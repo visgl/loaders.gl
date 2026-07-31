@@ -169,6 +169,93 @@ test('Tile3D#geometric error is undefined', t => {
   t.end();
 });
 
+test('Tile3D#scales geometric error with the complete transform', t => {
+  const uniformScaleHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: new Matrix4().scale([3, 3, 3])
+  };
+  const nonUniformScaleHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: new Matrix4().scale([2, 3, 4])
+  };
+  const rigidTransformHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    // A 90-degree Z rotation plus translation. Neither operation changes geometric error.
+    transform: new Matrix4([0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 100, 200, 300, 1])
+  };
+
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  t.equals(new Tile3D(MOCK_TILESET, uniformScaleHeader).lodMetricValue, 3, 'uses uniform scale');
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  t.equals(
+    new Tile3D(MOCK_TILESET, nonUniformScaleHeader).lodMetricValue,
+    4,
+    'uses the largest non-uniform scale component'
+  );
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  t.equals(
+    new Tile3D(MOCK_TILESET, rigidTransformHeader).lodMetricValue,
+    1,
+    'ignores rotation and translation'
+  );
+  t.end();
+});
+
+test('Tile3D#recomputes geometric error without compounding transform scale', t => {
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
+
+  tile._updateTransform(new Matrix4().scale([2, 2, 2]));
+  t.equals(tile.lodMetricValue, 2, 'applies the first transform scale');
+
+  tile._updateTransform(new Matrix4().scale([4, 4, 4]));
+  t.equals(tile.lodMetricValue, 4, 'recomputes from the source error after a scale change');
+
+  tile._updateTransform(new Matrix4());
+  t.equals(tile.lodMetricValue, 1, 'returns to the source error when the scale is removed');
+  t.end();
+});
+
+test('Tile3D#inherits unscaled geometric error before applying the child transform', t => {
+  const parentHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    lodMetricValue: 2,
+    transform: new Matrix4().scale([3, 3, 3])
+  };
+  const childHeader: {[key: string]: any} = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: new Matrix4().scale([4, 4, 4])
+  };
+  delete childHeader.lodMetricValue;
+
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const parent = new Tile3D(MOCK_TILESET, parentHeader);
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const child = new Tile3D(MOCK_TILESET, childHeader, parent);
+
+  t.equals(parent.lodMetricValue, 6, 'parent geometric error uses its complete scale');
+  t.equals(
+    child.lodMetricValue,
+    24,
+    'child applies its complete scale to the inherited source error exactly once'
+  );
+  t.end();
+});
+
+test('Tile3D#does not transform-scale I3S screen-threshold metrics', t => {
+  const tileHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    lodMetricType: LOD_METRIC_TYPE.MAX_SCREEN_THRESHOLD,
+    lodMetricValue: 5,
+    transform: new Matrix4().scale([2, 3, 4])
+  };
+
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const tile = new Tile3D(MOCK_TILESET, tileHeader);
+  t.equals(tile.lodMetricValue, 5, 'keeps I3S metric in its original screen-space units');
+  t.end();
+});
+
 test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', t => {
   const tileset = {
     ...MOCK_TILESET,

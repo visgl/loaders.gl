@@ -11,7 +11,7 @@ import {CullingVolume} from '@math.gl/culling';
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
 import type {DoublyLinkedListNode} from '../../utils/doubly-linked-list-node';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../../constants';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../../constants';
 import type {TileContentLoadResult} from './tileset-source';
 
 import {FrameState} from '../helpers/frame-state';
@@ -61,8 +61,17 @@ export class Tile3D {
   contentUrl: string;
   /** Different refinement algorithms used by I3S and 3D tiles */
   lodMetricType = 'geometricError';
-  /** The error, in meters, introduced if this tile is rendered and its children are not. */
+  /**
+   * The world-space geometric error, in meters, introduced if this tile is rendered and its
+   * children are not. For I3S this stores the format's unscaled screen-threshold metric instead.
+   */
   lodMetricValue: number = 0;
+
+  /**
+   * The source LOD metric before applying the tile's computed transform. Keeping the source value
+   * separate ensures transform updates never compound an already-scaled geometric error.
+   */
+  private _unscaledLodMetricValue: number = 0;
 
   /** @todo math.gl is not exporting BoundingVolume base type? */
   boundingVolume: any = null;
@@ -170,6 +179,7 @@ export class Tile3D {
 
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
+    this._updateLodMetricScale();
     this._initializeBoundingVolumes(header);
     this._initializeContent(header);
     this._initializeRenderingState(header);
@@ -569,7 +579,8 @@ export class Tile3D {
 
   // INTERNAL METHODS
 
-  _initializeLodMetric(header) {
+  /** Initializes the tile's LOD metric from its header or its nearest available ancestor. */
+  _initializeLodMetric(header: {[key: string]: any}): void {
     if ('lodMetricType' in header) {
       this.lodMetricType = header.lodMetricType;
     } else {
@@ -580,15 +591,20 @@ export class Tile3D {
 
     // This is used to compute screen space error, i.e., the error measured in pixels.
     if ('lodMetricValue' in header) {
-      this.lodMetricValue = header.lodMetricValue;
+      this._unscaledLodMetricValue = header.lodMetricValue;
     } else {
-      this.lodMetricValue =
-        (this.parent && this.parent.lodMetricValue) || this.tileset.lodMetricValue;
+      // Inherit the source value, not the parent's world-space value. The child's complete
+      // transform will be applied after transform initialization below.
+      this._unscaledLodMetricValue = this.parent
+        ? this.parent._unscaledLodMetricValue
+        : this.tileset.lodMetricValue;
       // eslint-disable-next-line
       console.warn(
         '3D Tile: Required prop lodMetricValue is undefined. Using parent lodMetricValue'
       );
     }
+
+    this.lodMetricValue = this._unscaledLodMetricValue;
   }
 
   _initializeTransforms(tileHeader) {
@@ -607,6 +623,28 @@ export class Tile3D {
     const parentInitialTransform =
       parent && parent._initialTransform ? parent._initialTransform.clone() : new Matrix4();
     this._initialTransform = new Matrix4(parentInitialTransform).multiplyRight(this.transform);
+  }
+
+  /**
+   * Updates the world-space LOD metric from the source metric and the complete tile transform.
+   *
+   * 3D Tiles geometric error is a distance in the tile's local meters. Screen-space error (SSE)
+   * compares that distance with a world-space camera distance, so both quantities must use the
+   * same scale. For non-uniform transforms the largest axis scale is deliberately used: this is
+   * conservative and prevents refinement from stopping while any transformed dimension can still
+   * exceed the requested visual error. Rotation and translation do not affect the scale.
+   *
+   * I3S `maxScreenThreshold` is already a screen-space metric and must not be transform-scaled.
+   */
+  _updateLodMetricScale(): void {
+    if (this.lodMetricType !== LOD_METRIC_TYPE.GEOMETRIC_ERROR) {
+      this.lodMetricValue = this._unscaledLodMetricValue;
+      return;
+    }
+
+    const transformScale = this.computedTransform.getScale(scratchVector);
+    const maximumScale = Math.max(transformScale[0], transformScale[1], transformScale[2]);
+    this.lodMetricValue = this._unscaledLodMetricValue * maximumScale;
   }
 
   _initializeBoundingVolumes(tileHeader) {
@@ -720,8 +758,11 @@ export class Tile3D {
     }
   }
 
-  // Update the tile's transform. The transform is applied to the tile's bounding volumes.
-  _updateTransform(parentTransform = new Matrix4()) {
+  /**
+   * Updates the tile's computed transform, world-space geometric error, and bounding volumes.
+   * @param parentTransform - Current computed transform of the parent tile or tileset.
+   */
+  _updateTransform(parentTransform = new Matrix4()): void {
     const computedTransform = parentTransform.clone().multiplyRight(this.transform);
     const didTransformChange = !computedTransform.equals(this.computedTransform);
 
@@ -731,6 +772,8 @@ export class Tile3D {
 
     this.computedTransform = computedTransform;
 
+    // Recalculate from the unscaled source metric so repeated model-matrix changes never compound.
+    this._updateLodMetricScale();
     this._updateBoundingVolume(this.header);
   }
 }
