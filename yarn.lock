@@ -4774,6 +4774,7 @@ __metadata:
     "@loaders.gl/images": "npm:4.4.3"
     "@loaders.gl/loader-utils": "npm:4.4.3"
     "@loaders.gl/schema": "npm:4.4.3"
+    "@loaders.gl/schema-utils": "npm:4.4.3"
     "@math.gl/polygon": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.1.1"
     "@types/pbf": "npm:^3.0.2"
