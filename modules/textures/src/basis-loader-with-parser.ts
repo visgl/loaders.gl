@@ -5,7 +5,7 @@
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {parseBasis} from './lib/parsers/parse-basis';
-import type {BasisFormat} from './lib/parsers/parse-basis';
+import type {BasisFormat} from './lib/utils/basis-format-utils';
 import {BasisWorkerLoader as BasisWorkerLoaderMetadata} from './basis-loader';
 import {BasisLoader as BasisLoaderMetadata} from './basis-loader';
 

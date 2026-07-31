@@ -54,7 +54,7 @@ export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
 
 // Basis format selection
-export {selectSupportedBasisFormat} from './lib/parsers/parse-basis';
+export {selectSupportedBasisFormat} from './lib/utils/basis-format-utils';
 
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
