@@ -5653,7 +5653,7 @@ __metadata:
     object-stream: "npm:0.0.1"
     parquet-wasm: "npm:0.7.1"
     snappyjs: "npm:^0.6.0"
-    thrift: "npm:^0.19.0"
+    thrift: "npm:^0.24.0"
     util: "npm:^0.12.5"
     varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
@@ -29089,13 +29089,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"q@npm:^1.5.0":
-  version: 1.5.1
-  resolution: "q@npm:1.5.1"
-  checksum: 10c0/7855fbdba126cb7e92ef3a16b47ba998c0786ec7fface236e3eb0135b65df36429d91a86b1fff3ab0927b4ac4ee88a2c44527c7c3b8e2a37efbec9fe34803df4
-  languageName: node
-  linkType: hard
-
 "qs@npm:6.11.0":
   version: 6.11.0
   resolution: "qs@npm:6.11.0"
@@ -32757,16 +32750,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"thrift@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "thrift@npm:0.19.0"
+"thrift@npm:^0.24.0":
+  version: 0.24.0
+  resolution: "thrift@npm:0.24.0"
   dependencies:
     browser-or-node: "npm:^1.2.1"
     isomorphic-ws: "npm:^4.0.1"
     node-int64: "npm:^0.4.0"
-    q: "npm:^1.5.0"
-    ws: "npm:^5.2.3"
-  checksum: 10c0/935c2d9fcd3f23528fb462e8186aacf6e9c185593f59ac6ede1e3f5862de85f7d093a99546edce77443c990e6fde850a5ef5603e087cc1e9df96003f01860435
+    uuid: "npm:^14.0.0"
+    ws: "npm:^8.21.0"
+  checksum: 10c0/79d15a1cc57f6ac6b94321da5602ab938019bfeed47d8f0898d98bee845987a6110cd40794dd997dd892425f5207824e464c5d4305bd51aadb644920089a7c14
   languageName: node
   linkType: hard
 
@@ -34086,6 +34079,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^14.0.0":
+  version: 14.0.1
+  resolution: "uuid@npm:14.0.1"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/2d961289097cb68c37d93d1da0b5c3aafc1eb9948a455cca8d0ae53a099b2fe583b8933254a84097f700e6bac2e23033364904df0467c22551d5d9611febcaf6
+  languageName: node
+  linkType: hard
+
 "uuid@npm:^3.3.2":
   version: 3.4.0
   resolution: "uuid@npm:3.4.0"
@@ -35374,15 +35376,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.2.3":
-  version: 5.2.4
-  resolution: "ws@npm:5.2.4"
-  dependencies:
-    async-limiter: "npm:~1.0.0"
-  checksum: 10c0/14e84e4209f86ab68b01b9ebf42c88f81f26a64ff4886ef65d27c734c9b90b8d7e84712da3c3f7a922a4ab58bf0b96544d32ae28ebbd620fcda3027dd5bc7604
-  languageName: node
-  linkType: hard
-
 "ws@npm:^6.2.1":
   version: 6.2.3
   resolution: "ws@npm:6.2.3"
@@ -35434,6 +35427,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10c0/4741d9b9bc3f9c791880882414f96e36b8b254e34d4b503279d6400d9a4b87a033834856dbdd94ee4b637944df17ea8afc4bce0ff4a1560d2166be8855da5b04
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.21.0":
+  version: 8.21.1
+  resolution: "ws@npm:8.21.1"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/c4c6f1d95f6d465262de2037c57c715725d67e078dd49420ede4e19115668aba159cb64d85c5e89c06eb2826be599e62e5095860ad6cc54ff42e8bd7684e1db8
   languageName: node
   linkType: hard
 
