@@ -46,6 +46,25 @@ function checkRegionBoundingVolumes(t, tile) {
   return t.ok(tile.boundingVolume.region) && t.equal(tile.boundingVolume.region.length, 6);
 }
 
+/** Encodes a minimal valid tileset with optional top-level or root overrides. */
+function encodeTilesetJson(overrides: {[key: string]: any} = {}): ArrayBuffer {
+  const tilesetJson = {
+    asset: {version: '1.1'},
+    geometricError: 1,
+    root: {
+      geometricError: 0,
+      refine: 'REPLACE',
+      boundingVolume: {sphere: [0, 0, 0, 1]}
+    },
+    ...overrides
+  };
+  const encodedJson = new TextEncoder().encode(JSON.stringify(tilesetJson));
+  return encodedJson.buffer.slice(
+    encodedJson.byteOffset,
+    encodedJson.byteOffset + encodedJson.byteLength
+  ) as ArrayBuffer;
+}
+
 test('Tiles3DLoader#Tileset file', async t => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
@@ -68,6 +87,101 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.equals(tileset.root.lodMetricValue, 0);
   t.equals(tileset.root.type, 'scenegraph');
 
+  t.end();
+});
+
+test('Tiles3DLoader#accepts supported required extensions', async t => {
+  const extensionsRequired = [
+    '3DTILES_implicit_tiling',
+    '3DTILES_bounding_volume_S2',
+    '3DTILES_batch_table_hierarchy',
+    '3DTILES_draco_point_compression',
+    '3DTILES_content_gltf'
+  ];
+  const tileset = await parse(
+    encodeTilesetJson({extensionsRequired, extensionsUsed: extensionsRequired}),
+    Tiles3DLoader,
+    {worker: false, '3d-tiles': {isTileset: true}}
+  );
+
+  t.deepEqual(tileset.extensionsRequired, extensionsRequired, 'preserves the required extensions');
+  t.end();
+});
+
+test('Tiles3DLoader#allows unknown extensionsUsed entries', async t => {
+  const tileset = await parse(
+    encodeTilesetJson({extensionsUsed: ['VENDOR_optional_extension']}),
+    Tiles3DLoader,
+    {worker: false, '3d-tiles': {isTileset: true}}
+  );
+
+  t.deepEqual(
+    tileset.extensionsUsed,
+    ['VENDOR_optional_extension'],
+    'optional unknown extensions do not prevent loading'
+  );
+  t.end();
+});
+
+test('Tiles3DLoader#rejects unsupported required extensions', async t => {
+  await t.rejects(
+    parse(encodeTilesetJson({extensionsRequired: ['VENDOR_required_extension']}), Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: true}
+    }),
+    /Unsupported required 3D Tiles extension: VENDOR_required_extension/,
+    'names an unsupported required extension'
+  );
+
+  await t.rejects(
+    parse(
+      encodeTilesetJson({
+        extensionsRequired: ['VENDOR_first', '3DTILES_multiple_contents', 'VENDOR_first']
+      }),
+      Tiles3DLoader,
+      {worker: false, '3d-tiles': {isTileset: true}}
+    ),
+    /Unsupported required 3D Tiles extensions: VENDOR_first, 3DTILES_multiple_contents/,
+    'reports every unsupported extension once in declaration order'
+  );
+  t.end();
+});
+
+test('Tiles3DLoader#validates required extensions before implicit subtree fetching', async t => {
+  let fetchCallCount = 0;
+  const implicitRoot = {
+    geometricError: 1,
+    refine: 'REPLACE',
+    boundingVolume: {sphere: [0, 0, 0, 1]},
+    content: {uri: 'content/{level}/{x}/{y}.glb'},
+    implicitTiling: {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 1,
+      availableLevels: 2,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+
+  await t.rejects(
+    parse(
+      encodeTilesetJson({
+        extensionsRequired: ['VENDOR_required_before_fetch'],
+        root: implicitRoot
+      }),
+      Tiles3DLoader,
+      {
+        worker: false,
+        '3d-tiles': {isTileset: true},
+        fetch: async () => {
+          fetchCallCount++;
+          throw new Error('subtree fetch should not run');
+        }
+      }
+    ),
+    /Unsupported required 3D Tiles extension: VENDOR_required_before_fetch/,
+    'rejects before normalization starts'
+  );
+  t.equals(fetchCallCount, 0, 'does not request an implicit subtree');
   t.end();
 });
 
