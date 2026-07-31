@@ -9,7 +9,7 @@
  Create as many sidebars as you want.
  */
 const sidebars = {
-  examplesSidebar: [
+  Examples: [
     {
       type: 'doc',
       label: 'Overview',
