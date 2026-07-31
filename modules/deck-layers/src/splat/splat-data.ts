@@ -21,12 +21,48 @@ export type GaussianSplatData = {
   scales: Float32Array;
   /** Interleaved quaternion rotations from `rot_0..3`. */
   rotations: Float32Array;
-  /** Normalized opacity values in linear alpha space. */
+  /** Linear opacity values used for blending and culling. */
   opacities: Float32Array;
+  /** Linear RGB values derived from SH DC columns or fallback colors. */
+  baseRgb: Float32Array;
   /** RGBA colors derived from SH DC columns and opacity. */
   colors: Uint8Array;
+  /** Minimum decoded RGB value represented by color byte 0. */
+  colorMin: number;
+  /** Maximum decoded RGB value represented by color byte 255. */
+  colorMax: number;
+  /** Optional interleaved spherical harmonic rest coefficients. */
+  sphericalHarmonics?: Float32Array;
+  /** Number of spherical harmonic rest coefficients per splat. */
+  sphericalHarmonicsComponentCount?: number;
   /** Circular fallback radii used by the CPU billboard renderer. */
   radii: Float32Array;
+};
+
+/** Linear Gaussian splat arrays that can be uploaded without Arrow conversion. */
+export type GaussianSplatValues = {
+  /** Number of splats represented by these arrays. */
+  splatCount: number;
+  /** Interleaved `x, y, z` positions. */
+  positions: Float32Array;
+  /** Interleaved decoded `scale_0, scale_1, scale_2` standard deviations. */
+  scales: Float32Array;
+  /** Interleaved quaternion rotations in `[w, x, y, z]` order. */
+  rotations: Float32Array;
+  /** Interleaved RGB color bytes. */
+  colors: Uint8Array;
+  /** Minimum decoded RGB value represented by color byte 0. */
+  colorMin?: number;
+  /** Maximum decoded RGB value represented by color byte 255. */
+  colorMax?: number;
+  /** Optional interleaved RGB spherical harmonic DC coefficients. */
+  sphericalHarmonicDcs?: Float32Array;
+  /** Linear opacity values used for blending and culling. */
+  opacities: Float32Array;
+  /** Optional interleaved spherical harmonic rest coefficients. */
+  sphericalHarmonics?: Float32Array;
+  /** Number of spherical harmonic rest coefficients per splat. */
+  sphericalHarmonicsComponentCount?: number;
 };
 
 /** Convert a loaders.gl wrapper or raw Apache Arrow table to a raw Arrow table. */
@@ -50,10 +86,60 @@ export function getGaussianSplatDataFromArrowTable(
   const scales = getSplatScales(table);
   const rotations = getSplatRotations(table);
   const opacities = getSplatOpacities(table, fallbackColor);
-  const colors = getSplatColors(table, fallbackColor, opacities);
+  const baseRgb = getSplatBaseRgb(table, fallbackColor);
+  const colorMin = 0;
+  const colorMax = 1;
+  const colors = getSplatColorsFromBaseRgb(baseRgb, opacities, colorMin, colorMax);
+  const sphericalHarmonics = getSplatSphericalHarmonics(table);
+  const sphericalHarmonicsComponentCount =
+    sphericalHarmonics && length > 0 ? sphericalHarmonics.length / length : undefined;
   const radii = getSplatRadii(scales, gaussianSupportRadius);
 
-  return {length, positions, scales, rotations, opacities, colors, radii};
+  return {
+    length,
+    positions,
+    scales,
+    rotations,
+    opacities,
+    baseRgb,
+    colors,
+    colorMin,
+    colorMax,
+    sphericalHarmonics,
+    sphericalHarmonicsComponentCount,
+    radii
+  };
+}
+
+/** Convert decoded Gaussian splat arrays to render-ready data without building Arrow columns. */
+export function getGaussianSplatDataFromValues(
+  splats: GaussianSplatValues,
+  fallbackColor: Color = DEFAULT_COLOR,
+  gaussianSupportRadius: number = 3
+): GaussianSplatData {
+  const length = splats.splatCount;
+  const colorMin = splats.colorMin ?? 0;
+  const colorMax = splats.colorMax ?? 1;
+  const baseRgb = splats.sphericalHarmonicDcs
+    ? getSplatBaseRgbFromSphericalHarmonicDcs(splats.sphericalHarmonicDcs, length)
+    : getSplatBaseRgbFromColorBytes(splats.colors, length, fallbackColor, colorMin, colorMax);
+  const colors = getSplatColorsFromBaseRgb(baseRgb, splats.opacities, colorMin, colorMax);
+  const radii = getSplatRadii(splats.scales, gaussianSupportRadius);
+
+  return {
+    length,
+    positions: splats.positions,
+    scales: splats.scales,
+    rotations: splats.rotations,
+    opacities: splats.opacities,
+    baseRgb,
+    colors,
+    colorMin,
+    colorMax,
+    sphericalHarmonics: splats.sphericalHarmonics,
+    sphericalHarmonicsComponentCount: splats.sphericalHarmonicsComponentCount,
+    radii
+  };
 }
 
 /** Return POSITION values as an interleaved XYZ array. */
@@ -140,27 +226,121 @@ export function getSplatColors(
   fallbackColor: Color,
   opacities: Float32Array = getSplatOpacities(table, fallbackColor)
 ): Uint8Array {
+  return getSplatColorsFromBaseRgb(getSplatBaseRgb(table, fallbackColor), opacities);
+}
+
+/** Return linear RGB values from SH DC columns or fallback colors. */
+export function getSplatBaseRgb(table: arrow.Table, fallbackColor: Color): Float32Array {
   const fdc0 = getOptionalNumericColumn(table, 'f_dc_0');
   const fdc1 = getOptionalNumericColumn(table, 'f_dc_1');
   const fdc2 = getOptionalNumericColumn(table, 'f_dc_2');
-  const colors = new Uint8Array(table.numRows * 4);
+  const rgb = new Float32Array(table.numRows * 3);
 
   for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    const colorIndex = rowIndex * 4;
+    const colorIndex = rowIndex * 3;
     if (fdc0 && fdc1 && fdc2) {
-      colors[colorIndex + 0] = normalizeColorByte(fdc0[rowIndex] * SH_C0 + 0.5);
-      colors[colorIndex + 1] = normalizeColorByte(fdc1[rowIndex] * SH_C0 + 0.5);
-      colors[colorIndex + 2] = normalizeColorByte(fdc2[rowIndex] * SH_C0 + 0.5);
+      rgb[colorIndex + 0] = fdc0[rowIndex] * SH_C0 + 0.5;
+      rgb[colorIndex + 1] = fdc1[rowIndex] * SH_C0 + 0.5;
+      rgb[colorIndex + 2] = fdc2[rowIndex] * SH_C0 + 0.5;
     } else {
-      colors[colorIndex + 0] = fallbackColor[0] ?? DEFAULT_COLOR[0];
-      colors[colorIndex + 1] = fallbackColor[1] ?? DEFAULT_COLOR[1];
-      colors[colorIndex + 2] = fallbackColor[2] ?? DEFAULT_COLOR[2];
+      rgb[colorIndex + 0] = (fallbackColor[0] ?? DEFAULT_COLOR[0]) / 255;
+      rgb[colorIndex + 1] = (fallbackColor[1] ?? DEFAULT_COLOR[1]) / 255;
+      rgb[colorIndex + 2] = (fallbackColor[2] ?? DEFAULT_COLOR[2]) / 255;
     }
+  }
 
+  return rgb;
+}
+
+/** Return linear RGB values from interleaved SH DC coefficient arrays. */
+function getSplatBaseRgbFromSphericalHarmonicDcs(
+  sphericalHarmonicDcs: Float32Array,
+  splatCount: number
+): Float32Array {
+  const rgb = new Float32Array(splatCount * 3);
+  for (let rowIndex = 0; rowIndex < splatCount; rowIndex++) {
+    const colorIndex = rowIndex * 3;
+    rgb[colorIndex + 0] = sphericalHarmonicDcs[colorIndex + 0] * SH_C0 + 0.5;
+    rgb[colorIndex + 1] = sphericalHarmonicDcs[colorIndex + 1] * SH_C0 + 0.5;
+    rgb[colorIndex + 2] = sphericalHarmonicDcs[colorIndex + 2] * SH_C0 + 0.5;
+  }
+  return rgb;
+}
+
+/** Return linear RGB values from interleaved RGB color bytes or a fallback color. */
+function getSplatBaseRgbFromColorBytes(
+  colors: Uint8Array,
+  splatCount: number,
+  fallbackColor: Color,
+  colorMin = 0,
+  colorMax = 1
+): Float32Array {
+  const rgb = new Float32Array(splatCount * 3);
+  const colorRange = colorMax - colorMin;
+  for (let rowIndex = 0; rowIndex < splatCount; rowIndex++) {
+    const colorIndex = rowIndex * 3;
+    if (colors.length >= colorIndex + 3) {
+      rgb[colorIndex + 0] = colorMin + (colors[colorIndex + 0] / 255) * colorRange;
+      rgb[colorIndex + 1] = colorMin + (colors[colorIndex + 1] / 255) * colorRange;
+      rgb[colorIndex + 2] = colorMin + (colors[colorIndex + 2] / 255) * colorRange;
+    } else {
+      rgb[colorIndex + 0] = (fallbackColor[0] ?? DEFAULT_COLOR[0]) / 255;
+      rgb[colorIndex + 1] = (fallbackColor[1] ?? DEFAULT_COLOR[1]) / 255;
+      rgb[colorIndex + 2] = (fallbackColor[2] ?? DEFAULT_COLOR[2]) / 255;
+    }
+  }
+  return rgb;
+}
+
+/** Return RGBA bytes from linear RGB values and opacity. */
+export function getSplatColorsFromBaseRgb(
+  baseRgb: Float32Array,
+  opacities: Float32Array,
+  colorMin = 0,
+  colorMax = 1
+): Uint8Array {
+  const colors = new Uint8Array(opacities.length * 4);
+  for (let rowIndex = 0; rowIndex < opacities.length; rowIndex++) {
+    const rgbIndex = rowIndex * 3;
+    const colorIndex = rowIndex * 4;
+    colors[colorIndex + 0] = encodeColorByte(baseRgb[rgbIndex + 0], colorMin, colorMax);
+    colors[colorIndex + 1] = encodeColorByte(baseRgb[rgbIndex + 1], colorMin, colorMax);
+    colors[colorIndex + 2] = encodeColorByte(baseRgb[rgbIndex + 2], colorMin, colorMax);
     colors[colorIndex + 3] = normalizeColorByte(opacities[rowIndex]);
   }
 
   return colors;
+}
+
+/** Encodes a decoded color component into an unorm8 byte range. */
+function encodeColorByte(value: number, colorMin: number, colorMax: number): number {
+  const colorRange = colorMax - colorMin;
+  const normalizedValue = colorRange > 0 ? (value - colorMin) / colorRange : value;
+  return normalizeColorByte(normalizedValue);
+}
+
+/** Return interleaved spherical harmonic rest coefficients, when present. */
+export function getSplatSphericalHarmonics(table: arrow.Table): Float32Array | undefined {
+  const columns: Float32Array[] = [];
+  for (let componentIndex = 0; ; componentIndex++) {
+    const column = getOptionalNumericColumn(table, `f_rest_${componentIndex}`);
+    if (!column) {
+      break;
+    }
+    columns.push(column);
+  }
+  if (!columns.length) {
+    return undefined;
+  }
+
+  const sphericalHarmonics = new Float32Array(table.numRows * columns.length);
+  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
+    for (let componentIndex = 0; componentIndex < columns.length; componentIndex++) {
+      sphericalHarmonics[rowIndex * columns.length + componentIndex] =
+        columns[componentIndex][rowIndex];
+    }
+  }
+  return sphericalHarmonics;
 }
 
 /** Return circular fallback radii from decoded anisotropic scales. */

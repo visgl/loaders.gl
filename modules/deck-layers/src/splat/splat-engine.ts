@@ -67,6 +67,8 @@ export type SplatEngineUpdateProps = {
   cullingVolume?: CullingVolume;
   /** Render radius multiplier used for screen-size culling. */
   radiusScale?: number;
+  /** World-space camera position used to evaluate view-dependent color. */
+  viewOrigin?: readonly [number, number, number];
 };
 
 /** Bindings consumed by the future WebGPU render path. */
@@ -101,6 +103,14 @@ export type SplatWebGLAttributes = {
   };
 };
 
+/** Decode range applied to packed RGB render bytes. */
+export type SplatColorRange = {
+  /** Minimum decoded RGB value represented by color byte 0. */
+  colorMin: number;
+  /** Maximum decoded RGB value represented by color byte 255. */
+  colorMax: number;
+};
+
 /** GPU buffers owned by {@link SplatEngine}. */
 export type SplatEngineBuffers = {
   /** Interleaved position storage buffer. */
@@ -113,6 +123,10 @@ export type SplatEngineBuffers = {
   opacities: Buffer;
   /** Packed RGBA color storage buffer. */
   colors: Buffer;
+  /** Per-splat active opacity weights used by paged LoD renderers. */
+  activeFlags: Buffer;
+  /** Compact active splat index list used by unsorted paged LoD renderers. */
+  activeIndices: Buffer;
   /** Current sortable key buffer. */
   keys: Buffer;
   /** Current sorted index buffer. */
@@ -157,10 +171,18 @@ type SplatComputePipelines = {
   clear: ComputePipeline;
   /** Projection and tile-count pass pipeline. */
   project: ComputePipeline;
+  /** Projection pass that walks compact active indices and counts visible tiles. */
+  projectActive: ComputePipeline;
+  /** Projection and direct visible-index compaction pass for unsorted rendering. */
+  projectUnsorted: ComputePipeline;
+  /** Projection pass that walks compact active indices for unsorted LoD rendering. */
+  projectActiveUnsorted: ComputePipeline;
   /** Serial tile prefix scan pipeline. */
   scanTiles: ComputePipeline;
   /** Visible splat scatter pipeline. */
   scatterTiles: ComputePipeline;
+  /** Visible active-index scatter pipeline. */
+  scatterActiveTiles: ComputePipeline;
   /** Tile-local sort pipeline. */
   tileSort: ComputePipeline;
   /** Sorted compact index copy pipeline. */
@@ -176,7 +198,9 @@ const DEFAULT_ENGINE_PROPS: SplatEngineProps = {
   maxScreenSpaceSplatSize: 1024
 };
 
+const WEBGPU_BUFFER_DESTROY_DELAY_MS = 2000;
 const COUNT_BUFFER_BYTE_LENGTH = 2 * Uint32Array.BYTES_PER_ELEMENT;
+const MAX_COMPUTE_WORKGROUPS_PER_DIMENSION = 65535;
 
 const COMPUTE_BINDING_DECLARATIONS = {
   positions: {name: 'positions', type: 'read-only-storage', group: 0, location: 0},
@@ -194,7 +218,9 @@ const COMPUTE_BINDING_DECLARATIONS = {
   tempTileIndices: {name: 'tempTileIndices', type: 'storage', group: 0, location: 12},
   tempTileKeys: {name: 'tempTileKeys', type: 'storage', group: 0, location: 13},
   counts: {name: 'counts', type: 'storage', group: 0, location: 14},
-  params: {name: 'params', type: 'uniform', group: 0, location: 15}
+  activeFlags: {name: 'activeFlags', type: 'read-only-storage', group: 0, location: 15},
+  params: {name: 'params', type: 'uniform', group: 0, location: 16},
+  activeIndices: {name: 'activeIndices', type: 'read-only-storage', group: 0, location: 17}
 } as const satisfies Record<string, BindingDeclaration>;
 
 const COMPUTE_PIPELINE_BINDING_NAMES: Record<string, readonly string[]> = {
@@ -204,14 +230,57 @@ const COMPUTE_PIPELINE_BINDING_NAMES: Record<string, readonly string[]> = {
     'scales',
     'rotations',
     'opacities',
+    'activeFlags',
     'keys',
     'projected',
     'tileCounts',
     'params'
   ],
+  projectActive: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'indices',
+    'keys',
+    'projected',
+    'tileCounts',
+    'params'
+  ],
+  projectUnsorted: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'activeFlags',
+    'indices',
+    'projected',
+    'counts',
+    'params'
+  ],
+  projectActiveUnsorted: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'activeFlags',
+    'indices',
+    'projected',
+    'params'
+  ],
   scanTiles: ['tileCounts', 'tileOffsets', 'tileCursors', 'counts', 'params'],
   scatterTiles: [
     'positions',
+    'keys',
+    'projected',
+    'tileCursors',
+    'tileIndices',
+    'tileKeys',
+    'params'
+  ],
+  scatterActiveTiles: [
+    'positions',
+    'indices',
     'keys',
     'projected',
     'tileCursors',
@@ -238,6 +307,9 @@ export class SplatEngine {
   buffers: SplatEngineBuffers | null = null;
 
   private sortedIndices: Uint32Array = new Uint32Array(0);
+  private activeIndices: Uint32Array = new Uint32Array(0);
+  private activeIndexCount = 0;
+  private activeWeights: Float32Array = new Float32Array(0);
   private dataStreamVersion = 0;
   private keys: Uint32Array = new Uint32Array(0);
   private projectedData: Float32Array = new Float32Array(0);
@@ -250,8 +322,14 @@ export class SplatEngine {
   private computePipelines: SplatComputePipelines | null = null;
   private computeTileGrid = getSplatTileGrid(1, 1);
   private computeBufferSignature = '';
+  /** Pending asynchronous visible-count readback, if one is in flight. */
   private countReadbackPromise: Promise<void> | null = null;
+  /** Monotonic serial used to ignore stale compute readbacks. */
   private computeUpdateSerial = 0;
+  /** True when a newer compute pass ran while the count readback was busy. */
+  private countReadbackDirty = false;
+  /** Last data/camera signature used for view-dependent SH color evaluation. */
+  private colorViewSignature = '';
   private overflowSplatCount = 0;
 
   constructor(device: Device, props: Partial<SplatEngineProps> = {}) {
@@ -262,6 +340,7 @@ export class SplatEngine {
   /** Release all GPU resources owned by this engine. */
   destroy(): void {
     this.dataStreamVersion++;
+    this.computeUpdateSerial++;
     this.destroyBuffers();
     this.destroyComputeResources();
   }
@@ -269,8 +348,9 @@ export class SplatEngine {
   /** Update engine options and mark dependent state dirty when values change. */
   setProps(props: Partial<SplatEngineProps>): void {
     const nextProps = {...this.props, ...props};
+    const sortModeChanged = nextProps.sortMode !== this.props.sortMode;
     if (
-      nextProps.sortMode !== this.props.sortMode ||
+      sortModeChanged ||
       nextProps.alphaCutoff !== this.props.alphaCutoff ||
       nextProps.screenSizeCutoffPixels !== this.props.screenSizeCutoffPixels ||
       nextProps.gaussianSupportRadius !== this.props.gaussianSupportRadius ||
@@ -280,6 +360,9 @@ export class SplatEngine {
       this.propsChanged = true;
     }
     this.props = nextProps;
+    if (sortModeChanged && nextProps.sortMode !== 'none') {
+      this.buffers?.activeFlags.write(this.activeWeights);
+    }
   }
 
   /** Decode Arrow data and upload persistent/transient GPU buffers. */
@@ -296,6 +379,12 @@ export class SplatEngine {
     }
 
     this.setArrowTableData(table, fallbackColor);
+  }
+
+  /** Upload decoded Gaussian splat arrays without constructing an Arrow table first. */
+  setSplatData(data: GaussianSplatData): void {
+    this.dataStreamVersion++;
+    this.setDecodedSplatData(data);
   }
 
   private async setDataFromBatches(
@@ -328,25 +417,87 @@ export class SplatEngine {
       fallbackColor,
       this.props.gaussianSupportRadius
     );
+    this.setDecodedSplatData(data);
+  }
+
+  /** Upload render-ready Gaussian splat data into CPU and GPU engine state. */
+  private setDecodedSplatData(data: GaussianSplatData): void {
     this.data = data;
     this.dataVersion++;
+    this.computeUpdateSerial++;
     this.sortedVersion = -1;
     this.sortedIndices = createSequentialIndices(data.length);
+    this.activeIndices = this.sortedIndices;
+    this.activeIndexCount = data.length;
+    this.activeWeights = createActiveWeights(data.length);
     this.renderSplatCount = data.length;
     this.keys = new Uint32Array(data.length);
     this.projectedData = new Float32Array(Math.max(data.length, 1) * 8);
     this.computeBufferSignature = '';
     this.overflowSplatCount = 0;
     this.countReadbackPromise = null;
+    this.countReadbackDirty = false;
+    this.colorViewSignature = '';
 
     this.destroyBuffers();
     this.destroyComputeBuffers();
     this.buffers = this.device.type === 'webgpu' ? this.createBuffers(data) : null;
   }
 
+  /** Replace the active splat rows without reuploading immutable splat attributes. */
+  setActiveIndices(indices?: Uint32Array): void {
+    const data = this.data;
+    if (!data) {
+      return;
+    }
+
+    const activeIndices = indices
+      ? copyValidSplatIndices(indices, data.length)
+      : createSequentialIndices(data.length);
+    this.activeIndices = activeIndices;
+    this.activeIndexCount = activeIndices.length;
+    this.renderSplatCount = activeIndices.length;
+    this.activeWeights = createActiveWeightsFromIndices(data.length, activeIndices);
+    this.buffers?.activeIndices.write(activeIndices);
+    if (this.props.sortMode !== 'none') {
+      this.buffers?.activeFlags.write(this.activeWeights);
+    }
+    this.sortedVersion = -1;
+    this.updateSignature = '';
+    this.countReadbackDirty = true;
+  }
+
+  /** Replace per-splat active opacity weights without reuploading immutable attributes. */
+  setActiveWeights(weights?: Float32Array): void {
+    const data = this.data;
+    if (!data) {
+      return;
+    }
+
+    const activeWeights =
+      weights && weights.length === data.length ? weights : createActiveWeights(data.length);
+    this.activeWeights = activeWeights;
+    this.activeIndices =
+      weights && weights.length === data.length
+        ? createActiveIndicesFromWeights(activeWeights)
+        : createSequentialIndices(data.length);
+    this.activeIndexCount = this.activeIndices.length;
+    this.renderSplatCount = this.activeIndexCount;
+    this.buffers?.activeIndices.write(this.activeIndices);
+    this.buffers?.activeFlags.write(activeWeights);
+    this.sortedVersion = -1;
+    this.updateSignature = '';
+    this.countReadbackDirty = true;
+  }
+
   /** Update projection/sort state before rendering. */
   update(props: SplatEngineUpdateProps = {}): void {
-    if (!this.data || !this.buffers) {
+    if (!this.data) {
+      return;
+    }
+
+    this.updateViewDependentColors(props);
+    if (!this.buffers) {
       return;
     }
 
@@ -417,6 +568,19 @@ export class SplatEngine {
     return this.renderSplatCount;
   }
 
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange(): SplatColorRange {
+    return {
+      colorMin: this.data?.colorMin ?? 0,
+      colorMax: this.data?.colorMax ?? 1
+    };
+  }
+
+  /** Return the last tile overflow count reported by the compute sorter. */
+  getOverflowSplatCount(): number {
+    return this.overflowSplatCount;
+  }
+
   /** Return a copy of the current sorted indices for validation. */
   getSortedIndicesForTesting(): Uint32Array {
     return this.sortedIndices.slice();
@@ -451,7 +615,7 @@ export class SplatEngine {
 
   /** Return the last tile overflow count reported by the compute sorter. */
   getOverflowSplatCountForTesting(): number {
-    return this.overflowSplatCount;
+    return this.getOverflowSplatCount();
   }
 
   private createBuffers(data: GaussianSplatData): SplatEngineBuffers {
@@ -478,6 +642,14 @@ export class SplatEngine {
       colors: this.device.createBuffer({
         usage: Buffer.STORAGE | Buffer.COPY_DST,
         data: colors
+      }),
+      activeFlags: this.device.createBuffer({
+        usage: Buffer.STORAGE | Buffer.COPY_DST,
+        data: this.activeWeights
+      }),
+      activeIndices: this.device.createBuffer({
+        usage: Buffer.STORAGE | Buffer.COPY_DST,
+        data: this.activeIndices
       }),
       keys: this.device.createBuffer({
         usage: Buffer.STORAGE | Buffer.COPY_DST | Buffer.COPY_SRC,
@@ -512,6 +684,20 @@ export class SplatEngine {
     );
   }
 
+  /** Return true when unsorted LoD rendering can project only selected active rows. */
+  private shouldUseActiveIndexProjection(): boolean {
+    return Boolean(
+      this.data && this.props.sortMode === 'none' && this.activeIndexCount < this.data.length
+    );
+  }
+
+  /** Return true when tile sorting can project only selected active rows. */
+  private shouldUseActiveTileProjection(): boolean {
+    return Boolean(
+      this.data && this.props.sortMode === 'tile' && this.activeIndexCount < this.data.length
+    );
+  }
+
   /** Run WebGPU projection, tile binning, optional tile sort, and visible-count readback. */
   private updateComputeTileBuffers(props: SplatEngineUpdateProps): void {
     const data = this.data;
@@ -531,63 +717,116 @@ export class SplatEngine {
     const bindings = this.getComputeBindings();
     const commandEncoder = this.device.createCommandEncoder({id: 'splat-compute-command-encoder'});
     const computePass = commandEncoder.beginComputePass({id: 'splat-compute-pass'});
-    const splatWorkgroups = Math.ceil(Math.max(data.length, 1) / SPLAT_COMPUTE_WORKGROUP_SIZE);
+    const useActiveIndexProjection = this.shouldUseActiveIndexProjection();
+    const useActiveTileProjection = this.shouldUseActiveTileProjection();
+    const useActiveProjection = useActiveIndexProjection || useActiveTileProjection;
+    const projectSplatCount = useActiveProjection ? this.activeIndexCount : data.length;
+    if (useActiveProjection) {
+      buffers.indices.write(this.activeIndices);
+    }
+    const splatWorkgroups = Math.ceil(
+      Math.max(projectSplatCount, 1) / SPLAT_COMPUTE_WORKGROUP_SIZE
+    );
     const clearWorkgroups = Math.ceil(
       Math.max(this.computeTileGrid.tileCount + 1, 2) / SPLAT_COMPUTE_WORKGROUP_SIZE
     );
     const sortMode = this.props.sortMode;
 
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.clear,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.clear),
-      clearWorkgroups
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.project,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.project),
-      splatWorkgroups
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.scanTiles,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scanTiles),
-      1
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.scatterTiles,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scatterTiles),
-      splatWorkgroups
-    );
-    if (sortMode === 'tile') {
+    if (!useActiveIndexProjection) {
       dispatchComputePipeline(
         computePass,
-        computePipelines.tileSort,
-        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.tileSort),
-        this.computeTileGrid.tileCount
+        computePipelines.clear,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.clear),
+        clearWorkgroups
       );
     }
     dispatchComputePipeline(
       computePass,
-      computePipelines.copySorted,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.copySorted),
+      useActiveIndexProjection
+        ? computePipelines.projectActiveUnsorted
+        : useActiveTileProjection
+          ? computePipelines.projectActive
+          : sortMode === 'none'
+            ? computePipelines.projectUnsorted
+            : computePipelines.project,
+      filterBindings(
+        bindings,
+        useActiveIndexProjection
+          ? COMPUTE_PIPELINE_BINDING_NAMES.projectActiveUnsorted
+          : useActiveTileProjection
+            ? COMPUTE_PIPELINE_BINDING_NAMES.projectActive
+            : sortMode === 'none'
+              ? COMPUTE_PIPELINE_BINDING_NAMES.projectUnsorted
+              : COMPUTE_PIPELINE_BINDING_NAMES.project
+      ),
       splatWorkgroups
     );
+    if (sortMode !== 'none') {
+      dispatchComputePipeline(
+        computePass,
+        computePipelines.scanTiles,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scanTiles),
+        1
+      );
+      dispatchComputePipeline(
+        computePass,
+        useActiveTileProjection
+          ? computePipelines.scatterActiveTiles
+          : computePipelines.scatterTiles,
+        filterBindings(
+          bindings,
+          useActiveTileProjection
+            ? COMPUTE_PIPELINE_BINDING_NAMES.scatterActiveTiles
+            : COMPUTE_PIPELINE_BINDING_NAMES.scatterTiles
+        ),
+        splatWorkgroups
+      );
+      if (sortMode === 'tile') {
+        const tileSortWorkgroupsX = Math.min(
+          this.computeTileGrid.tileCount,
+          MAX_COMPUTE_WORKGROUPS_PER_DIMENSION
+        );
+        const tileSortWorkgroupsY = Math.ceil(
+          this.computeTileGrid.tileCount / MAX_COMPUTE_WORKGROUPS_PER_DIMENSION
+        );
+        dispatchComputePipeline(
+          computePass,
+          computePipelines.tileSort,
+          filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.tileSort),
+          tileSortWorkgroupsX,
+          tileSortWorkgroupsY
+        );
+      }
+      dispatchComputePipeline(
+        computePass,
+        computePipelines.copySorted,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.copySorted),
+        splatWorkgroups
+      );
+    }
     computePass.end();
-    const shouldReadCounts = !this.countReadbackPromise;
+    const computeSerial = ++this.computeUpdateSerial;
+    const shouldReadCounts = !useActiveIndexProjection && !this.countReadbackPromise;
     if (shouldReadCounts) {
       commandEncoder.copyBufferToBuffer({
         sourceBuffer: computeBuffers.counts,
         destinationBuffer: computeBuffers.countReadback,
         size: COUNT_BUFFER_BYTE_LENGTH
       });
+    } else {
+      this.countReadbackDirty = true;
     }
     this.device.submit(commandEncoder.finish({id: 'splat-compute-command-buffer'}));
 
+    if (useActiveIndexProjection) {
+      this.renderSplatCount = this.activeIndexCount;
+      this.overflowSplatCount = 0;
+      this.countReadbackDirty = false;
+      return;
+    }
+
     if (shouldReadCounts) {
-      this.updateCountReadback();
+      this.updateCountReadback(computeSerial);
     }
   }
 
@@ -672,8 +911,12 @@ export class SplatEngine {
       shader,
       clear: this.createComputePipeline(shader, 'clear'),
       project: this.createComputePipeline(shader, 'project'),
+      projectActive: this.createComputePipeline(shader, 'projectActive'),
+      projectUnsorted: this.createComputePipeline(shader, 'projectUnsorted'),
+      projectActiveUnsorted: this.createComputePipeline(shader, 'projectActiveUnsorted'),
       scanTiles: this.createComputePipeline(shader, 'scanTiles'),
       scatterTiles: this.createComputePipeline(shader, 'scatterTiles'),
+      scatterActiveTiles: this.createComputePipeline(shader, 'scatterActiveTiles'),
       tileSort: this.createComputePipeline(shader, 'tileSort'),
       copySorted: this.createComputePipeline(shader, 'copySorted')
     };
@@ -720,6 +963,7 @@ export class SplatEngine {
     paramsU32[u32Offset + 4] = this.computeTileGrid.tileCount;
     paramsU32[u32Offset + 5] =
       this.props.sortMode === 'tile' ? 2 : this.props.sortMode === 'global' ? 1 : 0;
+    paramsU32[u32Offset + 6] = this.activeIndexCount;
 
     computeBuffers.params.write(new Uint8Array(paramsArrayBuffer));
   }
@@ -737,6 +981,8 @@ export class SplatEngine {
       scales: buffers.scales,
       rotations: buffers.rotations,
       opacities: buffers.opacities,
+      activeFlags: buffers.activeFlags,
+      activeIndices: buffers.activeIndices,
       keys: buffers.keys,
       indices: buffers.indices,
       projected: buffers.projected,
@@ -753,14 +999,13 @@ export class SplatEngine {
   }
 
   /** Start an asynchronous readback of visible and overflow counts without stalling draw. */
-  private updateCountReadback(): void {
+  private updateCountReadback(readbackSerial: number): void {
     const computeBuffers = this.computeBuffers;
     if (!computeBuffers || this.countReadbackPromise) {
       return;
     }
 
-    const readbackSerial = ++this.computeUpdateSerial;
-    this.countReadbackPromise = computeBuffers.countReadback
+    const readbackPromise = computeBuffers.countReadback
       .readAsync(0, COUNT_BUFFER_BYTE_LENGTH)
       .then(bytes => {
         if (readbackSerial < this.computeUpdateSerial) {
@@ -772,8 +1017,17 @@ export class SplatEngine {
       })
       .catch(() => {})
       .finally(() => {
+        if (this.countReadbackPromise !== readbackPromise) {
+          return;
+        }
         this.countReadbackPromise = null;
+        if (this.countReadbackDirty) {
+          this.countReadbackDirty = false;
+          this.sortedVersion = -1;
+          this.props.onDataUpdate?.();
+        }
       });
+    this.countReadbackPromise = readbackPromise;
   }
 
   private updateDepthSortBuffers(props: SplatEngineUpdateProps): void {
@@ -817,7 +1071,9 @@ export class SplatEngine {
       const projectedIndex = index * 8;
       const scaleIndex = index * 3;
       const positionIndex = index * 3;
-      const opacity = data.opacities[index];
+      const activeWeight = this.activeWeights[index] ?? 0;
+      const opacity = data.opacities[index] * activeWeight;
+      const isActive = activeWeight > 0;
       const scale: [number, number, number] = [
         data.scales[scaleIndex + 0],
         data.scales[scaleIndex + 1],
@@ -835,6 +1091,7 @@ export class SplatEngine {
         data.rotations[rotationIndex + 2],
         data.rotations[rotationIndex + 3]
       ];
+      const splatAlpha = getExpandedLoDOpacity(opacity);
       const covariance = projectSplatCovarianceToScreen({
         position,
         scale,
@@ -844,13 +1101,18 @@ export class SplatEngine {
         kernel2DSize: this.props.kernel2DSize,
         maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize
       });
+      const adjustedSupportRadius = getAdjustedGaussianSupportRadius(
+        splatAlpha,
+        this.props.gaussianSupportRadius
+      );
       const renderedMaxAxisPixels =
-        covariance.maxAxisPixels *
-        this.props.gaussianSupportRadius *
-        Math.max(props.radiusScale ?? 1, 0);
+        covariance.maxAxisPixels * adjustedSupportRadius * Math.max(props.radiusScale ?? 1, 0);
       const boundingRadius =
-        Math.max(scale[0], scale[1], scale[2]) * this.props.gaussianSupportRadius;
+        Math.max(scale[0], scale[1], scale[2]) *
+        Math.max(props.radiusScale ?? 1, 0) *
+        adjustedSupportRadius;
       const isVisible =
+        isActive &&
         opacity >= this.props.alphaCutoff &&
         isBoundingSphereVisible(
           props.cullingVolume,
@@ -866,8 +1128,8 @@ export class SplatEngine {
       this.projectedData[projectedIndex + 1] = covariance.axis0[1];
       this.projectedData[projectedIndex + 2] = covariance.axis1[0];
       this.projectedData[projectedIndex + 3] = covariance.axis1[1];
-      this.projectedData[projectedIndex + 4] = opacity;
-      this.projectedData[projectedIndex + 5] = isVisible;
+      this.projectedData[projectedIndex + 4] = splatAlpha;
+      this.projectedData[projectedIndex + 5] = isVisible ? covariance.alphaScale : 0;
       this.projectedData[projectedIndex + 6] = covariance.maxAxisPixels;
       this.projectedData[projectedIndex + 7] = 0;
 
@@ -898,6 +1160,23 @@ export class SplatEngine {
     buffers.projected.write(this.projectedData);
   }
 
+  /** Updates color buffers with view-dependent spherical harmonic terms. */
+  private updateViewDependentColors(props: SplatEngineUpdateProps): void {
+    const data = this.data;
+    if (!data?.sphericalHarmonics || !data.sphericalHarmonicsComponentCount || !props.viewOrigin) {
+      return;
+    }
+
+    const signature = `${this.dataVersion}|${props.viewOrigin[0]},${props.viewOrigin[1]},${props.viewOrigin[2]}`;
+    if (signature === this.colorViewSignature) {
+      return;
+    }
+
+    writeSphericalHarmonicColors(data, props.viewOrigin);
+    this.colorViewSignature = signature;
+    this.buffers?.colors.write(packColors(data.colors));
+  }
+
   private destroyBuffers(): void {
     const buffers = this.buffers;
     if (!buffers) {
@@ -905,7 +1184,7 @@ export class SplatEngine {
     }
 
     for (const buffer of Object.values(buffers)) {
-      buffer.destroy();
+      this.destroyBuffer(buffer);
     }
     this.buffers = null;
   }
@@ -918,10 +1197,20 @@ export class SplatEngine {
     }
 
     for (const buffer of Object.values(computeBuffers)) {
-      buffer.destroy();
+      this.destroyBuffer(buffer);
     }
     this.computeBuffers = null;
     this.computeBufferSignature = '';
+  }
+
+  /** Destroys buffers after in-flight WebGPU command buffers can release them. */
+  private destroyBuffer(buffer: Buffer): void {
+    if (this.device.type !== 'webgpu') {
+      buffer.destroy();
+      return;
+    }
+    const destroyTimer = setTimeout(() => buffer.destroy(), WEBGPU_BUFFER_DESTROY_DELAY_MS);
+    (destroyTimer as {unref?: () => void}).unref?.();
   }
 
   /** Destroy compute pipelines, shader, and compute-only buffers. */
@@ -934,8 +1223,12 @@ export class SplatEngine {
 
     computePipelines.clear.destroy();
     computePipelines.project.destroy();
+    computePipelines.projectActive.destroy();
+    computePipelines.projectUnsorted.destroy();
+    computePipelines.projectActiveUnsorted.destroy();
     computePipelines.scanTiles.destroy();
     computePipelines.scatterTiles.destroy();
+    computePipelines.scatterActiveTiles.destroy();
     computePipelines.tileSort.destroy();
     computePipelines.copySorted.destroy();
     computePipelines.shader.destroy();
@@ -947,14 +1240,21 @@ const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 /** Dispatch one compute pipeline with a shared binding map. */
 function dispatchComputePipeline(
-  computePass: {setPipeline: (pipeline: ComputePipeline) => void; dispatch: (x: number) => void},
+  computePass: {
+    setPipeline: (pipeline: ComputePipeline) => void;
+    dispatch: (x: number, y?: number) => void;
+  },
   pipeline: ComputePipeline,
   bindings: Record<string, Binding>,
-  workgroupCount: number
+  workgroupCountX: number,
+  workgroupCountY: number = 1
 ): void {
   pipeline.setBindings(bindings);
   computePass.setPipeline(pipeline);
-  computePass.dispatch(Math.max(Math.ceil(workgroupCount), 1));
+  computePass.dispatch(
+    Math.max(Math.ceil(workgroupCountX), 1),
+    Math.max(Math.ceil(workgroupCountY), 1)
+  );
 }
 
 /** Return a binding map containing only bindings used by one compute entry point. */
@@ -1049,6 +1349,16 @@ function isBoundingSphereVisible(
 
   const boundingSphere = new BoundingSphere([x, y, z], Math.max(radius, 0));
   return cullingVolume.computeVisibility(boundingSphere) !== CullingVolume.MASK_OUTSIDE;
+}
+
+/** Return the Spark-style support radius expanded for merged LoD opacity values above one. */
+function getAdjustedGaussianSupportRadius(opacity: number, gaussianSupportRadius: number): number {
+  return gaussianSupportRadius + Math.max(opacity - 1, 0) * 0.7;
+}
+
+/** Return Spark's expanded alpha domain for merged LoD opacity values above one. */
+function getExpandedLoDOpacity(opacity: number): number {
+  return opacity > 1 ? Math.min(opacity * 4 - 3, 5) : opacity;
 }
 
 /** Return a screen tile id for a projected splat center. */
@@ -1164,6 +1474,171 @@ function createSequentialIndices(length: number): Uint32Array {
     indices[index] = index;
   }
   return indices;
+}
+
+/** Copy valid active splat row indices into a compact GPU-uploadable list. */
+function copyValidSplatIndices(indices: Uint32Array, length: number): Uint32Array {
+  const validIndices = new Uint32Array(indices.length);
+  let validIndexCount = 0;
+  for (let indexOffset = 0; indexOffset < indices.length; indexOffset++) {
+    const index = indices[indexOffset];
+    if (index < length) {
+      validIndices[validIndexCount++] = index;
+    }
+  }
+  return validIndices.subarray(0, validIndexCount);
+}
+
+/** Create all-visible active opacity weights for newly uploaded splats. */
+function createActiveWeights(length: number): Float32Array {
+  const activeWeights = new Float32Array(length);
+  activeWeights.fill(1);
+  return activeWeights;
+}
+
+/** Create active opacity weights from a compact active row list. */
+function createActiveWeightsFromIndices(length: number, indices: Uint32Array): Float32Array {
+  const activeWeights = new Float32Array(length);
+  for (let indexOffset = 0; indexOffset < indices.length; indexOffset++) {
+    activeWeights[indices[indexOffset]] = 1;
+  }
+  return activeWeights;
+}
+
+/** Build a compact active row list from non-zero active opacity weights. */
+function createActiveIndicesFromWeights(activeWeights: Float32Array): Uint32Array {
+  const activeIndices = new Uint32Array(activeWeights.length);
+  let activeIndexCount = 0;
+  for (let weightIndex = 0; weightIndex < activeWeights.length; weightIndex++) {
+    if (activeWeights[weightIndex] > 0) {
+      activeIndices[activeIndexCount++] = weightIndex;
+    }
+  }
+  return activeIndices.subarray(0, activeIndexCount);
+}
+
+/** Recomputes RGBA bytes by evaluating available spherical harmonic rest coefficients. */
+export function writeSphericalHarmonicColors(
+  data: GaussianSplatData,
+  viewOrigin: readonly [number, number, number]
+): void {
+  const sphericalHarmonics = data.sphericalHarmonics;
+  const componentCount = data.sphericalHarmonicsComponentCount ?? 0;
+  if (!sphericalHarmonics || componentCount < 9) {
+    return;
+  }
+
+  for (let splatIndex = 0; splatIndex < data.length; splatIndex++) {
+    const positionIndex = splatIndex * 3;
+    const direction = normalizeVector([
+      data.positions[positionIndex + 0] - viewOrigin[0],
+      data.positions[positionIndex + 1] - viewOrigin[1],
+      data.positions[positionIndex + 2] - viewOrigin[2]
+    ]);
+    const rgbIndex = splatIndex * 3;
+    const harmonicIndex = splatIndex * componentCount;
+    let red = data.baseRgb[rgbIndex + 0];
+    let green = data.baseRgb[rgbIndex + 1];
+    let blue = data.baseRgb[rgbIndex + 2];
+
+    const sh1Basis0 = -0.4886025 * direction[1];
+    const sh1Basis1 = 0.4886025 * direction[2];
+    const sh1Basis2 = -0.4886025 * direction[0];
+    red +=
+      sphericalHarmonics[harmonicIndex + 0] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 3] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 6] * sh1Basis2;
+    green +=
+      sphericalHarmonics[harmonicIndex + 1] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 4] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 7] * sh1Basis2;
+    blue +=
+      sphericalHarmonics[harmonicIndex + 2] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 5] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 8] * sh1Basis2;
+
+    if (componentCount >= 24) {
+      const sh2 = getSphericalHarmonicDegree2Basis(direction);
+      for (let basisIndex = 0; basisIndex < 5; basisIndex++) {
+        const offset = harmonicIndex + 9 + basisIndex * 3;
+        red += sphericalHarmonics[offset + 0] * sh2[basisIndex];
+        green += sphericalHarmonics[offset + 1] * sh2[basisIndex];
+        blue += sphericalHarmonics[offset + 2] * sh2[basisIndex];
+      }
+    }
+
+    if (componentCount >= 45) {
+      const sh3 = getSphericalHarmonicDegree3Basis(direction);
+      for (let basisIndex = 0; basisIndex < 7; basisIndex++) {
+        const offset = harmonicIndex + 24 + basisIndex * 3;
+        red += sphericalHarmonics[offset + 0] * sh3[basisIndex];
+        green += sphericalHarmonics[offset + 1] * sh3[basisIndex];
+        blue += sphericalHarmonics[offset + 2] * sh3[basisIndex];
+      }
+    }
+
+    const colorIndex = splatIndex * 4;
+    data.colors[colorIndex + 0] = encodeColorByte(red, data.colorMin, data.colorMax);
+    data.colors[colorIndex + 1] = encodeColorByte(green, data.colorMin, data.colorMax);
+    data.colors[colorIndex + 2] = encodeColorByte(blue, data.colorMin, data.colorMax);
+    data.colors[colorIndex + 3] = normalizeColorByte(data.opacities[splatIndex]);
+  }
+}
+
+/** Returns degree-2 real SH basis values in Spark's packed order. */
+function getSphericalHarmonicDegree2Basis(
+  direction: readonly [number, number, number]
+): readonly [number, number, number, number, number] {
+  const [x, y, z] = direction;
+  return [
+    1.0925484 * x * y,
+    -1.0925484 * y * z,
+    0.3153915 * (2 * z * z - x * x - y * y),
+    -1.0925484 * x * z,
+    0.5462742 * (x * x - y * y)
+  ];
+}
+
+/** Returns degree-3 real SH basis values in Spark's packed order. */
+function getSphericalHarmonicDegree3Basis(
+  direction: readonly [number, number, number]
+): readonly [number, number, number, number, number, number, number] {
+  const [x, y, z] = direction;
+  const xx = x * x;
+  const yy = y * y;
+  const zz = z * z;
+  return [
+    -0.5900436 * y * (3 * xx - yy),
+    2.8906114 * x * y * z,
+    -0.4570458 * y * (4 * zz - xx - yy),
+    0.3731763 * z * (2 * zz - 3 * xx - 3 * yy),
+    -0.4570458 * x * (4 * zz - xx - yy),
+    1.4453057 * z * (xx - yy),
+    -0.5900436 * x * (xx - 3 * yy)
+  ];
+}
+
+/** Returns a normalized 3-vector, or a stable fallback for zero-length inputs. */
+function normalizeVector(
+  vector: readonly [number, number, number]
+): readonly [number, number, number] {
+  const length = Math.hypot(vector[0], vector[1], vector[2]);
+  if (!Number.isFinite(length) || length <= Number.EPSILON) {
+    return [0, 0, 1];
+  }
+  return [vector[0] / length, vector[1] / length, vector[2] / length];
+}
+
+/** Clamp a normalized color value and convert it to an unorm8 byte. */
+function normalizeColorByte(value: number): number {
+  return Math.round(Math.min(Math.max(value, 0), 1) * 255);
+}
+
+/** Encode a decoded RGB component into the splat color byte range. */
+function encodeColorByte(value: number, colorMin: number, colorMax: number): number {
+  const colorRange = colorMax - colorMin;
+  const normalizedValue = colorRange > 0 ? (value - colorMin) / colorRange : value;
+  return normalizeColorByte(normalizedValue);
 }
 
 /** Pack RGBA bytes into little-endian unsigned integers for storage buffers. */

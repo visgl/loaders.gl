@@ -4,7 +4,7 @@
 
 import type {Loader} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import type {SplatsLoaderOptions} from './types';
+import type {GaussianSplats, SplatsLoaderOptions} from './types';
 import {SPZFormat} from './splats-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -19,7 +19,7 @@ async function preload() {
 
 /** Metadata-only loader for Niantic Spatial `.spz` Gaussian splat files. */
 export const SPZLoader = {
-  dataType: null as unknown as MeshArrowTable,
+  dataType: null as unknown as MeshArrowTable | GaussianSplats,
   batchType: null as never,
   ...SPZFormat,
   version: VERSION,
@@ -29,4 +29,4 @@ export const SPZLoader = {
     }
   },
   preload
-} as const satisfies Loader<MeshArrowTable, never, SplatsLoaderOptions>;
+} as const satisfies Loader<MeshArrowTable | GaussianSplats, never, SplatsLoaderOptions>;

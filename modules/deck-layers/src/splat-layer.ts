@@ -20,15 +20,53 @@ import {
   type Unit,
   type Color
 } from '@deck.gl/core';
-import type {BufferLayout} from '@luma.gl/core';
+import type {BufferLayout, Device} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
 import type {ShaderModule} from '@luma.gl/shadertools';
 import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
 import {CullingVolume, Plane} from '@math.gl/culling';
-import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
-import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';
+import {Matrix4, type Matrix4Like} from '@math.gl/core';
+import {
+  SplatEngine,
+  type SplatColorRange,
+  type SplatEngineProps,
+  type SplatEngineUpdateProps,
+  type SplatRenderBindings,
+  type SplatSortMode,
+  type SplatWebGLAttributes
+} from './splat/splat-engine';
+import {
+  getArrowTable,
+  getGaussianSplatDataFromArrowTable,
+  getGaussianSplatDataFromValues,
+  type GaussianSplatValues
+} from './splat/splat-data';
 
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;
+const DEFAULT_RAD_SPLAT_MAX_CHUNKS = 32;
+const DEFAULT_RAD_SPLAT_MAX_SPLATS = 2100000;
+const DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
+const DEFAULT_RAD_SPLAT_MAX_OUTSTANDING_CHUNK_WORK_MULTIPLIER = 4;
+const DEFAULT_RAD_SPLAT_MAX_CHUNK_UPLOADS_PER_FRAME = 8;
+const DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT = 2;
+const DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS = 120;
+const DEFAULT_RAD_SPLAT_CHUNK_TIMEOUT_MS = 30000;
+const DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER = 4;
+const DEFAULT_RAD_BREADTH_PREFETCH_INTERVAL = 4;
+const DEFAULT_RAD_FRONTIER_MAX_SUPPRESSED_CHILD_SPLATS = 65536;
+const DEFAULT_RAD_CHILD_SUPPRESSION_COVERAGE = 0.02;
+const DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE = 0.85;
+const DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT = 0.005;
+const DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE = 512;
+const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 2500;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA = 16;
+const DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS = 1000;
+const DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS = 8;
+const DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL = 2048;
+const DEFAULT_RAD_CONE_FOV0_DEGREES = 90;
+const DEFAULT_RAD_CONE_FOV_DEGREES = 120;
+const IDENTITY_MODEL_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 
 /** Public rendering modes supported by {@link SplatLayer}. */
 export type SplatRenderMode = 'auto' | 'cpu' | 'gpu';
@@ -68,6 +106,421 @@ export type SplatLayerProps = CompositeLayerProps & {
   maxScreenSpaceSplatSize?: number;
 };
 
+/** Bounds for decoded RAD splats in source coordinates. */
+export type RADSplatBounds = {
+  /** Minimum x, y, z values. */
+  mins: [number, number, number];
+  /** Maximum x, y, z values. */
+  maxs: [number, number, number];
+};
+
+/** Progress event emitted while {@link RADSplatLayer} loads direct RAD chunks. */
+export type RADSplatLoadProgress = {
+  /** Whether the layer is currently loading chunks. */
+  isLoading: boolean;
+  /** Number of source chunks loaded so far. */
+  loadedChunkCount: number;
+  /** Number of source chunks selected for this load. */
+  selectedChunkCount: number;
+  /** Number of decoded splats loaded so far. */
+  loadedSplatCount: number;
+  /** Total splat count declared by RAD metadata. */
+  totalSplatCount: number;
+  /** Final visible splat count after optional parent pruning. */
+  visibleSplatCount?: number;
+  /** Final load duration in milliseconds. */
+  loadTimeMs?: number;
+  /** Final decoded bounds when available. */
+  bounds?: RADSplatBounds;
+  /** Number of decoded chunks resident in the runtime page store. */
+  residentChunkCount?: number;
+  /** Number of decoded splats resident in the runtime page store. */
+  residentSplatCount?: number;
+  /** Number of chunk requests currently in flight. */
+  requestedChunkCount?: number;
+  /** Number of resident chunks evicted since the current source was opened. */
+  evictedChunkCount?: number;
+  /** Number of active render pages in the current RAD frontier. */
+  renderPageCount?: number;
+  /** Number of splats uploaded into active render pages. */
+  renderPageSplatCount?: number;
+  /** Number of splats in current render index buffers after engine culling. */
+  renderSplatCount?: number;
+  /** Number of splats that overflowed tile-local storage in the latest compute pass. */
+  tileOverflowSplatCount?: number;
+  /** Number of selected visible LoD rows that still have children. */
+  frontierParentSplatCount?: number;
+  /** Number of selected visible LoD rows that are leaves. */
+  frontierLeafSplatCount?: number;
+  /** Largest selected LoD child count in the current frontier. */
+  frontierMaxChildCount?: number;
+  /** Largest Spark-expanded render opacity selected in the current frontier. */
+  frontierMaxOpacity?: number;
+  /** Largest decoded source-space scale selected in the current frontier. */
+  frontierMaxScale?: number;
+  /** Milliseconds spent uploading the most recent chunk page. */
+  lastUploadTimeMs?: number;
+  /** Milliseconds since the current source started loading when the last coherent LoD set committed. */
+  lastCommitTimeMs?: number;
+  /** Load failure message. */
+  error?: string;
+};
+
+/** Minimal RAD source contract consumed by {@link RADSplatLayer}. */
+export type RADSplatSourceLike = {
+  /** Returns parsed top-level RAD metadata. */
+  getMetadata: () => Promise<RADSplatMetadataLike>;
+  /** Fetches and decodes one RAD chunk into linear splat arrays. */
+  getChunkSplats: (
+    chunkIndex: number,
+    options?: RADSplatChunkRequestOptions
+  ) => Promise<RADSplatChunkValues>;
+};
+
+/** Props for rendering RAD sources without first materializing Arrow tables. */
+export type RADSplatLayerProps = Omit<SplatLayerProps, 'data'> & {
+  /** RAD source object returned by `RADSourceLoader`. */
+  data: RADSplatSourceLike | null;
+  /** First RAD chunk index to consider. */
+  startChunkIndex?: number;
+  /** Maximum number of RAD chunks to load. */
+  maxChunks?: number;
+  /** Maximum number of RAD splats to load before stopping chunk selection. */
+  maxSplats?: number;
+  /** Preferred Spark-style visible splat budget; overrides `maxSplats` when supplied. */
+  lodSplatCount?: number;
+  /** Maximum number of RAD chunks to fetch and decode at once. */
+  maxConcurrentChunkRequests?: number;
+  /** Whether loaded child splats should replace loaded parent LoD splats. */
+  pruneLoadedLoDParents?: boolean;
+  /** Multiplier applied to screen-space LoD priority. */
+  lodSplatScale?: number;
+  /** Render-radius multiplier applied after RAD LoD selection. */
+  lodRenderScale?: number;
+  /** Full-width foveation cone angle, in degrees, that keeps full chunk priority. */
+  coneFov0?: number;
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
+  coneFov?: number;
+  /** Relative priority retained for pages behind the active view. */
+  behindFoveate?: number;
+  /** Relative priority retained near the edge of the active view cone. */
+  coneFoveate?: number;
+  /** Whether the RAD page set should be reselected as the deck viewport changes. */
+  reselectOnViewChange?: boolean;
+  /** Maximum decoded RAD chunks retained across page reselections. */
+  maxCachedChunks?: number;
+  /** Maximum decoded resident splats retained before least-recently-used pages are evicted. */
+  maxResidentSplats?: number;
+  /** Alias for resident splat capacity used by Spark-style paged renderers. */
+  maxPagedSplats?: number;
+  /** Called as RAD chunks are loaded and uploaded. */
+  onLoadProgress?: (progress: RADSplatLoadProgress) => void;
+};
+
+type RADSplatMetadataLike = {
+  /** Total splat count declared by RAD metadata. */
+  count: number;
+  /** Nominal chunk size when per-chunk counts are omitted. */
+  chunkSize?: number;
+  /** RAD chunk table. */
+  chunks: {base?: number; count?: number}[];
+};
+
+type RADSplatChunkRequestOptions = {
+  /** Abort signal forwarded to chunk fetches. */
+  signal?: AbortSignal;
+  /** RAD chunk decode options. */
+  radChunk?: {
+    /** Whether decoded LoD child metadata is retained. */
+    includeLoDTree?: boolean;
+    /** Whether SH rest coefficients are decoded. */
+    includeSphericalHarmonics?: boolean;
+  };
+};
+
+type RADSplatChunkValues = GaussianSplatValues & {
+  /** Source-specific RAD metadata. */
+  loaderData?: Record<string, unknown>;
+};
+
+type RADSplatLoadedChunk = {
+  /** Source chunk index. */
+  chunkIndex: number;
+  /** Decoded Gaussian splats for the chunk. */
+  splats: RADSplatChunkValues;
+};
+
+type RADSplatRange = {
+  /** Inclusive first global splat index loaded. */
+  start: number;
+  /** Exclusive last global splat index loaded. */
+  end: number;
+};
+
+type RADSplatLoadedRange = RADSplatRange & {
+  /** Source chunk index represented by this loaded global range. */
+  chunkIndex: number;
+};
+
+type RADSplatChunkSelectionOptions = {
+  /** First RAD chunk index used as the root of the LoD traversal. */
+  startChunkIndex: number;
+  /** Maximum number of chunks to decode. */
+  maxChunks: number;
+  /** Maximum number of source splats to decode. */
+  maxSplats: number;
+  /** Maximum number of concurrent chunk requests. */
+  maxConcurrentChunkRequests: number;
+  /** Active deck.gl viewport used to score LoD children. */
+  viewport?: any;
+  /** Optional layer model transform applied before viewport projection. */
+  modelMatrix?: Matrix4Like | null;
+  /** Render radius multiplier used to score projected child importance. */
+  radiusScale: number;
+  /** Gaussian support radius used to score projected child importance. */
+  gaussianSupportRadius: number;
+  /** Multiplier applied to screen-space LoD priority. */
+  lodSplatScale: number;
+  /** Render-radius multiplier applied after RAD LoD selection. */
+  lodRenderScale: number;
+  /** Full-width foveation cone angle, in degrees, that keeps full priority. */
+  coneFov0: number;
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
+  coneFov: number;
+  /** Relative priority retained for pages behind the active view. */
+  behindFoveate: number;
+  /** Relative priority retained near the edge of the active view cone. */
+  coneFoveate: number;
+  /** Called after another prioritized chunk batch has been decoded. */
+  onLoadedChunksUpdate?: (loadedChunks: RADSplatLoadedChunk[]) => Promise<void> | void;
+  /** Decoded RAD chunks retained by the layer across reselections. */
+  chunkCache?: Map<number, RADSplatLoadedChunk>;
+  /** Maximum decoded RAD chunks retained after a selection pass. */
+  maxCachedChunks: number;
+};
+
+type RADRuntimeUpdateOptions = {
+  /** Active deck.gl device used to create page engines. */
+  device: Device;
+  /** Active deck.gl viewport used to score LoD children. */
+  viewport?: any;
+  /** Optional layer model transform applied before viewport projection. */
+  modelMatrix?: Matrix4Like | null;
+  /** First RAD chunk index used as the root of the LoD traversal. */
+  startChunkIndex: number;
+  /** Maximum chunks selected for the coherent LoD render set. */
+  maxChunks: number;
+  /** Maximum source splats selected for the coherent LoD render set. */
+  maxSplats: number;
+  /** Maximum resident splats retained in decoded pages. */
+  maxResidentSplats: number;
+  /** Maximum concurrent chunk requests. */
+  maxConcurrentChunkRequests: number;
+  /** Whether loaded child splats should replace loaded parent LoD splats. */
+  pruneLoadedLoDParents: boolean;
+  /** Whether camera movement should schedule LoD reselection. */
+  reselectOnViewChange: boolean;
+  /** Render radius multiplier used to score projected child importance. */
+  radiusScale: number;
+  /** Gaussian support radius used by page engines and LoD scoring. */
+  gaussianSupportRadius: number;
+  /** Multiplier applied to screen-space LoD priority. */
+  lodSplatScale: number;
+  /** Render-radius multiplier applied after RAD LoD selection. */
+  lodRenderScale: number;
+  /** Full-width foveation cone angle, in degrees, that keeps full priority. */
+  coneFov0: number;
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
+  coneFov: number;
+  /** Relative priority retained for pages behind the active view. */
+  behindFoveate: number;
+  /** Relative priority retained near the edge of the active view cone. */
+  coneFoveate: number;
+  /** Maximum decoded RAD chunks retained after a selection pass. */
+  maxCachedChunks: number;
+  /** Fallback color supplied to page engines. */
+  fallbackColor: Color;
+  /** Splat engine props shared by all RAD page engines. */
+  engineProps: Partial<SplatEngineProps>;
+};
+
+type RADRuntimeCallbacks = {
+  /** Called when runtime progress changes. */
+  onProgress: (progress: RADSplatLoadProgress) => void;
+  /** Called when renderable page state changes. */
+  onStateChange: () => void;
+  /** Called when a runtime error belongs to the active source. */
+  onError: (error: Error) => void;
+};
+
+type RADChunkSelectionPlan = {
+  /** Loaded chunks selected for the current coherent LoD set. */
+  selectedChunks: RADSplatLoadedChunk[];
+  /** Optional row-level frontier selected from loaded RAD LoD nodes. */
+  frontierChunks?: RADRenderFrontierChunk[];
+  /** Missing chunk indices requested to refine the current LoD set. */
+  missingChunkIndices: number[];
+};
+
+type RADChunkRequestPlanOptions = {
+  /** Already-loaded RAD chunks keyed by source chunk index. */
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>;
+  /** Source metadata for chunk range lookups. */
+  metadata: RADSplatMetadataLike;
+  /** Chunks that are already pending, queued, or permanently failed. */
+  unavailableChunkIndices: Set<number>;
+  /** Runtime selection and priority options. */
+  options: RADSplatChunkSelectionOptions;
+  /** Maximum chunk indices to include in the request plan. */
+  maxRequestChunkCount: number;
+};
+
+type RADRenderPage = {
+  /** Source chunk index represented by this page. */
+  chunkIndex: number;
+  /** Engine that owns this page's GPU resources. */
+  engine: SplatRenderEngineLike;
+  /** Bounds for sorting page draw order. */
+  bounds?: RADSplatBounds;
+};
+
+type RADRenderFrontierChunk = {
+  /** Loaded source chunk retained by the coherent render frontier. */
+  chunk: RADSplatLoadedChunk;
+  /** Number of visible rows represented by this source chunk after LoD pruning. */
+  visibleSplatCount: number;
+  /** Optional local row indices that should remain active for this page. */
+  visibleRows?: Uint32Array;
+  /** Optional per-row opacity weights for active rows in this page. */
+  rowWeights?: Float32Array;
+};
+
+type RADChildChunkGroup = {
+  /** Combined priority for a single parent splat's unloaded child chunk range. */
+  score: number;
+  /** Missing chunks needed before this parent can atomically refine to children. */
+  chunkIndices: number[];
+};
+
+type RADFrontierCandidate = {
+  /** Loaded source chunk that owns this LoD node. */
+  chunk: RADSplatLoadedChunk;
+  /** Local row index inside the owning chunk. */
+  rowIndex: number;
+  /** Global RAD splat index for this LoD node. */
+  globalSplatIndex: number;
+  /** Consecutive global index for the first child node. */
+  childStart: number;
+  /** Number of direct child nodes in the LoD tree. */
+  childCount: number;
+  /** Spark-style LoD scale after distance and foveation weighting. */
+  pixelScale: number;
+  /** Heap priority for refinement. */
+  score: number;
+};
+
+type RADLoadedRenderFrontierPlan = {
+  /** Loaded row frontier grouped by owning source chunk. */
+  frontierChunks: RADRenderFrontierChunk[];
+  /** Missing chunks needed before selected parents can refine. */
+  missingChunkIndices: number[];
+};
+
+type RADChildFrontierCandidates = {
+  /** Loaded child candidates that can be refined immediately. */
+  childCandidates: RADFrontierCandidate[];
+  /** Fraction of direct child rows that are currently loaded. */
+  childCoverage: number;
+  /** Whether any direct child row belongs to a missing page. */
+  hasMissingChildren: boolean;
+};
+
+type RADFoveationView = {
+  /** Camera position in RAD source coordinates. */
+  viewOrigin?: [number, number, number];
+  /** Unit forward direction in RAD source coordinates. */
+  viewDirection?: [number, number, number];
+};
+
+type RADStoredPage = {
+  /** Source chunk index represented by this decoded page. */
+  chunkIndex: number;
+  /** Decoded source chunk retained for future LoD traversal. */
+  loadedChunk: RADSplatLoadedChunk;
+  /** Page bounds in source coordinates. */
+  bounds?: RADSplatBounds;
+  /** Last time this page was selected or traversed. */
+  lastUsedMs: number;
+};
+
+type RADRenderRowSegment = {
+  /** Frontier entry that owns the selected rows. */
+  frontierChunk: RADRenderFrontierChunk;
+  /** Offset into `visibleRows`, or source row offset when `visibleRows` is absent. */
+  rowOffset: number;
+  /** Number of source rows included in this segment. */
+  rowCount: number;
+};
+
+type RADRenderPageEngine = SplatRenderEngineLike & {
+  /** Render page index represented by this engine. */
+  readonly chunkIndex: number;
+  /** Page bounds in source coordinates. */
+  readonly bounds?: RADSplatBounds;
+};
+
+type RADRenderMetrics = {
+  /** Number of active render pages in the current RAD frontier. */
+  renderPageCount: number;
+  /** Number of splats uploaded into active render pages. */
+  renderPageSplatCount: number;
+  /** Number of splats in current render index buffers after engine culling. */
+  renderSplatCount: number;
+  /** Number of splats that overflowed tile-local storage in the latest compute pass. */
+  tileOverflowSplatCount: number;
+};
+
+type RADFrontierStats = {
+  /** Number of selected visible LoD rows that still have children. */
+  parentSplatCount: number;
+  /** Number of selected visible LoD rows that are leaves. */
+  leafSplatCount: number;
+  /** Largest selected LoD child count in the current frontier. */
+  maxChildCount: number;
+  /** Largest Spark-expanded render opacity selected in the current frontier. */
+  maxOpacity: number;
+  /** Largest decoded source-space scale selected in the current frontier. */
+  maxScale: number;
+};
+
+type SplatRenderEngineLike = {
+  /** Release all GPU resources owned by this render engine. */
+  destroy: () => void;
+  /** Update engine options and mark dependent state dirty when values change. */
+  setProps: (props: Partial<SplatEngineProps>) => void;
+  /** Update projection/sort state before rendering. */
+  update: (props?: SplatEngineUpdateProps) => void;
+  /** Return render bindings for a WebGPU render model. */
+  getRenderBindings: () => SplatRenderBindings;
+  /** Return deck.gl binary attributes for the WebGL fallback path. */
+  getWebGLAttributes: () => SplatWebGLAttributes;
+  /** Return the number of splats currently managed by this engine. */
+  getSplatCount: () => number;
+  /** Return the number of visible splats in the current render index buffer. */
+  getRenderSplatCount: () => number;
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange: () => SplatColorRange;
+  /** Return the last tile overflow count reported by the compute sorter. */
+  getOverflowSplatCount: () => number;
+};
+
+type RADSplatChunkRangeLookup = {
+  /** Global splat start per RAD chunk. */
+  starts: number[];
+  /** Global splat end per RAD chunk. */
+  ends: number[];
+};
+
 type SplatPrimitiveLayerProps = LayerProps & {
   data: LayerDataSource<unknown>;
   sizeUnits?: Unit;
@@ -75,11 +528,14 @@ type SplatPrimitiveLayerProps = LayerProps & {
   radiusMinPixels?: number;
   radiusMaxPixels?: number;
   alphaScale?: number;
+  colorMin?: number;
+  colorMax?: number;
+  alphaCutoff?: number;
   screenSizeCutoffPixels?: number;
   gaussianSupportRadius?: number;
   kernel2DSize?: number;
   maxScreenSpaceSplatSize?: number;
-  splatEngine?: SplatEngine | null;
+  splatEngine?: SplatRenderEngineLike | null;
 };
 
 type SplatUniformProps = {
@@ -88,6 +544,9 @@ type SplatUniformProps = {
   radiusMinPixels: number;
   radiusMaxPixels: number;
   alphaScale: number;
+  colorMin: number;
+  colorMax: number;
+  alphaCutoff: number;
   screenSizeCutoffPixels: number;
   gaussianSupportRadius: number;
 };
@@ -126,6 +585,33 @@ const defaultProps: DefaultProps<SplatLayerProps> = {
   maxScreenSpaceSplatSize: {type: 'number', min: 1, value: 1024}
 };
 
+const {data: _splatLayerDefaultData, ...splatLayerDefaultPropsWithoutData} = defaultProps;
+
+const radSplatDefaultProps: DefaultProps<RADSplatLayerProps> = {
+  ...splatLayerDefaultPropsWithoutData,
+  data: {type: 'object', compare: false, value: null},
+  id: 'rad-splat-layer',
+  maxChunks: {type: 'number', min: 1, value: DEFAULT_RAD_SPLAT_MAX_CHUNKS},
+  maxSplats: {type: 'number', min: 1, value: DEFAULT_RAD_SPLAT_MAX_SPLATS},
+  lodSplatCount: {type: 'number', min: 1, value: DEFAULT_RAD_SPLAT_MAX_SPLATS},
+  maxConcurrentChunkRequests: {
+    type: 'number',
+    min: 1,
+    value: DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS
+  },
+  pruneLoadedLoDParents: true,
+  lodSplatScale: {type: 'number', min: 0, value: 1},
+  lodRenderScale: {type: 'number', min: 0, value: 1},
+  coneFov0: {type: 'number', min: 0, value: DEFAULT_RAD_CONE_FOV0_DEGREES},
+  coneFov: {type: 'number', min: 0, value: DEFAULT_RAD_CONE_FOV_DEGREES},
+  behindFoveate: {type: 'number', min: 0, max: 1, value: 0.2},
+  coneFoveate: {type: 'number', min: 0, max: 1, value: 0.4},
+  reselectOnViewChange: true,
+  maxCachedChunks: {type: 'number', min: 1, value: 256},
+  maxResidentSplats: {type: 'number', min: 1, value: DEFAULT_RAD_SPLAT_MAX_SPLATS * 2},
+  maxPagedSplats: {type: 'number', min: 1, value: DEFAULT_RAD_SPLAT_MAX_SPLATS * 2}
+};
+
 const splatUniforms = {
   name: 'splat',
   source: '',
@@ -136,6 +622,9 @@ layout(std140) uniform splatUniforms {
   float radiusMinPixels;
   float radiusMaxPixels;
   float alphaScale;
+  float colorMin;
+  float colorMax;
+  float alphaCutoff;
   float screenSizeCutoffPixels;
   float gaussianSupportRadius;
 } splat;
@@ -147,6 +636,9 @@ layout(std140) uniform splatUniforms {
     radiusMinPixels: 'f32',
     radiusMaxPixels: 'f32',
     alphaScale: 'f32',
+    colorMin: 'f32',
+    colorMax: 'f32',
+    alphaCutoff: 'f32',
     screenSizeCutoffPixels: 'f32',
     gaussianSupportRadius: 'f32'
   }
@@ -159,6 +651,9 @@ struct SplatUniforms {
   radiusMinPixels: f32,
   radiusMaxPixels: f32,
   alphaScale: f32,
+  colorMin: f32,
+  colorMax: f32,
+  alphaCutoff: f32,
   screenSizeCutoffPixels: f32,
   gaussianSupportRadius: f32,
 };
@@ -175,6 +670,8 @@ struct FragmentInputs {
   @builtin(position) position: vec4<f32>,
   @location(0) gaussianCoord: vec2<f32>,
   @location(1) color: vec4<f32>,
+  @location(2) splatAlpha: f32,
+  @location(3) supportRadius: f32,
 };
 
 @vertex
@@ -198,7 +695,9 @@ fn vertexMain(
     splatPositions[positionIndex + 1u],
     splatPositions[positionIndex + 2u]
   );
-  let supportScale = splat.gaussianSupportRadius * splat.radiusScale;
+  let adjustedSplatAlpha = max(projectedMetadata.x, 0.0);
+  let adjustedSupportRadius = splat.gaussianSupportRadius + max(adjustedSplatAlpha - 1.0, 0.0) * 0.7;
+  let supportScale = adjustedSupportRadius * splat.radiusScale;
   let rawAxis0 = projectedAxes.xy * supportScale;
   let rawAxis1 = projectedAxes.zw * supportScale;
   let rawMaxAxisPixels = max(length(rawAxis0), length(rawAxis1));
@@ -214,17 +713,19 @@ fn vertexMain(
     1.0,
     rawMaxAxisPixels >= splat.screenSizeCutoffPixels
   );
-  let visibleAlpha = projectedMetadata.x * layer.opacity * splat.alphaScale * projectedMetadata.y * sizeVisibility;
+  let visibleAlphaScale = layer.opacity * splat.alphaScale * sizeVisibility;
+  let fragmentSplatAlpha = adjustedSplatAlpha * projectedMetadata.y;
   let packedColor = splatColors[splatIndex];
+  let colorRange = splat.colorMax - splat.colorMin;
   let color = vec4<f32>(
-    f32(packedColor & 255u) / 255.0,
-    f32((packedColor >> 8u) & 255u) / 255.0,
-    f32((packedColor >> 16u) & 255u) / 255.0,
-    visibleAlpha
+    splat.colorMin + (f32(packedColor & 255u) / 255.0) * colorRange,
+    splat.colorMin + (f32((packedColor >> 8u) & 255u) / 255.0) * colorRange,
+    splat.colorMin + (f32((packedColor >> 16u) & 255u) / 255.0) * colorRange,
+    visibleAlphaScale
   );
   var outputs: FragmentInputs;
   geometry.worldPosition = splatPosition;
-  let gaussianCoord = corner * splat.gaussianSupportRadius;
+  let gaussianCoord = corner * adjustedSupportRadius;
   geometry.uv = gaussianCoord;
 
   var clipPosition = project_position_to_clipspace(
@@ -244,19 +745,26 @@ fn vertexMain(
   outputs.position = clipPosition;
   outputs.gaussianCoord = gaussianCoord;
   outputs.color = color;
+  outputs.splatAlpha = fragmentSplatAlpha;
+  outputs.supportRadius = adjustedSupportRadius;
   return outputs;
 }
 
 @fragment
 fn fragmentMain(inputs: FragmentInputs) -> @location(0) vec4<f32> {
   let radiusSquared = dot(inputs.gaussianCoord, inputs.gaussianCoord);
-  if (radiusSquared > splat.gaussianSupportRadius * splat.gaussianSupportRadius) {
+  let supportRadius = inputs.supportRadius;
+  if (radiusSquared > supportRadius * supportRadius) {
     discard;
   }
 
-  let gaussianAlpha = exp(-0.5 * radiusSquared);
-  let color = vec4<f32>(inputs.color.rgb, min(inputs.color.a * gaussianAlpha, 0.18));
-  if (color.a <= 0.00392156862) {
+  let standardAlpha = inputs.splatAlpha * exp(-0.5 * radiusSquared);
+  let extendedArea = exp((inputs.splatAlpha * inputs.splatAlpha - 1.0) / 2.718281828459045);
+  let extendedAlpha = 1.0 - pow(1.0 - exp(-0.5 * radiusSquared), extendedArea);
+  let alpha = select(standardAlpha, extendedAlpha, inputs.splatAlpha > 1.0);
+  let finalAlpha = inputs.color.a * alpha;
+  let color = vec4<f32>(inputs.color.rgb * finalAlpha, finalAlpha);
+  if (color.a <= splat.alphaCutoff) {
     discard;
   }
 
@@ -326,8 +834,9 @@ void main(void) {
   }
 
   float gaussianAlpha = exp(-6.0 * radiusSquared);
-  fragColor = vec4(vColor.rgb, vColor.a * gaussianAlpha);
-  if (fragColor.a <= 0.00392156862) {
+  float alpha = vColor.a * gaussianAlpha;
+  fragColor = vec4(vColor.rgb * alpha, alpha);
+  if (fragColor.a <= splat.alphaCutoff) {
     discard;
   }
 
@@ -338,10 +847,22 @@ void main(void) {
 /** WebGPU vertex buffer layout for the storage-buffer driven render path. */
 const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [];
 
+/** Blend state for shaders that return premultiplied RGBA, matching Spark's renderer. */
+const SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS = {
+  blend: true,
+  blendColorOperation: 'add',
+  blendColorSrcFactor: 'one',
+  blendColorDstFactor: 'one-minus-src-alpha',
+  blendAlphaOperation: 'add',
+  blendAlphaSrcFactor: 'one',
+  blendAlphaDstFactor: 'one-minus-src-alpha'
+} as const;
+
 /**
  * Renders GraphDECO-style Gaussian splat PLY data parsed as an Arrow table.
  *
  * The layer expects `POSITION`, `scale_0..2`, `opacity`, and `f_dc_0..2` columns.
+ * Optional `f_rest_*` columns are evaluated as view-dependent spherical harmonic color.
  * `scale_*` and `opacity` encodings are read from `loaders_gl.gaussian_splats.*`
  * field metadata when available.
  */
@@ -476,12 +997,14 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
 
     return new SplatPrimitiveLayer({
       ...this.getSubLayerProps({id}),
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS,
       data: splatData,
       sizeUnits: this.props.sizeUnits,
       radiusScale: this.props.radiusScale,
       radiusMinPixels: this.props.radiusMinPixels,
       radiusMaxPixels: this.props.radiusMaxPixels,
       alphaScale: this.props.alphaScale,
+      alphaCutoff: this.props.alphaCutoff,
       screenSizeCutoffPixels: this.props.screenSizeCutoffPixels,
       gaussianSupportRadius: this.props.gaussianSupportRadius,
       kernel2DSize: this.props.kernel2DSize,
@@ -558,6 +1081,1315 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
   }
 }
 
+/**
+ * Renders Spark RAD sources through a direct typed-array path.
+ *
+ * This layer bypasses Arrow materialization so larger RAD LoD windows can be decoded and uploaded
+ * to the WebGPU splat engine without repeatedly concatenating Arrow tables.
+ */
+export class RADSplatLayer extends CompositeLayer<RADSplatLayerProps> {
+  /** deck.gl layer name used in debugging output. */
+  static layerName = 'RADSplatLayer';
+
+  /** Default props for direct RAD rendering. */
+  static defaultProps: DefaultProps = radSplatDefaultProps;
+
+  declare state: {
+    /** Runtime retaining decoded pages and GPU page engines for the active RAD source. */
+    runtime?: RADRuntime;
+    /** Error raised by the current RAD load. */
+    loadError: Error | null;
+    /** Version incremented when RAD data is uploaded. */
+    engineDataVersion: number;
+  };
+
+  /** Initializes state used for direct RAD rendering. */
+  initializeState(): void {
+    this.setState({
+      loadError: null,
+      engineDataVersion: 0
+    });
+  }
+
+  /** Updates RAD scheduler state when props, state, or viewport buckets change. */
+  shouldUpdateState(params: UpdateParameters<this>): boolean {
+    return Boolean(
+      params.changeFlags.propsOrDataChanged ||
+        params.changeFlags.viewportChanged ||
+        params.changeFlags.stateChanged
+    );
+  }
+
+  /** Creates or updates the persistent RAD runtime without clearing it on viewport changes. */
+  updateState(params: UpdateParameters<this>): void {
+    super.updateState(params);
+
+    const source = this.props.data;
+    if (!source) {
+      this.destroyRADRuntime();
+      return;
+    }
+
+    let runtime = this.state.runtime;
+    if (params.changeFlags.dataChanged || !runtime || runtime.source !== source) {
+      runtime?.destroy();
+      runtime = new RADRuntime(source, {
+        onProgress: progress => this.reportRADLoadProgress(progress),
+        onStateChange: () =>
+          this.setState({engineDataVersion: (this.state.engineDataVersion || 0) + 1}),
+        onError: error => this.setState({loadError: error})
+      });
+      this.setState({runtime, loadError: null});
+    }
+
+    runtime.update(this.getRADRuntimeUpdateOptions());
+  }
+
+  /** Releases the WebGPU engine. */
+  finalizeState(context: LayerContext): void {
+    super.finalizeState(context);
+    this.destroyRADRuntime();
+  }
+
+  /** Renders uploaded RAD splats through the Gaussian billboard primitive. */
+  renderLayers(): Layer | Layer[] | null {
+    if (this.state.loadError) {
+      throw this.state.loadError;
+    }
+
+    const renderPages = this.state.runtime
+      ?.getRenderPages()
+      .filter(renderPage => renderPage.engine.getSplatCount() > 0)
+      .sort(
+        (left, right) =>
+          getRADSplatBoundsDepth(right.bounds, this.context.viewport, this.props.modelMatrix) -
+            getRADSplatBoundsDepth(left.bounds, this.context.viewport, this.props.modelMatrix) ||
+          left.chunkIndex - right.chunkIndex
+      );
+    return renderPages?.length
+      ? renderPages.map(renderPage =>
+          this.renderSplatPrimitiveLayer(`splats-${renderPage.chunkIndex}`, renderPage.engine)
+        )
+      : null;
+  }
+
+  /** Emits a RAD load progress callback when supplied. */
+  private reportRADLoadProgress(progress: RADSplatLoadProgress): void {
+    this.props.onLoadProgress?.(progress);
+  }
+
+  /** Renders the uploaded RAD data through a primitive splat layer. */
+  private renderSplatPrimitiveLayer(id: string, splatEngine: SplatRenderEngineLike): Layer {
+    const splatData =
+      this.context.device.type === 'webgpu'
+        ? {length: splatEngine.getSplatCount(), attributes: {}}
+        : splatEngine.getWebGLAttributes();
+
+    return new SplatPrimitiveLayer({
+      ...this.getSubLayerProps({id}),
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS,
+      data: splatData,
+      sizeUnits: this.props.sizeUnits,
+      radiusScale: this.getRADRenderRadiusScale(),
+      radiusMinPixels: this.props.radiusMinPixels,
+      radiusMaxPixels: this.props.radiusMaxPixels,
+      alphaScale: this.props.alphaScale,
+      alphaCutoff: this.props.alphaCutoff,
+      screenSizeCutoffPixels: this.props.screenSizeCutoffPixels,
+      gaussianSupportRadius: this.props.gaussianSupportRadius,
+      kernel2DSize: this.props.kernel2DSize,
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize,
+      splatEngine
+    }) as unknown as Layer;
+  }
+
+  /** Ensures the current device can satisfy the requested RAD render mode. */
+  private shouldUseGpuEngine(): boolean {
+    const renderMode = this.props.renderMode || 'auto';
+    const device = this.context?.device;
+    if (renderMode === 'cpu') {
+      return false;
+    }
+    if (device?.type === 'webgpu') {
+      return true;
+    }
+    if (renderMode === 'gpu') {
+      throw new Error('RADSplatLayer renderMode "gpu" requires a WebGPU device.');
+    }
+    return false;
+  }
+
+  /** Builds shared splat engine props from layer props. */
+  private getSplatEngineProps() {
+    return {
+      sortMode: (this.props.sortMode || 'global') as SplatSortMode,
+      alphaCutoff: this.props.alphaCutoff ?? 1 / 255,
+      screenSizeCutoffPixels: this.props.screenSizeCutoffPixels ?? 0,
+      gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
+      kernel2DSize: this.props.kernel2DSize ?? 0.3,
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024,
+      onDataUpdate: () =>
+        this.setState({engineDataVersion: (this.state.engineDataVersion || 0) + 1}),
+      onDataError: (error: Error) => this.setState({loadError: error})
+    };
+  }
+
+  /** Builds runtime update options from the current layer props and viewport. */
+  private getRADRuntimeUpdateOptions(): RADRuntimeUpdateOptions {
+    this.shouldUseGpuEngine();
+    const maxSplats =
+      this.props.lodSplatCount ?? this.props.maxSplats ?? DEFAULT_RAD_SPLAT_MAX_SPLATS;
+    const maxResidentSplats =
+      this.props.maxPagedSplats ??
+      this.props.maxResidentSplats ??
+      Math.max(maxSplats * 2, DEFAULT_RAD_SPLAT_MAX_SPLATS);
+    return {
+      device: this.context.device,
+      viewport: this.context.viewport,
+      modelMatrix: this.props.modelMatrix,
+      startChunkIndex: this.props.startChunkIndex ?? 0,
+      maxChunks: this.props.maxChunks ?? DEFAULT_RAD_SPLAT_MAX_CHUNKS,
+      maxSplats,
+      maxResidentSplats,
+      maxConcurrentChunkRequests:
+        this.props.maxConcurrentChunkRequests ?? DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS,
+      pruneLoadedLoDParents: this.props.pruneLoadedLoDParents ?? true,
+      reselectOnViewChange: this.props.reselectOnViewChange ?? true,
+      radiusScale: this.getRADRenderRadiusScale(),
+      gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
+      lodSplatScale: this.props.lodSplatScale ?? 1,
+      lodRenderScale: this.props.lodRenderScale ?? 1,
+      coneFov0: this.props.coneFov0 ?? DEFAULT_RAD_CONE_FOV0_DEGREES,
+      coneFov: this.props.coneFov ?? DEFAULT_RAD_CONE_FOV_DEGREES,
+      behindFoveate: this.props.behindFoveate ?? 0.2,
+      coneFoveate: this.props.coneFoveate ?? 0.4,
+      maxCachedChunks: this.props.maxCachedChunks ?? 256,
+      fallbackColor: this.props.getColor || DEFAULT_COLOR,
+      engineProps: this.getSplatEngineProps()
+    };
+  }
+
+  /** Return the effective RAD render radius scale including Spark-style render scale. */
+  private getRADRenderRadiusScale(): number {
+    return (this.props.radiusScale ?? 1) * (this.props.lodRenderScale ?? 1);
+  }
+
+  /** Releases the persistent RAD runtime. */
+  private destroyRADRuntime(): void {
+    this.state.runtime?.destroy();
+    this.setState({
+      runtime: undefined,
+      loadError: null,
+      engineDataVersion: 0
+    });
+  }
+}
+
+/** Runtime that keeps RAD chunks resident while camera-driven LoD selection changes. */
+class RADRuntime {
+  /** RAD source object backing this runtime. */
+  readonly source: RADSplatSourceLike;
+
+  private callbacks: RADRuntimeCallbacks;
+  private pageStore = new RADPageStore();
+  private renderStore = new RADRenderPageStore();
+  private metadata: RADSplatMetadataLike | null = null;
+  private metadataPromise: Promise<RADSplatMetadataLike> | null = null;
+  private options: RADRuntimeUpdateOptions | null = null;
+  private pendingChunkPromises = new Map<number, Promise<void>>();
+  private failedChunkErrors = new Map<number, Error>();
+  private queuedUploadChunks: RADSplatLoadedChunk[] = [];
+  private queuedUploadChunkIndices = new Set<number>();
+  private uploadScheduled = false;
+  private selectionScheduled = false;
+  /** True while an async camera LoD selection pass is still traversing metadata. */
+  private selectionRunning = false;
+  /** True when camera, upload, or request state changed during the current selection pass. */
+  private selectionRerunRequested = false;
+  private selectedChunkIndices: number[] = [];
+  private visibleChunkIndices: number[] = [];
+  private visibleSplatCount = 0;
+  private visibleBounds: RADSplatBounds | undefined;
+  private frontierStats: RADFrontierStats | undefined;
+  private loadStartMs = Date.now();
+  private lastCommitTimeMs: number | undefined;
+  /** Last wall-clock timestamp for a compacted render frontier commit. */
+  private lastRenderCommitMs = 0;
+  /** Selected chunk count represented by the last visible render frontier commit. */
+  private lastRenderCommitSelectedChunkCount = 0;
+  /** Latest selected frontier waiting for a throttled compact render commit. */
+  private pendingRenderPlan: RADChunkSelectionPlan | null = null;
+  /** Timer handle for the next throttled compact render commit. */
+  private pendingRenderCommitTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Last wall-clock timestamp for a completed LoD selection pass. */
+  private lastSelectionMs = 0;
+  /** Timer handle for the next throttled loading-time selection pass. */
+  private pendingSelectionTimer: ReturnType<typeof setTimeout> | null = null;
+  private selectionSignature = '';
+  private scheduleSerial = 0;
+  private destroyed = false;
+
+  constructor(source: RADSplatSourceLike, callbacks: RADRuntimeCallbacks) {
+    this.source = source;
+    this.callbacks = callbacks;
+  }
+
+  /** Update runtime inputs and schedule a cooperative LoD refinement pass when needed. */
+  update(options: RADRuntimeUpdateOptions): void {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.options = options;
+    this.renderStore.setProps(options.engineProps);
+    const selectionSignature = getRADRuntimeSelectionSignature(options);
+    if (selectionSignature === this.selectionSignature) {
+      return;
+    }
+    this.selectionSignature = selectionSignature;
+    this.requestSelection();
+  }
+
+  /** Return page engines in the current coherent render frontier. */
+  getRenderPages(): RADRenderPage[] {
+    return this.renderStore.getRenderPages();
+  }
+
+  /** Release all resident GPU resources and ignore pending async work. */
+  destroy(): void {
+    this.destroyed = true;
+    this.scheduleSerial++;
+    this.selectionRerunRequested = false;
+    this.pendingChunkPromises.clear();
+    this.failedChunkErrors.clear();
+    this.queuedUploadChunks = [];
+    this.queuedUploadChunkIndices.clear();
+    if (this.pendingRenderCommitTimer) {
+      clearTimeout(this.pendingRenderCommitTimer);
+      this.pendingRenderCommitTimer = null;
+    }
+    if (this.pendingSelectionTimer) {
+      clearTimeout(this.pendingSelectionTimer);
+      this.pendingSelectionTimer = null;
+    }
+    this.pendingRenderPlan = null;
+    this.pageStore.destroy();
+    this.renderStore.destroy();
+  }
+
+  private requestSelection(): void {
+    if (this.destroyed) {
+      return;
+    }
+    if (this.selectionRunning) {
+      this.selectionRerunRequested = true;
+      return;
+    }
+    if (this.selectionScheduled || this.pendingSelectionTimer) {
+      return;
+    }
+    if (this.shouldDeferLoadingSelection()) {
+      this.scheduleDeferredSelection();
+      return;
+    }
+    this.selectionScheduled = true;
+    const callback = () => {
+      this.selectionScheduled = false;
+      if (this.destroyed) {
+        return;
+      }
+      this.selectionRunning = true;
+      void this.scheduleSelection(this.selectionSignature)
+        .catch(error => this.handleError(error))
+        .finally(() => {
+          this.selectionRunning = false;
+          if (this.selectionRerunRequested && !this.destroyed) {
+            this.selectionRerunRequested = false;
+            this.requestSelection();
+          }
+        });
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(callback);
+    } else {
+      setTimeout(callback, 0);
+    }
+  }
+
+  /** Return true when another heavy LoD traversal should be batched during active loading. */
+  private shouldDeferLoadingSelection(): boolean {
+    if (this.visibleChunkIndices.length === 0) {
+      return false;
+    }
+    if (this.pendingChunkPromises.size === 0 && this.queuedUploadChunks.length === 0) {
+      return false;
+    }
+    return Date.now() - this.lastSelectionMs < DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS;
+  }
+
+  /** Schedule a deferred selection pass while chunk requests and uploads are active. */
+  private scheduleDeferredSelection(): void {
+    const elapsedMs = Date.now() - this.lastSelectionMs;
+    const delayMs = Math.max(DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS - elapsedMs, 0);
+    this.pendingSelectionTimer = setTimeout(() => {
+      this.pendingSelectionTimer = null;
+      this.requestSelection();
+    }, delayMs);
+  }
+
+  private async scheduleSelection(selectionSignature: string): Promise<void> {
+    const serial = ++this.scheduleSerial;
+    const metadata = await this.loadMetadata();
+    if (!this.isActive(serial, selectionSignature)) {
+      return;
+    }
+
+    this.lastSelectionMs = Date.now();
+    const plan = await this.selectChunks(metadata);
+    if (!this.isActive(serial, selectionSignature)) {
+      return;
+    }
+    let requestChunkIndices = this.getRequestChunkIndices(plan, metadata);
+    if (requestChunkIndices.length === 0) {
+      requestChunkIndices = this.getIdleBreadthPrefetchChunkIndices(metadata);
+    }
+    if (plan.selectedChunks.length > 0) {
+      const hasPendingLoadingWork =
+        this.pendingChunkPromises.size > 0 ||
+        this.queuedUploadChunks.length > 0 ||
+        requestChunkIndices.length > 0;
+      this.commitSelection(plan, hasPendingLoadingWork);
+    } else if (this.visibleChunkIndices.length === 0) {
+      this.emitProgress(true);
+    }
+
+    this.requestMissingChunks(requestChunkIndices);
+    this.evictUnusedPages();
+    this.emitProgress(this.pendingChunkPromises.size > 0 || requestChunkIndices.length > 0);
+  }
+
+  private async loadMetadata(): Promise<RADSplatMetadataLike> {
+    if (this.metadata) {
+      return this.metadata;
+    }
+    if (!this.metadataPromise) {
+      this.metadataPromise = this.source.getMetadata().then(metadata => {
+        this.metadata = metadata;
+        return metadata;
+      });
+    }
+    return await this.metadataPromise;
+  }
+
+  private async selectChunks(metadata: RADSplatMetadataLike): Promise<RADChunkSelectionPlan> {
+    const options = this.options;
+    if (!options || metadata.chunks.length === 0) {
+      return {selectedChunks: [], missingChunkIndices: []};
+    }
+
+    const residentChunks = this.pageStore.getLoadedChunkMap();
+    const selectedChunks: RADSplatLoadedChunk[] = [];
+    const selectedByChunkIndex = new Map<number, RADSplatLoadedChunk>();
+    const missingChunkIndices: number[] = [];
+    const missingChunkIndexSet = new Set<number>();
+    const pendingChunkIndices = new Set([
+      ...this.pendingChunkPromises.keys(),
+      ...this.failedChunkErrors.keys(),
+      ...this.queuedUploadChunkIndices
+    ]);
+    const firstChunkIndex = Math.min(
+      Math.max(Math.floor(options.startChunkIndex), 0),
+      metadata.chunks.length - 1
+    );
+    const loadedRenderFrontier = await getRADLoadedRenderFrontier(
+      residentChunks,
+      metadata,
+      firstChunkIndex,
+      pendingChunkIndices,
+      options
+    );
+    if (loadedRenderFrontier) {
+      return {
+        selectedChunks: loadedRenderFrontier.frontierChunks.map(({chunk}) => chunk),
+        frontierChunks: loadedRenderFrontier.frontierChunks,
+        missingChunkIndices: loadedRenderFrontier.missingChunkIndices
+      };
+    }
+
+    let frontier = metadata.chunks.length > 0 ? [firstChunkIndex] : [];
+    let selectedSplatCount = 0;
+
+    while (
+      frontier.length > 0 &&
+      selectedChunks.length < Math.max(Math.floor(options.maxChunks), 1) &&
+      selectedSplatCount < Math.max(Math.floor(options.maxSplats), 1)
+    ) {
+      const remainingChunkCount = Math.max(
+        Math.floor(options.maxChunks) - selectedChunks.length,
+        1
+      );
+      const chunkIndices = getRADNextChunkIndices(
+        frontier,
+        metadata,
+        selectedByChunkIndex,
+        pendingChunkIndices,
+        remainingChunkCount,
+        Math.max(Math.floor(options.maxSplats) - selectedSplatCount, 1)
+      );
+      if (!chunkIndices.length) {
+        break;
+      }
+
+      let addedResidentChunk = false;
+      let addedMissingChunk = false;
+      for (const chunkIndex of chunkIndices) {
+        const loadedChunk = residentChunks.get(chunkIndex);
+        if (!loadedChunk) {
+          if (!missingChunkIndexSet.has(chunkIndex) && !pendingChunkIndices.has(chunkIndex)) {
+            missingChunkIndexSet.add(chunkIndex);
+            pendingChunkIndices.add(chunkIndex);
+            missingChunkIndices.push(chunkIndex);
+            addedMissingChunk = true;
+          }
+          continue;
+        }
+
+        selectedByChunkIndex.set(chunkIndex, loadedChunk);
+        selectedChunks.push(loadedChunk);
+        selectedSplatCount += loadedChunk.splats.splatCount;
+        addedResidentChunk = true;
+        if (
+          selectedChunks.length >= Math.floor(options.maxChunks) ||
+          selectedSplatCount >= Math.floor(options.maxSplats)
+        ) {
+          break;
+        }
+      }
+      if (addedResidentChunk) {
+        frontier = getRADCameraPrioritizedChildChunkIndices(
+          selectedChunks,
+          selectedByChunkIndex,
+          metadata,
+          options
+        );
+      } else if (addedMissingChunk) {
+        break;
+      } else {
+        break;
+      }
+
+      if (
+        !frontier.length &&
+        selectedChunks.length < Math.floor(options.maxChunks) &&
+        selectedSplatCount < Math.floor(options.maxSplats)
+      ) {
+        frontier = getRADSplatChunkIndices(
+          metadata,
+          firstChunkIndex + 1,
+          Math.floor(options.maxChunks) - selectedChunks.length,
+          Math.floor(options.maxSplats) - selectedSplatCount
+        ).filter(
+          chunkIndex =>
+            !selectedByChunkIndex.has(chunkIndex) &&
+            !pendingChunkIndices.has(chunkIndex) &&
+            !missingChunkIndexSet.has(chunkIndex)
+        );
+      }
+    }
+
+    return {selectedChunks, missingChunkIndices};
+  }
+
+  /** Return immediate missing chunks plus speculative child chunks that fill request capacity. */
+  private getRequestChunkIndices(
+    plan: RADChunkSelectionPlan,
+    metadata: RADSplatMetadataLike
+  ): number[] {
+    const options = this.options;
+    if (!options || plan.selectedChunks.length === 0) {
+      return plan.missingChunkIndices;
+    }
+
+    return getRADChunkRequestIndices(plan.missingChunkIndices, plan.selectedChunks, {
+      loadedByChunkIndex: this.pageStore.getLoadedChunkMap(),
+      metadata,
+      unavailableChunkIndices: this.getUnavailableChunkIndices(),
+      options,
+      maxRequestChunkCount:
+        getRADMaxConcurrentChunkRequests(options.maxConcurrentChunkRequests) *
+        DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER
+    });
+  }
+
+  /** Return broad source-order chunks when the active LoD frontier has no direct misses. */
+  private getIdleBreadthPrefetchChunkIndices(metadata: RADSplatMetadataLike): number[] {
+    const options = this.options;
+    if (!options || this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0) {
+      return [];
+    }
+    if (
+      this.pageStore.getPageCount() >= options.maxCachedChunks ||
+      this.pageStore.getResidentSplatCount() >= options.maxResidentSplats
+    ) {
+      return [];
+    }
+    const maxRequestChunkCount =
+      getRADMaxConcurrentChunkRequests(options.maxConcurrentChunkRequests) *
+      DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER;
+    return getRADBreadthPrefetchChunkIndices({
+      loadedByChunkIndex: this.pageStore.getLoadedChunkMap(),
+      metadata,
+      unavailableChunkIndices: this.getUnavailableChunkIndices(),
+      options,
+      maxRequestChunkCount
+    }).slice(0, maxRequestChunkCount);
+  }
+
+  /** Return chunk indices that should not be selected for a new request. */
+  private getUnavailableChunkIndices(): Set<number> {
+    return new Set([
+      ...this.pendingChunkPromises.keys(),
+      ...this.failedChunkErrors.keys(),
+      ...this.queuedUploadChunkIndices
+    ]);
+  }
+
+  /** Commit or defer the selected LoD frontier depending on current chunk loading pressure. */
+  private commitSelection(plan: RADChunkSelectionPlan, hasPendingLoadingWork: boolean): void {
+    if (this.shouldDeferRenderCommit(plan, hasPendingLoadingWork)) {
+      this.pendingRenderPlan = plan;
+      this.scheduleDeferredRenderCommit();
+      return;
+    }
+    if (this.pendingRenderCommitTimer) {
+      clearTimeout(this.pendingRenderCommitTimer);
+      this.pendingRenderCommitTimer = null;
+    }
+    this.pendingRenderPlan = null;
+    this.applySelection(plan);
+  }
+
+  /** Return true when compact render page rebuilds should be batched during active loading. */
+  private shouldDeferRenderCommit(
+    plan: RADChunkSelectionPlan,
+    hasPendingLoadingWork: boolean
+  ): boolean {
+    if (!hasPendingLoadingWork || this.visibleChunkIndices.length === 0) {
+      return false;
+    }
+    const elapsedMs = Date.now() - this.lastRenderCommitMs;
+    const selectedChunkDelta = plan.selectedChunks.length - this.lastRenderCommitSelectedChunkCount;
+    if (
+      selectedChunkDelta >= DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA &&
+      elapsedMs >= DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS
+    ) {
+      return false;
+    }
+    return elapsedMs < DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS;
+  }
+
+  /** Schedule the latest pending LoD frontier for a batched compact render page rebuild. */
+  private scheduleDeferredRenderCommit(): void {
+    if (this.pendingRenderCommitTimer || this.destroyed) {
+      return;
+    }
+    const elapsedMs = Date.now() - this.lastRenderCommitMs;
+    const delayMs = Math.max(DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS - elapsedMs, 0);
+    this.pendingRenderCommitTimer = setTimeout(() => {
+      this.pendingRenderCommitTimer = null;
+      const pendingPlan = this.pendingRenderPlan;
+      this.pendingRenderPlan = null;
+      if (!pendingPlan || this.destroyed) {
+        return;
+      }
+      this.applySelection(pendingPlan);
+      this.emitProgress(this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0);
+    }, delayMs);
+  }
+
+  /** Apply the selected LoD frontier to visible state and compact render pages. */
+  private applySelection(plan: RADChunkSelectionPlan): void {
+    const options = this.options;
+    const selectedChunks = plan.selectedChunks;
+    const frontier: RADRenderFrontierChunk[] =
+      plan.frontierChunks ??
+      (options?.pruneLoadedLoDParents
+        ? getRADRuntimeRenderFrontierLoadedChunks(selectedChunks)
+        : selectedChunks.map(chunk => ({chunk, visibleSplatCount: chunk.splats.splatCount})));
+    if (options) {
+      this.renderStore.updateFrontier(
+        options.device,
+        frontier,
+        options.engineProps,
+        options.fallbackColor,
+        options.gaussianSupportRadius
+      );
+    }
+    const visibleChunkIndices = Array.from(new Set(frontier.map(({chunk}) => chunk.chunkIndex)));
+    this.selectedChunkIndices = selectedChunks.map(chunk => chunk.chunkIndex);
+    this.visibleChunkIndices = visibleChunkIndices;
+    this.visibleSplatCount = frontier.reduce((total, entry) => total + entry.visibleSplatCount, 0);
+    this.frontierStats = getRADFrontierStats(frontier);
+    this.visibleBounds = getRADPageBounds(visibleChunkIndices, this.pageStore);
+    this.lastCommitTimeMs = Date.now() - this.loadStartMs;
+    this.lastRenderCommitMs = Date.now();
+    this.lastRenderCommitSelectedChunkCount = selectedChunks.length;
+    this.callbacks.onStateChange();
+  }
+
+  private requestMissingChunks(chunkIndices: number[]): void {
+    const options = this.options;
+    if (!options) {
+      return;
+    }
+
+    const maxConcurrentChunkRequests = getRADMaxConcurrentChunkRequests(
+      options.maxConcurrentChunkRequests
+    );
+    const maxOutstandingChunkWork =
+      maxConcurrentChunkRequests * DEFAULT_RAD_SPLAT_MAX_OUTSTANDING_CHUNK_WORK_MULTIPLIER;
+    for (const chunkIndex of chunkIndices) {
+      if (
+        this.pendingChunkPromises.size >= maxConcurrentChunkRequests ||
+        this.pendingChunkPromises.size + this.queuedUploadChunks.length >= maxOutstandingChunkWork
+      ) {
+        return;
+      }
+      if (
+        this.pageStore.hasPage(chunkIndex) ||
+        this.pendingChunkPromises.has(chunkIndex) ||
+        this.failedChunkErrors.has(chunkIndex) ||
+        this.queuedUploadChunkIndices.has(chunkIndex)
+      ) {
+        continue;
+      }
+
+      const requestPromise = loadRADSplatChunkWithRetries(this.source, chunkIndex)
+        .then(chunk => {
+          if (this.destroyed) {
+            return;
+          }
+          this.enqueueUpload(chunk);
+        })
+        .catch(error => {
+          const chunkError = error instanceof Error ? error : new Error(String(error));
+          this.failedChunkErrors.set(chunkIndex, chunkError);
+          this.handleError(chunkError);
+        })
+        .finally(() => {
+          this.pendingChunkPromises.delete(chunkIndex);
+          if (this.destroyed || !this.options) {
+            return;
+          }
+          if (
+            !this.failedChunkErrors.has(chunkIndex) &&
+            !this.queuedUploadChunkIndices.has(chunkIndex)
+          ) {
+            this.requestSelection();
+          }
+        });
+      this.pendingChunkPromises.set(chunkIndex, requestPromise);
+    }
+  }
+
+  private enqueueUpload(chunk: RADSplatLoadedChunk): void {
+    if (
+      this.pageStore.hasPage(chunk.chunkIndex) ||
+      this.queuedUploadChunkIndices.has(chunk.chunkIndex)
+    ) {
+      return;
+    }
+    this.queuedUploadChunkIndices.add(chunk.chunkIndex);
+    this.queuedUploadChunks.push(chunk);
+    this.scheduleUpload();
+    this.requestSelection();
+    this.emitProgress(true);
+  }
+
+  private scheduleUpload(): void {
+    if (this.uploadScheduled || this.destroyed) {
+      return;
+    }
+    this.uploadScheduled = true;
+    const callback = () => this.processQueuedUpload();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(callback);
+    } else {
+      setTimeout(callback, 0);
+    }
+  }
+
+  private processQueuedUpload(): void {
+    this.uploadScheduled = false;
+    if (this.destroyed) {
+      return;
+    }
+
+    const uploadOptions = this.options;
+    let uploadedChunkCount = 0;
+    while (
+      uploadOptions &&
+      uploadedChunkCount < DEFAULT_RAD_SPLAT_MAX_CHUNK_UPLOADS_PER_FRAME &&
+      this.queuedUploadChunks.length > 0
+    ) {
+      const chunk = this.queuedUploadChunks.shift();
+      if (!chunk) {
+        break;
+      }
+      this.queuedUploadChunkIndices.delete(chunk.chunkIndex);
+      if (!this.pageStore.hasPage(chunk.chunkIndex)) {
+        this.pageStore.storeChunk(chunk);
+        uploadedChunkCount++;
+      }
+    }
+
+    if (uploadedChunkCount > 0) {
+      this.callbacks.onStateChange();
+      this.requestSelection();
+      this.emitProgress(this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0);
+    }
+
+    if (this.queuedUploadChunks.length > 0) {
+      this.scheduleUpload();
+    } else if (this.pendingChunkPromises.size === 0) {
+      void this.requestIdleBreadthPrefetch().catch(error => this.handleError(error));
+    }
+  }
+
+  /** Keep the resident RAD page pool filling after uploads drain and traversal is idle. */
+  private async requestIdleBreadthPrefetch(): Promise<void> {
+    if (this.destroyed || !this.options) {
+      return;
+    }
+    const metadata = await this.loadMetadata();
+    if (this.destroyed || !this.options) {
+      return;
+    }
+    const chunkIndices = this.getIdleBreadthPrefetchChunkIndices(metadata);
+    if (chunkIndices.length > 0) {
+      this.requestMissingChunks(chunkIndices);
+      this.emitProgress(true);
+    }
+  }
+
+  private evictUnusedPages(): void {
+    const options = this.options;
+    if (!options) {
+      return;
+    }
+    const protectedChunkIndices = new Set(this.visibleChunkIndices);
+    protectedChunkIndices.add(Math.max(Math.floor(options.startChunkIndex), 0));
+    this.pageStore.evict(options.maxCachedChunks, options.maxResidentSplats, protectedChunkIndices);
+  }
+
+  private emitProgress(isLoading: boolean): void {
+    const metadata = this.metadata;
+    const renderMetrics = this.renderStore.getMetrics();
+    this.callbacks.onProgress({
+      isLoading,
+      loadedChunkCount: this.pageStore.getPageCount(),
+      selectedChunkCount: this.selectedChunkIndices.length,
+      loadedSplatCount: this.pageStore.getResidentSplatCount(),
+      visibleSplatCount: this.visibleSplatCount,
+      totalSplatCount: metadata?.count ?? 0,
+      loadTimeMs:
+        !isLoading && this.pageStore.getPageCount() > 0 ? Date.now() - this.loadStartMs : undefined,
+      bounds: this.visibleBounds,
+      residentChunkCount: this.pageStore.getPageCount(),
+      residentSplatCount: this.pageStore.getResidentSplatCount(),
+      requestedChunkCount: this.pendingChunkPromises.size + this.queuedUploadChunks.length,
+      evictedChunkCount: this.pageStore.evictedChunkCount,
+      renderPageCount: renderMetrics.renderPageCount,
+      renderPageSplatCount: renderMetrics.renderPageSplatCount,
+      renderSplatCount: renderMetrics.renderSplatCount,
+      tileOverflowSplatCount: renderMetrics.tileOverflowSplatCount,
+      frontierParentSplatCount: this.frontierStats?.parentSplatCount,
+      frontierLeafSplatCount: this.frontierStats?.leafSplatCount,
+      frontierMaxChildCount: this.frontierStats?.maxChildCount,
+      frontierMaxOpacity: this.frontierStats?.maxOpacity,
+      frontierMaxScale: this.frontierStats?.maxScale,
+      lastUploadTimeMs: this.renderStore.lastUploadTimeMs ?? this.pageStore.lastUploadTimeMs,
+      lastCommitTimeMs: this.lastCommitTimeMs
+    });
+  }
+
+  private handleError(error: unknown): void {
+    if (this.destroyed) {
+      return;
+    }
+    const runtimeError = error instanceof Error ? error : new Error(String(error));
+    this.callbacks.onError(runtimeError);
+    this.callbacks.onProgress({
+      isLoading: false,
+      loadedChunkCount: this.pageStore.getPageCount(),
+      selectedChunkCount: this.selectedChunkIndices.length,
+      loadedSplatCount: this.pageStore.getResidentSplatCount(),
+      visibleSplatCount: this.visibleSplatCount,
+      totalSplatCount: this.metadata?.count ?? 0,
+      error: runtimeError.message
+    });
+  }
+
+  private isActive(serial: number, selectionSignature: string): boolean {
+    return (
+      !this.destroyed &&
+      serial === this.scheduleSerial &&
+      selectionSignature === this.selectionSignature &&
+      Boolean(this.options)
+    );
+  }
+}
+
+/** Store of decoded RAD source pages keyed by source chunk index. */
+class RADPageStore {
+  private pages = new Map<number, RADStoredPage>();
+
+  /** Number of resident pages evicted since the page store was created. */
+  evictedChunkCount = 0;
+  /** Duration for the latest decoded page store operation. */
+  lastUploadTimeMs: number | undefined;
+
+  /** Store one decoded chunk if it is not already resident. */
+  storeChunk(chunk: RADSplatLoadedChunk): RADStoredPage {
+    const existingPage = this.pages.get(chunk.chunkIndex);
+    if (existingPage) {
+      existingPage.lastUsedMs = Date.now();
+      return existingPage;
+    }
+
+    const startTimeMs = Date.now();
+    const page: RADStoredPage = {
+      chunkIndex: chunk.chunkIndex,
+      loadedChunk: chunk,
+      bounds: getRADSplatBounds(chunk.splats.positions),
+      lastUsedMs: Date.now()
+    };
+    this.lastUploadTimeMs = Date.now() - startTimeMs;
+    this.pages.set(chunk.chunkIndex, page);
+    return page;
+  }
+
+  /** Return true when a source chunk has a resident page. */
+  hasPage(chunkIndex: number): boolean {
+    return this.pages.has(chunkIndex);
+  }
+
+  /** Return source page bounds by source chunk index. */
+  getPageBounds(chunkIndex: number): RADSplatBounds | undefined {
+    const page = this.pages.get(chunkIndex);
+    if (page) {
+      page.lastUsedMs = Date.now();
+    }
+    return page?.bounds;
+  }
+
+  /** Return resident decoded chunks keyed by source chunk index. */
+  getLoadedChunkMap(): Map<number, RADSplatLoadedChunk> {
+    const loadedChunks = new Map<number, RADSplatLoadedChunk>();
+    for (const [chunkIndex, page] of this.pages) {
+      loadedChunks.set(chunkIndex, page.loadedChunk);
+    }
+    return loadedChunks;
+  }
+
+  /** Return resident page count. */
+  getPageCount(): number {
+    return this.pages.size;
+  }
+
+  /** Return decoded splat count across all resident pages. */
+  getResidentSplatCount(): number {
+    let splatCount = 0;
+    for (const page of this.pages.values()) {
+      splatCount += page.loadedChunk.splats.splatCount;
+    }
+    return splatCount;
+  }
+
+  /** Evict least-recently-used pages outside the protected render set. */
+  evict(
+    maxCachedChunks: number,
+    maxResidentSplats: number,
+    protectedChunkIndices: Set<number>
+  ): void {
+    const maxPageCount = Math.max(Math.floor(maxCachedChunks), protectedChunkIndices.size, 1);
+    const maxSplatCount = Math.max(Math.floor(maxResidentSplats), 1);
+    if (this.pages.size <= maxPageCount && this.getResidentSplatCount() <= maxSplatCount) {
+      return;
+    }
+
+    const evictablePages = Array.from(this.pages.values())
+      .filter(page => !protectedChunkIndices.has(page.chunkIndex))
+      .sort((left, right) => left.lastUsedMs - right.lastUsedMs);
+    for (const page of evictablePages) {
+      if (this.pages.size <= maxPageCount && this.getResidentSplatCount() <= maxSplatCount) {
+        return;
+      }
+      this.pages.delete(page.chunkIndex);
+      this.evictedChunkCount++;
+    }
+  }
+
+  /** Release every resident page. */
+  destroy(): void {
+    this.pages.clear();
+  }
+}
+
+/** Store of WebGPU render pages built from the current RAD frontier. */
+class RADRenderPageStore {
+  /** Current render pages exposed to deck.gl sublayers. */
+  private activePages: RADRenderPageEngine[] = [];
+  /** Shared render engine containing every active source chunk for tile and unsorted rendering. */
+  private pooledPage: RADPooledSplatEngine | null = null;
+  /** Signature for immutable chunks uploaded into the shared pooled page. */
+  private pooledSignature = '';
+  /** Compacted render pages used when a single globally sorted page is requested. */
+  private compactedPages: RADPageSplatEngine[] = [];
+  /** Signature for the current compacted frontier. */
+  private compactedSignature = '';
+  /** Signature for props baked into uploaded splat attributes. */
+  private uploadSignature = '';
+
+  /** Upload duration for the latest render frontier update. */
+  lastUploadTimeMs: number | undefined;
+
+  /** Update props on every resident render page engine. */
+  setProps(props: Partial<SplatEngineProps>): void {
+    for (const page of this.activePages) {
+      page.setProps(props);
+    }
+  }
+
+  /** Return current render pages. */
+  getRenderPages(): RADRenderPage[] {
+    return this.activePages.map(page => ({
+      chunkIndex: page.chunkIndex,
+      engine: page,
+      bounds: page.bounds
+    }));
+  }
+
+  /** Return aggregate render-page counters for RAD runtime progress reporting. */
+  getMetrics(): RADRenderMetrics {
+    return this.activePages.reduce<RADRenderMetrics>(
+      (metrics, page) => {
+        metrics.renderPageSplatCount += page.getSplatCount();
+        metrics.renderSplatCount += page.getRenderSplatCount();
+        metrics.tileOverflowSplatCount += page.getOverflowSplatCount();
+        return metrics;
+      },
+      {
+        renderPageCount: this.activePages.length,
+        renderPageSplatCount: 0,
+        renderSplatCount: 0,
+        tileOverflowSplatCount: 0
+      }
+    );
+  }
+
+  /** Update render pages when the row frontier changes. */
+  updateFrontier(
+    device: Device,
+    frontier: RADRenderFrontierChunk[],
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ): void {
+    const uploadSignature = getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius);
+    if (uploadSignature !== this.uploadSignature) {
+      this.destroy();
+      this.uploadSignature = uploadSignature;
+    }
+
+    if (engineProps.sortMode === 'global') {
+      this.updateCompactedFrontier(
+        device,
+        frontier,
+        engineProps,
+        fallbackColor,
+        gaussianSupportRadius
+      );
+      return;
+    }
+
+    this.updatePooledFrontier(device, frontier, engineProps, fallbackColor, gaussianSupportRadius);
+  }
+
+  /** Rebuild compacted render pages for globally sorted frontier rendering. */
+  private updateCompactedFrontier(
+    device: Device,
+    frontier: RADRenderFrontierChunk[],
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ): void {
+    this.destroyPooledPage();
+    const signature = getRADRenderFrontierSignature(frontier, fallbackColor, gaussianSupportRadius);
+    if (signature === this.compactedSignature) {
+      this.setProps(engineProps);
+      this.activePages = this.compactedPages;
+      return;
+    }
+
+    const startTimeMs = Date.now();
+    this.destroyCompactedPages();
+    const maxRenderPageSplatCount = getRADRenderPageSplatCount(frontier, engineProps.sortMode);
+    const compactedChunks = createRADCompactedRenderChunks(frontier, maxRenderPageSplatCount);
+    this.compactedPages = compactedChunks.map(
+      (splats, pageIndex) =>
+        new RADPageSplatEngine(
+          device,
+          {chunkIndex: pageIndex, splats},
+          engineProps,
+          fallbackColor,
+          gaussianSupportRadius
+        )
+    );
+    this.activePages = this.compactedPages;
+    this.compactedSignature = signature;
+    this.lastUploadTimeMs = Date.now() - startTimeMs;
+  }
+
+  /** Rebuild or reuse one shared page while updating active rows for tile and unsorted rendering. */
+  private updatePooledFrontier(
+    device: Device,
+    frontier: RADRenderFrontierChunk[],
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ): void {
+    const startTimeMs = Date.now();
+    this.destroyCompactedPages();
+
+    if (frontier.length === 0) {
+      this.destroyPooledPage();
+      this.activePages = [];
+      this.lastUploadTimeMs = Date.now() - startTimeMs;
+      return;
+    }
+
+    const signature = getRADPooledRenderFrontierSignature(
+      frontier,
+      fallbackColor,
+      gaussianSupportRadius
+    );
+    if (signature !== this.pooledSignature || !this.pooledPage) {
+      this.destroyPooledPage();
+      this.pooledPage = new RADPooledSplatEngine(
+        device,
+        createRADPooledRenderChunk(frontier),
+        engineProps,
+        fallbackColor,
+        gaussianSupportRadius
+      );
+      this.pooledSignature = signature;
+    } else {
+      this.pooledPage.setProps(engineProps);
+    }
+
+    this.pooledPage.setActiveWeights(createRADPooledActiveWeights(frontier));
+    this.pooledPage.touch();
+    this.activePages = [this.pooledPage];
+    this.lastUploadTimeMs = Date.now() - startTimeMs;
+  }
+
+  /** Release all render page engines. */
+  destroy(): void {
+    this.destroyPooledPage();
+    this.destroyCompactedPages();
+    this.activePages = [];
+    this.uploadSignature = '';
+  }
+
+  /** Release the shared pooled render page. */
+  private destroyPooledPage(): void {
+    this.pooledPage?.destroy();
+    this.pooledPage = null;
+    this.pooledSignature = '';
+  }
+
+  /** Release compacted page engines. */
+  private destroyCompactedPages(): void {
+    for (const page of this.compactedPages) {
+      page.destroy();
+    }
+    this.compactedPages = [];
+    this.compactedSignature = '';
+  }
+}
+
+/** Shared GPU render page containing all source chunks in the current RAD frontier. */
+class RADPooledSplatEngine implements RADRenderPageEngine {
+  /** Synthetic render page index used for the shared frontier page. */
+  readonly chunkIndex = -1;
+  /** Page bounds in source coordinates. */
+  readonly bounds?: RADSplatBounds;
+  /** Last time this page was selected or rendered. */
+  lastUsedMs = Date.now();
+
+  private splatEngine: SplatEngine;
+
+  /** Create a shared render page from all splats in the active RAD frontier. */
+  constructor(
+    device: Device,
+    splats: RADSplatChunkValues,
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ) {
+    this.bounds = getRADSplatBounds(splats.positions);
+    this.splatEngine = new SplatEngine(device, engineProps);
+    const splatData = getGaussianSplatDataFromValues(splats, fallbackColor, gaussianSupportRadius);
+    this.splatEngine.setSplatData(splatData);
+  }
+
+  /** Mark this page as recently used. */
+  touch(): void {
+    this.lastUsedMs = Date.now();
+  }
+
+  /** Release GPU resources owned by the shared page. */
+  destroy(): void {
+    this.splatEngine.destroy();
+  }
+
+  /** Update render-time engine props without replacing uploaded splat attributes. */
+  setProps(props: Partial<SplatEngineProps>): void {
+    this.splatEngine.setProps(props);
+  }
+
+  /** Update active row weights without reuploading immutable source attributes. */
+  setActiveWeights(weights: Float32Array): void {
+    this.splatEngine.setActiveWeights(weights);
+  }
+
+  /** Run per-frame GPU culling, binning, sorting, and buffer updates for the shared page. */
+  update(props: SplatEngineUpdateProps = {}): void {
+    this.touch();
+    this.splatEngine.update(props);
+  }
+
+  /** Return WebGPU bindings used by the splat primitive layer. */
+  getRenderBindings(): SplatRenderBindings {
+    return this.splatEngine.getRenderBindings();
+  }
+
+  /** Return WebGL attributes used by fallback splat primitive rendering. */
+  getWebGLAttributes(): SplatWebGLAttributes {
+    return this.splatEngine.getWebGLAttributes();
+  }
+
+  /** Return the number of uploaded splats in the shared page. */
+  getSplatCount(): number {
+    return this.splatEngine.getSplatCount();
+  }
+
+  /** Return the number of splats selected into the latest render index buffer. */
+  getRenderSplatCount(): number {
+    return this.splatEngine.getRenderSplatCount();
+  }
+
+  /** Return the latest tile overflow count reported by the shared engine. */
+  getOverflowSplatCount(): number {
+    return this.splatEngine.getOverflowSplatCount();
+  }
+}
+
+/** Stable GPU page for one RAD source chunk or compacted render batch. */
+class RADPageSplatEngine implements SplatRenderEngineLike {
+  /** Render page index represented by this engine. */
+  readonly chunkIndex: number;
+  /** Decoded source chunk or compacted batch uploaded to this render page. */
+  readonly loadedChunk: RADSplatLoadedChunk;
+  /** Page bounds in source coordinates. */
+  readonly bounds?: RADSplatBounds;
+  /** Last time this page was selected or rendered. */
+  lastUsedMs = Date.now();
+
+  private splatEngine: SplatEngine;
+  private activeRowsSignature = '';
+
+  constructor(
+    device: Device,
+    loadedChunk: RADSplatLoadedChunk,
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ) {
+    this.chunkIndex = loadedChunk.chunkIndex;
+    this.loadedChunk = loadedChunk;
+    this.bounds = getRADSplatBounds(loadedChunk.splats.positions);
+    this.splatEngine = new SplatEngine(device, engineProps);
+    const splatData = getGaussianSplatDataFromValues(
+      loadedChunk.splats,
+      fallbackColor,
+      gaussianSupportRadius
+    );
+    this.splatEngine.setSplatData(splatData);
+  }
+
+  /** Mark this page as recently used. */
+  touch(): void {
+    this.lastUsedMs = Date.now();
+  }
+
+  destroy(): void {
+    this.splatEngine.destroy();
+  }
+
+  setProps(props: Partial<SplatEngineProps>): void {
+    this.splatEngine.setProps(props);
+  }
+
+  /** Update the active row weights for this page without reuploading immutable splat attributes. */
+  setActiveRows(rows?: Uint32Array, rowWeights?: Float32Array): void {
+    const activeRowsSignature = rowWeights
+      ? getRADActiveWeightsSignature(rowWeights)
+      : getRADActiveRowsSignature(rows);
+    if (activeRowsSignature === this.activeRowsSignature) {
+      return;
+    }
+    this.activeRowsSignature = activeRowsSignature;
+    if (rowWeights) {
+      this.splatEngine.setActiveWeights(rowWeights);
+    } else {
+      this.splatEngine.setActiveIndices(rows);
+    }
+  }
+
+  update(props: SplatEngineUpdateProps = {}): void {
+    this.touch();
+    this.splatEngine.update(props);
+  }
+
+  getRenderBindings(): SplatRenderBindings {
+    return this.splatEngine.getRenderBindings();
+  }
+
+  getWebGLAttributes(): SplatWebGLAttributes {
+    return this.splatEngine.getWebGLAttributes();
+  }
+
+  getSplatCount(): number {
+    return this.splatEngine.getSplatCount();
+  }
+
+  getRenderSplatCount(): number {
+    return this.splatEngine.getRenderSplatCount();
+  }
+
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange(): SplatColorRange {
+    return this.splatEngine.getColorRange();
+  }
+
+  /** Return the latest tile overflow count reported by the page engine. */
+  getOverflowSplatCount(): number {
+    return this.splatEngine.getOverflowSplatCount();
+  }
+}
+
 /** Primitive Gaussian billboard layer used by {@link SplatLayer}. */
 class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
   /** deck.gl layer name used in debugging output. */
@@ -570,6 +2402,9 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     radiusMinPixels: {type: 'number', min: 0, value: 0},
     radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
     alphaScale: {type: 'number', min: 0, value: 1},
+    colorMin: {type: 'number', value: 0},
+    colorMax: {type: 'number', value: 1},
+    alphaCutoff: {type: 'number', min: 0, max: 1, value: 1 / 255},
     screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
     gaussianSupportRadius: {type: 'number', min: 0, value: 3},
     kernel2DSize: {type: 'number', min: 0, value: 0.3},
@@ -647,15 +2482,23 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       radiusMinPixels,
       radiusMaxPixels,
       alphaScale,
+      alphaCutoff,
       screenSizeCutoffPixels,
       gaussianSupportRadius
     } = this.props;
+    const colorRange = this.props.splatEngine?.getColorRange() ?? {
+      colorMin: this.props.colorMin,
+      colorMax: this.props.colorMax
+    };
     const splatProps: SplatUniformProps = {
       sizeUnits: UNIT[sizeUnits],
       radiusScale,
       radiusMinPixels,
       radiusMaxPixels,
       alphaScale,
+      colorMin: colorRange.colorMin,
+      colorMax: colorRange.colorMax,
+      alphaCutoff,
       screenSizeCutoffPixels,
       gaussianSupportRadius
     };
@@ -664,7 +2507,11 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       return;
     }
     this.props.splatEngine?.update(
-      getSplatEngineUpdateProps(this.context.viewport, this.props.radiusScale)
+      getSplatEngineUpdateProps(
+        this.context.viewport,
+        this.props.radiusScale,
+        this.props.modelMatrix
+      )
     );
     if (this.context.device.type === 'webgpu') {
       const splatEngine = this.props.splatEngine;
@@ -718,23 +2565,2043 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       topology: 'triangle-strip',
       vertexCount: 4,
       instanceCount: this.props.splatEngine?.getRenderSplatCount() ?? 0,
-      isInstanced: true
+      isInstanced: true,
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS
     });
   }
 }
 
-/** Build draw-time engine inputs from the active deck.gl viewport. */
-function getSplatEngineUpdateProps(viewport: any, radiusScale: number) {
-  if (!viewport) {
-    return {radiusScale};
+/** Build a runtime scheduler signature that may trigger reselection without clearing resident pages. */
+function getRADRuntimeSelectionSignature(options: RADRuntimeUpdateOptions): string {
+  return [
+    options.startChunkIndex,
+    options.maxChunks,
+    options.maxSplats,
+    options.maxResidentSplats,
+    options.maxConcurrentChunkRequests,
+    options.pruneLoadedLoDParents,
+    options.lodSplatScale,
+    options.lodRenderScale,
+    options.coneFov0,
+    options.coneFov,
+    options.behindFoveate,
+    options.coneFoveate,
+    options.maxCachedChunks,
+    options.radiusScale,
+    options.gaussianSupportRadius,
+    options.reselectOnViewChange ? getRADViewportLoadSignature(options.viewport) : 'static'
+  ].join('|');
+}
+
+/** Select RAD chunk indices from a contiguous LoD window. */
+function getRADSplatChunkIndices(
+  metadata: RADSplatMetadataLike,
+  startChunkIndex: number,
+  maxChunks: number,
+  maxSplats: number
+): number[] {
+  const chunkIndices: number[] = [];
+  let estimatedSplatCount = 0;
+  for (
+    let chunkIndex = Math.max(Math.floor(startChunkIndex), 0);
+    chunkIndex < metadata.chunks.length &&
+    chunkIndices.length < maxChunks &&
+    estimatedSplatCount < maxSplats;
+    chunkIndex++
+  ) {
+    const chunk = metadata.chunks[chunkIndex];
+    chunkIndices.push(chunkIndex);
+    estimatedSplatCount += chunk?.count ?? metadata.chunkSize ?? 0;
+  }
+  return chunkIndices;
+}
+
+/** Return the next LoD traversal chunk batch without materially exceeding the splat budget. */
+function getRADNextChunkIndices(
+  frontier: number[],
+  metadata: RADSplatMetadataLike,
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  queuedChunkIndices: Set<number>,
+  maxChunkCount: number,
+  remainingSplatCount: number
+): number[] {
+  const chunkIndices: number[] = [];
+  let estimatedSplatCount = 0;
+
+  for (const chunkIndex of frontier) {
+    if (
+      chunkIndex < 0 ||
+      chunkIndex >= metadata.chunks.length ||
+      loadedByChunkIndex.has(chunkIndex) ||
+      queuedChunkIndices.has(chunkIndex)
+    ) {
+      continue;
+    }
+
+    const chunkSplatCount = getRADEstimatedChunkSplatCount(metadata, chunkIndex);
+    if (chunkIndices.length > 0 && estimatedSplatCount + chunkSplatCount > remainingSplatCount) {
+      continue;
+    }
+    chunkIndices.push(chunkIndex);
+    estimatedSplatCount += chunkSplatCount;
+    if (chunkIndices.length >= maxChunkCount || estimatedSplatCount >= remainingSplatCount) {
+      break;
+    }
+  }
+
+  return chunkIndices;
+}
+
+/** Return a metadata-estimated decoded splat count for one RAD chunk. */
+function getRADEstimatedChunkSplatCount(
+  metadata: RADSplatMetadataLike,
+  chunkIndex: number
+): number {
+  return metadata.chunks[chunkIndex]?.count ?? metadata.chunkSize ?? 0;
+}
+
+/** Fetch and decode one RAD chunk with bounded transient retry tolerance. */
+async function loadRADSplatChunkWithRetries(
+  source: RADSplatSourceLike,
+  chunkIndex: number
+): Promise<RADSplatLoadedChunk> {
+  let lastError: unknown;
+  for (let attemptIndex = 0; attemptIndex <= DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT; attemptIndex++) {
+    const abortController =
+      typeof AbortController !== 'undefined' ? new AbortController() : undefined;
+    const timeout =
+      abortController &&
+      setTimeout(() => abortController.abort(), DEFAULT_RAD_SPLAT_CHUNK_TIMEOUT_MS);
+    try {
+      const splats = await source.getChunkSplats(chunkIndex, {
+        signal: abortController?.signal,
+        radChunk: {
+          includeLoDTree: true,
+          includeSphericalHarmonics: true
+        }
+      });
+      return {chunkIndex, splats};
+    } catch (error) {
+      lastError = error;
+      if (attemptIndex >= DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT) {
+        break;
+      }
+      await waitRADChunkRetryDelay(DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS * (attemptIndex + 1));
+    } finally {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+  }
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`RADSplatLayer failed to load RAD chunk ${chunkIndex}: ${message}`);
+}
+
+/** Wait before retrying a failed RAD chunk request. */
+function waitRADChunkRetryDelay(delayMs: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, delayMs));
+}
+
+/** Return a high-resolution timestamp for cooperative RAD LoD traversal. */
+function getRADSelectionNow(): number {
+  return typeof performance !== 'undefined' ? performance.now() : Date.now();
+}
+
+/** Yield control so long RAD LoD frontier traversals do not monopolize the app thread. */
+function yieldRADSelectionTraversal(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+/** Return a positive integer RAD chunk request concurrency limit. */
+function getRADMaxConcurrentChunkRequests(maxConcurrentChunkRequests: number): number {
+  return Number.isFinite(maxConcurrentChunkRequests) && maxConcurrentChunkRequests > 0
+    ? Math.floor(maxConcurrentChunkRequests)
+    : DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS;
+}
+
+/** Return immediate and speculative RAD chunk requests in priority order. */
+function getRADChunkRequestIndices(
+  immediateChunkIndices: number[],
+  selectedChunks: RADSplatLoadedChunk[],
+  requestOptions: RADChunkRequestPlanOptions
+): number[] {
+  const requestChunkIndices: number[] = [];
+  const requestedChunkIndices = new Set<number>();
+  const maxRequestChunkCount = Math.max(Math.floor(requestOptions.maxRequestChunkCount), 1);
+
+  const addRequestChunkIndex = (chunkIndex: number): boolean => {
+    if (
+      requestChunkIndices.length >= maxRequestChunkCount ||
+      requestedChunkIndices.has(chunkIndex) ||
+      requestOptions.loadedByChunkIndex.has(chunkIndex) ||
+      requestOptions.unavailableChunkIndices.has(chunkIndex)
+    ) {
+      return false;
+    }
+    requestedChunkIndices.add(chunkIndex);
+    requestChunkIndices.push(chunkIndex);
+    return true;
+  };
+
+  for (const chunkIndex of immediateChunkIndices) {
+    addRequestChunkIndex(chunkIndex);
+  }
+
+  if (requestChunkIndices.length >= maxRequestChunkCount || selectedChunks.length === 0) {
+    return requestChunkIndices;
+  }
+
+  const prefetchChunkIndices = getRADCameraPrioritizedChildChunkIndices(
+    selectedChunks,
+    requestOptions.loadedByChunkIndex,
+    requestOptions.metadata,
+    requestOptions.options
+  );
+
+  const breadthChunkIndices = getRADBreadthPrefetchChunkIndices(requestOptions);
+  let prefetchIndex = 0;
+  let breadthIndex = 0;
+  while (requestChunkIndices.length < maxRequestChunkCount) {
+    let addedRequest = false;
+    for (
+      let priorityIndex = 0;
+      priorityIndex < DEFAULT_RAD_BREADTH_PREFETCH_INTERVAL - 1 &&
+      prefetchIndex < prefetchChunkIndices.length;
+      priorityIndex++
+    ) {
+      addedRequest = addRequestChunkIndex(prefetchChunkIndices[prefetchIndex++]) || addedRequest;
+      if (requestChunkIndices.length >= maxRequestChunkCount) {
+        break;
+      }
+    }
+    if (requestChunkIndices.length >= maxRequestChunkCount) {
+      break;
+    }
+    if (breadthIndex < breadthChunkIndices.length) {
+      addedRequest = addRequestChunkIndex(breadthChunkIndices[breadthIndex++]) || addedRequest;
+    }
+    if (
+      !addedRequest &&
+      prefetchIndex >= prefetchChunkIndices.length &&
+      breadthIndex >= breadthChunkIndices.length
+    ) {
+      break;
+    }
+  }
+
+  return requestChunkIndices;
+}
+
+/** Return unloaded chunks in source order for broad settled-scene prefetch. */
+function getRADBreadthPrefetchChunkIndices(requestOptions: RADChunkRequestPlanOptions): number[] {
+  const chunkIndices: number[] = [];
+  const startChunkIndex = Math.max(Math.floor(requestOptions.options.startChunkIndex), 0);
+  for (
+    let chunkIndex = startChunkIndex;
+    chunkIndex < requestOptions.metadata.chunks.length;
+    chunkIndex++
+  ) {
+    if (
+      !requestOptions.loadedByChunkIndex.has(chunkIndex) &&
+      !requestOptions.unavailableChunkIndices.has(chunkIndex)
+    ) {
+      chunkIndices.push(chunkIndex);
+    }
+  }
+  return chunkIndices;
+}
+
+/** Return child chunks ordered by current camera importance. */
+function getRADCameraPrioritizedChildChunkIndices(
+  loadedChunks: RADSplatLoadedChunk[],
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  metadata: RADSplatMetadataLike,
+  options: RADSplatChunkSelectionOptions
+): number[] {
+  const childChunkGroups: RADChildChunkGroup[] = [];
+  const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
+  const chunkRangeLookup = getRADSplatChunkRangeLookup(metadata);
+  const loadedSplatCount = loadedChunks.reduce(
+    (total, loadedChunk) => total + loadedChunk.splats.splatCount,
+    0
+  );
+  const rowStride = Math.max(Math.ceil(loadedSplatCount / DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS), 1);
+
+  for (const loadedChunk of loadedChunks) {
+    const childCounts = loadedChunk.splats.loaderData?.childCounts;
+    const childStarts = loadedChunk.splats.loaderData?.childStarts;
+    if (!(childCounts instanceof Uint16Array) || !(childStarts instanceof Uint32Array)) {
+      continue;
+    }
+
+    for (let rowIndex = 0; rowIndex < loadedChunk.splats.splatCount; rowIndex += rowStride) {
+      const childCount = childCounts[rowIndex];
+      if (childCount <= 0) {
+        continue;
+      }
+      const childStart = childStarts[rowIndex];
+      const childChunkIndices = getRADSplatChunkIndicesForGlobalRange(
+        chunkRangeLookup,
+        childStart,
+        childCount
+      ).filter(childChunkIndex => !loadedByChunkIndex.has(childChunkIndex));
+      if (!childChunkIndices.length) {
+        continue;
+      }
+
+      const pixelScale = getRADSparkLoDPixelScale(
+        loadedChunk.splats,
+        rowIndex,
+        foveationView,
+        options.lodSplatScale,
+        options.coneFov0,
+        options.coneFov,
+        options.behindFoveate,
+        options.coneFoveate
+      );
+      const score = Number.isFinite(pixelScale) && pixelScale > 0 ? pixelScale : childCount;
+      childChunkGroups.push({score, chunkIndices: childChunkIndices});
+    }
+  }
+
+  const orderedChunkIndices: number[] = [];
+  const queuedChunkIndices = new Set<number>();
+  childChunkGroups.sort(
+    (leftGroup, rightGroup) =>
+      rightGroup.score - leftGroup.score || leftGroup.chunkIndices[0] - rightGroup.chunkIndices[0]
+  );
+  for (const childChunkGroup of childChunkGroups) {
+    for (const childChunkIndex of childChunkGroup.chunkIndices) {
+      if (queuedChunkIndices.has(childChunkIndex)) {
+        continue;
+      }
+      queuedChunkIndices.add(childChunkIndex);
+      orderedChunkIndices.push(childChunkIndex);
+    }
+  }
+  return orderedChunkIndices;
+}
+
+/** Return source chunk indices overlapping a global splat range. */
+function getRADSplatChunkIndicesForGlobalRange(
+  chunkRangeLookup: RADSplatChunkRangeLookup,
+  start: number,
+  count: number
+): number[] {
+  const end = start + count;
+  const chunkIndices: number[] = [];
+  let low = 0;
+  let high = chunkRangeLookup.ends.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (chunkRangeLookup.ends[middle] <= start) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+
+  for (let chunkIndex = low; chunkIndex < chunkRangeLookup.starts.length; chunkIndex++) {
+    if (chunkRangeLookup.starts[chunkIndex] >= end) {
+      break;
+    }
+    chunkIndices.push(chunkIndex);
+  }
+
+  return chunkIndices;
+}
+
+/** Build global splat start/end lookup tables for RAD chunk metadata. */
+function getRADSplatChunkRangeLookup(metadata: RADSplatMetadataLike): RADSplatChunkRangeLookup {
+  const starts = new Array<number>(metadata.chunks.length);
+  const ends = new Array<number>(metadata.chunks.length);
+  let previousChunkEnd = 0;
+
+  for (let chunkIndex = 0; chunkIndex < metadata.chunks.length; chunkIndex++) {
+    const chunk = metadata.chunks[chunkIndex];
+    const chunkStart = chunk.base ?? previousChunkEnd;
+    const chunkEnd = chunkStart + (chunk.count ?? metadata.chunkSize ?? 0);
+    starts[chunkIndex] = chunkStart;
+    ends[chunkIndex] = chunkEnd;
+    previousChunkEnd = chunkEnd;
+  }
+
+  return {starts, ends};
+}
+
+/** Select a Spark-style row frontier from already resident RAD LoD chunks. */
+async function getRADLoadedRenderFrontier(
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  metadata: RADSplatMetadataLike,
+  firstChunkIndex: number,
+  pendingChunkIndices: Set<number>,
+  options: RADSplatChunkSelectionOptions
+): Promise<RADLoadedRenderFrontierPlan | null> {
+  const chunkRangeLookup = getRADSplatChunkRangeLookup(metadata);
+  const rootGlobalSplatIndex = chunkRangeLookup.starts[firstChunkIndex] ?? 0;
+  const rootChunkIndex = getRADSplatChunkIndexForGlobalIndex(
+    chunkRangeLookup,
+    rootGlobalSplatIndex
+  );
+  if (rootChunkIndex < 0) {
+    return null;
+  }
+
+  const rootChunk = loadedByChunkIndex.get(rootChunkIndex);
+  if (!rootChunk) {
+    return {
+      frontierChunks: [],
+      missingChunkIndices: pendingChunkIndices.has(rootChunkIndex) ? [] : [rootChunkIndex]
+    };
+  }
+  if (!getRADLoDTreeArrays(rootChunk.splats)) {
+    return null;
+  }
+
+  const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
+  const rootCandidate = getRADFrontierCandidate(
+    loadedByChunkIndex,
+    chunkRangeLookup,
+    rootGlobalSplatIndex,
+    foveationView,
+    options
+  );
+  if (!rootCandidate) {
+    return null;
+  }
+
+  const pixelScaleLimit = getRADSparkLoDPixelScaleLimit(options.viewport, options.lodRenderScale);
+  const candidateHeap: RADFrontierCandidate[] = [rootCandidate];
+  const rowWeightsByChunkIndex = new Map<number, Map<number, number>>();
+  const missingChunkIndexSet = new Set<number>();
+  let selectedRowCount = 1;
+  let processedCandidateCount = 0;
+  let lastYieldTimeMs = getRADSelectionNow();
+  const maxSplatCount = Math.max(Math.floor(options.maxSplats), 1);
+
+  while (candidateHeap.length > 0) {
+    const candidate = candidateHeap[0];
+    if (!candidate) {
+      break;
+    }
+    if (candidate.pixelScale <= pixelScaleLimit) {
+      break;
+    }
+
+    popRADFrontierCandidate(candidateHeap);
+    if (candidate.childCount <= 0) {
+      addRADFrontierRow(rowWeightsByChunkIndex, candidate);
+      processedCandidateCount++;
+      if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+        processedCandidateCount = 0;
+        const nowMs = getRADSelectionNow();
+        if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+          await yieldRADSelectionTraversal();
+          lastYieldTimeMs = getRADSelectionNow();
+        }
+      }
+      continue;
+    }
+
+    const replacementRowCount = candidate.childCount;
+    if (selectedRowCount - 1 + replacementRowCount > maxSplatCount) {
+      pushRADFrontierCandidate(candidateHeap, candidate);
+      break;
+    }
+
+    const childFrontier = await getRADLoadedChildFrontierCandidates(
+      candidate,
+      loadedByChunkIndex,
+      chunkRangeLookup,
+      pendingChunkIndices,
+      missingChunkIndexSet,
+      foveationView,
+      options
+    );
+
+    if (childFrontier.hasMissingChildren || childFrontier.childCandidates.length === 0) {
+      addRADFrontierRow(rowWeightsByChunkIndex, candidate);
+      processedCandidateCount++;
+      if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+        processedCandidateCount = 0;
+        const nowMs = getRADSelectionNow();
+        if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+          await yieldRADSelectionTraversal();
+          lastYieldTimeMs = getRADSelectionNow();
+        }
+      }
+      continue;
+    }
+
+    selectedRowCount = selectedRowCount - 1 + childFrontier.childCandidates.length;
+    for (const childCandidate of childFrontier.childCandidates) {
+      if (childCandidate.pixelScale <= pixelScaleLimit) {
+        addRADFrontierRow(rowWeightsByChunkIndex, childCandidate);
+      } else {
+        pushRADFrontierCandidate(candidateHeap, childCandidate);
+      }
+    }
+
+    processedCandidateCount++;
+    if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+      processedCandidateCount = 0;
+      const nowMs = getRADSelectionNow();
+      if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+        await yieldRADSelectionTraversal();
+        lastYieldTimeMs = getRADSelectionNow();
+      }
+    }
+  }
+
+  for (const candidate of candidateHeap) {
+    addRADFrontierRow(rowWeightsByChunkIndex, candidate);
   }
 
   return {
-    modelViewProjectionMatrix: viewport.viewProjectionMatrix,
-    viewportSize: [viewport.width || 1, viewport.height || 1] as [number, number],
-    cullingVolume: getCullingVolume(viewport),
-    radiusScale
+    frontierChunks: createRADRenderFrontierChunks(loadedByChunkIndex, rowWeightsByChunkIndex),
+    missingChunkIndices: Array.from(missingChunkIndexSet)
   };
+}
+
+/** Return the direct child node candidates currently loaded for one frontier parent. */
+async function getRADLoadedChildFrontierCandidates(
+  candidate: RADFrontierCandidate,
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  chunkRangeLookup: RADSplatChunkRangeLookup,
+  pendingChunkIndices: Set<number>,
+  missingChunkIndexSet: Set<number>,
+  foveationView: RADFoveationView,
+  options: RADSplatChunkSelectionOptions
+): Promise<RADChildFrontierCandidates> {
+  const childEnd = candidate.childStart + candidate.childCount;
+  const childCandidates: RADFrontierCandidate[] = [];
+  const endpointChildChunkIndices = [
+    getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, candidate.childStart),
+    getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, childEnd - 1)
+  ];
+  let hasMissingEndpointChunk = false;
+  for (const childChunkIndex of endpointChildChunkIndices) {
+    if (childChunkIndex < 0) {
+      hasMissingEndpointChunk = true;
+      continue;
+    }
+    if (!loadedByChunkIndex.has(childChunkIndex)) {
+      if (!pendingChunkIndices.has(childChunkIndex)) {
+        missingChunkIndexSet.add(childChunkIndex);
+      }
+      hasMissingEndpointChunk = true;
+    }
+  }
+  if (hasMissingEndpointChunk) {
+    return {
+      childCandidates,
+      childCoverage: 0,
+      hasMissingChildren: true
+    };
+  }
+
+  let loadedChildCount = 0;
+  let hasMissingChildren = false;
+  let checkedChildCount = 0;
+  let lastYieldTimeMs = getRADSelectionNow();
+
+  for (
+    let childGlobalSplatIndex = candidate.childStart;
+    childGlobalSplatIndex < childEnd;
+    childGlobalSplatIndex++
+  ) {
+    checkedChildCount++;
+    if (checkedChildCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+      checkedChildCount = 0;
+      const nowMs = getRADSelectionNow();
+      if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+        await yieldRADSelectionTraversal();
+        lastYieldTimeMs = getRADSelectionNow();
+      }
+    }
+    const childCandidate = getRADFrontierCandidate(
+      loadedByChunkIndex,
+      chunkRangeLookup,
+      childGlobalSplatIndex,
+      foveationView,
+      options
+    );
+    if (!childCandidate) {
+      const childChunkIndex = getRADSplatChunkIndexForGlobalIndex(
+        chunkRangeLookup,
+        childGlobalSplatIndex
+      );
+      if (childChunkIndex >= 0 && !pendingChunkIndices.has(childChunkIndex)) {
+        missingChunkIndexSet.add(childChunkIndex);
+      }
+      hasMissingChildren = true;
+      continue;
+    }
+    loadedChildCount++;
+    childCandidates.push(childCandidate);
+  }
+
+  return {
+    childCandidates,
+    childCoverage: candidate.childCount > 0 ? loadedChildCount / candidate.childCount : 1,
+    hasMissingChildren
+  };
+}
+
+/** Return one resident RAD LoD node candidate by global splat index. */
+function getRADFrontierCandidate(
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  chunkRangeLookup: RADSplatChunkRangeLookup,
+  globalSplatIndex: number,
+  foveationView: RADFoveationView,
+  options: RADSplatChunkSelectionOptions
+): RADFrontierCandidate | null {
+  const chunkIndex = getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, globalSplatIndex);
+  const chunk = loadedByChunkIndex.get(chunkIndex);
+  if (!chunk) {
+    return null;
+  }
+
+  const rowIndex = globalSplatIndex - getRADSplatBase(chunk.splats);
+  const lodTree = getRADLoDTreeArrays(chunk.splats);
+  if (!lodTree || rowIndex < 0 || rowIndex >= chunk.splats.splatCount) {
+    return null;
+  }
+  const childCount = lodTree.childCounts[rowIndex];
+  const pixelScale = getRADSparkLoDPixelScale(
+    chunk.splats,
+    rowIndex,
+    foveationView,
+    options.lodSplatScale,
+    options.coneFov0,
+    options.coneFov,
+    options.behindFoveate,
+    options.coneFoveate
+  );
+
+  return {
+    chunk,
+    rowIndex,
+    globalSplatIndex,
+    childStart: lodTree.childStarts[rowIndex],
+    childCount,
+    pixelScale,
+    score: pixelScale
+  };
+}
+
+/** Return typed LoD child arrays when a decoded RAD chunk contains tree metadata. */
+function getRADLoDTreeArrays(
+  splats: RADSplatChunkValues
+): {childCounts: Uint16Array; childStarts: Uint32Array} | null {
+  const childCounts = splats.loaderData?.childCounts;
+  const childStarts = splats.loaderData?.childStarts;
+  return childCounts instanceof Uint16Array && childStarts instanceof Uint32Array
+    ? {childCounts, childStarts}
+    : null;
+}
+
+/** Return the source chunk index that owns a global RAD splat index. */
+function getRADSplatChunkIndexForGlobalIndex(
+  chunkRangeLookup: RADSplatChunkRangeLookup,
+  globalSplatIndex: number
+): number {
+  let low = 0;
+  let high = chunkRangeLookup.ends.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (chunkRangeLookup.ends[middle] <= globalSplatIndex) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+
+  return low < chunkRangeLookup.starts.length &&
+    chunkRangeLookup.starts[low] <= globalSplatIndex &&
+    globalSplatIndex < chunkRangeLookup.ends[low]
+    ? low
+    : -1;
+}
+
+/** Add a candidate to the max heap ordered by projected LoD score. */
+function pushRADFrontierCandidate(
+  heap: RADFrontierCandidate[],
+  candidate: RADFrontierCandidate
+): void {
+  heap.push(candidate);
+  let index = heap.length - 1;
+  while (index > 0) {
+    const parentIndex = Math.floor((index - 1) / 2);
+    if (compareRADFrontierCandidates(heap[parentIndex], candidate) >= 0) {
+      break;
+    }
+    heap[index] = heap[parentIndex];
+    index = parentIndex;
+  }
+  heap[index] = candidate;
+}
+
+/** Remove the highest-priority candidate from a max heap. */
+function popRADFrontierCandidate(heap: RADFrontierCandidate[]): RADFrontierCandidate | undefined {
+  const result = heap[0];
+  const tail = heap.pop();
+  if (!tail || heap.length === 0) {
+    return result;
+  }
+
+  let index = 0;
+  while (true) {
+    const leftChildIndex = index * 2 + 1;
+    const rightChildIndex = leftChildIndex + 1;
+    if (leftChildIndex >= heap.length) {
+      break;
+    }
+
+    const bestChildIndex =
+      rightChildIndex < heap.length &&
+      compareRADFrontierCandidates(heap[rightChildIndex], heap[leftChildIndex]) > 0
+        ? rightChildIndex
+        : leftChildIndex;
+    if (compareRADFrontierCandidates(heap[bestChildIndex], tail) <= 0) {
+      break;
+    }
+    heap[index] = heap[bestChildIndex];
+    index = bestChildIndex;
+  }
+  heap[index] = tail;
+  return result;
+}
+
+/** Compare LoD candidates by score with stable global-index tie breaking. */
+function compareRADFrontierCandidates(
+  left: RADFrontierCandidate,
+  right: RADFrontierCandidate
+): number {
+  return right.score === left.score
+    ? right.globalSplatIndex - left.globalSplatIndex
+    : left.score - right.score;
+}
+
+/** Add a selected LoD node row to the owning chunk group. */
+function addRADFrontierRow(
+  rowWeightsByChunkIndex: Map<number, Map<number, number>>,
+  candidate: RADFrontierCandidate,
+  weight = 1
+): void {
+  const chunkRows = rowWeightsByChunkIndex.get(candidate.chunk.chunkIndex) || new Map();
+  chunkRows.set(candidate.rowIndex, Math.max(chunkRows.get(candidate.rowIndex) ?? 0, weight));
+  rowWeightsByChunkIndex.set(candidate.chunk.chunkIndex, chunkRows);
+}
+
+/** Convert grouped local rows into render frontier chunks. */
+function createRADRenderFrontierChunks(
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
+  rowWeightsByChunkIndex: Map<number, Map<number, number>>
+): RADRenderFrontierChunk[] {
+  return Array.from(rowWeightsByChunkIndex.entries())
+    .sort((left, right) => left[0] - right[0])
+    .map(([chunkIndex, rowWeightsByIndex]) => {
+      const chunk = loadedByChunkIndex.get(chunkIndex);
+      if (!chunk) {
+        return null;
+      }
+      const rows = Array.from(rowWeightsByIndex.keys()).sort((left, right) => left - right);
+      const rowWeights = new Float32Array(chunk.splats.splatCount);
+      let hasPartialWeights = false;
+      for (const rowIndex of rows) {
+        const rowWeight = rowWeightsByIndex.get(rowIndex) ?? 0;
+        rowWeights[rowIndex] = rowWeight;
+        hasPartialWeights ||= rowWeight < 1;
+      }
+      const visibleRows =
+        rows.length === chunk.splats.splatCount ? undefined : Uint32Array.from(rows);
+      return {
+        chunk,
+        visibleSplatCount: rows.length,
+        visibleRows,
+        rowWeights: hasPartialWeights ? rowWeights : undefined
+      };
+    })
+    .filter(Boolean) as RADRenderFrontierChunk[];
+}
+
+/** Return diagnostics for the selected RAD LoD frontier. */
+function getRADFrontierStats(frontier: RADRenderFrontierChunk[]): RADFrontierStats {
+  const stats: RADFrontierStats = {
+    parentSplatCount: 0,
+    leafSplatCount: 0,
+    maxChildCount: 0,
+    maxOpacity: 0,
+    maxScale: 0
+  };
+
+  for (const frontierChunk of frontier) {
+    const splats = frontierChunk.chunk.splats;
+    const lodTree = getRADLoDTreeArrays(splats);
+    const visibleRows = frontierChunk.visibleRows;
+    const rowCount = visibleRows?.length ?? splats.splatCount;
+    for (let visibleRowIndex = 0; visibleRowIndex < rowCount; visibleRowIndex++) {
+      const rowIndex = visibleRows ? visibleRows[visibleRowIndex] : visibleRowIndex;
+      const childCount = lodTree?.childCounts[rowIndex] ?? 0;
+      if (childCount > 0) {
+        stats.parentSplatCount++;
+      } else {
+        stats.leafSplatCount++;
+      }
+      stats.maxChildCount = Math.max(stats.maxChildCount, childCount);
+      stats.maxOpacity = Math.max(
+        stats.maxOpacity,
+        getRADExpandedLoDOpacity(splats.opacities[rowIndex] ?? 0)
+      );
+      const scaleOffset = rowIndex * 3;
+      stats.maxScale = Math.max(
+        stats.maxScale,
+        Math.abs(splats.scales[scaleOffset] ?? 0),
+        Math.abs(splats.scales[scaleOffset + 1] ?? 0),
+        Math.abs(splats.scales[scaleOffset + 2] ?? 0)
+      );
+    }
+  }
+
+  return stats;
+}
+
+/** Return a stable signature for a compacted RAD render frontier. */
+function getRADRenderFrontierSignature(
+  frontier: RADRenderFrontierChunk[],
+  fallbackColor: Color,
+  gaussianSupportRadius: number
+): string {
+  const frontierSignature = frontier
+    .map(
+      entry =>
+        `${entry.chunk.chunkIndex}:${entry.visibleSplatCount}:` +
+        `${getRADActiveRowsSignature(entry.visibleRows)}:` +
+        `${entry.rowWeights ? getRADActiveWeightsSignature(entry.rowWeights) : 'weights-all'}`
+    )
+    .join('|');
+  return [
+    frontierSignature,
+    getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius)
+  ].join('|');
+}
+
+/** Return a signature for splat props baked into uploaded render page attributes. */
+function getRADRenderUploadSignature(fallbackColor: Color, gaussianSupportRadius: number): string {
+  return [
+    `fallback:${Array.from(fallbackColor).join(',')}`,
+    `support:${gaussianSupportRadius}`
+  ].join('|');
+}
+
+/** Return a stable signature for chunks uploaded into the shared RAD render pool. */
+function getRADPooledRenderFrontierSignature(
+  frontier: RADRenderFrontierChunk[],
+  fallbackColor: Color,
+  gaussianSupportRadius: number
+): string {
+  const chunkSignature = frontier
+    .map(entry => `${entry.chunk.chunkIndex}:${entry.chunk.splats.splatCount}`)
+    .join('|');
+  return [chunkSignature, getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius)].join(
+    '|'
+  );
+}
+
+/** Return a render page size that preserves global per-splat sorting when requested. */
+function getRADRenderPageSplatCount(
+  frontier: RADRenderFrontierChunk[],
+  _sortMode?: SplatSortMode
+): number {
+  const visibleSplatCount = frontier.reduce(
+    (total, entry) => total + Math.max(Math.floor(entry.visibleSplatCount), 0),
+    0
+  );
+  return Math.max(visibleSplatCount, 1);
+}
+
+/** Build one shared render chunk containing every source row for the active RAD frontier chunks. */
+function createRADPooledRenderChunk(frontier: RADRenderFrontierChunk[]): RADSplatChunkValues {
+  const pooledSegments: RADRenderRowSegment[] = frontier.map(frontierChunk => ({
+    frontierChunk: {
+      chunk: frontierChunk.chunk,
+      visibleSplatCount: frontierChunk.chunk.splats.splatCount
+    },
+    rowOffset: 0,
+    rowCount: frontierChunk.chunk.splats.splatCount
+  }));
+  const pooledSplatCount = pooledSegments.reduce((total, segment) => total + segment.rowCount, 0);
+  return createRADCompactedRenderChunk(pooledSegments, pooledSplatCount);
+}
+
+/** Build one active-weight buffer for the shared RAD render pool. */
+function createRADPooledActiveWeights(frontier: RADRenderFrontierChunk[]): Float32Array {
+  const pooledSplatCount = frontier.reduce(
+    (total, frontierChunk) => total + frontierChunk.chunk.splats.splatCount,
+    0
+  );
+  const activeWeights = new Float32Array(pooledSplatCount);
+  let pooledRowOffset = 0;
+
+  for (const frontierChunk of frontier) {
+    const splatCount = frontierChunk.chunk.splats.splatCount;
+    if (frontierChunk.rowWeights) {
+      const rowWeights = frontierChunk.rowWeights;
+      const rowCount = Math.min(rowWeights.length, splatCount);
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        activeWeights[pooledRowOffset + rowIndex] = rowWeights[rowIndex];
+      }
+    } else if (frontierChunk.visibleRows) {
+      for (const rowIndex of frontierChunk.visibleRows) {
+        if (rowIndex < splatCount) {
+          activeWeights[pooledRowOffset + rowIndex] = 1;
+        }
+      }
+    } else {
+      activeWeights.fill(1, pooledRowOffset, pooledRowOffset + splatCount);
+    }
+    pooledRowOffset += splatCount;
+  }
+
+  return activeWeights;
+}
+
+/** Return the RGB byte decode range shared by grouped RAD frontier chunks. */
+function getRADFrontierColorRange(frontierChunks: RADRenderFrontierChunk[]): SplatColorRange {
+  if (!frontierChunks.length) {
+    return {colorMin: 0, colorMax: 1};
+  }
+
+  let colorMin = frontierChunks[0].chunk.splats.colorMin ?? 0;
+  let colorMax = frontierChunks[0].chunk.splats.colorMax ?? 1;
+  for (const frontierChunk of frontierChunks) {
+    colorMin = Math.min(colorMin, frontierChunk.chunk.splats.colorMin ?? 0);
+    colorMax = Math.max(colorMax, frontierChunk.chunk.splats.colorMax ?? 1);
+  }
+  return {colorMin, colorMax};
+}
+
+/** Build compact render chunks containing only selected frontier rows. */
+function createRADCompactedRenderChunks(
+  frontier: RADRenderFrontierChunk[],
+  maxPageSplatCount: number
+): RADSplatChunkValues[] {
+  const compactedChunks: RADSplatChunkValues[] = [];
+  const pageSplatCount = Math.max(Math.floor(maxPageSplatCount), 1);
+  const segments: RADRenderRowSegment[] = [];
+  let currentPageSplatCount = 0;
+
+  const flushSegments = () => {
+    if (segments.length > 0 && currentPageSplatCount > 0) {
+      compactedChunks.push(createRADCompactedRenderChunk(segments, currentPageSplatCount));
+      segments.length = 0;
+      currentPageSplatCount = 0;
+    }
+  };
+
+  for (const frontierChunk of frontier) {
+    let consumedRows = 0;
+    const visibleSplatCount = Math.max(Math.floor(frontierChunk.visibleSplatCount), 0);
+    while (consumedRows < visibleSplatCount) {
+      if (currentPageSplatCount >= pageSplatCount) {
+        flushSegments();
+      }
+      const remainingPageRows = pageSplatCount - currentPageSplatCount;
+      const rowCount = Math.min(visibleSplatCount - consumedRows, remainingPageRows);
+      segments.push({frontierChunk, rowOffset: consumedRows, rowCount});
+      currentPageSplatCount += rowCount;
+      consumedRows += rowCount;
+    }
+  }
+  flushSegments();
+
+  return compactedChunks;
+}
+
+/** Build one compact render chunk from selected row segments. */
+function createRADCompactedRenderChunk(
+  segments: RADRenderRowSegment[],
+  splatCount: number
+): RADSplatChunkValues {
+  const sphericalHarmonicsComponentCount =
+    getRADCompactedSphericalHarmonicsComponentCount(segments);
+  const hasSphericalHarmonicDcs = segments.every(segment =>
+    Boolean(segment.frontierChunk.chunk.splats.sphericalHarmonicDcs)
+  );
+  const positions = new Float32Array(splatCount * 3);
+  const scales = new Float32Array(splatCount * 3);
+  const rotations = new Float32Array(splatCount * 4);
+  const colors = new Uint8Array(splatCount * 3);
+  const {colorMin, colorMax} = getRADSegmentColorRange(segments);
+  const sphericalHarmonicDcs = hasSphericalHarmonicDcs
+    ? new Float32Array(splatCount * 3)
+    : undefined;
+  const opacities = new Float32Array(splatCount);
+  const sphericalHarmonics = sphericalHarmonicsComponentCount
+    ? new Float32Array(splatCount * sphericalHarmonicsComponentCount)
+    : undefined;
+  let outputRowIndex = 0;
+
+  for (const segment of segments) {
+    const splats = segment.frontierChunk.chunk.splats;
+    const rows = segment.frontierChunk.visibleRows;
+    const rowWeights = segment.frontierChunk.rowWeights;
+    for (let segmentRowIndex = 0; segmentRowIndex < segment.rowCount; segmentRowIndex++) {
+      const inputRowIndex = rows
+        ? rows[segment.rowOffset + segmentRowIndex]
+        : segment.rowOffset + segmentRowIndex;
+      const outputPositionOffset = outputRowIndex * 3;
+      const inputPositionOffset = inputRowIndex * 3;
+      positions[outputPositionOffset] = splats.positions[inputPositionOffset];
+      positions[outputPositionOffset + 1] = splats.positions[inputPositionOffset + 1];
+      positions[outputPositionOffset + 2] = splats.positions[inputPositionOffset + 2];
+      scales[outputPositionOffset] = splats.scales[inputPositionOffset];
+      scales[outputPositionOffset + 1] = splats.scales[inputPositionOffset + 1];
+      scales[outputPositionOffset + 2] = splats.scales[inputPositionOffset + 2];
+      colors[outputPositionOffset] = splats.colors[inputPositionOffset];
+      colors[outputPositionOffset + 1] = splats.colors[inputPositionOffset + 1];
+      colors[outputPositionOffset + 2] = splats.colors[inputPositionOffset + 2];
+      if (sphericalHarmonicDcs && splats.sphericalHarmonicDcs) {
+        sphericalHarmonicDcs[outputPositionOffset] =
+          splats.sphericalHarmonicDcs[inputPositionOffset];
+        sphericalHarmonicDcs[outputPositionOffset + 1] =
+          splats.sphericalHarmonicDcs[inputPositionOffset + 1];
+        sphericalHarmonicDcs[outputPositionOffset + 2] =
+          splats.sphericalHarmonicDcs[inputPositionOffset + 2];
+      }
+
+      const outputRotationOffset = outputRowIndex * 4;
+      const inputRotationOffset = inputRowIndex * 4;
+      rotations[outputRotationOffset] = splats.rotations[inputRotationOffset];
+      rotations[outputRotationOffset + 1] = splats.rotations[inputRotationOffset + 1];
+      rotations[outputRotationOffset + 2] = splats.rotations[inputRotationOffset + 2];
+      rotations[outputRotationOffset + 3] = splats.rotations[inputRotationOffset + 3];
+
+      const rowWeight = rowWeights ? rowWeights[inputRowIndex] : 1;
+      opacities[outputRowIndex] = splats.opacities[inputRowIndex] * (rowWeight || 0);
+
+      if (sphericalHarmonics && splats.sphericalHarmonics) {
+        const outputSphericalHarmonicOffset = outputRowIndex * sphericalHarmonicsComponentCount;
+        const inputSphericalHarmonicOffset = inputRowIndex * sphericalHarmonicsComponentCount;
+        for (
+          let componentIndex = 0;
+          componentIndex < sphericalHarmonicsComponentCount;
+          componentIndex++
+        ) {
+          sphericalHarmonics[outputSphericalHarmonicOffset + componentIndex] =
+            splats.sphericalHarmonics[inputSphericalHarmonicOffset + componentIndex];
+        }
+      }
+
+      outputRowIndex++;
+    }
+  }
+
+  return {
+    splatCount,
+    positions,
+    scales,
+    rotations,
+    colors,
+    colorMin,
+    colorMax,
+    sphericalHarmonicDcs,
+    opacities,
+    sphericalHarmonics,
+    sphericalHarmonicsComponentCount: sphericalHarmonicsComponentCount || undefined,
+    loaderData: {count: splatCount}
+  };
+}
+
+/** Return the shared SH rest component count when all compacted segments provide it. */
+function getRADCompactedSphericalHarmonicsComponentCount(segments: RADRenderRowSegment[]): number {
+  const firstCount = segments[0]?.frontierChunk.chunk.splats.sphericalHarmonicsComponentCount ?? 0;
+  if (!firstCount) {
+    return 0;
+  }
+  return segments.every(segment => {
+    const splats = segment.frontierChunk.chunk.splats;
+    return splats.sphericalHarmonics && splats.sphericalHarmonicsComponentCount === firstCount;
+  })
+    ? firstCount
+    : 0;
+}
+
+/** Return the RGB byte decode range shared by compacted RAD row segments. */
+function getRADSegmentColorRange(segments: RADRenderRowSegment[]): SplatColorRange {
+  return getRADFrontierColorRange(segments.map(segment => segment.frontierChunk));
+}
+
+/** Return the Spark LoD angular pixel threshold for the active viewport. */
+function getRADSparkLoDPixelScaleLimit(viewport: any, lodRenderScale: number): number {
+  const [, viewportHeight] = getRADViewportSize(viewport);
+  const fieldOfViewRadians = (getRADViewportFov(viewport) * Math.PI) / 180;
+  const verticalPixelScale = (2 * Math.tan(0.5 * fieldOfViewRadians)) / Math.max(viewportHeight, 1);
+  const pixelScaleLimit = verticalPixelScale * Math.max(lodRenderScale, 0);
+  return Number.isFinite(pixelScaleLimit) ? pixelScaleLimit : 0;
+}
+
+/** Return one RAD LoD node's Spark traversal scale after distance and foveation weighting. */
+function getRADSparkLoDPixelScale(
+  splats: RADSplatChunkValues,
+  rowIndex: number,
+  foveationView: RADFoveationView,
+  lodSplatScale: number,
+  coneFov0: number,
+  coneFov: number,
+  behindFoveate: number,
+  coneFoveate: number
+): number {
+  const {viewOrigin, viewDirection} = foveationView;
+  if (!viewOrigin || !viewDirection) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const positionOffset = rowIndex * 3;
+  const position: [number, number, number] = [
+    splats.positions[positionOffset],
+    splats.positions[positionOffset + 1],
+    splats.positions[positionOffset + 2]
+  ];
+  const distance = Math.max(
+    Math.hypot(
+      position[0] - viewOrigin[0],
+      position[1] - viewOrigin[1],
+      position[2] - viewOrigin[2]
+    ),
+    1e-6
+  );
+  const lodNodeSize = getRADSparkLoDNodeSize(splats, rowIndex);
+  const foveationPriority = getRADFoveationWeight(
+    position,
+    foveationView,
+    coneFov0,
+    coneFov,
+    behindFoveate,
+    coneFoveate
+  );
+  const pixelScale = (lodNodeSize / distance) * Math.max(lodSplatScale, 0) * foveationPriority;
+  return Number.isFinite(pixelScale) ? pixelScale : 0;
+}
+
+/** Return the encoded RAD LoD node size used by Spark traversal. */
+function getRADSparkLoDNodeSize(splats: RADSplatChunkValues, rowIndex: number): number {
+  const scaleOffset = rowIndex * 3;
+  const averageScale =
+    (Math.abs(splats.scales[scaleOffset]) +
+      Math.abs(splats.scales[scaleOffset + 1]) +
+      Math.abs(splats.scales[scaleOffset + 2])) /
+    3;
+  const opacity = getRADExpandedLoDOpacity(splats.opacities[rowIndex]);
+  const opacityExpansion = opacity > 1 ? 1 + 0.7 * (opacity - 1) : 1;
+  return Math.max(2 * opacityExpansion * averageScale, Number.EPSILON);
+}
+
+/** Return Spark-style dot-space foveation priority for one splat center. */
+function getRADFoveationWeight(
+  position: readonly [number, number, number],
+  foveationView: RADFoveationView,
+  coneFov0: number,
+  coneFov: number,
+  behindFoveate: number,
+  coneFoveate: number
+): number {
+  const {viewOrigin, viewDirection} = foveationView;
+  if (!viewOrigin || !viewDirection) {
+    return 1;
+  }
+
+  const toSplat: [number, number, number] = [
+    position[0] - viewOrigin[0],
+    position[1] - viewOrigin[1],
+    position[2] - viewOrigin[2]
+  ];
+  const toSplatLength = Math.hypot(toSplat[0], toSplat[1], toSplat[2]);
+  const viewDirectionLength = Math.hypot(viewDirection[0], viewDirection[1], viewDirection[2]);
+  if (
+    !Number.isFinite(toSplatLength) ||
+    !Number.isFinite(viewDirectionLength) ||
+    toSplatLength <= 0 ||
+    viewDirectionLength <= 0
+  ) {
+    return 1;
+  }
+
+  const forwardDot =
+    toSplat[0] * viewDirection[0] + toSplat[1] * viewDirection[1] + toSplat[2] * viewDirection[2];
+  const conePriority = clampRADPriority(coneFoveate);
+  const behindPriority = clampRADPriority(behindFoveate);
+
+  if (forwardDot <= 0) {
+    return behindPriority;
+  }
+
+  const dotProduct = forwardDot / Math.max(toSplatLength * viewDirectionLength, Number.EPSILON);
+  const innerConeDot = getRADFoveationConeDot(coneFov0);
+  const outerConeDot = Math.min(getRADFoveationConeDot(coneFov), innerConeDot);
+  if (dotProduct >= innerConeDot) {
+    return 1;
+  }
+  if (dotProduct >= outerConeDot) {
+    const blend = (dotProduct - outerConeDot) / Math.max(innerConeDot - outerConeDot, 1e-6);
+    return mixRADPriority(conePriority, 1, blend);
+  }
+
+  const behindBlend = outerConeDot > 1e-6 ? dotProduct / outerConeDot : 1;
+  return mixRADPriority(behindPriority, conePriority, behindBlend);
+}
+
+/** Return Spark's cosine-space cutoff for a full-width foveation cone. */
+function getRADFoveationConeDot(coneFov: number): number {
+  if (coneFov <= 0) {
+    return 1;
+  }
+  const halfConeRadians = (0.5 * Math.min(Math.max(coneFov, 0), 180) * Math.PI) / 180;
+  return Math.cos(halfConeRadians);
+}
+
+/** Clamp a relative LoD priority multiplier into the Spark foveation range. */
+function clampRADPriority(value: number): number {
+  return Math.min(Math.max(Number(value) || 0, 0), 1);
+}
+
+/** Linearly interpolate two clamped LoD priority multipliers. */
+function mixRADPriority(start: number, end: number, blend: number): number {
+  const clampedBlend = Math.min(Math.max(blend, 0), 1);
+  return start + (end - start) * clampedBlend;
+}
+
+/** Project a local-space RAD point into viewport pixels and normalized depth. */
+function projectRADPoint(
+  position: readonly [number, number, number],
+  modelViewProjectionMatrix: readonly number[],
+  viewportSize: readonly [number, number]
+): [number, number, number] | null {
+  if (modelViewProjectionMatrix.length < 16) {
+    return null;
+  }
+
+  const clipX =
+    modelViewProjectionMatrix[0] * position[0] +
+    modelViewProjectionMatrix[4] * position[1] +
+    modelViewProjectionMatrix[8] * position[2] +
+    modelViewProjectionMatrix[12];
+  const clipY =
+    modelViewProjectionMatrix[1] * position[0] +
+    modelViewProjectionMatrix[5] * position[1] +
+    modelViewProjectionMatrix[9] * position[2] +
+    modelViewProjectionMatrix[13];
+  const clipZ =
+    modelViewProjectionMatrix[2] * position[0] +
+    modelViewProjectionMatrix[6] * position[1] +
+    modelViewProjectionMatrix[10] * position[2] +
+    modelViewProjectionMatrix[14];
+  const clipW =
+    modelViewProjectionMatrix[3] * position[0] +
+    modelViewProjectionMatrix[7] * position[1] +
+    modelViewProjectionMatrix[11] * position[2] +
+    modelViewProjectionMatrix[15];
+  if (!Number.isFinite(clipW) || Math.abs(clipW) < 1e-8) {
+    return null;
+  }
+
+  const normalizedX = clipX / clipW;
+  const normalizedY = clipY / clipW;
+  const normalizedZ = clipZ / clipW;
+  const projectedPoint: [number, number, number] = [
+    (normalizedX * 0.5 + 0.5) * viewportSize[0],
+    (0.5 - normalizedY * 0.5) * viewportSize[1],
+    normalizedZ
+  ];
+  return projectedPoint.every(Number.isFinite) ? projectedPoint : null;
+}
+
+/** Return a finite viewport size for chunk scoring. */
+function getRADViewportSize(viewport: any): [number, number] {
+  return [Math.max(Number(viewport?.width) || 1, 1), Math.max(Number(viewport?.height) || 1, 1)];
+}
+
+/** Return a coarse viewport signature used to trigger RAD page reselection. */
+function getRADViewportLoadSignature(viewport: any): string {
+  const cameraPosition = getViewportWorldCameraPosition(viewport) || [0, 0, 0];
+  const forwardDirection = getViewportForwardDirection(viewport) || [0, 0, -1];
+  const fov = getRADViewportFov(viewport);
+  return [
+    ...cameraPosition.map(value => getRADSignatureBucket(value, 6)),
+    ...forwardDirection.map(value => getRADSignatureBucket(value, 48)),
+    getRADSignatureBucket(fov, 2),
+    getRADSignatureBucket(Number(viewport?.zoom) || 0, 4),
+    getRADSignatureBucket(Number(viewport?.pitch) || 0, 2),
+    getRADSignatureBucket(Number(viewport?.bearing) || 0, 2),
+    getRADSignatureBucket(Number(viewport?.width) || 1, 1 / 128),
+    getRADSignatureBucket(Number(viewport?.height) || 1, 1 / 128)
+  ].join(',');
+}
+
+/** Return the active vertical FoV from deck.gl viewport variants. */
+function getRADViewportFov(viewport: any): number {
+  const fov = Number(viewport?.fovy ?? viewport?.fov ?? viewport?.projectionProps?.fovy);
+  return Number.isFinite(fov) ? fov : 50;
+}
+
+/** Return camera foveation inputs in RAD source coordinates. */
+function getRADFoveationView(viewport: any, modelMatrix?: Matrix4Like | null): RADFoveationView {
+  return {
+    viewOrigin: getViewportCameraPosition(viewport, modelMatrix),
+    viewDirection: getViewportForwardDirection(viewport, modelMatrix)
+  };
+}
+
+/** @internal Test-only entry point for viewport RAD load signatures. */
+export function _getRADViewportLoadSignatureForTesting(viewport: any): string {
+  return getRADViewportLoadSignature(viewport);
+}
+
+/** @internal Test-only entry point for Spark-style RAD foveation weights. */
+export function _getRADFoveationWeightForTesting(
+  position: readonly [number, number, number],
+  foveationView: {
+    viewOrigin?: [number, number, number];
+    viewDirection?: [number, number, number];
+  },
+  options: {
+    coneFov0?: number;
+    coneFov?: number;
+    behindFoveate?: number;
+    coneFoveate?: number;
+  } = {}
+): number {
+  return getRADFoveationWeight(
+    position,
+    foveationView,
+    options.coneFov0 ?? DEFAULT_RAD_CONE_FOV0_DEGREES,
+    options.coneFov ?? DEFAULT_RAD_CONE_FOV_DEGREES,
+    options.behindFoveate ?? 0.2,
+    options.coneFoveate ?? 0.4
+  );
+}
+
+/** Return a rounded integer bucket for a continuous scheduler signal. */
+function getRADSignatureBucket(value: number, scale: number): number {
+  return Math.round(value * scale);
+}
+
+/** Return Spark's expanded alpha domain for RAD merged LoD opacity values above one. */
+function getRADExpandedLoDOpacity(opacity: number): number {
+  return opacity > 1 ? Math.min(opacity * 4 - 3, 5) : opacity;
+}
+
+/** Return sorted global splat ranges represented by decoded chunks. */
+function getLoadedRADSplatRanges(loadedChunks: RADSplatLoadedChunk[]): RADSplatLoadedRange[] {
+  return loadedChunks
+    .map(({chunkIndex, splats}) => {
+      const base = getRADSplatBase(splats);
+      return {
+        start: base,
+        end: base + splats.splatCount,
+        chunkIndex
+      };
+    })
+    .filter(range => range.end > range.start)
+    .sort((left, right) => left.start - right.start);
+}
+
+/** Return the fraction of a global splat range that is resident. */
+function getRADSplatRangeCoverage(
+  start: number,
+  end: number,
+  loadedRanges: RADSplatLoadedRange[]
+): number {
+  const count = Math.max(end - start, 0);
+  if (count === 0) {
+    return 1;
+  }
+
+  let coveredCount = 0;
+  let coveredEnd = start;
+  for (const range of loadedRanges) {
+    if (range.end <= coveredEnd) {
+      continue;
+    }
+    if (range.start >= end) {
+      break;
+    }
+    if (range.start > coveredEnd) {
+      coveredEnd = range.start;
+    }
+
+    const overlapStart = Math.max(coveredEnd, start, range.start);
+    const overlapEnd = Math.min(range.end, end);
+    if (overlapEnd > overlapStart) {
+      coveredCount += overlapEnd - overlapStart;
+      coveredEnd = overlapEnd;
+    }
+    if (coveredEnd >= end) {
+      break;
+    }
+  }
+
+  return coveredCount / count;
+}
+
+/** Return an opacity weight for a parent splat with partially resident children. */
+function getRADParentOpacityWeightForCoverage(childCoverage: number): number {
+  if (childCoverage <= 0) {
+    return 1;
+  }
+  return Math.max(
+    DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT,
+    1 / (1 + childCoverage * DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE)
+  );
+}
+
+/** Return the first global splat index represented by decoded RAD chunk data. */
+function getRADSplatBase(splats: RADSplatChunkValues): number {
+  return typeof splats.loaderData?.base === 'number' ? splats.loaderData.base : 0;
+}
+
+/** Return a cheap signature for a page active-row set. */
+function getRADActiveRowsSignature(rows?: Uint32Array): string {
+  if (!rows) {
+    return 'all';
+  }
+
+  let hash = 2166136261;
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    hash ^= rows[rowIndex];
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${rows.length}:${rows[0] ?? 0}:${rows[rows.length - 1] ?? 0}:${hash >>> 0}`;
+}
+
+/** Return a cheap signature for a full-page active weight vector. */
+function getRADActiveWeightsSignature(weights: Float32Array): string {
+  let hash = 2166136261;
+  for (let weightIndex = 0; weightIndex < weights.length; weightIndex++) {
+    hash ^= Math.round(weights[weightIndex] * 255);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${weights.length}:${hash >>> 0}`;
+}
+
+/** Return the active row frontier for the live page runtime. */
+function getRADRuntimeRenderFrontierLoadedChunks(
+  loadedChunks: RADSplatLoadedChunk[]
+): RADRenderFrontierChunk[] {
+  return getRADRenderFrontierLoadedChunks(loadedChunks);
+}
+
+/** Build a coherent loaded RAD frontier by suppressing partial descendants under retained parents. */
+function getRADRenderFrontierSplatChunks(
+  loadedChunks: RADSplatLoadedChunk[]
+): RADSplatChunkValues[] {
+  const sortedLoadedChunks = [...loadedChunks].sort(
+    (left, right) =>
+      getRADSplatBase(left.splats) - getRADSplatBase(right.splats) ||
+      left.chunkIndex - right.chunkIndex
+  );
+  const loadedRanges = getLoadedRADSplatRanges(sortedLoadedChunks);
+  const retainedChildRanges = getRADRetainedParentChildRanges(sortedLoadedChunks, loadedRanges);
+  if (!retainedChildRanges.length) {
+    return sortedLoadedChunks.map(chunk => pruneLoadedRADSplatParents(chunk.splats, loadedRanges));
+  }
+
+  const visibleChunks: RADSplatChunkValues[] = [];
+  let retainedChildRangeIndex = 0;
+  for (const loadedChunk of sortedLoadedChunks) {
+    const splats = loadedChunk.splats;
+    const childCounts = splats.loaderData?.childCounts;
+    const childStarts = splats.loaderData?.childStarts;
+    if (!(childCounts instanceof Uint16Array) || !(childStarts instanceof Uint32Array)) {
+      visibleChunks.push(splats);
+      continue;
+    }
+
+    const base = getRADSplatBase(splats);
+    const keepRows = new Uint32Array(splats.splatCount);
+    let keepCount = 0;
+    for (let rowIndex = 0; rowIndex < splats.splatCount; rowIndex++) {
+      const globalSplatIndex = base + rowIndex;
+      while (
+        retainedChildRangeIndex < retainedChildRanges.length &&
+        retainedChildRanges[retainedChildRangeIndex].end <= globalSplatIndex
+      ) {
+        retainedChildRangeIndex++;
+      }
+      const retainedChildRange = retainedChildRanges[retainedChildRangeIndex];
+      if (
+        retainedChildRange &&
+        retainedChildRange.start <= globalSplatIndex &&
+        globalSplatIndex < retainedChildRange.end
+      ) {
+        continue;
+      }
+
+      const childCount = childCounts[rowIndex];
+      const childStart = childStarts[rowIndex];
+      const childCoverage = getRADSplatRangeCoverage(
+        childStart,
+        childStart + childCount,
+        loadedRanges
+      );
+      if (childCount > 0 && childCoverage >= DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE) {
+        continue;
+      }
+      keepRows[keepCount++] = rowIndex;
+    }
+
+    if (keepCount > 0) {
+      visibleChunks.push(copyRADSplatRows(splats, keepRows.subarray(0, keepCount)));
+    }
+  }
+  return visibleChunks;
+}
+
+/** Build a coherent RAD frontier while preserving source chunk page ownership. */
+function getRADRenderFrontierLoadedChunks(
+  loadedChunks: RADSplatLoadedChunk[]
+): RADRenderFrontierChunk[] {
+  const sortedLoadedChunks = [...loadedChunks].sort(
+    (left, right) =>
+      getRADSplatBase(left.splats) - getRADSplatBase(right.splats) ||
+      left.chunkIndex - right.chunkIndex
+  );
+  const loadedRanges = getLoadedRADSplatRanges(sortedLoadedChunks);
+  const retainedChildRanges = getRADRetainedParentChildRanges(sortedLoadedChunks, loadedRanges);
+  const visibleChunks: RADRenderFrontierChunk[] = [];
+  let retainedChildRangeIndex = 0;
+
+  for (const loadedChunk of sortedLoadedChunks) {
+    const splats = loadedChunk.splats;
+    const childCounts = splats.loaderData?.childCounts;
+    const childStarts = splats.loaderData?.childStarts;
+    if (!(childCounts instanceof Uint16Array) || !(childStarts instanceof Uint32Array)) {
+      visibleChunks.push({chunk: loadedChunk, visibleSplatCount: splats.splatCount});
+      continue;
+    }
+
+    const base = getRADSplatBase(splats);
+    const visibleRows = new Uint32Array(splats.splatCount);
+    const rowWeights = new Float32Array(splats.splatCount);
+    let hasPartialWeights = false;
+    let visibleSplatCount = 0;
+    for (let rowIndex = 0; rowIndex < splats.splatCount; rowIndex++) {
+      const globalSplatIndex = base + rowIndex;
+      while (
+        retainedChildRangeIndex < retainedChildRanges.length &&
+        retainedChildRanges[retainedChildRangeIndex].end <= globalSplatIndex
+      ) {
+        retainedChildRangeIndex++;
+      }
+      const retainedChildRange = retainedChildRanges[retainedChildRangeIndex];
+      if (
+        retainedChildRange &&
+        retainedChildRange.start <= globalSplatIndex &&
+        globalSplatIndex < retainedChildRange.end
+      ) {
+        continue;
+      }
+
+      const childCount = childCounts[rowIndex];
+      const childStart = childStarts[rowIndex];
+      const childCoverage = getRADSplatRangeCoverage(
+        childStart,
+        childStart + childCount,
+        loadedRanges
+      );
+      if (childCount > 0 && childCoverage >= DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE) {
+        continue;
+      }
+      visibleRows[visibleSplatCount] = rowIndex;
+      const rowWeight = childCount > 0 ? getRADParentOpacityWeightForCoverage(childCoverage) : 1;
+      rowWeights[rowIndex] = rowWeight;
+      hasPartialWeights ||= rowWeight < 1;
+      visibleSplatCount++;
+    }
+
+    if (visibleSplatCount > 0) {
+      visibleChunks.push({
+        chunk: loadedChunk,
+        visibleSplatCount,
+        visibleRows:
+          visibleSplatCount === splats.splatCount
+            ? undefined
+            : visibleRows.subarray(0, visibleSplatCount),
+        rowWeights: hasPartialWeights ? rowWeights : undefined
+      });
+    }
+  }
+  return visibleChunks;
+}
+
+/** @internal Test-only entry point for building a loaded RAD render frontier. */
+export function _getRADRenderFrontierSplatChunksForTesting(loadedChunks: any[]): any[] {
+  return getRADRenderFrontierSplatChunks(loadedChunks as RADSplatLoadedChunk[]);
+}
+
+/** @internal Test-only entry point for building the row-level loaded RAD LoD frontier. */
+export function _getRADLoadedRenderFrontierForTesting(
+  loadedChunks: any[],
+  metadata: any,
+  options: any
+): Promise<any[]> {
+  const loadedByChunkIndex = new Map<number, RADSplatLoadedChunk>(
+    (loadedChunks as RADSplatLoadedChunk[]).map(chunk => [chunk.chunkIndex, chunk])
+  );
+  return getRADLoadedRenderFrontier(
+    loadedByChunkIndex,
+    metadata,
+    options.startChunkIndex,
+    new Set(),
+    options
+  ).then(frontier => frontier?.frontierChunks || []);
+}
+
+/** @internal Test-only entry point for compacting selected RAD render frontier rows. */
+export function _getRADCompactedRenderChunksForTesting(
+  frontierChunks: any[],
+  maxPageSplatCount: number
+): any[] {
+  return createRADCompactedRenderChunks(
+    frontierChunks as RADRenderFrontierChunk[],
+    maxPageSplatCount
+  );
+}
+
+/** @internal Test-only entry point for building a pooled RAD render chunk. */
+export function _getRADPooledRenderChunkForTesting(frontierChunks: any[]): any {
+  return createRADPooledRenderChunk(frontierChunks as RADRenderFrontierChunk[]);
+}
+
+/** @internal Test-only entry point for building pooled RAD active weights. */
+export function _getRADPooledActiveWeightsForTesting(frontierChunks: any[]): Float32Array {
+  return createRADPooledActiveWeights(frontierChunks as RADRenderFrontierChunk[]);
+}
+
+/** @internal Test-only entry point for render frontier cache signatures. */
+export function _getRADRenderFrontierSignatureForTesting(
+  frontierChunks: any[],
+  fallbackColor: Color = DEFAULT_COLOR,
+  gaussianSupportRadius: number = 3
+): string {
+  return getRADRenderFrontierSignature(
+    frontierChunks as RADRenderFrontierChunk[],
+    fallbackColor,
+    gaussianSupportRadius
+  );
+}
+
+/** @internal Test-only entry point for RAD render page sizing. */
+export function _getRADRenderPageSplatCountForTesting(
+  frontierChunks: any[],
+  sortMode?: SplatSortMode
+): number {
+  return getRADRenderPageSplatCount(frontierChunks as RADRenderFrontierChunk[], sortMode);
+}
+
+/** @internal Test-only entry point for RAD chunk request prefetch planning. */
+export function _getRADChunkRequestIndicesForTesting(
+  immediateChunkIndices: number[],
+  selectedChunks: any[],
+  loadedChunks: any[],
+  metadata: any,
+  unavailableChunkIndices: number[] = [],
+  options: Partial<RADSplatChunkSelectionOptions> = {},
+  maxRequestChunkCount: number = 8
+): number[] {
+  const defaultOptions: RADSplatChunkSelectionOptions = {
+    startChunkIndex: 0,
+    maxChunks: 8,
+    maxSplats: 8,
+    maxConcurrentChunkRequests: 8,
+    radiusScale: 1,
+    gaussianSupportRadius: 3,
+    lodSplatScale: 1,
+    lodRenderScale: 1,
+    coneFov0: DEFAULT_RAD_CONE_FOV0_DEGREES,
+    coneFov: DEFAULT_RAD_CONE_FOV_DEGREES,
+    behindFoveate: 0.2,
+    coneFoveate: 0.4,
+    maxCachedChunks: 16
+  };
+  return getRADChunkRequestIndices(immediateChunkIndices, selectedChunks as RADSplatLoadedChunk[], {
+    loadedByChunkIndex: new Map(
+      (loadedChunks as RADSplatLoadedChunk[]).map(chunk => [chunk.chunkIndex, chunk])
+    ),
+    metadata: metadata as RADSplatMetadataLike,
+    unavailableChunkIndices: new Set(unavailableChunkIndices),
+    options: {...defaultOptions, ...options},
+    maxRequestChunkCount
+  });
+}
+
+/** Build merged child ranges whose parents remain in the current loaded frontier. */
+function getRADRetainedParentChildRanges(
+  loadedChunks: RADSplatLoadedChunk[],
+  loadedRanges: RADSplatLoadedRange[]
+): RADSplatRange[] {
+  const retainedChildRanges: RADSplatRange[] = [];
+  for (const loadedChunk of loadedChunks) {
+    const childCounts = loadedChunk.splats.loaderData?.childCounts;
+    const childStarts = loadedChunk.splats.loaderData?.childStarts;
+    if (!(childCounts instanceof Uint16Array) || !(childStarts instanceof Uint32Array)) {
+      continue;
+    }
+
+    for (let rowIndex = 0; rowIndex < loadedChunk.splats.splatCount; rowIndex++) {
+      const childCount = childCounts[rowIndex];
+      if (childCount <= 0) {
+        continue;
+      }
+      const childStart = childStarts[rowIndex];
+      const childEnd = childStart + childCount;
+      const childCoverage = getRADSplatRangeCoverage(childStart, childEnd, loadedRanges);
+      if (
+        childCount <= DEFAULT_RAD_FRONTIER_MAX_SUPPRESSED_CHILD_SPLATS &&
+        childCoverage < DEFAULT_RAD_CHILD_SUPPRESSION_COVERAGE
+      ) {
+        retainedChildRanges.push({start: childStart, end: childEnd});
+      }
+    }
+  }
+  return mergeRADSplatRanges(retainedChildRanges);
+}
+
+/** Merge sorted and overlapping global RAD ranges. */
+function mergeRADSplatRanges(ranges: RADSplatRange[]): RADSplatRange[] {
+  if (ranges.length <= 1) {
+    return ranges;
+  }
+  const sortedRanges = [...ranges].sort((left, right) => left.start - right.start);
+  const mergedRanges: RADSplatRange[] = [];
+  for (const range of sortedRanges) {
+    const lastRange = mergedRanges[mergedRanges.length - 1];
+    if (lastRange && range.start <= lastRange.end) {
+      lastRange.end = Math.max(lastRange.end, range.end);
+    } else {
+      mergedRanges.push({...range});
+    }
+  }
+  return mergedRanges;
+}
+
+/** Remove parent LoD rows when their child rows are present in the loaded chunk window. */
+function pruneLoadedRADSplatParents(
+  splats: RADSplatChunkValues,
+  loadedRanges: RADSplatLoadedRange[]
+): RADSplatChunkValues {
+  const childCounts = splats.loaderData?.childCounts;
+  const childStarts = splats.loaderData?.childStarts;
+  if (!(childCounts instanceof Uint16Array) || !(childStarts instanceof Uint32Array)) {
+    return splats;
+  }
+
+  const keepRows = new Uint32Array(splats.splatCount);
+  let keepCount = 0;
+  for (let rowIndex = 0; rowIndex < splats.splatCount; rowIndex++) {
+    const childCount = childCounts[rowIndex];
+    const childStart = childStarts[rowIndex];
+    const childCoverage = getRADSplatRangeCoverage(
+      childStart,
+      childStart + childCount,
+      loadedRanges
+    );
+    if (childCount > 0 && childCoverage >= DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE) {
+      continue;
+    }
+    keepRows[keepCount++] = rowIndex;
+  }
+  if (keepCount === splats.splatCount) {
+    return splats;
+  }
+
+  return copyRADSplatRows(splats, keepRows.subarray(0, keepCount));
+}
+
+/** Copy selected RAD rows while preserving optional LoD and SH metadata. */
+function copyRADSplatRows(splats: RADSplatChunkValues, keptRows: Uint32Array): RADSplatChunkValues {
+  if (keptRows.length === splats.splatCount) {
+    return splats;
+  }
+
+  const childCounts = splats.loaderData?.childCounts;
+  const childStarts = splats.loaderData?.childStarts;
+  const sphericalHarmonicsComponentCount = splats.sphericalHarmonicsComponentCount ?? 0;
+  return {
+    ...splats,
+    splatCount: keptRows.length,
+    positions: copyInterleavedRows(splats.positions, 3, keptRows),
+    scales: copyInterleavedRows(splats.scales, 3, keptRows),
+    rotations: copyInterleavedRows(splats.rotations, 4, keptRows),
+    colors: copyInterleavedRows(splats.colors, 3, keptRows),
+    sphericalHarmonicDcs: splats.sphericalHarmonicDcs
+      ? copyInterleavedRows(splats.sphericalHarmonicDcs, 3, keptRows)
+      : undefined,
+    opacities: copyInterleavedRows(splats.opacities, 1, keptRows),
+    sphericalHarmonics:
+      splats.sphericalHarmonics && sphericalHarmonicsComponentCount
+        ? copyInterleavedRows(splats.sphericalHarmonics, sphericalHarmonicsComponentCount, keptRows)
+        : undefined,
+    loaderData: {
+      ...splats.loaderData,
+      count: keptRows.length,
+      childCounts:
+        childCounts instanceof Uint16Array
+          ? copyInterleavedRows(childCounts, 1, keptRows)
+          : undefined,
+      childStarts:
+        childStarts instanceof Uint32Array
+          ? copyInterleavedRows(childStarts, 1, keptRows)
+          : undefined
+    }
+  };
+}
+
+/** Copy selected rows from an interleaved typed array. */
+function copyInterleavedRows<T extends Float32Array | Uint8Array | Uint16Array | Uint32Array>(
+  values: T,
+  itemSize: number,
+  rows: Uint32Array
+): T {
+  const copiedValues = new (values.constructor as {new (length: number): T})(
+    rows.length * itemSize
+  );
+  for (let outputRowIndex = 0; outputRowIndex < rows.length; outputRowIndex++) {
+    const inputOffset = rows[outputRowIndex] * itemSize;
+    const outputOffset = outputRowIndex * itemSize;
+    copiedValues.set(values.subarray(inputOffset, inputOffset + itemSize), outputOffset);
+  }
+  return copiedValues;
+}
+
+/** Return combined bounds for resident decoded source pages. */
+function getRADPageBounds(
+  chunkIndices: number[],
+  pageStore: RADPageStore
+): RADSplatBounds | undefined {
+  let bounds: RADSplatBounds | undefined;
+  for (const chunkIndex of chunkIndices) {
+    const pageBounds = pageStore.getPageBounds(chunkIndex);
+    if (!pageBounds) {
+      continue;
+    }
+    bounds = bounds ? unionRADSplatBounds(bounds, pageBounds) : pageBounds;
+  }
+  return bounds;
+}
+
+/** Return finite bounds for interleaved splat positions. */
+function getRADSplatBounds(positions: Float32Array): RADSplatBounds | undefined {
+  if (positions.length < 3) {
+    return undefined;
+  }
+
+  const mins: [number, number, number] = [Infinity, Infinity, Infinity];
+  const maxs: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let positionIndex = 0; positionIndex < positions.length; positionIndex += 3) {
+    for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+      const value = positions[positionIndex + axisIndex];
+      mins[axisIndex] = Math.min(mins[axisIndex], value);
+      maxs[axisIndex] = Math.max(maxs[axisIndex], value);
+    }
+  }
+  return mins.every(Number.isFinite) && maxs.every(Number.isFinite) ? {mins, maxs} : undefined;
+}
+
+/** Return the union of two finite RAD bounds objects. */
+function unionRADSplatBounds(left: RADSplatBounds, right: RADSplatBounds): RADSplatBounds {
+  return {
+    mins: [
+      Math.min(left.mins[0], right.mins[0]),
+      Math.min(left.mins[1], right.mins[1]),
+      Math.min(left.mins[2], right.mins[2])
+    ],
+    maxs: [
+      Math.max(left.maxs[0], right.maxs[0]),
+      Math.max(left.maxs[1], right.maxs[1]),
+      Math.max(left.maxs[2], right.maxs[2])
+    ]
+  };
+}
+
+/** Return normalized depth for a RAD bounds center so split engines can draw far-to-near. */
+function getRADSplatBoundsDepth(
+  bounds: RADSplatBounds | undefined,
+  viewport: any,
+  modelMatrix?: Matrix4Like | null
+): number {
+  if (!bounds) {
+    return 0;
+  }
+  const modelViewProjectionMatrix = getModelViewProjectionMatrix(viewport, modelMatrix);
+  if (!modelViewProjectionMatrix) {
+    return 0;
+  }
+  const center: [number, number, number] = [
+    (bounds.mins[0] + bounds.maxs[0]) * 0.5,
+    (bounds.mins[1] + bounds.maxs[1]) * 0.5,
+    (bounds.mins[2] + bounds.maxs[2]) * 0.5
+  ];
+  const projectedCenter = projectRADPoint(center, modelViewProjectionMatrix, [1, 1]);
+  return projectedCenter?.[2] ?? 0;
+}
+
+/** Build draw-time engine inputs from the active deck.gl viewport. */
+function getSplatEngineUpdateProps(
+  viewport: any,
+  radiusScale: number,
+  modelMatrix?: Matrix4Like | null
+) {
+  if (!viewport) {
+    return {radiusScale};
+  }
+  const hasModelMatrix = hasNonIdentityModelMatrix(modelMatrix);
+
+  return {
+    modelViewProjectionMatrix: getModelViewProjectionMatrix(viewport, modelMatrix),
+    viewportSize: [viewport.width || 1, viewport.height || 1] as [number, number],
+    cullingVolume: hasModelMatrix ? undefined : getCullingVolume(viewport),
+    radiusScale,
+    viewOrigin: getViewportCameraPosition(viewport, modelMatrix)
+  };
+}
+
+/** Return a viewport camera position suitable for view-dependent splat color. */
+function getViewportCameraPosition(
+  viewport: any,
+  modelMatrix?: Matrix4Like | null
+): [number, number, number] | undefined {
+  if (!viewport) {
+    return undefined;
+  }
+  const cameraPosition = getViewportWorldCameraPosition(viewport);
+  if (!cameraPosition || !hasNonIdentityModelMatrix(modelMatrix)) {
+    return cameraPosition;
+  }
+
+  try {
+    const modelMatrixInverse = new Matrix4(modelMatrix as any).invert();
+    const localCameraPosition = modelMatrixInverse.transformAsPoint(cameraPosition);
+    return [
+      Number(localCameraPosition[0]),
+      Number(localCameraPosition[1]),
+      Number(localCameraPosition[2])
+    ];
+  } catch {
+    return cameraPosition;
+  }
+}
+
+/** Return a viewport camera position in deck world coordinates. */
+function getViewportWorldCameraPosition(viewport: any): [number, number, number] | undefined {
+  if (!viewport) {
+    return undefined;
+  }
+  const cameraPosition = viewport.cameraPosition;
+  if (cameraPosition && cameraPosition.length >= 3) {
+    return [Number(cameraPosition[0]), Number(cameraPosition[1]), Number(cameraPosition[2])];
+  }
+
+  const viewMatrix = viewport.viewMatrix;
+  if (viewMatrix && viewMatrix.length >= 16) {
+    const translationX = Number(viewMatrix[12]);
+    const translationY = Number(viewMatrix[13]);
+    const translationZ = Number(viewMatrix[14]);
+    const position: [number, number, number] = [
+      -(
+        Number(viewMatrix[0]) * translationX +
+        Number(viewMatrix[1]) * translationY +
+        Number(viewMatrix[2]) * translationZ
+      ),
+      -(
+        Number(viewMatrix[4]) * translationX +
+        Number(viewMatrix[5]) * translationY +
+        Number(viewMatrix[6]) * translationZ
+      ),
+      -(
+        Number(viewMatrix[8]) * translationX +
+        Number(viewMatrix[9]) * translationY +
+        Number(viewMatrix[10]) * translationZ
+      )
+    ];
+    if (position.every(Number.isFinite)) {
+      return position;
+    }
+  }
+  return undefined;
+}
+
+/** Return the viewport forward direction in world or layer-local coordinates. */
+function getViewportForwardDirection(
+  viewport: any,
+  modelMatrix?: Matrix4Like | null
+): [number, number, number] | undefined {
+  const viewMatrix = viewport?.viewMatrix;
+  if (!viewMatrix || viewMatrix.length < 16) {
+    return undefined;
+  }
+  const forwardDirection: [number, number, number] = [
+    -Number(viewMatrix[2]),
+    -Number(viewMatrix[6]),
+    -Number(viewMatrix[10])
+  ];
+  const length = Math.hypot(forwardDirection[0], forwardDirection[1], forwardDirection[2]);
+  if (!Number.isFinite(length) || length <= 0) {
+    return undefined;
+  }
+  const normalizedForwardDirection: [number, number, number] = [
+    forwardDirection[0] / length,
+    forwardDirection[1] / length,
+    forwardDirection[2] / length
+  ];
+  if (!hasNonIdentityModelMatrix(modelMatrix)) {
+    return normalizedForwardDirection;
+  }
+
+  try {
+    const modelMatrixInverse = new Matrix4(modelMatrix as any).invert();
+    const localDirection = modelMatrixInverse.transformAsVector(normalizedForwardDirection);
+    const localLength = Math.hypot(
+      Number(localDirection[0]),
+      Number(localDirection[1]),
+      Number(localDirection[2])
+    );
+    return Number.isFinite(localLength) && localLength > 0
+      ? [
+          Number(localDirection[0]) / localLength,
+          Number(localDirection[1]) / localLength,
+          Number(localDirection[2]) / localLength
+        ]
+      : normalizedForwardDirection;
+  } catch {
+    return normalizedForwardDirection;
+  }
+}
+
+/** Combine a viewport projection with a layer model transform when present. */
+function getModelViewProjectionMatrix(
+  viewport: any,
+  modelMatrix?: Matrix4Like | null
+): readonly number[] | undefined {
+  const viewProjectionMatrix = viewport?.viewProjectionMatrix;
+  if (!viewProjectionMatrix || !hasNonIdentityModelMatrix(modelMatrix)) {
+    return viewProjectionMatrix;
+  }
+  return new Matrix4(viewProjectionMatrix).multiplyRight(modelMatrix as any);
+}
+
+/** Returns true when a layer model matrix applies a non-identity transform. */
+function hasNonIdentityModelMatrix(modelMatrix?: Matrix4Like | null): boolean {
+  if (!modelMatrix || modelMatrix.length < 16) {
+    return false;
+  }
+  for (let index = 0; index < 16; index++) {
+    if (Math.abs(Number(modelMatrix[index]) - IDENTITY_MODEL_MATRIX[index]) > 1e-12) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Build a math.gl frustum culling volume from a deck.gl viewport. */

@@ -4,8 +4,9 @@
 
 import test from 'tape-promise/tape';
 import {parse} from '@loaders.gl/core';
-import {ZstdCompression} from '@loaders.gl/compression';
+import {GZipCompression, ZstdCompression} from '@loaders.gl/compression';
 import {SPZLoader} from '@loaders.gl/splats';
+import type {GaussianSplats} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
 
@@ -40,18 +41,44 @@ test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async t => {
   t.end();
 });
 
+test('SPZLoader parses Spark legacy LoD SPZ', async t => {
+  const data = makeSparkLegacySPZFixture();
+  const table = await parse(data, SPZLoader);
+
+  t.equal(table.shape, 'arrow-table', 'returns MeshArrowTable by default');
+  t.equal(table.data.numRows, 3, 'parses row count');
+  t.deepEqual(table.data.getChild('POSITION')?.get(0)?.toArray(), [1, 2, -3], 'parses position');
+  t.ok(
+    Math.abs(Number(table.data.getChild('opacity')?.get(0)) - (128 / 255) * 2) < 1e-6,
+    'decodes Spark LoD opacity domain'
+  );
+  t.deepEqual(Array.from((table.loaderData as any).childCounts), [2, 0, 0], 'decodes child counts');
+  t.deepEqual(Array.from((table.loaderData as any).childStarts), [1, 0, 0], 'decodes child starts');
+
+  const splats = (await SPZLoaderWithParser.parse(data, {
+    splats: {shape: 'gaussian-splats'}
+  })) as GaussianSplats;
+  t.equal(splats.splatCount, 3, 'direct decoded shape returns splat values');
+  t.deepEqual(
+    Array.from(splats.loaderData?.childCounts as Uint16Array),
+    [2, 0, 0],
+    'direct decoded shape preserves child counts'
+  );
+  t.end();
+});
+
 test('SPZLoader validates header', async t => {
   await t.rejects(
     () => SPZLoaderWithParser.parse(new ArrayBuffer(8), {modules}),
-    /32-byte header/,
+    /16-byte SPZ header/,
     'rejects missing header'
   );
 
   const data = await makeSPZFixture();
-  new DataView(data).setUint32(4, 3, true);
+  new DataView(data).setUint32(4, 5, true);
   await t.rejects(
     () => SPZLoaderWithParser.parse(data, {modules}),
-    /version 3 is not supported/,
+    /version 5 is not supported/,
     'rejects unsupported version'
   );
   t.end();
@@ -144,6 +171,85 @@ function makeRotationStream(): Uint8Array {
   rotations.set(encodeQuaternionSmallestThree([0, 0, 0, 1]), 0);
   rotations.set(encodeQuaternionSmallestThree([1, 0, 0, 0]), 4);
   return rotations;
+}
+
+/** Builds a deterministic Spark legacy gzip SPZ fixture with LoD child metadata. */
+function makeSparkLegacySPZFixture(): ArrayBuffer {
+  const splatCount = 3;
+  const headerByteLength = 16;
+  const byteLength =
+    headerByteLength +
+    splatCount * 9 +
+    splatCount +
+    splatCount * 3 +
+    splatCount * 3 +
+    splatCount * 4 +
+    splatCount * 2 +
+    splatCount * 4;
+  const data = new ArrayBuffer(byteLength);
+  const dataView = new DataView(data);
+  const bytes = new Uint8Array(data);
+
+  dataView.setUint32(0, 0x5053474e, true);
+  dataView.setUint32(4, 3, true);
+  dataView.setUint32(8, splatCount, true);
+  dataView.setUint8(12, 0);
+  dataView.setUint8(13, 12);
+  dataView.setUint8(14, 0x80);
+  dataView.setUint8(15, 0);
+
+  let byteOffset = headerByteLength;
+  const positions = new Uint8Array(splatCount * 9);
+  writeFixed24(positions, 0, 1 * 4096);
+  writeFixed24(positions, 3, 2 * 4096);
+  writeFixed24(positions, 6, -3 * 4096);
+  writeFixed24(positions, 9, 4 * 4096);
+  writeFixed24(positions, 12, 5 * 4096);
+  writeFixed24(positions, 15, 6 * 4096);
+  writeFixed24(positions, 18, 7 * 4096);
+  writeFixed24(positions, 21, 8 * 4096);
+  writeFixed24(positions, 24, 9 * 4096);
+  bytes.set(positions, byteOffset);
+  byteOffset += positions.byteLength;
+
+  bytes.set(new Uint8Array([128, 64, 32]), byteOffset);
+  byteOffset += splatCount;
+
+  bytes.set(new Uint8Array([140, 128, 128, 128, 255, 0, 0, 128, 255]), byteOffset);
+  byteOffset += splatCount * 3;
+
+  bytes.set(
+    new Uint8Array([
+      encodeScale(2),
+      encodeScale(1),
+      encodeScale(0.5),
+      encodeScale(3),
+      encodeScale(4),
+      encodeScale(5),
+      encodeScale(0.25),
+      encodeScale(0.75),
+      encodeScale(1.25)
+    ]),
+    byteOffset
+  );
+  byteOffset += splatCount * 3;
+
+  bytes.set(encodeQuaternionSmallestThree([0, 0, 0, 1]), byteOffset);
+  bytes.set(encodeQuaternionSmallestThree([1, 0, 0, 0]), byteOffset + 4);
+  bytes.set(encodeQuaternionSmallestThree([0, 1, 0, 0]), byteOffset + 8);
+  byteOffset += splatCount * 4;
+
+  dataView.setUint16(byteOffset + 0, 2, true);
+  dataView.setUint16(byteOffset + 2, 0, true);
+  dataView.setUint16(byteOffset + 4, 0, true);
+  byteOffset += splatCount * 2;
+
+  dataView.setUint32(byteOffset + 0, 1, true);
+  dataView.setUint32(byteOffset + 4, 0, true);
+  dataView.setUint32(byteOffset + 8, 0, true);
+
+  const compression = new GZipCompression();
+  return compression.compressSync(data);
 }
 
 /** Encodes one `[x, y, z, w]` quaternion as SPZ smallest-three bytes. */

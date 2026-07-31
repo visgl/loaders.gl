@@ -7,8 +7,8 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
 /** Options shared by Gaussian splat loaders. */
 export type SplatsLoaderOptions = LoaderOptions & {
   splats?: {
-    /** Output shape. V1 supports loaders.gl Mesh Arrow tables. */
-    shape?: 'arrow-table';
+    /** Output shape. V1 supports loaders.gl Mesh Arrow tables and decoded splat arrays. */
+    shape?: 'arrow-table' | 'gaussian-splats';
   };
 };
 
@@ -26,6 +26,10 @@ export type GaussianSplats = {
   rotations: Float32Array;
   /** Interleaved RGB colors as unorm8 values. */
   colors: Uint8Array;
+  /** Minimum decoded RGB value represented by color byte 0. */
+  colorMin?: number;
+  /** Maximum decoded RGB value represented by color byte 255. */
+  colorMax?: number;
   /** Optional interleaved RGB spherical harmonic DC coefficients. */
   sphericalHarmonicDcs?: Float32Array;
   /** Linear opacity values. Some LoD formats intentionally store values above 1. */

@@ -27,6 +27,8 @@ export type RADChunkDecodeOptions = SplatsLoaderOptions & {
     includeLoDTree?: boolean;
     /** Whether decoded SH rest coefficients are included in Arrow table columns. */
     includeSphericalHarmonics?: boolean;
+    /** Whether browser RADSource chunk decodes may be offloaded to Web Workers. */
+    worker?: boolean;
   };
 };
 
@@ -60,7 +62,9 @@ export function parseRADChunkToGaussianSplats(
   const rgb = decodeRADRgb(bytes, metadata, splatCount);
   const scales = decodeRADScales(bytes, metadata, splatCount);
   const rotations = decodeRADRotations(bytes, metadata, splatCount);
-  const {colors, sphericalHarmonicDcs} = convertRgbToColorColumns(rgb);
+  const colorMin = metadata.splatEncoding?.rgbMin ?? 0;
+  const colorMax = metadata.splatEncoding?.rgbMax ?? 1;
+  const {colors, sphericalHarmonicDcs} = convertRgbToColorColumns(rgb, colorMin, colorMax);
   const includeLoDTree = options?.radChunk?.includeLoDTree ?? true;
   const childCounts = includeLoDTree
     ? decodeOptionalRADUint16(bytes, metadata, 'child_count')
@@ -80,6 +84,8 @@ export function parseRADChunkToGaussianSplats(
     scales,
     rotations,
     colors,
+    colorMin,
+    colorMax,
     sphericalHarmonicDcs,
     opacities,
     sphericalHarmonics: sphericalHarmonics?.values,
@@ -109,26 +115,14 @@ function decodeRADAlpha(
   }
   const opacities = decodeRADFloatProperty(bytes, metadata, property, 1);
   for (let splatIndex = 0; splatIndex < opacities.length; splatIndex++) {
-    opacities[splatIndex] = decodeRADOpacity(opacities[splatIndex], metadata, property);
+    opacities[splatIndex] = decodeRADOpacity(opacities[splatIndex]);
   }
   return opacities;
 }
 
-/** Decodes normal or Spark LoD opacity into the renderer opacity domain. */
-function decodeRADOpacity(
-  opacity: number,
-  metadata: RADChunkMetadata,
-  property: RADChunkProperty
-): number {
-  const normalizedOpacity = Math.max(opacity, 0);
-  if (
-    !metadata.splatEncoding?.lodOpacity ||
-    (property.encoding !== 'r8' && property.encoding !== 'r8_delta')
-  ) {
-    return normalizedOpacity;
-  }
-
-  return normalizedOpacity * 2;
+/** Clamps decoded RAD opacity into the renderer opacity domain. */
+function decodeRADOpacity(opacity: number): number {
+  return Math.max(opacity, 0);
 }
 
 /** Decodes the chunk RGB property, falling back to white splats. */
@@ -557,7 +551,11 @@ function decodeRADOct88R8Rotations(bytes: Uint8Array, count: number): Float32Arr
 }
 
 /** Converts decoded RGB floats to loaders.gl color and SH DC columns. */
-function convertRgbToColorColumns(rgb: Float32Array): {
+function convertRgbToColorColumns(
+  rgb: Float32Array,
+  colorMin: number,
+  colorMax: number
+): {
   colors: Uint8Array;
   sphericalHarmonicDcs: Float32Array;
 } {
@@ -565,7 +563,7 @@ function convertRgbToColorColumns(rgb: Float32Array): {
   const sphericalHarmonicDcs = new Float32Array(rgb.length);
   for (let componentIndex = 0; componentIndex < rgb.length; componentIndex++) {
     const component = rgb[componentIndex];
-    colors[componentIndex] = normalizeColorByte(component);
+    colors[componentIndex] = encodeColorByte(component, colorMin, colorMax);
     sphericalHarmonicDcs[componentIndex] = (component - 0.5) / SH_C0;
   }
   return {colors, sphericalHarmonicDcs};
@@ -701,9 +699,11 @@ function getSplatEncodingMaximum(
   }
 }
 
-/** Clamps a normalized color component into an unorm8 byte. */
-function normalizeColorByte(value: number): number {
-  return Math.round(Math.min(Math.max(value, 0), 1) * 255);
+/** Encodes a decoded color component into an unorm8 byte range. */
+function encodeColorByte(value: number, colorMin: number, colorMax: number): number {
+  const colorRange = colorMax - colorMin;
+  const normalizedValue = colorRange > 0 ? (value - colorMin) / colorRange : value;
+  return Math.round(Math.min(Math.max(normalizedValue, 0), 1) * 255);
 }
 
 /** Copies a byte view into a standalone ArrayBuffer. */

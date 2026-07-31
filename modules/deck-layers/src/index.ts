@@ -35,8 +35,16 @@ export type {
 export {BoundingBoxLayer, createBoundingBoxLayerEdges} from './bounding-box-layer';
 export type {TileBoundingBoxLayerProps} from './tile-bounding-box-layer';
 export {TileBoundingBoxLayer} from './tile-bounding-box-layer';
-export type {PublicSplatSortMode, SplatLayerProps, SplatRenderMode} from './splat-layer';
-export {SplatLayer} from './splat-layer';
+export type {
+  PublicSplatSortMode,
+  RADSplatBounds,
+  RADSplatLayerProps,
+  RADSplatLoadProgress,
+  RADSplatSourceLike,
+  SplatLayerProps,
+  SplatRenderMode
+} from './splat-layer';
+export {RADSplatLayer, SplatLayer} from './splat-layer';
 export type {Tile3DSourceLayerProps} from './tile-3d-source-layer';
 export {createSource, Tile3DSourceLayer} from './tile-3d-source-layer';
 export type {

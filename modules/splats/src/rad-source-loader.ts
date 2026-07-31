@@ -23,6 +23,7 @@ import type {GaussianSplats} from './types';
 
 const DEFAULT_RAD_HEADER_BYTE_LENGTHS = [64 * 1024, 256 * 1024, 1024 * 1024];
 const DEFAULT_RAD_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
+const DEFAULT_RAD_CHUNK_WORKER_COUNT = 6;
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -45,6 +46,33 @@ export type RADChunkRequestOptions = {
   /** Abort signal forwarded to the underlying fetch. */
   signal?: AbortSignal;
 } & RADChunkDecodeOptions;
+
+type RADChunkWorkerRequest = {
+  /** Request identifier assigned by the owning RAD chunk worker pool. */
+  id: number;
+  /** Raw RADC chunk payload. */
+  data: ArrayBuffer;
+  /** Decode options forwarded to the RAD chunk parser. */
+  options: RADChunkDecodeOptions;
+};
+
+type RADChunkWorkerResponse = {
+  /** Request identifier assigned by the owning RAD chunk worker pool. */
+  id: number;
+  /** Decoded Gaussian splat values, present when decode succeeded. */
+  splats?: GaussianSplats;
+  /** Error message, present when decode failed. */
+  error?: string;
+};
+
+type RADChunkWorkerPendingRequest = {
+  /** Resolves with decoded Gaussian splats from a RAD chunk worker. */
+  resolve: (splats: GaussianSplats) => void;
+  /** Rejects when a RAD chunk worker fails to decode. */
+  reject: (error: Error) => void;
+};
+
+let radChunkWorkerPool: RADChunkWorkerPool | null = null;
 
 /** Options for iterating decoded RAD chunk tables. */
 export type RADChunkTableIteratorOptions = RADChunkRequestOptions & {
@@ -190,10 +218,15 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     options: RADChunkRequestOptions = {}
   ): Promise<GaussianSplats> {
     const metadata = await this.getMetadata();
-    return parseRADChunkToGaussianSplats(
-      await this.getChunk(chunkIndex, options),
-      this._getChunkDecodeOptions(metadata, options)
-    );
+    const chunk = await this.getChunk(chunkIndex, options);
+    const decodeOptions = this._getChunkDecodeOptions(metadata, options);
+    if (shouldDecodeRADChunkOnWorker(decodeOptions)) {
+      return await getRADChunkWorkerPool().decode(
+        chunk,
+        getRADChunkWorkerDecodeOptions(decodeOptions)
+      );
+    }
+    return parseRADChunkToGaussianSplats(chunk, decodeOptions);
   }
 
   /** Fetches and decodes one RADC chunk into a Mesh Arrow table. */
@@ -379,6 +412,89 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
       signal: options.signal
     };
   }
+}
+
+/** Small browser worker pool used to keep RAD chunk decoding off the UI thread. */
+class RADChunkWorkerPool {
+  /** Browser workers that decode RADC payloads. */
+  private workers: Worker[] = [];
+  /** Pending decode requests keyed by request id. */
+  private pendingRequests = new Map<number, RADChunkWorkerPendingRequest>();
+  /** Monotonic request id assigned to worker messages. */
+  private nextRequestId = 1;
+  /** Round-robin index used to spread decodes across workers. */
+  private nextWorkerIndex = 0;
+
+  constructor(workerCount: number) {
+    for (let workerIndex = 0; workerIndex < workerCount; workerIndex++) {
+      const worker = new Worker(new URL('./lib/rad-chunk-worker.ts', import.meta.url), {
+        type: 'module'
+      });
+      worker.onmessage = (event: MessageEvent<RADChunkWorkerResponse>) =>
+        this.handleMessage(event.data);
+      worker.onerror = event => this.handleWorkerError(event.message);
+      this.workers.push(worker);
+    }
+  }
+
+  /** Decode one raw RAD chunk payload on a worker. */
+  decode(data: ArrayBuffer, options: RADChunkDecodeOptions): Promise<GaussianSplats> {
+    const worker = this.getNextWorker();
+    const id = this.nextRequestId++;
+    return new Promise((resolve, reject) => {
+      this.pendingRequests.set(id, {resolve, reject});
+      const request: RADChunkWorkerRequest = {id, data, options};
+      worker.postMessage(request, [data]);
+    });
+  }
+
+  /** Return the next worker selected by round-robin scheduling. */
+  private getNextWorker(): Worker {
+    const worker = this.workers[this.nextWorkerIndex % this.workers.length];
+    this.nextWorkerIndex++;
+    return worker;
+  }
+
+  /** Resolve or reject a pending worker decode request. */
+  private handleMessage(response: RADChunkWorkerResponse): void {
+    const pendingRequest = this.pendingRequests.get(response.id);
+    if (!pendingRequest) {
+      return;
+    }
+    this.pendingRequests.delete(response.id);
+    if (response.error || !response.splats) {
+      pendingRequest.reject(new Error(response.error || 'RAD chunk worker returned no splats.'));
+      return;
+    }
+    pendingRequest.resolve(response.splats);
+  }
+
+  /** Reject all pending requests after an unrecoverable worker failure. */
+  private handleWorkerError(message: string): void {
+    for (const pendingRequest of this.pendingRequests.values()) {
+      pendingRequest.reject(new Error(message || 'RAD chunk worker failed.'));
+    }
+    this.pendingRequests.clear();
+  }
+}
+
+/** Return true when a RAD chunk decode can run on a browser worker. */
+function shouldDecodeRADChunkOnWorker(options: RADChunkDecodeOptions): boolean {
+  return typeof Worker !== 'undefined' && options.radChunk?.worker !== false;
+}
+
+/** Return a shared RAD chunk worker pool, creating it lazily in browser runtimes. */
+function getRADChunkWorkerPool(): RADChunkWorkerPool {
+  if (!radChunkWorkerPool) {
+    radChunkWorkerPool = new RADChunkWorkerPool(DEFAULT_RAD_CHUNK_WORKER_COUNT);
+  }
+  return radChunkWorkerPool;
+}
+
+/** Strip request-only fields from options sent through worker structured cloning. */
+function getRADChunkWorkerDecodeOptions(options: RADChunkRequestOptions): RADChunkDecodeOptions {
+  const {signal: _signal, ...decodeOptions} = options;
+  return decodeOptions;
 }
 
 /** Returns the RAD chunk indices requested by a chunk-table iterator. */

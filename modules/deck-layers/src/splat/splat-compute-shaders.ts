@@ -17,8 +17,10 @@ export const SPLAT_COMPUTE_PARAM_BYTE_LENGTH = 224;
 /** WGSL source for WebGPU projection, tile binning, and tile-local sorting. */
 export const SPLAT_COMPUTE_SHADER = /* wgsl */ `\
 const WORKGROUP_SIZE: u32 = 256u;
-const TILE_SORT_MAX_SPLATS: u32 = 1024u;
+const TILE_SORT_MAX_SPLATS: u32 = 2048u;
+const TILE_SORT_MAX_WORKGROUPS_X: u32 = 65535u;
 const INVALID_KEY: u32 = 4294967295u;
+const MIN_PROJECTION_DERIVATIVE_STEP: f32 = 0.001;
 
 @group(0) @binding(0) var<storage, read> positions: array<f32>;
 @group(0) @binding(1) var<storage, read> scales: array<f32>;
@@ -35,6 +37,7 @@ const INVALID_KEY: u32 = 4294967295u;
 @group(0) @binding(12) var<storage, read_write> tempTileIndices: array<u32>;
 @group(0) @binding(13) var<storage, read_write> tempTileKeys: array<u32>;
 @group(0) @binding(14) var<storage, read_write> counts: array<atomic<u32>>;
+@group(0) @binding(15) var<storage, read> activeFlags: array<f32>;
 
 struct Params {
   viewProjection: mat4x4<f32>,
@@ -50,10 +53,10 @@ struct Params {
   counts1: vec4<u32>,
 };
 
-@group(0) @binding(15) var<uniform> params: Params;
+@group(0) @binding(16) var<uniform> params: Params;
 
-var<workgroup> localKeys: array<u32, 1024>;
-var<workgroup> localIndices: array<u32, 1024>;
+var<workgroup> localKeys: array<u32, 2048>;
+var<workgroup> localIndices: array<u32, 2048>;
 
 fn getMatrixColumn(column: u32) -> vec4<f32> {
   return params.viewProjection[column];
@@ -178,6 +181,10 @@ fn isInsideFrustum(position: vec3<f32>, radius: f32) -> bool {
   return true;
 }
 
+fn getExpandedLoDOpacity(opacity: f32) -> f32 {
+  return select(opacity, min(opacity * 4.0 - 3.0, 5.0), opacity > 1.0);
+}
+
 @compute @workgroup_size(WORKGROUP_SIZE)
 fn clear(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let index = globalId.x;
@@ -194,11 +201,19 @@ fn clear(@builtin(global_invocation_id) globalId: vec3<u32>) {
   }
 }
 
-@compute @workgroup_size(WORKGROUP_SIZE)
-fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
-  let index = globalId.x;
+struct ProjectResult {
+  visible: bool,
+  center: vec2<f32>,
+  key: u32,
+};
+
+fn projectWeightedSplat(index: u32, activeWeight: f32) -> ProjectResult {
   if (index >= params.counts0.x) {
-    return;
+    return ProjectResult(false, vec2<f32>(0.0, 0.0), 0u);
+  }
+  if (activeWeight <= 0.0) {
+    projected[index * 2u + 1u] = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+    return ProjectResult(false, vec2<f32>(0.0, 0.0), 0u);
   }
 
   let positionIndex = index * 3u;
@@ -224,34 +239,108 @@ fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
   var covariance01 = 0.0;
   var covariance11 = 0.0;
   for (var axis = 0u; axis < 3u; axis = axis + 1u) {
-    let endpoint = projectToScreen(position + getScaledAxis(rotation, scale, axis));
+    let scaledAxis = getScaledAxis(rotation, scale, axis);
+    let axisLength = length(scaledAxis);
+    if (axisLength <= 0.000001) {
+      continue;
+    }
+    let derivativeStep = min(axisLength, MIN_PROJECTION_DERIVATIVE_STEP);
+    let derivativeScale = axisLength / derivativeStep;
+    let endpoint = projectToScreen(position + scaledAxis * (derivativeStep / axisLength));
     let delta = endpoint - center;
-    covariance00 = covariance00 + delta.x * delta.x;
-    covariance01 = covariance01 + delta.x * delta.y;
-    covariance11 = covariance11 + delta.y * delta.y;
+    let scaledDelta = delta * derivativeScale;
+    covariance00 = covariance00 + scaledDelta.x * scaledDelta.x;
+    covariance01 = covariance01 + scaledDelta.x * scaledDelta.y;
+    covariance11 = covariance11 + scaledDelta.y * scaledDelta.y;
   }
 
+  let detOrig = max(covariance00 * covariance11 - covariance01 * covariance01, 0.0);
   let kernelVariance = params.radius.z * params.radius.z;
-  let rawAxes = getCovarianceAxes(covariance00 + kernelVariance, covariance01, covariance11 + kernelVariance);
+  let blurredCovariance00 = covariance00 + kernelVariance;
+  let blurredCovariance11 = covariance11 + kernelVariance;
+  let det = max(blurredCovariance00 * blurredCovariance11 - covariance01 * covariance01, 0.0);
+  let blurAlphaScale = select(1.0, sqrt(max(detOrig / det, 0.0)), det > 0.000001);
+  let rawAxes = getCovarianceAxes(blurredCovariance00, covariance01, blurredCovariance11);
   let axes = clampAxes(rawAxes, params.radius.w);
   let maxAxisPixels = getMaxAxisPixels(axes);
-  let opacity = opacities[index];
-  let renderedMaxAxisPixels = maxAxisPixels * params.viewportAlpha.w * params.radius.x;
-  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x;
+  let opacity = opacities[index] * activeWeight;
+  let splatAlpha = getExpandedLoDOpacity(opacity);
+  let adjustedSupportRadius = params.viewportAlpha.w + max(splatAlpha - 1.0, 0.0) * 0.7;
+  let renderedMaxAxisPixels = maxAxisPixels * adjustedSupportRadius * params.radius.x;
+  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * adjustedSupportRadius;
   let visible = opacity >= params.viewportAlpha.z &&
     renderedMaxAxisPixels >= params.radius.y &&
     isInsideFrustum(position, boundingRadius);
   let projectedBase = index * 2u;
   projected[projectedBase] = axes;
-  projected[projectedBase + 1u] = vec4<f32>(opacity, select(0.0, 1.0, visible), maxAxisPixels, 0.0);
+  projected[projectedBase + 1u] = vec4<f32>(
+    splatAlpha,
+    select(0.0, blurAlphaScale, visible),
+    maxAxisPixels,
+    0.0
+  );
 
   let clip = transformPosition(position);
   let key = getDepthKey(clip, index);
-  keys[index] = key;
-  if (visible) {
-    let tileId = getTileId(center);
+  return ProjectResult(visible, center, key);
+}
+
+fn projectSplat(index: u32) -> ProjectResult {
+  if (index >= params.counts0.x) {
+    return ProjectResult(false, vec2<f32>(0.0, 0.0), 0u);
+  }
+  return projectWeightedSplat(index, activeFlags[index]);
+}
+
+@compute @workgroup_size(WORKGROUP_SIZE)
+fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let result = projectSplat(globalId.x);
+  if (result.visible) {
+    keys[globalId.x] = result.key;
+    let tileId = getTileId(result.center);
     atomicAdd(&tileCounts[tileId], 1u);
   }
+}
+
+@compute @workgroup_size(WORKGROUP_SIZE)
+fn projectActive(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let activeSlot = globalId.x;
+  if (activeSlot >= params.counts1.z) {
+    return;
+  }
+  let index = indices[activeSlot];
+  if (index >= params.counts0.x) {
+    return;
+  }
+  let result = projectWeightedSplat(index, 1.0);
+  if (result.visible) {
+    keys[index] = result.key;
+    let tileId = getTileId(result.center);
+    atomicAdd(&tileCounts[tileId], 1u);
+  }
+}
+
+@compute @workgroup_size(WORKGROUP_SIZE)
+fn projectUnsorted(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let result = projectSplat(globalId.x);
+  if (result.visible) {
+    let dst = atomicAdd(&counts[0u], 1u);
+    indices[dst] = globalId.x;
+  }
+}
+
+@compute @workgroup_size(WORKGROUP_SIZE)
+fn projectActiveUnsorted(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let activeSlot = globalId.x;
+  if (activeSlot >= params.counts1.z) {
+    return;
+  }
+  let index = indices[activeSlot];
+  if (index >= params.counts0.x) {
+    return;
+  }
+  indices[activeSlot] = index;
+  _ = projectWeightedSplat(index, activeFlags[index]);
 }
 
 @compute @workgroup_size(1)
@@ -289,8 +378,33 @@ fn scatterTiles(@builtin(global_invocation_id) globalId: vec3<u32>) {
 }
 
 @compute @workgroup_size(WORKGROUP_SIZE)
+fn scatterActiveTiles(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let activeSlot = globalId.x;
+  if (activeSlot >= params.counts1.z) {
+    return;
+  }
+  let index = indices[activeSlot];
+  if (index >= params.counts0.x) {
+    return;
+  }
+  if (projected[index * 2u + 1u].y == 0.0) {
+    return;
+  }
+  let positionIndex = index * 3u;
+  let center = projectToScreen(vec3<f32>(
+    positions[positionIndex + 0u],
+    positions[positionIndex + 1u],
+    positions[positionIndex + 2u]
+  ));
+  let tileId = getTileId(center);
+  let dst = atomicAdd(&tileCursors[tileId], 1u);
+  tileIndices[dst] = index;
+  tileKeys[dst] = keys[index];
+}
+
+@compute @workgroup_size(WORKGROUP_SIZE)
 fn tileSort(@builtin(workgroup_id) workgroupId: vec3<u32>, @builtin(local_invocation_id) localId: vec3<u32>) {
-  let tile = workgroupId.x;
+  let tile = workgroupId.y * TILE_SORT_MAX_WORKGROUPS_X + workgroupId.x;
   if (tile >= params.counts1.x) {
     return;
   }
@@ -298,8 +412,16 @@ fn tileSort(@builtin(workgroup_id) workgroupId: vec3<u32>, @builtin(local_invoca
   let end = tileOffsets[tile + 1u];
   let count = end - start;
   let sortedCount = min(count, TILE_SORT_MAX_SPLATS);
+  if (localId.x == 0u && count > TILE_SORT_MAX_SPLATS) {
+    atomicAdd(&counts[1u], count - TILE_SORT_MAX_SPLATS);
+  }
 
-  for (var localIndex = localId.x; localIndex < TILE_SORT_MAX_SPLATS; localIndex = localIndex + WORKGROUP_SIZE) {
+  var sortLimit = 2u;
+  while (sortLimit < sortedCount) {
+    sortLimit = sortLimit * 2u;
+  }
+
+  for (var localIndex = localId.x; localIndex < sortLimit; localIndex = localIndex + WORKGROUP_SIZE) {
     if (localIndex < sortedCount) {
       localKeys[localIndex] = tileKeys[start + localIndex];
       localIndices[localIndex] = tileIndices[start + localIndex];
@@ -315,17 +437,19 @@ fn tileSort(@builtin(workgroup_id) workgroupId: vec3<u32>, @builtin(local_invoca
     var j = k / 2u;
     while (j > 0u) {
       for (var i = localId.x; i < TILE_SORT_MAX_SPLATS; i = i + WORKGROUP_SIZE) {
-        let ixj = i ^ j;
-        if (ixj > i) {
-          let ascending = (i & k) == 0u;
-          let keyI = localKeys[i];
-          let keyJ = localKeys[ixj];
-          if ((ascending && keyI > keyJ) || (!ascending && keyI < keyJ)) {
-            localKeys[i] = keyJ;
-            localKeys[ixj] = keyI;
-            let indexI = localIndices[i];
-            localIndices[i] = localIndices[ixj];
-            localIndices[ixj] = indexI;
+        if (i < sortLimit) {
+          let ixj = i ^ j;
+          if (ixj > i && ixj < sortLimit) {
+            let ascending = (i & k) == 0u;
+            let keyI = localKeys[i];
+            let keyJ = localKeys[ixj];
+            if ((ascending && keyI > keyJ) || (!ascending && keyI < keyJ)) {
+              localKeys[i] = keyJ;
+              localKeys[ixj] = keyI;
+              let indexI = localIndices[i];
+              localIndices[i] = localIndices[ixj];
+              localIndices[ixj] = indexI;
+            }
           }
         }
       }
@@ -338,9 +462,6 @@ fn tileSort(@builtin(workgroup_id) workgroupId: vec3<u32>, @builtin(local_invoca
   for (var localIndex = localId.x; localIndex < sortedCount; localIndex = localIndex + WORKGROUP_SIZE) {
     tileKeys[start + localIndex] = localKeys[localIndex];
     tileIndices[start + localIndex] = localIndices[localIndex];
-  }
-  if (localId.x == 0u && count > TILE_SORT_MAX_SPLATS) {
-    atomicAdd(&counts[1u], count - TILE_SORT_MAX_SPLATS);
   }
 }
 

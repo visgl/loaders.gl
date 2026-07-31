@@ -13,7 +13,10 @@ import {
   SPLAT_COMPUTE_WORKGROUP_SIZE
 } from '../src/splat/splat-compute-shaders';
 import {projectSplatCovarianceToScreen} from '../src/splat/splat-covariance';
-import {getGaussianSplatDataFromArrowTable} from '../src/splat/splat-data';
+import {
+  getGaussianSplatDataFromArrowTable,
+  getGaussianSplatDataFromValues
+} from '../src/splat/splat-data';
 import {
   getSplatTileBufferByteLengths,
   getSplatTileGrid,
@@ -47,6 +50,33 @@ function createGaussianSplatTable(): arrow.Table {
   });
 }
 
+/** Creates a Gaussian splat Arrow table with degree-1 SH rest coefficients. */
+function createSphericalHarmonicSplatTable(): arrow.Table {
+  return arrow.tableFromArrays({
+    POSITION: [[0, 0, -2]],
+    f_dc_0: [0],
+    f_dc_1: [0],
+    f_dc_2: [0],
+    opacity: [0],
+    scale_0: [0],
+    scale_1: [0],
+    scale_2: [0],
+    rot_0: [1],
+    rot_1: [0],
+    rot_2: [0],
+    rot_3: [0],
+    f_rest_0: [1],
+    f_rest_1: [0],
+    f_rest_2: [0],
+    f_rest_3: [0],
+    f_rest_4: [0],
+    f_rest_5: [0],
+    f_rest_6: [0],
+    f_rest_7: [0],
+    f_rest_8: [0]
+  });
+}
+
 /** Creates a minimal WebGPU-like device for SplatEngine state tests. */
 function createTestDevice() {
   return {
@@ -77,6 +107,26 @@ test('splat-data extracts shared Gaussian splat columns', t => {
   t.end();
 });
 
+test('SplatEngine evaluates view-dependent spherical harmonic colors', t => {
+  const engine = new SplatEngine(createTestDevice(), {
+    sortMode: 'global',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 3,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1024
+  });
+  engine.setData(createSphericalHarmonicSplatTable(), [255, 255, 255, 255]);
+  engine.update({viewportSize: [100, 100], radiusScale: 1, viewOrigin: [0, 1, -2]});
+
+  const color = engine.getWebGLAttributes().attributes.getColor.value;
+  t.ok(color[0] > 240, 'adds degree-1 SH red contribution for the active view');
+  t.equal(color[1], 128, 'keeps unchanged green channel at the DC color');
+  t.equal(color[2], 128, 'keeps unchanged blue channel at the DC color');
+  engine.destroy();
+  t.end();
+});
+
 test('splat-data reports missing required columns', t => {
   const table = arrow.tableFromArrays({
     POSITION: [[0, 0, 0]]
@@ -87,6 +137,46 @@ test('splat-data reports missing required columns', t => {
     /SplatLayer requires a scale_0 column/,
     'throws a clear error for missing required columns'
   );
+  t.end();
+});
+
+test('splat-data converts decoded Gaussian splat values', t => {
+  const data = getGaussianSplatDataFromValues({
+    splatCount: 1,
+    positions: new Float32Array([1, 2, 3]),
+    scales: new Float32Array([1, 2, 4]),
+    rotations: new Float32Array([1, 0, 0, 0]),
+    colors: new Uint8Array([64, 128, 255]),
+    opacities: new Float32Array([0.5])
+  });
+
+  t.equal(data.length, 1, 'extracts decoded row count');
+  t.deepEqual(Array.from(data.positions), [1, 2, 3], 'preserves decoded positions');
+  t.deepEqual(Array.from(data.colors), [64, 128, 255, 128], 'packs decoded RGB and opacity');
+  t.equal(data.radii[0], 6, 'derives fallback radius from decoded scale');
+  t.end();
+});
+
+test('splat-data preserves extended RAD color byte ranges', t => {
+  const data = getGaussianSplatDataFromValues({
+    splatCount: 1,
+    positions: new Float32Array([1, 2, 3]),
+    scales: new Float32Array([1, 2, 4]),
+    rotations: new Float32Array([1, 0, 0, 0]),
+    colors: new Uint8Array([0, 128, 255]),
+    colorMin: -0.5,
+    colorMax: 1.5,
+    opacities: new Float32Array([0.5])
+  });
+
+  t.deepEqual(Array.from(data.colors), [0, 128, 255, 128], 'preserves encoded color bytes');
+  t.deepEqual(
+    Array.from(data.baseRgb).map(value => Number(value.toFixed(3))),
+    [-0.5, 0.504, 1.5],
+    'decodes color bytes into the extended RGB range'
+  );
+  t.equal(data.colorMin, -0.5, 'preserves color minimum');
+  t.equal(data.colorMax, 1.5, 'preserves color maximum');
   t.end();
 });
 
@@ -260,14 +350,14 @@ test('splat-sort calculates tile grid and buffer sizes', t => {
   const tileGrid = getSplatTileGrid(1920, 1080);
   const byteLengths = getSplatTileBufferByteLengths(1000, tileGrid);
 
-  t.equal(SPLAT_TILE_SIZE_PIXELS, 16, 'uses 16 pixel default tiles');
-  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 1024, 'reserves 1024 splats per tile workgroup');
+  t.equal(SPLAT_TILE_SIZE_PIXELS, 2, 'uses 2 pixel default tiles');
+  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 2048, 'reserves 2048 splats per tile workgroup');
   t.equal(SPLAT_TILE_RADIX_WORKGROUP_SIZE, 256, 'uses 256 lane tile radix workgroups');
-  t.equal(tileGrid.columns, 120, 'calculates tile columns');
-  t.equal(tileGrid.rows, 68, 'calculates tile rows');
-  t.equal(tileGrid.tileCount, 8160, 'calculates tile count');
-  t.equal(byteLengths.tileCounts, 8160 * 4, 'allocates one count per tile');
-  t.equal(byteLengths.tileOffsets, 8161 * 4, 'allocates sentinel tile offset');
+  t.equal(tileGrid.columns, 960, 'calculates tile columns');
+  t.equal(tileGrid.rows, 540, 'calculates tile rows');
+  t.equal(tileGrid.tileCount, 518400, 'calculates tile count');
+  t.equal(byteLengths.tileCounts, 518400 * 4, 'allocates one count per tile');
+  t.equal(byteLengths.tileOffsets, 518401 * 4, 'allocates sentinel tile offset');
   t.equal(byteLengths.tileIndices, 1000 * 4, 'allocates compacted splat references');
   t.equal(byteLengths.overflowCount, 4, 'allocates overflow counter');
   t.equal(byteLengths.overflowIndices, 4, 'allocates at least one overflow slot');
@@ -285,5 +375,17 @@ test('splat-compute shader exposes projection and tile-sort entry points', t => 
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn scatterTiles('), 'includes scatter entry point');
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn tileSort('), 'includes tile sort entry point');
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn copySorted('), 'includes sorted copy entry point');
+  t.ok(
+    SPLAT_COMPUTE_SHADER.includes(
+      'let adjustedSupportRadius = params.viewportAlpha.w + max(splatAlpha - 1.0, 0.0) * 0.7;'
+    ),
+    'expands compute support radius for Spark LoD opacity values'
+  );
+  t.ok(
+    SPLAT_COMPUTE_SHADER.includes(
+      'let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * adjustedSupportRadius;'
+    ),
+    'uses render radius scale for compute frustum bounds'
+  );
   t.end();
 });
