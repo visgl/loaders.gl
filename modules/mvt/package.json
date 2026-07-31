@@ -48,6 +48,7 @@
     "@loaders.gl/images": "4.4.3",
     "@loaders.gl/loader-utils": "4.4.3",
     "@loaders.gl/schema": "4.4.3",
+    "@loaders.gl/schema-utils": "4.4.3",
     "@math.gl/polygon": "^4.1.0",
     "@probe.gl/stats": "^4.1.1",
     "pbf": "^3.2.1"
