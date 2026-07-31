@@ -209,18 +209,25 @@ test('MVTLoader#Parse Polygons MVT', async t => {
     };
 
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-    let expected = binary
-      ? decodedPolygonsGeoJSON
-      : {shape: 'geojson-table', type: 'FeatureCollection', features: decodedPolygonsGeoJSON};
     if (binary) {
-      // @ts-ignore
-      expected = geojsonToBinary(expected, {fixRingWinding: false});
+      const expected = geojsonToBinary(structuredClone(decodedPolygonsGeoJSON), {
+        fixRingWinding: false
+      });
       t.ok(geometry.byteLength > 0);
       delete geometry.byteLength;
+      t.deepEqual(geometry, expected, `Parsed Polygons MVT as ${outputFormat}`);
+    } else {
+      const expected = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: normalizeGeoJsonFeatures(decodedPolygonsGeoJSON)
+      };
+      const normalizedGeometry = {
+        ...geometry,
+        features: normalizeGeoJsonFeatures(geometry.features)
+      };
+      t.deepEqual(normalizedGeometry, expected, `Parsed Polygons MVT as ${outputFormat}`);
     }
-    const comparableGeometry = binary ? geometry : normalizeGeoJSONCoordinates(geometry);
-    const comparableExpected = binary ? expected : normalizeGeoJSONCoordinates(expected);
-    t.deepEqual(comparableGeometry, comparableExpected, `Parsed Polygons MVT as ${outputFormat}`);
   }
   t.end();
 });
@@ -237,30 +244,6 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
 
   t.end();
 });
-
-/**
- * Normalizes projected coordinates for comparisons across JavaScript runtimes.
- * WGS84 projection uses transcendental math whose least-significant digits can vary by platform.
- */
-function normalizeGeoJSONCoordinates(table: any): any {
-  return {
-    ...table,
-    features: table.features.map((feature: any) => ({
-      ...feature,
-      geometry: feature.geometry
-        ? {...feature.geometry, coordinates: roundCoordinates(feature.geometry.coordinates)}
-        : feature.geometry
-    }))
-  };
-}
-
-/** Rounds nested coordinate arrays to sub-millimeter precision. */
-function roundCoordinates(coordinates: any): any {
-  if (Array.isArray(coordinates)) {
-    return coordinates.map(value => roundCoordinates(value));
-  }
-  return typeof coordinates === 'number' ? Number(coordinates.toFixed(10)) : coordinates;
-}
 
 test('Should add layer name to custom property', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
@@ -394,3 +377,32 @@ test('Triangulation is supported', async t => {
 
   t.end();
 });
+
+/**
+ * Copies GeoJSON features while normalizing projected coordinate precision for stable comparisons.
+ *
+ * @param features GeoJSON features to normalize.
+ * @returns Feature copies with rounded geometry coordinates.
+ */
+function normalizeGeoJsonFeatures(features: any[]): any[] {
+  return features.map(feature => ({
+    ...feature,
+    geometry: {
+      ...feature.geometry,
+      coordinates: roundCoordinates(feature.geometry.coordinates)
+    }
+  }));
+}
+
+/**
+ * Rounds nested coordinates to avoid browser-specific floating-point projection drift.
+ *
+ * @param coordinates Nested GeoJSON coordinate values.
+ * @returns Coordinates rounded to stable sub-millimeter precision.
+ */
+function roundCoordinates(coordinates: any): any {
+  if (Array.isArray(coordinates)) {
+    return coordinates.map(value => roundCoordinates(value));
+  }
+  return typeof coordinates === 'number' ? Number(coordinates.toFixed(9)) : coordinates;
+}
