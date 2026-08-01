@@ -49,6 +49,7 @@
     "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
+    "@loaders.gl/scene": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
     "@loaders.gl/schema-utils": "workspace:*",
     "@loaders.gl/splats": "workspace:*",
