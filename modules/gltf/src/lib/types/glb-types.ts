@@ -6,7 +6,8 @@ export type GLBBinChunk = {
 
 export type GLB = {
   type: string;
-  version: number; // Version 2 of binary glTF container format
+  /** Binary glTF container version. */
+  version: number;
 
   // Put less important stuff in a header, to avoid clutter
   header: {
