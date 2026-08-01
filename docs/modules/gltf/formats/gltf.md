@@ -14,9 +14,27 @@ A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb
 
 ## Version History
 
+### glTF 2.1 (Draft)
+
+Khronos has [announced glTF 2.1](https://www.khronos.org/blog/introducing-gltf-2.1-with-complex-scenes) as a backwards-compatible update focused on complex scenes and quality-of-life improvements. The specification remains under development.
+
+#### Accessor Component Types
+
+glTF 2.1 defines additional accessor component type constants for extensions and future core features to reference. Defining a type does not automatically make it valid for every existing accessor use; each feature still specifies the component types it accepts.
+
+| `componentType` | Data type            | loaders.gl representation |
+| --------------- | -------------------- | ------------------------- |
+| `5124`          | Signed 32-bit integer | `Int32Array`              |
+| `5130`          | 64-bit float          | `Float64Array`            |
+| `5131`          | 16-bit float          | `Uint16Array`             |
+| `5134`          | Signed 64-bit integer | `BigInt64Array`           |
+| `5135`          | Unsigned 64-bit integer | `BigUint64Array`         |
+
+JavaScript runtimes supported by loaders.gl do not yet consistently provide `Float16Array`. The loader therefore preserves 16-bit floating-point payloads in a `Uint16Array`; `componentType: 5131` records that the words contain IEEE-754 binary16 values rather than unsigned integers.
+
 ### glTF 2.0
 
--GLB was incorporated directly into glTF 2.0.
+- GLB was incorporated directly into glTF 2.0.
 
 ### glTF 1.0
 

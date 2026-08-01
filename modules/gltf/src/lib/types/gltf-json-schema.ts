@@ -77,7 +77,19 @@ export type GLTFAccessor = {
   /**
    * The datatype of components in the attribute.
    */
-  componentType: 5120 | 5121 | 5122 | 5123 | 5125 | 5126 | number;
+  componentType:
+    | 5120
+    | 5121
+    | 5122
+    | 5123
+    | 5124
+    | 5125
+    | 5126
+    | 5130
+    | 5131
+    | 5134
+    | 5135
+    | number;
   /**
    * Specifies whether integer data values should be normalized.
    */
