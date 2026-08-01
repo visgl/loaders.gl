@@ -30,7 +30,7 @@ export async function parseUSD(
   options: USDLoaderOptions = {},
   context?: LoaderContext
 ): Promise<USDStage> {
-  const url = getSourceUrl(options.core?.baseUrl || context?.url);
+  const url = getSourceLocation(options.core?.baseUrl, context?.url);
   const environment: USDParseEnvironment = {
     fetch: async resourceUrl => {
       const response = await (context?.fetch || fetch)(resourceUrl);
@@ -83,15 +83,35 @@ export async function parseUSD(
   return stage;
 }
 
-/** Returns an absolute source URL suitable for resolving referenced layers. */
-function getSourceUrl(candidate: string | undefined): string | undefined {
-  if (!candidate) {
-    return undefined;
+/** Selects a source location suitable for resolving referenced layers. */
+function getSourceLocation(
+  configuredLocation: string | undefined,
+  contextLocation: string | undefined
+): string | undefined {
+  const configuredUrl = getAbsoluteUrl(configuredLocation);
+  if (configuredUrl) {
+    return configuredUrl;
   }
+  const contextUrl = getAbsoluteUrl(contextLocation);
+  return contextUrl || configuredLocation || contextLocation;
+}
+
+/** Returns an absolute URL when the candidate contains one. */
+function getAbsoluteUrl(candidate: string | undefined): string | undefined {
   try {
-    return new URL(candidate).href;
+    return candidate ? new URL(candidate).href : undefined;
   } catch {
     return undefined;
+  }
+}
+
+/** Resolves an asset path against either a URL or a filesystem path. */
+function resolveAssetPath(assetPath: string, sourceLocation: string): string {
+  try {
+    return new URL(assetPath, sourceLocation).href;
+  } catch {
+    const slashIndex = Math.max(sourceLocation.lastIndexOf('/'), sourceLocation.lastIndexOf('\\'));
+    return slashIndex >= 0 ? `${sourceLocation.slice(0, slashIndex + 1)}${assetPath}` : assetPath;
   }
 }
 
@@ -158,7 +178,7 @@ async function composePrims(
         if (!primSourceUrl) {
           throw new Error('OpenUSD references require a source URL or options.core.baseUrl.');
         }
-        const referencedUrl = new URL(reference.assetPath, primSourceUrl).href;
+        const referencedUrl = resolveAssetPath(reference.assetPath, primSourceUrl);
         const stage = await loadReferencedStage(referencedUrl, environment);
         const referencedPrims = selectReferencedPrims(stage, reference.primPath);
         const resolvedPrims = await composePrims(
@@ -179,7 +199,7 @@ async function composePrims(
       primSourceUrl,
       selections,
       environment,
-      depth + 1
+      depth
     );
     composedPrims.push(composedPrim);
   }

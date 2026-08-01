@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {parse} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
 import {USDLoader} from '@loaders.gl/scene';
 import {USDLoaderWithParser} from '@loaders.gl/scene/usd-loader';
 
@@ -116,6 +116,86 @@ def Xform "World"
     {path: '/Materials/Gold'},
     'applies local overrides to referenced prims'
   );
+  t.end();
+});
+
+test('USDLoader resolves references from relative filesystem paths', async t => {
+  const source = `#usda 1.0
+def Xform "World" (prepend references = @./assets/model.usda@) {}`;
+  const referencedLayer = `#usda 1.0
+def Mesh "Model" {int[] faceVertexCounts = [3]}`;
+  const requestedUrls: string[] = [];
+  const stage = await parse(source, USDLoader, {
+    core: {
+      baseUrl: 'fixtures/scenes/scene.usda',
+      fetch: async url => {
+        requestedUrls.push(String(url));
+        return new Response(referencedLayer);
+      }
+    }
+  });
+
+  t.deepEqual(
+    requestedUrls,
+    ['fixtures/scenes/./assets/model.usda'],
+    'preserves the relative source location'
+  );
+  t.deepEqual(
+    stage.rootPrims[0].attributes['faceVertexCounts'].value,
+    [3],
+    'composes the referenced layer'
+  );
+  t.end();
+});
+
+test('USDLoader uses an absolute response URL when the configured location is relative', async t => {
+  const source = `#usda 1.0
+def Xform "World" (prepend references = @./assets/model.usda@) {}`;
+  const referencedLayer = `#usda 1.0
+def Mesh "Model" {int[] faceVertexCounts = [3]}`;
+  const requestedUrls: string[] = [];
+  const stage = await load('relative/scene.usda', USDLoader, {
+    core: {
+      fetch: async url => {
+        const requestedUrl = String(url);
+        requestedUrls.push(requestedUrl);
+        const response = new Response(
+          requestedUrl === 'relative/scene.usda' ? source : referencedLayer
+        );
+        Object.defineProperty(response, 'url', {
+          value:
+            requestedUrl === 'relative/scene.usda'
+              ? 'https://example.com/scenes/scene.usda'
+              : requestedUrl
+        });
+        return response;
+      }
+    }
+  });
+
+  t.deepEqual(
+    requestedUrls,
+    ['relative/scene.usda', 'https://example.com/scenes/assets/model.usda'],
+    'falls back to the response URL for browser-style reference resolution'
+  );
+  t.deepEqual(
+    stage.rootPrims[0].attributes['faceVertexCounts'].value,
+    [3],
+    'composes the referenced layer'
+  );
+  t.end();
+});
+
+test('USDLoader does not count prim nesting against reference depth', async t => {
+  const source = `#usda 1.0
+def Xform "Level1" {
+  def Xform "Level2" {
+    def Xform "Level3" {}
+  }
+}`;
+  const stage = await parse(source, USDLoader, {usd: {maxReferenceDepth: 0}});
+
+  t.equal(stage.rootPrims[0].children[0].children[0].name, 'Level3', 'parses nested prims');
   t.end();
 });
 
