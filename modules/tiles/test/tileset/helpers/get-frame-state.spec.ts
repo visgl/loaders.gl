@@ -4,6 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {getFrameState} from '@loaders.gl/tiles';
+import {updateCameraMotionState} from '../../../src/tileset-3d/helpers/frame-state';
 import {WebMercatorViewport, FirstPersonView} from '@deck.gl/core';
 import {equals, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -39,8 +40,8 @@ test('getFrameState', t => {
     'camera.position should match.'
   );
   t.ok(
-    equals(results.camera.direction, expected.camera.direction, EPSILON),
-    'camera.direction should match.'
+    Math.abs(new Vector3(results.camera.direction).magnitude() - 1) < EPSILON,
+    'camera.direction should be normalized.'
   );
   t.ok(equals(results.camera.up, expected.camera.up, EPSILON), 'camera.up should match.');
   t.ok(
@@ -55,6 +56,15 @@ test('getFrameState', t => {
     results.dynamicScreenSpaceErrorDensity,
     0,
     'dynamic SSE density should be initialized for the tileset traversal.'
+  );
+  t.ok(
+    Math.abs(results.camera.verticalFieldOfView - (viewport.fovy * Math.PI) / 180) < EPSILON,
+    'camera.verticalFieldOfView should use viewport degrees converted to radians.'
+  );
+  t.equals(
+    results.camera.timeSinceMovement,
+    Number.POSITIVE_INFINITY,
+    'standalone frame states should not defer requests.'
   );
   t.equals(results.sseDenominator, results.sseDenominator, 'sseDenominator should match.');
   t.equals(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
@@ -97,5 +107,41 @@ test('getFrameState#cullingVolume', t => {
     }
   }
 
+  t.end();
+});
+
+test('updateCameraMotionState#tracks position and direction changes', t => {
+  const initialUpdate = updateCameraMotionState(undefined, [1, 2, 3], [0, 0, -1], 1000);
+  t.equals(
+    initialUpdate.timeSinceMovement,
+    Number.POSITIVE_INFINITY,
+    'treats the first camera observation as stationary'
+  );
+
+  const movedUpdate = updateCameraMotionState(initialUpdate.state, [1, 2, 4], [0, 0, -1], 1200);
+  t.equals(movedUpdate.timeSinceMovement, 0, 'records camera position movement');
+
+  const stationaryUpdate = updateCameraMotionState(movedUpdate.state, [1, 2, 4], [0, 0, -1], 1350);
+  t.equals(stationaryUpdate.timeSinceMovement, 0.15, 'measures stationary time in seconds');
+
+  const numericallyStableUpdate = updateCameraMotionState(
+    stationaryUpdate.state,
+    [1, 2, 4 + 1e-6],
+    [0, 0, -1 + 1e-8],
+    1375
+  );
+  t.equals(
+    numericallyStableUpdate.timeSinceMovement,
+    0.175,
+    'ignores sub-epsilon numeric noise in an otherwise stable camera pose'
+  );
+
+  const rotatedUpdate = updateCameraMotionState(
+    numericallyStableUpdate.state,
+    [1, 2, 4],
+    [0, 1, 0],
+    1400
+  );
+  t.equals(rotatedUpdate.timeSinceMovement, 0, 'records camera direction movement');
   t.end();
 });

@@ -142,12 +142,14 @@ export function getDynamicScreenSpaceError(
  * @param tile - Tile containing the transform-scaled geometric error and camera distance.
  * @param frameState - Current camera and viewport measurements.
  * @param useParentLodMetric - Whether request prioritization should use the parent's error.
+ * @param viewportHeightFraction - Fraction of viewport height represented by the priority pass.
  * @returns Estimated error in logical/CSS pixels.
  */
 export function getTiles3DScreenSpaceError(
   tile: Tile3D,
   frameState: FrameState,
-  useParentLodMetric: boolean
+  useParentLodMetric: boolean,
+  viewportHeightFraction = 1
 ): number {
   const tileset = tile.tileset;
   const parentLodMetricValue = (tile.parent && tile.parent.lodMetricValue) || tile.lodMetricValue;
@@ -160,7 +162,15 @@ export function getTiles3DScreenSpaceError(
 
   const {viewDistanceScale} = tileset.options;
   const lodScale = viewDistanceScale || 1;
-  const orthographicError = getOrthographicScreenSpaceError(lodMetricValue, frameState, lodScale);
+  const heightFraction = Number.isFinite(viewportHeightFraction)
+    ? Math.max(viewportHeightFraction, 0)
+    : 1;
+  const orthographicError = getOrthographicScreenSpaceError(
+    lodMetricValue,
+    frameState,
+    lodScale,
+    heightFraction
+  );
   if (orthographicError !== null) {
     return orthographicError;
   }
@@ -168,7 +178,9 @@ export function getTiles3DScreenSpaceError(
   // Avoid divide by zero when viewer is inside the tile.
   const distanceToCamera = Math.max(tile._distanceToCamera, 1e-7);
   const {height, sseDenominator} = frameState;
-  let screenSpaceError = (lodMetricValue * height * lodScale) / (distanceToCamera * sseDenominator);
+  let screenSpaceError =
+    (lodMetricValue * height * heightFraction * lodScale) /
+    (distanceToCamera * sseDenominator);
 
   if (tileset.options.dynamicScreenSpaceError && !frameState.viewport.orthographic) {
     screenSpaceError -= getDynamicScreenSpaceError(
@@ -192,12 +204,14 @@ export function getTiles3DScreenSpaceError(
  * @param lodMetricValue - Transform-scaled geometric error in world-space meters.
  * @param frameState - Current frame state containing the viewport.
  * @param lodScale - Application refinement scale from `viewDistanceScale`.
+ * @param viewportHeightFraction - Fraction of logical viewport height represented by the pass.
  * @returns SSE in logical pixels, or `null` when orthographic SSE cannot be calculated.
  */
 function getOrthographicScreenSpaceError(
   lodMetricValue: number,
   frameState: FrameState,
-  lodScale: number
+  lodScale: number,
+  viewportHeightFraction: number
 ): number | null {
   const viewport = frameState.viewport;
   if (!viewport?.orthographic) {
@@ -209,7 +223,7 @@ function getOrthographicScreenSpaceError(
     return null;
   }
 
-  return (lodMetricValue * lodScale) / metersPerPixel;
+  return (lodMetricValue * lodScale * viewportHeightFraction) / metersPerPixel;
 }
 
 /** Returns the content bounding volume header, falling back to the traversal volume. */

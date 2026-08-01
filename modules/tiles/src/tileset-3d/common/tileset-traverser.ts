@@ -35,6 +35,8 @@ export class TilesetTraverser {
   selectedTiles: Record<string, Tile3D> = {};
   // tiles should be loaded from server
   requestedTiles: Record<string, Tile3D> = {};
+  /** Tiles intentionally held until the camera has remained still for the configured delay. */
+  deferredTiles: Record<string, Tile3D> = {};
   // tiles does not have render content
   emptyTiles: Record<string, Tile3D> = {};
 
@@ -73,6 +75,7 @@ export class TilesetTraverser {
 
   reset() {
     this.requestedTiles = {};
+    this.deferredTiles = {};
     this.selectedTiles = {};
     this.emptyTiles = {};
     this._traversalStack.reset();
@@ -235,10 +238,34 @@ export class TilesetTraverser {
   // tile to load from server
   loadTile(tile: Tile3D, frameState: FrameState): void {
     if (this.shouldLoadTile(tile)) {
+      if (this.shouldDeferTileRequest(tile, frameState)) {
+        this.deferredTiles[tile.id] = tile;
+        return;
+      }
       tile._requestedFrame = frameState.frameNumber;
       tile._priority = tile._getPriority();
       this.requestedTiles[tile.id] = tile;
     }
+  }
+
+  /**
+   * Returns whether an eligible peripheral request should wait for camera motion to settle.
+   *
+   * Eligibility is calculated on the tile with refinement-safety checks. This final gate only
+   * applies the time window, keeping traversal deterministic once the delay expires.
+   *
+   * @param tile - Tile considered for loading.
+   * @param frameState - Current camera motion measurements.
+   * @returns `true` when the request should be retried after the remaining delay.
+   */
+  shouldDeferTileRequest(tile: Tile3D, frameState: FrameState): boolean {
+    const foveatedTimeDelay = tile.tileset.options.foveatedTimeDelay;
+    return (
+      tile.priorityDeferred &&
+      Number.isFinite(foveatedTimeDelay) &&
+      foveatedTimeDelay > 0 &&
+      frameState.camera.timeSinceMovement < foveatedTimeDelay
+    );
   }
 
   // cache tile

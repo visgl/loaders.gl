@@ -74,6 +74,12 @@ Parameters:
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
   - `options.maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
   - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+  - `options.progressiveResolutionHeightFraction`=`0.3` (`Number`) - Prioritizes coarse viewport coverage using SSE at a reduced logical viewport height. Set to `0` to disable; values above `0.5` are ignored.
+  - `options.foveatedScreenSpaceError`=`true` (`Boolean`) - Prioritizes perspective requests near the camera view axis before peripheral detail.
+  - `options.foveatedConeSize`=`0.1` (`Number`) - Fraction of the perspective field of view that receives no foveated SSE relaxation. Set to `1` to disable peripheral deferral.
+  - `options.foveatedMinimumScreenSpaceErrorRelaxation`=`0` (`Number`) - Minimum logical-pixel SSE relaxation immediately outside the center cone.
+  - `options.foveatedInterpolationCallback`=`linear interpolation` (`Function`) - Interpolates SSE relaxation from the cone edge toward the viewport edge.
+  - `options.foveatedTimeDelay`=`0.2` (`Number`) - Maximum seconds eligible peripheral requests wait after camera movement. Traditional `REPLACE` traversal is never deferred.
   - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.

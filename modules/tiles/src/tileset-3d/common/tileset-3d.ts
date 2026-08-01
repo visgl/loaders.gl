@@ -10,8 +10,11 @@ import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
-import {FrameState, getFrameState, limitSelectedTiles} from '../helpers/frame-state';
+import {getFrameState, limitSelectedTiles, updateCameraMotionState} from '../helpers/frame-state';
+import type {CameraMotionState, FrameState} from '../helpers/frame-state';
 import {calculateDynamicScreenSpaceErrorDensity} from '../helpers/tiles-3d-lod';
+import {interpolateLinearly} from '../helpers/tiles-3d-request-priority';
+import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-priority';
 
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
@@ -59,6 +62,18 @@ export type Tileset3DProps = {
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
   viewDistanceScale?: number;
+  /** Reduced viewport-height fraction used to prioritize coarse initial coverage; `0` disables it. */
+  progressiveResolutionHeightFraction?: number;
+  /** Whether requests nearer the center of a perspective viewport receive higher priority. */
+  foveatedScreenSpaceError?: boolean;
+  /** Fraction of the perspective field of view that receives no foveated SSE relaxation. */
+  foveatedConeSize?: number;
+  /** Minimum logical-pixel SSE relaxation immediately outside the foveated cone. */
+  foveatedMinimumScreenSpaceErrorRelaxation?: number;
+  /** Function that increases SSE relaxation from the foveated cone toward the viewport edge. */
+  foveatedInterpolationCallback?: FoveatedInterpolationCallback;
+  /** Seconds peripheral requests may wait after the camera moves. */
+  foveatedTimeDelay?: number;
 
   onTileLoad?: (tile: Tile3D) => any;
   onTileUnload?: (tile: Tile3D) => any;
@@ -105,6 +120,18 @@ type Props = {
   loadOptions: LoaderOptions;
   updateTransforms: boolean;
   viewDistanceScale: number;
+  /** Reduced viewport-height fraction used to prioritize coarse initial coverage. */
+  progressiveResolutionHeightFraction: number;
+  /** Whether perspective requests are prioritized around the viewport center. */
+  foveatedScreenSpaceError: boolean;
+  /** Fraction of the perspective field of view with no foveated SSE relaxation. */
+  foveatedConeSize: number;
+  /** Minimum logical-pixel SSE relaxation outside the foveated cone. */
+  foveatedMinimumScreenSpaceErrorRelaxation: number;
+  /** Function used to interpolate foveated SSE relaxation. */
+  foveatedInterpolationCallback: FoveatedInterpolationCallback;
+  /** Seconds eligible peripheral requests wait after camera movement. */
+  foveatedTimeDelay: number;
   basePath: string;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   i3s: Record<string, any>;
@@ -129,6 +156,12 @@ const DEFAULT_PROPS: Props = {
   onUpdate: () => {},
   contentLoader: undefined,
   viewDistanceScale: 1.0,
+  progressiveResolutionHeightFraction: 0.3,
+  foveatedScreenSpaceError: true,
+  foveatedConeSize: 0.1,
+  foveatedMinimumScreenSpaceErrorRelaxation: 0,
+  foveatedInterpolationCallback: interpolateLinearly,
+  foveatedTimeDelay: 0.2,
   maximumScreenSpaceError: 8,
   dynamicScreenSpaceError: true,
   dynamicScreenSpaceErrorDensity: 2.0e-4,
@@ -217,6 +250,10 @@ export class Tileset3D {
   private _requestedTiles: Tile3D[] = [];
   private _emptyTiles: Tile3D[] = [];
   private frameStateData: any = {};
+  /** Last camera pose retained independently for each viewport. */
+  private _cameraMotionStates: Record<string, CameraMotionState> = {};
+  /** Pending traversal that releases requests after camera motion settles. */
+  private _deferredTraversalTimeout: ReturnType<typeof setTimeout> | null = null;
 
   _traverser: TilesetTraverser;
   _cache = new TilesetCache();
@@ -269,6 +306,7 @@ export class Tileset3D {
   }
 
   destroy(): void {
+    this._clearDeferredTraversal();
     this._destroy();
   }
 
@@ -357,6 +395,8 @@ export class Tileset3D {
     this._cache.reset();
     this._frameNumber++;
     this.traverseCounter = preparedViewports.length;
+    const currentTime = Date.now();
+    let minimumDeferredTraversalDelay = Number.POSITIVE_INFINITY;
     const viewportsToTraverse: string[] = [];
     for (const viewport of preparedViewports) {
       const id = viewport.id;
@@ -378,6 +418,14 @@ export class Tileset3D {
       }
       const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
       const root = this.roots[id];
+      const cameraMotionUpdate = updateCameraMotionState(
+        this._cameraMotionStates[id],
+        frameState.camera.position,
+        frameState.camera.direction,
+        currentTime
+      );
+      this._cameraMotionStates[id] = cameraMotionUpdate.state;
+      frameState.camera.timeSinceMovement = cameraMotionUpdate.timeSinceMovement;
       frameState.dynamicScreenSpaceErrorDensity =
         this.type === TILESET_TYPE.TILES3D &&
         this.options.dynamicScreenSpaceError &&
@@ -387,6 +435,48 @@ export class Tileset3D {
       // Keep the legacy diagnostic field, but traversal reads the per-viewport frame value above.
       this.dynamicScreenSpaceErrorComputedDensity = frameState.dynamicScreenSpaceErrorDensity;
       this._traverser.traverse(root, frameState, this.options);
+      if (Object.keys(this._traverser.deferredTiles).length > 0) {
+        minimumDeferredTraversalDelay = Math.min(
+          minimumDeferredTraversalDelay,
+          Math.max(this.options.foveatedTimeDelay - cameraMotionUpdate.timeSinceMovement, 0)
+        );
+      }
+    }
+
+    if (Number.isFinite(minimumDeferredTraversalDelay)) {
+      this._scheduleDeferredTraversal(minimumDeferredTraversalDelay);
+    } else {
+      this._clearDeferredTraversal();
+    }
+  }
+
+  /**
+   * Schedules one follow-up traversal when the moving-camera deferral window expires.
+   *
+   * Replacing an existing timer ensures continuing camera movement pushes the retry window forward
+   * instead of creating a queue of redundant traversals.
+   *
+   * @param delayInSeconds - Remaining stationary delay before deferred requests become eligible.
+   */
+  private _scheduleDeferredTraversal(delayInSeconds: number): void {
+    this._clearDeferredTraversal();
+    this._deferredTraversalTimeout = setTimeout(
+      () => {
+        this._deferredTraversalTimeout = null;
+        this.selectTiles().catch((error: unknown) => {
+          const traversalError = error instanceof Error ? error : new Error(String(error));
+          this._onTilesetError(traversalError);
+        });
+      },
+      Math.max(delayInSeconds * 1000, 0)
+    );
+  }
+
+  /** Clears a pending moving-camera follow-up traversal. */
+  private _clearDeferredTraversal(): void {
+    if (this._deferredTraversalTimeout !== null) {
+      clearTimeout(this._deferredTraversalTimeout);
+      this._deferredTraversalTimeout = null;
     }
   }
 

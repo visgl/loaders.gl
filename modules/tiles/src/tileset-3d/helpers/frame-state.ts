@@ -14,6 +14,10 @@ export type FrameState = {
     up: number[];
     /** Camera position as `[longitude, latitude, height]`, with height in meters. */
     cartographicPosition: [number, number, number];
+    /** Perspective vertical field of view in radians. */
+    verticalFieldOfView: number;
+    /** Elapsed seconds since camera position or direction last changed. */
+    timeSinceMovement: number;
   };
   viewport: GeospatialViewport;
   topDownViewport: GeospatialViewport; // Use it to calculate projected radius for a tile
@@ -25,8 +29,34 @@ export type FrameState = {
   dynamicScreenSpaceErrorDensity: number;
 };
 
+/** Optional camera and projection measurements supplied when constructing a frame state. */
+export type GetFrameStateOptions = {
+  /** Elapsed seconds since camera position or direction last changed. */
+  timeSinceCameraMovement?: number;
+};
+
+/** Camera pose and timestamp retained between traversal frames. */
+export type CameraMotionState = {
+  /** Last observed Earth-centered, Earth-fixed camera position. */
+  position: number[];
+  /** Last observed normalized Earth-centered, Earth-fixed camera direction. */
+  direction: number[];
+  /** Timestamp in milliseconds of the last observed pose change. */
+  lastMovementTime: number;
+};
+
+/** Updated camera state and elapsed stationary time for a traversal frame. */
+export type CameraMotionUpdate = {
+  /** Camera pose to retain for the next traversal. */
+  state: CameraMotionState;
+  /** Elapsed seconds since the camera pose last changed. */
+  timeSinceMovement: number;
+};
+
 const scratchVector = new Vector3();
 const scratchPosition = new Vector3();
+const CAMERA_POSITION_EPSILON = 1e-5;
+const CAMERA_DIRECTION_EPSILON = 1e-7;
 const cullingVolume = new CullingVolume([
   new Plane(),
   new Plane(),
@@ -36,12 +66,26 @@ const cullingVolume = new CullingVolume([
   new Plane()
 ]);
 
-// Extracts a frame state appropriate for tile culling from a deck.gl viewport
-// TODO - this could likely be generalized and merged back into deck.gl for other culling scenarios
-export function getFrameState(viewport: GeospatialViewport, frameNumber: number): FrameState {
+/**
+ * Extracts a frame state appropriate for tile culling from a structural deck.gl viewport.
+ *
+ * `options.timeSinceCameraMovement` can be supplied by a caller that retains camera pose across
+ * calls. It defaults to a stationary camera so standalone callers do not defer requests.
+ *
+ * @param viewport - Geospatial viewport supplying camera and projection measurements.
+ * @param frameNumber - Current tileset traversal frame number.
+ * @param options - Additional camera and projection measurements for traversal.
+ * @returns Frame state used for visibility, SSE, and request-priority calculations.
+ */
+export function getFrameState(
+  viewport: GeospatialViewport,
+  frameNumber: number,
+  options: GetFrameStateOptions = {}
+): FrameState {
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   // Traverse and and request. Update _selectedTiles so that we know what to render.
-  const {cameraDirection, cameraUp, height} = viewport;
+  const {cameraUp, height} = viewport;
+  const cameraDirection = viewport.cameraDirection as number[] | undefined;
   const {metersPerUnit} = viewport.distanceScales;
 
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
@@ -56,10 +100,26 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
   );
 
   // These should still be normalized as the transform has scale 1 (goes from meters to meters)
-  const cameraDirectionCartesian = new Vector3(
-    // @ts-ignore
-    enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerUnit))
-  ).normalize();
+  let cameraDirectionCartesian: Vector3;
+  if (cameraDirection) {
+    cameraDirectionCartesian = new Vector3(
+      // @ts-ignore
+      enuToFixedTransform.transformAsVector(new Vector3(cameraDirection).scale(metersPerUnit))
+    ).normalize();
+  } else {
+    // Concrete deck.gl viewports do not expose the legacy structural cameraDirection field.
+    // The near-plane center is on the view axis, so its world-space direction is equivalent and
+    // works for perspective foveation without coupling loaders.gl to deck.gl internals.
+    // getFrustumPlanes is required by traversal but omitted from the minimal structural Viewport
+    // type for compatibility with existing application-side declarations.
+    // @ts-expect-error Runtime geospatial viewports provide getFrustumPlanes.
+    const nearPlane = viewport.getFrustumPlanes().near;
+    const nearCenterCommon = closestPointOnPlane(nearPlane, viewport.cameraPosition);
+    const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon);
+    cameraDirectionCartesian = new Vector3(nearCenterCartesian)
+      .subtract(cameraPositionCartesian)
+      .normalize();
+  }
   const cameraUpCartesian = new Vector3(
     // @ts-ignore
     enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerUnit))
@@ -86,7 +146,12 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
       position: cameraPositionCartesian,
       direction: cameraDirectionCartesian,
       up: cameraUpCartesian,
-      cartographicPosition: cameraPositionCartographic
+      cartographicPosition: cameraPositionCartographic,
+      verticalFieldOfView:
+        Number.isFinite(viewport.fovy) && Number(viewport.fovy) > 0
+          ? (Number(viewport.fovy) * Math.PI) / 180
+          : Math.PI / 3,
+      timeSinceMovement: options.timeSinceCameraMovement ?? Number.POSITIVE_INFINITY
     },
     viewport,
     topDownViewport,
@@ -96,6 +161,55 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
     sseDenominator: 1.15, // Assumes fovy = 60 degrees
     // Tileset3D fills this immediately before traversal because it depends on the root volume.
     dynamicScreenSpaceErrorDensity: 0
+  };
+}
+
+/**
+ * Updates retained camera motion state and calculates how long the current pose has been stable.
+ *
+ * The first observation is treated as stationary so initial tileset loading is never delayed.
+ * Position and direction are both compared because orbiting in place changes request relevance
+ * without necessarily changing the viewport's camera position.
+ *
+ * @param previousState - Pose retained from the preceding traversal for this viewport.
+ * @param position - Current Earth-centered, Earth-fixed camera position.
+ * @param direction - Current normalized Earth-centered, Earth-fixed camera direction.
+ * @param currentTime - Current monotonic-enough wall-clock time in milliseconds.
+ * @returns Updated pose and elapsed stationary time.
+ */
+export function updateCameraMotionState(
+  previousState: CameraMotionState | undefined,
+  position: number[] | Vector3,
+  direction: number[] | Vector3,
+  currentTime: number
+): CameraMotionUpdate {
+  const positionArray = Array.from(position);
+  const directionArray = Array.from(direction);
+  const positionChanged = previousState
+    ? positionArray.length !== previousState.position.length ||
+      positionArray.some(
+        (value, index) => Math.abs(value - previousState.position[index]) > CAMERA_POSITION_EPSILON
+      )
+    : false;
+  const directionChanged = previousState
+    ? directionArray.length !== previousState.direction.length ||
+      directionArray.some(
+        (value, index) =>
+          Math.abs(value - previousState.direction[index]) > CAMERA_DIRECTION_EPSILON
+      )
+    : false;
+  const lastMovementTime =
+    positionChanged || directionChanged
+      ? currentTime
+      : (previousState?.lastMovementTime ?? Number.NEGATIVE_INFINITY);
+
+  return {
+    state: {
+      position: positionArray,
+      direction: directionArray,
+      lastMovementTime
+    },
+    timeSinceMovement: Math.max((currentTime - lastMovementTime) / 1000, 0)
   };
 }
 
@@ -172,7 +286,7 @@ function commonSpacePlanesToWGS84(viewport) {
 
 function closestPointOnPlane(
   plane: {distance: number; normal: Vector3},
-  refPoint: [number, number, number] | Vector3,
+  refPoint: number[] | Vector3,
   out: Vector3 = new Vector3()
 ): Vector3 {
   const distanceToRef = plane.normal.dot(refPoint);
