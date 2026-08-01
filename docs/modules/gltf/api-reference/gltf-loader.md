@@ -58,13 +58,14 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-| Option                  | Type    | Default |                                                                            | Description |
-| ----------------------- | ------- | ------- | -------------------------------------------------------------------------- | ----------- |
-| `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS). |
-| `gltf.loadFiles`        | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.           |
-| `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).          |
-| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
-| `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
+| Option                    | Type    | Default | Description                                                                  |
+| ------------------------- | ------- | ------- | ---------------------------------------------------------------------------- |
+| `gltf.loadBuffers`        | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS).   |
+| `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
+| `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
+| `gltf.loadImages`         | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).            |
+| `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).               |
+| `gltf.normalize`          | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.   |
 
 ## Draft glTF 2.1 File Resolution
 
@@ -76,6 +77,17 @@ entries are cached in the parallel `gltf.files` array.
 
 `findGLTFFileIndex(gltf, reference)` performs only the virtual package lookup and returns `-1` when
 there is no matching entry. Ambiguous package names are rejected.
+
+## Draft glTF 2.1 External Assets
+
+With `gltf.loadExternalAssets: true`, `GLTFLoader` parses external assets referenced by
+`json.nodes[*].externalAsset`. Parsed children are stored in `gltf.externalAssets` at the same index
+as their `json.externalAssets` definition. Repeated references to the same URI share one parsed
+result, and cyclical references are rejected.
+
+Dependencies of URI-backed children resolve relative to the child URI. Dependencies of embedded
+children resolve through the containing asset's `files` array, allowing an unmodified nested glTF
+and its buffers or textures to be packaged together. Unreferenced definitions remain unloaded.
 
 ## Working with GLTF data
 
@@ -135,6 +147,10 @@ However, the objects inside these arrays will have been pre-processed to simplif
     name: String, // optional virtual package name
     url: String  // optional resolved URL
   }],
+
+  // Recursively parsed glTF 2.1 assets. Indices match json.externalAssets.
+  // Unreferenced definitions remain null.
+  externalAssets: Array<GLTFWithBuffers | null>,
 
   // Images can optionally be loaded and decoded, they will be stored here.
   // Standard raster images are decoded through ImageBitmapLoader.

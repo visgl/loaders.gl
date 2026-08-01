@@ -13,6 +13,8 @@ export type GLTFWithBuffers = {
   images?: GLTFExternalImage[];
   /** Resolved draft glTF 2.1 unified file references, parallel to `json.files`. */
   files?: GLTFExternalFile[];
+  /** Parsed draft glTF 2.1 external assets, parallel to `json.externalAssets`. */
+  externalAssets?: Array<GLTFWithBuffers | null>;
 };
 
 export type GLTFExternalBuffer = {
@@ -61,6 +63,7 @@ export type {
   GLTFTexture,
   GLTFImage,
   GLTFFile,
+  GLTFExternalAsset,
   GLTF_KHR_binary_glTF,
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,

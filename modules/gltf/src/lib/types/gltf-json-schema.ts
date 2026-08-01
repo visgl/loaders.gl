@@ -382,6 +382,18 @@ export type GLTFFile = {
 };
 
 /**
+ * A draft glTF 2.1 model dependency sourced from the top-level `files` array.
+ */
+export type GLTFExternalAsset = {
+  /** Index of the file containing the external glTF asset. */
+  file: GLTFId;
+  /** Optional application-facing name for this external asset. */
+  name?: string;
+  extensions?: Record<string, any>;
+  extras?: any;
+};
+
+/**
  * Reference to a texture.
  */
 export type GLTFTextureInfo = {
@@ -586,6 +598,8 @@ export type GLTFNode = {
    * The index of the mesh in this node.
    */
   mesh?: GLTFId;
+  /** Index of the draft glTF 2.1 external asset instantiated by this node. */
+  externalAsset?: GLTFId;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */
@@ -728,6 +742,10 @@ export type GLTF = {
    */
   files?: GLTFFile[];
   /**
+   * Draft glTF 2.1 external glTF assets.
+   */
+  externalAssets?: GLTFExternalAsset[];
+  /**
    * An array of materials.
    */
   materials?: GLTFMaterial[];
@@ -777,7 +795,8 @@ export type GLTFObject =
   | GLTFSkin
   | GLTFTexture
   | GLTFImage
-  | GLTFFile;
+  | GLTFFile
+  | GLTFExternalAsset;
 
 // GLTF Extensions
 /* eslint-disable camelcase */

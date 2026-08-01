@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {GLTFExternalFile, GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
 
@@ -13,7 +13,7 @@ import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
-import {resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
+import {findGLTFFileIndex, resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
@@ -25,6 +25,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadBuffers?: boolean;
   /** Resolve draft glTF 2.1 `files` entries. */
   loadFiles?: boolean;
+  /** Recursively parse draft glTF 2.1 external assets referenced by nodes. */
+  loadExternalAssets?: boolean;
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
@@ -71,6 +73,18 @@ export async function parseGLTF(
   options: GLTFLoaderOptions,
   context: LoaderContext
 ): Promise<GLTFWithBuffers> {
+  return await parseGLTFWithExternalAssets(gltf, arrayBufferOrString, byteOffset, options, context);
+}
+
+/** Parse glTF data while carrying recursion state through nested external assets. */
+async function parseGLTFWithExternalAssets(
+  gltf: GLTFWithBuffers,
+  arrayBufferOrString,
+  byteOffset: number,
+  options: GLTFLoaderOptions,
+  context: LoaderContext,
+  externalAssetLoadState?: ExternalAssetLoadState
+): Promise<GLTFWithBuffers> {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
@@ -84,6 +98,10 @@ export async function parseGLTF(
 
   if (options?.gltf?.loadFiles && gltf.json.files) {
     await loadFiles(gltf, options, context);
+  }
+
+  if (options?.gltf?.loadExternalAssets && gltf.json.externalAssets) {
+    await loadExternalAssets(gltf, options, context, externalAssetLoadState);
   }
 
   // loadImages and decodeExtensions should not be running in parallel, because
@@ -207,6 +225,161 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
 
   const files = gltf.json.files || [];
   gltf.files = new Array(files.length).fill(null);
+
+  const externalAssets = gltf.json.externalAssets || [];
+  gltf.externalAssets = new Array(externalAssets.length).fill(null);
+}
+
+type ExternalAssetLoadState = {
+  /** Parsed assets keyed by their resolved URI. */
+  cache: Map<string, Promise<GLTFWithBuffers>>;
+  /** Resolved URIs in the current recursion chain. */
+  ancestors: Set<string>;
+  /** Shared counter used to isolate virtual package URL namespaces. */
+  packageIds: {next: number};
+};
+
+const PACKAGE_URL_PREFIX = 'gltf-package:';
+
+/** Recursively resolve external assets instantiated by nodes. */
+async function loadExternalAssets(
+  gltf: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context: LoaderContext,
+  inheritedState?: ExternalAssetLoadState
+): Promise<void> {
+  const externalAssets = gltf.json.externalAssets || [];
+  const referencedIndices = new Set<number>();
+  for (const node of gltf.json.nodes || []) {
+    if (node.externalAsset !== undefined) {
+      assert(
+        node.externalAsset >= 0 && node.externalAsset < externalAssets.length,
+        `glTF node references missing external asset ${node.externalAsset}.`
+      );
+      referencedIndices.add(node.externalAsset);
+    }
+  }
+
+  const state =
+    inheritedState ||
+    createExternalAssetLoadState(context.url ? new Set([context.url]) : new Set());
+  for (const externalAssetIndex of referencedIndices) {
+    await loadExternalAsset(gltf, externalAssetIndex, options, context, state);
+  }
+}
+
+/** Parse one external asset and cache repeated file references. */
+async function loadExternalAsset(
+  gltf: GLTFWithBuffers,
+  externalAssetIndex: number,
+  options: GLTFLoaderOptions,
+  context: LoaderContext,
+  state: ExternalAssetLoadState
+): Promise<void> {
+  const externalAsset = gltf.json.externalAssets?.[externalAssetIndex];
+  if (!externalAsset) {
+    throw new Error(`Missing glTF external asset ${externalAssetIndex}.`);
+  }
+  assert(
+    Number.isInteger(externalAsset.file) &&
+      externalAsset.file >= 0 &&
+      externalAsset.file < (gltf.json.files?.length || 0),
+    `glTF external asset ${externalAssetIndex} references missing file ${externalAsset.file}.`
+  );
+
+  const file = await resolveGLTFFile(gltf, externalAsset.file, options, context);
+  const assetKey = file.url;
+  assert(
+    !assetKey || !state.ancestors.has(assetKey),
+    `glTF external asset cycle detected at ${assetKey}.`
+  );
+
+  let parsedAsset = assetKey ? state.cache.get(assetKey) : undefined;
+  if (!parsedAsset) {
+    const childContext = createExternalAssetContext(gltf, file, options, context, state);
+    const childState: ExternalAssetLoadState = {
+      ...state,
+      ancestors: new Set(state.ancestors)
+    };
+    if (assetKey) {
+      childState.ancestors.add(assetKey);
+    }
+    const data = sliceArrayBuffer(file.arrayBuffer, file.byteOffset, file.byteLength);
+    parsedAsset = parseGLTFWithExternalAssets(
+      {} as GLTFWithBuffers,
+      data,
+      0,
+      options,
+      childContext,
+      childState
+    );
+    if (assetKey) {
+      state.cache.set(assetKey, parsedAsset);
+    }
+  }
+
+  gltf.externalAssets = gltf.externalAssets || [];
+  gltf.externalAssets[externalAssetIndex] = await parsedAsset;
+}
+
+/** Create recursive loading state for an external-asset tree. */
+function createExternalAssetLoadState(ancestors: Set<string>): ExternalAssetLoadState {
+  return {cache: new Map(), ancestors, packageIds: {next: 0}};
+}
+
+/** Create URL and fetch semantics for a nested external asset. */
+function createExternalAssetContext(
+  parent: GLTFWithBuffers,
+  file: GLTFExternalFile,
+  options: GLTFLoaderOptions,
+  context: LoaderContext,
+  state: ExternalAssetLoadState
+): LoaderContext {
+  if (file.url && !file.url.startsWith('data:')) {
+    return {
+      ...context,
+      url: file.url,
+      filename: getUrlFilename(file.url),
+      baseUrl: getUrlBase(file.url)
+    };
+  }
+
+  const packageBaseUrl = `${PACKAGE_URL_PREFIX}${state.packageIds.next++}`;
+  const packageUrlPrefix = `${packageBaseUrl}/`;
+  return {
+    ...context,
+    url: file.name,
+    filename: file.name,
+    baseUrl: packageBaseUrl,
+    fetch: async (resource: string, init?: RequestInit) => {
+      const url = resource;
+      if (url.startsWith('data:')) {
+        return await context.fetch(resource, init);
+      }
+      const reference = url.startsWith(packageUrlPrefix) ? url.slice(packageUrlPrefix.length) : url;
+      const fileIndex = findGLTFFileIndex(parent, reference);
+      assert(fileIndex >= 0, `glTF package does not contain file ${reference}.`);
+      const resolvedFile = await resolveGLTFFile(parent, fileIndex, options, context);
+      const data = sliceArrayBuffer(
+        resolvedFile.arrayBuffer,
+        resolvedFile.byteOffset,
+        resolvedFile.byteLength
+      );
+      return new Response(data, {headers: {'content-type': resolvedFile.mimeType}});
+    }
+  };
+}
+
+/** Return the containing directory for a URL. */
+function getUrlBase(url: string): string {
+  const slashIndex = url.lastIndexOf('/');
+  return slashIndex >= 0 ? url.slice(0, slashIndex) : '';
+}
+
+/** Return the file name component for a URL. */
+function getUrlFilename(url: string): string {
+  const slashIndex = url.lastIndexOf('/');
+  return slashIndex >= 0 ? url.slice(slashIndex + 1) : url;
 }
 
 /** Resolve all draft glTF 2.1 unified file references. */

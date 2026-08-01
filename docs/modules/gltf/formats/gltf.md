@@ -18,11 +18,25 @@ array with `gltf.loadFiles: true`.
 For packaged assets, [`resolveGLTFFile()`](/docs/modules/gltf/api-reference/gltf-loader) also accepts
 a string reference. It looks up `files[*].name` or the original `files[*].uri`, providing the virtual
 file-system primitive needed to resolve dependencies from an embedded glTF asset. Recursive
-`externalAssets` parsing is intentionally separate from this file-resolution layer.
+`externalAssets` parsing builds on this file-resolution layer.
 
 This support follows the Khronos [Unified File References draft](https://github.com/KhronosGroup/glTF/issues/2590)
 and [Packaging External Assets draft](https://github.com/KhronosGroup/glTF/issues/2589), and may
 evolve while glTF 2.1 is finalized.
+
+## Draft glTF 2.1 External Assets
+
+The top-level `externalAssets` array references glTF files through `externalAssets[*].file`, and a
+scene node instantiates one of those models with `node.externalAsset`. Set
+`gltf.loadExternalAssets: true` to recursively parse referenced models into the parallel
+`gltf.externalAssets` result array.
+
+URI-backed models resolve their own dependencies relative to their URI. For models embedded in a
+data URI or buffer view, dependency URIs are looked up by name in the containing asset's `files`
+array. The loader caches repeated URI references, leaves unreferenced definitions unloaded, and
+rejects cyclical asset graphs.
+
+This support follows the Khronos [External Assets draft](https://github.com/KhronosGroup/glTF/issues/2586).
 
 ## Variants
 

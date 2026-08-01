@@ -27,6 +27,7 @@ Release Date: 2026
 - [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) and [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) add draft [GLB v3](/docs/modules/gltf/formats/glb) support for 64-bit lengths, multi-chunk traversal, reserved chunk-encoding validation, and explicit `buffer.chunk` references, advancing glTF 2.1 readiness.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds draft [glTF 2.1 accessor component types](/docs/modules/gltf/formats/gltf#accessor-component-types), including signed 32-bit integers, 16- and 64-bit floats, and signed and unsigned 64-bit integers.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds opt-in loading of draft glTF 2.1 [unified file references](/docs/modules/gltf/formats/gltf) from URIs or buffer views, plus virtual package lookup through `resolveGLTFFile()`.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
 
 **@loaders.gl/las** 
 

@@ -629,6 +629,8 @@ export type GLTFNodePostprocessed = {
    * The index of the mesh in this node.
    */
   mesh?: GLTFMeshPostprocessed;
+  /** Index of the draft glTF 2.1 external asset instantiated by this node. */
+  externalAsset?: GlTfId;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */

@@ -17,6 +17,7 @@ export type {
   GLTFTexture,
   GLTFImage,
   GLTFFile,
+  GLTFExternalAsset,
   GLTFObject,
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,
