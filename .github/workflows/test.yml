@@ -35,7 +35,7 @@ jobs:
             playwright: true
             scope: 'headless tests'
             test-command: test-headless-cover
-            test-arguments: --maxWorkers=2
+            test-arguments: --maxWorkers=1
           - node-version: 22
             coverage: false
             coverage-flag: ''
