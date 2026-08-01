@@ -12,7 +12,7 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | File Extensions | `.glb`, `.gltf`                                                                                                                                                 |
 | File Type       | Binary, JSON, Linked Assets                                                                                                                                     |
-| File Format     | [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
+| File Format     | [glTF v2.1 (draft)](/docs/modules/gltf/formats/gltf#gltf-21-draft), [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
 | Supported APIs  | `load`, `parse`                                                                                                                                                 |
 | Subloaders      | `DracoLoader`, `ImageBitmapLoader`                                                                                                                              |     |
@@ -39,6 +39,8 @@ const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 ## Overview
 
 The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
+
+Draft glTF 2.1 readiness includes the [new accessor component type definitions](/docs/modules/gltf/formats/gltf#accessor-component-types). `GLTFScenegraph` and `postProcessGLTF` expose these values through the corresponding JavaScript typed arrays.
 
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 

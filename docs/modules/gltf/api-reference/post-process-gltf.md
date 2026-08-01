@@ -92,6 +92,8 @@ The accessor parameters which are textual strings in glTF will be resolved into 
 
 - `accessor.value` - This will be set to a typed array that is a view into the underlying bufferView.
 
+Draft glTF 2.1 accessor component types are represented by `Int32Array`, `Float64Array`, `Uint16Array` (raw IEEE-754 binary16 words), `BigInt64Array`, or `BigUint64Array` as appropriate. See [Accessor Component Types](/docs/modules/gltf/formats/gltf#accessor-component-types).
+
 Remarks:
 
 - While it can be very convenient to initialize WebGL buffers from `accessor.value`, this approach will defeat any memory sharing on the GPU that the glTF file specifies through accessors sharing `bufferViews`. The canonical way of instantitating a glTF model is for an application to create one WebGL buffer for each `bufferView` and then use accessors to reference data chunks inside those WebGL buffers with `offset` and `stride`.

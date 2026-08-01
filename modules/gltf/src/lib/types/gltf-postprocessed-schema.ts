@@ -1,7 +1,7 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-type` = on 2018-02-24
 
-import type {TypedArray} from '@loaders.gl/loader-utils';
+import type {BigTypedArray} from '@loaders.gl/loader-utils';
 
 export type GlTfId = number;
 
@@ -83,7 +83,7 @@ export type GLTFAccessorPostprocessed = {
   components: number;
   bytesPerComponent: number;
   bytesPerElement: number;
-  value: TypedArray;
+  value: BigTypedArray;
 
   // GLTF attributes (possibly overridden)
   /**
@@ -97,7 +97,19 @@ export type GLTFAccessorPostprocessed = {
   /**
    * The datatype of components in the attribute.
    */
-  componentType: 5120 | 5121 | 5122 | 5123 | 5125 | 5126 | number;
+  componentType:
+    | 5120
+    | 5121
+    | 5122
+    | 5123
+    | 5124
+    | 5125
+    | 5126
+    | 5130
+    | 5131
+    | 5134
+    | 5135
+    | number;
   /**
    * Specifies whether integer data values should be normalized.
    */
