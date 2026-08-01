@@ -30,9 +30,9 @@ Features:
   retain the minimum level of detail appropriate for each zoom level
   (shapes are simplified and tiny polygons and line segments are filtered out).
 
-<!--
+{/*
 There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **TableTileSourceLoader** on different data. Just drag any GeoJSON on the page, watching the console.
---->
+*/}
 
 ### Install
 
