@@ -72,7 +72,7 @@ export const GLTFAccessorSchema = z
 export const GLTFAnimationChannelTargetSchema = z
   .object({
     node: GLTFIdSchema.optional(),
-    path: z.enum(['translation', 'rotation', 'scale', 'weights']),
+    path: z.union([z.enum(['translation', 'rotation', 'scale', 'weights']), z.string()]),
     ...GLTF_PROPERTY_SHAPE
   })
   .catchall(z.unknown());
@@ -160,24 +160,44 @@ export const GLTFCameraPerspectiveSchema = z
   .catchall(z.unknown());
 
 /** Zod schema for a glTF camera. */
-export const GLTFCameraSchema = z
-  .object({
-    orthographic: GLTFCameraOrthographicSchema.optional(),
-    perspective: GLTFCameraPerspectiveSchema.optional(),
-    type: z.enum(['perspective', 'orthographic']),
-    ...GLTF_NAMED_PROPERTY_SHAPE
-  })
-  .catchall(z.unknown());
+export const GLTFCameraSchema = z.discriminatedUnion('type', [
+  z
+    .object({
+      type: z.literal('orthographic'),
+      orthographic: GLTFCameraOrthographicSchema,
+      perspective: z.never().optional(),
+      ...GLTF_NAMED_PROPERTY_SHAPE
+    })
+    .catchall(z.unknown()),
+  z
+    .object({
+      type: z.literal('perspective'),
+      perspective: GLTFCameraPerspectiveSchema,
+      orthographic: z.never().optional(),
+      ...GLTF_NAMED_PROPERTY_SHAPE
+    })
+    .catchall(z.unknown())
+]);
 
 /** Zod schema for a glTF image. */
-export const GLTFImageSchema = z
-  .object({
-    uri: z.string().optional(),
-    mimeType: z.string().optional(),
-    bufferView: GLTFIdSchema.optional(),
-    ...GLTF_NAMED_PROPERTY_SHAPE
-  })
-  .catchall(z.unknown());
+export const GLTFImageSchema = z.union([
+  z
+    .object({
+      uri: z.string(),
+      mimeType: z.string().optional(),
+      bufferView: z.never().optional(),
+      ...GLTF_NAMED_PROPERTY_SHAPE
+    })
+    .catchall(z.unknown()),
+  z
+    .object({
+      bufferView: GLTFIdSchema,
+      mimeType: z.string(),
+      uri: z.never().optional(),
+      ...GLTF_NAMED_PROPERTY_SHAPE
+    })
+    .catchall(z.unknown())
+]);
 
 /** Zod schema for a glTF texture reference. */
 export const GLTFTextureInfoSchema = z

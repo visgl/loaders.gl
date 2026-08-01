@@ -83,6 +83,10 @@ Release Date: 2026
 - [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
 - [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
 
+**@loaders.gl/gltf**
+
+- `GLTFSchema` and schemas for individual glTF JSON objects provide Zod-based runtime validation. A generated Draft-07 JSON Schema is published at the `gltf.schema.json` package subpath for Monaco and other editor integrations.
+
 **@loaders.gl/json**
 
 - [`JSONLoader`](/docs/modules/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
