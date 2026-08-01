@@ -34,7 +34,7 @@ jobs:
       - name: Enable Corepack / Yarn 4
         run: |
           corepack enable
-          corepack prepare yarn@4.10.3 --activate
+          corepack prepare yarn@4.17.1 --activate
           yarn -v
 
       - name: Cache website Yarn artifacts
