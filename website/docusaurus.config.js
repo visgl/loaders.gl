@@ -1,7 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const webpack = require('webpack');
 const {resolve} = require('path');
 const {version} = require('../package.json');
 const {themes} = require('prism-react-renderer');
@@ -11,6 +10,39 @@ const darkCodeTheme = themes.dracula;
 /** @type {import('@docusaurus/types').Config} */
 const siteUrl = process.env.DOCUSAURUS_URL || 'https://loaders.gl';
 const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
+
+/** Creates loaders.gl's custom plugins using the bundler selected by Docusaurus. */
+function createBundlerPlugin() {
+  return {
+    name: 'loaders-gl-bundler-plugin',
+    configureWebpack(_config, _isServer, {currentBundler}) {
+      const bundler = currentBundler.instance;
+      return {
+        plugins: [
+          new bundler.DefinePlugin({
+            __VERSION__: JSON.stringify(version)
+          }),
+          new bundler.NormalModuleReplacementPlugin(
+            /^web-worker$/,
+            resolve('../node_modules/web-worker/src/browser/index.js')
+          ),
+          new bundler.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+              resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {
+              resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
+            }
+          })
+        ]
+      };
+    }
+  };
+}
 
 const config = {
   title: 'loaders.gl',
@@ -22,6 +54,10 @@ const config = {
   organizationName: 'visgl', // Usually your GitHub org/user name.
   projectName: 'loaders.gl', // Usually your repo name.
   trailingSlash: false,
+
+  future: {
+    v4: true
+  },
 
   markdown: {
     hooks: {
@@ -52,8 +88,9 @@ const config = {
   ],
 
   plugins: [
+    createBundlerPlugin,
     [
-      'docusaurus-node-polyfills', 
+      require.resolve('./node-polyfills-docusaurus-plugin'),
       { 
         excludeAliases: ['console']
       }
@@ -148,25 +185,6 @@ const config = {
             // '../react-table.css.js'
           }
         },
-        plugins: [
-          new webpack.DefinePlugin({
-            __VERSION__: JSON.stringify(version)
-          }),
-          // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
-          new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
-          new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
-            const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.includes('/modules/worker-utils/src')) {
-              resource.request = resolve('./src/shims/loadersgl-worker-version.js');
-            }
-          }),
-          new webpack.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
-            const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {
-              resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
-            }
-          })
-        ],
         module: {
           rules: [
             {
@@ -294,7 +312,7 @@ const config = {
           {
             type: 'html',
             position: 'right',
-            value: '<a href="https://openvisualization.org" target="_blank" style="content: \'\'; height: 80px; width: 100px; margin-top: -30px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat;  background-size: 80px 110px; display: flex">'
+            value: '<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: \'\'; height: 80px; width: 100px; margin-top: -30px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>'
           },
           {
             href: 'https://github.com/visgl/loaders.gl',
