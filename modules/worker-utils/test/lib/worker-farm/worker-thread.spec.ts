@@ -34,3 +34,67 @@ test('WorkerThread', async t => {
 
   t.end();
 });
+
+test('WorkerThread#loadWorker', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  let loadWorkerCalls = 0;
+  const workerThread = new WorkerThread({
+    name: 'test-worker',
+    loadWorker: () => {
+      loadWorkerCalls++;
+      const workerSourceUrl = URL.createObjectURL(
+        new Blob([testWorkerSource], {type: 'application/javascript'})
+      );
+      return new Worker(workerSourceUrl);
+    }
+  });
+
+  t.equal(loadWorkerCalls, 1, 'loadWorker creates the browser Worker');
+
+  workerThread.destroy();
+  t.ok(workerThread.terminated);
+  t.end();
+});
+
+test('WorkerThread#loadWorker falls back to source', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  const workerThread = new WorkerThread({
+    name: 'test-worker',
+    loadWorker: () => null,
+    source: testWorkerSource
+  });
+
+  workerThread.destroy();
+  t.ok(workerThread.terminated);
+  t.end();
+});
+
+test('WorkerThread#loadWorker falls back to source after construction error', async t => {
+  if (!hasWorker) {
+    t.comment('Worker test is browser only');
+    t.end();
+    return;
+  }
+
+  const workerThread = new WorkerThread({
+    name: 'test-worker',
+    loadWorker: () => {
+      throw new Error('loadWorker failed');
+    },
+    source: testWorkerSource
+  });
+
+  workerThread.destroy();
+  t.ok(workerThread.terminated);
+  t.end();
+});

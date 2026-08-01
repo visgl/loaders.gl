@@ -11,12 +11,20 @@ import type {
   WorkerMessagePayload
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
+import type {WorkerPoolTarget} from '../worker-farm/worker-pool';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {getWorkerURL, getWorkerName} from './get-worker-url';
+import {
+  getCustomWorkerURL,
+  getDefaultWorkerURL,
+  getWorkerURL,
+  getWorkerName
+} from './get-worker-url';
 import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
+import {isBrowser} from '../env-utils/globals';
 
 /** Options for worker processing */
 export type ProcessOnWorkerOptions = WorkerOptions & {
+  /** Name assigned to this worker job for debugging. */
   jobName?: string;
   [key: string]: any;
 };
@@ -56,11 +64,7 @@ export async function processOnWorker(
   const name = getWorkerName(worker);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
-  if (!source) {
-    workerPoolProps.url = getWorkerURL(worker, options);
-  }
+  const workerPoolProps = getWorkerPoolProps(worker, options, name);
   const workerPool = workerFarm.getWorkerPool(workerPoolProps);
 
   const jobName = options.jobName || worker.name;
@@ -96,11 +100,7 @@ export async function preloadWorker(
 ): Promise<void> {
   const name = getWorkerName(worker);
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
-  if (!source) {
-    workerPoolProps.url = getWorkerURL(worker, options);
-  }
+  const workerPoolProps = getWorkerPoolProps(worker, options, name);
   const workerPool = workerFarm.getWorkerPool(workerPoolProps);
   const count = preloadOptions.count ?? options.maxConcurrency ?? options.core?.maxConcurrency ?? 1;
 
@@ -111,6 +111,41 @@ export async function preloadWorker(
   });
 
   await Promise.all(preloadJobs);
+}
+
+/**
+ * Resolve the worker pool source without generating fallback URLs before they are needed.
+ * @param worker Worker object to resolve.
+ * @param options Worker options for the active job.
+ * @param name Versioned worker pool name.
+ * @returns Worker pool target properties.
+ */
+function getWorkerPoolProps(
+  worker: WorkerObject,
+  options: ProcessOnWorkerOptions,
+  name: string
+): WorkerPoolTarget {
+  const {source} = options;
+  if (source) {
+    return {name, source};
+  }
+
+  const customWorkerUrl = getCustomWorkerURL(worker, options);
+  if (customWorkerUrl) {
+    return {name, url: customWorkerUrl};
+  }
+
+  if (isBrowser && worker.loadWorker) {
+    return {
+      name,
+      loadWorker: worker.loadWorker,
+      loadWorkerOptions: options,
+      getUrl: () => getWorkerURL(worker, options),
+      urlKey: getDefaultWorkerURL(worker)
+    };
+  }
+
+  return {name, url: getWorkerURL(worker, options)};
 }
 
 /**

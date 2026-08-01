@@ -51,6 +51,29 @@ test('TriangulationWorker#plumbing', async t => {
   t.end();
 });
 
+test('TriangulationWorker#loadWorker default - BROWSER ONLY', async t => {
+  if (!isBrowser) {
+    t.comment('Module worker loadWorker test is browser only');
+    t.end();
+    return;
+  }
+
+  const sourceData = {
+    operation: 'test',
+    data: new ArrayBuffer(100)
+  };
+
+  const triangulatedData = await processOnWorker(TriangulationWorker, sourceData, {
+    reuseWorkers: false
+  });
+
+  t.ok(triangulatedData, 'Triangulation loadWorker echoed input data');
+  t.equal(triangulatedData.operation, 'test', 'Triangulation loadWorker returned test operation');
+  t.equal(triangulatedData.data?.byteLength, 100, 'Triangulation loadWorker returned buffer');
+
+  t.end();
+});
+
 test.skip('triangulateOnWorker', async t => {
   t.ok(triangulateOnWorker, 'triangulateOnWorker imported ok');
   /*

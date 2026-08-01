@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
+import type {LoadWorker, WorkerMessageType, WorkerMessagePayload, WorkerOptions} from '../../types';
 import {isMobile} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
@@ -19,13 +19,34 @@ type OnDebugParameters = {
 
 /** WorkerPool Properties */
 export type WorkerPoolProps = {
+  /** Human-readable worker pool name. */
   name?: string;
+  /** Inline worker source used for source-backed workers. */
   source?: string; // | Function;
+  /** Worker script URL used for URL-backed workers. */
   url?: string;
+  /** Lazily resolves a fallback worker URL if loadWorker is unavailable. */
+  getUrl?: () => string;
+  /** Creates a browser Worker instance without going through a URL string. */
+  loadWorker?: LoadWorker;
+  /** Worker options forwarded to loadWorker. */
+  loadWorkerOptions?: WorkerOptions;
+  /** Maximum number of workers to run concurrently on desktop browsers or Node.js. */
   maxConcurrency?: number;
+  /** Maximum number of workers to run concurrently on mobile browsers. */
   maxMobileConcurrency?: number;
+  /** Debug callback invoked when jobs are started. */
   onDebug?: (options: OnDebugParameters) => any;
+  /** Whether workers should be reused after completing a job. */
   reuseWorkers?: boolean;
+};
+
+/** Worker pool lookup options, including values that only affect pool identity. */
+export type WorkerPoolTarget = WorkerPoolProps & {
+  /** Worker name used as the base pool identity. */
+  name: string;
+  /** Stable cache key for a lazily resolved fallback URL. */
+  urlKey?: string;
 };
 
 /** Private helper types */
@@ -43,12 +64,25 @@ type QueuedJob = {
  * Process multiple data messages with small pool of identical workers
  */
 export default class WorkerPool {
+  /** Human-readable worker pool name. */
   name: string = 'unnamed';
+  /** Inline worker source used for source-backed workers. */
   source?: string; // | Function;
+  /** Worker script URL used for URL-backed workers. */
   url?: string;
+  /** Lazily resolves a fallback worker URL if loadWorker is unavailable. */
+  getUrl?: () => string;
+  /** Creates a browser Worker instance without going through a URL string. */
+  loadWorker?: LoadWorker;
+  /** Worker options forwarded to loadWorker. */
+  loadWorkerOptions?: WorkerOptions;
+  /** Maximum number of workers to run concurrently on desktop browsers or Node.js. */
   maxConcurrency: number = 1;
+  /** Maximum number of workers to run concurrently on mobile browsers. */
   maxMobileConcurrency: number = 1;
+  /** Debug callback invoked when jobs are started. */
   onDebug: (options: OnDebugParameters) => any = () => {};
+  /** Whether workers should be reused after completing a job. */
   reuseWorkers: boolean = true;
 
   private props: WorkerPoolProps = {};
@@ -63,12 +97,14 @@ export default class WorkerPool {
   }
 
   /**
-   * @param processor - worker function
-   * @param maxConcurrency - max count of workers
+   * @param props Worker pool properties.
    */
   constructor(props: WorkerPoolProps) {
     this.source = props.source;
     this.url = props.url;
+    this.getUrl = props.getUrl;
+    this.loadWorker = props.loadWorker;
+    this.loadWorkerOptions = props.loadWorkerOptions;
     this.setProps(props);
   }
 
@@ -82,6 +118,10 @@ export default class WorkerPool {
     this.isDestroyed = true;
   }
 
+  /**
+   * Updates worker pool configuration.
+   * @param props Worker pool properties to merge into the current pool.
+   */
   setProps(props: WorkerPoolProps) {
     this.props = {...this.props, ...props};
 
@@ -211,7 +251,14 @@ export default class WorkerPool {
     if (this.count < this._getMaxConcurrency()) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({name, source: this.source, url: this.url});
+      return new WorkerThread({
+        name,
+        source: this.source,
+        url: this.url,
+        getUrl: this.getUrl,
+        loadWorker: this.loadWorker,
+        loadWorkerOptions: this.loadWorkerOptions
+      });
     }
 
     // No worker available, have to wait

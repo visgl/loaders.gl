@@ -23,13 +23,15 @@ export function getWorkerName(worker: WorkerObject): string {
 }
 
 /**
- * Generate a worker URL based on worker object and options
- * @returns A URL to one of the following:
- * - a published worker on unpkg CDN
- * - a local test worker
- * - a URL provided by the user in options
+ * Returns a user-specified or test worker URL, without generating a default CDN URL.
+ * @param worker Worker object to resolve.
+ * @param options Worker options that may include URL overrides or test worker flags.
+ * @returns A custom or test worker URL, or `null` when no URL override is present.
  */
-export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
+export function getCustomWorkerURL(
+  worker: WorkerObject,
+  options: WorkerOptions = {}
+): string | null {
   const workerOptions = options[worker.id] || {};
 
   const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
@@ -49,7 +51,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
   const workerType = (options as any)._workerType || (options as any)?.core?._workerType;
-  if (workerType === 'test') {
+  if (!url && workerType === 'test') {
     if (isBrowser) {
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {
@@ -58,23 +60,49 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     }
   }
 
+  return url || null;
+}
+
+/**
+ * Generate a worker URL based on worker object and options
+ * @returns A URL to one of the following:
+ * - a published worker on unpkg CDN
+ * - a local test worker
+ * - a URL provided by the user in options
+ */
+export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
+  let url = getCustomWorkerURL(worker, options);
+
   // If url override is not provided, generate a URL to published version on npm CDN unpkg.com
   if (!url) {
-    // GENERATE
-    let version = worker.version;
-    // On master we need to load npm alpha releases published with the `beta` tag
-    if (version === 'latest') {
-      // throw new Error('latest worker version specified');
-      version = NPM_TAG;
-    }
-    const versionTag = version ? `@${version}` : '';
-    url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
-    warnIfUsingNpmTagFallback(worker, url);
+    url = getDefaultWorkerURL(worker, true);
   }
 
   assert(url);
 
   // Allow user to override location
+  return url;
+}
+
+/**
+ * Returns the generated prebuilt worker URL.
+ * @param worker Worker object to resolve.
+ * @param warn Whether to warn when the npm tag fallback is used.
+ */
+export function getDefaultWorkerURL(worker: WorkerObject, warn: boolean = false): string {
+  const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
+  // GENERATE
+  let version = worker.version;
+  // On master we need to load npm alpha releases published with the `beta` tag
+  if (version === 'latest') {
+    // throw new Error('latest worker version specified');
+    version = NPM_TAG;
+  }
+  const versionTag = version ? `@${version}` : '';
+  const url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
+  if (warn) {
+    warnIfUsingNpmTagFallback(worker, url);
+  }
   return url;
 }
 
