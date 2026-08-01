@@ -54,6 +54,9 @@ export class BrotliCompression extends Compression {
   /** Only use native decompression when no codec-specific options would be ignored. */
   protected readonly useNativeDecompressionStream: boolean;
 
+  /** Registered Brotli module that takes precedence over native decompression. */
+  protected readonly decompressionModuleName = 'brotli';
+
   constructor(options: BrotliCompressionOptions = {}) {
     super(options);
     this.options = options;

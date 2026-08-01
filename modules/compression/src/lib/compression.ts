@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 // Compression interface
-import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffersAsync,
+  getJSModuleOrNull,
+  registerJSModules
+} from '@loaders.gl/loader-utils';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream,
@@ -28,6 +32,9 @@ export abstract class Compression {
 
   /** Whether default asynchronous decompression can use the native stream path. */
   protected readonly useNativeDecompressionStream: boolean = true;
+
+  /** Registered fallback module that takes precedence over native decompression. */
+  protected readonly decompressionModuleName: string | undefined = undefined;
 
   constructor(options?: CompressionOptions) {
     this.compressBatches = this.compressBatches.bind(this);
@@ -79,7 +86,7 @@ export abstract class Compression {
   async *decompressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    if (this.decompressionStreamFormat && this.useNativeDecompressionStream) {
+    if (this.decompressionStreamFormat && this.shouldUseNativeDecompressionStream()) {
       const outputBatches = decompressBatchesWithNativeDecompressionStream(
         asyncIterator,
         this.decompressionStreamFormat
@@ -110,10 +117,23 @@ export abstract class Compression {
   protected async tryDecompressWithNativeDecompressionStream(
     input: ArrayBuffer
   ): Promise<ArrayBuffer | null> {
-    if (!this.decompressionStreamFormat || !this.useNativeDecompressionStream) {
+    if (!this.decompressionStreamFormat || !this.shouldUseNativeDecompressionStream()) {
       return null;
     }
     return await decompressWithNativeDecompressionStream(input, this.decompressionStreamFormat);
+  }
+
+  /**
+   * Returns whether native asynchronous decompression should be attempted.
+   *
+   * Explicitly registered fallback modules take precedence so applications that provide a
+   * library do not silently switch implementations when a runtime adds native support.
+   */
+  protected shouldUseNativeDecompressionStream(): boolean {
+    return (
+      this.useNativeDecompressionStream &&
+      (!this.decompressionModuleName || !getJSModuleOrNull(this.decompressionModuleName))
+    );
   }
 
   protected improveError(error) {

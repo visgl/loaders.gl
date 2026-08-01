@@ -18,6 +18,13 @@ import {
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
+import {
+  installRecordingDecompressionStream,
+  NATIVE_DECOMPRESSION_FIXTURES,
+  NATIVE_DECOMPRESSION_TEST_DATA,
+  supportsNativeDecompressionStream,
+  type NativeDecompressionTestFormat
+} from './utils/native-decompression-test-utils';
 
 // Import big dependencies
 
@@ -162,39 +169,65 @@ test('compression#batched', async t => {
   t.end();
 });
 
-test('gzip#native DecompressionStream atomic and batched', async t => {
-  if (typeof globalThis.DecompressionStream === 'undefined') {
-    t.comment('DecompressionStream is not available in this runtime');
-    t.end();
-    return;
+test('compression#native DecompressionStream formats', async t => {
+  for (const format of Object.keys(
+    NATIVE_DECOMPRESSION_FIXTURES
+  ) as NativeDecompressionTestFormat[]) {
+    if (!(await supportsNativeDecompressionStream(format))) {
+      t.comment(`${format} DecompressionStream is not available in this runtime`);
+      continue;
+    }
+
+    const restoreModule =
+      format === 'brotli'
+        ? removeRegisteredModule('brotli')
+        : format === 'zstd'
+          ? removeRegisteredModule('zstd-codec')
+          : null;
+    const nativeFormats: NativeDecompressionTestFormat[] = [];
+    const restoreDecompressionStream = installRecordingDecompressionStream(nativeFormats);
+
+    try {
+      const compression =
+        format === 'gzip'
+          ? new GZipCompression()
+          : format === 'deflate'
+            ? new DeflateCompression()
+            : format === 'deflate-raw'
+              ? new DeflateCompression({raw: true})
+              : format === 'brotli'
+                ? new BrotliCompression()
+                : new ZstdCompression();
+      const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES[format]).buffer;
+
+      const decompressedData = await compression.decompress(compressedData);
+      t.ok(
+        compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
+        `native atomic ${format} decompression works`
+      );
+
+      const splitIndex = Math.max(1, Math.floor(compressedData.byteLength / 2));
+      const compressedBatches = [
+        compressedData.slice(0, splitIndex),
+        compressedData.slice(splitIndex, compressedData.byteLength)
+      ];
+      const decompressedBatches = compression.decompressBatches(compressedBatches);
+      const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
+      t.ok(
+        compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData),
+        `native batched ${format} decompression works`
+      );
+      t.deepEqual(
+        nativeFormats,
+        [format, format],
+        `${format} uses the native stream for atomic and batched decompression`
+      );
+    } finally {
+      restoreDecompressionStream();
+      restoreModule?.();
+    }
   }
 
-  try {
-    const probeStream = new globalThis.DecompressionStream('gzip');
-    await probeStream.writable.abort();
-  } catch {
-    t.comment('gzip DecompressionStream is not available in this runtime');
-    t.end();
-    return;
-  }
-
-  const inputData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9]).buffer;
-  const compression = new GZipCompression();
-  const compressedData = compression.compressSync(inputData);
-
-  const decompressedData = await compression.decompress(compressedData);
-  t.ok(compareArrayBuffers(inputData, decompressedData), 'native atomic gzip decompression works');
-
-  const compressedBatches = [
-    compressedData.slice(0, 5),
-    compressedData.slice(5, compressedData.byteLength)
-  ];
-  const decompressedBatches = compression.decompressBatches(compressedBatches);
-  const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
-  t.ok(
-    compareArrayBuffers(inputData, decompressedBatchData),
-    'native batched gzip decompression works'
-  );
   t.end();
 });
 
@@ -229,11 +262,11 @@ test('zstd#native DecompressionStream works without zstd-codec', async t => {
   t.end();
 });
 
-test('zstd#unsupported native format falls back to zstd-codec', async t => {
+test('zstd#provided zstd-codec bypasses native DecompressionStream', async t => {
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream({
     formats,
-    supportedFormats: []
+    supportedFormats: ['zstd']
   });
 
   try {
@@ -243,7 +276,51 @@ test('zstd#unsupported native format falls back to zstd-codec', async t => {
     const decompressedData = await compression.decompress(compressedData);
 
     t.ok(compareArrayBuffers(inputData, decompressedData), 'zstd codec fallback decompresses data');
-    t.deepEqual(formats, ['zstd'], 'zstd native support is probed before falling back');
+    const splitIndex = Math.max(1, Math.floor(compressedData.byteLength / 2));
+    const decompressedBatches = compression.decompressBatches([
+      compressedData.slice(0, splitIndex),
+      compressedData.slice(splitIndex, compressedData.byteLength)
+    ]);
+    const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
+    t.ok(
+      compareArrayBuffers(inputData, decompressedBatchData),
+      'zstd codec fallback decompresses batches'
+    );
+    t.deepEqual(formats, [], 'provided zstd codec bypasses the native stream');
+  } finally {
+    restoreDecompressionStream();
+  }
+
+  t.end();
+});
+
+test('brotli#provided module bypasses native DecompressionStream', async t => {
+  const formats: string[] = [];
+  const restoreDecompressionStream = installMockDecompressionStream({
+    formats,
+    supportedFormats: ['brotli']
+  });
+
+  try {
+    const compression = new BrotliCompression({modules});
+    const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES.brotli).buffer;
+    const decompressedData = await compression.decompress(compressedData);
+
+    t.ok(
+      compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
+      'provided brotli module decompresses data'
+    );
+    const splitIndex = Math.max(1, Math.floor(compressedData.byteLength / 2));
+    const decompressedBatches = compression.decompressBatches([
+      compressedData.slice(0, splitIndex),
+      compressedData.slice(splitIndex, compressedData.byteLength)
+    ]);
+    const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
+    t.ok(
+      compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData),
+      'provided brotli module decompresses batches'
+    );
+    t.deepEqual(formats, [], 'provided brotli module bypasses the native stream');
   } finally {
     restoreDecompressionStream();
   }
@@ -257,16 +334,18 @@ test('zstd#native stream failures do not fall back', async t => {
     supportedFormats: ['zstd'],
     failWith: new Error('mock native decompression failed')
   });
+  const restoreZstdCodec = removeRegisteredModule('zstd-codec');
 
   try {
     const inputData = new Uint8Array([1, 2, 3]).buffer;
-    const compression = new ZstdCompression({modules});
+    const compression = new ZstdCompression();
     await t.rejects(
       compression.decompress(inputData),
       /mock native decompression failed/,
       'native stream errors propagate'
     );
   } finally {
+    restoreZstdCodec();
     restoreDecompressionStream();
   }
 

@@ -120,9 +120,10 @@ field-level GeoArrow metadata.
 ## Compressions
 
 Some compression codecs are big and need to be imported explicitly by the application and passed
-to the `ParquetLoader`. Zstandard pages can be decompressed without `zstd-codec` when the
-runtime supports `new DecompressionStream('zstd')`; inject `zstd-codec` as the fallback for
-other runtimes. LZ4 still requires `lz4js`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+to the `ParquetLoader`. Without an injected codec, Zstandard pages can use
+`new DecompressionStream('zstd')` when a future runtime supports it. Inject `zstd-codec` for broad
+runtime compatibility; when provided, loaders.gl uses it instead of the native stream path. LZ4
+still requires `lz4js`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';

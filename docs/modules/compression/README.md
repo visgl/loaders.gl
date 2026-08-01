@@ -7,11 +7,12 @@
 The `@loaders.gl/compression` module provides a selection of lossless,
 compression/decompression "transforms" with a unified interface that work both in browsers and in Node.js
 
-Default asynchronous `decompress()` and `decompressBatches()` calls use the runtime's
-`DecompressionStream` implementation for gzip, deflate, raw deflate, Brotli, and Zstandard
-when that exact format is supported. If the API or format is unavailable, loaders.gl falls back
-to its existing codec implementation. Compression and synchronous decompression keep their
-existing codec requirements. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+When no relevant codec module is registered, default asynchronous `decompress()` and
+`decompressBatches()` calls use the runtime's `DecompressionStream` implementation for gzip,
+deflate, raw deflate, Brotli, and Zstandard when that exact format is supported. If a codec module
+is provided, loaders.gl uses it instead of silently switching implementations. Compression and
+synchronous decompression keep their existing codec requirements.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## API
 
