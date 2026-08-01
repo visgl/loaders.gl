@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Website for vis.gl project",
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.17.1",
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",

@@ -39,13 +39,6 @@ jobs:
             playwright: false
             scope: 'node tests'
             test-command: test-node
-          - node-version: 20
-            coverage: false
-            coverage-flag: ''
-            playwright: false
-            scope: 'node tests'
-            test-command: test-node
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,7 +51,7 @@ jobs:
       - name: Enable Corepack / Yarn 4
         run: |
           corepack enable
-          corepack prepare yarn@4.10.3 --activate
+          corepack prepare yarn@4.17.1 --activate
           yarn -v
 
       - name: Cache Yarn 4 artifacts
@@ -155,7 +148,7 @@ jobs:
       - name: Enable Corepack / Yarn 4
         run: |
           corepack enable
-          corepack prepare yarn@4.10.3 --activate
+          corepack prepare yarn@4.17.1 --activate
           yarn -v
 
       - name: Cache Yarn 4 artifacts
@@ -207,7 +200,7 @@ jobs:
       - name: Enable Corepack / Yarn 4
         run: |
           corepack enable
-          corepack prepare yarn@4.10.3 --activate
+          corepack prepare yarn@4.17.1 --activate
           yarn -v
 
       - name: Cache website Yarn artifacts
