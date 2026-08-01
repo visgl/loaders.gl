@@ -13,6 +13,7 @@ import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
+import {resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
@@ -22,6 +23,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   normalize?: boolean;
   loadImages?: boolean;
   loadBuffers?: boolean;
+  /** Resolve draft glTF 2.1 `files` entries. */
+  loadFiles?: boolean;
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
@@ -77,6 +80,10 @@ export async function parseGLTF(
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
+  }
+
+  if (options?.gltf?.loadFiles && gltf.json.files) {
+    await loadFiles(gltf, options, context);
   }
 
   // loadImages and decodeExtensions should not be running in parallel, because
@@ -197,6 +204,21 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
   // Populate images
   const images = gltf.json.images || [];
   gltf.images = new Array(images.length).fill({});
+
+  const files = gltf.json.files || [];
+  gltf.files = new Array(files.length).fill(null);
+}
+
+/** Resolve all draft glTF 2.1 unified file references. */
+async function loadFiles(
+  gltf: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context: LoaderContext
+): Promise<void> {
+  const files = gltf.json.files || [];
+  await Promise.all(
+    files.map((_, fileIndex) => resolveGLTFFile(gltf, fileIndex, options, context))
+  );
 }
 
 /** Asynchronously fetch and parse buffers, store in buffers array outside of json

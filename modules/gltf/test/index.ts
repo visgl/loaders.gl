@@ -7,6 +7,7 @@ import './lib/glb/glb-custom-payload.spec';
 import './lib/gltf-utils/gltf-attribute-utils.spec';
 import './lib/gltf-utils/gltf-accessor-component-types.spec';
 import './lib/gltf-utils/resolve-url.spec';
+import './lib/gltf-utils/resolve-gltf-file.spec';
 
 import './lib/api/gltf-scenegraph-modifiers.spec';
 import './lib/api/gltf-scenegraph-accessors.spec';

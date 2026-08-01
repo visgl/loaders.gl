@@ -8,6 +8,22 @@ glTF is a standard file format for three-dimensional scenes and models, intended
 
 An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation.
 
+## Draft glTF 2.1 Unified File References
+
+Draft glTF 2.1 adds a top-level `files` array for generic dependencies beyond buffers and images.
+Each file has a required `mimeType` and exactly one source: an external or data `uri`, or an
+embedded `bufferView`. `GLTFLoader` can resolve these entries into its parallel `files` result
+array with `gltf.loadFiles: true`.
+
+For packaged assets, [`resolveGLTFFile()`](/docs/modules/gltf/api-reference/gltf-loader) also accepts
+a string reference. It looks up `files[*].name` or the original `files[*].uri`, providing the virtual
+file-system primitive needed to resolve dependencies from an embedded glTF asset. Recursive
+`externalAssets` parsing is intentionally separate from this file-resolution layer.
+
+This support follows the Khronos [Unified File References draft](https://github.com/KhronosGroup/glTF/issues/2590)
+and [Packaging External Assets draft](https://github.com/KhronosGroup/glTF/issues/2589), and may
+evolve while glTF 2.1 is finalized.
+
 ## Variants
 
 A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb (binary). Both .gltf and .glb files may reference external binary and texture resources. Alternatively, both formats may be self-contained by directly embedding binary data buffers (as base64-encoded strings in .gltf files or as raw byte arrays in .glb files).

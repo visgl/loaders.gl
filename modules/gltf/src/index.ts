@@ -16,6 +16,7 @@ export type {
   GLTFSkin,
   GLTFTexture,
   GLTFImage,
+  GLTFFile,
   GLTFObject,
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,
@@ -77,7 +78,11 @@ export type {
   GLTFTexturePostprocessed
 } from './lib/types/gltf-postprocessed-schema';
 
-export type {GLTFWithBuffers, FeatureTableJson} from './lib/types/gltf-types';
+export type {
+  GLTFWithBuffers,
+  GLTFExternalFile,
+  FeatureTableJson
+} from './lib/types/gltf-types';
 export {
   GLTFSchema,
   GLTFIdSchema,
@@ -131,6 +136,10 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
+export {
+  findGLTFFileIndex,
+  resolveGLTFFile
+} from './lib/gltf-utils/resolve-gltf-file';
 
 export {
   createExtStructuralMetadata,
