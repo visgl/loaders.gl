@@ -36,3 +36,71 @@ test('GLBLoader#load(v1)', async t => {
   t.equal(glbv1.json.asset.version, '1.0', 'GLBLoader returned parsed data');
   t.end();
 });
+
+test('GLBLoader#parseSync(v3)', t => {
+  const data = createGLBV3({asset: {version: '2.1'}}, new Uint8Array([1, 2, 3, 4]));
+  const glbv3 = parseSync(data, GLBLoader);
+
+  t.equal(glbv3.version, 3, 'GLBLoader returned correct glb version');
+  t.equal(glbv3.header.byteLength, data.byteLength, 'GLBLoader read the 64-bit file length');
+  t.equal(glbv3.json.asset.version, '2.1', 'GLBLoader returned correct gltf version');
+  t.equal(glbv3.binChunks.length, 1, 'GLBLoader returned the BIN chunk');
+  t.equal(glbv3.binChunks[0].byteLength, 4, 'GLBLoader read the 64-bit chunk length');
+
+  t.end();
+});
+
+test('GLBLoader#parseSync(v3) rejects unsupported chunk encoding', t => {
+  const data = createGLBV3({asset: {version: '2.1'}});
+  const dataView = new DataView(data);
+  dataView.setUint32(20, 1, true);
+
+  t.throws(() => parseSync(data, GLBLoader), /Unsupported GLB chunk encoding 1/);
+  t.end();
+});
+
+test('GLBLoader#parseSync(v3) rejects unsafe 64-bit lengths', t => {
+  const data = new ArrayBuffer(16);
+  const dataView = new DataView(data);
+  dataView.setUint32(0, 0x46546c67, true);
+  dataView.setUint32(4, 3, true);
+  dataView.setBigUint64(8, BigInt(Number.MAX_SAFE_INTEGER) + 1n, true);
+
+  t.throws(
+    () => parseSync(data, GLBLoader),
+    /GLB byte length exceeds JavaScript's safe integer range/
+  );
+  t.end();
+});
+
+/** Create a GLB v3 fixture using the draft Khronos binary layout. */
+function createGLBV3(json: Record<string, unknown>, binary?: Uint8Array): ArrayBuffer {
+  const textEncoder = new TextEncoder();
+  const jsonBytes = textEncoder.encode(JSON.stringify(json));
+  const jsonByteLength = Math.ceil(jsonBytes.byteLength / 4) * 4;
+  const binaryByteLength = binary ? Math.ceil(binary.byteLength / 4) * 4 : 0;
+  const fileByteLength = 16 + 16 + jsonByteLength + (binary ? 16 + binaryByteLength : 0);
+  const arrayBuffer = new ArrayBuffer(fileByteLength);
+  const dataView = new DataView(arrayBuffer);
+  const bytes = new Uint8Array(arrayBuffer);
+
+  dataView.setUint32(0, 0x46546c67, true);
+  dataView.setUint32(4, 3, true);
+  dataView.setBigUint64(8, BigInt(fileByteLength), true);
+
+  dataView.setUint32(16, 0x4e4f534a, true);
+  dataView.setUint32(20, 0, true);
+  dataView.setBigUint64(24, BigInt(jsonByteLength), true);
+  bytes.fill(0x20, 32, 32 + jsonByteLength);
+  bytes.set(jsonBytes, 32);
+
+  if (binary) {
+    const binaryHeaderByteOffset = 32 + jsonByteLength;
+    dataView.setUint32(binaryHeaderByteOffset, 0x004e4942, true);
+    dataView.setUint32(binaryHeaderByteOffset + 4, 0, true);
+    dataView.setBigUint64(binaryHeaderByteOffset + 8, BigInt(binaryByteLength), true);
+    bytes.set(binary, binaryHeaderByteOffset + 16);
+  }
+
+  return arrayBuffer;
+}
