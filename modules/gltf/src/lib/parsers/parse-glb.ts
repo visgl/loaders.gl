@@ -89,6 +89,7 @@ export function parseGLBSync(
     version,
 
     json: {},
+    jsonChunkIndex: -1,
     binChunks: []
   } as GLB);
 
@@ -124,10 +125,10 @@ function parseGLBV1(glb: GLB, dataView: DataView, byteOffset: number): number {
   // GLB v1 only supports a single chunk type
   assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
 
-  parseJSONChunk(glb, dataView, byteOffset, contentLength);
+  parseJSONChunk(glb, dataView, byteOffset, contentLength, 0);
   // No need to call the function padToBytes() from parseJSONChunk()
   byteOffset += contentLength;
-  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength);
+  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength, 1);
 
   return byteOffset;
 }
@@ -177,6 +178,7 @@ function parseGLBChunksSync(
 ) {
   const fileEndByteOffset = glb.header.byteOffset + glb.header.byteLength;
   assert(fileEndByteOffset <= dataView.byteLength);
+  let chunkIndex = 0;
 
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   // Iterate as long as there is space left for another chunk header
@@ -199,21 +201,24 @@ function parseGLBChunksSync(
     // Per spec we must iterate over chunks, ignoring all except JSON and BIN
     switch (chunkFormat) {
       case GLB_CHUNK_TYPE_JSON:
-        parseJSONChunk(glb, dataView, byteOffset, chunkLength);
+        // GLB v3 defines the first JSON chunk as the glTF JSON chunk.
+        if (glb.version !== 3 || glb.jsonChunkIndex === -1) {
+          parseJSONChunk(glb, dataView, byteOffset, chunkLength, chunkIndex);
+        }
         break;
       case GLB_CHUNK_TYPE_BIN:
-        parseBINChunk(glb, dataView, byteOffset, chunkLength);
+        parseBINChunk(glb, dataView, byteOffset, chunkLength, chunkIndex);
         break;
 
       // Backward compatibility for very old xviz files
       case GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED:
         if (!options.strict) {
-          parseJSONChunk(glb, dataView, byteOffset, chunkLength);
+          parseJSONChunk(glb, dataView, byteOffset, chunkLength, chunkIndex);
         }
         break;
       case GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED:
         if (!options.strict) {
-          parseBINChunk(glb, dataView, byteOffset, chunkLength);
+          parseBINChunk(glb, dataView, byteOffset, chunkLength, chunkIndex);
         }
         break;
 
@@ -224,13 +229,20 @@ function parseGLBChunksSync(
     }
 
     byteOffset += padToFourBytes(chunkLength);
+    chunkIndex++;
   }
 
   return byteOffset;
 }
 
 /* Parse a GLB JSON chunk */
-function parseJSONChunk(glb: GLB, dataView: DataView, byteOffset: number, chunkLength: number) {
+function parseJSONChunk(
+  glb: GLB,
+  dataView: DataView,
+  byteOffset: number,
+  chunkLength: number,
+  chunkIndex: number
+) {
   // 1. Create a "view" of the binary encoded JSON data inside the GLB
   const jsonChunk = new Uint8Array(dataView.buffer, byteOffset, chunkLength);
 
@@ -240,15 +252,17 @@ function parseJSONChunk(glb: GLB, dataView: DataView, byteOffset: number, chunkL
 
   // 3. Parse the JSON text into a JavaScript data structure
   glb.json = JSON.parse(jsonText);
+  glb.jsonChunkIndex = chunkIndex;
 
   return padToFourBytes(chunkLength);
 }
 
 /** Parse a GLB BIN chunk */
-function parseBINChunk(glb: GLB, dataView, byteOffset, chunkLength) {
+function parseBINChunk(glb: GLB, dataView, byteOffset, chunkLength, chunkIndex: number) {
   // Note: BIN chunk can be optional
   glb.header.hasBinChunk = true;
   glb.binChunks.push({
+    chunkIndex,
     byteOffset,
     byteLength: chunkLength,
     arrayBuffer: dataView.buffer

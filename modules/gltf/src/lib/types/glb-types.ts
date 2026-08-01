@@ -1,4 +1,6 @@
 export type GLBBinChunk = {
+  /** Zero-based index of this chunk in the GLB container. */
+  chunkIndex: number;
   byteOffset: number;
   byteLength: number;
   arrayBuffer: ArrayBuffer;
@@ -18,5 +20,7 @@ export type GLB = {
 
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   json: Record<string, any>;
+  /** Zero-based index of the glTF JSON chunk in the GLB container. */
+  jsonChunkIndex: number;
   binChunks: GLBBinChunk[];
 };

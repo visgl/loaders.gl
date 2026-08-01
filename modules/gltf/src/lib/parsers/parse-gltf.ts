@@ -128,20 +128,70 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
   // Populate buffers
   // Create an external buffers array to hold binary data
   const buffers = gltf.json.buffers || [];
+  const bufferDefinitions = Array.isArray(buffers) ? buffers : [];
   gltf.buffers = new Array(buffers.length).fill(null);
 
-  // Populates JSON and some bin chunk info
-  if (gltf._glb && gltf._glb.header.hasBinChunk) {
+  // Resolve GLB chunks into the parallel buffers array.
+  if (gltf._glb) {
     const {binChunks} = gltf._glb;
-    gltf.buffers[0] = {
-      arrayBuffer: binChunks[0].arrayBuffer,
-      byteOffset: binChunks[0].byteOffset,
-      byteLength: binChunks[0].byteLength
-    };
+
+    for (let bufferIndex = 0; bufferIndex < bufferDefinitions.length; bufferIndex++) {
+      const buffer = bufferDefinitions[bufferIndex];
+      if (buffer.chunk === undefined) {
+        continue;
+      }
+
+      assert(gltf._glb.version === 3, 'glTF buffer.chunk requires a GLB v3 container.');
+      assert(
+        buffer.uri === undefined,
+        `glTF buffer ${bufferIndex} cannot define both uri and chunk.`
+      );
+      const binChunk = binChunks.find(chunk => chunk.chunkIndex === buffer.chunk);
+      assert(
+        binChunk,
+        `glTF buffer ${bufferIndex} references missing GLB BIN chunk ${buffer.chunk}.`
+      );
+      assert(
+        buffer.byteLength <= binChunk.byteLength,
+        `glTF buffer ${bufferIndex} is larger than GLB BIN chunk ${buffer.chunk}.`
+      );
+      gltf.buffers[bufferIndex] = {
+        arrayBuffer: binChunk.arrayBuffer,
+        byteOffset: binChunk.byteOffset,
+        byteLength: buffer.byteLength
+      };
+    }
+
+    const uriLessBufferIndices = bufferDefinitions
+      .map((buffer, bufferIndex) => (buffer.uri === undefined ? bufferIndex : -1))
+      .filter(bufferIndex => bufferIndex !== -1);
+    const implicitBinChunk = binChunks.find(chunk => chunk.chunkIndex === 1);
+    const usesLegacyImplicitBuffer =
+      gltf._glb.version < 3 ||
+      (gltf._glb.jsonChunkIndex === 0 &&
+        bufferDefinitions[0]?.chunk === undefined &&
+        uriLessBufferIndices.length === 1 &&
+        uriLessBufferIndices[0] === 0 &&
+        Boolean(implicitBinChunk));
+
+    if (usesLegacyImplicitBuffer && (gltf._glb.version < 3 || bufferDefinitions[0])) {
+      const binChunk = gltf._glb.version < 3 ? binChunks[0] : implicitBinChunk;
+      assert(binChunk);
+      gltf.buffers[0] = {
+        arrayBuffer: binChunk.arrayBuffer,
+        byteOffset: binChunk.byteOffset,
+        byteLength: binChunk.byteLength
+      };
+    }
 
     // TODO - this modifies JSON and is a post processing thing
     // gltf.json.buffers[0].data = gltf.buffers[0].arrayBuffer;
     // gltf.json.buffers[0].byteOffset = gltf.buffers[0].byteOffset;
+  }
+
+  if (!gltf._glb) {
+    const chunkBufferIndex = bufferDefinitions.findIndex(buffer => buffer.chunk !== undefined);
+    assert(chunkBufferIndex === -1, `glTF buffer ${chunkBufferIndex} uses chunk outside a GLB.`);
   }
 
   // Populate images

@@ -249,6 +249,8 @@ export type GLTFBufferPostprocessed = {
 
   /** The uri of the buffer. */
   uri?: string;
+  /** The zero-based GLB v3 chunk index selected by this buffer. */
+  chunk?: number;
   name?: any;
   extensions?: any;
   extras?: any;
