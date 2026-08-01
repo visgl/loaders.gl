@@ -78,6 +78,45 @@ export type {
 } from './lib/types/gltf-postprocessed-schema';
 
 export type {GLTFWithBuffers, FeatureTableJson} from './lib/types/gltf-types';
+export {
+  GLTFSchema,
+  GLTFIdSchema,
+  GLTFObjectSchema,
+  GLTFAccessorSchema,
+  GLTFAccessorSparseSchema,
+  GLTFAccessorSparseIndicesSchema,
+  GLTFAccessorSparseValuesSchema,
+  GLTFAnimationSchema,
+  GLTFAnimationChannelSchema,
+  GLTFAnimationChannelTargetSchema,
+  GLTFAnimationSamplerSchema,
+  GLTFAssetSchema,
+  GLTFBufferSchema,
+  GLTFBufferViewSchema,
+  GLTFCameraSchema,
+  GLTFCameraOrthographicSchema,
+  GLTFCameraPerspectiveSchema,
+  GLTFImageSchema,
+  GLTFMaterialSchema,
+  GLTFMaterialNormalTextureInfoSchema,
+  GLTFMaterialOcclusionTextureInfoSchema,
+  GLTFMaterialPbrMetallicRoughnessSchema,
+  GLTFMeshSchema,
+  GLTFMeshPrimitiveSchema,
+  GLTFNodeSchema,
+  GLTFSamplerSchema,
+  GLTFSceneSchema,
+  GLTFSkinSchema,
+  GLTFTextureSchema,
+  GLTFTextureInfoSchema,
+  GLTFTextureInfoMetadataSchema,
+  GLTFKHRBinarySchema,
+  GLTFKHRDracoMeshCompressionSchema,
+  GLTFKHRTextureBasisuSchema,
+  GLTFEXTMeshoptCompressionSchema,
+  GLTFEXTTextureWebpSchema,
+  GLTFMSFTTextureDdsSchema
+} from './lib/types/gltf-zod-schema';
 export {GLTFFormat, GLBFormat} from './gltf-format';
 
 // glTF loader/writer definition objects
