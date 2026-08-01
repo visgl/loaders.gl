@@ -6,9 +6,14 @@ import {GeospatialViewport, Viewport} from '../../types';
 
 export type FrameState = {
   camera: {
+    /** Camera position in WGS84 Cartesian meters. */
     position: number[];
+    /** Normalized camera direction in WGS84 Cartesian coordinates. */
     direction: number[];
+    /** Normalized camera up direction in WGS84 Cartesian coordinates. */
     up: number[];
+    /** Camera position as `[longitude, latitude, height]`, with height in meters. */
+    cartographicPosition: [number, number, number];
   };
   viewport: GeospatialViewport;
   topDownViewport: GeospatialViewport; // Use it to calculate projected radius for a tile
@@ -16,6 +21,8 @@ export type FrameState = {
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
   sseDenominator: number; // Assumes fovy = 60 degrees
+  /** View-dependent density used by perspective dynamic screen-space error for this traversal. */
+  dynamicScreenSpaceErrorDensity: number;
 };
 
 const scratchVector = new Vector3();
@@ -78,14 +85,17 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
     camera: {
       position: cameraPositionCartesian,
       direction: cameraDirectionCartesian,
-      up: cameraUpCartesian
+      up: cameraUpCartesian,
+      cartographicPosition: cameraPositionCartographic
     },
     viewport,
     topDownViewport,
     height,
     cullingVolume,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
-    sseDenominator: 1.15 // Assumes fovy = 60 degrees
+    sseDenominator: 1.15, // Assumes fovy = 60 degrees
+    // Tileset3D fills this immediately before traversal because it depends on the root volume.
+    dynamicScreenSpaceErrorDensity: 0
   };
 }
 

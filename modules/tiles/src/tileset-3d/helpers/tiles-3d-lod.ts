@@ -5,162 +5,180 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-// TODO - Dynamic screen space error provides an optimization when looking at
-// tilesets from above
-
-/* eslint-disable */
-// @ts-nocheck
 import {Matrix4, Vector3, clamp} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
+import type {Tile3D} from '../common/tile-3d';
+import type {FrameState} from './frame-state';
+
+/** Options that control the perspective dynamic screen-space error optimization. */
+export type DynamicScreenSpaceErrorOptions = {
+  /** Base fog density used to reduce distant, horizon-facing screen-space error. */
+  dynamicScreenSpaceErrorDensity: number;
+  /** Maximum number of logical pixels subtracted from perspective screen-space error. */
+  dynamicScreenSpaceErrorFactor: number;
+  /** Fraction of the tileset height at which the optimization begins to fade. */
+  dynamicScreenSpaceErrorHeightFalloff: number;
+};
+
+type TileBoundingVolumeHeader = {
+  box?: number[];
+  region?: number[];
+  sphere?: number[];
+};
+
+type TilesetHeightRange = {
+  cameraHeight: number;
+  minimumHeight: number;
+  maximumHeight: number;
+  cameraDirection: Vector3;
+  upDirection: Vector3;
+};
 
 const scratchPositionNormal = new Vector3();
 const scratchCartographic = new Vector3();
-const scratchMatrix = new Matrix4();
 const scratchCenter = new Vector3();
 const scratchPosition = new Vector3();
 const scratchDirection = new Vector3();
+const unitZDirection = new Vector3(0, 0, 1);
 
-// eslint-disable-next-line max-statements, complexity
-export function calculateDynamicScreenSpaceError(root, {camera, mapProjection}, options = {}) {
-  const {dynamicScreenSpaceErrorHeightFalloff = 0.25, dynamicScreenSpaceErrorDensity = 0.00278} =
-    options;
-
-  let up;
-  let direction;
-  let height;
-  let minimumHeight;
-  let maximumHeight;
-
-  const tileBoundingVolume = root.contentBoundingVolume;
-
-  if (tileBoundingVolume instanceof TileBoundingRegion) {
-    up = Cartesian3.normalize(camera.positionWC, scratchPositionNormal);
-    direction = camera.directionWC;
-    height = camera.positionCartographic.height;
-    minimumHeight = tileBoundingVolume.minimumHeight;
-    maximumHeight = tileBoundingVolume.maximumHeight;
-  } else {
-    // Transform camera position and direction into the local coordinate system of the tileset
-    const transformLocal = Matrix4.inverseTransformation(root.computedTransform, scratchMatrix);
-    const ellipsoid = mapProjection.ellipsoid;
-    const boundingVolume = tileBoundingVolume.boundingVolume;
-    const centerLocal = Matrix4.multiplyByPoint(
-      transformLocal,
-      boundingVolume.center,
-      scratchCenter
-    );
-    if (Cartesian3.magnitude(centerLocal) > ellipsoid.minimumRadius) {
-      // The tileset is defined in WGS84. Approximate the minimum and maximum height.
-      const centerCartographic = Cartographic.fromCartesian(
-        centerLocal,
-        ellipsoid,
-        scratchCartographic
-      );
-      up = Cartesian3.normalize(camera.positionWC, scratchPositionNormal);
-      direction = camera.directionWC;
-      height = camera.positionCartographic.height;
-      minimumHeight = 0.0;
-      maximumHeight = centerCartographic.height * 2.0;
-    } else {
-      // The tileset is defined in local coordinates (z-up)
-      const positionLocal = Matrix4.multiplyByPoint(
-        transformLocal,
-        camera.positionWC,
-        scratchPosition
-      );
-      up = Cartesian3.UNIT_Z;
-      direction = Matrix4.multiplyByPointAsVector(
-        transformLocal,
-        camera.directionWC,
-        scratchDirection
-      );
-      direction = Cartesian3.normalize(direction, direction);
-      height = positionLocal.z;
-      if (tileBoundingVolume instanceof TileOrientedBoundingBox) {
-        // Assuming z-up, the last component stores the half-height of the box
-        const boxHeight = root._header.boundingVolume.box[11];
-        minimumHeight = centerLocal.z - boxHeight;
-        maximumHeight = centerLocal.z + boxHeight;
-      } else if (tileBoundingVolume instanceof TileBoundingSphere) {
-        const radius = boundingVolume.radius;
-        minimumHeight = centerLocal.z - radius;
-        maximumHeight = centerLocal.z + radius;
-      }
-    }
+/**
+ * Calculates the effective dynamic screen-space error density for one viewport and frame.
+ *
+ * Dynamic SSE is a perspective-only optimization for street-level views. It reduces refinement
+ * for distant tiles near the horizon, where loading every geometric detail is expensive and has
+ * limited visual benefit. Density fades to zero as the camera rises above the tileset or points
+ * vertically. The returned value belongs to the supplied frame state; callers must not reuse it
+ * for another viewport because camera height and direction are view dependent.
+ *
+ * @param root - Root tile whose transform and source bounding volume define the tileset space.
+ * @param frameState - Current camera measurements in WGS84 and logical viewport space.
+ * @param options - Dynamic SSE density and height-falloff controls.
+ * @returns Effective fog density for this viewport, or zero when it cannot be calculated.
+ */
+export function calculateDynamicScreenSpaceErrorDensity(
+  root: Tile3D,
+  frameState: FrameState,
+  options: DynamicScreenSpaceErrorOptions
+): number {
+  if (
+    !Number.isFinite(options.dynamicScreenSpaceErrorDensity) ||
+    options.dynamicScreenSpaceErrorDensity <= 0
+  ) {
+    return 0;
   }
 
-  // The range where the density starts to lessen. Start at the quarter height of the tileset.
-  const heightFalloff = dynamicScreenSpaceErrorHeightFalloff;
-  const heightClose = minimumHeight + (maximumHeight - minimumHeight) * heightFalloff;
-  const heightFar = maximumHeight;
+  const boundingVolumeHeader = getContentBoundingVolumeHeader(root);
+  const heightRange = boundingVolumeHeader.region
+    ? getRegionHeightRange(boundingVolumeHeader.region, frameState)
+    : getCartesianHeightRange(root, boundingVolumeHeader, frameState);
 
-  const t = clamp((height - heightClose) / (heightFar - heightClose), 0.0, 1.0);
+  if (!heightRange) {
+    return 0;
+  }
 
-  // Increase density as the camera tilts towards the horizon
-  const dot = Math.abs(Cartesian3.dot(direction, up));
+  const heightFalloff = clamp(options.dynamicScreenSpaceErrorHeightFalloff, 0, 1);
+  const heightClose =
+    heightRange.minimumHeight +
+    (heightRange.maximumHeight - heightRange.minimumHeight) * heightFalloff;
+  const heightSpan = heightRange.maximumHeight - heightClose;
+  const heightPercentage =
+    heightSpan > 0
+      ? clamp((heightRange.cameraHeight - heightClose) / heightSpan, 0, 1)
+      : heightRange.cameraHeight >= heightRange.maximumHeight
+        ? 1
+        : 0;
 
-  let horizonFactor = 1.0 - dot;
+  // A horizontal view has a dot product near zero and receives the strongest optimization.
+  // A vertical view has a dot product near one and keeps the unmodified perspective SSE.
+  const verticalAlignment = clamp(
+    Math.abs(heightRange.cameraDirection.dot(heightRange.upDirection)),
+    0,
+    1
+  );
+  const horizonFactor = (1 - verticalAlignment) * (1 - heightPercentage);
 
-  // Weaken the horizon factor as the camera height increases, implying the camera is further away from the tileset.
-  // The goal is to increase density for the "street view", not when viewing the tileset from a distance.
-  horizonFactor = horizonFactor * (1.0 - t);
-
-  return dynamicScreenSpaceErrorDensity * horizonFactor;
+  return options.dynamicScreenSpaceErrorDensity * horizonFactor;
 }
 
-export function fog(distanceToCamera, density) {
+/**
+ * Calculates exponential fog strength for a camera distance and density.
+ * @param distanceToCamera - Distance from the camera to the tile bounding volume in meters.
+ * @param density - Effective dynamic SSE density in inverse meters.
+ * @returns Unitless strength in the inclusive range from zero to one.
+ */
+export function getDynamicScreenSpaceErrorFog(distanceToCamera: number, density: number): number {
   const scalar = distanceToCamera * density;
-  return 1.0 - Math.exp(-(scalar * scalar));
+  return 1 - Math.exp(-(scalar * scalar));
 }
 
-export function getDynamicScreenSpaceError(tileset, distanceToCamera) {
-  if (tileset.dynamicScreenSpaceError && tileset.dynamicScreenSpaceErrorComputedDensity) {
-    const density = tileset.dynamicScreenSpaceErrorComputedDensity;
-    const factor = tileset.dynamicScreenSpaceErrorFactor;
-    // TODO: Refined screen space error that minimizes tiles in non-first-person
-    const dynamicError = fog(distanceToCamera, density) * factor;
-    return dynamicError;
+/**
+ * Calculates the perspective SSE reduction for a tile.
+ * @param distanceToCamera - Distance from the camera to the tile bounding volume in meters.
+ * @param density - View-dependent fog density calculated for the current frame.
+ * @param factor - Maximum reduction in logical/CSS pixels.
+ * @returns Number of logical pixels to subtract from perspective SSE.
+ */
+export function getDynamicScreenSpaceError(
+  distanceToCamera: number,
+  density: number,
+  factor: number
+): number {
+  if (density <= 0 || factor <= 0 || !Number.isFinite(density) || !Number.isFinite(factor)) {
+    return 0;
   }
 
-  return 0;
+  return getDynamicScreenSpaceErrorFog(distanceToCamera, density) * factor;
 }
 
 /**
  * Calculates 3D Tiles screen-space error (SSE) for the current projection.
  *
  * Perspective SSE projects the tile's world-space geometric error through the existing viewport
- * height and frustum denominator. Orthographic projection has no perspective distance falloff, so
- * its error is divided directly by the viewport's world-space meters per logical pixel.
+ * height and frustum denominator. Dynamic SSE may then reduce distant horizon refinement using
+ * the density calculated specifically for this frame and viewport. Orthographic projection has
+ * no perspective distance falloff, so its error is divided directly by the viewport's world-space
+ * meters per logical pixel and is never adjusted by perspective dynamic SSE.
  *
  * @param tile - Tile containing the transform-scaled geometric error and camera distance.
  * @param frameState - Current camera and viewport measurements.
  * @param useParentLodMetric - Whether request prioritization should use the parent's error.
  * @returns Estimated error in logical/CSS pixels.
  */
-export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric) {
+export function getTiles3DScreenSpaceError(
+  tile: Tile3D,
+  frameState: FrameState,
+  useParentLodMetric: boolean
+): number {
   const tileset = tile.tileset;
   const parentLodMetricValue = (tile.parent && tile.parent.lodMetricValue) || tile.lodMetricValue;
   const lodMetricValue = useParentLodMetric ? parentLodMetricValue : tile.lodMetricValue;
 
-  // Leaf tiles do not have any error so save the computation
-  if (lodMetricValue === 0.0) {
-    return 0.0;
+  // Leaf tiles do not have any error so save the computation.
+  if (lodMetricValue === 0) {
+    return 0;
   }
 
   const {viewDistanceScale} = tileset.options;
-  const lodScale = viewDistanceScale || 1.0;
+  const lodScale = viewDistanceScale || 1;
   const orthographicError = getOrthographicScreenSpaceError(lodMetricValue, frameState, lodScale);
   if (orthographicError !== null) {
     return orthographicError;
   }
 
-  // Avoid divide by zero when viewer is inside the tile
-  const distance = Math.max(tile._distanceToCamera, 1e-7);
+  // Avoid divide by zero when viewer is inside the tile.
+  const distanceToCamera = Math.max(tile._distanceToCamera, 1e-7);
   const {height, sseDenominator} = frameState;
-  let error = (lodMetricValue * height * lodScale) / (distance * sseDenominator);
+  let screenSpaceError = (lodMetricValue * height * lodScale) / (distanceToCamera * sseDenominator);
 
-  error -= getDynamicScreenSpaceError(tileset, distance);
+  if (tileset.options.dynamicScreenSpaceError && !frameState.viewport.orthographic) {
+    screenSpaceError -= getDynamicScreenSpaceError(
+      distanceToCamera,
+      frameState.dynamicScreenSpaceErrorDensity,
+      tileset.options.dynamicScreenSpaceErrorFactor
+    );
+  }
 
-  return error;
+  return screenSpaceError;
 }
 
 /**
@@ -176,16 +194,115 @@ export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric)
  * @param lodScale - Application refinement scale from `viewDistanceScale`.
  * @returns SSE in logical pixels, or `null` when orthographic SSE cannot be calculated.
  */
-function getOrthographicScreenSpaceError(lodMetricValue, frameState, lodScale) {
+function getOrthographicScreenSpaceError(
+  lodMetricValue: number,
+  frameState: FrameState,
+  lodScale: number
+): number | null {
   const viewport = frameState.viewport;
   if (!viewport?.orthographic) {
     return null;
   }
 
   const metersPerPixel = viewport.metersPerPixel;
-  if (!Number.isFinite(metersPerPixel) || metersPerPixel <= 0) {
+  if (!Number.isFinite(metersPerPixel) || !metersPerPixel || metersPerPixel <= 0) {
     return null;
   }
 
   return (lodMetricValue * lodScale) / metersPerPixel;
+}
+
+/** Returns the content bounding volume header, falling back to the traversal volume. */
+function getContentBoundingVolumeHeader(root: Tile3D): TileBoundingVolumeHeader {
+  return root.header.content?.boundingVolume || root.header.boundingVolume;
+}
+
+/** Calculates camera and tileset heights for a geodetic region bounding volume. */
+function getRegionHeightRange(region: number[], frameState: FrameState): TilesetHeightRange {
+  const upDirection = scratchPositionNormal.copy(frameState.camera.position).normalize();
+  const cameraDirection = scratchDirection.copy(frameState.camera.direction).normalize();
+
+  return {
+    cameraHeight: frameState.camera.cartographicPosition[2],
+    minimumHeight: region[4],
+    maximumHeight: region[5],
+    cameraDirection,
+    upDirection
+  };
+}
+
+/**
+ * Calculates camera and tileset heights for box and sphere volumes.
+ *
+ * The root transform is inverted so that both camera height and source volume dimensions use the
+ * same coordinate system. Small coordinates are treated as local z-up. Earth-scale coordinates
+ * are treated as WGS84 and use cartographic height, matching Cesium's conservative approximation.
+ */
+function getCartesianHeightRange(
+  root: Tile3D,
+  boundingVolumeHeader: TileBoundingVolumeHeader,
+  frameState: FrameState
+): TilesetHeightRange | null {
+  const halfHeight = getBoundingVolumeCenterAndHalfHeight(boundingVolumeHeader, scratchCenter);
+  if (halfHeight === null) {
+    return null;
+  }
+
+  const localTransform = new Matrix4(root.computedTransform).invert();
+  const ellipsoid = root.tileset.ellipsoid as Ellipsoid;
+  const centerMagnitude = Math.hypot(scratchCenter[0], scratchCenter[1], scratchCenter[2]);
+
+  if (centerMagnitude > ellipsoid.minimumRadius) {
+    const centerCartographic = ellipsoid.cartesianToCartographic(
+      scratchCenter,
+      scratchCartographic
+    );
+    const upDirection = scratchPositionNormal.copy(frameState.camera.position).normalize();
+    const cameraDirection = scratchDirection.copy(frameState.camera.direction).normalize();
+
+    return {
+      cameraHeight: frameState.camera.cartographicPosition[2],
+      minimumHeight: 0,
+      maximumHeight: centerCartographic[2] * 2,
+      cameraDirection,
+      upDirection
+    };
+  }
+
+  localTransform.transformAsPoint(frameState.camera.position, scratchPosition);
+  localTransform.transformAsVector(frameState.camera.direction, scratchDirection);
+  scratchDirection.normalize();
+
+  return {
+    cameraHeight: scratchPosition[2],
+    minimumHeight: scratchCenter[2] - halfHeight,
+    maximumHeight: scratchCenter[2] + halfHeight,
+    cameraDirection: scratchDirection,
+    upDirection: unitZDirection
+  };
+}
+
+/**
+ * Copies the source volume center and returns its conservative z-up half-height.
+ * @param boundingVolumeHeader - Root content or traversal volume from tileset JSON.
+ * @param result - Scratch vector that receives the source-space center.
+ * @returns Half-height in source-space meters, or `null` for an unsupported volume.
+ */
+function getBoundingVolumeCenterAndHalfHeight(
+  boundingVolumeHeader: TileBoundingVolumeHeader,
+  result: Vector3
+): number | null {
+  if (boundingVolumeHeader.box) {
+    const box = boundingVolumeHeader.box;
+    result.set(box[0], box[1], box[2]);
+    return box.length === 10 ? box[5] : Math.hypot(box[9], box[10], box[11]);
+  }
+
+  if (boundingVolumeHeader.sphere) {
+    const sphere = boundingVolumeHeader.sphere;
+    result.set(sphere[0], sphere[1], sphere[2]);
+    return sphere[3];
+  }
+
+  return null;
 }

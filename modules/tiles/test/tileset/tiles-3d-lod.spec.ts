@@ -6,8 +6,15 @@
 
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 import {Tile3D} from '@loaders.gl/tiles';
-import {getTiles3DScreenSpaceError} from '../../src/tileset-3d/helpers/tiles-3d-lod';
+import type {FrameState} from '../../src/tileset-3d/helpers/frame-state';
+import {
+  calculateDynamicScreenSpaceErrorDensity,
+  getDynamicScreenSpaceError,
+  getDynamicScreenSpaceErrorFog,
+  getTiles3DScreenSpaceError
+} from '../../src/tileset-3d/helpers/tiles-3d-lod';
 import {LOD_METRIC_TYPE, TILESET_TYPE} from '../../src/constants';
 
 const TILE_HEADER = {
@@ -24,18 +31,39 @@ const TILESET = {
   lodMetricValue: 10,
   lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
   type: TILESET_TYPE.TILES3D,
-  options: {viewDistanceScale: 1},
-  dynamicScreenSpaceError: false
+  ellipsoid: Ellipsoid.WGS84,
+  options: {
+    viewDistanceScale: 1,
+    dynamicScreenSpaceError: false,
+    dynamicScreenSpaceErrorFactor: 24
+  }
+};
+
+const DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS = {
+  dynamicScreenSpaceErrorDensity: 2.0e-4,
+  dynamicScreenSpaceErrorFactor: 24,
+  dynamicScreenSpaceErrorHeightFalloff: 0.25
 };
 
 /** Creates the minimal frame state used by the 3D Tiles SSE calculation. */
-function createFrameState(overrides: {[key: string]: any} = {}) {
-  return {
+function createFrameState(overrides: {[key: string]: any} = {}): FrameState {
+  const camera = {
+    position: [0, 0, 5],
+    direction: [1, 0, 0],
+    up: [0, 0, 1],
+    cartographicPosition: [0, 0, 5]
+  };
+  const frameState = {
+    camera,
     height: 1000,
     sseDenominator: 2,
     viewport: {orthographic: false},
+    dynamicScreenSpaceErrorDensity: 0,
     ...overrides
   };
+  frameState.camera = {...camera, ...overrides.camera};
+  // Tests exercise calculations that do not require culling or the top-down viewport.
+  return frameState as unknown as FrameState;
 }
 
 /** Creates a Tile3D with a controlled camera distance for SSE tests. */
@@ -157,6 +185,143 @@ test('getTiles3DScreenSpaceError#returns zero for zero-error leaves', t => {
     ),
     0,
     'skips projection work for zero error'
+  );
+  t.end();
+});
+
+test('dynamic screen-space error#uses exponential fog', t => {
+  t.equals(getDynamicScreenSpaceErrorFog(0, 0.01), 0, 'zero distance has no fog');
+  t.ok(
+    getDynamicScreenSpaceErrorFog(200, 0.01) > getDynamicScreenSpaceErrorFog(100, 0.01),
+    'fog strength increases with camera distance'
+  );
+  t.equals(
+    getDynamicScreenSpaceError(100, 0, 24),
+    0,
+    'zero effective density disables the reduction'
+  );
+  t.end();
+});
+
+test('calculateDynamicScreenSpaceErrorDensity#local box responds to view and height', t => {
+  const root = createTile({
+    ...TILE_HEADER,
+    boundingVolume: {box: [0, 0, 10, 10, 0, 0, 0, 10, 0, 0, 0, 10]}
+  });
+
+  t.equals(
+    calculateDynamicScreenSpaceErrorDensity(
+      root,
+      createFrameState(),
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ),
+    DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
+    'a street-level horizontal view receives the full configured density'
+  );
+  t.equals(
+    calculateDynamicScreenSpaceErrorDensity(
+      root,
+      createFrameState({camera: {direction: [0, 0, -1]}}),
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ),
+    0,
+    'a vertical view does not reduce refinement'
+  );
+  t.ok(
+    calculateDynamicScreenSpaceErrorDensity(
+      root,
+      createFrameState({camera: {position: [0, 0, 15]}}),
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ) < DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
+    'density fades as the camera rises through the tileset height range'
+  );
+  t.end();
+});
+
+test('calculateDynamicScreenSpaceErrorDensity#uses the root transform without changing units', t => {
+  const root = createTile({
+    ...TILE_HEADER,
+    transform: new Matrix4().translate([0, 0, 100]),
+    boundingVolume: {sphere: [0, 0, 10, 10]}
+  });
+  const translatedFrameState = createFrameState({camera: {position: [0, 0, 105]}});
+
+  t.equals(
+    calculateDynamicScreenSpaceErrorDensity(
+      root,
+      translatedFrameState,
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ),
+    DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
+    'camera and source volume are compared in the same local coordinate system'
+  );
+  t.end();
+});
+
+test('calculateDynamicScreenSpaceErrorDensity#uses geodetic region heights', t => {
+  const root = createTile({
+    ...TILE_HEADER,
+    boundingVolume: {region: [-1, -1, 1, 1, 0, 100]}
+  });
+  const frameState = createFrameState({
+    camera: {
+      position: [Ellipsoid.WGS84.maximumRadius + 25, 0, 0],
+      direction: [0, 1, 0],
+      cartographicPosition: [0, 0, 25]
+    }
+  });
+
+  t.equals(
+    calculateDynamicScreenSpaceErrorDensity(root, frameState, DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS),
+    DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
+    'region minimum and maximum heights control the falloff'
+  );
+  t.end();
+});
+
+test('getTiles3DScreenSpaceError#applies dynamic SSE only to perspective views', t => {
+  const tile = createTile();
+  tile.tileset.options.dynamicScreenSpaceError = true;
+  const dynamicFrameState = createFrameState({dynamicScreenSpaceErrorDensity: 0.01});
+  const expectedReduction = getDynamicScreenSpaceError(100, 0.01, 24);
+
+  t.equals(
+    getTiles3DScreenSpaceError(tile, dynamicFrameState, false),
+    50 - expectedReduction,
+    'subtracts the view-dependent reduction from perspective SSE'
+  );
+
+  tile.tileset.options.dynamicScreenSpaceError = false;
+  t.equals(
+    getTiles3DScreenSpaceError(tile, dynamicFrameState, false),
+    50,
+    'the option restores the established perspective formula when disabled'
+  );
+
+  tile.tileset.options.dynamicScreenSpaceError = true;
+  t.equals(
+    getTiles3DScreenSpaceError(
+      tile,
+      createFrameState({
+        dynamicScreenSpaceErrorDensity: 0.01,
+        viewport: {orthographic: true, metersPerPixel: 2}
+      }),
+      false
+    ),
+    5,
+    'orthographic SSE is never reduced by the perspective optimization'
+  );
+  t.equals(
+    getTiles3DScreenSpaceError(
+      tile,
+      createFrameState({
+        dynamicScreenSpaceErrorDensity: 0.01,
+        viewport: {orthographic: true, metersPerPixel: 0}
+      }),
+      false
+    ),
+    50,
+    'an invalid orthographic scale falls back without applying dynamic SSE'
   );
   t.end();
 });

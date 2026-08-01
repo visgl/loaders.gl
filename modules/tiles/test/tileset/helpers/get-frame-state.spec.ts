@@ -43,6 +43,19 @@ test('getFrameState', t => {
     'camera.direction should match.'
   );
   t.ok(equals(results.camera.up, expected.camera.up, EPSILON), 'camera.up should match.');
+  t.ok(
+    equals(
+      results.camera.cartographicPosition,
+      viewport.unprojectPosition(viewport.cameraPosition),
+      EPSILON
+    ),
+    'camera.cartographicPosition should retain the viewport height used by dynamic SSE.'
+  );
+  t.equals(
+    results.dynamicScreenSpaceErrorDensity,
+    0,
+    'dynamic SSE density should be initialized for the tileset traversal.'
+  );
   t.equals(results.sseDenominator, results.sseDenominator, 'sseDenominator should match.');
   t.equals(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
 
