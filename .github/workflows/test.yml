@@ -22,6 +22,7 @@ jobs:
             scope: 'node tests'
             test-command: test-node
             test-arguments: ''
+            sharded: false
           - node-version: 24
             coverage: true
             coverage-flag: node
@@ -29,6 +30,7 @@ jobs:
             scope: 'node tests'
             test-command: test-node-cover
             test-arguments: ''
+            sharded: false
           - node-version: 24
             coverage: true
             coverage-flag: headless
@@ -36,6 +38,7 @@ jobs:
             scope: 'headless tests'
             test-command: test-headless-cover
             test-arguments: --maxWorkers=1
+            sharded: true
           - node-version: 22
             coverage: false
             coverage-flag: ''
@@ -43,6 +46,7 @@ jobs:
             scope: 'node tests'
             test-command: test-node
             test-arguments: ''
+            sharded: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,8 +93,16 @@ jobs:
         run: yarn run build-workers
 
       - name: Run tests
+        if: ${{ !matrix.sharded }}
         run: |
           yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }}
+
+      - name: Run headless test shards
+        if: matrix.sharded
+        run: |
+          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }} --shard=1/2 --reporter=blob
+          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }} --shard=2/2 --reporter=blob
+          yarn vitest --config vitest.config.ts --merge-reports --coverage
 
       - name: Sanitize lcov for Coveralls
         if: matrix.coverage
