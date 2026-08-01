@@ -21,24 +21,28 @@ jobs:
             playwright: false
             scope: 'node tests'
             test-command: test-node
+            test-arguments: ''
           - node-version: 24
             coverage: true
             coverage-flag: node
             playwright: false
             scope: 'node tests'
             test-command: test-node-cover
+            test-arguments: ''
           - node-version: 24
             coverage: true
             coverage-flag: headless
             playwright: true
             scope: 'headless tests'
             test-command: test-headless-cover
+            test-arguments: --maxWorkers=2
           - node-version: 22
             coverage: false
             coverage-flag: ''
             playwright: false
             scope: 'node tests'
             test-command: test-node
+            test-arguments: ''
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,7 +90,7 @@ jobs:
 
       - name: Run tests
         run: |
-          yarn run ${{ matrix.test-command }}
+          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }}
 
       - name: Sanitize lcov for Coveralls
         if: matrix.coverage
