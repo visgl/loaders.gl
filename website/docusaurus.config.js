@@ -115,6 +115,7 @@ const config = {
             '@loaders.gl/potree': resolve('../modules/potree/src'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
+            '@loaders.gl/scene': resolve('../modules/scene/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
             '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),

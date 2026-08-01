@@ -55,6 +55,7 @@
       "modules/shapefile/formats/shapefile",
       "modules/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
+      "modules/scene/formats/usd",
       "modules/wkt/formats/wkb",
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkt-crs",
@@ -145,6 +146,7 @@
           "modules/mvt/api-reference/tilejson-loader",
           "modules/3d-tiles/api-reference/tiles-3d-loader",
           "modules/wkt/api-reference/twkb-loader",
+          "modules/scene/api-reference/usd-loader",
           "modules/video/api-reference/video-loader",
           "modules/wkt/api-reference/hex-wkb-loader",
           "modules/wkt/api-reference/wkb-loader",
@@ -478,6 +480,13 @@
           "modules/schema/api-reference/schema",
           "modules/schema/api-reference/table",
           "modules/schema/api-reference/table-batch"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/scene",
+        "items": [
+          "modules/scene/README"
         ]
       },
       {

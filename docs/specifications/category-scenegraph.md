@@ -1,6 +1,7 @@
 # Scenegraph Loaders
 
-The Scenegraph category is intended to represent glTF scenegraphs.
+The Scenegraph category represents hierarchical 3D scene descriptions. Each loader returns a
+typed representation close to its source format.
 
 ## Loaders
 
@@ -8,8 +9,9 @@ The Scenegraph category is intended to represent glTF scenegraphs.
 | ------------------------------------------------------------ | ----- |
 | [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) |       |
 | [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader)   |       |
+| [`USDLoader`](/docs/modules/scene/api-reference/usd-loader)   |       |
 
-## Data Format
+## glTF Data Format
 
 The data format is fairly raw, close to the unpacked glTF/GLB data structure, it is described by:
 
@@ -38,10 +40,9 @@ To simplify higher-level processing of the loaded, raw glTF data, several helper
 - create HTML images from image buffers
 - etc
 
-## Non-glTF Scenegraphs
+## OpenUSD Data Format
 
-The scenegraph "category" was created specifically for the `glTF` format, and there are no plans to support other scenegraph formats in loaders.gl (as such formats tend to have large and complex specifications with many edge cases).
-
-Therefore, the current recommendation is to first convert scenegraph files in other formats to glTF with external tools before loading them using loaders.gl.
-
-That said, hypothetical new loaders for other scenegraph formats (e.g. a COLLADA loader) could potentially choose to belong to the Scenegraph category by "converting" loaded data to the format described on this page. It would thus enable interoperability with applications that are already designed to use the `GLTFLoader`).
+`USDLoader` returns a `USDStage` with root-layer metadata, a hierarchy of typed `USDPrim` objects,
+and the URLs of layers used during composition. See the
+[`USDLoader`](/docs/modules/scene/api-reference/usd-loader) reference for supported OpenUSD
+features and current limitations.

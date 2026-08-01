@@ -5735,6 +5735,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/scene@npm:^5.0.0-alpha.0, @loaders.gl/scene@workspace:modules/scene":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/scene@workspace:modules/scene"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.1"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/schema-utils@npm:^5.0.0-alpha.0, @loaders.gl/schema-utils@workspace:modules/schema-utils":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/schema-utils@workspace:modules/schema-utils"
@@ -28820,6 +28830,7 @@ __metadata:
     "@loaders.gl/loader-utils": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
+    "@loaders.gl/scene": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"
     "@loaders.gl/splats": "workspace:*"

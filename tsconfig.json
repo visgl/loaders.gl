@@ -263,6 +263,15 @@
       "@loaders.gl/splats/test": [
         "modules/splats/test"
       ],
+      "@loaders.gl/scene": [
+        "modules/scene/src"
+      ],
+      "@loaders.gl/scene/*": [
+        "modules/scene/src/*"
+      ],
+      "@loaders.gl/scene/test": [
+        "modules/scene/test"
+      ],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],
