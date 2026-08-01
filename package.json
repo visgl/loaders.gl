@@ -90,7 +90,7 @@
   ],
   "resolutions": {
     "apache-arrow": "^21.0.0",
-    "typescript": "^5.6.0",
+    "typescript": "^6.0.3",
     "@loaders.gl/3d-tiles": "^5.0.0-alpha.0",
     "@loaders.gl/compression": "^5.0.0-alpha.0",
     "@loaders.gl/core": "^5.0.0-alpha.0",
