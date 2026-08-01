@@ -13,3 +13,32 @@ The GLB file format is a binary form of glTF that includes textures instead of r
 GLB was introduced as an extension to glTF 1.0
 
 GLB was incorporated directly into glTF 2.0.
+
+GLB version 3 is being developed for glTF 2.1. In addition to 64-bit file and chunk lengths,
+the draft format permits multiple BIN chunks and allows the glTF JSON chunk to follow custom
+chunks. The first JSON chunk contains the glTF document.
+
+## GLB Version 3 Buffer Chunks
+
+In draft glTF 2.1 JSON, a buffer may use `chunk` instead of `uri` to select a BIN chunk in a
+GLB v3 container:
+
+```json
+{
+  "buffers": [
+    {"byteLength": 1024, "chunk": 2},
+    {"byteLength": 2048, "chunk": 4}
+  ]
+}
+```
+
+Chunk indices are zero-based positions in the complete GLB chunk sequence. JSON, BIN, and custom
+chunks all count toward the index, so `chunk: 2` refers to the third chunk in the file. The target
+must be a BIN chunk, and a buffer cannot define both `uri` and `chunk`.
+
+For compatibility, a GLB v3 document may omit `chunk` for buffer 0 only when it uses the classic
+layout: the JSON chunk is chunk 0, the BIN chunk is chunk 1, and buffer 0 is the only buffer without
+a `uri`. GLB versions 1 and 2 retain their existing implicit buffer behavior.
+
+This support follows the Khronos [Multiple Binary Chunks in GLB draft](https://github.com/KhronosGroup/glTF/issues/2611)
+and may evolve while glTF 2.1 is finalized.

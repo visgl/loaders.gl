@@ -106,7 +106,7 @@ However, the objects inside these arrays will have been pre-processed to simplif
   json: Object, // Contains the unmodified parsed glTF JSON (the parsed GLB JSON chunk)
 
   // Length and indices of this array will match `json.buffers`
-  // The GLB bin chunk, if present, will be found in buffer 0.
+  // GLB v1/v2's bin chunk, or GLB v3 chunks selected by json.buffers[*].chunk.
   // Additional glTF json `buffers` are fetched and base64 decoded from the JSON uri:s.
   buffers: [{
     arrayBuffer: ArrayBuffer,
@@ -123,6 +123,10 @@ However, the objects inside these arrays will have been pre-processed to simplif
   _glb?: Object
 }
 ```
+
+For draft GLB v3 files, `GLTFLoader` resolves each `json.buffers[*].chunk` index to the
+corresponding BIN chunk. See the [GLB format documentation](../formats/glb) for indexing and
+legacy fallback rules.
 
 | Field                     | Type          | Default | Description                                                      |
 | ------------------------- | ------------- | ------- | ---------------------------------------------------------------- |

@@ -227,6 +227,11 @@ export type GLTFBuffer = {
    */
   uri?: string;
   /**
+   * The zero-based index of the GLB v3 chunk containing the buffer.
+   * Draft glTF 2.1 property; mutually exclusive with `uri`.
+   */
+  chunk?: number;
+  /**
    * The length of the buffer in bytes.
    */
   byteLength: number;
