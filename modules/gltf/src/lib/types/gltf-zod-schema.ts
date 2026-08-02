@@ -112,6 +112,7 @@ export const GLTFAssetSchema = z
     generator: z.string().optional(),
     version: z.string(),
     minVersion: z.string().optional(),
+    thumbnail: GLTFIdSchema.optional(),
     ...GLTF_PROPERTY_SHAPE
   })
   .catchall(z.unknown());

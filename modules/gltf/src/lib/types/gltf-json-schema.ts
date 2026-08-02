@@ -213,6 +213,11 @@ export type GLTFAsset = {
    * The minimum glTF version that this asset targets.
    */
   minVersion?: string;
+  /**
+   * The index of an image that provides a preview of this glTF asset.
+   * Draft glTF 2.1.
+   */
+  thumbnail?: GLTFId;
   extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
