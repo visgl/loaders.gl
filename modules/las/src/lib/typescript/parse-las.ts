@@ -41,7 +41,7 @@ const LASZIP_USER_ID = 'laszip encoded';
 const LASZIP_RECORD_ID = 22204;
 const VARIABLE_CHUNK_SIZE = 0xffffffff;
 const LAZ_CHUNK_TABLE_POINTER_LENGTH = 8;
-const LEGACY_LAZ_DECODE_RETRY_BYTE_LENGTH = 16 * 1024;
+const LEGACY_LAZ_MIN_DECODE_RETRY_BYTE_LENGTH = 16 * 1024;
 
 type LASZipVLR = {
   compressor: number;
@@ -342,6 +342,10 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
     };
     let nextDecodeAttemptByteLength = 0;
     let inputDone = false;
+    // Arithmetic state cannot be rolled back after a partial point. Retry from the chunk start at
+    // geometric byte thresholds, replaying emitted points into one scratch record.
+    let emittedPointCount = 0;
+    const replayPoint = new Uint8Array(header.pointsStructSize);
 
     while (true) {
       const availableByteLength = reader.getAvailableByteLength();
@@ -356,31 +360,57 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
       }
 
       const checkpoint = reader.checkpoint();
+      let decodedPointCount = 0;
       try {
         if (availableByteLength === 0) {
           throw new NeedsMoreData();
         }
+        recordReadBytesStats(reader, availableByteLength, state.stats);
         const compressedCandidate = reader.readBytes(availableByteLength);
         const cursor = createLAZChunkDecoderCursor(compressedCandidate, metadata);
-        const rawChunk = new Uint8Array(chunkPointCount * header.pointsStructSize);
-        cursor.decodeInto(rawChunk, 0, chunkPointCount);
-        reader.restore(checkpoint);
-        recordReadBytesStats(reader, cursor.compressedByteOffset, state.stats);
-        reader.readBytes(cursor.compressedByteOffset);
-        recordDecodedChunkAllocation(rawChunk.byteLength, state.stats);
-        for (const batch of appendRawPointChunk(rawChunk, outputHeader, state)) {
-          yield batch;
+
+        while (decodedPointCount < chunkPointCount) {
+          const replayingEmittedPoint = decodedPointCount < emittedPointCount;
+          const output = replayingEmittedPoint ? replayPoint : state.rawBatch;
+          const outputOffset = replayingEmittedPoint
+            ? 0
+            : state.batchPointCount * header.pointsStructSize;
+          cursor.decodeInto(output, outputOffset, 1);
+          decodedPointCount++;
+
+          if (!replayingEmittedPoint) {
+            emittedPointCount++;
+            state.batchPointCount++;
+            if (state.batchPointCount === batchSize) {
+              const batch = flushRawPointBatch(outputHeader, state);
+              if (batch) {
+                yield batch;
+              }
+            }
+          }
         }
+
+        reader.restore(checkpoint);
+        reader.skip(cursor.compressedByteOffset);
         break;
       } catch (error) {
         reader.restore(checkpoint);
         if (!(error instanceof NeedsMoreData)) {
           throw error;
         }
-        if (inputDone) {
-          throw new NeedsMoreData('LASLoader: truncated legacy LAZ chunk');
+        if (decodedPointCount < emittedPointCount) {
+          throw new Error(
+            `LASLoader: legacy LAZ replay reached ${decodedPointCount} points after previously emitting ${emittedPointCount}`
+          );
         }
-        nextDecodeAttemptByteLength = availableByteLength + LEGACY_LAZ_DECODE_RETRY_BYTE_LENGTH;
+        if (inputDone) {
+          throw new NeedsMoreData(
+            `LASLoader: truncated legacy LAZ chunk after ${decodedPointCount} of ${chunkPointCount} points with ${availableByteLength} bytes available`
+          );
+        }
+        nextDecodeAttemptByteLength =
+          availableByteLength +
+          Math.max(availableByteLength, LEGACY_LAZ_MIN_DECODE_RETRY_BYTE_LENGTH);
       }
 
       const next = await inputIterator.next();

@@ -25,7 +25,7 @@ export class BinaryChunkReader {
 
   private chunks: Uint8Array[] = [];
   private scratch = new ArrayBuffer(8);
-  private checkpointOffsets: number[] = [];
+  private checkpoints: BinaryChunkReaderCheckpoint[] = [];
 
   constructor(options?: BinaryChunkReaderOptions) {
     this.maxRewindBytes = options?.maxRewindBytes || 0;
@@ -44,6 +44,7 @@ export class BinaryChunkReader {
   /** Mark the input as complete and discard retained chunks. */
   end(): void {
     this.chunks = [];
+    this.checkpoints = [];
     this.offset = 0;
     this.ended = true;
   }
@@ -217,14 +218,15 @@ export class BinaryChunkReader {
 
   /** Create a checkpoint that can be restored later. */
   checkpoint(): BinaryChunkReaderCheckpoint {
-    this.checkpointOffsets.push(this.offset);
-    return {offset: this.offset};
+    const checkpoint = {offset: this.offset};
+    this.checkpoints.push(checkpoint);
+    return checkpoint;
   }
 
   /** Restore a previous checkpoint. */
   restore(checkpoint: BinaryChunkReaderCheckpoint): void {
     this.offset = checkpoint.offset;
-    this.checkpointOffsets.pop();
+    this.checkpoints.pop();
   }
 
   /** Dispose chunks that are older than the configured rewind window. */
@@ -251,9 +253,9 @@ export class BinaryChunkReader {
   }
 
   private disposeBuffers(): void {
-    const protectedOffset =
-      this.checkpointOffsets.length > 0
-        ? Math.min(...this.checkpointOffsets)
+    let protectedOffset =
+      this.checkpoints.length > 0
+        ? Math.min(...this.checkpoints.map(checkpoint => checkpoint.offset))
         : Number.POSITIVE_INFINITY;
     while (
       this.chunks.length > 0 &&
@@ -261,9 +263,11 @@ export class BinaryChunkReader {
       protectedOffset >= this.chunks[0].byteLength
     ) {
       this.offset -= this.chunks[0].byteLength;
-      for (let index = 0; index < this.checkpointOffsets.length; index++) {
-        this.checkpointOffsets[index] -= this.chunks[0].byteLength;
+      // Checkpoints use offsets relative to the first retained chunk and must move with disposal.
+      for (const checkpoint of this.checkpoints) {
+        checkpoint.offset -= this.chunks[0].byteLength;
       }
+      protectedOffset -= this.chunks[0].byteLength;
       this.chunks.shift();
     }
   }

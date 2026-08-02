@@ -60,12 +60,12 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | LASzip VLR parsing | Partial. Compression mode, fixed or variable chunking, and chunk-size metadata required for TypeScript LAZ decoding are parsed incrementally. |
 | Chunk table parsing | LASzip chunk-table version 0 is supported for fixed-size and variable-size chunks. Decoded point counts and byte ranges are validated before decompression. |
 | Single compressed chunk decode | Supported when metadata is supplied by the caller. |
-| LAZ point formats 0, 1, 2, and 3 | Supported for legacy fixed-size LASzip chunks, including GPS time and RGB item decoding. Full-file streaming may still need the chunk table before output can start. |
+| LAZ point formats 0, 1, 2, and 3 | Supported for legacy fixed-size LASzip chunks, including GPS time and RGB item decoding. Complete batches can be emitted before a compressed chunk has fully arrived. |
 | LAZ 1.4 point formats 6, 7, 8 | Supported for COPC-style chunks and fixed-size full-file LAZ chunks. |
 | LAZ point formats 4, 5, 9, 10 | Not supported. These add waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
 | Selective decompression | Supported for PDRF 6, 7, and 8 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table while preserving complete raw-record decoding through the chunk APIs. |
-| True streaming decode | Partial. Fixed-size full-file LAZ can emit batches after complete compressed chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
+| True streaming decode | Partial. Legacy fixed-size PDRF 0-3 chunks emit complete batches before the current chunk or file ends using bounded geometric replay. Layered PDRF 6-8 emits after complete chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. |
 | LAZ encoding | Not implemented. |
 
 #### Selective LAZ 1.4 Decoding
@@ -198,7 +198,7 @@ The TypeScript-only backend should be completed in stages, with parity tests aga
 | 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
 | 5 | Expand LAZ decompression. | PDRF 4, 5, 9, and 10 decode byte-for-byte against the current laz-perf/laz-rs backends. |
 | 6 | Implement LAZ encoding. | Raw point data compressed by the TypeScript encoder decodes byte-for-byte to the original records. |
-| 7 | Add true feedable LAZ streaming. | The decoder can pause on missing bytes without corrupting arithmetic decoder state and can emit complete point batches before the full file is buffered. |
+| 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
 | 9 | Implement COPC writing. | Writer emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |
 | 10 | Promote backend defaults only after parity and performance are acceptable. | TypeScript backend performance and fixture coverage are documented against laz-perf/laz-rs baselines. |
