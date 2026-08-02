@@ -93,8 +93,8 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | Extension                                                 | Preprocessed | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | [KHR_draco_mesh_compression](#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                                                    |
-| [KHR_meshopt_compression](#khr_meshopt_compression)       | Y            | Decompresses meshopt-compressed geometries, including version 1 and `COLOR` filtered streams |
-| [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses meshopt-compressed geometries                                                  |
+| [KHR_meshopt_compression](#khr_meshopt_compression)       | Y            | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                  |
+| [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses existing version 0 meshopt streams                                             |
 | [KHR_texture_basisu](#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
 | [KHR_texture_transform](#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
 | KHR_texture_webp                                          | Y            |
@@ -168,28 +168,80 @@ Parsing support:
 - Existing interleaved buffer views remain untouched so that attributes like positions and normals that share the original data continue to function correctly.
 - When the extension references a different `texCoord` index than the source attribute, the loader creates a new accessor and attribute entry for the transformed coordinates.
 
-### KHR_meshopt_compression
+### Meshopt compression
 
-This Khronos release-candidate extension stores mesh attributes and indices in meshopt-compressed
-buffer views. `GLTFLoader` decompresses both version 0 and version 1 streams, applies all specified
-post-decode filters (including `COLOR`), and removes processed extension declarations from the
-returned glTF document. Decoding is enabled when `gltf.loadBuffers` and `gltf.decompressMeshes` are
-both `true`, which is the default.
+[meshoptimizer](https://github.com/zeux/meshoptimizer) is the codec and implementation library.
+`EXT_meshopt_compression` and `KHR_meshopt_compression` are glTF extension contracts that describe
+which buffer ranges use that codec. loaders.gl already supported the EXT contract; support for the
+newer KHR contract is additional rather than a replacement.
 
-A buffer view or fallback buffer may use either `KHR_meshopt_compression` or
-`EXT_meshopt_compression`, but not both. The loader continues to support the ratified vendor
-extension for existing assets.
+| Capability | `EXT_meshopt_compression` | `KHR_meshopt_compression` |
+| ---------- | ------------------------- | ------------------------- |
+| Khronos status | Complete, ratified vendor extension | Release candidate Khronos extension |
+| Attribute bitstream | Version 0 | Versions 0 and 1 |
+| Modes | `ATTRIBUTES`, `TRIANGLES`, `INDICES` | `ATTRIBUTES`, `TRIANGLES`, `INDICES` |
+| Filters | `NONE`, `OCTAHEDRAL`, `QUATERNION`, `EXPONENTIAL` | EXT filters plus `COLOR` |
+| loaders.gl support | Existing assets remain supported | Added in loaders.gl 5.0 |
+
+The exact extension name matters. A glTF document can list either name in `extensionsRequired`, so
+supporting only EXT does not claim the KHR capability. Khronos also recommends that loaders retain
+EXT support because existing assets and tools use it. Version 0 EXT assets are binary-compatible
+with KHR, but loaders.gl does not silently rename unsupported extension declarations.
+
+The KHR extension improves the attribute codec with a version 1 bitstream. It also adds the `COLOR`
+post-decode filter for 4-byte or 8-byte color elements using a YCoCg representation. These features
+required moving from the older decoder that had been embedded in loaders.gl to the maintained
+decoder-only distribution from `meshoptimizer`. Applications do not need to provide or initialize a
+meshopt decoder separately.
+
+#### How loading works
+
+Meshopt compression operates on buffer views, not just mesh primitives. It can therefore represent
+geometry, animation, morph targets, and instance data. For each compressed buffer view:
+
+1. The extension object's `buffer`, `byteOffset`, and `byteLength` select the compressed source
+   bytes.
+2. `mode`, `count`, and `byteStride` define how to reconstruct `count * byteStride` bytes.
+3. The parent buffer view's `buffer`, `byteOffset`, and `byteLength` select the uncompressed
+   destination. That buffer may contain a real uncompressed fallback or be a placeholder allocated
+   for extension-aware loaders.
+4. The loader decodes into the destination range and applies the declared filter.
+
+After all matching buffer views decode successfully, `GLTFLoader` removes their extension objects,
+fallback-buffer markers, and the matching top-level `extensionsUsed` and `extensionsRequired`
+entries. It retains the source buffers containing compressed bytes and does not compact or renumber
+the document's buffers.
+
+Decoding runs during asynchronous loading when both `gltf.loadBuffers` and
+`gltf.decompressMeshes` are `true`, which is the default. If either option is disabled, the
+compressed declarations remain for the application to process. A buffer view or fallback buffer
+that declares both KHR and EXT is invalid and is rejected before any stream is decoded, avoiding a
+partially transformed result.
+
+| Mode or filter | Intended data |
+| -------------- | ------------- |
+| `ATTRIBUTES` | Fixed-stride values such as vertex attributes, animation values, or instance transforms |
+| `TRIANGLES` | Indices representing triangle lists |
+| `INDICES` | Arbitrary index sequences that are not triangle lists |
+| `OCTAHEDRAL` | Quantized unit vectors such as normals and tangents |
+| `QUATERNION` | Quantized rotations |
+| `EXPONENTIAL` | Floating-point data with reduced mantissa precision |
+| `COLOR` | KHR-only quantized color data using a YCoCg representation |
+
+Meshopt and Draco are separate compression paths. Meshopt compresses individual buffer views while
+preserving the parent accessor and buffer-view layout; Draco represents the attributes and indices
+of an entire mesh primitive in one extension object. The `gltf.decompressMeshes` option controls
+both paths. loaders.gl currently decodes, but does not encode, either meshopt extension.
+
+#### KHR_meshopt_compression
 
 [KHR_meshopt_compression specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_meshopt_compression)
 
+#### EXT_meshopt_compression
+
+[EXT_meshopt_compression specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_meshopt_compression)
+
 ## Custom Extensions
-
-### EXT_meshopt_compression
-
-This extension provides a support for the meshopt binary geometry data compression format that is tailored to the common types of data seen in glTF buffers.
-The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parsed glTF data structure.
-
-[EXT_meshopt_compression specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression)
 
 ### EXT_feature_metadata
 

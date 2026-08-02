@@ -1,7 +1,10 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
-import {validateMeshoptCompressionExclusivity} from '../../../src/lib/extensions/meshopt-compression';
+import {
+  decodeMeshoptCompression,
+  validateMeshoptCompressionExclusivity
+} from '../../../src/lib/extensions/meshopt-compression';
 
 const KHR_MESHOPT_CUBE_URL =
   '@loaders.gl/gltf/test/data/meshopt/MeshoptCubeTest/glTF-Meshopt/MeshoptCubeTest.gltf';
@@ -65,7 +68,14 @@ test('KHR_meshopt_compression#decodes official version 1 fixture', async t => {
   t.end();
 });
 
-/** Rotates each triangle so its smallest index comes first while preserving winding order. */
+/**
+ * Rotates each triangle so equivalent cyclic index orderings compare identically.
+ *
+ * Meshopt triangle decoding preserves winding but may cyclically rotate a triangle's three indices.
+ *
+ * @param indices Triangle-list indices to normalize.
+ * @returns A flat array containing each triangle with its smallest index first.
+ */
 function getCanonicalTriangleIndices(indices: Uint16Array): number[] {
   const canonicalIndices: number[] = [];
   for (let triangleOffset = 0; triangleOffset < indices.length; triangleOffset += 3) {
@@ -115,6 +125,72 @@ test('KHR_meshopt_compression#rejects KHR and EXT on one buffer view', t => {
       }),
     /buffer 0 cannot use both KHR_meshopt_compression and EXT_meshopt_compression/,
     'rejects the mutually exclusive buffer fallback combination'
+  );
+  t.end();
+});
+
+test('KHR_meshopt_compression#preserves declarations when decoding fails', async t => {
+  const sourceBytes = new Uint8Array([0]);
+  const destinationBytes = new Uint8Array(4);
+  const gltf = {
+    json: {
+      asset: {version: '2.0'},
+      extensionsUsed: ['KHR_meshopt_compression'],
+      extensionsRequired: ['KHR_meshopt_compression'],
+      buffers: [
+        {byteLength: sourceBytes.byteLength},
+        {
+          byteLength: destinationBytes.byteLength,
+          extensions: {KHR_meshopt_compression: {fallback: true}}
+        }
+      ],
+      bufferViews: [
+        {
+          buffer: 1,
+          byteLength: destinationBytes.byteLength,
+          extensions: {
+            KHR_meshopt_compression: {
+              buffer: 0,
+              byteLength: sourceBytes.byteLength,
+              byteStride: 4,
+              count: 1,
+              mode: 'ATTRIBUTES'
+            }
+          }
+        }
+      ]
+    },
+    buffers: [
+      {arrayBuffer: sourceBytes.buffer, byteOffset: 0, byteLength: sourceBytes.byteLength},
+      {
+        arrayBuffer: destinationBytes.buffer,
+        byteOffset: 0,
+        byteLength: destinationBytes.byteLength
+      }
+    ],
+    images: []
+  };
+
+  await t.rejects(
+    decodeMeshoptCompression(
+      gltf,
+      {gltf: {decompressMeshes: true, loadBuffers: true}},
+      'KHR_meshopt_compression'
+    ),
+    /Malformed buffer data/,
+    'reports malformed compressed data'
+  );
+  t.ok(
+    gltf.json.bufferViews[0].extensions.KHR_meshopt_compression,
+    'retains the buffer-view declaration'
+  );
+  t.ok(
+    gltf.json.buffers[1].extensions.KHR_meshopt_compression,
+    'retains the fallback-buffer marker'
+  );
+  t.ok(
+    gltf.json.extensionsRequired.includes('KHR_meshopt_compression'),
+    'retains the required capability declaration'
   );
   t.end();
 });

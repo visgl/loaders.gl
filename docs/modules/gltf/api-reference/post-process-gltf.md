@@ -48,12 +48,16 @@ The GLTF post processor copies objects in the input gltf json field as necessary
 
 ## Post Processing of glTF Extensions
 
-Mhile many glTF extensions can only be handled in the final renderer, some extensions are "structural" and can be processed during the loading / post processing stage.
+While many glTF extensions can only be handled in the final renderer, some extensions are "structural" and can be processed during loading.
 
 Such structural extensions may represent alternate, optional, more efficient ways to store data etc.
 Examples are mesh compressions such as Draco, or alternate image formats for textures.
 
 By handling these extensions during loading, less work needs to be done by the upstream renderer.
+Meshopt decompression is completed by the asynchronous `GLTFLoader` before `postProcessGLTF` runs;
+the postprocessor itself does not decode compressed streams. See the
+[meshopt compression guide](/docs/modules/gltf/formats/gltf#meshopt-compression) for the distinction
+between the existing EXT extension and the newer KHR extension.
 
 | Extension                                                                                     | Preprocessed | Description                                |
 | --------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------ |

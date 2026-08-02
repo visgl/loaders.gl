@@ -6,13 +6,26 @@
  * the decoder-only runtime import so applications do not load the encoder and processing modules.
  */
 declare module 'meshoptimizer/decoder' {
-  /** Maintained WebAssembly meshopt decoder. */
+  /**
+   * Decoder-only surface used by loaders.gl from the maintained `meshoptimizer` package.
+   *
+   * Each decode method writes exactly `count * byteStride` bytes into caller-provided storage and
+   * throws when the source bitstream is malformed.
+   */
   export const MeshoptDecoder: {
-    /** Whether WebAssembly decoding is available in this runtime. */
+    /** Whether WebAssembly decoding can be initialized in the current runtime. */
     supported: boolean;
     /** Resolves after the decoder WebAssembly module is initialized. */
     ready: Promise<void>;
-    /** Decodes an attribute buffer and optionally applies a post-decode filter. */
+    /**
+     * Decodes a fixed-stride attribute stream and optionally applies a post-decode filter.
+     *
+     * @param target Destination storage for at least `count * byteStride` bytes.
+     * @param count Number of fixed-stride elements to decode.
+     * @param byteStride Number of bytes in each decoded element.
+     * @param source Complete compressed attribute bitstream.
+     * @param filter Optional meshopt post-decode filter name.
+     */
     decodeVertexBuffer: (
       target: Uint8Array,
       count: number,
@@ -20,21 +33,44 @@ declare module 'meshoptimizer/decoder' {
       source: Uint8Array,
       filter?: string
     ) => void;
-    /** Decodes a triangle index buffer. */
+    /**
+     * Decodes a triangle-list index stream.
+     *
+     * @param target Destination storage for at least `count * byteStride` bytes.
+     * @param count Number of indices to decode.
+     * @param byteStride Number of bytes in each decoded index.
+     * @param source Complete compressed triangle bitstream.
+     */
     decodeIndexBuffer: (
       target: Uint8Array,
       count: number,
       byteStride: number,
       source: Uint8Array
     ) => void;
-    /** Decodes an arbitrary index sequence. */
+    /**
+     * Decodes an arbitrary index sequence.
+     *
+     * @param target Destination storage for at least `count * byteStride` bytes.
+     * @param count Number of indices to decode.
+     * @param byteStride Number of bytes in each decoded index.
+     * @param source Complete compressed index-sequence bitstream.
+     */
     decodeIndexSequence: (
       target: Uint8Array,
       count: number,
       byteStride: number,
       source: Uint8Array
     ) => void;
-    /** Dispatches decoding from a glTF meshopt compression mode and optional filter. */
+    /**
+     * Dispatches decoding using a glTF meshopt compression mode and optional filter.
+     *
+     * @param target Destination storage for at least `count * byteStride` bytes.
+     * @param count Number of fixed-stride elements to decode.
+     * @param byteStride Number of bytes in each decoded element.
+     * @param source Complete compressed bitstream.
+     * @param mode glTF meshopt compression mode.
+     * @param filter Optional meshopt post-decode filter name.
+     */
     decodeGltfBuffer: (
       target: Uint8Array,
       count: number,

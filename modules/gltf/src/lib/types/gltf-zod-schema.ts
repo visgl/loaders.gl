@@ -424,7 +424,11 @@ export const GLTFKHRTextureBasisuSchema = z
   .object({source: GLTFIdSchema, extras: z.unknown().optional()})
   .catchall(z.unknown());
 
-/** Zod schema for the EXT_meshopt_compression extension. */
+/**
+ * Zod schema for ratified `EXT_meshopt_compression` buffer-view declarations.
+ *
+ * The schema accepts the four EXT filters and deliberately excludes the KHR-only `COLOR` filter.
+ */
 export const GLTFEXTMeshoptCompressionSchema = z
   .object({
     buffer: GLTFIdSchema,
@@ -438,7 +442,12 @@ export const GLTFEXTMeshoptCompressionSchema = z
   })
   .catchall(z.unknown());
 
-/** Zod schema for the KHR_meshopt_compression extension. */
+/**
+ * Zod schema for release-candidate `KHR_meshopt_compression` buffer-view declarations.
+ *
+ * The KHR schema extends the EXT filter enum with `COLOR`; bitstream version is encoded in the
+ * compressed source rather than represented by a JSON field.
+ */
 export const GLTFKHRMeshoptCompressionSchema = z
   .object({
     buffer: GLTFIdSchema,

@@ -41,7 +41,7 @@ export const GLTFLoader = {
       loadFiles: false, // Resolve generic glTF 2.1 file references on demand
       loadExternalAssets: false, // Recursively parse glTF 2.1 external assets
       loadImages: true, // Create image objects
-      decompressMeshes: true // Decompress Draco encoded meshes
+      decompressMeshes: true // Decompress Draco and KHR/EXT meshopt encoded data
     }
   }
 } as const satisfies Loader<GLTFWithBuffers, never, GLTFLoaderOptions>;
