@@ -235,11 +235,27 @@ async function* decodePendingLAZFileInBatches(
   header: LASHeader,
   options: LASLoaderOptions = {}
 ): AsyncIterable<LASDecodedChunk> {
-  const laszip = parseLASZipVLR(initialPending, header);
+  const {pending, laszip} = await readLASZipVLRFromInput(initialPending, inputIterator, header);
   validateTypeScriptLAZSupport(header, laszip);
 
+  yield* decodeLAZFileWithParsedVLRInBatches(pending, inputIterator, header, laszip, options);
+}
+
+async function* decodeLAZFileWithParsedVLRInBatches(
+  initialPending: Uint8Array<ArrayBufferLike>,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
+  header: LASHeader,
+  laszip: LASZipVLR,
+  options: LASLoaderOptions
+): AsyncIterable<LASDecodedChunk> {
+  if (laszip.variableChunks) {
+    const bytes = await collectRemainingInputBytes(initialPending, inputIterator);
+    yield* decodeLAZFileFromCompleteBytes(bytes, header, laszip, options);
+    return;
+  }
+
   if (header.pointsFormatId <= 5) {
-    yield* decodePendingLegacyLAZFileInBatches(
+    yield* decodePendingFixedLegacyLAZFileInBatches(
       initialPending,
       inputIterator,
       header,
@@ -291,33 +307,13 @@ async function* decodePendingLAZFileInBatches(
   }
 }
 
-async function* decodePendingLegacyLAZFileInBatches(
+async function* decodePendingFixedLegacyLAZFileInBatches(
   initialPending: Uint8Array<ArrayBufferLike>,
   inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
   header: LASHeader,
   laszip: LASZipVLR,
   options: LASLoaderOptions = {}
 ): AsyncIterable<LASDecodedChunk> {
-  if (laszip.variableChunks) {
-    let pending = initialPending;
-    while (true) {
-      try {
-        yield* decodeLegacyLAZFileFromCompleteBytes(pending, header, laszip, options);
-        return;
-      } catch (error) {
-        if (!(error instanceof NeedsMoreData)) {
-          throw error;
-        }
-      }
-
-      const next = await inputIterator.next();
-      if (next.done) {
-        throw new NeedsMoreData('LASLoader: truncated legacy LAZ file');
-      }
-      pending = concatenateUint8Arrays(pending, toUint8Array(next.value));
-    }
-  }
-
   const outputHeader = {...header, totalToRead: header.pointsCount};
   const batchSize = getBatchSize(options);
   const state = createRawPointBatchState(
@@ -410,23 +406,18 @@ async function* parseLAZInBatches(
   header: LASHeader,
   options: LASLoaderOptions
 ): AsyncIterable<LASArrowTable> {
-  const laszip = parseLASZipVLR(initialPending, header);
+  const {pending, laszip} = await readLASZipVLRFromInput(initialPending, inputIterator, header);
   validateTypeScriptLAZSupport(header, laszip);
-  if (header.pointsFormatId >= 6 && header.pointsFormatId <= 8) {
-    yield* parsePendingLAZFileInArrowBatches(
-      initialPending,
-      inputIterator,
-      header,
-      laszip,
-      options
-    );
+  if (!laszip.variableChunks && header.pointsFormatId >= 6 && header.pointsFormatId <= 8) {
+    yield* parsePendingLAZFileInArrowBatches(pending, inputIterator, header, laszip, options);
     return;
   }
 
-  for await (const batch of decodePendingLAZFileInBatches(
-    initialPending,
+  for await (const batch of decodeLAZFileWithParsedVLRInBatches(
+    pending,
     inputIterator,
     header,
+    laszip,
     options
   )) {
     yield parseLASArrowTableBatch(batch.arrayBuffer, batch.header, options);
@@ -491,8 +482,8 @@ function* parseLAZChunkedIterator(
   const laszip = parseLASZipVLR(new Uint8Array(arrayBuffer), header);
   validateTypeScriptLAZSupport(header, laszip);
 
-  if (header.pointsFormatId <= 5) {
-    yield* decodeLegacyLAZFileFromCompleteBytes(new Uint8Array(arrayBuffer), header, laszip, {
+  if (header.pointsFormatId <= 5 || laszip.variableChunks) {
+    yield* decodeLAZFileFromCompleteBytes(new Uint8Array(arrayBuffer), header, laszip, {
       batchSize,
       las: {}
     });
@@ -533,7 +524,7 @@ function* parseLAZChunkedIterator(
   }
 }
 
-function* decodeLegacyLAZFileFromCompleteBytes(
+function* decodeLAZFileFromCompleteBytes(
   bytes: Uint8Array,
   header: LASHeader,
   laszip: LASZipVLR,
@@ -902,11 +893,60 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
       `LASLoader: LAS 1.4 TypeScript LAZ decoding requires LASzip compressor 3; received ${laszip.compressor}`
     );
   }
-  if (laszip.variableChunks) {
-    throw new Error(
-      'LASLoader: TypeScript LAZ streaming does not yet support variable chunk sizes'
-    );
+}
+
+/** Read enough input to parse the LASzip VLR without assuming VLR alignment. */
+async function readLASZipVLRFromInput(
+  initialPending: Uint8Array<ArrayBufferLike>,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
+  header: LASHeader
+): Promise<{pending: Uint8Array<ArrayBufferLike>; laszip: LASZipVLR}> {
+  let pending = initialPending;
+  while (true) {
+    try {
+      return {pending, laszip: parseLASZipVLR(pending, header)};
+    } catch (error) {
+      if (!(error instanceof NeedsMoreData)) {
+        throw error;
+      }
+    }
+
+    const next = await inputIterator.next();
+    if (next.done) {
+      throw new NeedsMoreData('LASLoader: incomplete LASzip VLR');
+    }
+    pending = concatenateUint8Arrays(pending, toUint8Array(next.value));
   }
+}
+
+/** Collect a forward-only input once when metadata at EOF is required before decoding. */
+async function collectRemainingInputBytes(
+  initialPending: Uint8Array<ArrayBufferLike>,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>
+): Promise<Uint8Array<ArrayBufferLike>> {
+  const chunks: Uint8Array<ArrayBufferLike>[] = [initialPending];
+  let totalByteLength = initialPending.byteLength;
+
+  while (true) {
+    const next = await inputIterator.next();
+    if (next.done) {
+      break;
+    }
+    const chunk = toUint8Array(next.value);
+    chunks.push(chunk);
+    totalByteLength += chunk.byteLength;
+  }
+
+  if (chunks.length === 1) {
+    return initialPending;
+  }
+  const bytes = new Uint8Array(totalByteLength);
+  let byteOffset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, byteOffset);
+    byteOffset += chunk.byteLength;
+  }
+  return bytes;
 }
 
 async function readUntilAvailable(
@@ -1019,7 +1059,11 @@ function readLAZChunkTable(
   laszip: LASZipVLR,
   chunkTableOffset: number
 ) {
-  if (chunkTableOffset < 0 || chunkTableOffset + 8 > bytes.byteLength) {
+  if (
+    !Number.isSafeInteger(chunkTableOffset) ||
+    chunkTableOffset < 0 ||
+    chunkTableOffset + 8 > bytes.byteLength
+  ) {
     throw new NeedsMoreData('LASLoader: incomplete LAZ chunk table');
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -1034,12 +1078,30 @@ function readLAZChunkTable(
     }
     return [];
   }
-  return decodeLAZChunkTable(bytes.subarray(chunkTableOffset + 8), {
+  const chunks = decodeLAZChunkTable(bytes.subarray(chunkTableOffset + 8), {
     chunkCount,
     pointCount: header.pointsCount,
     chunkSize: laszip.chunkSize,
     variable: laszip.variableChunks
   });
+  let decodedPointCount = 0;
+  let decodedByteLength = 0;
+  for (const chunk of chunks) {
+    if (chunk.pointCount === 0 || chunk.byteLength === 0) {
+      throw new Error('LASLoader: invalid empty LAZ chunk-table entry');
+    }
+    decodedPointCount += chunk.pointCount;
+    decodedByteLength += chunk.byteLength;
+  }
+  if (decodedPointCount !== header.pointsCount) {
+    throw new Error(
+      `LASLoader: LAZ chunk table contains ${decodedPointCount} points; expected ${header.pointsCount}`
+    );
+  }
+  if (header.pointsOffset + LAZ_CHUNK_TABLE_POINTER_LENGTH + decodedByteLength > chunkTableOffset) {
+    throw new Error('LASLoader: LAZ chunk table byte lengths overlap the chunk table');
+  }
+  return chunks;
 }
 
 function createRawPointBatchState(

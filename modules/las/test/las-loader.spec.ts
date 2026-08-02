@@ -33,7 +33,7 @@ import {
   encodeLAZChunk,
   NeedsMoreData
 } from '@loaders.gl/las';
-import {createLAZChunkDecoderCursor} from '@loaders.gl/loader-utils';
+import {createLAZChunkDecoderCursor, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {LASCOPCLoaderWithParser} from '../src/las-copc-loader-with-parser';
 import {LAZPerfLoaderWithParser} from '../src/lazperf-loader-with-parser';
 import {LAZRsLoaderWithParser} from '../src/laz-rs-loader-with-parser';
@@ -45,6 +45,7 @@ const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
 const LAS_POINT_COUNT = 808042;
 const LAS_EXTRABYTES_POINT_COUNT = 1065;
 const LAZ_1_4_POINT_COUNT = 100000;
+const VARIABLE_LAZ_1_4_POINT_COUNT = 100000;
 const LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/points-1.4.las';
 const LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/ellipsoid-1.4.laz';
 const COPC_BINARY_URL = 'modules/copc/test/data/ellipsoid.copc.laz';
@@ -460,6 +461,107 @@ test('LASLoader#parseInBatches LAZ 1.4 TypeScript backend accepts split file chu
       colors: Array.from(expected.attributes.COLOR_0.value)
     },
     'split file chunks match complete-buffer TypeScript parse'
+  );
+  t.end();
+});
+
+test('LASLoader#parse variable-chunk LAZ 1.4 TypeScript backend matches COPC', async t => {
+  const response = await fetchFile(COPC_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {backend: 'copc'},
+    core: {worker: false}
+  });
+  const actual = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+
+  t.equal(actual.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
+  t.equal(actual.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
+  t.equal(
+    actual.header.vertexCount,
+    VARIABLE_LAZ_1_4_POINT_COUNT,
+    'variable chunks contain every point'
+  );
+  compareMeshAttributes(t, actual, expected, 'variable-chunk TypeScript parse matches COPC');
+  t.end();
+}, 15000);
+
+test('TypeScriptLAZ#decodes the COPC variable chunk table', async t => {
+  const response = await fetchFile(COPC_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = Number(dataView.getBigUint64(pointDataOffset, true));
+  const chunkCount = dataView.getUint32(chunkTableOffset + 4, true);
+  const chunks = decodeLAZChunkTable(bytes.subarray(chunkTableOffset + 8), {
+    chunkCount,
+    pointCount: VARIABLE_LAZ_1_4_POINT_COUNT,
+    chunkSize: 0xffffffff,
+    variable: true
+  });
+
+  t.equal(chunks.length, 5, 'fixture contains five variable-size chunks');
+  t.equal(
+    chunks.reduce((pointCount, chunk) => pointCount + chunk.pointCount, 0),
+    VARIABLE_LAZ_1_4_POINT_COUNT,
+    'chunk point counts cover the file'
+  );
+  t.equal(
+    chunks.reduce((byteLength, chunk) => byteLength + chunk.byteLength, 0),
+    chunkTableOffset - pointDataOffset - 8,
+    'chunk byte lengths reach the chunk table exactly'
+  );
+  t.end();
+});
+
+test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async t => {
+  const response = await fetchFile(COPC_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {backend: 'copc'},
+    core: {worker: false}
+  });
+  const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
+    batchSize: 25000,
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+  const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
+
+  compareCollectedMeshAttributes(
+    t,
+    actual,
+    {
+      positions: Array.from(expected.attributes.POSITION.value),
+      intensities: Array.from(expected.attributes.intensity.value),
+      classifications: Array.from(expected.attributes.classification.value),
+      colors: Array.from(expected.attributes.COLOR_0.value)
+    },
+    'split variable-chunk TypeScript streaming matches COPC'
+  );
+  t.end();
+}, 15000);
+
+test('LASLoader#parseInBatches rejects a truncated variable chunk table', async t => {
+  const response = await fetchFile(COPC_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const truncated = arrayBuffer.slice(0, arrayBuffer.byteLength - 16);
+  const batches = await parseInBatches(splitArrayBuffer(truncated, 257), LASLoader, {
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+
+  await t.rejects(
+    async () => {
+      for await (const _batch of batches) {
+        _batch;
+      }
+    },
+    /LAZ chunk table|Needs more data/,
+    'truncated variable chunk table fails deterministically'
   );
   t.end();
 });

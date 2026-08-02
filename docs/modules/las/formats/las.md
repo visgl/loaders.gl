@@ -56,16 +56,16 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 
 | Capability | TypeScript backend status |
 | --- | --- |
-| Full LAZ file parsing | Partial. Fixed-size LASzip chunks for supported TypeScript LAZ point formats can be decoded incrementally by `parseInBatches`. Variable-size chunk tables are not supported yet. |
-| LASzip VLR parsing | Partial. Enough metadata is parsed for fixed-size TypeScript LAZ chunk decoding. |
-| Chunk table parsing | Partial. Fixed-size chunk streams are supported; variable-size chunk tables are not supported yet. |
+| Full LAZ file parsing | Partial. Fixed-size LASzip chunks for supported TypeScript LAZ point formats can be decoded incrementally by `parseInBatches`. Variable-size chunk files are supported after their chunk table is available at EOF. |
+| LASzip VLR parsing | Partial. Compression mode, fixed or variable chunking, and chunk-size metadata required for TypeScript LAZ decoding are parsed incrementally. |
+| Chunk table parsing | LASzip chunk-table version 0 is supported for fixed-size and variable-size chunks. Decoded point counts and byte ranges are validated before decompression. |
 | Single compressed chunk decode | Supported when metadata is supplied by the caller. |
 | LAZ point formats 0, 1, 2, and 3 | Supported for legacy fixed-size LASzip chunks, including GPS time and RGB item decoding. Full-file streaming may still need the chunk table before output can start. |
 | LAZ 1.4 point formats 6, 7, 8 | Supported for COPC-style chunks and fixed-size full-file LAZ chunks. |
 | LAZ point formats 4, 5, 9, 10 | Not supported. These add waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
 | Selective decompression | Supported for PDRF 7 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table while preserving complete raw-record decoding through the chunk APIs. |
-| True streaming decode | Partial. Full-file LAZ `parseInBatches` can consume incoming bytes and emit raw point batches after complete compressed chunks are available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
+| True streaming decode | Partial. Fixed-size full-file LAZ can emit batches after complete compressed chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
 | LAZ encoding | Not implemented. |
 
 #### Selective LAZ 1.4 Decoding
