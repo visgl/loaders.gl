@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CompositeLayer, type CompositeLayerProps, type LayersList} from '@deck.gl/core';
+import {
+  CompositeLayer,
+  type CompositeLayerProps,
+  type DefaultProps,
+  type LayersList
+} from '@deck.gl/core';
 import type {Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {createDataSource} from '@loaders.gl/core';
 import type {
@@ -50,6 +55,20 @@ type ResolvedSourceData =
   | null;
 
 /**
+ * Synchronous prop definitions for source dispatch.
+ *
+ * deck.gl's inherited `data` prop is asynchronous and replaces URL inputs with an empty array while
+ * it loads them. `SourceLayer` must retain the original URL or Blob so that the selected child layer
+ * can resolve it with the supplied source factories or 3D loader.
+ */
+const defaultProps: DefaultProps<SourceLayerProps> = {
+  id: 'source-layer',
+  data: '',
+  sources: {type: 'array', compare: false, value: []},
+  sourceOptions: {type: 'object', compare: false, value: {}}
+};
+
+/**
  * Internal deck.gl dispatcher that selects the appropriate source-backed layer for an input.
  *
  * This class is exported for internal repository use and examples, and is not documented
@@ -61,6 +80,9 @@ export class SourceLayer<
 > extends CompositeLayer<SourceLayerProps<DataT> & ExtraProps> {
   /** deck.gl layer name used in debugging output. */
   static layerName = 'SourceLayer';
+
+  /** Synchronous prop definitions that preserve URL and Blob inputs for source dispatch. */
+  static defaultProps: DefaultProps = defaultProps;
 
   /** Initialize resolved source state. */
   initializeState(): void {
@@ -74,6 +96,8 @@ export class SourceLayer<
     if (
       changeFlags.dataChanged ||
       props.sources !== oldProps.sources ||
+      props.loader !== oldProps.loader ||
+      props.loaders !== oldProps.loaders ||
       props.sourceOptions !== oldProps.sourceOptions
     ) {
       this.setState({
@@ -92,19 +116,25 @@ export class SourceLayer<
     const {sources, sourceOptions, metadata, ...layerProps} = this.props;
     if (isTileSourceRuntime(resolvedData)) {
       return [
-        new TileSourceLayer({
-          ...layerProps,
-          data: resolvedData,
-          metadata
-        } as unknown as TileSourceLayerProps)
+        new TileSourceLayer(
+          this.getSubLayerProps({
+            ...layerProps,
+            id: 'tile-source',
+            data: resolvedData,
+            metadata
+          }) as unknown as TileSourceLayerProps
+        )
       ];
     }
 
     return [
-      new Tile3DSourceLayer({
-        ...layerProps,
-        data: resolvedData
-      } as any)
+      new Tile3DSourceLayer(
+        this.getSubLayerProps({
+          ...layerProps,
+          id: 'tiles-3d',
+          data: resolvedData
+        }) as any
+      )
     ];
   }
 
