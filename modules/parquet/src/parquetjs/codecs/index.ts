@@ -9,6 +9,7 @@ import type {ParquetCodecKit} from './declare';
 import * as PLAIN from './plain';
 import * as RLE from './rle';
 import * as DICTIONARY from './dictionary';
+import * as DELTA from './delta';
 
 export * from './declare';
 
@@ -32,5 +33,17 @@ export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
     // @ts-ignore
     encodeValues: DICTIONARY.encodeValues,
     decodeValues: DICTIONARY.decodeValues
+  },
+  DELTA_BINARY_PACKED: {
+    encodeValues: DELTA.encodeValues,
+    decodeValues: DELTA.decodeDeltaBinaryPackedValues
+  },
+  DELTA_LENGTH_BYTE_ARRAY: {
+    encodeValues: DELTA.encodeValues,
+    decodeValues: DELTA.decodeDeltaLengthByteArrayValues
+  },
+  DELTA_BYTE_ARRAY: {
+    encodeValues: DELTA.encodeValues,
+    decodeValues: DELTA.decodeDeltaByteArrayValues
   }
 };

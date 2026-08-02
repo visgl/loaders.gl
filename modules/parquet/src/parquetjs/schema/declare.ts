@@ -7,7 +7,14 @@
 import Int64 from 'node-int64';
 import type {PageHeader} from '../parquet-thrift';
 
-export type ParquetCodec = 'PLAIN' | 'RLE' | 'PLAIN_DICTIONARY';
+export type ParquetCodec =
+  | 'PLAIN'
+  | 'RLE'
+  | 'PLAIN_DICTIONARY'
+  | 'RLE_DICTIONARY'
+  | 'DELTA_BINARY_PACKED'
+  | 'DELTA_LENGTH_BYTE_ARRAY'
+  | 'DELTA_BYTE_ARRAY';
 export type ParquetCompression =
   | 'UNCOMPRESSED'
   | 'GZIP'

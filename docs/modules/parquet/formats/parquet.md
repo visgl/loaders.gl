@@ -36,7 +36,7 @@ A wide range of compression codecs are supported. Internal parquet compression f
 | `SNAPPY`       | ✅   | ✅    |                                                                         |
 | `BROTLI`       | ✅   | No    |                                                                         |
 | `LZO`          | ❌   | ❌    | There is currently no readily available browser-based LZO module for JS |
-| `LZ4`          | ✅   | ✅    |                                                                         |
+| `LZ4`          | ✅   | ✅    | Reads raw blocks, framed streams, and legacy Hadoop-framed Parquet data |
 | `LZ4_RAW`      | ✅   | ✅    |                                                                         |
 | `ZSTD`         | ✅   | ✅    |                                                                         |
 
@@ -51,9 +51,11 @@ The following Parquet encodings are supported:
 | `PLAIN`                   | ✅   | ✅    | All                                                                                                                                                                      |
 | `PLAIN_DICTIONARY`        | ✅   | ✅    | All                                                                                                                                                                      |
 | `RLE_DICTIONARY`          | ✅   | ❌    | All                                                                                                                                                                      |
-| `DELTA_BINARY_PACKED`     | ❌   | ❌    | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
-| `DELTA_BYTE_ARRAY`        | ❌   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
-| `DELTA_LENGTH_BYTE_ARRAY` | ❌   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `DELTA_BINARY_PACKED`     | ✅   | ❌    | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
+| `DELTA_BYTE_ARRAY`        | ✅   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `DELTA_LENGTH_BYTE_ARRAY` | ✅   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+
+The TypeScript backend reads both Data Page V1 and Data Page V2. Delta encodings are decoder-only; the TypeScript writer continues to use its existing encodings.
 
 ## Repetition
 
