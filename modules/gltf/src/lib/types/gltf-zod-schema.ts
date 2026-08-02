@@ -306,6 +306,15 @@ export const GLTFNodeSchema = z
     scale: z.array(z.number()).length(3).optional(),
     translation: z.array(z.number()).length(3).optional(),
     weights: z.array(z.number()).min(1).optional(),
+    externalAsset: GLTFIdSchema.optional(),
+    ...GLTF_NAMED_PROPERTY_SHAPE
+  })
+  .catchall(z.unknown());
+
+/** Zod schema for a draft glTF 2.1 external asset definition. */
+export const GLTFExternalAssetSchema = z
+  .object({
+    file: GLTFIdSchema,
     ...GLTF_NAMED_PROPERTY_SHAPE
   })
   .catchall(z.unknown());
@@ -369,6 +378,7 @@ export const GLTFSchema = z
     buffers: z.array(GLTFBufferSchema).min(1).optional(),
     bufferViews: z.array(GLTFBufferViewSchema).min(1).optional(),
     cameras: z.array(GLTFCameraSchema).min(1).optional(),
+    externalAssets: z.array(GLTFExternalAssetSchema).min(1).optional(),
     images: z.array(GLTFImageSchema).min(1).optional(),
     materials: z.array(GLTFMaterialSchema).min(1).optional(),
     meshes: z.array(GLTFMeshSchema).min(1).optional(),
@@ -396,7 +406,8 @@ export const GLTFObjectSchema = z.union([
   GLTFSceneSchema,
   GLTFSkinSchema,
   GLTFTextureSchema,
-  GLTFImageSchema
+  GLTFImageSchema,
+  GLTFExternalAssetSchema
 ]);
 
 /** Zod schema for the KHR_binary_glTF extension. */

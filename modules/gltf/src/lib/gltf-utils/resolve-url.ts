@@ -6,13 +6,28 @@ export function resolveUrl(url: string, options?: StrictLoaderOptions, context?:
   // TODO: Use better logic to handle all protocols plus not delay on data
   const absolute = url.startsWith('data:') || url.startsWith('http:') || url.startsWith('https:');
   if (absolute) {
-    return url;
+    return canonicalizeUrl(url);
   }
   const baseUrl = context?.baseUrl || getResolveBaseUrl(options?.core?.baseUrl);
   if (!baseUrl) {
     throw new Error(`'baseUrl' must be provided to resolve relative url ${url}`);
   }
-  return baseUrl.endsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
+  const resolvedUrl = baseUrl.endsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
+  return canonicalizeUrl(resolvedUrl);
+}
+
+/**
+ * Normalize equivalent absolute URLs for cache and cycle-detection keys.
+ * Non-URL paths are returned unchanged so local and virtual file-system resolution remains intact.
+ * @param url - URL to normalize.
+ * @returns Canonical URL when the input has a supported absolute scheme.
+ */
+export function canonicalizeUrl(url: string): string {
+  try {
+    return new URL(url).href;
+  } catch {
+    return url;
+  }
 }
 
 function getResolveBaseUrl(baseUrl?: string): string | undefined {

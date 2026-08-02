@@ -100,7 +100,7 @@ test('GLTFLoader#resolves embedded external asset dependencies from the package'
 test('GLTFLoader#rejects cyclical external assets', async t => {
   const recursiveAsset = JSON.stringify({
     asset: {version: '2.1'},
-    files: [{mimeType: 'model/gltf+json', uri: 'child.gltf'}],
+    files: [{mimeType: 'model/gltf+json', uri: './child.gltf'}],
     externalAssets: [{file: 0}],
     nodes: [{externalAsset: 0}]
   });

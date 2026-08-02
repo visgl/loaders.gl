@@ -3,16 +3,18 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  GLTF1Schema,
-  GLTF2Schema,
-  GLTF21Schema,
   GLTFSchema,
-  GLTFVersionSchema,
-  GLTF1ExtensionSchemas,
-  GLTF2ExtensionSchemas,
   GLTFEXTMeshoptCompressionSchema,
   GLTFKHRMeshoptCompressionSchema
 } from '@loaders.gl/gltf';
+import {
+  GLTF1Schema,
+  GLTF2Schema,
+  GLTF21Schema,
+  GLTFVersionSchema,
+  GLTF1ExtensionSchemas,
+  GLTF2ExtensionSchemas
+} from '@loaders.gl/gltf/schema';
 import {describe, expect, it} from 'vitest';
 
 describe('GLTFSchema', () => {
@@ -48,6 +50,29 @@ describe('GLTFSchema', () => {
     expect(Object.keys(GLTF2ExtensionSchemas.Vendor)).toContain('EXT_mesh_gpu_instancing');
   });
 
+  it('preserves constraints unsupported by Zod JSON Schema conversion', () => {
+    const perspective = {yfov: 1, znear: 0.1};
+    const orthographic = {xmag: 1, ymag: 1, zfar: 100, znear: 0};
+    const iesProfileSchema = GLTF2ExtensionSchemas.Vendor.EXT_lights_ies.lightProfile;
+
+    expect(
+      GLTF21Schema.safeParse({
+        asset: {version: '2.1'},
+        cameras: [{type: 'perspective', perspective, orthographic}]
+      }).success
+    ).toBe(false);
+    expect(GLTF21Schema.safeParse({asset: {version: '2.1'}, nodes: [{skin: 0}]}).success).toBe(
+      false
+    );
+    expect(GLTF1Schema.safeParse({asset: {version: '1.0'}, scene: 'default'}).success).toBe(false);
+    expect(iesProfileSchema.safeParse({bufferView: 0}).success).toBe(false);
+    const validProfile = iesProfileSchema.safeParse({
+      bufferView: 0,
+      mimeType: 'application/x-ies-lm-63'
+    });
+    expect(validProfile.success, validProfile.error?.message).toBe(true);
+  });
+
   it('accepts a glTF document and preserves extension properties', () => {
     const document = {
       asset: {version: '2.0'},
@@ -62,6 +87,21 @@ describe('GLTFSchema', () => {
   it('rejects malformed core properties', () => {
     expect(GLTFSchema.safeParse({asset: {version: 2}}).success).toBe(false);
     expect(GLTFSchema.safeParse({asset: {version: '2.0'}, scene: -1}).success).toBe(false);
+  });
+
+  it('validates draft glTF 2.1 external asset references', () => {
+    const asset = {version: '2.1'};
+
+    expect(
+      GLTFSchema.safeParse({
+        asset,
+        externalAssets: [{file: 0}],
+        nodes: [{externalAsset: 0}]
+      }).success
+    ).toBe(true);
+    expect(GLTFSchema.safeParse({asset, externalAssets: {file: 0}}).success).toBe(false);
+    expect(GLTFSchema.safeParse({asset, externalAssets: [{file: '0'}]}).success).toBe(false);
+    expect(GLTFSchema.safeParse({asset, nodes: [{externalAsset: '0'}]}).success).toBe(false);
   });
 
   it('validates draft glTF 2.1 thumbnail references', () => {

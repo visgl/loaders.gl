@@ -65,7 +65,7 @@ export async function resolveGLTFFile(
   if (file.uri !== undefined) {
     const url = resolveUrl(file.uri, options, context);
     const response = await context.fetch(url);
-    assert(response, `Failed to fetch glTF file ${file.uri}.`);
+    assert(response?.ok, `Failed to fetch glTF file ${file.uri}: HTTP ${response?.status}.`);
     const arrayBuffer = await response.arrayBuffer();
     resolvedFile = {
       arrayBuffer,

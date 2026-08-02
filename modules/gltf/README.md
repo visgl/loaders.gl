@@ -4,7 +4,12 @@ The module exports [Zod](https://zod.dev/) schemas for glTF 1.0, glTF 2.0, draft
 all Khronos extension schema fragments, and the individual glTF 2.0 JSON objects:
 
 ```ts
-import {GLTF1Schema, GLTF2Schema, GLTF21Schema, GLTFVersionSchema} from '@loaders.gl/gltf';
+import {
+  GLTF1Schema,
+  GLTF2Schema,
+  GLTF21Schema,
+  GLTFVersionSchema
+} from '@loaders.gl/gltf/schema';
 
 const gltf = GLTF2Schema.parse(json);
 ```
