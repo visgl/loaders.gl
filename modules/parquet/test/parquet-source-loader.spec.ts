@@ -11,7 +11,8 @@ import {
   ParquetJSWriter,
   ParquetSourceLoader,
   type ParquetSourceLoaderOptions,
-  type ParquetSourceMetadata
+  type ParquetSourceMetadata,
+  type ParquetTelemetryEvent
 } from '@loaders.gl/parquet';
 import {
   ParquetSource,
@@ -19,6 +20,8 @@ import {
 } from '@loaders.gl/parquet/parquet-source-loader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
+const STATISTICS_FIXTURE_URL =
+  '@loaders.gl/parquet/test/data/apache/good/nullable.impala.parquet';
 const REMOTE_URL = 'https://example.com/data/alltypes_plain.parquet';
 
 /** Lazily encoded three-row-group fixture shared by selective-read tests. */
@@ -122,6 +125,27 @@ test('ParquetSource#read applies snapshotted source defaults', async (t) => {
     batches.every(batch => batch.schema?.fields[0]?.name === 'x'),
     'uses the snapshotted default column projection'
   );
+  await source.close();
+  t.end();
+});
+
+test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) => {
+  const fixture = await loadFixture(STATISTICS_FIXTURE_URL);
+  const source = createDataSource(new Blob([fixture]), [ParquetSourceLoaderWithParser], {
+    core: {type: 'parquet'}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata();
+  const columns = metadata.rowGroups[0].columns;
+  const idStatistics = columns.find(column => column.path.join('.') === 'id')?.statistics;
+  const keyStatistics = columns.find(
+    column => column.path.join('.') === 'int_map.map.key'
+  )?.statistics;
+
+  t.equal(idStatistics?.min, 1, 'decodes physical INT64 minimum');
+  t.equal(idStatistics?.max, 7, 'decodes physical INT64 maximum');
+  t.equal(idStatistics?.nullCount, 0, 'retains an explicit zero null count');
+  t.equal(keyStatistics?.min, 'k1', 'converts a logical UTF8 minimum');
+  t.equal(keyStatistics?.max, 'k3', 'converts a logical UTF8 maximum');
   await source.close();
   t.end();
 });
@@ -235,6 +259,61 @@ test('ParquetSource#read cancels outstanding ranges when iteration ends early', 
   t.equal(firstBatch.value?.rowGroupIndex, 0, 'emits the first row group in requested order');
   await iterator.return?.();
   t.ok(blockedRequestAborted, 'aborts the concurrently requested next row group');
+  t.equal(source.getTelemetry().cancellationCount, 1, 'counts the cancelled read');
+  t.ok(source.getTelemetry().abortedRangeRequestCount >= 1, 'counts the aborted range');
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#prunes row groups and reports exact cumulative telemetry', async (t) => {
+  const fixture = await createSelectiveFixture();
+  const requests: RangeRequestRecord[] = [];
+  const events: ParquetTelemetryEvent[] = [];
+  const source = createRemoteSource(createRangeFetch(fixture, {requests}), {
+    parquet: {onTelemetry: event => events.push(event)}
+  });
+  const metadata = await source.getMetadata();
+  const metadataRequestCount = requests.length;
+  const batches = await collectParquetBatches(
+    source.read({
+      rowGroups: [0, 1, 2],
+      columns: ['x'],
+      rowGroupFilter: rowGroup => rowGroup.index !== 1
+    })
+  );
+  const telemetry = source.getTelemetry();
+  const downloadedBytes = requests.reduce(
+    (sum, request) => sum + request.end - request.start + 1,
+    0
+  );
+  const prunedRanges = getColumnRanges(metadata, 1, ['x']);
+  const dataRequests = requests.slice(metadataRequestCount);
+
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
+    [0, 1, 4, 5],
+    'returns only rows from retained row groups'
+  );
+  t.ok(
+    dataRequests.every(request =>
+      prunedRanges.every(range => request.end < range.start || request.start > range.end)
+    ),
+    'does not fetch the pruned row group column'
+  );
+  t.equal(telemetry.rangeRequestCount, requests.length, 'counts every HTTP range');
+  t.equal(telemetry.requestedBytes, downloadedBytes, 'requested bytes match the server log');
+  t.equal(telemetry.downloadedBytes, downloadedBytes, 'downloaded bytes match the server log');
+  t.equal(telemetry.cacheHits, 1, 'counts the cached header read');
+  t.equal(telemetry.rowGroupsRequested, 3, 'counts candidate row groups');
+  t.equal(telemetry.rowGroupsPruned, 1, 'counts pruned row groups');
+  t.equal(telemetry.rowGroupsDecoded, 2, 'counts decoded row groups');
+  t.equal(telemetry.batchesEmitted, 2, 'counts emitted Arrow batches');
+  t.equal(telemetry.rowsEmitted, 4, 'counts emitted rows');
+  t.ok(telemetry.networkDurationMs >= 0, 'records network duration');
+  t.ok(telemetry.decodeDurationMs >= 0, 'records decode duration');
+  t.ok(telemetry.arrowConversionDurationMs >= 0, 'records Arrow conversion duration');
+  t.ok(events.some(event => event.type === 'row-group-prune'), 'emits a pruning event');
+  t.ok(events.some(event => event.type === 'batch'), 'emits batch events');
   await source.close();
   t.end();
 });
@@ -333,8 +412,8 @@ test('ParquetSourceLoader#abort and close cancel initialization', async (t) => {
 });
 
 /** Loads the shared Parquet fixture into memory for deterministic transport tests. */
-async function loadFixture(): Promise<ArrayBuffer> {
-  const response = await fetchFile(FIXTURE_URL);
+async function loadFixture(url = FIXTURE_URL): Promise<ArrayBuffer> {
+  const response = await fetchFile(url);
   return await response.arrayBuffer();
 }
 

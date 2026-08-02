@@ -41,8 +41,10 @@ export const ParquetSourceLoader = {
       columns: undefined,
       batchSize: undefined,
       concurrency: undefined,
+      rowGroupFilter: undefined,
       headers: undefined,
       preserveBinary: false,
+      onTelemetry: undefined,
       wasmUrl: undefined
     },
     rangeRequests: {
@@ -57,8 +59,10 @@ export const ParquetSourceLoader = {
       columns: undefined!,
       batchSize: undefined!,
       concurrency: undefined!,
+      rowGroupFilter: undefined!,
       headers: undefined!,
       preserveBinary: false,
+      onTelemetry: undefined!,
       wasmUrl: undefined!
     },
     rangeRequests: {

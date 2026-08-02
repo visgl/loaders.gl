@@ -10,9 +10,35 @@ import type {ParquetObjectVersion, ParquetRangeRequestOptions} from '../../parqu
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 type ParquetRangeFileOptions = {
+  /** Fetch implementation used for every HTTP range. */
   fetch: FetchLike;
+  /** Headers forwarded to every HTTP range. */
   headers?: HeadersInit;
+  /** Range coalescing and diagnostics configuration. */
   rangeRequests?: ParquetRangeRequestOptions;
+  /** Receives source-local transport telemetry deltas. */
+  onTelemetry?: (event: ParquetRangeTelemetryEvent) => void;
+};
+
+type ParquetRangeTelemetryEvent = {
+  /** Transport operation that produced this event. */
+  type: 'range-request' | 'cache-hit';
+  /** Number of transport requests contributed by this event. */
+  rangeRequestCount?: number;
+  /** Number of transport bytes requested by this event. */
+  requestedBytes?: number;
+  /** Number of response bytes downloaded by this event. */
+  downloadedBytes?: number;
+  /** Number of cache hits contributed by this event. */
+  cacheHits?: number;
+  /** Network duration contributed by this event. */
+  networkDurationMs?: number;
+  /** Number of failed requests contributed by this event. */
+  failedRangeRequestCount?: number;
+  /** Number of aborted requests contributed by this event. */
+  abortedRangeRequestCount?: number;
+  /** Error associated with a failed range request. */
+  error?: unknown;
 };
 
 type ContentRange = {
@@ -32,6 +58,8 @@ export class ParquetRangeFile implements ReadableFile {
   private readonly fetch: FetchLike;
   /** Headers inherited from source loader options. */
   private readonly headers?: HeadersInit;
+  /** Source telemetry callback invoked after transport and cache operations. */
+  private readonly onTelemetry?: (event: ParquetRangeTelemetryEvent) => void;
   /** Scheduler used to coalesce later row-group reads. */
   private readonly scheduler: RangeRequestScheduler;
   /** Aborts all active requests when the file is closed. */
@@ -51,6 +79,7 @@ export class ParquetRangeFile implements ReadableFile {
     this.url = url;
     this.fetch = options.fetch;
     this.headers = options.headers;
+    this.onTelemetry = options.onTelemetry;
     this.scheduler =
       options.rangeRequests?.scheduler ||
       new RangeRequestScheduler({
@@ -103,6 +132,7 @@ export class ParquetRangeFile implements ReadableFile {
 
     const cached = this.cache.get(getRangeKey(offset, length));
     if (cached) {
+      this.onTelemetry?.({type: 'cache-hit', cacheHits: 1});
       return cached.slice(0);
     }
 
@@ -155,6 +185,7 @@ export class ParquetRangeFile implements ReadableFile {
     validateVersion: boolean
   ): Promise<{response: Response; arrayBuffer: ArrayBuffer; contentRange: ContentRange}> {
     const abortContext = createCombinedAbortSignal(signal, this.closeController.signal);
+    const startTime = getCurrentTime();
     try {
       const response = await this.fetch(this.url, {
         headers: createRangeHeaders(this.headers, offset, length, validateVersion && this.version),
@@ -191,7 +222,26 @@ export class ParquetRangeFile implements ReadableFile {
           `Parquet range response returned ${arrayBuffer.byteLength} bytes; expected ${length}`
         );
       }
+      this.onTelemetry?.({
+        type: 'range-request',
+        rangeRequestCount: 1,
+        requestedBytes: length,
+        downloadedBytes: arrayBuffer.byteLength,
+        networkDurationMs: getCurrentTime() - startTime
+      });
       return {response, arrayBuffer, contentRange};
+    } catch (error) {
+      this.onTelemetry?.({
+        type: 'range-request',
+        rangeRequestCount: 1,
+        requestedBytes: length,
+        networkDurationMs: getCurrentTime() - startTime,
+        failedRangeRequestCount: 1,
+        abortedRangeRequestCount:
+          abortContext.signal.aborted || isAbortError(error) ? 1 : undefined,
+        error
+      });
+      throw error;
     } finally {
       abortContext.dispose();
     }
@@ -203,6 +253,16 @@ export class ParquetRangeFile implements ReadableFile {
       throw new Error('Parquet source is closed');
     }
   }
+}
+
+/** Returns a monotonic timestamp when available and falls back to wall-clock time. */
+function getCurrentTime(): number {
+  return globalThis.performance?.now() ?? Date.now();
+}
+
+/** Returns true for DOM and cross-runtime abort errors. */
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
 }
 
 /** Validates a requested range against the known object byte length. */
