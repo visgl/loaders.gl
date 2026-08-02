@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Link from '@docusaurus/Link';
 import styled from 'styled-components';
 
 const sourceTabs = [
@@ -265,7 +266,7 @@ const CompactNode = styled(Node)`
   padding: 8px 10px;
 `;
 
-const LinkedCompactNode = styled(CompactNode).attrs({as: 'a'})`
+const LinkedCompactNode = styled(CompactNode).attrs({as: Link})`
   text-decoration: none;
   transition:
     border-color 160ms ease,
@@ -477,7 +478,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
               {selectedSourceTab.sourceLoaders.map((sourceLoader) => (
                 <LinkedCompactNode
                   key={sourceLoader}
-                  href={sourceDocumentationLinks[sourceLoader]}
+                  to={sourceDocumentationLinks[sourceLoader]}
                   $compactText={sourceLoader.length > 20}
                 >
                   <span>{sourceLoader}</span>
@@ -516,7 +517,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
         >
           <CenteredNodeContent>
             {loadingManagerDocumentationLinks[selectedSourceTab.loadingManager] ? (
-              <LinkedCompactNode href={loadingManagerDocumentationLinks[selectedSourceTab.loadingManager]}>
+              <LinkedCompactNode to={loadingManagerDocumentationLinks[selectedSourceTab.loadingManager]}>
                 <span>{selectedSourceTab.loadingManager}</span>
                 <LinkMark aria-hidden="true">↗</LinkMark>
               </LinkedCompactNode>
@@ -562,7 +563,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
                 <LayerPreviewChildrenRow>
                   <LayerPreviewChildren>
                     {renderedDeckLayers.map((layer) => (
-                      <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
+                      <LinkedCompactNode key={layer} to={deckLayerDocumentationLinks[layer]}>
                         <span>{layer}</span>
                         <LinkMark aria-hidden="true">↗</LinkMark>
                       </LinkedCompactNode>
@@ -573,7 +574,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
             ) : (
               <MethodGrid>
                 {renderedDeckLayers.map((layer) => (
-                  <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
+                  <LinkedCompactNode key={layer} to={deckLayerDocumentationLinks[layer]}>
                     <span>{layer}</span>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedCompactNode>

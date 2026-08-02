@@ -13,7 +13,7 @@ Tune 3D Tiles in layers: establish the desired final LOD, then improve how quick
 3. Tune `progressiveResolutionHeightFraction` for initial broad coverage.
 4. Tune `foveatedConeSize`, relaxation, and `foveatedTimeDelay` for interaction.
 5. Tune `maxRequests` for network and decode capacity.
-6. Tune `maximumMemoryUsage`, optionally enabling memory-adjusted SSE.
+6. Tune byte-native `cacheBytes` and `maximumCacheOverflowBytes`; memory-adjusted SSE is enabled by default.
 
 ## What to Inspect
 
@@ -27,8 +27,8 @@ Useful `Tile3D` fields include:
 | `selected` | Whether content contributes to the current frame. |
 | `refine` | `ADD` or `REPLACE` continuity semantics. |
 | `_priorityProgressiveResolution` | Whether the tile belongs to the coarse-coverage band. |
-| `_priorityDeferred` | Whether motion deferral currently holds the request. |
-| `_foveatedFactor` | Unitless distance from the perspective view axis. |
+| `priorityDeferred` | Whether motion deferral currently holds the request, including its active time window. |
+| `_foveatedFactor` | Unitless distance from the perspective forward view ray. |
 | `_priority` | Combined scheduler priority; smaller starts first. |
 
 The underscored fields are runtime diagnostics, not stable public API. Prefer callbacks and stats for application behavior. `Tileset3D.stats` exposes tiles loading, loaded, in memory, in view, renderable, failed, estimated GPU memory, and the current maximum SSE.
@@ -47,7 +47,7 @@ The underscored fields are runtime diagnostics, not stable public API. Prefer ca
 | Orthographic LOD or progressive pass looks wrong | Invalid `metersPerPixel` or physical/logical pixel mixing. | Supply a positive finite logical-pixel scale. |
 | High-DPI displays choose different LOD | Custom viewport applied DPR a second time. | Use CSS/logical dimensions with no additional DPR factor. |
 | Scaled tiles under-refine | World transform was not applied to geometric error. | Inspect `lodMetricValue` and the composed model/tile transforms. |
-| Memory exceeds configured maximum | Current-frame working set is larger than the soft cache budget. | Raise the budget, raise SSE, or enable memory-adjusted SSE. |
+| Memory exceeds `cacheBytes` | Current-frame working set is larger than the soft eviction target. | Compare usage with the base-plus-overflow ceiling; raise a budget, raise SSE, or keep memory-adjusted SSE enabled. |
 | Many queued requests but low throughput | Request throttling or upstream fetch limits. | Inspect `maxRequests`, browser connection limits, and loader worker concurrency. |
 
 ## Multi-Viewport Behavior

@@ -26,6 +26,7 @@ import {TilesetTraverser} from './tileset-traverser';
 import {
   calculateFoveatedFactor,
   calculateTileRequestPriority,
+  isFoveatedRequestDelayActive,
   isFoveatedRequestDeferred,
   isProgressiveResolutionPriority
 } from '../helpers/tiles-3d-request-priority';
@@ -128,7 +129,7 @@ export class Tile3D {
   _priorityProgressiveResolution: boolean = false;
   /** Angular distance from the camera view axis used to prioritize center tiles. */
   _foveatedFactor: number = 0;
-  /** Whether this peripheral request may wait briefly after camera movement. */
+  /** Whether this peripheral request is currently inside the camera-motion deferral window. */
   priorityDeferred: boolean = false;
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
@@ -369,6 +370,12 @@ export class Tile3D {
     if (this.tileset._frameNumber - this._touchedFrame >= 1) {
       return -1;
     }
+    // RequestScheduler re-evaluates this callback before a queued request receives a slot. A
+    // negative priority cancels work that became deferred after it was queued; the scheduled
+    // follow-up traversal submits it again after the motion delay expires.
+    if (this.priorityDeferred) {
+      return -1;
+    }
     if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
       return -1;
     }
@@ -388,7 +395,6 @@ export class Tile3D {
     const reverseScreenSpaceError = Math.max(rootScreenSpaceError - screenSpaceError, 0);
     return calculateTileRequestPriority({
       priorityProgressiveResolution: this._priorityProgressiveResolution,
-      priorityDeferred: this.priorityDeferred,
       foveatedFactor: this._foveatedFactor,
       reverseScreenSpaceError,
       rootScreenSpaceError
@@ -540,7 +546,7 @@ export class Tile3D {
     }
 
     this._foveatedFactor = calculateFoveatedFactor(this.boundingVolume, frameState.camera);
-    this.priorityDeferred = isFoveatedRequestDeferred({
+    const deferralEligible = isFoveatedRequestDeferred({
       refinement: this.refine,
       skipLevelOfDetail: this.tileset._traverser.options.skipLevelOfDetail,
       foveatedScreenSpaceError: options.foveatedScreenSpaceError,
@@ -554,6 +560,11 @@ export class Tile3D {
       maximumScreenSpaceError: this.tileset.memoryAdjustedScreenSpaceError,
       priorityProgressiveResolution: this._priorityProgressiveResolution
     });
+    this.priorityDeferred = isFoveatedRequestDelayActive(
+      deferralEligible,
+      frameState.camera.timeSinceMovement,
+      options.foveatedTimeDelay
+    );
   }
 
   // Determines whether the tile's bounding volume intersects the culling volume.

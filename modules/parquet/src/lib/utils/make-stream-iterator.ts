@@ -43,32 +43,64 @@ async function* makeBrowserStreamIterator<T>(
   const reader = stream.getReader();
 
   let nextBatchPromise: Promise<{done?: boolean; value?: T}> | undefined;
+  let streamFinished = false;
+  let streamReadFailed = false;
+  let iteratorFailed = false;
 
   try {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const currentBatchPromise = nextBatchPromise || reader.read();
-      // Issue a read for an additional batch, while we await the next batch
-      // Idea is to make fetching happen in parallel with processing / parsing
-      if (options?._streamReadAhead) {
-        nextBatchPromise = reader.read();
-      }
+      nextBatchPromise = undefined;
       // Read from the stream
-      // value is a Uint8Array
-      const {done, value} = await currentBatchPromise;
+      let batch;
+      try {
+        batch = await currentBatchPromise;
+      } catch (error) {
+        streamReadFailed = true;
+        throw error;
+      }
+      const {done, value} = batch;
       // Exit if we're done
       if (done) {
+        streamFinished = true;
         return;
+      }
+      // Issue a read for an additional batch while the current batch is processed
+      if (options?._streamReadAhead) {
+        nextBatchPromise = reader.read();
+        // Observe a prefetched rejection even if the consumer stops before requesting it
+        void nextBatchPromise.catch(() => {});
       }
       // Else yield the chunk
       if (value) {
         yield value;
       }
     }
-  } catch (_error) {
-    // TODO - examples makes it look like this should always be called,
-    // but that generates exceptions so only call it if we do not reach the end
-    reader.releaseLock();
+  } catch (error) {
+    iteratorFailed = true;
+    throw error;
+  } finally {
+    let cleanupError: unknown;
+
+    if (!streamFinished && !streamReadFailed) {
+      try {
+        await reader.cancel();
+      } catch (error) {
+        cleanupError = error;
+      }
+    }
+
+    try {
+      reader.releaseLock();
+    } catch (error) {
+      cleanupError ||= error;
+    }
+
+    // Preserve iteration errors instead of replacing them with cleanup errors
+    if (!iteratorFailed && cleanupError) {
+      throw cleanupError;
+    }
   }
 }
 

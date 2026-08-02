@@ -71,13 +71,24 @@ export class TilesetCache {
     }
   }
 
-  unloadTiles(tileset, unloadCallback): void {
+  /**
+   * Unloads least-recently-used tiles until the byte-native cache target is met.
+   *
+   * Tiles touched after the frame sentinel remain protected, so {@link Tileset3D.cacheBytes} is a
+   * soft target rather than a hard cap on the visible working set. Overflow headroom affects
+   * memory-adjusted SSE, not eviction of unused tiles.
+   *
+   * @param tileset - Tileset that owns the cache and reports estimated content memory.
+   * @param unloadCallback - Callback that releases content and decrements the memory estimate.
+   */
+  unloadTiles(
+    tileset: Tileset3D,
+    unloadCallback?: (tileset: Tileset3D, tile: Tile3D) => void
+  ): void {
     const trimTiles = this._trimTiles;
     this._trimTiles = false;
 
     const list = this._list;
-
-    const maximumMemoryUsageInBytes = tileset.maximumMemoryUsage * 1024 * 1024;
 
     // Traverse the list only to the sentinel since tiles/nodes to the
     // right of the sentinel were used this frame.
@@ -85,10 +96,7 @@ export class TilesetCache {
     const sentinel = this._sentinel;
     let node = list.head;
 
-    while (
-      node !== sentinel &&
-      (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
-    ) {
+    while (node !== sentinel && (tileset.gpuMemoryUsageInBytes > tileset.cacheBytes || trimTiles)) {
       // @ts-expect-error
       const tile = node.item;
       // @ts-expect-error

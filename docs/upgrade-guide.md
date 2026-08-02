@@ -4,6 +4,14 @@
 
 These deprecations.removals are being considered for v5
 
+**@loaders.gl/tiles**
+
+- `Tileset3D.maximumMemoryUsage` and the `maximumMemoryUsage` constructor option are deprecated. Use byte-native `cacheBytes`; convert MiB with `maximumMemoryUsage * 1024 * 1024`.
+- `memoryCacheOverflow` is deprecated. Use byte-native `maximumCacheOverflowBytes`; the byte-native option takes precedence when both forms are supplied.
+- The default 3D Tiles cache policy is now a 512 MiB base target plus 512 MiB of current-view overflow headroom, with memory-adjusted SSE enabled. To preserve the previous 32 MiB/1 MiB policy, configure both byte budgets explicitly and set `memoryAdjustedScreenSpaceError: false`.
+
+See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for migration examples and runtime behavior.
+
 **@loaders.gl/core**
 
 - Top-level loader options are no longer supported

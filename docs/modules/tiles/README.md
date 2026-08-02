@@ -42,7 +42,9 @@ viewport.
 - `cartesianCenter` (`Number[3]`): Center of tileset in fixed frame coordinates.
 - `cartographicCenter` (`Number[3]`): Center of tileset in cartographic coordinates `[long, lat, elevation]`
 - `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)): Gets an ellipsoid describing the shape of the globe.
-- `maximumMemoryUsage` (`Number`): If tiles sized more than `maximumMemoryUsage` are needed to for the current view, when these tiles go out of view, they will be unloaded.`maximumMemoryUsage` must be greater than or equal to zero.
+- `cacheBytes` (`Number`): Soft byte target for cached tile content that is not needed by the current frame. Current-frame tiles remain protected.
+- `maximumCacheOverflowBytes` (`Number`): Additional byte headroom before cache pressure raises the active screen-space-error threshold.
+- `maximumMemoryUsage` (`Number`, deprecated): MiB compatibility alias for `cacheBytes`.
 - `modelMatrix` (`Matrix4: A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 - `root` (`Tile3DHeader`): The root tile header.
 - `tiles`: (`Array<Tile3DHeader>`): All the tiles that have been traversed.
@@ -60,7 +62,8 @@ viewport.
   - `options`: Options object, but not limited to
     Parameters:
     - `modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix that transforms the tileset's root tile.
-    - `maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
+    - `cacheBytes`=`536870912` (`Number`) - Soft target in bytes for evictable cached content.
+    - `maximumCacheOverflowBytes`=`536870912` (`Number`) - Additional current-view headroom in bytes before LOD adapts.
     - `ellipsoid`=`Ellipsoid.WGS84` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)) - The ellipsoid determining the size and shape of the globe.
       Callbacks:
     - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.

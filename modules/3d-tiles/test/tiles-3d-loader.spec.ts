@@ -108,6 +108,45 @@ test('Tiles3DLoader#accepts supported required extensions', async t => {
   t.end();
 });
 
+test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async t => {
+  const s2VolumeInfo = {token: '1', minimumHeight: 0, maximumHeight: 10};
+  const s2BoundingVolume = {
+    extensions: {'3DTILES_bounding_volume_S2': s2VolumeInfo}
+  };
+  const tileset = await parse(
+    encodeTilesetJson({
+      extensionsRequired: ['3DTILES_bounding_volume_S2'],
+      root: {
+        geometricError: 0,
+        refine: 'REPLACE',
+        boundingVolume: s2BoundingVolume,
+        viewerRequestVolume: s2BoundingVolume,
+        content: {uri: 'tile.glb', boundingVolume: s2BoundingVolume}
+      }
+    }),
+    Tiles3DLoader,
+    {worker: false, '3d-tiles': {isTileset: true}}
+  );
+
+  t.equal(tileset.root.boundingVolume.box.length, 12, 'normalizes the tile traversal volume');
+  t.equal(
+    tileset.root.content.boundingVolume.box.length,
+    12,
+    'normalizes the explicit content volume'
+  );
+  t.equal(
+    tileset.root.viewerRequestVolume.box.length,
+    12,
+    'normalizes the explicit viewer request volume'
+  );
+  t.deepEqual(
+    tileset.root.boundingVolume.s2VolumeInfo,
+    s2VolumeInfo,
+    'retains S2 metadata for implicit subdivision and diagnostics'
+  );
+  t.end();
+});
+
 test('Tiles3DLoader#allows unknown extensionsUsed entries', async t => {
   const tileset = await parse(
     encodeTilesetJson({extensionsUsed: ['VENDOR_optional_extension']}),
