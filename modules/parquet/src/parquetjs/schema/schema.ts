@@ -15,7 +15,8 @@ import {
   RepetitionType,
   SchemaDefinition
 } from './declare';
-import {materializeRows, shredBuffer, shredRecord} from './shred';
+import type {ArrayType} from '@loaders.gl/schema';
+import {materializeColumns, materializeRows, shredBuffer, shredRecord} from './shred';
 import {PARQUET_LOGICAL_TYPES} from './types';
 
 /**
@@ -80,6 +81,11 @@ export class ParquetSchema {
 
   materializeRows(rowGroup: ParquetRowGroup): ParquetRow[] {
     return materializeRows(this, rowGroup);
+  }
+
+  /** Materializes one decoded row group as top-level column arrays. */
+  materializeColumns(rowGroup: ParquetRowGroup): Record<string, ArrayType> {
+    return materializeColumns(this, rowGroup);
   }
 
   compress(type: ParquetCompression): this {

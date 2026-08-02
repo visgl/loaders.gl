@@ -29,6 +29,7 @@ metadata before Parquet encoding.
 # Attribution
 
 - Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).
+- Delta decoder improvements include adaptations from https://github.com/hyparam/hyparquet under the MIT license (Copyright (c) Hyperparam contributors).
 - Documentation was inspired by [parquet-go](https://github.com/xitongsys/parquet-go/blob/master/LICENSE) under Apache 2 license.
 
 # License

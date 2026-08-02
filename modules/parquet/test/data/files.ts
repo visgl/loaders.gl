@@ -95,7 +95,7 @@ export const PARQUET_FILES: ParquetTestFile[] = [
   {
     title: 'datapage_v2',
     path: 'good/datapage_v2.snappy.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },
@@ -123,7 +123,7 @@ export const PARQUET_FILES: ParquetTestFile[] = [
   {
     title: 'hadoop_lz4_compressed',
     path: 'good/hadoop_lz4_compressed.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },
@@ -229,28 +229,28 @@ export const PARQUET_FILES: ParquetTestFile[] = [
   {
     title: 'delta_binary_packed',
     path: 'good/delta_binary_packed.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },
   {
     title: 'delta_byte_array',
     path: 'good/delta_byte_array.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },
   {
     title: 'delta_encoding_optional_column',
     path: 'good/delta_encoding_optional_column.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },
   {
     title: 'delta_encoding_required_column',
     path: 'good/delta_encoding_required_column.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },

@@ -8,6 +8,7 @@ import './make-stream-iterator.spec';
 // parquetjs unit test suite
 import './parquetjs/codec-plain.spec';
 import './parquetjs/codec-rle.spec';
+import './parquetjs/codec-delta.spec';
 import './parquetjs/schema.spec';
 import './parquetjs/shred.spec';
 import './parquetjs/thrift.spec';

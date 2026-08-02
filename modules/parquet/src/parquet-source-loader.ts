@@ -4,7 +4,7 @@
 
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
 import {BlobFile, DataSource} from '@loaders.gl/loader-utils';
-import type {Schema} from '@loaders.gl/schema';
+import type {ArrayType, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
@@ -24,7 +24,6 @@ import type {
 import {preloadCompressions} from './parquetjs/compression';
 import {CompressionCodec, Encoding, type FileMetaData} from './parquetjs/parquet-thrift/index';
 import {ParquetReader} from './parquetjs/parser/parquet-reader';
-import type {ParquetRow} from './parquetjs/schema/declare';
 import type {ParquetSchema} from './parquetjs/schema/schema';
 
 export type {
@@ -61,8 +60,10 @@ type ParquetSourceInitialization = {
 type ParquetRowGroupReadResult = {
   /** Zero-based source row-group index. */
   rowGroupIndex: number;
-  /** Materialized rows for the selected columns. */
-  rows: ParquetRow[];
+  /** Materialized columns for the selected fields. */
+  columns: Record<string, ArrayType>;
+  /** Number of logical rows in the decoded row group. */
+  rowCount: number;
 };
 
 type SettledParquetRowGroupRead =
@@ -193,21 +194,27 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           throw settledRead.error;
         }
 
-        const {rowGroupIndex, rows} = settledRead.result;
-        const outputBatchSize = batchSize || Math.max(rows.length, 1);
+        const {rowGroupIndex, columns: decodedColumns, rowCount} = settledRead.result;
+        const outputBatchSize = batchSize || Math.max(rowCount, 1);
         for (
           let rowGroupRowOffset = 0;
-          rowGroupRowOffset < rows.length;
+          rowGroupRowOffset < rowCount;
           rowGroupRowOffset += outputBatchSize
         ) {
           throwIfAborted(readContext.abortController.signal);
-          const batchRows = rows.slice(rowGroupRowOffset, rowGroupRowOffset + outputBatchSize);
+          const batchRowCount = Math.min(outputBatchSize, rowCount - rowGroupRowOffset);
+          const columns = sliceColumns(
+            decodedColumns,
+            rowGroupRowOffset,
+            rowGroupRowOffset + batchRowCount
+          );
           yield createParquetBatch(
             initialization.metadata,
             projectedSchema,
             rowGroupIndex,
             rowGroupRowOffset,
-            batchRows
+            columns,
+            batchRowCount
           );
         }
       }
@@ -290,8 +297,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       signal
     );
     throwIfAborted(signal);
-    const rows = initialization.parquetSchema.materializeRows(decodedRowGroup);
-    return {rowGroupIndex, rows};
+    const columns = initialization.parquetSchema.materializeColumns(decodedRowGroup);
+    return {rowGroupIndex, columns, rowCount: decodedRowGroup.rowCount};
   }
 
   /** Opens the readable file and decodes its footer and schema once. */
@@ -435,15 +442,16 @@ function createRowGroupMetadata(
   });
 }
 
-/** Converts decoded rows into one Arrow batch and attaches stable source provenance. */
+/** Converts decoded columns into one Arrow batch and attaches stable source provenance. */
 function createParquetBatch(
   metadata: ParquetSourceMetadata,
   schema: Schema,
   rowGroupIndex: number,
   rowGroupRowOffset: number,
-  rows: ParquetRow[]
+  columns: Record<string, ArrayType>,
+  rowCount: number
 ): ParquetBatch {
-  const arrowTable = convertTable({shape: 'object-row-table', schema, data: rows}, 'arrow-table');
+  const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow-table');
   const rowGroup = metadata.rowGroups[rowGroupIndex];
   const sourceId = metadata.url || metadata.name;
   const provenance = {
@@ -453,7 +461,7 @@ function createParquetBatch(
     rowGroupIndex,
     rowOffset: rowGroup.rowOffset + rowGroupRowOffset,
     rowGroupRowOffset,
-    rowCount: rows.length
+    rowCount
   };
   return {
     batchType: 'data',
@@ -461,10 +469,26 @@ function createParquetBatch(
     schemaType: 'explicit',
     schema,
     data: arrowTable.data,
-    length: rows.length,
+    length: rowCount,
     metadata: provenance,
     ...provenance
   };
+}
+
+/** Returns a row slice of every decoded column without constructing row objects. */
+function sliceColumns(
+  columns: Record<string, ArrayType>,
+  start: number,
+  end: number
+): Record<string, ArrayType> {
+  const slicedColumns: Record<string, ArrayType> = {};
+  for (const [name, column] of Object.entries(columns)) {
+    const slice = (column as ArrayType & {slice?: (start: number, end: number) => ArrayType}).slice;
+    slicedColumns[name] = slice
+      ? slice.call(column, start, end)
+      : Array.prototype.slice.call(column, start, end);
+  }
+  return slicedColumns;
 }
 
 /** Validates and normalizes requested row-group indexes. */

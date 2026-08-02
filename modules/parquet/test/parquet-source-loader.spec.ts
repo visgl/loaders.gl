@@ -172,6 +172,11 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     'returns only rows from the selected row group'
   );
   t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2', 'source-3'],
+    'converts logical values directly from decoded columns'
+  );
+  t.deepEqual(
     batches[0].schema?.fields.map(field => field.name),
     ['x', 'source_id'],
     'projects the batch schema'

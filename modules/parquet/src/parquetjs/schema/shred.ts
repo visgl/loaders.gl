@@ -300,23 +300,12 @@ function materializeColumnAsColumnarArray(
 
   const columnName = branch[0].name;
 
-  let column: ArrayType | undefined;
-  const {values} = columnData;
-  if (values.length === rowCount && branch[0].primitiveType) {
-    // if (branch[0].repetitionType === `REQUIRED`) {
-    //   switch (branch[0].primitiveType) {
-    //     case 'INT32': return values instanceof Int32Array ? values : new Int32Array(values);
-    //   }
-    // }
-    column = values;
-  }
-
-  if (column) {
-    columns[columnName] = column;
+  if (branch.length === 1 && field.repetitionType !== 'REPEATED') {
+    columns[columnName] = materializeFlatColumn(field, columnData, rowCount);
     return;
   }
 
-  column = new Array(rowCount);
+  const column: ArrayType = new Array(rowCount);
   for (let i = 0; i < rowCount; i++) {
     column[i] = {};
   }
@@ -396,4 +385,25 @@ function materializeColumnAsColumnarArray(
       column[i] = (column[i] as object)[columnName];
     }
   }
+}
+
+/** Materializes a required or optional top-level primitive column with logical type conversion. */
+function materializeFlatColumn(
+  field: ParquetField,
+  columnData: ParquetColumnChunk,
+  rowCount: number
+): ArrayType {
+  const column = new Array(rowCount).fill(null);
+  let valueIndex = 0;
+  for (let rowIndex = 0; rowIndex < Math.min(columnData.count, rowCount); rowIndex++) {
+    if (columnData.dlevels[rowIndex] === field.dLevelMax) {
+      column[rowIndex] = Types.fromPrimitive(
+        field.originalType || field.primitiveType!,
+        columnData.values[valueIndex],
+        field
+      );
+      valueIndex++;
+    }
+  }
+  return column;
 }

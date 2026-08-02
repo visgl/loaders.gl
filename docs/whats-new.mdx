@@ -87,6 +87,8 @@ Release Date: 2026
 **@loaders.gl/parquet**
 
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
+- `ParquetSourceLoader` now materializes selected columns directly into Arrow batches without an intermediate object-row table.
+- The Parquet TypeScript backend now reads Data Page V2, `DELTA_BINARY_PACKED`, `DELTA_LENGTH_BYTE_ARRAY`, `DELTA_BYTE_ARRAY`, and legacy Hadoop-framed LZ4 data.
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) is now documented for selecting object-row or Arrow output from the canonical wasm-backed loader.
 

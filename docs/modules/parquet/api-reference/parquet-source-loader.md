@@ -97,6 +97,10 @@ Rows are yielded in the requested row-group order even when `concurrency` allows
 decode at once. Ending iteration early, aborting `signal`, or calling `close()` cancels outstanding
 range requests. Network and decode errors are rethrown by the iterator.
 
+The source materializes selected Parquet columns directly and converts those columns into typed
+Arrow batches. It does not construct an intermediate object for every row. Nested columns retain
+their composite values while primitive and logical columns flow through the columnar path.
+
 ### `close(): Promise<void>`
 
 Aborts active requests, closes the range-backed file, and permanently closes the source. Calling
@@ -110,7 +114,7 @@ individual read.
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
-| `parquet.preserveBinary` | `boolean` | `false` | Preserves decoded binary values as byte arrays. |
+| `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
 | `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
 | `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
@@ -128,8 +132,6 @@ individual read.
 
 - Decoding runs on the caller thread; worker-backed decoding and transferable Arrow buffers are not
   implemented yet.
-- The TypeScript decoder temporarily materializes object rows before creating Arrow batches. A
-  following tranche will decode directly into typed columns without changing the `read()` API.
 - Downloaded-byte, request-count, network-time, and decode-time telemetry are not yet attached to
   batches.
 - Row-group and column-chunk sizes and offsets are available, but min/max/null statistics are not.
