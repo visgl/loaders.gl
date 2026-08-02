@@ -269,6 +269,42 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches W
   t.end();
 }, 30000);
 
+test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async t => {
+  const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  let consumedByteLength = 0;
+  const batches = await parseInBatches(
+    splitArrayBuffer(arrayBuffer, 257, byteLength => {
+      consumedByteLength += byteLength;
+    }),
+    LASLoader,
+    {
+      batchSize: 250,
+      las: {backend: 'typescript'},
+      core: {worker: false}
+    }
+  );
+  let batchCount = 0;
+  let pointCount = 0;
+  let firstBatchConsumedByteLength = 0;
+
+  for await (const batch of batches as AsyncIterable<any>) {
+    if (batchCount === 0) {
+      firstBatchConsumedByteLength = consumedByteLength;
+    }
+    batchCount++;
+    pointCount += batch.header.vertexCount;
+  }
+
+  t.ok(batchCount > 1, 'fixture emits multiple batches');
+  t.equal(pointCount, LAS_EXTRABYTES_POINT_COUNT, 'stream emits every point once');
+  t.ok(
+    firstBatchConsumedByteLength < arrayBuffer.byteLength,
+    `first batch emitted after ${firstBatchConsumedByteLength} of ${arrayBuffer.byteLength} bytes`
+  );
+  t.end();
+}, 30000);
+
 test('LASLoader#parse LAS 1.4 fixture', async t => {
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
     las: {backend: 'copc'},
@@ -1242,11 +1278,14 @@ function compareCollectedMeshAttributes(
 
 async function* splitArrayBuffer(
   arrayBuffer: ArrayBuffer | Uint8Array,
-  chunkSize: number
+  chunkSize: number,
+  onChunk?: (byteLength: number) => void
 ): AsyncIterable<ArrayBuffer> {
   const bytes = arrayBuffer instanceof Uint8Array ? arrayBuffer : new Uint8Array(arrayBuffer);
   for (let offset = 0; offset < bytes.byteLength; offset += chunkSize) {
-    yield bytes.slice(offset, Math.min(offset + chunkSize, bytes.byteLength)).buffer;
+    const chunk = bytes.slice(offset, Math.min(offset + chunkSize, bytes.byteLength));
+    onChunk?.(chunk.byteLength);
+    yield chunk.buffer;
   }
 }
 

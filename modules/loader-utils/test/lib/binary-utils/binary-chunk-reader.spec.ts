@@ -40,6 +40,19 @@ test('BinaryChunkReader#checkpoint and restore', () => {
   expect(reader.readUint32LE()).toBe(0x05040302);
 });
 
+test('BinaryChunkReader#checkpoint survives disposal of preceding chunks', () => {
+  const reader = new BinaryChunkReader();
+  reader.write(new Uint8Array([1, 2]));
+  reader.write(new Uint8Array([3, 4]));
+  reader.skip(2);
+
+  const checkpoint = reader.checkpoint();
+  expect(reader.readBytes(2)).toEqual(new Uint8Array([3, 4]));
+  reader.restore(checkpoint);
+
+  expect(reader.readBytes(2)).toEqual(new Uint8Array([3, 4]));
+});
+
 test('BinaryChunkReader#readInto across chunks', () => {
   const reader = new BinaryChunkReader();
   reader.write(CHUNK_1);
