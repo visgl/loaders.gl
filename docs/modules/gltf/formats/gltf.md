@@ -38,6 +38,18 @@ rejects cyclical asset graphs.
 
 This support follows the Khronos [External Assets draft](https://github.com/KhronosGroup/glTF/issues/2586).
 
+## Draft glTF 2.1 Thumbnails
+
+Draft glTF 2.1 adds `asset.thumbnail`, an index into the top-level `images` array. The referenced
+image provides an optional preview that applications can display without rendering the scene.
+
+`GLTFLoader` treats the thumbnail as a referenced image, so `gltf.loadImages: true` loads it even
+when no texture uses that image. The unmodified index remains available at
+`gltf.json.asset.thumbnail`; [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf)
+resolves it to the corresponding processed image object.
+
+This support follows the Khronos [Thumbnails draft](https://github.com/KhronosGroup/glTF/issues/2593).
+
 ## Variants
 
 A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb (binary). Both .gltf and .glb files may reference external binary and texture resources. Alternatively, both formats may be self-contained by directly embedding binary data buffers (as base64-encoded strings in .gltf files or as raw byte arrays in .glb files).

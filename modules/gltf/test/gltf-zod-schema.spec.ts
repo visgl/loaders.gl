@@ -22,6 +22,17 @@ describe('GLTFSchema', () => {
     expect(GLTFSchema.safeParse({asset: {version: '2.0'}, scene: -1}).success).toBe(false);
   });
 
+  it('validates draft glTF 2.1 thumbnail references', () => {
+    expect(
+      GLTFSchema.safeParse({
+        asset: {version: '2.1', thumbnail: 0},
+        images: [{uri: 'thumbnail.png'}]
+      }).success
+    ).toBe(true);
+    expect(GLTFSchema.safeParse({asset: {version: '2.1', thumbnail: -1}}).success).toBe(false);
+    expect(GLTFSchema.safeParse({asset: {version: '2.1', thumbnail: 0.5}}).success).toBe(false);
+  });
+
   it('accepts extension-defined animation target paths', () => {
     const document = {
       asset: {version: '2.0'},

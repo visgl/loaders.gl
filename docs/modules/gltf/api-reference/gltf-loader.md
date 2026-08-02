@@ -42,6 +42,8 @@ The `GLTFLoader` aims to take care of as much processing as possible, while rema
 
 Draft glTF 2.1 readiness includes the [new accessor component type definitions](/docs/modules/gltf/formats/gltf#accessor-component-types). `GLTFScenegraph` and `postProcessGLTF` expose these values through the corresponding JavaScript typed arrays.
 
+The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails). When `asset.thumbnail` references an image, `gltf.loadImages: true` loads that image even if it is not used by a texture.
+
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
@@ -63,7 +65,7 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.loadBuffers`        | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS).   |
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
-| `gltf.loadImages`         | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).            |
+| `gltf.loadImages`         | Boolean | `false` | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).               |
 | `gltf.normalize`          | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.   |
 

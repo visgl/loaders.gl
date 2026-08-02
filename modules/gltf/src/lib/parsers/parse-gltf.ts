@@ -448,9 +448,13 @@ async function loadImages(gltf: GLTFWithBuffers, options, context: LoaderContext
   return await Promise.all(promises);
 }
 
-/** Make sure we only load images that are actually referenced by textures */
+/** Return image indices referenced by textures or draft glTF 2.1 asset metadata. */
 function getReferencesImageIndices(gltf: GLTFWithBuffers): number[] {
   const imageIndices = new Set<number>();
+
+  if (gltf.json.asset.thumbnail !== undefined) {
+    imageIndices.add(gltf.json.asset.thumbnail);
+  }
 
   const textures = gltf.json.textures || [];
   for (const texture of textures) {

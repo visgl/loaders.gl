@@ -242,6 +242,11 @@ export type Asset = {
    * The minimum glTF version that this asset targets.
    */
   minVersion?: string;
+  /**
+   * The image that provides a preview of this glTF asset.
+   * Draft glTF 2.1.
+   */
+  thumbnail?: GLTFImagePostprocessed;
   extensions?: any;
   extras?: any;
   // [k: string]: any;
