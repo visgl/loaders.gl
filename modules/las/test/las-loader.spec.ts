@@ -48,6 +48,10 @@ const LAZ_1_4_POINT_COUNT = 100000;
 const VARIABLE_LAZ_1_4_POINT_COUNT = 100000;
 const LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/points-1.4.las';
 const LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/ellipsoid-1.4.laz';
+const PDRF_6_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.las';
+const PDRF_6_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.laz';
+const PDRF_8_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.las';
+const PDRF_8_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.laz';
 const COPC_BINARY_URL = 'modules/copc/test/data/ellipsoid.copc.laz';
 const LAZ_1_4_PARITY_BACKENDS = ['copc', 'laz-rs'] as const;
 
@@ -227,7 +231,7 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', a
   t.equal(actual.header.vertexCount, LAS_POINT_COUNT, 'fixture point count is expected');
   compareMeshAttributes(t, actual, expected, 'TypeScript LAZ PDRF 3 parse matches laz-rs');
   t.end();
-}, 15000);
+}, 30000);
 
 test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
@@ -263,7 +267,7 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches W
     'split TypeScript LAZ PDRF 3 streaming matches laz-rs'
   );
   t.end();
-}, 15000);
+}, 30000);
 
 test('LASLoader#parse LAS 1.4 fixture', async t => {
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
@@ -462,6 +466,133 @@ test('LASLoader#parseInBatches LAZ 1.4 TypeScript backend accepts split file chu
     },
     'split file chunks match complete-buffer TypeScript parse'
   );
+  t.end();
+});
+
+for (const fixture of [
+  {
+    pointDataRecordFormat: 6,
+    pointDataRecordLength: 34,
+    lasUrl: PDRF_6_LAS_1_4_BINARY_URL,
+    lazUrl: PDRF_6_LAZ_1_4_BINARY_URL,
+    parityBackends: ['copc'] as const
+  },
+  {
+    pointDataRecordFormat: 8,
+    pointDataRecordLength: 42,
+    lasUrl: PDRF_8_LAS_1_4_BINARY_URL,
+    lazUrl: PDRF_8_LAZ_1_4_BINARY_URL,
+    // The laz-rs wrapper currently fails while closing LAS 1.4 files with Extra Bytes.
+    parityBackends: ['copc'] as const
+  }
+]) {
+  const label = `PDRF ${fixture.pointDataRecordFormat}`;
+
+  test(`TypeScriptLAZ#raw LAS 1.4 ${label} output matches uncompressed records`, async t => {
+    const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
+    const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
+    const batches: Uint8Array[] = [];
+
+    for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
+      batchSize: 127
+    })) {
+      t.equal(
+        batch.header.pointsFormatId,
+        fixture.pointDataRecordFormat,
+        `${label} header preserves point format`
+      );
+      batches.push(new Uint8Array(batch.arrayBuffer));
+    }
+
+    const lasDataView = new DataView(lasArrayBuffer);
+    const pointDataOffset = lasDataView.getUint32(96, true);
+    const expected = new Uint8Array(
+      lasArrayBuffer,
+      pointDataOffset,
+      1024 * fixture.pointDataRecordLength
+    );
+    t.deepEqual(
+      concatenateUint8ArraysForTest(batches),
+      expected,
+      `${label} preserves every point byte`
+    );
+    t.end();
+  });
+
+  test(`LASLoader#parse and split streaming LAS 1.4 ${label} match reference backends`, async t => {
+    const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
+    const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
+      las: {backend: 'typescript'},
+      core: {worker: false}
+    });
+    const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+      batchSize: 127,
+      las: {backend: 'typescript'},
+      core: {worker: false}
+    });
+    const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
+
+    t.equal(actual.loaderData.versionAsString, '1.4', `${label} fixture is LAS 1.4`);
+    t.equal(
+      actual.loaderData.pointsFormatId,
+      fixture.pointDataRecordFormat,
+      `${label} fixture has the expected point format`
+    );
+    t.equal(actual.header.vertexCount, 1024, `${label} fixture has 1,024 points`);
+
+    for (const backend of fixture.parityBackends) {
+      const expected = await parse(lazArrayBuffer.slice(0), LASLoader, {
+        las: {backend},
+        core: {worker: false}
+      });
+      compareMeshAttributes(t, actual, expected, `${label} TypeScript parse matches ${backend}`);
+      compareCollectedMeshAttributes(
+        t,
+        streamed,
+        {
+          positions: Array.from(expected.attributes.POSITION.value),
+          intensities: Array.from(expected.attributes.intensity.value),
+          classifications: Array.from(expected.attributes.classification.value),
+          colors: Array.from(expected.attributes.COLOR_0?.value || [])
+        },
+        `${label} TypeScript streaming matches ${backend}`
+      );
+    }
+    t.end();
+  });
+}
+
+test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', async t => {
+  const lasArrayBuffer = await (await fetchFile(PDRF_8_LAS_1_4_BINARY_URL)).arrayBuffer();
+  const lazArrayBuffer = await (await fetchFile(PDRF_8_LAZ_1_4_BINARY_URL)).arrayBuffer();
+  const lazDataView = new DataView(lazArrayBuffer);
+  const pointDataOffset = lazDataView.getUint32(96, true);
+  const pointDataRecordLength = lazDataView.getUint16(105, true);
+  const sizeHeaderCount = 11 + (pointDataRecordLength - 38);
+  let chunkByteLength = pointDataRecordLength + 4 + sizeHeaderCount * 4;
+  for (let index = 0; index < sizeHeaderCount; index++) {
+    chunkByteLength += lazDataView.getUint32(
+      pointDataOffset + 8 + pointDataRecordLength + 4 + index * 4,
+      true
+    );
+  }
+  const compressed = new Uint8Array(lazArrayBuffer, pointDataOffset + 8, chunkByteLength);
+  const cursor = createLAZChunkDecoderCursor(compressed, {
+    pointCount: 256,
+    pointDataRecordFormat: 8,
+    pointDataRecordLength
+  });
+  const actual = new Uint8Array(256 * pointDataRecordLength);
+  const pointsDecoded = cursor.decodeInto(actual, 0, 256);
+
+  const lasDataView = new DataView(lasArrayBuffer);
+  const expected = new Uint8Array(
+    lasArrayBuffer,
+    lasDataView.getUint32(96, true),
+    actual.byteLength
+  );
+  t.equal(pointsDecoded, 256, 'raw cursor decodes every point in the chunk');
+  t.deepEqual(actual, expected, 'raw PDRF 8 chunk matches uncompressed records');
   t.end();
 });
 

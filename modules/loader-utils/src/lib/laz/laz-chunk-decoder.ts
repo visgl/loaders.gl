@@ -1306,7 +1306,10 @@ class Point14Decompressor {
   private pointSourceId: ArithmeticDecoder | null;
   private gpsTime: ArithmeticDecoder | null;
   private sizes: number[] = [];
-  scannerChannel = 0;
+  /** Actual scanner channel used by Point14 context state. */
+  private currentScannerChannel = 0;
+  /** LASzip v3 item context emitted to fields following Point14. */
+  itemContextChannel = 0;
 
   constructor(stream: ByteReader, mode: Point14DecompressionMode = Point14DecompressionMode.Full) {
     this.stream = stream;
@@ -1364,8 +1367,9 @@ class Point14Decompressor {
       } else {
         readPoint14FromStreamInto(point, this.stream);
       }
-      this.scannerChannel = getScannerChannel(point);
-      const context = this.contexts[this.scannerChannel];
+      this.currentScannerChannel = getScannerChannel(point);
+      this.itemContextChannel = this.currentScannerChannel;
+      const context = this.contexts[this.currentScannerChannel];
       if (context.last !== point) {
         copyPoint14(context.last, point);
       }
@@ -1398,15 +1402,17 @@ class Point14Decompressor {
     const returnNumberDecrements = returnNumberMinus && !returnNumberPlus;
     const returnNumberMiscChange = returnNumberPlus && returnNumberMinus;
 
-    let scannerChannel = this.scannerChannel;
+    this.itemContextChannel = 0;
+    let scannerChannel = this.currentScannerChannel;
     let context = previous;
     if (scannerChannelChanged) {
       const diff = this.xy.decodeSymbol(previous.scannerChannelModel);
       scannerChannel = (scannerChannel + diff + 1) % 4;
       context = this.contexts[scannerChannel];
       this.activeContext = context;
+      this.itemContextChannel = scannerChannel;
     }
-    this.scannerChannel = scannerChannel;
+    this.currentScannerChannel = scannerChannel;
 
     if (!context.haveLast) {
       context.haveLast = true;
@@ -1694,15 +1700,18 @@ class RGB14Decompressor {
       return;
     }
     let context = this.activeContext!;
+    let lastContext = context;
     if (scannerChannel !== this.lastChannel) {
       const previous = context;
       context = this.contexts[scannerChannel];
+      lastContext = previous;
       this.lastChannel = scannerChannel;
       if (!context.haveLast) {
         context.haveLast = true;
         context.lastRed = previous.lastRed;
         context.lastGreen = previous.lastGreen;
         context.lastBlue = previous.lastBlue;
+        lastContext = context;
       }
       this.activeContext = context;
     }
@@ -1712,52 +1721,52 @@ class RGB14Decompressor {
     let blue = 0;
     if (symbol & 1) {
       const correction = this.rgb.decodeSymbol(context.diffModel[0]);
-      red = (correction + (context.lastRed & 0xff)) & 0xff;
+      red = (correction + (lastContext.lastRed & 0xff)) & 0xff;
     } else {
-      red = context.lastRed & 0xff;
+      red = lastContext.lastRed & 0xff;
     }
     if (symbol & 2) {
       const correction = this.rgb.decodeSymbol(context.diffModel[1]);
-      red |= ((correction + (context.lastRed >> 8)) & 0xff) << 8;
+      red |= ((correction + (lastContext.lastRed >> 8)) & 0xff) << 8;
     } else {
-      red |= context.lastRed & 0xff00;
+      red |= lastContext.lastRed & 0xff00;
     }
     if (symbol & 64) {
-      let diff = (red & 0xff) - (context.lastRed & 0xff);
+      let diff = (red & 0xff) - (lastContext.lastRed & 0xff);
       if (symbol & 4) {
         const correction = this.rgb.decodeSymbol(context.diffModel[2]);
-        green = (correction + clampUint8(diff + (context.lastGreen & 0xff))) & 0xff;
+        green = (correction + clampUint8(diff + (lastContext.lastGreen & 0xff))) & 0xff;
       } else {
-        green = context.lastGreen & 0xff;
+        green = lastContext.lastGreen & 0xff;
       }
       if (symbol & 16) {
         const correction = this.rgb.decodeSymbol(context.diffModel[4]);
-        diff = ((diff + ((green & 0xff) - (context.lastGreen & 0xff))) / 2) | 0;
-        blue = (correction + clampUint8(diff + (context.lastBlue & 0xff))) & 0xff;
+        diff = ((diff + ((green & 0xff) - (lastContext.lastGreen & 0xff))) / 2) | 0;
+        blue = (correction + clampUint8(diff + (lastContext.lastBlue & 0xff))) & 0xff;
       } else {
-        blue = context.lastBlue & 0xff;
+        blue = lastContext.lastBlue & 0xff;
       }
-      diff = (red >> 8) - (context.lastRed >> 8);
+      diff = (red >> 8) - (lastContext.lastRed >> 8);
       if (symbol & 8) {
         const correction = this.rgb.decodeSymbol(context.diffModel[3]);
-        green |= ((correction + clampUint8(diff + (context.lastGreen >> 8))) & 0xff) << 8;
+        green |= ((correction + clampUint8(diff + (lastContext.lastGreen >> 8))) & 0xff) << 8;
       } else {
-        green |= context.lastGreen & 0xff00;
+        green |= lastContext.lastGreen & 0xff00;
       }
       if (symbol & 32) {
         const correction = this.rgb.decodeSymbol(context.diffModel[5]);
-        diff = ((diff + (green >> 8) - (context.lastGreen >> 8)) / 2) | 0;
-        blue |= ((correction + clampUint8(diff + (context.lastBlue >> 8))) & 0xff) << 8;
+        diff = ((diff + (green >> 8) - (lastContext.lastGreen >> 8)) / 2) | 0;
+        blue |= ((correction + clampUint8(diff + (lastContext.lastBlue >> 8))) & 0xff) << 8;
       } else {
-        blue |= context.lastBlue & 0xff00;
+        blue |= lastContext.lastBlue & 0xff00;
       }
     } else {
       green = red;
       blue = red;
     }
-    context.lastRed = red;
-    context.lastGreen = green;
-    context.lastBlue = blue;
+    lastContext.lastRed = red;
+    lastContext.lastGreen = green;
+    lastContext.lastBlue = blue;
     this.decodedRed = red;
     this.decodedGreen = green;
     this.decodedBlue = blue;
@@ -1810,8 +1819,8 @@ class NIR14Decompressor {
       if (!context.haveLast) {
         context.haveLast = true;
         context.lastValue = lastContext.lastValue;
+        lastContext = context;
       }
-      lastContext = context;
     }
     const symbol = this.nir.decodeSymbol(context.usedModel);
     let value =
@@ -1922,11 +1931,11 @@ function createPointDecompressor(
     case 3:
       return new PointFormat3Decompressor(stream, extraByteCount);
     case 6:
-      return new PointFormat6Decompressor(stream, extraByteCount);
+      return new PointFormat6Decompressor(stream, extraByteCount, outputMode);
     case 7:
       return new PointFormat7Decompressor(stream, extraByteCount, outputMode);
     case 8:
-      return new PointFormat8Decompressor(stream, extraByteCount);
+      return new PointFormat8Decompressor(stream, extraByteCount, outputMode);
     default:
       throw new Error(
         `TypeScript LAZ decoder does not support point format ${metadata.pointDataRecordFormat}`
@@ -2202,42 +2211,85 @@ class PointFormat6Decompressor implements PointDecompressor {
   private stream: ByteReader;
   private point: Point14Decompressor;
   private bytes: Byte14Decompressor | null;
-  private pointScratch = new Uint8Array(30);
-  private extraByteScratch: Uint8Array;
+  /** Extra bytes stored with the first point and in independent later layers. */
+  private extraByteCount: number;
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number) {
+  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
     this.stream = stream;
-    this.point = new Point14Decompressor(stream);
-    this.bytes = extraByteCount ? new Byte14Decompressor(stream, extraByteCount) : null;
-    this.extraByteScratch = new Uint8Array(extraByteCount);
+    this.extraByteCount = extraByteCount;
+    this.point = new Point14Decompressor(
+      stream,
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+    );
+    this.bytes =
+      outputMode === 'raw' && extraByteCount
+        ? new Byte14Decompressor(stream, extraByteCount)
+        : null;
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
     outputOffset = this.point.decompress(output, outputOffset);
     if (this.bytes) {
-      outputOffset = this.bytes.decompress(output, outputOffset, this.point.scannerChannel);
+      outputOffset = this.bytes.decompress(output, outputOffset, this.point.itemContextChannel);
     }
     this.readFirstMetadata();
     return outputOffset;
   }
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
-    const point = this.point.decompressPoint(this.pointScratch, 0);
-    if (this.bytes) {
-      this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
+    const point = this.point.decompressPoint();
+    if (this.first && this.extraByteCount) {
+      this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    const positions = target.positions;
+    const intensities = target.intensities;
+    const classifications = target.classifications;
+    const scale = target.scale;
+    const offset = target.offset;
+    let targetPointIndex = target.pointOffset;
+
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      if (this.first && this.extraByteCount) {
+        this.stream.consume(this.extraByteCount);
+      }
+      this.readFirstMetadata();
+      writePoint14ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex++
+      );
+    }
   }
 
   private readFirstMetadata(): void {
     if (this.first) {
       this.stream.getUint32();
       this.point.readSizes();
-      this.bytes?.readSizes();
+      let skippedExtraByteLength = 0;
+      if (this.bytes) {
+        this.bytes.readSizes();
+      } else {
+        for (let index = 0; index < this.extraByteCount; index++) {
+          skippedExtraByteLength += this.stream.getUint32();
+        }
+      }
       this.point.readData();
-      this.bytes?.readData();
+      if (this.bytes) {
+        this.bytes.readData();
+      } else {
+        this.stream.consume(skippedExtraByteLength);
+      }
       this.first = false;
     }
   }
@@ -2269,9 +2321,9 @@ class PointFormat7Decompressor implements PointDecompressor {
 
   decompress(output: Uint8Array, outputOffset: number): number {
     outputOffset = this.point.decompress(output, outputOffset);
-    outputOffset = this.rgb.decompress(output, outputOffset, this.point.scannerChannel);
+    outputOffset = this.rgb.decompress(output, outputOffset, this.point.itemContextChannel);
     if (this.bytes) {
-      outputOffset = this.bytes.decompress(output, outputOffset, this.point.scannerChannel);
+      outputOffset = this.bytes.decompress(output, outputOffset, this.point.itemContextChannel);
     }
     this.readFirstMetadata();
     return outputOffset;
@@ -2279,7 +2331,7 @@ class PointFormat7Decompressor implements PointDecompressor {
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
     const point = this.point.decompressPoint(this.pointScratch, 0);
-    this.rgb.decompressRgb(this.point.scannerChannel);
+    this.rgb.decompressRgb(this.point.itemContextChannel);
     // The first point stores extra bytes before the layered stream metadata.
     if (this.first && this.extraByteCount) {
       this.stream.consume(this.extraByteCount);
@@ -2308,7 +2360,7 @@ class PointFormat7Decompressor implements PointDecompressor {
     // The first point stores extra bytes before the layered stream metadata.
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
       const point = this.point.decompressPoint(this.pointScratch, 0);
-      this.rgb.decompressRgb(this.point.scannerChannel);
+      this.rgb.decompressRgb(this.point.itemContextChannel);
       if (this.first && this.extraByteCount) {
         this.stream.consume(this.extraByteCount);
       }
@@ -2367,39 +2419,43 @@ class PointFormat8Decompressor implements PointDecompressor {
   private stream: ByteReader;
   private point: Point14Decompressor;
   private rgb: RGB14Decompressor;
-  private nir: NIR14Decompressor;
+  private nir: NIR14Decompressor | null;
   private bytes: Byte14Decompressor | null;
-  private pointScratch = new Uint8Array(30);
-  private nirScratch = new Uint8Array(2);
-  private extraByteScratch: Uint8Array;
+  /** Extra bytes stored with the first point and in independent later layers. */
+  private extraByteCount: number;
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number) {
+  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
     this.stream = stream;
-    this.point = new Point14Decompressor(stream);
+    this.extraByteCount = extraByteCount;
+    this.point = new Point14Decompressor(
+      stream,
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+    );
     this.rgb = new RGB14Decompressor(stream);
-    this.nir = new NIR14Decompressor(stream);
-    this.bytes = extraByteCount ? new Byte14Decompressor(stream, extraByteCount) : null;
-    this.extraByteScratch = new Uint8Array(extraByteCount);
+    this.nir = outputMode === 'raw' ? new NIR14Decompressor(stream) : null;
+    this.bytes =
+      outputMode === 'raw' && extraByteCount
+        ? new Byte14Decompressor(stream, extraByteCount)
+        : null;
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
     outputOffset = this.point.decompress(output, outputOffset);
-    outputOffset = this.rgb.decompress(output, outputOffset, this.point.scannerChannel);
-    outputOffset = this.nir.decompress(output, outputOffset, this.point.scannerChannel);
+    outputOffset = this.rgb.decompress(output, outputOffset, this.point.itemContextChannel);
+    outputOffset = this.nir!.decompress(output, outputOffset, this.point.itemContextChannel);
     if (this.bytes) {
-      outputOffset = this.bytes.decompress(output, outputOffset, this.point.scannerChannel);
+      outputOffset = this.bytes.decompress(output, outputOffset, this.point.itemContextChannel);
     }
     this.readFirstMetadata();
     return outputOffset;
   }
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
-    const point = this.point.decompressPoint(this.pointScratch, 0);
-    this.rgb.decompressRgb(this.point.scannerChannel);
-    this.nir.decompress(this.nirScratch, 0, this.point.scannerChannel);
-    if (this.bytes) {
-      this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
+    const point = this.point.decompressPoint();
+    this.rgb.decompressRgb(this.point.itemContextChannel);
+    if (this.first) {
+      this.stream.consume(2 + this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
@@ -2412,17 +2468,75 @@ class PointFormat8Decompressor implements PointDecompressor {
     );
   }
 
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    const positions = target.positions;
+    const intensities = target.intensities;
+    const classifications = target.classifications;
+    const colors = target.colors;
+    const rawColors = target.rawColors;
+    const scale = target.scale;
+    const offset = target.offset;
+    let targetPointIndex = target.pointOffset;
+
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      this.rgb.decompressRgb(this.point.itemContextChannel);
+      if (this.first) {
+        this.stream.consume(2 + this.extraByteCount);
+      }
+      this.readFirstMetadata();
+      writePoint14ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex
+      );
+      if (colors) {
+        const colorOffset = targetPointIndex * 4;
+        colors[colorOffset] = this.rgb.decodedRed & 0xff;
+        colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+        colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+        colors[colorOffset + 3] = 255;
+      } else if (rawColors) {
+        const colorOffset = targetPointIndex * 3;
+        rawColors[colorOffset] = this.rgb.decodedRed;
+        rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+        rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+      }
+      targetPointIndex++;
+    }
+  }
+
   private readFirstMetadata(): void {
     if (this.first) {
       this.stream.getUint32();
       this.point.readSizes();
       this.rgb.readSizes();
-      this.nir.readSizes();
-      this.bytes?.readSizes();
+      const skippedNirByteLength = this.nir ? 0 : this.stream.getUint32();
+      this.nir?.readSizes();
+      let skippedExtraByteLength = 0;
+      if (this.bytes) {
+        this.bytes.readSizes();
+      } else {
+        for (let index = 0; index < this.extraByteCount; index++) {
+          skippedExtraByteLength += this.stream.getUint32();
+        }
+      }
       this.point.readData();
       this.rgb.readData();
-      this.nir.readData();
-      this.bytes?.readData();
+      if (this.nir) {
+        this.nir.readData();
+      } else {
+        this.stream.consume(skippedNirByteLength);
+      }
+      if (this.bytes) {
+        this.bytes.readData();
+      } else {
+        this.stream.consume(skippedExtraByteLength);
+      }
       this.first = false;
     }
   }
