@@ -609,6 +609,79 @@ test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async
   t.end();
 });
 
+test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async t => {
+  const {compressed, metadata} = await getCOPCRootChunk();
+  const rawPointData = decodeLAZChunk(compressed, metadata);
+  const rawPointDataView = new DataView(
+    rawPointData.buffer,
+    rawPointData.byteOffset,
+    rawPointData.byteLength
+  );
+  const positions = new Float64Array(metadata.pointCount * 3);
+  const intensities = new Uint16Array(metadata.pointCount);
+  const classifications = new Uint8Array(metadata.pointCount);
+  const rawColors = new Uint16Array(metadata.pointCount * 3);
+  const target = {
+    positions,
+    intensities,
+    classifications,
+    rawColors,
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const cursor = createLAZChunkDecoderCursor(compressed, metadata);
+
+  while (cursor.remainingPointCount > 0) {
+    target.pointOffset = metadata.pointCount - cursor.remainingPointCount;
+    cursor.decodeIntoPointData(target, 17);
+  }
+
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedIntensities = new Uint16Array(metadata.pointCount);
+  const expectedClassifications = new Uint8Array(metadata.pointCount);
+  const expectedRawColors = new Uint16Array(metadata.pointCount * 3);
+  for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+    const pointOffset = pointIndex * metadata.pointDataRecordLength;
+    const positionOffset = pointIndex * 3;
+    expectedPositions[positionOffset] = rawPointDataView.getInt32(pointOffset, true);
+    expectedPositions[positionOffset + 1] = rawPointDataView.getInt32(pointOffset + 4, true);
+    expectedPositions[positionOffset + 2] = rawPointDataView.getInt32(pointOffset + 8, true);
+    expectedIntensities[pointIndex] = rawPointDataView.getUint16(pointOffset + 12, true);
+    expectedClassifications[pointIndex] = rawPointDataView.getUint8(pointOffset + 16);
+    expectedRawColors[positionOffset] = rawPointDataView.getUint16(pointOffset + 30, true);
+    expectedRawColors[positionOffset + 1] = rawPointDataView.getUint16(pointOffset + 32, true);
+    expectedRawColors[positionOffset + 2] = rawPointDataView.getUint16(pointOffset + 34, true);
+  }
+
+  t.deepEqual(positions, expectedPositions, 'selected positions match full point records');
+  t.deepEqual(intensities, expectedIntensities, 'selected intensities match full point records');
+  t.deepEqual(
+    classifications,
+    expectedClassifications,
+    'selected classifications match full point records'
+  );
+  t.deepEqual(rawColors, expectedRawColors, 'selected colors match full point records');
+
+  target.pointOffset = 0;
+  const pointDataFirstCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  pointDataFirstCursor.decodeIntoPointData(target, 1);
+  t.throws(
+    () => pointDataFirstCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1),
+    /Cannot mix raw and point-data decoding/,
+    'cursor rejects switching from selected to raw output'
+  );
+
+  const rawFirstCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  rawFirstCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1);
+  t.throws(
+    () => rawFirstCursor.decodeIntoPointData(target, 1),
+    /Cannot mix raw and point-data decoding/,
+    'cursor rejects switching from raw to selected output'
+  );
+  t.end();
+});
+
 test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
   const expected = createPointFormat0Record();
   const compressed = new Uint8Array(expected.byteLength + 4);

@@ -64,9 +64,17 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | LAZ 1.4 point formats 6, 7, 8 | Supported for COPC-style chunks and fixed-size full-file LAZ chunks. |
 | LAZ point formats 4, 5, 9, 10 | Not supported. These add waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
-| Selective decompression | Not implemented. |
+| Selective decompression | Supported for PDRF 7 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table while preserving complete raw-record decoding through the chunk APIs. |
 | True streaming decode | Partial. Full-file LAZ `parseInBatches` can consume incoming bytes and emit raw point batches after complete compressed chunks are available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
 | LAZ encoding | Not implemented. |
+
+#### Selective LAZ 1.4 Decoding
+
+The TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 7 stores groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, and Extra Bytes layers that are not currently exposed in the returned table, using a specialized batch loop for its common XYZ, intensity, classification, and RGB output.
+
+This optimization applies only to table parsing. `decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between selective table output and raw-record output after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
+
+PDRF 6 and 8 continue to decode complete records before populating Arrow columns. Their selective paths should be enabled only after dedicated fixtures cover their unique fields, especially PDRF 8 NIR values.
 
 ### TypeScript COPC Path
 

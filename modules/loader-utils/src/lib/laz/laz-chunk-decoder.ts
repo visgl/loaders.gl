@@ -43,6 +43,9 @@ export type LAZChunkTableEntry = {
   byteLength: number;
 };
 
+/** Output mode selected for one stateful LAZ chunk decoder. */
+type LAZChunkDecoderOutputMode = 'raw' | 'point-data';
+
 /** Error raised when a feedable decoder needs more compressed bytes. */
 export class NeedsMoreData extends Error {
   constructor(message: string = 'LAZ chunk decoder needs more compressed data') {
@@ -155,6 +158,8 @@ export class LAZChunkDecoderCursor {
   private stream: ByteReader;
   private decoder: PointDecompressor;
   private pointIndex = 0;
+  /** Output mode selected by the first decode call. */
+  private outputMode: LAZChunkDecoderOutputMode | null = null;
 
   constructor(compressed: ArrayBuffer | ArrayBufferView, metadata: LAZChunkMetadata) {
     this.metadata = metadata;
@@ -175,6 +180,7 @@ export class LAZChunkDecoderCursor {
   /** Decode up to `pointCount` points into `output` at `outputOffset`. */
   decodeInto(output: Uint8Array, outputOffset: number, pointCount: number): number {
     const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
+    this.selectOutputMode('raw', pointsToDecode);
     let targetOffset = outputOffset;
 
     for (let pointIndex = 0; pointIndex < pointsToDecode; pointIndex++) {
@@ -194,6 +200,7 @@ export class LAZChunkDecoderCursor {
         `TypeScript LAZ decoder does not support direct point-data output for point format ${this.metadata.pointDataRecordFormat}`
       );
     }
+    this.selectOutputMode('point-data', pointsToDecode);
 
     if (this.decoder.decompressPointDataBatch) {
       this.decoder.decompressPointDataBatch(target, pointsToDecode);
@@ -205,6 +212,17 @@ export class LAZChunkDecoderCursor {
 
     this.pointIndex += pointsToDecode;
     return pointsToDecode;
+  }
+
+  /** Lock this cursor to one output mode so skipped layered streams cannot be read later. */
+  private selectOutputMode(mode: LAZChunkDecoderOutputMode, pointCount: number): void {
+    if (pointCount === 0) {
+      return;
+    }
+    if (this.outputMode && this.outputMode !== mode) {
+      throw new Error('Cannot mix raw and point-data decoding in one LAZ chunk cursor');
+    }
+    this.outputMode = mode;
   }
 }
 
@@ -1198,6 +1216,14 @@ class Point14Context {
   gpsTimeChange = false;
 }
 
+/** Determines whether Point14 decoding preserves every field or only returned point data. */
+enum Point14DecompressionMode {
+  /** Preserve every field in the raw LAS point record. */
+  Full,
+  /** Decode only fields represented by {@link LAZPointDataTarget}. */
+  PointData
+}
+
 class Point14Decompressor {
   private stream: ByteReader;
   private contexts = Array.from({length: 4}, () => new Point14Context());
@@ -1244,7 +1270,12 @@ class Point14Decompressor {
     return outputOffset + 30;
   }
 
-  decompressPoint(output?: Uint8Array, outputOffset: number = 0): Point14 {
+  decompressPoint(
+    output?: Uint8Array,
+    outputOffset: number = 0,
+    mode: Point14DecompressionMode = Point14DecompressionMode.Full
+  ): Point14 {
+    const decompressOptionalFields = mode === Point14DecompressionMode.Full;
     if (this.lastChannel === -1) {
       const point = this.contexts[0].last;
       if (output) {
@@ -1352,7 +1383,7 @@ class Point14Decompressor {
       );
     }
 
-    if (this.flags.valid) {
+    if (decompressOptionalFields && this.flags.valid) {
       const mergedFlags = mergeFlags(context.last);
       const flags = this.flags.decodeSymbol(context.flagModel[mergedFlags]);
       setEdgeOfFlightLine(context.last, (flags >> 5) & 1);
@@ -1374,24 +1405,24 @@ class Point14Decompressor {
       context.last.intensity = intensity & 0xffff;
     }
 
-    if (scanAngleChanged) {
+    if (decompressOptionalFields && scanAngleChanged) {
       context.last.scanAngle = toInt16(
         context.scanAngle.decompress(this.scanAngle, context.last.scanAngle, gpsTimeChanged ? 1 : 0)
       );
     }
 
-    if (this.userData.valid) {
+    if (decompressOptionalFields && this.userData.valid) {
       const userDataContext = context.last.userData >> 2;
       context.last.userData = this.userData.decodeSymbol(context.userDataModel[userDataContext]);
     }
 
-    if (pointSourceChanged) {
+    if (decompressOptionalFields && pointSourceChanged) {
       context.last.pointSourceId =
         context.pointSourceId.decompress(this.pointSourceId, context.last.pointSourceId, 0) &
         0xffff;
     }
 
-    if (gpsTimeChanged) {
+    if (decompressOptionalFields && gpsTimeChanged) {
       this.decodeGpsTime(context);
     }
     context.gpsTimeChange = gpsTimeChanged;
@@ -2151,9 +2182,14 @@ class PointFormat7Decompressor implements PointDecompressor {
   }
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
-    const point = this.point.decompressPoint(this.pointScratch, 0);
+    const point = this.point.decompressPoint(
+      this.pointScratch,
+      0,
+      Point14DecompressionMode.PointData
+    );
     this.rgb.decompressRgb(this.point.scannerChannel);
-    if (this.bytes) {
+    // The first point stores extra bytes before the layered stream metadata.
+    if (this.first && this.bytes) {
       this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
     }
     this.readFirstMetadata();
@@ -2177,10 +2213,15 @@ class PointFormat7Decompressor implements PointDecompressor {
     const offset = target.offset;
     let targetPointIndex = target.pointOffset;
 
+    // The first point stores extra bytes before the layered stream metadata.
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-      const point = this.point.decompressPoint(this.pointScratch, 0);
+      const point = this.point.decompressPoint(
+        this.pointScratch,
+        0,
+        Point14DecompressionMode.PointData
+      );
       this.rgb.decompressRgb(this.point.scannerChannel);
-      if (this.bytes) {
+      if (this.first && this.bytes) {
         this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
       }
       this.readFirstMetadata();

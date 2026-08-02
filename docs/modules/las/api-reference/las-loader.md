@@ -42,3 +42,9 @@ const table = await load(url, LASLoader, {
 | `options.las.fp64`       | `number`             | `false`    | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                              |
 | `options.las.colorDepth` | `number` or `string` | `8`        | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                   |
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
+
+## TypeScript LAZ Streaming
+
+With `las.backend: 'typescript'`, `parseInBatches` consumes compressed LAZ input incrementally and emits Arrow table batches after complete LAZ chunks are available. PDRF 7 table parsing selectively decodes the LAZ 1.4 field layers represented by the returned Arrow schema. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
+
+This is chunk-streaming rather than point-streaming: an individual compressed LAZ chunk must be available before its point rows can be emitted. See the [LAS/LAZ format implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for supported point formats and remaining limitations.
