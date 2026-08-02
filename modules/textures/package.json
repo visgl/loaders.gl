@@ -71,7 +71,7 @@
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
-    "generate-json-schema": "node scripts/generate-json-schema.mjs",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/lib/composite-image/composite-image-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/textures/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
