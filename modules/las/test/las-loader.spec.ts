@@ -832,6 +832,13 @@ test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t =>
   for (const fixture of [
     {
       url: PDRF_4_LAZ_1_3_BINARY_URL,
+      itemType: 6,
+      invalidVersion: 1,
+      error: /unsupported legacy LASzip item type 6 version 1/,
+      label: 'Point10'
+    },
+    {
+      url: PDRF_4_LAZ_1_3_BINARY_URL,
       itemType: 9,
       invalidVersion: 2,
       error: /unsupported WavePacket13 item version 2/,
@@ -857,6 +864,56 @@ test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t =>
       }),
       fixture.error,
       `unsupported ${fixture.label} versions fail before point decoding`
+    );
+  }
+  t.end();
+});
+
+test('LASLoader#TypeScript rejects incompatible LASzip item layouts', async t => {
+  const source = await (await fetchFile(PDRF_7_V4_LAZ_1_4_BINARY_URL)).arrayBuffer();
+  for (const fixture of [
+    {
+      mutate: (arrayBuffer: ArrayBuffer) => {
+        const dataOffset = findLASZipVLRDataOffset(arrayBuffer);
+        new DataView(arrayBuffer).setUint16(dataOffset + 2, 1, true);
+      },
+      error: /requires LASzip arithmetic coder 0; received 1/,
+      label: 'unsupported coder'
+    },
+    {
+      mutate: (arrayBuffer: ArrayBuffer) => {
+        const itemOffset = findLASZipItemOffset(arrayBuffer, 11);
+        new DataView(arrayBuffer).setUint16(itemOffset, 12, true);
+      },
+      error: /LASzip item 1 has type 12; expected 11 for point format 7/,
+      label: 'wrong item type'
+    },
+    {
+      mutate: (arrayBuffer: ArrayBuffer) => {
+        const itemOffset = findLASZipItemOffset(arrayBuffer, 14);
+        new DataView(arrayBuffer).setUint16(itemOffset + 2, 3, true);
+      },
+      error: /LASzip item 2 has size 3; expected 4 for point format 7/,
+      label: 'wrong item size'
+    },
+    {
+      mutate: (arrayBuffer: ArrayBuffer) => {
+        const dataOffset = findLASZipVLRDataOffset(arrayBuffer);
+        new DataView(arrayBuffer).setUint16(dataOffset + 32, 2, true);
+      },
+      error: /point format 7 has 2 LASzip items; expected 3/,
+      label: 'missing item'
+    }
+  ]) {
+    const corrupted = source.slice(0);
+    fixture.mutate(corrupted);
+    await t.rejects(
+      parse(corrupted, LASLoader, {
+        las: {backend: 'typescript'},
+        core: {worker: false}
+      }),
+      fixture.error,
+      fixture.label
     );
   }
   t.end();
@@ -1566,6 +1623,11 @@ function concatenateUint8ArraysForTest(chunks: Uint8Array[]): Uint8Array {
 
 /** Find the LASzip item-version field for one item type in a test fixture. */
 function findLASZipItemVersionOffset(arrayBuffer: ArrayBuffer, targetItemType: number): number {
+  return findLASZipItemOffset(arrayBuffer, targetItemType) + 4;
+}
+
+/** Find one LASzip item descriptor in a test fixture. */
+function findLASZipItemOffset(arrayBuffer: ArrayBuffer, targetItemType: number): number {
   const dataView = new DataView(arrayBuffer);
   let offset = dataView.getUint16(94, true);
   const variableLengthRecordCount = dataView.getUint32(100, true);
@@ -1579,7 +1641,7 @@ function findLASZipItemVersionOffset(arrayBuffer: ArrayBuffer, targetItemType: n
       for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         const itemOffset = dataOffset + 34 + itemIndex * 6;
         if (dataView.getUint16(itemOffset, true) === targetItemType) {
-          return itemOffset + 4;
+          return itemOffset;
         }
       }
     }
@@ -1587,6 +1649,25 @@ function findLASZipItemVersionOffset(arrayBuffer: ArrayBuffer, targetItemType: n
   }
 
   throw new Error(`LASzip item type ${targetItemType} not found`);
+}
+
+/** Find the LASzip VLR payload in a test fixture. */
+function findLASZipVLRDataOffset(arrayBuffer: ArrayBuffer): number {
+  const dataView = new DataView(arrayBuffer);
+  let offset = dataView.getUint16(94, true);
+  const variableLengthRecordCount = dataView.getUint32(100, true);
+
+  for (let recordIndex = 0; recordIndex < variableLengthRecordCount; recordIndex++) {
+    const recordId = dataView.getUint16(offset + 18, true);
+    const recordLength = dataView.getUint16(offset + 20, true);
+    const dataOffset = offset + 54;
+    if (recordId === 22204) {
+      return dataOffset;
+    }
+    offset = dataOffset + recordLength;
+  }
+
+  throw new Error('LASzip VLR not found');
 }
 
 function createPointFormat0Record(): Uint8Array {

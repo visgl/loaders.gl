@@ -57,10 +57,10 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | Capability | TypeScript backend status |
 | --- | --- |
 | Full LAZ file parsing | Partial. Fixed-size LASzip chunks for supported TypeScript LAZ point formats can be decoded incrementally by `parseInBatches`. Variable-size chunk files are supported after their chunk table is available at EOF. |
-| LASzip VLR parsing | Partial. Compression mode, fixed or variable chunking, and chunk-size metadata required for TypeScript LAZ decoding are parsed incrementally. |
+| LASzip VLR parsing | Partial. Compression mode, arithmetic coder, fixed or variable chunking, chunk-size metadata, and the point format's item order, sizes, and versions are parsed incrementally and validated before decoding. |
 | Chunk table parsing | LASzip chunk-table version 0 is supported for fixed-size and variable-size chunks. Decoded point counts and byte ranges are validated before decompression. |
 | Single compressed chunk decode | Supported when metadata is supplied by the caller. |
-| LAZ point formats 0-5 | Supported for legacy fixed-size LASzip chunks, including GPS time, RGB, and PDRF 4/5 WavePacket13 decoding. Complete batches can be emitted before a compressed chunk has fully arrived. |
+| LAZ point formats 0-5 | Supported for legacy fixed-size LASzip v2 chunks, including GPS time, RGB, and PDRF 4/5 WavePacket13 v1 decoding. LASzip v1 Point10/GPS/RGB/Byte items are rejected because their codec differs. Complete batches can be emitted before a compressed chunk has fully arrived. |
 | LAZ 1.4 point formats 6-10 | Supported for fixed-size full-file LAZ chunks. PDRF 9/10 raw decoding preserves the complete 29-byte waveform packet reference, including lossless 64-bit offsets. COPC remains limited by specification to PDRF 6-8. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
 | Selective decompression | Supported for PDRF 6-10 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table, including PDRF 9/10 waveform references, while preserving complete raw-record decoding through the chunk APIs. |
