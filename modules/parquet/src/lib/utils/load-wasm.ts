@@ -5,7 +5,7 @@
 import type * as ParquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 import {PARQUET_WASM_URL} from '../constants';
 
-let initializePromise: Promise<typeof ParquetWasm>;
+let initializePromise: Promise<typeof ParquetWasm> | undefined;
 
 export async function loadWasm(
   wasmUrl: ParquetWasm.InitInput | Promise<ParquetWasm.InitInput> = PARQUET_WASM_URL
@@ -14,7 +14,14 @@ export async function loadWasm(
     if (!wasmUrl) {
       throw new Error('ParquetLoader: No wasmUrl provided');
     }
-    initializePromise = loadAndInitializeWasm(wasmUrl);
+    const nextInitializePromise = loadAndInitializeWasm(wasmUrl);
+    const cachedInitializePromise = nextInitializePromise.catch(error => {
+      if (initializePromise === cachedInitializePromise) {
+        initializePromise = undefined;
+      }
+      throw error;
+    });
+    initializePromise = cachedInitializePromise;
   }
 
   return await initializePromise;

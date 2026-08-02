@@ -86,7 +86,7 @@ Release Date: 2026
 
 **@loaders.gl/parquet**
 
-- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet footer metadata and schema access with cancellation and object-version validation.
+- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - reuses cached schema and footer metadata while streaming selected row groups and columns as Arrow batches with source-row provenance.
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) is now documented for selecting object-row or Arrow output from the canonical wasm-backed loader.
 

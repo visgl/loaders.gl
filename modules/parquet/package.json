@@ -38,6 +38,11 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./parquet-source-loader": {
+      "types": "./dist/parquet-source-loader.d.ts",
+      "import": "./dist/parquet-source-loader.js",
+      "require": "./dist/parquet-source-loader.cjs"
     }
   },
   "sideEffects": false,

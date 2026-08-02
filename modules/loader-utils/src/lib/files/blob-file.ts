@@ -30,16 +30,10 @@ export class BlobFile implements ReadableFile {
     };
   }
 
-  async read(start?: number | bigint, length?: number, signal?: AbortSignal): Promise<ArrayBuffer> {
-    if (signal?.aborted) {
-      throw new Error('Request aborted');
-    }
+  async read(start?: number | bigint, length?: number): Promise<ArrayBuffer> {
     const arrayBuffer = await this.handle
       .slice(Number(start), Number(start) + Number(length))
       .arrayBuffer();
-    if (signal?.aborted) {
-      throw new Error('Request aborted');
-    }
     return arrayBuffer;
   }
 }

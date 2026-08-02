@@ -2,101 +2,97 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  DataSourceOptions,
-  RangeRequestScheduler,
-  RangeRequestSchedulerProps
-} from '@loaders.gl/loader-utils';
-import type {FileMetaData} from './parquetjs/parquet-thrift/index';
+import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 
-/** Version validators captured from an HTTP Parquet object. */
-export type ParquetObjectVersion = {
-  /** HTTP entity tag returned by the object store. */
-  etag?: string;
-  /** HTTP last-modified timestamp returned by the object store. */
-  lastModified?: string;
+import type {DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
+
+/** Options applied to each read from a Parquet source. */
+export type ParquetSourceReadOptions = {
+  /** Row-group indexes to read. Defaults to all row groups in file order. */
+  rowGroups?: readonly number[];
+  /** Column paths to project. Defaults to all columns. */
+  columns?: readonly string[];
+  /** Target number of rows in each returned Arrow batch. */
+  batchSize?: number;
+  /** Number of concurrent range requests used by parquet-wasm. */
+  concurrency?: number;
 };
 
-/** Normalized metadata for one Parquet column chunk. */
+/** Options for creating a Parquet source. */
+export type ParquetSourceLoaderOptions = DataSourceOptions & {
+  parquet?: ParquetSourceReadOptions & {
+    /** URL or module used to initialize parquet-wasm. */
+    wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
+  };
+};
+
+/** Plain metadata for one Parquet column chunk. */
 export type ParquetColumnChunkMetadata = {
-  /** Nested column path in the Parquet schema. */
-  path: string[];
-  /** Compression codec declared by the column chunk. */
-  compression: string;
-  /** Number of encoded values, including repeated values. */
-  valueCount: number;
-  /** Compressed byte length of the column chunk. */
-  compressedByteLength: number;
-  /** Uncompressed byte length of the column chunk. */
-  uncompressedByteLength: number;
-  /** Absolute file offset of the first data page. */
-  dataPageOffset: number;
-  /** Absolute file offset of the dictionary page, when present. */
-  dictionaryPageOffset?: number;
+  /** Nested column path. */
+  readonly path: readonly string[];
+  /** Optional external file containing the chunk. */
+  readonly filePath?: string;
+  /** Byte offset reported by the Parquet footer. */
+  readonly fileOffset: bigint;
+  /** Number of encoded values in the chunk. */
+  readonly valueCount: number;
+  /** Compression codec name. */
+  readonly compression: string;
+  /** Encodings used by the chunk. */
+  readonly encodings: readonly string[];
+  /** Compressed chunk size in bytes. */
+  readonly compressedSize: number;
+  /** Uncompressed chunk size in bytes. */
+  readonly uncompressedSize: number;
 };
 
-/** Normalized metadata for one Parquet row group. */
+/** Plain metadata for one Parquet row group. */
 export type ParquetRowGroupMetadata = {
   /** Zero-based row-group index. */
-  index: number;
-  /** Number of logical rows in the row group. */
-  rowCount: number;
-  /** Total uncompressed byte length declared by the row group. */
-  uncompressedByteLength: number;
-  /** Sum of compressed column-chunk byte lengths. */
-  compressedByteLength: number;
-  /** Column chunks contained in the row group. */
-  columns: ParquetColumnChunkMetadata[];
+  readonly index: number;
+  /** Absolute offset of the first row in the file. */
+  readonly rowOffset: number;
+  /** Number of rows in the row group. */
+  readonly rowCount: number;
+  /** Total compressed column size in bytes. */
+  readonly compressedSize: number;
+  /** Total uncompressed column size in bytes. */
+  readonly uncompressedSize: number;
+  /** Column chunks in this row group. */
+  readonly columns: readonly ParquetColumnChunkMetadata[];
 };
 
-/** Dataset-level metadata returned by `ParquetSource.getMetadata()`. */
+/** Cached schema and footer metadata exposed by a Parquet source. */
 export type ParquetSourceMetadata = {
-  /** Display name inferred from the URL or File name. */
-  name: string;
-  /** Resolved source URL for remote datasets. */
-  url?: string;
-  /** Total Parquet object byte length. */
-  fileByteLength: number;
+  /** Arrow-compatible loaders.gl schema. */
+  readonly schema: Schema;
   /** Parquet format version stored in the footer. */
-  formatVersion: number;
-  /** Writer identifier stored in the footer. */
-  createdBy?: string;
-  /** Total logical row count. */
-  rowCount: number;
-  /** Number of row groups. */
-  rowGroupCount: number;
-  /** User key/value metadata stored in the footer. */
-  keyValueMetadata: Record<string, string>;
-  /** Normalized row-group and column-chunk metadata. */
-  rowGroups: ParquetRowGroupMetadata[];
-  /** HTTP object validators captured when opening a remote source. */
-  objectVersion?: ParquetObjectVersion;
-  /** Raw decoded Parquet footer, included only when requested. */
-  formatSpecificMetadata?: FileMetaData;
+  readonly version: number;
+  /** Total number of rows in the file. */
+  readonly rowCount: number;
+  /** Application string stored by the Parquet writer. */
+  readonly createdBy?: string;
+  /** File-level key/value metadata. */
+  readonly keyValueMetadata: Readonly<Record<string, string>>;
+  /** Row-group and column-chunk metadata. */
+  readonly rowGroups: readonly ParquetRowGroupMetadata[];
 };
 
-/** Options for one Parquet source metadata request. */
-export type ParquetMetadataRequestOptions = {
-  /** Include the decoded Parquet thrift footer in the returned metadata. */
-  formatSpecificMetadata?: boolean;
-  /** Abort source initialization and its range requests. */
-  signal?: AbortSignal;
+/** Provenance attached to every Arrow batch returned by a Parquet source. */
+export type ParquetBatchMetadata = {
+  /** Source URL, File name, or a stable Blob label. */
+  readonly sourceId: string;
+  /** Row group that produced this batch. */
+  readonly rowGroupIndex: number;
+  /** Absolute offset of the first batch row in the source file. */
+  readonly rowOffset: number;
+  /** Offset of the first batch row within its row group. */
+  readonly rowGroupRowOffset: number;
 };
 
-/** Range transport options for `ParquetSourceLoader`. */
-export type ParquetRangeRequestOptions = RangeRequestSchedulerProps & {
-  /** Reusable scheduler shared with other range-addressable sources. */
-  scheduler?: RangeRequestScheduler;
-};
-
-/** Options for constructing a `ParquetSource`. */
-export type ParquetSourceLoaderOptions = DataSourceOptions & {
-  parquet?: {
-    /** HTTP headers forwarded to every remote Parquet request. */
-    headers?: HeadersInit;
-    /** Preserve binary values when the TypeScript decoder is used for later reads. */
-    preserveBinary?: boolean;
-  };
-  /** Byte-range scheduling and diagnostics configuration. */
-  rangeRequests?: ParquetRangeRequestOptions;
+/** Arrow batch returned by a Parquet source. */
+export type ParquetSourceBatch = Omit<ArrowTableBatch<ParquetBatchMetadata>, 'metadata'> & {
+  /** Provenance for the source rows represented by this batch. */
+  readonly metadata: ParquetBatchMetadata;
 };
