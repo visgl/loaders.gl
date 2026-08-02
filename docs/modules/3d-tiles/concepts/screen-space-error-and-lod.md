@@ -4,6 +4,8 @@
 
 This guide describes the loaders.gl 3D Tiles calculation. It also explains how projection, transforms, display pixel density, and traversal options affect the selected level of detail (LOD).
 
+Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [request scheduling](./request-scheduling-and-priorities) · [cache and memory](./caching-and-memory) · [diagnostics](./runtime-tuning-and-diagnostics)
+
 ![3D Tiles correctness flow from transform-scaled geometric error through perspective or orthographic SSE to LOD refinement, plus early required-extension validation](../images/screen-space-error-and-lod.png)
 
 References:
@@ -174,43 +176,9 @@ SSE decides whether a tile needs more detail; the tile's `refine` mode determine
 
 Both modes use the same SSE threshold. They differ in rendering and loading continuity, not in the definition of geometric error.
 
-## Progressive and Foveated Request Scheduling
+## From Desired LOD to Request Order
 
-SSE determines which hierarchy levels are needed. When several needed tiles are waiting for a limited number of network slots, loaders.gl applies a second set of measurements to decide which requests should start first. These measurements affect request order, not the normal SSE refinement threshold or the final selected LOD.
-
-### Progressive Coarse Coverage
-
-`progressiveResolutionHeightFraction` calculates a second SSE as though the viewport were rendered at a fraction of its logical height:
-
-```text
-progressiveSSE = normalSSE * progressiveResolutionHeightFraction
-```
-
-The default fraction is `0.3`. A tile whose progressive SSE still exceeds `maximumScreenSpaceError` receives higher request priority. The first descendant that crosses below the threshold is also promoted, producing a coarse SSE leaf instead of stopping between hierarchy levels. This tends to fill the viewport with usable low-resolution content before requesting all fine detail.
-
-Set the option to `0` to disable progressive prioritization. Values greater than `0.5` are ignored because they no longer represent a meaningfully reduced initial-resolution pass. The calculation uses logical pixels for both perspective and orthographic projection, just like normal SSE.
-
-### Foveated Center Priority
-
-With `foveatedScreenSpaceError: true` (the default), perspective requests near the camera's view axis load before equally needed requests near the viewport edge. The calculation uses the tile's complete bounding sphere: a large tile that intersects the view axis counts as centered even if its bounding-volume center is off-axis.
-
-`foveatedConeSize` controls the unrelaxed center region as a fraction of the field of view and defaults to `0.1`. Outside that cone, `foveatedMinimumScreenSpaceErrorRelaxation` and `foveatedInterpolationCallback` determine how quickly peripheral requests lose urgency. The default callback interpolates linearly toward `maximumScreenSpaceError`.
-
-Angular foveation is disabled for orthographic viewports because a parallel frustum has no perspective field of view. Progressive coarse coverage remains active for orthographic traversal.
-
-### Moving-Camera Deferral
-
-While camera position or direction is changing, eligible peripheral requests may wait up to `foveatedTimeDelay`, which defaults to `0.2` seconds. A follow-up traversal is scheduled for the end of the delay, so held requests become eligible even if the application does not submit another camera update.
-
-Deferral is deliberately refinement-safe:
-
-- `ADD` descendants can wait because their ancestors remain rendered.
-- Skip-LOD `REPLACE` descendants can wait while an available ancestor supplies coverage, except progressive-resolution tiles needed for the initial coarse pass.
-- Traditional `REPLACE` children never wait. The parent cannot disappear until every required child is ready, so deferring one of those children would prolong coarse rendering and could interfere with hole prevention.
-
-Foveated priority still orders traditional `REPLACE` requests center-first; only the moving-camera pause is disabled for them.
-
-The complete request order is lexicographic: non-deferred work before deferred work, progressive coverage before fine detail, center content before peripheral content, then the established reverse-SSE ordering. Separate priority bands keep an extreme value in one measurement from overpowering a more important scheduling invariant.
+SSE determines which hierarchy levels are needed. When several needed tiles compete for network slots, progressive and foveated measurements decide which requests start first without changing the final SSE target. See [Request scheduling and priorities](./request-scheduling-and-priorities) for the complete model, including foveated requests and moving-camera deferral.
 
 ## Tuning LOD
 
@@ -227,12 +195,7 @@ Tune dynamic SSE only after choosing those global quality controls. Increase
 distant structures appear too coarse. Height falloff is mainly useful for local tilesets whose
 street-level and aerial views need different traversal depth.
 
-After selecting an acceptable final LOD, tune streaming behavior separately:
-
-- Reduce `progressiveResolutionHeightFraction` to make the first coverage pass coarser, or set it to `0` when complete fine-detail order is preferable.
-- Increase `foveatedConeSize` to treat more of the viewport as central. Set it to `1` to disable foveated deferral without disabling progressive coverage.
-- Increase `foveatedTimeDelay` to suppress more peripheral traffic during continuous motion. Decrease it when peripheral detail should recover sooner after short camera adjustments.
-- Increase `foveatedMinimumScreenSpaceErrorRelaxation` when the edge of the foveated cone should begin with a stronger priority penalty. A custom `foveatedInterpolationCallback` can provide a nonlinear transition.
+After selecting an acceptable final LOD, tune streaming behavior separately with the [request-scheduling guide](./request-scheduling-and-priorities), then size the [cache and memory budget](./caching-and-memory).
 
 Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, and `maximumMemoryUsage` can delay or limit the visible effect of an SSE change.
 
@@ -265,10 +228,6 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 | Orthographic traversal returns `NaN` or extreme values | `metersPerPixel` is zero, negative, or non-finite. | Supply a positive finite value; loaders.gl otherwise uses its perspective-compatible fallback. |
 | High-DPI displays select different tiles | Physical and logical pixels are being mixed in a custom viewport. | Provide CSS/logical dimensions and do not apply another DPR factor. |
 | Lowering SSE does not immediately improve detail | Children are still loading or constrained by memory and scheduling. | Wait for load callbacks, retraverse, and inspect cache/request limits. |
-| Center detail streams no faster than the periphery | Foveated SSE is disabled, the cone covers the full field of view, or the viewport is orthographic. | Check `foveatedScreenSpaceError`, reduce `foveatedConeSize`, and confirm a perspective viewport exposes its field of view. |
-| The viewport remains empty while moving | Coarse ancestors are unavailable or application code is unloading selected parents. | Ensure root/ancestor content can load; normal `REPLACE` requests are never motion-deferred by loaders.gl. |
-| Peripheral detail takes too long after movement | The movement delay or SSE relaxation is too aggressive. | Reduce `foveatedTimeDelay`, increase `foveatedConeSize`, or reduce the relaxation settings. |
-| Fine detail starts before broad coverage | Progressive priority is disabled or its reduced-height SSE already meets the threshold at the root. | Use a fraction in `(0, 0.5]` and inspect the tileset's geometric-error hierarchy. |
 
 ## Current Boundaries
 
@@ -276,6 +235,6 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 - Orthographic SSE requires `metersPerPixel`; invalid values use the perspective-compatible fallback.
 - Dynamic SSE is a perspective optimization. It is not subtracted from orthographic SSE, including
   the perspective-compatible fallback used when an orthographic viewport has an invalid pixel scale.
-- Angular foveation is a perspective-only scheduling optimization; orthographic requests retain progressive and reverse-SSE priority.
+- Request-priority behavior is documented separately because it controls arrival order rather than final LOD.
 - 3D Tiles geometric error is measured in meters. I3S uses a different `maxScreenThreshold` LOD metric that is already screen-oriented and is not transform-scaled by this logic.
 - SSE controls refinement after visibility and request-volume checks. It cannot make a culled tile visible or provide descendants that are missing from the tileset.

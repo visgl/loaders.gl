@@ -95,6 +95,20 @@ test('getTiles3DScreenSpaceError#scales progressive-resolution perspective heigh
   t.end();
 });
 
+test('getTiles3DScreenSpaceError#composes progressive and dynamic perspective SSE', t => {
+  const tile = createTile();
+  tile.tileset.options.dynamicScreenSpaceError = true;
+  const frameState = createFrameState({dynamicScreenSpaceErrorDensity: 0.01});
+  const expectedReduction = getDynamicScreenSpaceError(100, 0.01, 24);
+
+  t.equals(
+    getTiles3DScreenSpaceError(tile, frameState, false, 0.3),
+    15 - expectedReduction,
+    'scales the projection term before applying the unchanged dynamic SSE reduction'
+  );
+  t.end();
+});
+
 test('getTiles3DScreenSpaceError#uses orthographic logical-pixel scale', t => {
   const tile = createTile();
   const frameState = createFrameState({

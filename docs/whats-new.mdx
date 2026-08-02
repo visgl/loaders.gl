@@ -199,6 +199,15 @@ A minor release that includes:
 
 - **3D Tiles 1.1 Writing** [`Tile3DWriter`](/docs/modules/3d-tiles/api-reference/tile-3d-writer) now supports writing 3DTiles 1.1
 - **3D Tiles 1.1 Extensions** `EXT_mesh_features` and `EXT_structural_metadata` are now supported.
+- **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
+- **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
+- **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
+- **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.
+- **Progressive tile requests** Coarse viewport coverage receives priority before fine detail through reduced-height SSE.
+- **Foveated tile requests** Perspective tiles near the view axis receive priority over equally needed peripheral detail without changing the final LOD target.
+- **Motion-aware request deferral** Refinement-safe peripheral requests can pause briefly during camera motion and automatically resume after the configured delay.
+- **Request-priority diagnostics** Tile runtime fields and tests expose progressive, foveated, deferred, and combined priority calculations.
+- **3D Tiles runtime guides** A [sidebar-linked concepts suite](/docs/modules/3d-tiles/concepts) documents hierarchy refinement, SSE/LOD, request scheduling, foveation, caching, memory, tuning, and diagnostics.
 
 **@loaders.gl/tile-converter**
 

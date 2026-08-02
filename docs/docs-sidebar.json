@@ -260,7 +260,18 @@
         "label": "@loaders.gl/3d-tiles",
         "items": [
           "modules/3d-tiles/README",
-          "modules/3d-tiles/concepts/screen-space-error-and-lod"
+          {
+            "type": "category",
+            "label": "Runtime Concepts",
+            "items": [
+              "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
+              "modules/3d-tiles/concepts/screen-space-error-and-lod",
+              "modules/3d-tiles/concepts/request-scheduling-and-priorities",
+              "modules/3d-tiles/concepts/caching-and-memory",
+              "modules/3d-tiles/concepts/runtime-tuning-and-diagnostics"
+            ]
+          }
         ]
       },
       {

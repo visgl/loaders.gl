@@ -179,8 +179,7 @@ export function getTiles3DScreenSpaceError(
   const distanceToCamera = Math.max(tile._distanceToCamera, 1e-7);
   const {height, sseDenominator} = frameState;
   let screenSpaceError =
-    (lodMetricValue * height * heightFraction * lodScale) /
-    (distanceToCamera * sseDenominator);
+    (lodMetricValue * height * heightFraction * lodScale) / (distanceToCamera * sseDenominator);
 
   if (tileset.options.dynamicScreenSpaceError && !frameState.viewport.orthographic) {
     screenSpaceError -= getDynamicScreenSpaceError(

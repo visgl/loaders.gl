@@ -19,7 +19,16 @@ const scratchClosestPointOnLine = new Vector3();
 const scratchVectorToLine = new Vector3();
 const scratchClosestPointOnSphere = new Vector3();
 
-/** Interpolates a value used to relax SSE away from the center of the viewport. */
+/**
+ * Interpolates the logical-pixel SSE relaxation used outside the foveated center cone.
+ *
+ * @param minimumValue - Relaxation at the edge of the center cone, in logical pixels.
+ * @param maximumValue - Maximum relaxation at the edge of the perspective field of view, in
+ * logical pixels.
+ * @param interpolationAmount - Normalized distance from the cone edge toward the field-of-view
+ * edge, clamped to `[0, 1]` by the caller.
+ * @returns Interpolated SSE relaxation in logical pixels. Non-finite results are treated as zero.
+ */
 export type FoveatedInterpolationCallback = (
   minimumValue: number,
   maximumValue: number,
@@ -76,7 +85,14 @@ export type TileRequestPriorityParameters = {
   rootScreenSpaceError: number;
 };
 
-/** Linearly interpolates between two values. */
+/**
+ * Linearly interpolates between two values.
+ *
+ * @param minimumValue - Value returned when `interpolationAmount` is zero.
+ * @param maximumValue - Value returned when `interpolationAmount` is one.
+ * @param interpolationAmount - Normalized interpolation position.
+ * @returns Linearly interpolated value.
+ */
 export function interpolateLinearly(
   minimumValue: number,
   maximumValue: number,
@@ -91,6 +107,11 @@ export function interpolateLinearly(
  * The tile's bounding sphere, rather than only its center, is used so large tiles that intersect
  * the view axis retain center priority. The returned angular factor is zero on the view axis and
  * increases toward the edge of a perspective frustum.
+ *
+ * @param boundingVolume - Tile volume used to find the point nearest the camera view axis.
+ * @param camera - World-space camera position and normalized view direction.
+ * @returns Unitless angular factor, where zero intersects the view axis and larger values are more
+ * peripheral.
  */
 export function calculateFoveatedFactor(
   boundingVolume: BoundingSphere | OrientedBoundingBox,
@@ -132,6 +153,13 @@ export function calculateFoveatedFactor(
  * In addition to tiles whose reduced-height SSE exceeds the normal threshold, the first child
  * that crosses below the threshold is promoted. Promoting that SSE leaf prevents gaps between
  * coarse hierarchy levels in the initial coverage pass.
+ *
+ * @param screenSpaceError - Tile SSE calculated at the reduced logical viewport height.
+ * @param parentScreenSpaceError - Parent SSE at the same reduced height, when available.
+ * @param maximumScreenSpaceError - Normal traversal threshold in logical pixels.
+ * @param progressiveResolutionHeightFraction - Reduced-height fraction; values outside `(0, 0.5]`
+ * disable progressive priority.
+ * @returns `true` when the tile belongs to the initial coarse-coverage priority band.
  */
 export function isProgressiveResolutionPriority(
   screenSpaceError: number,
@@ -160,6 +188,9 @@ export function isProgressiveResolutionPriority(
  * Traditional `REPLACE` traversal is never deferred because every required child must be ready
  * before its parent disappears. `ADD` traversal and skip-LOD replacement traversal can safely keep
  * already available ancestors while peripheral descendants wait.
+ *
+ * @param parameters - Refinement, projection, SSE, and foveation measurements for the tile.
+ * @returns `true` when the request may wait during the camera-motion delay.
  */
 export function isFoveatedRequestDeferred(parameters: FoveatedDeferralParameters): boolean {
   const coneSize = Number.isFinite(parameters.foveatedConeSize)
@@ -218,6 +249,9 @@ export function isFoveatedRequestDeferred(parameters: FoveatedDeferralParameters
  * progressive-coverage flag, distance from the view center, and finally the established reverse-
  * SSE order. Normalizing reverse SSE preserves its relative ordering while preventing one metric
  * from spilling into the next priority band.
+ *
+ * @param parameters - Independent request-priority measurements for a tile.
+ * @returns Numeric priority for `RequestScheduler`; smaller values start first.
  */
 export function calculateTileRequestPriority(parameters: TileRequestPriorityParameters): number {
   const normalizedReverseScreenSpaceError =
