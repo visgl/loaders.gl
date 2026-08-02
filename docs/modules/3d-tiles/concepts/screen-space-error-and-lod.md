@@ -1,10 +1,12 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Screen-Space Error and Level of Detail
+
+<Tiles3DDocsTabs active="sse-lod" />
 
 3D Tiles organizes content in a spatial hierarchy. A parent tile provides a coarser representation of an area, while its descendants provide progressively more detail. `Tileset3D` traverses this hierarchy for every viewport and uses **screen-space error (SSE)** to decide whether a tile is detailed enough to render or should refine to its children.
 
 This guide describes the loaders.gl 3D Tiles calculation. It also explains how projection, transforms, display pixel density, and traversal options affect the selected level of detail (LOD).
-
-Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [request scheduling](./request-scheduling-and-priorities) · [cache and memory](./caching-and-memory) · [diagnostics](./runtime-tuning-and-diagnostics)
 
 ![3D Tiles correctness flow from transform-scaled geometric error through perspective or orthographic SSE to LOD refinement, plus early required-extension validation](../images/screen-space-error-and-lod.png)
 

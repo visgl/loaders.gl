@@ -1,8 +1,10 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Runtime Tuning and Diagnostics
 
-Tune 3D Tiles in layers: establish the desired final LOD, then improve how quickly useful coverage arrives, then size request and memory resources. Changing several layers together makes symptoms harder to explain.
+<Tiles3DDocsTabs active="diagnostics" />
 
-Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [SSE and LOD](./screen-space-error-and-lod) · [request scheduling](./request-scheduling-and-priorities) · [cache and memory](./caching-and-memory)
+Tune 3D Tiles in layers: establish the desired final LOD, then improve how quickly useful coverage arrives, then size request and memory resources. Changing several layers together makes symptoms harder to explain.
 
 ## Recommended Sequence
 

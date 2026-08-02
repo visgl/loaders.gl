@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # Overview
+
+<GltfDocsTabs active="overview" />
 
 ![logo](./images/gltf-small.png)
 

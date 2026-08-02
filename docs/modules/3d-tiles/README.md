@@ -1,4 +1,8 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Overview
+
+<Tiles3DDocsTabs active="module" />
 
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;

@@ -1,8 +1,10 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Caching and Memory
 
-`Tileset3D` caches loaded content so camera movement can reuse tiles without immediately fetching and decoding them again. The cache cooperates with traversal: tiles touched in the current frame are protected, while unused least-recently-used content becomes eligible for eviction.
+<Tiles3DDocsTabs active="cache" />
 
-Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [SSE and LOD](./screen-space-error-and-lod) · [request scheduling](./request-scheduling-and-priorities) · [diagnostics](./runtime-tuning-and-diagnostics)
+`Tileset3D` caches loaded content so camera movement can reuse tiles without immediately fetching and decoding them again. The cache cooperates with traversal: tiles touched in the current frame are protected, while unused least-recently-used content becomes eligible for eviction.
 
 ## The Memory Limit Is Soft
 
