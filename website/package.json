@@ -13,9 +13,7 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-heading-ids": "ts-node scripts/write-heading-ids.ts",
-    "deploy": "./scripts/deploy.sh prod",
-    "deploy-preview": "./scripts/deploy.sh preview",
-    "deploy-prod": "./scripts/deploy.sh prod"
+    "deploy": "docusaurus deploy"
   },
   "dependencies": {
     "@algolia/autocomplete-js": "^1.17.0",

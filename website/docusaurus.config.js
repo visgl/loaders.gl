@@ -313,7 +313,7 @@ const config = {
           {
             type: 'html',
             position: 'right',
-            value: '<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: \'\'; height: 80px; width: 100px; margin-top: -30px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>'
+            value: `<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: ''; height: 80px; width: 100px; margin-top: -30px; background-image: url('${baseUrl}images/openjs-foundation.svg'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>`
           },
           {
             href: 'https://github.com/visgl/loaders.gl',
