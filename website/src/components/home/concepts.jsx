@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Link from '@docusaurus/Link';
 import styled from 'styled-components';
 import SourceLoaderGraphic from '../source-loader-graphic';
 
@@ -354,7 +355,7 @@ const LinkBar = styled.div`
   margin: 0 0 36px;
 `;
 
-const GuideLink = styled.a`
+const GuideLink = styled(Link)`
   align-items: center;
   background: var(--ifm-color-white);
   border: 1px solid var(--ifm-color-gray-400);
@@ -563,7 +564,7 @@ const Node = styled.div`
   position: relative;
 `;
 
-const LinkedNode = styled(Node).attrs({as: 'a'})`
+const LinkedNode = styled(Node).attrs({as: Link})`
   text-decoration: none;
   transition:
     border-color 160ms ease,
@@ -602,7 +603,7 @@ const CategoryNode = styled(Node)`
   font-weight: 800;
 `;
 
-const LinkedCategoryNode = styled(CategoryNode).attrs({as: 'a'})`
+const LinkedCategoryNode = styled(CategoryNode).attrs({as: Link})`
   text-decoration: none;
   transition:
     border-color 160ms ease,
@@ -775,11 +776,11 @@ export default function Concepts() {
         </Intro>
 
         <LinkBar aria-label="Concept guide links">
-          <GuideLink href="/docs/developer-guide/loader-categories">Loader categories</GuideLink>
-          <GuideLink href="/docs/developer-guide/using-loaders">Using loaders</GuideLink>
-          <GuideLink href="/docs/developer-guide/using-writers">Using writers</GuideLink>
-          <GuideLink href="/docs/developer-guide/using-sources">Using sources</GuideLink>
-          <GuideLink href="/docs/developer-guide/composite-loaders">Composite loaders</GuideLink>
+          <GuideLink to="/docs/developer-guide/loader-categories">Loader categories</GuideLink>
+          <GuideLink to="/docs/developer-guide/using-loaders">Using loaders</GuideLink>
+          <GuideLink to="/docs/developer-guide/using-writers">Using writers</GuideLink>
+          <GuideLink to="/docs/developer-guide/using-sources">Using sources</GuideLink>
+          <GuideLink to="/docs/developer-guide/composite-loaders">Composite loaders</GuideLink>
         </LinkBar>
 
         <PanelGrid>
@@ -831,7 +832,7 @@ export default function Concepts() {
                       selectedRepresentation.loaders.map((loader) => (
                         <LinkedNode
                           key={loader}
-                          href={loaderDocumentationLinks[loader]}
+                          to={loaderDocumentationLinks[loader]}
                           $compactText={loader.length > 20}
                         >
                           <span>{loader}</span>
@@ -849,7 +850,7 @@ export default function Concepts() {
                 <ConceptColumn>
                   <StageLabel>Data</StageLabel>
                   <DataCategoryNode
-                    href={categoryDocumentationLinks[selectedCategory.id]}
+                    to={categoryDocumentationLinks[selectedCategory.id]}
                     $background="rgba(0, 173, 230, 0.12)"
                     $border="rgba(0, 173, 230, 0.55)"
                   >
@@ -868,7 +869,7 @@ export default function Concepts() {
                       selectedRepresentation.writers.map((writer) => (
                         <LinkedCategoryNode
                           key={writer}
-                          href={writerDocumentationLinks[writer]}
+                          to={writerDocumentationLinks[writer]}
                           $compactText={writer.length > 20}
                           $background="rgba(53, 173, 107, 0.12)"
                           $border="rgba(53, 173, 107, 0.55)"
@@ -915,11 +916,11 @@ export default function Concepts() {
               <SplitPanel>
                 <CompactFlow>
                   <Stack>
-                    <LinkedNode href={loaderDocumentationLinks.GLTFLoader}>
+                    <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
                       <span>GLTFLoader</span>
                       <LinkMark aria-hidden="true">↗</LinkMark>
                     </LinkedNode>
-                    <LinkedNode href={loaderDocumentationLinks.Tiles3DLoader}>
+                    <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
                       <span>Tiles3DLoader</span>
                       <LinkMark aria-hidden="true">↗</LinkMark>
                     </LinkedNode>
@@ -929,7 +930,7 @@ export default function Concepts() {
                     {subloaders.map((subloader) => (
                       <LinkedNode
                         key={subloader}
-                        href={loaderDocumentationLinks[subloader]}
+                        to={loaderDocumentationLinks[subloader]}
                         $compactText={subloader.length > 20}
                       >
                         <span>{subloader}</span>
@@ -965,7 +966,7 @@ export default function Concepts() {
                   <StageLabel>Streaming loaders</StageLabel>
                   <LoaderGrid>
                     {streamingLoaders.map((loader) => (
-                      <LinkedNode key={loader} href={loaderDocumentationLinks[loader]}>
+                      <LinkedNode key={loader} to={loaderDocumentationLinks[loader]}>
                         <span>{loader}</span>
                         <LinkMark aria-hidden="true">↗</LinkMark>
                       </LinkedNode>
