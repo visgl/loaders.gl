@@ -16,6 +16,7 @@ export type Tiles3DDocsTabId =
   | 'runtime'
   | 'resources'
   | 'hierarchy'
+  | 'implicit'
   | 'sse-lod'
   | 'requests'
   | 'cache'
@@ -33,6 +34,11 @@ const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
     id: 'hierarchy',
     label: 'Hierarchy',
     href: '/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement'
+  },
+  {
+    id: 'implicit',
+    label: 'Implicit',
+    href: '/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees'
   },
   {
     id: 'sse-lod',

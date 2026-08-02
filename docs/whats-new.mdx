@@ -210,6 +210,11 @@ A minor release that includes:
 - **Single-pass JSON preprocessing** External tileset and JSON glTF payloads are decoded and parsed once, with stable diagnostics for truncated, malformed, or unsupported content.
 - **Cached resource derivation** Relative content references reuse a parse-scoped URI resolver, while inherited-query tile URLs are cached and invalidated whenever source query state changes.
 - **3D Tiles resource guide** A new [Resources tab](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) documents content detection, URI resolution, query inheritance, cache scope, archive behavior, and troubleshooting.
+- **Lazy implicit initialization** Implicit tilesets complete root parsing and `onTilesetLoad` without fetching subtree availability resources or eagerly allocating the complete hierarchy.
+- **View-gated subtree requests** Implicit availability is requested only after frustum, viewer-request-volume, and SSE checks, using the same progressive, foveated, and concurrency priorities as tile content.
+- **Bounded subtree materialization** Each request materializes exactly one QUADTREE or OCTREE subtree, leaves deeper boundaries lazy, deduplicates final URLs, and retains a configurable parsed-subtree LRU.
+- **Correct implicit level semantics** `availableLevels` is treated as a count including level zero, child-subtree Morton indexes omit the tile-level offset, and the last declared level is materialized without requesting beyond it.
+- **Implicit hierarchy diagnostics** Runtime child states and `Tiles3DSource.getImplicitTilingStats()` expose pending requests, cache reuse, and materialized-header counts, documented in a new [Implicit tab](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees).
 - **Explicit S2 bounding volumes** `3DTILES_bounding_volume_S2` tile, content, and viewer-request volumes are converted to traversal-ready oriented boxes outside implicit tiling as well.
 - **Progressive tile requests** Coarse viewport coverage receives priority before fine detail through reduced-height SSE.
 - **Foveated tile requests** Perspective tiles near the view axis receive priority over equally needed peripheral detail without changing the final LOD target.

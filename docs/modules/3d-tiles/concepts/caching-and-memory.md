@@ -29,6 +29,12 @@ Both values are byte counts, not decimal megabytes. Multiply a desired mebibyte 
 
 This policy favors complete, hole-free rendering over a hard cap. `cacheBytes` should therefore not be interpreted as a process, JavaScript heap, or GPU allocation limit.
 
+## Implicit Subtree Metadata Cache
+
+Implicit availability files use a separate source-local parsed-metadata cache. It is bounded by `loadOptions['3d-tiles'].maximumCachedSubtrees`, defaults to 32 entries, and deduplicates requests by final URL after query inheritance. Set it to `0` to retain only active in-flight promises. These entries are small availability structures, not decoded render content, and therefore do not count toward `cacheBytes` or `maximumCacheOverflowBytes`.
+
+Materialized runtime headers for visited subtree levels remain part of the live hierarchy even after their parsed availability entry leaves this LRU. A lower SSE threshold can still grow the visited hierarchy by legitimately traversing deeper. Inspect `Tiles3DSource.getImplicitTilingStats()` and see [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees) when separating metadata growth from GPU content pressure.
+
 ## What the Estimate Includes
 
 `gpuMemoryUsageInBytes` tracks the runtime's best estimate for loaded tile content. Geometry, textures, batch-table textures, and point metadata contribute when their loaders report byte lengths. The value does not include every allocation made by the application, browser, renderer, decoder, or network stack.

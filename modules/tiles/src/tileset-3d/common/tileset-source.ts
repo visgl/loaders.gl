@@ -73,6 +73,16 @@ export type TileContentLoadResult = {
   nestedTileset?: TilesetJSON;
 };
 
+/** Result of a source-managed lazy child-header request. */
+export type TileChildrenLoadResult = {
+  /** Whether a subtree resource was loaded and installed. */
+  loaded: boolean;
+  /** Number of available tiles described by the subtree, including its existing root placeholder. */
+  tileCount: number;
+  /** Number of lazy child-subtree references installed at the new boundary. */
+  childSubtreeCount: number;
+};
+
 /**
  * Flags describing compression and texture formats observed while streaming tile content.
  */
@@ -157,6 +167,9 @@ export interface Tileset3DSource {
    */
   initialize(): Promise<void>;
 
+  /** Releases source-local caches and prevents late asynchronous work from mutating runtime tiles. */
+  destroy?(): void;
+
   /**
    * Returns normalized source metadata after initialization completes.
    */
@@ -185,6 +198,14 @@ export interface Tileset3DSource {
    * Loads renderable content for a tile.
    */
   loadTileContent(tile: Tile3D): Promise<TileContentLoadResult>;
+
+  /**
+   * Loads and installs a complete lazy child-header group for a runtime tile.
+   *
+   * Sources that implement this hook retain ownership of resource parsing, caching, query
+   * inheritance, and archive resolution. Traversal calls it only after visibility and LOD checks.
+   */
+  loadTileChildren?(tile: Tile3D, frameState: FrameState): Promise<TileChildrenLoadResult>;
 
   /**
    * Resolves a tile-relative path to the final request URL.

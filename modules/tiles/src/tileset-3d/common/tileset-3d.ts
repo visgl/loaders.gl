@@ -431,6 +431,7 @@ export class Tileset3D {
 
   destroy(): void {
     this._clearDeferredTraversal();
+    this.source.destroy?.();
     this._destroy();
   }
 
@@ -896,6 +897,28 @@ export class Tileset3D {
     } finally {
       this._onEndTileLoading();
       this._onTileLoad(tile, loadResult);
+    }
+  }
+
+  /**
+   * Loads a source-managed lazy child-header group and reports failures through tile callbacks.
+   *
+   * Subtree metadata shares the normal loading counters but is not reported as render content and
+   * is not added to the GPU cache. Traversal is notified separately after the promise settles.
+   *
+   * @param tile - Runtime tile that owns the lazy subtree reference.
+   * @param frameState - View state that made the subtree eligible for refinement.
+   */
+  async _loadTileChildren(tile: Tile3D, frameState: FrameState): Promise<void> {
+    try {
+      this._onStartTileLoading();
+      await tile.loadChildren(frameState);
+    } catch (error: unknown) {
+      const tileError = error instanceof Error ? error : new Error('subtree load failed');
+      this._onSourceError(tileError, tile);
+      this._onTileLoadError(tile, tileError);
+    } finally {
+      this._onEndTileLoading();
     }
   }
 

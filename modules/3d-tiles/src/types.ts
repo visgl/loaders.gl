@@ -8,6 +8,7 @@ export type {FeatureTableJson};
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
+import type {ImplicitSubtreeReference} from '@loaders.gl/tiles';
 
 export type B3DMContent = {
   batchTableJson?: FeatureTableJson;
@@ -150,6 +151,8 @@ export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine' | 'chi
   refine?: TILE_REFINEMENT | string;
   /** An array of objects that define child tiles. */
   children: Tiles3DTileJSONPostprocessed[];
+  /** Lazy source reference used to request and materialize one implicit subtree during traversal. */
+  implicitSubtree?: ImplicitSubtreeReference;
 };
 
 /** Metadata about the tile's content and a link to the content. */
