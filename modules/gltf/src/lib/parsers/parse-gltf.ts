@@ -21,7 +21,9 @@ import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 export type ParseGLTFOptions = ParseGLBOptions & {
   normalize?: boolean;
   loadImages?: boolean;
+  /** Load linked and embedded buffers; required for meshopt decompression. @default true */
   loadBuffers?: boolean;
+  /** Decompress Draco, `EXT_meshopt_compression`, and `KHR_meshopt_compression` data. @default true */
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */

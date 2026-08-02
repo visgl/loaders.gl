@@ -12,6 +12,7 @@ import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata'
 
 // GLTF 2.0 Khronos extensions (decode/encode)
 import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression';
+import * as KHR_meshopt_compression from '../extensions/KHR_meshopt_compression';
 import * as EXT_texture_webp from '../extensions/EXT_texture_webp';
 import * as KHR_texture_basisu from '../extensions/KHR_texture_basisu';
 import * as KHR_draco_mesh_compression from '../extensions/KHR_draco_mesh_compression';
@@ -50,6 +51,7 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // 2.0
   EXT_structural_metadata,
   EXT_mesh_features,
+  KHR_meshopt_compression,
   EXT_meshopt_compression,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided

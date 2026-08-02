@@ -51,12 +51,29 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-| Option                  | Type    | Default |                                                                            | Description |
-| ----------------------- | ------- | ------- | -------------------------------------------------------------------------- | ----------- |
-| `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS). |
-| `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).          |
-| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
-| `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
+| Option                  | Type    | Default |                                                                                                   | Description |
+| ----------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS).                        |
+| `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).                                 |
+| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
+| `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.                        |
+
+### Meshopt decompression
+
+`GLTFLoader` supports both the existing `EXT_meshopt_compression` extension and the newer
+`KHR_meshopt_compression` extension. KHR adds version 1 attribute streams and the `COLOR` filter;
+support for KHR does not replace EXT because glTF capability negotiation uses the exact extension
+name and existing assets continue to declare EXT.
+
+Meshopt decoding is available during asynchronous parsing when `gltf.loadBuffers` and
+`gltf.decompressMeshes` are both enabled. The maintained decoder ships with `@loaders.gl/gltf`, so
+there is no decoder option or application-level initialization step. Successful decoding writes
+the uncompressed bytes into the buffer range described by the parent buffer view and removes the
+processed extension declarations. The compressed source buffer remains in the returned data.
+
+Set `gltf.decompressMeshes` to `false` to retain both KHR and EXT declarations for another component
+to process. See [Meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression) for the
+stream versions, modes, filters, fallback-buffer behavior, and comparison with Draco.
 
 ## Working with GLTF data
 
