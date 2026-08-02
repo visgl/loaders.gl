@@ -70,7 +70,9 @@ Returns cached plain JavaScript metadata copied from the Parquet footer:
 - key/value footer metadata;
 - row counts, absolute row offsets, and compressed/uncompressed byte lengths for each row group;
 - column path, compression, encodings, value count, physical range, byte lengths, and page offsets
-  for each column chunk; and
+  for each column chunk;
+- decoded minimum, maximum, null-count, and distinct-count statistics when supplied by the writer;
+  and
 - `ETag` or `Last-Modified` validators captured from remote objects.
 
 Pass `{formatSpecificMetadata: true}` to include the decoded Parquet Thrift footer. Both metadata and
@@ -101,6 +103,51 @@ The source materializes selected Parquet columns directly and converts those col
 Arrow batches. It does not construct an intermediate object for every row. Nested columns retain
 their composite values while primitive and logical columns flow through the columnar path.
 
+### Row-group pruning
+
+Use `rowGroupFilter` to remove candidate row groups using the normalized footer statistics before
+any selected column chunk is fetched. The filter runs after `rowGroups`, so explicit selection and
+statistics pruning can be combined.
+
+```typescript
+const batches = source.read({
+  columns: ['timestamp', 'value'],
+  rowGroupFilter: rowGroup => {
+    const timestamp = rowGroup.columns.find(column => column.path.join('.') === 'timestamp');
+    // Missing or malformed statistics are unknown: retain the row group.
+    if (timestamp?.statistics?.min === undefined || timestamp.statistics.max === undefined) {
+      return true;
+    }
+    return timestamp.statistics.max >= start && timestamp.statistics.min < end;
+  }
+});
+```
+
+Statistics are optional because Parquet writers are not required to emit them. A safe predicate
+retains a row group whenever the statistics required to prove exclusion are absent.
+
+## Telemetry
+
+`getTelemetry()` returns a cumulative snapshot for the source. `parquet.onTelemetry` additionally
+receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, batches,
+cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
+
+```typescript
+const source = createDataSource(url, [ParquetSourceLoader], {
+  parquet: {
+    onTelemetry: event => console.log(event.type, event.telemetry)
+  }
+});
+
+await Array.fromAsync(source.read());
+console.log(source.getTelemetry());
+```
+
+The snapshot reports exact transport counts and bytes, range-cache hits, cumulative
+network/decode/Arrow durations, candidate/pruned/decoded row groups, emitted batches and rows,
+retries, cancellations, and failures. `retryCount` remains zero while the source uses its fail-fast
+range policy.
+
 ### `close(): Promise<void>`
 
 Aborts active requests, closes the range-backed file, and permanently closes the source. Calling
@@ -115,8 +162,10 @@ individual read.
 | --- | --- | --- | --- |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
 | `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
+| `parquet.onTelemetry` | `(event: ParquetTelemetryEvent) => void` | `undefined` | Receives cumulative transport, pruning, decode, and batch telemetry events. |
 | `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
+| `parquet.rowGroupFilter` / `read.rowGroupFilter` | `(rowGroup: ParquetRowGroupMetadata) => boolean` | keep all | Retains candidate row groups before their column chunks are fetched. |
 | `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
 | `parquet.concurrency` / `read.concurrency` | `number` | `1` | Maximum row groups decoded concurrently. |
 | `read.signal` | `AbortSignal` | `undefined` | Cancels this read and its outstanding ranges. |
@@ -132,6 +181,3 @@ individual read.
 
 - Decoding runs on the caller thread; worker-backed decoding and transferable Arrow buffers are not
   implemented yet.
-- Downloaded-byte, request-count, network-time, and decode-time telemetry are not yet attached to
-  batches.
-- Row-group and column-chunk sizes and offsets are available, but min/max/null statistics are not.

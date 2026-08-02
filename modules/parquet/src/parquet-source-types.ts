@@ -20,6 +20,18 @@ export type ParquetObjectVersion = {
   lastModified?: string;
 };
 
+/** Footer statistics for one Parquet column chunk. */
+export type ParquetColumnChunkStatistics = {
+  /** Minimum value when the writer supplied valid statistics. */
+  min?: unknown;
+  /** Maximum value when the writer supplied valid statistics. */
+  max?: unknown;
+  /** Number of null values when reported by the writer. */
+  nullCount?: number;
+  /** Number of distinct values when reported by the writer. */
+  distinctCount?: number;
+};
+
 /** Normalized metadata for one Parquet column chunk. */
 export type ParquetColumnChunkMetadata = {
   /** Nested column path in the Parquet schema. */
@@ -46,6 +58,8 @@ export type ParquetColumnChunkMetadata = {
   readonly dataPageOffset: number;
   /** Absolute file offset of the dictionary page, when present. */
   readonly dictionaryPageOffset?: number;
+  /** Optional min/max and count statistics decoded from the footer. */
+  readonly statistics?: ParquetColumnChunkStatistics;
 };
 
 /** Normalized metadata for one Parquet row group. */
@@ -116,12 +130,76 @@ export type ParquetSourceReadOptions = {
   batchSize?: number;
   /** Maximum number of row groups decoded concurrently. */
   concurrency?: number;
+  /** Retains candidate row groups for which the predicate returns true. */
+  rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
 
 /** Compatibility alias for selective source read options. */
 export type ParquetReadOptions = ParquetSourceReadOptions;
+
+/** Cumulative transport, decode, conversion, and pruning counters for one source. */
+export type ParquetTelemetry = {
+  /** Number of HTTP byte-range requests sent by this source. */
+  rangeRequestCount: number;
+  /** Number of transport bytes requested from the remote object. */
+  requestedBytes: number;
+  /** Number of response bytes downloaded from the remote object. */
+  downloadedBytes: number;
+  /** Number of exact byte ranges served from the source cache. */
+  cacheHits: number;
+  /** Total time spent awaiting HTTP range requests. */
+  networkDurationMs: number;
+  /** Number of failed HTTP range requests. */
+  failedRangeRequestCount: number;
+  /** Number of aborted HTTP range requests. */
+  abortedRangeRequestCount: number;
+  /** Retry attempts made by this source. Currently zero because reads fail fast. */
+  retryCount: number;
+  /** Time spent fetching, decompressing, and decoding selected row groups. */
+  decodeDurationMs: number;
+  /** Time spent converting decoded columns into Arrow batches. */
+  arrowConversionDurationMs: number;
+  /** Candidate row groups considered by read operations. */
+  rowGroupsRequested: number;
+  /** Candidate row groups rejected by `rowGroupFilter`. */
+  rowGroupsPruned: number;
+  /** Row groups successfully decoded. */
+  rowGroupsDecoded: number;
+  /** Arrow batches emitted by read operations. */
+  batchesEmitted: number;
+  /** Rows emitted by read operations. */
+  rowsEmitted: number;
+  /** Read operations cancelled by signals, source close, or early iterator return. */
+  cancellationCount: number;
+  /** Read operations that failed for reasons other than cancellation. */
+  failedReadCount: number;
+};
+
+/** Event emitted after one Parquet source telemetry update. */
+export type ParquetTelemetryEvent = {
+  /** Operation that produced the telemetry update. */
+  type:
+    | 'range-request'
+    | 'cache-hit'
+    | 'row-group-prune'
+    | 'decode'
+    | 'arrow-conversion'
+    | 'batch'
+    | 'cancel'
+    | 'read-error';
+  /** Cumulative snapshot after applying this event. */
+  telemetry: ParquetTelemetry;
+  /** Row-group index associated with the event, when applicable. */
+  rowGroupIndex?: number;
+  /** Row count associated with a batch event. */
+  rowCount?: number;
+  /** Duration contributed by this event. */
+  durationMs?: number;
+  /** Error associated with a failed request or read. */
+  error?: unknown;
+};
 
 /** Stable source and row-position information attached to every Parquet batch. */
 export type ParquetBatchProvenance = {
@@ -163,6 +241,8 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */
     preserveBinary?: boolean;
+    /** Receives cumulative transport, pruning, decode, and batch telemetry events. */
+    onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Retained for source API compatibility; the TypeScript backend does not initialize WASM. */
     wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
   };

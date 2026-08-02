@@ -17,6 +17,7 @@ export type {
   ParquetBatchMetadata,
   ParquetBatchProvenance,
   ParquetColumnChunkMetadata,
+  ParquetColumnChunkStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
   ParquetRangeRequestOptions,
@@ -25,7 +26,9 @@ export type {
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
-  ParquetSourceReadOptions
+  ParquetSourceReadOptions,
+  ParquetTelemetry,
+  ParquetTelemetryEvent
 } from './parquet-source-types';
 
 export {ParquetWriter} from './parquet-writer';
