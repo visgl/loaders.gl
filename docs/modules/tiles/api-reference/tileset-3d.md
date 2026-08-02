@@ -96,6 +96,17 @@ For format-specific source behavior, see:
 Cesium 3D tiles specific options:
 
 - `options.maximumScreenSpaceError`=`8` (`Number`) - The maximum screen-space error used to drive level-of-detail refinement. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+- `options.dynamicScreenSpaceError`=`true` (`Boolean`) - Reduces refinement for distant,
+  horizon-facing tiles in perspective views. Orthographic traversal is unaffected.
+- `options.dynamicScreenSpaceErrorDensity`=`0.0002` (`Number`) - Base fog density, in inverse
+  meters, used by dynamic SSE. Higher values reduce distant refinement sooner.
+- `options.dynamicScreenSpaceErrorFactor`=`24` (`Number`) - Maximum dynamic SSE reduction in
+  logical/CSS pixels.
+- `options.dynamicScreenSpaceErrorHeightFalloff`=`0.25` (`Number`) - Fraction of the root tileset
+  height at which dynamic SSE starts to fade as the camera rises. Values are clamped to `[0, 1]`.
+
+See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod#dynamic-perspective-sse)
+for the formulas, worked example, projection boundaries, and tuning guidance.
 
 ## Properties
 

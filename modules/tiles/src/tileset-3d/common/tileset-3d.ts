@@ -11,6 +11,7 @@ import {RequestScheduler, LoaderWithParser, LoaderOptions} from '@loaders.gl/loa
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
 import {FrameState, getFrameState, limitSelectedTiles} from '../helpers/frame-state';
+import {calculateDynamicScreenSpaceErrorDensity} from '../helpers/tiles-3d-lod';
 
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
@@ -46,6 +47,14 @@ export type Tileset3DProps = {
   modelMatrix?: Matrix4;
 
   maximumScreenSpaceError?: number;
+  /** Enables perspective dynamic SSE to reduce distant, horizon-facing refinement. */
+  dynamicScreenSpaceError?: boolean;
+  /** Base dynamic SSE fog density in inverse meters. */
+  dynamicScreenSpaceErrorDensity?: number;
+  /** Maximum dynamic SSE reduction in logical/CSS pixels. */
+  dynamicScreenSpaceErrorFactor?: number;
+  /** Fraction of tileset height at which dynamic SSE begins to fade, clamped to `[0, 1]`. */
+  dynamicScreenSpaceErrorHeightFalloff?: number;
   memoryAdjustedScreenSpaceError?: boolean;
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
@@ -81,6 +90,14 @@ type Props = {
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   onUpdate: () => void;
   maximumScreenSpaceError: number;
+  /** Whether perspective dynamic SSE is enabled. */
+  dynamicScreenSpaceError: boolean;
+  /** Base dynamic SSE fog density in inverse meters. */
+  dynamicScreenSpaceErrorDensity: number;
+  /** Maximum dynamic SSE reduction in logical/CSS pixels. */
+  dynamicScreenSpaceErrorFactor: number;
+  /** Fraction of tileset height at which dynamic SSE begins to fade. */
+  dynamicScreenSpaceErrorHeightFalloff: number;
   memoryAdjustedScreenSpaceError: boolean;
   viewportTraversersMap: Record<string, any> | null;
   attributions: string[];
@@ -113,6 +130,10 @@ const DEFAULT_PROPS: Props = {
   contentLoader: undefined,
   viewDistanceScale: 1.0,
   maximumScreenSpaceError: 8,
+  dynamicScreenSpaceError: true,
+  dynamicScreenSpaceErrorDensity: 2.0e-4,
+  dynamicScreenSpaceErrorFactor: 24,
+  dynamicScreenSpaceErrorHeightFalloff: 0.25,
   memoryAdjustedScreenSpaceError: false,
   loadTiles: true,
   updateTransforms: true,
@@ -174,7 +195,8 @@ export class Tileset3D {
   zoom = 1;
   boundingVolume: any = null;
 
-  dynamicScreenSpaceErrorComputedDensity = 0.0;
+  /** Effective dynamic SSE density calculated for the most recently traversed viewport. */
+  dynamicScreenSpaceErrorComputedDensity = 0;
 
   maximumMemoryUsage = 32;
   gpuMemoryUsageInBytes = 0;
@@ -355,7 +377,16 @@ export class Tileset3D {
         continue;
       }
       const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
-      this._traverser.traverse(this.roots[id], frameState, this.options);
+      const root = this.roots[id];
+      frameState.dynamicScreenSpaceErrorDensity =
+        this.type === TILESET_TYPE.TILES3D &&
+        this.options.dynamicScreenSpaceError &&
+        !frameState.viewport.orthographic
+          ? calculateDynamicScreenSpaceErrorDensity(root, frameState, this.options)
+          : 0;
+      // Keep the legacy diagnostic field, but traversal reads the per-viewport frame value above.
+      this.dynamicScreenSpaceErrorComputedDensity = frameState.dynamicScreenSpaceErrorDensity;
+      this._traverser.traverse(root, frameState, this.options);
     }
   }
 

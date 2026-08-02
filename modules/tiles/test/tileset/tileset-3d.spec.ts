@@ -133,6 +133,18 @@ test('Tileset3D#exports source-backed construction helpers', async t => {
   t.ok(i3sSource);
   t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
   t.equals(tileset.asset.version, '1.0');
+  t.equals(tileset.options.dynamicScreenSpaceError, true, 'dynamic SSE defaults to enabled');
+  t.equals(
+    tileset.options.dynamicScreenSpaceErrorDensity,
+    2.0e-4,
+    'uses the tuned default density'
+  );
+  t.equals(tileset.options.dynamicScreenSpaceErrorFactor, 24, 'uses the tuned default factor');
+  t.equals(
+    tileset.options.dynamicScreenSpaceErrorHeightFalloff,
+    0.25,
+    'uses the tuned default height falloff'
+  );
   t.end();
 });
 

@@ -64,6 +64,59 @@ perspectiveSSE = (8 * 900) / (600 * 1.15) = 10.43 px
 
 With `maximumScreenSpaceError: 8`, the tile exceeds the tolerance and should refine. With a threshold of `16`, the tile is acceptable. Moving the camera to `300 m` doubles SSE to approximately `20.87 px`, making refinement more likely.
 
+## Dynamic Perspective SSE
+
+Perspective views can spend substantial bandwidth and memory refining distant tiles near the
+horizon. At street level, those tiles cover a large traversal distance but their finest details
+often contribute little to the final image. Dynamic screen-space error (dynamic SSE) applies a
+fog-like reduction after the normal perspective calculation:
+
+```text
+fogStrength = 1 - exp(-((distanceToCamera * effectiveDensity) ^ 2))
+dynamicReduction = fogStrength * dynamicScreenSpaceErrorFactor
+adjustedPerspectiveSSE = perspectiveSSE - dynamicReduction
+```
+
+`effectiveDensity` starts with `dynamicScreenSpaceErrorDensity` and is attenuated by two
+view-dependent factors:
+
+- **Camera direction:** a horizontal, horizon-facing view receives the strongest reduction. The
+  reduction fades to zero as the camera points vertically.
+- **Camera height:** the reduction is strongest near the lower part of the root tileset volume. It
+  fades to zero as the camera rises above the volume. `dynamicScreenSpaceErrorHeightFalloff`
+  controls where that fade begins.
+
+The calculation uses geodetic heights for a root `region` and earth-scale bounding volumes. Local
+tilesets use their root transform and source-space z-up height. Density is recalculated for every
+viewport and traversal frame, so multiple views do not share camera-dependent state.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `dynamicScreenSpaceError` | `true` | Enables the optimization for perspective 3D Tiles traversal. |
+| `dynamicScreenSpaceErrorDensity` | `0.0002` | Base fog density in inverse meters. Higher values reduce distant SSE sooner. |
+| `dynamicScreenSpaceErrorFactor` | `24` | Maximum SSE reduction in logical pixels. |
+| `dynamicScreenSpaceErrorHeightFalloff` | `0.25` | Fraction of root height where density begins to fade, clamped to `[0, 1]`. |
+
+These defaults follow Cesium's tuned street-level behavior. Dynamic SSE does not change the base
+perspective formula, its fixed denominator, or `viewDistanceScale`; it only subtracts the
+view-dependent reduction afterward. Set `dynamicScreenSpaceError: false` when exact unadjusted
+perspective SSE is required or when comparing traversal results with an older loaders.gl release.
+
+### Dynamic SSE Example
+
+Assume the normal perspective calculation produces `30 px` SSE for a horizon tile at `3,000 m`.
+The camera is low and horizontal, so the effective density equals its default `0.0002`:
+
+```text
+fogStrength = 1 - exp(-((3000 * 0.0002) ^ 2)) = 0.3023
+dynamicReduction = 0.3023 * 24 = 7.26 px
+adjustedPerspectiveSSE = 30 - 7.26 = 22.74 px
+```
+
+With `maximumScreenSpaceError: 16`, this tile still refines. More distant horizon tiles receive a
+larger reduction and stop earlier. Looking downward or moving above the tileset drives effective
+density toward zero, restoring the unadjusted `30 px` result.
+
 ## Orthographic SSE
 
 Orthographic projection does not make geometry smaller with camera distance. Its LOD calculation therefore uses the viewport's world-space pixel size directly:
@@ -130,6 +183,12 @@ The two primary controls are:
 
 Start with `maximumScreenSpaceError`. It has an intuitive interpretation as tolerated logical pixels and is easier to compare across tilesets. Use `viewDistanceScale` when an application needs a global quality multiplier without replacing its chosen threshold.
 
+Tune dynamic SSE only after choosing those global quality controls. Increase
+`dynamicScreenSpaceErrorDensity` when distant horizon tiles refine too deeply, or increase
+`dynamicScreenSpaceErrorFactor` when the maximum reduction is too small. Lower either value when
+distant structures appear too coarse. Height falloff is mainly useful for local tilesets whose
+street-level and aerial views need different traversal depth.
+
 Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, and `maximumMemoryUsage` can delay or limit the visible effect of an SSE change.
 
 ## Runtime Inspection
@@ -141,6 +200,8 @@ The following `Tile3D` properties are useful when diagnosing selection:
 - `tile.screenSpaceError`: most recently calculated SSE.
 - `tile.selected`: whether the tile was selected for the current traversal frame.
 - `tile.refine`: whether descendants add to or replace the tile.
+- `tileset.dynamicScreenSpaceErrorComputedDensity`: effective density for the most recently
+  traversed viewport; zero means the current view receives no dynamic reduction.
 
 Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`. If refinement is expected but does not occur, also check that descendants exist, their content is available, the tile is inside the culling and request volumes, and traversal has run again after asynchronous content loading.
 
@@ -150,6 +211,9 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 | --- | --- | --- |
 | Tiles stay visibly coarse | SSE threshold is high, `viewDistanceScale` is low, or child content is unavailable. | Lower `maximumScreenSpaceError`, restore `viewDistanceScale` toward `1`, and inspect child requests. |
 | Too many tiles load | SSE threshold is low or `viewDistanceScale` is high. | Raise `maximumScreenSpaceError` and monitor requests and memory. |
+| Distant horizon tiles refine too deeply | Dynamic SSE is disabled, its density is too low, or the camera is above the root volume. | Enable dynamic SSE, inspect the computed density, and tune density or height falloff. |
+| Distant buildings look too coarse | Dynamic density or factor is too high for the dataset. | Lower `dynamicScreenSpaceErrorDensity` or `dynamicScreenSpaceErrorFactor`. |
+| Aerial and street-level views select the same deep LOD | The root height range or height falloff does not distinguish the camera positions. | Inspect the root bounding volume and lower `dynamicScreenSpaceErrorHeightFalloff`. |
 | A scaled-up model under-refines | Geometric error is not using the model's world scale. | Confirm the model matrix reaches `Tileset3D` and inspect `tile.lodMetricValue`. |
 | LOD changes after repeated transform updates | A derived error is being scaled repeatedly. | Ensure updates start from the source geometric error; loaders.gl does this automatically. |
 | Orthographic LOD changes with camera distance | The viewport is missing `orthographic: true` or valid `metersPerPixel`. | Inspect the viewport contract and its scale units. |
@@ -161,6 +225,7 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 
 - The perspective denominator is currently fixed at `1.15`, corresponding approximately to the established 60-degree field-of-view assumption. Perspective behavior is intentionally preserved for compatibility rather than derived from every possible projection matrix.
 - Orthographic SSE requires `metersPerPixel`; invalid values use the perspective-compatible fallback.
-- Dynamic SSE remains a perspective optimization and is not subtracted from orthographic SSE.
+- Dynamic SSE is a perspective optimization. It is not subtracted from orthographic SSE, including
+  the perspective-compatible fallback used when an orthographic viewport has an invalid pixel scale.
 - 3D Tiles geometric error is measured in meters. I3S uses a different `maxScreenThreshold` LOD metric that is already screen-oriented and is not transform-scaled by this logic.
 - SSE controls refinement after visibility and request-volume checks. It cannot make a culled tile visible or provide descendants that are missing from the tileset.
