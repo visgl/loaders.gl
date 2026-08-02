@@ -19,6 +19,16 @@ test('ParquetWriter#writer objects', (t) => {
   t.end();
 });
 
+test('ParquetSource#public exports', (t) => {
+  t.ok(parquet.ParquetSourceLoader, 'root exports ParquetSourceLoader');
+  t.ok(parquet.ParquetSource, 'root exports ParquetSource');
+  t.ok(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader');
+  t.ok(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource');
+  t.ok(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader');
+  t.ok(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource');
+  t.end();
+});
+
 test('ParquetWriter#removed Arrow variant exports are absent', (t) => {
   t.notOk('ParquetArrowLoader' in parquet, 'root does not export ParquetArrowLoader');
   t.notOk('ParquetArrowWorkerLoader' in parquet, 'root does not export ParquetArrowWorkerLoader');

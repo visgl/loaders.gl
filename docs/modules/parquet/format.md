@@ -14,9 +14,10 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 | Loader APIs          | `load`, `parse`, `parseInBatches`                                                          |
 | Loader Worker Thread | No                                                                                         |
 | Loader Streaming     | Yes                                                                                        |
+| Source APIs          | `createDataSource`, `getMetadata`, `getSchema`, `read`, `close`                            |
 | Writer APIs          | `encode`, `encodeSync`                                                                     |
 
-## Loaders and Writers
+## Loaders, Sources and Writers
 
 <div className="docs-api-card-grid">
   <a className="docs-api-card" href="/docs/modules/parquet/api-reference/parquet-loader">
@@ -32,6 +33,13 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
     <span>Loads GeoParquet files as GeoJSON tables or Arrow tables with geospatial metadata.</span>
     <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
+  </a>
+  <a className="docs-api-card" href="/docs/modules/parquet/api-reference/parquet-source-loader">
+    <span className="docs-api-card__kind">Source</span>
+    <strong>ParquetSourceLoader</strong>
+    <span>Reuses cached schema and footer metadata for selective Arrow reads.</span>
+    <span className="docs-api-card__meta">Output: ArrowTableBatch</span>
+    <span className="docs-api-card__meta">APIs: createDataSource, getMetadata, getSchema, read</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/parquet/api-reference/parquet-writer">
     <span className="docs-api-card__kind">Writer</span>
