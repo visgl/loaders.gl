@@ -199,7 +199,7 @@ street-level and aerial views need different traversal depth.
 
 After selecting an acceptable final LOD, tune streaming behavior separately with the [request-scheduling guide](./request-scheduling-and-priorities), then size the [cache and memory budget](./caching-and-memory).
 
-Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, and `maximumMemoryUsage` can delay or limit the visible effect of an SSE change.
+Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, byte-native cache budgets, and memory-adjusted SSE can delay or limit the visible effect of an SSE change. See [Caching and memory](./caching-and-memory).
 
 ## Runtime Inspection
 
