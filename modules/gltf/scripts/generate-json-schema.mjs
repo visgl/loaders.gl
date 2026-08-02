@@ -58,16 +58,22 @@ const gltf21Schema = withIdentity(
   '2.1'
 );
 
-await writeSchema('gltf.schema.json', gltf2Schema);
 await writeSchema('gltf-1.schema.json', gltf1Schema);
 await writeSchema('gltf-2.schema.json', gltf2Schema);
 await writeSchema('gltf-2.1.schema.json', gltf21Schema);
-await writeSchema('gltf-all.schema.json', {
-  $schema: 'https://json-schema.org/draft/2020-12/schema',
-  $id: 'https://unpkg.com/@loaders.gl/gltf/gltf-all.schema.json',
-  title: 'glTF JSON',
-  oneOf: [gltf1Schema, gltf2Schema, gltf21Schema]
-});
+
+/** Returns the schema union for every supported glTF version. */
+function getVersionUnionSchema(id) {
+  return {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `https://unpkg.com/@loaders.gl/gltf/${id}`,
+    title: 'glTF JSON',
+    oneOf: [gltf1Schema, gltf2Schema, gltf21Schema]
+  };
+}
+
+await writeSchema('gltf.schema.json', getVersionUnionSchema('gltf.schema.json'));
+await writeSchema('gltf-all.schema.json', getVersionUnionSchema('gltf-all.schema.json'));
 
 async function writeExtensionSchemas(value, pathParts = []) {
   for (const [key, item] of Object.entries(value)) {
