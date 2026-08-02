@@ -4,7 +4,7 @@
 
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parseFromContext, path} from '@loaders.gl/loader-utils';
+import {CachedUriResolver, parseFromContext} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoaderWithParser} from '../../tile-3d-subtree-loader-with-parser';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {
@@ -82,23 +82,18 @@ function getRefine(refine?: string): TILE_REFINEMENT | string | undefined {
   }
 }
 
-function resolveUri(uri: string, basePath: string): string {
-  // url scheme per RFC3986
-  const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
-
-  if (urlSchemeRegex.test(basePath)) {
-    const url = new URL(uri, `${basePath}/`);
-    return decodeURI(url.toString());
-  } else if (uri.startsWith('/')) {
-    return uri;
-  }
-
-  return path.resolve(basePath, uri);
-}
-
+/**
+ * Normalizes one explicit tile header into the runtime representation.
+ *
+ * @param tile - Source tile header, or `null` for an unavailable implicit tile.
+ * @param basePath - Directory used for relative resource resolution.
+ * @param resourceResolver - Parse-scoped resolver that caches the parsed base and repeated URIs.
+ * @returns Normalized runtime header, or `null` when no source tile is available.
+ */
 export function normalizeTileData(
   tile: Tiles3DTileJSON | null,
-  basePath: string
+  basePath: string,
+  resourceResolver: CachedUriResolver = new CachedUriResolver(basePath)
 ): Tiles3DTileJSONPostprocessed | null {
   if (!tile) {
     return null;
@@ -108,7 +103,7 @@ export function normalizeTileData(
     const contentUri = tile.content.uri || tile.content?.url;
     if (typeof contentUri !== 'undefined') {
       // sparse implicit tilesets may not define content for all nodes
-      tileContentUrl = resolveUri(contentUri, basePath);
+      tileContentUrl = resourceResolver.resolve(contentUri);
     }
   }
   const boundingVolume = normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume;
@@ -165,7 +160,18 @@ function normalizeS2BoundingVolume(
   } as Tile3DBoundingVolume & S2VolumeBox;
 }
 
-// normalize tile headers
+/**
+ * Normalizes the complete explicit header tree and any eagerly expanded implicit roots.
+ *
+ * One {@link CachedUriResolver} is shared for the parse so repeated external resource references
+ * reuse their derived URL without retaining data after the tileset parse completes.
+ *
+ * @param tileset - Parsed source tileset JSON.
+ * @param basePath - Directory used for relative resource resolution.
+ * @param options - Loader options forwarded to implicit subtree parsing.
+ * @param context - Loader context used for implicit subtree requests.
+ * @returns Normalized root tile, or `null` when the source has no root.
+ */
 export async function normalizeTileHeaders(
   tileset: Tiles3DTilesetJSON,
   basePath: string,
@@ -173,6 +179,9 @@ export async function normalizeTileHeaders(
   context?: LoaderContext
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   let root: Tiles3DTileJSONPostprocessed | null = null;
+  // One parse-scoped resolver retains the parsed base URL and repeated derived resources without
+  // leaking URLs between unrelated tilesets.
+  const resourceResolver = new CachedUriResolver(basePath);
 
   const rootImplicitTilingExtension = getImplicitTilingExtensionData(tileset.root);
   if (rootImplicitTilingExtension && tileset.root) {
@@ -182,10 +191,11 @@ export async function normalizeTileHeaders(
       basePath,
       rootImplicitTilingExtension,
       options,
-      context
+      context,
+      resourceResolver
     );
   } else {
-    root = normalizeTileData(tileset.root, basePath);
+    root = normalizeTileData(tileset.root, basePath, resourceResolver);
   }
 
   const stack: any[] = [];
@@ -205,10 +215,11 @@ export async function normalizeTileHeaders(
           basePath,
           childImplicitTilingExtension,
           options,
-          context
+          context,
+          resourceResolver
         );
       } else {
-        childHeaderPostprocessed = normalizeTileData(childHeader, basePath);
+        childHeaderPostprocessed = normalizeTileData(childHeader, basePath, resourceResolver);
       }
 
       if (childHeaderPostprocessed) {
@@ -223,9 +234,16 @@ export async function normalizeTileHeaders(
 }
 
 /**
- * Do normalisation of implicit tile headers
- * TODO Check if Tile3D class can be a return type here.
- * @param tileset
+ * Creates the currently eager implicit tile hierarchy from its root subtree.
+ *
+ * @param tile - Source tile carrying the implicit-tiling declaration.
+ * @param tileset - Owning tileset JSON.
+ * @param basePath - Directory used for subtree and content resolution.
+ * @param implicitTilingExtension - Normalized implicit-tiling declaration.
+ * @param options - Loader options forwarded to subtree parsing.
+ * @param context - Loader context used to fetch subtree resources.
+ * @param resourceResolver - Parse-scoped resolver shared with explicit header normalization.
+ * @returns Normalized implicit root, or `null` when unavailable.
  */
 export async function normalizeImplicitTileHeaders(
   tile: Tiles3DTileJSON,
@@ -233,7 +251,8 @@ export async function normalizeImplicitTileHeaders(
   basePath: string,
   implicitTilingExtension: ImplicitTilingExensionData,
   options: Tiles3DLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  resourceResolver: CachedUriResolver = new CachedUriResolver(basePath)
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
@@ -259,7 +278,7 @@ export async function normalizeImplicitTileHeaders(
     );
   }
   const replacedUrlTemplate = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
-  const subtreeUrl = resolveUri(replacedUrlTemplate, basePath);
+  const subtreeUrl = resourceResolver.resolve(replacedUrlTemplate);
   const response = await context.fetch(subtreeUrl);
   if (!response.ok) {
     throw new Error(`Failed to load 3D Tiles subtree: ${response.status} ${response.statusText}`);
@@ -272,7 +291,7 @@ export async function normalizeImplicitTileHeaders(
     context
   )) as Subtree;
   const tileContentUri = normalizedTile.content?.uri;
-  const contentUrlTemplate = tileContentUri ? resolveUri(tileContentUri, basePath) : '';
+  const contentUrlTemplate = tileContentUri ? resourceResolver.resolve(tileContentUri) : '';
   const refine = tileset?.root?.refine;
   // @ts-ignore
   const rootLodMetricValue = normalizedTile.geometricError;

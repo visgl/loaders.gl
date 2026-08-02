@@ -20,7 +20,10 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       loadGLTF?: boolean;
       /** If renderer doesn't support quantized positions, loader can decode them on CPU */
       decodeQuantizedPositions?: boolean;
-      /** Whether this is a tileset or a tile */
+      /**
+       * Selects tileset-header or render-content parsing. `auto` detects the payload from its
+       * bytes and JSON structure; explicit booleans assert the expected category.
+       */
       isTileset?: boolean | 'auto';
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;

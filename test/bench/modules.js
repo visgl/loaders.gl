@@ -15,6 +15,7 @@ import excelBench from '@loaders.gl/excel/test/excel.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
 import lasBench from '@loaders.gl/las/test/las-loader.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
+import tiles3DBench from '@loaders.gl/3d-tiles/test/tiles-3d-loader.bench';
 // import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import flatgeobufBench from '@loaders.gl/flatgeobuf/test/flatgeobuf.bench';
 import geopackageBench from '@loaders.gl/geopackage/test/geopackage.bench';
@@ -78,6 +79,10 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
 
   if (shouldRunBenchmark('json')) {
     await jsonBench(suite);
+  }
+
+  if (shouldRunBenchmark('3d-tiles')) {
+    await tiles3DBench(suite);
   }
 
   // await mvtBench(suite);

@@ -183,6 +183,7 @@ export type {FeedableLAZChunkEncoder} from './lib/laz/laz-chunk-encoder';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
+export {CachedUriResolver} from './lib/path-utils/cached-uri-resolver';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases';
 
 // MICRO LOADERS
