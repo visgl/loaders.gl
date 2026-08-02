@@ -97,6 +97,35 @@ test('GLTFLoader#parse(v3) rejects missing buffer chunks', async t => {
   t.end();
 });
 
+test('GLTFLoader#parse(v3) loads embedded glTF 2.1 files', async t => {
+  const data = createGLBV3(
+    {
+      asset: {version: '2.1'},
+      buffers: [{byteLength: 4}],
+      bufferViews: [{buffer: 0, byteLength: 4}],
+      files: [{name: 'nested.glb', mimeType: 'model/gltf-binary', bufferView: 0}]
+    },
+    [new Uint8Array([1, 2, 3, 4])]
+  );
+  const gltf = await parse(data, GLTFLoader, {
+    gltf: {loadBuffers: true, loadFiles: true, loadImages: false}
+  });
+  const file = gltf.files?.[0];
+  t.ok(file, 'returns a parallel resolved file entry');
+  if (!file) {
+    t.end();
+    return;
+  }
+
+  t.equal(file.name, 'nested.glb', 'preserves the virtual package name');
+  t.deepEqual(
+    Array.from(new Uint8Array(file.arrayBuffer, file.byteOffset, file.byteLength)),
+    [1, 2, 3, 4],
+    'loads file bytes from its buffer view'
+  );
+  t.end();
+});
+
 test('GLTFLoader#load(binary)', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.buffers, 'GLTFLoader without post-processing returned data.buffers');

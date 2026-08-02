@@ -61,9 +61,21 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | Option                  | Type    | Default |                                                                            | Description |
 | ----------------------- | ------- | ------- | -------------------------------------------------------------------------- | ----------- |
 | `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS). |
+| `gltf.loadFiles`        | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.           |
 | `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).          |
 | `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
 | `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
+
+## Draft glTF 2.1 File Resolution
+
+`resolveGLTFFile(gltf, fileReference, options, context)` resolves one entry from the draft glTF 2.1
+`files` array. `fileReference` can be an array index, a package name matching `files[*].name`, or an
+original URI matching `files[*].uri`. URI-backed files are fetched relative to the containing asset;
+buffer-view-backed files return a view of the already loaded buffer without copying it. Resolved
+entries are cached in the parallel `gltf.files` array.
+
+`findGLTFFileIndex(gltf, reference)` performs only the virtual package lookup and returns `-1` when
+there is no matching entry. Ambiguous package names are rejected.
 
 ## Working with GLTF data
 
@@ -112,6 +124,16 @@ However, the objects inside these arrays will have been pre-processed to simplif
     arrayBuffer: ArrayBuffer,
     byteOffset: Number,
     byteLength: Number
+  }],
+
+  // Draft glTF 2.1 generic files. Length and indices match json.files.
+  files: [{
+    arrayBuffer: ArrayBuffer,
+    byteOffset: Number,
+    byteLength: Number,
+    mimeType: String,
+    name: String, // optional virtual package name
+    url: String  // optional resolved URL
   }],
 
   // Images can optionally be loaded and decoded, they will be stored here.

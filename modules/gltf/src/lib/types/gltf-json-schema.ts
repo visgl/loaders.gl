@@ -366,6 +366,22 @@ export type GLTFImage = {
 };
 
 /**
+ * A draft glTF 2.1 reference to a file stored at a URI or in a buffer view.
+ */
+export type GLTFFile = {
+  /** URI of the file. Mutually exclusive with `bufferView`. */
+  uri?: string;
+  /** Index of the buffer view containing the file. Mutually exclusive with `uri`. */
+  bufferView?: GLTFId;
+  /** MIME type of the referenced file. */
+  mimeType: string;
+  /** Name used to resolve references from embedded packaged assets. */
+  name?: string;
+  extensions?: Record<string, any>;
+  extras?: any;
+};
+
+/**
  * Reference to a texture.
  */
 export type GLTFTextureInfo = {
@@ -708,6 +724,10 @@ export type GLTF = {
    */
   images?: GLTFImage[];
   /**
+   * Draft glTF 2.1 unified file references.
+   */
+  files?: GLTFFile[];
+  /**
    * An array of materials.
    */
   materials?: GLTFMaterial[];
@@ -756,7 +776,8 @@ export type GLTFObject =
   | GLTFScene
   | GLTFSkin
   | GLTFTexture
-  | GLTFImage;
+  | GLTFImage
+  | GLTFFile;
 
 // GLTF Extensions
 /* eslint-disable camelcase */
