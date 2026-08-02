@@ -145,7 +145,20 @@ jobs:
           file: coverage/lcov.info
           format: lcov
           flag-name: ${{ matrix.coverage-flag }}
+          parallel: true
           fail-on-error: false
+
+  coverage-finished:
+    name: Finish Coveralls coverage
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Finish parallel Coveralls build
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
 
   build:
     name: Build
