@@ -37,7 +37,12 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
-    "./gltf.schema.json": "./dist/gltf.schema.json"
+    "./gltf.schema.json": "./dist/gltf.schema.json",
+    "./gltf-1.schema.json": "./dist/gltf-1.schema.json",
+    "./gltf-2.schema.json": "./dist/gltf-2.schema.json",
+    "./gltf-2.1.schema.json": "./dist/gltf-2.1.schema.json",
+    "./gltf-all.schema.json": "./dist/gltf-all.schema.json",
+    "./schemas/*": "./dist/schemas/*"
   },
   "sideEffects": false,
   "files": [
@@ -49,6 +54,7 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node scripts/generate-json-schema.mjs",
+    "update-official-schemas": "node scripts/update-official-schemas.mjs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
