@@ -13,13 +13,19 @@ export {ParquetJSLoader} from './parquet-js-loader';
 
 export {ParquetSourceLoader} from './parquet-source-loader-types';
 export type {
-  ParquetSourceLoaderOptions,
-  ParquetSourceReadOptions,
-  ParquetSourceMetadata,
-  ParquetRowGroupMetadata,
-  ParquetColumnChunkMetadata,
+  ParquetBatch,
   ParquetBatchMetadata,
-  ParquetSourceBatch
+  ParquetBatchProvenance,
+  ParquetColumnChunkMetadata,
+  ParquetMetadataRequestOptions,
+  ParquetObjectVersion,
+  ParquetRangeRequestOptions,
+  ParquetReadOptions,
+  ParquetRowGroupMetadata,
+  ParquetSourceBatch,
+  ParquetSourceLoaderOptions,
+  ParquetSourceMetadata,
+  ParquetSourceReadOptions
 } from './parquet-source-types';
 
 export {ParquetWriter} from './parquet-writer';
