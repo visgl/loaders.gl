@@ -5715,7 +5715,7 @@ __metadata:
     lz4js: "npm:^0.2.0"
     node-int64: "npm:^0.4.0"
     object-stream: "npm:0.0.1"
-    parquet-wasm: "npm:0.7.1"
+    parquet-wasm: "npm:0.7.2"
     snappyjs: "npm:^0.6.0"
     thrift: "npm:^0.24.0"
     util: "npm:^0.12.5"
@@ -27729,10 +27729,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parquet-wasm@npm:0.7.1":
-  version: 0.7.1
-  resolution: "parquet-wasm@npm:0.7.1"
-  checksum: 10c0/05bf2450455bc1a43acfbe0195f5e4e9ca4569af2ec5a2edf301e41f2c63b9551e1ae25ad2e89e7a12ddd1984a7c771f1d3609a6d01989103e795f44fd10d5af
+"parquet-wasm@npm:0.7.2":
+  version: 0.7.2
+  resolution: "parquet-wasm@npm:0.7.2"
+  checksum: 10c0/cfdf72c542b7e6768e6b38e386c0ab7d13bd92c9d8c45da5619409846654107c279343177bb3dba8c7fcb40c3f7be09dc154b7d175479a669b599b8bce3210b7
   languageName: node
   linkType: hard
 

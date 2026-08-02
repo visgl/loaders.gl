@@ -143,10 +143,18 @@ await Array.fromAsync(source.read());
 console.log(source.getTelemetry());
 ```
 
-The snapshot reports exact transport counts and bytes, range-cache hits, cumulative
+The frozen snapshot reports exact transport counts and bytes, range-cache hits, cumulative
 network/decode/Arrow durations, candidate/pruned/decoded row groups, emitted batches and rows,
 retries, cancellations, and failures. `retryCount` remains zero while the source uses its fail-fast
 range policy.
+
+### `capabilities: ParquetSourceCapabilities`
+
+The source exposes the frozen `PARQUET_SOURCE_CAPABILITIES` descriptor synchronously, before any
+network or decoding work starts. It reports support for cached immutable metadata, row-group and
+column selection, provenance, cancellation, custom range transport, object-version validation,
+statistics, transport/decode telemetry, and package-local WASM delivery. Source worker decoding is
+the remaining deferred capability.
 
 ### `close(): Promise<void>`
 
@@ -176,6 +184,14 @@ individual read.
 | `rangeRequests.maxMergedBytes` | `number` | scheduler default | Maximum size of one merged transport range. |
 | `rangeRequests.stats` | `Stats` | scheduler default | probe.gl range-request counters. |
 | `rangeRequests.onEvent` | `(event) => void` | `undefined` | Range scheduling diagnostic callback. |
+
+## Package-local WASM
+
+`@loaders.gl/parquet/wasm` exports `PARQUET_WASM_URL`, a bundler-resolvable URL for the packaged
+`parquet_wasm_bg.wasm` asset. The raw file is also exported as
+`@loaders.gl/parquet/parquet_wasm_bg.wasm` for explicit copy or self-hosting workflows. The current
+`ParquetSource` uses the TypeScript range decoder and does not initialize WASM; these entry points
+serve the package's WASM loader and writer paths.
 
 ## Current limitations
 

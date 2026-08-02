@@ -23,12 +23,16 @@ test('ParquetWriter#writer objects', (t) => {
 test('ParquetSource#public exports', (t) => {
   t.ok(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata');
   t.notOk('ParquetSource' in parquet, 'root does not export runtime ParquetSource');
+  t.ok(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities');
   t.ok(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader');
   t.ok(parquetSource.ParquetSource, 'source subpath exports runtime source');
+  t.ok(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities');
   t.ok(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader');
   t.ok(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource');
+  t.ok(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities');
   t.ok(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader');
   t.ok(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource');
+  t.ok(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities');
   t.end();
 });
 

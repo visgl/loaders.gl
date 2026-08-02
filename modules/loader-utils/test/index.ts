@@ -26,5 +26,6 @@ import './lib/sources/data-source-manager.spec';
 // import './lib/filesystems/node-filesystem-facade.spec';
 
 import './lib/readable-file/readable-file.spec';
+import './lib/readable-file/http-file.spec';
 
 import './lib/worker-loader-utils/parse-with-worker.browser.spec';

@@ -20,10 +20,14 @@ const scheduler = new RangeRequestScheduler({
   stats
 });
 
+// Reuse one key only for requests with the same URL, credentials, and fetch behavior.
+const transportContext = {};
+
 const arrayBuffer = await scheduler.fetch({
   url,
   offset: 1_000_000,
   length: 4096,
+  isolationKey: transportContext,
   fetchOptions: {
     headers: {Authorization: 'Bearer token'}
   }
@@ -56,6 +60,12 @@ creates the `Range` header, preserves caller headers from `fetchOptions`, aborts
 `200 OK` full-object responses, handles `416` size probes for offset `0`, and records
 transport diagnostics in `stats`.
 
+HTTP fetch calls are isolated by default because separate calls may use different credentials,
+headers, or fetch implementations. To coalesce compatible calls, pass the same stable
+`isolationKey` object to each call. Keys are compared by identity (`===`), so creating a new object
+for every request does not enable coalescing. Never reuse a key across different authentication or
+validator contexts.
+
 ### `scheduleRequest(request): Promise<ArrayBuffer>`
 
 Enqueues one exact range using a caller-supplied transport callback. The returned promise
@@ -63,6 +73,15 @@ resolves to the exact requested byte slice, not the merged transport response.
 
 `request.fetchRange` must return the bytes for the offset and length it receives. Those may be
 larger than the original request when several child requests are merged.
+If a server legitimately clamps the final range at end of file, return a transport result with
+`arrayBuffer` and the authoritative `sourceByteLength`. The scheduler accepts a short response only
+when its end offset exactly matches that declared length; unmarked and mismatched short responses
+are rejected.
+
+`scheduleRequest()` coalesces requests with the same `sourceId` by default. Pass distinct
+`isolationKey` values when one source identifier can refer to different transport, credential, or
+validator contexts. Conversely, pass the same stable key to state explicitly that those contexts
+are compatible.
 
 Use `scheduleRequest` for non-HTTP transports or sources that need custom response handling.
 
@@ -94,6 +113,7 @@ type RangeStats = {
   requestedBytes: number;
   transportBytes: number;
   responseBytes: number;
+  networkTimeMs: number;
   overfetchBytes: number;
   failedTransportRanges: number;
   abortedLogicalRanges: number;

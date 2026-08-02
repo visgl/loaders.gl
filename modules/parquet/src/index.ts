@@ -30,6 +30,10 @@ export type {
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
+export {
+  PARQUET_SOURCE_CAPABILITIES,
+  type ParquetSourceCapabilities
+} from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
 export type {ParquetJSWriterOptions} from './parquet-js-writer';

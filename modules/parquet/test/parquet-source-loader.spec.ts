@@ -7,6 +7,7 @@ import test from 'tape-promise/tape';
 import {createDataSource, encode, fetchFile, load} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
+  PARQUET_SOURCE_CAPABILITIES,
   type ParquetBatch,
   ParquetJSWriter,
   ParquetSourceLoader,
@@ -59,6 +60,8 @@ test('ParquetSourceLoader#Blob metadata and schema are cached', async (t) => {
   const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
 
   t.ok(source instanceof ParquetSource, 'root metadata loader preloads the runtime source');
+  t.equal(source.capabilities, PARQUET_SOURCE_CAPABILITIES, 'advertises immutable capabilities');
+  t.ok(Object.isFrozen(source.getTelemetry()), 'returns frozen telemetry snapshots');
   const metadata = await source.getMetadata();
   const schema = await source.getSchema();
 
@@ -79,6 +82,9 @@ test('ParquetSourceLoader#Blob metadata and schema are cached', async (t) => {
   t.equal(await source.getMetadata(), metadata, 'returns cached metadata object');
   t.equal(await source.getSchema(), schema, 'returns cached schema object');
   t.ok(Object.isFrozen(metadata), 'freezes the cached metadata object');
+  t.ok(Object.isFrozen(metadata.schema), 'freezes the cached schema');
+  t.ok(Object.isFrozen(metadata.schema.fields), 'freezes cached schema fields');
+  t.ok(Object.isFrozen(metadata.schema.fields[0]), 'freezes each cached schema field');
   t.ok(Object.isFrozen(metadata.rowGroups), 'freezes the cached row-group list');
   t.ok(Object.isFrozen(metadata.rowGroups[0].columns), 'freezes cached column metadata');
 
@@ -206,6 +212,7 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     'projects the batch schema'
   );
   t.notOk(batches[0].data.getChild('ignored_payload'), 'does not materialize ignored columns');
+  t.ok(Object.isFrozen(batches[0].metadata), 'freezes batch provenance');
 
   const selectedRanges = getColumnRanges(metadata, 1, ['x', 'source_id']);
   const dataRequests = requests.slice(metadataRequestCount);
@@ -216,6 +223,22 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     ),
     'every post-metadata request stays inside a selected column chunk'
   );
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#read preserves the caller AbortSignal reason', async (t) => {
+  const fixture = await createSelectiveFixture();
+  const source = new ParquetSource(new Blob([fixture]), {});
+  const abortController = new AbortController();
+  const abortReason = new Error('Query superseded');
+  const iterator = source.read({batchSize: 1, signal: abortController.signal})[Symbol.asyncIterator]();
+
+  const firstResult = await iterator.next();
+  t.notOk(firstResult.done, 'emits a batch before cancellation');
+  abortController.abort(abortReason);
+  await t.rejects(iterator.next(), abortReason, 'rejects with the caller AbortSignal reason');
+
   await source.close();
   t.end();
 });

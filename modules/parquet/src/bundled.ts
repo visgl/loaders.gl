@@ -18,3 +18,7 @@ export {
   type ParquetBatchMetadata,
   type ParquetSourceBatch
 } from './parquet-source-loader';
+export {
+  PARQUET_SOURCE_CAPABILITIES,
+  type ParquetSourceCapabilities
+} from './parquet-source-capabilities';
