@@ -23,3 +23,4 @@ import './parquet-loader.spec';
 import './geoparquet-loader.spec';
 import './parquet-typed-array.spec';
 import './parquet-compatibility.spec';
+import './parquet-source-loader.spec';

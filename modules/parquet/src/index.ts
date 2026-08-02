@@ -10,6 +10,16 @@ export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loade
 export {ParquetLoader} from './parquet-loader';
 export {GeoParquetLoader} from './geoparquet-loader';
 export {ParquetJSLoader} from './parquet-js-loader';
+export {ParquetSource, ParquetSourceLoader} from './parquet-source-loader';
+export type {
+  ParquetColumnChunkMetadata,
+  ParquetMetadataRequestOptions,
+  ParquetObjectVersion,
+  ParquetRangeRequestOptions,
+  ParquetRowGroupMetadata,
+  ParquetSourceLoaderOptions,
+  ParquetSourceMetadata
+} from './parquet-source-types';
 
 export {ParquetWriter} from './parquet-writer';
 export type {ParquetJSWriterOptions} from './parquet-js-writer';

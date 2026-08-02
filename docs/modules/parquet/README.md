@@ -11,6 +11,7 @@ Experimental loader and writer for the Apache Parquet format.
 - `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) provide the experimental parquetjs plain-row and plain-table APIs. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetLoader` supports Arrow output with `parquet.shape: 'arrow-table'`, and `ParquetWriter` accepts loaders.gl Arrow tables.
+- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) provides reusable range-backed footer metadata and schema access for URLs, Blobs, and Files. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## Geospatial Metadata
 

@@ -135,6 +135,7 @@
           "modules/obj/api-reference/obj-loader",
           "modules/parquet/api-reference/parquet-loader",
           "modules/parquet/api-reference/parquet-js-loader",
+          "modules/parquet/api-reference/parquet-source-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/potree/api-reference/potree-loader",
