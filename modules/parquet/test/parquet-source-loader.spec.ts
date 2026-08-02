@@ -4,11 +4,8 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile, load} from '@loaders.gl/core';
-import {
-  ParquetSource,
-  ParquetSourceLoader,
-  type ParquetSourceBatch
-} from '@loaders.gl/parquet';
+import {ParquetSourceLoader, type ParquetSourceBatch} from '@loaders.gl/parquet';
+import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 

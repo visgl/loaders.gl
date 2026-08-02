@@ -29,7 +29,8 @@ for (const backend of ['typescript', 'wasm'] as const) {
     }
     test(`Parquet compatibility matrix#${backend}#${fixture.title}`, async (t) => {
       const url = `${PARQUET_DIRECTORY}/${fixture.path}`;
-      const result = await readWithLoadersGl(url, backend);
+      const file = await readCompatibilityFixture(url);
+      const result = await readWithLoadersGl(file, backend);
       assertCompatibilityResult(t, fixture, backend, fixture[supportProperty], result);
       t.end();
     });
@@ -39,19 +40,29 @@ for (const backend of ['typescript', 'wasm'] as const) {
 for (const fixture of PARQUET_FILES) {
   test(`Parquet compatibility matrix#hyparquet#${fixture.title}`, async (t) => {
     const url = `${PARQUET_DIRECTORY}/${fixture.path}`;
-    const result = await readWithHyparquet(url);
+    const file = await readCompatibilityFixture(url);
+    const result = await readWithHyparquet(file);
     assertCompatibilityResult(t, fixture, 'hyparquet', fixture.supportedHyparquet, result);
     t.end();
   });
 }
 
+/** Fetch and validate one fixture independently of the backend compatibility result. */
+async function readCompatibilityFixture(url: string): Promise<ArrayBuffer> {
+  const response = await fetchFile(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Parquet compatibility fixture ${url}: ${response.status}`);
+  }
+  return await response.arrayBuffer();
+}
+
 /** Read one compatibility fixture through a loaders.gl backend. */
 async function readWithLoadersGl(
-  url: string,
+  file: ArrayBuffer,
   backend: LoadersGlBackend
 ): Promise<CompatibilityResult> {
   try {
-    await load(url, ParquetLoader, {
+    await load(file, ParquetLoader, {
       core: {worker: false},
       parquet: {backend}
     });
@@ -62,10 +73,8 @@ async function readWithLoadersGl(
 }
 
 /** Read one compatibility fixture through the external hyparquet reference implementation. */
-async function readWithHyparquet(url: string): Promise<CompatibilityResult> {
+async function readWithHyparquet(file: ArrayBuffer): Promise<CompatibilityResult> {
   try {
-    const response = await fetchFile(url);
-    const file = await response.arrayBuffer();
     await parquetReadObjects({file, compressors});
     return {supported: true};
   } catch (error) {

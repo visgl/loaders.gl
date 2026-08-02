@@ -8,6 +8,7 @@ import {encode, load} from '@loaders.gl/core';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import * as parquet from '@loaders.gl/parquet';
 import * as bundledParquet from '@loaders.gl/parquet/bundled';
+import * as parquetSource from '@loaders.gl/parquet/parquet-source-loader';
 import * as unbundledParquet from '@loaders.gl/parquet/unbundled';
 import {ParquetJSLoader, ParquetJSWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
@@ -20,8 +21,10 @@ test('ParquetWriter#writer objects', (t) => {
 });
 
 test('ParquetSource#public exports', (t) => {
-  t.ok(parquet.ParquetSourceLoader, 'root exports ParquetSourceLoader');
-  t.ok(parquet.ParquetSource, 'root exports ParquetSource');
+  t.ok(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata');
+  t.notOk('ParquetSource' in parquet, 'root does not export runtime ParquetSource');
+  t.ok(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader');
+  t.ok(parquetSource.ParquetSource, 'source subpath exports runtime source');
   t.ok(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader');
   t.ok(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource');
   t.ok(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader');

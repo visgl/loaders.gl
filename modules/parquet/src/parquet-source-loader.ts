@@ -5,109 +5,33 @@
 import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 import * as arrow from 'apache-arrow';
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/schema';
 
-import {ParquetFormat} from './parquet-format';
 import {PARQUET_WASM_URL} from './lib/constants';
 import {normalizeArrowTableGeoMetadata} from './lib/geo/geospatial-metadata';
 import {loadWasm} from './lib/utils/load-wasm';
 import {makeStreamIterator} from './lib/utils/make-stream-iterator';
+import {ParquetSourceLoader as ParquetSourceLoaderMetadata} from './parquet-source-loader-types';
+import type {
+  ParquetColumnChunkMetadata,
+  ParquetRowGroupMetadata,
+  ParquetSourceBatch,
+  ParquetSourceLoaderOptions,
+  ParquetSourceMetadata,
+  ParquetSourceReadOptions
+} from './parquet-source-types';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** Options applied to each read from a {@link ParquetSource}. */
-export type ParquetSourceReadOptions = {
-  /** Row-group indexes to read. Defaults to all row groups in file order. */
-  rowGroups?: readonly number[];
-  /** Column paths to project. Defaults to all columns. */
-  columns?: readonly string[];
-  /** Target number of rows in each returned Arrow batch. */
-  batchSize?: number;
-  /** Number of concurrent range requests used by parquet-wasm. */
-  concurrency?: number;
-};
-
-/** Options for creating a {@link ParquetSource}. */
-export type ParquetSourceLoaderOptions = DataSourceOptions & {
-  parquet?: ParquetSourceReadOptions & {
-    /** URL or module used to initialize parquet-wasm. */
-    wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
-  };
-};
-
-/** Plain metadata for one Parquet column chunk. */
-export type ParquetColumnChunkMetadata = {
-  /** Nested column path. */
-  readonly path: readonly string[];
-  /** Optional external file containing the chunk. */
-  readonly filePath?: string;
-  /** Byte offset reported by the Parquet footer. */
-  readonly fileOffset: bigint;
-  /** Number of encoded values in the chunk. */
-  readonly valueCount: number;
-  /** Compression codec name. */
-  readonly compression: string;
-  /** Encodings used by the chunk. */
-  readonly encodings: readonly string[];
-  /** Compressed chunk size in bytes. */
-  readonly compressedSize: number;
-  /** Uncompressed chunk size in bytes. */
-  readonly uncompressedSize: number;
-};
-
-/** Plain metadata for one Parquet row group. */
-export type ParquetRowGroupMetadata = {
-  /** Zero-based row-group index. */
-  readonly index: number;
-  /** Absolute offset of the first row in the file. */
-  readonly rowOffset: number;
-  /** Number of rows in the row group. */
-  readonly rowCount: number;
-  /** Total compressed column size in bytes. */
-  readonly compressedSize: number;
-  /** Total uncompressed column size in bytes. */
-  readonly uncompressedSize: number;
-  /** Column chunks in this row group. */
-  readonly columns: readonly ParquetColumnChunkMetadata[];
-};
-
-/** Cached schema and footer metadata exposed by a {@link ParquetSource}. */
-export type ParquetSourceMetadata = {
-  /** Arrow-compatible loaders.gl schema. */
-  readonly schema: Schema;
-  /** Parquet format version stored in the footer. */
-  readonly version: number;
-  /** Total number of rows in the file. */
-  readonly rowCount: number;
-  /** Application string stored by the Parquet writer. */
-  readonly createdBy?: string;
-  /** File-level key/value metadata. */
-  readonly keyValueMetadata: Readonly<Record<string, string>>;
-  /** Row-group and column-chunk metadata. */
-  readonly rowGroups: readonly ParquetRowGroupMetadata[];
-};
-
-/** Provenance attached to every Arrow batch returned by {@link ParquetSource.read}. */
-export type ParquetBatchMetadata = {
-  /** Source URL, File name, or a stable Blob label. */
-  readonly sourceId: string;
-  /** Row group that produced this batch. */
-  readonly rowGroupIndex: number;
-  /** Absolute offset of the first batch row in the source file. */
-  readonly rowOffset: number;
-  /** Offset of the first batch row within its row group. */
-  readonly rowGroupRowOffset: number;
-};
-
-/** Arrow batch returned by {@link ParquetSource.read}. */
-export type ParquetSourceBatch = Omit<ArrowTableBatch<ParquetBatchMetadata>, 'metadata'> & {
-  /** Provenance for the source rows represented by this batch. */
-  readonly metadata: ParquetBatchMetadata;
-};
+export type {
+  ParquetBatchMetadata,
+  ParquetColumnChunkMetadata,
+  ParquetRowGroupMetadata,
+  ParquetSourceBatch,
+  ParquetSourceLoaderOptions,
+  ParquetSourceMetadata,
+  ParquetSourceReadOptions
+} from './parquet-source-types';
 
 /** Snapshotted options used internally for one read. */
 type ResolvedParquetSourceReadOptions = {
@@ -123,46 +47,24 @@ type ParquetSourceState = {
   schemaMetadata: Map<string, string>;
 };
 
-/** Source factory for reusable, selective access to Parquet files. */
-export const ParquetSourceLoader = {
-  ...ParquetFormat,
-  dataType: null as unknown as ParquetSource,
-  batchType: null as never,
-  name: 'ParquetSourceLoader',
-  id: 'parquet-source',
-  module: 'parquet',
-  version: VERSION,
-  type: 'parquet',
-  fromUrl: true,
-  fromBlob: true,
+const {
+  preload: _preloadParquetSourceLoader,
+  createDataSource: _createMetadataDataSource,
+  ...ParquetSourceLoaderBase
+} = ParquetSourceLoaderMetadata;
 
-  options: {
-    parquet: {
-      rowGroups: undefined,
-      columns: undefined,
-      batchSize: undefined,
-      concurrency: undefined,
-      wasmUrl: PARQUET_WASM_URL
-    }
-  },
-
-  defaultOptions: {
-    parquet: {
-      rowGroups: undefined!,
-      columns: undefined!,
-      batchSize: undefined!,
-      concurrency: undefined!,
-      wasmUrl: PARQUET_WASM_URL
-    }
-  },
-
-  testURL: (url: string): boolean => /\.parquet(?:$|[?#])/i.test(url),
+/** Runtime source factory for reusable, selective access to Parquet files. */
+export const ParquetSourceLoaderWithParser = {
+  ...ParquetSourceLoaderBase,
   createDataSource: (
     data: string | Blob,
     options: ParquetSourceLoaderOptions,
     coreApi?: CoreAPI
   ): ParquetSource => new ParquetSource(data, options, coreApi)
 } as const satisfies SourceLoader<ParquetSource>;
+
+/** Runtime Parquet source loader exposed by the explicit package subpath. */
+export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet file handle with cached footer/schema and selective Arrow reads. */
 export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
@@ -182,7 +84,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
   /** Creates a lazy Parquet source without performing I/O. */
   constructor(data: string | Blob, options: ParquetSourceLoaderOptions, coreApi?: CoreAPI) {
     const wasmUrl = options.parquet?.wasmUrl;
-    super(data, options, ParquetSourceLoader.defaultOptions, coreApi);
+    super(data, options, ParquetSourceLoaderWithParser.defaultOptions, coreApi);
 
     // mergeOptions recursively treats opaque Promise, URL, module, and buffer inputs as option
     // bags. Preserve the caller's wasm input by identity instead.

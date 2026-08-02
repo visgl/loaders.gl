@@ -13,12 +13,12 @@ groups and columns as Arrow batches without reopening the file for each read.
 ## Usage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {ParquetSourceLoader} from '@loaders.gl/parquet';
 
-const source = createDataSource(
+const source = await load(
   'https://example.com/trips.parquet',
-  [ParquetSourceLoader],
+  ParquetSourceLoader,
   {}
 );
 
@@ -38,8 +38,18 @@ try {
 }
 ```
 
-Both URL and `Blob` inputs are supported. `createDataSource()` returns immediately; file access and
-WASM initialization begin when `getSchema()`, `getMetadata()`, or `read()` is first called.
+Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `load()` imports its
+runtime implementation from the package's `parquet-source-loader` subpath. File access and WASM
+initialization begin when `getSchema()`, `getMetadata()`, or `read()` is first called.
+
+Applications that need synchronous `createDataSource()` can import the runtime loader explicitly:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {ParquetSourceLoader} from '@loaders.gl/parquet/parquet-source-loader';
+
+const source = createDataSource(url, [ParquetSourceLoader], {});
+```
 
 ## API
 
