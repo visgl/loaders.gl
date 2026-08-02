@@ -27,8 +27,8 @@ Useful `Tile3D` fields include:
 | `selected` | Whether content contributes to the current frame. |
 | `refine` | `ADD` or `REPLACE` continuity semantics. |
 | `_priorityProgressiveResolution` | Whether the tile belongs to the coarse-coverage band. |
-| `_priorityDeferred` | Whether motion deferral currently holds the request. |
-| `_foveatedFactor` | Unitless distance from the perspective view axis. |
+| `priorityDeferred` | Whether motion deferral currently holds the request, including its active time window. |
+| `_foveatedFactor` | Unitless distance from the perspective forward view ray. |
 | `_priority` | Combined scheduler priority; smaller starts first. |
 
 The underscored fields are runtime diagnostics, not stable public API. Prefer callbacks and stats for application behavior. `Tileset3D.stats` exposes tiles loading, loaded, in memory, in view, renderable, failed, estimated GPU memory, and the current maximum SSE.

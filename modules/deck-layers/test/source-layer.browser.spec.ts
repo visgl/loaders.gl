@@ -17,7 +17,7 @@ function createSourceLayer(props: SourceLayerProps): SourceLayer {
   return new SourceLayer(props as any);
 }
 
-test('SourceLayer#preserves URL inputs for 3D loader dispatch', t => {
+test('SourceLayer#preserves URL inputs for browser 3D loader dispatch', t => {
   const tilesetUrl = 'https://example.com/tileset.json';
   const layer = createSourceLayer({
     id: 'tiles-3d',

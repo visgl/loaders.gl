@@ -12,7 +12,10 @@ import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
 import {getFrameState, limitSelectedTiles, updateCameraMotionState} from '../helpers/frame-state';
 import type {CameraMotionState, FrameState} from '../helpers/frame-state';
-import {calculateDynamicScreenSpaceErrorDensity} from '../helpers/tiles-3d-lod';
+import {
+  calculateDynamicScreenSpaceErrorDensity,
+  updateRootTransformForDynamicScreenSpaceError
+} from '../helpers/tiles-3d-lod';
 import {interpolateLinearly} from '../helpers/tiles-3d-request-priority';
 import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-priority';
 
@@ -623,6 +626,10 @@ export class Tileset3D {
       );
       this._cameraMotionStates[id] = cameraMotionUpdate.state;
       frameState.camera.timeSinceMovement = cameraMotionUpdate.timeSinceMovement;
+      // Dynamic SSE reads the root's inverse computed transform before traversal updates tile
+      // visibility. Refresh it from the current tileset model matrix here so animated local
+      // box/sphere tilesets never calculate their height falloff one transform behind the frame.
+      updateRootTransformForDynamicScreenSpaceError(root, this.modelMatrix);
       frameState.dynamicScreenSpaceErrorDensity =
         this.type === TILESET_TYPE.TILES3D &&
         this.options.dynamicScreenSpaceError &&

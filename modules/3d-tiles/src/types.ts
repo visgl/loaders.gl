@@ -103,8 +103,8 @@ export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> &
 export type Tiles3DTileJSON = {
   /** A bounding volume that encloses a tile or its content. */
   boundingVolume: Tile3DBoundingVolume;
-  /** A bounding volume that encloses a tile or its content. */
-  viewerRequestVolume?: object;
+  /** A bounding volume that limits requests to cameras inside the volume. */
+  viewerRequestVolume?: Tile3DBoundingVolume;
   /** The error, in meters, introduced if this tile is rendered and its children are not. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels. */
   geometricError: number;
   /**

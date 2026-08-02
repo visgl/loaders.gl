@@ -11,7 +11,6 @@ import {TILE_REFINEMENT} from '../../constants';
 const PREFERRED_SORTING_DIGITS = 10_000;
 const FOVEATED_SORTING_SCALE = 10_000;
 const PROGRESSIVE_RESOLUTION_PENALTY = 100_000_000;
-const FOVEATED_DEFERRAL_PENALTY = 1_000_000_000;
 
 const scratchBoundingSphere = new BoundingSphere();
 const scratchCenterOffset = new Vector3();
@@ -75,8 +74,6 @@ export type FoveatedDeferralParameters = {
 export type TileRequestPriorityParameters = {
   /** Whether the tile contributes coarse progressive-resolution coverage. */
   priorityProgressiveResolution: boolean;
-  /** Whether the tile is eligible for moving-camera deferral. */
-  priorityDeferred: boolean;
   /** Tile distance from the camera view axis, represented as an angular factor. */
   foveatedFactor: number;
   /** Existing reverse-SSE ordering value; smaller values are more urgent. */
@@ -102,11 +99,13 @@ export function interpolateLinearly(
 }
 
 /**
- * Calculates how far a tile lies from the camera's center line.
+ * Calculates how far a tile lies from the camera's forward center ray.
  *
  * The tile's bounding sphere, rather than only its center, is used so large tiles that intersect
- * the view axis retain center priority. The returned angular factor is zero on the view axis and
- * increases toward the edge of a perspective frustum.
+ * the view axis retain center priority. Clamping the nearest point to the forward ray prevents
+ * volumes behind the camera from receiving the same priority as centered visible content. The
+ * returned angular factor is zero on the view axis and increases toward the edge of a perspective
+ * frustum, reaching one for volumes entirely behind the camera.
  *
  * @param boundingVolume - Tile volume used to find the point nearest the camera view axis.
  * @param camera - World-space camera position and normalized view direction.
@@ -124,7 +123,7 @@ export function calculateFoveatedFactor(
   const {center, radius} = boundingSphere;
 
   scratchCenterOffset.copy(center).subtract(camera.position);
-  const centerZDepth = scratchCenterOffset.dot(camera.direction);
+  const centerZDepth = Math.max(scratchCenterOffset.dot(camera.direction), 0);
   scratchClosestPointOnLine.copy(camera.direction).scale(centerZDepth).add(camera.position);
   scratchVectorToLine.copy(scratchClosestPointOnLine).subtract(center);
 
@@ -144,7 +143,7 @@ export function calculateFoveatedFactor(
   }
 
   scratchClosestPointOnSphere.normalize();
-  return Math.max(1 - Math.abs(scratchClosestPointOnSphere.dot(camera.direction)), 0);
+  return Math.min(Math.max(1 - scratchClosestPointOnSphere.dot(camera.direction), 0), 1);
 }
 
 /**
@@ -243,12 +242,38 @@ export function isFoveatedRequestDeferred(parameters: FoveatedDeferralParameters
 }
 
 /**
+ * Returns whether an eligible foveated request is inside the current camera-motion delay.
+ *
+ * Eligibility describes geometry and refinement safety; this function adds time. Keeping the
+ * active state separate ensures the scheduler removes the temporary hold as soon as the configured
+ * delay expires, while invalid timing inputs safely disable the hold.
+ *
+ * @param deferralEligible - Whether refinement and foveation permit this request to wait.
+ * @param timeSinceMovement - Seconds since the current viewport last changed pose.
+ * @param foveatedTimeDelay - Maximum delay after motion, in seconds.
+ * @returns `true` only while an eligible request remains inside a positive finite delay.
+ */
+export function isFoveatedRequestDelayActive(
+  deferralEligible: boolean,
+  timeSinceMovement: number,
+  foveatedTimeDelay: number
+): boolean {
+  return (
+    deferralEligible &&
+    Number.isFinite(timeSinceMovement) &&
+    Number.isFinite(foveatedTimeDelay) &&
+    foveatedTimeDelay > 0 &&
+    timeSinceMovement < foveatedTimeDelay
+  );
+}
+
+/**
  * Encodes request priority into independent decimal bands.
  *
- * Smaller values load first. Moving-camera deferral is the strongest penalty, followed by the
- * progressive-coverage flag, distance from the view center, and finally the established reverse-
- * SSE order. Normalizing reverse SSE preserves its relative ordering while preventing one metric
- * from spilling into the next priority band.
+ * Smaller values load first. Requests inside the moving-camera delay are kept out of this queue;
+ * eligible requests are ordered by the progressive-coverage flag, distance from the view center,
+ * and finally the established reverse-SSE order. Normalizing reverse SSE preserves its relative
+ * ordering while preventing one metric from spilling into the next priority band.
  *
  * @param parameters - Independent request-priority measurements for a tile.
  * @returns Numeric priority for `RequestScheduler`; smaller values start first.
@@ -272,12 +297,5 @@ export function calculateTileRequestPriority(parameters: TileRequestPriorityPara
   const progressiveResolutionDigits = parameters.priorityProgressiveResolution
     ? 0
     : PROGRESSIVE_RESOLUTION_PENALTY;
-  const foveatedDeferralDigits = parameters.priorityDeferred ? FOVEATED_DEFERRAL_PENALTY : 0;
-
-  return (
-    foveatedDeferralDigits +
-    progressiveResolutionDigits +
-    foveatedSortingDigits +
-    preferredSortingDigits
-  );
+  return progressiveResolutionDigits + foveatedSortingDigits + preferredSortingDigits;
 }
