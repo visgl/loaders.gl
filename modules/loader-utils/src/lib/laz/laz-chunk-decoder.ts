@@ -7,6 +7,14 @@ export type LAZChunkMetadata = {
   pointDataRecordFormat: number;
   pointDataRecordLength: number;
   pointCount: number;
+  /** LASzip Point14 item version. Version 4 fixes scanner-channel context propagation. */
+  point14ItemVersion?: 2 | 3 | 4;
+  /** LASzip RGB14 or RGBNIR14 item version. Version 4 fixes context switching. */
+  rgb14ItemVersion?: 2 | 3 | 4;
+  /** LASzip WavePacket14 item version. Version 4 fixes version 3 context switching. */
+  wavePacketItemVersion?: 3 | 4;
+  /** LASzip Byte14 item version. Version 4 fixes context switching. */
+  byte14ItemVersion?: 2 | 3 | 4;
 };
 
 /** Options for streaming LAZ chunk decoding. */
@@ -773,6 +781,13 @@ class ArithmeticDecoder {
     return ((upper << 16) | lower) >>> 0;
   }
 
+  /** Read one lossless 64-bit unsigned integer from the arithmetic stream. */
+  readUint64(): bigint {
+    const lower = this.readInt();
+    const upper = this.readInt();
+    return (BigInt(upper) << 32n) | BigInt(lower);
+  }
+
   private renormalize(): void {
     let value = this.value;
     let length = this.length;
@@ -1310,9 +1325,16 @@ class Point14Decompressor {
   private currentScannerChannel = 0;
   /** LASzip v3 item context emitted to fields following Point14. */
   itemContextChannel = 0;
+  /** Point14 item version controlling downstream scanner-channel propagation. */
+  private itemVersion: 2 | 3 | 4;
 
-  constructor(stream: ByteReader, mode: Point14DecompressionMode = Point14DecompressionMode.Full) {
+  constructor(
+    stream: ByteReader,
+    mode: Point14DecompressionMode = Point14DecompressionMode.Full,
+    itemVersion: 2 | 3 | 4 = 3
+  ) {
     this.stream = stream;
+    this.itemVersion = itemVersion;
     this.contexts = Array.from({length: 4}, () => new Point14Context(mode));
     this.decompressOptionalFields = mode === Point14DecompressionMode.Full;
     this.flags = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
@@ -1413,6 +1435,9 @@ class Point14Decompressor {
       this.itemContextChannel = scannerChannel;
     }
     this.currentScannerChannel = scannerChannel;
+    if (this.itemVersion >= 4) {
+      this.itemContextChannel = scannerChannel;
+    }
 
     if (!context.haveLast) {
       context.haveLast = true;
@@ -1657,9 +1682,12 @@ class RGB14Decompressor {
   decodedRed = 0;
   decodedGreen = 0;
   decodedBlue = 0;
+  /** RGB item version controlling scanner-channel predictor selection. */
+  private itemVersion: 2 | 3 | 4;
 
-  constructor(stream: ByteReader) {
+  constructor(stream: ByteReader, itemVersion: 2 | 3 | 4 = 3) {
     this.stream = stream;
+    this.itemVersion = itemVersion;
   }
 
   readSizes(): void {
@@ -1711,6 +1739,9 @@ class RGB14Decompressor {
         context.lastRed = previous.lastRed;
         context.lastGreen = previous.lastGreen;
         context.lastBlue = previous.lastBlue;
+        lastContext = context;
+      }
+      if (this.itemVersion >= 4) {
         lastContext = context;
       }
       this.activeContext = context;
@@ -1786,9 +1817,12 @@ class NIR14Decompressor {
   private lastChannel = -1;
   private nirCount = 0;
   private nir = new ArithmeticDecoder();
+  /** RGBNIR item version controlling scanner-channel predictor selection. */
+  private itemVersion: 2 | 3 | 4;
 
-  constructor(stream: ByteReader) {
+  constructor(stream: ByteReader, itemVersion: 2 | 3 | 4 = 3) {
     this.stream = stream;
+    this.itemVersion = itemVersion;
   }
 
   readSizes(): void {
@@ -1821,6 +1855,9 @@ class NIR14Decompressor {
         context.lastValue = lastContext.lastValue;
         lastContext = context;
       }
+      if (this.itemVersion >= 4) {
+        lastContext = context;
+      }
     }
     const symbol = this.nir.decodeSymbol(context.usedModel);
     let value =
@@ -1834,6 +1871,208 @@ class NIR14Decompressor {
     lastContext.lastValue = value;
     writeUint16(value, output, outputOffset);
     return outputOffset + 2;
+  }
+}
+
+/** Arithmetic state and last waveform packet reference for one scanner channel. */
+class WavePacket14Context {
+  /** Whether this scanner channel has inherited or decoded a waveform reference. */
+  haveLast = false;
+  /** Last waveform packet descriptor index. */
+  descriptorIndex = 0;
+  /** Last waveform packet byte offset, kept losslessly as an unsigned 64-bit integer. */
+  offset = 0n;
+  /** Last waveform packet byte size. */
+  packetSize = 0;
+  /** Raw IEEE-754 bits for the last return-point location. */
+  returnPointBits = 0;
+  /** Raw IEEE-754 bits for the last waveform X vector component. */
+  xBits = 0;
+  /** Raw IEEE-754 bits for the last waveform Y vector component. */
+  yBits = 0;
+  /** Raw IEEE-754 bits for the last waveform Z vector component. */
+  zBits = 0;
+  /** Last signed 32-bit offset difference used by the integer predictor. */
+  lastOffsetDifference = 0;
+  /** Last offset coding symbol, which selects the next four-symbol model. */
+  lastOffsetDifferenceSymbol = 0;
+  /** Waveform descriptor arithmetic model. */
+  descriptorModel = new ArithmeticModel(256);
+  /** Context-dependent waveform offset coding models. */
+  offsetDifferenceModels = createModels(4, 4);
+  /** Integer decompressor for signed waveform offset differences. */
+  offsetDifferenceDecompressor = createIntegerDecompressor(32, 1);
+  /** Integer decompressor for waveform packet sizes. */
+  packetSizeDecompressor = createIntegerDecompressor(32, 1);
+  /** Integer decompressor for raw return-point float bits. */
+  returnPointDecompressor = createIntegerDecompressor(32, 1);
+  /** Shared three-context decompressor for raw X, Y, and Z float bits. */
+  vectorDecompressor = createIntegerDecompressor(32, 3);
+}
+
+/** Decoder for the independent LASzip 1.4 waveform packet reference layer. */
+class WavePacket14Decompressor {
+  /** Compressed chunk source. */
+  private stream: ByteReader;
+  /** Per-scanner-channel arithmetic and prediction state. */
+  private contexts = Array.from({length: 4}, () => new WavePacket14Context());
+  /** Scanner channel used by the previous point. */
+  private lastChannel = -1;
+  /** Compressed waveform layer byte length. */
+  private wavePacketByteCount = 0;
+  /** Arithmetic decoder bounded to the waveform layer. */
+  private decoder = new ArithmeticDecoder();
+  /** WavePacket14 item version selected by the LASzip VLR. */
+  private itemVersion: 3 | 4;
+
+  constructor(stream: ByteReader, itemVersion: 3 | 4) {
+    this.stream = stream;
+    this.itemVersion = itemVersion;
+  }
+
+  /** Read the compressed waveform layer byte length. */
+  readSizes(): void {
+    this.wavePacketByteCount = this.stream.getUint32();
+  }
+
+  /** Bind the arithmetic decoder to the compressed waveform layer. */
+  readData(): void {
+    this.decoder.initStream(this.stream, this.wavePacketByteCount);
+  }
+
+  /** Decode one 29-byte LAS waveform packet reference. */
+  decompress(output: Uint8Array, outputOffset: number, scannerChannel: number): number {
+    if (this.lastChannel === -1) {
+      this.stream.getBytes(output, outputOffset, 29);
+      const context = this.contexts[scannerChannel];
+      this.readContext(context, output, outputOffset);
+      context.haveLast = true;
+      this.lastChannel = scannerChannel;
+      return outputOffset + 29;
+    }
+
+    const previousContext = this.contexts[this.lastChannel];
+    const context = this.contexts[scannerChannel];
+    let lastWavePacketContext = context;
+    if (scannerChannel !== this.lastChannel) {
+      lastWavePacketContext = previousContext;
+      if (!context.haveLast) {
+        this.copyLastWavePacket(context, previousContext);
+        context.haveLast = true;
+        lastWavePacketContext = context;
+      } else if (this.itemVersion >= 4) {
+        lastWavePacketContext = context;
+      }
+      this.lastChannel = scannerChannel;
+    }
+
+    if (this.wavePacketByteCount) {
+      this.decodeContext(context, lastWavePacketContext);
+    }
+    this.writeContext(lastWavePacketContext, output, outputOffset);
+    return outputOffset + 29;
+  }
+
+  /** Decode changed waveform fields into one scanner-channel context. */
+  private decodeContext(
+    codingContext: WavePacket14Context,
+    lastWavePacketContext: WavePacket14Context
+  ): void {
+    lastWavePacketContext.descriptorIndex = this.decoder.decodeSymbol(
+      codingContext.descriptorModel
+    );
+    const offsetDifferenceSymbol = this.decoder.decodeSymbol(
+      codingContext.offsetDifferenceModels[codingContext.lastOffsetDifferenceSymbol]
+    );
+    codingContext.lastOffsetDifferenceSymbol = offsetDifferenceSymbol;
+    switch (offsetDifferenceSymbol) {
+      case 0:
+        break;
+      case 1:
+        lastWavePacketContext.offset = BigInt.asUintN(
+          64,
+          lastWavePacketContext.offset + BigInt(lastWavePacketContext.packetSize)
+        );
+        break;
+      case 2:
+        codingContext.lastOffsetDifference = codingContext.offsetDifferenceDecompressor.decompress(
+          this.decoder,
+          codingContext.lastOffsetDifference,
+          0
+        );
+        lastWavePacketContext.offset = BigInt.asUintN(
+          64,
+          lastWavePacketContext.offset + BigInt(codingContext.lastOffsetDifference)
+        );
+        break;
+      default:
+        lastWavePacketContext.offset = this.decoder.readUint64();
+        break;
+    }
+
+    lastWavePacketContext.packetSize =
+      codingContext.packetSizeDecompressor.decompress(
+        this.decoder,
+        lastWavePacketContext.packetSize | 0,
+        0
+      ) >>> 0;
+    lastWavePacketContext.returnPointBits = codingContext.returnPointDecompressor.decompress(
+      this.decoder,
+      lastWavePacketContext.returnPointBits,
+      0
+    );
+    lastWavePacketContext.xBits = codingContext.vectorDecompressor.decompress(
+      this.decoder,
+      lastWavePacketContext.xBits,
+      0
+    );
+    lastWavePacketContext.yBits = codingContext.vectorDecompressor.decompress(
+      this.decoder,
+      lastWavePacketContext.yBits,
+      1
+    );
+    lastWavePacketContext.zBits = codingContext.vectorDecompressor.decompress(
+      this.decoder,
+      lastWavePacketContext.zBits,
+      2
+    );
+  }
+
+  /** Initialize one context from the previous scanner channel's last reference. */
+  private copyLastWavePacket(target: WavePacket14Context, source: WavePacket14Context): void {
+    target.descriptorIndex = source.descriptorIndex;
+    target.offset = source.offset;
+    target.packetSize = source.packetSize;
+    target.returnPointBits = source.returnPointBits;
+    target.xBits = source.xBits;
+    target.yBits = source.yBits;
+    target.zBits = source.zBits;
+  }
+
+  /** Read one uncompressed waveform reference into a decoder context. */
+  private readContext(context: WavePacket14Context, input: Uint8Array, inputOffset: number): void {
+    context.descriptorIndex = input[inputOffset];
+    context.offset = readBigUint64(input, inputOffset + 1);
+    context.packetSize = readUint32(input, inputOffset + 9);
+    context.returnPointBits = readInt32(input, inputOffset + 13);
+    context.xBits = readInt32(input, inputOffset + 17);
+    context.yBits = readInt32(input, inputOffset + 21);
+    context.zBits = readInt32(input, inputOffset + 25);
+  }
+
+  /** Write one decoder context as an uncompressed 29-byte waveform reference. */
+  private writeContext(
+    context: WavePacket14Context,
+    output: Uint8Array,
+    outputOffset: number
+  ): void {
+    output[outputOffset] = context.descriptorIndex;
+    writeBigUint64(context.offset, output, outputOffset + 1);
+    writeUint32(context.packetSize, output, outputOffset + 9);
+    writeInt32(context.returnPointBits, output, outputOffset + 13);
+    writeInt32(context.xBits, output, outputOffset + 17);
+    writeInt32(context.yBits, output, outputOffset + 21);
+    writeInt32(context.zBits, output, outputOffset + 25);
   }
 }
 
@@ -1855,10 +2094,13 @@ class Byte14Decompressor {
   private lastChannel = -1;
   private byteCount: number[];
   private byteDecoder: ArithmeticDecoder[];
+  /** Byte14 item version controlling scanner-channel predictor selection. */
+  private itemVersion: 2 | 3 | 4;
 
-  constructor(stream: ByteReader, count: number) {
+  constructor(stream: ByteReader, count: number, itemVersion: 2 | 3 | 4 = 3) {
     this.stream = stream;
     this.count = count;
+    this.itemVersion = itemVersion;
     this.contexts = Array.from({length: 4}, () => new Byte14Context(count));
     this.byteCount = new Array<number>(count).fill(0);
     this.byteDecoder = Array.from({length: count}, () => new ArithmeticDecoder());
@@ -1893,6 +2135,9 @@ class Byte14Decompressor {
         context.haveLast = true;
         context.last.set(lastByte);
         lastByte = this.contexts[this.lastChannel].last;
+      }
+      if (this.itemVersion >= 4) {
+        lastByte = context.last;
       }
     }
     for (let index = 0; index < this.count; index++) {
@@ -1931,11 +2176,15 @@ function createPointDecompressor(
     case 3:
       return new PointFormat3Decompressor(stream, extraByteCount);
     case 6:
-      return new PointFormat6Decompressor(stream, extraByteCount, outputMode);
+      return new PointFormat6Decompressor(stream, extraByteCount, outputMode, metadata);
     case 7:
-      return new PointFormat7Decompressor(stream, extraByteCount, outputMode);
+      return new PointFormat7Decompressor(stream, extraByteCount, outputMode, metadata);
     case 8:
-      return new PointFormat8Decompressor(stream, extraByteCount, outputMode);
+      return new PointFormat8Decompressor(stream, extraByteCount, outputMode, metadata);
+    case 9:
+      return new PointFormat9Decompressor(stream, extraByteCount, outputMode, metadata);
+    case 10:
+      return new PointFormat10Decompressor(stream, extraByteCount, outputMode, metadata);
     default:
       throw new Error(
         `TypeScript LAZ decoder does not support point format ${metadata.pointDataRecordFormat}`
@@ -1945,7 +2194,7 @@ function createPointDecompressor(
 
 /** Return whether a point format has a direct typed-array output path. */
 function supportsDirectPointDataOutput(pointDataRecordFormat: number): boolean {
-  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 8;
+  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10;
 }
 
 class PointFormat0Decompressor implements PointDecompressor {
@@ -2215,16 +2464,22 @@ class PointFormat6Decompressor implements PointDecompressor {
   private extraByteCount: number;
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    outputMode: LAZChunkDecoderOutputMode,
+    metadata: LAZChunkMetadata
+  ) {
     this.stream = stream;
     this.extraByteCount = extraByteCount;
     this.point = new Point14Decompressor(
       stream,
-      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData,
+      metadata.point14ItemVersion ?? 3
     );
     this.bytes =
       outputMode === 'raw' && extraByteCount
-        ? new Byte14Decompressor(stream, extraByteCount)
+        ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
 
@@ -2305,17 +2560,23 @@ class PointFormat7Decompressor implements PointDecompressor {
   private pointScratch = new Uint8Array(30);
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    outputMode: LAZChunkDecoderOutputMode,
+    metadata: LAZChunkMetadata
+  ) {
     this.stream = stream;
     this.extraByteCount = extraByteCount;
     this.point = new Point14Decompressor(
       stream,
-      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData,
+      metadata.point14ItemVersion ?? 3
     );
-    this.rgb = new RGB14Decompressor(stream);
+    this.rgb = new RGB14Decompressor(stream, metadata.rgb14ItemVersion ?? 3);
     this.bytes =
       outputMode === 'raw' && extraByteCount
-        ? new Byte14Decompressor(stream, extraByteCount)
+        ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
 
@@ -2425,18 +2686,25 @@ class PointFormat8Decompressor implements PointDecompressor {
   private extraByteCount: number;
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    outputMode: LAZChunkDecoderOutputMode,
+    metadata: LAZChunkMetadata
+  ) {
     this.stream = stream;
     this.extraByteCount = extraByteCount;
     this.point = new Point14Decompressor(
       stream,
-      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData,
+      metadata.point14ItemVersion ?? 3
     );
-    this.rgb = new RGB14Decompressor(stream);
-    this.nir = outputMode === 'raw' ? new NIR14Decompressor(stream) : null;
+    this.rgb = new RGB14Decompressor(stream, metadata.rgb14ItemVersion ?? 3);
+    this.nir =
+      outputMode === 'raw' ? new NIR14Decompressor(stream, metadata.rgb14ItemVersion ?? 3) : null;
     this.bytes =
       outputMode === 'raw' && extraByteCount
-        ? new Byte14Decompressor(stream, extraByteCount)
+        ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
 
@@ -2542,6 +2810,282 @@ class PointFormat8Decompressor implements PointDecompressor {
   }
 }
 
+/** LASzip layered decoder for LAS 1.4 point format 9. */
+class PointFormat9Decompressor implements PointDecompressor {
+  /** Compressed chunk source. */
+  private stream: ByteReader;
+  /** Core LAS 1.4 point decoder. */
+  private point: Point14Decompressor;
+  /** Waveform packet reference decoder, omitted for selective Arrow output. */
+  private wavePacket: WavePacket14Decompressor | null;
+  /** Extra Bytes decoder, omitted for selective Arrow output. */
+  private bytes: Byte14Decompressor | null;
+  /** Extra bytes stored with the first point and in independent later layers. */
+  private extraByteCount: number;
+  /** Whether the first point and layered stream metadata remain unread. */
+  private first = true;
+
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    outputMode: LAZChunkDecoderOutputMode,
+    metadata: LAZChunkMetadata
+  ) {
+    this.stream = stream;
+    this.extraByteCount = extraByteCount;
+    this.point = new Point14Decompressor(
+      stream,
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData,
+      metadata.point14ItemVersion ?? 3
+    );
+    this.wavePacket =
+      outputMode === 'raw'
+        ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
+        : null;
+    this.bytes =
+      outputMode === 'raw' && extraByteCount
+        ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
+        : null;
+  }
+
+  /** Decode one complete PDRF 9 point record. */
+  decompress(output: Uint8Array, outputOffset: number): number {
+    outputOffset = this.point.decompress(output, outputOffset);
+    outputOffset = this.wavePacket!.decompress(output, outputOffset, this.point.itemContextChannel);
+    if (this.bytes) {
+      outputOffset = this.bytes.decompress(output, outputOffset, this.point.itemContextChannel);
+    }
+    this.readFirstMetadata();
+    return outputOffset;
+  }
+
+  /** Decode one PDRF 9 point directly into represented Arrow columns. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    if (this.first) {
+      this.stream.consume(29 + this.extraByteCount);
+    }
+    this.readFirstMetadata();
+    writePoint14ToPointDataTarget(point, target, targetPointIndex);
+  }
+
+  /** Decode PDRF 9 points directly into represented Arrow columns. */
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    const positions = target.positions;
+    const intensities = target.intensities;
+    const classifications = target.classifications;
+    const scale = target.scale;
+    const offset = target.offset;
+    let targetPointIndex = target.pointOffset;
+
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      if (this.first) {
+        this.stream.consume(29 + this.extraByteCount);
+      }
+      this.readFirstMetadata();
+      writePoint14ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex++
+      );
+    }
+  }
+
+  /** Read and bind or skip the independent PDRF 9 field layers. */
+  private readFirstMetadata(): void {
+    if (this.first) {
+      this.stream.getUint32();
+      this.point.readSizes();
+      const skippedWavePacketByteLength = this.wavePacket ? 0 : this.stream.getUint32();
+      this.wavePacket?.readSizes();
+      let skippedExtraByteLength = 0;
+      if (this.bytes) {
+        this.bytes.readSizes();
+      } else {
+        for (let index = 0; index < this.extraByteCount; index++) {
+          skippedExtraByteLength += this.stream.getUint32();
+        }
+      }
+      this.point.readData();
+      if (this.wavePacket) {
+        this.wavePacket.readData();
+      } else {
+        this.stream.consume(skippedWavePacketByteLength);
+      }
+      if (this.bytes) {
+        this.bytes.readData();
+      } else {
+        this.stream.consume(skippedExtraByteLength);
+      }
+      this.first = false;
+    }
+  }
+}
+
+/** LASzip layered decoder for LAS 1.4 point format 10. */
+class PointFormat10Decompressor implements PointDecompressor {
+  /** Compressed chunk source. */
+  private stream: ByteReader;
+  /** Core LAS 1.4 point decoder. */
+  private point: Point14Decompressor;
+  /** RGB decoder retained for raw and Arrow output. */
+  private rgb: RGB14Decompressor;
+  /** NIR decoder, omitted for selective Arrow output. */
+  private nir: NIR14Decompressor | null;
+  /** Waveform packet reference decoder, omitted for selective Arrow output. */
+  private wavePacket: WavePacket14Decompressor | null;
+  /** Extra Bytes decoder, omitted for selective Arrow output. */
+  private bytes: Byte14Decompressor | null;
+  /** Extra bytes stored with the first point and in independent later layers. */
+  private extraByteCount: number;
+  /** Whether the first point and layered stream metadata remain unread. */
+  private first = true;
+
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    outputMode: LAZChunkDecoderOutputMode,
+    metadata: LAZChunkMetadata
+  ) {
+    this.stream = stream;
+    this.extraByteCount = extraByteCount;
+    this.point = new Point14Decompressor(
+      stream,
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData,
+      metadata.point14ItemVersion ?? 3
+    );
+    this.rgb = new RGB14Decompressor(stream, metadata.rgb14ItemVersion ?? 3);
+    this.nir =
+      outputMode === 'raw' ? new NIR14Decompressor(stream, metadata.rgb14ItemVersion ?? 3) : null;
+    this.wavePacket =
+      outputMode === 'raw'
+        ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
+        : null;
+    this.bytes =
+      outputMode === 'raw' && extraByteCount
+        ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
+        : null;
+  }
+
+  /** Decode one complete PDRF 10 point record. */
+  decompress(output: Uint8Array, outputOffset: number): number {
+    outputOffset = this.point.decompress(output, outputOffset);
+    outputOffset = this.rgb.decompress(output, outputOffset, this.point.itemContextChannel);
+    outputOffset = this.nir!.decompress(output, outputOffset, this.point.itemContextChannel);
+    outputOffset = this.wavePacket!.decompress(output, outputOffset, this.point.itemContextChannel);
+    if (this.bytes) {
+      outputOffset = this.bytes.decompress(output, outputOffset, this.point.itemContextChannel);
+    }
+    this.readFirstMetadata();
+    return outputOffset;
+  }
+
+  /** Decode one PDRF 10 point directly into represented Arrow columns. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    this.rgb.decompressRgb(this.point.itemContextChannel);
+    if (this.first) {
+      this.stream.consume(2 + 29 + this.extraByteCount);
+    }
+    this.readFirstMetadata();
+    writePoint14ToPointDataTarget(point, target, targetPointIndex);
+    writeRgbToPointDataTarget(
+      this.rgb.decodedRed,
+      this.rgb.decodedGreen,
+      this.rgb.decodedBlue,
+      target,
+      targetPointIndex
+    );
+  }
+
+  /** Decode PDRF 10 points directly into represented Arrow columns. */
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    const positions = target.positions;
+    const intensities = target.intensities;
+    const classifications = target.classifications;
+    const colors = target.colors;
+    const rawColors = target.rawColors;
+    const scale = target.scale;
+    const offset = target.offset;
+    let targetPointIndex = target.pointOffset;
+
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      this.rgb.decompressRgb(this.point.itemContextChannel);
+      if (this.first) {
+        this.stream.consume(2 + 29 + this.extraByteCount);
+      }
+      this.readFirstMetadata();
+      writePoint14ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex
+      );
+      if (colors) {
+        const colorOffset = targetPointIndex * 4;
+        colors[colorOffset] = this.rgb.decodedRed & 0xff;
+        colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+        colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+        colors[colorOffset + 3] = 255;
+      } else if (rawColors) {
+        const colorOffset = targetPointIndex * 3;
+        rawColors[colorOffset] = this.rgb.decodedRed;
+        rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+        rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+      }
+      targetPointIndex++;
+    }
+  }
+
+  /** Read and bind or skip the independent PDRF 10 field layers. */
+  private readFirstMetadata(): void {
+    if (this.first) {
+      this.stream.getUint32();
+      this.point.readSizes();
+      this.rgb.readSizes();
+      const skippedNirByteLength = this.nir ? 0 : this.stream.getUint32();
+      this.nir?.readSizes();
+      const skippedWavePacketByteLength = this.wavePacket ? 0 : this.stream.getUint32();
+      this.wavePacket?.readSizes();
+      let skippedExtraByteLength = 0;
+      if (this.bytes) {
+        this.bytes.readSizes();
+      } else {
+        for (let index = 0; index < this.extraByteCount; index++) {
+          skippedExtraByteLength += this.stream.getUint32();
+        }
+      }
+      this.point.readData();
+      this.rgb.readData();
+      if (this.nir) {
+        this.nir.readData();
+      } else {
+        this.stream.consume(skippedNirByteLength);
+      }
+      if (this.wavePacket) {
+        this.wavePacket.readData();
+      } else {
+        this.stream.consume(skippedWavePacketByteLength);
+      }
+      if (this.bytes) {
+        this.bytes.readData();
+      } else {
+        this.stream.consume(skippedExtraByteLength);
+      }
+      this.first = false;
+    }
+  }
+}
+
 function createIntegerDecompressor(bits: number, contexts: number): IntegerDecompressor {
   const decompressor = new IntegerDecompressor(bits, contexts);
   decompressor.init();
@@ -2577,6 +3121,10 @@ function getPointDataRecordBaseLength(pointDataRecordFormat: number): number {
       return 36;
     case 8:
       return 38;
+    case 9:
+      return 59;
+    case 10:
+      return 67;
     default:
       throw new Error(
         `TypeScript LAZ decoder does not support point format ${pointDataRecordFormat}`
@@ -2585,7 +3133,7 @@ function getPointDataRecordBaseLength(pointDataRecordFormat: number): number {
 }
 
 function hasLayeredChunkSizeHeaders(pointDataRecordFormat: number): boolean {
-  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 8;
+  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10;
 }
 
 function getChunkSizeHeaderCount(pointDataRecordFormat: number, extraByteCount: number): number {
@@ -2596,6 +3144,10 @@ function getChunkSizeHeaderCount(pointDataRecordFormat: number, extraByteCount: 
       return 10 + extraByteCount;
     case 8:
       return 11 + extraByteCount;
+    case 9:
+      return 10 + extraByteCount;
+    case 10:
+      return 12 + extraByteCount;
     default:
       throw new Error(
         `TypeScript LAZ decoder does not support point format ${pointDataRecordFormat}`
@@ -2829,6 +3381,35 @@ function readInt16(bytes: Uint8Array, offset: number): number {
 
 function writeInt16(value: number, bytes: Uint8Array, offset: number): void {
   writeUint16(value, bytes, offset);
+}
+
+/** Read an unaligned little-endian unsigned 32-bit integer. */
+function readUint32(bytes: Uint8Array, offset: number): number {
+  return (
+    (bytes[offset] |
+      (bytes[offset + 1] << 8) |
+      (bytes[offset + 2] << 16) |
+      ((bytes[offset + 3] << 24) >>> 0)) >>>
+    0
+  );
+}
+
+/** Write an unaligned little-endian unsigned 32-bit integer. */
+function writeUint32(value: number, bytes: Uint8Array, offset: number): void {
+  writeInt32(value, bytes, offset);
+}
+
+/** Read an unaligned little-endian unsigned 64-bit integer without precision loss. */
+function readBigUint64(bytes: Uint8Array, offset: number): bigint {
+  const lower = readUint32(bytes, offset);
+  const upper = readUint32(bytes, offset + 4);
+  return (BigInt(upper) << 32n) | BigInt(lower);
+}
+
+/** Write an unaligned little-endian unsigned 64-bit integer without precision loss. */
+function writeBigUint64(value: bigint, bytes: Uint8Array, offset: number): void {
+  writeUint32(Number(value & 0xffffffffn), bytes, offset);
+  writeUint32(Number((value >> 32n) & 0xffffffffn), bytes, offset + 4);
 }
 
 function readInt32(bytes: Uint8Array, offset: number): number {

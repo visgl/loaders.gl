@@ -2,7 +2,7 @@
 
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
-LAS 1.4 and LAZ point formats 6, 7, and 8 are supported by the `copc`, `laz-rs`, and opt-in `typescript` backends. The default `laz-perf` backend remains limited to LAS 1.3. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for backend and point-format details.
+Modern LAZ point formats 6-10 are supported by the opt-in `typescript` backend, including LASzip item versions 3 and 4; support in the `copc` and `laz-rs` backends depends on their bundled decoder versions. The default `laz-perf` backend remains limited to LAS 1.3. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for backend and point-format details.
 
 ## Installation
 

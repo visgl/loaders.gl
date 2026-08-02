@@ -52,6 +52,14 @@ const PDRF_6_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.las';
 const PDRF_6_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.laz';
 const PDRF_8_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.las';
 const PDRF_8_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.laz';
+const PDRF_9_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf9-1.4.las';
+const PDRF_9_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf9-1.4.laz';
+const PDRF_9_LAS_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf9-1.5.las';
+const PDRF_9_LAZ_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf9-1.5.laz';
+const PDRF_10_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.4.las';
+const PDRF_10_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.4.laz';
+const PDRF_10_LAS_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.las';
+const PDRF_10_LAZ_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.laz';
 const COPC_BINARY_URL = 'modules/copc/test/data/ellipsoid.copc.laz';
 const LAZ_1_4_PARITY_BACKENDS = ['copc', 'laz-rs'] as const;
 
@@ -507,6 +515,7 @@ test('LASLoader#parseInBatches LAZ 1.4 TypeScript backend accepts split file chu
 
 for (const fixture of [
   {
+    version: '1.4',
     pointDataRecordFormat: 6,
     pointDataRecordLength: 34,
     lasUrl: PDRF_6_LAS_1_4_BINARY_URL,
@@ -514,17 +523,54 @@ for (const fixture of [
     parityBackends: ['copc'] as const
   },
   {
+    version: '1.4',
     pointDataRecordFormat: 8,
     pointDataRecordLength: 42,
     lasUrl: PDRF_8_LAS_1_4_BINARY_URL,
     lazUrl: PDRF_8_LAZ_1_4_BINARY_URL,
     // The laz-rs wrapper currently fails while closing LAS 1.4 files with Extra Bytes.
     parityBackends: ['copc'] as const
+  },
+  {
+    version: '1.4',
+    pointDataRecordFormat: 9,
+    pointDataRecordLength: 63,
+    lasUrl: PDRF_9_LAS_1_4_BINARY_URL,
+    lazUrl: PDRF_9_LAZ_1_4_BINARY_URL,
+    // Bundled laz-rs uses laz 0.5.2 and rejects WavePacket14; laz-perf does not implement it.
+    parityBackends: [] as const
+  },
+  {
+    version: '1.4',
+    pointDataRecordFormat: 10,
+    pointDataRecordLength: 71,
+    lasUrl: PDRF_10_LAS_1_4_BINARY_URL,
+    lazUrl: PDRF_10_LAZ_1_4_BINARY_URL,
+    // Bundled laz-rs uses laz 0.5.2 and rejects WavePacket14; laz-perf does not implement it.
+    parityBackends: [] as const
+  },
+  {
+    version: '1.5',
+    pointDataRecordFormat: 9,
+    pointDataRecordLength: 63,
+    lasUrl: PDRF_9_LAS_1_5_BINARY_URL,
+    lazUrl: PDRF_9_LAZ_1_5_BINARY_URL,
+    // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
+    parityBackends: [] as const
+  },
+  {
+    version: '1.5',
+    pointDataRecordFormat: 10,
+    pointDataRecordLength: 71,
+    lasUrl: PDRF_10_LAS_1_5_BINARY_URL,
+    lazUrl: PDRF_10_LAZ_1_5_BINARY_URL,
+    // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
+    parityBackends: [] as const
   }
 ]) {
   const label = `PDRF ${fixture.pointDataRecordFormat}`;
 
-  test(`TypeScriptLAZ#raw LAS 1.4 ${label} output matches uncompressed records`, async t => {
+  test(`TypeScriptLAZ#raw LAS ${fixture.version} ${label} output matches uncompressed records`, async t => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
@@ -552,10 +598,33 @@ for (const fixture of [
       expected,
       `${label} preserves every point byte`
     );
+    if (fixture.pointDataRecordFormat >= 9) {
+      const waveformByteOffset = fixture.pointDataRecordFormat === 9 ? 31 : 39;
+      const waveformOffset = new DataView(
+        expected.buffer,
+        expected.byteOffset,
+        expected.byteLength
+      ).getBigUint64(waveformByteOffset, true);
+      t.ok(
+        waveformOffset > BigInt(Number.MAX_SAFE_INTEGER),
+        `${label} preserves waveform offsets beyond Number.MAX_SAFE_INTEGER`
+      );
+    }
+    if (fixture.version === '1.5') {
+      const scannerChannels = new Set<number>();
+      for (let pointIndex = 0; pointIndex < 1024; pointIndex++) {
+        scannerChannels.add((expected[pointIndex * fixture.pointDataRecordLength + 15] >> 4) & 3);
+      }
+      t.deepEqual(
+        Array.from(scannerChannels).sort(),
+        [0, 1, 2, 3],
+        `${label} exercises all WavePacket14 v4 scanner-channel contexts`
+      );
+    }
     t.end();
   });
 
-  test(`LASLoader#parse and split streaming LAS 1.4 ${label} match reference backends`, async t => {
+  test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async t => {
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
       las: {backend: 'typescript'},
@@ -568,13 +637,29 @@ for (const fixture of [
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
 
-    t.equal(actual.loaderData.versionAsString, '1.4', `${label} fixture is LAS 1.4`);
+    t.equal(
+      actual.loaderData.versionAsString,
+      fixture.version,
+      `${label} fixture is LAS ${fixture.version}`
+    );
     t.equal(
       actual.loaderData.pointsFormatId,
       fixture.pointDataRecordFormat,
       `${label} fixture has the expected point format`
     );
     t.equal(actual.header.vertexCount, 1024, `${label} fixture has 1,024 points`);
+
+    compareCollectedMeshAttributes(
+      t,
+      streamed,
+      {
+        positions: Array.from(actual.attributes.POSITION.value),
+        intensities: Array.from(actual.attributes.intensity.value),
+        classifications: Array.from(actual.attributes.classification.value),
+        colors: Array.from(actual.attributes.COLOR_0?.value || [])
+      },
+      `${label} TypeScript streaming matches complete parse`
+    );
 
     for (const backend of fixture.parityBackends) {
       const expected = await parse(lazArrayBuffer.slice(0), LASLoader, {
@@ -597,6 +682,23 @@ for (const fixture of [
     t.end();
   });
 }
+
+test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t => {
+  const lazArrayBuffer = await (await fetchFile(PDRF_10_LAZ_1_5_BINARY_URL)).arrayBuffer();
+  const corrupted = lazArrayBuffer.slice(0);
+  const wavePacketItemVersionOffset = findLASZipItemVersionOffset(corrupted, 13);
+  new DataView(corrupted).setUint16(wavePacketItemVersionOffset, 5, true);
+
+  await t.rejects(
+    parse(corrupted, LASLoader, {
+      las: {backend: 'typescript'},
+      core: {worker: false}
+    }),
+    /unsupported WavePacket14 item version 5/,
+    'unsupported WavePacket14 versions fail before point decoding'
+  );
+  t.end();
+});
 
 test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', async t => {
   const lasArrayBuffer = await (await fetchFile(PDRF_8_LAS_1_4_BINARY_URL)).arrayBuffer();
@@ -1298,6 +1400,31 @@ function concatenateUint8ArraysForTest(chunks: Uint8Array[]): Uint8Array {
     offset += chunk.byteLength;
   }
   return result;
+}
+
+/** Find the LASzip item-version field for one item type in a test fixture. */
+function findLASZipItemVersionOffset(arrayBuffer: ArrayBuffer, targetItemType: number): number {
+  const dataView = new DataView(arrayBuffer);
+  let offset = dataView.getUint16(94, true);
+  const variableLengthRecordCount = dataView.getUint32(100, true);
+
+  for (let recordIndex = 0; recordIndex < variableLengthRecordCount; recordIndex++) {
+    const recordId = dataView.getUint16(offset + 18, true);
+    const recordLength = dataView.getUint16(offset + 20, true);
+    const dataOffset = offset + 54;
+    if (recordId === 22204) {
+      const itemCount = dataView.getUint16(dataOffset + 32, true);
+      for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+        const itemOffset = dataOffset + 34 + itemIndex * 6;
+        if (dataView.getUint16(itemOffset, true) === targetItemType) {
+          return itemOffset + 4;
+        }
+      }
+    }
+    offset = dataOffset + recordLength;
+  }
+
+  throw new Error(`LASzip item type ${targetItemType} not found`);
 }
 
 function createPointFormat0Record(): Uint8Array {
