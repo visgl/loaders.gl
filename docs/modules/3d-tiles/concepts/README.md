@@ -8,6 +8,7 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 
 | Guide | Question it answers |
 | --- | --- |
+| [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) | How are relative references, inherited queries, and extensionless content handled? |
 | [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement) | Which tiles can replace or augment their ancestors? |
 | [Screen-space error and LOD](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) | How much detail does the current view require? |
 | [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) | Which required tile should use the next network slot? |
@@ -16,4 +17,4 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 
 The stages are related but not interchangeable. In particular, screen-space error determines the desired final LOD. Progressive and foveated scheduling normally change only the order and timing of requests needed to reach that LOD.
 
-Start with [tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement), or go directly to the [request-scheduling guide](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) for foveated requests.
+Start with [resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) to understand how a tileset enters the runtime, continue with [tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement), or go directly to the [request-scheduling guide](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) for foveated requests.

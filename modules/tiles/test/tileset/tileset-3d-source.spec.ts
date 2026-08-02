@@ -117,14 +117,16 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
   const tileContent = {content: 'from-resolver'};
   let rootLoadCount = 0;
   let resourceLoadCount = 0;
+  let resourceTilesetMode: unknown;
 
   const resolver: TilesetSourceResolver = {
     async loadRoot() {
       rootLoadCount++;
       return rootTileset;
     },
-    async loadResource() {
+    async loadResource(_url, _loader, loadOptions) {
       resourceLoadCount++;
+      resourceTilesetMode = (loadOptions['3d-tiles'] as Record<string, unknown>)?.isTileset;
       return tileContent;
     }
   };
@@ -144,8 +146,62 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
 
   t.equal(rootLoadCount, 1, 'root metadata goes through the injected resolver');
   t.equal(resourceLoadCount, 1, 'tile content goes through the injected resolver');
+  t.equal(resourceTilesetMode, 'auto', 'content kind is detected from bytes rather than URL');
   t.equal(tile.content, tileContent);
   t.notOk(loadResult.nestedTileset);
+  t.end();
+});
+
+test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape', async t => {
+  const nestedTileset = {shape: 'tileset3d', asset: {version: '1.1'}, root: {}};
+  const resolver: TilesetSourceResolver = {
+    async loadRoot() {
+      return {
+        asset: {version: '1.1'},
+        root: {refine: 'REPLACE'},
+        lodMetricType: 'geometricError',
+        lodMetricValue: 1
+      };
+    },
+    async loadResource() {
+      return nestedTileset;
+    }
+  };
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    resolver
+  });
+  await source.initialize();
+
+  const tile = {contentUrl: 'https://example.com/nested/signed-resource?token=one'} as any;
+  const loadResult = await source.loadTileContent(tile);
+  t.equal(loadResult.nestedTileset, nestedTileset);
+  t.equal(tile.content, nestedTileset);
+  t.end();
+});
+
+test('Tiles3DSource invalidates cached URLs when inherited query state changes', async t => {
+  const source = new Tiles3DSource({
+    type: 'tileset',
+    url: 'https://example.com/tileset.json',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'},
+    lodMetricType: 'geometricError',
+    lodMetricValue: 1,
+    queryString: 'token=one'
+  } as any);
+  await source.initialize();
+
+  const tilePath = 'https://example.com/tile.b3dm';
+  t.equal(source.getTileUrl(tilePath), `${tilePath}?token=one`);
+  (source as any).setQueryParameter('token', 'two');
+  t.equal(
+    source.getTileUrl(tilePath),
+    `${tilePath}?token=two`,
+    'does not return a stale cached URL'
+  );
   t.end();
 });
 

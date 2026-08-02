@@ -13,7 +13,11 @@ import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
-import {Tiles3DTilesetSchema} from './tileset-zod-schema';
+import {
+  preprocess3DTileContent,
+  type Preprocessed3DTileContent,
+  type Tiles3DContentType
+} from './lib/parsers/preprocess-3d-tile-content';
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
@@ -42,7 +46,10 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       loadGLTF?: boolean;
       /** If renderer doesn't support quantized positions, loader can decode them on CPU */
       decodeQuantizedPositions?: boolean;
-      /** Whether this is a tileset or a tile */
+      /**
+       * Selects tileset-header or render-content parsing. `auto` detects the payload from its
+       * bytes and JSON structure; explicit booleans assert the expected category.
+       */
       isTileset?: boolean | 'auto';
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
@@ -61,33 +68,67 @@ export const Tiles3DLoaderWithParser = {
   Tiles3DLoaderOptions
 >;
 
-/** Parses a tileset or tile */
+/**
+ * Preprocesses and parses a tileset, legacy tile format, GLB, or JSON glTF payload.
+ *
+ * @param data - Complete fetched resource bytes.
+ * @param options - Loader options, including optional explicit content mode.
+ * @param context - Loader context used for base paths and nested resources.
+ * @returns Parsed external tileset or renderable tile content.
+ */
 async function parse(
-  data,
+  data: ArrayBuffer,
   options: Tiles3DLoaderOptions = {},
   context?: LoaderContext
 ): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed> {
-  // auto detect file type
   const loaderOptions = options['3d-tiles'] || {};
-  let isTileset;
-  if (loaderOptions.isTileset === 'auto') {
-    isTileset = context?.url && context.url.indexOf('.json') !== -1;
-  } else {
-    isTileset = loaderOptions.isTileset;
+  const preprocessedContent = preprocess3DTileContent(data);
+  if (getIsTileset(preprocessedContent, loaderOptions.isTileset)) {
+    return parseTileset(preprocessedContent.jsonPayload as Tiles3DTilesetJSON, options, context);
   }
-
-  return isTileset ? parseTileset(data, options, context) : parseTile(data, options, context);
+  return parseTile(data, preprocessedContent.contentType, options, context);
 }
 
-/** Parse a tileset */
+/**
+ * Resolves the tileset mode while retaining explicit caller assertions.
+ *
+ * `auto` follows the payload structure and therefore works for extensionless and signed URLs.
+ * Explicit `true` remains useful for callers that want the loader to reject non-tileset payloads
+ * at the boundary; explicit `false` likewise rejects an external tileset where render content was
+ * expected.
+ *
+ * @param content - Structure-first content classification.
+ * @param isTilesetOption - Caller mode, including the public `auto` default.
+ * @returns Whether to parse the JSON payload as an external tileset.
+ * @throws If an explicit mode contradicts the detected payload.
+ */
+function getIsTileset(
+  content: Preprocessed3DTileContent,
+  isTilesetOption: boolean | 'auto' | undefined
+): content is Extract<Preprocessed3DTileContent, {contentType: 'externalTileset'}> {
+  const detectedTileset = content.contentType === 'externalTileset';
+  if (isTilesetOption === true && !detectedTileset) {
+    throw new Error(`Expected 3D Tiles tileset JSON; detected ${content.contentType}`);
+  }
+  if (isTilesetOption === false && detectedTileset) {
+    throw new Error('Expected 3D tile render content; detected external tileset JSON');
+  }
+  return isTilesetOption === true || (isTilesetOption !== false && detectedTileset);
+}
+
+/**
+ * Normalizes a pre-parsed external tileset JSON payload.
+ *
+ * @param tilesetJson - JSON object classified as an external tileset.
+ * @param options - Loader options forwarded to header normalization.
+ * @param context - Loader context providing resource URL and subtree fetch.
+ * @returns Normalized tileset runtime metadata.
+ */
 async function parseTileset(
-  data: ArrayBuffer,
+  tilesetJson: Tiles3DTilesetJSON,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTilesetJSONPostprocessed> {
-  const tilesetJson: Tiles3DTilesetJSON = Tiles3DTilesetSchema.parse(
-    JSON.parse(new TextDecoder().decode(data))
-  );
   validateRequiredExtensions(tilesetJson);
 
   const tilesetUrl = context?.url || '';
@@ -138,9 +179,18 @@ function validateRequiredExtensions(tilesetJson: Tiles3DTilesetJSON): void {
   );
 }
 
-/** Parse a tile */
+/**
+ * Parses renderable content using its structure-first type classification.
+ *
+ * @param arrayBuffer - Original resource bytes.
+ * @param contentType - Detected binary or JSON glTF type.
+ * @param options - Loader options forwarded to tile and glTF parsers.
+ * @param context - Loader context used for external glTF resources.
+ * @returns Parsed renderable tile content.
+ */
 async function parseTile(
   arrayBuffer: ArrayBuffer,
+  contentType: Tiles3DContentType,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTileContent> {
@@ -152,7 +202,7 @@ async function parseTile(
   };
   const byteOffset = 0;
   // @ts-expect-error
-  await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
+  await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content, contentType);
   // @ts-expect-error
   return tile.content;
 }
