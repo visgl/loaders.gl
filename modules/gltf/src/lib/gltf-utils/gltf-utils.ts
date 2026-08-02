@@ -19,7 +19,9 @@ type TypedArrayConstructor =
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
-  | Float64ArrayConstructor;
+  | Float64ArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
 
 const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Int8Array, 5120],
@@ -29,7 +31,9 @@ const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Int32Array, 5124],
   [Uint32Array, 5125],
   [Float32Array, 5126],
-  [Float64Array, 5130]
+  [Float64Array, 5130],
+  [BigInt64Array, 5134],
+  [BigUint64Array, 5135]
 ];
 const ARRAY_TO_COMPONENT_TYPE = new Map<TypedArrayConstructor, number>(
   ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT

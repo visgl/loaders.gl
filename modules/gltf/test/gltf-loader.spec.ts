@@ -98,6 +98,21 @@ test('GLTFLoader#parse(v3) preserves legacy implicit buffer mapping', async t =>
   t.end();
 });
 
+test('GLTFLoader#parse(v3) rejects implicit buffers outside the legacy layout', async t => {
+  const data = createGLBV3(
+    {asset: {version: '2.1'}, buffers: [{byteLength: 4}]},
+    [new Uint8Array([1, 2, 3, 4])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+
+  await t.rejects(
+    parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}}),
+    /buffer 0 without a uri must define a valid GLB v3 chunk/,
+    'does not replace an unresolved buffer with zero-filled bytes'
+  );
+  t.end();
+});
+
 test('GLTFLoader#parse(v3) rejects missing buffer chunks', async t => {
   const data = createGLBV3({
     asset: {version: '2.1'},

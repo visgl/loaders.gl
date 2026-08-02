@@ -72,3 +72,26 @@ test('glTF 2.1 accessor component types', t => {
   }
   t.end();
 });
+
+test('GLTFScenegraph#addBinaryBuffer accepts 64-bit integer arrays', t => {
+  const gltf = {json: {asset: {version: '2.1'}}, buffers: []};
+  const scenegraph = new GLTFScenegraph(gltf);
+
+  scenegraph.addBinaryBuffer(new BigInt64Array([-1n, 1n]), {
+    size: 1,
+    min: [-1n],
+    max: [1n]
+  });
+  scenegraph.addBinaryBuffer(new BigUint64Array([0n, 2n]), {
+    size: 1,
+    min: [0n],
+    max: [2n]
+  });
+
+  t.deepEqual(
+    gltf.json.accessors?.map(accessor => accessor.componentType),
+    [5134, 5135],
+    'maps signed and unsigned 64-bit constructors to glTF component types'
+  );
+  t.end();
+});

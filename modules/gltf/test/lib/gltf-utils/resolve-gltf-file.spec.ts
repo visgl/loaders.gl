@@ -63,6 +63,30 @@ test('resolveGLTFFile#fetches URI files relative to the containing asset', async
   t.end();
 });
 
+test('resolveGLTFFile#rejects unsuccessful URI responses', async t => {
+  const gltf = {
+    json: {
+      asset: {version: '2.1'},
+      files: [{mimeType: 'application/octet-stream', uri: 'missing.bin'}]
+    },
+    buffers: [],
+    files: [null]
+  } as unknown as GLTFWithBuffers;
+
+  await t.rejects(
+    resolveGLTFFile(
+      gltf,
+      0,
+      {core: {baseUrl: 'https://example.com/model.gltf'}},
+      createLoaderContext(async () => new Response('not found', {status: 404}))
+    ),
+    /Failed to fetch glTF file missing.bin: HTTP 404/,
+    'does not cache an HTTP error body as a resolved file'
+  );
+  t.equal(gltf.files?.[0], null, 'leaves the file cache empty');
+  t.end();
+});
+
 test('findGLTFFileIndex#rejects ambiguous virtual package references', t => {
   const gltf = {
     json: {

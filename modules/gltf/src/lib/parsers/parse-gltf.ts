@@ -12,7 +12,7 @@ import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
-import {resolveUrl} from '../gltf-utils/resolve-url';
+import {canonicalizeUrl, resolveUrl} from '../gltf-utils/resolve-url';
 import {findGLTFFileIndex, resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
@@ -211,6 +211,15 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
       };
     }
 
+    if (gltf._glb.version === 3) {
+      for (const bufferIndex of uriLessBufferIndices) {
+        assert(
+          gltf.buffers[bufferIndex],
+          `glTF buffer ${bufferIndex} without a uri must define a valid GLB v3 chunk.`
+        );
+      }
+    }
+
     // TODO - this modifies JSON and is a post processing thing
     // gltf.json.buffers[0].data = gltf.buffers[0].arrayBuffer;
     // gltf.json.buffers[0].byteOffset = gltf.buffers[0].byteOffset;
@@ -264,7 +273,7 @@ async function loadExternalAssets(
 
   const state =
     inheritedState ||
-    createExternalAssetLoadState(context.url ? new Set([context.url]) : new Set());
+    createExternalAssetLoadState(context.url ? new Set([canonicalizeUrl(context.url)]) : new Set());
   for (const externalAssetIndex of referencedIndices) {
     await loadExternalAsset(gltf, externalAssetIndex, options, context, state);
   }
