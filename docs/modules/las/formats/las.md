@@ -64,19 +64,19 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | LAZ 1.4 point formats 6, 7, 8 | Supported for COPC-style chunks and fixed-size full-file LAZ chunks. |
 | LAZ point formats 4, 5, 9, 10 | Not supported. These add waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
-| Selective decompression | Supported for PDRF 7 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table while preserving complete raw-record decoding through the chunk APIs. |
+| Selective decompression | Supported for PDRF 6, 7, and 8 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table while preserving complete raw-record decoding through the chunk APIs. |
 | True streaming decode | Partial. Fixed-size full-file LAZ can emit batches after complete compressed chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
 | LAZ encoding | Not implemented. |
 
 #### Selective LAZ 1.4 Decoding
 
-The TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 7 stores groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, and Extra Bytes layers that are not currently exposed in the returned table, using a specialized batch loop for its common XYZ, intensity, classification, and RGB output. The selective decoder also avoids constructing arithmetic models for those skipped layers.
+The TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 6, 7, and 8 store groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, NIR, and Extra Bytes layers that are not currently exposed in the returned table, using specialized batch loops for their common output fields. RGB remains enabled for PDRF 7 and 8. The selective decoder also avoids constructing arithmetic models for skipped layers.
 
-Compressed field layers are decoded as bounded ranges of the original chunk instead of copied into per-layer readers. The point and RGB decoders retain their active scanner-channel contexts, while still initializing an independent context if a later point switches channels. These details reduce temporary allocation and property lookup overhead without changing the complete-record APIs.
+Compressed field layers are decoded as bounded ranges of the original chunk instead of copied into per-layer readers. LASzip v3's item-context channel behavior is preserved separately from each point's actual scanner channel; this distinction is required when a point switches scanner channels. These details reduce temporary allocation and property lookup overhead without changing the complete-record APIs.
 
 This optimization applies only to table parsing. `decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between selective table output and raw-record output after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
 
-PDRF 6 and 8 continue to decode complete records before populating Arrow columns. Their selective paths should be enabled only after dedicated fixtures cover their unique fields, especially PDRF 8 NIR values.
+Dedicated PDRF 6 and PDRF 8 fixtures compare every raw decoded byte against matching uncompressed LAS records. PDRF 8 coverage includes NIR, Extra Bytes, and scanner-channel transitions. NIR and Extra Bytes are preserved by raw decoding but are not yet exposed as Arrow columns.
 
 ### TypeScript COPC Path
 
