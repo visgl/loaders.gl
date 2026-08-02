@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {PotreeMetadata} from './types/potree-metadata';
 
 import {PotreeFormat} from './potree-format';
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -22,7 +23,7 @@ async function preload() {
 /** Metadata-only Potree loader. */
 export const PotreeLoader = {
   ...PotreeFormat,
-  dataType: null as unknown as any,
+  dataType: null as unknown as PotreeMetadata,
   batchType: null as never,
 
   name: 'potree metadata',
@@ -37,4 +38,4 @@ export const PotreeLoader = {
     potree: {}
   },
   preload
-} as const satisfies Loader<any, never, POTreeLoaderOptions>;
+} as const satisfies Loader<PotreeMetadata, never, POTreeLoaderOptions>;

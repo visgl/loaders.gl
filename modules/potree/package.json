@@ -38,7 +38,8 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
-    }
+    },
+    "./potree-metadata.schema.json": "./dist/potree-metadata.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -47,7 +48,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
+    "generate-json-schema": "node scripts/generate-json-schema.mjs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
@@ -58,7 +60,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.1",
     "@loaders.gl/schema-utils": "5.0.0-alpha.1",
     "@math.gl/core": "^4.1.0",
-    "@math.gl/proj4": "^4.1.0"
+    "@math.gl/proj4": "^4.1.0",
+    "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

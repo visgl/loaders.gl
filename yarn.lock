@@ -5790,6 +5790,7 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.1"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/proj4": "npm:^4.1.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
