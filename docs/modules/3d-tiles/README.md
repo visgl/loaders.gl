@@ -38,6 +38,7 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 
 - [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection)
 - [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement)
+- [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees)
 - [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod)
 - [Request scheduling, progressive loading, and foveated requests](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities)
 - [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory)

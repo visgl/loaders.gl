@@ -30,8 +30,12 @@ Useful `Tile3D` fields include:
 | `priorityDeferred` | Whether motion deferral currently holds the request, including its active time window. |
 | `_foveatedFactor` | Unitless distance from the perspective forward view ray. |
 | `_priority` | Combined scheduler priority; smaller starts first. |
+| `childrenState` | Lazy hierarchy lifecycle: `unloaded`, `loading`, `ready`, or `failed`. |
+| `hasUnloadedChildren` | Whether traversal may request a lazy subtree at this tile. |
 
 The underscored fields are runtime diagnostics, not stable public API. Prefer callbacks and stats for application behavior. `Tileset3D.stats` exposes tiles loading, loaded, in memory, in view, renderable, failed, estimated GPU memory, and the current maximum SSE.
+
+For an implicit source, `Tiles3DSource.getImplicitTilingStats()` separates subtree resource requests, parsed-cache hits, pending subtrees, and materialized header counts from tile-content and GPU-memory stats. A high `pendingSubtrees` count with no render-content traffic points to hierarchy intake; high `materializedTiles` with low `cachedSubtrees` means the parsed LRU is bounded but the camera has explored a broad runtime hierarchy. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees#runtime-diagnostics).
 
 ## Troubleshooting
 
