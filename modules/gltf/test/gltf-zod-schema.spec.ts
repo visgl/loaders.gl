@@ -2,10 +2,50 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GLTFSchema} from '@loaders.gl/gltf';
+import {
+  GLTF1Schema,
+  GLTF2Schema,
+  GLTF21Schema,
+  GLTFSchema,
+  GLTFVersionSchema,
+  GLTF1ExtensionSchemas,
+  GLTF2ExtensionSchemas
+} from '@loaders.gl/gltf';
 import {describe, expect, it} from 'vitest';
 
 describe('GLTFSchema', () => {
+  it('validates each supported glTF version', () => {
+    const gltf1 = {asset: {version: '1.0'}};
+    const gltf2 = {asset: {version: '2.0'}};
+    const gltf21 = {asset: {version: '2.1'}};
+
+    expect(GLTF1Schema.safeParse(gltf1).success).toBe(true);
+    expect(GLTF2Schema.safeParse(gltf2).success).toBe(true);
+    expect(GLTF21Schema.safeParse(gltf21).success).toBe(true);
+    expect(GLTF1Schema.safeParse(gltf2).success).toBe(false);
+    expect(GLTF2Schema.safeParse(gltf21).success).toBe(false);
+    expect(GLTF21Schema.safeParse(gltf2).success).toBe(false);
+    expect(GLTFVersionSchema.safeParse(gltf1).success).toBe(true);
+    expect(GLTFVersionSchema.safeParse(gltf2).success).toBe(true);
+    expect(GLTFVersionSchema.safeParse(gltf21).success).toBe(true);
+  });
+
+  it('exports every official extension schema group', () => {
+    const extensionStatuses = [
+      ...Object.values(GLTF1ExtensionSchemas),
+      ...Object.values(GLTF2ExtensionSchemas)
+    ];
+    const extensionGroups = extensionStatuses.flatMap(status => Object.values(status));
+    const extensionFragments = extensionGroups.flatMap(extension => Object.values(extension));
+
+    expect(Object.keys(GLTF1ExtensionSchemas)).toEqual(['Khronos', 'Vendor']);
+    expect(Object.keys(GLTF2ExtensionSchemas)).toEqual(['Archived', 'Khronos', 'Vendor']);
+    expect(extensionGroups).toHaveLength(63);
+    expect(extensionFragments).toHaveLength(119);
+    expect(Object.keys(GLTF2ExtensionSchemas.Khronos)).toContain('KHR_lights_punctual');
+    expect(Object.keys(GLTF2ExtensionSchemas.Vendor)).toContain('EXT_mesh_gpu_instancing');
+  });
+
   it('accepts a glTF document and preserves extension properties', () => {
     const document = {
       asset: {version: '2.0'},
