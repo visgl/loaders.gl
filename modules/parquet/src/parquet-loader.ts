@@ -10,30 +10,9 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/schema';
 
-import {ParquetFormat} from './parquet-format';
-import {
-  PARQUET_LOADER_DEFAULT_OPTIONS,
-  type ParquetLoaderOptions as SharedParquetLoaderOptions
-} from './parquet-loader-options';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** Module-relative worker asset for browser ESM and Node.js CommonJS distributions. */
-const PARQUET_WORKER_URL = import.meta.url
-  ? new URL(getParquetWorkerFile(), import.meta.url).toString()
-  : typeof __dirname === 'string'
-    ? `${__dirname}/parquet-worker-node.cjs`
-    : true;
-
-/** Selects the worker bundle for the current JavaScript runtime. */
-function getParquetWorkerFile(): string {
-  const isNode = Boolean(
-    (globalThis as {process?: {versions?: {node?: string}}}).process?.versions?.node
-  );
-  return isNode ? './parquet-worker-node.cjs' : './parquet-worker.js';
-}
+import {PARQUET_LOADER_BASE} from './parquet-loader-base';
+import type {ParquetLoaderOptions as SharedParquetLoaderOptions} from './parquet-loader-options';
+import {PARQUET_WORKER_URL} from './parquet-worker-url';
 
 /** Options for the parquet loader */
 export type ParquetLoaderOptions = SharedParquetLoaderOptions;
@@ -62,20 +41,8 @@ async function preloadParquetLoader(_url: string, options?: LoaderOptions) {
 
 /** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoader = {
-  ...ParquetFormat,
-
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
-
-  id: 'parquet',
-  module: 'parquet',
-  version: VERSION,
+  ...PARQUET_LOADER_BASE,
   worker: PARQUET_WORKER_URL,
-  options: {
-    parquet: {
-      ...PARQUET_LOADER_DEFAULT_OPTIONS
-    }
-  },
   preload: preloadParquetLoader
 } as const satisfies Loader<
   ObjectRowTable | ArrowTable,

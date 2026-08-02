@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -18,6 +17,15 @@ import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
 } from './parse-parquet-to-arrow-js';
+import {
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './convert-parquet-tables';
+
+export {
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './convert-parquet-tables';
 
 /**
  * Parses a parquet file into an Arrow-backed table.
@@ -106,32 +114,4 @@ function getParquetBackend(options: ParquetLoaderOptions): 'wasm' | 'typescript'
     return options.parquet.backend;
   }
   return options.parquet?.implementation === 'js' ? 'typescript' : 'wasm';
-}
-
-/**
- * Converts an Arrow-backed table into object rows.
- *
- * @param arrowTable - Arrow table wrapper.
- * @returns Object-row table.
- */
-export function convertArrowTableToObjectRows(arrowTable: ArrowTable): ObjectRowTable {
-  return convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
-}
-
-/**
- * Converts an Arrow batch into object-row output.
- *
- * @param batch - Arrow table batch wrapper.
- * @returns Object-row batch.
- */
-export function convertArrowBatchToObjectRows(batch: ArrowTableBatch): ObjectRowTableBatch {
-  const objectRowTable = convertArrowToTable(batch.data, 'object-row-table') as ObjectRowTable;
-
-  return {
-    batchType: batch.batchType,
-    shape: objectRowTable.shape,
-    schema: objectRowTable.schema,
-    data: objectRowTable.data,
-    length: batch.length
-  };
 }
