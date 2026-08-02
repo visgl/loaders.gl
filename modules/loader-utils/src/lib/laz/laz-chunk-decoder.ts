@@ -1875,7 +1875,7 @@ class NIR14Decompressor {
 }
 
 /** Arithmetic state and last waveform packet reference for one scanner channel. */
-class WavePacket14Context {
+class WavePacketDecompressionContext {
   /** Whether this scanner channel has inherited or decoded a waveform reference. */
   haveLast = false;
   /** Last waveform packet descriptor index. */
@@ -1915,7 +1915,7 @@ class WavePacket14Decompressor {
   /** Compressed chunk source. */
   private stream: ByteReader;
   /** Per-scanner-channel arithmetic and prediction state. */
-  private contexts = Array.from({length: 4}, () => new WavePacket14Context());
+  private contexts = Array.from({length: 4}, () => new WavePacketDecompressionContext());
   /** Scanner channel used by the previous point. */
   private lastChannel = -1;
   /** Compressed waveform layer byte length. */
@@ -1975,8 +1975,8 @@ class WavePacket14Decompressor {
 
   /** Decode changed waveform fields into one scanner-channel context. */
   private decodeContext(
-    codingContext: WavePacket14Context,
-    lastWavePacketContext: WavePacket14Context
+    codingContext: WavePacketDecompressionContext,
+    lastWavePacketContext: WavePacketDecompressionContext
   ): void {
     lastWavePacketContext.descriptorIndex = this.decoder.decodeSymbol(
       codingContext.descriptorModel
@@ -2039,7 +2039,10 @@ class WavePacket14Decompressor {
   }
 
   /** Initialize one context from the previous scanner channel's last reference. */
-  private copyLastWavePacket(target: WavePacket14Context, source: WavePacket14Context): void {
+  private copyLastWavePacket(
+    target: WavePacketDecompressionContext,
+    source: WavePacketDecompressionContext
+  ): void {
     target.descriptorIndex = source.descriptorIndex;
     target.offset = source.offset;
     target.packetSize = source.packetSize;
@@ -2050,7 +2053,11 @@ class WavePacket14Decompressor {
   }
 
   /** Read one uncompressed waveform reference into a decoder context. */
-  private readContext(context: WavePacket14Context, input: Uint8Array, inputOffset: number): void {
+  private readContext(
+    context: WavePacketDecompressionContext,
+    input: Uint8Array,
+    inputOffset: number
+  ): void {
     context.descriptorIndex = input[inputOffset];
     context.offset = readBigUint64(input, inputOffset + 1);
     context.packetSize = readUint32(input, inputOffset + 9);
@@ -2062,7 +2069,7 @@ class WavePacket14Decompressor {
 
   /** Write one decoder context as an uncompressed 29-byte waveform reference. */
   private writeContext(
-    context: WavePacket14Context,
+    context: WavePacketDecompressionContext,
     output: Uint8Array,
     outputOffset: number
   ): void {
@@ -2175,6 +2182,10 @@ function createPointDecompressor(
       return new PointFormat2Decompressor(stream, extraByteCount);
     case 3:
       return new PointFormat3Decompressor(stream, extraByteCount);
+    case 4:
+      return new PointFormat4Decompressor(stream, extraByteCount);
+    case 5:
+      return new PointFormat5Decompressor(stream, extraByteCount);
     case 6:
       return new PointFormat6Decompressor(stream, extraByteCount, outputMode, metadata);
     case 7:
@@ -2448,6 +2459,177 @@ class PointFormat3Decompressor implements PointDecompressor {
     return outputOffset;
   }
 
+  private readFirstMetadata(): void {
+    if (this.first) {
+      this.point.readFirstMetadata();
+      this.first = false;
+    }
+  }
+}
+
+/** LASzip v1 decoder for the interleaved legacy waveform packet item. */
+class WavePacket13Decompressor {
+  /** Compressed chunk source used for the first uncompressed item. */
+  private stream: ByteReader;
+  /** Arithmetic decoder shared by all legacy point items. */
+  private decoder: ArithmeticDecoder;
+  /** Waveform state and arithmetic models for the preceding point. */
+  private context = new WavePacketDecompressionContext();
+
+  constructor(stream: ByteReader, decoder: ArithmeticDecoder) {
+    this.stream = stream;
+    this.decoder = decoder;
+  }
+
+  /** Decode one complete 29-byte legacy waveform packet reference. */
+  decompress(output: Uint8Array, outputOffset: number): number {
+    const context = this.context;
+    if (!context.haveLast) {
+      this.stream.getBytes(output, outputOffset, 29);
+      this.readContext(output, outputOffset);
+      context.haveLast = true;
+      return outputOffset + 29;
+    }
+
+    context.descriptorIndex = this.decoder.decodeSymbol(context.descriptorModel);
+    const offsetDifferenceSymbol = this.decoder.decodeSymbol(
+      context.offsetDifferenceModels[context.lastOffsetDifferenceSymbol]
+    );
+    context.lastOffsetDifferenceSymbol = offsetDifferenceSymbol;
+    switch (offsetDifferenceSymbol) {
+      case 0:
+        break;
+      case 1:
+        context.offset = BigInt.asUintN(64, context.offset + BigInt(context.packetSize));
+        break;
+      case 2:
+        context.lastOffsetDifference = context.offsetDifferenceDecompressor.decompress(
+          this.decoder,
+          context.lastOffsetDifference,
+          0
+        );
+        context.offset = BigInt.asUintN(64, context.offset + BigInt(context.lastOffsetDifference));
+        break;
+      default:
+        context.offset = this.decoder.readUint64();
+        break;
+    }
+
+    context.packetSize =
+      context.packetSizeDecompressor.decompress(this.decoder, context.packetSize | 0, 0) >>> 0;
+    context.returnPointBits = context.returnPointDecompressor.decompress(
+      this.decoder,
+      context.returnPointBits,
+      0
+    );
+    context.xBits = context.vectorDecompressor.decompress(this.decoder, context.xBits, 0);
+    context.yBits = context.vectorDecompressor.decompress(this.decoder, context.yBits, 1);
+    context.zBits = context.vectorDecompressor.decompress(this.decoder, context.zBits, 2);
+    this.writeContext(output, outputOffset);
+    return outputOffset + 29;
+  }
+
+  /** Initialize waveform predictors from the first uncompressed item. */
+  private readContext(input: Uint8Array, inputOffset: number): void {
+    const context = this.context;
+    context.descriptorIndex = input[inputOffset];
+    context.offset = readBigUint64(input, inputOffset + 1);
+    context.packetSize = readUint32(input, inputOffset + 9);
+    context.returnPointBits = readInt32(input, inputOffset + 13);
+    context.xBits = readInt32(input, inputOffset + 17);
+    context.yBits = readInt32(input, inputOffset + 21);
+    context.zBits = readInt32(input, inputOffset + 25);
+  }
+
+  /** Write waveform predictor state as one LAS packet-reference field. */
+  private writeContext(output: Uint8Array, outputOffset: number): void {
+    const context = this.context;
+    output[outputOffset] = context.descriptorIndex;
+    writeBigUint64(context.offset, output, outputOffset + 1);
+    writeUint32(context.packetSize, output, outputOffset + 9);
+    writeInt32(context.returnPointBits, output, outputOffset + 13);
+    writeInt32(context.xBits, output, outputOffset + 17);
+    writeInt32(context.yBits, output, outputOffset + 21);
+    writeInt32(context.zBits, output, outputOffset + 25);
+  }
+}
+
+/** LASzip interleaved decoder for LAS point format 4. */
+class PointFormat4Decompressor implements PointDecompressor {
+  /** Legacy core point decoder. */
+  private point: Point10Decompressor;
+  /** GPS time decoder. */
+  private gpsTime: GpsTime10Decompressor;
+  /** Legacy waveform packet decoder. */
+  private wavePacket: WavePacket13Decompressor;
+  /** Extra Bytes decoder. */
+  private bytes: Byte10Decompressor;
+  /** Whether the first raw items remain unread. */
+  private first = true;
+
+  constructor(stream: ByteReader, extraByteCount: number) {
+    this.point = new Point10Decompressor(stream);
+    const decoder = this.point.getDecoder();
+    this.gpsTime = new GpsTime10Decompressor(stream, decoder);
+    this.wavePacket = new WavePacket13Decompressor(stream, decoder);
+    this.bytes = new Byte10Decompressor(stream, decoder, extraByteCount);
+  }
+
+  /** Decode one complete PDRF 4 point record. */
+  decompress(output: Uint8Array, outputOffset: number): number {
+    outputOffset = this.point.decompress(output, outputOffset);
+    outputOffset = this.gpsTime.decompress(output, outputOffset);
+    outputOffset = this.wavePacket.decompress(output, outputOffset);
+    outputOffset = this.bytes.decompress(output, outputOffset);
+    this.readFirstMetadata();
+    return outputOffset;
+  }
+
+  /** Initialize the shared legacy arithmetic decoder after first raw items. */
+  private readFirstMetadata(): void {
+    if (this.first) {
+      this.point.readFirstMetadata();
+      this.first = false;
+    }
+  }
+}
+
+/** LASzip interleaved decoder for LAS point format 5. */
+class PointFormat5Decompressor implements PointDecompressor {
+  /** Legacy core point decoder. */
+  private point: Point10Decompressor;
+  /** GPS time decoder. */
+  private gpsTime: GpsTime10Decompressor;
+  /** RGB decoder. */
+  private rgb: RGB10Decompressor;
+  /** Legacy waveform packet decoder. */
+  private wavePacket: WavePacket13Decompressor;
+  /** Extra Bytes decoder. */
+  private bytes: Byte10Decompressor;
+  /** Whether the first raw items remain unread. */
+  private first = true;
+
+  constructor(stream: ByteReader, extraByteCount: number) {
+    this.point = new Point10Decompressor(stream);
+    const decoder = this.point.getDecoder();
+    this.gpsTime = new GpsTime10Decompressor(stream, decoder);
+    this.rgb = new RGB10Decompressor(stream, decoder);
+    this.wavePacket = new WavePacket13Decompressor(stream, decoder);
+    this.bytes = new Byte10Decompressor(stream, decoder, extraByteCount);
+  }
+
+  /** Decode one complete PDRF 5 point record. */
+  decompress(output: Uint8Array, outputOffset: number): number {
+    outputOffset = this.point.decompress(output, outputOffset);
+    outputOffset = this.gpsTime.decompress(output, outputOffset);
+    outputOffset = this.rgb.decompress(output, outputOffset);
+    outputOffset = this.wavePacket.decompress(output, outputOffset);
+    outputOffset = this.bytes.decompress(output, outputOffset);
+    this.readFirstMetadata();
+    return outputOffset;
+  }
+
+  /** Initialize the shared legacy arithmetic decoder after first raw items. */
   private readFirstMetadata(): void {
     if (this.first) {
       this.point.readFirstMetadata();
@@ -3115,6 +3297,10 @@ function getPointDataRecordBaseLength(pointDataRecordFormat: number): number {
       return 26;
     case 3:
       return 34;
+    case 4:
+      return 57;
+    case 5:
+      return 63;
     case 6:
       return 30;
     case 7:

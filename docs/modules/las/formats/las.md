@@ -35,7 +35,7 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | GPS time | Parsed only indirectly by format layout today; not exposed as a first-class attribute by the TypeScript path. |
 | NIR | Not exposed as a first-class attribute. |
 | Return flags, scanner channel, scan angle, point source ID, user data | Incomplete. |
-| Waveform packet fields | PDRF 9/10 packet references are preserved by the raw TypeScript LAZ APIs but are not exposed as Arrow columns. Waveform payload handling is not implemented. |
+| Waveform packet fields | PDRF 4/5/9/10 packet references are preserved by the raw TypeScript LAZ APIs but are not exposed as Arrow columns. Waveform payload handling is not implemented. |
 | Extra bytes | Raw record length is respected, but Extra Bytes VLR metadata is not mapped to output attributes. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | Not fully parsed or preserved. |
 | `parseInBatches` | Incremental for uncompressed LAS point records after enough header/point bytes are available. |
@@ -60,12 +60,11 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | LASzip VLR parsing | Partial. Compression mode, fixed or variable chunking, and chunk-size metadata required for TypeScript LAZ decoding are parsed incrementally. |
 | Chunk table parsing | LASzip chunk-table version 0 is supported for fixed-size and variable-size chunks. Decoded point counts and byte ranges are validated before decompression. |
 | Single compressed chunk decode | Supported when metadata is supplied by the caller. |
-| LAZ point formats 0, 1, 2, and 3 | Supported for legacy fixed-size LASzip chunks, including GPS time and RGB item decoding. Complete batches can be emitted before a compressed chunk has fully arrived. |
+| LAZ point formats 0-5 | Supported for legacy fixed-size LASzip chunks, including GPS time, RGB, and PDRF 4/5 WavePacket13 decoding. Complete batches can be emitted before a compressed chunk has fully arrived. |
 | LAZ 1.4 point formats 6-10 | Supported for fixed-size full-file LAZ chunks. PDRF 9/10 raw decoding preserves the complete 29-byte waveform packet reference, including lossless 64-bit offsets. COPC remains limited by specification to PDRF 6-8. |
-| LAZ point formats 4 and 5 | Not supported. These add legacy waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
 | Selective decompression | Supported for PDRF 6-10 Arrow output. The decoder skips independent LAZ 1.4 layers that are not represented in the returned table, including PDRF 9/10 waveform references, while preserving complete raw-record decoding through the chunk APIs. |
-| True streaming decode | Partial. Legacy fixed-size PDRF 0-3 chunks emit complete batches before the current chunk or file ends using bounded geometric replay. Layered PDRF 6-10 emits after complete chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. |
+| True streaming decode | Partial. Legacy fixed-size PDRF 0-5 chunks emit complete batches before the current chunk or file ends using bounded geometric replay. Layered PDRF 6-10 emits after complete chunks arrive. Variable-size chunk point counts are stored in the table at EOF, so a forward-only input is buffered until that table is available. |
 | LAZ encoding | Not implemented. |
 
 #### Selective LAZ 1.4 Decoding
@@ -76,7 +75,7 @@ Compressed field layers are decoded as bounded ranges of the original chunk inst
 
 This optimization applies only to table parsing. `decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between selective table output and raw-record output after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
 
-Dedicated PDRF 6, 8, 9, and 10 fixtures compare every raw decoded byte against matching uncompressed LAS records. PDRF 8 coverage includes NIR, Extra Bytes, and scanner-channel transitions. PDRF 9/10 coverage exercises all waveform-offset predictor modes, exact 64-bit offsets above `Number.MAX_SAFE_INTEGER`, packet sizes, float vector fields, and Extra Bytes. LASzip-generated LAS 1.5 PDRF 9/10 fixtures additionally verify item version 4 across all four scanner-channel contexts. NIR, waveform references, and Extra Bytes are preserved by raw decoding but are not yet exposed as Arrow columns.
+Dedicated PDRF 4, 5, 6, 8, 9, and 10 fixtures compare every raw decoded byte against matching uncompressed LAS records. LASzip-generated PDRF 4/5 fixtures validate legacy WavePacket13 and PDRF 5 field ordering. PDRF 8 coverage includes NIR, Extra Bytes, and scanner-channel transitions. PDRF 9/10 coverage exercises all waveform-offset predictor modes, exact 64-bit offsets above `Number.MAX_SAFE_INTEGER`, packet sizes, float vector fields, and Extra Bytes. LASzip-generated LAS 1.5 PDRF 9/10 fixtures additionally verify item version 4 across all four scanner-channel contexts. NIR, waveform references, and Extra Bytes are preserved by raw decoding but are not yet exposed as Arrow columns.
 
 ### TypeScript COPC Path
 
@@ -93,8 +92,8 @@ Dedicated PDRF 6, 8, 9, and 10 fixtures compare every raw decoded byte against m
 | Version | Point data record formats | Main additions | loaders.gl status |
 | --- | --- | --- | --- |
 | 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records. | Header/read compatibility in the TypeScript path; writing is not targeted. |
-| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Read support through existing backends; TypeScript path reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 6-10, plus legacy PDRF 0-3. |
-| 1.3 | 0-5 | EVLRs and waveform packet support. | Read support for common LAS/LAZ attributes. |
+| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Read support through existing backends; TypeScript path reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 0-10. |
+| 1.3 | 0-5 | EVLRs and waveform packet support. | TypeScript LAZ decoding supports all PDRFs, including raw PDRF 4/5 waveform references. |
 | 1.2 | 0-3 | RGB point formats and broader geospatial metadata conventions. | Read and write support for common uncompressed LAS attributes. |
 | 1.1 | 0-1 | GPS time point format and early classification/metadata updates. | Read support for common attributes. |
 | 1.0 | 0 | Original LAS public header, VLRs, and core point record format. | Read support for common attributes. |
@@ -196,7 +195,7 @@ The TypeScript-only backend should be completed in stages, with parity tests aga
 | 2 | Complete LAS metadata parsing. | Public header, VLRs, EVLRs, WKT, GeoTIFF CRS records, Extra Bytes VLRs, and waveform metadata are parsed and exposed consistently. |
 | 3 | Complete raw LAS point readers and writers. | PDRF 0-10 fields round-trip where loaders.gl has an attribute representation, and unsupported fields are explicitly preserved or documented. |
 | 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
-| 5 | Expand legacy waveform LAZ decompression. | PDRF 4 and 5 decode byte-for-byte against a current LASzip-compatible reference. PDRF 9 and 10 raw-record decoding is implemented. |
+| 5 | Expose waveform metadata and payload access. | PDRF 4/5/9/10 packet references become typed output metadata, and internal EVLR or external WDP sample payloads can be loaded on demand. Raw-record decompression is implemented. |
 | 6 | Implement LAZ encoding. | Raw point data compressed by the TypeScript encoder decodes byte-for-byte to the original records. |
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
