@@ -59,7 +59,8 @@
     },
     "./ktx2-basis-writer-worker-node.js": {
       "import": "./dist/ktx2-basis-writer-worker-node.js"
-    }
+    },
+    "./texture-manifest.schema.json": "./dist/texture-manifest.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -69,7 +70,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
+    "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
+    "generate-json-schema": "node scripts/generate-json-schema.mjs",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
@@ -89,7 +91,8 @@
     "@loaders.gl/worker-utils": "5.0.0-alpha.1",
     "@math.gl/types": "^4.1.0",
     "ktx-parse": "^0.7.0",
-    "texture-compressor": "^1.0.2"
+    "texture-compressor": "^1.0.2",
+    "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
