@@ -858,6 +858,33 @@ export type GLTF_EXT_meshopt_compression = {
 };
 
 /**
+ * Khronos meshopt buffer-view compression extension.
+ *
+ * KHR streams use the same fields as `EXT_meshopt_compression`, add version 1 attribute encoding,
+ * and add the `COLOR` post-decode filter.
+ *
+ * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_meshopt_compression
+ */
+export type GLTF_KHR_meshopt_compression = {
+  /** Index of the buffer containing the compressed bytes. */
+  buffer: number;
+  /** Byte offset of the compressed data within `buffer`. */
+  byteOffset?: number;
+  /** Length of the compressed data in bytes. */
+  byteLength: number;
+  /** Stride of each decompressed element in bytes. */
+  byteStride: number;
+  /** Number of elements in the decompressed buffer view. */
+  count: number;
+  /** Meshopt codec mode used for the compressed data. */
+  mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
+  /** Optional post-decode filter applied to the decompressed data. */
+  filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL' | 'COLOR';
+  /** Application-specific extension data. */
+  extras?: any;
+};
+
+/**
  * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_texture_webp
  */
 export type GLTF_EXT_texture_webp = {

@@ -29,6 +29,7 @@ Release Date: 2026
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds opt-in loading of draft glTF 2.1 [unified file references](/docs/modules/gltf/formats/gltf) from URIs or buffer views, plus virtual package lookup through `resolveGLTFFile()`.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) resolves the thumbnail index to the processed image.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#khr_meshopt_compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
 
 **@loaders.gl/las** 
 

@@ -67,6 +67,7 @@ export type {
   GLTF_KHR_binary_glTF,
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,
+  GLTF_KHR_meshopt_compression,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp
 } from './gltf-json-schema';

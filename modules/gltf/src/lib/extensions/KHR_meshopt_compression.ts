@@ -2,10 +2,10 @@ import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {decodeMeshoptCompression} from './meshopt-compression';
 
-/** Vendor meshopt compression extension name. */
-export const name = 'EXT_meshopt_compression';
+/** Khronos meshopt compression extension name. */
+export const name = 'KHR_meshopt_compression';
 
-/** Decodes the vendor meshopt compression extension. */
+/** Decodes the Khronos meshopt compression extension. */
 export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
   await decodeMeshoptCompression(gltfData, options, name);
 }

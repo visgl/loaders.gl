@@ -48,7 +48,7 @@ The GLTF Loader returns an object with a `json` field containing the glTF Sceneg
 
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
-In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
+In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#khr_meshopt_compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
 
 Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
 
@@ -66,7 +66,7 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `false` | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
-| `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).               |
+| `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and KHR/EXT meshopt compressed meshes.                       |
 | `gltf.normalize`          | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.   |
 
 ## Draft glTF 2.1 File Resolution

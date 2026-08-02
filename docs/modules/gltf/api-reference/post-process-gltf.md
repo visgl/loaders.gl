@@ -55,10 +55,11 @@ Examples are mesh compressions such as Draco, or alternate image formats for tex
 
 By handling these extensions during loading, less work needs to be done by the upstream renderer.
 
-| Extension                                                | Preprocessed | Description                                |
-| -------------------------------------------------------- | ------------ | ------------------------------------------ |
-| [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
-| [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
+| Extension                                                                                     | Preprocessed | Description                                |
+| --------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------ |
+| [KHR_draco_mesh_compression](/docs/modules/gltf/formats/gltf#khr_draco_mesh_compression)       | Y            | Decompresses draco-compressed geometries   |
+| [KHR_meshopt_compression](/docs/modules/gltf/formats/gltf#khr_meshopt_compression)             | Y            | Decompresses meshopt-compressed geometries |
+| [EXT_meshopt_compression](/docs/modules/gltf/formats/gltf#ext_meshopt_compression)             | Y            | Decompresses meshopt-compressed geometries |
 
 ## Detailed Post Processing Notes
 

@@ -9,7 +9,9 @@ import {
   GLTFSchema,
   GLTFVersionSchema,
   GLTF1ExtensionSchemas,
-  GLTF2ExtensionSchemas
+  GLTF2ExtensionSchemas,
+  GLTFEXTMeshoptCompressionSchema,
+  GLTFKHRMeshoptCompressionSchema
 } from '@loaders.gl/gltf';
 import {describe, expect, it} from 'vitest';
 
@@ -119,5 +121,24 @@ describe('GLTFSchema', () => {
         images: [{uri: 'image.png', bufferView: 0, mimeType: 'image/png'}]
       }).success
     ).toBe(false);
+  });
+});
+
+describe('meshopt compression extension schemas', () => {
+  const extension = {
+    buffer: 0,
+    byteLength: 64,
+    byteStride: 4,
+    count: 16,
+    mode: 'ATTRIBUTES',
+    filter: 'COLOR'
+  };
+
+  it('accepts the KHR COLOR filter', () => {
+    expect(GLTFKHRMeshoptCompressionSchema.safeParse(extension).success).toBe(true);
+  });
+
+  it('keeps COLOR out of the EXT extension schema', () => {
+    expect(GLTFEXTMeshoptCompressionSchema.safeParse(extension).success).toBe(false);
   });
 });

@@ -65,6 +65,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.1",
     "@loaders.gl/textures": "5.0.0-alpha.1",
     "@math.gl/core": "^4.1.0",
+    "meshoptimizer": "^1.2.0",
     "zod": "^4.1.12"
   },
   "peerDependencies": {

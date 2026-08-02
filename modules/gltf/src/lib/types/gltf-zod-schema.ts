@@ -438,6 +438,20 @@ export const GLTFEXTMeshoptCompressionSchema = z
   })
   .catchall(z.unknown());
 
+/** Zod schema for the KHR_meshopt_compression extension. */
+export const GLTFKHRMeshoptCompressionSchema = z
+  .object({
+    buffer: GLTFIdSchema,
+    byteOffset: z.number().int().nonnegative().optional(),
+    byteLength: z.number().int().positive(),
+    byteStride: z.number().int().positive(),
+    count: z.number().int().positive(),
+    mode: z.enum(['ATTRIBUTES', 'TRIANGLES', 'INDICES']),
+    filter: z.enum(['NONE', 'OCTAHEDRAL', 'QUATERNION', 'EXPONENTIAL', 'COLOR']).optional(),
+    extras: z.unknown().optional()
+  })
+  .catchall(z.unknown());
+
 /** Zod schema for the EXT_texture_webp extension. */
 export const GLTFEXTTextureWebpSchema = z
   .object({source: GLTFIdSchema, extras: z.unknown().optional()})
