@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 
 import {ImageLoader, ImageBitmapLoader, getImageType, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
+import {parseImageBitmapBlob} from '../src/lib/parsers/parse-image-bitmap';
 
 import {
   TEST_CASES,
@@ -31,6 +32,77 @@ test('ImageBitmapLoader#load(data URL)', async () => {
   const imageData = getImageData(image);
   expect(imageData.width, 'image width is correct').toEqual(2);
   expect(imageData.height, 'image height is correct').toEqual(2);
+});
+
+test.runIf(isBrowser)('ImageBitmapLoader#load(Blob) uses native Blob decoding', async () => {
+  const response = await fetch(IMAGE_DATA_URL);
+  const blob = await response.blob();
+  Object.defineProperty(blob, 'arrayBuffer', {
+    value: async () => {
+      throw new Error('Blob.arrayBuffer should not be called');
+    }
+  });
+
+  const image = await load(blob, ImageBitmapLoader);
+  expect(image, 'image loaded successfully from Blob').toBeTruthy();
+  expect(getImageType(image), 'Blob image type is correct').toBe('imagebitmap');
+  expect(image.width, 'Blob image width is correct').toBe(2);
+  expect(image.height, 'Blob image height is correct').toBe(2);
+});
+
+test.runIf(isBrowser)('parseImageBitmapBlob uses native Blob decoding', async () => {
+  const response = await fetch(IMAGE_DATA_URL);
+  const blob = await response.blob();
+  Object.defineProperty(blob, 'arrayBuffer', {
+    value: async () => {
+      throw new Error('Blob.arrayBuffer should not be called');
+    }
+  });
+
+  const image = await parseImageBitmapBlob(blob);
+  expect(getImageType(image), 'Blob image type is correct').toBe('imagebitmap');
+  expect(image.width, 'Blob image width is correct').toBe(2);
+  expect(image.height, 'Blob image height is correct').toBe(2);
+});
+
+test.runIf(isBrowser)('parseImageBitmapBlob falls back for SVG Blobs', async () => {
+  const response = await fetch(SVG_DATA_URL);
+  const blob = await response.blob();
+  let arrayBufferCalled = false;
+  const arrayBuffer = blob.arrayBuffer.bind(blob);
+  Object.defineProperty(blob, 'arrayBuffer', {
+    value: async () => {
+      arrayBufferCalled = true;
+      return await arrayBuffer();
+    }
+  });
+
+  const image = await parseImageBitmapBlob(blob, {}, {url: 'image.svg'});
+  expect(image, 'SVG Blob is loaded').toBeTruthy();
+  expect(arrayBufferCalled, 'SVG Blob uses ArrayBuffer fallback').toBe(true);
+});
+
+test.runIf(isBrowser)('parseImageBitmapBlob rejects browsers without createImageBitmap', async () => {
+  const response = await fetch(IMAGE_DATA_URL);
+  const blob = await response.blob();
+  const originalCreateImageBitmap = globalThis.createImageBitmap;
+
+  Object.defineProperty(globalThis, 'createImageBitmap', {
+    configurable: true,
+    value: undefined
+  });
+
+  try {
+    await parseImageBitmapBlob(blob);
+    throw new Error('parseImageBitmapBlob should fail without createImageBitmap');
+  } catch (error) {
+    expect((error as Error).message.includes('requires browser ImageBitmap support')).toBe(true);
+  } finally {
+    Object.defineProperty(globalThis, 'createImageBitmap', {
+      configurable: true,
+      value: originalCreateImageBitmap
+    });
+  }
 });
 
 test.runIf(!isBrowser)('ImageBitmapLoader#load(URL) returns Node ImageBitmap', async () => {

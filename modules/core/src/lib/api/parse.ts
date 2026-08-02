@@ -21,6 +21,7 @@ import {
   canParseWithWorker,
   mergeOptions,
   isResponse,
+  isBlob,
   isSourceLoader
 } from '@loaders.gl/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/worker-utils';
@@ -158,6 +159,10 @@ async function parseWithLoader(
   if (canParseWithWorker(loaderWithParser, options)) {
     data = await getArrayBufferFromData(data, options);
     return await parseWithWorker(loaderWithParser, data, options, context, parse);
+  }
+
+  if (isBlob(data) && loaderWithParser.parseBlob) {
+    return await loaderWithParser.parseBlob(data, options, context);
   }
 
   data = await getArrayBufferOrStringFromData(data, loader, options);

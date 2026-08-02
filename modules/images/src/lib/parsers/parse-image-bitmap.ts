@@ -1,7 +1,8 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import type {ImageBitmapLoaderOptions} from '../../image-bitmap-loader';
-import {parseToImageBitmap} from './parse-to-image-bitmap';
+import {parseBlobToImageBitmap, parseToImageBitmap} from './parse-to-image-bitmap';
+import {isSVG} from './svg-utils';
 import {parseToNodeImage} from './parse-to-node-image';
 
 const INVALID_IMAGE_TYPE_ERROR =
@@ -30,6 +31,38 @@ export async function parseImageBitmap(
   }
 
   return await parseToImageBitmap(arrayBuffer, options, context?.url);
+}
+
+/**
+ * Parses Blob images into `ImageBitmap` without first copying to an ArrayBuffer when possible.
+ * @param blob Encoded image Blob
+ * @param options ImageBitmap loader options
+ * @param context Loader context
+ * @returns Decoded ImageBitmap
+ */
+export async function parseImageBitmapBlob(
+  blob: Blob,
+  options?: ImageBitmapLoaderOptions,
+  context?: LoaderContext
+): Promise<ImageBitmap> {
+  options = options || {};
+  validateImageTypeOption(options);
+  const hasNodeImageParser = Boolean(globalThis.loaders?.parseImageNode);
+
+  if (
+    !isBrowser ||
+    hasNodeImageParser ||
+    isSVG(context?.url) ||
+    blob.type.startsWith('image/svg+xml')
+  ) {
+    return await parseImageBitmap(await blob.arrayBuffer(), options, context);
+  }
+
+  if (typeof ImageBitmap === 'undefined' || typeof createImageBitmap !== 'function') {
+    throw new Error(UNSUPPORTED_IMAGE_BITMAP_ERROR);
+  }
+
+  return await parseBlobToImageBitmap(blob, options);
 }
 
 /**
