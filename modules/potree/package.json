@@ -49,7 +49,7 @@
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
-    "generate-json-schema": "node scripts/generate-json-schema.mjs",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/types/potree-metadata.js --export PotreeMetadataSchema --output ./dist/potree-metadata.schema.json --id https://unpkg.com/@loaders.gl/potree/potree-metadata.schema.json --title 'Potree 1.x cloud.js metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
