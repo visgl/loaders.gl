@@ -6,7 +6,7 @@ import test from 'test/utils/vitest-tape';
 import type {Subtree} from '../../../src/types';
 import type {ImplicitOptions} from '../../../src/lib/parsers/parse-3d-tile-header';
 import {parseImplicitTiles} from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
-import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
 
 test('parseImplicitTiles#supports a single available level', async t => {
   const subtree: Subtree = {
@@ -18,17 +18,14 @@ test('parseImplicitTiles#supports a single available level', async t => {
   };
   const implicitOptions: ImplicitOptions = {
     contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
-    subtreesUriTemplate: 'subtrees/{level}/{x}/{y}.subtree',
+    subtreesUrlTemplate: 'https://example.com/subtrees/{level}/{x}/{y}.subtree',
     subdivisionScheme: 'QUADTREE',
     subtreeLevels: 1,
     maximumLevel: 0,
-    refine: 'REPLACE',
-    basePath: 'https://example.com',
+    refine: TILE_REFINEMENT.REPLACE,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
     rootLodMetricValue: 500,
-    rootBoundingVolume: {region: [0, 0, 1, 1, 0, 100]},
-    getTileType: () => TILE_TYPE.SCENEGRAPH,
-    getRefine: () => TILE_REFINEMENT.REPLACE
+    rootBoundingVolume: {region: [0, 0, 1, 1, 0, 100]}
   };
 
   const tile = await parseImplicitTiles({
