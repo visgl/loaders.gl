@@ -6,9 +6,10 @@
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`ParquetSourceLoader` creates a reusable `ParquetSource` for selective access to a Parquet file.
-The source opens the file lazily, caches its schema and footer metadata, and can stream selected row
-groups and columns as Arrow batches without reopening the file for each read.
+`ParquetSourceLoader` creates a reusable `ParquetSource` for metadata, schema, and selective Arrow
+batch access without downloading an entire remote Parquet object. The source uses bounded HTTP byte
+ranges, decodes the footer once, and shares the resulting metadata and schema cache across calls and
+reads.
 
 ## Usage
 
@@ -16,22 +17,25 @@ groups and columns as Arrow batches without reopening the file for each read.
 import {load} from '@loaders.gl/core';
 import {ParquetSourceLoader} from '@loaders.gl/parquet';
 
+const abortController = new AbortController();
 const source = await load(
   'https://example.com/trips.parquet',
   ParquetSourceLoader,
-  {}
+  {parquet: {headers: {Authorization: 'Bearer token'}}}
 );
 
 try {
   const metadata = await source.getMetadata();
-  console.log(metadata.rowCount, metadata.rowGroups.length);
+  const schema = await source.getSchema();
 
   for await (const batch of source.read({
-    rowGroups: [2, 3],
-    columns: ['pickup_longitude', 'pickup_latitude'],
-    batchSize: 65_536
+    rowGroups: [4, 7, 8],
+    columns: ['x', 'y', 'source_id'],
+    batchSize: 524_288,
+    concurrency: 2,
+    signal: abortController.signal
   })) {
-    console.log(batch.data, batch.metadata);
+    console.log(schema, metadata.rowCount, batch.rowOffset, batch.data);
   }
 } finally {
   await source.close();
@@ -39,8 +43,8 @@ try {
 ```
 
 Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `load()` imports its
-runtime implementation from the package's `parquet-source-loader` subpath. File access and WASM
-initialization begin when `getSchema()`, `getMetadata()`, or `read()` is first called.
+runtime implementation from the package's `parquet-source-loader` subpath. File access begins when
+`getSchema()`, `getMetadata()`, or `read()` is first called.
 
 Applications that need synchronous `createDataSource()` can import the runtime loader explicitly:
 
@@ -53,71 +57,79 @@ const source = createDataSource(url, [ParquetSourceLoader], {});
 
 ## API
 
-### `getSchema(): Promise<Schema>`
+### `getSchema(options?): Promise<Schema>`
 
 Returns the cached Arrow-compatible loaders.gl schema. Compatible GeoParquet metadata is normalized
 to GeoArrow field metadata in the same way as Arrow output from `ParquetLoader`.
 
-### `getMetadata(): Promise<ParquetSourceMetadata>`
+### `getMetadata(options?): Promise<ParquetSourceMetadata>`
 
-Returns cached, plain JavaScript metadata copied from the Parquet footer:
+Returns cached plain JavaScript metadata copied from the Parquet footer:
 
-- `schema`: Arrow-compatible loaders.gl schema.
-- `version`: Parquet format version.
-- `rowCount`: total file row count.
-- `createdBy`: optional writer identifier.
-- `keyValueMetadata`: file-level key/value metadata.
-- `rowGroups`: row count, absolute source-row offset, compressed and uncompressed size, and column
-  chunks for every row group.
+- file byte length, format version, writer, and row count;
+- key/value footer metadata;
+- row counts, absolute row offsets, and compressed/uncompressed byte lengths for each row group;
+- column path, compression, encodings, value count, physical range, byte lengths, and page offsets
+  for each column chunk; and
+- `ETag` or `Last-Modified` validators captured from remote objects.
 
-Each column chunk includes its nested `path`, optional `filePath`, `fileOffset`, value count,
-compression and encoding names, and compressed and uncompressed size. `fileOffset` is a `bigint`.
+Pass `{formatSpecificMetadata: true}` to include the decoded Parquet Thrift footer. Both metadata and
+schema objects are reused for the lifetime of the source.
 
-The returned schema and metadata objects are reused for the lifetime of the source.
+### `read(options?): AsyncIterable<ParquetSourceBatch>`
 
-### `read(options?: ParquetSourceReadOptions): AsyncIterable<ParquetSourceBatch>`
+Returns Arrow table batches. `rowGroups` controls which row groups are fetched and their output
+order. `columns` prevents unselected column chunks from being requested or decoded. Both selections
+are validated against the cached footer before row data is read.
 
-Streams Arrow batches for the selected row groups and columns. Omitting `rowGroups` reads every row
-group in file order. Explicit row-group indexes are read in the supplied order and must be unique and
-in range.
+Every batch includes provenance as top-level properties and in `batch.metadata`:
 
-Each batch includes provenance in `batch.metadata`:
-
-| Field | Description |
+| Property | Description |
 | --- | --- |
-| `sourceId` | Resolved URL, file name, or stable Blob label. |
-| `rowGroupIndex` | Zero-based source row-group index. |
-| `rowOffset` | Absolute offset of the first batch row in the source file. |
-| `rowGroupRowOffset` | Offset of the first batch row within its row group. |
+| `sourceId` / `source` | Source URL, file name, or stable Blob label. |
+| `sourceUrl` | Source URL when available. |
+| `rowGroupIndex` | Zero-based row-group index in the source file. |
+| `rowOffset` | Absolute source-row offset of the first batch row. |
+| `rowGroupRowOffset` | Offset of the first batch row within the row group. |
+| `rowCount` | Number of rows in the batch. |
+
+Rows are yielded in the requested row-group order even when `concurrency` allows multiple groups to
+decode at once. Ending iteration early, aborting `signal`, or calling `close()` cancels outstanding
+range requests. Network and decode errors are rethrown by the iterator.
 
 ### `close(): Promise<void>`
 
-Releases the cached WASM file handle and prevents additional operations. Calling `close()` more than
-once is safe. A source supports one active `read()` at a time; finish or cancel that iterator before
-starting another read or calling `close()`. Overlapping operations reject instead of waiting behind a
-paused consumer.
+Aborts active requests, closes the range-backed file, and permanently closes the source. Calling
+`close()` more than once is safe.
 
 ## Options
 
-Source defaults are configured under `parquet` when the source is created. `read()` accepts the first
-four options again and uses them to override the source defaults for that read.
+Source defaults are configured under `parquet`; `read()` options override those defaults for an
+individual read.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `parquet.rowGroups` | `number[]` | all row groups | Row-group indexes to read. |
-| `parquet.columns` | `string[]` | all columns | Column paths to project. |
-| `parquet.batchSize` | `number` | backend default | Target number of rows per Arrow batch. |
-| `parquet.concurrency` | `number` | backend default | Concurrent reads used by `parquet-wasm`. |
-| `parquet.wasmUrl` | `ParquetWasm.InitInput \| Promise<ParquetWasm.InitInput>` | external URL | Overrides the `parquet-wasm` binary location. |
+| `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
+| `parquet.preserveBinary` | `boolean` | `false` | Preserves decoded binary values as byte arrays. |
+| `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
+| `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
+| `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
+| `parquet.concurrency` / `read.concurrency` | `number` | `1` | Maximum row groups decoded concurrently. |
+| `read.signal` | `AbortSignal` | `undefined` | Cancels this read and its outstanding ranges. |
+| `rangeRequests.scheduler` | `RangeRequestScheduler` | per-source scheduler | Reuses a shared loaders.gl range scheduler. |
+| `rangeRequests.batchDelayMs` | `number` | `0` | Delay before coalescing queued ranges. |
+| `rangeRequests.maxGapBytes` | `number` | `0` | Maximum gap eligible for range coalescing. |
+| `rangeRequests.rangeExpansionBytes` | `number` | `0` | Maximum overfetch used to combine nearby ranges. |
+| `rangeRequests.maxMergedBytes` | `number` | scheduler default | Maximum size of one merged transport range. |
+| `rangeRequests.stats` | `Stats` | scheduler default | probe.gl range-request counters. |
+| `rangeRequests.onEvent` | `(event) => void` | `undefined` | Range scheduling diagnostic callback. |
 
 ## Current limitations
 
 - Decoding runs on the caller thread; worker-backed decoding and transferable Arrow buffers are not
   implemented yet.
-- URL and Blob access use the transport built into `parquet-wasm`. A custom fetch or range-request
-  transport, `AbortSignal`, and ETag/Last-Modified consistency checks are not exposed yet. Remote
-  reads depend on the server's CORS and byte-range behavior.
-- The default WASM binary is loaded from an external URL. Set `parquet.wasmUrl` to self-host the
-  binary; a bundler-resolved packaged default is not implemented yet.
-- Downloaded-byte, request-count, network-time, and decode-time telemetry are not reported yet.
+- The TypeScript decoder temporarily materializes object rows before creating Arrow batches. A
+  following tranche will decode directly into typed columns without changing the `read()` API.
+- Downloaded-byte, request-count, network-time, and decode-time telemetry are not yet attached to
+  batches.
 - Row-group and column-chunk sizes and offsets are available, but min/max/null statistics are not.

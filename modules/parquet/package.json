@@ -74,6 +74,7 @@
     "@loaders.gl/gis": "5.0.0-alpha.1",
     "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "@loaders.gl/schema": "5.0.0-alpha.1",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.1",
     "@loaders.gl/wkt": "5.0.0-alpha.1",
     "@probe.gl/log": "^4.1.1",
     "async-mutex": "^0.2.2",

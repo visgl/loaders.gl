@@ -4,7 +4,6 @@
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
 
-import {PARQUET_WASM_URL} from './lib/constants';
 import {ParquetFormat} from './parquet-format';
 import type {ParquetSource} from './parquet-source-loader';
 import type {ParquetSourceLoaderOptions} from './parquet-source-types';
@@ -42,7 +41,14 @@ export const ParquetSourceLoader = {
       columns: undefined,
       batchSize: undefined,
       concurrency: undefined,
-      wasmUrl: PARQUET_WASM_URL
+      headers: undefined,
+      preserveBinary: false,
+      wasmUrl: undefined
+    },
+    rangeRequests: {
+      batchDelayMs: 0,
+      maxGapBytes: 0,
+      rangeExpansionBytes: 0
     }
   },
   defaultOptions: {
@@ -51,7 +57,14 @@ export const ParquetSourceLoader = {
       columns: undefined!,
       batchSize: undefined!,
       concurrency: undefined!,
-      wasmUrl: PARQUET_WASM_URL
+      headers: undefined!,
+      preserveBinary: false,
+      wasmUrl: undefined!
+    },
+    rangeRequests: {
+      batchDelayMs: 0,
+      maxGapBytes: 0,
+      rangeExpansionBytes: 0
     }
   },
   testURL: (url: string): boolean => /\.parquet(?:$|[?#])/i.test(url),
