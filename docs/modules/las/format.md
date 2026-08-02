@@ -11,9 +11,9 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
 | File Extensions      | `.las`, `.laz`                                                                             |
 | MIME Type            | Not standardized                                                                           |
 | File Type            | Binary                                                                                     |
-| Loader APIs          | `load`, `parse`, `parseSync`                                                               |
+| Loader APIs          | `load`, `parse`, `parseSync`, `parseInBatches`                                             |
 | Loader Worker Thread | Yes                                                                                        |
-| Loader Streaming     | No                                                                                         |
+| Loader Streaming     | Yes with the TypeScript backend                                                            |
 | Writer APIs          | `encode`, `encodeSync`                                                                     |
 
 ## Loaders and Writers
@@ -41,4 +41,4 @@ LAS stores uncompressed point cloud data. LAZ is the lossless compressed variant
 
 ## Support
 
-`@loaders.gl/las` supports LAS and LAZ files up to LAS v1.3. LAS v1.4 is not currently supported.
+`@loaders.gl/las` supports LAS 1.4 through the `copc`, `laz-rs`, and opt-in `typescript` backends. The default `laz-perf` backend supports files through LAS 1.3. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for point-format details.
