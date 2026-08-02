@@ -203,11 +203,19 @@ A minor release that includes:
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
+- **Same-frame dynamic SSE transforms** Animated local tilesets refresh the root transform before density calculation, and tilted oriented boxes derive height from every rotated half axis.
 - **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.
+- **Explicit S2 bounding volumes** `3DTILES_bounding_volume_S2` tile, content, and viewer-request volumes are converted to traversal-ready oriented boxes outside implicit tiling as well.
 - **Progressive tile requests** Coarse viewport coverage receives priority before fine detail through reduced-height SSE.
 - **Foveated tile requests** Perspective tiles near the view axis receive priority over equally needed peripheral detail without changing the final LOD target.
+- **Forward-ray foveation** Volumes behind the camera are classified as peripheral instead of competing with visible center content through the backward half of an infinite view line.
 - **Motion-aware request deferral** Refinement-safe peripheral requests can pause briefly during camera motion and automatically resume after the configured delay.
+- **Queued-request deferral** Peripheral work already waiting for a scheduler slot is canceled before network access when motion makes it deferrable, then resubmitted without a stale penalty after the delay.
 - **Request-priority diagnostics** Tile runtime fields and tests expose progressive, foveated, deferred, and combined priority calculations.
+- **Byte-native cache budgets** `Tileset3D.cacheBytes` and `maximumCacheOverflowBytes` replace ambiguous MiB-era controls with exact byte thresholds and Cesium-compatible 512 MiB 3D Tiles defaults while leaving I3S defaults unchanged.
+- **Memory-aware LOD** Cache pressure above the base-plus-overflow ceiling raises the active SSE incrementally, while usage below the base target restores the configured quality and unused tiles still evict at the base budget.
+- **Cache migration and diagnostics** Deprecated MiB aliases remain synchronized, runtime budget updates avoid stale conversions, and the cache guide documents precedence, tuning, memory estimates, and troubleshooting.
+- **Reliable 3D Tiles example dispatch** The internal `SourceLayer` now preserves URL and Blob inputs for its 3D loader instead of allowing deck.gl's inherited asynchronous `data` prop to replace them before dispatch.
 - **3D Tiles runtime guides** A [sidebar- and tab-linked concepts suite](/docs/modules/3d-tiles/concepts) documents hierarchy refinement, SSE/LOD, request scheduling, foveation, caching, memory, tuning, and diagnostics.
 
 **@loaders.gl/tile-converter**

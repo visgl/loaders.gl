@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Matrix4, Vector3, clamp} from '@math.gl/core';
+import {Matrix4, Quaternion, Vector3, clamp} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {Tile3D} from '../common/tile-3d';
 import type {FrameState} from './frame-state';
@@ -39,7 +39,30 @@ const scratchCartographic = new Vector3();
 const scratchCenter = new Vector3();
 const scratchPosition = new Vector3();
 const scratchDirection = new Vector3();
+const scratchBoxXAxis = new Vector3();
+const scratchBoxYAxis = new Vector3();
+const scratchBoxZAxis = new Vector3();
+const scratchBoxQuaternion = new Quaternion();
 const unitZDirection = new Vector3(0, 0, 1);
+
+/**
+ * Refreshes the root transform before calculating transform-dependent dynamic SSE density.
+ *
+ * Traversal normally updates transforms while visiting tile visibility, but density is calculated
+ * immediately before traversal. Performing the root update at that earlier boundary keeps local
+ * box and sphere height falloff synchronized with an animated tileset model matrix in the same
+ * frame. {@link Tile3D._updateTransform} also recalculates world-space geometric error from its raw
+ * source value, so repeated calls do not compound scale.
+ *
+ * @param root - Root tile whose computed transform feeds dynamic SSE height calculations.
+ * @param modelMatrix - Current tileset-to-world transform for this frame.
+ */
+export function updateRootTransformForDynamicScreenSpaceError(
+  root: Tile3D,
+  modelMatrix: Matrix4
+): void {
+  root._updateTransform(modelMatrix);
+}
 
 /**
  * Calculates the effective dynamic screen-space error density for one viewport and frame.
@@ -308,7 +331,7 @@ function getBoundingVolumeCenterAndHalfHeight(
   if (boundingVolumeHeader.box) {
     const box = boundingVolumeHeader.box;
     result.set(box[0], box[1], box[2]);
-    return box.length === 10 ? box[5] : Math.hypot(box[9], box[10], box[11]);
+    return getBoxHalfHeight(box);
   }
 
   if (boundingVolumeHeader.sphere) {
@@ -318,4 +341,30 @@ function getBoundingVolumeCenterAndHalfHeight(
   }
 
   return null;
+}
+
+/**
+ * Returns the conservative source-z extent of an oriented box.
+ *
+ * A 12-component 3D Tiles box stores three half-axis vectors, so every vector can contribute to
+ * vertical height after rotation. The alternate 10-component representation stores half sizes and
+ * a quaternion; rotating its three scaled basis vectors produces the same sum of absolute z
+ * projections. Using only the nominal z axis would underestimate tilted volumes and fade dynamic
+ * SSE too early while the camera is still within the tileset's height range.
+ *
+ * @param box - Source-space oriented box in half-axis or half-size/quaternion form.
+ * @returns Conservative source-z half-height in the box coordinate system's distance units.
+ */
+function getBoxHalfHeight(box: number[]): number {
+  if (box.length === 10) {
+    scratchBoxQuaternion.fromArray(box, 6);
+    scratchBoxXAxis.set(box[3], 0, 0).transformByQuaternion(scratchBoxQuaternion);
+    scratchBoxYAxis.set(0, box[4], 0).transformByQuaternion(scratchBoxQuaternion);
+    scratchBoxZAxis.set(0, 0, box[5]).transformByQuaternion(scratchBoxQuaternion);
+    return (
+      Math.abs(scratchBoxXAxis[2]) + Math.abs(scratchBoxYAxis[2]) + Math.abs(scratchBoxZAxis[2])
+    );
+  }
+
+  return Math.abs(box[5]) + Math.abs(box[8]) + Math.abs(box[11]);
 }

@@ -6,12 +6,14 @@
 
 import test from 'tape-promise/tape';
 import {BoundingSphere} from '@math.gl/culling';
-import {TILE_REFINEMENT} from '../../src/constants';
+import {TILE_CONTENT_STATE, TILE_REFINEMENT} from '../../src/constants';
+import {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
 import {
   calculateFoveatedFactor,
   calculateTileRequestPriority,
   interpolateLinearly,
+  isFoveatedRequestDelayActive,
   isFoveatedRequestDeferred,
   isProgressiveResolutionPriority
 } from '../../src/tileset-3d/helpers/tiles-3d-request-priority';
@@ -25,6 +27,7 @@ test('request priority#foveated factor accounts for bounding volume', t => {
   const centeredTile = new BoundingSphere([0, 0, 10], 1);
   const peripheralTile = new BoundingSphere([5, 0, 10], 1);
   const intersectingTile = new BoundingSphere([4, 0, 10], 4);
+  const behindCameraTile = new BoundingSphere([0, 0, -10], 1);
 
   t.equals(
     calculateFoveatedFactor(centeredTile, TEST_CAMERA),
@@ -39,6 +42,11 @@ test('request priority#foveated factor accounts for bounding volume', t => {
     calculateFoveatedFactor(intersectingTile, TEST_CAMERA),
     0,
     'keeps a large volume at center priority when it intersects the view axis'
+  );
+  t.equals(
+    calculateFoveatedFactor(behindCameraTile, TEST_CAMERA),
+    1,
+    'assigns maximum peripheral priority to a volume behind the camera'
   );
   t.end();
 });
@@ -119,7 +127,6 @@ test('request priority#foveated deferral preserves refinement continuity', t => 
 test('request priority#uses independent scheduling bands', t => {
   const basePriority = {
     priorityProgressiveResolution: false,
-    priorityDeferred: false,
     foveatedFactor: 0,
     reverseScreenSpaceError: 0,
     rootScreenSpaceError: 100
@@ -131,19 +138,56 @@ test('request priority#uses independent scheduling bands', t => {
   });
   const centerPriority = calculateTileRequestPriority(basePriority);
   const peripheralPriority = calculateTileRequestPriority({...basePriority, foveatedFactor: 0.1});
-  const deferredPriority = calculateTileRequestPriority({
-    ...basePriority,
-    priorityDeferred: true
-  });
 
   t.ok(progressivePriority < centerPriority, 'loads coarse progressive coverage first');
   t.ok(centerPriority < peripheralPriority, 'loads viewport-center content before the periphery');
-  t.ok(peripheralPriority < deferredPriority, 'keeps deferred content behind stationary work');
   t.ok(
     calculateTileRequestPriority({...basePriority, reverseScreenSpaceError: 10}) <
       calculateTileRequestPriority({...basePriority, reverseScreenSpaceError: 90}),
     'preserves reverse-SSE order inside the same priority band'
   );
+  t.end();
+});
+
+test('request priority#limits deferral to the active motion window', t => {
+  t.ok(isFoveatedRequestDelayActive(true, 0.1, 0.2), 'holds eligible work during the delay');
+  t.notOk(isFoveatedRequestDelayActive(true, 0.2, 0.2), 'removes the hold when the delay expires');
+  t.notOk(
+    isFoveatedRequestDelayActive(false, 0.1, 0.2),
+    'does not hold refinement-ineligible work'
+  );
+  for (const invalidDelay of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    t.notOk(
+      isFoveatedRequestDelayActive(true, 0.1, invalidDelay),
+      `disables the hold for delay ${String(invalidDelay)}`
+    );
+  }
+  t.end();
+});
+
+test('Tile3D#scheduler callback cancels a request that became deferred while queued', t => {
+  const tile = Object.assign(Object.create(Tile3D.prototype), {
+    refine: TILE_REFINEMENT.ADD,
+    tileset: {
+      _frameNumber: 1,
+      _traverser: {
+        options: {skipLevelOfDetail: false},
+        root: {_screenSpaceError: 100}
+      }
+    },
+    parent: null,
+    _visible: true,
+    _touchedFrame: 1,
+    _screenSpaceError: 10,
+    _priorityProgressiveResolution: false,
+    _foveatedFactor: 0.1,
+    contentState: TILE_CONTENT_STATE.LOADING,
+    priorityDeferred: true
+  }) as Tile3D;
+
+  t.equals(tile._getPriority(), -1, 'cancels the queued scheduler entry during motion');
+  tile.priorityDeferred = false;
+  t.ok(tile._getPriority() >= 0, 'restores normal priority after the delay expires');
   t.end();
 });
 
@@ -170,6 +214,7 @@ test('TilesetTraverser#releases deferred requests after the movement delay', t =
   t.notOk(traverser.requestedTiles[tile.id], 'does not issue the held request');
 
   traverser.reset();
+  tile.priorityDeferred = isFoveatedRequestDelayActive(true, 0.2, 0.2);
   // @ts-expect-error test supplies the minimal tile and frame-state fields used by loadTile
   traverser.loadTile(tile, {...movingFrameState, camera: {timeSinceMovement: 0.2}});
   t.ok(traverser.requestedTiles[tile.id], 'releases the request when the delay expires');

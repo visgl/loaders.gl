@@ -94,6 +94,12 @@ The calculation uses geodetic heights for a root `region` and earth-scale boundi
 tilesets use their root transform and source-space z-up height. Density is recalculated for every
 viewport and traversal frame, so multiple views do not share camera-dependent state.
 
+For local box and sphere tilesets, the root transform is refreshed before density is calculated,
+so an animated `modelMatrix` affects height falloff in the same frame as traversal. A tilted
+oriented box uses the sum of the absolute vertical projections of all three half axes. The
+half-size/quaternion representation is rotated into the same conservative extent; using only its
+nominal z half-size would make tilted datasets appear artificially short.
+
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `dynamicScreenSpaceError` | `true` | Enables the optimization for perspective 3D Tiles traversal. |
@@ -199,7 +205,7 @@ street-level and aerial views need different traversal depth.
 
 After selecting an acceptable final LOD, tune streaming behavior separately with the [request-scheduling guide](./request-scheduling-and-priorities), then size the [cache and memory budget](./caching-and-memory).
 
-Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, and `maximumMemoryUsage` can delay or limit the visible effect of an SSE change.
+Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, byte-native cache budgets, and memory-adjusted SSE can delay or limit the visible effect of an SSE change. See [Caching and memory](./caching-and-memory).
 
 ## Runtime Inspection
 

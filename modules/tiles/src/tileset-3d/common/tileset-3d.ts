@@ -12,7 +12,10 @@ import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
 import {getFrameState, limitSelectedTiles, updateCameraMotionState} from '../helpers/frame-state';
 import type {CameraMotionState, FrameState} from '../helpers/frame-state';
-import {calculateDynamicScreenSpaceErrorDensity} from '../helpers/tiles-3d-lod';
+import {
+  calculateDynamicScreenSpaceErrorDensity,
+  updateRootTransformForDynamicScreenSpaceError
+} from '../helpers/tiles-3d-lod';
 import {interpolateLinearly} from '../helpers/tiles-3d-request-priority';
 import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-priority';
 
@@ -38,7 +41,28 @@ export type Tileset3DProps = {
   loadOptions?: LoaderOptions;
   loadTiles?: boolean;
   basePath?: string;
+  /**
+   * Soft target, in bytes, for cached tile content that is not required by the current frame.
+   * The listed default applies to 3D Tiles; I3S retains its existing 32 MiB default.
+   * @default 536870912
+   */
+  cacheBytes?: number;
+  /**
+   * Additional bytes that the current-frame working set may use before memory-adjusted SSE rises.
+   * The listed default applies to 3D Tiles; I3S retains its existing 1 MiB default.
+   * @default 536870912
+   */
+  maximumCacheOverflowBytes?: number;
+  /**
+   * Soft cache target in mebibytes.
+   * @deprecated Use {@link Tileset3DProps.cacheBytes}; when both are supplied, `cacheBytes` wins.
+   */
   maximumMemoryUsage?: number;
+  /**
+   * Cache overflow headroom in mebibytes.
+   * @deprecated Use {@link Tileset3DProps.maximumCacheOverflowBytes}; when both are supplied, the
+   * byte-native option wins.
+   */
   memoryCacheOverflow?: number;
   maximumTilesSelected?: number;
   debounceTime?: number;
@@ -58,6 +82,10 @@ export type Tileset3DProps = {
   dynamicScreenSpaceErrorFactor?: number;
   /** Fraction of tileset height at which dynamic SSE begins to fade, clamped to `[0, 1]`. */
   dynamicScreenSpaceErrorHeightFalloff?: number;
+  /**
+   * Enables adaptive LOD reduction when estimated tile memory exceeds the overflow ceiling.
+   * Defaults to `true` for 3D Tiles and retains the existing `false` default for I3S.
+   */
   memoryAdjustedScreenSpaceError?: boolean;
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
@@ -93,7 +121,13 @@ type Props = {
   modelMatrix: Matrix4;
   throttleRequests: boolean;
   maxRequests: number;
+  /** Soft target, in bytes, for evictable cached tile content. */
+  cacheBytes: number;
+  /** Current-frame headroom, in bytes, before memory-adjusted SSE rises. */
+  maximumCacheOverflowBytes: number;
+  /** @deprecated Byte-native code should use `cacheBytes`. */
   maximumMemoryUsage: number;
+  /** @deprecated Byte-native code should use `maximumCacheOverflowBytes`. */
   memoryCacheOverflow: number;
   maximumTilesSelected: number;
   debounceTime: number;
@@ -113,6 +147,7 @@ type Props = {
   dynamicScreenSpaceErrorFactor: number;
   /** Fraction of tileset height at which dynamic SSE begins to fade. */
   dynamicScreenSpaceErrorHeightFalloff: number;
+  /** Whether cache pressure may adapt the active SSE threshold. */
   memoryAdjustedScreenSpaceError: boolean;
   viewportTraversersMap: Record<string, any> | null;
   attributions: string[];
@@ -137,14 +172,80 @@ type Props = {
   i3s: Record<string, any>;
 };
 
+const BYTES_PER_MEBIBYTE = 1024 * 1024;
+const DEFAULT_CACHE_BYTES = 512 * BYTES_PER_MEBIBYTE;
+const DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES = 512 * BYTES_PER_MEBIBYTE;
+const DEFAULT_I3S_CACHE_BYTES = 32 * BYTES_PER_MEBIBYTE;
+const DEFAULT_I3S_MAXIMUM_CACHE_OVERFLOW_BYTES = BYTES_PER_MEBIBYTE;
+
+/**
+ * Validates a byte-based tile-cache budget.
+ *
+ * Fractions are accepted because JavaScript memory estimates are numbers, but negative, infinite,
+ * and `NaN` values cannot define a stable cache threshold.
+ *
+ * @param value - Proposed cache budget in bytes.
+ * @param optionName - Public option name used in an actionable error message.
+ * @returns The validated byte budget.
+ */
+function validateCacheByteLength(value: number, optionName: string): number {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`${optionName} must be a finite number greater than or equal to 0`);
+  }
+  return value;
+}
+
+/**
+ * Resolves the base cache target from byte-native or deprecated mebibyte options.
+ *
+ * The byte-native option takes precedence so mixed migration configurations are deterministic.
+ * The fallback is already expressed in bytes and is used for both construction and runtime updates.
+ *
+ * @param options - Options that may contain byte-native or deprecated cache values.
+ * @param fallbackCacheBytes - Existing or default cache target in bytes.
+ * @returns The resolved and validated cache target in bytes.
+ */
+function resolveCacheBytes(options: Tileset3DProps, fallbackCacheBytes: number): number {
+  const cacheBytes =
+    options.cacheBytes ??
+    (options.maximumMemoryUsage !== undefined
+      ? options.maximumMemoryUsage * BYTES_PER_MEBIBYTE
+      : fallbackCacheBytes);
+  return validateCacheByteLength(cacheBytes, 'cacheBytes');
+}
+
+/**
+ * Resolves cache overflow headroom from byte-native or deprecated mebibyte options.
+ *
+ * The byte-native option takes precedence so callers can migrate the two cache controls
+ * independently without unit ambiguity.
+ *
+ * @param options - Options that may contain byte-native or deprecated overflow values.
+ * @param fallbackOverflowBytes - Existing or default overflow headroom in bytes.
+ * @returns The resolved and validated overflow headroom in bytes.
+ */
+function resolveMaximumCacheOverflowBytes(
+  options: Tileset3DProps,
+  fallbackOverflowBytes: number
+): number {
+  const maximumCacheOverflowBytes =
+    options.maximumCacheOverflowBytes ??
+    (options.memoryCacheOverflow !== undefined
+      ? options.memoryCacheOverflow * BYTES_PER_MEBIBYTE
+      : fallbackOverflowBytes);
+  return validateCacheByteLength(maximumCacheOverflowBytes, 'maximumCacheOverflowBytes');
+}
+
 const DEFAULT_PROPS: Props = {
   description: '',
   ellipsoid: Ellipsoid.WGS84,
   modelMatrix: new Matrix4(),
   throttleRequests: true,
   maxRequests: 64,
-  maximumMemoryUsage: 32,
-  memoryCacheOverflow: 1,
+  cacheBytes: DEFAULT_CACHE_BYTES,
+  maximumCacheOverflowBytes: DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES,
+  maximumMemoryUsage: DEFAULT_CACHE_BYTES / BYTES_PER_MEBIBYTE,
+  memoryCacheOverflow: DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES / BYTES_PER_MEBIBYTE,
   maximumTilesSelected: 0,
   debounceTime: 0,
   onTileLoad: () => {},
@@ -167,7 +268,7 @@ const DEFAULT_PROPS: Props = {
   dynamicScreenSpaceErrorDensity: 2.0e-4,
   dynamicScreenSpaceErrorFactor: 24,
   dynamicScreenSpaceErrorHeightFalloff: 0.25,
-  memoryAdjustedScreenSpaceError: false,
+  memoryAdjustedScreenSpaceError: true,
   loadTiles: true,
   updateTransforms: true,
   viewportTraversersMap: null,
@@ -231,12 +332,13 @@ export class Tileset3D {
   /** Effective dynamic SSE density calculated for the most recently traversed viewport. */
   dynamicScreenSpaceErrorComputedDensity = 0;
 
-  maximumMemoryUsage = 32;
+  /** Estimated bytes currently retained by loaded tile content. */
   gpuMemoryUsageInBytes = 0;
+  /** Active SSE threshold after optional cache-pressure adjustment, in logical/CSS pixels. */
   memoryAdjustedScreenSpaceError = 0.0;
 
-  private _cacheBytes = 0;
-  private _cacheOverflowBytes = 0;
+  private _cacheBytes = DEFAULT_CACHE_BYTES;
+  private _maximumCacheOverflowBytes = DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES;
 
   _frameNumber = 0;
   private _tiles: Record<string, Tile3D> = {};
@@ -269,12 +371,34 @@ export class Tileset3D {
    * @param options Traversal and runtime options.
    */
   constructor(source: Tileset3DSource, options?: Tileset3DProps) {
-    this.options = {...DEFAULT_PROPS, ...options};
-    this.loadOptions = this.options.loadOptions || {};
-
     if (!isTileset3DSource(source)) {
       throw new Error('Tileset3D requires a Tileset3DSource instance');
     }
+
+    const suppliedOptions = options || {};
+    const usesTiles3DCacheDefaults = source.type === TILESET_TYPE.TILES3D;
+    const defaultCacheBytes = usesTiles3DCacheDefaults
+      ? DEFAULT_PROPS.cacheBytes
+      : DEFAULT_I3S_CACHE_BYTES;
+    const defaultMaximumCacheOverflowBytes = usesTiles3DCacheDefaults
+      ? DEFAULT_PROPS.maximumCacheOverflowBytes
+      : DEFAULT_I3S_MAXIMUM_CACHE_OVERFLOW_BYTES;
+    const cacheBytes = resolveCacheBytes(suppliedOptions, defaultCacheBytes);
+    const maximumCacheOverflowBytes = resolveMaximumCacheOverflowBytes(
+      suppliedOptions,
+      defaultMaximumCacheOverflowBytes
+    );
+    this.options = {
+      ...DEFAULT_PROPS,
+      ...suppliedOptions,
+      cacheBytes,
+      maximumCacheOverflowBytes,
+      maximumMemoryUsage: cacheBytes / BYTES_PER_MEBIBYTE,
+      memoryCacheOverflow: maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE,
+      memoryAdjustedScreenSpaceError:
+        suppliedOptions.memoryAdjustedScreenSpaceError ?? usesTiles3DCacheDefaults
+    };
+    this.loadOptions = this.options.loadOptions || {};
     this.source = source;
 
     this.tileset = null;
@@ -296,8 +420,8 @@ export class Tileset3D {
     });
 
     this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
-    this._cacheBytes = this.options.maximumMemoryUsage * 1024 * 1024;
-    this._cacheOverflowBytes = this.options.memoryCacheOverflow * 1024 * 1024;
+    this._cacheBytes = cacheBytes;
+    this._maximumCacheOverflowBytes = maximumCacheOverflowBytes;
 
     this.stats = new Stats({id: this.url});
     this._initializeStats();
@@ -322,14 +446,83 @@ export class Tileset3D {
     return this._frameNumber;
   }
 
+  /**
+   * Gets or sets the soft target, in bytes, for cached tile content not needed this frame.
+   *
+   * Current-frame tiles remain protected even when their estimated memory exceeds this target.
+   * Reducing the value makes unused least-recently-used tiles eligible for eviction on the next
+   * traversal.
+   * @default 536870912 for 3D Tiles; 33554432 for I3S
+   */
+  get cacheBytes(): number {
+    return this._cacheBytes;
+  }
+
+  set cacheBytes(value: number) {
+    this._cacheBytes = validateCacheByteLength(value, 'cacheBytes');
+    this.options.cacheBytes = this._cacheBytes;
+    this.options.maximumMemoryUsage = this._cacheBytes / BYTES_PER_MEBIBYTE;
+  }
+
+  /**
+   * Gets or sets the additional current-frame headroom, in bytes, before memory-adjusted SSE rises.
+   *
+   * The pressure ceiling is `cacheBytes + maximumCacheOverflowBytes`. This value does not change
+   * the base target used to evict tiles that were not touched in the current frame.
+   * @default 536870912 for 3D Tiles; 1048576 for I3S
+   */
+  get maximumCacheOverflowBytes(): number {
+    return this._maximumCacheOverflowBytes;
+  }
+
+  set maximumCacheOverflowBytes(value: number) {
+    this._maximumCacheOverflowBytes = validateCacheByteLength(value, 'maximumCacheOverflowBytes');
+    this.options.maximumCacheOverflowBytes = this._maximumCacheOverflowBytes;
+    this.options.memoryCacheOverflow = this._maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE;
+  }
+
+  /**
+   * Gets or sets the soft cache target in mebibytes.
+   * @deprecated Use {@link Tileset3D.cacheBytes}. Assignments remain synchronized for compatibility.
+   */
+  get maximumMemoryUsage(): number {
+    return this.cacheBytes / BYTES_PER_MEBIBYTE;
+  }
+
+  set maximumMemoryUsage(value: number) {
+    this.cacheBytes = validateCacheByteLength(value * BYTES_PER_MEBIBYTE, 'maximumMemoryUsage');
+  }
+
   get queryParams(): string {
     const rootUrl = this.source.getTileUrl(this.url);
     const queryIndex = rootUrl.indexOf('?');
     return queryIndex >= 0 ? rootUrl.slice(queryIndex + 1) : '';
   }
 
+  /**
+   * Updates traversal and runtime options, synchronizing byte-native and deprecated cache values.
+   *
+   * For each budget, the byte-native option takes precedence when both unit forms are supplied.
+   * Unspecified budgets retain their current byte values, avoiding repeated MiB conversion.
+   *
+   * @param props - Partial runtime options to apply.
+   */
   setProps(props: Tileset3DProps): void {
-    this.options = {...this.options, ...props};
+    const cacheBytes = resolveCacheBytes(props, this.cacheBytes);
+    const maximumCacheOverflowBytes = resolveMaximumCacheOverflowBytes(
+      props,
+      this.maximumCacheOverflowBytes
+    );
+    this.options = {
+      ...this.options,
+      ...props,
+      cacheBytes,
+      maximumCacheOverflowBytes,
+      maximumMemoryUsage: cacheBytes / BYTES_PER_MEBIBYTE,
+      memoryCacheOverflow: maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE
+    };
+    this._cacheBytes = cacheBytes;
+    this._maximumCacheOverflowBytes = maximumCacheOverflowBytes;
   }
 
   getTileUrl(tilePath: string): string {
@@ -372,13 +565,20 @@ export class Tileset3D {
     return this.updatePromise;
   }
 
+  /**
+   * Moves the active LOD threshold toward the configured SSE or away from cache pressure.
+   *
+   * Usage below {@link Tileset3D.cacheBytes} restores quality in two-percent steps. Usage above
+   * `cacheBytes + maximumCacheOverflowBytes` reduces refinement in two-percent steps. Values in
+   * the overflow window leave the threshold unchanged, preventing rapid load/evict oscillation.
+   */
   adjustScreenSpaceError(): void {
-    if (this.gpuMemoryUsageInBytes < this._cacheBytes) {
+    if (this.gpuMemoryUsageInBytes < this.cacheBytes) {
       this.memoryAdjustedScreenSpaceError = Math.max(
         this.memoryAdjustedScreenSpaceError / 1.02,
         this.options.maximumScreenSpaceError
       );
-    } else if (this.gpuMemoryUsageInBytes > this._cacheBytes + this._cacheOverflowBytes) {
+    } else if (this.gpuMemoryUsageInBytes > this.cacheBytes + this.maximumCacheOverflowBytes) {
       this.memoryAdjustedScreenSpaceError *= 1.02;
     }
   }
@@ -426,6 +626,10 @@ export class Tileset3D {
       );
       this._cameraMotionStates[id] = cameraMotionUpdate.state;
       frameState.camera.timeSinceMovement = cameraMotionUpdate.timeSinceMovement;
+      // Dynamic SSE reads the root's inverse computed transform before traversal updates tile
+      // visibility. Refresh it from the current tileset model matrix here so animated local
+      // box/sphere tilesets never calculate their height falloff one transform behind the frame.
+      updateRootTransformForDynamicScreenSpaceError(root, this.modelMatrix);
       frameState.dynamicScreenSpaceErrorDensity =
         this.type === TILESET_TYPE.TILES3D &&
         this.options.dynamicScreenSpaceError &&
@@ -596,6 +800,9 @@ export class Tileset3D {
 
   _unloadTiles(): void {
     this._cache.unloadTiles(this, (tileset, tile) => tileset._unloadTile(tile));
+    if (this.options.memoryAdjustedScreenSpaceError) {
+      this.adjustScreenSpaceError();
+    }
   }
 
   _updateStats(): void {

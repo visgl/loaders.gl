@@ -48,4 +48,6 @@ A tile can be visible but neither selected nor requested, for example when desce
 
 External tilesets extend the apparent hierarchy after their JSON is loaded. Implicit tiling materializes nodes from subtree availability data. Both still feed the same traversal concepts: bounding volumes determine relevance, geometric error determines refinement, and content state determines whether a selected representation is renderable.
 
+Required extensions are validated before normalization or dependent network access. The supported `3DTILES_bounding_volume_S2` extension is normalized to the oriented-box representation consumed by traversal for explicit tile, content, and viewer-request volumes as well as implicit roots. The original S2 metadata remains available where implicit subdivision needs its token and height range. Unknown optional names in `extensionsUsed` remain forward-compatible.
+
 Next: [Screen-space error and LOD](./screen-space-error-and-lod).

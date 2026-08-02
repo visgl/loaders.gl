@@ -111,8 +111,19 @@ export function normalizeTileData(
       tileContentUrl = resolveUri(contentUri, basePath);
     }
   }
+  const boundingVolume = normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume;
+  const content = tile.content
+    ? {
+        ...tile.content,
+        boundingVolume: normalizeS2BoundingVolume(tile.content.boundingVolume)
+      }
+    : undefined;
+  const viewerRequestVolume = normalizeS2BoundingVolume(tile.viewerRequestVolume);
   const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
     ...tile,
+    boundingVolume,
+    content,
+    viewerRequestVolume,
     id: tileContentUrl,
     contentUrl: tileContentUrl,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
@@ -123,6 +134,35 @@ export function normalizeTileData(
   };
 
   return tilePostprocessed;
+}
+
+/**
+ * Converts an S2-only bounding volume into the oriented-box representation used by traversal.
+ *
+ * `3DTILES_bounding_volume_S2` may appear on explicit or implicit tile, content, and viewer-request
+ * volumes. Keeping the source extension metadata beside the derived box lets implicit subdivision
+ * retain its S2 token while ensuring every explicit volume reaches runtime with a supported
+ * `box`, `region`, or `sphere` shape.
+ *
+ * @param boundingVolume - Source bounding volume, if the owning property is present.
+ * @returns The original volume when it does not use S2, or a cloned volume with a derived box.
+ */
+function normalizeS2BoundingVolume(
+  boundingVolume?: Tile3DBoundingVolume
+): Tile3DBoundingVolume | undefined {
+  const extensions = boundingVolume?.extensions as
+    | Record<string, S2VolumeInfo | undefined>
+    | undefined;
+  const s2VolumeInfo = extensions?.['3DTILES_bounding_volume_S2'];
+  if (!boundingVolume || !s2VolumeInfo) {
+    return boundingVolume;
+  }
+
+  return {
+    ...boundingVolume,
+    box: convertS2BoundingVolumetoOBB(s2VolumeInfo),
+    s2VolumeInfo
+  } as Tile3DBoundingVolume & S2VolumeBox;
 }
 
 // normalize tile headers
@@ -195,6 +235,17 @@ export async function normalizeImplicitTileHeaders(
   options: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
+  const normalizedTile: Tiles3DTileJSON = {
+    ...tile,
+    boundingVolume: normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume,
+    content: tile.content
+      ? {
+          ...tile.content,
+          boundingVolume: normalizeS2BoundingVolume(tile.content.boundingVolume)
+        }
+      : undefined,
+    viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
+  };
   const {
     subdivisionScheme,
     maximumLevel,
@@ -220,21 +271,12 @@ export async function normalizeImplicitTileHeaders(
     options,
     context
   )) as Subtree;
-  const tileContentUri = tile.content?.uri;
+  const tileContentUri = normalizedTile.content?.uri;
   const contentUrlTemplate = tileContentUri ? resolveUri(tileContentUri, basePath) : '';
   const refine = tileset?.root?.refine;
   // @ts-ignore
-  const rootLodMetricValue = tile.geometricError;
-
-  // Replace tile.boundingVolume with the the bounding volume specified by the extensions['3DTILES_bounding_volume_S2']
-  const s2VolumeInfo: S2VolumeInfo = tile.boundingVolume.extensions?.['3DTILES_bounding_volume_S2'];
-  if (s2VolumeInfo) {
-    const box = convertS2BoundingVolumetoOBB(s2VolumeInfo);
-    const s2VolumeBox: S2VolumeBox = {box, s2VolumeInfo};
-    tile.boundingVolume = s2VolumeBox;
-  }
-
-  const rootBoundingVolume = tile.boundingVolume;
+  const rootLodMetricValue = normalizedTile.geometricError;
+  const rootBoundingVolume = normalizedTile.boundingVolume;
 
   const implicitOptions: ImplicitOptions = {
     contentUrlTemplate,
@@ -252,7 +294,7 @@ export async function normalizeImplicitTileHeaders(
   };
 
   return await normalizeImplicitTileData(
-    tile,
+    normalizedTile,
     basePath,
     subtree,
     implicitOptions,

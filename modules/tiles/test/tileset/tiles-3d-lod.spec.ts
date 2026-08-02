@@ -13,7 +13,8 @@ import {
   calculateDynamicScreenSpaceErrorDensity,
   getDynamicScreenSpaceError,
   getDynamicScreenSpaceErrorFog,
-  getTiles3DScreenSpaceError
+  getTiles3DScreenSpaceError,
+  updateRootTransformForDynamicScreenSpaceError
 } from '../../src/tileset-3d/helpers/tiles-3d-lod';
 import {LOD_METRIC_TYPE, TILESET_TYPE} from '../../src/constants';
 
@@ -293,6 +294,64 @@ test('calculateDynamicScreenSpaceErrorDensity#uses the root transform without ch
     ),
     DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
     'camera and source volume are compared in the same local coordinate system'
+  );
+  t.end();
+});
+
+test('dynamic screen-space error#refreshes an animated root before density calculation', t => {
+  const root = createTile({
+    ...TILE_HEADER,
+    boundingVolume: {sphere: [0, 0, 10, 10]}
+  });
+  const currentModelMatrix = new Matrix4().translate([0, 0, 100]);
+
+  updateRootTransformForDynamicScreenSpaceError(root, currentModelMatrix);
+
+  t.ok(
+    root.computedTransform.equals(currentModelMatrix),
+    'uses the current-frame tileset transform before traversal'
+  );
+  t.equals(root.lodMetricValue, 10, 'does not compound the source geometric error');
+  t.equals(
+    calculateDynamicScreenSpaceErrorDensity(
+      root,
+      createFrameState({camera: {position: [0, 0, 105]}}),
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ),
+    DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS.dynamicScreenSpaceErrorDensity,
+    'calculates density from the refreshed transform in the same frame'
+  );
+  t.end();
+});
+
+test('calculateDynamicScreenSpaceErrorDensity#includes every oriented-box axis in height', t => {
+  const halfAxesRoot = createTile({
+    ...TILE_HEADER,
+    boundingVolume: {box: [0, 0, 10, 10, 0, 10, 0, 2, 0, 0, 0, 1]}
+  });
+  const halfSizeQuaternionRoot = createTile({
+    ...TILE_HEADER,
+    boundingVolume: {
+      box: [0, 0, 10, 10, 2, 1, 0, Math.sin(Math.PI / 4), 0, Math.cos(Math.PI / 4)]
+    }
+  });
+  const frameState = createFrameState({camera: {position: [0, 0, 15]}});
+
+  t.ok(
+    calculateDynamicScreenSpaceErrorDensity(
+      halfAxesRoot,
+      frameState,
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ) > 0,
+    'includes tilted half-axis z projections'
+  );
+  t.ok(
+    calculateDynamicScreenSpaceErrorDensity(
+      halfSizeQuaternionRoot,
+      frameState,
+      DYNAMIC_SCREEN_SPACE_ERROR_OPTIONS
+    ) > 0,
+    'includes quaternion-rotated half-size z projections'
   );
   t.end();
 });

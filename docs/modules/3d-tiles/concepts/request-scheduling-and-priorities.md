@@ -36,7 +36,7 @@ Set the fraction to `0` to disable progressive priority. Values greater than `0.
 
 ## Foveated Center Priority
 
-With `foveatedScreenSpaceError: true`, perspective requests near the camera view axis rank before equally needed peripheral requests. loaders.gl measures the nearest point of the complete tile bounding sphere to the view axis. A large tile that intersects the axis therefore counts as central even when its center does not.
+With `foveatedScreenSpaceError: true`, perspective requests near the camera's forward view ray rank before equally needed peripheral requests. loaders.gl measures the nearest point of the complete tile bounding sphere to that ray. A large tile that intersects the ray therefore counts as central even when its center does not. A volume entirely behind the camera is treated as maximally peripheral instead of projecting onto the backward half of an infinite line and competing with visible center content.
 
 `foveatedConeSize` is the fraction of the vertical field of view that receives no peripheral relaxation. It defaults to `0.1`; a larger value makes more of the view central, while `1` disables peripheral deferral. A missing or invalid field of view uses the established 60-degree fallback.
 
@@ -47,6 +47,8 @@ Angular foveation is disabled for orthographic viewports because parallel projec
 ## Camera Motion and Deferral
 
 `Tileset3D` retains camera position and direction separately for each viewport. When either changes beyond a small numeric tolerance, eligible peripheral requests may wait up to `foveatedTimeDelay` seconds (`0.2` by default). Continuing motion pushes the retry window forward. A single follow-up traversal is scheduled when the window expires, so requests recover even if the application supplies no further camera event.
+
+Deferral is applied both to new candidates and to requests already waiting for a concurrency slot. If camera motion makes a queued request deferrable, its scheduler callback cancels that queue entry before network access begins. The follow-up traversal submits it again after the delay. Requests whose fetch has already started are not interrupted. Once the delay expires, the active deferral flag and its priority effect are removed together, so released work cannot remain artificially penalized while the camera is stationary.
 
 The first observed camera pose is treated as stationary; initial tileset loading is not delayed.
 
@@ -61,14 +63,13 @@ Traditional replacement children are still ordered center-first; only the tempor
 
 ## Complete Priority Order
 
-Smaller numeric priorities start first. Independent priority bands produce this lexicographic order:
+Deferred work is kept out of the scheduler queue until it becomes eligible. Among requests that may start, smaller numeric priorities produce this lexicographic order:
 
-1. Eligible now before motion-deferred work.
-2. Progressive coarse coverage before fine detail.
-3. Center content before peripheral content.
-4. Established reverse-SSE order as the tie-breaker.
+1. Progressive coarse coverage before fine detail.
+2. Center content before peripheral content.
+3. Established reverse-SSE order as the tie-breaker.
 
-Each measurement is normalized into its own numeric band, preventing an extreme SSE or angle from overpowering a stronger invariant.
+Each queued measurement is normalized into its own numeric band, preventing an extreme SSE or angle from overpowering a stronger invariant.
 
 ## Options
 
