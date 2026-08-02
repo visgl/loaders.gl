@@ -22,3 +22,4 @@ import './parquet-arrow-writer.spec';
 import './parquet-loader.spec';
 import './geoparquet-loader.spec';
 import './parquet-typed-array.spec';
+import './parquet-compatibility.spec';

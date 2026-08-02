@@ -87,7 +87,9 @@
   "devDependencies": {
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
-    "@types/varint": "^5.0.0"
+    "@types/varint": "^5.0.0",
+    "hyparquet": "1.27.1",
+    "hyparquet-compressors": "1.1.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",
