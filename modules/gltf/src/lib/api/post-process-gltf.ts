@@ -8,6 +8,7 @@ import type {ParseGLTFOptions} from '../parsers/parse-gltf';
 import type {
   GLTF,
   GLTFAccessor,
+  GLTFAsset,
   GLTFBufferView,
   GLTFCamera,
   GLTFImage,
@@ -22,6 +23,7 @@ import type {
 
 import type {
   GLTFPostprocessed,
+  Asset,
   GLTFAccessorPostprocessed,
   GLTFBufferPostprocessed,
   GLTFBufferViewPostprocessed,
@@ -162,6 +164,7 @@ class GLTFPostProcessor {
     if (gltf.images) {
       json.images = gltf.images.map((image, i) => this._resolveImage(image, i));
     }
+    json.asset = this._resolveAsset(gltf.asset);
     if (gltf.samplers) {
       json.samplers = gltf.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
     }
@@ -255,6 +258,14 @@ class GLTFPostProcessor {
   }
 
   // PARSING HELPERS
+
+  /** Resolve the draft glTF 2.1 thumbnail image reference in asset metadata. */
+  _resolveAsset(gltfAsset: GLTFAsset): Asset {
+    return {
+      ...gltfAsset,
+      thumbnail: gltfAsset.thumbnail !== undefined ? this.getImage(gltfAsset.thumbnail) : undefined
+    };
+  }
 
   _resolveScene(scene: GLTFScene, index: number): GLTFScenePostprocessed {
     return {

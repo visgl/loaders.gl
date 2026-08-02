@@ -18,11 +18,37 @@ array with `gltf.loadFiles: true`.
 For packaged assets, [`resolveGLTFFile()`](/docs/modules/gltf/api-reference/gltf-loader) also accepts
 a string reference. It looks up `files[*].name` or the original `files[*].uri`, providing the virtual
 file-system primitive needed to resolve dependencies from an embedded glTF asset. Recursive
-`externalAssets` parsing is intentionally separate from this file-resolution layer.
+`externalAssets` parsing builds on this file-resolution layer.
 
 This support follows the Khronos [Unified File References draft](https://github.com/KhronosGroup/glTF/issues/2590)
 and [Packaging External Assets draft](https://github.com/KhronosGroup/glTF/issues/2589), and may
 evolve while glTF 2.1 is finalized.
+
+## Draft glTF 2.1 External Assets
+
+The top-level `externalAssets` array references glTF files through `externalAssets[*].file`, and a
+scene node instantiates one of those models with `node.externalAsset`. Set
+`gltf.loadExternalAssets: true` to recursively parse referenced models into the parallel
+`gltf.externalAssets` result array.
+
+URI-backed models resolve their own dependencies relative to their URI. For models embedded in a
+data URI or buffer view, dependency URIs are looked up by name in the containing asset's `files`
+array. The loader caches repeated URI references, leaves unreferenced definitions unloaded, and
+rejects cyclical asset graphs.
+
+This support follows the Khronos [External Assets draft](https://github.com/KhronosGroup/glTF/issues/2586).
+
+## Draft glTF 2.1 Thumbnails
+
+Draft glTF 2.1 adds `asset.thumbnail`, an index into the top-level `images` array. The referenced
+image provides an optional preview that applications can display without rendering the scene.
+
+`GLTFLoader` treats the thumbnail as a referenced image, so `gltf.loadImages: true` loads it even
+when no texture uses that image. The unmodified index remains available at
+`gltf.json.asset.thumbnail`; [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf)
+resolves it to the corresponding processed image object.
+
+This support follows the Khronos [Thumbnails draft](https://github.com/KhronosGroup/glTF/issues/2593).
 
 ## Variants
 

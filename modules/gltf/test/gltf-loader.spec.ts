@@ -11,6 +11,8 @@ import {createGLBV3} from './test-utils/create-glb-v3';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
+const PNG_DATA_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
 
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
@@ -35,6 +37,19 @@ test('GLTFLoader#load(binary)', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.json.asset, 'GLTFLoader returned parsed data');
 
+  t.end();
+});
+
+test('GLTFLoader#parse() loads a draft glTF 2.1 thumbnail image', async t => {
+  const gltf = await parse(
+    JSON.stringify({
+      asset: {version: '2.1', thumbnail: 0},
+      images: [{uri: PNG_DATA_URL}]
+    }),
+    GLTFLoader
+  );
+
+  t.ok(gltf.images?.[0], 'loads an image referenced only by asset.thumbnail');
   t.end();
 });
 

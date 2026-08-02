@@ -102,6 +102,7 @@ Remarks:
 
 - `image.image` - Populated from the supplied `gltf.images` array. This array is populated by the `GLTFLoader` via `options.loadImages: true`):
 - `image.uri` - If the loaded image in the `images` array is not available, uses `gltf.baseUri` to resolve a relative URI and replaces this value.
+- `asset.thumbnail` - A draft glTF 2.1 thumbnail index is replaced by the corresponding processed image object.
 
 ### Materials
 

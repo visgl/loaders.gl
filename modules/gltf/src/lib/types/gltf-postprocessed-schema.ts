@@ -242,6 +242,11 @@ export type Asset = {
    * The minimum glTF version that this asset targets.
    */
   minVersion?: string;
+  /**
+   * The image that provides a preview of this glTF asset.
+   * Draft glTF 2.1.
+   */
+  thumbnail?: GLTFImagePostprocessed;
   extensions?: any;
   extras?: any;
   // [k: string]: any;
@@ -629,6 +634,8 @@ export type GLTFNodePostprocessed = {
    * The index of the mesh in this node.
    */
   mesh?: GLTFMeshPostprocessed;
+  /** Index of the draft glTF 2.1 external asset instantiated by this node. */
+  externalAsset?: GlTfId;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */
