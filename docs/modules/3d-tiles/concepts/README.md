@@ -1,4 +1,8 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # 3D Tiles Runtime Concepts
+
+<Tiles3DDocsTabs active="runtime" />
 
 Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarchy, decide which level of detail is needed, rank missing content, load within concurrency limits, render safe coverage, and retain useful content in the cache. These pages document each stage and the options that connect them.
 

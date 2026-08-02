@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # GLTFLoader
+
+<GltfDocsTabs active="gltf-loader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />

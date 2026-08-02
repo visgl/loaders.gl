@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # postProcessGLTF
+
+<GltfDocsTabs active="post-processing" />
 
 The `postProcessGLTF` function transforms standards-compliant glTF JSON
 into an inter-linked JavaScript data structure that it significantly easier to work with.

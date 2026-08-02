@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # glTF - gl Transfer Format
+
+<GltfDocsTabs active="format" />
 
 - _[`@loaders.gl/gltf`](/docs/modules/gltf)_
 - _[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)_

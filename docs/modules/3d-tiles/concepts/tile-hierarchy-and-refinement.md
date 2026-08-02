@@ -1,8 +1,10 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Tile Hierarchy and Refinement
 
-3D Tiles divides a dataset into a tree. A tile describes a bounding volume, a geometric error, an optional content resource, and zero or more children. Traversal visits visible branches and decides whether each tile can provide current coverage or needs descendants.
+<Tiles3DDocsTabs active="hierarchy" />
 
-Concepts: [overview](/docs/modules/3d-tiles/concepts) · [SSE and LOD](./screen-space-error-and-lod) · [request scheduling](./request-scheduling-and-priorities) · [cache and memory](./caching-and-memory) · [diagnostics](./runtime-tuning-and-diagnostics)
+3D Tiles divides a dataset into a tree. A tile describes a bounding volume, a geometric error, an optional content resource, and zero or more children. Traversal visits visible branches and decides whether each tile can provide current coverage or needs descendants.
 
 ## The Per-Frame Pipeline
 

@@ -1,8 +1,10 @@
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
 # Request Scheduling and Priorities
 
-A **foveated request** is an ordinary tile content request whose start time is influenced by its position in the view. It is not a new HTTP method, endpoint, file format, or server feature. The term describes client-side prioritization inspired by human vision: central detail is usually more noticeable than peripheral detail while a camera is moving.
+<Tiles3DDocsTabs active="requests" />
 
-Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [SSE and LOD](./screen-space-error-and-lod) · [cache and memory](./caching-and-memory) · [diagnostics](./runtime-tuning-and-diagnostics)
+A **foveated request** is an ordinary tile content request whose start time is influenced by its position in the view. It is not a new HTTP method, endpoint, file format, or server feature. The term describes client-side prioritization inspired by human vision: central detail is usually more noticeable than peripheral detail while a camera is moving.
 
 ## Selection Versus Scheduling
 
