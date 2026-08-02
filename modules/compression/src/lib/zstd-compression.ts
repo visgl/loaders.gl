@@ -7,6 +7,7 @@ import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 import {
   registerJSModules,
+  checkJSModule,
   getJSModule,
   getJSModuleOrNull,
   ensureArrayBuffer
@@ -29,12 +30,6 @@ export class ZstdCompression extends Compression {
   readonly isSupported = true;
   readonly options: CompressionOptions;
 
-  /** Native Zstandard format used for default asynchronous decompression. */
-  protected readonly decompressionStreamFormat = 'zstd';
-
-  /** Registered Zstandard module that takes precedence over native decompression. */
-  protected readonly decompressionModuleName = 'zstd-codec';
-
   /**
    * zstd-codec is an injectable dependency due to big size
    * @param options
@@ -47,6 +42,7 @@ export class ZstdCompression extends Compression {
 
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
+    checkJSModule('zstd-codec', this.name);
     const ZstdCodec = getJSModuleOrNull('zstd-codec');
     // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
@@ -74,13 +70,7 @@ export class ZstdCompression extends Compression {
   }
 
   async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
-    const nativeOutput = await this.tryDecompressWithNativeDecompressionStream(input);
-    if (nativeOutput) {
-      return nativeOutput;
-    }
-
     await this.preload();
-    getJSModule('zstd-codec', this.name);
     const simpleZstd = new zstd.Streaming();
     const inputArray = new Uint8Array(input);
 

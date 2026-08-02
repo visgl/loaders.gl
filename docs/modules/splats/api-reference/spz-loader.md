@@ -17,10 +17,12 @@
 
 ## Usage
 
-SPZ version 4 uses ZSTD-compressed attribute streams. Without an injected codec, async SPZ parsing
-can use `new DecompressionStream('zstd')` when a future runtime supports it. Inject `zstd-codec`
-through loader options for broad runtime compatibility; when provided, loaders.gl uses it instead
-of the native stream path.
+SPZ version 4 uses ZSTD-compressed attribute streams. Async SPZ parsing first probes the lightweight
+native decompression entrypoint, which has no codec imports, before lazily loading the
+codec-backed fallback. Native Zstandard support is not yet widely available, so inject
+`zstd-codec` through loader options for broad runtime compatibility; when provided, it takes
+precedence over the native path.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ```typescript
 // Install zstd-codec for broad runtime compatibility.

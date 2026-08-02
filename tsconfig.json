@@ -82,6 +82,9 @@
       "@loaders.gl/compression": [
         "modules/compression/src"
       ],
+      "@loaders.gl/compression/*": [
+        "modules/compression/src/*"
+      ],
       "@loaders.gl/compression/test": [
         "modules/compression/test"
       ],

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {concatenateArrayBuffersAsync, ensureArrayBuffer} from '@loaders.gl/loader-utils';
-
 /**
  * Compression formats that runtimes may expose through DecompressionStream.
  *
@@ -28,7 +26,7 @@ export async function decompressWithNativeDecompressionStream(
   format: NativeDecompressionFormat
 ): Promise<ArrayBuffer | null> {
   const outputBatches = decompressBatchesWithNativeDecompressionStream([input], format);
-  return outputBatches ? await concatenateArrayBuffersAsync(outputBatches) : null;
+  return outputBatches ? await concatenateNativeDecompressionBatches(outputBatches) : null;
 }
 
 /**
@@ -101,7 +99,7 @@ async function* transformBatchesWithNativeDecompressionStream(
         outputCompleted = true;
         break;
       }
-      yield ensureArrayBuffer(value);
+      yield copyExactArrayBuffer(value);
     }
     await writePromise;
   } finally {
@@ -112,6 +110,42 @@ async function* transformBatchesWithNativeDecompressionStream(
     }
     reader.releaseLock();
   }
+}
+
+/**
+ * Concatenates decompressed batches without importing codec-adjacent utilities.
+ *
+ * @param outputBatches Decompressed output batches.
+ * @returns One exact ArrayBuffer containing every output byte.
+ */
+async function concatenateNativeDecompressionBatches(
+  outputBatches: AsyncIterable<ArrayBuffer>
+): Promise<ArrayBuffer> {
+  const batches: Uint8Array[] = [];
+  let byteLength = 0;
+  for await (const outputBatch of outputBatches) {
+    const bytes = new Uint8Array(outputBatch);
+    batches.push(bytes);
+    byteLength += bytes.byteLength;
+  }
+
+  const output = new Uint8Array(byteLength);
+  let byteOffset = 0;
+  for (const batch of batches) {
+    output.set(batch, byteOffset);
+    byteOffset += batch.byteLength;
+  }
+  return output.buffer;
+}
+
+/**
+ * Copies one stream chunk into an exact ArrayBuffer.
+ *
+ * @param value Decompressed stream chunk.
+ * @returns Exact ArrayBuffer containing only the chunk bytes.
+ */
+function copyExactArrayBuffer(value: Uint8Array): ArrayBuffer {
+  return new Uint8Array(value).buffer;
 }
 
 /**

@@ -6,14 +6,10 @@
 
 Compresses / decompresses Zstandard encoded data.
 
-When no `zstd-codec` module is registered, asynchronous `decompress()` and
-`decompressBatches()` probe `new DecompressionStream('zstd')` so future runtimes can use native
-Zstandard support automatically. Native Zstandard support is not yet widely available.
-<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-
-Inject `zstd-codec` through `options.modules` for broad compatibility. When it is provided, it
-takes precedence over the native stream path. `compress()`, `compressSync()`, and
-`decompressSync()` continue to require `zstd-codec` in every runtime.
+Inject `zstd-codec` through `options.modules` for compression and decompression through this
+codec-backed class. Async-only callers can probe future native Zstandard support through the
+lightweight `@loaders.gl/compression/native-decompression` entrypoint without importing
+`zstd-codec`.
 
 ## Interface
 
@@ -23,6 +19,5 @@ Implements the [`Compression](./compression) API.
 
 ### `constructor(options?: object)`
 
-`options` is optional for future native asynchronous decompression. Supply
-`{modules: {'zstd-codec': ZstdCodec}}` for broad runtime compatibility or when a
-synchronous/compression API is needed.
+`options` is optional at construction time. Supply `{modules: {'zstd-codec': ZstdCodec}}` before
+calling compression or decompression methods.

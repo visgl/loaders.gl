@@ -7,24 +7,43 @@
 The `@loaders.gl/compression` module provides a selection of lossless,
 compression/decompression "transforms" with a unified interface that work both in browsers and in Node.js
 
-When no relevant codec module is registered, default asynchronous `decompress()` and
-`decompressBatches()` calls use the runtime's `DecompressionStream` implementation for gzip,
-deflate, raw deflate, Brotli, and Zstandard when that exact format is supported. If a codec module
-is provided, loaders.gl uses it instead of silently switching implementations. Compression and
-synchronous decompression keep their existing codec requirements.
+For async code that only needs decompression, the lightweight
+[`@loaders.gl/compression/native-decompression`](/docs/modules/compression/api-reference/native-decompression)
+entrypoint probes the runtime's
+`DecompressionStream` implementation for gzip, deflate, raw deflate, Brotli, and Zstandard. The
+entrypoint has no codec imports, so supported runtimes do not pull fallback codec code into the
+initial bundle. It returns `null` when the runtime or exact format is unavailable, allowing callers
+to load a fallback only when needed.
 <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+
+```typescript
+import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
+
+async function decompressGzip(input: ArrayBuffer): Promise<ArrayBuffer> {
+  const output = await decompressWithNativeDecompressionStream(input, 'gzip');
+  if (output) {
+    return output;
+  }
+  const {GZipCompression} = await import('@loaders.gl/compression/gzip-compression');
+  return new GZipCompression().decompress(input);
+}
+```
+
+Parquet and SPZ parsing use this lightweight path automatically before lazily loading their
+codec-backed fallbacks. Existing compression classes keep their deterministic codec behavior for
+compression and synchronous decompression.
 
 ## API
 
 | Compression Class                                                                   | Format                | Characteristics                      | Library Size                                         | Notes |
 | ----------------------------------------------------------------------------------- | --------------------- | ------------------------------------ | ---------------------------------------------------- | ----- |
 | [`NoCompression`](/docs/modules/compression/api-reference/no-compression)           | none                  | -                                    | -                                                    |
-| [`GzipCompression`](/docs/modules/compression/api-reference/gzip-compression)       | gzip(`.gz`)           | size                                 | Native async decode; [small fallback](https://bundlephobia.com/package/pako) |
-| [`DeflateCompression`](/docs/modules/compression/api-reference/deflate-compression) | DEFLATE(PKZIP)        | size                                 | Native async decode; [small fallback](https://bundlephobia.com/package/pako) |
+| [`GzipCompression`](/docs/modules/compression/api-reference/gzip-compression)       | gzip(`.gz`)           | size                                 | [Small](https://bundlephobia.com/package/pako)       |
+| [`DeflateCompression`](/docs/modules/compression/api-reference/deflate-compression) | DEFLATE(PKZIP)        | size                                 | [Small](https://bundlephobia.com/package/pako)       |
 | [`LZ4Compression`](/docs/modules/compression/api-reference/lz4-compression)         | LZ4                   | speed ("real-time")                  | [Medium](https://bundlephobia.com/package/lz4)       |
-| [`ZstdCompression`](/docs/modules/compression/api-reference/zstd-compression)       | Zstandard             | speed ("real-time")                  | Native async decode when available; [large fallback](https://bundlephobia.com/package/zstd-codec) |
+| [`ZstdCompression`](/docs/modules/compression/api-reference/zstd-compression)       | Zstandard             | speed ("real-time")                  | [Large](https://bundlephobia.com/package/zstd-codec) |
 | [`SnappyCompression`](/docs/modules/compression/api-reference/snappy-compression)   | Snappy(Zippy)         | speed ("real-time")                  | [Small](https://bundlephobia.com/package/snappys)    |
-| [`BrotliCompression`](/docs/modules/compression/api-reference/brotli-compression)   | Brotli                | Size, fast decompress, slow compress | Native async decode when available; [large fallback](https://bundlephobia.com/package/brotli) |
+| [`BrotliCompression`](/docs/modules/compression/api-reference/brotli-compression)   | Brotli                | Size, fast decompress, slow compress | [Large](https://bundlephobia.com/package/brotli)     |
 | [`LZOCompression`](/docs/modules/compression/api-reference/lzo-compression)         | Lempel-Ziv-Oberheimer | size                                 | Node.js only                                         |
 
 ## Compression Formats

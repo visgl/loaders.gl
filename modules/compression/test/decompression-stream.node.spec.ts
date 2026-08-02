@@ -4,11 +4,9 @@
 
 import test from 'tape-promise/tape';
 import {
-  BrotliCompression,
-  DeflateCompression,
-  GZipCompression,
-  ZstdCompression
-} from '@loaders.gl/compression';
+  decompressBatchesWithNativeDecompressionStream,
+  decompressWithNativeDecompressionStream
+} from '@loaders.gl/compression/native-decompression';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers} from './utils/test-utils';
 import {
@@ -23,7 +21,7 @@ type MutableGlobalThis = typeof globalThis & {
   Buffer?: typeof Buffer;
 };
 
-test('compression#native DecompressionStream formats in Node.js', async t => {
+test('native decompression#real DecompressionStream formats in Node.js', async t => {
   for (const format of Object.keys(
     NATIVE_DECOMPRESSION_FIXTURES
   ) as NativeDecompressionTestFormat[]) {
@@ -36,21 +34,14 @@ test('compression#native DecompressionStream formats in Node.js', async t => {
     const restoreDecompressionStream = installRecordingDecompressionStream(nativeFormats);
 
     try {
-      const compression =
-        format === 'gzip'
-          ? new GZipCompression()
-          : format === 'deflate'
-            ? new DeflateCompression()
-            : format === 'deflate-raw'
-              ? new DeflateCompression({raw: true})
-              : format === 'brotli'
-                ? new BrotliCompression()
-                : new ZstdCompression();
       const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES[format]).buffer;
 
-      const decompressedData = await compression.decompress(compressedData);
+      const decompressedData = await decompressWithNativeDecompressionStream(
+        compressedData,
+        format
+      );
       t.ok(
-        compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
+        decompressedData && compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
         `native atomic ${format} decompression works in Node.js`
       );
 
@@ -59,7 +50,11 @@ test('compression#native DecompressionStream formats in Node.js', async t => {
         compressedData.slice(0, splitIndex),
         compressedData.slice(splitIndex, compressedData.byteLength)
       ];
-      const decompressedBatches = compression.decompressBatches(compressedBatches);
+      const decompressedBatches = decompressBatchesWithNativeDecompressionStream(
+        compressedBatches,
+        format
+      );
+      t.ok(decompressedBatches, `native batched ${format} stream is created in Node.js`);
       const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
       t.ok(
         compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData),
@@ -78,17 +73,15 @@ test('compression#native DecompressionStream formats in Node.js', async t => {
   t.end();
 });
 
-test('gzip#native DecompressionStream falls back without global Buffer in Node.js', async t => {
-  const inputData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9]).buffer;
-  const compression = new GZipCompression();
-  const compressedData = compression.compressSync(inputData);
+test('native decompression#returns null without global Buffer in Node.js', async t => {
+  const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES.gzip).buffer;
   const mutableGlobalThis = globalThis as MutableGlobalThis;
   const originalBuffer = mutableGlobalThis.Buffer;
   mutableGlobalThis.Buffer = undefined;
 
   try {
-    const decompressedData = await compression.decompress(compressedData);
-    t.ok(compareArrayBuffers(inputData, decompressedData), 'gzip falls back without Buffer');
+    const decompressedData = await decompressWithNativeDecompressionStream(compressedData, 'gzip');
+    t.equal(decompressedData, null, 'native helper lets callers choose a fallback without Buffer');
   } finally {
     mutableGlobalThis.Buffer = originalBuffer;
   }
