@@ -22,6 +22,10 @@ import {
   parseParquetObjectRowTableInBatches
 } from './lib/parsers/parse-parquet-tables';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
+import {
+  deserializeParquetWorkerResult,
+  serializeParquetWorkerResult
+} from './lib/parquet-worker-transport';
 import {ParquetLoader as ParquetLoaderMetadata, type ParquetLoaderOptions} from './parquet-loader';
 
 const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
@@ -50,7 +54,9 @@ export const ParquetWASMLoaderWithParser = {
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
     yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options);
-  }
+  },
+  serializeWorkerResult: serializeParquetWorkerResult,
+  deserializeWorkerResult: deserializeParquetWorkerResult
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,

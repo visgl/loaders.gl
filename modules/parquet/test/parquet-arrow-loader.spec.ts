@@ -5,7 +5,14 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders.gl/core';
+import {
+  load,
+  loadInBatches,
+  encode,
+  fetchFile,
+  isBrowser,
+  setLoaderOptions
+} from '@loaders.gl/core';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {getGeoMetadata, convertGeometryToWKB} from '@loaders.gl/gis';
@@ -29,6 +36,69 @@ test('ParquetLoader#loader objects', (t) => {
   // Not sure why validateLoader calls parse? Raises an error about "Invalid Parquet file"
   // validateLoader(t, ParquetLoader, 'ParquetLoader');
   // validateLoader(t, ParquetWorkerLoader, 'ParquetWorkerLoader');
+  t.end();
+});
+
+test('ParquetLoader#publishes a module-local worker asset', t => {
+  t.equal(typeof ParquetLoader.worker, 'string', 'declares a concrete packaged worker URL');
+  t.notOk(
+    String(ParquetLoader.worker).includes('unpkg.com'),
+    'does not use the implicit worker CDN fallback'
+  );
+  const workerFile = isBrowser ? '/parquet-worker.js' : '/parquet-worker-node.cjs';
+  t.ok(String(ParquetLoader.worker).endsWith(workerFile), 'targets the packaged runtime worker');
+  t.end();
+});
+
+test('ParquetLoader#worker keeps the browser responsive and rehydrates Arrow output', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const response = await fetchFile(`${PARQUET_DIR}/geoparquet/example.parquet`);
+  const arrayBuffer = await response.arrayBuffer();
+  let mainThreadTicked = false;
+  const tablePromise = load(arrayBuffer, ParquetLoader, {
+    core: {worker: true, reuseWorkers: false},
+    parquet: {shape: 'arrow-table'}
+  }) as Promise<ArrowTable>;
+  await new Promise<void>(resolve =>
+    setTimeout(() => {
+      mainThreadTicked = true;
+      resolve();
+    }, 0)
+  );
+  const table = await tablePromise;
+
+  t.ok(mainThreadTicked, 'the main event loop advances while the worker decodes');
+  t.ok(table.data instanceof arrow.Table, 'rehydrates an Apache Arrow Table on the main thread');
+  t.equal(table.data.getChild('name')?.get(0), 'Fiji', 'rehydrated Arrow vectors retain methods');
+  t.end();
+});
+
+test('ParquetLoader#worker parse is cancellable', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const response = await fetchFile(`${PARQUET_DIR}/geoparquet/example.parquet`);
+  const arrayBuffer = await response.arrayBuffer();
+  const abortController = new AbortController();
+  abortController.abort();
+  const tablePromise = load(arrayBuffer, ParquetLoader, {
+    core: {worker: true, reuseWorkers: true},
+    parquet: {shape: 'arrow-table', signal: abortController.signal}
+  });
+
+  let abortError: unknown;
+  try {
+    await tablePromise;
+  } catch (error) {
+    abortError = error;
+  }
+  t.equal((abortError as Error | undefined)?.name, 'AbortError', 'terminates the active worker parse');
   t.end();
 });
 

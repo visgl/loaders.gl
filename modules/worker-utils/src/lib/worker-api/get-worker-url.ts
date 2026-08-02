@@ -36,6 +36,11 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
 
   let url = workerOptions.workerUrl;
 
+  // A loader may publish a module-relative worker asset instead of relying on a CDN fallback.
+  if (!url && typeof worker.worker === 'string') {
+    url = worker.worker;
+  }
+
   // HACK: Allow for non-nested workerUrl for the CompressionWorker.
   // For the compression worker, workerOptions is currently not nested correctly. For most loaders,
   // you'd have options within an object, i.e. `{mvt: {coordinates: ...}}` but the CompressionWorker

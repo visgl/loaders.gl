@@ -35,6 +35,13 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     return false;
   }
 
+  if (
+    loader.id === 'parquet' &&
+    (options as {parquet?: {backend?: string}} | undefined)?.parquet?.backend === 'typescript'
+  ) {
+    return false;
+  }
+
   return Boolean(canProcessOnWorker(loader, workerOptions));
 }
 
@@ -49,10 +56,11 @@ export async function parseWithWorker(
   context?: LoaderContext,
   parseOnMainThread?: ParseOnMainThread
 ) {
+  const signal = getWorkerAbortSignal(options);
   const result = await processOnWorker(
     loader,
     data,
-    getWorkerOptions(options),
+    {...getWorkerOptions(options), signal},
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -74,6 +82,15 @@ export async function parseWithWorker(
   return isLoaderWithWorkerResultDeserializer(loader)
     ? loader.deserializeWorkerResult(result, options, context)
     : result;
+}
+
+/** Returns the loader-specific abort signal used to cancel a worker job. */
+function getWorkerAbortSignal(options?: StrictLoaderOptions): AbortSignal | undefined {
+  const parquetSignal = (options as {parquet?: {signal?: unknown}} | undefined)?.parquet?.signal;
+  if (typeof AbortSignal !== 'undefined' && parquetSignal instanceof AbortSignal) {
+    return parquetSignal;
+  }
+  return undefined;
 }
 
 /**

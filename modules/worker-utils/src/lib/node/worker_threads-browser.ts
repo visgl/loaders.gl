@@ -8,6 +8,24 @@
  * The replacement is done in package.json browser field
  */
 export class NodeWorker {
+  /** Restores the native worker constructor when this browser shim is embedded in a Node bundle. */
+  constructor(...arguments_: unknown[]) {
+    const runtimeProcess = (
+      globalThis as {
+        process?: {
+          getBuiltinModule?: (specifier: string) => {
+            Worker?: new (...workerArguments: unknown[]) => NodeWorker;
+          };
+        };
+      }
+    ).process;
+    const WorkerConstructor = runtimeProcess?.getBuiltinModule?.('node:worker_threads').Worker;
+    if (WorkerConstructor) {
+      return new WorkerConstructor(...arguments_);
+    }
+  }
+
+  /** No-op browser fallback matching the native Worker API. */
   terminate() {}
 }
 

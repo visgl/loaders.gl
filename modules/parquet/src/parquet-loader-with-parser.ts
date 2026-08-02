@@ -33,6 +33,7 @@ const DEFAULT_PARQUET_JS_OPTIONS = {
 /** Parser-bearing TypeScript-only Parquet loader implementation. */
 export const ParquetLoaderWithParser = {
   ...ParquetLoaderMetadataWithoutPreload,
+  worker: false,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseParquetFile(new BlobFile(arrayBuffer), getParquetOptions(options));
   },

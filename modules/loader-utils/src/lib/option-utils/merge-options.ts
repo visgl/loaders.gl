@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {isPureObject} from '../javascript-utils/is-type';
+
 export type RequiredOptions<T> = Required<{[K in keyof T]: Required<T[K]>}>;
 
 export function getRequiredOptions<T>(options: T): RequiredOptions<T> {
@@ -33,7 +35,7 @@ function mergeOptionsRecursively(
 
   const options = {...baseOptions};
   for (const [key, newValue] of Object.entries(newOptions)) {
-    if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
+    if (isPureObject(newValue)) {
       options[key] = mergeOptionsRecursively(
         (options[key] as Record<string, unknown>) || {},
         newOptions[key] as Record<string, unknown>,

@@ -20,6 +20,21 @@ import {
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Module-relative worker asset for browser ESM and Node.js CommonJS distributions. */
+const PARQUET_WORKER_URL = import.meta.url
+  ? new URL(getParquetWorkerFile(), import.meta.url).toString()
+  : typeof __dirname === 'string'
+    ? `${__dirname}/parquet-worker-node.cjs`
+    : true;
+
+/** Selects the worker bundle for the current JavaScript runtime. */
+function getParquetWorkerFile(): string {
+  const isNode = Boolean(
+    (globalThis as {process?: {versions?: {node?: string}}}).process?.versions?.node
+  );
+  return isNode ? './parquet-worker-node.cjs' : './parquet-worker.js';
+}
+
 /** Options for the parquet loader */
 export type ParquetLoaderOptions = SharedParquetLoaderOptions;
 
@@ -55,7 +70,7 @@ export const ParquetLoader = {
   id: 'parquet',
   module: 'parquet',
   version: VERSION,
-  worker: false,
+  worker: PARQUET_WORKER_URL,
   options: {
     parquet: {
       ...PARQUET_LOADER_DEFAULT_OPTIONS
