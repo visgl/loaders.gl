@@ -12,7 +12,7 @@ import {
   getLAZChunkByteLength,
   NeedsMoreData
 } from '@loaders.gl/loader-utils';
-import type {LAZPointDataTarget} from '@loaders.gl/loader-utils';
+import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader';
 import {getLASSchema} from '../get-las-schema';
 import type {LASHeader} from '../las-types';
@@ -47,7 +47,28 @@ type LASZipVLR = {
   compressor: number;
   chunkSize: number;
   variableChunks: boolean;
+  point14ItemVersion: 2 | 3 | 4 | null;
+  rgb14ItemVersion: 2 | 3 | 4 | null;
+  wavePacketItemVersion: 3 | 4 | null;
+  byte14ItemVersion: 2 | 3 | 4 | null;
 };
+
+/** Build chunk metadata with the item versions declared by the LASzip VLR. */
+function createLAZChunkMetadata(
+  header: LASHeader,
+  laszip: LASZipVLR,
+  pointCount: number
+): LAZChunkMetadata {
+  return {
+    pointDataRecordFormat: header.pointsFormatId,
+    pointDataRecordLength: header.pointsStructSize,
+    pointCount,
+    point14ItemVersion: laszip.point14ItemVersion ?? undefined,
+    rgb14ItemVersion: laszip.rgb14ItemVersion ?? undefined,
+    wavePacketItemVersion: laszip.wavePacketItemVersion ?? undefined,
+    byte14ItemVersion: laszip.byte14ItemVersion ?? undefined
+  };
+}
 
 type RawPointBatchState = {
   rawBatch: Uint8Array;
@@ -286,11 +307,7 @@ async function* decodeLAZFileWithParsedVLRInBatches(
 
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
-    const metadata = {
-      pointDataRecordFormat: header.pointsFormatId,
-      pointDataRecordLength: header.pointsStructSize,
-      pointCount: chunkPointCount
-    };
+    const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     const chunkByteLength = await readLAZChunkByteLengthFromReader(reader, inputIterator, metadata);
     recordReadBytesStats(reader, chunkByteLength, state.stats);
     const compressedChunk = reader.readBytes(chunkByteLength);
@@ -335,11 +352,7 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
   let sourcePointIndex = 0;
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
-    const metadata = {
-      pointDataRecordFormat: header.pointsFormatId,
-      pointDataRecordLength: header.pointsStructSize,
-      pointCount: chunkPointCount
-    };
+    const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     let nextDecodeAttemptByteLength = 0;
     let inputDone = false;
     // Arithmetic state cannot be rolled back after a partial point. Retry from the chunk start at
@@ -438,7 +451,7 @@ async function* parseLAZInBatches(
 ): AsyncIterable<LASArrowTable> {
   const {pending, laszip} = await readLASZipVLRFromInput(initialPending, inputIterator, header);
   validateTypeScriptLAZSupport(header, laszip);
-  if (!laszip.variableChunks && header.pointsFormatId >= 6 && header.pointsFormatId <= 8) {
+  if (!laszip.variableChunks && header.pointsFormatId >= 6 && header.pointsFormatId <= 10) {
     yield* parsePendingLAZFileInArrowBatches(pending, inputIterator, header, laszip, options);
     return;
   }
@@ -477,11 +490,7 @@ async function* parsePendingLAZFileInArrowBatches(
 
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
-    const metadata = {
-      pointDataRecordFormat: header.pointsFormatId,
-      pointDataRecordLength: header.pointsStructSize,
-      pointCount: chunkPointCount
-    };
+    const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     const chunkByteLength = await readLAZChunkByteLengthFromReader(reader, inputIterator, metadata);
     const compressedChunk = reader.readBytes(chunkByteLength);
 
@@ -528,11 +537,7 @@ function* parseLAZChunkedIterator(
 
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
-    const metadata = {
-      pointDataRecordFormat: header.pointsFormatId,
-      pointDataRecordLength: header.pointsStructSize,
-      pointCount: chunkPointCount
-    };
+    const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     const compressed = bytes.subarray(byteOffset);
     const chunkByteLength = getLAZChunkByteLength(compressed, metadata);
     for (const batch of appendDecodedLAZChunk(
@@ -579,11 +584,7 @@ function* decodeLAZFileFromCompleteBytes(
     if (compressedChunk.byteLength < chunk.byteLength) {
       throw new NeedsMoreData('LASLoader: truncated legacy LAZ chunk');
     }
-    const metadata = {
-      pointDataRecordFormat: header.pointsFormatId,
-      pointDataRecordLength: header.pointsStructSize,
-      pointCount: chunk.pointCount
-    };
+    const metadata = createLAZChunkMetadata(header, laszip, chunk.pointCount);
     const rawChunk = decodeLAZChunk(compressedChunk, metadata);
     recordDecodedChunkAllocation(rawChunk.byteLength, state.stats);
     for (const batch of appendRawPointChunk(rawChunk, outputHeader, state)) {
@@ -894,11 +895,51 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
       throw new NeedsMoreData('LASLoader: incomplete VLR data');
     }
     if (userId === LASZIP_USER_ID && recordId === LASZIP_RECORD_ID) {
+      if (recordLength < 34) {
+        throw new Error('LASLoader: malformed LASzip VLR');
+      }
       const chunkSize = dataView.getUint32(dataOffset + 12, true);
+      const itemCount = dataView.getUint16(dataOffset + 32, true);
+      const itemDataByteLength = 34 + itemCount * 6;
+      if (itemDataByteLength > recordLength) {
+        throw new Error('LASLoader: malformed LASzip VLR item table');
+      }
+      let point14ItemVersion: 2 | 3 | 4 | null = null;
+      let rgb14ItemVersion: 2 | 3 | 4 | null = null;
+      let wavePacketItemVersion: 3 | 4 | null = null;
+      let byte14ItemVersion: 2 | 3 | 4 | null = null;
+      for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+        const itemOffset = dataOffset + 34 + itemIndex * 6;
+        const itemType = dataView.getUint16(itemOffset, true);
+        const itemVersion = dataView.getUint16(itemOffset + 4, true);
+        if ([10, 11, 12, 14].includes(itemType)) {
+          if (itemVersion !== 2 && itemVersion !== 3 && itemVersion !== 4) {
+            throw new Error(
+              `LASLoader: unsupported LAS 1.4 item type ${itemType} version ${itemVersion}`
+            );
+          }
+          if (itemType === 10) {
+            point14ItemVersion = itemVersion;
+          } else if (itemType === 11 || itemType === 12) {
+            rgb14ItemVersion = itemVersion;
+          } else {
+            byte14ItemVersion = itemVersion;
+          }
+        } else if (itemType === 13) {
+          if (itemVersion !== 3 && itemVersion !== 4) {
+            throw new Error(`LASLoader: unsupported WavePacket14 item version ${itemVersion}`);
+          }
+          wavePacketItemVersion = itemVersion;
+        }
+      }
       return {
         compressor: dataView.getUint16(dataOffset, true),
         chunkSize,
-        variableChunks: chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE
+        variableChunks: chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE,
+        point14ItemVersion,
+        rgb14ItemVersion,
+        wavePacketItemVersion,
+        byte14ItemVersion
       };
     }
     offset = dataOffset + recordLength;
@@ -908,9 +949,9 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
 }
 
 function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): void {
-  if (![0, 1, 2, 3, 6, 7, 8].includes(header.pointsFormatId)) {
+  if (![0, 1, 2, 3, 6, 7, 8, 9, 10].includes(header.pointsFormatId)) {
     throw new Error(
-      `LASLoader: TypeScript LAZ streaming only supports point formats 0, 1, 2, 3, 6, 7, and 8; received ${header.pointsFormatId}`
+      `LASLoader: TypeScript LAZ streaming only supports point formats 0, 1, 2, 3, and 6-10; received ${header.pointsFormatId}`
     );
   }
   if (header.pointsFormatId <= 5 && laszip.compressor !== 2) {
@@ -921,6 +962,36 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
   if (header.pointsFormatId >= 6 && laszip.compressor !== 3) {
     throw new Error(
       `LASLoader: LAS 1.4 TypeScript LAZ decoding requires LASzip compressor 3; received ${laszip.compressor}`
+    );
+  }
+  if (header.pointsFormatId >= 6 && !laszip.point14ItemVersion) {
+    throw new Error(
+      `LASLoader: point format ${header.pointsFormatId} requires a Point14 LASzip item`
+    );
+  }
+  if (
+    (header.pointsFormatId === 7 || header.pointsFormatId === 8 || header.pointsFormatId === 10) &&
+    !laszip.rgb14ItemVersion
+  ) {
+    throw new Error(
+      `LASLoader: point format ${header.pointsFormatId} requires an RGB14 or RGBNIR14 LASzip item`
+    );
+  }
+  if (
+    header.pointsFormatId >= 6 &&
+    header.pointsStructSize > getLAZPointDataRecordBaseLength(header.pointsFormatId) &&
+    !laszip.byte14ItemVersion
+  ) {
+    throw new Error(
+      `LASLoader: point format ${header.pointsFormatId} with Extra Bytes requires a Byte14 LASzip item`
+    );
+  }
+  if (
+    (header.pointsFormatId === 9 || header.pointsFormatId === 10) &&
+    !laszip.wavePacketItemVersion
+  ) {
+    throw new Error(
+      `LASLoader: point format ${header.pointsFormatId} requires a WavePacket14 LASzip item`
     );
   }
 }
@@ -1030,7 +1101,7 @@ function tryReadLAZChunkByteLengthFromReader(
   reader: BinaryChunkReader,
   metadata: LAZChunkByteLengthMetadata
 ): number | null {
-  if (metadata.pointDataRecordFormat < 6 || metadata.pointDataRecordFormat > 8) {
+  if (metadata.pointDataRecordFormat < 6 || metadata.pointDataRecordFormat > 10) {
     return null;
   }
 
@@ -1065,6 +1136,10 @@ function getLAZPointDataRecordBaseLength(pointDataRecordFormat: number): number 
       return 36;
     case 8:
       return 38;
+    case 9:
+      return 59;
+    case 10:
+      return 67;
     default:
       throw new Error(`Unsupported LAS 1.4 point format ${pointDataRecordFormat}`);
   }
@@ -1078,6 +1153,10 @@ function getLAZChunkSizeHeaderBaseCount(pointDataRecordFormat: number): number {
       return 10;
     case 8:
       return 11;
+    case 9:
+      return 10;
+    case 10:
+      return 12;
     default:
       throw new Error(`Unsupported LAS 1.4 point format ${pointDataRecordFormat}`);
   }
