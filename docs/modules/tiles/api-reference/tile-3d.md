@@ -16,6 +16,14 @@ Paremeters:
 
 #### Properties
 
+###### `childrenState` (String)
+
+For a lazy implicit subtree root, reports `unloaded`, `loading`, `ready`, or `failed`. Explicit tiles begin in `ready` because their child headers are already known.
+
+###### `hasUnloadedChildren` (Boolean)
+
+Returns `true` when traversal may request a source-managed lazy child-header group. This is distinct from unloaded content: subtree metadata establishes hierarchy, while content requests load renderable payloads.
+
 ###### `boundingVolume` (BoundingVolume)
 
 A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))

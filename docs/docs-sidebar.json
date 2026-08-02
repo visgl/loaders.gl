@@ -269,7 +269,9 @@
             "label": "Runtime Concepts",
             "items": [
               "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/resource-resolution-and-content-detection",
               "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
+              "modules/3d-tiles/concepts/implicit-tiling-and-subtrees",
               "modules/3d-tiles/concepts/screen-space-error-and-lod",
               "modules/3d-tiles/concepts/request-scheduling-and-priorities",
               "modules/3d-tiles/concepts/caching-and-memory",
