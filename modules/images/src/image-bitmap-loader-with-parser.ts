@@ -1,5 +1,5 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parseImageBitmap} from './lib/parsers/parse-image-bitmap';
+import {parseImageBitmap, parseImageBitmapBlob} from './lib/parsers/parse-image-bitmap';
 import {
   ImageBitmapLoader as ImageBitmapLoaderMetadata,
   type ImageBitmapLoaderOptions
@@ -15,5 +15,6 @@ export type {ImageBitmapLoaderOptions} from './image-bitmap-loader';
  */
 export const ImageBitmapLoaderWithParser = {
   ...ImageBitmapLoaderMetadataWithoutPreload,
-  parse: parseImageBitmap
+  parse: parseImageBitmap,
+  parseBlob: parseImageBitmapBlob
 } as const satisfies LoaderWithParser<ImageBitmap, never, ImageBitmapLoaderOptions>;

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseVideo from './lib/parsers/parse-video';
+import parseVideo, {parseVideoBlob} from './lib/parsers/parse-video';
 import {VideoLoader as VideoLoaderMetadata} from './video-loader';
 
 const {preload: _VideoLoaderPreload, ...VideoLoaderMetadataWithoutPreload} = VideoLoaderMetadata;
@@ -17,5 +17,6 @@ export type VideoLoaderOptions = LoaderOptions & {
  */
 export const VideoLoaderWithParser = {
   ...VideoLoaderMetadataWithoutPreload,
-  parse: parseVideo
+  parse: parseVideo,
+  parseBlob: parseVideoBlob
 } as const satisfies LoaderWithParser<HTMLVideoElement, never, VideoLoaderOptions>;

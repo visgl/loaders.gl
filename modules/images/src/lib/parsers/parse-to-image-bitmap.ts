@@ -39,6 +39,24 @@ export async function parseToImageBitmap(
 }
 
 /**
+ * Asynchronously parses a Blob into an ImageBitmap without copying through an ArrayBuffer.
+ * @param blob Encoded image Blob
+ * @param options ImageBitmap parsing options
+ * @returns Decoded ImageBitmap
+ */
+export async function parseBlobToImageBitmap(
+  blob: Blob,
+  options: ImageBitmapParseOptions
+): Promise<ImageBitmap> {
+  const imageBitmapOptions = (options && options.imagebitmap) as
+    | ImageBitmapOptions
+    | null
+    | undefined;
+
+  return await safeCreateImageBitmap(blob, imageBitmapOptions);
+}
+
+/**
  * Safely creates an imageBitmap with options
  * *
  * Firefox crashes if imagebitmapOptions is supplied

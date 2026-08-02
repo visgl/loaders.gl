@@ -223,6 +223,8 @@ export type LoaderWithParser<
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => Promise<DataT>;
+  /** Parse asynchronously and atomically from a browser Blob without first copying to an ArrayBuffer. */
+  parseBlob?: (blob: Blob, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
   /** Parse asynchronously and atomically from a random access "file like" input */
   parseFile?: (
     file: ReadableFile,
