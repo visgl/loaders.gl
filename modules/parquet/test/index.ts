@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import './init';
+import './make-stream-iterator.spec';
 
 // parquetjs unit test suite
 import './parquetjs/codec-plain.spec';
@@ -18,6 +19,7 @@ import './parquetjs/reader.spec';
 // loader/writer
 import './parquet-arrow-loader.spec';
 import './parquet-arrow-writer.spec';
+import './parquet-source-loader.spec';
 
 import './parquet-loader.spec';
 import './geoparquet-loader.spec';

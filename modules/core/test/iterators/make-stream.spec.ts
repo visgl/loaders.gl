@@ -27,6 +27,61 @@ test('asyncIteratorToStream#makeIterator(iteratorToStream())', async () => {
   expect(chunks).toEqual(concatenatedData);
 });
 
+test('makeIterator#rethrows stream read errors and releases the lock', async () => {
+  const readError = new Error('Stream read failed');
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.error(readError);
+    }
+  });
+
+  let thrownError: unknown;
+  try {
+    for await (const _chunk of makeIterator(stream) as AsyncIterable<ArrayBuffer>) {
+      // The stream errors before yielding a chunk
+    }
+  } catch (error) {
+    thrownError = error;
+  }
+
+  expect(thrownError).toBe(readError);
+  expect(stream.locked).toBe(false);
+});
+
+test('makeIterator#cancels stream and releases the lock on early return', async () => {
+  let cancellationCount = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new Uint8Array([1]));
+    },
+    cancel() {
+      cancellationCount++;
+    }
+  });
+
+  for await (const _chunk of makeIterator(stream, {
+    _streamReadAhead: true
+  }) as AsyncIterable<ArrayBuffer>) {
+    break;
+  }
+
+  expect(cancellationCount).toBe(1);
+  expect(stream.locked).toBe(false);
+});
+
+test('makeIterator#releases stream lock after natural completion', async () => {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new Uint8Array([1]));
+      controller.close();
+    }
+  });
+
+  await concatenateArrayBuffersAsync(makeIterator(stream) as AsyncIterable<ArrayBuffer>);
+
+  expect(stream.locked).toBe(false);
+});
+
 test('asyncIteratorToStream#read stream using DOM/Node APIs', async () => {
   const data = [1, 2, 3].map(value => new Uint8Array([value]).buffer);
   const concatenatedData = concatenateArrayBuffers(...data);
