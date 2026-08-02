@@ -15,6 +15,14 @@ test('Tileset3D#traverser base class', async t => {
   const tileset = new Tileset3D(source);
   await tileset.tilesetInitializationPromise;
 
+  t.equals(
+    tileset.options.progressiveResolutionHeightFraction,
+    0.3,
+    'uses the progressive-resolution default'
+  );
+  t.equals(tileset.options.foveatedScreenSpaceError, true, 'enables foveated priority by default');
+  t.equals(tileset.options.foveatedTimeDelay, 0.2, 'uses the moving-camera delay default');
+
   const traverser = new TilesetTraverser({
     basePath: tileset.basePath,
     onTraversalEnd: traversalEnd

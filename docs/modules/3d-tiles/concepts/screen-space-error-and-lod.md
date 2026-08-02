@@ -4,6 +4,8 @@
 
 This guide describes the loaders.gl 3D Tiles calculation. It also explains how projection, transforms, display pixel density, and traversal options affect the selected level of detail (LOD).
 
+Concepts: [overview](/docs/modules/3d-tiles/concepts) · [hierarchy](./tile-hierarchy-and-refinement) · [request scheduling](./request-scheduling-and-priorities) · [cache and memory](./caching-and-memory) · [diagnostics](./runtime-tuning-and-diagnostics)
+
 ![3D Tiles correctness flow from transform-scaled geometric error through perspective or orthographic SSE to LOD refinement, plus early required-extension validation](../images/screen-space-error-and-lod.png)
 
 References:
@@ -174,6 +176,10 @@ SSE decides whether a tile needs more detail; the tile's `refine` mode determine
 
 Both modes use the same SSE threshold. They differ in rendering and loading continuity, not in the definition of geometric error.
 
+## From Desired LOD to Request Order
+
+SSE determines which hierarchy levels are needed. When several needed tiles compete for network slots, progressive and foveated measurements decide which requests start first without changing the final SSE target. See [Request scheduling and priorities](./request-scheduling-and-priorities) for the complete model, including foveated requests and moving-camera deferral.
+
 ## Tuning LOD
 
 The two primary controls are:
@@ -188,6 +194,8 @@ Tune dynamic SSE only after choosing those global quality controls. Increase
 `dynamicScreenSpaceErrorFactor` when the maximum reduction is too small. Lower either value when
 distant structures appear too coarse. Height falloff is mainly useful for local tilesets whose
 street-level and aerial views need different traversal depth.
+
+After selecting an acceptable final LOD, tune streaming behavior separately with the [request-scheduling guide](./request-scheduling-and-priorities), then size the [cache and memory budget](./caching-and-memory).
 
 Changing either value affects more than visual sharpness. Deeper traversal can increase request count, decode work, GPU memory, cache churn, and draw calls. Tile availability, network latency, refinement mode, and `maximumMemoryUsage` can delay or limit the visible effect of an SSE change.
 
@@ -227,5 +235,6 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 - Orthographic SSE requires `metersPerPixel`; invalid values use the perspective-compatible fallback.
 - Dynamic SSE is a perspective optimization. It is not subtracted from orthographic SSE, including
   the perspective-compatible fallback used when an orthographic viewport has an invalid pixel scale.
+- Request-priority behavior is documented separately because it controls arrival order rather than final LOD.
 - 3D Tiles geometric error is measured in meters. I3S uses a different `maxScreenThreshold` LOD metric that is already screen-oriented and is not transform-scaled by this logic.
 - SSE controls refinement after visibility and request-volume checks. It cannot make a culled tile visible or provide descendants that are missing from the tileset.

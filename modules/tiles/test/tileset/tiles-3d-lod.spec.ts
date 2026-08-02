@@ -85,6 +85,30 @@ test('getTiles3DScreenSpaceError#preserves perspective calculation', t => {
   t.end();
 });
 
+test('getTiles3DScreenSpaceError#scales progressive-resolution perspective height', t => {
+  const tile = createTile();
+  t.equals(
+    getTiles3DScreenSpaceError(tile, createFrameState(), false, 0.3),
+    15,
+    'calculates coarse-pass SSE at 30% of logical viewport height'
+  );
+  t.end();
+});
+
+test('getTiles3DScreenSpaceError#composes progressive and dynamic perspective SSE', t => {
+  const tile = createTile();
+  tile.tileset.options.dynamicScreenSpaceError = true;
+  const frameState = createFrameState({dynamicScreenSpaceErrorDensity: 0.01});
+  const expectedReduction = getDynamicScreenSpaceError(100, 0.01, 24);
+
+  t.equals(
+    getTiles3DScreenSpaceError(tile, frameState, false, 0.3),
+    15 - expectedReduction,
+    'scales the projection term before applying the unchanged dynamic SSE reduction'
+  );
+  t.end();
+});
+
 test('getTiles3DScreenSpaceError#uses orthographic logical-pixel scale', t => {
   const tile = createTile();
   const frameState = createFrameState({
@@ -104,6 +128,21 @@ test('getTiles3DScreenSpaceError#uses orthographic logical-pixel scale', t => {
     getTiles3DScreenSpaceError(tile, frameState, false),
     5,
     'orthographic SSE is independent of camera distance and viewport height'
+  );
+  t.end();
+});
+
+test('getTiles3DScreenSpaceError#scales progressive-resolution orthographic pixels', t => {
+  const tile = createTile();
+  t.equals(
+    getTiles3DScreenSpaceError(
+      tile,
+      createFrameState({viewport: {orthographic: true, metersPerPixel: 2}}),
+      false,
+      0.3
+    ),
+    1.5,
+    'represents the same tile in a reduced-height logical-pixel pass'
   );
   t.end();
 });
