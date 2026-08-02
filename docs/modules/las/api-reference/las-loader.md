@@ -45,6 +45,6 @@ const table = await load(url, LASLoader, {
 
 ## TypeScript LAZ Streaming
 
-With `las.backend: 'typescript'`, `parseInBatches` consumes compressed LAZ input incrementally and emits Arrow table batches after complete LAZ chunks are available. PDRF 7 table parsing selectively decodes the LAZ 1.4 field layers represented by the returned Arrow schema. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
+With `las.backend: 'typescript'`, `parseInBatches` consumes compressed LAZ input incrementally and emits Arrow table batches after complete LAZ chunks are available. PDRF 7 table parsing selectively decodes the LAZ 1.4 field layers represented by the returned Arrow schema without copying compressed field layers into temporary readers. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
 
 This is chunk-streaming rather than point-streaming: an individual compressed LAZ chunk must be available before its point rows can be emitted. See the [LAS/LAZ format implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for supported point formats and remaining limitations.

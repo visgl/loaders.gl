@@ -156,7 +156,8 @@ export function createLAZChunkDecoder(metadata: LAZChunkMetadata): FeedableLAZCh
 export class LAZChunkDecoderCursor {
   private metadata: LAZChunkMetadata;
   private stream: ByteReader;
-  private decoder: PointDecompressor;
+  /** Decoder initialized after the caller selects raw or direct point-data output. */
+  private decoder: PointDecompressor | null = null;
   private pointIndex = 0;
   /** Output mode selected by the first decode call. */
   private outputMode: LAZChunkDecoderOutputMode | null = null;
@@ -164,7 +165,6 @@ export class LAZChunkDecoderCursor {
   constructor(compressed: ArrayBuffer | ArrayBufferView, metadata: LAZChunkMetadata) {
     this.metadata = metadata;
     this.stream = new ByteReader(toUint8Array(compressed));
-    this.decoder = createPointDecompressor(this.stream, metadata);
   }
 
   /** Number of points still available in this compressed chunk. */
@@ -180,11 +180,14 @@ export class LAZChunkDecoderCursor {
   /** Decode up to `pointCount` points into `output` at `outputOffset`. */
   decodeInto(output: Uint8Array, outputOffset: number, pointCount: number): number {
     const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
-    this.selectOutputMode('raw', pointsToDecode);
+    const decoder = this.selectOutputMode('raw', pointsToDecode);
+    if (!decoder) {
+      return 0;
+    }
     let targetOffset = outputOffset;
 
     for (let pointIndex = 0; pointIndex < pointsToDecode; pointIndex++) {
-      targetOffset = this.decoder.decompress(output, targetOffset);
+      targetOffset = decoder.decompress(output, targetOffset);
     }
 
     this.pointIndex += pointsToDecode;
@@ -195,18 +198,21 @@ export class LAZChunkDecoderCursor {
   decodeIntoPointData(target: LAZPointDataTarget, pointCount: number): number {
     const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
 
-    if (!this.decoder.decompressPointData) {
+    if (pointsToDecode > 0 && !supportsDirectPointDataOutput(this.metadata.pointDataRecordFormat)) {
       throw new Error(
         `TypeScript LAZ decoder does not support direct point-data output for point format ${this.metadata.pointDataRecordFormat}`
       );
     }
-    this.selectOutputMode('point-data', pointsToDecode);
+    const decoder = this.selectOutputMode('point-data', pointsToDecode);
+    if (!decoder) {
+      return 0;
+    }
 
-    if (this.decoder.decompressPointDataBatch) {
-      this.decoder.decompressPointDataBatch(target, pointsToDecode);
+    if (decoder.decompressPointDataBatch) {
+      decoder.decompressPointDataBatch(target, pointsToDecode);
     } else {
       for (let pointIndex = 0; pointIndex < pointsToDecode; pointIndex++) {
-        this.decoder.decompressPointData(target, target.pointOffset + pointIndex);
+        decoder.decompressPointData!(target, target.pointOffset + pointIndex);
       }
     }
 
@@ -215,14 +221,19 @@ export class LAZChunkDecoderCursor {
   }
 
   /** Lock this cursor to one output mode so skipped layered streams cannot be read later. */
-  private selectOutputMode(mode: LAZChunkDecoderOutputMode, pointCount: number): void {
+  private selectOutputMode(
+    mode: LAZChunkDecoderOutputMode,
+    pointCount: number
+  ): PointDecompressor | null {
     if (pointCount === 0) {
-      return;
+      return null;
     }
     if (this.outputMode && this.outputMode !== mode) {
       throw new Error('Cannot mix raw and point-data decoding in one LAZ chunk cursor');
     }
     this.outputMode = mode;
+    this.decoder ||= createPointDecompressor(this.stream, this.metadata, mode);
+    return this.decoder;
   }
 }
 
@@ -445,6 +456,11 @@ class ByteReader {
     return this.offset;
   }
 
+  /** Underlying contiguous bytes used by bounded arithmetic layers. */
+  get data(): Uint8Array {
+    return this.bytes;
+  }
+
   getByte(): number {
     if (this.offset >= this.bytes.length) {
       throw new NeedsMoreData();
@@ -460,6 +476,16 @@ class ByteReader {
     this.offset += length;
   }
 
+  /** Consume a bounded byte range without constructing a subreader. */
+  consume(length: number): number {
+    if (this.offset + length > this.bytes.length) {
+      throw new NeedsMoreData();
+    }
+    const startOffset = this.offset;
+    this.offset += length;
+    return startOffset;
+  }
+
   getUint32(): number {
     const b0 = this.getByte();
     const b1 = this.getByte();
@@ -467,36 +493,11 @@ class ByteReader {
     const b3 = this.getByte();
     return (b0 | (b1 << 8) | (b2 << 16) | ((b3 << 24) >>> 0)) >>> 0;
   }
-
-  copy(length: number): MemoryByteReader {
-    if (this.offset + length > this.bytes.length) {
-      throw new NeedsMoreData();
-    }
-    const copy = this.bytes.subarray(this.offset, this.offset + length);
-    this.offset += length;
-    return new MemoryByteReader(copy);
-  }
 }
 
 type ByteInput = {
   getByte(): number;
 };
-
-class MemoryByteReader implements ByteInput {
-  private bytes: Uint8Array;
-  private offset = 0;
-
-  constructor(bytes: Uint8Array = new Uint8Array(0)) {
-    this.bytes = bytes;
-  }
-
-  getByte(): number {
-    if (this.offset >= this.bytes.length) {
-      throw new NeedsMoreData();
-    }
-    return this.bytes[this.offset++];
-  }
-}
 
 class ArithmeticModel {
   symbols: number;
@@ -606,18 +607,27 @@ class ArithmeticBitModel {
 }
 
 class ArithmeticDecoder {
-  private input: ByteInput;
+  private input: ByteInput | null;
+  /** Contiguous layered input used by the LAZ 1.4 hot path. */
+  private inputBytes: Uint8Array | null = null;
+  /** Current absolute position in {@link inputBytes}. */
+  private inputOffset = 0;
+  /** Exclusive end of the bounded range in {@link inputBytes}. */
+  private inputEnd = 0;
   private value = 0;
   private length = AC_MAX_LENGTH;
   valid = false;
 
-  constructor(input: ByteInput = new MemoryByteReader()) {
+  constructor(input: ByteInput | null = null) {
     this.input = input;
   }
 
   initStream(source: ByteReader, count: number): void {
     if (count) {
-      this.input = source.copy(count);
+      this.inputBytes = source.data;
+      this.inputOffset = source.consume(count);
+      this.inputEnd = this.inputOffset + count;
+      this.input = null;
       this.readInitBytes();
       this.valid = true;
     } else {
@@ -626,11 +636,26 @@ class ArithmeticDecoder {
   }
 
   readInitBytes(): void {
+    if (this.inputBytes) {
+      const offset = this.inputOffset;
+      if (offset + 4 > this.inputEnd) {
+        throw new NeedsMoreData();
+      }
+      this.value =
+        (((this.inputBytes[offset] << 24) >>> 0) |
+          (this.inputBytes[offset + 1] << 16) |
+          (this.inputBytes[offset + 2] << 8) |
+          this.inputBytes[offset + 3]) >>>
+        0;
+      this.inputOffset = offset + 4;
+      return;
+    }
+    const input = this.input!;
     this.value =
-      (((this.input.getByte() << 24) >>> 0) |
-        (this.input.getByte() << 16) |
-        (this.input.getByte() << 8) |
-        this.input.getByte()) >>>
+      (((input.getByte() << 24) >>> 0) |
+        (input.getByte() << 16) |
+        (input.getByte() << 8) |
+        input.getByte()) >>>
       0;
   }
 
@@ -749,13 +774,27 @@ class ArithmeticDecoder {
   }
 
   private renormalize(): void {
-    const input = this.input;
     let value = this.value;
     let length = this.length;
-    do {
-      value = ((value << 8) | input.getByte()) >>> 0;
-      length = (length << 8) >>> 0;
-    } while (length < AC_MIN_LENGTH);
+    if (this.inputBytes) {
+      const inputBytes = this.inputBytes;
+      const inputEnd = this.inputEnd;
+      let inputOffset = this.inputOffset;
+      do {
+        if (inputOffset >= inputEnd) {
+          throw new NeedsMoreData();
+        }
+        value = ((value << 8) | inputBytes[inputOffset++]) >>> 0;
+        length = (length << 8) >>> 0;
+      } while (length < AC_MIN_LENGTH);
+      this.inputOffset = inputOffset;
+    } else {
+      const input = this.input!;
+      do {
+        value = ((value << 8) | input.getByte()) >>> 0;
+        length = (length << 8) >>> 0;
+      } while (length < AC_MIN_LENGTH);
+    }
     this.value = value;
     this.length = length;
   }
@@ -853,59 +892,69 @@ class IntegerDecompressor {
 }
 
 class StreamingMedian {
-  values = [0, 0, 0, 0, 0];
-  high = true;
+  /** Smallest retained value. */
+  private value0 = 0;
+  /** Second-smallest retained value. */
+  private value1 = 0;
+  /** Current median. */
+  private value2 = 0;
+  /** Second-largest retained value. */
+  private value3 = 0;
+  /** Largest retained value. */
+  private value4 = 0;
+  /** Whether the next update shifts values toward the upper half. */
+  private high = true;
 
   add(value: number): void {
     if (this.high) {
-      if (value < this.values[2]) {
-        this.values[4] = this.values[3];
-        this.values[3] = this.values[2];
-        if (value < this.values[0]) {
-          this.values[2] = this.values[1];
-          this.values[1] = this.values[0];
-          this.values[0] = value;
-        } else if (value < this.values[1]) {
-          this.values[2] = this.values[1];
-          this.values[1] = value;
+      if (value < this.value2) {
+        this.value4 = this.value3;
+        this.value3 = this.value2;
+        if (value < this.value0) {
+          this.value2 = this.value1;
+          this.value1 = this.value0;
+          this.value0 = value;
+        } else if (value < this.value1) {
+          this.value2 = this.value1;
+          this.value1 = value;
         } else {
-          this.values[2] = value;
+          this.value2 = value;
         }
       } else {
-        if (value < this.values[3]) {
-          this.values[4] = this.values[3];
-          this.values[3] = value;
+        if (value < this.value3) {
+          this.value4 = this.value3;
+          this.value3 = value;
         } else {
-          this.values[4] = value;
+          this.value4 = value;
         }
         this.high = false;
       }
-    } else if (this.values[2] < value) {
-      this.values[0] = this.values[1];
-      this.values[1] = this.values[2];
-      if (this.values[4] < value) {
-        this.values[2] = this.values[3];
-        this.values[3] = this.values[4];
-        this.values[4] = value;
-      } else if (this.values[3] < value) {
-        this.values[2] = this.values[3];
-        this.values[3] = value;
+    } else if (this.value2 < value) {
+      this.value0 = this.value1;
+      this.value1 = this.value2;
+      if (this.value4 < value) {
+        this.value2 = this.value3;
+        this.value3 = this.value4;
+        this.value4 = value;
+      } else if (this.value3 < value) {
+        this.value2 = this.value3;
+        this.value3 = value;
       } else {
-        this.values[2] = value;
+        this.value2 = value;
       }
     } else {
-      if (this.values[1] < value) {
-        this.values[0] = this.values[1];
-        this.values[1] = value;
+      if (this.value1 < value) {
+        this.value0 = this.value1;
+        this.value1 = value;
       } else {
-        this.values[0] = value;
+        this.value0 = value;
       }
       this.high = true;
     }
   }
 
   get(): number {
-    return this.values[2];
+    return this.value2;
   }
 }
 
@@ -1184,38 +1233,6 @@ class Byte10Decompressor {
   }
 }
 
-class Point14Context {
-  changedValuesModel = createModels(8, 128);
-  scannerChannelModel = new ArithmeticModel(3);
-  returnNumberGpsSameModel = new ArithmeticModel(13);
-  numberReturnsModel = createModels(16, 16);
-  returnNumberModel = createModels(16, 16);
-  classModel = createModels(64, 256);
-  flagModel = createModels(64, 64);
-  userDataModel = createModels(64, 256);
-  gpsTimeMultiModel = new ArithmeticModel(515);
-  gpsTime0DiffModel = new ArithmeticModel(5);
-  dx = createIntegerDecompressor(32, 2);
-  dy = createIntegerDecompressor(32, 22);
-  z = createIntegerDecompressor(32, 20);
-  intensity = createIntegerDecompressor(16, 4);
-  scanAngle = createIntegerDecompressor(16, 2);
-  pointSourceId = createIntegerDecompressor(16, 1);
-  gpsTime = createIntegerDecompressor(32, 9);
-  haveLast = false;
-  last = createPoint14();
-  lastIntensity = new Array<number>(8).fill(0);
-  lastZ = new Array<number>(8).fill(0);
-  lastXDiffMedian = Array.from({length: 12}, () => new StreamingMedian());
-  lastYDiffMedian = Array.from({length: 12}, () => new StreamingMedian());
-  lastGpsSequence = 0;
-  nextGpsSequence = 0;
-  lastGpsTime = new Array<number>(4).fill(0);
-  lastGpsTimeDiff = new Array<number>(4).fill(0);
-  multiExtremeCounter = new Array<number>(4).fill(0);
-  gpsTimeChange = false;
-}
-
 /** Determines whether Point14 decoding preserves every field or only returned point data. */
 enum Point14DecompressionMode {
   /** Preserve every field in the raw LAS point record. */
@@ -1224,24 +1241,82 @@ enum Point14DecompressionMode {
   PointData
 }
 
+class Point14Context {
+  changedValuesModel = createModels(8, 128);
+  scannerChannelModel = new ArithmeticModel(3);
+  returnNumberGpsSameModel = new ArithmeticModel(13);
+  numberReturnsModel = createModels(16, 16);
+  returnNumberModel = createModels(16, 16);
+  classModel = createModels(64, 256);
+  flagModel: ArithmeticModel[] = [];
+  userDataModel: ArithmeticModel[] = [];
+  gpsTimeMultiModel!: ArithmeticModel;
+  gpsTime0DiffModel!: ArithmeticModel;
+  dx = createIntegerDecompressor(32, 2);
+  dy = createIntegerDecompressor(32, 22);
+  z = createIntegerDecompressor(32, 20);
+  intensity = createIntegerDecompressor(16, 4);
+  scanAngle!: IntegerDecompressor;
+  pointSourceId!: IntegerDecompressor;
+  gpsTime!: IntegerDecompressor;
+  haveLast = false;
+  last = createPoint14();
+  lastIntensity = new Array<number>(8).fill(0);
+  lastZ = new Array<number>(8).fill(0);
+  lastXDiffMedian = Array.from({length: 12}, () => new StreamingMedian());
+  lastYDiffMedian = Array.from({length: 12}, () => new StreamingMedian());
+  lastGpsSequence = 0;
+  nextGpsSequence = 0;
+  lastGpsTime: number[] = [];
+  lastGpsTimeDiff: number[] = [];
+  multiExtremeCounter: number[] = [];
+  gpsTimeChange = false;
+
+  /** Construct context models required by the selected output mode. */
+  constructor(mode: Point14DecompressionMode) {
+    if (mode === Point14DecompressionMode.Full) {
+      this.flagModel = createModels(64, 64);
+      this.userDataModel = createModels(64, 256);
+      this.gpsTimeMultiModel = new ArithmeticModel(515);
+      this.gpsTime0DiffModel = new ArithmeticModel(5);
+      this.scanAngle = createIntegerDecompressor(16, 2);
+      this.pointSourceId = createIntegerDecompressor(16, 1);
+      this.gpsTime = createIntegerDecompressor(32, 9);
+      this.lastGpsTime = new Array<number>(4).fill(0);
+      this.lastGpsTimeDiff = new Array<number>(4).fill(0);
+      this.multiExtremeCounter = new Array<number>(4).fill(0);
+    }
+  }
+}
+
 class Point14Decompressor {
   private stream: ByteReader;
-  private contexts = Array.from({length: 4}, () => new Point14Context());
-  private lastChannel = -1;
+  private contexts: Point14Context[];
+  /** Current scanner-channel context, cached because channel switches are uncommon. */
+  private activeContext: Point14Context | null = null;
+  /** Whether fields omitted from direct point-data output must be decoded. */
+  private decompressOptionalFields: boolean;
   private xy = new ArithmeticDecoder();
   private z = new ArithmeticDecoder();
   private classification = new ArithmeticDecoder();
-  private flags = new ArithmeticDecoder();
+  private flags: ArithmeticDecoder | null;
   private intensity = new ArithmeticDecoder();
-  private scanAngle = new ArithmeticDecoder();
-  private userData = new ArithmeticDecoder();
-  private pointSourceId = new ArithmeticDecoder();
-  private gpsTime = new ArithmeticDecoder();
+  private scanAngle: ArithmeticDecoder | null;
+  private userData: ArithmeticDecoder | null;
+  private pointSourceId: ArithmeticDecoder | null;
+  private gpsTime: ArithmeticDecoder | null;
   private sizes: number[] = [];
   scannerChannel = 0;
 
-  constructor(stream: ByteReader) {
+  constructor(stream: ByteReader, mode: Point14DecompressionMode = Point14DecompressionMode.Full) {
     this.stream = stream;
+    this.contexts = Array.from({length: 4}, () => new Point14Context(mode));
+    this.decompressOptionalFields = mode === Point14DecompressionMode.Full;
+    this.flags = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.scanAngle = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.userData = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.pointSourceId = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.gpsTime = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
   }
 
   readSizes(): void {
@@ -1256,12 +1331,21 @@ class Point14Decompressor {
     this.xy.initStream(this.stream, this.sizes[index++]);
     this.z.initStream(this.stream, this.sizes[index++]);
     this.classification.initStream(this.stream, this.sizes[index++]);
-    this.flags.initStream(this.stream, this.sizes[index++]);
+    this.initializeOptionalStream(this.flags, this.sizes[index++]);
     this.intensity.initStream(this.stream, this.sizes[index++]);
-    this.scanAngle.initStream(this.stream, this.sizes[index++]);
-    this.userData.initStream(this.stream, this.sizes[index++]);
-    this.pointSourceId.initStream(this.stream, this.sizes[index++]);
-    this.gpsTime.initStream(this.stream, this.sizes[index++]);
+    this.initializeOptionalStream(this.scanAngle, this.sizes[index++]);
+    this.initializeOptionalStream(this.userData, this.sizes[index++]);
+    this.initializeOptionalStream(this.pointSourceId, this.sizes[index++]);
+    this.initializeOptionalStream(this.gpsTime, this.sizes[index++]);
+  }
+
+  /** Initialize a retained field layer or consume its compressed range. */
+  private initializeOptionalStream(decoder: ArithmeticDecoder | null, byteLength: number): void {
+    if (decoder) {
+      decoder.initStream(this.stream, byteLength);
+    } else {
+      this.stream.consume(byteLength);
+    }
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
@@ -1270,13 +1354,9 @@ class Point14Decompressor {
     return outputOffset + 30;
   }
 
-  decompressPoint(
-    output?: Uint8Array,
-    outputOffset: number = 0,
-    mode: Point14DecompressionMode = Point14DecompressionMode.Full
-  ): Point14 {
-    const decompressOptionalFields = mode === Point14DecompressionMode.Full;
-    if (this.lastChannel === -1) {
+  decompressPoint(output?: Uint8Array, outputOffset: number = 0): Point14 {
+    const decompressOptionalFields = this.decompressOptionalFields;
+    if (!this.activeContext) {
       const point = this.contexts[0].last;
       if (output) {
         this.stream.getBytes(output, outputOffset, 30);
@@ -1290,17 +1370,21 @@ class Point14Decompressor {
         copyPoint14(context.last, point);
       }
       context.haveLast = true;
-      context.lastGpsTime[0] = context.last.gpsTime;
-      this.lastChannel = this.scannerChannel;
+      if (decompressOptionalFields) {
+        context.lastGpsTime[0] = context.last.gpsTime;
+      }
+      this.activeContext = context;
       context.lastZ.fill(context.last.z);
       context.lastIntensity.fill(context.last.intensity);
       return context.last;
     }
 
-    const previous = this.contexts[this.lastChannel];
+    const previous = this.activeContext!;
+    const previousReturns = previous.last.returns;
+    const previousReturnNumber = previousReturns & 0x0f;
     const changeStream =
-      (getReturnNumber(previous.last) === 1 ? 1 : 0) |
-      ((getReturnNumber(previous.last) >= getNumberOfReturns(previous.last) ? 1 : 0) << 1) |
+      (previousReturnNumber === 1 ? 1 : 0) |
+      ((previousReturnNumber >= previousReturns >> 4 ? 1 : 0) << 1) |
       ((previous.gpsTimeChange ? 1 : 0) << 2);
     const changedValues = this.xy.decodeSymbol(previous.changedValuesModel[changeStream]);
     const scannerChannelChanged = Boolean((changedValues >> 6) & 1);
@@ -1314,30 +1398,32 @@ class Point14Decompressor {
     const returnNumberDecrements = returnNumberMinus && !returnNumberPlus;
     const returnNumberMiscChange = returnNumberPlus && returnNumberMinus;
 
-    let scannerChannel = getScannerChannel(previous.last);
+    let scannerChannel = this.scannerChannel;
+    let context = previous;
     if (scannerChannelChanged) {
       const diff = this.xy.decodeSymbol(previous.scannerChannelModel);
       scannerChannel = (scannerChannel + diff + 1) % 4;
-      this.lastChannel = scannerChannel;
+      context = this.contexts[scannerChannel];
+      this.activeContext = context;
     }
     this.scannerChannel = scannerChannel;
 
-    const context = this.contexts[scannerChannel];
     if (!context.haveLast) {
       context.haveLast = true;
       copyPoint14(context.last, previous.last);
       context.lastZ.fill(previous.last.z);
       context.lastIntensity.fill(previous.last.intensity);
-      context.lastGpsTime[0] = previous.last.gpsTime;
+      if (decompressOptionalFields) {
+        context.lastGpsTime[0] = previous.last.gpsTime;
+      }
     }
     setScannerChannel(context.last, scannerChannel);
 
-    let numberOfReturns = getNumberOfReturns(context.last);
-    let returnNumber = getReturnNumber(context.last);
+    let numberOfReturns = context.last.returns >> 4;
+    let returnNumber = context.last.returns & 0x0f;
     if (numberReturnsChanged) {
       numberOfReturns = this.xy.decodeSymbol(context.numberReturnsModel[numberOfReturns]);
     }
-    setNumberOfReturns(context.last, numberOfReturns);
     if (returnNumberIncrements) {
       returnNumber = (returnNumber + 1) % 16;
     } else if (returnNumberDecrements) {
@@ -1347,7 +1433,7 @@ class Point14Decompressor {
         ? this.xy.decodeSymbol(context.returnNumberModel[returnNumber])
         : (returnNumber + this.xy.decodeSymbol(context.returnNumberGpsSameModel) + 2) % 16;
     }
-    setReturnNumber(context.last, returnNumber);
+    context.last.returns = (numberOfReturns << 4) | returnNumber;
 
     const xyContext =
       (NUMBER_RETURN_MAP_6_CONTEXT[numberOfReturns][returnNumber] << 1) | (gpsTimeChanged ? 1 : 0);
@@ -1383,7 +1469,7 @@ class Point14Decompressor {
       );
     }
 
-    if (decompressOptionalFields && this.flags.valid) {
+    if (this.flags?.valid) {
       const mergedFlags = mergeFlags(context.last);
       const flags = this.flags.decodeSymbol(context.flagModel[mergedFlags]);
       setEdgeOfFlightLine(context.last, (flags >> 5) & 1);
@@ -1405,24 +1491,24 @@ class Point14Decompressor {
       context.last.intensity = intensity & 0xffff;
     }
 
-    if (decompressOptionalFields && scanAngleChanged) {
+    if (scanAngleChanged && this.scanAngle) {
       context.last.scanAngle = toInt16(
         context.scanAngle.decompress(this.scanAngle, context.last.scanAngle, gpsTimeChanged ? 1 : 0)
       );
     }
 
-    if (decompressOptionalFields && this.userData.valid) {
+    if (this.userData?.valid) {
       const userDataContext = context.last.userData >> 2;
       context.last.userData = this.userData.decodeSymbol(context.userDataModel[userDataContext]);
     }
 
-    if (decompressOptionalFields && pointSourceChanged) {
+    if (pointSourceChanged && this.pointSourceId) {
       context.last.pointSourceId =
         context.pointSourceId.decompress(this.pointSourceId, context.last.pointSourceId, 0) &
         0xffff;
     }
 
-    if (decompressOptionalFields && gpsTimeChanged) {
+    if (gpsTimeChanged && this.gpsTime) {
       this.decodeGpsTime(context);
     }
     context.gpsTimeChange = gpsTimeChanged;
@@ -1430,11 +1516,12 @@ class Point14Decompressor {
   }
 
   private decodeGpsTime(context: Point14Context): void {
+    const gpsTime = this.gpsTime!;
     while (true) {
       if (context.lastGpsTimeDiff[context.lastGpsSequence] === 0) {
-        const multi = this.gpsTime.decodeSymbol(context.gpsTime0DiffModel);
+        const multi = gpsTime.decodeSymbol(context.gpsTime0DiffModel);
         if (multi === 0) {
-          const symbol = context.gpsTime.decompress(this.gpsTime, 0, 0);
+          const symbol = context.gpsTime.decompress(gpsTime, 0, 0);
           context.lastGpsTimeDiff[context.lastGpsSequence] = symbol;
           context.lastGpsTime[context.lastGpsSequence] = addInt32ToFloat64Bits(
             context.lastGpsTime[context.lastGpsSequence],
@@ -1444,12 +1531,8 @@ class Point14Decompressor {
         } else if (multi === 1) {
           context.nextGpsSequence = (context.nextGpsSequence + 1) & 3;
           const lastTimeBits = float64ToBigUint64(context.lastGpsTime[context.lastGpsSequence]);
-          const upper = context.gpsTime.decompress(
-            this.gpsTime,
-            Number(lastTimeBits >> 32n) | 0,
-            8
-          );
-          const lower = this.gpsTime.readInt();
+          const upper = context.gpsTime.decompress(gpsTime, Number(lastTimeBits >> 32n) | 0, 8);
+          const lower = gpsTime.readInt();
           context.lastGpsTime[context.nextGpsSequence] = bigUint64ToFloat64(
             (BigInt(upper >>> 0) << 32n) | BigInt(lower)
           );
@@ -1461,11 +1544,11 @@ class Point14Decompressor {
           continue;
         }
       } else {
-        let multi = this.gpsTime.decodeSymbol(context.gpsTimeMultiModel);
+        let multi = gpsTime.decodeSymbol(context.gpsTimeMultiModel);
         let gpsTimeDiff = 0;
         if (multi === 1) {
           const symbol = context.gpsTime.decompress(
-            this.gpsTime,
+            gpsTime,
             context.lastGpsTimeDiff[context.lastGpsSequence],
             1
           );
@@ -1476,7 +1559,7 @@ class Point14Decompressor {
           context.multiExtremeCounter[context.lastGpsSequence] = 0;
         } else if (multi < GPS_TIME_MULTI_CODE_FULL) {
           if (multi === 0) {
-            gpsTimeDiff = context.gpsTime.decompress(this.gpsTime, 0, 7);
+            gpsTimeDiff = context.gpsTime.decompress(gpsTime, 0, 7);
             context.multiExtremeCounter[context.lastGpsSequence]++;
             if (context.multiExtremeCounter[context.lastGpsSequence] > 3) {
               context.multiExtremeCounter[context.lastGpsSequence] = 0;
@@ -1485,13 +1568,13 @@ class Point14Decompressor {
           } else if (multi < GPS_TIME_MULTI) {
             const tag = multi < 10 ? 2 : 3;
             gpsTimeDiff = context.gpsTime.decompress(
-              this.gpsTime,
+              gpsTime,
               multi * context.lastGpsTimeDiff[context.lastGpsSequence],
               tag
             );
           } else if (multi === GPS_TIME_MULTI) {
             gpsTimeDiff = context.gpsTime.decompress(
-              this.gpsTime,
+              gpsTime,
               GPS_TIME_MULTI * context.lastGpsTimeDiff[context.lastGpsSequence],
               4
             );
@@ -1504,13 +1587,13 @@ class Point14Decompressor {
             multi = GPS_TIME_MULTI - multi;
             if (multi > GPS_TIME_MULTI_MINUS) {
               gpsTimeDiff = context.gpsTime.decompress(
-                this.gpsTime,
+                gpsTime,
                 multi * context.lastGpsTimeDiff[context.lastGpsSequence],
                 5
               );
             } else {
               gpsTimeDiff = context.gpsTime.decompress(
-                this.gpsTime,
+                gpsTime,
                 GPS_TIME_MULTI_MINUS * context.lastGpsTimeDiff[context.lastGpsSequence],
                 6
               );
@@ -1528,12 +1611,8 @@ class Point14Decompressor {
         } else if (multi === GPS_TIME_MULTI_CODE_FULL) {
           context.nextGpsSequence = (context.nextGpsSequence + 1) & 3;
           const lastTimeBits = float64ToBigUint64(context.lastGpsTime[context.lastGpsSequence]);
-          const upper = context.gpsTime.decompress(
-            this.gpsTime,
-            Number(lastTimeBits >> 32n) | 0,
-            8
-          );
-          const lower = this.gpsTime.readInt();
+          const upper = context.gpsTime.decompress(gpsTime, Number(lastTimeBits >> 32n) | 0, 8);
+          const lower = gpsTime.readInt();
           context.lastGpsTime[context.nextGpsSequence] = bigUint64ToFloat64(
             (BigInt(upper >>> 0) << 32n) | BigInt(lower)
           );
@@ -1564,6 +1643,8 @@ class RGB14Context {
 class RGB14Decompressor {
   private stream: ByteReader;
   private contexts = Array.from({length: 4}, () => new RGB14Context());
+  /** Current scanner-channel context, cached because channel switches are uncommon. */
+  private activeContext: RGB14Context | null = null;
   private lastChannel = -1;
   private rgbCount = 0;
   private rgb = new ArithmeticDecoder();
@@ -1602,26 +1683,28 @@ class RGB14Decompressor {
       context.lastBlue = this.decodedBlue;
       context.haveLast = true;
       this.lastChannel = scannerChannel;
+      this.activeContext = context;
       return;
     }
     if (this.rgbCount === 0) {
-      const context = this.contexts[this.lastChannel];
+      const context = this.activeContext!;
       this.decodedRed = context.lastRed;
       this.decodedGreen = context.lastGreen;
       this.decodedBlue = context.lastBlue;
       return;
     }
-    const context = this.contexts[scannerChannel];
-    let lastContext = this.contexts[this.lastChannel];
+    let context = this.activeContext!;
     if (scannerChannel !== this.lastChannel) {
+      const previous = context;
+      context = this.contexts[scannerChannel];
       this.lastChannel = scannerChannel;
       if (!context.haveLast) {
         context.haveLast = true;
-        context.lastRed = lastContext.lastRed;
-        context.lastGreen = lastContext.lastGreen;
-        context.lastBlue = lastContext.lastBlue;
+        context.lastRed = previous.lastRed;
+        context.lastGreen = previous.lastGreen;
+        context.lastBlue = previous.lastBlue;
       }
-      lastContext = context;
+      this.activeContext = context;
     }
     const symbol = this.rgb.decodeSymbol(context.usedModel);
     let red = 0;
@@ -1629,52 +1712,52 @@ class RGB14Decompressor {
     let blue = 0;
     if (symbol & 1) {
       const correction = this.rgb.decodeSymbol(context.diffModel[0]);
-      red = (correction + (lastContext.lastRed & 0xff)) & 0xff;
+      red = (correction + (context.lastRed & 0xff)) & 0xff;
     } else {
-      red = lastContext.lastRed & 0xff;
+      red = context.lastRed & 0xff;
     }
     if (symbol & 2) {
       const correction = this.rgb.decodeSymbol(context.diffModel[1]);
-      red |= ((correction + (lastContext.lastRed >> 8)) & 0xff) << 8;
+      red |= ((correction + (context.lastRed >> 8)) & 0xff) << 8;
     } else {
-      red |= lastContext.lastRed & 0xff00;
+      red |= context.lastRed & 0xff00;
     }
     if (symbol & 64) {
-      let diff = (red & 0xff) - (lastContext.lastRed & 0xff);
+      let diff = (red & 0xff) - (context.lastRed & 0xff);
       if (symbol & 4) {
         const correction = this.rgb.decodeSymbol(context.diffModel[2]);
-        green = (correction + clampUint8(diff + (lastContext.lastGreen & 0xff))) & 0xff;
+        green = (correction + clampUint8(diff + (context.lastGreen & 0xff))) & 0xff;
       } else {
-        green = lastContext.lastGreen & 0xff;
+        green = context.lastGreen & 0xff;
       }
       if (symbol & 16) {
         const correction = this.rgb.decodeSymbol(context.diffModel[4]);
-        diff = ((diff + ((green & 0xff) - (lastContext.lastGreen & 0xff))) / 2) | 0;
-        blue = (correction + clampUint8(diff + (lastContext.lastBlue & 0xff))) & 0xff;
+        diff = ((diff + ((green & 0xff) - (context.lastGreen & 0xff))) / 2) | 0;
+        blue = (correction + clampUint8(diff + (context.lastBlue & 0xff))) & 0xff;
       } else {
-        blue = lastContext.lastBlue & 0xff;
+        blue = context.lastBlue & 0xff;
       }
-      diff = (red >> 8) - (lastContext.lastRed >> 8);
+      diff = (red >> 8) - (context.lastRed >> 8);
       if (symbol & 8) {
         const correction = this.rgb.decodeSymbol(context.diffModel[3]);
-        green |= ((correction + clampUint8(diff + (lastContext.lastGreen >> 8))) & 0xff) << 8;
+        green |= ((correction + clampUint8(diff + (context.lastGreen >> 8))) & 0xff) << 8;
       } else {
-        green |= lastContext.lastGreen & 0xff00;
+        green |= context.lastGreen & 0xff00;
       }
       if (symbol & 32) {
         const correction = this.rgb.decodeSymbol(context.diffModel[5]);
-        diff = ((diff + (green >> 8) - (lastContext.lastGreen >> 8)) / 2) | 0;
-        blue |= ((correction + clampUint8(diff + (lastContext.lastBlue >> 8))) & 0xff) << 8;
+        diff = ((diff + (green >> 8) - (context.lastGreen >> 8)) / 2) | 0;
+        blue |= ((correction + clampUint8(diff + (context.lastBlue >> 8))) & 0xff) << 8;
       } else {
-        blue |= lastContext.lastBlue & 0xff00;
+        blue |= context.lastBlue & 0xff00;
       }
     } else {
       green = red;
       blue = red;
     }
-    lastContext.lastRed = red;
-    lastContext.lastGreen = green;
-    lastContext.lastBlue = blue;
+    context.lastRed = red;
+    context.lastGreen = green;
+    context.lastBlue = blue;
     this.decodedRed = red;
     this.decodedGreen = green;
     this.decodedBlue = blue;
@@ -1825,7 +1908,8 @@ type PointDecompressor = {
 
 function createPointDecompressor(
   stream: ByteReader,
-  metadata: LAZChunkMetadata
+  metadata: LAZChunkMetadata,
+  outputMode: LAZChunkDecoderOutputMode
 ): PointDecompressor {
   const extraByteCount = getExtraByteCount(metadata);
   switch (metadata.pointDataRecordFormat) {
@@ -1840,7 +1924,7 @@ function createPointDecompressor(
     case 6:
       return new PointFormat6Decompressor(stream, extraByteCount);
     case 7:
-      return new PointFormat7Decompressor(stream, extraByteCount);
+      return new PointFormat7Decompressor(stream, extraByteCount, outputMode);
     case 8:
       return new PointFormat8Decompressor(stream, extraByteCount);
     default:
@@ -1848,6 +1932,11 @@ function createPointDecompressor(
         `TypeScript LAZ decoder does not support point format ${metadata.pointDataRecordFormat}`
       );
   }
+}
+
+/** Return whether a point format has a direct typed-array output path. */
+function supportsDirectPointDataOutput(pointDataRecordFormat: number): boolean {
+  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 8;
 }
 
 class PointFormat0Decompressor implements PointDecompressor {
@@ -2159,16 +2248,23 @@ class PointFormat7Decompressor implements PointDecompressor {
   private point: Point14Decompressor;
   private rgb: RGB14Decompressor;
   private bytes: Byte14Decompressor | null;
+  /** Extra bytes stored with the first point and in independent later layers. */
+  private extraByteCount: number;
   private pointScratch = new Uint8Array(30);
-  private extraByteScratch: Uint8Array;
   private first = true;
 
-  constructor(stream: ByteReader, extraByteCount: number) {
+  constructor(stream: ByteReader, extraByteCount: number, outputMode: LAZChunkDecoderOutputMode) {
     this.stream = stream;
-    this.point = new Point14Decompressor(stream);
+    this.extraByteCount = extraByteCount;
+    this.point = new Point14Decompressor(
+      stream,
+      outputMode === 'raw' ? Point14DecompressionMode.Full : Point14DecompressionMode.PointData
+    );
     this.rgb = new RGB14Decompressor(stream);
-    this.bytes = extraByteCount ? new Byte14Decompressor(stream, extraByteCount) : null;
-    this.extraByteScratch = new Uint8Array(extraByteCount);
+    this.bytes =
+      outputMode === 'raw' && extraByteCount
+        ? new Byte14Decompressor(stream, extraByteCount)
+        : null;
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
@@ -2182,15 +2278,11 @@ class PointFormat7Decompressor implements PointDecompressor {
   }
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
-    const point = this.point.decompressPoint(
-      this.pointScratch,
-      0,
-      Point14DecompressionMode.PointData
-    );
+    const point = this.point.decompressPoint(this.pointScratch, 0);
     this.rgb.decompressRgb(this.point.scannerChannel);
     // The first point stores extra bytes before the layered stream metadata.
-    if (this.first && this.bytes) {
-      this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
+    if (this.first && this.extraByteCount) {
+      this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
@@ -2215,14 +2307,10 @@ class PointFormat7Decompressor implements PointDecompressor {
 
     // The first point stores extra bytes before the layered stream metadata.
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-      const point = this.point.decompressPoint(
-        this.pointScratch,
-        0,
-        Point14DecompressionMode.PointData
-      );
+      const point = this.point.decompressPoint(this.pointScratch, 0);
       this.rgb.decompressRgb(this.point.scannerChannel);
-      if (this.first && this.bytes) {
-        this.bytes.decompress(this.extraByteScratch, 0, this.point.scannerChannel);
+      if (this.first && this.extraByteCount) {
+        this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
       writePoint14ToPointDataArrays(
@@ -2255,10 +2343,21 @@ class PointFormat7Decompressor implements PointDecompressor {
       this.stream.getUint32();
       this.point.readSizes();
       this.rgb.readSizes();
-      this.bytes?.readSizes();
+      let skippedExtraByteLength = 0;
+      if (this.bytes) {
+        this.bytes.readSizes();
+      } else {
+        for (let index = 0; index < this.extraByteCount; index++) {
+          skippedExtraByteLength += this.stream.getUint32();
+        }
+      }
       this.point.readData();
       this.rgb.readData();
-      this.bytes?.readData();
+      if (this.bytes) {
+        this.bytes.readData();
+      } else {
+        this.stream.consume(skippedExtraByteLength);
+      }
       this.first = false;
     }
   }
@@ -2569,22 +2668,6 @@ function writeRgbToPointDataTarget(
   target.rawColors[colorOffset] = red;
   target.rawColors[colorOffset + 1] = green;
   target.rawColors[colorOffset + 2] = blue;
-}
-
-function getReturnNumber(point: Point14): number {
-  return point.returns & 0x0f;
-}
-
-function setReturnNumber(point: Point14, returnNumber: number): void {
-  point.returns = (returnNumber & 0x0f) | (point.returns & 0xf0);
-}
-
-function getNumberOfReturns(point: Point14): number {
-  return point.returns >> 4;
-}
-
-function setNumberOfReturns(point: Point14, numberOfReturns: number): void {
-  point.returns = ((numberOfReturns & 0x0f) << 4) | (point.returns & 0x0f);
 }
 
 function getScannerChannel(point: Point14): number {

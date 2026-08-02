@@ -70,7 +70,9 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 
 #### Selective LAZ 1.4 Decoding
 
-The TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 7 stores groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, and Extra Bytes layers that are not currently exposed in the returned table, using a specialized batch loop for its common XYZ, intensity, classification, and RGB output.
+The TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 7 stores groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, and Extra Bytes layers that are not currently exposed in the returned table, using a specialized batch loop for its common XYZ, intensity, classification, and RGB output. The selective decoder also avoids constructing arithmetic models for those skipped layers.
+
+Compressed field layers are decoded as bounded ranges of the original chunk instead of copied into per-layer readers. The point and RGB decoders retain their active scanner-channel contexts, while still initializing an independent context if a later point switches channels. These details reduce temporary allocation and property lookup overhead without changing the complete-record APIs.
 
 This optimization applies only to table parsing. `decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between selective table output and raw-record output after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
 

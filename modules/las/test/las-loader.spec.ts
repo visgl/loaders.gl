@@ -664,6 +664,30 @@ test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async
   t.deepEqual(rawColors, expectedRawColors, 'selected colors match full point records');
 
   target.pointOffset = 0;
+  const zeroPointDataCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  t.equal(
+    zeroPointDataCursor.decodeIntoPointData(target, 0),
+    0,
+    'zero-point selected decode does not consume input'
+  );
+  t.equal(
+    zeroPointDataCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1),
+    1,
+    'zero-point selected decode does not lock the cursor output mode'
+  );
+
+  const zeroRawCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  t.equal(
+    zeroRawCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 0),
+    0,
+    'zero-point raw decode does not consume input'
+  );
+  t.equal(
+    zeroRawCursor.decodeIntoPointData(target, 1),
+    1,
+    'zero-point raw decode does not lock the cursor output mode'
+  );
+
   const pointDataFirstCursor = createLAZChunkDecoderCursor(compressed, metadata);
   pointDataFirstCursor.decodeIntoPointData(target, 1);
   t.throws(
@@ -694,6 +718,32 @@ test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
   });
 
   t.deepEqual(actual, expected, 'point format 0 first point is preserved');
+
+  const cursor = createLAZChunkDecoderCursor(compressed, {
+    pointCount: 1,
+    pointDataRecordFormat: 0,
+    pointDataRecordLength: expected.byteLength
+  });
+  const target = {
+    positions: new Float32Array(3),
+    intensities: new Uint16Array(1),
+    classifications: new Uint8Array(1),
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  t.throws(
+    () => cursor.decodeIntoPointData(target, 1),
+    /does not support direct point-data output for point format 0/,
+    'legacy point formats reject direct point-data output'
+  );
+  const rawOutput = new Uint8Array(expected.byteLength);
+  t.equal(
+    cursor.decodeInto(rawOutput, 0, 1),
+    1,
+    'rejected direct output does not initialize or lock the cursor'
+  );
+  t.deepEqual(rawOutput, expected, 'raw decode remains available after rejected direct output');
   t.end();
 });
 
