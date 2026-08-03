@@ -38,6 +38,10 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['.json.gz']
   },
   {
+    test: /statistics\/summary$/,
+    extensions: ['.json.gz']
+  },
+  {
     test: /nodes\/\d+\/shared$/,
     extensions: ['/sharedResource.json.gz']
   }
