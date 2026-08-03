@@ -43,10 +43,24 @@ const VARIABLE_CHUNK_SIZE = 0xffffffff;
 const LAZ_CHUNK_TABLE_POINTER_LENGTH = 8;
 const LEGACY_LAZ_MIN_DECODE_RETRY_BYTE_LENGTH = 16 * 1024;
 
+/** One compressed field item declared by the LASzip VLR. */
+type LASZipItem = {
+  /** LASzip item type identifier. */
+  type: number;
+  /** Uncompressed item width in bytes. */
+  size: number;
+  /** LASzip codec version for this item. */
+  version: number;
+};
+
 type LASZipVLR = {
   compressor: number;
+  /** Entropy coder identifier declared by LASzip. */
+  coder: number;
   chunkSize: number;
   variableChunks: boolean;
+  /** Ordered compressed field descriptors. */
+  items: LASZipItem[];
   point14ItemVersion: 2 | 3 | 4 | null;
   rgb14ItemVersion: 2 | 3 | 4 | null;
   wavePacket13ItemVersion: 1 | null;
@@ -910,11 +924,20 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
       let wavePacket13ItemVersion: 1 | null = null;
       let wavePacketItemVersion: 3 | 4 | null = null;
       let byte14ItemVersion: 2 | 3 | 4 | null = null;
+      const items: LASZipItem[] = [];
       for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         const itemOffset = dataOffset + 34 + itemIndex * 6;
         const itemType = dataView.getUint16(itemOffset, true);
+        const itemSize = dataView.getUint16(itemOffset + 2, true);
         const itemVersion = dataView.getUint16(itemOffset + 4, true);
-        if (itemType === 9) {
+        items.push({type: itemType, size: itemSize, version: itemVersion});
+        if ([0, 6, 7, 8].includes(itemType)) {
+          if (itemVersion !== 2) {
+            throw new Error(
+              `LASLoader: unsupported legacy LASzip item type ${itemType} version ${itemVersion}`
+            );
+          }
+        } else if (itemType === 9) {
           if (itemVersion !== 1) {
             throw new Error(`LASLoader: unsupported WavePacket13 item version ${itemVersion}`);
           }
@@ -941,8 +964,10 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
       }
       return {
         compressor: dataView.getUint16(dataOffset, true),
+        coder: dataView.getUint16(dataOffset + 2, true),
         chunkSize,
         variableChunks: chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE,
+        items,
         point14ItemVersion,
         rgb14ItemVersion,
         wavePacket13ItemVersion,
@@ -972,6 +997,12 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
       `LASLoader: LAS 1.4 TypeScript LAZ decoding requires LASzip compressor 3; received ${laszip.compressor}`
     );
   }
+  if (laszip.coder !== 0) {
+    throw new Error(
+      `LASLoader: TypeScript LAZ decoding requires LASzip arithmetic coder 0; received ${laszip.coder}`
+    );
+  }
+  validateLASZipItemLayout(header, laszip.items);
   if (header.pointsFormatId >= 6 && !laszip.point14ItemVersion) {
     throw new Error(
       `LASLoader: point format ${header.pointsFormatId} requires a Point14 LASzip item`
@@ -1009,6 +1040,85 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
     throw new Error(
       `LASLoader: point format ${header.pointsFormatId} requires a WavePacket14 LASzip item`
     );
+  }
+}
+
+/** Validate the LASzip item sequence assumed by the point-format decoder. */
+function validateLASZipItemLayout(header: LASHeader, actualItems: LASZipItem[]): void {
+  const pointDataRecordFormat = header.pointsFormatId;
+  const baseLength = getLAZPointDataRecordBaseLength(pointDataRecordFormat);
+  const extraByteCount = header.pointsStructSize - baseLength;
+  if (extraByteCount < 0) {
+    throw new Error(
+      `LASLoader: point format ${pointDataRecordFormat} record length ${header.pointsStructSize} is smaller than ${baseLength}`
+    );
+  }
+
+  const expectedItems: Array<{type: number; size: number}> = [];
+  switch (pointDataRecordFormat) {
+    case 0:
+      expectedItems.push({type: 6, size: 20});
+      break;
+    case 1:
+      expectedItems.push({type: 6, size: 20}, {type: 7, size: 8});
+      break;
+    case 2:
+      expectedItems.push({type: 6, size: 20}, {type: 8, size: 6});
+      break;
+    case 3:
+      expectedItems.push({type: 6, size: 20}, {type: 7, size: 8}, {type: 8, size: 6});
+      break;
+    case 4:
+      expectedItems.push({type: 6, size: 20}, {type: 7, size: 8}, {type: 9, size: 29});
+      break;
+    case 5:
+      expectedItems.push(
+        {type: 6, size: 20},
+        {type: 7, size: 8},
+        {type: 8, size: 6},
+        {type: 9, size: 29}
+      );
+      break;
+    case 6:
+      expectedItems.push({type: 10, size: 30});
+      break;
+    case 7:
+      expectedItems.push({type: 10, size: 30}, {type: 11, size: 6});
+      break;
+    case 8:
+      expectedItems.push({type: 10, size: 30}, {type: 12, size: 8});
+      break;
+    case 9:
+      expectedItems.push({type: 10, size: 30}, {type: 13, size: 29});
+      break;
+    case 10:
+      expectedItems.push({type: 10, size: 30}, {type: 12, size: 8}, {type: 13, size: 29});
+      break;
+    default:
+      return;
+  }
+  if (extraByteCount > 0) {
+    expectedItems.push({type: pointDataRecordFormat <= 5 ? 0 : 14, size: extraByteCount});
+  }
+
+  if (actualItems.length !== expectedItems.length) {
+    throw new Error(
+      `LASLoader: point format ${pointDataRecordFormat} has ${actualItems.length} LASzip items; expected ${expectedItems.length}`
+    );
+  }
+  for (let itemIndex = 0; itemIndex < expectedItems.length; itemIndex++) {
+    const actualItem = actualItems[itemIndex];
+    const expectedItem = expectedItems[itemIndex];
+    if (actualItem.type !== expectedItem.type) {
+      throw new Error(
+        `LASLoader: LASzip item ${itemIndex} has type ${actualItem.type}; expected ${expectedItem.type} for point format ${pointDataRecordFormat}`
+      );
+    }
+    if (actualItem.size !== expectedItem.size) {
+      throw new Error(
+        `LASLoader: LASzip item ${itemIndex} has size ${actualItem.size}; expected ${expectedItem.size} for point format ${pointDataRecordFormat}`
+      );
+    }
   }
 }
 
@@ -1146,6 +1256,18 @@ function tryReadLAZChunkByteLengthFromReader(
 
 function getLAZPointDataRecordBaseLength(pointDataRecordFormat: number): number {
   switch (pointDataRecordFormat) {
+    case 0:
+      return 20;
+    case 1:
+      return 28;
+    case 2:
+      return 26;
+    case 3:
+      return 34;
+    case 4:
+      return 57;
+    case 5:
+      return 63;
     case 6:
       return 30;
     case 7:
@@ -1157,7 +1279,7 @@ function getLAZPointDataRecordBaseLength(pointDataRecordFormat: number): number 
     case 10:
       return 67;
     default:
-      throw new Error(`Unsupported LAS 1.4 point format ${pointDataRecordFormat}`);
+      throw new Error(`Unsupported LAS point format ${pointDataRecordFormat}`);
   }
 }
 
