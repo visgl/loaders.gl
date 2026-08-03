@@ -10,7 +10,7 @@ import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
 import {ensureGeoParquetMetadataOnArrowTable} from './lib/geo/geospatial-metadata';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {ParquetFormat} from './parquet-format';
-import {VERSION, PARQUET_WASM_URL} from './lib/constants';
+import {VERSION} from './lib/constants';
 
 /** Public options for the wasm-backed Parquet writer. */
 export type ParquetWriterOptions = WriterOptions & {
@@ -26,9 +26,7 @@ export const ParquetWriter = {
   module: 'parquet',
   version: VERSION,
   options: {
-    parquet: {
-      wasmUrl: PARQUET_WASM_URL
-    }
+    parquet: {}
   },
   encode(table: Table, options?: ParquetWriterOptions) {
     const arrowTable =

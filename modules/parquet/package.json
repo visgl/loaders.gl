@@ -43,6 +43,13 @@
       "types": "./dist/parquet-source-loader.d.ts",
       "import": "./dist/parquet-source-loader.js",
       "require": "./dist/parquet-source-loader.cjs"
+    },
+    "./parquet-worker.js": {
+      "import": "./dist/parquet-worker.js"
+    },
+    "./parquet-worker-node.cjs": {
+      "import": "./dist/parquet-worker-node.cjs",
+      "require": "./dist/parquet-worker-node.cjs"
     }
   },
   "sideEffects": false,
@@ -52,10 +59,12 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "yarn run copy-wasm",
+    "pre-build": "npm run copy-wasm && npm run build-worker && npm run build-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "copy-wasm": "cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet_wasm_bg.wasm"
+    "copy-wasm": "cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet_wasm_bg.wasm",
+    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "browser": {
     "child_process": false,

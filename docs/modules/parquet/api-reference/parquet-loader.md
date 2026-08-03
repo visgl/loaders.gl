@@ -43,11 +43,23 @@ import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
 const arrowTable = await load(url, ParquetLoader, {
+  core: {
+    worker: true
+  },
   parquet: {
-    shape: 'arrow-table'
+    shape: 'arrow-table',
+    signal: abortController.signal
   }
 });
 ```
+
+## Worker execution
+
+The default wasm backend can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and Arrow output returns as a transferable Arrow IPC payload that is rehydrated into Apache Arrow class instances on the main thread. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
+
+The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
+
+Set `core.worker: false` to decode on the calling thread. The TypeScript backend currently stays on the calling thread. Node worker threads remain opt-in through `core._nodeWorkers`.
 
 ## Shapes
 
@@ -147,7 +159,9 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
 | `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups for the wasm loader implementations. |
 | `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the wasm loader implementations. |
-| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
+| `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
+| `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
+| `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
 
 ## Backend Selection
 

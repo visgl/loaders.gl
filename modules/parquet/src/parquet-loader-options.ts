@@ -17,6 +17,11 @@ type ParquetCommonLoaderOptions = {
 type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
   rowGroups?: number[];
   concurrency?: number;
+  /** Cancels an active worker parse by terminating its worker. */
+  signal?: AbortSignal;
+  /** Overrides the packaged Parquet worker asset URL. */
+  workerUrl?: string;
+  /** Overrides the package-local parquet-wasm binary URL. */
   wasmUrl?: string;
 };
 

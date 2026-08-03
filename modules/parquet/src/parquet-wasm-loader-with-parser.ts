@@ -16,22 +16,28 @@ import {BlobFile} from '@loaders.gl/loader-utils';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {
-  parseParquetArrowTable,
-  parseParquetArrowTableInBatches,
-  parseParquetObjectRowTable,
-  parseParquetObjectRowTableInBatches
-} from './lib/parsers/parse-parquet-tables';
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './lib/parsers/convert-parquet-tables';
+import {
+  parseParquetFileToArrow,
+  parseParquetFileToArrowInBatches
+} from './lib/parsers/parse-parquet-to-arrow';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
-import {ParquetLoader as ParquetLoaderMetadata, type ParquetLoaderOptions} from './parquet-loader';
+import {
+  deserializeParquetWorkerResult,
+  serializeParquetWorkerResult
+} from './lib/parquet-worker-transport';
+import {PARQUET_LOADER_BASE} from './parquet-loader-base';
+import type {ParquetLoaderOptions} from './parquet-loader-options';
+import {PARQUET_WORKER_URL} from './parquet-worker-url';
 
-const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
-  ParquetLoaderMetadata;
-
-export type {ParquetLoaderOptions} from './parquet-loader';
+export type {ParquetLoaderOptions} from './parquet-loader-options';
 
 /** WASM-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetWASMLoaderWithParser = {
-  ...ParquetLoaderMetadataWithoutPreload,
+  ...PARQUET_LOADER_BASE,
+  worker: PARQUET_WORKER_URL,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseParquetTable(new BlobFile(arrayBuffer), options);
   },
@@ -50,7 +56,9 @@ export const ParquetWASMLoaderWithParser = {
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
     yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options);
-  }
+  },
+  serializeWorkerResult: serializeParquetWorkerResult,
+  deserializeWorkerResult: deserializeParquetWorkerResult
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,
@@ -70,10 +78,11 @@ async function parseParquetTable(
   const parquetOptions = getParquetOptions(options);
 
   if (parquetOptions.parquet?.shape === 'arrow-table') {
-    return await parseParquetArrowTable(file, parquetOptions);
+    return await parseParquetFileToArrow(file, parquetOptions.parquet);
   }
 
-  return await parseParquetObjectRowTable(file, parquetOptions);
+  const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
+  return convertArrowTableToObjectRows(arrowTable);
 }
 
 /**
@@ -89,11 +98,13 @@ async function* parseParquetTableInBatches(
   const parquetOptions = getParquetOptions(options);
 
   if (parquetOptions.parquet?.shape === 'arrow-table') {
-    yield* parseParquetArrowTableInBatches(file, parquetOptions);
+    yield* parseParquetFileToArrowInBatches(file, parquetOptions.parquet);
     return;
   }
 
-  yield* parseParquetObjectRowTableInBatches(file, parquetOptions);
+  for await (const batch of parseParquetFileToArrowInBatches(file, parquetOptions.parquet)) {
+    yield convertArrowBatchToObjectRows(batch);
+  }
 }
 
 /**

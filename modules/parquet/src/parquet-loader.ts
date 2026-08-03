@@ -10,15 +10,9 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/schema';
 
-import {ParquetFormat} from './parquet-format';
-import {
-  PARQUET_LOADER_DEFAULT_OPTIONS,
-  type ParquetLoaderOptions as SharedParquetLoaderOptions
-} from './parquet-loader-options';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {PARQUET_LOADER_BASE} from './parquet-loader-base';
+import type {ParquetLoaderOptions as SharedParquetLoaderOptions} from './parquet-loader-options';
+import {PARQUET_WORKER_URL} from './parquet-worker-url';
 
 /** Options for the parquet loader */
 export type ParquetLoaderOptions = SharedParquetLoaderOptions;
@@ -47,20 +41,8 @@ async function preloadParquetLoader(_url: string, options?: LoaderOptions) {
 
 /** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoader = {
-  ...ParquetFormat,
-
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
-
-  id: 'parquet',
-  module: 'parquet',
-  version: VERSION,
-  worker: false,
-  options: {
-    parquet: {
-      ...PARQUET_LOADER_DEFAULT_OPTIONS
-    }
-  },
+  ...PARQUET_LOADER_BASE,
+  worker: PARQUET_WORKER_URL,
   preload: preloadParquetLoader
 } as const satisfies Loader<
   ObjectRowTable | ArrowTable,

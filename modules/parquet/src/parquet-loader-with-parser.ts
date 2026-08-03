@@ -18,10 +18,7 @@ import type {
   ParquetLoaderImplementationOptions,
   ParquetLoaderOptions
 } from './parquet-loader-options';
-import {ParquetLoader as ParquetLoaderMetadata} from './parquet-loader';
-
-const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
-  ParquetLoaderMetadata;
+import {PARQUET_LOADER_BASE} from './parquet-loader-base';
 
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
@@ -32,7 +29,8 @@ const DEFAULT_PARQUET_JS_OPTIONS = {
 
 /** Parser-bearing TypeScript-only Parquet loader implementation. */
 export const ParquetLoaderWithParser = {
-  ...ParquetLoaderMetadataWithoutPreload,
+  ...PARQUET_LOADER_BASE,
+  worker: false,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseParquetFile(new BlobFile(arrayBuffer), getParquetOptions(options));
   },

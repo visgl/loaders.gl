@@ -178,6 +178,8 @@ export default class WorkerPool {
    */
   returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =
+      // Aborted jobs terminate their worker immediately.
+      worker.terminated ||
       // If the pool is destroyed, there is no reason to keep the worker around
       this.isDestroyed ||
       // If the app has disabled worker reuse, any completed workers should be destroyed
@@ -186,7 +188,9 @@ export default class WorkerPool {
       this.count > this._getMaxConcurrency();
 
     if (shouldDestroyWorker) {
-      worker.destroy();
+      if (!worker.terminated) {
+        worker.destroy();
+      }
       this.count--;
     } else {
       worker.unref();
