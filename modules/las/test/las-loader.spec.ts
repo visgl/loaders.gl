@@ -54,6 +54,8 @@ const PDRF_5_LAS_1_3_BINARY_URL = '@loaders.gl/las/test/data/pdrf5-1.3.las';
 const PDRF_5_LAZ_1_3_BINARY_URL = '@loaders.gl/las/test/data/pdrf5-1.3.laz';
 const PDRF_6_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.las';
 const PDRF_6_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf6-1.4.laz';
+const PDRF_7_V4_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf7-v4-1.4.las';
+const PDRF_7_V4_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf7-v4-1.4.laz';
 const PDRF_8_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.las';
 const PDRF_8_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf8-1.4.laz';
 const PDRF_9_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf9-1.4.las';
@@ -621,6 +623,21 @@ for (const fixture of [
   },
   {
     version: '1.4',
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 40,
+    lasUrl: PDRF_7_V4_LAS_1_4_BINARY_URL,
+    lazUrl: PDRF_7_V4_LAZ_1_4_BINARY_URL,
+    expectedItemVersions: [
+      [10, 4],
+      [11, 4],
+      [14, 4]
+    ] as const,
+    exercisesAllScannerChannels: true,
+    // COPC misdecodes RGB v4 after scanner-channel changes; bundled laz-rs rejects v4 on open.
+    parityBackends: [] as const
+  },
+  {
+    version: '1.4',
     pointDataRecordFormat: 8,
     pointDataRecordLength: 42,
     lasUrl: PDRF_8_LAS_1_4_BINARY_URL,
@@ -652,6 +669,12 @@ for (const fixture of [
     pointDataRecordLength: 63,
     lasUrl: PDRF_9_LAS_1_5_BINARY_URL,
     lazUrl: PDRF_9_LAZ_1_5_BINARY_URL,
+    expectedItemVersions: [
+      [10, 4],
+      [13, 4],
+      [14, 4]
+    ] as const,
+    exercisesAllScannerChannels: true,
     // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
     parityBackends: [] as const
   },
@@ -661,6 +684,13 @@ for (const fixture of [
     pointDataRecordLength: 71,
     lasUrl: PDRF_10_LAS_1_5_BINARY_URL,
     lazUrl: PDRF_10_LAZ_1_5_BINARY_URL,
+    expectedItemVersions: [
+      [10, 4],
+      [12, 4],
+      [13, 4],
+      [14, 4]
+    ] as const,
+    exercisesAllScannerChannels: true,
     // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
     parityBackends: [] as const
   }
@@ -671,6 +701,18 @@ for (const fixture of [
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
+
+    if ('expectedItemVersions' in fixture) {
+      const lazDataView = new DataView(lazArrayBuffer);
+      for (const [itemType, expectedVersion] of fixture.expectedItemVersions) {
+        const itemVersionOffset = findLASZipItemVersionOffset(lazArrayBuffer, itemType);
+        t.equal(
+          lazDataView.getUint16(itemVersionOffset, true),
+          expectedVersion,
+          `${label} LASzip item ${itemType} uses version ${expectedVersion}`
+        );
+      }
+    }
 
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
       batchSize: 127
@@ -707,7 +749,7 @@ for (const fixture of [
         `${label} preserves waveform offsets beyond Number.MAX_SAFE_INTEGER`
       );
     }
-    if (fixture.version === '1.5') {
+    if ('exercisesAllScannerChannels' in fixture && fixture.exercisesAllScannerChannels) {
       const scannerChannels = new Set<number>();
       for (let pointIndex = 0; pointIndex < 1024; pointIndex++) {
         scannerChannels.add((expected[pointIndex * fixture.pointDataRecordLength + 15] >> 4) & 3);
@@ -715,14 +757,19 @@ for (const fixture of [
       t.deepEqual(
         Array.from(scannerChannels).sort(),
         [0, 1, 2, 3],
-        `${label} exercises all WavePacket14 v4 scanner-channel contexts`
+        `${label} exercises all LASzip v4 scanner-channel contexts`
       );
     }
     t.end();
   });
 
   test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async t => {
+    const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
+    const expected = await parse(lasArrayBuffer, LASLoader, {
+      las: {backend: 'typescript'},
+      core: {worker: false}
+    });
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
       las: {backend: 'typescript'},
       core: {worker: false}
@@ -745,17 +792,18 @@ for (const fixture of [
       `${label} fixture has the expected point format`
     );
     t.equal(actual.header.vertexCount, 1024, `${label} fixture has 1,024 points`);
+    compareMeshAttributes(t, actual, expected, `${label} TypeScript LAZ matches uncompressed LAS`);
 
     compareCollectedMeshAttributes(
       t,
       streamed,
       {
-        positions: Array.from(actual.attributes.POSITION.value),
-        intensities: Array.from(actual.attributes.intensity.value),
-        classifications: Array.from(actual.attributes.classification.value),
-        colors: Array.from(actual.attributes.COLOR_0?.value || [])
+        positions: Array.from(expected.attributes.POSITION.value),
+        intensities: Array.from(expected.attributes.intensity.value),
+        classifications: Array.from(expected.attributes.classification.value),
+        colors: Array.from(expected.attributes.COLOR_0?.value || [])
       },
-      `${label} TypeScript streaming matches complete parse`
+      `${label} TypeScript streaming matches uncompressed LAS`
     );
 
     for (const backend of fixture.parityBackends) {
