@@ -137,6 +137,11 @@ export default class App extends PureComponent<AppProps> {
     const {category, name} = this.state;
     const selectedExample = examplesByCategory[category].examples[name];
     this.setState({selectedExample});
+    
+    // Check if a tileset is specified in the query params
+    if (this._selectTilesetFromQueryParams()) {
+      return;
+    }
   }
 
   // Check URL query params and select the "custom example" if appropriate

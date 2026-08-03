@@ -53,7 +53,7 @@ const config = {
   favicon: '/favicon.png',
   organizationName: 'visgl', // Usually your GitHub org/user name.
   projectName: 'loaders.gl', // Usually your repo name.
-  trailingSlash: false,
+  trailingSlash: undefined,
 
   future: {
     v4: true
