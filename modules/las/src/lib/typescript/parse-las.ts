@@ -49,6 +49,7 @@ type LASZipVLR = {
   variableChunks: boolean;
   point14ItemVersion: 2 | 3 | 4 | null;
   rgb14ItemVersion: 2 | 3 | 4 | null;
+  wavePacket13ItemVersion: 1 | null;
   wavePacketItemVersion: 3 | 4 | null;
   byte14ItemVersion: 2 | 3 | 4 | null;
 };
@@ -828,7 +829,7 @@ function getColorOffset(pointsFormatId: number): number {
     case 3:
       return 28;
     case 5:
-      return 57;
+      return 28;
     case 7:
     case 8:
     case 10:
@@ -906,13 +907,19 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
       }
       let point14ItemVersion: 2 | 3 | 4 | null = null;
       let rgb14ItemVersion: 2 | 3 | 4 | null = null;
+      let wavePacket13ItemVersion: 1 | null = null;
       let wavePacketItemVersion: 3 | 4 | null = null;
       let byte14ItemVersion: 2 | 3 | 4 | null = null;
       for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
         const itemOffset = dataOffset + 34 + itemIndex * 6;
         const itemType = dataView.getUint16(itemOffset, true);
         const itemVersion = dataView.getUint16(itemOffset + 4, true);
-        if ([10, 11, 12, 14].includes(itemType)) {
+        if (itemType === 9) {
+          if (itemVersion !== 1) {
+            throw new Error(`LASLoader: unsupported WavePacket13 item version ${itemVersion}`);
+          }
+          wavePacket13ItemVersion = itemVersion;
+        } else if ([10, 11, 12, 14].includes(itemType)) {
           if (itemVersion !== 2 && itemVersion !== 3 && itemVersion !== 4) {
             throw new Error(
               `LASLoader: unsupported LAS 1.4 item type ${itemType} version ${itemVersion}`
@@ -938,6 +945,7 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
         variableChunks: chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE,
         point14ItemVersion,
         rgb14ItemVersion,
+        wavePacket13ItemVersion,
         wavePacketItemVersion,
         byte14ItemVersion
       };
@@ -949,9 +957,9 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
 }
 
 function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): void {
-  if (![0, 1, 2, 3, 6, 7, 8, 9, 10].includes(header.pointsFormatId)) {
+  if (![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(header.pointsFormatId)) {
     throw new Error(
-      `LASLoader: TypeScript LAZ streaming only supports point formats 0, 1, 2, 3, and 6-10; received ${header.pointsFormatId}`
+      `LASLoader: TypeScript LAZ streaming only supports point formats 0-10; received ${header.pointsFormatId}`
     );
   }
   if (header.pointsFormatId <= 5 && laszip.compressor !== 2) {
@@ -967,6 +975,14 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
   if (header.pointsFormatId >= 6 && !laszip.point14ItemVersion) {
     throw new Error(
       `LASLoader: point format ${header.pointsFormatId} requires a Point14 LASzip item`
+    );
+  }
+  if (
+    (header.pointsFormatId === 4 || header.pointsFormatId === 5) &&
+    !laszip.wavePacket13ItemVersion
+  ) {
+    throw new Error(
+      `LASLoader: point format ${header.pointsFormatId} requires a WavePacket13 LASzip item`
     );
   }
   if (
