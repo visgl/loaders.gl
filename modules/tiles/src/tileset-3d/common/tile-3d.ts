@@ -813,8 +813,15 @@ export class Tile3D {
     return refine || (this.parent && this.parent.refine) || TILE_REFINEMENT.REPLACE;
   }
 
-  _isTileset() {
-    return this.contentUrl.indexOf('.json') !== -1;
+  /**
+   * Returns whether loaded content is an external tileset.
+   *
+   * Parsed shape is authoritative because valid external resources may be extensionless, signed,
+   * or use a misleading filename. This method is called only after source loading has populated
+   * `content`.
+   */
+  _isTileset(): boolean {
+    return this.content?.shape === 'tileset3d';
   }
 
   _onContentLoaded() {

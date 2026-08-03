@@ -90,6 +90,51 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.end();
 });
 
+test('Tiles3DLoader#detects extensionless tileset JSON from structure', async t => {
+  const tileset = await parse(encodeTilesetJson(), Tiles3DLoader, {worker: false});
+
+  t.equal(tileset.shape, 'tileset3d');
+  t.equal(tileset.asset.version, '1.1');
+  t.equal(tileset.root.lodMetricValue, 0);
+  t.end();
+});
+
+test('Tiles3DLoader#detects JSON glTF tile content from structure', async t => {
+  const gltfJson = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+  );
+  const gltfArrayBuffer = gltfJson.buffer.slice(
+    gltfJson.byteOffset,
+    gltfJson.byteOffset + gltfJson.byteLength
+  ) as ArrayBuffer;
+  const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
+    worker: false,
+    '3d-tiles': {loadGLTF: false}
+  });
+
+  t.equal(tile.type, 'glTF', 'routes JSON glTF through the shared glTF content parser');
+  t.equal(tile.gltfArrayBuffer, gltfArrayBuffer, 'preserves JSON glTF bytes for deferred parsing');
+  t.end();
+});
+
+test('Tiles3DLoader#reports explicit content-mode mismatches', async t => {
+  await t.rejects(
+    parse(encodeTilesetJson(), Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: false}
+    }),
+    /Expected 3D tile render content; detected external tileset JSON/
+  );
+  await t.rejects(
+    parse(new TextEncoder().encode(JSON.stringify({asset: {version: '2.0'}})), Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: true}
+    }),
+    /Expected 3D Tiles tileset JSON; detected gltf/
+  );
+  t.end();
+});
+
 test('Tiles3DLoader#accepts supported required extensions', async t => {
   const extensionsRequired = [
     '3DTILES_implicit_tiling',
@@ -272,7 +317,12 @@ test('Tiles3DLoader#loads json from base64 URL', async t => {
   }
   const tilesetJson = {
     asset: {
-      version: 2.0
+      version: '1.1'
+    },
+    geometricError: 0,
+    root: {
+      boundingVolume: {sphere: [0, 0, 0, 1]},
+      geometricError: 0
     }
   };
 

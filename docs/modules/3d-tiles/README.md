@@ -36,6 +36,7 @@ To handle the complex dynamic tile selection and loading required to performantl
 
 The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains the complete path from hierarchy traversal to rendering:
 
+- [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection)
 - [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement)
 - [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod)
 - [Request scheduling, progressive loading, and foveated requests](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities)

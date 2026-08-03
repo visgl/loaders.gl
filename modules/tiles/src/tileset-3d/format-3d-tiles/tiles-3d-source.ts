@@ -65,6 +65,8 @@ export class Tiles3DSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private readonly queryParams: Record<string, string> = {};
+  /** Final request URLs cached by unmodified tile content URL. */
+  private readonly tileUrlCache: Map<string, string> = new Map();
   private readonly extensionsUsed: string[] = [];
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
@@ -104,7 +106,9 @@ export class Tiles3DSource implements Tileset3DSource {
 
     if (this.rootTileset.queryString) {
       const searchParams = new URLSearchParams(this.rootTileset.queryString);
-      Object.assign(this.queryParams, Object.fromEntries(searchParams.entries()));
+      for (const [parameterName, parameterValue] of searchParams.entries()) {
+        this.setQueryParameter(parameterName, parameterValue);
+      }
     }
 
     this.asset = this.rootTileset.asset;
@@ -120,7 +124,7 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     if ('tilesetVersion' in this.asset) {
-      this.queryParams.v = this.asset.tilesetVersion;
+      this.setQueryParameter('v', this.asset.tilesetVersion);
     }
 
     this.properties = this.rootTileset.properties;
@@ -186,7 +190,7 @@ export class Tiles3DSource implements Tileset3DSource {
           const url = new URL(childTile.contentUrl);
           const session = url.searchParams.get('session');
           if (session) {
-            this.queryParams.session = session;
+            this.setQueryParameter('session', session);
           }
         }
         tile.children.push(childTile);
@@ -216,7 +220,9 @@ export class Tiles3DSource implements Tileset3DSource {
       ...this.loadOptions,
       [this.loader.id]: {
         ...tilesetLoaderOptions,
-        isTileset: tile.type === 'json',
+        // Content bytes, rather than URL suffixes, distinguish external tilesets from renderable
+        // payloads. This is required for signed and extensionless resources.
+        isTileset: 'auto',
         assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y'
       }
     };
@@ -226,19 +232,32 @@ export class Tiles3DSource implements Tileset3DSource {
 
     return {
       loaded: true,
-      nestedTileset: tile.contentUrl.includes('.json') ? content : undefined
+      nestedTileset: content?.shape === 'tileset3d' ? content : undefined
     };
   }
 
   /**
    * Resolves a tile content URL with source-managed query parameters.
+   *
+   * Existing per-resource parameters take precedence over inherited root, version, and session
+   * values. Completed URLs are cached by the original tile path; {@link setQueryParameter}
+   * invalidates the cache before changed source state can be observed.
+   *
+   * @param tilePath - Unmodified absolute content URL or data URL from the tile header.
+   * @returns Content URL with any missing source parameters appended.
    */
   getTileUrl(tilePath: string): string {
     if (tilePath.startsWith('data:')) {
       return tilePath;
     }
 
+    const cachedTileUrl = this.tileUrlCache.get(tilePath);
+    if (cachedTileUrl) {
+      return cachedTileUrl;
+    }
+
     if (!Object.keys(this.queryParams).length) {
+      this.tileUrlCache.set(tilePath, tilePath);
       return tilePath;
     }
 
@@ -252,7 +271,27 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const queryParams = mergedQueryParams.toString();
-    return queryParams ? `${pathWithoutQuery}?${queryParams}` : pathWithoutQuery;
+    const tileUrl = queryParams ? `${pathWithoutQuery}?${queryParams}` : pathWithoutQuery;
+    this.tileUrlCache.set(tilePath, tileUrl);
+    return tileUrl;
+  }
+
+  /**
+   * Updates an inherited source query parameter and invalidates derived request URLs.
+   *
+   * Root tokens and tileset versions normally settle during initialization. Some providers expose
+   * a session parameter on a child URL, so invalidation is required to prevent URLs cached earlier
+   * in header construction from retaining stale authentication state.
+   *
+   * @param parameterName - Query parameter name.
+   * @param parameterValue - Query parameter value.
+   */
+  private setQueryParameter(parameterName: string, parameterValue: string): void {
+    if (this.queryParams[parameterName] === parameterValue) {
+      return;
+    }
+    this.queryParams[parameterName] = parameterValue;
+    this.tileUrlCache.clear();
   }
 
   /**

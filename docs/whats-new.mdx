@@ -210,6 +210,11 @@ A minor release that includes:
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
 - **Same-frame dynamic SSE transforms** Animated local tilesets refresh the root transform before density calculation, and tilted oriented boxes derive height from every rotated half axis.
 - **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.
+- **Structure-first content detection** `Tiles3DLoader` classifies legacy binary tiles, GLB, JSON glTF, and external tilesets from payload bytes and JSON structure instead of URL extensions or MIME types.
+- **Extensionless nested tilesets** Signed, extensionless, and misleadingly named external tilesets are recognized from their parsed shape throughout the `Tiles3DSource` loading path.
+- **Single-pass JSON preprocessing** External tileset and JSON glTF payloads are decoded and parsed once, with stable diagnostics for truncated, malformed, or unsupported content.
+- **Cached resource derivation** Relative content references reuse a parse-scoped URI resolver, while inherited-query tile URLs are cached and invalidated whenever source query state changes.
+- **3D Tiles resource guide** A new [Resources tab](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) documents content detection, URI resolution, query inheritance, cache scope, archive behavior, and troubleshooting.
 - **Explicit S2 bounding volumes** `3DTILES_bounding_volume_S2` tile, content, and viewer-request volumes are converted to traversal-ready oriented boxes outside implicit tiling as well.
 - **Progressive tile requests** Coarse viewport coverage receives priority before fine detail through reduced-height SSE.
 - **Foveated tile requests** Perspective tiles near the view axis receive priority over equally needed peripheral detail without changing the final LOD target.
