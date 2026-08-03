@@ -11,6 +11,10 @@
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
   },
+  "bugs": {
+    "url": "https://github.com/visgl/loaders.gl/issues"
+  },
+  "homepage": "https://loaders.gl",
   "keywords": [
     "loader",
     "parser",
