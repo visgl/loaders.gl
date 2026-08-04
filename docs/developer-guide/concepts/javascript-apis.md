@@ -37,6 +37,30 @@ The preferred way to provide random-access data to loaders.gl is through `Readab
 
 `ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/loader-utils` (and `DataViewReadableFile` from `@loaders.gl/zip`) to keep loader interactions consistent across platforms.
 
+### Validated HTTP ranges
+
+`HttpFile.open()` pins the remote object's byte length and available `ETag`/`Last-Modified`
+validators. Supplying identity from a trusted manifest avoids the opening one-byte probe:
+
+```ts
+import {HttpFile} from '@loaders.gl/loader-utils';
+
+const file = await HttpFile.open('https://example.com/data.parquet', {
+  byteLength: manifest.byteLength,
+  etag: manifest.etag,
+  consistency: 'strict'
+});
+
+const bytes = await file.read(offset, length, abortController.signal);
+console.log(file.getIdentitySnapshot(), file.getTelemetry());
+```
+
+Every read requires an exact `206` response and validates `Content-Range`, response length, and the
+pinned object identity before returning bytes. `strict` consistency requires validators to remain
+visible; the default `best-effort` mode still rejects changed validators but permits servers whose
+CORS policy does not expose them. A shared `RangeRequestScheduler` can coalesce nearby reads while
+keeping different authentication and validator contexts isolated.
+
 ## Saving data
 
 Saving data from a browser is either done by POST requests to a server, or via local downloads.

@@ -71,6 +71,28 @@ test('Parquet makeStreamIterator#unlocks after natural completion', async t => {
   t.end();
 });
 
+test('Parquet makeStreamIterator#aborts a pending read and releases the stream', async t => {
+  const abortController = new AbortController();
+  const abortReason = new Error('Stop reading Parquet data');
+  let cancellationCount = 0;
+  const stream = new ReadableStream<number>({
+    cancel() {
+      cancellationCount++;
+    }
+  });
+
+  const valuesPromise = collectValues(
+    makeStreamIterator(stream, {signal: abortController.signal})
+  );
+  await Promise.resolve();
+  abortController.abort(abortReason);
+
+  await t.rejects(valuesPromise, abortReason, 'rejects with the AbortSignal reason');
+  t.equal(cancellationCount, 1, 'cancels the pending stream');
+  t.notOk(stream.locked, 'releases the reader or async-iterator lock');
+  t.end();
+});
+
 async function collectValues<T>(values: AsyncIterable<T>): Promise<T[]> {
   const collectedValues: T[] = [];
   for await (const value of values) {

@@ -9,6 +9,10 @@ import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
+import {
+  PARQUET_SOURCE_CAPABILITIES,
+  type ParquetSourceCapabilities
+} from './parquet-source-capabilities';
 import {ParquetSourceLoader as ParquetSourceLoaderMetadata} from './parquet-source-loader-types';
 import type {
   ParquetBatch,
@@ -24,6 +28,10 @@ import type {
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
+export {
+  PARQUET_SOURCE_CAPABILITIES,
+  type ParquetSourceCapabilities
+} from './parquet-source-capabilities';
 import {preloadCompressions} from './parquetjs/compression';
 import {
   CompressionCodec,
@@ -122,6 +130,8 @@ export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
 export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
+  /** Immutable feature support for the current range-backed source implementation. */
+  readonly capabilities: ParquetSourceCapabilities = PARQUET_SOURCE_CAPABILITIES;
   /** Shared initialization for this source instance. */
   private initializationPromise: Promise<ParquetSourceInitialization> | null = null;
   /** File allocated during source initialization, including while it is opening. */
@@ -164,7 +174,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
 
   /** Returns a copy of cumulative transport, decode, conversion, and pruning telemetry. */
   getTelemetry(): ParquetTelemetry {
-    return {...this.telemetry};
+    return Object.freeze({...this.telemetry});
   }
 
   /** Selectively fetches row groups and columns as ordered Arrow batches with source provenance. */
@@ -387,7 +397,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       });
       const fileMetadata = await reader.getFileMetadata();
       const parquetSchema = await reader.getSchema();
-      const schema = await getSchemaFromParquetReader(reader);
+      const schema = deepFreeze(await getSchemaFromParquetReader(reader));
       const metadata = createParquetSourceMetadata(
         this.data,
         this.url,
@@ -638,7 +648,7 @@ function createParquetBatch(
   const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow-table');
   const rowGroup = metadata.rowGroups[rowGroupIndex];
   const sourceId = metadata.url || metadata.name;
-  const provenance = {
+  const provenance = Object.freeze({
     sourceId,
     sourceUrl: metadata.url,
     source: sourceId,
@@ -646,7 +656,7 @@ function createParquetBatch(
     rowOffset: rowGroup.rowOffset + rowGroupRowOffset,
     rowGroupRowOffset,
     rowCount
-  };
+  });
   return {
     batchType: 'data',
     shape: 'arrow-table',
@@ -776,7 +786,7 @@ function createReadAbortContext(signal?: AbortSignal): {
   removeSignalListener: () => void;
 } {
   const abortController = new AbortController();
-  const abortRead = (): void => abortController.abort();
+  const abortRead = (): void => abortController.abort(signal?.reason);
   if (signal?.aborted) {
     abortRead();
   } else {
@@ -793,9 +803,23 @@ function throwIfAborted(signal: AbortSignal): void {
   if (!signal.aborted) {
     return;
   }
+  if (signal.reason !== undefined) {
+    throw signal.reason;
+  }
   const error = new Error('Parquet read aborted');
   error.name = 'AbortError';
   throw error;
+}
+
+/** Recursively freezes the plain schema tree cached by a source. */
+function deepFreeze<T>(value: T): T {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+  for (const nestedValue of Object.values(value)) {
+    deepFreeze(nestedValue);
+  }
+  return Object.freeze(value);
 }
 
 /** Converts footer key/value pairs into an object. */

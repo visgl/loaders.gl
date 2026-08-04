@@ -15,7 +15,8 @@ import type {
   RasterData,
   RasterChannelDataType,
   RasterBoundingBox,
-  RangeRequestSchedulerProps
+  RangeRequestSchedulerProps,
+  RangeRequestTransportResult
 } from '@loaders.gl/loader-utils';
 import {
   DataSource,
@@ -576,6 +577,7 @@ class GeoTIFFRangeSchedulerClient {
   private readonly sourceId: string;
   private readonly defaultHeaders?: HeadersInit;
   private readonly rangeScheduler: RangeRequestScheduler;
+  private readonly schedulerIsolationKey = {};
   private fileSize: number | null = null;
 
   /** Creates a new range-scheduled GeoTIFF client. */
@@ -605,6 +607,7 @@ class GeoTIFFRangeSchedulerClient {
 
     const arrayBuffer = await this.rangeScheduler.scheduleRequest({
       sourceId: this.sourceId,
+      isolationKey: this.schedulerIsolationKey,
       offset,
       length,
       signal,
@@ -626,7 +629,7 @@ class GeoTIFFRangeSchedulerClient {
     length: number,
     headers: Headers,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer> {
+  ): Promise<RangeRequestTransportResult> {
     let response = await this.fetch(this.url, {
       headers: createRangeRequestHeaders(headers, offset, length),
       signal
@@ -660,7 +663,13 @@ class GeoTIFFRangeSchedulerClient {
       }
     }
 
-    return await response.arrayBuffer();
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      arrayBuffer,
+      status: response.status,
+      sourceByteLength: this.fileSize ?? undefined,
+      transportBytes: arrayBuffer.byteLength
+    };
   }
 }
 
