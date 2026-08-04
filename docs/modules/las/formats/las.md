@@ -84,6 +84,7 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 | COPC hierarchy and range selection | Uses the existing COPC path; not a standalone TypeScript COPC parser yet. |
 | Node range fetching | Supported. Each selected node's compressed byte range is fetched as a complete chunk. |
 | Point decoding | Supported for COPC nodes using LAZ 1.4 PDRF 6, 7, or 8. |
+| Render attribute output | The TypeScript path decodes positions and RGB directly into typed Arrow attributes, avoiding an intermediate raw-record buffer and second point traversal. |
 | Progressive point output while range data arrives | Not implemented. |
 | COPC writer | Not implemented. |
 

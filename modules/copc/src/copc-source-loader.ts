@@ -14,6 +14,7 @@ import type {
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import {
+  createLAZChunkDecoderCursor,
   DataSource,
   concatenateArrayBuffersFromArray,
   decodeLAZChunkInBatches
@@ -270,16 +271,96 @@ export class COPCTileSource
       return null;
     }
 
+    const nativeOrigin = this.getNativeTileCenter(tile.id);
+    const cartographicOrigin = this.projectPoint(nativeOrigin);
+
+    if (
+      this.options.copc?.decoder === 'typescript-laz' &&
+      supportsDirectCOPCPointDataOutput(copc.header.pointDataRecordFormat)
+    ) {
+      return await this.loadTypeScriptTileContent(copc, node, nativeOrigin, cartographicOrigin);
+    }
+
     const view = await this.loadPointDataView(copc, node);
     const pointCount = view.pointCount;
     const positions = new Float32Array(pointCount * 3);
-    const nativeOrigin = this.getNativeTileCenter(tile.id);
-    const cartographicOrigin = this.projectPoint(nativeOrigin);
     const colors = this.createColorArray(view, pointCount);
 
     this.populateTileAttributes(view, positions, colors, nativeOrigin, cartographicOrigin);
 
     return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
+  }
+
+  /** Decode a COPC node directly into the typed attributes used for rendering. */
+  protected async loadTypeScriptTileContent(
+    copc: Copc,
+    node: Hierarchy.Node,
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
+  ) {
+    const pointCount = node.pointCount;
+    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
+    const nativePositions = new Float64Array(pointCount * 3);
+    const positions = new Float32Array(pointCount * 3);
+    const colors = pointFormatHasColor(copc.header.pointDataRecordFormat)
+      ? new Uint16Array(pointCount * 3)
+      : null;
+    const cursor = createLAZChunkDecoderCursor(compressed, {
+      pointCount,
+      pointDataRecordFormat: copc.header.pointDataRecordFormat,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    });
+
+    const decodedPointCount = cursor.decodeIntoPointData(
+      {
+        positions: nativePositions,
+        intensities: new Uint16Array(pointCount),
+        classifications: new Uint8Array(pointCount),
+        rawColors: colors,
+        pointOffset: 0,
+        scale: copc.header.scale,
+        offset: copc.header.offset
+      },
+      pointCount
+    );
+    if (decodedPointCount !== pointCount) {
+      throw new Error(
+        `COPC TypeScript LAZ decoder produced ${decodedPointCount} points; expected ${pointCount}`
+      );
+    }
+
+    this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
+    return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
+  }
+
+  /** Transform decoded native positions into tile-relative render coordinates. */
+  protected transformTilePositions(
+    nativePositions: Float64Array,
+    positions: Float32Array,
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
+  ): void {
+    if (!this._projection) {
+      for (let index = 0; index < nativePositions.length; index += 3) {
+        positions[index] = nativePositions[index] - nativeOrigin[0];
+        positions[index + 1] = nativePositions[index + 1] - nativeOrigin[1];
+        positions[index + 2] = nativePositions[index + 2] - nativeOrigin[2];
+      }
+      return;
+    }
+
+    for (let index = 0; index < nativePositions.length; index += 3) {
+      const nativeZ = nativePositions[index + 2];
+      // projectPoint clones its input because proj4 mutates arrays. This temporary is already owned.
+      const cartographicPosition = this._projection.project([
+        nativePositions[index],
+        nativePositions[index + 1],
+        nativeZ
+      ]);
+      positions[index] = cartographicPosition[0] - cartographicOrigin[0];
+      positions[index + 1] = cartographicPosition[1] - cartographicOrigin[1];
+      positions[index + 2] = nativeZ - nativeOrigin[2];
+    }
   }
 
   async _initCopc(url: string) {
@@ -782,6 +863,16 @@ function normalizeProjectionDefinition(projectionData: string): string {
     projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);
 
   return horizontalWktMatch?.[1] || projectionData;
+}
+
+/** Return whether a valid COPC point format supports direct typed point-data output. */
+function supportsDirectCOPCPointDataOutput(pointDataRecordFormat: number): boolean {
+  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 8;
+}
+
+/** Return whether a LAS point format contains RGB channels. */
+function pointFormatHasColor(pointDataRecordFormat: number): boolean {
+  return pointDataRecordFormat === 7 || pointDataRecordFormat === 8;
 }
 
 /** Create the COPC package byte-range getter for URL/path and Blob inputs. */
