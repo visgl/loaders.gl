@@ -30,6 +30,38 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./native-decompression": {
+      "types": "./dist/native-decompression.d.ts",
+      "import": "./dist/native-decompression.js"
+    },
+    "./no-compression": {
+      "types": "./dist/no-compression.d.ts",
+      "import": "./dist/no-compression.js"
+    },
+    "./gzip-compression": {
+      "types": "./dist/gzip-compression.d.ts",
+      "import": "./dist/gzip-compression.js"
+    },
+    "./deflate-compression": {
+      "types": "./dist/deflate-compression.d.ts",
+      "import": "./dist/deflate-compression.js"
+    },
+    "./brotli-compression": {
+      "types": "./dist/brotli-compression.d.ts",
+      "import": "./dist/brotli-compression.js"
+    },
+    "./snappy-compression": {
+      "types": "./dist/snappy-compression.d.ts",
+      "import": "./dist/snappy-compression.js"
+    },
+    "./lz4-compression": {
+      "types": "./dist/lz4-compression.d.ts",
+      "import": "./dist/lz4-compression.js"
+    },
+    "./zstd-compression": {
+      "types": "./dist/zstd-compression.d.ts",
+      "import": "./dist/zstd-compression.js"
+    },
     "./compression-worker.js": {
       "import": "./dist/compression-worker.js"
     },
@@ -63,13 +95,8 @@
     "pako": "1.0.11",
     "snappyjs": "^0.6.1"
   },
-  "optionalDependencies": {
-    "@types/brotli": "^1.3.0",
-    "brotli": "^1.3.2",
-    "lz4js": "^0.2.0",
-    "zstd-codec": "^0.1"
-  },
   "devDependencies": {
+    "@types/brotli": "^1.3.0",
     "brotli": "^1.3.2",
     "lz4js": "^0.2.0",
     "zstd-codec": "^0.1"

@@ -73,6 +73,10 @@ Release Date: 2026
 - `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
 - `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
 
+**@loaders.gl/compression**
+
+- The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
+
 **@loaders.gl/deck-layers**
 
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.

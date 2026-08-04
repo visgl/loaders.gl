@@ -119,8 +119,12 @@ field-level GeoArrow metadata.
 
 ## Compressions
 
-Some compressions are big and need to be imported explicitly by the application
-and passed to the `ParquetLoader`
+Async Parquet parsing first probes the runtime's native `DecompressionStream` for gzip, Brotli,
+and Zstandard pages. Those probes come from a lightweight entrypoint with no codec imports, and
+codec-backed implementations are loaded only when native support is unavailable. Native Zstandard
+support is not yet widely available, so inject `zstd-codec` for broad compatibility; when
+provided, it takes precedence over the native path. LZ4 still requires `lz4js`.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';

@@ -7,6 +7,32 @@
 The `@loaders.gl/compression` module provides a selection of lossless,
 compression/decompression "transforms" with a unified interface that work both in browsers and in Node.js
 
+For async code that only needs decompression, the lightweight
+[`@loaders.gl/compression/native-decompression`](/docs/modules/compression/api-reference/native-decompression)
+entrypoint probes the runtime's
+`DecompressionStream` implementation for gzip, deflate, raw deflate, Brotli, and Zstandard. The
+entrypoint has no codec imports, so supported runtimes do not pull fallback codec code into the
+initial bundle. It returns `null` when the runtime or exact format is unavailable, allowing callers
+to load a fallback only when needed.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+
+```typescript
+import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
+
+async function decompressGzip(input: ArrayBuffer): Promise<ArrayBuffer> {
+  const output = await decompressWithNativeDecompressionStream(input, 'gzip');
+  if (output) {
+    return output;
+  }
+  const {GZipCompression} = await import('@loaders.gl/compression/gzip-compression');
+  return new GZipCompression().decompress(input);
+}
+```
+
+Parquet and SPZ parsing use this lightweight path automatically before lazily loading their
+codec-backed fallbacks. Existing compression classes keep their deterministic codec behavior for
+compression and synchronous decompression.
+
 ## API
 
 | Compression Class                                                                   | Format                | Characteristics                      | Library Size                                         | Notes |

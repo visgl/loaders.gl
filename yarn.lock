@@ -5283,15 +5283,6 @@ __metadata:
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
-  dependenciesMeta:
-    "@types/brotli":
-      optional: true
-    brotli:
-      optional: true
-    lz4js:
-      optional: true
-    zstd-codec:
-      optional: true
   languageName: unknown
   linkType: soft
 
