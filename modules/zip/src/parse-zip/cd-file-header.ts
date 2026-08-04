@@ -57,6 +57,7 @@ const CD_EXTRA_FIELD_LENGTH_OFFSET = 30;
 const CD_START_DISK_OFFSET = 32;
 const CD_LOCAL_HEADER_OFFSET_OFFSET = 42;
 const CD_FILE_NAME_OFFSET = 46n;
+const ZIP64_EXTRA_FIELD_ID = 0x0001;
 
 export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x01, 0x02]);
 
@@ -144,14 +145,6 @@ export async function* makeZipCDHeaderIterator(
     );
   }
 }
-/**
- * returns the number written in the provided bytes
- * @param bytes two bytes containing the number
- * @returns the number written in the provided bytes
- */
-const getUint16 = (...bytes: [number, number]) => {
-  return bytes[0] + bytes[1] * 16;
-};
 
 /**
  * reads all nesessary data from zip64 record in the extra data
@@ -167,19 +160,27 @@ const findZip64DataInExtra = (zip64data: Zip64Data, extraField: DataView): Parti
   if (zip64dataList.length > 0) {
     // total length of data in zip64 notation in bytes
     const zip64chunkSize = zip64dataList.reduce((sum, curr) => sum + curr.length, 0);
-    // we're looking for the zip64 nontation header (0x0001)
-    // and a size field with a correct value next to it
-    const offsetInExtraData = new Uint8Array(extraField.buffer).findIndex(
-      (_val, i, arr) =>
-        getUint16(arr[i], arr[i + 1]) === 0x0001 &&
-        getUint16(arr[i + 2], arr[i + 3]) === zip64chunkSize
-    );
-    // then we read all the nesessary fields from the zip64 data
-    let bytesRead = 0;
-    for (const note of zip64dataList) {
-      const offset = bytesRead;
-      zip64DataRes[note.name] = extraField.getBigUint64(offsetInExtraData + 4 + offset, true);
-      bytesRead = offset + note.length;
+    let offset = 0;
+    while (offset + 4 <= extraField.byteLength) {
+      const headerId = extraField.getUint16(offset, true);
+      const dataSize = extraField.getUint16(offset + 2, true);
+      const payloadStart = offset + 4;
+      if (payloadStart + dataSize > extraField.byteLength) {
+        break;
+      }
+      if (headerId === ZIP64_EXTRA_FIELD_ID && dataSize === zip64chunkSize) {
+        let bytesRead = 0;
+        for (const note of zip64dataList) {
+          const fieldOffset = payloadStart + bytesRead;
+          if (fieldOffset + 8 > payloadStart + dataSize) {
+            break;
+          }
+          zip64DataRes[note.name] = extraField.getBigUint64(fieldOffset, true);
+          bytesRead += note.length;
+        }
+        break;
+      }
+      offset = payloadStart + dataSize;
     }
   }
 
