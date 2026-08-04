@@ -314,8 +314,6 @@ export class COPCTileSource
     const decodedPointCount = cursor.decodeIntoPointData(
       {
         positions: nativePositions,
-        intensities: new Uint16Array(pointCount),
-        classifications: new Uint8Array(pointCount),
         rawColors: colors,
         pointOffset: 0,
         scale: copc.header.scale,
