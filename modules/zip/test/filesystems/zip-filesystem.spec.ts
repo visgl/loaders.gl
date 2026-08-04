@@ -5,12 +5,16 @@
 import test from 'tape-promise/tape';
 
 import {isBrowser} from '@loaders.gl/core';
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {
   createReadableFileFromBuffer,
   createReadableFileFromPath,
   loadArrayBufferFromFile
 } from 'test/utils/readable-files';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
+import {generateCDHeader} from '../../src/parse-zip/cd-file-header';
+import {generateEoCD} from '../../src/parse-zip/end-of-central-directory';
+import {generateLocalHeader} from '../../src/parse-zip/local-file-header';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
 
@@ -101,3 +105,68 @@ test('zip#ZipFileSystem - buffer-backed readable file', async t => {
   await fileSystem.destroy();
   t.end();
 });
+
+test('zip#ZipFileSystem - malformed ZIP64 metadata produces controlled errors', async t => {
+  const centralDirectoryArchive = createMalformedZip64Archive('central-directory');
+  const centralDirectoryFileSystem = new ZipFileSystem(centralDirectoryArchive);
+  await t.rejects(
+    () => centralDirectoryFileSystem.readdir(),
+    /Invalid ZIP archive:.*ZIP64/,
+    'readdir rejects malformed central-directory ZIP64 data'
+  );
+  await t.rejects(
+    () => centralDirectoryFileSystem.stat('test.json'),
+    /Invalid ZIP archive:.*ZIP64/,
+    'stat rejects malformed central-directory ZIP64 data'
+  );
+  await centralDirectoryFileSystem.destroy();
+
+  const localHeaderArchive = createMalformedZip64Archive('local-header');
+  const localHeaderFileSystem = new ZipFileSystem(localHeaderArchive);
+  await t.rejects(
+    () => localHeaderFileSystem.fetch('test.json'),
+    /Invalid ZIP archive:.*ZIP64/,
+    'fetch rejects malformed local-header ZIP64 data'
+  );
+  await localHeaderFileSystem.destroy();
+  t.end();
+});
+
+/**
+ * Creates an in-memory ZIP whose selected header requires missing ZIP64 size data.
+ * @param malformedHeader header to mark with ZIP64 sentinels
+ * @returns malformed ZIP archive bytes
+ */
+function createMalformedZip64Archive(
+  malformedHeader: 'central-directory' | 'local-header'
+): ArrayBuffer {
+  const fileName = 'test.json';
+  const localHeader = generateLocalHeader({crc32: 0, fileName, length: 0});
+  const centralDirectoryHeader = generateCDHeader({
+    crc32: 0,
+    fileName,
+    length: 0,
+    offset: 0n
+  });
+
+  const header =
+    malformedHeader === 'local-header'
+      ? new DataView(localHeader)
+      : new DataView(centralDirectoryHeader);
+  const compressedSizeOffset = malformedHeader === 'local-header' ? 18 : 20;
+  const uncompressedSizeOffset = malformedHeader === 'local-header' ? 22 : 24;
+  header.setUint32(compressedSizeOffset, 0xffffffff, true);
+  header.setUint32(uncompressedSizeOffset, 0xffffffff, true);
+
+  const centralDirectoryOffset = BigInt(localHeader.byteLength);
+  const endOfCentralDirectoryOffset =
+    centralDirectoryOffset + BigInt(centralDirectoryHeader.byteLength);
+  const endOfCentralDirectory = generateEoCD({
+    recordsNumber: 1,
+    cdSize: centralDirectoryHeader.byteLength,
+    cdOffset: centralDirectoryOffset,
+    eoCDStart: endOfCentralDirectoryOffset
+  });
+
+  return concatenateArrayBuffers(localHeader, centralDirectoryHeader, endOfCentralDirectory);
+}

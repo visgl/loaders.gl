@@ -40,20 +40,19 @@ test('SLPKLoader#zip64 info generation', async t => {
   t.end();
 });
 
-test('SLPKLoader#central directory file header parse with zip64 sentinel and empty extra field', async t => {
+test('SLPKLoader#central directory file header rejects missing zip64 extra field', async t => {
   const header = generateCDHeader({crc32: 0, fileName: 'test.json', length: 0, offset: 0n});
   const view = new DataView(header);
   view.setUint32(20, 0xffffffff, true);
   view.setUint32(24, 0xffffffff, true);
-  const cdFileHeader = await parseZipCDFileHeader(0n, new DataViewReadableFile(view));
-  t.equal(cdFileHeader?.fileName, 'test.json');
-  t.equal(cdFileHeader?.uncompressedSize, BigInt(0xffffffff));
-  t.equal(cdFileHeader?.compressedSize, BigInt(0xffffffff));
-  t.equal(cdFileHeader?.extraFieldLength, 0);
+  await t.rejects(
+    parseZipCDFileHeader(0n, new DataViewReadableFile(view)),
+    /Invalid ZIP archive:.*ZIP64/
+  );
   t.end();
 });
 
-test('SLPKLoader#central directory file header parse with truncated zip64 extra field', async t => {
+test('SLPKLoader#central directory file header rejects truncated zip64 extra field', async t => {
   const header = generateCDHeader({crc32: 0, fileName: 'test.json', length: 0, offset: 0n});
   const view = new DataView(header);
   view.setUint32(20, 0xffffffff, true);
@@ -63,13 +62,10 @@ test('SLPKLoader#central directory file header parse with truncated zip64 extra 
   const buffer = new Uint8Array(header.byteLength + extra.byteLength);
   buffer.set(new Uint8Array(header), 0);
   buffer.set(extra, header.byteLength);
-  const cdFileHeader = await parseZipCDFileHeader(
-    0n,
-    new DataViewReadableFile(new DataView(buffer.buffer))
+  await t.rejects(
+    parseZipCDFileHeader(0n, new DataViewReadableFile(new DataView(buffer.buffer))),
+    /Invalid ZIP archive:.*ZIP64/
   );
-  t.equal(cdFileHeader?.uncompressedSize, BigInt(0xffffffff));
-  t.equal(cdFileHeader?.fileName, 'test.json');
-  t.equal(cdFileHeader?.extraFieldLength, 8);
   t.end();
 });
 
@@ -88,6 +84,38 @@ test('SLPKLoader#central directory file header parse with valid zip64 extra fiel
   t.equal(cdFileHeader?.compressedSize, BigInt(0xffffffffff));
   t.equal(cdFileHeader?.extraFieldLength, 20);
   t.equal(cdFileHeader?.localHeaderOffset, 0n);
+  t.end();
+});
+
+test('SLPKLoader#central directory file header parses all zip64 field widths', async t => {
+  const header = generateCDHeader({crc32: 0, fileName: 'test.json', length: 0, offset: 0n});
+  const view = new DataView(header);
+  view.setUint32(20, 0xffffffff, true);
+  view.setUint32(24, 0xffffffff, true);
+  view.setUint16(30, 32, true);
+  view.setUint16(34, 0xffff, true);
+  view.setUint32(42, 0xffffffff, true);
+
+  const extra = new DataView(new ArrayBuffer(32));
+  extra.setUint16(0, 0x0001, true);
+  extra.setUint16(2, 28, true);
+  extra.setBigUint64(4, 0x112233445566n, true);
+  extra.setBigUint64(12, 0x223344556677n, true);
+  extra.setBigUint64(20, 0x334455667788n, true);
+  extra.setUint32(28, 0x12345678, true);
+
+  const buffer = new Uint8Array(header.byteLength + extra.byteLength);
+  buffer.set(new Uint8Array(header), 0);
+  buffer.set(new Uint8Array(extra.buffer), header.byteLength);
+  const cdFileHeader = await parseZipCDFileHeader(
+    0n,
+    new DataViewReadableFile(new DataView(buffer.buffer))
+  );
+
+  t.equal(cdFileHeader?.uncompressedSize, 0x112233445566n);
+  t.equal(cdFileHeader?.compressedSize, 0x223344556677n);
+  t.equal(cdFileHeader?.localHeaderOffset, 0x334455667788n);
+  t.equal(cdFileHeader?.startDisk, 0x12345678n);
   t.end();
 });
 
