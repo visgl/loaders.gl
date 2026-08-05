@@ -19,7 +19,8 @@ registry status, extension name, and schema fragment because an extension may au
 different glTF object types.
 
 Standalone JSON Schemas are published per version for Monaco and other editor integrations.
-`gltf.schema.json` remains the glTF 2.0 alias, while `gltf-all.schema.json` is an opt-in union:
+`gltf.schema.json` accepts every supported glTF version, so its validation contract only broadens as
+new versions are added. `gltf-all.schema.json` is an explicit alias for the same version union:
 
 ```text
 https://unpkg.com/@loaders.gl/gltf@5/gltf.schema.json
