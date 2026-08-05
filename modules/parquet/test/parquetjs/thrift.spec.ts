@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import * as parquetThrift from '@loaders.gl/parquet/parquetjs/parquet-thrift';
 import {serializeThrift} from '@loaders.gl/parquet/parquetjs/utils/read-utils';

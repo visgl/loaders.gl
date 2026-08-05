@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from sax-ts & sax under ISC license
 
-import type {Test} from 'tape-promise/tape';
+import type {Test} from 'test/utils/vitest-tape';
 import {SAXParser, SAXParserOptions} from '@loaders.gl/xml';
 
 type TestSAXParams = {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {
   triangulateOnWorker,
   triangulateWKBColumnOnWorker,

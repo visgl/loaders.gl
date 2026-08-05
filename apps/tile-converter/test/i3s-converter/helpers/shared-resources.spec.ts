@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import transform from 'json-map-transform';
 
 import {SHARED_RESOURCES as sharedResourcesTemplate} from '../../../src/i3s-converter/json-templates/shared-resources';

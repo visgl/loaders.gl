@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import test from 'tape';
+import test from 'test/utils/vitest-tape';
 import {version} from '../lerna.json';
 
 // @ts-ignore TS2339: Property does not exist on type 'Window & typeof globalThis'.

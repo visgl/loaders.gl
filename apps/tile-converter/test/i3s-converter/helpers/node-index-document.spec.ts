@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import {NodeIndexDocument} from '../../../src/i3s-converter/helpers/node-index-document';
 import I3SConverter from '../../../src/i3s-converter/i3s-converter';

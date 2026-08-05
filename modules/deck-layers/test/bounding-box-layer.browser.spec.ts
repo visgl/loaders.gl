@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/culling';
 import type {Layer} from '@deck.gl/core';
 import {BoundingBoxLayer, createBoundingBoxLayerEdges} from '../src/bounding-box-layer';

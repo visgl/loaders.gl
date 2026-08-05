@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, parse} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {PotreeHierarchyChunkLoader} from '@loaders.gl/potree';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import StreamingJSONParser from '../../../src/lib/json-parser/streaming-json-parser';
 import FastStreamingJSONParser from '../../../src/lib/json-parser/fast-streaming-json-parser';
 

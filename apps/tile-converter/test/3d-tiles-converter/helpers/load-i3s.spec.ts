@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 // @ts-expect-error it required `@loaders.gl/i3s/src/lib/helpers/i3s-nodepages-tiles` but it fails because tries to get the dependency from
 // `@loaders.gl/i3s/src/src/lib/helpers/i3s-nodepages-tiles`

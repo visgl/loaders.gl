@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import JSONParser from '../../../src/lib/json-parser/json-parser';
 
 // tslint:disable:object-literal-sort-keys

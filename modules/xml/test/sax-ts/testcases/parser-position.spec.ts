@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from sax-ts & sax under ISC license
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {SAXParser} from '@loaders.gl/xml';
 
 function testPosition(t, chunks, expectedEvents) {

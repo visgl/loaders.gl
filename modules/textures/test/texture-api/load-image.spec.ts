@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile} from '@loaders.gl/core';
 import {loadImageTexture, loadImageTextureArray, loadImageTextureCube} from '@loaders.gl/textures';
 import {getImageData, getImageType, isImage} from '@loaders.gl/images';

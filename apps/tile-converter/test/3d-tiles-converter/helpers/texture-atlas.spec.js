@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {convertTextureAtlas} from '../../../src/3d-tiles-converter/helpers/texture-atlas';
 
 test('tile-converter(3d-tiles)#convertTextureAtlas - should convert texture atlas', async t => {

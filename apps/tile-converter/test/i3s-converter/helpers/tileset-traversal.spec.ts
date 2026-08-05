@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Tiles3DLoader, Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
 import {load} from '@loaders.gl/core';
 import {traverseDatasetWith} from '../../../src/i3s-converter/helpers/tileset-traversal';

@@ -1,5 +1,5 @@
 import {addOneFile, createZip, getFileIterator} from '../../src/parse-zip/zip-composition';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 
 const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';

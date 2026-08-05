@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {load} from '@loaders.gl/core';
 import {I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
 

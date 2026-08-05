@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {getDracoSchema} from '../../../src/lib/utils/get-draco-schema';
 
 const ATTRIBUTES_STUB = {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {BasisLoader} from '@loaders.gl/textures';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';

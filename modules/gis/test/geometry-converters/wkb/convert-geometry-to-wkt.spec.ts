@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';

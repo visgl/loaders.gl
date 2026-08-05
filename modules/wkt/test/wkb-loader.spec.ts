@@ -4,7 +4,7 @@
 
 /* eslint-disable no-continue */
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {isWKB} from '@loaders.gl/gis';
 import {WKBLoader} from '@loaders.gl/wkt/bundled';

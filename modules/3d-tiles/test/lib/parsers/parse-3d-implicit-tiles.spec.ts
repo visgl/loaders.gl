@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import type {Subtree} from '../../../src/types';
 import type {ImplicitOptions} from '../../../src/lib/parsers/parse-3d-tile-header';
 import {parseImplicitTiles} from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';

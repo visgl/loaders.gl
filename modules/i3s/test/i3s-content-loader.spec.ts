@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {getImageData} from '@loaders.gl/images';
 // @ts-expect-error

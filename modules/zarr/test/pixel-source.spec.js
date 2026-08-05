@@ -1,5 +1,5 @@
 // @loaders.gl, MIT license
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {loadZarr} from '@loaders.gl/zarr';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
 

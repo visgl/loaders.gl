@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {TableTileSourceLoader, TableVectorTileSource} from '@loaders.gl/mvt';

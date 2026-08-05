@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
-  "extends": ["./dev-modules/devtools-extensions/biome/base.jsonc"],
+  "extends": ["@vis.gl/dev-tools/biome.jsonc"],
   "files": {
     "includes": [
       "modules/**/*.js",
@@ -100,10 +100,12 @@
       "suspicious": {
         "noAssignInExpressions": "error",
         "noAsyncPromiseExecutor": "error",
+        "noConsole": "off",
         "noDebugger": "error",
         "noDoubleEquals": "error",
         "noGlobalIsNan": "error",
-        "noRedeclare": "error"
+        "noRedeclare": "error",
+        "noShadowRestrictedNames": "off"
       }
     }
   },

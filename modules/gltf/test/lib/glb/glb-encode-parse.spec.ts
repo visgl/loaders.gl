@@ -1,6 +1,6 @@
 /* eslint-disable */
 /*
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {GLBParser, GLBBuilder} from '@loaders.gl/gltf';
 
 import TEST_JSON from '@loaders.gl/gltf/test/data/glb/test-data.json';

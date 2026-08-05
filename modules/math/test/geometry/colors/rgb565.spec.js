@@ -1,4 +1,4 @@
-import test from 'tape';
+import test from 'test/utils/vitest-tape';
 // import {encodeRGB565, decodeRGB565} from '@loaders.gl/math';
 
 test('encodeRGB565/decodeRGB565', t => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {createDataSource, encode, fetchFile, load} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/schema';

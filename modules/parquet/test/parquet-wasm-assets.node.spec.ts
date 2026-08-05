@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {readFileSync} from 'node:fs';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {PARQUET_WASM_URL} from '@loaders.gl/parquet/wasm';
 

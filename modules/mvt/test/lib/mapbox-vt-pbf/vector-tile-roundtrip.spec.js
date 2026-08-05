@@ -1,5 +1,5 @@
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import VectorTile from '@loaders.gl/mvt/lib/mapbox-vector-tile-js/vector-tile';
 import {fromGeojsonVt, fromVectorTileJs} from '@loaders.gl/mvt/lib/mapbox-vt-pbf/to-vector-tile';

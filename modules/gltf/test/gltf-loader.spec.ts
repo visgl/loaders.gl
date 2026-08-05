@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {registerLoaders, load, parse, parseSync, fetchFile} from '@loaders.gl/core';

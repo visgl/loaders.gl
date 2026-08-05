@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {setLoaderOptions, load, loadInBatches} from '@loaders.gl/core';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {PARQUET_CODECS} from '@loaders.gl/parquet/parquetjs/codecs';
 
 /** Creates an exact byte vector for concise codec fixtures. */

@@ -135,7 +135,13 @@ function usesExplicitEndSignal(callback: TestCallback): boolean {
 export interface Test {
   _assert(
     value: unknown,
-    options?: {message?: string; operator?: string; actual?: unknown; expected?: unknown; extra?: unknown}
+    options?: {
+      message?: string;
+      operator?: string;
+      actual?: unknown;
+      expected?: unknown;
+      extra?: unknown;
+    }
   ): void;
   assert(value: unknown, message?: string): void;
   comment(...messages: unknown[]): void;
@@ -200,7 +206,13 @@ class VitestTape implements Test {
 
   _assert(
     value: unknown,
-    options: {message?: string; operator?: string; actual?: unknown; expected?: unknown; extra?: unknown} = {}
+    options: {
+      message?: string;
+      operator?: string;
+      actual?: unknown;
+      expected?: unknown;
+      extra?: unknown;
+    } = {}
   ): void {
     this.countAssertion();
     expect(Boolean(value), options.message).toBe(true);
@@ -239,7 +251,8 @@ class VitestTape implements Test {
   ): Promise<void> {
     this.countAssertion();
     const {message: normalizedMessage} = normalizeThrowsArgs(expectedOrMessage, message);
-    const promise = typeof callbackOrPromise === 'function' ? callbackOrPromise() : callbackOrPromise;
+    const promise =
+      typeof callbackOrPromise === 'function' ? callbackOrPromise() : callbackOrPromise;
     try {
       await promise;
     } catch (error) {
@@ -341,7 +354,8 @@ class VitestTape implements Test {
   ): Promise<void> {
     this.countAssertion();
     const {expected, message: normalizedMessage} = normalizeThrowsArgs(expectedOrMessage, message);
-    const promise = typeof callbackOrPromise === 'function' ? callbackOrPromise() : callbackOrPromise;
+    const promise =
+      typeof callbackOrPromise === 'function' ? callbackOrPromise() : callbackOrPromise;
 
     let rejection: unknown;
     let rejected = false;

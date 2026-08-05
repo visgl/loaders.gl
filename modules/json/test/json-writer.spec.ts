@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {JSONWriter} from '@loaders.gl/json';
 import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/json/bundled';

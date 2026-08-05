@@ -1,4 +1,4 @@
-import test, {testIfBrowser} from 'tape-promise/tape';
+import test, {testIfBrowser} from 'test/utils/vitest-tape';
 
 import parseVideo, {parseVideoBlob} from '../src/lib/parsers/parse-video';
 import {VideoLoaderWithParser} from '../src/video-loader-with-parser';

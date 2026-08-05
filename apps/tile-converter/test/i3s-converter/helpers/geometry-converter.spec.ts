@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {WorkerFarm} from '@loaders.gl/worker-utils';

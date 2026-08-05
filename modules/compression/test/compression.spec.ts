@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /** @typedef {import('@loaders.gl/compression').Compression} Compression */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {
   NoCompression,
   GZipCompression,

@@ -5,7 +5,7 @@
 
 /* eslint-disable camelcase */
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {testSax} from '../utils/test-utils';
 
 /* eslint-disable block-scoped-var */

@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createProjection} from '../../src/utils/projection-utils';
 import {areNumberArraysEqual} from './compareArrays';
 

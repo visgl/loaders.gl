@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {GL_RGBA32F} from '../../../src/lib/gl-extensions';
 import {isHDR, parseHDR} from '../../../src/lib/parsers/parse-hdr';

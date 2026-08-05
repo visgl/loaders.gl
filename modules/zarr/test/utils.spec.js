@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 // @ts-ignore
 import {isInterleaved, getIndexer} from '@loaders.gl/zarr/lib/utils';

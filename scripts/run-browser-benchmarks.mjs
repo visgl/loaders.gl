@@ -1,10 +1,6 @@
 import {createServer} from 'vite';
 import {chromium, firefox, webkit} from 'playwright';
 
-import {getPlaywrightLaunchOptions} from './get-playwright-launch-options.mjs';
-import {getVitestConfig} from './get-vitest-config.mjs';
-import {loadOcularConfig} from './load-ocular-config.mjs';
-
 const DEFAULT_HOST = '127.0.0.1';
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
 const BROWSER_TYPES = {chromium, firefox, webkit};
@@ -13,23 +9,17 @@ const BROWSER_TYPES = {chromium, firefox, webkit};
  * Runs the browser benchmark entrypoint in Playwright against a Vite dev server.
  */
 export async function runBrowserBenchmarks(options = {}) {
-  const ocularConfig = options.ocularConfig || (await loadOcularConfig(options));
-  const vitestConfig = ocularConfig.devtools?.vitest || {};
-  const browserName = options.browserName || vitestConfig.browserName || 'chromium';
+  const browserName = options.browserName || 'chromium';
   const browserType = BROWSER_TYPES[browserName];
 
   if (!browserType) {
     throw new Error(`Unsupported browser for benchmarks: ${browserName}`);
   }
 
-  const viteConfig = await getVitestConfig({ocularConfig});
   const server = await createServer({
-    configFile: false,
+    configFile: 'vitest.config.ts',
     root: process.cwd(),
-    plugins: viteConfig.plugins,
-    resolve: viteConfig.resolve,
     optimizeDeps: {
-      ...viteConfig.optimizeDeps,
       entries: ['test/bench/index.html']
     },
     server: {
@@ -46,15 +36,15 @@ export async function runBrowserBenchmarks(options = {}) {
   }
 
   const origin = `http://${options.host || DEFAULT_HOST}:${address.port}`;
-  const browser = await browserType.launch(
-    getPlaywrightLaunchOptions({
-      ocularConfig,
-      channel: vitestConfig.channel,
-      softwareGpu: Boolean(vitestConfig.softwareGpu),
-      launchOptions: vitestConfig.launchOptions,
-      headless: options.headless ?? true
-    })
-  );
+  const browser = await browserType.launch({
+    headless: options.headless ?? true,
+    args: [
+      '--disable-dev-shm-usage',
+      '--enable-unsafe-webgpu',
+      '--ignore-gpu-blocklist',
+      ...(process.env.CI ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : [])
+    ]
+  });
 
   const page = await browser.newPage();
   forwardBrowserConsole(page);

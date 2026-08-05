@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {_JSONPath} from '@loaders.gl/json';
 
 const VALID_JSONPATHS = [

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
-import {resolve as resolveBenchmarkSpecifier} from '../dev-modules/devtools-extensions/bench-loader.mjs';
+import test from 'test/utils/vitest-tape';
+import {resolve as resolveBenchmarkSpecifier} from './utils/bench-loader.mjs';
 
 test('bench-loader resolves workspace benchmark entries from test sources', async t => {
   const resolution = await resolveBenchmarkSpecifier(

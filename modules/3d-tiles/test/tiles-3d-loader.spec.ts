@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';

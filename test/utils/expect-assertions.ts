@@ -1,4 +1,4 @@
-import test, {Test as TapeTest} from '@loaders.gl/devtools-extensions/tape-test-utils';
+import test, {Test as TapeTest} from 'test/utils/vitest-tape';
 import {tapeEquals, tapeEqualsEpsilon} from './tape-assertions';
 
 /**

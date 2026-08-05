@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {I3SContentLoader, customizeColors} from '@loaders.gl/i3s';
 

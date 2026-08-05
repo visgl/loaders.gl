@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
 
 test('tile-converter(i3s)#createPopupInfo - Should create popup info', async t => {

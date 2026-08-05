@@ -1,6 +1,6 @@
 /* eslint-disable max-statements */
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary, getGeometryInfo, _extractNumericPropTypes} from '@loaders.gl/gis';
 

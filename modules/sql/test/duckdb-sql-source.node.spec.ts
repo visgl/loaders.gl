@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createDataSource} from '@loaders.gl/core';
 import {DuckDBSQLDataSource, DuckDBSQLSource} from '@loaders.gl/sql';
 

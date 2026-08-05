@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {composeHashFile} from '../../src/hash-file-utility';
 import {NodeFile, isBrowser} from '@loaders.gl/loader-utils';
 import {makeZipCDHeaderIterator} from '../../src/parse-zip/cd-file-header';

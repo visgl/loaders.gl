@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import Tile3DBatchTable from '@loaders.gl/3d-tiles/classes/tile-3d-batch-table';
 import {Matrix2, Matrix3, Matrix4} from '@math.gl/core';
 import {loadTileset} from '../utils/load-utils';

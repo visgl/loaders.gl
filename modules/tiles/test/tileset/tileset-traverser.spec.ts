@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {coreApi} from '@loaders.gl/core';

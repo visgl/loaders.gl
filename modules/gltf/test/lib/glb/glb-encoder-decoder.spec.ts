@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /*
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {GLBBuilder, GLBParser} from '@loaders.gl/gltf';
 

@@ -1,4 +1,4 @@
-// import test from 'tape-promise/tape';
+// import test from 'test/utils/vitest-tape';
 
 import {describe, it, expect} from 'test/utils/expect-assertions';
 import {NetCDFLoader} from '@loaders.gl/netcdf';

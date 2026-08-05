@@ -5,7 +5,7 @@ import {
   getURLValue,
   validateOptionsWithEqual
 } from '../../src/lib/utils/cli-utils';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 test('tile-converter(utils)#reads a string value', async t => {
   t.equal(getStringValue(0, ['', 'string']), 'string');

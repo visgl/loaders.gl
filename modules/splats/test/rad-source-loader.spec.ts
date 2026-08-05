@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {DeflateCompression} from '@loaders.gl/compression';
 import {load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';

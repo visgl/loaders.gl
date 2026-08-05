@@ -1,5 +1,5 @@
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile} from '@loaders.gl/core';
 import Pbf from 'pbf';
 import VectorTile from '@loaders.gl/mvt/lib/mapbox-vector-tile-js/vector-tile';

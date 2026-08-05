@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {GL} from '@loaders.gl/math';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';

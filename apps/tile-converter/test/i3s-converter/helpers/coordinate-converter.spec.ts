@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {convertBoundingVolumeToI3SFullExtent} from '../../../src/i3s-converter/helpers/coordinate-converter';
 import {Ellipsoid} from '@math.gl/geospatial';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {classifyRingsFlat} from '@loaders.gl/mvt/lib/utils/geometry-utils';
 
 const loadJSON = async (relativePath: string) => {

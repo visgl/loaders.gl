@@ -1,6 +1,6 @@
 /* eslint-disable */
 /*
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {toLowPrecision} from 'test/test-utils';
 
 import {GLTFBuilder, GLTFParser} from '@loaders.gl/gltf';
