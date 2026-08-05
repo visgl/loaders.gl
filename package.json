@@ -28,7 +28,7 @@
     "website"
   ],
   "engines": {
-    "node": ">=20.18.0"
+    "node": "^22.13.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
     "bootstrap": "ocular-bootstrap",
@@ -38,7 +38,7 @@
     "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
     "build": "yarn build-modules",
-    "build-modules": "ocular-clean && ocular-build && yarn workspaces foreach -Apt run pre-build",
+    "build-modules": "ocular-clean && ocular-build && npx lerna run pre-build",
     "build-apps": "node ./scripts/run-app-commands.mjs build",
     "build-workers": "node ./scripts/build-workers.mjs",
     "cover": "yarn test-cover",
