@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {load, fetchFile} from '@loaders.gl/core';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 // import type {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';

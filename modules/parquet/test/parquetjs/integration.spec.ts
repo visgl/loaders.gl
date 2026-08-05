@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import test, {Test} from 'tape-promise/tape';
+import test, {Test} from 'test/utils/vitest-tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import {ParquetSchema, ParquetReader, ParquetEncoder} from '@loaders.gl/parquet';

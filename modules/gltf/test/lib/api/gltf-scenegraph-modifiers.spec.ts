@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {load} from '@loaders.gl/core';
 
 import {GLTFLoader, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';

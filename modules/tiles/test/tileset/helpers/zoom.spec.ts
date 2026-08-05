@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Vector3} from '@math.gl/core';
 

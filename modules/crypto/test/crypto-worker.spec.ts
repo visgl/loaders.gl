@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {CryptoWorker, CryptoJSWorker} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';

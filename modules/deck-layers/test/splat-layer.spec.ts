@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {SplatLayer, type SplatLayerProps} from '../src/splat-layer';
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 

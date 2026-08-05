@@ -16,7 +16,7 @@ License: MIT
 // @ts-nocheck
 
 /* eslint-disable quotes */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import Papa from '@loaders.gl/csv/papaparse/papaparse';
 
 // import {isBrowser, load} from '@loaders.gl/core';

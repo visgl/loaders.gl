@@ -4,7 +4,7 @@
 
 /* eslint-disable no-continue */
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {HexWKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';

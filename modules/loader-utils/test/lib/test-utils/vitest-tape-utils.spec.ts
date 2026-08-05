@@ -1,4 +1,4 @@
-import test, {isBrowser, isNode, testIf, testIfBrowser, testIfNode} from 'tape-promise/tape';
+import test, {isBrowser, isNode, testIf, testIfBrowser, testIfNode} from 'test/utils/vitest-tape';
 
 test('vitest tape runtime utils#runtime flags are exclusive', t => {
   t.equal(isNode, !isBrowser);

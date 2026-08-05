@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateWriter} from 'test/common/conformance';
 
 import {parse, encodeSync, encode, load} from '@loaders.gl/core';

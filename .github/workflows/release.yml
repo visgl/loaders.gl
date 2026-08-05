@@ -71,7 +71,7 @@ jobs:
             yarn-cache-${{ runner.os }}-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium

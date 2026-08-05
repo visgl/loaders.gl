@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';

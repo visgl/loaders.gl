@@ -4,7 +4,7 @@
 
 /* eslint-disable max-statements */
 /* eslint-disable complexity */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';

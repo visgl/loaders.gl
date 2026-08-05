@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';

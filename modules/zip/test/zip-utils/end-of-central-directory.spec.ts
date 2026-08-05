@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {parseEoCDRecord} from '../../src/parse-zip/end-of-central-directory';
 import {DataViewReadableFile} from '../../src/parse-zip/readable-file-utils';

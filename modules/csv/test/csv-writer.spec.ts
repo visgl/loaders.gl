@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {CSVLoader, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
 import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
 

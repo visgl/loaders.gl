@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {default as NodePages} from '../../../src/i3s-converter/helpers/node-pages';
 import {isBrowser} from '@loaders.gl/core';
 import I3SConverter from '../../../src/i3s-converter/i3s-converter';

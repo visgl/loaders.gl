@@ -7,7 +7,7 @@
 // https://github.com/mholt/PapaParse
 
 /* eslint-disable quotes, no-var, prefer-template, curly */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import Papa from '../../src/papaparse/papaparse';
 import {CORE_PARSER_TESTS, PARSE_TESTS, PARSE_ASYNC_TESTS} from './csv-test-cases';

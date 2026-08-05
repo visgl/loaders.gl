@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable max-statements */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {ParquetSchema, convertParquetSchema} from '@loaders.gl/parquet';
 
 // tslint:disable:ter-prefer-arrow-callback

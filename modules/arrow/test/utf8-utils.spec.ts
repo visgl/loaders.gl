@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {compareUTF8, parseUTF8BigInt, parseUTF8Boolean, parseUTF8Number} from '@loaders.gl/arrow';
 

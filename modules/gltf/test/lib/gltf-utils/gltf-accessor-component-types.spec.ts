@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
 import type {BigTypedArray} from '@loaders.gl/schema';

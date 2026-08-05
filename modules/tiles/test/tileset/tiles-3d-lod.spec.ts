@@ -4,7 +4,7 @@
 
 // This file tests behavior derived from the Cesium code base under Apache 2 license.
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Tile3D} from '@loaders.gl/tiles';

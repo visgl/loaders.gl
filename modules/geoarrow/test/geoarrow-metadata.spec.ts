@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import type {GeoArrowMetadata} from '@loaders.gl/geoarrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';

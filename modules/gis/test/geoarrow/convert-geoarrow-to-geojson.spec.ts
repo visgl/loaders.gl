@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test, {Test} from 'tape-promise/tape';
+import test, {Test} from 'test/utils/vitest-tape';
 import {
   GEOARROW_TEST_CASES,
   GEOARROW_ENCODINGS

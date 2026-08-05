@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {ZstdCodec} from 'zstd-codec';
 import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
 import {decompress} from '../src/parquetjs/compression';

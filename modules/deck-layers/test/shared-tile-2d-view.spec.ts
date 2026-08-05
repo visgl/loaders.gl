@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles';
 import {SharedTile2DView} from '../src/shared-tile-2d/shared-tile-2d-view';
 

@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {findGLTFFileIndex, resolveGLTFFile} from '@loaders.gl/gltf';

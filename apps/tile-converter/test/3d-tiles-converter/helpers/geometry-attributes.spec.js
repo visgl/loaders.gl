@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-attributes';
 

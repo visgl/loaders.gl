@@ -1,5 +1,5 @@
 /* eslint-disable max-len, camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {parse, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';

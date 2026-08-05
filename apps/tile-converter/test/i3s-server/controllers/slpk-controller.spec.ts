@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
 import {getFileByUrl, loadArchive} from '../../../src/i3s-server/controllers/slpk-controller';

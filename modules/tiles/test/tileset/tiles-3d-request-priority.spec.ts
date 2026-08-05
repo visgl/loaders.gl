@@ -4,7 +4,7 @@
 
 // This file tests behavior derived from the Cesium code base under Apache 2 license.
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {BoundingSphere} from '@math.gl/culling';
 import {TILE_CONTENT_STATE, TILE_REFINEMENT} from '../../src/constants';
 import {Tile3D} from '../../src/tileset-3d/common/tile-3d';

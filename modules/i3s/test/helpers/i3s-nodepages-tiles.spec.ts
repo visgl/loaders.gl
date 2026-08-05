@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 import {TEST_LAYER_URL, TILESET_STUB} from '../test-utils/load-utils';

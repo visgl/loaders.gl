@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import type {Schema} from '@loaders.gl/schema';
 
 import {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from '@loaders.gl/sql';

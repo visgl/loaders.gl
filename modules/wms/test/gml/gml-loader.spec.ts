@@ -6,7 +6,7 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 

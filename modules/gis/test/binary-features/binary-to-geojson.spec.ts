@@ -1,5 +1,5 @@
 /* eslint-disable max-depth */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import type {BinaryFeatureCollection, FeatureCollection} from '@loaders.gl/schema';
 import {fetchFile} from '@loaders.gl/core';
 import {binaryToGeojson, convertBinaryGeometryToGeometry} from '@loaders.gl/gis';

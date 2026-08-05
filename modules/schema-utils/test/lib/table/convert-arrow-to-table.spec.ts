@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import test from 'tape-promise/tape';
+// import test from 'test/utils/vitest-tape';
 // import {ARROW_SIMPLE} from '@loaders.gl/arrow/test/data/arrow/test-cases';
 
 // import {fetchFile, parse} from '@loaders.gl/core';

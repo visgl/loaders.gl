@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {default as I3SConverter} from '../../src/i3s-converter/i3s-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 

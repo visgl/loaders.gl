@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';

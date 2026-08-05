@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Test} from 'tape-promise/tape';
+import type {Test} from 'test/utils/vitest-tape';
 
 const EPSILON_DEFAULT = 0.01;
 

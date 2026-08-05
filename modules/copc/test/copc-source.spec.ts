@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createDataSource, encodeSync, fetchFile, isBrowser} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
 

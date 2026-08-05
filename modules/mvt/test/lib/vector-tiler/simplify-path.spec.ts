@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {simplifyPath} from '@loaders.gl/mvt/lib/vector-tiler/features/simplify-path';
 
 /* eslint comma-spacing:0, no-shadow: 0*/

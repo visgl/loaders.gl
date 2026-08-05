@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {PotreeSourceLoader} from '@loaders.gl/potree';
 
 const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';

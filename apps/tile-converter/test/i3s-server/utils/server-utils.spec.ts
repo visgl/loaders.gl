@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import {formErrorHandler, normalizePort} from '../../../src/i3s-server/utils/server-utils';
 

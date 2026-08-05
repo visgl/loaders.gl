@@ -4,7 +4,7 @@
 
 // @ts-nocheck Bizarre array indexing
 /* eslint-disable max-statements */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {ParquetSchema} from '@loaders.gl/parquet';
 import {ParquetRowGroup, shredRecord, materializeRows} from '@loaders.gl/parquet/parquetjs/schema/shred';
 

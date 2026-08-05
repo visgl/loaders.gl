@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {parse} from '@loaders.gl/core';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';

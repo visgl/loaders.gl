@@ -21,15 +21,15 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // ../../node_modules/@maplibre/mlt/dist/index.js
-var dist_exports = {};
-__export(dist_exports, {
+var index_exports = {};
+__export(index_exports, {
   FeatureTable: () => FeatureTable,
   GEOMETRY_TYPE: () => GEOMETRY_TYPE,
   GeometryVector: () => GeometryVector,
   GpuVector: () => GpuVector,
   decodeTile: () => decodeTile
 });
-module.exports = __toCommonJS(dist_exports);
+module.exports = __toCommonJS(index_exports);
 
 // ../../node_modules/@maplibre/mlt/dist/vector/vector.js
 var Vector = class {

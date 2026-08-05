@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {isTWKB} from '@loaders.gl/gis';
 import {TWKBLoader} from '@loaders.gl/wkt/bundled';

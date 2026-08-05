@@ -81,13 +81,11 @@ jobs:
           node -p "process.versions"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Install Playwright browser dependencies
         if: matrix.playwright
-        run: |
-          google-chrome --version
-          yarn playwright install-deps chrome
+        run: yarn playwright install --with-deps chromium
 
       - name: Build workers
         run: yarn run build-workers
@@ -199,7 +197,7 @@ jobs:
           node -p "process.versions"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Run Vitest async guardrails
         run: yarn run test-vitest-async-guardrails
@@ -245,7 +243,7 @@ jobs:
             website-yarn-cache-${{ runner.os }}-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Build website
         run: |
