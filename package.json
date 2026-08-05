@@ -77,7 +77,8 @@
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "vite": "^8.0.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "zod": "^4.1.12"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",

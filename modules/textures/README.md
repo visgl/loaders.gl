@@ -60,6 +60,8 @@ The `textures` module also exports JSON manifest loaders for image-based composi
 - `TextureCubeLoader` for cubemaps
 - `TextureCubeArrayLoader` for cube arrays
 
+The package root exports `CompositeImageManifestSchema` and the schemas for each individual manifest shape for runtime validation and TypeScript type inference. The equivalent generated JSON Schema is available from `@loaders.gl/textures/texture-manifest.schema.json`.
+
 Each manifest includes a `shape` discriminator and resolves relative member URLs against the manifest URL.
 Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
 These loaders return schema `Texture` objects rather than raw image trees.

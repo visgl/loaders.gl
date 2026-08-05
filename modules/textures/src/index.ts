@@ -49,6 +49,18 @@ export type {
 } from './texture-cube-array-loader';
 export {TextureCubeArrayLoader} from './texture-cube-array-loader';
 
+export {
+  CompositeImageManifestSchema,
+  ImageTextureArrayManifestSchema,
+  ImageTextureCubeArrayLayerSchema,
+  ImageTextureCubeArrayManifestSchema,
+  ImageTextureCubeManifestSchema,
+  ImageTextureManifestSchema,
+  ImageTextureSourceSchema,
+  ImageTextureTemplateSourceSchema
+} from './lib/composite-image/composite-image-manifest-schema';
+export type {CompositeImageManifest} from './lib/composite-image/composite-image-manifest-schema';
+
 // Module constants
 export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';

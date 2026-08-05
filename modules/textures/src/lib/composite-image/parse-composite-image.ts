@@ -8,56 +8,27 @@ import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {ImageBitmapLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
 import {asyncDeepMap} from '../texture-api/async-deep-map';
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types';
+import {IMAGE_TEXTURE_CUBE_FACES, type ImageCubeTexture} from './image-texture-cube';
 import {
-  IMAGE_TEXTURE_CUBE_FACES,
-  type ImageCubeTexture,
-  type ImageTextureCubeDirectionAlias,
-  type ImageTextureCubeFace
-} from './image-texture-cube';
+  CompositeImageManifestSchema,
+  type CompositeImageManifest,
+  type ImageTextureCubeManifest,
+  type ImageTextureManifest,
+  type ImageTextureSource,
+  type ImageTextureTemplateSource
+} from './composite-image-manifest-schema';
 
-export type ImageTextureTemplateSource = {
-  mipLevels: number | 'auto';
-  template: string;
-};
-
-export type ImageTextureSource = string | string[] | ImageTextureTemplateSource;
-
-export type ImageTextureManifest = {
-  shape: 'image-texture';
-  image?: string;
-  mipLevels?: number | 'auto';
-  template?: string;
-  mipmaps?: string[];
-};
-
-export type ImageTextureArrayManifest = {
-  shape: 'image-texture-array';
-  layers: ImageTextureSource[];
-};
-
-export type ImageTextureCubeFaces = Partial<
-  Record<ImageTextureCubeFace | ImageTextureCubeDirectionAlias, ImageTextureSource>
->;
-
-export type ImageTextureCubeManifest = {
-  shape: 'image-texture-cube';
-  faces: ImageTextureCubeFaces;
-};
-
-export type ImageTextureCubeArrayLayer = {
-  faces: ImageTextureCubeFaces;
-};
-
-export type ImageTextureCubeArrayManifest = {
-  shape: 'image-texture-cube-array';
-  layers: ImageTextureCubeArrayLayer[];
-};
-
-export type CompositeImageManifest =
-  | ImageTextureManifest
-  | ImageTextureArrayManifest
-  | ImageTextureCubeManifest
-  | ImageTextureCubeArrayManifest;
+export type {
+  CompositeImageManifest,
+  ImageTextureArrayManifest,
+  ImageTextureCubeArrayLayer,
+  ImageTextureCubeArrayManifest,
+  ImageTextureCubeFaces,
+  ImageTextureCubeManifest,
+  ImageTextureManifest,
+  ImageTextureSource,
+  ImageTextureTemplateSource
+} from './composite-image-manifest-schema';
 
 export type CompositeImageUrlTree =
   | ImageTextureSource
@@ -217,11 +188,7 @@ export function resolveCompositeImageUrl(
 }
 
 function parseCompositeImageManifestJSON(text: string): CompositeImageManifest {
-  const manifest = JSON.parse(text) as CompositeImageManifest;
-  if (!manifest?.shape) {
-    throw new Error('Composite image manifest must contain a shape field');
-  }
-  return manifest;
+  return CompositeImageManifestSchema.parse(JSON.parse(text));
 }
 
 async function getImageTextureSource(
