@@ -1296,6 +1296,86 @@ test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async
   t.end();
 });
 
+test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async t => {
+  const {compressed, metadata} = await getCOPCRootChunk();
+  const rawPointData = decodeLAZChunk(compressed, metadata);
+  const rawPointDataView = new DataView(
+    rawPointData.buffer,
+    rawPointData.byteOffset,
+    rawPointData.byteLength
+  );
+  const positions = new Float64Array(metadata.pointCount * 3);
+  const rawColors = new Uint16Array(metadata.pointCount * 3);
+  const selectedTarget = {
+    positions,
+    rawColors,
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const selectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+
+  while (selectedCursor.remainingPointCount > 0) {
+    selectedTarget.pointOffset = metadata.pointCount - selectedCursor.remainingPointCount;
+    selectedCursor.decodeIntoPointData(selectedTarget, 17);
+  }
+
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedRawColors = new Uint16Array(metadata.pointCount * 3);
+  for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+    const pointOffset = pointIndex * metadata.pointDataRecordLength;
+    const positionOffset = pointIndex * 3;
+    expectedPositions[positionOffset] = rawPointDataView.getInt32(pointOffset, true);
+    expectedPositions[positionOffset + 1] = rawPointDataView.getInt32(pointOffset + 4, true);
+    expectedPositions[positionOffset + 2] = rawPointDataView.getInt32(pointOffset + 8, true);
+    expectedRawColors[positionOffset] = rawPointDataView.getUint16(pointOffset + 30, true);
+    expectedRawColors[positionOffset + 1] = rawPointDataView.getUint16(pointOffset + 32, true);
+    expectedRawColors[positionOffset + 2] = rawPointDataView.getUint16(pointOffset + 34, true);
+  }
+
+  t.deepEqual(
+    positions,
+    expectedPositions,
+    'positions match while intensity and class are skipped'
+  );
+  t.deepEqual(
+    rawColors,
+    expectedRawColors,
+    'RGB matches while unrelated Point14 layers are skipped'
+  );
+
+  const positionsOnlyTarget = {
+    positions: new Float64Array(metadata.pointCount * 3),
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const positionsOnlyCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  t.equal(
+    positionsOnlyCursor.decodeIntoPointData(positionsOnlyTarget, metadata.pointCount),
+    metadata.pointCount,
+    'positions-only output skips every optional independent layer'
+  );
+  t.deepEqual(
+    positionsOnlyTarget.positions,
+    expectedPositions,
+    'positions remain correct while RGB is skipped'
+  );
+
+  const lockedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  lockedCursor.decodeIntoPointData(positionsOnlyTarget, 1);
+  t.throws(
+    () =>
+      lockedCursor.decodeIntoPointData(
+        {...positionsOnlyTarget, classifications: new Uint8Array(metadata.pointCount)},
+        1
+      ),
+    /Cannot change selected point-data fields/,
+    'cursor rejects changing independent field selection after decoding starts'
+  );
+  t.end();
+});
+
 test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
   const expected = createPointFormat0Record();
   const compressed = new Uint8Array(expected.byteLength + 4);
