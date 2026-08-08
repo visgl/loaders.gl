@@ -22,6 +22,15 @@
     },
     {
       "type": "category",
+      "label": "Usage Guide",
+      "items": [
+        "arrowjs/usage-guide/tables",
+        "arrowjs/usage-guide/geoarrow",
+        "arrowjs/usage-guide/mesharrow"
+      ]
+    },
+    {
+      "type": "category",
       "label": "Developer Guide",
       "items": [
         "arrowjs/developer-guide/introduction",
