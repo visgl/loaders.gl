@@ -55,7 +55,10 @@ const nodeExcludePatterns = [
   'modules/tiles/test/tileset/tileset-traverser.spec.ts'
 ];
 
-const browserExcludePatterns = ['modules/las/test/**'];
+const browserExcludePatterns = [
+  'modules/las/test/las-loader.spec.ts',
+  'modules/las/test/las-writer.spec.ts'
+];
 const sharedTestOptions = {
   passWithNoTests: true,
   setupFiles: ['./test/vitest-setup.ts'],
