@@ -179,6 +179,30 @@ export default async function lasLoaderBench(bench) {
     }
   );
 
+  bench.add(
+    'decodeLAZChunk cursor render-data LAZ 1.4 PDRF 7 backend=typescript',
+    {
+      multiplier: laz14FirstChunk.metadata.pointCount,
+      unit: 'output points',
+      minIterations: 3
+    },
+    () => {
+      const target = createLAZRenderDataBenchmarkTarget(
+        laz14FirstChunk.metadata.pointCount,
+        laz14Header
+      );
+      const cursor = createLAZChunkDecoderCursor(
+        laz14FirstChunk.compressed,
+        laz14FirstChunk.metadata
+      );
+      while (cursor.remainingPointCount > 0) {
+        const targetPointOffset = laz14FirstChunk.metadata.pointCount - cursor.remainingPointCount;
+        target.pointOffset = targetPointOffset;
+        cursor.decodeIntoPointData(target, Math.min(BATCH_SIZE, cursor.remainingPointCount));
+      }
+    }
+  );
+
   bench.groupSorted('LASWriter');
 
   bench.add('LASWriter LAS 1.2 backend=typescript', benchmarkOptions, () => {
@@ -301,6 +325,25 @@ function createLAZPointDataBenchmarkTarget(
     positions: new Float32Array(pointCount * 3),
     intensities: new Uint16Array(pointCount),
     classifications: new Uint8Array(pointCount),
+    rawColors: new Uint16Array(pointCount * 3),
+    pointOffset: 0,
+    scale: header.scale,
+    offset: header.offset
+  };
+}
+
+/**
+ * Creates the positions and RGB target used by the COPC rendering path.
+ * @param pointCount Number of points to decode.
+ * @param header LAS header with scale and offset metadata.
+ * @returns Direct render-data decode target.
+ */
+function createLAZRenderDataBenchmarkTarget(
+  pointCount: number,
+  header: ReturnType<typeof parseLASHeader>
+): LAZPointDataTarget {
+  return {
+    positions: new Float64Array(pointCount * 3),
     rawColors: new Uint16Array(pointCount * 3),
     pointOffset: 0,
     scale: header.scale,

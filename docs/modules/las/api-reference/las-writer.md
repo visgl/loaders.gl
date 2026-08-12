@@ -30,13 +30,17 @@ const arrayBuffer = await encode(pointCloud, LASWriter, {
 
 ## Data Format
 
-`LASWriter` accepts Mesh Arrow tables and legacy Mesh objects. Legacy Mesh input is normalized through the Mesh Arrow table conversion path before LAS binary data is encoded.
+`LASWriter` accepts Mesh Arrow tables and legacy Mesh objects. Arrow table input is normalized to the writer's Mesh representation before LAS binary data is encoded.
 
-The writer requires a `POSITION` attribute. It writes `COLOR_0`, `intensity`, and `classification` attributes when present. `LASWriter` writes uncompressed LAS 1.2 output; it does not write LAZ-compressed output.
+The writer requires a `POSITION` attribute. It writes `COLOR_0`, `intensity`, and `classification` attributes when present. It can select LAS versions 1.0-1.4 and PDRF 0-8, but fields without a corresponding input attribute, including GPS time, waveform references, NIR, return flags, and scanner metadata, are zero-filled. Current round-trip coverage targets default LAS 1.2 and LAS 1.4/PDRF 7; full conformance for every selectable version/PDRF combination is not claimed. `LASWriter` does not write LAZ-compressed or COPC output.
 
 ## Options
 
-| Option       | Type                       | Default                 | Description                                                                 |
-| ------------ | -------------------------- | ----------------------- | --------------------------------------------------------------------------- |
-| `las.scale`  | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate scale factors used to quantize positions into LAS integer coordinates. |
-| `las.offset` | `[number, number, number]` | Mesh minimum position   | Coordinate offsets used to quantize positions into LAS integer coordinates. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `las.format` | `'las' \| 'laz' \| 'copc'` | `'las'` | Output container. Only `'las'` is implemented; compressed formats throw. |
+| `las.version` | `'1.0'` through `'1.4'` | `'1.2'` or `'1.4'` | LAS header version. The default is 1.4 for modern PDRFs and 1.2 otherwise. |
+| `las.pointDataRecordFormat` | `0` through `8` | Derived | Point record layout. The default depends on version and whether `COLOR_0` is present. |
+| `las.scale` | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate scale factors used to quantize positions into LAS integer coordinates. |
+| `las.offset` | `[number, number, number]` | Mesh minimum position | Coordinate offsets used to quantize positions into LAS integer coordinates. |
+| `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
