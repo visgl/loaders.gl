@@ -14,17 +14,16 @@ test('CompressedTextureWriter#write-and-read-image', async t => {
     t.end();
     return;
   }
+  // The `texture-compressor` CLI is an optional, application-supplied prerequisite,
+  // so skip (rather than fail) when it is not installed in this environment.
+  let outputFilename: string | undefined;
   try {
-    const outputFilename = await encodeURLtoURL(
-      IMAGE_URL,
-      '/tmp/test.ktx',
-      CompressedTextureWriter,
-      {}
-    );
-    t.ok(outputFilename, 'a filename was returned');
-  } catch (_error) {
-    // @ts-ignore
-    // t.comment(error);
+    outputFilename = await encodeURLtoURL(IMAGE_URL, '/tmp/test.ktx', CompressedTextureWriter, {});
+  } catch (error) {
+    t.comment(`texture-compressor CLI not available, skipping: ${(error as Error).message}`);
+    t.end();
+    return;
   }
+  t.ok(outputFilename, 'a filename was returned');
   t.end();
 });

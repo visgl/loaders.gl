@@ -88,8 +88,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.1",
     "@loaders.gl/worker-utils": "5.0.0-alpha.1",
     "@math.gl/types": "^4.1.0",
-    "ktx-parse": "^0.7.0",
-    "texture-compressor": "^1.0.2"
+    "ktx-parse": "^0.7.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

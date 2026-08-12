@@ -146,6 +146,11 @@ This unifies top-level loading behavior:
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
 - The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
 
+**@loaders.gl/textures**
+
+- `@loaders.gl/textures` no longer depends on the deprecated `texture-compressor` package, which pulled in vulnerable versions of `image-size`. The package was only ever used as a command line tool by the experimental `CompressedTextureWriter`, and was installed for every consumer whether or not that writer was used.
+- Applications that use `CompressedTextureWriter` must now install the CLI themselves, for example with `npm install --save-dev texture-compressor`. The CLI is invoked with `npx --no`, so it is never downloaded on demand; if it cannot be resolved locally, `encodeURLtoURL()` rejects. All other `@loaders.gl/textures` loaders and writers are unaffected.
+
 **@loaders.gl/tiles**
 
 - `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.

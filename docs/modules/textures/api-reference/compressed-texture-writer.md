@@ -11,6 +11,16 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 
 > The experimental `CompressedTextureWriter` class can encode a binary encoded image into a compressed texture.
 
+:::caution
+This writer works by spawning the [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) command line utility via `npx`. That utility is **not** installed by `@loaders.gl/textures`. Applications that use this writer must install it themselves:
+
+```bash
+npm install --save-dev texture-compressor
+```
+
+The utility is invoked with `npx --no`, so it is never downloaded on demand. If it cannot be resolved locally, `encodeURLtoURL()` rejects.
+:::
+
 | Loader         | Characteristic                                         |
 | -------------- | ------------------------------------------------------ |
 | File Extension |                                                        |
@@ -46,4 +56,6 @@ TBA
 
 ## Remarks
 
+- Requires the `texture-compressor` CLI to be installed by the application, see the note above.
+- Output is currently hardcoded to the S3TC/DXT1 compression format, and the CLI only writes `.ktx` containers, so `outputUrl` must end in `.ktx` despite the writer being registered under the `dds` id.
 - For more information, see [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor).
