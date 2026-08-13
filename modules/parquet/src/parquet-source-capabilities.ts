@@ -43,5 +43,5 @@ export const PARQUET_SOURCE_CAPABILITIES: ParquetSourceCapabilities = Object.fre
   supportsObjectVersionValidation: true,
   supportsNetworkTelemetry: true,
   supportsDecodeTelemetry: true,
-  supportsWorkerDecoding: false
+  supportsWorkerDecoding: true
 });

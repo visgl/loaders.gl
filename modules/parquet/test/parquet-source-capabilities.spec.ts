@@ -22,7 +22,7 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', t
     supportsObjectVersionValidation: true,
     supportsNetworkTelemetry: true,
     supportsDecodeTelemetry: true,
-    supportsWorkerDecoding: false
+    supportsWorkerDecoding: true
   };
 
   t.ok(Object.isFrozen(PARQUET_SOURCE_CAPABILITIES), 'freezes the shared capability descriptor');
