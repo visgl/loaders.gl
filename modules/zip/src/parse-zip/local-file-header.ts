@@ -95,15 +95,17 @@ export const parseZipLocalFileHeader = async (
   const uncompressedSize = BigInt(mainHeader.getUint32(UNCOMPRESSED_SIZE_OFFSET, true));
 
   const expectedZip64Fields: Zip64ExtraFieldDescription<keyof Zip64LocalSizeData>[] = [];
-  if (uncompressedSize === ZIP64_UINT32_SENTINEL) {
-    expectedZip64Fields.push({name: 'uncompressedSize', byteLength: 8});
-  }
-  if (compressedSize === ZIP64_UINT32_SENTINEL) {
-    expectedZip64Fields.push({name: 'compressedSize', byteLength: 8});
+  if (uncompressedSize === ZIP64_UINT32_SENTINEL || compressedSize === ZIP64_UINT32_SENTINEL) {
+    // APPNOTE 4.5.3 requires both sizes in local ZIP64 extra data when either
+    // 32-bit size field contains the ZIP64 sentinel.
+    expectedZip64Fields.push(
+      {name: 'uncompressedSize', byteLength: 8},
+      {name: 'compressedSize', byteLength: 8}
+    );
   }
 
   const zip64Sizes = parseZip64ExtraField(extraDataBuffer, expectedZip64Fields);
-  if (zip64Sizes.compressedSize !== undefined) {
+  if (compressedSize === ZIP64_UINT32_SENTINEL && zip64Sizes.compressedSize !== undefined) {
     compressedSize = zip64Sizes.compressedSize;
   }
 

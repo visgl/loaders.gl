@@ -77,6 +77,21 @@ test('zip#ZipFileSystem - fetch the file', async t => {
   t.end();
 });
 
+test('zip#ZipFileSystem - fetch uses central-directory sizes for data descriptors', async t => {
+  for (const includeSignature of [true, false]) {
+    const archive = createDataDescriptorArchive(includeSignature);
+    const fileSystem = new ZipFileSystem(archive);
+    const response = await fileSystem.fetch('test.txt');
+    t.equal(
+      await response.text(),
+      'data descriptor contents',
+      includeSignature ? 'reads signed descriptor archive' : 'reads unsigned descriptor archive'
+    );
+    await fileSystem.destroy();
+  }
+  t.end();
+});
+
 test('zip#ZipFileSystem - fetch should fail', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
@@ -169,4 +184,53 @@ function createMalformedZip64Archive(
   });
 
   return concatenateArrayBuffers(localHeader, centralDirectoryHeader, endOfCentralDirectory);
+}
+
+/**
+ * Creates an in-memory stored ZIP whose local header defers sizes to a data descriptor.
+ * @param includeSignature whether to include the optional data descriptor signature
+ * @returns ZIP archive bytes
+ */
+function createDataDescriptorArchive(includeSignature: boolean): ArrayBuffer {
+  const fileName = 'test.txt';
+  const contents = new TextEncoder().encode('data descriptor contents');
+  const localHeader = generateLocalHeader({crc32: 0, fileName, length: 0});
+  new DataView(localHeader).setUint16(6, 0x0008, true);
+
+  const descriptor = new DataView(new ArrayBuffer(includeSignature ? 16 : 12));
+  let descriptorOffset = 0;
+  if (includeSignature) {
+    descriptor.setUint32(descriptorOffset, 0x08074b50, true);
+    descriptorOffset += 4;
+  }
+  descriptor.setUint32(descriptorOffset, 0, true);
+  descriptor.setUint32(descriptorOffset + 4, contents.byteLength, true);
+  descriptor.setUint32(descriptorOffset + 8, contents.byteLength, true);
+
+  const centralDirectoryOffset = BigInt(
+    localHeader.byteLength + contents.byteLength + descriptor.byteLength
+  );
+  const centralDirectoryHeader = generateCDHeader({
+    crc32: 0,
+    fileName,
+    length: contents.byteLength,
+    offset: 0n
+  });
+  new DataView(centralDirectoryHeader).setUint16(8, 0x0008, true);
+  const endOfCentralDirectoryOffset =
+    centralDirectoryOffset + BigInt(centralDirectoryHeader.byteLength);
+  const endOfCentralDirectory = generateEoCD({
+    recordsNumber: 1,
+    cdSize: centralDirectoryHeader.byteLength,
+    cdOffset: centralDirectoryOffset,
+    eoCDStart: endOfCentralDirectoryOffset
+  });
+
+  return concatenateArrayBuffers(
+    localHeader,
+    contents.buffer,
+    descriptor.buffer,
+    centralDirectoryHeader,
+    endOfCentralDirectory
+  );
 }

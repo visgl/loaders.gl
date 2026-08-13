@@ -124,7 +124,7 @@ export class ZipFileSystem implements FileSystem {
       const compressedFile = await readRange(
         this.file,
         localFileHeader.fileDataOffset,
-        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+        localFileHeader.fileDataOffset + cdFileHeader.compressedSize
       );
 
       uncompressedFile = await compressionHandler(compressedFile);
