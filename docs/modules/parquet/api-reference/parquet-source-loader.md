@@ -99,9 +99,17 @@ Rows are yielded in the requested row-group order even when `concurrency` allows
 decode at once. Ending iteration early, aborting `signal`, or calling `close()` cancels outstanding
 range requests. Network and decode errors are rethrown by the iterator.
 
-The source materializes selected Parquet columns directly and converts those columns into typed
-Arrow batches. It does not construct an intermediate object for every row. Nested columns retain
-their composite values while primitive and logical columns flow through the columnar path.
+By default in browsers, the source fetches selected compressed column chunks on the caller thread,
+then transfers those exact buffers to a dedicated worker. Decompression, page decoding, column
+materialization, and Arrow conversion run in that worker. The result uses
+`@loaders.gl/arrow`'s direct Arrow table transport: Arrow's underlying buffers are transferred and
+the table is hydrated on the caller thread, without serializing the table to Arrow IPC or
+constructing an intermediate object for every row. Keeping authenticated range requests on the
+caller thread preserves custom fetch implementations, cancellation, range scheduling, and object
+version validation.
+
+Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
+retain their composite values while primitive and logical columns flow through the columnar path.
 
 ### Row-group pruning
 
@@ -129,8 +137,9 @@ retains a row group whenever the statistics required to prove exclusion are abse
 ## Telemetry
 
 `getTelemetry()` returns a cumulative snapshot for the source. `parquet.onTelemetry` additionally
-receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, batches,
-cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
+receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, worker
+transfer, batches, cancellation, and failures. Exceptions thrown by the callback do not interrupt
+a read.
 
 ```typescript
 const source = createDataSource(url, [ParquetSourceLoader], {
@@ -144,17 +153,16 @@ console.log(source.getTelemetry());
 ```
 
 The frozen snapshot reports exact transport counts and bytes, range-cache hits, cumulative
-network/decode/Arrow durations, candidate/pruned/decoded row groups, emitted batches and rows,
-retries, cancellations, and failures. `retryCount` remains zero while the source uses its fail-fast
-range policy.
+network/decode/Arrow durations, worker scheduling and transfer duration, worker-decoded row groups,
+candidate/pruned/decoded row groups, emitted batches and rows, retries, cancellations, and failures.
+`retryCount` remains zero while the source uses its fail-fast range policy.
 
 ### `capabilities: ParquetSourceCapabilities`
 
 The source exposes the frozen `PARQUET_SOURCE_CAPABILITIES` descriptor synchronously, before any
 network or decoding work starts. It reports support for cached immutable metadata, row-group and
 column selection, provenance, cancellation, custom range transport, object-version validation,
-statistics, transport/decode telemetry, and package-local WASM delivery. Source worker decoding is
-the remaining deferred capability.
+statistics, transport/decode telemetry, package-local assets, and worker-backed selective decoding.
 
 ### `close(): Promise<void>`
 
@@ -168,9 +176,13 @@ individual read.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
+| `core.worker` | `boolean` | `true` in browsers | Runs decompression, decoding, materialization, and Arrow conversion in a worker. Unsupported runtimes fall back to the caller thread. |
+| `core.reuseWorkers` | `boolean` | `true` in browsers | Reuses selective source workers between row-group jobs. |
+| `core.workerTransferBufferCopy` | `'none' \| 'sliced' \| 'all'` | `'sliced'` | Controls how `@loaders.gl/arrow` isolates Arrow buffers before transfer. |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
 | `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
 | `parquet.onTelemetry` | `(event: ParquetTelemetryEvent) => void` | `undefined` | Receives cumulative transport, pruning, decode, and batch telemetry events. |
+| `parquet.workerUrl` | `string` | package-local worker | Overrides the selective source worker URL for explicit asset hosting. |
 | `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
 | `parquet.rowGroupFilter` / `read.rowGroupFilter` | `(rowGroup: ParquetRowGroupMetadata) => boolean` | keep all | Retains candidate row groups before their column chunks are fetched. |
@@ -195,5 +207,7 @@ serve the package's WASM loader and writer paths.
 
 ## Current limitations
 
-- Decoding runs on the caller thread; worker-backed decoding and transferable Arrow buffers are not
-  implemented yet.
+- Range fetching remains on the caller thread so custom fetch implementations and authenticated,
+  version-pinned requests do not cross the worker boundary.
+- Node.js worker execution remains experimental and opt-in through `core._nodeWorkers`; Node.js
+  otherwise decodes on the caller thread.

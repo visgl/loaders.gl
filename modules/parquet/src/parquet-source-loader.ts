@@ -2,12 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {hydrateArrowTable} from '@loaders.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
-import {BlobFile, DataSource} from '@loaders.gl/loader-utils';
-import type {ArrayType, Schema} from '@loaders.gl/schema';
+import {BlobFile, DataSource, isBrowser} from '@loaders.gl/loader-utils';
+import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
+import {
+  canDecodeParquetSourceOnWorker,
+  decodeParquetSourceRowGroupOnWorker,
+  PARQUET_SOURCE_WORKER_OPERATION,
+  type ParquetSourceWorkerColumnChunk,
+  type ParquetSourceWorkerOptions,
+  type ParquetSourceWorkerResult
+} from './lib/parquet-source-worker';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
 import {
   PARQUET_SOURCE_CAPABILITIES,
@@ -36,6 +45,7 @@ import {preloadCompressions} from './parquetjs/compression';
 import {
   CompressionCodec,
   Encoding,
+  type ColumnChunk,
   type FileMetaData,
   type Statistics as ParquetThriftStatistics
 } from './parquetjs/parquet-thrift/index';
@@ -51,6 +61,7 @@ import {
   readInt64LE,
   toUint8Array
 } from './parquetjs/utils/binary-utils';
+import {fieldIndexOf} from './parquetjs/utils/read-utils';
 
 export type {
   ParquetBatch,
@@ -89,10 +100,12 @@ type ParquetSourceInitialization = {
 type ParquetRowGroupReadResult = {
   /** Zero-based source row-group index. */
   rowGroupIndex: number;
-  /** Materialized columns for the selected fields. */
-  columns: Record<string, ArrayType>;
   /** Number of logical rows in the decoded row group. */
   rowCount: number;
+  /** Caller-thread columns when worker decoding is unavailable or disabled. */
+  columns?: Record<string, ArrayType>;
+  /** Directly transferable Arrow batches when worker decoding is enabled. */
+  workerResult?: ParquetSourceWorkerResult;
 };
 
 type SettledParquetRowGroupRead =
@@ -213,6 +226,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       const batchSize = normalizeBatchSize(readOptions.batchSize);
       const concurrency = normalizeConcurrency(readOptions.concurrency);
       const projectedSchema = projectSchema(initialization.schema, columns);
+      const workerOptions = this.getWorkerOptions(concurrency, readContext.abortController.signal);
+      const decodeOnWorker = canDecodeParquetSourceOnWorker(workerOptions);
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
 
@@ -227,6 +242,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             initialization,
             rowGroupIndex,
             columnList,
+            projectedSchema,
+            batchSize,
+            decodeOnWorker ? workerOptions : undefined,
             readContext.abortController.signal
           ).then(
             result => ({result}) as SettledParquetRowGroupRead,
@@ -247,7 +265,36 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           throw settledRead.error;
         }
 
-        const {rowGroupIndex, columns: decodedColumns, rowCount} = settledRead.result;
+        const {rowGroupIndex, columns: decodedColumns, rowCount, workerResult} = settledRead.result;
+        if (workerResult) {
+          for (const workerBatch of workerResult.batches) {
+            throwIfAborted(readContext.abortController.signal);
+            const deserializationStartTime = getCurrentTime();
+            const arrowTable = hydrateArrowTable(workerBatch.arrowTable);
+            const deserializationDurationMs = getCurrentTime() - deserializationStartTime;
+            this.recordTelemetry(
+              'arrow-conversion',
+              {arrowConversionDurationMs: deserializationDurationMs},
+              {rowGroupIndex, durationMs: deserializationDurationMs}
+            );
+            const batch = createParquetBatchFromArrow(
+              initialization.metadata,
+              projectedSchema,
+              rowGroupIndex,
+              workerBatch.rowGroupRowOffset,
+              arrowTable,
+              workerBatch.rowCount
+            );
+            this.recordTelemetry(
+              'batch',
+              {batchesEmitted: 1, rowsEmitted: workerBatch.rowCount},
+              {rowGroupIndex, rowCount: workerBatch.rowCount}
+            );
+            yield batch;
+          }
+          continue;
+        }
+
         const outputBatchSize = batchSize || Math.max(rowCount, 1);
         for (
           let rowGroupRowOffset = 0;
@@ -257,7 +304,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           throwIfAborted(readContext.abortController.signal);
           const batchRowCount = Math.min(outputBatchSize, rowCount - rowGroupRowOffset);
           const columns = sliceColumns(
-            decodedColumns,
+            decodedColumns!,
             rowGroupRowOffset,
             rowGroupRowOffset + batchRowCount
           );
@@ -361,13 +408,46 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     };
   }
 
+  /** Creates loader-utils worker options for one selective source read. */
+  private getWorkerOptions(concurrency: number, signal: AbortSignal): ParquetSourceWorkerOptions {
+    return {
+      core: {
+        worker: this.options.core?.worker ?? true,
+        maxConcurrency: concurrency,
+        maxMobileConcurrency: this.options.core?.maxMobileConcurrency ?? concurrency,
+        reuseWorkers: this.options.core?.reuseWorkers ?? isBrowser,
+        _nodeWorkers: this.options.core?._nodeWorkers ?? false,
+        _workerType: this.options.core?._workerType
+      },
+      parquet: {
+        workerUrl: this.options.parquet?.workerUrl,
+        signal
+      }
+    };
+  }
+
   /** Fetches and decodes one selected row group using the cached footer and schema. */
   private async readRowGroup(
     initialization: ParquetSourceInitialization,
     rowGroupIndex: number,
     columnList: string[][],
+    projectedSchema: Schema,
+    batchSize: number | undefined,
+    workerOptions: ParquetSourceWorkerOptions | undefined,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
+    if (workerOptions) {
+      return await this.readRowGroupOnWorker(
+        initialization,
+        rowGroupIndex,
+        columnList,
+        projectedSchema,
+        batchSize,
+        workerOptions,
+        signal
+      );
+    }
+
     const decodeStartTime = getCurrentTime();
     const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
     const decodedRowGroup = await initialization.reader.readRowGroup(
@@ -385,6 +465,72 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       {rowGroupIndex, durationMs: decodeDurationMs}
     );
     return {rowGroupIndex, columns, rowCount: decodedRowGroup.rowCount};
+  }
+
+  /** Fetches selected chunks and transfers their decompression and Arrow conversion to a worker. */
+  private async readRowGroupOnWorker(
+    initialization: ParquetSourceInitialization,
+    rowGroupIndex: number,
+    columnList: string[][],
+    projectedSchema: Schema,
+    batchSize: number | undefined,
+    workerOptions: ParquetSourceWorkerOptions,
+    signal: AbortSignal
+  ): Promise<ParquetRowGroupReadResult> {
+    const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+    const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+      const path = columnChunk.meta_data?.path_in_schema;
+      return Boolean(path && (columnList.length === 0 || fieldIndexOf(columnList, path) >= 0));
+    });
+    const ranges = await Promise.all(
+      selectedColumnChunks.map(async columnChunk => {
+        const {offset, length} = getColumnChunkRange(columnChunk);
+        return {offset, data: await initialization.file.read(offset, length, signal)};
+      })
+    );
+    throwIfAborted(signal);
+
+    const workerStartTime = getCurrentTime();
+    const workerResult = await decodeParquetSourceRowGroupOnWorker(
+      {
+        operation: PARQUET_SOURCE_WORKER_OPERATION,
+        fileByteLength: initialization.file.size,
+        rowCount: Number(rowGroup.num_rows),
+        uncompressedByteLength: Number(rowGroup.total_byte_size),
+        schemaDefinition: initialization.parquetSchema.schema,
+        projectedSchema,
+        columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
+        ranges,
+        batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
+        preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+        workerTransferBufferCopy: this.options.core?.workerTransferBufferCopy
+      },
+      workerOptions
+    );
+    const workerRoundTripDurationMs = getCurrentTime() - workerStartTime;
+    const workerTransferDurationMs = Math.max(
+      workerRoundTripDurationMs -
+        workerResult.decodeDurationMs -
+        workerResult.arrowConversionDurationMs,
+      0
+    );
+    throwIfAborted(signal);
+    this.recordTelemetry(
+      'decode',
+      {decodeDurationMs: workerResult.decodeDurationMs, rowGroupsDecoded: 1},
+      {rowGroupIndex, durationMs: workerResult.decodeDurationMs}
+    );
+    this.recordTelemetry(
+      'arrow-conversion',
+      {arrowConversionDurationMs: workerResult.arrowConversionDurationMs},
+      {rowGroupIndex, durationMs: workerResult.arrowConversionDurationMs}
+    );
+    this.recordTelemetry(
+      'worker-transfer',
+      {workerTransferDurationMs, workerDecodeCount: 1},
+      {rowGroupIndex, durationMs: workerTransferDurationMs}
+    );
+    return {rowGroupIndex, rowCount: workerResult.rowCount, workerResult};
   }
 
   /** Opens the readable file and decodes its footer and schema once. */
@@ -636,6 +782,55 @@ function createRowGroupMetadata(
   });
 }
 
+/** Returns the complete contiguous byte range occupied by one Parquet column chunk. */
+function getColumnChunkRange(columnChunk: ColumnChunk): {offset: number; length: number} {
+  if (columnChunk.file_path) {
+    throw new Error('Parquet worker decoding does not support external column chunk files');
+  }
+  const columnMetadata = columnChunk.meta_data;
+  if (!columnMetadata) {
+    throw new Error('Parquet column chunk is missing metadata');
+  }
+  const dataPageOffset = Number(columnMetadata.data_page_offset);
+  const dictionaryPageOffset =
+    columnMetadata.dictionary_page_offset === undefined
+      ? undefined
+      : Number(columnMetadata.dictionary_page_offset);
+  const offset = Math.min(
+    dataPageOffset,
+    dictionaryPageOffset && dictionaryPageOffset > 0 ? dictionaryPageOffset : dataPageOffset
+  );
+  const length = Number(columnMetadata.total_compressed_size);
+  if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(length) || offset < 0 || length < 0) {
+    throw new Error('Parquet column chunk range must use non-negative safe integers');
+  }
+  return {offset, length};
+}
+
+/** Copies one selected Thrift column chunk into a structured-cloneable worker descriptor. */
+function createParquetSourceWorkerColumnChunk(
+  columnChunk: ColumnChunk
+): ParquetSourceWorkerColumnChunk {
+  const columnMetadata = columnChunk.meta_data;
+  if (!columnMetadata) {
+    throw new Error('Parquet column chunk is missing metadata');
+  }
+  return {
+    filePath: columnChunk.file_path || undefined,
+    physicalType: columnMetadata.type,
+    compressionCodec: columnMetadata.codec,
+    path: [...columnMetadata.path_in_schema],
+    valueCount: Number(columnMetadata.num_values),
+    compressedByteLength: Number(columnMetadata.total_compressed_size),
+    uncompressedByteLength: Number(columnMetadata.total_uncompressed_size),
+    dataPageOffset: Number(columnMetadata.data_page_offset),
+    dictionaryPageOffset:
+      columnMetadata.dictionary_page_offset === undefined
+        ? undefined
+        : Number(columnMetadata.dictionary_page_offset)
+  };
+}
+
 /** Converts decoded columns into one Arrow batch and attaches stable source provenance. */
 function createParquetBatch(
   metadata: ParquetSourceMetadata,
@@ -646,6 +841,25 @@ function createParquetBatch(
   rowCount: number
 ): ParquetBatch {
   const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow-table');
+  return createParquetBatchFromArrow(
+    metadata,
+    schema,
+    rowGroupIndex,
+    rowGroupRowOffset,
+    arrowTable.data,
+    rowCount
+  );
+}
+
+/** Wraps a worker-transferred or locally converted Arrow table with source provenance. */
+function createParquetBatchFromArrow(
+  metadata: ParquetSourceMetadata,
+  schema: Schema,
+  rowGroupIndex: number,
+  rowGroupRowOffset: number,
+  data: ArrowTable['data'],
+  rowCount: number
+): ParquetBatch {
   const rowGroup = metadata.rowGroups[rowGroupIndex];
   const sourceId = metadata.url || metadata.name;
   const provenance = Object.freeze({
@@ -662,7 +876,7 @@ function createParquetBatch(
     shape: 'arrow-table',
     schemaType: 'explicit',
     schema,
-    data: arrowTable.data,
+    data,
     length: rowCount,
     metadata: provenance,
     ...provenance
@@ -763,6 +977,8 @@ function createParquetTelemetry(): ParquetTelemetry {
     retryCount: 0,
     decodeDurationMs: 0,
     arrowConversionDurationMs: 0,
+    workerTransferDurationMs: 0,
+    workerDecodeCount: 0,
     rowGroupsRequested: 0,
     rowGroupsPruned: 0,
     rowGroupsDecoded: 0,
