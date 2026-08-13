@@ -5851,6 +5851,10 @@ __metadata:
     ktx-parse: "npm:^0.7.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    texture-compressor: ^1.0.2
+  peerDependenciesMeta:
+    texture-compressor:
+      optional: true
   languageName: unknown
   linkType: soft
 

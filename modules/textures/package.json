@@ -91,7 +91,13 @@
     "ktx-parse": "^0.7.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "texture-compressor": "^1.0.2"
+  },
+  "peerDependenciesMeta": {
+    "texture-compressor": {
+      "optional": true
+    }
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }
