@@ -4,7 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 
-import {createDataSource, encode, fetchFile, load} from '@loaders.gl/core';
+import {createDataSource, encode, fetchFile, isBrowser, load} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   PARQUET_SOURCE_CAPABILITIES,
@@ -227,9 +227,51 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
   t.end();
 });
 
+test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const fixture = await createSelectiveFixture();
+  const source = (await load(new Blob([fixture]), ParquetSourceLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  })) as ParquetSource;
+  let mainThreadTicked = false;
+  const batchesPromise = collectParquetBatches(
+    source.read({rowGroups: [1], columns: ['x', 'source_id'], batchSize: 1})
+  );
+  await new Promise<void>(resolve =>
+    setTimeout(() => {
+      mainThreadTicked = true;
+      resolve();
+    }, 0)
+  );
+  const batches = await batchesPromise;
+
+  t.ok(mainThreadTicked, 'keeps the caller event loop responsive during decode');
+  t.equal(source.getTelemetry().workerDecodeCount, 1, 'records the worker-decoded row group');
+  t.ok(
+    source.getTelemetry().workerTransferDurationMs >= 0,
+    'records worker scheduling and direct buffer transfer time'
+  );
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
+    [2, 3],
+    'hydrates directly transferred Arrow buffers into main-thread class instances'
+  );
+  t.deepEqual(
+    batches.map(batch => batch.rowOffset),
+    [2, 3],
+    'retains exact source provenance across the worker boundary'
+  );
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read preserves the caller AbortSignal reason', async (t) => {
   const fixture = await createSelectiveFixture();
-  const source = new ParquetSource(new Blob([fixture]), {});
+  const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
   const abortController = new AbortController();
   const abortReason = new Error('Query superseded');
   const iterator = source.read({batchSize: 1, signal: abortController.signal})[Symbol.asyncIterator]();
@@ -500,6 +542,7 @@ function createRemoteSource(
     core: {
       ...options.core,
       type: 'parquet',
+      _workerType: options.core?._workerType ?? 'test',
       loadOptions: {core: {fetch: rangeFetch}}
     }
   }) as ParquetSource;

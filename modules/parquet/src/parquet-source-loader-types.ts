@@ -45,6 +45,7 @@ export const ParquetSourceLoader = {
       headers: undefined,
       preserveBinary: false,
       onTelemetry: undefined,
+      workerUrl: undefined,
       wasmUrl: undefined
     },
     rangeRequests: {
@@ -63,6 +64,7 @@ export const ParquetSourceLoader = {
       headers: undefined!,
       preserveBinary: false,
       onTelemetry: undefined!,
+      workerUrl: undefined!,
       wasmUrl: undefined!
     },
     rangeRequests: {
