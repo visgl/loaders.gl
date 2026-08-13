@@ -5,18 +5,53 @@
 import {CompressedTextureWriterOptions} from '../../compressed-texture-writer';
 
 type TextureCompressorPack = (options: Record<string, unknown>) => Promise<unknown>;
+type TextureCompressorModule = {
+  pack?: TextureCompressorPack;
+  default?: {pack?: TextureCompressorPack};
+};
+type LoadTextureCompressorModule = () => Promise<TextureCompressorModule>;
+type LoadTextureCompressorPack = () => Promise<TextureCompressorPack>;
+type TextureEncoder = (
+  inputUrl: string,
+  outputUrl: string,
+  options?: CompressedTextureWriterOptions
+) => Promise<string>;
+
+/** Dynamically imports the locally installed optional texture-compressor peer. */
+async function importTextureCompressor(): Promise<TextureCompressorModule> {
+  const packageName = 'texture-compressor';
+  return await import(/* webpackIgnore: true */ /* @vite-ignore */ packageName);
+}
 
 /**
  * Loads the pack function from the locally installed optional texture-compressor peer.
  */
-export async function loadTextureCompressorPack(): Promise<TextureCompressorPack> {
-  const packageName = 'texture-compressor';
-  const textureCompressor = await import(/* @vite-ignore */ packageName);
-  const pack = textureCompressor.pack || textureCompressor.default?.pack;
-  if (typeof pack !== 'function') {
+export async function loadTextureCompressorPack(
+  loadTextureCompressorModule: LoadTextureCompressorModule = importTextureCompressor
+): Promise<TextureCompressorPack> {
+  const textureCompressor = await loadTextureCompressorModule();
+  const textureCompressorPack = textureCompressor.pack || textureCompressor.default?.pack;
+  if (typeof textureCompressorPack !== 'function') {
     throw new Error('The installed texture-compressor package does not export pack()');
   }
-  return pack;
+  return textureCompressorPack;
+}
+
+/** Creates the compressed texture encoder with the supplied optional peer loader. */
+export function createTextureEncoder(
+  loadTextureCompressorPackFunction: LoadTextureCompressorPack = loadTextureCompressorPack
+): TextureEncoder {
+  return async (inputUrl, outputUrl, options) => {
+    const textureCompressorPack = await loadTextureCompressorPackFunction();
+    await textureCompressorPack({
+      type: 's3tc',
+      compression: 'DXT1',
+      quality: 'normal',
+      input: inputUrl,
+      output: outputUrl
+    });
+    return outputUrl;
+  };
 }
 
 /**
@@ -35,18 +70,4 @@ export async function loadTextureCompressorPack(): Promise<TextureCompressorPack
  *
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
-export async function encodeImageURLToCompressedTextureURL(
-  inputUrl: string,
-  outputUrl: string,
-  options?: CompressedTextureWriterOptions
-): Promise<string> {
-  const pack = await loadTextureCompressorPack();
-  await pack({
-    type: 's3tc',
-    compression: 'DXT1',
-    quality: 'normal',
-    input: inputUrl,
-    output: outputUrl
-  });
-  return outputUrl;
-}
+export const encodeImageURLToCompressedTextureURL = createTextureEncoder();
