@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-schema';
+import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

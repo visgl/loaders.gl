@@ -33,10 +33,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./tileset-schema": {
-      "types": "./dist/tileset-schema.d.ts",
-      "import": "./dist/tileset-schema.js",
-      "require": "./dist/tileset-schema.cjs"
+    "./tileset-zod-schema": {
+      "types": "./dist/tileset-zod-schema.d.ts",
+      "import": "./dist/tileset-zod-schema.js",
+      "require": "./dist/tileset-zod-schema.cjs"
     },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
@@ -57,7 +57,7 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema",
     "prepublishOnly": "npm run build-bundle && npm run build-bundle-dev",
-    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tileset-schema.js --export Tiles3DTilesetSchema --output ./dist/tileset.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON'",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tileset-zod-schema.js --export Tiles3DTilesetSchema --output ./dist/tileset.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },

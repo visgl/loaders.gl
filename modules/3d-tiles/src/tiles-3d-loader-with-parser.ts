@@ -13,7 +13,7 @@ import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
-import {Tiles3DTilesetSchema} from './tileset-schema';
+import {Tiles3DTilesetSchema} from './tileset-zod-schema';
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
