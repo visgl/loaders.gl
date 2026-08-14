@@ -111,11 +111,11 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     for (let batchStart = selectionStart; batchStart < selectionEnd; batchStart += batchSize) {
       const batchEnd = Math.min(batchStart + batchSize, selectionEnd);
       const batchTable = sliceDecodedTable(decodedTable, batchStart, batchEnd);
+      const length = batchEnd - batchStart;
       const arrowTable = normalizeArrowTableGeoMetadata(
-        convertDecodedTableToArrow(batchTable),
+        convertDecodedTableToArrow(batchTable, length),
         schema.metadata
       );
-      const length = batchEnd - batchStart;
 
       yield {
         batchType: 'data',
@@ -134,7 +134,10 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
 }
 
 /** Builds Arrow vectors directly from flat decoded columns and falls back for nested row tables. */
-function convertDecodedTableToArrow(table: ColumnarTable | ObjectRowTable): ArrowTable {
+function convertDecodedTableToArrow(
+  table: ColumnarTable | ObjectRowTable,
+  rowCount: number
+): ArrowTable {
   if (table.shape === 'object-row-table') {
     return convertTable(table, 'arrow-table');
   }
@@ -152,8 +155,28 @@ function convertDecodedTableToArrow(table: ColumnarTable | ObjectRowTable): Arro
   return {
     shape: 'arrow-table',
     schema: table.schema,
-    data: new arrow.Table(arrowSchema, vectors)
+    data: createArrowTable(arrowSchema, vectors, rowCount)
   };
+}
+
+/** Creates an Arrow table while retaining row counts for a schema with no projected fields. */
+function createArrowTable(
+  schema: arrow.Schema,
+  vectors: Record<string, arrow.Vector>,
+  rowCount: number
+): arrow.Table {
+  if (schema.fields.length || rowCount === 0) {
+    return new arrow.Table(schema, vectors);
+  }
+
+  const recordBatch = new arrow.RecordBatch(
+    schema,
+    arrow.makeData({type: new arrow.Struct([]), children: []})
+  );
+  // Apache Arrow JS derives RecordBatch length from its children and therefore resets an empty
+  // Struct to zero rows. Restore the explicit Parquet selection length after construction.
+  Object.defineProperty(recordBatch.data, 'length', {value: rowCount});
+  return new arrow.Table(schema, [recordBatch]);
 }
 
 /** Normalizes JavaScript values that Apache Arrow's 64-bit integer builders require as bigints. */

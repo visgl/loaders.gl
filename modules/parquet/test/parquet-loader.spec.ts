@@ -146,6 +146,27 @@ test('ParquetJSLoader#arrow-table applies projection, offset, and limit', async 
   t.end();
 });
 
+test('ParquetJSLoader#arrow-table preserves rows for an empty projection', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {
+      shape: 'arrow-table',
+      columns: ['missing_column'],
+      offset: 2,
+      limit: 3
+    }
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 3, 'preserves the selected row count');
+    t.equal(table.data.numCols, 0, 'returns no projected columns');
+    t.deepEqual(table.data.toArray(), [{}, {}, {}], 'retains empty records for selected rows');
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#arrow-table materializes required INT64 logical values', async (t) => {
   const url = '@loaders.gl/parquet/test/data/fruits.parquet';
   const table = await load(url, ParquetJSLoader, {
