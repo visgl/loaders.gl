@@ -114,6 +114,7 @@ Release Date: 2026
 - The Parquet WASM backend is updated to 0.7.2, and `@loaders.gl/parquet/wasm` exposes its package-local binary URL for explicit asset workflows.
 - `HttpFile` now supports pinned object identity, strict or best-effort validator consistency, cancellable exact range reads, shared scheduling, and immutable request/byte/time telemetry.
 - The Parquet TypeScript backend now reads Data Page V2, `DELTA_BINARY_PACKED`, `DELTA_LENGTH_BYTE_ARRAY`, `DELTA_BYTE_ARRAY`, and legacy Hadoop-framed LZ4 data.
+- The Parquet TypeScript backend now reuses primitive views and materializes flat columns through allocation-conscious fast paths, substantially improving object-row decode throughput without changing output.
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - Parquet parser selection now follows the imported loader: use the primary worker-capable `ParquetLoader` for WASM or the explicit main-thread `ParquetJSLoader` fallback for parquetjs. Runtime `parquet.backend` and `parquet.implementation` selectors have been removed.
 - `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.

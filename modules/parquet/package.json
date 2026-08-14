@@ -107,7 +107,6 @@
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@dsnp/parquetjs": "1.8.9",
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0",

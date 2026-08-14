@@ -11,11 +11,6 @@ import {
   concatUint8Arrays,
   copyUint8Array,
   encodeUtf8,
-  readDoubleLE,
-  readFloatLE,
-  readInt32LE,
-  readInt64LE,
-  readUInt32LE,
   toUint8Array,
   writeDoubleLE,
   writeFloatLE,
@@ -90,10 +85,10 @@ function encodeValues_BOOLEAN(values: boolean[]): Uint8Array {
 }
 
 function decodeValues_BOOLEAN(cursor: CursorBuffer, count: number): boolean[] {
-  const values: boolean[] = [];
+  const values = new Array<boolean>(count);
   for (let i = 0; i < count; i++) {
     const b = cursor.buffer[cursor.offset + Math.floor(i / 8)];
-    values.push((b & (1 << (i % 8))) > 0);
+    values[i] = (b & (1 << (i % 8))) > 0;
   }
   cursor.offset += Math.ceil(count / 8);
   return values;
@@ -108,9 +103,10 @@ function encodeValues_INT32(values: number[]): Uint8Array {
 }
 
 function decodeValues_INT32(cursor: CursorBuffer, count: number): number[] {
-  const values: number[] = [];
+  const values = new Array<number>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values.push(readInt32LE(cursor.buffer, cursor.offset));
+    values[i] = dataView.getInt32(cursor.offset, true);
     cursor.offset += 4;
   }
   return values;
@@ -125,9 +121,10 @@ function encodeValues_INT64(values: number[]): Uint8Array {
 }
 
 function decodeValues_INT64(cursor: CursorBuffer, count: number): number[] {
-  const values: number[] = [];
+  const values = new Array<number>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values.push(readInt64LE(cursor.buffer, cursor.offset));
+    values[i] = Number(dataView.getBigInt64(cursor.offset, true));
     cursor.offset += 8;
   }
   return values;
@@ -143,14 +140,15 @@ function encodeValues_INT96(values: number[]): Uint8Array {
 }
 
 function decodeValues_INT96(cursor: CursorBuffer, count: number): number[] {
-  const values: number[] = [];
+  const values = new Array<number>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    const low = readInt64LE(cursor.buffer, cursor.offset);
-    const high = readUInt32LE(cursor.buffer, cursor.offset + 8);
+    const low = Number(dataView.getBigInt64(cursor.offset, true));
+    const high = dataView.getUint32(cursor.offset + 8, true);
     if (high === 0xffffffff) {
-      values.push(~-low + 1); // truncate to 64 actual precision
+      values[i] = ~-low + 1; // truncate to 64 actual precision
     } else {
-      values.push(low); // truncate to 64 actual precision
+      values[i] = low; // truncate to 64 actual precision
     }
     cursor.offset += 12;
   }
@@ -166,9 +164,10 @@ function encodeValues_FLOAT(values: number[]): Uint8Array {
 }
 
 function decodeValues_FLOAT(cursor: CursorBuffer, count: number): number[] {
-  const values: number[] = [];
+  const values = new Array<number>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values.push(readFloatLE(cursor.buffer, cursor.offset));
+    values[i] = dataView.getFloat32(cursor.offset, true);
     cursor.offset += 4;
   }
   return values;
@@ -183,9 +182,10 @@ function encodeValues_DOUBLE(values: number[]): Uint8Array {
 }
 
 function decodeValues_DOUBLE(cursor: CursorBuffer, count: number): number[] {
-  const values: number[] = [];
+  const values = new Array<number>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values.push(readDoubleLE(cursor.buffer, cursor.offset));
+    values[i] = dataView.getFloat64(cursor.offset, true);
     cursor.offset += 8;
   }
   return values;
@@ -210,11 +210,12 @@ function encodeValues_BYTE_ARRAY(values: any[]): Uint8Array {
 }
 
 function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Uint8Array[] {
-  const values: Uint8Array[] = [];
+  const values = new Array<Uint8Array>(count);
+  const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    const len = readUInt32LE(cursor.buffer, cursor.offset);
+    const len = dataView.getUint32(cursor.offset, true);
     cursor.offset += 4;
-    values.push(copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + len)));
+    values[i] = copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + len));
     cursor.offset += len;
   }
   return values;
@@ -238,17 +239,22 @@ function decodeValues_FIXED_LEN_BYTE_ARRAY(
   count: number,
   opts: ParquetCodecOptions
 ): Uint8Array[] {
-  const values: Uint8Array[] = [];
+  const values = new Array<Uint8Array>(count);
   if (!opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
   for (let i = 0; i < count; i++) {
-    values.push(
-      copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + opts.typeLength))
+    values[i] = copyUint8Array(
+      cursor.buffer.subarray(cursor.offset, cursor.offset + opts.typeLength)
     );
     cursor.offset += opts.typeLength;
   }
   return values;
+}
+
+/** Creates one reusable DataView for all primitive reads from a codec cursor. */
+function getCursorDataView(cursor: CursorBuffer): DataView {
+  return new DataView(cursor.buffer.buffer, cursor.buffer.byteOffset, cursor.buffer.byteLength);
 }
 
 function toPrimitiveBytes(value: any): Uint8Array {

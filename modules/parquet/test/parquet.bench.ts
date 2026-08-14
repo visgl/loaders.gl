@@ -6,7 +6,6 @@ import {GeoParquetLoader, ParquetJSLoader, ParquetLoader} from '@loaders.gl/parq
 import {fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
-import {ParquetReader} from '@dsnp/parquetjs';
 import {parquetReadObjects} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
 
@@ -32,7 +31,7 @@ type ParquetBenchmarkScenario = {
   implementationIds?: ParquetBenchmarkImplementationId[];
 };
 
-type ParquetBenchmarkImplementationId = 'typescript' | 'wasm' | 'hyparquet' | 'parquetjs';
+type ParquetBenchmarkImplementationId = 'typescript' | 'wasm' | 'hyparquet';
 
 type ParquetBenchmarkImplementation = {
   /** Stable implementation identifier used for scenario selection. */
@@ -183,23 +182,18 @@ function createParquetBenchmarkImplementations(
   return [
     {
       id: 'typescript',
-      name: 'loaders.gl TypeScript',
+      name: 'ParquetJSLoader (TypeScript)',
       decode: scenario => decodeWithLoadersGl(scenario, typescriptLoader)
     },
     {
       id: 'wasm',
-      name: 'loaders.gl parquet-wasm',
+      name: 'ParquetLoader (WASM)',
       decode: scenario => decodeWithLoadersGl(scenario, wasmLoader)
     },
     {
       id: 'hyparquet',
       name: 'hyparquet',
       decode: decodeWithHyparquet
-    },
-    {
-      id: 'parquetjs',
-      name: '@dsnp/parquetjs',
-      decode: decodeWithParquetJs
     }
   ];
 }
@@ -224,22 +218,6 @@ async function decodeWithHyparquet(scenario: ParquetBenchmarkScenario): Promise<
     compressors
   });
   return rows.length;
-}
-
-/** Decodes one scenario through the maintained parquetjs implementation. */
-async function decodeWithParquetJs(scenario: ParquetBenchmarkScenario): Promise<number> {
-  const reader = await ParquetReader.openBuffer(Buffer.from(scenario.arrayBuffer));
-  try {
-    const columnList = scenario.columns?.map(column => [column]);
-    const cursor = reader.getCursor(columnList);
-    let rowCount = 0;
-    while (await cursor.next()) {
-      rowCount++;
-    }
-    return rowCount;
-  } finally {
-    await reader.close();
-  }
 }
 
 /** Warms every implementation and verifies that benchmark throughput uses a common row count. */

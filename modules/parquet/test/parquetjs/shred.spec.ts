@@ -6,7 +6,12 @@
 /* eslint-disable max-statements */
 import test from 'test/utils/vitest-tape';
 import {ParquetSchema} from '@loaders.gl/parquet';
-import {ParquetRowGroup, shredRecord, materializeRows} from '@loaders.gl/parquet/parquetjs/schema/shred';
+import {
+  ParquetRowGroup,
+  shredRecord,
+  materializeColumns,
+  materializeRows
+} from '@loaders.gl/parquet/parquetjs/schema/shred';
 
 const TEXT_DECODER = new TextDecoder();
 
@@ -117,6 +122,30 @@ test('ParquetShredder#should shred a list of simple records with optional scalar
   assert.deepEqual(colData.price.rlevels, [0, 0, 0]);
   assert.deepEqual(colData.price.values, [23.5, 17.1, 42]);
 
+  assert.end();
+});
+
+test('ParquetShredder#materializes flat required, optional, and logical columns', assert => {
+  const schema = new ParquetSchema({
+    name: {type: 'UTF8'},
+    quantity: {type: 'INT64', optional: true},
+    price: {type: 'DOUBLE'}
+  });
+  const buffer = new ParquetRowGroup();
+  shredRecord(schema, {name: 'apple', quantity: 10, price: 23.5}, buffer);
+  shredRecord(schema, {name: 'orange', price: 17.1}, buffer);
+  shredRecord(schema, {name: 'banana', quantity: 15, price: 42}, buffer);
+
+  assert.deepEqual(materializeRows(schema, buffer), [
+    {name: 'apple', quantity: 10, price: 23.5},
+    {name: 'orange', price: 17.1},
+    {name: 'banana', quantity: 15, price: 42}
+  ]);
+  assert.deepEqual(materializeColumns(schema, buffer), {
+    name: ['apple', 'orange', 'banana'],
+    quantity: [10, null, 15],
+    price: [23.5, 17.1, 42]
+  });
   assert.end();
 });
 
