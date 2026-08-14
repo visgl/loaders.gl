@@ -23,12 +23,12 @@ import {
 } from '@loaders.gl/parquet/parquet-source-loader';
 
 import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
+import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
 import {
-  decodeParquetSourceWorkerInput,
   isParquetSourceWorkerInput,
   PARQUET_SOURCE_WORKER_OPERATION,
   type ParquetSourceWorkerInput
-} from '../src/lib/parquet-source-worker';
+} from '../src/lib/parquet-source-worker-types';
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -626,8 +626,7 @@ async function createParquetSourceWorkerInput(
     }),
     ranges,
     batchSize: 1,
-    preserveBinary: false,
-    workerTransferBufferCopy: 'sliced'
+    preserveBinary: false
   };
 }
 

@@ -4,10 +4,8 @@
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-import {
-  decodeParquetSourceWorkerInput,
-  isParquetSourceWorkerInput
-} from '../lib/parquet-source-worker';
+import {decodeParquetSourceWorkerInput} from '../lib/parquet-source-worker-decoder';
+import {isParquetSourceWorkerInput} from '../lib/parquet-source-worker-types';
 import {PARQUET_LOADER_BASE} from '../parquet-loader-base';
 
 /** Worker-local parser for one selective Parquet source row-group job. */
