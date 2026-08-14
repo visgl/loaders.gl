@@ -19,6 +19,7 @@ export type {
   NodeReference,
   Resource,
   MaxScreenThresholdSQ,
+  NodePage,
   NodeInPage,
   SharedResources,
   Attribute,

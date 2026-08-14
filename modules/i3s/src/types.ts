@@ -688,13 +688,13 @@ type FilterModeWireFrame = {
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/spatialReference.cmn.md */
 export type SpatialReference = {
   /** The current WKID value of the vertical coordinate system. */
-  latestVcsWkid: number;
-  /** dentifies the current WKID value associated with the same spatial reference. */
-  latestWkid: number;
+  latestVcsWkid?: number;
+  /** Identifies the current WKID value associated with the same spatial reference. */
+  latestWkid?: number;
   /** The WKID value of the vertical coordinate system. */
-  vcsWkid: number;
+  vcsWkid?: number;
   /** WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS. */
-  wkid: number;
+  wkid?: number;
   /** WKT, or Well-Known Text, of the CRS. Specify either WKT or WKID of the CRS but not both. */
   wkt?: string;
 };

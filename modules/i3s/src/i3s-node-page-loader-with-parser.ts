@@ -6,6 +6,7 @@ import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {NodePage} from './types';
 import {I3SNodePageLoader as I3SNodePageLoaderMetadata} from './i3s-node-page-loader';
+import {I3SNodePageSchema} from './i3s-zod-schema';
 
 const {preload: _I3SNodePageLoaderPreload, ...I3SNodePageLoaderMetadataWithoutPreload} =
   I3SNodePageLoaderMetadata;
@@ -24,5 +25,5 @@ async function parseNodePage(
   options?: LoaderOptions
 ): Promise<NodePage> {
   const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
-  return JSON.parse(text) as NodePage;
+  return I3SNodePageSchema.parse(JSON.parse(text));
 }
