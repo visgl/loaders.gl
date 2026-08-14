@@ -178,7 +178,6 @@ individual read.
 | --- | --- | --- | --- |
 | `core.worker` | `boolean` | `true` in browsers | Runs decompression, decoding, materialization, and Arrow conversion in a worker. Unsupported runtimes fall back to the caller thread. |
 | `core.reuseWorkers` | `boolean` | `true` in browsers | Reuses selective source workers between row-group jobs. |
-| `core.workerTransferBufferCopy` | `'none' \| 'sliced' \| 'all'` | `'sliced'` | Controls how `@loaders.gl/arrow` isolates Arrow buffers before transfer. |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
 | `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
 | `parquet.onTelemetry` | `(event: ParquetTelemetryEvent) => void` | `undefined` | Receives cumulative transport, pruning, decode, and batch telemetry events. |
