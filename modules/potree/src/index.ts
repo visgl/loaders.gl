@@ -4,4 +4,11 @@ export {PotreeHierarchyChunkLoader} from './potree-hierarchy-chunk-loader';
 export {PotreeBinLoader} from './potree-bin-loader';
 export {PotreeSourceLoader} from './potree-source-loader';
 
+export type {
+  HierarchyItem,
+  PotreeAttribute,
+  PotreeBoundingBox,
+  PotreeMetadata
+} from './potree-metadata-schema';
+
 export {type POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
