@@ -101,13 +101,11 @@ export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
     .passthrough()
 );
 
-/** Zod schema for raw 3D Tiles tileset JSON before loader normalization. */
-export const Tiles3DTilesetSchema = z
+/** Common fields in raw 3D Tiles tileset JSON before loader normalization. */
+const Tiles3DTilesetBaseSchema = z
   .object({
     asset: Tiles3DTilesetAssetSchema,
     properties: z.record(z.string(), TilesetPropertySchema).optional(),
-    schema: z.record(z.string(), z.unknown()).optional(),
-    schemaUri: z.string().optional(),
     statistics: z.unknown().optional(),
     groups: z.array(z.unknown()).optional(),
     metadata: z.unknown().optional(),
@@ -118,7 +116,32 @@ export const Tiles3DTilesetSchema = z
     extensions: z.record(z.string(), z.unknown()).optional(),
     extras: z.unknown().optional()
   })
-  .passthrough()
-  .refine(tileset => !(tileset.schema && tileset.schemaUri), {
-    message: 'Tileset cannot define both schema and schemaUri'
-  }) satisfies z.ZodType<Tiles3DTilesetJSON>;
+  .passthrough();
+
+/** Mutually exclusive inline, external, or absent metadata schema declarations. */
+const Tiles3DMetadataSchemaSource = z.union([
+  z
+    .object({
+      schema: z.record(z.string(), z.unknown()),
+      schemaUri: z.never().optional()
+    })
+    .passthrough(),
+  z
+    .object({
+      schema: z.never().optional(),
+      schemaUri: z.string()
+    })
+    .passthrough(),
+  z
+    .object({
+      schema: z.never().optional(),
+      schemaUri: z.never().optional()
+    })
+    .passthrough()
+]);
+
+/** Zod schema for raw 3D Tiles tileset JSON before loader normalization. */
+export const Tiles3DTilesetSchema = z.intersection(
+  Tiles3DTilesetBaseSchema,
+  Tiles3DMetadataSchemaSource
+) satisfies z.ZodType<Tiles3DTilesetJSON>;

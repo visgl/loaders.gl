@@ -248,6 +248,35 @@ test('LAS loader variants parseInBatches', async t => {
   t.end();
 });
 
+test('LAS loader variants return Arrow tables', async t => {
+  const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+
+  for (const {name, loader} of [
+    {name: 'laz-perf', loader: LAZPerfLoader},
+    {name: 'COPC', loader: LASCOPCLoader},
+    {name: 'laz-rs', loader: LAZRsLoader}
+  ]) {
+    const table = await parse(arrayBuffer.slice(0), loader, {
+      core: {worker: false},
+      las: {shape: 'arrow-table'}
+    });
+    t.equal(table.shape, 'arrow-table', `${name} variant returns an Arrow table`);
+    t.equal(table.data.numRows, LAS_EXTRABYTES_POINT_COUNT, `${name} variant returns every point`);
+  }
+
+  const syncTable = LAZPerfLoaderWithParser.parseSync(arrayBuffer, {
+    las: {shape: 'arrow-table'}
+  });
+  t.equal(syncTable.shape, 'arrow-table', 'laz-perf parseSync returns an Arrow table');
+  t.equal(
+    syncTable.data.numRows,
+    LAS_EXTRABYTES_POINT_COUNT,
+    'laz-perf parseSync returns every point'
+  );
+  t.end();
+});
+
 test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async t => {
   const expected = await parse(fetchFile(LAS_BINARY_URL), LAZRsLoader, {
     core: {worker: false}

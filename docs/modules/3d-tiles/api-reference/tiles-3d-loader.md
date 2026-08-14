@@ -80,6 +80,22 @@ while (!tileset3d.isLoaded()) {
 }
 ```
 
+## Tileset Metadata Validation
+
+`Tiles3DLoader` validates raw tileset JSON before normalizing the header or loading tile content.
+Applications can use the same Zod schema directly:
+
+```typescript
+import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-zod-schema';
+
+const validatedTileset = Tiles3DTilesetSchema.parse(tilesetJson);
+```
+
+The equivalent generated JSON Schema is published as
+`@loaders.gl/3d-tiles/tileset.schema.json` for editors, build tools, and non-TypeScript validators.
+Both schemas enforce the same structural constraints, including that a tileset cannot define both
+`schema` and `schemaUri`.
+
 ## Options
 
 | Option               | Type             | Default | Description                                                                                                                                                           |
