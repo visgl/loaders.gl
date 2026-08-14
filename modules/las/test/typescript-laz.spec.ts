@@ -119,11 +119,13 @@ test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async t => {
     }
 
     const expected = getLASPointData(lasArrayBuffer, fixture.pointDataRecordLength);
-    t.deepEqual(
-      concatenateUint8Arrays(decodedBatches),
-      expected,
-      `${fixture.label} raw records match LAS`
+    const actual = concatenateUint8Arrays(decodedBatches);
+    t.equal(
+      actual.byteLength,
+      expected.byteLength,
+      `${fixture.label} raw record byte length matches LAS`
     );
+    t.deepEqual(actual, expected, `${fixture.label} raw records match LAS`);
   }
   t.end();
 }, 60000);
@@ -142,6 +144,18 @@ test('TypeScript LAZ complete and split parsing preserve Arrow attributes', asyn
       })
     );
 
+    for (const attributeName of Object.keys(expected) as Array<keyof CollectedAttributes>) {
+      t.equal(
+        complete[attributeName].length,
+        expected[attributeName].length,
+        `${fixture.label} complete ${attributeName} length matches LAS`
+      );
+      t.equal(
+        streamed[attributeName].length,
+        expected[attributeName].length,
+        `${fixture.label} split ${attributeName} length matches LAS`
+      );
+    }
     t.deepEqual(complete, expected, `${fixture.label} complete parse matches LAS`);
     t.deepEqual(streamed, expected, `${fixture.label} split parse matches LAS`);
   }

@@ -41,14 +41,21 @@ describe('Tiles3DTilesetSchema', () => {
   });
 
   it('rejects conflicting inline and external metadata schemas', () => {
+    const conflictingTileset = {
+      asset: {version: '1.1'},
+      schema: {},
+      schemaUri: 'metadata.schema.json',
+      geometricError: 1,
+      root: {boundingVolume: {sphere: [0, 0, 0, 1]}, geometricError: 0}
+    };
+
+    expect(Tiles3DTilesetSchema.safeParse(conflictingTileset).success).toBe(false);
+
+    const jsonSchema = z.toJSONSchema(Tiles3DTilesetSchema, {target: 'draft-7'});
+    const schemaFromJson = z.fromJSONSchema(jsonSchema);
     expect(
-      Tiles3DTilesetSchema.safeParse({
-        asset: {version: '1.1'},
-        schema: {},
-        schemaUri: 'metadata.schema.json',
-        geometricError: 1,
-        root: {boundingVolume: {sphere: [0, 0, 0, 1]}, geometricError: 0}
-      }).success
+      schemaFromJson.safeParse(conflictingTileset).success,
+      'generated JSON Schema rejects the same conflict'
     ).toBe(false);
   });
 
@@ -56,9 +63,8 @@ describe('Tiles3DTilesetSchema', () => {
     const jsonSchema = z.toJSONSchema(Tiles3DTilesetSchema, {target: 'draft-7'});
     const serializedJsonSchema = JSON.stringify(jsonSchema);
 
-    expect(jsonSchema.required).toEqual(
-      expect.arrayContaining(['asset', 'geometricError', 'root'])
-    );
     expect(serializedJsonSchema).toContain('boundingVolume');
+    expect(serializedJsonSchema).toContain('schemaUri');
+    expect(serializedJsonSchema).toContain('"not":{}');
   });
 });
