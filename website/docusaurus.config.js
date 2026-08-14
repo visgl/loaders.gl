@@ -229,7 +229,11 @@ const config = {
             '/examples/geoarrow': '/examples/geospatial/geoarrow',
             '/examples/geoparquet': '/examples/geospatial/geoparquet',
             '/examples/geojson': '/examples/geospatial/geojson',
-    
+
+            '/docs/modules/parquet/benchmarks': '/docs/modules/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/parquet/api-reference/parquet-writer',
+
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };

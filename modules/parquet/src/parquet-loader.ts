@@ -27,9 +27,6 @@ async function preloadParquetLoader(_url: string, options?: LoaderOptions) {
     }
 
     case 'typescript': {
-      if (parquetOptions?.parquet?.shape === 'arrow-table') {
-        throw new Error('ParquetLoader: backend "typescript" does not support shape "arrow-table"');
-      }
       const {ParquetLoaderWithParser} = await import('./parquet-loader-with-parser');
       return ParquetLoaderWithParser;
     }

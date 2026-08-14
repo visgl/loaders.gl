@@ -48,20 +48,6 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
     <span className="docs-api-card__meta">Input: Table</span>
     <span className="docs-api-card__meta">APIs: encode, encodeSync</span>
   </a>
-  <a className="docs-api-card" href="/docs/modules/parquet/api-reference/parquet-js-loader">
-    <span className="docs-api-card__kind">Loader</span>
-    <strong>ParquetJSLoader</strong>
-    <span>Loads Parquet files with the experimental parquetjs backend.</span>
-    <span className="docs-api-card__meta">Output: ObjectRowTable</span>
-    <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
-  </a>
-  <a className="docs-api-card" href="/docs/modules/parquet/api-reference/parquet-js-writer">
-    <span className="docs-api-card__kind">Writer</span>
-    <strong>ParquetJSWriter</strong>
-    <span>Writes Parquet files with the experimental parquetjs backend.</span>
-    <span className="docs-api-card__meta">Input: Table</span>
-    <span className="docs-api-card__meta">APIs: encode</span>
-  </a>
 </div>
 
 ## Encodings

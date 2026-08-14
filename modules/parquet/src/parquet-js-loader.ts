@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  ObjectRowTable,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
 
 import {ParquetFormat} from './parquet-format';
 import type {ParquetJSLoaderOptions} from './parquet-loader-options';
@@ -16,7 +21,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const DEFAULT_PARQUET_JS_OPTIONS = {
   backend: 'typescript' as const,
   columns: undefined,
-  preserveBinary: false
+  preserveBinary: false,
+  shape: 'object-row-table' as const
 };
 
 /** Preloads the parser-bearing parquetjs loader implementation. */
@@ -25,12 +31,12 @@ async function preload() {
   return ParquetLoaderWithParser;
 }
 
-/** Metadata-only plain-row Parquet loader backed by the experimental parquetjs implementation. */
+/** Metadata-only Parquet loader backed by the experimental TypeScript implementation. */
 export const ParquetJSLoader = {
   ...ParquetFormat,
 
-  dataType: null as unknown as ObjectRowTable,
-  batchType: null as unknown as ObjectRowTableBatch,
+  dataType: null as unknown as ObjectRowTable | ArrowTable,
+  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
 
   id: 'parquet-js',
   module: 'parquet',
@@ -40,4 +46,8 @@ export const ParquetJSLoader = {
     parquet: DEFAULT_PARQUET_JS_OPTIONS
   },
   preload
-} as const satisfies Loader<ObjectRowTable, ObjectRowTableBatch, ParquetJSLoaderOptions>;
+} as const satisfies Loader<
+  ObjectRowTable | ArrowTable,
+  ObjectRowTableBatch | ArrowTableBatch,
+  ParquetJSLoaderOptions
+>;

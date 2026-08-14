@@ -155,18 +155,31 @@ test('ParquetLoader#parse applies reader options without passing wasmUrl upstrea
   t.end();
 });
 
-test('ParquetLoader#arrow-table rejects deprecated js implementation option', async (t) => {
+test('ParquetLoader#arrow-table supports deprecated js implementation option', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  await t.rejects(
-    load(url, ParquetLoader, {
+  const table = (await load(
+    url,
+    ParquetLoader,
+    {
       parquet: {
         shape: 'arrow-table',
         implementation: 'js',
         limit: 3
       }
-    } as any),
-    /does not support shape "arrow-table"/,
-    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
+    } as any
+  )) as ArrowTable;
+
+  t.equal(table.shape, 'arrow-table');
+  t.equal(table.data.numRows, 3, 'TypeScript implementation converts selected rows to Arrow');
+  t.equal(
+    getGeometryColumnsFromSchema(table.schema!).geometry?.encoding,
+    'geoarrow.wkb',
+    'TypeScript implementation annotates the Arrow geometry field'
+  );
+  t.equal(
+    getGeoMetadata(table.schema?.metadata)?.columns.geometry.encoding,
+    'wkb',
+    'TypeScript implementation preserves GeoParquet schema metadata'
   );
   t.end();
 });
@@ -196,20 +209,28 @@ test('ParquetLoader#load supports arrow-table shape', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#arrow-table loadInBatches rejects deprecated js implementation option', async (t) => {
+test('ParquetLoader#arrow-table loadInBatches supports TypeScript implementation', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  await t.rejects(
-    loadInBatches(url, ParquetLoader, {
+  const iterator = await loadInBatches(
+    url,
+    ParquetLoader,
+    {
       parquet: {
         shape: 'arrow-table',
-        implementation: 'js',
+        backend: 'typescript',
         limit: 5,
         batchSize: 2
       }
-    } as any),
-    /does not support shape "arrow-table"/,
-    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
+    }
   );
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    t.equal(batch.shape, 'arrow-table');
+    t.ok(batch.data instanceof arrow.Table, 'returns Apache Arrow table batches');
+    rowCount += batch.length;
+  }
+  t.equal(rowCount, 5, 'returns all requested rows');
   t.end();
 });
 
