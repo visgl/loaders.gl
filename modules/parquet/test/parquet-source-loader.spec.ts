@@ -4,7 +4,9 @@
 
 import test from 'test/utils/vitest-tape';
 
+import {hydrateArrowTable} from '@loaders.gl/arrow';
 import {createDataSource, encode, fetchFile, isBrowser, load} from '@loaders.gl/core';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   PARQUET_SOURCE_CAPABILITIES,
@@ -19,6 +21,15 @@ import {
   ParquetSource,
   ParquetSourceLoader as ParquetSourceLoaderWithParser
 } from '@loaders.gl/parquet/parquet-source-loader';
+
+import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
+import {
+  decodeParquetSourceWorkerInput,
+  isParquetSourceWorkerInput,
+  PARQUET_SOURCE_WORKER_OPERATION,
+  type ParquetSourceWorkerInput
+} from '../src/lib/parquet-source-worker';
+import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
 const STATISTICS_FIXTURE_URL =
@@ -269,6 +280,52 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   t.end();
 });
 
+test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async t => {
+  const fixture = await createSelectiveFixture();
+  const input = await createParquetSourceWorkerInput(fixture, 1, ['x', 'source_id']);
+
+  t.ok(isParquetSourceWorkerInput(input), 'recognizes a selective Parquet worker job');
+  t.notOk(isParquetSourceWorkerInput(null), 'rejects a null worker job');
+  t.notOk(
+    isParquetSourceWorkerInput({...input, operation: 'unsupported'}),
+    'rejects another worker operation'
+  );
+
+  const result = await decodeParquetSourceWorkerInput(input);
+  const arrowTables = result.batches.map(batch => hydrateArrowTable(batch.arrowTable));
+
+  t.equal(result.rowCount, 2, 'decodes the complete selected row group');
+  t.deepEqual(
+    result.batches.map(batch => batch.rowGroupRowOffset),
+    [0, 1],
+    'retains batch offsets within the selected row group'
+  );
+  t.deepEqual(
+    result.batches.map(batch => batch.rowCount),
+    [1, 1],
+    'honors the requested worker batch size'
+  );
+  t.deepEqual(
+    arrowTables.flatMap(table => Array.from(table.getChild('x')?.toArray() || [])),
+    [2, 3],
+    'decodes projected numeric values'
+  );
+  t.deepEqual(
+    arrowTables.flatMap(table => Array.from(table.getChild('source_id')?.toArray() || [])),
+    ['source-2', 'source-3'],
+    'decodes projected logical values'
+  );
+  t.notOk(arrowTables[0].getChild('ignored_payload'), 'does not materialize unselected columns');
+  t.ok(result.decodeDurationMs >= 0, 'reports worker decode duration');
+  t.ok(result.arrowConversionDurationMs >= 0, 'reports worker Arrow conversion duration');
+  await t.rejects(
+    decodeParquetSourceWorkerInput({...input, ranges: []}),
+    /unavailable byte range/,
+    'rejects decoder reads outside the transferred column ranges'
+  );
+  t.end();
+});
+
 test('ParquetSource#read preserves the caller AbortSignal reason', async (t) => {
   const fixture = await createSelectiveFixture();
   const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
@@ -507,6 +564,71 @@ async function createSelectiveFixture(): Promise<ArrayBuffer> {
     {parquet: {rowGroupSize: 2}}
   );
   return await selectiveFixturePromise;
+}
+
+/** Creates a direct worker job from one fixture row group for shared decoder tests. */
+async function createParquetSourceWorkerInput(
+  fixture: ArrayBuffer,
+  rowGroupIndex: number,
+  selectedColumns: string[]
+): Promise<ParquetSourceWorkerInput> {
+  const reader = new ParquetReader(new BlobFile(fixture));
+  const fileMetadata = await reader.getFileMetadata();
+  const parquetSchema = await reader.getSchema();
+  const schema = await getSchemaFromParquetReader(reader);
+  const rowGroup = fileMetadata.row_groups[rowGroupIndex];
+  const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+    const path = columnChunk.meta_data?.path_in_schema;
+    return Boolean(path && selectedColumns.includes(path[0]));
+  });
+  const ranges = selectedColumnChunks.map(columnChunk => {
+    const columnMetadata = columnChunk.meta_data;
+    if (!columnMetadata) {
+      throw new Error('Parquet column chunk is missing metadata');
+    }
+    const dataPageOffset = Number(columnMetadata.data_page_offset);
+    const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset || dataPageOffset);
+    const offset = Math.min(dataPageOffset, dictionaryPageOffset);
+    const length = Number(columnMetadata.total_compressed_size);
+    return {offset, data: fixture.slice(offset, offset + length)};
+  });
+
+  reader.close();
+  return {
+    operation: PARQUET_SOURCE_WORKER_OPERATION,
+    fileByteLength: fixture.byteLength,
+    rowCount: Number(rowGroup.num_rows),
+    uncompressedByteLength: Number(rowGroup.total_byte_size),
+    schemaDefinition: parquetSchema.schema,
+    projectedSchema: {
+      ...schema,
+      fields: schema.fields.filter(field => selectedColumns.includes(field.name))
+    },
+    columnChunks: selectedColumnChunks.map(columnChunk => {
+      const columnMetadata = columnChunk.meta_data;
+      if (!columnMetadata) {
+        throw new Error('Parquet column chunk is missing metadata');
+      }
+      return {
+        filePath: columnChunk.file_path || undefined,
+        physicalType: columnMetadata.type,
+        compressionCodec: columnMetadata.codec,
+        path: [...columnMetadata.path_in_schema],
+        valueCount: Number(columnMetadata.num_values),
+        compressedByteLength: Number(columnMetadata.total_compressed_size),
+        uncompressedByteLength: Number(columnMetadata.total_uncompressed_size),
+        dataPageOffset: Number(columnMetadata.data_page_offset),
+        dictionaryPageOffset:
+          columnMetadata.dictionary_page_offset === undefined
+            ? undefined
+            : Number(columnMetadata.dictionary_page_offset)
+      };
+    }),
+    ranges,
+    batchSize: 1,
+    preserveBinary: false,
+    workerTransferBufferCopy: 'sliced'
+  };
 }
 
 /** Collects a selective source read for concise assertions. */
