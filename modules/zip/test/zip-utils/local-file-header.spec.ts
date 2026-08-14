@@ -77,15 +77,16 @@ test('SLPKLoader#local file header parses valid zip64 sizes', async t => {
   t.end();
 });
 
-test('SLPKLoader#local file header parses only sentinel-backed zip64 fields', async t => {
+test('SLPKLoader#local file header requires the ZIP64 size pair', async t => {
   const compressedHeader = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const compressedHeaderView = new DataView(compressedHeader);
   compressedHeaderView.setUint32(18, 0xffffffff, true);
-  compressedHeaderView.setUint16(28, 12, true);
-  const compressedExtraField = new DataView(new ArrayBuffer(12));
+  compressedHeaderView.setUint16(28, 20, true);
+  const compressedExtraField = new DataView(new ArrayBuffer(20));
   compressedExtraField.setUint16(0, 0x0001, true);
-  compressedExtraField.setUint16(2, 8, true);
-  compressedExtraField.setBigUint64(4, 0x112233445566n, true);
+  compressedExtraField.setUint16(2, 16, true);
+  compressedExtraField.setBigUint64(4, 0x010203040506n, true);
+  compressedExtraField.setBigUint64(12, 0x112233445566n, true);
 
   const compressedFileHeader = await parseZipLocalFileHeader(
     0n,
@@ -98,11 +99,12 @@ test('SLPKLoader#local file header parses only sentinel-backed zip64 fields', as
   const uncompressedHeader = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const uncompressedHeaderView = new DataView(uncompressedHeader);
   uncompressedHeaderView.setUint32(22, 0xffffffff, true);
-  uncompressedHeaderView.setUint16(28, 12, true);
-  const uncompressedExtraField = new DataView(new ArrayBuffer(12));
+  uncompressedHeaderView.setUint16(28, 20, true);
+  const uncompressedExtraField = new DataView(new ArrayBuffer(20));
   uncompressedExtraField.setUint16(0, 0x0001, true);
-  uncompressedExtraField.setUint16(2, 8, true);
+  uncompressedExtraField.setUint16(2, 16, true);
   uncompressedExtraField.setBigUint64(4, 0x223344556677n, true);
+  uncompressedExtraField.setBigUint64(12, 0x334455667788n, true);
 
   const uncompressedFileHeader = await parseZipLocalFileHeader(
     0n,
