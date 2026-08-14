@@ -13,6 +13,7 @@ import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
+import {Tiles3DTilesetSchema} from './tileset-schema';
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
@@ -84,7 +85,9 @@ async function parseTileset(
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTilesetJSONPostprocessed> {
-  const tilesetJson: Tiles3DTilesetJSON = JSON.parse(new TextDecoder().decode(data));
+  const tilesetJson: Tiles3DTilesetJSON = Tiles3DTilesetSchema.parse(
+    JSON.parse(new TextDecoder().decode(data))
+  );
   validateRequiredExtensions(tilesetJson);
 
   const tilesetUrl = context?.url || '';

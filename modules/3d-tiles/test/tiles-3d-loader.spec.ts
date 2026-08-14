@@ -272,7 +272,12 @@ test('Tiles3DLoader#loads json from base64 URL', async t => {
   }
   const tilesetJson = {
     asset: {
-      version: 2.0
+      version: '1.1'
+    },
+    geometricError: 0,
+    root: {
+      boundingVolume: {sphere: [0, 0, 0, 1]},
+      geometricError: 0
     }
   };
 
