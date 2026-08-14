@@ -155,19 +155,14 @@ test('ParquetLoader#parse applies reader options without passing wasmUrl upstrea
   t.end();
 });
 
-test('ParquetLoader#arrow-table supports deprecated js implementation option', async (t) => {
+test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const table = (await load(
-    url,
-    ParquetLoader,
-    {
-      parquet: {
-        shape: 'arrow-table',
-        implementation: 'js',
-        limit: 3
-      }
-    } as any
-  )) as ArrowTable;
+  const table = (await load(url, ParquetJSLoader, {
+    parquet: {
+      shape: 'arrow-table',
+      limit: 3
+    }
+  })) as ArrowTable;
 
   t.equal(table.shape, 'arrow-table');
   t.equal(table.data.numRows, 3, 'TypeScript implementation converts selected rows to Arrow');
@@ -183,7 +178,6 @@ test('ParquetLoader#arrow-table supports deprecated js implementation option', a
   );
   t.end();
 });
-
 test('ParquetLoader#load supports arrow-table shape', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const wrapperTable = (await load(url, ParquetLoader, {
@@ -209,15 +203,14 @@ test('ParquetLoader#load supports arrow-table shape', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#arrow-table loadInBatches supports TypeScript implementation', async (t) => {
+test('ParquetJSLoader#arrow-table supports loadInBatches', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const iterator = await loadInBatches(
     url,
-    ParquetLoader,
+    ParquetJSLoader,
     {
       parquet: {
         shape: 'arrow-table',
-        backend: 'typescript',
         limit: 5,
         batchSize: 2
       }
@@ -233,27 +226,12 @@ test('ParquetLoader#arrow-table loadInBatches supports TypeScript implementation
   t.equal(rowCount, 5, 'returns all requested rows');
   t.end();
 });
-
 test('ParquetWriter#Arrow table round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWriter, {
     worker: false
   });
-  const newTable = (await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false},
-    parquet: {shape: 'arrow-table'}
-  })) as ArrowTable;
-
-  t.deepEqual(table.data.schema, newTable.data.schema);
-  t.end();
-});
-
-test('ParquetWriter#ignores implementation option and stays on wasm', async (t) => {
-  const table = createArrowTable();
-  const parquetBuffer = await encode(table, ParquetWriter, {
-    parquet: {implementation: 'js'}
-  } as any);
   const newTable = (await load(parquetBuffer, ParquetLoader, {
     core: {worker: false},
     parquet: {shape: 'arrow-table'}
@@ -408,8 +386,7 @@ test('GeoParquetLoader#supports arrow-table shape', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table = await load(url, GeoParquetLoader, {
     parquet: {
-      shape: 'arrow-table',
-      backend: 'wasm'
+      shape: 'arrow-table'
     }
   });
 

@@ -5,18 +5,17 @@
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
-import {BenchResults} from '@probe.gl/react-bench';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 
 type BenchmarkResultRow = {
-  /** Stable benchmark or group label. */
-  id: React.ReactNode;
-  /** Numeric throughput used by the result renderer. */
-  value?: number;
+  /** Human-readable fixture and feature label. */
+  scenario: string;
+  /** Human-readable loader variant label. */
+  implementation: string;
   /** Human-readable throughput. */
-  formattedValue?: string;
+  formattedValue: string;
   /** Human-readable measurement error. */
-  formattedError?: string;
+  formattedError: string;
 };
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
@@ -156,8 +155,46 @@ export default function ParquetBenchmarksApp(): JSX.Element {
           </ul>
         </aside>
       ) : null}
-      <div className="benchmark-results">
-        <BenchResults log={rows} />
+      <div className="parquet-benchmark-results" aria-live="polite">
+        <table className="parquet-benchmark-table">
+          <thead>
+            <tr>
+              <th scope="col">Fixture</th>
+              <th scope="col">Loader Variant</th>
+              <th scope="col" className="parquet-benchmark-number">
+                Throughput
+              </th>
+              <th scope="col" className="parquet-benchmark-number">
+                Variation
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => {
+              const startsScenario = rows[rowIndex - 1]?.scenario !== row.scenario;
+              const scenarioRowCount = rows.filter(
+                candidateRow => candidateRow.scenario === row.scenario
+              ).length;
+              return (
+                <tr key={`${row.scenario}-${row.implementation}`}>
+                  {startsScenario ? (
+                    <th scope="rowgroup" rowSpan={scenarioRowCount}>
+                      {row.scenario}
+                    </th>
+                  ) : null}
+                  <td>{row.implementation}</td>
+                  <td className="parquet-benchmark-number">
+                    <strong>{row.formattedValue}</strong> rows/s
+                  </td>
+                  <td className="parquet-benchmark-number">{row.formattedError}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {rows.length === 0 ? (
+          <p className="parquet-benchmark-empty">Results appear here as each case completes.</p>
+        ) : null}
       </div>
     </div>
   );
@@ -248,8 +285,7 @@ async function createParquetBenchmarkImplementations(): Promise<
         const table = (await loadersGlTypeScript.ParquetLoaderWithParser.parse(
           scenario.arrayBuffer,
           {
-            core: {worker: false},
-            parquet: {backend: 'typescript'}
+            core: {worker: false}
           }
         )) as ObjectRowTable;
         return table.data.length;
@@ -357,15 +393,16 @@ async function validateParquetBenchmarkScenario(
 /** Converts one probe.gl log entry into a result table row. */
 function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
   switch (entry.type) {
-    case 'group':
-      return {id: entry.id};
-    case 'test':
+    case 'test': {
+      const separatorIndex = entry.id.lastIndexOf(' :: ');
       return {
-        id: entry.id.slice(entry.id.lastIndexOf(' :: ') + 4),
-        value: Number.parseFloat(entry.itersPerSecond),
+        scenario: separatorIndex >= 0 ? entry.id.slice(0, separatorIndex) : 'Parquet decode',
+        implementation:
+          separatorIndex >= 0 ? entry.id.slice(separatorIndex + 4) : entry.id,
         formattedValue: entry.itersPerSecond,
-        formattedError: `${(entry.error * 100).toFixed(2)}%`
+        formattedError: `±${(entry.error * 100).toFixed(2)}%`
       };
+    }
     case 'complete':
       return null;
     default:

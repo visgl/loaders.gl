@@ -129,6 +129,7 @@ This unifies top-level loading behavior:
 
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
 - `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
+- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or `ParquetJSLoader` for the TypeScript parquetjs implementation.
 
 **@loaders.gl/images**
 

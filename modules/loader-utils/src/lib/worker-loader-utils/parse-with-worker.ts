@@ -35,13 +35,6 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     return false;
   }
 
-  if (
-    loader.id === 'parquet' &&
-    (options as {parquet?: {backend?: string}} | undefined)?.parquet?.backend === 'typescript'
-  ) {
-    return false;
-  }
-
   return Boolean(canProcessOnWorker(loader, workerOptions));
 }
 

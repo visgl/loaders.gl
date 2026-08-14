@@ -19,7 +19,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
-  backend: 'typescript' as const,
   columns: undefined,
   preserveBinary: false,
   shape: 'object-row-table' as const

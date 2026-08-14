@@ -6,7 +6,7 @@ import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
-import type {ParquetLoaderOptions} from '../../parquet-loader-options';
+import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {normalizeArrowTableGeoMetadata} from '../geo/geospatial-metadata';
 import {parseParquetFile, parseParquetFileInBatches} from './parse-parquet-to-json';
 
@@ -18,7 +18,7 @@ import {parseParquetFile, parseParquetFileInBatches} from './parse-parquet-to-js
  */
 export async function parseParquetFileToArrowWithJs(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSLoaderOptions
 ): Promise<ArrowTable> {
   const objectRowTable = await parseParquetFile(file, options);
   return normalizeArrowTableGeoMetadata(convertTable(objectRowTable, 'arrow-table'));
@@ -32,7 +32,7 @@ export async function parseParquetFileToArrowWithJs(
  */
 export async function* parseParquetFileToArrowInBatchesWithJs(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   for await (const batch of parseParquetFileInBatches(file, options)) {
     const arrowTable = normalizeArrowTableGeoMetadata(convertTable(batch, 'arrow-table'));
