@@ -40,6 +40,14 @@ export class Tile3DSourceLayer<
   /** Default props inherited from `Tile3DLayer`. */
   static defaultProps = Tile3DLayer.defaultProps as any;
 
+  /**
+   * Creates a source-backed 3D tile layer.
+   * @param props Layer properties accepting URLs, blobs, and pre-constructed tileset sources
+   */
+  constructor(props: Tile3DSourceLayerProps<DataT> & ExtraProps) {
+    super(props as Tile3DLayerProps<DataT> & ExtraProps);
+  }
+
   /** Install source-backed loading hooks after the base layer initializes its state. */
   initializeState(): void {
     super.initializeState();
