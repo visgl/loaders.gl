@@ -117,6 +117,30 @@ test('ParquetSource#preserves opaque WASM inputs by identity', async (t) => {
   t.end();
 });
 
+test('ParquetSource#routes the public worker URL to the selective worker descriptor', async t => {
+  const workerUrl = 'https://example.com/parquet-source-worker.js';
+  const source = new ParquetSource(new Blob(), {parquet: {workerUrl}});
+  const signal = new AbortController().signal;
+  const workerOptions = (
+    source as unknown as {
+      getWorkerOptions: (
+        concurrency: number,
+        signal: AbortSignal
+      ) => {'parquet-source'?: {workerUrl?: string}; parquet?: {signal?: AbortSignal}};
+    }
+  ).getWorkerOptions(1, signal);
+
+  t.equal(
+    workerOptions['parquet-source']?.workerUrl,
+    workerUrl,
+    'keys the URL override by the private worker descriptor id'
+  );
+  t.equal(workerOptions.parquet?.signal, signal, 'retains cancellation in the public namespace');
+
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read applies snapshotted source defaults', async (t) => {
   const fixture = await createSelectiveFixture();
   const rowGroups = [1];
@@ -326,9 +350,11 @@ test('ParquetSource worker decoder batches projected columns into transferable A
   t.end();
 });
 
-test('ParquetSource#read preserves the caller AbortSignal reason', async (t) => {
+test('ParquetSource#read preserves the caller AbortSignal reason', async t => {
   const fixture = await createSelectiveFixture();
-  const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
+  const source = new ParquetSource(new Blob([fixture]), {
+    core: {worker: isBrowser, reuseWorkers: false, _workerType: 'test'}
+  });
   const abortController = new AbortController();
   const abortReason = new Error('Query superseded');
   const iterator = source.read({batchSize: 1, signal: abortController.signal})[Symbol.asyncIterator]();

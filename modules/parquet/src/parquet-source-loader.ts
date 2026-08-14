@@ -421,8 +421,10 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         _nodeWorkers: this.options.core?._nodeWorkers ?? false,
         _workerType: this.options.core?._workerType
       },
+      'parquet-source': {
+        workerUrl: this.options.parquet?.workerUrl
+      },
       parquet: {
-        workerUrl: this.options.parquet?.workerUrl,
         signal
       }
     };
@@ -493,21 +495,27 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     throwIfAborted(signal);
 
     const workerStartTime = getCurrentTime();
-    const workerResult = await decodeParquetSourceRowGroupOnWorker(
-      {
-        operation: PARQUET_SOURCE_WORKER_OPERATION,
-        fileByteLength: initialization.file.size,
-        rowCount: Number(rowGroup.num_rows),
-        uncompressedByteLength: Number(rowGroup.total_byte_size),
-        schemaDefinition: initialization.parquetSchema.schema,
-        projectedSchema,
-        columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
-        ranges,
-        batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
-        preserveBinary: Boolean(this.options.parquet?.preserveBinary)
-      },
-      workerOptions
-    );
+    let workerResult: ParquetSourceWorkerResult;
+    try {
+      workerResult = await decodeParquetSourceRowGroupOnWorker(
+        {
+          operation: PARQUET_SOURCE_WORKER_OPERATION,
+          fileByteLength: initialization.file.size,
+          rowCount: Number(rowGroup.num_rows),
+          uncompressedByteLength: Number(rowGroup.total_byte_size),
+          schemaDefinition: initialization.parquetSchema.schema,
+          projectedSchema,
+          columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
+          ranges,
+          batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
+          preserveBinary: Boolean(this.options.parquet?.preserveBinary)
+        },
+        workerOptions
+      );
+    } catch (error) {
+      throwIfAborted(signal);
+      throw error;
+    }
     const workerRoundTripDurationMs = getCurrentTime() - workerStartTime;
     const workerTransferDurationMs = Math.max(
       workerRoundTripDurationMs -

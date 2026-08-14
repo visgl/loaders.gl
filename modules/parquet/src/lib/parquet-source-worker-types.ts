@@ -89,10 +89,13 @@ export type ParquetSourceWorkerResult = {
 
 /** Worker options used by selective Parquet source jobs. */
 export type ParquetSourceWorkerOptions = StrictLoaderOptions & {
+  /** Private descriptor options keyed by the selective worker id. */
+  'parquet-source'?: {
+    /** Overrides the package-local selective Parquet worker asset. */
+    workerUrl?: string;
+  };
   /** Parquet worker URL and cancellation controls. */
   parquet?: {
-    /** Overrides the package-local Parquet worker asset. */
-    workerUrl?: string;
     /** Terminates active worker jobs when aborted. */
     signal?: AbortSignal;
   };
