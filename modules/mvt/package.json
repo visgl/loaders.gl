@@ -27,10 +27,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./tilejson-schema": {
-      "types": "./dist/tilejson-schema.d.ts",
-      "import": "./dist/tilejson-schema.js",
-      "require": "./dist/tilejson-schema.cjs"
+    "./tilejson-zod-schema": {
+      "types": "./dist/tilejson-zod-schema.d.ts",
+      "import": "./dist/tilejson-zod-schema.js",
+      "require": "./dist/tilejson-zod-schema.cjs"
     },
     "./unbundled": {
       "types": "./dist/unbundled.d.ts",
@@ -53,7 +53,7 @@
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle-dev",
-    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tilejson-schema.js --export TileJSONMetadataSchema --output ./dist/tilejson.schema.json --id https://unpkg.com/@loaders.gl/mvt/tilejson.schema.json --title 'loaders.gl TileJSON and Tilestats metadata'",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tilejson-zod-schema.js --export TileJSONMetadataSchema --output ./dist/tilejson.schema.json --id https://unpkg.com/@loaders.gl/mvt/tilejson.schema.json --title 'loaders.gl TileJSON and Tilestats metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""

@@ -15,7 +15,7 @@ export type {
   Tilestats,
   TilestatsLayer,
   TilestatsLayerAttribute
-} from './tilejson-schema';
+} from './tilejson-zod-schema';
 
 // MapStyleLoader
 

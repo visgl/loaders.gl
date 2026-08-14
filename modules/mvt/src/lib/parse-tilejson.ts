@@ -10,7 +10,7 @@ import {
   type TileJSONMetadata,
   type TilestatsLayer,
   type TilestatsLayerAttribute
-} from '../tilejson-schema';
+} from '../tilejson-zod-schema';
 
 export type TileJSONOptions = {
   /** max number of values. If not provided, include all values in the source tilestats */

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile} from '@loaders.gl/core';
-import {TileJSONMetadataSchema} from '@loaders.gl/mvt/tilejson-schema';
+import {TileJSONMetadataSchema} from '@loaders.gl/mvt/tilejson-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 
