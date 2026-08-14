@@ -271,7 +271,7 @@ async function createParquetBenchmarkImplementations(): Promise<
     hyparquetCompressors
   ] = await Promise.all([
     import('@loaders.gl/loader-utils'),
-    import('../../../modules/parquet/src/parquet-loader-with-parser'),
+    import('../../../modules/parquet/src/parquet-js-loader'),
     import('../../../modules/parquet/src/lib/parsers/parse-parquet-to-arrow'),
     import('../../../modules/parquet/src/lib/parsers/convert-parquet-tables'),
     import('hyparquet'),
@@ -282,7 +282,7 @@ async function createParquetBenchmarkImplementations(): Promise<
       id: 'typescript',
       name: 'ParquetJSLoader (TypeScript)',
       decode: async scenario => {
-        const table = (await loadersGlTypeScript.ParquetLoaderWithParser.parse(
+        const table = (await loadersGlTypeScript.ParquetJSLoaderWithParser.parse(
           scenario.arrayBuffer,
           {
             core: {worker: false}

@@ -32,6 +32,11 @@ const wasmRows = await load(url, ParquetLoader, {parquet: options});
 const typeScriptRows = await load(url, ParquetJSLoader, {parquet: options});
 ```
 
+Applications normally import metadata loaders from the package root. Code that needs a
+parser-bearing loader directly can import `ParquetLoaderWithParser` from
+`@loaders.gl/parquet/parquet-loader` or `ParquetJSLoaderWithParser` from
+`@loaders.gl/parquet/parquet-js-loader`.
+
 Load a Parquet file as Arrow using the primary loader.
 
 ```typescript

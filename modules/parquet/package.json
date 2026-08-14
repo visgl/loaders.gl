@@ -39,6 +39,14 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./parquet-loader": {
+      "types": "./dist/parquet-loader.d.ts",
+      "import": "./dist/parquet-loader.js"
+    },
+    "./parquet-js-loader": {
+      "types": "./dist/parquet-js-loader.d.ts",
+      "import": "./dist/parquet-js-loader.js"
+    },
     "./parquet-source-loader": {
       "types": "./dist/parquet-source-loader.d.ts",
       "import": "./dist/parquet-source-loader.js",

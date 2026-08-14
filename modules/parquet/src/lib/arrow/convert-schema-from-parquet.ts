@@ -5,7 +5,7 @@
 import {Schema, Field, DataType} from '@loaders.gl/schema';
 
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
-import type {FieldDefinition, ParquetField, ParquetType} from '../../parquetjs/schema/declare';
+import type {FieldDefinition, ParquetType, SchemaDefinition} from '../../parquetjs/schema/declare';
 import {FileMetaData} from '../../parquetjs/parquet-thrift';
 
 export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
@@ -56,27 +56,47 @@ export function convertParquetSchema(
   return schema;
 }
 
-function getFields(schema: FieldDefinition): Field[] {
+function getFields(schema: SchemaDefinition): Field[] {
   const fields: Field[] = [];
 
   for (const name in schema) {
-    const field = schema[name];
-
-    if (field.fields) {
-      const children = getFields(field.fields);
-      fields.push({name, type: {type: 'struct', children}, nullable: field.optional});
-    } else {
-      const type = PARQUET_TYPE_MAPPING[field.type];
-      const metadata = getFieldMetadata(field);
-      const arrowField = {name, type, nullable: field.optional, metadata};
-      fields.push(arrowField);
-    }
+    fields.push(getField(name, schema[name]));
   }
 
   return fields;
 }
 
-function getFieldMetadata(field: ParquetField): Record<string, string> | undefined {
+/** Converts one Parquet field, preserving repeated values as Arrow lists. */
+function getField(name: string, field: FieldDefinition): Field {
+  const elementField: Field = field.fields
+    ? {
+        name,
+        type: {type: 'struct', children: getFields(field.fields)},
+        nullable: Boolean(field.optional)
+      }
+    : {
+        name,
+        type: PARQUET_TYPE_MAPPING[field.type!],
+        nullable: Boolean(field.optional),
+        metadata: getFieldMetadata(field)
+      };
+
+  if (!field.repeated) {
+    return elementField;
+  }
+
+  return {
+    name,
+    type: {
+      type: 'list',
+      children: [{...elementField, name: 'element', nullable: false}]
+    },
+    nullable: Boolean(field.optional),
+    metadata: elementField.metadata
+  };
+}
+
+function getFieldMetadata(field: FieldDefinition): Record<string, string> | undefined {
   let metadata: Record<string, string> | undefined;
 
   for (const key in field) {

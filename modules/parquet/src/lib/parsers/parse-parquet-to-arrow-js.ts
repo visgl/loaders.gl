@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import * as arrow from 'apache-arrow';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {convertTable} from '@loaders.gl/schema-utils';
+import {convertSchemaToArrow, convertTable} from '@loaders.gl/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {normalizeArrowTableGeoMetadata} from '../geo/geospatial-metadata';
@@ -21,6 +22,14 @@ export async function parseParquetFileToArrowWithJs(
   options?: ParquetJSLoaderOptions
 ): Promise<ArrowTable> {
   const objectRowTable = await parseParquetFile(file, options);
+  if (objectRowTable.data.length === 0 && objectRowTable.schema) {
+    const arrowSchema = convertSchemaToArrow(objectRowTable.schema);
+    return normalizeArrowTableGeoMetadata({
+      shape: 'arrow-table',
+      schema: objectRowTable.schema,
+      data: new arrow.Table(arrowSchema, [])
+    });
+  }
   return normalizeArrowTableGeoMetadata(convertTable(objectRowTable, 'arrow-table'));
 }
 
