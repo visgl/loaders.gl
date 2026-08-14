@@ -67,3 +67,63 @@ test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', t => {
   t.equal(json.asset.thumbnail?.image.width, 2, 'preserves the decoded thumbnail image');
   t.end();
 });
+
+test('gltf#postProcessGLTF normalizes indexed LINE_LOOP topology without mutating source data', t => {
+  const sourceIndices = new Uint16Array([3, 1, 4, 2]);
+  const source = {
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: sourceIndices.byteLength}],
+      bufferViews: [{buffer: 0, byteLength: sourceIndices.byteLength}],
+      accessors: [
+        {bufferView: 0, componentType: 5123, count: sourceIndices.length, type: 'SCALAR'},
+        {componentType: 5126, count: 5, type: 'VEC3'}
+      ],
+      meshes: [{primitives: [{attributes: {POSITION: 1}, indices: 0, mode: 2}]}]
+    },
+    buffers: [
+      {
+        arrayBuffer: sourceIndices.buffer,
+        byteOffset: 0,
+        byteLength: sourceIndices.byteLength
+      }
+    ]
+  } as GLTFWithBuffers;
+
+  const json = postProcessGLTF(source);
+  const primitive = json.meshes[0].primitives[0];
+
+  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
+  t.deepEqual(
+    Array.from(primitive.indices?.value || []),
+    [3, 1, 1, 4, 4, 2, 2, 3],
+    'expands the loop into line-list indices'
+  );
+  t.equal(primitive.indices?.componentType, 5123, 'uses portable unsigned-short indices');
+  t.equal(source.json.meshes?.[0].primitives[0].mode, 2, 'preserves the source primitive mode');
+  t.equal(source.json.accessors?.[0].count, 4, 'preserves the source index accessor');
+  t.deepEqual(Array.from(sourceIndices), [3, 1, 4, 2], 'preserves the source index buffer');
+  t.end();
+});
+
+test('gltf#postProcessGLTF normalizes non-indexed TRIANGLE_FAN topology', t => {
+  const json = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, count: 4, type: 'VEC3'}],
+      meshes: [{primitives: [{attributes: {POSITION: 0}, mode: 6}]}]
+    },
+    buffers: []
+  } as GLTFWithBuffers);
+  const primitive = json.meshes[0].primitives[0];
+
+  t.equal(primitive.mode, 4, 'converts TRIANGLE_FAN to TRIANGLES');
+  t.deepEqual(
+    Array.from(primitive.indices?.value || []),
+    [0, 1, 2, 0, 2, 3],
+    'expands the fan into triangle-list indices'
+  );
+  t.equal(primitive.indices?.count, 6, 'updates the generated index count');
+  t.equal(primitive.indices?.max?.[0], 3, 'records the generated maximum index');
+  t.end();
+});

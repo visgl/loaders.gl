@@ -339,7 +339,7 @@ class GLTFPostProcessor {
       primitives: []
     };
     if (gltfMesh.primitives) {
-      mesh.primitives = gltfMesh.primitives.map(gltfPrimitive => {
+      mesh.primitives = gltfMesh.primitives.map((gltfPrimitive, primitiveIndex) => {
         const primitive: GLTFMeshPrimitivePostprocessed = {
           ...gltfPrimitive,
           attributes: {},
@@ -356,7 +356,7 @@ class GLTFPostProcessor {
         if (gltfPrimitive.material !== undefined) {
           primitive.material = this.getMaterial(gltfPrimitive.material);
         }
-        return primitive;
+        return normalizePrimitiveTopology(primitive, mesh.id, primitiveIndex);
       });
     }
     return mesh;
@@ -565,6 +565,132 @@ class GLTFPostProcessor {
     }
     return camera;
   }
+}
+
+/**
+ * Expands WebGL-only primitive topologies into portable indexed topologies.
+ *
+ * WebGPU does not support `LINE_LOOP` or `TRIANGLE_FAN`. The returned primitive uses a generated
+ * index accessor and leaves the source glTF primitive, accessor, and buffer data unchanged.
+ *
+ * @param primitive Resolved glTF primitive.
+ * @param meshId Identifier of the primitive's containing mesh.
+ * @param primitiveIndex Position of the primitive in its containing mesh.
+ * @returns The resolved primitive, normalized when it uses a WebGL-only topology.
+ * @throws If an indexed primitive is postprocessed without its index buffer data.
+ */
+function normalizePrimitiveTopology(
+  primitive: GLTFMeshPrimitivePostprocessed,
+  meshId: string,
+  primitiveIndex: number
+): GLTFMeshPrimitivePostprocessed {
+  if (primitive.mode !== 2 && primitive.mode !== 6) {
+    return primitive;
+  }
+
+  const sourceIndices = primitive.indices?.value;
+  assert(
+    !primitive.indices || sourceIndices,
+    'glTF topology normalization requires loaded index accessor data'
+  );
+  const sourceIndexCount = primitive.indices?.count ?? getPrimitiveVertexCount(primitive);
+  const maximumIndex = getMaximumIndex(sourceIndices, sourceIndexCount);
+  const IndexArray = maximumIndex <= 65535 ? Uint16Array : Uint32Array;
+  const generatedIndices =
+    primitive.mode === 2
+      ? createLineLoopIndices(sourceIndices, sourceIndexCount, IndexArray)
+      : createTriangleFanIndices(sourceIndices, sourceIndexCount, IndexArray);
+
+  primitive.mode = primitive.mode === 2 ? 1 : 4;
+  primitive.indices = {
+    id: `${meshId}-primitive-${primitiveIndex}-portable-indices`,
+    components: 1,
+    bytesPerComponent: IndexArray.BYTES_PER_ELEMENT,
+    bytesPerElement: IndexArray.BYTES_PER_ELEMENT,
+    componentType: IndexArray === Uint16Array ? 5123 : 5125,
+    normalized: false,
+    count: generatedIndices.length,
+    type: 'SCALAR',
+    min: generatedIndices.length ? [getMinimumIndex(generatedIndices)] : undefined,
+    max: generatedIndices.length ? [maximumIndex] : undefined,
+    value: generatedIndices
+  };
+
+  return primitive;
+}
+
+/** Returns the vertex count shared by a non-indexed primitive's attributes. */
+function getPrimitiveVertexCount(primitive: GLTFMeshPrimitivePostprocessed): number {
+  const attribute = Object.values(primitive.attributes)[0];
+  assert(attribute, 'glTF primitive must define at least one attribute');
+  return attribute.count;
+}
+
+/** Returns the largest referenced vertex index. */
+function getMaximumIndex(
+  indices: ArrayLike<number | bigint> | undefined,
+  indexCount: number
+): number {
+  if (!indices) {
+    return Math.max(0, indexCount - 1);
+  }
+
+  let maximumIndex = 0;
+  for (let index = 0; index < indexCount; index++) {
+    maximumIndex = Math.max(maximumIndex, Number(indices[index]));
+  }
+  return maximumIndex;
+}
+
+/** Returns the smallest generated vertex index. */
+function getMinimumIndex(indices: Uint16Array | Uint32Array): number {
+  let minimumIndex = Infinity;
+  for (const index of indices) {
+    minimumIndex = Math.min(minimumIndex, index);
+  }
+  return minimumIndex;
+}
+
+/** Reads an authored index or generates the equivalent sequential index. */
+function getSourceIndex(indices: ArrayLike<number | bigint> | undefined, index: number): number {
+  return indices ? Number(indices[index]) : index;
+}
+
+/** Expands a line loop into a portable line list. */
+function createLineLoopIndices(
+  sourceIndices: ArrayLike<number | bigint> | undefined,
+  sourceIndexCount: number,
+  IndexArray: Uint16ArrayConstructor | Uint32ArrayConstructor
+): Uint16Array | Uint32Array {
+  if (sourceIndexCount < 2) {
+    return new IndexArray(0);
+  }
+
+  const generatedIndices = new IndexArray(sourceIndexCount * 2);
+  for (let sourceIndex = 0; sourceIndex < sourceIndexCount; sourceIndex++) {
+    generatedIndices[sourceIndex * 2] = getSourceIndex(sourceIndices, sourceIndex);
+    generatedIndices[sourceIndex * 2 + 1] = getSourceIndex(
+      sourceIndices,
+      (sourceIndex + 1) % sourceIndexCount
+    );
+  }
+  return generatedIndices;
+}
+
+/** Expands a triangle fan into a portable triangle list while preserving winding. */
+function createTriangleFanIndices(
+  sourceIndices: ArrayLike<number | bigint> | undefined,
+  sourceIndexCount: number,
+  IndexArray: Uint16ArrayConstructor | Uint32ArrayConstructor
+): Uint16Array | Uint32Array {
+  const triangleCount = Math.max(0, sourceIndexCount - 2);
+  const generatedIndices = new IndexArray(triangleCount * 3);
+  for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
+    generatedIndices[triangleIndex * 3] = getSourceIndex(sourceIndices, 0);
+    generatedIndices[triangleIndex * 3 + 1] = getSourceIndex(sourceIndices, triangleIndex + 1);
+    generatedIndices[triangleIndex * 3 + 2] = getSourceIndex(sourceIndices, triangleIndex + 2);
+  }
+  return generatedIndices;
 }
 
 export function postProcessGLTF(
