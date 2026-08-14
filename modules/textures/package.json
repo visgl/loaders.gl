@@ -31,6 +31,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./texture-manifest-schema": {
+      "types": "./dist/texture-manifest-schema.d.ts",
+      "import": "./dist/texture-manifest-schema.js",
+      "require": "./dist/texture-manifest-schema.cjs"
+    },
     "./unbundled": {
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
@@ -59,7 +64,8 @@
     },
     "./ktx2-basis-writer-worker-node.js": {
       "import": "./dist/ktx2-basis-writer-worker-node.js"
-    }
+    },
+    "./texture-manifest.schema.json": "./dist/texture-manifest.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -69,7 +75,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
+    "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/texture-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/textures/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
@@ -88,7 +95,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.1",
     "@loaders.gl/worker-utils": "5.0.0-alpha.1",
     "@math.gl/types": "^4.1.0",
-    "ktx-parse": "^0.7.0"
+    "ktx-parse": "^0.7.0",
+    "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",
