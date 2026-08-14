@@ -58,6 +58,8 @@ Legacy Mesh loader variants return a JavaScript object shape that is optimized f
 
 ## Mesh Arrow Tables
 
+See the [Mesh Arrow usage guide](/docs/arrowjs/usage-guide/mesharrow) for the complete column and metadata conventions, loaders.gl 5.0 construction examples, and luma.gl v10 rendering guidance.
+
 `@loaders.gl/schema` exports predefined schema contracts for common mesh columns:
 
 | Export                       | Description                                                                                 |
