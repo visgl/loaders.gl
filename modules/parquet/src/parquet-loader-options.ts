@@ -47,7 +47,10 @@ export type ParquetLoaderOptions = LoaderOptions & {
 
 /** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
 export type ParquetJSLoaderOptions = LoaderOptions & {
-  parquet?: {backend?: 'typescript'} & {
+  parquet?: {
+    backend?: 'typescript';
+    shape?: 'object-row-table' | 'arrow-table';
+  } & {
     [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };
 };

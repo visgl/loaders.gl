@@ -1,4 +1,5 @@
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # ParquetLoader
 
@@ -12,9 +13,8 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows by default and can return Arrow tables through `parquet.shape: 'arrow-table'`.
 
-[`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) is the plain-row loader for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-
-The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
+`ParquetJSLoader` is the experimental TypeScript loader variant.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
@@ -24,16 +24,11 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 Load a Parquet file as object rows.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
 const wasmRows = await load(url, ParquetLoader, {parquet: options});
-const typeScriptRows = await load(url, ParquetLoader, {
-  parquet: {
-    ...options,
-    backend: 'typescript'
-  }
-});
+const typeScriptRows = await load(url, ParquetJSLoader, {parquet: options});
 ```
 
 Load a Parquet file as Arrow using the main loader.
@@ -52,14 +47,6 @@ const arrowTable = await load(url, ParquetLoader, {
   }
 });
 ```
-
-## Worker execution
-
-The default wasm backend can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and Arrow output returns as a transferable Arrow IPC payload that is rehydrated into Apache Arrow class instances on the main thread. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
-
-The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
-
-Set `core.worker: false` to decode on the calling thread. The TypeScript backend currently stays on the calling thread. Node worker threads remain opt-in through `core._nodeWorkers`.
 
 ## Shapes
 
@@ -155,7 +142,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.backend` | `'wasm' \| 'typescript'` | `'wasm'` | Selects the parser backend. The TypeScript backend returns object-row tables only. |
+| `parquet.backend` | `'wasm' \| 'typescript'` | `'wasm'` | Selects the implementation used by `ParquetLoader`. |
 | `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
@@ -167,7 +154,58 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
 | `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
 
-## Backend Selection
+## Loader Variants
 
-- Use `ParquetLoader` for the default wasm-backed plain-row loader.
-- Use `ParquetJSLoader` for the experimental parquetjs plain-row loader.
+- Use `ParquetLoader` for the default wasm-backed loader. It supports object-row and Arrow output.
+- Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and
+  Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`,
+  `batchSize`, and `preserveBinary`.
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {ParquetJSLoader} from '@loaders.gl/parquet';
+
+const table = await load(url, ParquetJSLoader, {
+  parquet: {
+    columns: ['id', 'name'],
+    limit: 100,
+    shape: 'arrow-table'
+  }
+});
+```
+
+For `shape: 'arrow-table'`, `ParquetJSLoader` converts its decoded rows to an Apache Arrow table and
+preserves compatible GeoParquet metadata on the Arrow schema.
+
+## Worker execution
+
+The default wasm backend can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and Arrow output returns as a transferable Arrow IPC payload that is rehydrated into Apache Arrow class instances on the main thread. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
+
+The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
+
+Set `core.worker: false` to decode on the calling thread. The TypeScript backend currently stays on the calling thread. Node worker threads remain opt-in through `core._nodeWorkers`.
+
+## Live Benchmarks
+
+These benchmarks compare maintained JavaScript and WebAssembly object-row decode paths on common,
+checked-in fixtures. They are a reproducible baseline for finding optimization opportunities in the
+loaders.gl TypeScript backend, not a ranking of projects.
+
+The suite runs entirely in your browser. Fixture download and parser initialization happen before
+timing; each implementation is warmed up and must return the same row count. Results depend on the
+browser, hardware, thermal state, and whether this tab remains focused.
+
+The live suite includes the loaders.gl TypeScript backend, the loaders.gl `parquet-wasm` backend,
+and hyparquet. Dependency versions are pinned in the repository lockfile. The corresponding Node
+suite adds `@dsnp/parquetjs` and covers additional codecs and projections with `yarn bench parquet`.
+
+<BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
+  {() => {
+    const ParquetBenchmarksApp = require('@site/src/examples/parquet-benchmarks-app').default;
+    return <ParquetBenchmarksApp />;
+  }}
+</BrowserOnly>
+
+## Remarks
+
+- The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
