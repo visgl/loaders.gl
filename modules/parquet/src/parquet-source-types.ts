@@ -7,7 +7,8 @@ import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 import type {
   DataSourceOptions,
   RangeRequestScheduler,
-  RangeRequestSchedulerProps
+  RangeRequestSchedulerProps,
+  StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
@@ -236,6 +237,12 @@ export type ParquetRangeRequestOptions = RangeRequestSchedulerProps & {
 
 /** Options for constructing a `ParquetSource`. */
 export type ParquetSourceLoaderOptions = DataSourceOptions & {
+  /** Source integration and worker execution options. */
+  core?: NonNullable<DataSourceOptions['core']> &
+    Pick<
+      NonNullable<StrictLoaderOptions['core']>,
+      'worker' | 'maxConcurrency' | 'maxMobileConcurrency' | 'reuseWorkers' | '_workerType'
+    >;
   parquet?: ParquetSourceReadOptions & {
     /** HTTP headers forwarded to every remote Parquet request. */
     headers?: HeadersInit;
@@ -243,6 +250,8 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     preserveBinary?: boolean;
     /** Receives cumulative transport, pruning, decode, and batch telemetry events. */
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
+    /** Overrides the package-local worker used for selective source decoding. */
+    workerUrl?: string;
     /** Retained for source API compatibility; the TypeScript backend does not initialize WASM. */
     wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
   };

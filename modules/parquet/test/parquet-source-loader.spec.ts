@@ -4,7 +4,9 @@
 
 import test from 'test/utils/vitest-tape';
 
-import {createDataSource, encode, fetchFile, load} from '@loaders.gl/core';
+import {hydrateArrowTable} from '@loaders.gl/arrow';
+import {createDataSource, encode, fetchFile, isBrowser, load} from '@loaders.gl/core';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   PARQUET_SOURCE_CAPABILITIES,
@@ -19,6 +21,11 @@ import {
   ParquetSource,
   ParquetSourceLoader as ParquetSourceLoaderWithParser
 } from '@loaders.gl/parquet/parquet-source-loader';
+
+import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
+import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
+import type {ParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-types';
+import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
 const STATISTICS_FIXTURE_URL =
@@ -101,6 +108,30 @@ test('ParquetSource#preserves opaque WASM inputs by identity', async (t) => {
   const source = new ParquetSource(new Blob(), {parquet: {wasmUrl}});
 
   t.equal(source.options.parquet.wasmUrl, wasmUrl, 'does not recursively merge the WASM input');
+
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#routes the public worker URL to the selective worker descriptor', async t => {
+  const workerUrl = 'https://example.com/parquet-source-worker.js';
+  const source = new ParquetSource(new Blob(), {parquet: {workerUrl}});
+  const signal = new AbortController().signal;
+  const workerOptions = (
+    source as unknown as {
+      getWorkerOptions: (
+        concurrency: number,
+        signal: AbortSignal
+      ) => {'parquet-source'?: {workerUrl?: string}; parquet?: {signal?: AbortSignal}};
+    }
+  ).getWorkerOptions(1, signal);
+
+  t.equal(
+    workerOptions['parquet-source']?.workerUrl,
+    workerUrl,
+    'keys the URL override by the private worker descriptor id'
+  );
+  t.equal(workerOptions.parquet?.signal, signal, 'retains cancellation in the public namespace');
 
   await source.close();
   t.end();
@@ -227,9 +258,87 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
   t.end();
 });
 
-test('ParquetSource#read preserves the caller AbortSignal reason', async (t) => {
+test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
   const fixture = await createSelectiveFixture();
-  const source = new ParquetSource(new Blob([fixture]), {});
+  const source = (await load(new Blob([fixture]), ParquetSourceLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  })) as ParquetSource;
+  let mainThreadTicked = false;
+  const batchesPromise = collectParquetBatches(
+    source.read({rowGroups: [1], columns: ['x', 'source_id'], batchSize: 1})
+  );
+  await new Promise<void>(resolve =>
+    setTimeout(() => {
+      mainThreadTicked = true;
+      resolve();
+    }, 0)
+  );
+  const batches = await batchesPromise;
+
+  t.ok(mainThreadTicked, 'keeps the caller event loop responsive during decode');
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
+    [2, 3],
+    'hydrates directly transferred Arrow buffers into main-thread class instances'
+  );
+  t.deepEqual(
+    batches.map(batch => batch.rowOffset),
+    [2, 3],
+    'retains exact source provenance across the worker boundary'
+  );
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async t => {
+  const fixture = await createSelectiveFixture();
+  const input = await createParquetSourceWorkerInput(fixture, 1, ['x', 'source_id']);
+
+  const result = await decodeParquetSourceWorkerInput(input);
+  const arrowTables = result.batches.map(batch => hydrateArrowTable(batch.arrowTable));
+
+  t.equal(result.rowCount, 2, 'decodes the complete selected row group');
+  t.deepEqual(
+    result.batches.map(batch => batch.rowGroupRowOffset),
+    [0, 1],
+    'retains batch offsets within the selected row group'
+  );
+  t.deepEqual(
+    result.batches.map(batch => batch.rowCount),
+    [1, 1],
+    'honors the requested worker batch size'
+  );
+  t.deepEqual(
+    arrowTables.flatMap(table => Array.from(table.getChild('x')?.toArray() || [])),
+    [2, 3],
+    'decodes projected numeric values'
+  );
+  t.deepEqual(
+    arrowTables.flatMap(table => Array.from(table.getChild('source_id')?.toArray() || [])),
+    ['source-2', 'source-3'],
+    'decodes projected logical values'
+  );
+  t.notOk(arrowTables[0].getChild('ignored_payload'), 'does not materialize unselected columns');
+  t.ok(result.decodeDurationMs >= 0, 'reports worker decode duration');
+  t.ok(result.arrowConversionDurationMs >= 0, 'reports worker Arrow conversion duration');
+  await t.rejects(
+    decodeParquetSourceWorkerInput({...input, ranges: []}),
+    /unavailable byte range/,
+    'rejects decoder reads outside the transferred column ranges'
+  );
+  t.end();
+});
+
+test('ParquetSource#read preserves the caller AbortSignal reason', async t => {
+  const fixture = await createSelectiveFixture();
+  const source = new ParquetSource(new Blob([fixture]), {
+    core: {worker: isBrowser, reuseWorkers: false, _workerType: 'test'}
+  });
   const abortController = new AbortController();
   const abortReason = new Error('Query superseded');
   const iterator = source.read({batchSize: 1, signal: abortController.signal})[Symbol.asyncIterator]();
@@ -467,6 +576,69 @@ async function createSelectiveFixture(): Promise<ArrayBuffer> {
   return await selectiveFixturePromise;
 }
 
+/** Creates a direct worker job from one fixture row group for shared decoder tests. */
+async function createParquetSourceWorkerInput(
+  fixture: ArrayBuffer,
+  rowGroupIndex: number,
+  selectedColumns: string[]
+): Promise<ParquetSourceWorkerInput> {
+  const reader = new ParquetReader(new BlobFile(fixture));
+  const fileMetadata = await reader.getFileMetadata();
+  const parquetSchema = await reader.getSchema();
+  const schema = await getSchemaFromParquetReader(reader);
+  const rowGroup = fileMetadata.row_groups[rowGroupIndex];
+  const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+    const path = columnChunk.meta_data?.path_in_schema;
+    return Boolean(path && selectedColumns.includes(path[0]));
+  });
+  const ranges = selectedColumnChunks.map(columnChunk => {
+    const columnMetadata = columnChunk.meta_data;
+    if (!columnMetadata) {
+      throw new Error('Parquet column chunk is missing metadata');
+    }
+    const dataPageOffset = Number(columnMetadata.data_page_offset);
+    const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset || dataPageOffset);
+    const offset = Math.min(dataPageOffset, dictionaryPageOffset);
+    const length = Number(columnMetadata.total_compressed_size);
+    return {offset, data: fixture.slice(offset, offset + length)};
+  });
+
+  reader.close();
+  return {
+    fileByteLength: fixture.byteLength,
+    rowCount: Number(rowGroup.num_rows),
+    uncompressedByteLength: Number(rowGroup.total_byte_size),
+    schemaDefinition: parquetSchema.schema,
+    projectedSchema: {
+      ...schema,
+      fields: schema.fields.filter(field => selectedColumns.includes(field.name))
+    },
+    columnChunks: selectedColumnChunks.map(columnChunk => {
+      const columnMetadata = columnChunk.meta_data;
+      if (!columnMetadata) {
+        throw new Error('Parquet column chunk is missing metadata');
+      }
+      return {
+        filePath: columnChunk.file_path || undefined,
+        physicalType: columnMetadata.type,
+        compressionCodec: columnMetadata.codec,
+        path: [...columnMetadata.path_in_schema],
+        valueCount: Number(columnMetadata.num_values),
+        compressedByteLength: Number(columnMetadata.total_compressed_size),
+        uncompressedByteLength: Number(columnMetadata.total_uncompressed_size),
+        dataPageOffset: Number(columnMetadata.data_page_offset),
+        dictionaryPageOffset:
+          columnMetadata.dictionary_page_offset === undefined
+            ? undefined
+            : Number(columnMetadata.dictionary_page_offset)
+      };
+    }),
+    ranges,
+    batchSize: 1,
+    preserveBinary: false
+  };
+}
+
 /** Collects a selective source read for concise assertions. */
 async function collectParquetBatches(batches: AsyncIterable<ParquetBatch>): Promise<ParquetBatch[]> {
   const result: ParquetBatch[] = [];
@@ -500,6 +672,7 @@ function createRemoteSource(
     core: {
       ...options.core,
       type: 'parquet',
+      _workerType: options.core?._workerType ?? 'test',
       loadOptions: {core: {fetch: rangeFetch}}
     }
   }) as ParquetSource;
