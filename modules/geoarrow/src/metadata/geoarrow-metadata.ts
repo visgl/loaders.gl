@@ -3,18 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
+import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/gis';
+import {GeoArrowMetadataSchema} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
 
-export type GeoArrowEncoding =
-  | 'geoarrow.geometry'
-  | 'geoarrow.geometrycollection'
-  | 'geoarrow.multipolygon'
-  | 'geoarrow.polygon'
-  | 'geoarrow.multilinestring'
-  | 'geoarrow.linestring'
-  | 'geoarrow.multipoint'
-  | 'geoarrow.point'
-  | 'geoarrow.wkb'
-  | 'geoarrow.wkt';
+export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/gis';
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
@@ -26,26 +18,13 @@ const GEOARROW_ENCODINGS = [
   'geoarrow.linestring',
   'geoarrow.multipoint',
   'geoarrow.point',
+  'geoarrow.box',
   'geoarrow.wkb',
   'geoarrow.wkt'
 ] as const satisfies GeoArrowEncoding[];
 
 const GEOARROW_ENCODING = 'ARROW:extension:name';
 const GEOARROW_METADATA = 'ARROW:extension:metadata';
-
-/**
- * Geospatial metadata for one column, extracted from Apache Arrow metadata
- * @see https://github.com/geoarrow/geoarrow/blob/main/extension-types.md
- */
-export type GeoArrowMetadata = {
-  /** Encoding of geometry in this column */
-  encoding?: GeoArrowEncoding;
-  /** CRS in [PROJJSON](https://proj.org/specifications/projjson.html). Omitted if producer has no information about CRS */
-  crs?: Record<string, unknown>;
-  /** Edges are either spherical or omitted */
-  edges?: 'spherical';
-  [key: string]: unknown;
-};
 
 /**
  * get geometry columns from arrow table
@@ -95,7 +74,7 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_METADATA);
   if (columnMetadata) {
     try {
-      const parsedMetadata = JSON.parse(columnMetadata) as GeoArrowMetadata;
+      const parsedMetadata = GeoArrowMetadataSchema.parse(JSON.parse(columnMetadata));
       metadata = {
         ...(metadata || {}),
         ...parsedMetadata

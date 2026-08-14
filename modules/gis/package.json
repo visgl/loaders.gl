@@ -23,7 +23,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./geospatial-metadata-zod-schema": {
+      "types": "./dist/geospatial-metadata-zod-schema.d.ts",
+      "import": "./dist/geospatial-metadata-zod-schema.js",
+      "require": "./dist/geospatial-metadata-zod-schema.cjs"
+    },
+    "./geoparquet.schema.json": "./dist/geoparquet.schema.json",
+    "./geoarrow-metadata.schema.json": "./dist/geoarrow-metadata.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -31,6 +38,10 @@
     "dist",
     "README.md"
   ],
+  "scripts": {
+    "pre-build": "npm run generate-json-schema",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/gis/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/gis/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
+  },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "@loaders.gl/schema": "5.0.0-alpha.1",
@@ -38,7 +49,8 @@
     "@mapbox/vector-tile": "^1.3.1",
     "@math.gl/polygon": "^4.1.0",
     "apache-arrow": ">= 17.0.0",
-    "pbf": "^3.2.1"
+    "pbf": "^3.2.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@math.gl/proj4": "^4.1.0"

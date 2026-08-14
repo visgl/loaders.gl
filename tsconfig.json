@@ -163,6 +163,9 @@
       "@loaders.gl/gis": [
         "modules/gis/src"
       ],
+      "@loaders.gl/gis/*": [
+        "modules/gis/src/*"
+      ],
       "@loaders.gl/gis/test": [
         "modules/gis/test"
       ],

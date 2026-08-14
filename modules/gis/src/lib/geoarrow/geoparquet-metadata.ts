@@ -21,6 +21,7 @@ export type GeoMetadata = {
  */
 export type GeoColumnMetadata = {
   encoding:
+    | 'WKB'
     | 'wkb'
     | 'wkt'
     | 'point'
@@ -57,6 +58,41 @@ export type GeoParquetGeometryType =
   | 'MultiLineString Z'
   | 'MultiPolygon Z'
   | 'GeometryCollection Z';
+
+/** GeoArrow extension names used to describe geometry column encodings. */
+export type GeoArrowEncoding =
+  | 'geoarrow.geometry'
+  | 'geoarrow.geometrycollection'
+  | 'geoarrow.multipolygon'
+  | 'geoarrow.polygon'
+  | 'geoarrow.multilinestring'
+  | 'geoarrow.linestring'
+  | 'geoarrow.multipoint'
+  | 'geoarrow.point'
+  | 'geoarrow.box'
+  | 'geoarrow.wkb'
+  | 'geoarrow.wkt';
+
+/** CRS serialization identifiers defined by the GeoArrow extension metadata specification. */
+export type GeoArrowCRSType = 'projjson' | 'wkt2:2019' | 'authority_code' | 'srid';
+
+/** Non-planar edge interpretations supported by GeoArrow extension metadata. */
+export type GeoArrowEdgeType = 'spherical' | 'vincenty' | 'thomas' | 'andoyer' | 'karney';
+
+/** Geospatial metadata stored on one GeoArrow extension field. */
+export type GeoArrowMetadata = {
+  /** Geometry encoding declared by the Arrow extension name. */
+  encoding?: GeoArrowEncoding;
+  /** Coordinate reference system metadata as PROJJSON or a serialized string. */
+  crs?: Record<string, unknown> | string;
+  /** Serialization used when `crs` is represented as a string. */
+  crs_type?: GeoArrowCRSType;
+  /** Non-planar interpretation of edges between geometry vertices. */
+  edges?: GeoArrowEdgeType;
+  /** Geometry types represented by the field. */
+  geometry_types?: GeoParquetGeometryType[];
+  [key: string]: unknown;
+};
 
 /**
  * Reads GeoParquet metadata from a metadata container.

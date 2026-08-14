@@ -19,7 +19,11 @@ export {getMetadataValue, setMetadataValue} from './lib/geoarrow/metadata-utils'
 export type {
   GeoMetadata,
   GeoColumnMetadata,
-  GeoParquetGeometryType
+  GeoParquetGeometryType,
+  GeoArrowEncoding,
+  GeoArrowCRSType,
+  GeoArrowEdgeType,
+  GeoArrowMetadata
 } from './lib/geoarrow/geoparquet-metadata';
 export {
   getGeoMetadata,
