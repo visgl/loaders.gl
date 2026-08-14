@@ -44,24 +44,20 @@ export type GLTFHeader = {
  * https://github.com/CesiumGS/3d-tiles/tree/main/specification#property-reference
  */
 export type Tiles3DTilesetJSON = {
-  shape: 'tileset3d';
-  /** Metadata about the entire tileset.
-   * https://github.com/CesiumGS/3d-tiles/tree/main/specification#asset
-   */
-  asset: {
-    /** The 3D Tiles version. The version defines the JSON schema for the tileset JSON and the base set of tile formats. */
-    version: string;
-    /** Application-specific version of this tileset, e.g., for when an existing tileset is updated. */
-    tilesetVersion?: string;
-    /** Dictionary object with extension-specific objects. */
-    extensions?: object;
-    /** Application-specific data. */
-    extras?: any;
-    /** Not mentioned in 1.0 spec but some tilesets contain this option */
-    gltfUpAxis?: string;
-  };
+  /** Metadata about the entire tileset. */
+  asset: Tiles3DTilesetAsset;
   /** A dictionary object of metadata about per-feature properties. */
   properties?: Record<string, TilesetProperty>;
+  /** Inline definition of metadata classes and enums. */
+  schema?: Record<string, unknown>;
+  /** URI of an external metadata schema. */
+  schemaUri?: string;
+  /** Statistics about metadata entities in the tileset. */
+  statistics?: unknown;
+  /** Metadata groups referenced by tile contents. */
+  groups?: unknown[];
+  /** Metadata entity associated with the complete tileset. */
+  metadata?: unknown;
   /** The error, in meters, introduced if this tileset is not rendered. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels. */
   geometricError: number;
   /** A tile in a 3D Tiles tileset. */
@@ -71,13 +67,29 @@ export type Tiles3DTilesetJSON = {
   /** Names of 3D Tiles extensions required to properly load this tileset. */
   extensionsRequired?: string[];
   /** Dictionary object with extension-specific objects. */
-  extensions?: object;
+  extensions?: Record<string, unknown>;
   /** Application-specific data. */
-  extras?: any;
+  extras?: unknown;
+};
+
+/** Metadata about the complete 3D Tiles tileset asset. */
+export type Tiles3DTilesetAsset = {
+  /** 3D Tiles version defining the tileset JSON contract and base tile formats. */
+  version: string;
+  /** Application-specific version of this tileset. */
+  tilesetVersion?: string;
+  /** Extension objects keyed by extension name. */
+  extensions?: Record<string, unknown>;
+  /** Application-specific data. */
+  extras?: unknown;
+  /** Non-standard glTF up-axis used by some tilesets. */
+  gltfUpAxis?: string;
 };
 
 /** TilesetJSON postprocessed by Tiles3DLoader */
 export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> & {
+  /** loaders.gl data shape discriminator added during parsing. */
+  shape: 'tileset3d';
   /** @deprecated Loader used */
   loader: LoaderWithParser;
   /** URL used to load a tileset resource */
@@ -155,15 +167,15 @@ export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine' | 'chi
 /** Metadata about the tile's content and a link to the content. */
 export type Tiles3DTileContentJSON = {
   /** A uri that points to the tile's content. When the uri is relative, it is relative to the referring tileset JSON file. */
-  uri: string;
+  uri?: string;
   /** url doesn't allign the spec but we support it same way as uri */
   url?: string;
   /** A bounding volume that encloses a tile or its content. At least one bounding volume property is required. Bounding volumes include box, region, or sphere. */
   boundingVolume?: Tile3DBoundingVolume;
   /** Dictionary object with extension-specific objects. */
-  extensions?: object;
+  extensions?: Record<string, unknown>;
   /** Application-specific data. */
-  extras?: any;
+  extras?: unknown;
 };
 
 /** A bounding volume that encloses a tile or its content.
@@ -181,9 +193,9 @@ export type Tile3DBoundingVolume = {
    * Longitudes and latitudes are in radians, and heights are in meters above (or below) the WGS84 ellipsoid. */
   region?: number[];
   /** Dictionary object with extension-specific objects. */
-  extensions?: object;
+  extensions?: Record<string, unknown>;
   /** Application-specific data. */
-  extras?: any;
+  extras?: unknown;
 };
 
 /**
@@ -196,9 +208,9 @@ export type TilesetProperty = {
   /** The minimum value of this property of all the features in the tileset. */
   minimum: number;
   /** Dictionary object with extension-specific objects. */
-  extensions?: object;
+  extensions?: Record<string, unknown>;
   /** Application-specific data. */
-  extras?: any;
+  extras?: unknown;
 };
 
 export type Tiles3DTileContent = {
@@ -387,7 +399,7 @@ export type ImplicitTilingExensionData = ImplicitTilingData & {
  * This object allows a tile to be implicitly subdivided. Tile and content availability and metadata is stored in subtrees which are referenced externally.
  * https://github.com/CesiumGS/3d-tiles/blob/draft-1.1/specification/schema/tile.implicitTiling.schema.json
  * */
-type ImplicitTilingData = {
+export type ImplicitTilingData = {
   /** A string describing the subdivision scheme used within the tileset. */
   subdivisionScheme: 'QUADTREE' | 'OCTREE' | string;
   /** The number of distinct levels in each subtree. For example, a quadtree with `subtreeLevels = 2` will have subtrees with 5 nodes (one root and 4 children). */

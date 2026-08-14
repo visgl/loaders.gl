@@ -22,6 +22,7 @@ import './lib/parsers/helpers/parse-3d-tile-subtree.spec';
 
 // TODO v4.0 restore these tests
 import './tiles-3d-loader.spec';
+import './tileset-zod-schema.spec';
 import './tile-3d-subtree-loader.spec';
 import './tiles-3d-archive-loaders.spec';
 import './tiles-3d-archive-readable-file.spec';

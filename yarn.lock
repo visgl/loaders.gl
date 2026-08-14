@@ -5208,6 +5208,7 @@ __metadata:
     "@math.gl/geospatial": "npm:^4.1.0"
     "@probe.gl/log": "npm:^4.1.1"
     long: "npm:^5.2.1"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown

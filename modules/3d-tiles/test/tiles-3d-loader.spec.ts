@@ -186,6 +186,20 @@ test('Tiles3DLoader#rejects unsupported required extensions', async t => {
   t.end();
 });
 
+test('Tiles3DLoader#rejects unknown binary tile types', async t => {
+  const unknownTile = new TextEncoder().encode('nope').buffer as ArrayBuffer;
+
+  await t.rejects(
+    parse(unknownTile, Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: false}
+    }),
+    /3DTileLoader: unknown type nope/,
+    'reports the unrecognized tile magic'
+  );
+  t.end();
+});
+
 test('Tiles3DLoader#validates required extensions before implicit subtree fetching', async t => {
   let fetchCallCount = 0;
   const implicitRoot = {
@@ -272,7 +286,12 @@ test('Tiles3DLoader#loads json from base64 URL', async t => {
   }
   const tilesetJson = {
     asset: {
-      version: 2.0
+      version: '1.1'
+    },
+    geometricError: 0,
+    root: {
+      boundingVolume: {sphere: [0, 0, 0, 1]},
+      geometricError: 0
     }
   };
 

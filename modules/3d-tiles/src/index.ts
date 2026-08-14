@@ -29,7 +29,9 @@ export type {
   Tiles3DTileJSON,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSON,
+  Tiles3DTilesetAsset,
   Tiles3DTilesetJSONPostprocessed,
+  ImplicitTilingData,
   Tiles3DTileContent,
   ImplicitTilingExensionData
 } from './types';
