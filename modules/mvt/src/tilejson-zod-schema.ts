@@ -20,35 +20,53 @@ export interface TileJSONVectorLayer {
   [key: string]: unknown;
 }
 
-/** Statistics for one attribute in a raw Tilestats document. */
+/**
+ * One raw, unparsed Tilestats layer attribute.
+ *
+ * @see https://github.com/mapbox/mapbox-geostats#output-the-stats
+ */
 export interface TilestatsLayerAttribute {
-  /** Attribute name. */
+  /** The name of this attribute. */
   attribute?: string;
-  /** Producer-specific attribute type such as `string`, `number`, or `boolean`. */
+  /**
+   * The inferred attribute type:
+   *
+   * - `string` if all values are strings or `null`.
+   * - `number` if all values are numbers or `null`.
+   * - `boolean` if all values are booleans or `null`.
+   * - `null` if the only value is `null`.
+   * - `mixed` if values have multiple types.
+   *
+   * Array and object values are coerced to strings by Mapbox Geostats.
+   */
   type?: string;
-  /** Minimum numeric value observed for the attribute. */
+  /** Minimum value when any values are numbers. */
   min?: number;
-  /** Maximum numeric value observed for the attribute. */
+  /** Maximum value when any values are numbers. */
   max?: number;
-  /** Number of unique values observed for the attribute. */
+  /** Number of unique values. */
   count?: number;
-  /** Sample of unique values observed for the attribute. */
+  /** First 100 unique values. */
   values?: unknown[];
   /** Additional attribute statistics are preserved verbatim. */
   [key: string]: unknown;
 }
 
-/** Statistics for one vector layer in a raw Tilestats document. */
+/**
+ * One raw, unparsed layer in a Tilestats document.
+ *
+ * @see https://github.com/mapbox/mapbox-geostats#output-the-stats
+ */
 export interface TilestatsLayer {
-  /** Vector layer identifier. */
+  /** The name of this layer. */
   layer?: string;
-  /** Total feature count for the layer. */
+  /** The number of features in this layer. */
   count?: number;
-  /** Dominant geometry type in the layer. */
+  /** The dominant geometry type in this layer. */
   geometry?: string;
-  /** Number of distinct attributes described for the layer. */
+  /** The number of unique attributes in this layer, up to 1000. */
   attributeCount?: number;
-  /** Attribute statistics for the layer. */
+  /** Attribute statistics for this layer. */
   attributes?: TilestatsLayerAttribute[];
   /** Additional layer statistics are preserved verbatim. */
   [key: string]: unknown;
