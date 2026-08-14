@@ -14,7 +14,6 @@ import {
   decodeParquetSourceRowGroupOnWorker
 } from './lib/parquet-source-worker-client';
 import {
-  PARQUET_SOURCE_WORKER_OPERATION,
   type ParquetSourceWorkerColumnChunk,
   type ParquetSourceWorkerOptions,
   type ParquetSourceWorkerResult
@@ -418,7 +417,6 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         maxConcurrency: concurrency,
         maxMobileConcurrency: this.options.core?.maxMobileConcurrency ?? concurrency,
         reuseWorkers: this.options.core?.reuseWorkers ?? isBrowser,
-        _nodeWorkers: this.options.core?._nodeWorkers ?? false,
         _workerType: this.options.core?._workerType
       },
       'parquet-source': {
@@ -494,12 +492,10 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     );
     throwIfAborted(signal);
 
-    const workerStartTime = getCurrentTime();
     let workerResult: ParquetSourceWorkerResult;
     try {
       workerResult = await decodeParquetSourceRowGroupOnWorker(
         {
-          operation: PARQUET_SOURCE_WORKER_OPERATION,
           fileByteLength: initialization.file.size,
           rowCount: Number(rowGroup.num_rows),
           uncompressedByteLength: Number(rowGroup.total_byte_size),
@@ -516,13 +512,6 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       throwIfAborted(signal);
       throw error;
     }
-    const workerRoundTripDurationMs = getCurrentTime() - workerStartTime;
-    const workerTransferDurationMs = Math.max(
-      workerRoundTripDurationMs -
-        workerResult.decodeDurationMs -
-        workerResult.arrowConversionDurationMs,
-      0
-    );
     throwIfAborted(signal);
     this.recordTelemetry(
       'decode',
@@ -533,11 +522,6 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       'arrow-conversion',
       {arrowConversionDurationMs: workerResult.arrowConversionDurationMs},
       {rowGroupIndex, durationMs: workerResult.arrowConversionDurationMs}
-    );
-    this.recordTelemetry(
-      'worker-transfer',
-      {workerTransferDurationMs, workerDecodeCount: 1},
-      {rowGroupIndex, durationMs: workerTransferDurationMs}
     );
     return {rowGroupIndex, rowCount: workerResult.rowCount, workerResult};
   }
@@ -986,8 +970,6 @@ function createParquetTelemetry(): ParquetTelemetry {
     retryCount: 0,
     decodeDurationMs: 0,
     arrowConversionDurationMs: 0,
-    workerTransferDurationMs: 0,
-    workerDecodeCount: 0,
     rowGroupsRequested: 0,
     rowGroupsPruned: 0,
     rowGroupsDecoded: 0,

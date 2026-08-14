@@ -162,10 +162,6 @@ export type ParquetTelemetry = {
   decodeDurationMs: number;
   /** Time spent converting decoded columns into Arrow batches. */
   arrowConversionDurationMs: number;
-  /** Worker scheduling and transfer time outside measured decode and Arrow conversion work. */
-  workerTransferDurationMs: number;
-  /** Row groups decoded by worker jobs rather than on the caller thread. */
-  workerDecodeCount: number;
   /** Candidate row groups considered by read operations. */
   rowGroupsRequested: number;
   /** Candidate row groups rejected by `rowGroupFilter`. */
@@ -191,7 +187,6 @@ export type ParquetTelemetryEvent = {
     | 'row-group-prune'
     | 'decode'
     | 'arrow-conversion'
-    | 'worker-transfer'
     | 'batch'
     | 'cancel'
     | 'read-error';
@@ -246,12 +241,7 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
   core?: NonNullable<DataSourceOptions['core']> &
     Pick<
       NonNullable<StrictLoaderOptions['core']>,
-      | 'worker'
-      | 'maxConcurrency'
-      | 'maxMobileConcurrency'
-      | 'reuseWorkers'
-      | '_nodeWorkers'
-      | '_workerType'
+      'worker' | 'maxConcurrency' | 'maxMobileConcurrency' | 'reuseWorkers' | '_workerType'
     >;
   parquet?: ParquetSourceReadOptions & {
     /** HTTP headers forwarded to every remote Parquet request. */

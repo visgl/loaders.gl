@@ -24,11 +24,7 @@ import {
 
 import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
-import {
-  isParquetSourceWorkerInput,
-  PARQUET_SOURCE_WORKER_OPERATION,
-  type ParquetSourceWorkerInput
-} from '../src/lib/parquet-source-worker-types';
+import type {ParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-types';
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -285,11 +281,6 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   const batches = await batchesPromise;
 
   t.ok(mainThreadTicked, 'keeps the caller event loop responsive during decode');
-  t.equal(source.getTelemetry().workerDecodeCount, 1, 'records the worker-decoded row group');
-  t.ok(
-    source.getTelemetry().workerTransferDurationMs >= 0,
-    'records worker scheduling and direct buffer transfer time'
-  );
   t.deepEqual(
     batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
     [2, 3],
@@ -307,13 +298,6 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
 test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async t => {
   const fixture = await createSelectiveFixture();
   const input = await createParquetSourceWorkerInput(fixture, 1, ['x', 'source_id']);
-
-  t.ok(isParquetSourceWorkerInput(input), 'recognizes a selective Parquet worker job');
-  t.notOk(isParquetSourceWorkerInput(null), 'rejects a null worker job');
-  t.notOk(
-    isParquetSourceWorkerInput({...input, operation: 'unsupported'}),
-    'rejects another worker operation'
-  );
 
   const result = await decodeParquetSourceWorkerInput(input);
   const arrowTables = result.batches.map(batch => hydrateArrowTable(batch.arrowTable));
@@ -621,7 +605,6 @@ async function createParquetSourceWorkerInput(
 
   reader.close();
   return {
-    operation: PARQUET_SOURCE_WORKER_OPERATION,
     fileByteLength: fixture.byteLength,
     rowCount: Number(rowGroup.num_rows),
     uncompressedByteLength: Number(rowGroup.total_byte_size),

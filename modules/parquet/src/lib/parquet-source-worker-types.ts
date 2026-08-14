@@ -8,9 +8,6 @@ import type {Schema} from '@loaders.gl/schema';
 
 import type {SchemaDefinition} from '../parquetjs/schema/declare';
 
-/** Discriminator for a selective Parquet source worker job. */
-export const PARQUET_SOURCE_WORKER_OPERATION = 'decode-parquet-source-row-group';
-
 /** One transferable range containing a selected Parquet column chunk. */
 export type ParquetSourceWorkerRange = {
   /** Absolute byte offset of this range in the source object. */
@@ -43,8 +40,6 @@ export type ParquetSourceWorkerColumnChunk = {
 
 /** Transferable input for one worker-backed Parquet source row-group decode. */
 export type ParquetSourceWorkerInput = {
-  /** Worker operation discriminator. */
-  operation: typeof PARQUET_SOURCE_WORKER_OPERATION;
   /** Total source byte length used to validate virtual file reads. */
   fileByteLength: number;
   /** Logical row count in the selected row group. */
@@ -94,18 +89,9 @@ export type ParquetSourceWorkerOptions = StrictLoaderOptions & {
     /** Overrides the package-local selective Parquet worker asset. */
     workerUrl?: string;
   };
-  /** Parquet worker URL and cancellation controls. */
+  /** Parquet cancellation controls. */
   parquet?: {
     /** Terminates active worker jobs when aborted. */
     signal?: AbortSignal;
   };
 };
-
-/** Returns true when a worker input requests selective Parquet source decoding. */
-export function isParquetSourceWorkerInput(input: unknown): input is ParquetSourceWorkerInput {
-  return Boolean(
-    input &&
-      typeof input === 'object' &&
-      (input as {operation?: unknown}).operation === PARQUET_SOURCE_WORKER_OPERATION
-  );
-}

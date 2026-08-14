@@ -54,10 +54,6 @@
     "./parquet-source-worker.js": {
       "import": "./dist/parquet-source-worker.js"
     },
-    "./parquet-source-worker-node.cjs": {
-      "import": "./dist/parquet-source-worker-node.cjs",
-      "require": "./dist/parquet-source-worker-node.cjs"
-    },
     "./wasm": {
       "types": "./dist/wasm.d.ts",
       "import": "./dist/wasm.js"
@@ -71,14 +67,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-wasm && npm run build-worker && npm run build-worker-node && npm run build-source-worker && npm run build-source-worker-node",
+    "pre-build": "npm run copy-wasm && npm run build-worker && npm run build-worker-node && npm run build-source-worker",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "copy-wasm": "cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet_wasm_bg.wasm",
     "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-source-worker": "esbuild src/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-source-worker-node": "esbuild src/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-source-worker": "esbuild src/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "browser": {
     "child_process": false,

@@ -137,9 +137,8 @@ retains a row group whenever the statistics required to prove exclusion are abse
 ## Telemetry
 
 `getTelemetry()` returns a cumulative snapshot for the source. `parquet.onTelemetry` additionally
-receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, worker
-transfer, batches, cancellation, and failures. Exceptions thrown by the callback do not interrupt
-a read.
+receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, batches,
+cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
 
 ```typescript
 const source = createDataSource(url, [ParquetSourceLoader], {
@@ -153,9 +152,9 @@ console.log(source.getTelemetry());
 ```
 
 The frozen snapshot reports exact transport counts and bytes, range-cache hits, cumulative
-network/decode/Arrow durations, worker scheduling and transfer duration, worker-decoded row groups,
-candidate/pruned/decoded row groups, emitted batches and rows, retries, cancellations, and failures.
-`retryCount` remains zero while the source uses its fail-fast range policy.
+network/decode/Arrow durations, candidate/pruned/decoded row groups, emitted batches and rows,
+retries, cancellations, and failures. `retryCount` remains zero while the source uses its fail-fast
+range policy.
 
 ### `capabilities: ParquetSourceCapabilities`
 
@@ -208,5 +207,4 @@ serve the package's WASM loader and writer paths.
 
 - Range fetching remains on the caller thread so custom fetch implementations and authenticated,
   version-pinned requests do not cross the worker boundary.
-- Node.js worker execution remains experimental and opt-in through `core._nodeWorkers`; Node.js
-  otherwise decodes on the caller thread.
+- Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
