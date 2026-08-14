@@ -6,7 +6,7 @@ import test from 'test/utils/vitest-tape';
 import type {Test} from 'test/utils/vitest-tape';
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {parquetReadObjects} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
@@ -93,10 +93,8 @@ async function readWithLoadersGl(
   backend: LoadersGlBackend
 ): Promise<CompatibilityResult> {
   try {
-    const table = (await load(file, ParquetLoader, {
-      core: {worker: false},
-      parquet: {backend}
-    })) as ObjectRowTable;
+    const loader = backend === 'typescript' ? ParquetJSLoader : ParquetLoader;
+    const table = (await load(file, loader, {core: {worker: false}})) as ObjectRowTable;
     return {supported: true, rows: table.data};
   } catch (error) {
     return {supported: false, error: getErrorMessage(error)};

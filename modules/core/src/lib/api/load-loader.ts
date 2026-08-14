@@ -121,20 +121,9 @@ function getLoaderImplementationSpecifier(loader: Loader, options?: LoaderOption
 
 /** Gets the cache key for option-selected parser implementations. */
 function getLoaderImplementationCacheKey(loader: Loader, options?: LoaderOptions): string {
-  const loaderOptions = options?.[loader.id] as
-    | {backend?: unknown; implementation?: unknown}
-    | undefined;
+  const loaderOptions = options?.[loader.id] as {backend?: unknown} | undefined;
   const defaultLoaderOptions = loader.options?.[loader.id] as {backend?: unknown} | undefined;
-  return String(
-    loaderOptions?.backend ||
-      getDeprecatedImplementationBackend(loaderOptions?.implementation) ||
-      defaultLoaderOptions?.backend ||
-      ''
-  );
-}
-
-function getDeprecatedImplementationBackend(implementation: unknown): unknown {
-  return implementation === 'js' ? 'typescript' : implementation;
+  return String(loaderOptions?.backend || defaultLoaderOptions?.backend || '');
 }
 
 /** Imports a module and finds the parser-bearing loader implementation with the requested id. */

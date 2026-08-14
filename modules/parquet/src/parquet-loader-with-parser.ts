@@ -18,37 +18,36 @@ import {
   parseParquetFileToArrowWithJs
 } from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
-import type {
-  ParquetLoaderImplementationOptions,
-  ParquetLoaderOptions
-} from './parquet-loader-options';
-import {PARQUET_LOADER_BASE} from './parquet-loader-base';
+import type {ParquetJSLoaderOptions} from './parquet-loader-options';
+import {ParquetJSLoader as ParquetJSLoaderMetadata} from './parquet-js-loader';
+
+const {preload: _ParquetJSLoaderPreload, ...ParquetJSLoaderMetadataWithoutPreload} =
+  ParquetJSLoaderMetadata;
 
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
-  backend: 'typescript' as const,
   columns: undefined,
   preserveBinary: false
 };
 
 /** Parser-bearing TypeScript-only Parquet loader implementation. */
 export const ParquetLoaderWithParser = {
-  ...PARQUET_LOADER_BASE,
+  ...ParquetJSLoaderMetadataWithoutPreload,
   worker: false,
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetJSLoaderOptions) {
     const parquetOptions = getParquetOptions(options);
     const file = new BlobFile(arrayBuffer);
     return parquetOptions.parquet?.shape === 'arrow-table'
       ? parseParquetFileToArrowWithJs(file, parquetOptions)
       : parseParquetFile(file, parquetOptions);
   },
-  parseFile(file: ReadableFile, options?: ParquetLoaderOptions) {
+  parseFile(file: ReadableFile, options?: ParquetJSLoaderOptions) {
     const parquetOptions = getParquetOptions(options);
     return parquetOptions.parquet?.shape === 'arrow-table'
       ? parseParquetFileToArrowWithJs(file, parquetOptions)
       : parseParquetFile(file, parquetOptions);
   },
-  parseFileInBatches(file: ReadableFile, options?: ParquetLoaderOptions) {
+  parseFileInBatches(file: ReadableFile, options?: ParquetJSLoaderOptions) {
     const parquetOptions = getParquetOptions(options);
     return parquetOptions.parquet?.shape === 'arrow-table'
       ? parseParquetFileToArrowInBatchesWithJs(file, parquetOptions)
@@ -58,7 +57,7 @@ export const ParquetLoaderWithParser = {
     asyncIterator:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options?: ParquetLoaderOptions,
+    options?: ParquetJSLoaderOptions,
     _context?: unknown
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
@@ -73,7 +72,7 @@ export const ParquetLoaderWithParser = {
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,
-  ParquetLoaderOptions
+  ParquetJSLoaderOptions
 >;
 
 /**
@@ -81,6 +80,6 @@ export const ParquetLoaderWithParser = {
  * @param options caller-supplied loader options
  * @returns normalized options with parquetjs defaults applied
  */
-function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderImplementationOptions {
+function getParquetOptions(options?: ParquetJSLoaderOptions): ParquetJSLoaderOptions {
   return normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS);
 }
