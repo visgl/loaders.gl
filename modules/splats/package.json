@@ -49,6 +49,11 @@
       "types": "./dist/rad-source-loader.d.ts",
       "import": "./dist/rad-source-loader.js"
     },
+    "./rad-zod-schema": {
+      "types": "./dist/rad-zod-schema.d.ts",
+      "import": "./dist/rad-zod-schema.js",
+      "require": "./dist/rad-zod-schema.cjs"
+    },
     "./unbundled": {
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
@@ -56,7 +61,9 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
-    }
+    },
+    "./rad-metadata.schema.json": "./dist/rad-metadata.schema.json",
+    "./radc-metadata.schema.json": "./dist/radc-metadata.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -65,7 +72,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADMetadataJSONSchema --output ./dist/rad-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/rad-metadata.schema.json --title 'loaders.gl Spark RAD metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADChunkMetadataJSONSchema --output ./dist/radc-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/radc-metadata.schema.json --title 'loaders.gl Spark RADC chunk metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
@@ -73,7 +81,8 @@
     "@loaders.gl/compression": "5.0.0-alpha.1",
     "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "@loaders.gl/schema": "5.0.0-alpha.1",
-    "apache-arrow": ">= 17.0.0"
+    "apache-arrow": ">= 17.0.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "zstd-codec": "^0.1.0"

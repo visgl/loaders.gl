@@ -5,12 +5,14 @@
 export type {GaussianSplats, SplatsLoaderOptions} from './types';
 export type {
   RADChunkMetadata,
+  RADChunkMetadataJSON,
   RADChunkProperty,
   RADChunkPropertyCompression,
   RADChunkPropertyEncoding,
   RADChunkPropertyName,
   RADChunkRange,
   RADMetadata,
+  RADMetadataJSON,
   RADSplatEncoding
 } from './lib/parse-rad';
 export {SPLATFormat, KSPLATFormat, SPZFormat, RADFormat} from './splats-format';

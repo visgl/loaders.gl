@@ -5808,6 +5808,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.1"
     "@loaders.gl/schema": "npm:5.0.0-alpha.1"
     apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
     zstd-codec: "npm:^0.1.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
