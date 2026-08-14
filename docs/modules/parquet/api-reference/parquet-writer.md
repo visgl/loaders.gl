@@ -12,7 +12,8 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 `ParquetWriter` accepts loaders.gl tables, including Arrow tables, and encodes them through the wasm-backed Parquet writer path.
 
-[`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) is the plain-table writer for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+`ParquetJSWriter` is the plain-table writer for the experimental TypeScript parquetjs backend.
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
@@ -67,10 +68,26 @@ const parquetBuffer = await encode(arrowTable, ParquetWriter, {
 | ------ | ---- | ------- | ----------- |
 | `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter`. |
 
-## Backend Selection
+## Writer Variants
 
 - Use `ParquetWriter` for the default wasm-backed plain-table writer.
-- Use `ParquetJSWriter` for the experimental parquetjs plain-table writer.
+- Use `ParquetJSWriter` for the experimental TypeScript parquetjs plain-table writer. It accepts
+  plain loaders.gl tables and does not require Arrow input.
+
+```typescript
+import {encode} from '@loaders.gl/core';
+import {ParquetJSWriter} from '@loaders.gl/parquet';
+
+const parquetBuffer = await encode(table, ParquetJSWriter, {
+  core: {worker: false},
+  parquet: {
+    rowGroupSize: 1000
+  }
+});
+```
+
+`ParquetJSWriter` supports `parquet.rowGroupSize`, `parquet.pageSize`, and
+`parquet.useDataPageV2`; their defaults are selected by the implementation.
 
 ## Supported Files
 

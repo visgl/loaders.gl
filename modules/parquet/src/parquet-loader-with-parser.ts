@@ -13,6 +13,10 @@ import type {
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
+import {
+  parseParquetFileToArrowInBatchesWithJs,
+  parseParquetFileToArrowWithJs
+} from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import type {
   ParquetLoaderImplementationOptions,
@@ -32,13 +36,23 @@ export const ParquetLoaderWithParser = {
   ...PARQUET_LOADER_BASE,
   worker: false,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseParquetFile(new BlobFile(arrayBuffer), getParquetOptions(options));
+    const parquetOptions = getParquetOptions(options);
+    const file = new BlobFile(arrayBuffer);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
+      : parseParquetFile(file, parquetOptions);
   },
   parseFile(file: ReadableFile, options?: ParquetLoaderOptions) {
-    return parseParquetFile(file, getParquetOptions(options));
+    const parquetOptions = getParquetOptions(options);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
+      : parseParquetFile(file, parquetOptions);
   },
   parseFileInBatches(file: ReadableFile, options?: ParquetLoaderOptions) {
-    return parseParquetFileInBatches(file, getParquetOptions(options));
+    const parquetOptions = getParquetOptions(options);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowInBatchesWithJs(file, parquetOptions)
+      : parseParquetFileInBatches(file, parquetOptions);
   },
   async *parseInBatches(
     asyncIterator:
@@ -48,7 +62,13 @@ export const ParquetLoaderWithParser = {
     _context?: unknown
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseParquetFileInBatches(new BlobFile(arrayBuffer), getParquetOptions(options));
+    const parquetOptions = getParquetOptions(options);
+    const file = new BlobFile(arrayBuffer);
+    if (parquetOptions.parquet?.shape === 'arrow-table') {
+      yield* parseParquetFileToArrowInBatchesWithJs(file, parquetOptions);
+    } else {
+      yield* parseParquetFileInBatches(file, parquetOptions);
+    }
   }
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,

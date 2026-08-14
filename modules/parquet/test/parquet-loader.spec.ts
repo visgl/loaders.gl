@@ -66,10 +66,10 @@ test('ParquetLoader#preload resolves backend parser implementations', async (t) 
     ParquetLoaderWithParser,
     'deprecated js implementation resolves TypeScript parser'
   );
-  await t.rejects(
-    preload(ParquetLoader, {parquet: {backend: 'typescript', shape: 'arrow-table'}}),
-    /does not support shape "arrow-table"/,
-    'typescript backend rejects arrow-table shape'
+  t.equal(
+    await preload(ParquetLoader, {parquet: {backend: 'typescript', shape: 'arrow-table'}}),
+    ParquetLoaderWithParser,
+    'typescript backend resolves its parser for arrow-table shape'
   );
   t.end();
 });
@@ -82,6 +82,20 @@ test('ParquetJSLoader#load alltypes_dictionary file', async (t) => {
   if (table.shape === 'object-row-table') {
     t.equal(table.data.length, 2);
     t.deepEqual(table.data, ALL_TYPES_DICTIONARY_EXPECTED);
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#load supports arrow-table shape', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 2);
   }
   t.end();
 });
