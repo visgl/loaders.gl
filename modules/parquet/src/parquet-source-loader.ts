@@ -11,12 +11,14 @@ import {convertTable} from '@loaders.gl/schema-utils';
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {
   canDecodeParquetSourceOnWorker,
-  decodeParquetSourceRowGroupOnWorker,
+  decodeParquetSourceRowGroupOnWorker
+} from './lib/parquet-source-worker-client';
+import {
   PARQUET_SOURCE_WORKER_OPERATION,
   type ParquetSourceWorkerColumnChunk,
   type ParquetSourceWorkerOptions,
   type ParquetSourceWorkerResult
-} from './lib/parquet-source-worker';
+} from './lib/parquet-source-worker-types';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
 import {
   PARQUET_SOURCE_CAPABILITIES,
@@ -502,8 +504,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
         ranges,
         batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
-        preserveBinary: Boolean(this.options.parquet?.preserveBinary),
-        workerTransferBufferCopy: this.options.core?.workerTransferBufferCopy
+        preserveBinary: Boolean(this.options.parquet?.preserveBinary)
       },
       workerOptions
     );

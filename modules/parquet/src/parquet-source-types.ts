@@ -250,7 +250,6 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
       | 'maxConcurrency'
       | 'maxMobileConcurrency'
       | 'reuseWorkers'
-      | 'workerTransferBufferCopy'
       | '_nodeWorkers'
       | '_workerType'
     >;
