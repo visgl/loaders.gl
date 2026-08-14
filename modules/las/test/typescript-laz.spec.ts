@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
-import {fetchFile} from '@loaders.gl/core';
+import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
+import {LASLoader} from '@loaders.gl/las';
 import {
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
@@ -17,6 +18,7 @@ import {
   parseLASInBatches,
   type LASArrowTable
 } from '../src/lib/typescript/parse-las';
+import type {LASMesh} from '../src/lib/las-types';
 
 type LAZFixture = {
   label: string;
@@ -279,6 +281,35 @@ test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
     () => parseLAS(source.slice(0, source.byteLength - 32)),
     /needs more|truncated|beyond input/i,
     'rejects truncated compressed point data'
+  );
+  t.end();
+});
+
+test('LASLoader primary TypeScript variant uses its packaged worker', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
+  const arrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const workerResult = (await parse(arrayBuffer.slice(0), LASLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  })) as LASMesh;
+  const mainThreadResult = (await parse(arrayBuffer.slice(0), LASLoader, {
+    core: {worker: false}
+  })) as LASMesh;
+
+  t.equal(workerResult.header.vertexCount, POINT_COUNT, 'TypeScript worker decodes LAS 1.4 PDRF 7');
+  t.deepEqual(
+    workerResult.attributes.POSITION.value,
+    mainThreadResult.attributes.POSITION.value,
+    'worker positions match main-thread TypeScript output'
+  );
+  t.deepEqual(
+    workerResult.attributes.COLOR_0.value,
+    mainThreadResult.attributes.COLOR_0.value,
+    'worker colors match main-thread TypeScript output'
   );
   t.end();
 });

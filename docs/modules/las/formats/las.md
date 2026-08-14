@@ -9,11 +9,11 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
 
 The _LASER file format_ (LAS) and its compressed version (LAZ) are public formats for the interchange of 3D point cloud data, developed for lidar mapping and related point cloud workflows.
 
-## Variants
+## LAS, LAZ, and COPC
 
 LAS is the uncompressed exchange format. LAZ is the losslessly compressed form defined by LASzip-compatible compression. COPC is a range-readable LAZ 1.4 layout that adds an octree hierarchy so applications can request spatial subsets without downloading the whole file.
 
-| Variant | Description |
+| Format | Description |
 | --- | --- |
 | LAS | Uncompressed LAS records in one file. |
 | LAZ | LAS records compressed with LASzip-compatible lossless compression. |
@@ -21,13 +21,13 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 
 ## Current Implementation Limits
 
-`@loaders.gl/las` has mature WASM-backed and Rust-backed LAZ paths. The TypeScript-only backend is opt-in and is still incomplete. It is intended to remove the runtime WASM requirement over time, but it should not yet be treated as a complete LAS, LAZ, or COPC implementation.
+`LASLoader` uses a pure TypeScript implementation. It is still incomplete and should not yet be treated as a complete LAS, LAZ, or COPC implementation.
 
 LAS file versions and LASzip codec versions are independent. A claim such as "LAZ 1.4 support" is therefore not precise enough: compatibility also depends on the PDRF, LASzip compressor and coder, item codec versions, chunk-table mode, and whether the caller needs complete raw records or only the fields exposed as Arrow columns.
 
 ### TypeScript LAS Parser
 
-| Capability | TypeScript backend status |
+| Capability | TypeScript status |
 | --- | --- |
 | Uncompressed LAS 1.0-1.4 | Partial. Reads common public-header fields and PDRF 0-10 record layouts. Dedicated conformance fixtures do not yet cover every header version/PDRF combination. |
 | LAS 1.5 | Partial. Extended point counts and PDRF 9/10 files are fixture-tested; LAS 1.5 metadata and conformance rules are not complete. |
@@ -42,7 +42,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 ### TypeScript LAS Writer
 
-| Capability | TypeScript backend status |
+| Capability | TypeScript status |
 | --- | --- |
 | Uncompressed LAS writing | Partial. Supports LAS output for represented mesh/table fields. |
 | LAS versions | Versions 1.0-1.4 are selectable and LAS 1.5 is rejected. Round-trip coverage currently targets default LAS 1.2 and LAS 1.4/PDRF 7; full version conformance is not claimed. |
@@ -78,8 +78,8 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | 3 | 1.2-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB; GPS time omitted. | Full-file parity with laz-rs on two LAS 1.2 files. |
 | 4 | 1.3-1.4 | Supported, including WavePacket13 and Extra Bytes. | XYZ, intensity, classification; GPS time and waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
 | 5 | 1.3-1.4 | Supported, including RGB, WavePacket13, and Extra Bytes. | XYZ, intensity, classification, RGB; GPS time and waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
-| 6 | 1.4-1.5 | Supported for Point14 item versions 2-4. | XYZ, intensity, classification. | LAS 1.4 byte parity plus COPC backend parity. |
-| 7 | 1.4-1.5 | Supported for Point14/RGB14 item versions 2-4. | XYZ, intensity, classification, RGB. | LAS 1.4 v3 backend parity and v4 byte parity across all scanner channels. |
+| 6 | 1.4-1.5 | Supported for Point14 item versions 2-4. | XYZ, intensity, classification. | LAS 1.4 byte parity plus COPC decoder parity. |
+| 7 | 1.4-1.5 | Supported for Point14/RGB14 item versions 2-4. | XYZ, intensity, classification, RGB. | LAS 1.4 v3 decoder parity and v4 byte parity across all scanner channels. |
 | 8 | 1.4-1.5 | Supported for Point14/RGBNIR14 item versions 2-4. | XYZ, intensity, classification, RGB; NIR omitted. | LAS 1.4 byte parity including NIR and Extra Bytes. |
 | 9 | 1.4-1.5 | Supported, including WavePacket14 versions 3-4 and exact 64-bit offsets. | XYZ, intensity, classification; waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
 | 10 | 1.4-1.5 | Supported, including RGB, NIR, WavePacket14 versions 3-4, and exact 64-bit offsets. | XYZ, intensity, classification, RGB; NIR and waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
@@ -108,7 +108,7 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 
 ### TypeScript COPC Path
 
-| Capability | TypeScript backend status |
+| Capability | TypeScript status |
 | --- | --- |
 | COPC hierarchy and range selection | Uses the existing COPC path; not a standalone TypeScript COPC parser yet. |
 | Node range fetching | Supported. Each selected node's compressed byte range is fetched as a complete chunk. |
@@ -122,7 +122,7 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 | Version | Point data record formats | Main additions | loaders.gl status |
 | --- | --- | --- | --- |
 | 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records. | Header/read compatibility in the TypeScript path; writing is not targeted. |
-| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Read support through existing backends; TypeScript path reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 0-10. |
+| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 0-10. |
 | 1.3 | 0-5 | EVLRs and waveform packet support. | TypeScript LAZ decoding supports all PDRFs, including raw PDRF 4/5 waveform references. |
 | 1.2 | 0-3 | RGB point formats and broader geospatial metadata conventions. | Read and write support for common uncompressed LAS attributes. |
 | 1.1 | 0-1 | GPS time point format and early classification/metadata updates. | Read support for common attributes. |
@@ -217,7 +217,7 @@ A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads t
 
 ## Next Steps
 
-The TypeScript-only backend should be completed in stages, with parity tests against the existing WASM/Rust paths at each stage.
+The TypeScript implementation should be completed in stages, with parity tests against established decoders at each stage.
 
 | Priority | Work item | Acceptance target |
 | --- | --- | --- |
@@ -230,4 +230,3 @@ The TypeScript-only backend should be completed in stages, with parity tests aga
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
 | 9 | Implement COPC writing. | Writer emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |
-| 10 | Promote backend defaults only after parity and performance are acceptable. | TypeScript backend performance and fixture coverage are documented against laz-perf/laz-rs baselines. |

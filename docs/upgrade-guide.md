@@ -88,7 +88,9 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 
 ### LAS point skipping option removal
 
-`LASLoader` no longer supports `options.las.skip`. The loader now returns all points for every backend. Applications that need sampled point clouds should downsample the parsed mesh/table after loading, or use COPC/source-level filtering when working with large datasets.
+`LASLoader` no longer supports `options.las.skip`. LAS loaders now return all points. Applications that need sampled point clouds should downsample the parsed mesh/table after loading, or use COPC/source-level filtering when working with large datasets.
+
+`LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Import `LAZPerfLoader`, `LASCOPCLoader`, or `LAZRsLoader` explicitly when a compatibility loader is required.
 
 ### SourceLoader migration examples
 

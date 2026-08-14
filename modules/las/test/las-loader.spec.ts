@@ -10,7 +10,13 @@ import {
   validateTableCategoryData
 } from 'test/common/conformance';
 
-import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
+import {
+  LASCOPCLoader,
+  LASLoader,
+  LASWorkerLoader,
+  LAZPerfLoader,
+  LAZRsLoader
+} from '@loaders.gl/las';
 import * as las from '@loaders.gl/las';
 import * as bundledLas from '@loaders.gl/las/bundled';
 import * as unbundledLas from '@loaders.gl/las/unbundled';
@@ -34,10 +40,10 @@ import {
   NeedsMoreData
 } from '@loaders.gl/las';
 import {createLAZChunkDecoderCursor, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
-import {LASCOPCLoaderWithParser} from '../src/las-copc-loader-with-parser';
-import {LAZPerfLoaderWithParser} from '../src/lazperf-loader-with-parser';
-import {LAZRsLoaderWithParser} from '../src/laz-rs-loader-with-parser';
-import {LASLoaderWithParser} from '../src/las-loader-with-parser';
+import {LASCOPCLoaderWithParser} from '../src/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '../src/lazperf-loader';
+import {LAZRsLoaderWithParser} from '../src/laz-rs-loader';
+import {LASLoaderWithParser} from '../src/las-loader';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
@@ -67,7 +73,10 @@ const PDRF_10_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.4.laz';
 const PDRF_10_LAS_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.las';
 const PDRF_10_LAZ_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.laz';
 const COPC_BINARY_URL = 'modules/copc/test/data/ellipsoid.copc.laz';
-const LAZ_1_4_PARITY_BACKENDS = ['copc', 'laz-rs'] as const;
+const LAZ_1_4_PARITY_VARIANTS = [
+  {name: 'COPC', loader: LASCOPCLoader},
+  {name: 'laz-rs', loader: LAZRsLoader}
+] as const;
 
 setLoaderOptions({
   _workerType: 'test'
@@ -76,6 +85,9 @@ setLoaderOptions({
 test('LASLoader#loader conformance', t => {
   validateLoader(t, LASLoader, 'LASLoader');
   validateLoader(t, LASWorkerLoader, 'LASWorkerLoader');
+  validateLoader(t, LAZPerfLoader, 'LAZPerfLoader');
+  validateLoader(t, LASCOPCLoader, 'LASCOPCLoader');
+  validateLoader(t, LAZRsLoader, 'LAZRsLoader');
   t.end();
 });
 
@@ -86,28 +98,31 @@ test('LASLoader#removed Arrow variant exports are absent', t => {
   t.end();
 });
 
-test('LASLoader#preload resolves backend parser implementations', async t => {
-  t.equal(await preload(LASLoader), LAZPerfLoaderWithParser, 'default backend resolves laz-perf');
+test('LAS loader variants preload explicit parser implementations', async t => {
   t.equal(
-    await preload(LASLoader, {las: {backend: 'laz-perf'}}),
-    LAZPerfLoaderWithParser,
-    'laz-perf backend resolves laz-perf parser'
-  );
-  t.equal(
-    await preload(LASLoader, {las: {backend: 'copc'}}),
-    LASCOPCLoaderWithParser,
-    'copc backend resolves COPC parser'
-  );
-  t.equal(
-    await preload(LASLoader, {las: {backend: 'laz-rs'}}),
-    LAZRsLoaderWithParser,
-    'laz-rs backend resolves laz-rs parser'
-  );
-  t.equal(
-    await preload(LASLoader, {las: {backend: 'typescript'}}),
+    await preload(LASLoader),
     LASLoaderWithParser,
-    'typescript backend resolves TypeScript parser'
+    'primary loader resolves TypeScript parser'
   );
+  t.equal(
+    await preload(LAZPerfLoader),
+    LAZPerfLoaderWithParser,
+    'laz-perf variant resolves laz-perf parser'
+  );
+  t.equal(
+    await preload(LASCOPCLoader),
+    LASCOPCLoaderWithParser,
+    'COPC variant resolves COPC parser'
+  );
+  t.equal(
+    await preload(LAZRsLoader),
+    LAZRsLoaderWithParser,
+    'laz-rs variant resolves laz-rs parser'
+  );
+  t.ok(LASLoaderWithParser.worker, 'primary TypeScript variant uses the packaged worker');
+  t.notOk(LAZPerfLoaderWithParser.worker, 'laz-perf variant defaults to the main thread');
+  t.notOk(LASCOPCLoaderWithParser.worker, 'COPC variant defaults to the main thread');
+  t.notOk(LAZRsLoaderWithParser.worker, 'laz-rs variant defaults to the main thread');
   t.end();
 });
 
@@ -209,12 +224,16 @@ test('LASLoader#parseInBatches(fp64)', async t => {
   t.end();
 });
 
-test('LASLoader#parseInBatches backend option', async t => {
-  for (const backend of ['laz-perf', 'copc', 'laz-rs', 'typescript'] as const) {
+test('LAS loader variants parseInBatches', async t => {
+  for (const {name, loader} of [
+    {name: 'TypeScript', loader: LASLoader},
+    {name: 'laz-perf', loader: LAZPerfLoader},
+    {name: 'COPC', loader: LASCOPCLoader},
+    {name: 'laz-rs', loader: LAZRsLoader}
+  ]) {
     const response = await fetchFile(LAS_BINARY_URL);
-    const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    const batches = await parseInBatches(makeIterator(response), loader, {
       batchSize: 30000,
-      las: {backend},
       core: {worker: false}
     });
     let totalVertexCount = 0;
@@ -223,19 +242,17 @@ test('LASLoader#parseInBatches backend option', async t => {
       totalVertexCount += batch.header.vertexCount;
     }
 
-    t.equal(totalVertexCount, LAS_POINT_COUNT, `${backend} backend emits all points`);
+    t.equal(totalVertexCount, LAS_POINT_COUNT, `${name} loader variant emits all points`);
   }
 
   t.end();
 });
 
-test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
-  const expected = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
-    las: {backend: 'laz-rs'},
+test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async t => {
+  const expected = await parse(fetchFile(LAS_BINARY_URL), LAZRsLoader, {
     core: {worker: false}
   });
   const actual = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   validateMeshCategoryData(t, actual);
@@ -247,16 +264,14 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', a
   t.end();
 }, 30000);
 
-test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
+test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', async t => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'laz-rs'},
+  const expected = await parse(arrayBuffer.slice(0), LAZRsLoader, {
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 250,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -294,7 +309,6 @@ test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async t
     LASLoader,
     {
       batchSize: 250,
-      las: {backend: 'typescript'},
       core: {worker: false}
     }
   );
@@ -375,17 +389,12 @@ for (const fixture of [
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     // Bundled laz-rs rejects WavePacket13 item type 9; the raw test above uses current LASzip's
     // byte-exact round-trip as the codec oracle.
-    const expected = await parse(lasArrayBuffer, LASLoader, {
-      las: {backend: 'typescript'},
-      core: {worker: false}
-    });
+    const expected = await parse(lasArrayBuffer, LASLoader, {core: {worker: false}});
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
-      las: {backend: 'typescript'},
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
       batchSize: 127,
-      las: {backend: 'typescript'},
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -412,9 +421,8 @@ for (const fixture of [
   });
 }
 
-test('LASLoader#parse LAS 1.4 fixture', async t => {
-  const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'copc'},
+test('LASCOPCLoader#parse LAS 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
   validateMeshCategoryData(t, data);
@@ -426,13 +434,11 @@ test('LASLoader#parse LAS 1.4 fixture', async t => {
   t.end();
 });
 
-test('LASLoader#parse LAS 1.4 fixture with TypeScript backend', async t => {
-  const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'copc'},
+test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async t => {
+  const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   validateMeshCategoryData(t, data);
@@ -441,19 +447,17 @@ test('LASLoader#parse LAS 1.4 fixture with TypeScript backend', async t => {
   t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
   t.equal(data.header.vertexCount, 3, 'fixture point count is expected');
   t.ok(data.attributes.COLOR_0, 'fixture includes color');
-  compareMeshAttributes(t, data, expected, 'TypeScript backend matches COPC/WASM backend');
+  compareMeshAttributes(t, data, expected, 'TypeScript variant matches COPC variant');
   t.end();
 });
 
-test('LASLoader#parseInBatches TypeScript backend matches WASM backend', async t => {
-  const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'copc'},
+test('LASLoader#parseInBatches matches COPC variant', async t => {
+  const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
   const response = await fetchFile(LAS_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 2,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const positions: number[] = [];
@@ -483,9 +487,8 @@ test('LASLoader#parseInBatches TypeScript backend matches WASM backend', async t
   t.end();
 });
 
-test('LASLoader#parse LAZ 1.4 fixture', async t => {
-  const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'copc'},
+test('LASCOPCLoader#parse LAZ 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
   validateMeshCategoryData(t, data);
@@ -497,42 +500,38 @@ test('LASLoader#parse LAZ 1.4 fixture', async t => {
   t.end();
 });
 
-test('LASLoader#parse LAZ 1.4 TypeScript backend matches other backends', async t => {
+test('LASLoader#parse LAZ 1.4 matches other loader variants', async t => {
   const actual = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   validateMeshCategoryData(t, actual);
 
-  for (const backend of LAZ_1_4_PARITY_BACKENDS) {
-    const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
-      las: {backend},
+  for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
+    const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
       core: {worker: false}
     });
 
     t.equal(
       actual.header.vertexCount,
       expected.header.vertexCount,
-      `TypeScript LAZ point count matches ${backend}`
+      `TypeScript LAZ point count matches ${name}`
     );
-    compareMeshAttributes(t, actual, expected, `TypeScript LAZ parse matches ${backend}`);
+    compareMeshAttributes(t, actual, expected, `TypeScript LAZ parse matches ${name}`);
   }
 
   t.end();
 });
 
-test('LASLoader#parseInBatches LAZ 1.4 fixture with TypeScript backend', async t => {
+test('LASLoader#parseInBatches LAZ 1.4 fixture', async t => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
 
-  for (const backend of LAZ_1_4_PARITY_BACKENDS) {
-    const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
-      las: {backend},
+  for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
+    const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
       core: {worker: false}
     });
 
@@ -545,26 +544,24 @@ test('LASLoader#parseInBatches LAZ 1.4 fixture with TypeScript backend', async t
         classifications: Array.from(expected.attributes.classification.value),
         colors: Array.from(expected.attributes.COLOR_0.value)
       },
-      `TypeScript LAZ streaming matches ${backend}`
+      `TypeScript LAZ streaming matches ${name}`
     );
   }
 
   t.end();
 });
 
-test('LASLoader#parseInBatches split LAZ 1.4 TypeScript backend matches other backends', async t => {
+test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', async t => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
 
-  for (const backend of LAZ_1_4_PARITY_BACKENDS) {
-    const expected = await parse(arrayBuffer.slice(0), LASLoader, {
-      las: {backend},
+  for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
+    const expected = await parse(arrayBuffer.slice(0), loader, {
       core: {worker: false}
     });
 
@@ -577,23 +574,21 @@ test('LASLoader#parseInBatches split LAZ 1.4 TypeScript backend matches other ba
         classifications: Array.from(expected.attributes.classification.value),
         colors: Array.from(expected.attributes.COLOR_0.value)
       },
-      `split TypeScript LAZ streaming matches ${backend}`
+      `split TypeScript LAZ streaming matches ${name}`
     );
   }
 
   t.end();
 });
 
-test('LASLoader#parseInBatches LAZ 1.4 TypeScript backend accepts split file chunks', async t => {
+test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async t => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -619,7 +614,7 @@ for (const fixture of [
     pointDataRecordLength: 34,
     lasUrl: PDRF_6_LAS_1_4_BINARY_URL,
     lazUrl: PDRF_6_LAZ_1_4_BINARY_URL,
-    parityBackends: ['copc'] as const
+    parityVariants: [{name: 'COPC', loader: LASCOPCLoader}] as const
   },
   {
     version: '1.4',
@@ -634,7 +629,7 @@ for (const fixture of [
     ] as const,
     exercisesAllScannerChannels: true,
     // COPC misdecodes RGB v4 after scanner-channel changes; bundled laz-rs rejects v4 on open.
-    parityBackends: [] as const
+    parityVariants: [] as const
   },
   {
     version: '1.4',
@@ -643,7 +638,7 @@ for (const fixture of [
     lasUrl: PDRF_8_LAS_1_4_BINARY_URL,
     lazUrl: PDRF_8_LAZ_1_4_BINARY_URL,
     // The laz-rs wrapper currently fails while closing LAS 1.4 files with Extra Bytes.
-    parityBackends: ['copc'] as const
+    parityVariants: [{name: 'COPC', loader: LASCOPCLoader}] as const
   },
   {
     version: '1.4',
@@ -652,7 +647,7 @@ for (const fixture of [
     lasUrl: PDRF_9_LAS_1_4_BINARY_URL,
     lazUrl: PDRF_9_LAZ_1_4_BINARY_URL,
     // Bundled laz-rs uses laz 0.5.2 and rejects WavePacket14; laz-perf does not implement it.
-    parityBackends: [] as const
+    parityVariants: [] as const
   },
   {
     version: '1.4',
@@ -661,7 +656,7 @@ for (const fixture of [
     lasUrl: PDRF_10_LAS_1_4_BINARY_URL,
     lazUrl: PDRF_10_LAZ_1_4_BINARY_URL,
     // Bundled laz-rs uses laz 0.5.2 and rejects WavePacket14; laz-perf does not implement it.
-    parityBackends: [] as const
+    parityVariants: [] as const
   },
   {
     version: '1.5',
@@ -675,8 +670,8 @@ for (const fixture of [
       [14, 4]
     ] as const,
     exercisesAllScannerChannels: true,
-    // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
-    parityBackends: [] as const
+    // LASzip WavePacket14 v4 fixes context switching; bundled variants do not support it.
+    parityVariants: [] as const
   },
   {
     version: '1.5',
@@ -691,8 +686,8 @@ for (const fixture of [
       [14, 4]
     ] as const,
     exercisesAllScannerChannels: true,
-    // LASzip WavePacket14 v4 fixes context switching; bundled backends do not support it.
-    parityBackends: [] as const
+    // LASzip WavePacket14 v4 fixes context switching; bundled variants do not support it.
+    parityVariants: [] as const
   }
 ]) {
   const label = `PDRF ${fixture.pointDataRecordFormat}`;
@@ -766,17 +761,12 @@ for (const fixture of [
   test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async t => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
-    const expected = await parse(lasArrayBuffer, LASLoader, {
-      las: {backend: 'typescript'},
-      core: {worker: false}
-    });
+    const expected = await parse(lasArrayBuffer, LASLoader, {core: {worker: false}});
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
-      las: {backend: 'typescript'},
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
       batchSize: 127,
-      las: {backend: 'typescript'},
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -806,12 +796,11 @@ for (const fixture of [
       `${label} TypeScript streaming matches uncompressed LAS`
     );
 
-    for (const backend of fixture.parityBackends) {
-      const expected = await parse(lazArrayBuffer.slice(0), LASLoader, {
-        las: {backend},
+    for (const {name, loader} of fixture.parityVariants) {
+      const expected = await parse(lazArrayBuffer.slice(0), loader, {
         core: {worker: false}
       });
-      compareMeshAttributes(t, actual, expected, `${label} TypeScript parse matches ${backend}`);
+      compareMeshAttributes(t, actual, expected, `${label} TypeScript parse matches ${name}`);
       compareCollectedMeshAttributes(
         t,
         streamed,
@@ -821,7 +810,7 @@ for (const fixture of [
           classifications: Array.from(expected.attributes.classification.value),
           colors: Array.from(expected.attributes.COLOR_0?.value || [])
         },
-        `${label} TypeScript streaming matches ${backend}`
+        `${label} TypeScript streaming matches ${name}`
       );
     }
     t.end();
@@ -859,7 +848,6 @@ test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t =>
 
     await t.rejects(
       parse(corrupted, LASLoader, {
-        las: {backend: 'typescript'},
         core: {worker: false}
       }),
       fixture.error,
@@ -909,7 +897,6 @@ test('LASLoader#TypeScript rejects incompatible LASzip item layouts', async t =>
     fixture.mutate(corrupted);
     await t.rejects(
       parse(corrupted, LASLoader, {
-        las: {backend: 'typescript'},
         core: {worker: false}
       }),
       fixture.error,
@@ -953,15 +940,13 @@ test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', asyn
   t.end();
 });
 
-test('LASLoader#parse variable-chunk LAZ 1.4 TypeScript backend matches COPC', async t => {
+test('LASLoader#parse variable-chunk LAZ 1.4 matches COPC variant', async t => {
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'copc'},
+  const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
     core: {worker: false}
   });
   const actual = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
 
@@ -1008,13 +993,11 @@ test('TypeScriptLAZ#decodes the COPC variable chunk table', async t => {
 test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async t => {
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'copc'},
+  const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -1038,7 +1021,6 @@ test('LASLoader#parseInBatches rejects a truncated variable chunk table', async 
   const arrayBuffer = await response.arrayBuffer();
   const truncated = arrayBuffer.slice(0, arrayBuffer.byteLength - 16);
   const batches = await parseInBatches(splitArrayBuffer(truncated, 257), LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
 
@@ -1054,18 +1036,18 @@ test('LASLoader#parseInBatches rejects a truncated variable chunk table', async 
   t.end();
 });
 
-test('LASLoader#preload exposes parseSync only for sync-capable backends', async t => {
+test('LAS loader variants expose parseSync only when supported', async t => {
   const arrayBuffer = new ArrayBuffer(0);
-  const copcLoader = await preload(LASLoader, {las: {backend: 'copc'}});
-  const lazRsLoader = await preload(LASLoader, {las: {backend: 'laz-rs'}});
-  const typeScriptLoader = await preload(LASLoader, {las: {backend: 'typescript'}});
+  const copcLoader = await preload(LASCOPCLoader);
+  const lazRsLoader = await preload(LAZRsLoader);
+  const typeScriptLoader = await preload(LASLoader);
 
-  t.notOk(copcLoader.parseSync, 'copc backend does not expose parseSync');
-  t.notOk(lazRsLoader.parseSync, 'laz-rs backend does not expose parseSync');
+  t.notOk(copcLoader.parseSync, 'COPC variant does not expose parseSync');
+  t.notOk(lazRsLoader.parseSync, 'laz-rs variant does not expose parseSync');
   t.throws(
-    () => typeScriptLoader.parseSync?.(arrayBuffer, {las: {backend: 'typescript'}}),
+    () => typeScriptLoader.parseSync?.(arrayBuffer),
     /invalid LAS header/,
-    'typescript backend can run through parseSync'
+    'TypeScript variant can run through parseSync'
   );
   t.end();
 });

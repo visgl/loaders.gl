@@ -3,19 +3,45 @@
 // Copyright (c) vis.gl contributors
 
 // LASER (LAS) FILE FORMAT
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import type {LASLoaderOptions} from './las-loader';
-import {LASWorkerLoader} from './las-loader';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 import type {LASMesh} from './lib/las-types';
+import {parseLAS, parseLASInBatches} from './lib/laz-rs-wasm/parse-las';
+import initLazRsWasm from './libs/laz-rs-wasm/laz_rs_wasm';
 
 /**
- * Metadata-only loader for the LAS (LASer) point cloud format.
+ * Loader for the LAS (LASer) point cloud format
  */
-export const LAZRsLoader = {
-  ...LASWorkerLoader,
-  preload: async () => {
-    const {LAZRsLoaderWithParser} = await import('./laz-rs-loader-with-parser');
-    return LAZRsLoaderWithParser;
+export const LAZRsLoaderWithParser = {
+  ...LAS_LOADER_METADATA,
+  name: 'LAS (laz-rs)',
+  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
+    await initLazRsWasm();
+    return convertLASMesh(parseLAS(arrayBuffer, {...options}), options);
+  },
+  parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
+    await initLazRsWasm();
+    for await (const mesh of parseLASInBatches(arrayBufferIterator, options)) {
+      yield convertLASMesh(mesh, options);
+    }
   }
-} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  LASMesh | MeshArrowTable,
+  LASMesh | MeshArrowTable,
+  LASLoaderOptions
+>;
+
+function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  if (options?.las?.shape === 'arrow-table') {
+    return table;
+  }
+  return {
+    ...(convertTableToMesh(table) as LASMesh),
+    loader: mesh.loader,
+    loaderData: mesh.loaderData,
+    progress: (mesh as LASMesh & {progress?: number}).progress
+  } as LASMesh & {progress?: number};
+}

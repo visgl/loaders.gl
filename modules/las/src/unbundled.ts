@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {LASLoaderOptions} from './las-loader';
-export {LASLoader, LASWorkerLoader} from './las-loader';
+export type {LASLoaderOptions} from './las-loader-types';
+export {LASLoader, LASWorkerLoader} from './las-loader-types';
+export {LASCOPCLoader} from './las-copc-loader-types';
+export {LAZPerfLoader} from './lazperf-loader-types';
+export {LAZRsLoader} from './laz-rs-loader-types';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
   NeedsMoreData,

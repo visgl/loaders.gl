@@ -37,6 +37,22 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./las-loader": {
+      "types": "./dist/las-loader.d.ts",
+      "import": "./dist/las-loader.js"
+    },
+    "./lazperf-loader": {
+      "types": "./dist/lazperf-loader.d.ts",
+      "import": "./dist/lazperf-loader.js"
+    },
+    "./las-copc-loader": {
+      "types": "./dist/las-copc-loader.d.ts",
+      "import": "./dist/las-copc-loader.js"
+    },
+    "./laz-rs-loader": {
+      "types": "./dist/laz-rs-loader.d.ts",
+      "import": "./dist/laz-rs-loader.js"
+    },
     "./las-worker.js": {
       "import": "./dist/las-worker.js"
     }

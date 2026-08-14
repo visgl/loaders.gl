@@ -4,7 +4,7 @@
 
 // ported and es6-ified from https://github.com/verma/plasio/
 // import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
-import type {LASLoaderOptions} from '../../las-loader';
+import type {LASLoaderOptions} from '../../las-loader-types';
 import type {LASMesh, LASHeader} from '../las-types';
 import type {MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox /* , convertMeshToTable */} from '@loaders.gl/schema-utils';

@@ -3,7 +3,28 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
-import {processOnWorker, preloadWorker, NullWorker, isBrowser} from '@loaders.gl/worker-utils';
+import {
+  canProcessOnWorker,
+  processOnWorker,
+  preloadWorker,
+  NullWorker,
+  isBrowser
+} from '@loaders.gl/worker-utils';
+
+test('canProcessOnWorker#custom worker URL', t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const MainThreadLoader = {...NullWorker, worker: false};
+  t.notOk(canProcessOnWorker(MainThreadLoader, {worker: true}), 'defaults to the main thread');
+  t.ok(
+    canProcessOnWorker(MainThreadLoader, {worker: true, null: {workerUrl: 'custom-worker.js'}}),
+    'a custom worker URL opts into worker processing'
+  );
+  t.end();
+});
 
 test('processOnWorker', async t => {
   if (!isBrowser) {
