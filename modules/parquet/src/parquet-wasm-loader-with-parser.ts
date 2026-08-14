@@ -113,14 +113,5 @@ async function* parseParquetTableInBatches(
  * @returns normalized loader options
  */
 export function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
-  return normalizeParquetOptions(
-    {
-      ...options,
-      parquet: {
-        ...(options?.parquet || {}),
-        backend: 'wasm'
-      }
-    },
-    ParquetWASMLoaderWithParser.options.parquet
-  );
+  return normalizeParquetOptions(options, ParquetWASMLoaderWithParser.options.parquet);
 }

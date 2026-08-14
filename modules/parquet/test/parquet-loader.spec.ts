@@ -49,28 +49,19 @@ test('ParquetJSLoader#loader objects', (t) => {
   t.end();
 });
 
-test('ParquetLoader#preload resolves backend parser implementations', async (t) => {
-  t.equal(await preload(ParquetLoader), ParquetWASMLoaderWithParser, 'default backend resolves wasm');
+test('Parquet loaders preload explicit parser implementations', async (t) => {
   t.equal(
-    await preload(ParquetLoader, {parquet: {backend: 'wasm'}}),
+    await preload(ParquetLoader),
     ParquetWASMLoaderWithParser,
-    'wasm backend resolves wasm parser'
+    'primary ParquetLoader resolves the WASM parser'
   );
   t.equal(
-    await preload(ParquetLoader, {parquet: {backend: 'typescript'}}),
+    await preload(ParquetJSLoader),
     ParquetLoaderWithParser,
-    'typescript backend resolves TypeScript parser'
+    'fallback ParquetJSLoader resolves the TypeScript parser'
   );
-  t.equal(
-    await preload(ParquetLoader, {parquet: {implementation: 'js'} as any}),
-    ParquetLoaderWithParser,
-    'deprecated js implementation resolves TypeScript parser'
-  );
-  t.equal(
-    await preload(ParquetLoader, {parquet: {backend: 'typescript', shape: 'arrow-table'}}),
-    ParquetLoaderWithParser,
-    'typescript backend resolves its parser for arrow-table shape'
-  );
+  t.equal(ParquetLoaderWithParser.id, ParquetJSLoader.id, 'fallback parser preserves loader id');
+  t.equal(ParquetJSLoader.worker, false, 'fallback parser stays on the main thread');
   t.end();
 });
 
@@ -360,15 +351,14 @@ test('ParquetJSLoader#load', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#maps deprecated implementation option to backend', async (t) => {
+test('ParquetJSLoader#loads through the explicit TypeScript implementation', async (t) => {
   const url = '@loaders.gl/parquet/test/data/geoparquet/example.parquet';
-  const table = await load(url, ParquetLoader, {
+  const table = await load(url, ParquetJSLoader, {
     parquet: {
-      implementation: 'js',
       limit: 2
     },
     core: {worker: false}
-  } as any);
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {

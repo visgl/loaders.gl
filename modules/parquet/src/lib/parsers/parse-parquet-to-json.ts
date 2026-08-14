@@ -6,7 +6,7 @@ import {default as log} from '@probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch, Schema} from '@loaders.gl/schema';
 
-import type {ParquetLoaderOptions} from '../../parquet-loader-options';
+import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
@@ -20,7 +20,7 @@ import {preloadCompressions} from '../../parquetjs/compression';
  */
 export async function parseParquetFile(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSLoaderOptions
 ): Promise<ObjectRowTable> {
   await preloadCompressions(options);
 
@@ -73,7 +73,7 @@ export async function parseParquetFile(
  */
 export async function* parseParquetFileInBatches(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   await preloadCompressions(options);
 
@@ -131,7 +131,7 @@ export async function* parseParquetFileInBatches(
 }
 
 function getParquetIterationProps(
-  options?: ParquetLoaderOptions
+  options?: ParquetJSLoaderOptions
 ): {columnList?: string[] | string[][]} | undefined {
   const columnList = options?.parquet?.columns;
   return columnList?.length ? {columnList} : undefined;
