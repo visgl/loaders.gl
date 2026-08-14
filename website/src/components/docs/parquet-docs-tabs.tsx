@@ -15,6 +15,7 @@ export type ParquetDocsTabId =
   | 'overview'
   | 'try-it'
   | 'format'
+  | 'benchmarks'
   | 'geoparquet'
   | 'parquetloader'
   | 'geoparquetloader'
@@ -26,6 +27,7 @@ const PARQUET_DOCS_TABS: ParquetDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/geoparquet'},
   {id: 'overview', label: 'Overview', href: '/docs/modules/parquet/formats/parquet'},
   {id: 'format', label: 'Format', href: '/docs/modules/parquet/format'},
+  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/parquet/benchmarks'},
   {id: 'geoparquet', label: 'GeoParquet', href: '/docs/modules/parquet/formats/geoparquet'},
   {
     id: 'parquetloader',
