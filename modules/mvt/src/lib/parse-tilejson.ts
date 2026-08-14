@@ -4,6 +4,13 @@
 
 import {Schema} from '@loaders.gl/schema';
 import {getSchemaFromTileJSONLayer} from './get-schemas-from-tilejson';
+import {
+  TileJSONMetadataSchema,
+  TilestatsSchema,
+  type TileJSONMetadata,
+  type TilestatsLayer,
+  type TilestatsLayerAttribute
+} from '../tilejson-zod-schema';
 
 export type TileJSONOptions = {
   /** max number of values. If not provided, include all values in the source tilestats */
@@ -90,93 +97,50 @@ export type TileJSONField = {
 };
 
 /**
- * The raw/unparsed tilestats layer type
- * @see https://github.com/mapbox/mapbox-geostats#output-the-stats
- */
-type TilestatsLayer = {
-  /** The name of this layer */
-  layer: string;
-  /** The number of features in this layer */
-  count: number;
-  /** The dominant geometry type in this layer */
-  geometry: string;
-  /** The number of unique attributes in this layer (max. 1000) */
-  attributeCount: number;
-  /** Fields for this layer */
-  attributes?: TilestatsLayerAttribute[];
-};
-
-/**
- * The raw/unparsed tilestats attribute type
- * @see https://github.com/mapbox/mapbox-geostats#output-the-stats
- */
-type TilestatsLayerAttribute = {
-  /** The name of this layer */
-  attribute?: string;
-  /** Each attribute has one of the following types:
-   * - 'string' if all its values are strings (or null).
-   * - 'number' if all its values are numbers (or null).
-   * - 'boolean' if all its values are booleans (or null).
-   * - 'null' if its only value is null.
-   * - 'mixed' if it has values of multiple types.
-   * - Array and object values are coerced to strings.
-   */
-  type?: string;
-  /** min value (if there are *any* numbers in the values) */
-  min?: number;
-  /** max value (if there are *any* numbers in the values) */
-  max?: number;
-  /** Number of unique values */
-  count?: number;
-  /** First 100 values */
-  values?: unknown[];
-};
-
-const isObject: (x: unknown) => boolean = x => x !== null && typeof x === 'object';
-
-/**
  * Parse TileJSON from metadata
  * @param jsonMetadata - metadata object
  * @param options - options
  * @returns - parsed TileJSON
  */
 // eslint-disable-next-line complexity
-export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): TileJSON | null {
-  if (!jsonMetadata || !isObject(jsonMetadata)) {
+export function parseTileJSON(jsonMetadata: unknown, options: TileJSONOptions): TileJSON | null {
+  if (!jsonMetadata || typeof jsonMetadata !== 'object' || Array.isArray(jsonMetadata)) {
     return null;
   }
 
+  const metadata: TileJSONMetadata = TileJSONMetadataSchema.parse(jsonMetadata);
+
   let tileJSON: TileJSON = {
-    name: jsonMetadata.name || '',
-    description: jsonMetadata.description || ''
+    name: metadata.name || '',
+    description: metadata.description || ''
   };
 
   // tippecanoe
 
-  if (typeof jsonMetadata.generator === 'string') {
-    tileJSON.generator = jsonMetadata.generator;
+  if (typeof metadata.generator === 'string') {
+    tileJSON.generator = metadata.generator;
   }
-  if (typeof jsonMetadata.generator_options === 'string') {
-    tileJSON.generatorOptions = jsonMetadata.generator_options;
+  if (typeof metadata.generator_options === 'string') {
+    tileJSON.generatorOptions = metadata.generator_options;
   }
 
   // Tippecanoe emits `antimeridian_adjusted_bounds` instead of `bounds`
   tileJSON.boundingBox =
-    parseBounds(jsonMetadata.bounds) || parseBounds(jsonMetadata.antimeridian_adjusted_bounds);
+    parseBounds(metadata.bounds) || parseBounds(metadata.antimeridian_adjusted_bounds);
 
   // TODO - can be undefined - we could set to center of bounds...
-  tileJSON.center = parseCenter(jsonMetadata.center);
+  tileJSON.center = parseCenter(metadata.center);
   // TODO - can be undefined, we could extract from layers...
-  tileJSON.maxZoom = safeParseFloat(jsonMetadata.maxzoom);
+  tileJSON.maxZoom = safeParseFloat(metadata.maxzoom);
   // TODO - can be undefined, we could extract from layers...
-  tileJSON.minZoom = safeParseFloat(jsonMetadata.minzoom);
+  tileJSON.minZoom = safeParseFloat(metadata.minzoom);
 
   // Look for nested metadata embedded in .json field
   // TODO - document what source this applies to, when is this needed?
-  if (typeof jsonMetadata?.json === 'string') {
+  if (typeof metadata.json === 'string') {
     // try to parse json
     try {
-      tileJSON.metaJson = JSON.parse(jsonMetadata.json);
+      tileJSON.metaJson = JSON.parse(metadata.json);
     } catch (_error) {
       // do nothing
     }
@@ -184,9 +148,9 @@ export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): Tile
 
   // Look for fields in tilestats
 
-  const tilestats = jsonMetadata.tilestats || tileJSON.metaJson?.tilestats;
+  const tilestats = metadata.tilestats || tileJSON.metaJson?.tilestats;
   const tileStatsLayers = parseTilestatsLayers(tilestats, options);
-  const tileJSONlayers = parseTileJSONLayers(jsonMetadata.vector_layers); // eslint-disable-line camelcase
+  const tileJSONlayers = parseTileJSONLayers(metadata.vector_layers); // eslint-disable-line camelcase
   // TODO - merge in description from tilejson
   const layers = mergeLayers(tileJSONlayers, tileStatsLayers);
 
@@ -206,7 +170,7 @@ export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): Tile
   return tileJSON;
 }
 
-function parseTileJSONLayers(layers: any[]): TileJSONLayer[] {
+function parseTileJSONLayers(layers: TileJSONMetadata['vector_layers']): TileJSONLayer[] {
   // Look for fields in vector_layers
   if (!Array.isArray(layers)) {
     return [];
@@ -214,7 +178,9 @@ function parseTileJSONLayers(layers: any[]): TileJSONLayer[] {
   return layers.map(layer => parseTileJSONLayer(layer));
 }
 
-function parseTileJSONLayer(layer: any): TileJSONLayer {
+function parseTileJSONLayer(
+  layer: NonNullable<TileJSONMetadata['vector_layers']>[number]
+): TileJSONLayer {
   const fields = Object.entries(layer.fields || []).map(([key, datatype]) => ({
     name: key,
     ...attributeTypeToFieldType(String(datatype))
@@ -229,10 +195,11 @@ function parseTileJSONLayer(layer: any): TileJSONLayer {
 }
 
 /** parse Layers array from tilestats */
-function parseTilestatsLayers(tilestats: any, options: TileJSONOptions): TileJSONLayer[] {
-  if (isObject(tilestats) && Array.isArray(tilestats.layers)) {
+function parseTilestatsLayers(tilestats: unknown, options: TileJSONOptions): TileJSONLayer[] {
+  const result = TilestatsSchema.safeParse(tilestats);
+  if (result.success && Array.isArray(result.data?.layers)) {
     // we are in luck!
-    return tilestats.layers.map(layer => parseTilestatsForLayer(layer, options));
+    return result.data.layers.map(layer => parseTilestatsForLayer(layer, options));
   }
   return [];
 }
@@ -284,7 +251,7 @@ function mergeLayers(layers: TileJSONLayer[], tilestatsLayers: TileJSONLayer[]):
  *`[[w, s], [e, n]]`, indicates the limits of the bounding box using the axis units and order of the specified CRS.
  */
 function parseBounds(
-  bounds: string | number[]
+  bounds: string | number[] | undefined
 ): [[east: number, south: number], [west: number, north: number]] | undefined {
   // supported formats
   // string: "-96.657715,40.126127,-90.140061,43.516689",
@@ -305,7 +272,7 @@ function parseBounds(
   return undefined;
 }
 
-function parseCenter(center: string | number[]): number[] | null {
+function parseCenter(center: string | number[] | undefined): number[] | null {
   // supported formats
   // string: "-96.657715,40.126127,-90.140061,43.516689",
   // array: [-91.505127,41.615442,14]
@@ -338,7 +305,7 @@ function isLng(num: any): boolean {
 function isZoom(num: any): boolean {
   return Number.isFinite(num) && num >= 0 && num <= 22;
 }
-function fromArrayOrString(data: string | number[]): number[] | null {
+function fromArrayOrString(data: string | number[] | undefined): number[] | null {
   if (typeof data === 'string') {
     return data.split(',').map(parseFloat);
   } else if (Array.isArray(data)) {
