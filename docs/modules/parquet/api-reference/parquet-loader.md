@@ -200,9 +200,9 @@ The suite runs entirely in your browser. Fixture download and parser initializat
 timing; each implementation is warmed up and must return the same row count. Results depend on the
 browser, hardware, thermal state, and whether this tab remains focused.
 
-The live suite includes the loaders.gl TypeScript backend, the loaders.gl `parquet-wasm` backend,
-and hyparquet. Dependency versions are pinned in the repository lockfile. The corresponding Node
-suite adds `@dsnp/parquetjs` and covers additional codecs and projections with `yarn bench parquet`.
+The live suite includes both loaders.gl loader variants plus a browser-oriented peer reader.
+Dependency versions are pinned in the repository lockfile. The corresponding Node suite covers
+additional codecs and projections with `yarn bench parquet`.
 
 <BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
   {() => {

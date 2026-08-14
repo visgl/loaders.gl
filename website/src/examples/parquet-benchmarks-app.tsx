@@ -280,7 +280,7 @@ async function createParquetBenchmarkImplementations(): Promise<
   return [
     {
       id: 'typescript',
-      name: 'loaders.gl TypeScript',
+      name: 'ParquetJSLoader (TypeScript)',
       decode: async scenario => {
         const table = (await loadersGlTypeScript.ParquetLoaderWithParser.parse(
           scenario.arrayBuffer,
@@ -293,7 +293,7 @@ async function createParquetBenchmarkImplementations(): Promise<
     },
     {
       id: 'wasm',
-      name: 'loaders.gl / parquet-wasm',
+      name: 'ParquetLoader (WASM)',
       decode: async scenario => {
         const arrowTable = await loadersGlWasm.parseParquetFileToArrow(
           new loadersGlLoaderUtils.BlobFile(scenario.arrayBuffer)
