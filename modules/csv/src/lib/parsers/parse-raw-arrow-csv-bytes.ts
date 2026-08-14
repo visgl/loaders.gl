@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, Schema} from '@loaders.gl/schema';
+import {getArrowViewTypeSupport} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVRawArrowOptions} from './parse-csv-to-arrow';
@@ -45,6 +46,13 @@ export function parseRawArrowCSVBytes(
   arrayBuffer: ArrayBuffer,
   csvOptions: CSVRawArrowOptions
 ): ArrowTable | null {
+  const shouldUseUtf8View =
+    csvOptions.viewTypes === 'require' ||
+    (csvOptions.viewTypes === 'prefer' && getArrowViewTypeSupport().utf8View);
+  if (shouldUseUtf8View) {
+    return null;
+  }
+
   const parserOptions = getCSVByteParserOptions(arrayBuffer, csvOptions);
   if (!parserOptions) {
     return null;

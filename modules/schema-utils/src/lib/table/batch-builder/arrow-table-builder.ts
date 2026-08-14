@@ -4,7 +4,14 @@
 
 import type {Schema, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
-import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import {
+  convertArrowToSchema,
+  convertSchemaToArrow,
+  type ArrowSchemaConversionOptions
+} from '@loaders.gl/schema-utils';
+
+/** Options for constructing Arrow tables from loaders.gl rows. */
+export type ArrowTableBuilderOptions = ArrowSchemaConversionOptions;
 
 /** Builds an arrow table or batches */
 export class ArrowTableBuilder {
@@ -13,9 +20,12 @@ export class ArrowTableBuilder {
   arrowBuilders: arrow.Builder[];
   length: number;
 
-  constructor(schema: Schema) {
-    this.schema = schema;
-    this.arrowSchema = convertSchemaToArrow(schema);
+  constructor(schema: Schema, options?: ArrowTableBuilderOptions) {
+    this.arrowSchema = convertSchemaToArrow(schema, options);
+    this.schema =
+      options?.viewTypes && options.viewTypes !== 'never'
+        ? convertArrowToSchema(this.arrowSchema)
+        : schema;
     this.arrowBuilders = this.arrowSchema.fields.map(field =>
       arrow.makeBuilder({type: field.type, nullValues: [null]})
     );

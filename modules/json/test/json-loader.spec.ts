@@ -606,6 +606,30 @@ test('JSONTableLoader#parse(arrow-table with supplied loaders.gl schema)', async
   t.end();
 });
 
+test('JSONTableLoader#parse(arrow-table prefers supported Arrow view types)', async t => {
+  const schema: Schema = {
+    fields: [{name: 'name', type: 'utf8', nullable: false}],
+    metadata: {}
+  };
+
+  const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{name: 'Arrow'}]), {
+    json: {
+      shape: 'arrow-table',
+      schema,
+      arrowConversion: {viewTypes: 'require'}
+    }
+  });
+
+  t.equal(table.data.schema.fields[0].type.constructor.name, 'Utf8View');
+  t.deepEqual(
+    table.schema?.fields.map(field => field.type),
+    ['utf8-view'],
+    'reports the selected physical types'
+  );
+  t.equal(table.data.getChild('name')?.get(0), 'Arrow');
+  t.end();
+});
+
 test('JSONTableLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
   const schema = new arrow.Schema([
     new arrow.Field('id', new arrow.Float64(), false),

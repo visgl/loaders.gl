@@ -9,7 +9,8 @@ import {
   AsyncQueue,
   ArrowTableBuilder,
   convertArrowToSchema,
-  convertToObjectRow
+  convertToObjectRow,
+  deserializeArrowType
 } from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
@@ -130,7 +131,7 @@ export async function parseRawArrowCSVText(
           headerRow = generateHeader(csvOptions.columnPrefix || 'column', row.length);
         }
         schema = createUtf8Schema(headerRow);
-        arrowTableBuilder = new ArrowTableBuilder(schema);
+        arrowTableBuilder = new ArrowTableBuilder(schema, {viewTypes: csvOptions.viewTypes});
       }
 
       if (csvOptions.optimizeMemoryUsage) {
@@ -153,7 +154,7 @@ export async function parseRawArrowCSVText(
 
   if (headerRow) {
     const headerSchema = createUtf8Schema(headerRow);
-    return new ArrowTableBuilder(headerSchema).finishTable();
+    return new ArrowTableBuilder(headerSchema, {viewTypes: csvOptions.viewTypes}).finishTable();
   }
 
   return {
@@ -199,14 +200,15 @@ async function parseRawArrowCSVTextWithPapa(
     }
   );
   const columns: Record<string, arrow.Vector> = {};
-  const listType = new arrow.List(new arrow.Field('item', new arrow.Utf8(), true));
+  const utf8Type = deserializeArrowType('utf8', {viewTypes: csvOptions.viewTypes});
+  const listType = new arrow.List(new arrow.Field('item', utf8Type, true));
 
   for (const columnName of columnNames) {
     const columnValues = rows.map(row => row[columnName]);
     const hasListValues = columnValues.some(value => Array.isArray(value));
     columns[columnName] = hasListValues
       ? arrow.vectorFromArray(columnValues.map(getRawArrowListValue), listType)
-      : arrow.vectorFromArray(columnValues.map(getRawArrowStringValue), new arrow.Utf8());
+      : arrow.vectorFromArray(columnValues.map(getRawArrowStringValue), utf8Type);
   }
 
   const data = new arrow.Table(columns);
@@ -332,7 +334,7 @@ export function parseRawArrowCSVInBatches(
           headerRow = generateHeader(csvOptions.columnPrefix || 'column', row.length);
         }
         const schema = createUtf8Schema(headerRow);
-        arrowTableBuilder = new ArrowTableBuilder(schema);
+        arrowTableBuilder = new ArrowTableBuilder(schema, {viewTypes: csvOptions.viewTypes});
       }
 
       if (csvOptions.optimizeMemoryUsage) {
