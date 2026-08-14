@@ -132,7 +132,6 @@ type AppState = {
   error?: string | null;
   loading?: boolean;
   loadDurationSeconds?: number | null;
-  displayedParquetImplementation?: 'wasm' | 'js' | null;
   loadedDataName: LoadedDataName;
   loadedGeometryType: LoadedGeometryType;
   // CURRENT VIEW POINT / CAMERA POSITION
@@ -143,9 +142,7 @@ type AppState = {
  * A Geospatial table map viewer
  */
 export default function App(props: AppProps = {}) {
-  const [parquetImplementation, setParquetImplementation] = useState<'wasm' | 'js'>('js');
   const [tableFormat, setTableFormat] = useState<TableFormat>('geoarrow');
-  const previousParquetImplementation = useRef(parquetImplementation);
   const previousTableFormat = useRef(tableFormat);
   const loadRequestIdRef = useRef(0);
   const availableExamples = useMemo(
@@ -161,7 +158,6 @@ export default function App(props: AppProps = {}) {
     error: null,
     loading: false,
     loadDurationSeconds: null,
-    displayedParquetImplementation: null,
     loadedDataName: 'geojson',
     loadedGeometryType: null
   });
@@ -185,37 +181,9 @@ export default function App(props: AppProps = {}) {
       initialCategoryName,
       initialExampleName,
       initialExample,
-      previousParquetImplementation.current,
       previousTableFormat.current
     );
   }, [availableExamples, props.format]);
-
-  useEffect(() => {
-    const implementationChanged = previousParquetImplementation.current !== parquetImplementation;
-    previousParquetImplementation.current = parquetImplementation;
-
-    if (
-      !implementationChanged ||
-      state.selectedCategoryName !== 'GeoParquet' ||
-      !state.selectedExample ||
-      !state.selectedExampleName
-    ) {
-      return;
-    }
-
-    void loadExample(
-      state.selectedCategoryName,
-      state.selectedExampleName,
-      state.selectedExample,
-      parquetImplementation,
-      tableFormat
-    );
-  }, [
-    parquetImplementation,
-    state.selectedCategoryName,
-    state.selectedExample,
-    state.selectedExampleName
-  ]);
 
   useEffect(() => {
     const formatChanged = previousTableFormat.current !== tableFormat;
@@ -229,11 +197,9 @@ export default function App(props: AppProps = {}) {
       state.selectedCategoryName,
       state.selectedExampleName,
       state.selectedExample,
-      parquetImplementation,
       tableFormat
     );
   }, [
-    parquetImplementation,
     state.selectedCategoryName,
     state.selectedExample,
     state.selectedExampleName,
@@ -271,7 +237,6 @@ export default function App(props: AppProps = {}) {
                   loadedDataName: state.loadedDataName,
                   loadedGeometryType: state.loadedGeometryType,
                   rowCount: state.table ? getTableLength(state.table) : null,
-                  parquetImplementation,
                   loadDurationSeconds: state.loadDurationSeconds,
                   loading: state.loading,
                   error: state.error,
@@ -284,13 +249,11 @@ export default function App(props: AppProps = {}) {
                         categoryName,
                         exampleName,
                         example,
-                        parquetImplementation,
                         tableFormat
                       );
                     }
                   },
-                  onTableFormatChange: setTableFormat,
-                  onParquetImplementationChange: setParquetImplementation
+                  onTableFormatChange: setTableFormat
                 })
             })
           }
@@ -299,7 +262,6 @@ export default function App(props: AppProps = {}) {
     ];
   }, [
     availableExamples,
-    parquetImplementation,
     props.hideChrome,
     state.error,
     state.loadedDataName,
@@ -333,11 +295,10 @@ export default function App(props: AppProps = {}) {
     categoryName: string,
     exampleName: string,
     example: Example,
-    implementation: 'wasm' | 'js',
     nextTableFormat: TableFormat
   ) {
     const url = example.data;
-    const loaderOptions = getLoaderOptions(example, implementation, nextTableFormat);
+    const loaderOptions = getLoaderOptions(example, nextTableFormat);
     const loaders = getLoaders(example, nextTableFormat);
     const requestId = ++loadRequestIdRef.current;
     const loadStartTime = performance.now();
@@ -372,7 +333,6 @@ export default function App(props: AppProps = {}) {
         error: null,
         loading: false,
         loadDurationSeconds,
-        displayedParquetImplementation: implementation,
         loadedDataName: loadedTableInfo.loadedDataName,
         loadedGeometryType: loadedTableInfo.loadedGeometryType
       }));
@@ -451,7 +411,6 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
 
 function getLoaderOptions(
   example: Example,
-  implementation: 'wasm' | 'js',
   tableFormat: TableFormat
 ): LoaderOptions {
   const tableShape = tableFormat === 'geoarrow' ? 'arrow-table' : 'geojson-table';
@@ -461,8 +420,7 @@ function getLoaderOptions(
     ...LOADER_OPTIONS,
     parquet: {
       ...LOADER_OPTIONS.parquet,
-      shape: tableShape,
-      implementation
+      shape: tableShape
     },
     arrow: {
       ...LOADER_OPTIONS.arrow,
@@ -853,7 +811,6 @@ function renderGeospatialSidebar(
     loadedDataName: LoadedDataName;
     loadedGeometryType: LoadedGeometryType;
     rowCount: number | null;
-    parquetImplementation: 'wasm' | 'js';
     loadDurationSeconds?: number | null;
     loading: boolean;
     error?: string | null;
@@ -861,7 +818,6 @@ function renderGeospatialSidebar(
     viewState: Record<string, unknown>;
     onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
     onTableFormatChange: (tableFormat: TableFormat) => void;
-    onParquetImplementationChange: (implementation: 'wasm' | 'js') => void;
   }
 ): void {
   rootElement.replaceChildren();
@@ -884,12 +840,6 @@ function renderGeospatialSidebar(
       onTableFormatChange: options.onTableFormatChange
     })
   );
-
-  if (options.selectedCategoryName === 'GeoParquet') {
-    rootElement.appendChild(
-      createParquetSection(options.parquetImplementation, options.onParquetImplementationChange)
-    );
-  }
 
   rootElement.appendChild(
     createStatusSection({
@@ -1082,41 +1032,6 @@ function createArrowSeparator(): HTMLElement {
   separatorElement.style.color = '#64748b';
   separatorElement.style.fontSize = '13px';
   return separatorElement;
-}
-
-function createParquetSection(
-  parquetImplementation: 'wasm' | 'js',
-  onParquetImplementationChange: (implementation: 'wasm' | 'js') => void
-): HTMLElement {
-  const section = createSection();
-  section.appendChild(createLabel('GeoParquetLoader options', 'parquet-implementation'));
-
-  const selectElement = document.createElement('select');
-  selectElement.id = 'parquet-implementation';
-  selectElement.value = parquetImplementation;
-  selectElement.style.width = '100%';
-  selectElement.style.margin = '0 0 4px';
-  selectElement.style.padding = '8px';
-  selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
-  selectElement.style.borderRadius = '8px';
-  selectElement.style.background = 'var(--menu-background, #fff)';
-  selectElement.style.color = 'inherit';
-  selectElement.add(new Option('wasm', 'wasm'));
-  selectElement.add(new Option('js', 'js'));
-  selectElement.addEventListener('change', (event) => {
-    onParquetImplementationChange((event.target as HTMLSelectElement).value as 'wasm' | 'js');
-  });
-  section.appendChild(selectElement);
-
-  const hintElement = document.createElement('div');
-  hintElement.textContent =
-    'Switches GeoParquet loading between the Arrow-backed wasm path and the JS fallback.';
-  hintElement.style.color = '#555';
-  hintElement.style.fontSize = '12px';
-  hintElement.style.lineHeight = '1.4';
-  section.appendChild(hintElement);
-
-  return section;
 }
 
 function createErrorSection(message: string): HTMLElement {

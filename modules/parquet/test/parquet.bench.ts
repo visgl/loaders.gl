@@ -66,13 +66,26 @@ export async function parquetBench(suite) {
     ]);
   const [typescriptLoader, wasmLoader] = await Promise.all([
     preload(ParquetJSLoader, {core: {worker: false}}),
-    preload(ParquetLoader, {core: {worker: false}, parquet: {backend: 'wasm'}})
+    preload(ParquetLoader, {core: {worker: false}})
   ]);
   const implementations = createParquetBenchmarkImplementations(typescriptLoader, wasmLoader);
   const scenarios: ParquetBenchmarkScenario[] = [
-    {name: 'LZ4_RAW full table', arrayBuffer: lz4ArrayBuffer},
-    {name: 'Hadoop LZ4 full table', arrayBuffer: hadoopLz4ArrayBuffer},
-    {name: 'DELTA_BYTE_ARRAY full table', arrayBuffer: deltaByteArrayBuffer},
+    {name: 'GeoParquet object rows', arrayBuffer: geoArrayBuffer},
+    {
+      name: 'LZ4_RAW full table',
+      arrayBuffer: lz4ArrayBuffer,
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'Hadoop LZ4 full table',
+      arrayBuffer: hadoopLz4ArrayBuffer,
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY full table',
+      arrayBuffer: deltaByteArrayBuffer,
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
     {
       name: 'DELTA_BYTE_ARRAY projected columns',
       arrayBuffer: deltaByteArrayBuffer,
@@ -169,17 +182,17 @@ function createParquetBenchmarkImplementations(
   return [
     {
       id: 'typescript',
-      name: 'loaders.gl TypeScript',
-      decode: scenario => decodeWithLoadersGl(scenario, typescriptLoader, 'typescript')
+      name: 'ParquetJSLoader (TypeScript)',
+      decode: scenario => decodeWithLoadersGl(scenario, typescriptLoader)
     },
     {
       id: 'wasm',
-      name: 'loaders.gl parquet-wasm',
-      decode: scenario => decodeWithLoadersGl(scenario, wasmLoader, 'wasm')
+      name: 'ParquetLoader (WASM)',
+      decode: scenario => decodeWithLoadersGl(scenario, wasmLoader)
     },
     {
       id: 'hyparquet',
-      name: 'hyparquet 1.27.1',
+      name: 'hyparquet',
       decode: decodeWithHyparquet
     }
   ];
@@ -188,12 +201,11 @@ function createParquetBenchmarkImplementations(
 /** Decodes one scenario through a preloaded loaders.gl implementation. */
 async function decodeWithLoadersGl(
   scenario: ParquetBenchmarkScenario,
-  loader: LoaderWithParser,
-  backend: 'typescript' | 'wasm'
+  loader: LoaderWithParser
 ): Promise<number> {
   const table = (await parse(scenario.arrayBuffer, loader, {
     core: {worker: false},
-    parquet: {backend, columns: scenario.columns}
+    parquet: {columns: scenario.columns}
   })) as ObjectRowTable;
   return table.data.length;
 }

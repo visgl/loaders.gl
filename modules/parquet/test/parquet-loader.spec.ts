@@ -8,9 +8,9 @@ import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/parquet/parquet-loader';
 import {isBrowser, load, preload, setLoaderOptions} from '@loaders.gl/core';
-import {ParquetLoaderWithParser} from '../src/parquet-loader-with-parser';
-import {ParquetWASMLoaderWithParser} from '../src/parquet-wasm-loader-with-parser';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
 import {
@@ -49,28 +49,19 @@ test('ParquetJSLoader#loader objects', (t) => {
   t.end();
 });
 
-test('ParquetLoader#preload resolves backend parser implementations', async (t) => {
-  t.equal(await preload(ParquetLoader), ParquetWASMLoaderWithParser, 'default backend resolves wasm');
+test('Parquet loaders preload explicit parser implementations', async (t) => {
   t.equal(
-    await preload(ParquetLoader, {parquet: {backend: 'wasm'}}),
-    ParquetWASMLoaderWithParser,
-    'wasm backend resolves wasm parser'
-  );
-  t.equal(
-    await preload(ParquetLoader, {parquet: {backend: 'typescript'}}),
+    await preload(ParquetLoader),
     ParquetLoaderWithParser,
-    'typescript backend resolves TypeScript parser'
+    'primary ParquetLoader resolves the WASM parser'
   );
   t.equal(
-    await preload(ParquetLoader, {parquet: {implementation: 'js'} as any}),
-    ParquetLoaderWithParser,
-    'deprecated js implementation resolves TypeScript parser'
+    await preload(ParquetJSLoader),
+    ParquetJSLoaderWithParser,
+    'fallback ParquetJSLoader resolves the TypeScript parser'
   );
-  await t.rejects(
-    preload(ParquetLoader, {parquet: {backend: 'typescript', shape: 'arrow-table'}}),
-    /does not support shape "arrow-table"/,
-    'typescript backend rejects arrow-table shape'
-  );
+  t.equal(ParquetJSLoaderWithParser.id, ParquetJSLoader.id, 'fallback parser preserves loader id');
+  t.equal(ParquetJSLoader.worker, false, 'fallback parser stays on the main thread');
   t.end();
 });
 
@@ -82,6 +73,40 @@ test('ParquetJSLoader#load alltypes_dictionary file', async (t) => {
   if (table.shape === 'object-row-table') {
     t.equal(table.data.length, 2);
     t.deepEqual(table.data, ALL_TYPES_DICTIONARY_EXPECTED);
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#load supports arrow-table shape', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 2);
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#load arrow-table preserves schema for empty results', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table', limit: 0}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 0);
+    t.ok(table.schema.fields.length > 0, 'loaders.gl schema retains the file fields');
+    t.deepEqual(
+      table.data.schema.fields.map((field) => field.name),
+      table.schema.fields.map((field) => field.name),
+      'Arrow schema retains the same file fields'
+    );
   }
   t.end();
 });
@@ -183,6 +208,26 @@ test('ParquetJSLoader#load nested_lists file', async (t) => {
   t.end();
 });
 
+test('ParquetJSLoader#load nested_lists file as an Arrow table', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nested_lists.snappy.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    const firstRow = JSON.parse(JSON.stringify(table.data.get(0)?.toJSON())) as {
+      a: {list: Array<{element: {list: unknown[]}}>};
+    };
+    t.equal(table.data.numRows, 3);
+    t.ok(JSON.stringify(table.schema).includes('"type":"list"'), 'schema contains Arrow lists');
+    t.equal(firstRow.a.list.length, 2, 'outer repeated group is preserved');
+    t.equal(firstRow.a.list[0].element.list.length, 2, 'nested repeated group is preserved');
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#load nested_maps file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nested_maps.snappy.parquet';
   const table = await load(url, ParquetJSLoader, getParquetLoaderOptions(url));
@@ -258,6 +303,26 @@ test('ParquetJSLoader#load repeated_no_annotation file', async (t) => {
   if (table.shape === 'object-row-table') {
     t.equal(table.data.length, 6);
     t.deepEqual(table.data, REPEATED_NO_ANNOTATION_EXPECTED);
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#load repeated_no_annotation file as an Arrow table', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/repeated_no_annotation.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    const lastRow = JSON.parse(JSON.stringify(table.data.get(5)?.toJSON())) as {
+      phoneNumbers: {phone: Array<{number: number; kind: string | null}>};
+    };
+    t.equal(table.data.numRows, 6);
+    t.ok(JSON.stringify(table.schema).includes('"type":"list"'), 'schema contains Arrow lists');
+    t.equal(lastRow.phoneNumbers.phone.length, 3, 'all repeated structs are retained');
+    t.equal(lastRow.phoneNumbers.phone[2].kind, 'mobile', 'repeated struct values are retained');
   }
   t.end();
 });
@@ -346,15 +411,14 @@ test('ParquetJSLoader#load', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#maps deprecated implementation option to backend', async (t) => {
+test('ParquetJSLoader#loads through the explicit TypeScript implementation', async (t) => {
   const url = '@loaders.gl/parquet/test/data/geoparquet/example.parquet';
-  const table = await load(url, ParquetLoader, {
+  const table = await load(url, ParquetJSLoader, {
     parquet: {
-      implementation: 'js',
       limit: 2
     },
     core: {worker: false}
-  } as any);
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {

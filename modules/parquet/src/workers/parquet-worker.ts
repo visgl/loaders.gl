@@ -4,13 +4,13 @@
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
 import type {ParquetLoaderOptions} from '../parquet-loader-options';
-import {ParquetWASMLoaderWithParser} from '../parquet-wasm-loader-with-parser';
+import {ParquetLoaderWithParser} from '../parquet-loader';
 
 /** Worker-local Parquet loader with a package-relative default WASM URL. */
 const ParquetWorkerLoader = {
-  ...ParquetWASMLoaderWithParser,
+  ...ParquetLoaderWithParser,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return ParquetWASMLoaderWithParser.parse(arrayBuffer, addWorkerWasmUrl(options));
+    return ParquetLoaderWithParser.parse(arrayBuffer, addWorkerWasmUrl(options));
   }
 };
 

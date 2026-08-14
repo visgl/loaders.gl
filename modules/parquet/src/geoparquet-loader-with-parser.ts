@@ -24,7 +24,7 @@ import {
   GeoParquetLoader as GeoParquetLoaderMetadata,
   type GeoParquetLoaderOptions
 } from './geoparquet-loader';
-import {getParquetOptions} from './parquet-wasm-loader-with-parser';
+import {getParquetOptions} from './parquet-loader';
 
 const {preload: _GeoParquetLoaderPreload, ...GeoParquetLoaderMetadataWithoutPreload} =
   GeoParquetLoaderMetadata;
