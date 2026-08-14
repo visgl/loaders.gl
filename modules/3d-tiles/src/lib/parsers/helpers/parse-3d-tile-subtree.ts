@@ -4,7 +4,7 @@
 
 import type {Subtree, Availability} from '../../../types';
 import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {SubtreeSchema} from '../../../subtree-schema';
+import {SubtreeSchema} from '../../../subtree-zod-schema';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;
 const SUBTREE_FILE_VERSION = 1;

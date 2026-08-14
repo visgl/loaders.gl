@@ -82,3 +82,17 @@ test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', a
   await loadExplicitBitstream(subtree, contentAvailability, internalBinaryBuffer, context());
   t.deepEqual(contentAvailability.explicitBitstream, new Uint8Array([128]));
 });
+
+test('loadExplicitBitstream ignores omitted optional availability', async t => {
+  const subtree: Subtree = {
+    buffers: [],
+    bufferViews: [],
+    tileAvailability: {constant: 1},
+    childSubtreeAvailability: {constant: 0}
+  };
+
+  await loadExplicitBitstream(subtree, undefined, new ArrayBuffer(0), context());
+
+  t.pass('does not require optional content availability');
+  t.end();
+});

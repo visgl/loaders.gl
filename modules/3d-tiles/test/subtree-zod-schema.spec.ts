@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {SubtreeSchema} from '@loaders.gl/3d-tiles/subtree-schema';
+import {SubtreeSchema} from '@loaders.gl/3d-tiles/subtree-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 
