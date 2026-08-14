@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {encodeSync, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {LASLoader, LASWriter} from '@loaders.gl/las';
+import {LASCOPCLoader, LASLoader, LASWriter, LAZPerfLoader, LAZRsLoader} from '@loaders.gl/las';
 import type {LASLoaderOptions} from '@loaders.gl/las';
 import {
   createLAZChunkDecoderCursor,
@@ -20,23 +20,20 @@ const LAZ_1_2_PDRF_3 = 3;
 const LAZ_1_4_PDRF_7 = 7;
 const BATCH_SIZE = 25_000;
 const STREAMING_LAZ_CHUNK_SIZE = 64 * 1024;
-const LAZ_1_2_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las']>['backend']>[] = [
-  'laz-perf',
-  'copc',
-  'laz-rs',
-  'typescript'
-];
-const LAZ_1_4_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las']>['backend']>[] = [
-  'copc',
-  'laz-rs',
-  'typescript'
-];
-const STREAMING_LAZ_1_4_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las']>['backend']>[] = [
-  'typescript'
-];
+const LAZ_1_2_LOADER_VARIANTS = [
+  {name: 'typescript', loader: LASLoader},
+  {name: 'laz-perf', loader: LAZPerfLoader},
+  {name: 'copc', loader: LASCOPCLoader},
+  {name: 'laz-rs', loader: LAZRsLoader}
+] as const;
+const LAZ_1_4_LOADER_VARIANTS = [
+  {name: 'typescript', loader: LASLoader},
+  {name: 'copc', loader: LASCOPCLoader},
+  {name: 'laz-rs', loader: LAZRsLoader}
+] as const;
 
 /**
- * Adds LAS backend parse benchmarks.
+ * Adds LAS loader variant parse benchmarks.
  * @param bench Benchmark suite
  * @returns Benchmark suite with LAS cases added
  */
@@ -65,11 +62,11 @@ export default async function lasLoaderBench(bench) {
 
   bench.groupSorted('LASLoader parse LAZ 1.2 PDRF 3');
 
-  for (const backend of LAZ_1_2_BACKENDS) {
-    bench.addAsync(`parse LAZ 1.2 PDRF 3 backend=${backend}`, benchmarkOptions, async () => {
-      await parse(lazArrayBuffer, LASLoader, {
+  for (const {name, loader} of LAZ_1_2_LOADER_VARIANTS) {
+    bench.addAsync(`parse LAZ 1.2 PDRF 3 variant=${name}`, benchmarkOptions, async () => {
+      await parse(lazArrayBuffer, loader, {
         core: {worker: false},
-        las: {backend, shape: 'arrow-table'}
+        las: {shape: 'arrow-table'}
       });
     });
   }
@@ -77,13 +74,13 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader parseInBatches streaming LAZ 1.2 PDRF 3');
 
   bench.addAsync(
-    `parseInBatches streaming LAZ 1.2 PDRF 3 backend=typescript ${formatStreamingStats(lazStreamingStats)}`,
+    `parseInBatches streaming LAZ 1.2 PDRF 3 variant=typescript ${formatStreamingStats(lazStreamingStats)}`,
     benchmarkOptions,
     async () => {
       const batches = await parseInBatches(lazChunks, LASLoader, {
         batchSize: BATCH_SIZE,
         core: {worker: false},
-        las: {backend: 'typescript', shape: 'arrow-table'}
+        las: {shape: 'arrow-table'}
       });
       for await (const _batch of batches) {
         _batch;
@@ -93,38 +90,36 @@ export default async function lasLoaderBench(bench) {
 
   bench.groupSorted('LASLoader parse LAZ 1.4 PDRF 7');
 
-  for (const backend of LAZ_1_4_BACKENDS) {
-    bench.addAsync(`parse LAZ 1.4 PDRF 7 backend=${backend}`, laz14BenchmarkOptions, async () => {
-      await parse(laz14ArrayBuffer, LASLoader, {
+  for (const {name, loader} of LAZ_1_4_LOADER_VARIANTS) {
+    bench.addAsync(`parse LAZ 1.4 PDRF 7 variant=${name}`, laz14BenchmarkOptions, async () => {
+      await parse(laz14ArrayBuffer, loader, {
         core: {worker: false},
-        las: {backend, shape: 'arrow-table'}
+        las: {shape: 'arrow-table'}
       });
     });
   }
 
   bench.groupSorted('LASLoader parseInBatches streaming LAZ 1.4 PDRF 7');
 
-  for (const backend of STREAMING_LAZ_1_4_BACKENDS) {
-    bench.addAsync(
-      `parseInBatches streaming LAZ 1.4 PDRF 7 backend=${backend} ${formatStreamingStats(laz14StreamingStats)}`,
-      laz14BenchmarkOptions,
-      async () => {
-        const batches = await parseInBatches(laz14Chunks, LASLoader, {
-          batchSize: BATCH_SIZE,
-          core: {worker: false},
-          las: {backend, shape: 'arrow-table'}
-        });
-        for await (const _batch of batches) {
-          _batch;
-        }
+  bench.addAsync(
+    `parseInBatches streaming LAZ 1.4 PDRF 7 variant=typescript ${formatStreamingStats(laz14StreamingStats)}`,
+    laz14BenchmarkOptions,
+    async () => {
+      const batches = await parseInBatches(laz14Chunks, LASLoader, {
+        batchSize: BATCH_SIZE,
+        core: {worker: false},
+        las: {shape: 'arrow-table'}
+      });
+      for await (const _batch of batches) {
+        _batch;
       }
-    );
-  }
+    }
+  );
 
   bench.groupSorted('TypeScript LAZ raw chunk decode');
 
   bench.add(
-    'decodeLAZChunk LAZ 1.4 PDRF 7 backend=typescript',
+    'decodeLAZChunk LAZ 1.4 PDRF 7 variant=typescript',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -136,7 +131,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor batches LAZ 1.4 PDRF 7 backend=typescript',
+    'decodeLAZChunk cursor batches LAZ 1.4 PDRF 7 variant=typescript',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -156,7 +151,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor point-data LAZ 1.4 PDRF 7 backend=typescript',
+    'decodeLAZChunk cursor point-data LAZ 1.4 PDRF 7 variant=typescript',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -180,7 +175,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor render-data LAZ 1.4 PDRF 7 backend=typescript',
+    'decodeLAZChunk cursor render-data LAZ 1.4 PDRF 7 variant=typescript',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -205,10 +200,10 @@ export default async function lasLoaderBench(bench) {
 
   bench.groupSorted('LASWriter');
 
-  bench.add('LASWriter LAS 1.2 backend=typescript', benchmarkOptions, () => {
+  bench.add('LASWriter LAS 1.2 variant=typescript', benchmarkOptions, () => {
     encodeBenchmarkLASArrayBuffer(table, '1.2');
   });
-  bench.add('LASWriter LAS 1.4 backend=typescript', benchmarkOptions, () => {
+  bench.add('LASWriter LAS 1.4 variant=typescript', benchmarkOptions, () => {
     encodeBenchmarkLASArrayBuffer(table, '1.4');
   });
 
@@ -236,7 +231,6 @@ async function collectTypeScriptLAZStreamingStats(chunks: ArrayBuffer[]): Promis
     batchSize: BATCH_SIZE,
     core: {worker: false},
     las: {
-      backend: 'typescript',
       shape: 'arrow-table',
       lazStreamingStats
     } as LASLoaderOptions['las'] & {
@@ -398,9 +392,9 @@ function readNullTerminatedAscii(bytes: Uint8Array, offset: number, length: numb
  * @returns Decoded benchmark Arrow table
  */
 async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<MeshArrowTable> {
-  return (await parse(lazArrayBuffer, LASLoader, {
+  return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
-    las: {backend: 'laz-rs', shape: 'arrow-table'}
+    las: {shape: 'arrow-table'}
   })) as MeshArrowTable;
 }
 
@@ -412,9 +406,9 @@ async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<M
 async function createBenchmarkLAZ14ArrowTable(
   lazArrayBuffer: ArrayBuffer
 ): Promise<MeshArrowTable> {
-  return (await parse(lazArrayBuffer, LASLoader, {
+  return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
-    las: {backend: 'laz-rs', shape: 'arrow-table'}
+    las: {shape: 'arrow-table'}
   })) as MeshArrowTable;
 }
 

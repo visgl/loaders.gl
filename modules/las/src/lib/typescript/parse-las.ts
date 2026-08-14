@@ -13,7 +13,7 @@ import {
   NeedsMoreData
 } from '@loaders.gl/loader-utils';
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
-import type {LASLoaderOptions} from '../../las-loader';
+import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
 import type {LASHeader} from '../las-types';
 
@@ -117,7 +117,7 @@ type LAZChunkByteLengthMetadata = {
   pointCount: number;
 };
 
-/** Parse LAS data with the TypeScript backend. */
+/** Parse LAS data with the TypeScript loader variant. */
 export function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}): LASArrowTable {
   const header = parseLASHeader(arrayBuffer);
   if (header.isCompressed) {

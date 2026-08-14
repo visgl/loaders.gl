@@ -6,26 +6,20 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
-import type {LASLoaderOptions} from './las-loader';
+import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 import type {LASMesh} from './lib/las-types';
-import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
-import {LASLoader as LASLoaderMetadata} from './las-loader';
-
-const {preload: _LASLoaderPreload, ...LASLoaderMetadataWithoutPreload} = LASLoaderMetadata;
+import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
 
 /**
- * Loader for the LAS (LASer) point cloud format
- * @note Does not support LAS v1.4
+ * LAS/LAZ loader variant using the laz-perf decoder from the COPC package.
  */
-export const LAZPerfLoaderWithParser = {
-  ...LASLoaderMetadataWithoutPreload,
+export const LASCOPCLoaderWithParser = {
+  ...LAS_LOADER_METADATA,
+  name: 'LAS (COPC)',
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
-    yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
-  }
+    convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
+  parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>
+    convertLASMeshBatches(parseCOPCLASInBatches(arrayBufferIterator, options), options)
 } as const satisfies LoaderWithParser<
   LASMesh | MeshArrowTable,
   LASMesh | MeshArrowTable,

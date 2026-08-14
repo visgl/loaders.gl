@@ -5,7 +5,7 @@
 import test from 'test/utils/vitest-tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
-import {LASLoader, LASWriter} from '@loaders.gl/las';
+import {LASCOPCLoader, LASLoader, LASWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
 
@@ -49,11 +49,9 @@ test('LASWriter#encode LAS 1.4 point format 7', async t => {
     las: {version: '1.4', pointDataRecordFormat: 7}
   });
   const data = await parse(arrayBuffer, LASLoader, {
-    las: {backend: 'typescript'},
     core: {worker: false}
   });
-  const wasmData = await parse(arrayBuffer.slice(0), LASLoader, {
-    las: {backend: 'copc'},
+  const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
     core: {worker: false}
   });
 

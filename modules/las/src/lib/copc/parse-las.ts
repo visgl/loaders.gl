@@ -6,14 +6,14 @@ import type {MeshAttributes} from '@loaders.gl/schema';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import {Las} from 'copc';
-import type {LASLoaderOptions} from '../../las-loader';
+import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
 import type {LASHeader, LASMesh} from '../las-types';
 
 const DEFAULT_BATCH_SIZE = 1000 * 100;
 
 /**
- * Parse LAS/LAZ data using the laz-perf backend shipped by the COPC package.
+ * Parse LAS/LAZ data using the laz-perf decoder shipped by the COPC package.
  * @param arrayBuffer Complete LAS/LAZ file data
  * @param options LAS loader options
  * @returns Parsed LAS mesh

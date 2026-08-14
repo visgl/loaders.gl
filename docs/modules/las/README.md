@@ -2,7 +2,7 @@
 
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
-LAZ point formats 0-10 are supported by the opt-in `typescript` backend for documented LASzip codec combinations. Legacy Point10/GPS/RGB/Byte items require item version 2, WavePacket13 requires version 1, and modern items support versions 2-4; PDRF 9/10 WavePacket14 supports versions 3-4. Arrow output exposes only positions, intensity, classification, and RGB, while the raw APIs preserve complete supported point records. Support in the `copc` and `laz-rs` backends depends on their bundled decoder versions. The default `laz-perf` backend remains limited to LAS 1.3 and point formats 0-3. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
+`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, and RGB, while the raw APIs preserve complete supported point records. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
 
 ## Installation
 

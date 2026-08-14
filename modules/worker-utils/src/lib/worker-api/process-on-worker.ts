@@ -41,7 +41,8 @@ export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions
     return false;
   }
 
-  return worker.worker && options?.worker;
+  const workerOptions = options?.[worker.id];
+  return Boolean((worker.worker || workerOptions?.workerUrl) && options?.worker);
 }
 
 /**
