@@ -42,3 +42,36 @@ test('parseImplicitTiles#supports a single available level', async t => {
   t.equal(tile.lodMetricValue, 500);
   t.end();
 });
+
+test('parseImplicitTiles#supports subtrees without content availability', async t => {
+  const subtree: Subtree = {
+    buffers: [],
+    bufferViews: [],
+    tileAvailability: {constant: 1},
+    childSubtreeAvailability: {constant: 0}
+  };
+  const implicitOptions: ImplicitOptions = {
+    contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
+    subtreesUriTemplate: 'subtrees/{level}/{x}/{y}.subtree',
+    subdivisionScheme: 'QUADTREE',
+    subtreeLevels: 1,
+    maximumLevel: 0,
+    refine: 'REPLACE',
+    basePath: 'https://example.com',
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    rootLodMetricValue: 500,
+    rootBoundingVolume: {region: [0, 0, 1, 1, 0, 100]},
+    getTileType: () => TILE_TYPE.SCENEGRAPH,
+    getRefine: () => TILE_REFINEMENT.REPLACE
+  };
+
+  const tile = await parseImplicitTiles({
+    subtree,
+    implicitOptions,
+    loaderOptions: {}
+  });
+
+  t.equal(tile.contentUrl, '');
+  t.equal(tile.children.length, 0);
+  t.end();
+});

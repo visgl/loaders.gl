@@ -38,6 +38,11 @@
       "import": "./dist/tileset-zod-schema.js",
       "require": "./dist/tileset-zod-schema.cjs"
     },
+    "./subtree-zod-schema": {
+      "types": "./dist/subtree-zod-schema.d.ts",
+      "import": "./dist/subtree-zod-schema.js",
+      "require": "./dist/subtree-zod-schema.cjs"
+    },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
@@ -46,7 +51,8 @@
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
     },
-    "./tileset.schema.json": "./dist/tileset.schema.json"
+    "./tileset.schema.json": "./dist/tileset.schema.json",
+    "./subtree.schema.json": "./dist/subtree.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -57,7 +63,7 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema",
     "prepublishOnly": "npm run build-bundle && npm run build-bundle-dev",
-    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tileset-zod-schema.js --export Tiles3DTilesetSchema --output ./dist/tileset.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON'",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tileset-zod-schema.js --export Tiles3DTilesetSchema --output ./dist/tileset.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON' && node ../../scripts/generate-json-schema.mjs --schema ./dist/subtree-zod-schema.js --export SubtreeSchema --output ./dist/subtree.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/subtree.schema.json --title 'loaders.gl 3D Tiles subtree metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },

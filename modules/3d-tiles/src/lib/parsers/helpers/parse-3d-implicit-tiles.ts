@@ -284,9 +284,12 @@ export async function parseImplicitTiles(params: {
  * @returns
  */
 function getAvailabilityResult(
-  availabilityData: Availability | Availability[],
+  availabilityData: Availability | Availability[] | undefined,
   index: number
 ): boolean {
+  if (!availabilityData) {
+    return false;
+  }
   let availabilityObject: Availability;
   if (Array.isArray(availabilityData)) {
     /** TODO: we don't support `3DTILES_multiple_contents` extension at the moment.
