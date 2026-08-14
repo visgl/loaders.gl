@@ -111,6 +111,60 @@ test('ParquetJSLoader#load arrow-table preserves schema for empty results', asyn
   t.end();
 });
 
+test('ParquetJSLoader#arrow-table applies projection, offset, and limit', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
+  const options = {
+    core: {worker: false},
+    parquet: {
+      shape: 'arrow-table' as const,
+      columns: ['id', 'bool_col'],
+      offset: 2,
+      limit: 3
+    }
+  };
+  const arrowTable = await load(url, ParquetJSLoader, options);
+  const objectRowTable = await load(url, ParquetJSLoader, {
+    ...options,
+    parquet: {...options.parquet, shape: 'object-row-table'}
+  });
+
+  t.equal(arrowTable.shape, 'arrow-table');
+  t.equal(objectRowTable.shape, 'object-row-table');
+  if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
+    t.equal(arrowTable.data.numRows, 3, 'returns the requested row range');
+    t.deepEqual(
+      arrowTable.schema?.fields.map(field => field.name),
+      ['id', 'bool_col'],
+      'returns only projected columns'
+    );
+    t.deepEqual(
+      arrowTable.data.getChild('id')?.toArray(),
+      new Int32Array(objectRowTable.data.map(row => row.id)),
+      'direct Arrow values match object-row decoding'
+    );
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#arrow-table materializes required INT64 logical values', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/fruits.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table', columns: ['date'], limit: 1}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 1);
+    t.equal(
+      table.data.getChild('date')?.get(0),
+      1625040045218n,
+      'converts the timestamp value for the Arrow Int64 vector'
+    );
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#load alltypes_plain file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
   const table = await load(url, ParquetJSLoader, getParquetLoaderOptions(url));

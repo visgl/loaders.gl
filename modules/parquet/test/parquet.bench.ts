@@ -5,11 +5,11 @@
 import {GeoParquetLoader, ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
 import {fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ObjectRowTable} from '@loaders.gl/schema';
-import {parquetReadObjects} from 'hyparquet';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+import {convertTable, makeTableFromData} from '@loaders.gl/schema-utils';
+import {parquetRead, parquetReadObjects, type ColumnData} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
 
-const PARQUET_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const LZ4_PARQUET_URL =
   '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed_larger.parquet';
 const HADOOP_LZ4_PARQUET_URL =
@@ -27,6 +27,8 @@ type ParquetBenchmarkScenario = {
   arrayBuffer: ArrayBuffer;
   /** Optional top-level Parquet columns decoded by every included implementation. */
   columns?: string[];
+  /** Table shape materialized by every included implementation. */
+  shape: 'arrow-table' | 'object-row-table';
   /** Implementations included when a backend cannot correctly execute the scenario. */
   implementationIds?: ParquetBenchmarkImplementationId[];
 };
@@ -43,22 +45,15 @@ type ParquetBenchmarkImplementation = {
 };
 
 export async function parquetBench(suite) {
-  const [
-    parquetResponse,
-    lz4ParquetResponse,
-    hadoopLz4ParquetResponse,
-    deltaByteArrayParquetResponse,
-    geoParquetResponse
-  ] = await Promise.all([
-    fetchFile(PARQUET_URL),
+  const [lz4ParquetResponse, hadoopLz4ParquetResponse, deltaByteArrayParquetResponse, geoParquetResponse] =
+    await Promise.all([
     fetchFile(LZ4_PARQUET_URL),
     fetchFile(HADOOP_LZ4_PARQUET_URL),
     fetchFile(DELTA_BYTE_ARRAY_PARQUET_URL),
     fetchFile(GEO_PARQUET_URL)
   ]);
-  const [arrayBuffer, lz4ArrayBuffer, hadoopLz4ArrayBuffer, deltaByteArrayBuffer, geoArrayBuffer] =
+  const [lz4ArrayBuffer, hadoopLz4ArrayBuffer, deltaByteArrayBuffer, geoArrayBuffer] =
     await Promise.all([
-      parquetResponse.arrayBuffer(),
       lz4ParquetResponse.arrayBuffer(),
       hadoopLz4ParquetResponse.arrayBuffer(),
       deltaByteArrayParquetResponse.arrayBuffer(),
@@ -70,28 +65,38 @@ export async function parquetBench(suite) {
   ]);
   const implementations = createParquetBenchmarkImplementations(typescriptLoader, wasmLoader);
   const scenarios: ParquetBenchmarkScenario[] = [
-    {name: 'GeoParquet object rows', arrayBuffer: geoArrayBuffer},
+    {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
     {
-      name: 'LZ4_RAW full table',
+      name: 'LZ4_RAW full table → Arrow',
       arrayBuffer: lz4ArrayBuffer,
+      shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'Hadoop LZ4 full table',
+      name: 'Hadoop LZ4 full table → Arrow',
       arrayBuffer: hadoopLz4ArrayBuffer,
+      shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'DELTA_BYTE_ARRAY full table',
+      name: 'DELTA_BYTE_ARRAY full table → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
+      shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'DELTA_BYTE_ARRAY projected columns',
+      name: 'DELTA_BYTE_ARRAY projected columns → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       columns: ['c_customer_id', 'c_email_address'],
+      shape: 'arrow-table',
       // parquet-wasm 0.7.2 currently returns mismatched IPC schema/vector counts for this projection.
       implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY full table → object rows',
+      arrayBuffer: deltaByteArrayBuffer,
+      shape: 'object-row-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
     }
   ];
 
@@ -102,7 +107,7 @@ export async function parquetBench(suite) {
         )
       : implementations;
     const rowCount = await validateParquetBenchmarkScenario(scenario, scenarioImplementations);
-    suite = suite.groupSorted(`Parquet object-row decode - ${scenario.name}`);
+    suite = suite.groupSorted(`Parquet decode - ${scenario.name}`);
 
     for (const implementation of scenarioImplementations) {
       suite.addAsync(
@@ -119,30 +124,6 @@ export async function parquetBench(suite) {
       );
     }
   }
-
-  suite = suite.group('ParquetLoader Arrow');
-
-  suite.addAsync(
-    "load(ParquetLoader, shape: 'arrow-table') - Parquet load",
-    {multiplier: 40000, unit: 'rows'},
-    async () => {
-      await load(arrayBuffer, ParquetLoader, {
-        core: {worker: false},
-        parquet: {shape: 'arrow-table'}
-      });
-    }
-  );
-
-  suite.addAsync(
-    "load(ParquetLoader, shape: 'arrow-table') - GeoParquet load",
-    {multiplier: 40000, unit: 'rows'},
-    async () => {
-      await load(geoArrayBuffer, ParquetLoader, {
-        core: {worker: false},
-        parquet: {shape: 'arrow-table'}
-      });
-    }
-  );
 
   suite = suite.group('GeoParquetLoader');
 
@@ -174,7 +155,7 @@ export async function parquetBench(suite) {
   // });
 }
 
-/** Creates equivalent object-row decode cases for the maintained Parquet implementations. */
+/** Creates equivalent Arrow-table decode cases for the maintained Parquet implementations. */
 function createParquetBenchmarkImplementations(
   typescriptLoader: LoaderWithParser,
   wasmLoader: LoaderWithParser
@@ -182,12 +163,12 @@ function createParquetBenchmarkImplementations(
   return [
     {
       id: 'typescript',
-      name: 'ParquetJSLoader (TypeScript)',
+      name: 'ParquetJSLoader',
       decode: scenario => decodeWithLoadersGl(scenario, typescriptLoader)
     },
     {
       id: 'wasm',
-      name: 'ParquetLoader (WASM)',
+      name: 'ParquetLoader',
       decode: scenario => decodeWithLoadersGl(scenario, wasmLoader)
     },
     {
@@ -205,19 +186,45 @@ async function decodeWithLoadersGl(
 ): Promise<number> {
   const table = (await parse(scenario.arrayBuffer, loader, {
     core: {worker: false},
-    parquet: {columns: scenario.columns}
-  })) as ObjectRowTable;
-  return table.data.length;
+    parquet: {columns: scenario.columns, shape: scenario.shape}
+  })) as ArrowTable | ObjectRowTable;
+  return table.shape === 'arrow-table' ? table.data.numRows : table.data.length;
 }
 
 /** Decodes one scenario through the latest pinned hyparquet implementation. */
 async function decodeWithHyparquet(scenario: ParquetBenchmarkScenario): Promise<number> {
-  const rows = await parquetReadObjects({
+  if (scenario.shape === 'object-row-table') {
+    const rows = await parquetReadObjects({
+      file: scenario.arrayBuffer,
+      columns: scenario.columns,
+      compressors
+    });
+    return rows.length;
+  }
+
+  const columns: Record<string, unknown[]> = {};
+  await parquetRead({
     file: scenario.arrayBuffer,
     columns: scenario.columns,
+    onChunk: chunk => appendHyparquetColumnChunk(columns, chunk),
     compressors
   });
-  return rows.length;
+  const columnarTable = makeTableFromData(columns);
+  const arrowTable = convertTable(columnarTable, 'arrow-table');
+  return arrowTable.data.numRows;
+}
+
+/** Copies one hyparquet output chunk into a contiguous top-level column. */
+function appendHyparquetColumnChunk(
+  columns: Record<string, unknown[]>,
+  chunk: ColumnData
+): void {
+  const column = columns[chunk.columnName] || [];
+  column.length = Math.max(column.length, chunk.rowEnd);
+  for (let valueIndex = 0; valueIndex < chunk.columnData.length; valueIndex++) {
+    column[chunk.rowStart + valueIndex] = chunk.columnData[valueIndex];
+  }
+  columns[chunk.columnName] = column;
 }
 
 /** Warms every implementation and verifies that benchmark throughput uses a common row count. */
