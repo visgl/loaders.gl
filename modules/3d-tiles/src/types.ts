@@ -328,7 +328,7 @@ export type Subtree = {
    * An array of content availability objects. If the tile has a single content this array will have one element; if the tile has multiple contents -
    * as supported by 3DTILES_multiple_contents and 3D Tiles 1.1 - this array will have multiple elements.
    */
-  contentAvailability: Availability | Availability[];
+  contentAvailability?: Availability | Availability[];
   /** The availability of children subtrees. The availability bitstream is a 1D boolean array where subtrees are ordered by their Morton index in the level of the tree
    * immediately below the bottom row of the subtree. A child subtree's availability is determined by a single bit, 1 meaning a subtree exists at that spatial index,
    * and 0 meaning it does not. The number of elements in the array is `N^subtreeLevels` where N is 4 for subdivision scheme `QUADTREE` and 8 for `OCTREE`.
@@ -355,6 +355,8 @@ export type Availability = {
    * The schemas of vNext and 1.1 are same but there are tiles with `bufferView` property instead of `bitstream`
    */
   bufferView?: number;
+  /** Number of available elements represented by the availability declaration. */
+  availableCount?: number;
   /**
    * Postprocessing property
    * contain availability bits loaded from the bufferView
@@ -369,16 +371,23 @@ export type ExplicitBitstream = Uint8Array;
  */
 export type SubdivisionScheme = 'QUADTREE' | 'OCTREE';
 
-type GLTFStyleBuffer = {
-  name: string;
+/** Binary buffer declared by a 3D Tiles subtree. */
+export type GLTFStyleBuffer = {
+  /** Optional application-specific buffer name. */
+  name?: string;
+  /** URI of an external buffer. Omitted for a buffer embedded in a binary subtree. */
   uri?: string;
+  /** Buffer byte length. */
   byteLength: number;
 };
 
 /** Subtree buffer view */
 export type GLTFStyleBufferView = {
+  /** Index of the buffer containing this view. */
   buffer: number;
+  /** Byte offset of this view within its buffer. */
   byteOffset: number;
+  /** Byte length of this view. */
   byteLength: number;
 };
 
