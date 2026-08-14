@@ -185,8 +185,10 @@ const table = await load(url, ParquetJSLoader, {
 ```
 
 For `shape: 'arrow-table'`, `ParquetJSLoader` materializes flat selected columns directly into Apache
-Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Nested schemas use
-the object-row materializer as a compatibility fallback.
+Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Flat `UTF8`,
+`BYTE_ARRAY`, and `FIXED_LEN_BYTE_ARRAY` columns are assembled directly into Arrow offset, validity,
+and value buffers without converting their bytes through JavaScript strings. Nested schemas use the
+object-row materializer as a compatibility fallback.
 
 ## Worker Execution
 

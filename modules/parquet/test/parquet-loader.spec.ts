@@ -186,6 +186,40 @@ test('ParquetJSLoader#arrow-table materializes required INT64 logical values', a
   t.end();
 });
 
+test('ParquetJSLoader#arrow-table preserves ranged optional DELTA_BYTE_ARRAY Utf8 values', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/delta_byte_array.parquet';
+  const columns = ['c_customer_id', 'c_email_address'];
+  const parquetOptions = {shape: 'arrow-table' as const, columns, offset: 3, limit: 5, batchSize: 2};
+  const arrowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: parquetOptions
+  });
+  const objectRowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {...parquetOptions, shape: 'object-row-table'}
+  });
+
+  t.equal(arrowTable.shape, 'arrow-table');
+  t.equal(objectRowTable.shape, 'object-row-table');
+  if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
+    t.deepEqual(
+      arrowTable.data.batches.map(batch => batch.numRows),
+      [2, 2, 1],
+      'retains requested Arrow batches'
+    );
+    for (const columnName of columns) {
+      const vector = arrowTable.data.getChild(columnName);
+      t.ok(vector, `${columnName} Arrow vector is present`);
+      t.deepEqual(
+        vector?.toArray(),
+        objectRowTable.data.map(row => row[columnName] ?? null),
+        `${columnName} values and nulls match object-row decoding`
+      );
+    }
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#load alltypes_plain file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
   const table = await load(url, ParquetJSLoader, getParquetLoaderOptions(url));
@@ -210,14 +244,27 @@ test('ParquetJSLoader#load alltypes_plain_snappy file', async (t) => {
   t.end();
 });
 
-test('ParquetJSLoader#load binary file', async (t) => {
+test('ParquetJSLoader#load binary file as an Arrow table', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
-  const table = await load(url, ParquetJSLoader, getParquetLoaderOptions(url));
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table', offset: 2, limit: 4, batchSize: 2}
+  });
 
-  t.equal(table.shape, 'object-row-table');
-  if (table.shape === 'object-row-table') {
-    t.equal(table.data.length, 12);
-    t.deepEqual(table.data, BINARY_EXPECTED());
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 4);
+    t.deepEqual(
+      table.data.getChild('foo')?.toArray(),
+      BINARY_EXPECTED()
+        .slice(2, 6)
+        .map(row => row.foo)
+    );
+    t.deepEqual(
+      table.data.batches.map(batch => batch.numRows),
+      [2, 2],
+      'retains requested Arrow batches'
+    );
   }
   t.end();
 });
