@@ -7,6 +7,7 @@ import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';
 import {TileJSONLoader} from '@loaders.gl/mvt';
+import {parseTileJSON} from '../src/lib/parse-tilejson';
 
 import {TILEJSONS} from './data/tilejson/tilejson';
 
@@ -39,4 +40,31 @@ test('TileJSONLoader#tippecanoe', async () => {
   expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, 'maxValue clips unique values').toBe(
     10
   );
+});
+
+test('parseTileJSON#rejects non-object metadata', () => {
+  expect(parseTileJSON(null, {})).toBeNull();
+  expect(parseTileJSON([], {})).toBeNull();
+});
+
+test('parseTileJSON#reads nested metadata and tolerates indexed Tilestats attributes', () => {
+  const metadata = parseTileJSON(
+    {
+      json: JSON.stringify({tilestats: {layers: []}}),
+      vector_layers: [{id: 'indexed', fields: {}}],
+      tilestats: {
+        layers: [
+          {
+            layer: 'indexed',
+            geometry: 'Point',
+            attributes: [{attribute: 'population|0', type: 'number'}]
+          }
+        ]
+      }
+    },
+    {}
+  );
+
+  expect(metadata?.metaJson).toEqual({tilestats: {layers: []}});
+  expect(metadata?.layers?.[0]?.fields).toEqual([]);
 });
