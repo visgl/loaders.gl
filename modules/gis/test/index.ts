@@ -30,5 +30,6 @@ import './wkt-crs/parse-wkt-crs.spec';
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
 import './geoarrow/wkb-geoarrow-utils.spec';
+import './geoarrow/geospatial-metadata-zod-schema.spec';
 
 import './table-converters/convert-geojson-to-arrow-table.spec';

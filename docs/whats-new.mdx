@@ -77,6 +77,11 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
+**@loaders.gl/gis**
+
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/gis`, while matching runtime validators are available from `@loaders.gl/gis/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
+
 **@loaders.gl/deck-layers**
 
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.

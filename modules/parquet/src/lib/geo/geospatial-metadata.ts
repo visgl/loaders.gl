@@ -10,34 +10,21 @@ import {
   getMetadataValue,
   setGeoMetadata,
   setMetadataValue,
+  type GeoArrowEncoding,
+  type GeoArrowMetadata,
   type GeoColumnMetadata,
   type GeoMetadata,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
+import {
+  GeoArrowMetadataSchema,
+  GeoParquetMetadataSchema
+} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 const GEOARROW_EXTENSION_NAME_KEY = 'ARROW:extension:name';
 const GEOARROW_EXTENSION_METADATA_KEY = 'ARROW:extension:metadata';
 const GEOPARQUET_VERSION = '1.1.0';
-
-type GeoArrowEncoding =
-  | 'geoarrow.geometry'
-  | 'geoarrow.geometrycollection'
-  | 'geoarrow.multipolygon'
-  | 'geoarrow.polygon'
-  | 'geoarrow.multilinestring'
-  | 'geoarrow.linestring'
-  | 'geoarrow.multipoint'
-  | 'geoarrow.point'
-  | 'geoarrow.wkb'
-  | 'geoarrow.wkt';
-
-type GeoArrowMetadata = {
-  encoding?: GeoArrowEncoding;
-  crs?: Record<string, unknown>;
-  edges?: 'spherical';
-  [key: string]: unknown;
-};
 
 const GEOARROW_ENCODINGS = [
   'geoarrow.geometry',
@@ -48,6 +35,7 @@ const GEOARROW_ENCODINGS = [
   'geoarrow.linestring',
   'geoarrow.multipoint',
   'geoarrow.point',
+  'geoarrow.box',
   'geoarrow.wkb',
   'geoarrow.wkt'
 ] as const satisfies GeoArrowEncoding[];
@@ -116,9 +104,10 @@ function getGeometryMetadataForField(
   const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_EXTENSION_METADATA_KEY);
   if (columnMetadata) {
     try {
+      const parsedMetadata = GeoArrowMetadataSchema.parse(JSON.parse(columnMetadata));
       metadata = {
         ...(metadata || {}),
-        ...(JSON.parse(columnMetadata) as GeoArrowMetadata)
+        ...parsedMetadata
       };
     } catch {
       return metadata;
@@ -354,51 +343,12 @@ function getGeoArrowMetadataFromGeoParquetField(
 }
 
 function isValidGeoParquetMetadata(geoMetadata: GeoMetadata | null): boolean {
-  if (!geoMetadata || typeof geoMetadata !== 'object') {
-    return false;
-  }
-
-  if (
-    typeof geoMetadata.version !== 'string' ||
-    typeof geoMetadata.primary_column !== 'string' ||
-    !geoMetadata.columns ||
-    typeof geoMetadata.columns !== 'object'
-  ) {
-    return false;
-  }
-
-  const primaryColumnMetadata = geoMetadata.columns[geoMetadata.primary_column];
-  if (!primaryColumnMetadata) {
-    return false;
-  }
-
-  return Object.values(geoMetadata.columns).every(isValidGeoParquetColumnMetadata);
+  return GeoParquetMetadataSchema.safeParse(geoMetadata).success;
 }
 
-function isValidGeoParquetColumnMetadata(columnMetadata: unknown): boolean {
-  if (!columnMetadata || typeof columnMetadata !== 'object') {
-    return false;
-  }
-
-  const {encoding, geometry_types} = columnMetadata as GeoColumnMetadata;
-  return (
-    typeof encoding === 'string' &&
-    Boolean(
-      GEOPARQUET_TO_GEOARROW_ENCODINGS[
-        encoding.toLowerCase() as keyof typeof GEOPARQUET_TO_GEOARROW_ENCODINGS
-      ]
-    ) &&
-    Array.isArray(geometry_types)
-  );
-}
-
-function synthesizeGeoParquetColumnMetadata(geometryMetadata: {
-  encoding?: GeoArrowEncoding;
-  crs?: Record<string, unknown>;
-  crs_type?: 'projjson' | 'wkt2:2019';
-  edges?: 'spherical';
-  geometry_types?: GeoParquetGeometryType[];
-}): GeoColumnMetadata | null {
+function synthesizeGeoParquetColumnMetadata(
+  geometryMetadata: GeoArrowMetadata
+): GeoColumnMetadata | null {
   const encoding = geometryMetadata.encoding
     ? GEOARROW_TO_GEOPARQUET_ENCODINGS[
         geometryMetadata.encoding as keyof typeof GEOARROW_TO_GEOPARQUET_ENCODINGS
@@ -418,10 +368,10 @@ function synthesizeGeoParquetColumnMetadata(geometryMetadata: {
     geometry_types: geometryTypes
   };
 
-  if (geometryMetadata.crs !== undefined) {
+  if (geometryMetadata.crs !== undefined && typeof geometryMetadata.crs !== 'string') {
     columnMetadata.crs = geometryMetadata.crs;
   }
-  if (geometryMetadata.crs_type !== undefined) {
+  if (geometryMetadata.crs_type === 'projjson' || geometryMetadata.crs_type === 'wkt2:2019') {
     columnMetadata.crs_type = geometryMetadata.crs_type;
   }
   if (geometryMetadata.edges === 'spherical') {

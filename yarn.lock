@@ -5451,6 +5451,7 @@ __metadata:
     "@math.gl/proj4": "npm:^4.1.0"
     apache-arrow: "npm:>= 17.0.0"
     pbf: "npm:^3.2.1"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
