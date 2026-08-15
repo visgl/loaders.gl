@@ -6000,11 +6000,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/zarr@workspace:modules/zarr":
+"@loaders.gl/zarr@workspace:*, @loaders.gl/zarr@workspace:modules/zarr":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/zarr@workspace:modules/zarr"
   dependencies:
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.1"
     zarr: "npm:^0.5.0"
+    zarrita: "npm:~0.7.1"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -12556,6 +12558,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zarrita/storage@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@zarrita/storage@npm:0.2.0"
+  dependencies:
+    reference-spec-reader: "npm:^0.2.0"
+    unzipit: "npm:2.0.0"
+  checksum: 10c0/9f433cb8ab404741f05c842b57e03710cc8add4f58826a001099a7b0eff7f2bb3fd3a87c9c038655d479abc9a50368eaf0685898433e313c9cf587b6d51b03a8
+  languageName: node
+  linkType: hard
+
 "@zeit/schemas@npm:2.36.0":
   version: 2.36.0
   resolution: "@zeit/schemas@npm:2.36.0"
@@ -18941,6 +18953,13 @@ __metadata:
   version: 0.7.4
   resolution: "fflate@npm:0.7.4"
   checksum: 10c0/5e749eb3a6ed61a0f6c55756abf9f4258f06f60505db689e22d18503dd252ca5af656d32668e4b7b20714adf8b313febf695d23863a8352f23e325baee0f672d
+  languageName: node
+  linkType: hard
+
+"fflate@npm:^0.8.0":
+  version: 0.8.3
+  resolution: "fflate@npm:0.8.3"
+  checksum: 10c0/eab181ca37f5348ae76d4b6f840e0026e30220e33153289ac942222d8b9638237d486507dbcc09878d724095bd354993a2ee48bbee99c8f2c6440d4448719aa7
   languageName: node
   linkType: hard
 
@@ -25970,6 +25989,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"numcodecs@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "numcodecs@npm:0.3.2"
+  dependencies:
+    fflate: "npm:^0.8.0"
+  checksum: 10c0/38e6e60ee063f63f6530f78f9dd4c1b4e347989b29950ddcf3307e43579ad1bc1ba17a6faf0e5cb9786517ac1489c02ee86a77ca8c19fbd70d0d20a23e7d6a81
+  languageName: node
+  linkType: hard
+
 "nx@npm:>=23.1.0 < 24.0.0":
   version: 23.1.1
   resolution: "nx@npm:23.1.1"
@@ -26302,6 +26330,19 @@ __metadata:
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"
     "@luma.gl/shadertools": "npm:^9.3.2"
+    react: "npm:^19.2.5"
+    react-dom: "npm:^19.2.5"
+    typescript: "npm:^5.6.0"
+    vite: "npm:^7.2.7"
+  languageName: unknown
+  linkType: soft
+
+"ome-zarr-source-example@workspace:examples/website/omezarr":
+  version: 0.0.0-use.local
+  resolution: "ome-zarr-source-example@workspace:examples/website/omezarr"
+  dependencies:
+    "@loaders.gl/core": "workspace:*"
+    "@loaders.gl/zarr": "workspace:*"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
@@ -28477,6 +28518,7 @@ __metadata:
     "@loaders.gl/splats": "workspace:*"
     "@loaders.gl/traces": "workspace:*"
     "@loaders.gl/xml": "workspace:*"
+    "@loaders.gl/zarr": "workspace:*"
     "@luma.gl/constants": "npm:^9.3.2"
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"
@@ -29349,6 +29391,13 @@ __metadata:
     unified: "npm:^11.0.0"
     vfile: "npm:^6.0.0"
   checksum: 10c0/c2ed4c0e8cf8a09aedcd47c5d016d47f6e1ff6c2d4b220e2abaf1b77713bf404756af2ea3ea7999aec5862e8825aff035edceb370c7fd8603a7e9da03bd6987e
+  languageName: node
+  linkType: hard
+
+"reference-spec-reader@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "reference-spec-reader@npm:0.2.0"
+  checksum: 10c0/8d966a0124978edf910aae10fcc56c13c2b66393ce0217819296ff1ff1b626754698c6edc4b2bfe6171acfac827979eb8ef7a884f521794798304be4a523ccd0
   languageName: node
   linkType: hard
 
@@ -33201,6 +33250,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unzipit@npm:2.0.0":
+  version: 2.0.0
+  resolution: "unzipit@npm:2.0.0"
+  checksum: 10c0/7ee6af8bf1b8a978c08cebbe65d7e0dfab8a0889d20ef89c1b2219389cad255074611f895242f34087cb0cf428719dd8251734d0e8fa4033c618c9ff21d67445
+  languageName: node
+  linkType: hard
+
 "upath@npm:^1.1.1":
   version: 1.2.0
   resolution: "upath@npm:1.2.0"
@@ -34906,6 +34962,16 @@ __metadata:
     numcodecs: "npm:^0.2.2"
     p-queue: "npm:^7.1.0"
   checksum: 10c0/d784683d06debaff526165cc6271c5a5968468d77d241180d7e01c4c8c7035b9e16888aa81606f6402121cddb9925c9822bb8d1363fa00e40f97ec57426045f8
+  languageName: node
+  linkType: hard
+
+"zarrita@npm:~0.7.1":
+  version: 0.7.4
+  resolution: "zarrita@npm:0.7.4"
+  dependencies:
+    "@zarrita/storage": "npm:^0.2.0"
+    numcodecs: "npm:^0.3.2"
+  checksum: 10c0/f4516aa547b665a94383f540ab98726d88ba91fd45e845c86ca7e0046044772860eb0d90c5e869e45b9c7a40c2acb2a0b82ea2386fb415445f27e5dda536da88
   languageName: node
   linkType: hard
 

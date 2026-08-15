@@ -4,92 +4,160 @@
 
 import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
-import type {SourceLoader, DataSourceOptions, RasterData, RasterChannelDataType} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  SourceLoader,
+  DataSourceOptions,
+  RasterData,
+  RasterChannelDataType
+} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
-import type {Labels, Channel, RootAttrs, SupportedTypedArray} from './types';
-import {guessLabels, guessTileSize, isInterleaved, validLabels} from './lib/utils';
+import type {Labels, Channel, Multiscale, RootAttrs, SupportedTypedArray} from './types';
+import {guessLabels, guessTileSize, validLabels} from './lib/utils';
 import ZarritaPixelSource from './lib/zarrita-pixel-source';
-import {loadConsolidatedMetadata, type ZarrConsolidatedMetadata} from './lib/consolidated-zarr';
-export type {ZarrConsolidatedMetadata} from './lib/consolidated-zarr';
+import {
+  loadConsolidatedMetadata,
+  type LoadConsolidatedMetadataOptions,
+  type ZarrConsolidatedMetadata,
+  type ZarrMetadataPath
+} from './lib/consolidated-zarr';
+export type {
+  LoadConsolidatedMetadataOptions,
+  ZarrConsolidatedFormat,
+  ZarrConsolidatedMetadata,
+  ZarrMetadataPath
+} from './lib/consolidated-zarr';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Options shared by Zarr-backed source loaders. */
 export type ZarrSourceLoaderOptions = DataSourceOptions & {
+  /** Zarr store discovery and dimension options. */
   zarr?: {
-    metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json';
+    /** Consolidated metadata file to load, or `auto` to probe known names. */
+    metadataPath?: ZarrMetadataPath;
+    /** Group path within the store root. */
     path?: string | null;
+    /** Explicit dimension labels when array or OME metadata does not provide them. */
     labels?: string[];
+    /** Whether opening a source requires consolidated metadata. Defaults to `true`. */
     requireConsolidatedMetadata?: boolean;
   };
+  /** OME-Zarr raster layout and channel defaults. */
   omezarr?: {
+    /** Whether multi-channel reads return one interleaved typed array by default. */
     interleaved?: boolean;
+    /** Channel indices selected when a raster request omits `channels`. */
     defaultChannels?: number[];
   };
 };
 
+/** Source loader type for Zarr-backed runtime sources. */
 export type ZarrSourceLoader<SourceT extends ZarrSource = ZarrSource> = SourceLoader<
   SourceT,
   ZarrSourceLoaderOptions
 >;
 
+/** Parameters used to request a 2D OME-Zarr plane. */
 export type GetOMEZarrParameters = {
+  /** Zero-based pyramid level. Defaults to `0`. */
   level?: number;
+  /** Zero-based time index. Defaults to the OME display setting or `0`. */
   t?: number;
+  /** Zero-based z index. Defaults to the OME display setting or `0`. */
   z?: number;
+  /** Zero-based channel indices to load. */
   channels?: number[];
+  /** Whether to return one interleaved typed array. */
   interleaved?: boolean;
+  /** Abort signal forwarded to metadata and chunk requests. */
   signal?: AbortSignal;
 };
 
+/** Channel display metadata exposed by an OME-Zarr source. */
 export type OMEZarrChannelMetadata = {
+  /** Zero-based channel index. */
   index: number;
+  /** Optional OME channel label. */
   name?: string;
+  /** Optional OME hexadecimal display color. */
   color?: string;
+  /** Whether the channel is active in the OME display settings. */
   active?: boolean;
 };
 
+/** Pyramid level metadata exposed by an OME-Zarr source. */
 export type OMEZarrLevelMetadata = {
+  /** Zero-based pyramid level. */
   level: number;
+  /** Dataset path relative to the selected image group. */
   path: string;
+  /** Width of the level in pixels. */
   width: number;
+  /** Height of the level in pixels. */
   height: number;
-};
-
-export type OMEZarrSourceLoaderMetadata = {
-  name?: string;
-  width: number;
-  height: number;
-  bandCount: number;
-  dtype: RasterChannelDataType;
-  sizeT: number;
-  sizeZ: number;
-  sizeC: number;
-  labels: string[];
-  tileSize?: {width: number; height: number};
-  levels: OMEZarrLevelMetadata[];
-  channels: OMEZarrChannelMetadata[];
-  metadata: Record<string, unknown>;
+  /** OME coordinate transformations declared for this level. */
   coordinateTransformations?: unknown[];
 };
 
+/** Normalized metadata exposed by {@link OMEZarrImageSource}. */
+export type OMEZarrSourceLoaderMetadata = {
+  /** OME image name, or a name derived from the selected group path. */
+  name?: string;
+  /** Full-resolution width in pixels. */
+  width: number;
+  /** Full-resolution height in pixels. */
+  height: number;
+  /** Number of available channels. */
+  bandCount: number;
+  /** Numeric channel type. */
+  dtype: RasterChannelDataType;
+  /** Number of time indices. */
+  sizeT: number;
+  /** Number of z indices. */
+  sizeZ: number;
+  /** Number of channel indices. */
+  sizeC: number;
+  /** Default time index from OME display settings. */
+  defaultT: number;
+  /** Default z index from OME display settings. */
+  defaultZ: number;
+  /** Dimension labels reported by the array or OME metadata. */
+  labels: string[];
+  /** Native chunk dimensions for the full-resolution level. */
+  tileSize?: {width: number; height: number};
+  /** Available pyramid levels. */
+  levels: OMEZarrLevelMetadata[];
+  /** OME channel display metadata. */
+  channels: OMEZarrChannelMetadata[];
+  /** Normalized OME attributes retained for application-specific use. */
+  metadata: Record<string, unknown>;
+  /** Image-level coordinate transformations when present. */
+  coordinateTransformations?: unknown[];
+};
+
+/** Options for {@link loadZarrConsolidatedMetadata}. */
+export type LoadZarrConsolidatedMetadataOptions = LoadConsolidatedMetadataOptions & {
+  /** Fetch implementation used for metadata requests. Defaults to global `fetch`. */
+  fetch?: (url: string, options?: RequestInit) => Promise<Response>;
+};
+
 type OMEZarrInit = {
+  /** Pixel sources ordered by pyramid level. */
   data: ZarritaPixelSource<string[]>[];
+  /** Normalized metadata shared by all reads. */
   metadata: OMEZarrSourceLoaderMetadata;
 };
 
 /**
- * Loads consolidated metadata for a Zarr store root and extracts top-level groups.
+ * Loads consolidated metadata for a Zarr store root and extracts top-level arrays and groups.
  */
 export async function loadZarrConsolidatedMetadata(
   url: string,
-  options: {
-    metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json';
-    fetch?: (url: string, options?: RequestInit) => Promise<Response>;
-    signal?: AbortSignal;
-  } = {}
+  options: LoadZarrConsolidatedMetadataOptions = {}
 ): Promise<ZarrConsolidatedMetadata> {
   const fetcher = options.fetch || fetch;
   return await loadConsolidatedMetadata(url, fetcher, options);
@@ -99,29 +167,38 @@ export async function loadZarrConsolidatedMetadata(
  * Base runtime source for Zarr-backed sources that resolve groups and consolidated metadata.
  */
 export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOptions> {
+  /** Zarrita store used for metadata and chunk reads. */
   protected readonly store: zarrita.FetchStore;
+  /** Selected group path within the store root. */
   protected readonly path: string | null;
+  /** Shared consolidated metadata request. */
   private consolidatedMetadataPromise: Promise<ZarrConsolidatedMetadata> | null = null;
 
-  constructor(data: string, options: ZarrSourceLoaderOptions) {
-    super(data, options, {
-      zarr: {
-        metadataPath: 'auto',
-        path: null,
-        labels: undefined!,
-        requireConsolidatedMetadata: true
+  /** Creates a Zarr-backed source. */
+  constructor(data: string, options: ZarrSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(
+      data,
+      options,
+      {
+        zarr: {
+          metadataPath: 'auto',
+          path: null,
+          labels: undefined!,
+          requireConsolidatedMetadata: true
+        },
+        omezarr: {
+          interleaved: false,
+          defaultChannels: undefined!
+        }
       },
-      omezarr: {
-        interleaved: false,
-        defaultChannels: undefined!
-      }
-    });
+      coreApi
+    );
 
     this.path = this.options.zarr?.path || null;
-    this.store = new zarrita.FetchStore(this.url, {
+    this.store = new zarrita.FetchStore(getZarritaStoreUrl(this.url), {
       fetch: async (request: Request) => {
         const headers = Object.fromEntries(request.headers.entries());
-        return await this.fetch(request.url, {
+        return await this.fetchZarrFile(request.url, {
           method: request.method,
           headers,
           signal: request.signal
@@ -130,17 +207,46 @@ export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOpti
     });
   }
 
-  async getConsolidatedMetadata(signal?: AbortSignal): Promise<ZarrConsolidatedMetadata> {
-    if (!this.consolidatedMetadataPromise) {
-      this.consolidatedMetadataPromise = loadConsolidatedMetadata(this.url, this.fetch, {
-        metadataPath: this.options.zarr?.metadataPath,
-        signal
-      });
-    }
+  /** Fetches Zarr metadata or chunk data through the injected core API when available. */
+  private async fetchZarrFile(url: string, requestOptions?: RequestInit): Promise<Response> {
+    const fetchUrl = getFetchableUrl(url);
+    const response = this.hasCoreApi
+      ? await this.coreApi.fetchFile(fetchUrl, requestOptions)
+      : await this.fetch(fetchUrl, requestOptions);
 
-    return await this.consolidatedMetadataPromise;
+    // The Node file fetcher reports missing files as 400/ENOENT, while FetchStore
+    // needs a 404 response to continue its v2/v3 format probing.
+    if (response.status === 400 && response.statusText.includes('ENOENT')) {
+      return new Response(null, {status: 404, statusText: 'Not Found'});
+    }
+    return response;
   }
 
+  /** Loads normalized consolidated metadata for the backing Zarr store. */
+  async getConsolidatedMetadata(signal?: AbortSignal): Promise<ZarrConsolidatedMetadata> {
+    if (!this.consolidatedMetadataPromise) {
+      this.consolidatedMetadataPromise = loadConsolidatedMetadata(
+        this.url,
+        (url, requestOptions) => this.fetchZarrFile(url, requestOptions),
+        {
+          metadataPath: this.options.zarr?.metadataPath,
+          signal
+        }
+      );
+    }
+
+    const consolidatedMetadataPromise = this.consolidatedMetadataPromise;
+    try {
+      return await consolidatedMetadataPromise;
+    } catch (error) {
+      if (this.consolidatedMetadataPromise === consolidatedMetadataPromise) {
+        this.consolidatedMetadataPromise = null;
+      }
+      throw error;
+    }
+  }
+
+  /** Opens the selected Zarr group after the configured metadata preflight. */
   protected async openGroup(signal?: AbortSignal): Promise<zarrita.Group<Readable>> {
     if (this.options.zarr?.requireConsolidatedMetadata) {
       await this.getConsolidatedMetadata(signal);
@@ -156,13 +262,15 @@ export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOpti
  */
 export const OMEZarrSourceLoader = {
   dataType: null as unknown as OMEZarrImageSource,
+  /** Runtime source type marker used by `createDataSource()` type inference. */
+  dataSource: null as unknown as OMEZarrImageSource,
   batchType: null as never,
   name: 'OMEZarrSourceLoader',
   id: 'omezarr',
   module: 'zarr',
   version: VERSION,
   extensions: ['zarr'],
-  mimeTypes: ['application/vnd+zarr'],
+  mimeTypes: [],
   type: 'omezarr',
   fromUrl: true,
   fromBlob: false,
@@ -178,7 +286,7 @@ export const OMEZarrSourceLoader = {
       interleaved: false,
       defaultChannels: undefined!
     }
-  },
+  } as ZarrSourceLoaderOptions,
 
   defaultOptions: {
     zarr: {
@@ -196,23 +304,27 @@ export const OMEZarrSourceLoader = {
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   createDataSource: (
     data: string,
-    options: ZarrSourceLoaderOptions
-  ): OMEZarrImageSource => new OMEZarrImageSource(data, options)
+    options: ZarrSourceLoaderOptions,
+    coreApi?: CoreAPI
+  ): OMEZarrImageSource => new OMEZarrImageSource(data, options, coreApi)
 } as const satisfies ZarrSourceLoader<OMEZarrImageSource>;
 
 /**
  * Source that loads 2D planes from an OME-Zarr pyramid.
  */
 export class OMEZarrImageSource extends ZarrSource {
+  /** Shared source initialization request. */
   private initPromise: Promise<OMEZarrInit> | null = null;
 
-  async getMetadata(): Promise<OMEZarrSourceLoaderMetadata> {
-    const {metadata} = await this.getInitPromise();
+  /** Returns normalized OME-Zarr image and pyramid metadata. */
+  async getMetadata(signal?: AbortSignal): Promise<OMEZarrSourceLoaderMetadata> {
+    const {metadata} = await this.getInitPromise(signal);
     return metadata;
   }
 
+  /** Loads one 2D OME-Zarr plane or channel composite. */
   async getRaster(parameters: GetOMEZarrParameters = {}): Promise<RasterData> {
-    const {data, metadata} = await this.getInitPromise();
+    const {data, metadata} = await this.getInitPromise(parameters.signal);
     const level = parameters.level ?? 0;
     const pixelSource = data[level];
 
@@ -222,10 +334,20 @@ export class OMEZarrImageSource extends ZarrSource {
 
     const interleavedSource = metadata.labels.includes('_c');
     const interleaved = parameters.interleaved ?? this.options.omezarr?.interleaved ?? interleavedSource;
-    const selection = {
-      t: parameters.t ?? 0,
-      z: parameters.z ?? 0
-    };
+    const selection: Record<string, number> = {};
+    const timeIndex = normalizeAxisSelection(
+      parameters.t,
+      metadata.defaultT,
+      metadata.sizeT,
+      'time'
+    );
+    const zIndex = normalizeAxisSelection(parameters.z, metadata.defaultZ, metadata.sizeZ, 'z');
+    if (metadata.labels.includes('t')) {
+      selection.t = timeIndex;
+    }
+    if (metadata.labels.includes('z')) {
+      selection.z = zIndex;
+    }
     const channels = normalizeChannelSelection(
       parameters.channels,
       metadata.bandCount,
@@ -274,16 +396,26 @@ export class OMEZarrImageSource extends ZarrSource {
     };
   }
 
-  private getInitPromise(): Promise<OMEZarrInit> {
+  /** Returns the shared initialization request for this source. */
+  private async getInitPromise(signal?: AbortSignal): Promise<OMEZarrInit> {
     if (!this.initPromise) {
-      this.initPromise = this.initialize();
+      this.initPromise = this.initialize(signal);
     }
 
-    return this.initPromise;
+    const initPromise = this.initPromise;
+    try {
+      return await initPromise;
+    } catch (error) {
+      if (this.initPromise === initPromise) {
+        this.initPromise = null;
+      }
+      throw error;
+    }
   }
 
-  private async initialize(): Promise<OMEZarrInit> {
-    const group = await this.openGroup();
+  /** Opens the image group and creates one pixel source per pyramid level. */
+  private async initialize(signal?: AbortSignal): Promise<OMEZarrInit> {
+    const group = await this.openGroup(signal);
     const attrs = normalizeRootAttrs(group.attrs as unknown as RootAttrs);
     const datasets = attrs.multiscales?.[0]?.datasets;
 
@@ -292,34 +424,45 @@ export class OMEZarrImageSource extends ZarrSource {
     }
 
     const arrays = await Promise.all(
-      datasets.map(dataset => zarrita.open(group.resolve(dataset.path), {kind: 'array'}))
+      datasets.map(dataset =>
+        zarrita.open(group.resolve(dataset.path), {kind: 'array', signal})
+      )
     );
 
     const labels = inferLabels(attrs, arrays[0], this.options.zarr?.labels);
-    const tileSize = guessTileSize({shape: arrays[0].shape, chunks: arrays[0].chunks});
+    const tileSize = guessTileSize({shape: arrays[0].shape, chunks: arrays[0].chunks}, labels);
     const data = arrays.map(array => new ZarritaPixelSource(array, labels, tileSize));
 
     return {
       data,
-      metadata: normalizeOMEZarrMetadata(this.data, attrs, data)
+      metadata: normalizeOMEZarrMetadata(this.path || this.data, attrs, data)
     };
   }
 }
 
+/** Normalizes pre-0.5 and 0.5 OME attributes into one internal shape. */
 function normalizeRootAttrs(attrs: RootAttrs): {
-  multiscales: NonNullable<RootAttrs['multiscales']>;
+  multiscales: Multiscale[];
   omero: {channels?: Channel[]; name?: string; rdefs?: {defaultT?: number; defaultZ?: number; model: string}};
   coordinateTransformations?: unknown[];
 } {
   const omeAttrs = 'ome' in attrs && attrs.ome ? attrs.ome : null;
+  const multiscales =
+    ('multiscales' in attrs ? attrs.multiscales : undefined) || omeAttrs?.multiscales || [];
+  const legacyCoordinateTransformations =
+    'coordinateTransformations' in attrs ? attrs.coordinateTransformations : undefined;
 
   return {
-    multiscales: attrs.multiscales || omeAttrs?.multiscales || [],
+    multiscales,
     omero: ('omero' in attrs ? attrs.omero : undefined) || omeAttrs?.omero || {},
-    coordinateTransformations: attrs.coordinateTransformations || omeAttrs?.coordinateTransformations
+    coordinateTransformations:
+      multiscales[0]?.coordinateTransformations ||
+      legacyCoordinateTransformations ||
+      omeAttrs?.coordinateTransformations
   };
 }
 
+/** Resolves dimension labels from explicit options, array metadata, or OME axes. */
 function inferLabels(
   attrs: ReturnType<typeof normalizeRootAttrs>,
   array: zarrita.Array<zarrita.DataType, Readable>,
@@ -338,6 +481,7 @@ function inferLabels(
   return labels;
 }
 
+/** Copies non-empty Zarr v3 dimension names. */
 function normalizeDimensionNames(dimensionNames?: string[]): string[] | null {
   if (!dimensionNames?.length) {
     return null;
@@ -346,6 +490,7 @@ function normalizeDimensionNames(dimensionNames?: string[]): string[] | null {
   return [...dimensionNames];
 }
 
+/** Extracts named dimensions from OME multiscale axis metadata. */
 function getAxisNames(
   axes: Array<string | {name?: string; type?: string}> | undefined
 ): string[] | null {
@@ -360,13 +505,14 @@ function getAxisNames(
   return labels.length ? labels : null;
 }
 
+/** Builds normalized OME-Zarr metadata from the opened pyramid sources. */
 function normalizeOMEZarrMetadata(
   data: string,
   attrs: ReturnType<typeof normalizeRootAttrs>,
   sources: ZarritaPixelSource<string[]>[]
 ): OMEZarrSourceLoaderMetadata {
   const baseSource = sources[0];
-  const interleaved = isInterleaved(baseSource.shape);
+  const interleaved = baseSource.labels[baseSource.labels.length - 1] === '_c';
   const [height, width] = baseSource.shape.slice(interleaved ? -3 : -2);
   const labels = [...baseSource.labels];
   const dtype = normalizeDtype(baseSource.dtype);
@@ -375,12 +521,15 @@ function normalizeOMEZarrMetadata(
     getAxisSize(baseSource.shape, labels, 'c') ||
     (attrs.omero?.channels?.length || 1);
   const levels = sources.map((source, level) => {
-    const [levelHeight, levelWidth] = source.shape.slice(isInterleaved(source.shape) ? -3 : -2);
+    const levelInterleaved = source.labels[source.labels.length - 1] === '_c';
+    const [levelHeight, levelWidth] = source.shape.slice(levelInterleaved ? -3 : -2);
+    const dataset = attrs.multiscales[0]?.datasets[level];
     return {
       level,
-      path: attrs.multiscales[0]?.datasets[level]?.path || String(level),
+      path: dataset?.path || String(level),
       width: levelWidth,
-      height: levelHeight
+      height: levelHeight,
+      coordinateTransformations: dataset?.coordinateTransformations
     };
   });
 
@@ -397,8 +546,10 @@ function normalizeOMEZarrMetadata(
       getAxisSize(baseSource.shape, labels, '_c') ||
       attrs.omero?.channels?.length ||
       1,
+    defaultT: attrs.omero?.rdefs?.defaultT ?? 0,
+    defaultZ: attrs.omero?.rdefs?.defaultZ ?? 0,
     labels,
-    tileSize: {width: baseSource.tileSize, height: baseSource.tileSize},
+    tileSize: {width: baseSource.tileWidth, height: baseSource.tileHeight},
     levels,
     channels: (attrs.omero?.channels || []).map(normalizeChannel),
     metadata: attrs as unknown as Record<string, unknown>,
@@ -406,6 +557,7 @@ function normalizeOMEZarrMetadata(
   };
 }
 
+/** Converts OME display settings for one channel into public metadata. */
 function normalizeChannel(channel: Channel, index: number): OMEZarrChannelMetadata {
   return {
     index,
@@ -415,11 +567,13 @@ function normalizeChannel(channel: Channel, index: number): OMEZarrChannelMetada
   };
 }
 
+/** Returns the size of a named dimension when it is present. */
 function getAxisSize(shape: number[], labels: string[], label: string): number | null {
   const index = labels.indexOf(label);
   return index >= 0 ? shape[index] : null;
 }
 
+/** Converts a Zarrita dtype into the raster source dtype union. */
 function normalizeDtype(dtype: string): RasterChannelDataType {
   switch (dtype) {
     case 'uint8':
@@ -436,6 +590,7 @@ function normalizeDtype(dtype: string): RasterChannelDataType {
   }
 }
 
+/** Resolves and validates the channel selection for a raster request. */
 function normalizeChannelSelection(
   requestedChannels: number[] | undefined,
   bandCount: number,
@@ -444,20 +599,58 @@ function normalizeChannelSelection(
   const channelSelection =
     requestedChannels || defaultChannels || Array.from({length: bandCount}, (_, index) => index);
 
+  if (channelSelection.length === 0) {
+    throw new Error('OME-Zarr channel selection must include at least one channel.');
+  }
+
   for (const channel of channelSelection) {
-    if (channel < 0 || channel >= bandCount) {
+    if (!Number.isInteger(channel) || channel < 0 || channel >= bandCount) {
       throw new Error(`Channel ${channel} is out of bounds for OME-Zarr with ${bandCount} bands.`);
     }
   }
 
-  return channelSelection;
+  return [...channelSelection];
 }
 
+/** Resolves and validates one optional time or z selection. */
+function normalizeAxisSelection(
+  requestedIndex: number | undefined,
+  defaultIndex: number,
+  size: number,
+  axisName: 'time' | 'z'
+): number {
+  const index = requestedIndex ?? defaultIndex;
+  if (!Number.isInteger(index) || index < 0 || index >= size) {
+    throw new Error(`OME-Zarr ${axisName} index ${index} is out of bounds for axis size ${size}.`);
+  }
+  return index;
+}
+
+/** Derives a display name from a store URL or selected group path. */
 function getOMEZarrName(data: string): string {
   const normalizedData = data.replace(/[?#].*$/, '').replace(/\/+$/, '');
   return normalizedData.split('/').pop() || normalizedData;
 }
 
+/** Converts file URLs emitted by FetchStore into paths accepted by core's Node file fetcher. */
+function getFetchableUrl(url: string): string {
+  if (!url.startsWith('file:')) {
+    return url;
+  }
+
+  return decodeURIComponent(new URL(url).pathname);
+}
+
+/** Resolves browser-relative URLs because Zarrita's FetchStore requires an absolute URL. */
+function getZarritaStoreUrl(url: string): string {
+  if (typeof globalThis.location?.href !== 'string') {
+    return url;
+  }
+
+  return new URL(url, globalThis.location.href).href;
+}
+
+/** Interleaves equally sized planar channel arrays. */
 function interleaveTypedArrays(
   data: SupportedTypedArray[],
   dtype: RasterChannelDataType
@@ -476,6 +669,7 @@ function interleaveTypedArrays(
   return interleaved;
 }
 
+/** Selects channels from an interleaved source and returns the requested layout. */
 function selectInterleavedChannels(
   data: SupportedTypedArray,
   bandCount: number,
@@ -504,6 +698,7 @@ function selectInterleavedChannels(
   return channelData.length === 1 ? channelData[0] : channelData;
 }
 
+/** Returns the typed-array constructor for a raster dtype. */
 function getTypedArrayConstructor(
   dtype: RasterChannelDataType
 ): new (length: number) => SupportedTypedArray {
@@ -529,6 +724,7 @@ function getTypedArrayConstructor(
   }
 }
 
+/** Returns the raster dtype represented by a typed-array constructor. */
 function getTypedArrayDtype(
   TypedArrayConstructor: new (length: number) => SupportedTypedArray
 ): RasterChannelDataType {

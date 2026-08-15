@@ -19,14 +19,17 @@ export function normalizeStore(source: string | Store): Store {
 export async function loadMultiscales(store: Store, path = '') {
   const grp = await openGroup(store, path);
   const rootAttrs = (await grp.attrs.asObject()) as RootAttrs;
+  const multiscales =
+    ('multiscales' in rootAttrs ? rootAttrs.multiscales : undefined) ||
+    ('ome' in rootAttrs ? rootAttrs.ome?.multiscales : undefined);
 
   // Root of Zarr store must implement multiscales extension.
   // https://github.com/zarr-developers/zarr-specs/issues/50
-  if (!Array.isArray(rootAttrs.multiscales)) {
+  if (!Array.isArray(multiscales)) {
     throw new Error('Cannot find Zarr multiscales metadata.');
   }
 
-  const {datasets} = rootAttrs.multiscales[0];
+  const {datasets} = multiscales[0];
   const promises = datasets.map((d) => grp.getItem(d.path)) as Promise<ZarrArray>[];
 
   return {
@@ -72,8 +75,11 @@ export function isInterleaved(shape: number[]) {
   return lastDimSize === 3 || lastDimSize === 4;
 }
 
-export function guessTileSize(arr: {shape: number[]; chunks: number[]}) {
-  const interleaved = isInterleaved(arr.shape);
+export function guessTileSize(
+  arr: {shape: number[]; chunks: number[]},
+  labels?: readonly string[]
+) {
+  const interleaved = labels ? labels[labels.length - 1] === '_c' : isInterleaved(arr.shape);
   const [yChunk, xChunk] = arr.chunks.slice(interleaved ? -3 : -2);
   const size = Math.min(yChunk, xChunk);
   // deck.gl requirement for power-of-two tile size.
@@ -147,8 +153,8 @@ export function validLabels(labels: string[], shape: number[]): labels is Labels
   if (labels.length !== shape.length) {
     throw new Error('Labels do not match Zarr array shape.');
   }
-  const n = shape.length;
-  if (isInterleaved(shape)) {
+  const n = labels.length;
+  if (labels[n - 1] === '_c') {
     // last three dimensions are [row, column, bands]
     return labels[n - 3] === 'y' && labels[n - 2] === 'x' && labels[n - 1] === '_c';
   }

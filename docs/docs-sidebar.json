@@ -196,6 +196,7 @@
           "modules/geotiff/api-reference/geotiff-source-loader",
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
+          "modules/zarr/api-reference/ome-zarr-source-loader",
           "modules/parquet/api-reference/parquet-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
@@ -588,6 +589,14 @@
         "label": "@loaders.gl/zip",
         "items": [
           "modules/zip/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/zarr",
+        "items": [
+          "modules/zarr/README",
+          "modules/zarr/api-reference/ome-zarr-source-loader"
         ]
       }
     ]

@@ -2,13 +2,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/** Consolidated metadata files supported by Zarr v2 and v3 stores. */
+export type ZarrMetadataPath = 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json';
+
+/** Zarr format generation represented by normalized consolidated metadata. */
 export type ZarrConsolidatedFormat = 'v2' | 'v3';
 
+/** Normalized consolidated metadata and the top-level nodes it describes. */
 export type ZarrConsolidatedMetadata = {
+  /** Zarr format generation used by the consolidated metadata document. */
   format: ZarrConsolidatedFormat;
+  /** Metadata file that was loaded. */
   metadataPath: '.zmetadata' | 'zmetadata' | 'zarr.json';
+  /** Format-specific consolidated metadata entries keyed by Zarr path. */
   metadata: Record<string, unknown>;
+  /** Top-level group paths. */
   topLevelGroups: string[];
+  /** Top-level array paths. */
+  topLevelArrays: string[];
 };
 
 type V2ConsolidatedMetadata = {
@@ -21,8 +32,11 @@ type V3ConsolidatedMetadata = {
   };
 };
 
-type LoadConsolidatedMetadataOptions = {
-  metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json';
+/** Options for loading consolidated Zarr metadata. */
+export type LoadConsolidatedMetadataOptions = {
+  /** Metadata file to load, or `auto` to probe v3 and v2 names in order. */
+  metadataPath?: ZarrMetadataPath;
+  /** Abort signal forwarded to metadata requests. */
   signal?: AbortSignal;
 };
 
@@ -52,8 +66,16 @@ export async function loadConsolidatedMetadata(
       continue;
     }
 
-    const json = (await response.json()) as V2ConsolidatedMetadata | V3ConsolidatedMetadata;
-    return normalizeConsolidatedMetadata(json, metadataPath);
+    try {
+      const json = (await response.json()) as V2ConsolidatedMetadata | V3ConsolidatedMetadata;
+      return normalizeConsolidatedMetadata(json, metadataPath);
+    } catch (error) {
+      if (options.signal?.aborted || options.metadataPath !== undefined && options.metadataPath !== 'auto') {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`${metadataPath}: ${message}`);
+    }
   }
 
   throw new Error(
@@ -61,8 +83,9 @@ export async function loadConsolidatedMetadata(
   );
 }
 
+/** Returns metadata filenames in the order they should be probed. */
 function getMetadataPaths(
-  metadataPath: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json' = 'auto'
+  metadataPath: ZarrMetadataPath = 'auto'
 ): Array<'.zmetadata' | 'zmetadata' | 'zarr.json'> {
   if (metadataPath === 'auto') {
     return ['zarr.json', '.zmetadata', 'zmetadata'];
@@ -71,6 +94,7 @@ function getMetadataPaths(
   return [metadataPath];
 }
 
+/** Normalizes one v2 or v3 consolidated metadata document. */
 function normalizeConsolidatedMetadata(
   metadata: V2ConsolidatedMetadata | V3ConsolidatedMetadata,
   metadataPath: '.zmetadata' | 'zmetadata' | 'zarr.json'
@@ -85,7 +109,8 @@ function normalizeConsolidatedMetadata(
       format: 'v3',
       metadataPath,
       metadata: normalizedMetadata,
-      topLevelGroups: extractTopLevelGroups(Object.keys(normalizedMetadata))
+      topLevelGroups: extractV3TopLevelNodes(normalizedMetadata, 'group'),
+      topLevelArrays: extractV3TopLevelNodes(normalizedMetadata, 'array')
     };
   }
 
@@ -98,30 +123,44 @@ function normalizeConsolidatedMetadata(
     format: 'v2',
     metadataPath,
     metadata: normalizedMetadata,
-    topLevelGroups: extractTopLevelGroups(Object.keys(normalizedMetadata).map(normalizeV2Path))
+    topLevelGroups: extractV2TopLevelNodes(Object.keys(normalizedMetadata), 'zgroup'),
+    topLevelArrays: extractV2TopLevelNodes(Object.keys(normalizedMetadata), 'zarray')
   };
 }
 
-function normalizeV2Path(path: string): string {
-  return path
-    .replace(/\/\.(?:zattrs|zarray|zgroup)$/i, '')
-    .replace(/^\.(?:zattrs|zarray|zgroup)$/i, '');
+/** Extracts top-level v2 nodes represented by `.zgroup` or `.zarray` keys. */
+function extractV2TopLevelNodes(paths: string[], nodeType: 'zgroup' | 'zarray'): string[] {
+  const suffix = `.${nodeType}`;
+  const nodePaths = paths
+    .filter(path => path === suffix || path.endsWith(`/${suffix}`))
+    .map(path => path.slice(0, -suffix.length).replace(/\/+$/, ''));
+  return extractDirectChildren(nodePaths);
 }
 
-function extractTopLevelGroups(paths: string[]): string[] {
-  const topLevelGroups = new Set<string>();
+/** Extracts top-level v3 nodes with the requested `node_type`. */
+function extractV3TopLevelNodes(
+  metadata: Record<string, unknown>,
+  nodeType: 'group' | 'array'
+): string[] {
+  const nodePaths = Object.entries(metadata)
+    .filter(([, value]) =>
+      Boolean(value && typeof value === 'object' && (value as {node_type?: unknown}).node_type === nodeType)
+    )
+    .map(([path]) => path);
+  return extractDirectChildren(nodePaths);
+}
+
+/** Returns normalized paths that are direct children of the store root. */
+function extractDirectChildren(paths: string[]): string[] {
+  const directChildren = new Set<string>();
 
   for (const path of paths) {
-    const normalizedPath = path.replace(/^\/+/, '');
-    if (!normalizedPath) {
+    const normalizedPath = path.replace(/^\/+|\/+$/g, '');
+    if (!normalizedPath || normalizedPath.includes('/')) {
       continue;
     }
-
-    const [topLevelGroup] = normalizedPath.split('/');
-    if (topLevelGroup) {
-      topLevelGroups.add(topLevelGroup);
-    }
+    directChildren.add(normalizedPath);
   }
 
-  return [...topLevelGroups].sort();
+  return [...directChildren].sort();
 }

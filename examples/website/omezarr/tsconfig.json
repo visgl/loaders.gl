@@ -5,18 +5,14 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "baseUrl": "../../..",
-    "paths": {
-      "@loaders.gl/*": ["modules/*/src"]
-    },
+    "noEmit": true,
     "jsx": "react-jsx"
   },
   "include": ["./app.tsx", "./react-dom-client.d.ts"]

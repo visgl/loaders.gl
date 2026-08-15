@@ -48,6 +48,8 @@ const consolidated = await loadZarrConsolidatedMetadata(rootUrl);
 
 console.log(consolidated.topLevelGroups);
 // ['images', 'labels', 'points', 'shapes', 'tables']
+console.log(consolidated.topLevelArrays);
+// []
 
 const imageSource = createDataSource(rootUrl, [OMEZarrSourceLoader], {
   zarr: {
@@ -59,4 +61,5 @@ const imageSource = createDataSource(rootUrl, [OMEZarrSourceLoader], {
 const imageMetadata = await imageSource.getMetadata();
 ```
 
-For documentation please visit the [website](https://loaders.gl).
+See the [`OMEZarrSourceLoader` API reference](https://loaders.gl/docs/modules/zarr/api-reference/ome-zarr-source-loader)
+for source options, raster output layout, and current scope.

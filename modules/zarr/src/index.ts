@@ -11,8 +11,14 @@ export {
 } from './ome-zarr-source-loader';
 export type {
   GetOMEZarrParameters,
+  LoadConsolidatedMetadataOptions,
+  LoadZarrConsolidatedMetadataOptions,
+  OMEZarrChannelMetadata,
+  OMEZarrLevelMetadata,
   OMEZarrSourceLoaderMetadata,
+  ZarrConsolidatedFormat,
   ZarrConsolidatedMetadata,
+  ZarrMetadataPath,
   ZarrSourceLoader,
   ZarrSourceLoaderOptions
 } from './ome-zarr-source-loader';

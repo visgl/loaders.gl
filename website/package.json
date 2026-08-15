@@ -54,6 +54,7 @@
     "@loaders.gl/splats": "workspace:*",
     "@loaders.gl/traces": "workspace:*",
     "@loaders.gl/xml": "workspace:*",
+    "@loaders.gl/zarr": "workspace:*",
     "@luma.gl/constants": "^9.3.2",
     "@luma.gl/core": "^9.3.2",
     "@luma.gl/engine": "^9.3.2",
