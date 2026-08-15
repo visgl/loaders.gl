@@ -6,7 +6,13 @@
 import test from 'test/utils/vitest-tape';
 
 import * as parquetThrift from '@loaders.gl/parquet/parquetjs/parquet-thrift';
-import {serializeThrift} from '@loaders.gl/parquet/parquetjs/utils/read-utils';
+import {getThriftEnum, serializeThrift} from '@loaders.gl/parquet/parquetjs/utils/read-utils';
+
+test('thrift#getThriftEnum resolves generated numeric enums', assert => {
+  assert.equal(getThriftEnum(parquetThrift.Type, parquetThrift.Type.BYTE_ARRAY), 'BYTE_ARRAY');
+  assert.throws(() => getThriftEnum(parquetThrift.Type, 100), /Invalid ENUM value/);
+  assert.end();
+});
 
 // TODO v4 disabled because of Node.js Buffer dependency
 test.skip('thrift#should correctly en/decode literal zeroes with the CompactProtocol', assert => {
