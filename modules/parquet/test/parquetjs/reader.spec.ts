@@ -9,8 +9,46 @@ import {ParquetReader} from '@loaders.gl/parquet';
 import {fetchFile} from '@loaders.gl/core';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
+const DICTIONARY_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+const WIDE_URL = '@loaders.gl/parquet/test/data/apache/good/delta_binary_packed.parquet';
 // const TEST_NUM_ROWS = 1; // 10000;
 // const TEST_VTIME =  Date.now();
+
+/** Blob-backed file that records random-access request count and concurrency. */
+class TrackedBlobFile extends BlobFile {
+  /** Number of reads initiated since the last metric reset. */
+  readCount = 0;
+  /** Number of reads that have not completed. */
+  activeReadCount = 0;
+  /** Largest number of simultaneous reads since the last metric reset. */
+  maximumActiveReadCount = 0;
+
+  /** Clears read metrics without changing the underlying file. */
+  resetMetrics(): void {
+    this.readCount = 0;
+    this.activeReadCount = 0;
+    this.maximumActiveReadCount = 0;
+  }
+
+  /** Reads one range while updating request and concurrency metrics. */
+  override async read(
+    start?: number | bigint,
+    length?: number,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer> {
+    this.readCount++;
+    this.activeReadCount++;
+    this.maximumActiveReadCount = Math.max(
+      this.maximumActiveReadCount,
+      this.activeReadCount
+    );
+    try {
+      return await super.read(start, length, signal);
+    } finally {
+      this.activeReadCount--;
+    }
+  }
+}
 
 // eslint-disable-next-line
 test('ParquetReader#fruits.parquet', async t => {
@@ -195,6 +233,62 @@ test('ParquetReader#fruits.parquet', async t => {
     t.equal(await cursor.next(), null, '');
   }
   */
+
+  reader.close();
+  t.end();
+});
+
+test('ParquetReader#coalesces and concurrently reads selected column chunks', async t => {
+  const response = await fetchFile(DICTIONARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const file = new TrackedBlobFile(arrayBuffer);
+
+  const reader = new ParquetReader(file);
+  const metadata = await reader.getFileMetadata();
+  const firstSchema = await reader.getSchema();
+  const secondSchema = await reader.getSchema();
+  t.equal(secondSchema, firstSchema, 'caches the parsed schema within one reader');
+
+  file.resetMetrics();
+  const rowGroupMetadata = metadata.row_groups[0];
+  const rowGroup = await reader.readRowGroup(firstSchema, rowGroupMetadata, []);
+
+  t.equal(
+    file.readCount,
+    rowGroupMetadata.columns.length,
+    'reads each dictionary-backed column chunk with one coalesced range'
+  );
+  t.ok(file.maximumActiveReadCount > 1, 'reads independent selected columns concurrently');
+  t.equal(rowGroup.rowCount, 2, 'preserves the decoded row count');
+  t.equal(
+    Object.keys(rowGroup.columnData).length,
+    rowGroupMetadata.columns.length,
+    'preserves every decoded column'
+  );
+
+  reader.close();
+  t.end();
+});
+
+test('ParquetReader#bounds concurrent reads for wide row groups', async t => {
+  const response = await fetchFile(WIDE_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const file = new TrackedBlobFile(arrayBuffer);
+  const reader = new ParquetReader(file);
+  const metadata = await reader.getFileMetadata();
+  const schema = await reader.getSchema();
+  const rowGroupMetadata = metadata.row_groups[0];
+
+  file.resetMetrics();
+  const rowGroup = await reader.readRowGroup(schema, rowGroupMetadata, []);
+
+  t.equal(file.readCount, rowGroupMetadata.columns.length, 'reads every selected column once');
+  t.equal(file.maximumActiveReadCount, 16, 'caps simultaneous column reads');
+  t.equal(
+    Object.keys(rowGroup.columnData).length,
+    rowGroupMetadata.columns.length,
+    'preserves every column across concurrency batches'
+  );
 
   reader.close();
   t.end();

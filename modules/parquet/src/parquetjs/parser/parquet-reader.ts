@@ -22,6 +22,9 @@ import {
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
 import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
 
+/** Bounds concurrent range requests when a row group contains unusually many selected columns. */
+const MAXIMUM_CONCURRENT_COLUMN_READS = 16;
+
 export type ParquetReaderProps = {
   /** Maximum dictionary-page read size. */
   defaultDictionarySize?: number;
@@ -61,6 +64,8 @@ export class ParquetReader {
   props: Required<Omit<ParquetReaderProps, 'signal'>> & {signal?: AbortSignal};
   file: ReadableFile;
   metadata: Promise<FileMetaData> | null = null;
+  /** Parsed Parquet schema shared by metadata, iteration, and materialization paths. */
+  private schema: Promise<ParquetSchema> | null = null;
 
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
@@ -124,11 +129,12 @@ export class ParquetReader {
   }
 
   async getSchema(signal?: AbortSignal): Promise<ParquetSchema> {
-    const metadata = await this.getFileMetadata(signal);
-    const root = metadata.schema[0];
-    const {schema: schemaDefinition} = decodeSchema(metadata.schema, 1, root.num_children!);
-    const schema = new ParquetSchema(schemaDefinition);
-    return schema;
+    this.schema ||= this.getFileMetadata(signal).then(metadata => {
+      const root = metadata.schema[0];
+      const {schema: schemaDefinition} = decodeSchema(metadata.schema, 1, root.num_children!);
+      return new ParquetSchema(schemaDefinition);
+    });
+    return await this.schema;
   }
 
   /**
@@ -209,19 +215,34 @@ export class ParquetReader {
     columnList: string[][],
     signal?: AbortSignal
   ): Promise<ParquetRowGroup> {
-    const buffer: ParquetRowGroup = {
-      rowCount: Number(rowGroup.num_rows),
-      columnData: {}
-    };
-    for (const colChunk of rowGroup.columns) {
-      const colMetadata = colChunk.meta_data;
-      const colKey = colMetadata?.path_in_schema;
-      if (columnList.length > 0 && fieldIndexOf(columnList, colKey!) < 0) {
-        continue; // eslint-disable-line no-continue
-      }
-      buffer.columnData[colKey!.join()] = await this.readColumnChunk(schema, colChunk, signal);
+    const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+      const columnKey = columnChunk.meta_data?.path_in_schema;
+      return columnList.length === 0 || fieldIndexOf(columnList, columnKey!) >= 0;
+    });
+    const columnEntries: Array<readonly [string, ParquetColumnChunk]> = [];
+    for (
+      let batchStart = 0;
+      batchStart < selectedColumnChunks.length;
+      batchStart += MAXIMUM_CONCURRENT_COLUMN_READS
+    ) {
+      const columnBatch = selectedColumnChunks.slice(
+        batchStart,
+        batchStart + MAXIMUM_CONCURRENT_COLUMN_READS
+      );
+      columnEntries.push(
+        ...(await Promise.all(
+          columnBatch.map(async columnChunk => {
+            const columnKey = columnChunk.meta_data!.path_in_schema.join();
+            const columnData = await this.readColumnChunk(schema, columnChunk, signal);
+            return [columnKey, columnData] as const;
+          })
+        ))
+      );
     }
-    return buffer;
+    return {
+      rowCount: Number(rowGroup.num_rows),
+      columnData: Object.fromEntries(columnEntries)
+    };
   }
 
   /**
@@ -256,11 +277,14 @@ export class ParquetReader {
         : undefined;
     const chunkOffset = Math.min(pagesOffset, validDictionaryPageOffset ?? pagesOffset);
     const chunkEnd = chunkOffset + Number(colChunk.meta_data?.total_compressed_size!);
-    let pagesSize = Math.max(0, chunkEnd - pagesOffset);
-
-    if (!colChunk.file_path) {
-      pagesSize = Math.min(this.file.size - pagesOffset, pagesSize);
-    }
+    const chunkSize = Math.min(this.file.size - chunkOffset, Math.max(0, chunkEnd - chunkOffset));
+    const arrayBuffer = await this.file.read(chunkOffset, chunkSize, signal ?? this.props.signal);
+    const chunkBuffer = toUint8Array(arrayBuffer);
+    const pagesRelativeOffset = pagesOffset - chunkOffset;
+    const pagesSize = Math.min(
+      chunkBuffer.length - pagesRelativeOffset,
+      Math.max(0, chunkEnd - pagesOffset)
+    );
 
     const context: ParquetReaderContext = {
       type,
@@ -275,21 +299,24 @@ export class ParquetReader {
       retainByteArrayViews: this.props.retainByteArrayViews
     };
 
-    let dictionary;
+    let dictionary: any[] | undefined;
 
     if (validDictionaryPageOffset !== undefined) {
-      // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
-      dictionary = await this.getDictionary(
-        validDictionaryPageOffset,
-        context,
-        pagesOffset,
-        signal
+      const dictionaryRelativeOffset = validDictionaryPageOffset - chunkOffset;
+      const dictionarySize = Math.min(
+        Math.max(0, pagesOffset - validDictionaryPageOffset),
+        chunkBuffer.length - dictionaryRelativeOffset,
+        this.props.defaultDictionarySize
       );
+      const dictionaryBuffer = chunkBuffer.subarray(
+        dictionaryRelativeOffset,
+        dictionaryRelativeOffset + dictionarySize
+      );
+      dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
     }
 
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
-    const arrayBuffer = await this.file.read(pagesOffset, pagesSize, signal ?? this.props.signal);
-    const pagesBuf = toUint8Array(arrayBuffer);
+    const pagesBuf = chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
@@ -328,10 +355,16 @@ export class ParquetReader {
       signal ?? this.props.signal
     );
     const pagesBuf = toUint8Array(arrayBuffer);
-
-    const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
-    const decodedPage = await decodePage(cursor, context);
-
-    return decodedPage.dictionary!;
+    return await decodeDictionaryBuffer(pagesBuf, context);
   }
+}
+
+/** Decodes one dictionary page from an already-read column-chunk range. */
+async function decodeDictionaryBuffer(
+  dictionaryBuffer: Uint8Array,
+  context: ParquetReaderContext
+): Promise<any[]> {
+  const cursor = {buffer: dictionaryBuffer, offset: 0, size: dictionaryBuffer.length};
+  const decodedPage = await decodePage(cursor, context);
+  return decodedPage.dictionary!;
 }
