@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {RADChunkMetadataJSONSchema, RADMetadataJSONSchema} from '../rad-zod-schema';
+
 const RAD_MAGIC = 0x30444152;
 const RAD_CHUNK_MAGIC = 0x43444152;
 const RAD_HEADER_BYTE_LENGTH = 8;
@@ -26,6 +28,8 @@ export type RADSplatEncoding = {
   sh3Max?: number;
   /** Whether opacity is encoded for LoD blending. */
   lodOpacity?: boolean;
+  /** Additional splat-encoding properties are preserved verbatim. */
+  [key: string]: unknown;
 };
 
 /** One RAD chunk location in the top-level RAD chunk table. */
@@ -40,14 +44,16 @@ export type RADChunkRange = {
   count?: number;
   /** Optional sidecar `.radc` filename relative to the RAD file URL. */
   filename?: string;
+  /** Additional chunk-range properties are preserved verbatim. */
+  [key: string]: unknown;
 };
 
-/** Parsed Spark RAD top-level metadata with loader-derived byte offsets. */
-export type RADMetadata = {
+/** Handwritten type for the JSON metadata stored in a Spark RAD header. */
+export type RADMetadataJSON = {
   /** RAD container version. Version 1 is currently supported. */
-  version: number;
+  version: 1;
   /** RAD payload type. Spark currently writes `gsplat`. */
-  type: string;
+  type: 'gsplat';
   /** Total splat count represented by the RAD source. */
   count: number;
   /** Maximum spherical harmonics degree present in the chunks. */
@@ -66,6 +72,12 @@ export type RADMetadata = {
   shCodeCount?: number;
   /** Optional RAD writer comment. */
   comment?: string;
+  /** Additional RAD metadata properties are preserved verbatim. */
+  [key: string]: unknown;
+};
+
+/** Parsed Spark RAD top-level metadata with loader-derived byte offsets. */
+export type RADMetadata = RADMetadataJSON & {
   /** Byte length of the JSON metadata block. */
   headerJsonByteLength: number;
   /** Byte offset where inline RAD chunks begin. */
@@ -124,12 +136,14 @@ export type RADChunkProperty = {
   min?: number;
   /** Optional decode maximum for quantized properties. */
   max?: number;
+  /** Additional chunk-property metadata is preserved verbatim. */
+  [key: string]: unknown;
 };
 
-/** Parsed Spark RADC chunk metadata with loader-derived byte offsets. */
-export type RADChunkMetadata = {
+/** Handwritten type for the JSON metadata stored in a Spark RADC chunk header. */
+export type RADChunkMetadataJSON = {
   /** RAD chunk version. Version 1 is currently supported. */
-  version: number;
+  version: 1;
   /** First global splat index represented by this chunk. */
   base: number;
   /** Number of splats represented by this chunk. */
@@ -144,6 +158,12 @@ export type RADChunkMetadata = {
   splatEncoding?: RADSplatEncoding;
   /** Property table for the chunk payload. */
   properties: RADChunkProperty[];
+  /** Additional RADC metadata properties are preserved verbatim. */
+  [key: string]: unknown;
+};
+
+/** Parsed Spark RADC chunk metadata with loader-derived byte offsets. */
+export type RADChunkMetadata = RADChunkMetadataJSON & {
   /** Byte length of the chunk JSON metadata block. */
   headerJsonByteLength: number;
   /** Byte offset where the chunk payload begins. */
@@ -191,9 +211,11 @@ export function tryParseRADHeader(data: ArrayBuffer | ArrayBufferView): RADMetad
     return null;
   }
 
-  const rawMetadata = parseJSONRecord(
-    bytes.subarray(RAD_HEADER_BYTE_LENGTH, headerJsonEnd),
-    'RADLoader: failed to parse RAD metadata JSON.'
+  const rawMetadata = RADMetadataJSONSchema.parse(
+    parseJSON(
+      bytes.subarray(RAD_HEADER_BYTE_LENGTH, headerJsonEnd),
+      'RADLoader: failed to parse RAD metadata JSON.'
+    )
   );
   return normalizeRADMetadata(rawMetadata, headerJsonByteLength);
 }
@@ -219,9 +241,11 @@ export function parseRADChunkHeader(data: ArrayBuffer | ArrayBufferView): RADChu
     throw new Error('RADLoader: RADC chunk must contain a complete metadata header.');
   }
 
-  const rawMetadata = parseJSONRecord(
-    bytes.subarray(RAD_HEADER_BYTE_LENGTH, headerJsonEnd),
-    'RADLoader: failed to parse RADC metadata JSON.'
+  const rawMetadata = RADChunkMetadataJSONSchema.parse(
+    parseJSON(
+      bytes.subarray(RAD_HEADER_BYTE_LENGTH, headerJsonEnd),
+      'RADLoader: failed to parse RADC metadata JSON.'
+    )
   );
   const payloadBytes = readSafeUint64(
     dataView,
@@ -242,186 +266,41 @@ export function roundUpToEight(byteLength: number): number {
 }
 
 function normalizeRADMetadata(
-  rawMetadata: Record<string, unknown>,
+  rawMetadata: RADMetadataJSON,
   headerJsonByteLength: number
 ): RADMetadata {
-  const version = requireSafeInteger(rawMetadata.version, 'RAD version');
-  if (version !== 1) {
-    throw new Error(`RADLoader: version ${version} is not supported.`);
-  }
-
-  const type = requireString(rawMetadata.type, 'RAD type');
-  if (type !== 'gsplat') {
-    throw new Error(`RADLoader: RAD type ${type} is not supported.`);
-  }
-
-  const chunks = requireArray(rawMetadata.chunks, 'RAD chunks').map((chunk, chunkIndex) =>
-    normalizeRADChunkRange(chunk, chunkIndex)
-  );
-  const metadata: RADMetadata = {
-    version,
-    type,
-    count: requireSafeInteger(rawMetadata.count, 'RAD count'),
-    maxSh: optionalSafeInteger(rawMetadata.maxSh, 'RAD maxSh'),
-    lodTree: optionalBoolean(rawMetadata.lodTree, 'RAD lodTree'),
-    chunkSize: optionalSafeInteger(rawMetadata.chunkSize, 'RAD chunkSize'),
-    allChunkBytes: optionalSafeInteger(rawMetadata.allChunkBytes, 'RAD allChunkBytes'),
-    chunks,
-    splatEncoding: optionalSplatEncoding(rawMetadata.splatEncoding, 'RAD splatEncoding'),
-    shCodeCount: optionalSafeInteger(rawMetadata.shCodeCount, 'RAD shCodeCount'),
-    comment: optionalString(rawMetadata.comment, 'RAD comment'),
+  return {
+    ...rawMetadata,
     headerJsonByteLength,
     chunksByteOffset: RAD_HEADER_BYTE_LENGTH + roundUpToEight(headerJsonByteLength)
-  };
-
-  return metadata;
-}
-
-function normalizeRADChunkRange(rawChunk: unknown, chunkIndex: number): RADChunkRange {
-  const chunk = requireRecord(rawChunk, `RAD chunk ${chunkIndex}`);
-  return {
-    offset: requireSafeInteger(chunk.offset, `RAD chunk ${chunkIndex} offset`),
-    bytes: requireSafeInteger(chunk.bytes, `RAD chunk ${chunkIndex} bytes`),
-    base: optionalSafeInteger(chunk.base, `RAD chunk ${chunkIndex} base`),
-    count: optionalSafeInteger(chunk.count, `RAD chunk ${chunkIndex} count`),
-    filename: optionalString(chunk.filename, `RAD chunk ${chunkIndex} filename`)
   };
 }
 
 function normalizeRADChunkMetadata(
-  rawMetadata: Record<string, unknown>,
+  rawMetadata: RADChunkMetadataJSON,
   headerJsonByteLength: number,
   payloadByteOffset: number,
   payloadBytes: number
 ): RADChunkMetadata {
-  const version = requireSafeInteger(rawMetadata.version, 'RADC version');
-  if (version !== 1) {
-    throw new Error(`RADLoader: RADC version ${version} is not supported.`);
-  }
-
-  const metadataPayloadBytes = requireSafeInteger(rawMetadata.payloadBytes, 'RADC payloadBytes');
-  if (metadataPayloadBytes !== payloadBytes) {
+  if (rawMetadata.payloadBytes !== payloadBytes) {
     throw new Error('RADLoader: RADC metadata payload byte length does not match binary header.');
   }
 
   return {
-    version,
-    base: requireSafeInteger(rawMetadata.base, 'RADC base'),
-    count: requireSafeInteger(rawMetadata.count, 'RADC count'),
+    ...rawMetadata,
     payloadBytes,
-    maxSh: optionalSafeInteger(rawMetadata.maxSh, 'RADC maxSh'),
-    lodTree: optionalBoolean(rawMetadata.lodTree, 'RADC lodTree'),
-    splatEncoding: optionalSplatEncoding(rawMetadata.splatEncoding, 'RADC splatEncoding'),
-    properties: requireArray(rawMetadata.properties, 'RADC properties').map((property, index) =>
-      normalizeRADChunkProperty(property, index)
-    ),
     headerJsonByteLength,
     payloadByteOffset,
     chunkByteLength: payloadByteOffset + payloadBytes
   };
 }
 
-function normalizeRADChunkProperty(rawProperty: unknown, propertyIndex: number): RADChunkProperty {
-  const property = requireRecord(rawProperty, `RADC property ${propertyIndex}`);
-  return {
-    offset: requireSafeInteger(property.offset, `RADC property ${propertyIndex} offset`),
-    bytes: requireSafeInteger(property.bytes, `RADC property ${propertyIndex} bytes`),
-    property: requireString(property.property, `RADC property ${propertyIndex} name`),
-    encoding: requireString(property.encoding, `RADC property ${propertyIndex} encoding`),
-    compression: optionalString(property.compression, `RADC property ${propertyIndex} compression`),
-    min: optionalFiniteNumber(property.min, `RADC property ${propertyIndex} min`),
-    max: optionalFiniteNumber(property.max, `RADC property ${propertyIndex} max`)
-  };
-}
-
-function optionalSplatEncoding(value: unknown, fieldName: string): RADSplatEncoding | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  const encoding = requireRecord(value, fieldName);
-  return {
-    rgbMin: optionalFiniteNumber(encoding.rgbMin, `${fieldName}.rgbMin`),
-    rgbMax: optionalFiniteNumber(encoding.rgbMax, `${fieldName}.rgbMax`),
-    lnScaleMin: optionalFiniteNumber(encoding.lnScaleMin, `${fieldName}.lnScaleMin`),
-    lnScaleMax: optionalFiniteNumber(encoding.lnScaleMax, `${fieldName}.lnScaleMax`),
-    sh1Max: optionalFiniteNumber(encoding.sh1Max, `${fieldName}.sh1Max`),
-    sh2Max: optionalFiniteNumber(encoding.sh2Max, `${fieldName}.sh2Max`),
-    sh3Max: optionalFiniteNumber(encoding.sh3Max, `${fieldName}.sh3Max`),
-    lodOpacity: optionalBoolean(encoding.lodOpacity, `${fieldName}.lodOpacity`)
-  };
-}
-
-function parseJSONRecord(bytes: Uint8Array, message: string): Record<string, unknown> {
+function parseJSON(bytes: Uint8Array, message: string): unknown {
   try {
-    return requireRecord(JSON.parse(TEXT_DECODER.decode(bytes)), message);
-  } catch (error) {
-    if (error instanceof Error && error.message.startsWith('RADLoader:')) {
-      throw error;
-    }
+    return JSON.parse(TEXT_DECODER.decode(bytes));
+  } catch {
     throw new Error(message);
   }
-}
-
-function requireRecord(value: unknown, fieldName: string): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error(`RADLoader: ${fieldName} must be an object.`);
-  }
-  return value as Record<string, unknown>;
-}
-
-function requireArray(value: unknown, fieldName: string): unknown[] {
-  if (!Array.isArray(value)) {
-    throw new Error(`RADLoader: ${fieldName} must be an array.`);
-  }
-  return value;
-}
-
-function requireString(value: unknown, fieldName: string): string {
-  if (typeof value !== 'string') {
-    throw new Error(`RADLoader: ${fieldName} must be a string.`);
-  }
-  return value;
-}
-
-function optionalString(value: unknown, fieldName: string): string | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  return requireString(value, fieldName);
-}
-
-function optionalBoolean(value: unknown, fieldName: string): boolean | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (typeof value !== 'boolean') {
-    throw new Error(`RADLoader: ${fieldName} must be a boolean.`);
-  }
-  return value;
-}
-
-function requireSafeInteger(value: unknown, fieldName: string): number {
-  if (!Number.isSafeInteger(value) || Number(value) < 0) {
-    throw new Error(`RADLoader: ${fieldName} must be a non-negative safe integer.`);
-  }
-  return Number(value);
-}
-
-function optionalSafeInteger(value: unknown, fieldName: string): number | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  return requireSafeInteger(value, fieldName);
-}
-
-function optionalFiniteNumber(value: unknown, fieldName: string): number | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw new Error(`RADLoader: ${fieldName} must be a finite number.`);
-  }
-  return value;
 }
 
 function readSafeUint64(dataView: DataView, byteOffset: number, fieldName: string): number {
