@@ -42,6 +42,7 @@ import type {
 import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
+import type {BigTypedArray, BigTypedArrayConstructor} from '@loaders.gl/loader-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -441,9 +442,70 @@ class GLTFPostProcessor {
         );
       }
       accessor.value = new ArrayType(cutBuffer);
+    } else {
+      const {ArrayType} = getAccessorArrayTypeAndLength(accessor, {
+        byteLength: accessor.count * accessor.bytesPerElement
+      });
+      accessor.value = new ArrayType(accessor.count * accessor.components);
+    }
+
+    if (gltfAccessor.sparse) {
+      this._applySparseAccessor(accessor, gltfAccessor.sparse);
     }
 
     return accessor;
+  }
+
+  /** Applies sparse accessor replacements to an accessor's materialized values. */
+  _applySparseAccessor(
+    accessor: GLTFAccessorPostprocessed,
+    sparse: NonNullable<GLTFAccessor['sparse']>
+  ): void {
+    const SparseIndexArray = getSparseIndexArrayType(sparse.indices.componentType);
+    const sparseIndices = this._getTypedArrayFromBufferView(
+      SparseIndexArray,
+      this.getBufferView(sparse.indices.bufferView),
+      sparse.indices.byteOffset || 0,
+      sparse.count
+    );
+    const SparseValueArray = accessor.value.constructor as BigTypedArrayConstructor;
+    const sparseValues = this._getTypedArrayFromBufferView(
+      SparseValueArray,
+      this.getBufferView(sparse.values.bufferView),
+      sparse.values.byteOffset || 0,
+      sparse.count * accessor.components
+    );
+
+    for (let sparseValueIndex = 0; sparseValueIndex < sparse.count; sparseValueIndex++) {
+      const accessorIndex = Number(sparseIndices[sparseValueIndex]);
+      assert(
+        Number.isInteger(accessorIndex) && accessorIndex >= 0 && accessorIndex < accessor.count,
+        'glTF sparse accessor index is out of bounds'
+      );
+      for (let componentIndex = 0; componentIndex < accessor.components; componentIndex++) {
+        const targetIndex = accessorIndex * accessor.components + componentIndex;
+        const sourceIndex = sparseValueIndex * accessor.components + componentIndex;
+        Reflect.set(accessor.value, targetIndex, sparseValues[sourceIndex]);
+      }
+    }
+  }
+
+  /** Creates a typed array from a byte range within a resolved buffer view. */
+  _getTypedArrayFromBufferView(
+    ArrayType: BigTypedArrayConstructor,
+    bufferView: GLTFBufferViewPostprocessed,
+    byteOffset: number,
+    length: number
+  ): BigTypedArray {
+    const byteLength = length * ArrayType.BYTES_PER_ELEMENT;
+    assert(
+      byteOffset + byteLength <= bufferView.byteLength,
+      'glTF sparse accessor data exceeds its buffer view'
+    );
+    const buffer = bufferView.buffer;
+    const absoluteByteOffset = buffer.byteOffset + (bufferView.byteOffset || 0) + byteOffset;
+    const arrayBuffer = copyToArrayBuffer(buffer.arrayBuffer, absoluteByteOffset, byteLength);
+    return new ArrayType(arrayBuffer);
   }
 
   /**
@@ -589,10 +651,6 @@ function normalizePrimitiveTopology(
   }
 
   const sourceIndices = primitive.indices?.value;
-  assert(
-    !primitive.indices || sourceIndices,
-    'glTF topology normalization requires loaded index accessor data'
-  );
   const sourceIndexCount = primitive.indices?.count ?? getPrimitiveVertexCount(primitive);
   const maximumIndex = getMaximumIndex(sourceIndices, sourceIndexCount);
   const IndexArray = maximumIndex <= 65535 ? Uint16Array : Uint32Array;
@@ -617,6 +675,22 @@ function normalizePrimitiveTopology(
   };
 
   return primitive;
+}
+
+/** Returns the typed-array constructor for valid sparse accessor index component types. */
+function getSparseIndexArrayType(
+  componentType: number
+): Uint8ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor {
+  switch (componentType) {
+    case 5121:
+      return Uint8Array;
+    case 5123:
+      return Uint16Array;
+    case 5125:
+      return Uint32Array;
+    default:
+      throw new Error(`Invalid glTF sparse index component type ${componentType}`);
+  }
 }
 
 /** Returns the vertex count shared by a non-indexed primitive's attributes. */

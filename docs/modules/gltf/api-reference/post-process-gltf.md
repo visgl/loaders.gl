@@ -89,7 +89,8 @@ WebGPU does not support the glTF `LINE_LOOP` and `TRIANGLE_FAN` primitive modes.
 `postProcessGLTF` expands those modes into indexed `LINES` and `TRIANGLES`, respectively. Indexed
 and non-indexed source primitives are both supported, winding is preserved, and generated indices
 use `Uint16Array` or `Uint32Array` according to the largest referenced vertex. The original glTF
-primitive, accessor, and buffer data remain unchanged.
+primitive, accessor, and buffer data remain unchanged. Bufferless index accessors are materialized
+from their implicit-zero base and optional sparse substitutions before topology expansion.
 
 ## Node Specific Post Processing
 

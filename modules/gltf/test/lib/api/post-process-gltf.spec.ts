@@ -127,3 +127,64 @@ test('gltf#postProcessGLTF normalizes non-indexed TRIANGLE_FAN topology', t => {
   t.equal(primitive.indices?.max?.[0], 3, 'records the generated maximum index');
   t.end();
 });
+
+test('gltf#postProcessGLTF materializes an implicit-zero index accessor', t => {
+  const json = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      accessors: [
+        {componentType: 5123, count: 3, type: 'SCALAR'},
+        {componentType: 5126, count: 1, type: 'VEC3'}
+      ],
+      meshes: [{primitives: [{attributes: {POSITION: 1}, indices: 0, mode: 2}]}]
+    },
+    buffers: []
+  } as GLTFWithBuffers);
+
+  const primitive = json.meshes[0].primitives[0];
+  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
+  t.deepEqual(
+    Array.from(primitive.indices?.value || []),
+    [0, 0, 0, 0, 0, 0],
+    'uses the accessor implicit-zero values'
+  );
+  t.end();
+});
+
+test('gltf#postProcessGLTF applies sparse-only index accessor substitutions', t => {
+  const sparseData = new Uint8Array([1, 3, 5, 0, 2, 0]);
+  const json = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: sparseData.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 2},
+        {buffer: 0, byteOffset: 2, byteLength: 4}
+      ],
+      accessors: [
+        {
+          componentType: 5123,
+          count: 4,
+          type: 'SCALAR',
+          sparse: {
+            count: 2,
+            indices: {bufferView: 0, componentType: 5121},
+            values: {bufferView: 1}
+          }
+        },
+        {componentType: 5126, count: 6, type: 'VEC3'}
+      ],
+      meshes: [{primitives: [{attributes: {POSITION: 1}, indices: 0, mode: 2}]}]
+    },
+    buffers: [{arrayBuffer: sparseData.buffer, byteOffset: 0, byteLength: sparseData.byteLength}]
+  } as GLTFWithBuffers);
+
+  const primitive = json.meshes[0].primitives[0];
+  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
+  t.deepEqual(
+    Array.from(primitive.indices?.value || []),
+    [0, 5, 5, 0, 0, 2, 2, 0],
+    'applies sparse substitutions to the implicit-zero base'
+  );
+  t.end();
+});
