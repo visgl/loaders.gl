@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LAZChunkMetadata} from './laz-chunk-decoder';
+import type {LAZChunkTableEntry} from './laz-chunk-decoder';
 import {
   ArithmeticEncoder,
   ArithmeticModel,
@@ -155,6 +156,36 @@ export function encodeLAZChunk(
     sizeView.setUint32(4 + index * 4, layers[index].byteLength, true);
   }
   return concatenateUint8Arrays([firstRecord, sizeHeader, ...layers]);
+}
+
+/** Encode LASzip chunk-table entries as one arithmetic-coded payload. */
+export function encodeLAZChunkTable(
+  chunks: readonly LAZChunkTableEntry[],
+  options: {
+    /** Whether to include the point count for each variable-size chunk. */
+    variable?: boolean;
+  } = {}
+): Uint8Array {
+  if (chunks.length === 0) {
+    return new Uint8Array(0);
+  }
+
+  const encoder = new ArithmeticEncoder();
+  const compressor = new IntegerCompressor(encoder, 32, 2);
+  let pointCountPredictor = 0;
+  let byteLengthPredictor = 0;
+
+  for (const chunk of chunks) {
+    validateChunkTableEntry(chunk);
+    if (options.variable) {
+      compressor.compress(pointCountPredictor, chunk.pointCount, 0);
+      pointCountPredictor = chunk.pointCount;
+    }
+    compressor.compress(byteLengthPredictor, chunk.byteLength, 1);
+    byteLengthPredictor = chunk.byteLength;
+  }
+
+  return encoder.finish();
 }
 
 type Point14 = {
@@ -923,6 +954,24 @@ function validateMetadata(rawBytes: Uint8Array, metadata: LAZChunkMetadata): voi
     throw new Error(
       `LAZ chunk input has ${rawBytes.byteLength} bytes; expected ${expectedByteLength}`
     );
+  }
+}
+
+/** Validate one chunk-table entry before integer compression. */
+function validateChunkTableEntry(chunk: LAZChunkTableEntry): void {
+  if (
+    !Number.isInteger(chunk.pointCount) ||
+    chunk.pointCount <= 0 ||
+    chunk.pointCount > 0xffffffff
+  ) {
+    throw new Error(`Invalid LAZ chunk point count ${chunk.pointCount}`);
+  }
+  if (
+    !Number.isInteger(chunk.byteLength) ||
+    chunk.byteLength <= 0 ||
+    chunk.byteLength > 0xffffffff
+  ) {
+    throw new Error(`Invalid LAZ chunk byte length ${chunk.byteLength}`);
   }
 }
 

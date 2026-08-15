@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import {
+  encodeLAZChunk,
+  encodeLAZChunkTable,
+  type LAZChunkTableEntry,
+  type WriterOptions,
+  type WriterWithEncoder
+} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {LASFormat} from './las-format';
@@ -13,6 +19,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
+const LASZIP_VLR_HEADER_LENGTH = 54;
+const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
+const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
 const POINT_RECORD_LENGTHS: Record<number, number> = {
   0: 20,
   1: 28,
@@ -29,7 +38,7 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
 export type LASWriterOptions = WriterOptions & {
   /** LAS-specific writer options. */
   las?: {
-    /** Output container format. Only uncompressed LAS is currently implemented. */
+    /** Output container format. COPC writing is not yet implemented. */
     format?: 'las' | 'laz' | 'copc';
     /** LAS file version to write. LAS 1.5 writing is intentionally not supported. */
     version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
@@ -41,18 +50,20 @@ export type LASWriterOptions = WriterOptions & {
     offset?: [number, number, number];
     /** Color component depth used by source color attributes. */
     colorDepth?: number | string;
+    /** Number of points per fixed-size LAZ chunk. */
+    chunkSize?: number;
   };
 };
 
 /**
- * Writer for uncompressed LAS point cloud data.
+ * Writer for LAS and LAZ point cloud data.
  */
 export const LASWriter = {
   ...LASFormat,
   dataType: null as unknown as Mesh | MeshArrowTable,
   batchType: null as never,
   version: VERSION,
-  extensions: ['las'],
+  extensions: ['las', 'laz'],
   options: {
     las: {}
   },
@@ -67,13 +78,11 @@ export const LASWriter = {
   }
 } as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, LASWriterOptions>;
 
-/** Encode mesh category data as uncompressed LAS bytes. */
+/** Encode mesh category data as LAS or LAZ bytes. */
 function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
   const format = options.las?.format || 'las';
-  if (format !== 'las') {
-    throw new Error(
-      `LASWriter: TypeScript ${format.toUpperCase()} encoding is not implemented yet`
-    );
+  if (format === 'copc') {
+    throw new Error('LASWriter: TypeScript COPC encoding is not implemented yet');
   }
 
   const mesh = normalizeMesh(data);
@@ -93,10 +102,38 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   }
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
   const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
-  const arrayBuffer = new ArrayBuffer(headerLength + vertexCount * pointDataRecordLength);
-  const dataView = new DataView(arrayBuffer);
+  if (format === 'laz') {
+    validateLAZOptions(version, pointDataRecordFormat, options.las?.chunkSize);
+  }
 
-  writeHeader(dataView, {
+  const rawPointData = new Uint8Array(vertexCount * pointDataRecordLength);
+  const pointDataView = new DataView(rawPointData.buffer);
+
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    const pointOffset = vertexIndex * pointDataRecordLength;
+    pointDataView.setInt32(
+      pointOffset,
+      Math.round((getComponent(positionAttribute, vertexIndex, 0) - offset[0]) / scale[0]),
+      true
+    );
+    pointDataView.setInt32(
+      pointOffset + 4,
+      Math.round((getComponent(positionAttribute, vertexIndex, 1) - offset[1]) / scale[1]),
+      true
+    );
+    pointDataView.setInt32(
+      pointOffset + 8,
+      Math.round((getComponent(positionAttribute, vertexIndex, 2) - offset[2]) / scale[2]),
+      true
+    );
+    writePointRecord(pointDataView, pointOffset, vertexIndex, pointDataRecordFormat, {
+      intensityAttribute,
+      classificationAttribute,
+      colorAttribute
+    });
+  }
+
+  const writeParameters: LASWriteParameters = {
     vertexCount,
     boundingBox,
     scale,
@@ -105,33 +142,181 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     headerLength,
     pointDataRecordFormat,
     pointDataRecordLength
-  });
-
-  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
-    const pointOffset = headerLength + vertexIndex * pointDataRecordLength;
-    dataView.setInt32(
-      pointOffset,
-      Math.round((getComponent(positionAttribute, vertexIndex, 0) - offset[0]) / scale[0]),
-      true
-    );
-    dataView.setInt32(
-      pointOffset + 4,
-      Math.round((getComponent(positionAttribute, vertexIndex, 1) - offset[1]) / scale[1]),
-      true
-    );
-    dataView.setInt32(
-      pointOffset + 8,
-      Math.round((getComponent(positionAttribute, vertexIndex, 2) - offset[2]) / scale[2]),
-      true
-    );
-    writePointRecord(dataView, pointOffset, vertexIndex, pointDataRecordFormat, {
-      intensityAttribute,
-      classificationAttribute,
-      colorAttribute
-    });
+  };
+  if (format === 'laz') {
+    return encodeLAZFile(rawPointData, writeParameters, options.las?.chunkSize);
   }
 
+  const arrayBuffer = new ArrayBuffer(headerLength + rawPointData.byteLength);
+  writeHeader(new DataView(arrayBuffer), {...writeParameters, pointDataOffset: headerLength});
+  new Uint8Array(arrayBuffer, headerLength).set(rawPointData);
   return arrayBuffer;
+}
+
+/** Values shared by LAS header and point-data encoding. */
+type LASWriteParameters = {
+  /** Number of point records in the output. */
+  vertexCount: number;
+  /** World-coordinate bounds. */
+  boundingBox: [[number, number, number], [number, number, number]];
+  /** Coordinate quantization scales. */
+  scale: [number, number, number];
+  /** Coordinate quantization offsets. */
+  offset: [number, number, number];
+  /** LAS file version. */
+  version: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
+  /** Public header byte length. */
+  headerLength: number;
+  /** LAS point data record format. */
+  pointDataRecordFormat: number;
+  /** Byte length of each raw point record. */
+  pointDataRecordLength: number;
+};
+
+/** One LASzip item descriptor written into the codec VLR. */
+type LASzipItem = {
+  /** LASzip item type identifier. */
+  type: number;
+  /** Uncompressed item byte length. */
+  size: number;
+};
+
+/** Assemble raw LAS point records into a complete fixed-chunk LAZ file. */
+function encodeLAZFile(
+  rawPointData: Uint8Array,
+  parameters: LASWriteParameters,
+  requestedChunkSize?: number
+): ArrayBuffer {
+  const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
+  const laszipVLR = createLASzipVLR(
+    parameters.pointDataRecordFormat,
+    parameters.pointDataRecordLength,
+    chunkSize
+  );
+  const pointDataOffset = parameters.headerLength + laszipVLR.byteLength;
+  const compressedChunks: Uint8Array[] = [];
+  const chunkTableEntries: LAZChunkTableEntry[] = [];
+
+  for (let pointOffset = 0; pointOffset < parameters.vertexCount; pointOffset += chunkSize) {
+    const pointCount = Math.min(chunkSize, parameters.vertexCount - pointOffset);
+    const byteOffset = pointOffset * parameters.pointDataRecordLength;
+    const compressed = encodeLAZChunk(
+      rawPointData.subarray(byteOffset, byteOffset + pointCount * parameters.pointDataRecordLength),
+      {
+        pointDataRecordFormat: parameters.pointDataRecordFormat,
+        pointDataRecordLength: parameters.pointDataRecordLength,
+        pointCount,
+        point14ItemVersion: 3,
+        rgb14ItemVersion: 3,
+        byte14ItemVersion: 3
+      }
+    );
+    compressedChunks.push(compressed);
+    chunkTableEntries.push({pointCount, byteLength: compressed.byteLength});
+  }
+
+  const compressedPointDataByteLength = compressedChunks.reduce(
+    (byteLength, chunk) => byteLength + chunk.byteLength,
+    0
+  );
+  const chunkTablePayload = encodeLAZChunkTable(chunkTableEntries);
+  const chunkTableOffset = pointDataOffset + 8 + compressedPointDataByteLength;
+  const arrayBuffer = new ArrayBuffer(chunkTableOffset + 8 + chunkTablePayload.byteLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+
+  writeHeader(dataView, {
+    ...parameters,
+    pointDataOffset,
+    vlrCount: 1,
+    compressed: true
+  });
+  bytes.set(laszipVLR, parameters.headerLength);
+  writeUint64Fallback(dataView, pointDataOffset, chunkTableOffset);
+  let compressedOffset = pointDataOffset + 8;
+  for (const chunk of compressedChunks) {
+    bytes.set(chunk, compressedOffset);
+    compressedOffset += chunk.byteLength;
+  }
+  dataView.setUint32(chunkTableOffset, 0, true);
+  dataView.setUint32(chunkTableOffset + 4, chunkTableEntries.length, true);
+  bytes.set(chunkTablePayload, chunkTableOffset + 8);
+  return arrayBuffer;
+}
+
+/** Create the LASzip VLR for a layered LAS 1.4 point layout. */
+function createLASzipVLR(
+  pointDataRecordFormat: number,
+  pointDataRecordLength: number,
+  chunkSize: number
+): Uint8Array {
+  const items = getLASzipItems(pointDataRecordFormat, pointDataRecordLength);
+  const payloadLength = LASZIP_VLR_PAYLOAD_BASE_LENGTH + items.length * 6;
+  const bytes = new Uint8Array(LASZIP_VLR_HEADER_LENGTH + payloadLength);
+  const dataView = new DataView(bytes.buffer);
+  const payloadOffset = LASZIP_VLR_HEADER_LENGTH;
+
+  writeString(dataView, 2, 'laszip encoded', 16);
+  dataView.setUint16(18, 22204, true);
+  dataView.setUint16(20, payloadLength, true);
+  writeString(dataView, 22, 'loaders.gl LAZ writer', 32);
+  dataView.setUint16(payloadOffset, 3, true);
+  dataView.setUint16(payloadOffset + 2, 0, true);
+  dataView.setUint8(payloadOffset + 4, 3);
+  dataView.setUint8(payloadOffset + 5, 5);
+  dataView.setUint16(payloadOffset + 6, 1, true);
+  dataView.setUint32(payloadOffset + 8, 0, true);
+  dataView.setUint32(payloadOffset + 12, chunkSize, true);
+  bytes.fill(0xff, payloadOffset + 16, payloadOffset + 32);
+  dataView.setUint16(payloadOffset + 32, items.length, true);
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+    const itemOffset = payloadOffset + LASZIP_VLR_PAYLOAD_BASE_LENGTH + itemIndex * 6;
+    const item = items[itemIndex];
+    dataView.setUint16(itemOffset, item.type, true);
+    dataView.setUint16(itemOffset + 2, item.size, true);
+    dataView.setUint16(itemOffset + 4, 3, true);
+  }
+  return bytes;
+}
+
+/** Return LASzip item descriptors for one supported point format. */
+function getLASzipItems(
+  pointDataRecordFormat: number,
+  pointDataRecordLength: number
+): LASzipItem[] {
+  const items = [{type: 10, size: 30}];
+  if (pointDataRecordFormat === 7) {
+    items.push({type: 11, size: 6});
+  } else if (pointDataRecordFormat === 8) {
+    items.push({type: 12, size: 8});
+  }
+  const extraByteCount = pointDataRecordLength - POINT_RECORD_LENGTHS[pointDataRecordFormat];
+  if (extraByteCount > 0) {
+    items.push({type: 14, size: extraByteCount});
+  }
+  return items;
+}
+
+/** Validate the intentionally narrow LAZ container writer surface. */
+function validateLAZOptions(
+  version: string,
+  pointDataRecordFormat: number,
+  chunkSize?: number
+): void {
+  if (version !== '1.4') {
+    throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
+  }
+  if (![6, 7, 8].includes(pointDataRecordFormat)) {
+    throw new Error(
+      `LASWriter: LAZ output only supports point data record formats 6-8; received ${pointDataRecordFormat}`
+    );
+  }
+  if (
+    chunkSize !== undefined &&
+    (!Number.isInteger(chunkSize) || chunkSize <= 0 || chunkSize > 0xffffffff)
+  ) {
+    throw new Error(`LASWriter: invalid LAZ chunk size ${chunkSize}`);
+  }
 }
 
 /** Return mesh data as a Mesh, converting MeshArrowTable input first. */
@@ -205,15 +390,13 @@ function getRequiredAttribute(mesh: Mesh, attributeName: string): MeshAttribute 
 /** Write the LAS 1.2 public header block. */
 function writeHeader(
   dataView: DataView,
-  parameters: {
-    vertexCount: number;
-    boundingBox: [[number, number, number], [number, number, number]];
-    scale: [number, number, number];
-    offset: [number, number, number];
-    version: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
-    headerLength: number;
-    pointDataRecordFormat: number;
-    pointDataRecordLength: number;
+  parameters: LASWriteParameters & {
+    /** Absolute point-data byte offset. */
+    pointDataOffset: number;
+    /** Number of VLR records before point data. */
+    vlrCount?: number;
+    /** Whether the point format byte carries the LASzip compression flag. */
+    compressed?: boolean;
   }
 ): void {
   const [versionMajor, versionMinor] = parameters.version.split('.').map(Number);
@@ -223,8 +406,9 @@ function writeHeader(
   writeString(dataView, 26, 'loaders.gl', 32);
   writeString(dataView, 58, 'loaders.gl', 32);
   dataView.setUint16(94, parameters.headerLength, true);
-  dataView.setUint32(96, parameters.headerLength, true);
-  dataView.setUint8(104, parameters.pointDataRecordFormat);
+  dataView.setUint32(96, parameters.pointDataOffset, true);
+  dataView.setUint32(100, parameters.vlrCount || 0, true);
+  dataView.setUint8(104, parameters.pointDataRecordFormat | (parameters.compressed ? 0x80 : 0));
   dataView.setUint16(105, parameters.pointDataRecordLength, true);
   dataView.setUint32(107, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
   dataView.setUint32(111, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
@@ -345,7 +529,7 @@ function getDefaultPointDataRecordFormat(
   options: LASWriterOptions,
   colorAttribute?: MeshAttribute
 ): number {
-  if (options.las?.version === '1.4') {
+  if (options.las?.format === 'laz' || options.las?.version === '1.4') {
     return colorAttribute ? 7 : 6;
   }
   return colorAttribute ? 2 : 0;
