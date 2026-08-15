@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile, Stat} from '@loaders.gl/loader-utils';
+import type {ReadableFile, Stat} from './file';
 
-/** Random-access file over an in-memory Parquet buffer without routing reads through `Blob`. */
-export class ParquetArrayBufferFile implements ReadableFile {
-  /** Complete in-memory Parquet file. */
+/** Random-access file over an in-memory ArrayBuffer without routing reads through Blob. */
+export class ArrayBufferFile implements ReadableFile {
+  /** Complete in-memory file. */
   readonly handle: ArrayBuffer;
   /** File length in bytes. */
   readonly size: number;
@@ -15,7 +15,7 @@ export class ParquetArrayBufferFile implements ReadableFile {
   /** In-memory files do not have a URL. */
   readonly url = '';
 
-  /** Creates a random-access view of an in-memory Parquet file. */
+  /** Creates a random-access view of an in-memory file. */
   constructor(arrayBuffer: ArrayBuffer) {
     this.handle = arrayBuffer;
     this.size = arrayBuffer.byteLength;

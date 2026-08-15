@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {localHeaderSignature, getReadableFileSize, readRange} from '@loaders.gl/zip';
 import {
@@ -7,6 +8,30 @@ import {
   createBrowserReadableFile
 } from 'test/utils/readable-files';
 const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
+
+test('ReadableFile#ArrayBufferFile range reads and stat', async () => {
+  const arrayBuffer = Uint8Array.from([10, 20, 30, 40, 50]).buffer;
+  const readableFile = new ArrayBufferFile(arrayBuffer);
+
+  expect(readableFile.handle, 'retains the original ArrayBuffer').toBe(arrayBuffer);
+  expect(new Uint8Array(await readableFile.read()), 'reads all bytes').toEqual(
+    Uint8Array.from([10, 20, 30, 40, 50])
+  );
+  expect(new Uint8Array(await readableFile.read(1, 3)), 'reads a byte range').toEqual(
+    Uint8Array.from([20, 30, 40])
+  );
+  expect(await readableFile.stat(), 'reports the in-memory file size').toEqual({
+    size: 5,
+    bigsize: 5n,
+    isDirectory: false
+  });
+
+  const abortController = new AbortController();
+  abortController.abort();
+  await expect(readableFile.read(0, 1, abortController.signal)).rejects.toThrow('Request aborted');
+  await readableFile.close();
+});
+
 test('ReadableFile#BlobFile range reads and stat', async () => {
   const readableFile = createBrowserReadableFile(DATA_ARRAY.buffer);
   const size = await getReadableFileSize(readableFile);
