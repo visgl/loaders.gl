@@ -8,14 +8,13 @@ import type {
   ArrayType,
   ArrowTable,
   ArrowTableBatch,
+  DataType,
+  Field,
   ObjectRowTable,
-  Schema
+  Schema,
+  SchemaMetadata
 } from '@loaders.gl/schema';
-import {
-  convertTable,
-  deserializeArrowField,
-  deserializeArrowMetadata
-} from '@loaders.gl/schema-utils';
+import {convertTable, deserializeArrowType} from '@loaders.gl/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';
@@ -31,6 +30,22 @@ import {getSchemaFromParquetReader} from './get-parquet-schema';
 
 /** Largest byte value copied inline to avoid TypedArray#set call overhead. */
 const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
+
+/** Primitive Arrow type instances used by serialized Parquet schemas. */
+const PARQUET_ARROW_PRIMITIVE_TYPES: Partial<Record<Extract<DataType, string>, arrow.DataType>> = {
+  binary: new arrow.Binary(),
+  bool: new arrow.Bool(),
+  float32: new arrow.Float32(),
+  float64: new arrow.Float64(),
+  int8: new arrow.Int8(),
+  int16: new arrow.Int16(),
+  int32: new arrow.Int32(),
+  int64: new arrow.Int64(),
+  uint16: new arrow.Uint16(),
+  uint32: new arrow.Uint32(),
+  uint64: new arrow.Uint64(),
+  utf8: new arrow.Utf8()
+};
 
 /** Inputs accepted by Apache Arrow's overloaded `Schema.assign` method. */
 type ArrowSchemaAssignment = arrow.Schema | arrow.Field | arrow.Field[];
@@ -198,9 +213,37 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
 /** Converts a loaders.gl schema into the identity-aware Arrow schema used by Parquet batches. */
 function createParquetArrowSchema(schema: Schema): ParquetArrowSchema {
   return new ParquetArrowSchema(
-    schema.fields.map(field => deserializeArrowField(field)),
-    deserializeArrowMetadata(schema.metadata)
+    schema.fields.map(field => createParquetArrowField(field)),
+    createParquetArrowMetadata(schema.metadata)
   );
+}
+
+/** Hydrates one serialized Parquet field without generic Arrow conversion allocations. */
+function createParquetArrowField(field: Field): arrow.Field {
+  return new arrow.Field(
+    field.name,
+    createParquetArrowType(field.type),
+    field.nullable,
+    createParquetArrowMetadata(field.metadata)
+  );
+}
+
+/** Reuses immutable primitive Arrow types and falls back for composite serialized types. */
+function createParquetArrowType(dataType: DataType): arrow.DataType {
+  const primitiveType =
+    typeof dataType === 'string' ? PARQUET_ARROW_PRIMITIVE_TYPES[dataType] : undefined;
+  return primitiveType || deserializeArrowType(dataType);
+}
+
+/** Hydrates serialized Parquet metadata without an intermediate entries array. */
+function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, string> {
+  const arrowMetadata = new Map<string, string>();
+  if (metadata) {
+    for (const key of Object.keys(metadata)) {
+      arrowMetadata.set(key, metadata[key]);
+    }
+  }
+  return arrowMetadata;
 }
 
 /** Builds Arrow from one selected row-group range and falls back for nested columns. */
