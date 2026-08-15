@@ -1,6 +1,9 @@
 import {expect, test} from 'vitest';
 import {load, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
+import {setupLoaderTestEnvironment} from '../../../../../test/vitest-setup-loaders';
+
+await setupLoaderTestEnvironment();
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 

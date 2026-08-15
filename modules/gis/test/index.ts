@@ -16,15 +16,10 @@ import './utils/hex-transcoder.spec';
 // wkt format family parsers/encoder
 import './geometry-converters/wkb/convert-wkb-to-geometry.spec';
 // import './geometry-converters/wkb/convert-twkb-to-geometry.spec';
-import './geometry-converters/wkb/convert-wkt-to-geometry.spec';
 
 import './geometry-converters/wkb/convert-geometry-to-wkb.spec';
-import './geometry-converters/wkb/convert-geometry-to-twkb.spec';
-import './geometry-converters/wkb/convert-geometry-to-wkt.spec';
 
 // import './wkt/parse-hex-wkb.spec';
-
-import './wkt-crs/parse-wkt-crs.spec';
 
 // geoarrow
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';

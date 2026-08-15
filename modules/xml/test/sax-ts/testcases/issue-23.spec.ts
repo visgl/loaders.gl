@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#issue-23', t => {
-  testSax(t, {
+test('SAXParser#issue-23', () => {
+  testSax({
     xml:
       '<compileClassesResponse>' +
       '<result>' +
@@ -55,6 +49,4 @@ test('SAXParser#issue-23', t => {
       strict: false
     }
   });
-
-  t.end();
 });

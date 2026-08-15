@@ -1,3 +1,4 @@
+import '@loaders.gl/polyfills';
 import test from 'test/utils/vitest-tape';
 import {composeHashFile} from '../../src/hash-file-utility';
 import {NodeFile} from '@loaders.gl/loader-utils';

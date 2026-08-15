@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {pathToFileURL} from 'node:url';
+import '@loaders.gl/polyfills';
 import test from 'test/utils/vitest-tape';
 import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
 import {

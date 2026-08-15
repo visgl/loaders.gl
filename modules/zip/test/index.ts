@@ -11,5 +11,3 @@ import './zip-utils/cd-file-header.spec';
 import './zip-utils/end-of-central-directory.spec';
 import './zip-utils/local-file-header.spec';
 import './zip-utils/search-from-the-end.spec';
-import './zip-utils/zip-composition.spec';
-import './zip-utils/hash-file-utility.spec';

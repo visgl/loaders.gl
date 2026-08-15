@@ -1,0 +1,14 @@
+# Generated baseline. Remove entries as tests migrate; additions require explicit review.
+modules/3d-tiles/test/lib/parsers/batched-model-3d-tile.spec.ts::modules/3d-tiles/test/data/cesium-rtc-extension.b3dm # Canonical CesiumRTC integration fixture; the extension behavior depends on the complete tile container.
+modules/core/test/lib/api/create-raster-source.spec.ts::modules/geotiff/test/data/gfw-azores.tif # Cross-package raster-source conformance uses the same representative GeoTIFF as the owning package.
+modules/draco/test/draco-arrow-loader.spec.ts::modules/draco/test/data/cesium-tile.drc # Canonical Draco payload exercises Arrow conversion from a realistic compressed point cloud.
+modules/draco/test/draco-compression-ratio.spec.ts::modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin # Compression-ratio behavior requires a representative position buffer rather than a tiny synthetic sample.
+modules/draco/test/draco-loader.spec.ts::modules/draco/test/data/cesium-tile.drc # Canonical Draco interoperability payload covers decoder metadata and attributes together.
+modules/geotiff/test/geotiff-loader.spec.ts::modules/geotiff/test/data/gfw-azores.tif # Representative tiled GeoTIFF retains geospatial metadata and raster decoding coverage.
+modules/gltf/test/glb-loader.spec.ts::modules/gltf/test/data/gltf-2.0/2CylinderEngine.glb # Canonical multi-mesh GLB preserves realistic accessor and buffer integration coverage.
+modules/gltf/test/gltf-loader.spec.ts::modules/gltf/test/data/gltf-2.0/2CylinderEngine.glb # Canonical multi-mesh glTF preserves realistic scene and resource integration coverage.
+modules/loader-utils/test/lib/iterators/make-iterator.spec.ts::modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin # Iterator chunk-boundary coverage needs a buffer large enough to span many chunks.
+modules/parquet/test/parquet-loader.spec.ts::modules/parquet/test/data/fruits.parquet # Canonical Parquet interoperability fixture covers encoded pages and schema metadata.
+modules/parquet/test/parquetjs/integration.spec.ts::modules/parquet/test/data/fruits.parquet # JavaScript backend parity is checked against the canonical encoded-page fixture.
+modules/parquet/test/parquetjs/reader.spec.ts::modules/parquet/test/data/fruits.parquet # Reader integration retains realistic row-group and metadata behavior.
+modules/ply/test/ply-loader.spec.js::modules/ply/test/data/bun_zipper.ply # Canonical Stanford bunny fixture covers a realistic mesh header and vertex corpus.

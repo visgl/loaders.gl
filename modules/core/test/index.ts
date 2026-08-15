@@ -22,7 +22,6 @@ import './lib/loader-utils/format-metadata.spec';
 import './lib/fetch/fetch-error-message.spec';
 import './lib/fetch/fetch-file.spec';
 import './lib/fetch/fetch-file.browser.spec';
-import './lib/fetch/fetch-file.node.spec';
 // import './lib/fetch/read-file.spec';
 
 import './lib/api/set-loader-options.spec';

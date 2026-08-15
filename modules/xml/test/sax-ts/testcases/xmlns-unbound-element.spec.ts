@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#smlns-unbound-element', t => {
-  testSax(t, {
+test('SAXParser#smlns-unbound-element', () => {
+  testSax({
     saxOptions: {
       strict: true,
       xmlns: true
@@ -37,8 +31,7 @@ test('SAXParser#smlns-unbound-element', t => {
       ['closetag', 'unbound:root']
     ]
   }).write('<unbound:root/>');
-
-  testSax(t, {
+  testSax({
     saxOptions: {
       strict: true,
       xmlns: true
@@ -101,6 +94,4 @@ test('SAXParser#smlns-unbound-element', t => {
       ]
     ]
   }).write('<unbound:root xmlns:unbound="someuri"/>');
-
-  t.end();
 });

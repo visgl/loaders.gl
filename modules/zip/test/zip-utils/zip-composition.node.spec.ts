@@ -1,5 +1,6 @@
 import {copyFile, stat, unlink} from 'node:fs/promises';
 
+import '@loaders.gl/polyfills';
 import {addOneFile, createZip, getFileIterator} from '../../src/parse-zip/zip-composition';
 import test from 'test/utils/vitest-tape';
 

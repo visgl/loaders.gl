@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#cdata-end-split', t => {
-  testSax(t, {
+test('SAXParser#cdata-end-split', () => {
+  testSax({
     expect: [
       ['opentagstart', {name: 'R', attributes: {}}],
       ['opentag', {name: 'R', attributes: {}, isSelfClosing: false}],
@@ -21,6 +15,4 @@ test('SAXParser#cdata-end-split', t => {
     .write(']>')
     .write('</r>')
     .close();
-
-  t.end();
 });

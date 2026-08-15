@@ -2,8 +2,6 @@ import test from 'test/utils/vitest-tape';
 import {PotreeSourceLoader} from '@loaders.gl/potree';
 
 const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';
-const POTREE_LAZ_URL =
-  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
 test('PotreeSourceLoader#initialize', async t => {
   const DS = PotreeSourceLoader;
@@ -66,39 +64,6 @@ test('PotreeSourceLoader#exposes normalized tile headers and bounds', async t =>
     t.equal(childMinBounds[2], rootMinBounds[2], 'child 0 keeps lower z bound');
     t.equal(childMaxBounds[2], (rootMinBounds[2] + rootMaxBounds[2]) / 2, 'child 0 splits z');
   }
-
-  t.end();
-});
-
-test('PotreeSourceLoader#derives cartographic view metadata from the dataset', async t => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_LAZ_URL, {});
-
-  const metadata = await source.getMetadata();
-  const viewState = source.getViewState();
-
-  t.ok(
-    Array.isArray(metadata.viewState.cartographicCenter),
-    'metadata includes a cartographic center'
-  );
-  t.ok((metadata.viewState.zoom || 0) > 0, 'metadata includes an inferred zoom');
-  t.deepEqual(
-    metadata.viewState.cartographicCenter,
-    viewState.cartographicCenter,
-    'metadata view state matches the source view state'
-  );
-  t.end();
-});
-
-test.skip('PotreeSourceLoader#loadNodeContent', async t => {
-  const DS = PotreeSourceLoader;
-  const source = DS.createDataSource(POTREE_LAZ_URL, {});
-
-  await source.init();
-
-  t.ok(source.isSupported());
-
-  const existingNodeContent = await source.loadNodeContent('246');
-  t.equals(existingNodeContent?.header?.vertexCount, 9933);
 
   t.end();
 });

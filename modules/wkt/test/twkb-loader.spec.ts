@@ -9,7 +9,25 @@ import {TWKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
-// const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+
+function normalizeTypedArrays(value: unknown): unknown {
+  if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+    return Array.from(value as ArrayLike<number>);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(entry => normalizeTypedArrays(entry));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, normalizeTypedArrays(entry)])
+    );
+  }
+
+  return value;
+}
 
 test('TWKBLoader#2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
@@ -42,20 +60,22 @@ test('TWKBLoader#2D', async t => {
   t.end();
 });
 
-// test('TWKBLoader#Z', async (t) => {
-//   const response = await fetchFile(WKB_Z_TEST_CASES);
-//   const TEST_CASES = parseTestCases(await response.json());
+test('TWKBLoader#Z', async t => {
+  const response = await fetchFile(WKB_Z_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
 
-//   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
-//   for (const testCase of Object.values(TEST_CASES)) {
-//     if (testCase.geoJSON.type === 'GeometryCollection') {
-//       continue;
-//     }
+  for (const testCase of Object.values(TEST_CASES)) {
+    if (testCase.geoJSON.type === 'GeometryCollection') {
+      continue;
+    }
 
-//     if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
-//       t.deepEqual(parseSync(testCase.twkbXdr, TWKBLoader, {wkb: {shape: 'geojson-geometry'}}), testCase.geoJSON);
-//     }
-//   }
+    if (testCase.twkb && testCase.geoJSON) {
+      const parsedGeometry = parseSync(testCase.twkb, TWKBLoader, {
+        wkb: {shape: 'geojson-geometry'}
+      });
+      t.deepEqual(normalizeTypedArrays(parsedGeometry), testCase.geoJSON);
+    }
+  }
 
-//   t.end();
-// });
+  t.end();
+});

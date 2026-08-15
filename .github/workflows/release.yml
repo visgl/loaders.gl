@@ -88,6 +88,11 @@ jobs:
       - name: Run headless browser tests
         run: yarn test-headless
 
+      - name: Run hermetic slow tests
+        env:
+          VITEST_MAX_WORKERS: 1
+        run: yarn test-slow
+
       - name: Login to NPM
         run: npm config set "//registry.npmjs.org/:_authToken=${NPM_ACCESS_TOKEN}"
 
