@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -18,6 +18,7 @@ import {
   parseParquetFileToArrowWithJs
 } from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
+import {ParquetArrayBufferFile} from './lib/parquet-array-buffer-file';
 import {ParquetJSLoader as ParquetJSLoaderMetadata} from './parquet-js-loader-types';
 import type {ParquetJSLoaderOptions} from './parquet-loader-options';
 
@@ -36,7 +37,7 @@ export const ParquetJSLoaderWithParser = {
   worker: false,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetJSLoaderOptions) {
     const parquetOptions = getParquetOptions(options);
-    const file = new BlobFile(arrayBuffer);
+    const file = new ParquetArrayBufferFile(arrayBuffer);
     return parquetOptions.parquet?.shape === 'arrow-table'
       ? parseParquetFileToArrowWithJs(file, parquetOptions)
       : parseParquetFile(file, parquetOptions);
@@ -62,7 +63,7 @@ export const ParquetJSLoaderWithParser = {
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
     const parquetOptions = getParquetOptions(options);
-    const file = new BlobFile(arrayBuffer);
+    const file = new ParquetArrayBufferFile(arrayBuffer);
     if (parquetOptions.parquet?.shape === 'arrow-table') {
       yield* parseParquetFileToArrowInBatchesWithJs(file, parquetOptions);
     } else {

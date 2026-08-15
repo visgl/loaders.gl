@@ -14,6 +14,7 @@ import {ParquetEncoder} from '../src/parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../src/parquetjs/schema/schema';
 import {materializeColumns, materializeRows} from '../src/parquetjs/schema/shred';
 import {concatUint8Arrays} from '../src/parquetjs/utils/binary-utils';
+import {ParquetArrayBufferFile} from '../src/lib/parquet-array-buffer-file';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data';
 const TEXT_DECODER = new TextDecoder();
@@ -90,6 +91,22 @@ async function readParquetRows(parquetBytes: Uint8Array): Promise<any[]> {
   reader.close();
   return rows;
 }
+
+test('ParquetArrayBufferFile reads in-memory ranges without Blob', async t => {
+  const arrayBuffer = Uint8Array.from([10, 20, 30, 40, 50]).buffer;
+  const file = new ParquetArrayBufferFile(arrayBuffer);
+
+  t.equal(file.handle, arrayBuffer, 'retains the original ArrayBuffer');
+  t.deepEqual(Array.from(new Uint8Array(await file.read())), [10, 20, 30, 40, 50], 'reads all');
+  t.deepEqual(Array.from(new Uint8Array(await file.read(1, 3))), [20, 30, 40], 'reads a range');
+  t.deepEqual(await file.stat(), {size: 5, bigsize: 5n, isDirectory: false}, 'reports size');
+
+  const abortController = new AbortController();
+  abortController.abort();
+  await t.rejects(file.read(0, 1, abortController.signal), /Request aborted/, 'honors abort');
+  await file.close();
+  t.end();
+});
 
 test('Parquet thrift metadata decodes from Uint8Array and Uint8Array subarray', async t => {
   const parquetBytes = await readTestBytes('fruits.parquet');
