@@ -176,6 +176,18 @@ test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async (t) => {
     'wkb',
     'TypeScript implementation preserves GeoParquet schema metadata'
   );
+  t.equal(
+    table.data.schema.fields
+      .find(field => field.name === 'geometry')
+      ?.metadata.get('ARROW:extension:name'),
+    'geoarrow.wkb',
+    'TypeScript Arrow schema preserves GeoArrow field metadata'
+  );
+  t.ok(table.data.schema.metadata.get('geo'), 'TypeScript Arrow schema preserves GeoParquet metadata');
+  t.notOk(
+    table.data.schema.fields.find(field => field.name === 'pop_est')?.metadata.has('typeLength'),
+    'TypeScript Arrow schema omits absent physical metadata'
+  );
   t.end();
 });
 test('ParquetLoader#load supports arrow-table shape', async (t) => {
@@ -221,6 +233,19 @@ test('ParquetJSLoader#arrow-table supports loadInBatches', async (t) => {
   for await (const batch of iterator) {
     t.equal(batch.shape, 'arrow-table');
     t.ok(batch.data instanceof arrow.Table, 'returns Apache Arrow table batches');
+    t.equal(
+      getGeometryColumnsFromSchema(batch.schema).geometry?.encoding,
+      'geoarrow.wkb',
+      'batch loaders.gl schema includes GeoArrow field metadata'
+    );
+    t.equal(
+      batch.data.schema.fields
+        .find(field => field.name === 'geometry')
+        ?.metadata.get('ARROW:extension:name'),
+      'geoarrow.wkb',
+      'batch Arrow schema includes GeoArrow field metadata'
+    );
+    t.ok(batch.data.schema.metadata.get('geo'), 'batch Arrow schema preserves GeoParquet metadata');
     rowCount += batch.length;
   }
   t.equal(rowCount, 5, 'returns all requested rows');

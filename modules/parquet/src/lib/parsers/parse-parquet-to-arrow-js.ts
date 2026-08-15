@@ -23,7 +23,6 @@ import type {
 } from '../../parquetjs/schema/declare';
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
-import {normalizeArrowTableGeoMetadata} from '../geo/geospatial-metadata';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 
 /** Largest byte value copied inline to avoid TypedArray#set call overhead. */
@@ -51,10 +50,7 @@ export async function parseParquetFileToArrowWithJs(
   const table = recordBatches.length
     ? new arrow.Table(recordBatches)
     : new arrow.Table(convertSchemaToArrow(schema), []);
-  return normalizeArrowTableGeoMetadata(
-    {shape: 'arrow-table', data: table, schema},
-    schema.metadata
-  );
+  return {shape: 'arrow-table', data: table, schema};
 }
 
 /** Reads the projected loaders.gl schema when row selection produces no Arrow record batches. */
@@ -86,6 +82,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     retainByteArrayViews: true
   });
   const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
+  const arrowSchema = convertSchemaToArrow(schema);
   const parquetSchema = await reader.getSchema();
   const rowGroups = reader.rowGroupIterator(getParquetIterationProps(options));
   const rowOffset = Math.max(0, options?.parquet?.offset || 0);
@@ -111,9 +108,13 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
       continue;
     }
 
-    const arrowTable = normalizeArrowTableGeoMetadata(
-      convertRowGroupSliceToArrow(schema, parquetSchema, rowGroup, selectionStart, selectionEnd),
-      schema.metadata
+    const arrowTable = convertRowGroupSliceToArrow(
+      schema,
+      arrowSchema,
+      parquetSchema,
+      rowGroup,
+      selectionStart,
+      selectionEnd
     );
     const batchSize =
       requestedBatchSize && requestedBatchSize > 0 ? requestedBatchSize : remainingRowCount;
@@ -146,6 +147,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
 /** Builds Arrow from one selected row-group range and falls back for nested columns. */
 function convertRowGroupSliceToArrow(
   schema: Schema,
+  arrowSchema: arrow.Schema,
   parquetSchema: ParquetSchema,
   rowGroup: ParquetRowGroup,
   start: number,
@@ -160,7 +162,6 @@ function convertRowGroupSliceToArrow(
     return convertTable(table, 'arrow-table');
   }
 
-  const arrowSchema = convertSchemaToArrow(schema);
   const vectors: Record<string, arrow.Vector> = {};
   for (const field of arrowSchema.fields) {
     const parquetField = parquetSchema.findField(field.name);
