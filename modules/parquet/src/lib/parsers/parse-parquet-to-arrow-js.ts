@@ -206,7 +206,20 @@ function createArrowTable(
   vectors: Record<string, arrow.Vector>,
   rowCount: number
 ): arrow.Table {
-  if (schema.fields.length || rowCount === 0) {
+  if (schema.fields.length) {
+    // Every vector represents one row-group slice and therefore has one data chunk. Supplying the
+    // Struct directly avoids Arrow Table's generic vector redistribution and schema reassignment.
+    const children = schema.fields.map(field => vectors[field.name].data[0]);
+    const data = arrow.makeData({
+      type: new arrow.Struct(schema.fields),
+      length: rowCount,
+      nullCount: 0,
+      children
+    });
+    const recordBatch = new arrow.RecordBatch(schema, data);
+    return new arrow.Table(recordBatch);
+  }
+  if (rowCount === 0) {
     return new arrow.Table(schema, vectors);
   }
 
