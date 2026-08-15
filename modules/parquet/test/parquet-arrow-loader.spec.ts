@@ -226,6 +226,28 @@ test('ParquetJSLoader#arrow-table supports loadInBatches', async (t) => {
   t.equal(rowCount, 5, 'returns all requested rows');
   t.end();
 });
+
+test('ParquetJSLoader#empty projection batches preserve their row counts', async (t) => {
+  const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
+  const iterator = await loadInBatches(url, ParquetJSLoader, {
+    parquet: {
+      shape: 'arrow-table',
+      columns: ['missing_column'],
+      offset: 2,
+      limit: 3,
+      batchSize: 2
+    }
+  });
+
+  const batchLengths: number[] = [];
+  for await (const batch of iterator) {
+    batchLengths.push(batch.length);
+    t.equal(batch.data.numRows, batch.length, 'Arrow rows match the advertised batch length');
+    t.equal(batch.data.numCols, 0, 'batch contains no projected columns');
+  }
+  t.deepEqual(batchLengths, [2, 1], 'preserves requested batching for empty projections');
+  t.end();
+});
 test('ParquetWriter#Arrow table round trip', async (t) => {
   const table = createArrowTable();
 

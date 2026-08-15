@@ -184,8 +184,9 @@ const table = await load(url, ParquetJSLoader, {
 });
 ```
 
-For `shape: 'arrow-table'`, `ParquetJSLoader` converts its decoded rows to an Apache Arrow table and
-preserves compatible GeoParquet metadata on the Arrow schema.
+For `shape: 'arrow-table'`, `ParquetJSLoader` materializes flat selected columns directly into Apache
+Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Nested schemas use
+the object-row materializer as a compatibility fallback.
 
 ## Worker Execution
 
@@ -197,13 +198,14 @@ Set `core.worker: false` to decode on the calling thread. `ParquetJSLoader` alwa
 
 ## Live Benchmarks
 
-These benchmarks compare maintained JavaScript and WebAssembly object-row decode paths on common,
+These benchmarks compare maintained JavaScript and WebAssembly Arrow-table decode paths on common,
 checked-in fixtures. They are a reproducible baseline for finding optimization opportunities in the
 loaders.gl TypeScript backend, not a ranking of projects.
 
 The suite runs entirely in your browser. Fixture download and parser initialization happen before
-timing; each implementation is warmed up and must return the same row count. Results depend on the
-browser, hardware, thermal state, and whether this tab remains focused.
+timing; each implementation is warmed up and must return the same row count. The suite focuses on
+Arrow output and retains one object-row control to expose row-materialization cost. Results depend on
+the browser, hardware, thermal state, and whether this tab remains focused.
 
 The live suite includes both loaders.gl loader variants plus a browser-oriented peer reader.
 Dependency versions are pinned in the repository lockfile. The corresponding Node suite covers

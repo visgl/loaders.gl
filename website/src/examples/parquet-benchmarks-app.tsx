@@ -5,28 +5,31 @@
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 
 type BenchmarkResultRow = {
   /** Human-readable fixture and feature label. */
   scenario: string;
-  /** Human-readable loader variant label. */
-  implementation: string;
+  /** Loader variant that produced the result. */
+  implementationId: ParquetBenchmarkImplementationId;
   /** Human-readable throughput. */
   formattedValue: string;
-  /** Human-readable measurement error. */
-  formattedError: string;
 };
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
 
 type ParquetBenchmarkImplementationId = 'typescript' | 'wasm' | 'hyparquet';
+type ParquetBenchmarkShape = 'arrow-table' | 'object-row-table';
 
 type ParquetBenchmarkScenario = {
   /** Human-readable fixture and feature label. */
   name: string;
   /** Complete fixture bytes held outside the timed callback. */
   arrayBuffer: ArrayBuffer;
+  /** Optional top-level columns decoded by every loader variant. */
+  columns?: string[];
+  /** Table shape materialized by every loader variant. */
+  shape: ParquetBenchmarkShape;
   /** Implementations that currently support the fixture features. */
   implementationIds: ParquetBenchmarkImplementationId[];
 };
@@ -36,7 +39,7 @@ type ParquetBenchmarkImplementation = {
   id: ParquetBenchmarkImplementationId;
   /** Human-readable implementation label. */
   name: string;
-  /** Hot object-row decode operation returning the output row count. */
+  /** Hot decode operation returning the output row count. */
   decode: (scenario: ParquetBenchmarkScenario) => Promise<number>;
 };
 
@@ -46,6 +49,32 @@ type ValidatedParquetBenchmarkImplementation = {
   /** Row count produced during warm-up. */
   rowCount: number;
 };
+
+type HyparquetColumnChunk = {
+  /** Top-level column name. */
+  columnName: string;
+  /** Values decoded for this chunk. */
+  columnData: ArrayLike<unknown>;
+  /** First row represented by the chunk. */
+  rowStart: number;
+  /** Exclusive last row represented by the chunk. */
+  rowEnd: number;
+};
+
+const PARQUET_BENCHMARK_IMPLEMENTATION_LABELS: Record<
+  ParquetBenchmarkImplementationId,
+  string
+> = {
+  typescript: 'ParquetJSLoader',
+  wasm: 'ParquetLoader',
+  hyparquet: 'hyparquet'
+};
+
+const PARQUET_BENCHMARK_IMPLEMENTATION_IDS: ParquetBenchmarkImplementationId[] = [
+  'typescript',
+  'wasm',
+  'hyparquet'
+];
 
 /** Renders live comparative Parquet decode benchmarks in the visitor's browser. */
 export default function ParquetBenchmarksApp(): JSX.Element {
@@ -131,10 +160,14 @@ export default function ParquetBenchmarksApp(): JSX.Element {
 
   const isRunning = status === 'loading' || status === 'running';
   const canRestart = status === 'complete' || status === 'failed';
+  const scenarioNames = Array.from(new Set(rows.map(row => row.scenario)));
 
   return (
     <div className="benchmark-page">
-      <p>Live Parquet object-row decode throughput. Keep this tab focused while it runs.</p>
+      <p>
+        Live Parquet decode throughput, primarily to Arrow with one object-row control. Keep this tab
+        focused while it runs.
+      </p>
       <div className="benchmark-status-row" aria-live="polite">
         {isRunning ? <span className="benchmark-spinner" aria-hidden="true" /> : null}
         <p className="benchmark-status">Status: {status}</p>
@@ -159,37 +192,44 @@ export default function ParquetBenchmarksApp(): JSX.Element {
         <table className="parquet-benchmark-table">
           <thead>
             <tr>
-              <th scope="col">Fixture</th>
-              <th scope="col">Loader Variant</th>
-              <th scope="col" className="parquet-benchmark-number">
-                Throughput
-              </th>
-              <th scope="col" className="parquet-benchmark-number">
-                Variation
-              </th>
+              <th scope="col">Test</th>
+              {PARQUET_BENCHMARK_IMPLEMENTATION_IDS.map(implementationId => (
+                <th
+                  key={implementationId}
+                  scope="col"
+                  className="parquet-benchmark-number"
+                >
+                  {PARQUET_BENCHMARK_IMPLEMENTATION_LABELS[implementationId]}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, rowIndex) => {
-              const startsScenario = rows[rowIndex - 1]?.scenario !== row.scenario;
-              const scenarioRowCount = rows.filter(
-                candidateRow => candidateRow.scenario === row.scenario
-              ).length;
-              return (
-                <tr key={`${row.scenario}-${row.implementation}`}>
-                  {startsScenario ? (
-                    <th scope="rowgroup" rowSpan={scenarioRowCount}>
-                      {row.scenario}
-                    </th>
-                  ) : null}
-                  <td>{row.implementation}</td>
-                  <td className="parquet-benchmark-number">
-                    <strong>{row.formattedValue}</strong> rows/s
-                  </td>
-                  <td className="parquet-benchmark-number">{row.formattedError}</td>
-                </tr>
-              );
-            })}
+            {scenarioNames.map(scenario => (
+              <tr key={scenario}>
+                <th scope="row">{scenario}</th>
+                {PARQUET_BENCHMARK_IMPLEMENTATION_IDS.map(implementationId => {
+                  const result = rows.find(
+                    row => row.scenario === scenario && row.implementationId === implementationId
+                  );
+                  return (
+                    <td
+                      key={implementationId}
+                      className="parquet-benchmark-number"
+                      aria-label={`${PARQUET_BENCHMARK_IMPLEMENTATION_LABELS[implementationId]} throughput`}
+                    >
+                      {result ? (
+                        <>
+                          <strong>{result.formattedValue}</strong> rows/s
+                        </>
+                      ) : (
+                        <span className="parquet-benchmark-pending">—</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
         {rows.length === 0 ? (
@@ -232,18 +272,35 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
   const deltaByteArrayBuffer = await fetchParquetFixture(deltaByteArrayUrl);
   return [
     {
-      name: 'GeoParquet object rows',
+      name: 'GeoParquet → Arrow',
       arrayBuffer: geoParquetArrayBuffer,
+      shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'LZ4_RAW object rows',
+      name: 'LZ4_RAW → Arrow',
       arrayBuffer: lz4ArrayBuffer,
+      shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'DELTA_BYTE_ARRAY object rows',
+      name: 'DELTA_BYTE_ARRAY → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY projection → Arrow',
+      arrayBuffer: deltaByteArrayBuffer,
+      columns: ['c_customer_id', 'c_email_address'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 returns mismatched IPC schema/vector counts for this projection.
+      implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY → object rows',
+      arrayBuffer: deltaByteArrayBuffer,
+      shape: 'object-row-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     }
   ];
@@ -258,7 +315,7 @@ async function fetchParquetFixture(url: string): Promise<ArrayBuffer> {
   return await response.arrayBuffer();
 }
 
-/** Loads browser implementations and creates equivalent object-row decode cases. */
+/** Loads browser implementations and creates equivalent Arrow-table decode cases. */
 async function createParquetBenchmarkImplementations(): Promise<
   ParquetBenchmarkImplementation[]
 > {
@@ -267,6 +324,7 @@ async function createParquetBenchmarkImplementations(): Promise<
     loadersGlTypeScript,
     loadersGlWasm,
     loadersGlTableConverters,
+    loadersGlSchemaUtils,
     hyparquet,
     hyparquetCompressors
   ] = await Promise.all([
@@ -274,46 +332,84 @@ async function createParquetBenchmarkImplementations(): Promise<
     import('../../../modules/parquet/src/parquet-js-loader'),
     import('../../../modules/parquet/src/lib/parsers/parse-parquet-to-arrow'),
     import('../../../modules/parquet/src/lib/parsers/convert-parquet-tables'),
+    import('@loaders.gl/schema-utils'),
     import('hyparquet'),
     import('hyparquet-compressors')
   ]);
   return [
     {
       id: 'typescript',
-      name: 'ParquetJSLoader (TypeScript)',
+      name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.typescript,
       decode: async scenario => {
         const table = (await loadersGlTypeScript.ParquetJSLoaderWithParser.parse(
           scenario.arrayBuffer,
           {
-            core: {worker: false}
+            core: {worker: false},
+            parquet: {columns: scenario.columns, shape: scenario.shape}
           }
-        )) as ObjectRowTable;
-        return table.data.length;
+        )) as ArrowTable | ObjectRowTable;
+        return getBenchmarkTableRowCount(table);
       }
     },
     {
       id: 'wasm',
-      name: 'ParquetLoader (WASM)',
+      name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.wasm,
       decode: async scenario => {
         const arrowTable = await loadersGlWasm.parseParquetFileToArrow(
-          new loadersGlLoaderUtils.BlobFile(scenario.arrayBuffer)
+          new loadersGlLoaderUtils.BlobFile(scenario.arrayBuffer),
+          {columns: scenario.columns}
         );
-        const table = loadersGlTableConverters.convertArrowTableToObjectRows(arrowTable);
-        return table.data.length;
+        if (scenario.shape === 'arrow-table') {
+          return arrowTable.data.numRows;
+        }
+        const objectRowTable = loadersGlTableConverters.convertArrowTableToObjectRows(arrowTable);
+        return objectRowTable.data.length;
       }
     },
     {
       id: 'hyparquet',
-      name: 'hyparquet',
+      name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.hyparquet,
       decode: async scenario => {
-        const rows = await hyparquet.parquetReadObjects({
+        if (scenario.shape === 'object-row-table') {
+          const rows = await hyparquet.parquetReadObjects({
+            file: scenario.arrayBuffer,
+            columns: scenario.columns,
+            compressors: hyparquetCompressors.compressors
+          });
+          return rows.length;
+        }
+
+        const columns: Record<string, unknown[]> = {};
+        await hyparquet.parquetRead({
           file: scenario.arrayBuffer,
+          columns: scenario.columns,
+          onChunk: (chunk: HyparquetColumnChunk) => appendHyparquetColumnChunk(columns, chunk),
           compressors: hyparquetCompressors.compressors
         });
-        return rows.length;
+        const columnarTable = loadersGlSchemaUtils.makeTableFromData(columns);
+        const arrowTable = loadersGlSchemaUtils.convertTable(columnarTable, 'arrow-table');
+        return arrowTable.data.numRows;
       }
     }
   ];
+}
+
+/** Returns the materialized row count for either benchmark table shape. */
+function getBenchmarkTableRowCount(table: ArrowTable | ObjectRowTable): number {
+  return table.shape === 'arrow-table' ? table.data.numRows : table.data.length;
+}
+
+/** Copies one hyparquet output chunk into a contiguous top-level column. */
+function appendHyparquetColumnChunk(
+  columns: Record<string, unknown[]>,
+  chunk: HyparquetColumnChunk
+): void {
+  const column = columns[chunk.columnName] || [];
+  column.length = Math.max(column.length, chunk.rowEnd);
+  for (let valueIndex = 0; valueIndex < chunk.columnData.length; valueIndex++) {
+    column[chunk.rowStart + valueIndex] = chunk.columnData[valueIndex];
+  }
+  columns[chunk.columnName] = column;
 }
 
 /** Adds validated scenarios to the browser benchmark suite. */
@@ -341,7 +437,7 @@ async function addParquetBenchmarksToSuite(
       bench.group(`Parquet decode - ${scenario.name}`);
       for (const {implementation} of validatedImplementations) {
         bench.addAsync(
-          `${scenario.name} :: ${implementation.name}`,
+          `${scenario.name} :: ${implementation.id}`,
           {minIterations: 3, unit: 'rows', multiplier: rowCount},
           async () => {
             const decodedRowCount = await implementation.decode(scenario);
@@ -395,12 +491,19 @@ function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
   switch (entry.type) {
     case 'test': {
       const separatorIndex = entry.id.lastIndexOf(' :: ');
+      const implementationId = entry.id.slice(
+        separatorIndex + 4
+      ) as ParquetBenchmarkImplementationId;
+      if (
+        separatorIndex < 0 ||
+        !PARQUET_BENCHMARK_IMPLEMENTATION_IDS.includes(implementationId)
+      ) {
+        return null;
+      }
       return {
-        scenario: separatorIndex >= 0 ? entry.id.slice(0, separatorIndex) : 'Parquet decode',
-        implementation:
-          separatorIndex >= 0 ? entry.id.slice(separatorIndex + 4) : entry.id,
-        formattedValue: entry.itersPerSecond,
-        formattedError: `±${(entry.error * 100).toFixed(2)}%`
+        scenario: entry.id.slice(0, separatorIndex),
+        implementationId,
+        formattedValue: entry.itersPerSecond
       };
     }
     case 'complete':
