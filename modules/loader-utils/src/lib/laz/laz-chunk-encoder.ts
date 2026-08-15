@@ -13,6 +13,8 @@ import {
 } from './laz-arithmetic-encoder';
 
 const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {6: 30, 7: 36, 8: 38};
+const LASZIP_VLR_HEADER_LENGTH = 54;
+const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
 const GPS_TIME_MULTI = 500;
 const GPS_TIME_MULTI_MINUS = -10;
 const GPS_TIME_MULTI_CODE_FULL = 511;
@@ -188,6 +190,47 @@ export function encodeLAZChunkTable(
   return encoder.finish();
 }
 
+/** Encode a complete LASzip VLR for a supported layered point layout. */
+export function encodeLASzipVLR(options: {
+  /** LAS point data record format. */
+  pointDataRecordFormat: number;
+  /** Uncompressed byte length of each point record. */
+  pointDataRecordLength: number;
+  /** Fixed chunk size or `0xffffffff` for variable chunks. */
+  chunkSize: number;
+  /** LASzip item codec version. */
+  itemVersion?: 3;
+}): Uint8Array {
+  const itemVersion = options.itemVersion || 3;
+  const items = getLASzipItems(options.pointDataRecordFormat, options.pointDataRecordLength);
+  const payloadLength = LASZIP_VLR_PAYLOAD_BASE_LENGTH + items.length * 6;
+  const bytes = new Uint8Array(LASZIP_VLR_HEADER_LENGTH + payloadLength);
+  const dataView = new DataView(bytes.buffer);
+  const payloadOffset = LASZIP_VLR_HEADER_LENGTH;
+
+  writeString(dataView, 2, 'laszip encoded', 16);
+  dataView.setUint16(18, 22204, true);
+  dataView.setUint16(20, payloadLength, true);
+  writeString(dataView, 22, 'loaders.gl LAZ writer', 32);
+  dataView.setUint16(payloadOffset, 3, true);
+  dataView.setUint16(payloadOffset + 2, 0, true);
+  dataView.setUint8(payloadOffset + 4, 3);
+  dataView.setUint8(payloadOffset + 5, 5);
+  dataView.setUint16(payloadOffset + 6, 1, true);
+  dataView.setUint32(payloadOffset + 8, 0, true);
+  dataView.setUint32(payloadOffset + 12, options.chunkSize, true);
+  bytes.fill(0xff, payloadOffset + 16, payloadOffset + 32);
+  dataView.setUint16(payloadOffset + 32, items.length, true);
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+    const itemOffset = payloadOffset + LASZIP_VLR_PAYLOAD_BASE_LENGTH + itemIndex * 6;
+    const item = items[itemIndex];
+    dataView.setUint16(itemOffset, item.type, true);
+    dataView.setUint16(itemOffset + 2, item.size, true);
+    dataView.setUint16(itemOffset + 4, itemVersion, true);
+  }
+  return bytes;
+}
+
 type Point14 = {
   /** Quantized X coordinate. */
   x: number;
@@ -220,6 +263,14 @@ type Rgb14 = {
   green: number;
   /** Blue channel. */
   blue: number;
+};
+
+/** One LASzip item descriptor written into the codec VLR. */
+type LASzipItem = {
+  /** LASzip item type identifier. */
+  type: number;
+  /** Uncompressed item byte length. */
+  size: number;
 };
 
 /** Prediction state for one Point14 scanner channel. */
@@ -975,6 +1026,30 @@ function validateChunkTableEntry(chunk: LAZChunkTableEntry): void {
   }
 }
 
+/** Return LASzip item descriptors for one supported point format. */
+function getLASzipItems(
+  pointDataRecordFormat: number,
+  pointDataRecordLength: number
+): LASzipItem[] {
+  const baseLength = POINT_FORMAT_BASE_LENGTHS[pointDataRecordFormat];
+  if (!baseLength || pointDataRecordLength < baseLength) {
+    throw new Error(
+      `Invalid point record length ${pointDataRecordLength} for point format ${pointDataRecordFormat}`
+    );
+  }
+  const items: LASzipItem[] = [{type: 10, size: 30}];
+  if (pointDataRecordFormat === 7) {
+    items.push({type: 11, size: 6});
+  } else if (pointDataRecordFormat === 8) {
+    items.push({type: 12, size: 8});
+  }
+  const extraByteCount = pointDataRecordLength - baseLength;
+  if (extraByteCount > 0) {
+    items.push({type: 14, size: extraByteCount});
+  }
+  return items;
+}
+
 /** Parse a raw LAS 1.4 Point14 item. */
 function readPoint14(bytes: Uint8Array, offset: number): Point14 {
   const view = new DataView(bytes.buffer, bytes.byteOffset + offset, 30);
@@ -1070,4 +1145,16 @@ function concatenateUint8Arrays(chunks: Uint8Array[]): Uint8Array {
     offset += chunk.byteLength;
   }
   return result;
+}
+
+/** Write a fixed-length ASCII string into a DataView. */
+function writeString(
+  dataView: DataView,
+  byteOffset: number,
+  value: string,
+  byteLength: number
+): void {
+  for (let characterIndex = 0; characterIndex < byteLength; characterIndex++) {
+    dataView.setUint8(byteOffset + characterIndex, value.charCodeAt(characterIndex) || 0);
+  }
 }

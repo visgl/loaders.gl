@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {
+  encodeLASzipVLR,
   encodeLAZChunk,
   encodeLAZChunkTable,
   type LAZChunkTableEntry,
@@ -19,8 +20,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
-const LASZIP_VLR_HEADER_LENGTH = 54;
-const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
 const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
 const POINT_RECORD_LENGTHS: Record<number, number> = {
   0: 20,
@@ -173,14 +172,6 @@ type LASWriteParameters = {
   pointDataRecordLength: number;
 };
 
-/** One LASzip item descriptor written into the codec VLR. */
-type LASzipItem = {
-  /** LASzip item type identifier. */
-  type: number;
-  /** Uncompressed item byte length. */
-  size: number;
-};
-
 /** Assemble raw LAS point records into a complete fixed-chunk LAZ file. */
 function encodeLAZFile(
   rawPointData: Uint8Array,
@@ -188,11 +179,11 @@ function encodeLAZFile(
   requestedChunkSize?: number
 ): ArrayBuffer {
   const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
-  const laszipVLR = createLASzipVLR(
-    parameters.pointDataRecordFormat,
-    parameters.pointDataRecordLength,
+  const laszipVLR = encodeLASzipVLR({
+    pointDataRecordFormat: parameters.pointDataRecordFormat,
+    pointDataRecordLength: parameters.pointDataRecordLength,
     chunkSize
-  );
+  });
   const pointDataOffset = parameters.headerLength + laszipVLR.byteLength;
   const compressedChunks: Uint8Array[] = [];
   const chunkTableEntries: LAZChunkTableEntry[] = [];
@@ -242,59 +233,6 @@ function encodeLAZFile(
   dataView.setUint32(chunkTableOffset + 4, chunkTableEntries.length, true);
   bytes.set(chunkTablePayload, chunkTableOffset + 8);
   return arrayBuffer;
-}
-
-/** Create the LASzip VLR for a layered LAS 1.4 point layout. */
-function createLASzipVLR(
-  pointDataRecordFormat: number,
-  pointDataRecordLength: number,
-  chunkSize: number
-): Uint8Array {
-  const items = getLASzipItems(pointDataRecordFormat, pointDataRecordLength);
-  const payloadLength = LASZIP_VLR_PAYLOAD_BASE_LENGTH + items.length * 6;
-  const bytes = new Uint8Array(LASZIP_VLR_HEADER_LENGTH + payloadLength);
-  const dataView = new DataView(bytes.buffer);
-  const payloadOffset = LASZIP_VLR_HEADER_LENGTH;
-
-  writeString(dataView, 2, 'laszip encoded', 16);
-  dataView.setUint16(18, 22204, true);
-  dataView.setUint16(20, payloadLength, true);
-  writeString(dataView, 22, 'loaders.gl LAZ writer', 32);
-  dataView.setUint16(payloadOffset, 3, true);
-  dataView.setUint16(payloadOffset + 2, 0, true);
-  dataView.setUint8(payloadOffset + 4, 3);
-  dataView.setUint8(payloadOffset + 5, 5);
-  dataView.setUint16(payloadOffset + 6, 1, true);
-  dataView.setUint32(payloadOffset + 8, 0, true);
-  dataView.setUint32(payloadOffset + 12, chunkSize, true);
-  bytes.fill(0xff, payloadOffset + 16, payloadOffset + 32);
-  dataView.setUint16(payloadOffset + 32, items.length, true);
-  for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-    const itemOffset = payloadOffset + LASZIP_VLR_PAYLOAD_BASE_LENGTH + itemIndex * 6;
-    const item = items[itemIndex];
-    dataView.setUint16(itemOffset, item.type, true);
-    dataView.setUint16(itemOffset + 2, item.size, true);
-    dataView.setUint16(itemOffset + 4, 3, true);
-  }
-  return bytes;
-}
-
-/** Return LASzip item descriptors for one supported point format. */
-function getLASzipItems(
-  pointDataRecordFormat: number,
-  pointDataRecordLength: number
-): LASzipItem[] {
-  const items = [{type: 10, size: 30}];
-  if (pointDataRecordFormat === 7) {
-    items.push({type: 11, size: 6});
-  } else if (pointDataRecordFormat === 8) {
-    items.push({type: 12, size: 8});
-  }
-  const extraByteCount = pointDataRecordLength - POINT_RECORD_LENGTHS[pointDataRecordFormat];
-  if (extraByteCount > 0) {
-    items.push({type: 14, size: extraByteCount});
-  }
-  return items;
 }
 
 /** Validate the intentionally narrow LAZ container writer surface. */

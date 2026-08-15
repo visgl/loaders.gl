@@ -181,6 +181,7 @@ export type {
 } from './lib/laz/laz-chunk-decoder';
 export {
   createLAZChunkEncoder,
+  encodeLASzipVLR,
   encodeLAZChunk,
   encodeLAZChunkTable
 } from './lib/laz/laz-chunk-encoder';
