@@ -605,16 +605,20 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   border-bottom: 0;
 }
 
-.parquet-benchmark-table tbody th[scope='rowgroup'] {
+.parquet-benchmark-table tbody th[scope='row'] {
   background: var(--ifm-table-stripe-background);
   font-weight: 600;
-  width: 34%;
+  width: 28%;
 }
 
 .parquet-benchmark-table .parquet-benchmark-number {
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
+}
+
+.parquet-benchmark-pending {
+  color: var(--ifm-font-color-secondary);
 }
 
 .parquet-benchmark-empty {
