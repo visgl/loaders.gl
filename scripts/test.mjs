@@ -51,6 +51,18 @@ const modeArguments = {
     '--project',
     'headless'
   ],
+  'cover-slow': [
+    'run',
+    '--config',
+    VITEST_CONFIG,
+    '--coverage',
+    '--testTimeout',
+    '60000',
+    '--project',
+    'slow-node',
+    '--project',
+    'slow-headless'
+  ],
   cover: [
     'run',
     '--config',
@@ -123,6 +135,7 @@ Modes:
   external         Run scheduled/manual tests that access external services
   cover-node       Run Node-only tests with coverage
   cover-headless   Run headless browser tests with coverage
+  cover-slow       Run hermetic slow tests with coverage
   cover            Run Node-only and headless browser tests with coverage
 `);
 }

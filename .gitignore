@@ -3,6 +3,7 @@ test/data/test.png
 tmp
 !modules/zip/test/data/**/*.zip
 .vitest-attachments/
+.vitest-reports*/
 test-results/
 .codex-worktrees/
 **/__screenshots__/

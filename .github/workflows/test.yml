@@ -32,7 +32,7 @@ jobs:
             playwright: false
             scope: 'node tests'
             test-command: test-node-cover
-            test-arguments: '--reporter=blob'
+            test-arguments: '--reporter=blob --outputFile.blob=.vitest-reports/blob-node.json'
             profile-name: node-24
           - node-version: 24
             coverage: true
@@ -78,12 +78,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .yarn/cache
-            .pnp.*
-            .yarn/install-state.gz
-          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            yarn-cache-${{ runner.os }}-
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Print versions
         run: |
@@ -126,7 +124,7 @@ jobs:
 
   coverage-finished:
     name: Merge and check coverage
-    needs: test
+    needs: [test, slow-tests]
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
@@ -142,6 +140,15 @@ jobs:
         run: |
           corepack enable
           corepack prepare yarn@4.17.1 --activate
+
+      - name: Cache Yarn 4 artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -210,6 +217,15 @@ jobs:
           corepack enable
           corepack prepare yarn@4.17.1 --activate
 
+      - name: Cache Yarn 4 artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -222,7 +238,20 @@ jobs:
       - name: Run affected or full slow suite
         env:
           VITEST_MAX_WORKERS: 1
-        run: yarn test-slow-affected
+        run: >-
+          yarn test-slow-affected-cover
+          --reporter=default
+          --reporter=blob
+          --outputFile.blob=.vitest-reports/blob-slow.json
+          --coverage.reporter=json
+
+      - name: Upload slow coverage blob
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-blob-slow
+          path: .vitest-reports/
+          include-hidden-files: true
+          if-no-files-found: warn
 
   external-tests:
     name: External service smoke tests
@@ -242,6 +271,15 @@ jobs:
         run: |
           corepack enable
           corepack prepare yarn@4.17.1 --activate
+
+      - name: Cache Yarn 4 artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -282,12 +320,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .yarn/cache
-            .pnp.*
-            .yarn/install-state.gz
-          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            yarn-cache-${{ runner.os }}-
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Cache Nx build artifacts
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-build-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+          restore-keys: |
+            nx-build-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Print versions
         run: |
@@ -337,12 +381,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            website/.yarn/cache
-            website/.pnp.*
-            website/.yarn/install-state.gz
-          key: website-yarn-cache-${{ runner.os }}-${{ hashFiles('website/yarn.lock') }}
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            website-yarn-cache-${{ runner.os }}-
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install dependencies
         run: yarn install --immutable

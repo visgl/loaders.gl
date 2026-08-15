@@ -7,12 +7,14 @@
 import {spawn, spawnSync} from 'node:child_process';
 
 const arguments_ = process.argv.slice(2);
+const coverage = arguments_.includes('--coverage');
 const runAll =
   arguments_.includes('--all') ||
   process.env.GITHUB_EVENT_NAME === 'push' ||
   process.env.GITHUB_EVENT_NAME === 'schedule' ||
   process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
 const baseReference = getArgumentValue('--base') || process.env.GITHUB_BASE_REF || 'master';
+const testArguments = getTestArguments();
 const testFilters = runAll ? null : findAffectedModuleFilters(baseReference);
 
 if (testFilters?.length === 0) {
@@ -20,12 +22,34 @@ if (testFilters?.length === 0) {
   process.exit(0);
 }
 
-process.exitCode = await runProcess('yarn', ['test-slow', ...(testFilters || [])]);
+const testCommand = coverage ? 'test-slow-cover' : 'test-slow';
+process.exitCode = await runProcess('yarn', [
+  testCommand,
+  ...(testFilters || []),
+  ...testArguments
+]);
 
 /** Returns a named command-line argument value. */
 function getArgumentValue(argumentName) {
   const argumentIndex = arguments_.indexOf(argumentName);
   return argumentIndex >= 0 ? arguments_[argumentIndex + 1] : undefined;
+}
+
+/** Returns arguments intended for Vitest rather than this affected-test wrapper. */
+function getTestArguments() {
+  const testArguments_ = [];
+  for (let argumentIndex = 0; argumentIndex < arguments_.length; argumentIndex++) {
+    const argument = arguments_[argumentIndex];
+    if (argument === '--coverage' || argument === '--all') {
+      continue;
+    }
+    if (argument === '--base') {
+      argumentIndex++;
+      continue;
+    }
+    testArguments_.push(argument);
+  }
+  return testArguments_;
 }
 
 /** Returns module directory filters affected by a Git diff, or null for shared changes. */

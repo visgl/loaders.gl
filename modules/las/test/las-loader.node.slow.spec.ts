@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable max-len */
+import '@loaders.gl/polyfills';
 import test from 'test/utils/vitest-tape';
 import {
   validateLoader,
