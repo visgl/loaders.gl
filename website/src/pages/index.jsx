@@ -1,8 +1,12 @@
 import React from 'react';
-import {Home} from '../components';
+import {ClientExample, Home} from '../components';
 import Layout from '@theme/Layout';
-import HeroExample from '../examples/home-demo';
 import Concepts from '../components/home/concepts';
+
+/** Renders the homepage example behind the shared client-only loading boundary. */
+function HeroExample() {
+  return <ClientExample kind="home" />;
+}
 
 export default function IndexPage() {
   return (

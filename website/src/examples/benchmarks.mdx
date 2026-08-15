@@ -3,11 +3,6 @@ title: "Benchmarks"
 hide_title: true
 ---
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
+import {ClientExample} from '../components';
 
-<BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
-  {() => {
-    const BenchmarksApp = require('./benchmarks-app').default;
-    return <BenchmarksApp />;
-  }}
-</BrowserOnly>
+<ClientExample kind="benchmarks" fallback={<p>Loading browser benchmarks...</p>} />
