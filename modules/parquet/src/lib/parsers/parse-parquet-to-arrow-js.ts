@@ -11,7 +11,11 @@ import type {
   ObjectRowTable,
   Schema
 } from '@loaders.gl/schema';
-import {convertSchemaToArrow, convertTable} from '@loaders.gl/schema-utils';
+import {
+  convertTable,
+  deserializeArrowField,
+  deserializeArrowMetadata
+} from '@loaders.gl/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';
@@ -27,6 +31,53 @@ import {getSchemaFromParquetReader} from './get-parquet-schema';
 
 /** Largest byte value copied inline to avoid TypedArray#set call overhead. */
 const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
+
+/** Inputs accepted by Apache Arrow's overloaded `Schema.assign` method. */
+type ArrowSchemaAssignment = arrow.Schema | arrow.Field | arrow.Field[];
+
+/** Arrow schema that preserves identity when Apache Arrow assigns its existing fields. */
+class ParquetArrowSchema extends arrow.Schema {
+  /** Whether the next exact field assignment may reuse this schema. */
+  private reuseIdentityAssignment = false;
+
+  /** Enables identity reuse for one synchronous Arrow RecordBatch construction. */
+  enableIdentityAssignmentReuse(): void {
+    this.reuseIdentityAssignment = true;
+  }
+
+  /** Restores Apache Arrow's normal public assignment semantics. */
+  disableIdentityAssignmentReuse(): void {
+    this.reuseIdentityAssignment = false;
+  }
+
+  /**
+   * Avoids cloning fields and merging metadata when assignment is already an exact match.
+   * @param assignments schemas or fields to merge into this schema
+   * @returns this schema for an identity assignment, otherwise Apache Arrow's assigned schema
+   */
+  override assign(...assignments: ArrowSchemaAssignment[]): arrow.Schema {
+    const firstAssignment = assignments[0];
+    if (
+      this.reuseIdentityAssignment &&
+      assignments.length === 1 &&
+      Array.isArray(firstAssignment) &&
+      firstAssignment.length === this.fields.length &&
+      firstAssignment.every((field, index) => field === this.fields[index])
+    ) {
+      return this;
+    }
+    const assignedSchema =
+      assignments.length === 1 && firstAssignment instanceof arrow.Schema
+        ? super.assign(firstAssignment)
+        : super.assign(...(assignments as Array<arrow.Field | arrow.Field[]>));
+    return new ParquetArrowSchema(
+      assignedSchema.fields,
+      assignedSchema.metadata,
+      assignedSchema.dictionaries,
+      assignedSchema.metadataVersion
+    );
+  }
+}
 
 /**
  * Parses a Parquet file with the TypeScript implementation directly into Arrow batches.
@@ -49,7 +100,7 @@ export async function parseParquetFileToArrowWithJs(
   schema ||= await readProjectedSchema(file, options);
   const table = recordBatches.length
     ? new arrow.Table(recordBatches)
-    : new arrow.Table(convertSchemaToArrow(schema), []);
+    : new arrow.Table(createParquetArrowSchema(schema), []);
   return {shape: 'arrow-table', data: table, schema};
 }
 
@@ -82,7 +133,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     retainByteArrayViews: true
   });
   const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
-  const arrowSchema = convertSchemaToArrow(schema);
+  const arrowSchema = createParquetArrowSchema(schema);
   const parquetSchema = await reader.getSchema();
   const rowGroups = reader.rowGroupIterator(getParquetIterationProps(options));
   const rowOffset = Math.max(0, options?.parquet?.offset || 0);
@@ -142,6 +193,14 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
       return;
     }
   }
+}
+
+/** Converts a loaders.gl schema into the identity-aware Arrow schema used by Parquet batches. */
+function createParquetArrowSchema(schema: Schema): ParquetArrowSchema {
+  return new ParquetArrowSchema(
+    schema.fields.map(field => deserializeArrowField(field)),
+    deserializeArrowMetadata(schema.metadata)
+  );
 }
 
 /** Builds Arrow from one selected row-group range and falls back for nested columns. */
@@ -216,14 +275,14 @@ function createArrowTable(
       nullCount: 0,
       children
     });
-    const recordBatch = new arrow.RecordBatch(schema, data);
+    const recordBatch = createParquetRecordBatch(schema, data);
     return new arrow.Table(recordBatch);
   }
   if (rowCount === 0) {
     return new arrow.Table(schema, vectors);
   }
 
-  const recordBatch = new arrow.RecordBatch(
+  const recordBatch = createParquetRecordBatch(
     schema,
     arrow.makeData({type: new arrow.Struct([]), children: []})
   );
@@ -231,6 +290,23 @@ function createArrowTable(
   // Struct to zero rows. Restore the explicit Parquet selection length after construction.
   Object.defineProperty(recordBatch.data, 'length', {value: rowCount});
   return new arrow.Table(schema, [recordBatch]);
+}
+
+/** Constructs a RecordBatch while restricting schema identity reuse to the synchronous call. */
+function createParquetRecordBatch(
+  schema: arrow.Schema,
+  data: arrow.Data<arrow.Struct>
+): arrow.RecordBatch {
+  if (!(schema instanceof ParquetArrowSchema)) {
+    return new arrow.RecordBatch(schema, data);
+  }
+
+  schema.enableIdentityAssignmentReuse();
+  try {
+    return new arrow.RecordBatch(schema, data);
+  } finally {
+    schema.disableIdentityAssignmentReuse();
+  }
 }
 
 /** Typed arrays accepted by the direct primitive Arrow materialization path. */
