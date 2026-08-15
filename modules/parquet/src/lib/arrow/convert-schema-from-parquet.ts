@@ -96,16 +96,21 @@ function getField(name: string, field: FieldDefinition): Field {
   };
 }
 
+/** Returns defined physical field properties as Arrow-compatible string metadata. */
 function getFieldMetadata(field: FieldDefinition): Record<string, string> | undefined {
   let metadata: Record<string, string> | undefined;
 
   for (const key in field) {
-    if (key !== 'name') {
-      let value = field[key] || '';
-      value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
-      metadata = metadata || {};
-      metadata[key] = value;
+    const fieldValue = field[key];
+    if (key === 'name' || fieldValue === undefined) {
+      continue;
     }
+    const metadataValue = typeof fieldValue === 'string' ? fieldValue : JSON.stringify(fieldValue);
+    if (metadataValue === undefined) {
+      continue;
+    }
+    metadata ||= {};
+    metadata[key] = metadataValue;
   }
 
   return metadata;
