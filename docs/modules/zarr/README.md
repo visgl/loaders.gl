@@ -7,8 +7,8 @@
 </p>
 
 The `@loaders.gl/zarr` module reads chunked, multidimensional [Zarr](https://zarr.dev/)
-arrays. It supports the existing pixel-pyramid API and an OME-Zarr source API for normalized
-metadata and typed 2D plane reads.
+arrays. It supports the existing pixel-pyramid API, an OME-Zarr source API for bioimaging, and a
+GeoZarr/CF source API for georeferenced Earth-science rasters.
 
 ## Installation
 
@@ -20,6 +20,9 @@ npm install @loaders.gl/core @loaders.gl/zarr
 
 - [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader) opens OME-Zarr
   v2 and v3 image groups through `createDataSource()` or `load()`.
+- [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) opens one
+  georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or
+  band selections.
 - `loadZarrConsolidatedMetadata()` probes `.zmetadata`, `zmetadata`, and `zarr.json` documents and
   reports top-level arrays and groups.
 - `loadZarr()` and `ZarrPixelSource` provide the legacy Zarr v2 pixel-pyramid API.
@@ -40,6 +43,10 @@ const raster = await source.getRaster({level: 0, channels: [0, 1, 2]});
 
 The [OME-Zarr example](/examples/bioimaging/ome-zarr) demonstrates browsing a SpatialData-style
 root and selecting an image pyramid.
+
+For climate, weather, ocean, satellite, and other Earth-science stores, use
+`GeoZarrSourceLoader`. It recognizes the current GeoZarr `proj:` and `spatial:` conventions as
+well as the regular one-dimensional coordinate arrays commonly written by xarray/CF workflows.
 
 ## Attributions
 

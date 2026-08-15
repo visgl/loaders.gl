@@ -9,6 +9,7 @@ export {
   OMEZarrImageSource,
   loadZarrConsolidatedMetadata
 } from './ome-zarr-source-loader';
+export {GeoZarrSourceLoader, GeoZarrRasterSource} from './geo-zarr-source-loader';
 export type {
   GetOMEZarrParameters,
   LoadConsolidatedMetadataOptions,
@@ -22,3 +23,10 @@ export type {
   ZarrSourceLoader,
   ZarrSourceLoaderOptions
 } from './ome-zarr-source-loader';
+export type {
+  GeoZarrAffineTransform,
+  GeoZarrSelectionDimension,
+  GeoZarrSourceLoaderOptions,
+  GeoZarrSourceMetadata,
+  GetGeoZarrParameters
+} from './geo-zarr-source-loader';
