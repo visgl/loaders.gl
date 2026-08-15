@@ -23420,6 +23420,7 @@ __metadata:
     "@types/node": "npm:^25.3.0"
     "@vis.gl/dev-tools": "npm:2.0.0-alpha.6"
     "@vis.gl/ts-plugins": "npm:2.0.0-alpha.6"
+    "@vitest/browser-playwright": "npm:^4.0.18"
     "@vitest/coverage-v8": "npm:^4.0.18"
     playwright: "npm:^1.59.1"
     pre-commit: "npm:^1.2.2"

@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#self-closing-child', t => {
-  testSax(t, {
+test('SAXParser#self-closing-child', () => {
+  testSax({
     xml:
       '<root>' +
       '<child>' +
@@ -90,6 +84,4 @@ test('SAXParser#self-closing-child', t => {
       strict: false
     }
   });
-
-  t.end();
 });

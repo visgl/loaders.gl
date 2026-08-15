@@ -1,0 +1,726 @@
+{
+  "version": 1,
+  "target": 90,
+  "packages": {
+    "@loaders.gl/3d-tiles": {
+      "path": "modules/3d-tiles",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 80,
+        "branches": 59
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 79,
+        "branches": 59
+      }
+    },
+    "@loaders.gl/arrow": {
+      "path": "modules/arrow",
+      "browser": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 86,
+        "branches": 82
+      },
+      "merged": {
+        "statements": 83,
+        "lines": 85,
+        "functions": 84,
+        "branches": 82
+      }
+    },
+    "@loaders.gl/bson": {
+      "path": "modules/bson",
+      "browser": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      }
+    },
+    "@loaders.gl/compression": {
+      "path": "modules/compression",
+      "browser": {
+        "statements": 24,
+        "lines": 23,
+        "functions": 45,
+        "branches": 15
+      },
+      "merged": {
+        "statements": 24,
+        "lines": 23,
+        "functions": 45,
+        "branches": 16
+      }
+    },
+    "@loaders.gl/core": {
+      "path": "modules/core",
+      "browser": {
+        "statements": 74,
+        "lines": 74,
+        "functions": 78,
+        "branches": 73
+      },
+      "merged": {
+        "statements": 73,
+        "lines": 74,
+        "functions": 78,
+        "branches": 71
+      }
+    },
+    "@loaders.gl/crypto": {
+      "path": "modules/crypto",
+      "browser": {
+        "statements": 63,
+        "lines": 61,
+        "functions": 84,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 62,
+        "lines": 62,
+        "functions": 84,
+        "branches": 46
+      }
+    },
+    "@loaders.gl/csv": {
+      "path": "modules/csv",
+      "browser": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 78,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 76,
+        "branches": 64
+      }
+    },
+    "@loaders.gl/draco": {
+      "path": "modules/draco",
+      "browser": {
+        "statements": 37,
+        "lines": 37,
+        "functions": 40,
+        "branches": 25
+      },
+      "merged": {
+        "statements": 36,
+        "lines": 37,
+        "functions": 40,
+        "branches": 25
+      }
+    },
+    "@loaders.gl/excel": {
+      "path": "modules/excel",
+      "browser": {
+        "statements": 94,
+        "lines": 94,
+        "functions": 100,
+        "branches": 83
+      },
+      "merged": {
+        "statements": 91,
+        "lines": 94,
+        "functions": 100,
+        "branches": 78
+      }
+    },
+    "@loaders.gl/flatgeobuf": {
+      "path": "modules/flatgeobuf",
+      "browser": {
+        "statements": 49,
+        "lines": 50,
+        "functions": 60,
+        "branches": 41
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 50,
+        "functions": 59,
+        "branches": 39
+      }
+    },
+    "@loaders.gl/geoarrow": {
+      "path": "modules/geoarrow",
+      "browser": {
+        "statements": 66,
+        "lines": 66,
+        "functions": 69,
+        "branches": 51
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 68,
+        "branches": 51
+      }
+    },
+    "@loaders.gl/geopackage": {
+      "path": "modules/geopackage",
+      "browser": {
+        "statements": 86,
+        "lines": 86,
+        "functions": 97,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 95,
+        "branches": 65
+      }
+    },
+    "@loaders.gl/geotiff": {
+      "path": "modules/geotiff",
+      "browser": {
+        "statements": 60,
+        "lines": 60,
+        "functions": 75,
+        "branches": 41
+      },
+      "merged": {
+        "statements": 58,
+        "lines": 60,
+        "functions": 73,
+        "branches": 41
+      }
+    },
+    "@loaders.gl/gis": {
+      "path": "modules/gis",
+      "browser": {
+        "statements": 68,
+        "lines": 68,
+        "functions": 75,
+        "branches": 53
+      },
+      "merged": {
+        "statements": 67,
+        "lines": 68,
+        "functions": 75,
+        "branches": 53
+      }
+    },
+    "@loaders.gl/gltf": {
+      "path": "modules/gltf",
+      "browser": {
+        "statements": 85,
+        "lines": 85,
+        "functions": 85,
+        "branches": 73
+      },
+      "merged": {
+        "statements": 84,
+        "lines": 85,
+        "functions": 84,
+        "branches": 73
+      }
+    },
+    "@loaders.gl/i3s": {
+      "path": "modules/i3s",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 86,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 64
+      }
+    },
+    "@loaders.gl/images": {
+      "path": "modules/images",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 89,
+        "branches": 75
+      },
+      "merged": {
+        "statements": 81,
+        "lines": 82,
+        "functions": 89,
+        "branches": 74
+      }
+    },
+    "@loaders.gl/json": {
+      "path": "modules/json",
+      "browser": {
+        "statements": 86,
+        "lines": 86,
+        "functions": 89,
+        "branches": 79
+      },
+      "merged": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 88,
+        "branches": 79
+      }
+    },
+    "@loaders.gl/kml": {
+      "path": "modules/kml",
+      "browser": {
+        "statements": 83,
+        "lines": 82,
+        "functions": 75,
+        "branches": 63
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 82,
+        "functions": 73,
+        "branches": 63
+      }
+    },
+    "@loaders.gl/las": {
+      "path": "modules/las",
+      "browser": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 46,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 45,
+        "branches": 46
+      }
+    },
+    "@loaders.gl/lerc": {
+      "path": "modules/lerc",
+      "browser": {
+        "statements": 25,
+        "lines": 28,
+        "functions": 0,
+        "branches": 20
+      },
+      "merged": {
+        "statements": 23,
+        "lines": 28,
+        "functions": 0,
+        "branches": 20
+      }
+    },
+    "@loaders.gl/loader-utils": {
+      "path": "modules/loader-utils",
+      "browser": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 74,
+        "branches": 69
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 75,
+        "branches": 71
+      }
+    },
+    "@loaders.gl/math": {
+      "path": "modules/math",
+      "browser": {
+        "statements": 43,
+        "lines": 44,
+        "functions": 61,
+        "branches": 28
+      },
+      "merged": {
+        "statements": 43,
+        "lines": 44,
+        "functions": 61,
+        "branches": 28
+      }
+    },
+    "@loaders.gl/mlt": {
+      "path": "modules/mlt",
+      "browser": {
+        "statements": 42,
+        "lines": 43,
+        "functions": 47,
+        "branches": 29
+      },
+      "merged": {
+        "statements": 41,
+        "lines": 42,
+        "functions": 43,
+        "branches": 29
+      }
+    },
+    "@loaders.gl/mvt": {
+      "path": "modules/mvt",
+      "browser": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 81,
+        "branches": 67
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 80,
+        "branches": 67
+      }
+    },
+    "@loaders.gl/netcdf": {
+      "path": "modules/netcdf",
+      "browser": {
+        "statements": 61,
+        "lines": 61,
+        "functions": 57,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 61,
+        "lines": 61,
+        "functions": 56,
+        "branches": 60
+      }
+    },
+    "@loaders.gl/obj": {
+      "path": "modules/obj",
+      "browser": {
+        "statements": 72,
+        "lines": 72,
+        "functions": 76,
+        "branches": 54
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 72,
+        "functions": 74,
+        "branches": 54
+      }
+    },
+    "@loaders.gl/parquet": {
+      "path": "modules/parquet",
+      "browser": {
+        "statements": 66,
+        "lines": 65,
+        "functions": 74,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 65,
+        "functions": 74,
+        "branches": 59
+      }
+    },
+    "@loaders.gl/pcd": {
+      "path": "modules/pcd",
+      "browser": {
+        "statements": 68,
+        "lines": 68,
+        "functions": 83,
+        "branches": 53
+      },
+      "merged": {
+        "statements": 67,
+        "lines": 68,
+        "functions": 83,
+        "branches": 53
+      }
+    },
+    "@loaders.gl/ply": {
+      "path": "modules/ply",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 91,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 81,
+        "lines": 82,
+        "functions": 90,
+        "branches": 60
+      }
+    },
+    "@loaders.gl/pmtiles": {
+      "path": "modules/pmtiles",
+      "browser": {
+        "statements": 54,
+        "lines": 55,
+        "functions": 51,
+        "branches": 35
+      },
+      "merged": {
+        "statements": 53,
+        "lines": 55,
+        "functions": 50,
+        "branches": 34
+      }
+    },
+    "@loaders.gl/polyfills": {
+      "path": "modules/polyfills",
+      "browser": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 0,
+        "branches": 0
+      },
+      "merged": {
+        "statements": 13,
+        "lines": 14,
+        "functions": 17,
+        "branches": 6
+      }
+    },
+    "@loaders.gl/potree": {
+      "path": "modules/potree",
+      "browser": {
+        "statements": 63,
+        "lines": 63,
+        "functions": 65,
+        "branches": 54
+      },
+      "merged": {
+        "statements": 62,
+        "lines": 63,
+        "functions": 62,
+        "branches": 54
+      }
+    },
+    "@loaders.gl/scene": {
+      "path": "modules/scene",
+      "browser": {
+        "statements": 88,
+        "lines": 87,
+        "functions": 100,
+        "branches": 73
+      },
+      "merged": {
+        "statements": 87,
+        "lines": 87,
+        "functions": 100,
+        "branches": 73
+      }
+    },
+    "@loaders.gl/schema": {
+      "path": "modules/schema",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      }
+    },
+    "@loaders.gl/schema-utils": {
+      "path": "modules/schema-utils",
+      "browser": {
+        "statements": 56,
+        "lines": 56,
+        "functions": 52,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 55,
+        "lines": 56,
+        "functions": 52,
+        "branches": 46
+      }
+    },
+    "@loaders.gl/shapefile": {
+      "path": "modules/shapefile",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 71,
+        "branches": 55
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 69,
+        "branches": 55
+      }
+    },
+    "@loaders.gl/splats": {
+      "path": "modules/splats",
+      "browser": {
+        "statements": 79,
+        "lines": 80,
+        "functions": 89,
+        "branches": 63
+      },
+      "merged": {
+        "statements": 78,
+        "lines": 80,
+        "functions": 84,
+        "branches": 63
+      }
+    },
+    "@loaders.gl/sql": {
+      "path": "modules/sql",
+      "browser": {
+        "statements": 47,
+        "lines": 48,
+        "functions": 44,
+        "branches": 35
+      },
+      "merged": {
+        "statements": 63,
+        "lines": 66,
+        "functions": 63,
+        "branches": 49
+      }
+    },
+    "@loaders.gl/terrain": {
+      "path": "modules/terrain",
+      "browser": {
+        "statements": 54,
+        "lines": 53,
+        "functions": 61,
+        "branches": 34
+      },
+      "merged": {
+        "statements": 53,
+        "lines": 53,
+        "functions": 61,
+        "branches": 34
+      }
+    },
+    "@loaders.gl/textures": {
+      "path": "modules/textures",
+      "browser": {
+        "statements": 75,
+        "lines": 75,
+        "functions": 72,
+        "branches": 67
+      },
+      "merged": {
+        "statements": 74,
+        "lines": 75,
+        "functions": 69,
+        "branches": 67
+      }
+    },
+    "@loaders.gl/tiles": {
+      "path": "modules/tiles",
+      "browser": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 76,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 76,
+        "branches": 64
+      }
+    },
+    "@loaders.gl/video": {
+      "path": "modules/video",
+      "browser": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 1,
+        "branches": 0
+      },
+      "merged": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 1,
+        "branches": 0
+      }
+    },
+    "@loaders.gl/wkt": {
+      "path": "modules/wkt",
+      "browser": {
+        "statements": 57,
+        "lines": 60,
+        "functions": 29,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 49,
+        "lines": 56,
+        "functions": 21,
+        "branches": 46
+      }
+    },
+    "@loaders.gl/wms": {
+      "path": "modules/wms",
+      "browser": {
+        "statements": 50,
+        "lines": 49,
+        "functions": 59,
+        "branches": 44
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 49,
+        "functions": 54,
+        "branches": 44
+      }
+    },
+    "@loaders.gl/worker-utils": {
+      "path": "modules/worker-utils",
+      "browser": {
+        "statements": 62,
+        "lines": 63,
+        "functions": 63,
+        "branches": 58
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 65,
+        "functions": 67,
+        "branches": 63
+      }
+    },
+    "@loaders.gl/xml": {
+      "path": "modules/xml",
+      "browser": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 71,
+        "branches": 80
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 70,
+        "branches": 80
+      }
+    },
+    "@loaders.gl/zip": {
+      "path": "modules/zip",
+      "browser": {
+        "statements": 71,
+        "lines": 71,
+        "functions": 73,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 86,
+        "lines": 87,
+        "functions": 91,
+        "branches": 72
+      }
+    }
+  }
+}

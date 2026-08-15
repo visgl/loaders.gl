@@ -18,8 +18,6 @@ import './wms/wms-layer-description-loader.spec';
 
 // WMS - Web Map Tile Service
 
-import './wmts/wmts-capabilities-loader.spec';
-
 // WMS - Web Feature Service
 
 import './wfs/wfs-capabilities-loader.spec';

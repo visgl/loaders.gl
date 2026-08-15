@@ -1,5 +1,4 @@
 {
-  "all": "true",
   "include": [
     "modules/**/src/**/*.+(js|jsx|mjs|ts|tsx)"
   ],
@@ -11,8 +10,6 @@
     "**/test/**",
     "**/*.d.ts",
 
-    "**/bundle.+(js|ts)",
-    "**/*.worker.+(js|ts)",
     "**/bundle.+(js|ts)",
     "**/*.worker.+(js|ts)",
     "**/text-encoding.js",

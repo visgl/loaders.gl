@@ -1,0 +1,1 @@
+# Generated baseline. Remove entries as tests migrate; additions require explicit review.

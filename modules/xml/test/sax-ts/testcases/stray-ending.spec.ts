@@ -1,15 +1,9 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
 // stray ending tags should just be ignored in non-strict mode.
 // https://github.com/isaacs/sax-js/issues/32
-test('SAXParser#stray-ending', t => {
-  testSax(t, {
+test('SAXParser#stray-ending', () => {
+  testSax({
     xml: '<a><b></c></b></a>',
     expect: [
       [
@@ -50,5 +44,4 @@ test('SAXParser#stray-ending', t => {
       strict: false
     }
   });
-  t.end();
 });

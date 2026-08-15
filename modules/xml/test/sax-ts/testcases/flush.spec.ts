@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#flush', t => {
-  const parser = testSax(t, {
+test('SAXParser#flush', () => {
+  const parser = testSax({
     expect: [
       ['opentagstart', {name: 'T', attributes: {}}],
       ['opentag', {name: 'T', attributes: {}, isSelfClosing: false}],
@@ -16,11 +10,8 @@ test('SAXParser#flush', t => {
       ['closetag', 'T']
     ]
   });
-
   parser.write('<T>flush');
   parser.flush();
   parser.write('rest</T>');
   parser.close();
-
-  t.end();
 });

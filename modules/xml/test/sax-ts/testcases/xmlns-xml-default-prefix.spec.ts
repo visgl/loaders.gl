@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#xmlns-xml-default-prefix', t => {
-  testSax(t, {
+test('SAXParser#xmlns-xml-default-prefix', () => {
+  testSax({
     xml: '<xml:root/>',
     expect: [
       [
@@ -37,6 +31,4 @@ test('SAXParser#xmlns-xml-default-prefix', t => {
       xmlns: true
     }
   });
-
-  t.end();
 });

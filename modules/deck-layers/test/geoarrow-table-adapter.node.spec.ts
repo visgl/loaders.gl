@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {readFile} from 'node:fs/promises';
 import test from 'test/utils/vitest-tape';
-import {fetchFile} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core';
 import {
   GEOARROW_MULTILINE_FILE,
   GEOARROW_POINT_FILE,
@@ -16,11 +17,14 @@ import {
   getApacheArrowTable,
   getGeoArrowGeometryColumn
 } from '../src/geoarrow-table-adapter';
+import {setupLoaderTestEnvironment} from '../../../test/vitest-setup-loaders';
+
+await setupLoaderTestEnvironment();
 
 /** Loads an Apache Arrow table from a GeoArrow fixture. */
 async function loadArrowTable(filePath: string): Promise<arrow.Table> {
-  const file = await fetchFile(filePath);
-  return arrow.tableFromIPC(await file.arrayBuffer());
+  const file = await readFile(resolvePath(filePath));
+  return arrow.tableFromIPC(file);
 }
 
 test('GeoArrowTableAdapter#converts native point, line, and polygon tables', async t => {

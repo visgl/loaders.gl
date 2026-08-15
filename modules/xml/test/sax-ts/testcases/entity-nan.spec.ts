@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#entity-nan', t => {
-  testSax(t, {
+test('SAXParser#entity-nan', () => {
+  testSax({
     xml: '<r>&#NaN;</r>',
     expect: [
       ['opentagstart', {name: 'R', attributes: {}}],
@@ -16,6 +10,4 @@ test('SAXParser#entity-nan', t => {
       ['closetag', 'R']
     ]
   });
-
-  t.end();
 });

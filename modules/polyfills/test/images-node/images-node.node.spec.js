@@ -1,11 +1,15 @@
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
+import '@loaders.gl/polyfills';
+import {setupLoaderTestEnvironment} from '../../../../test/vitest-setup-loaders';
 import {parseImageNode} from '../../src/images/parse-image-node';
 import {
   getImageBitmapDataNode,
   isNodeImageBitmap,
   NodeImageBitmap
 } from '../../src/images/node-image-bitmap';
+
+await setupLoaderTestEnvironment();
 const images = [
   ['@loaders.gl/images/test/data/img1-preview.png', 'image/png'],
   ['@loaders.gl/images/test/data/img1-preview.jpeg', 'image/jpeg'],

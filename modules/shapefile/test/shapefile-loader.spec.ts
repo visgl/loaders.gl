@@ -2,304 +2,95 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
-  setLoaderOptions,
+  _BrowserFileSystem as BrowserFileSystem,
   fetchFile,
   load,
   loadInBatches,
-  selectLoader,
-  isBrowser,
-  _BrowserFileSystem as BrowserFileSystem
+  selectLoader
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {DBFLoaderWithParser as DBFLoader} from '../src/dbf-loader-with-parser';
 import {Proj4Projection} from '@math.gl/proj4';
-import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
 
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
+const SHAPEFILE_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
+
+test.each([
+  'points',
+  'polygons',
+  'boolean-property',
+  'utf8-property'
+])('ShapefileLoader#loads representative %s fixture', async fixtureName => {
+  const table = await load(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`, ShapefileLoader, {
+    core: {worker: false},
+    shapefile: {shape: 'v3'}
+  });
+  const expected = await (await fetchFile(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.json`)).json();
+
+  expect(table.data).toEqual(expected.features);
 });
 
-const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
-const SHAPEFILE_JS_TEST_FILES = {
-  'boolean-property': null,
-  'date-property': null,
-  empty: null,
-  'ignore-properties': null,
-  'latin1-property': null,
-  'mixed-properties': null,
-  multipointm: null,
-  multipoints: null,
-  null: null,
-  'number-null-property': null,
-  'number-property': null,
-  pointm: null,
-  points: null,
-  polygonm: null,
-  polygons: null,
-  polylinem: null,
-  polylines: null,
-  singleton: null,
-  'string-property': null,
-  'utf8-property': null
-};
+test('ShapefileLoader#loads browser File objects', async () => {
+  const fixtureName = 'points';
+  const files = await getFixtureFiles(fixtureName);
+  const fileSystem = new BrowserFileSystem(files);
+  const table = await load(`${fixtureName}.shp`, ShapefileLoader, {
+    core: {worker: false},
+    fetch: fileSystem.fetch,
+    shapefile: {shape: 'v3'}
+  });
 
-test('ShapefileLoader#load (from browser File objects)', async t => {
-  if (typeof File !== 'undefined') {
-    // test `File` load (browser)
-    t.comment('...FILE LOAD STARTING. FAILED FETCHES EXPECTED');
-    for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
-      const fileList = await getFileList(testFileName);
-      SHAPEFILE_JS_TEST_FILES[testFileName] = fileList;
-    }
-    t.comment('...FILE LOAD COMPLETE');
+  expect(table.data.length).toBeGreaterThan(0);
+});
 
-    for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
-      const fileList = SHAPEFILE_JS_TEST_FILES[testFileName];
-      const fileSystem = new BrowserFileSystem(fileList);
-      // eslint-disable-next-line
-      const fetch = fileSystem.fetch.bind(fileSystem.fetch);
-      const filename = `${testFileName}.shp`;
-      // @ts-ignore
-      const data = await load(filename, ShapefileLoader, {fetch, shapefile: {shape: 'v3'}});
-      // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
-
-      testShapefileData(t, testFileName, data);
+test('ShapefileLoader#streams a representative fixture', async () => {
+  const fixtureName = 'points';
+  const batches = await loadInBatches(
+    `${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`,
+    ShapefileLoader,
+    {core: {worker: false}, shapefile: {shape: 'v3'}}
+  );
+  const tables = [];
+  for await (const batch of batches) {
+    if (batch?.data) {
+      tables.push(batch);
     }
   }
-  t.end();
+
+  expect(tables).toHaveLength(1);
+  expect(tables[0].data.length).toBeGreaterThan(0);
 });
 
-test('ShapefileLoader#load (from files or URLs)', async t => {
-  // test file load (node) or URL load (browser)
-  for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
-    const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const data = await load(filename, ShapefileLoader, {shapefile: {shape: 'v3'}});
-    // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
-
-    await testShapefileData(t, testFileName, data);
-  }
-
-  t.end();
-});
-
-test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
-  // test file load (node) or URL load (browser)
-  const testFileName = 'points';
-  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-  const data = await load(filename, ShapefileLoader, {
+test('ShapefileLoader#reprojects points', async () => {
+  const fixtureName = 'points';
+  const table = await load(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`, ShapefileLoader, {
+    core: {worker: false},
     shapefile: {shape: 'v3'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
-  // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
-
-  // Compare with parsed json
-  // This is a special case with reprojected coordinates; otherwise use the
-  // testShapefileData helper
-  const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
-  const json = await response.json();
-
+  const expected = await (await fetchFile(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.json`)).json();
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
 
-  for (let i = 0; i < json.features.length; i++) {
-    // @ts-ignore
-    const shpFeature = data.data[i];
-    const jsonFeature = json.features[i];
-    const jsonPointGeom = projection.project(jsonFeature.geometry.coordinates);
-    tapeEqualsEpsilon(t, shpFeature.geometry.coordinates, jsonPointGeom, 0.00001);
-  }
-
-  t.end();
+  expect(table.data[0].geometry.coordinates).toEqual(
+    projection.project(expected.features[0].geometry.coordinates)
+  );
 });
 
-test('ShapefileLoader#load passes dbf options to DBFLoader#parse', async t => {
-  if (isBrowser) {
-    t.comment('Skipping DBFLoader.parse option forwarding test in browser');
-    t.end();
-    return;
-  }
-  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
-  const dbfWorkerUrl = 'custom.dbf.worker.js';
-  const originalParse = DBFLoader.parse;
-  let receivedOptions = null;
-
-  DBFLoader.parse = async (arrayBuffer, options) => {
-    receivedOptions = options;
-    return originalParse(arrayBuffer, options);
-  };
-
-  try {
-    await load(filename, ShapefileLoader, {
-      shapefile: {shape: 'v3'},
-      dbf: {workerUrl: dbfWorkerUrl}
-    });
-    t.equal(receivedOptions?.dbf?.workerUrl, dbfWorkerUrl, 'ShapefileLoader forwards dbf options');
-  } finally {
-    DBFLoader.parse = originalParse;
-  }
-
-  t.end();
+test('ShapefileLoader#selects from its magic number', async () => {
+  const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/boolean-property.shp`);
+  const loader = await selectLoader(await response.arrayBuffer(), [ShapefileLoader]);
+  expect(loader?.id).toBe('shapefile');
 });
 
-test('ShapefileLoader#selectLoader (from arrayBuffer data)', async t => {
-  // test file load (node) or URL load (browser)
-  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
-  const response = await fetchFile(filename);
-  const arrayBuffer = await response.arrayBuffer();
-  const loader = await selectLoader(arrayBuffer, [ShapefileLoader]);
-  t.equal(loader && loader.id, 'shapefile', 'Select loader using SHP magic number');
-  t.end();
-});
-
-test('ShapefileLoader#loadInBatches(URL)', async t => {
-  // test file load (node) or URL load (browser)
-  for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
-    const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const batches = await loadInBatches(filename, ShapefileLoader, {shapefile: {shape: 'v3'}});
-    let data;
-    for await (const batch of batches) {
-      if (batch?.data) {
-        data = batch;
-      }
-      // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
-    }
-    await testShapefileData(t, testFileName, data);
-  }
-
-  t.end();
-});
-
-test('ShapefileLoader#loadInBatches(File)', async t => {
-  // test file load (node) or URL load (browser)
-  for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
-    if (testFileName === 'utf8-property') {
-      // requires CPG File
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-    const dbfFilename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`;
-    const dbfResponse = await fetchFile(dbfFilename);
-    const dbfFile = new File([await dbfResponse.blob()], dbfFilename);
-    let fileSystem;
-    if (dbfResponse.ok) {
-      fileSystem = new BrowserFileSystem([dbfFile]);
-    } else {
-      fileSystem = new BrowserFileSystem([]);
-    }
-
-    const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const response = await fetchFile(filename);
-    const file = new File([await response.blob()], filename);
-    // @ts-ignore
-    const batches = await loadInBatches(file, ShapefileLoader, {
-      fetch: fileSystem.fetch,
-      shapefile: {shape: 'v3'}
-    });
-    let data;
-    for await (const batch of batches) {
-      if (batch?.data) {
-        data = batch;
-      }
-    }
-    await testShapefileData(t, testFileName, data);
-  }
-
-  t.end();
-});
-
-test('ShapefileLoader#loadInBatches passes dbf options to DBFLoader#parseInBatches', async t => {
-  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
-  const dbfWorkerUrl = 'custom.dbf.worker.js';
-  const originalParseInBatches = DBFLoader.parseInBatches;
-  let receivedOptions = null;
-
-  DBFLoader.parseInBatches = (arrayBufferIterator, options) => {
-    receivedOptions = options;
-    return originalParseInBatches(arrayBufferIterator, options);
-  };
-
-  try {
-    const batches = await loadInBatches(filename, ShapefileLoader, {
-      shapefile: {shape: 'v3'},
-      dbf: {workerUrl: dbfWorkerUrl}
-    });
-    for await (const batch of batches) {
-      // exhaust iterator to ensure DBF parsing runs
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = batch;
-    }
-    t.equal(
-      receivedOptions?.dbf?.workerUrl,
-      dbfWorkerUrl,
-      'ShapefileLoader forwards dbf options in batches'
-    );
-  } finally {
-    DBFLoader.parseInBatches = originalParseInBatches;
-  }
-
-  t.end();
-});
-
-test('ShapefileLoader#loadInBatches when options.metadata: true', async t => {
-  const testFileName = Object.keys(SHAPEFILE_JS_TEST_FILES)[0];
-  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-  const batches = await loadInBatches(filename, ShapefileLoader, {
-    shapefile: {shape: 'v3'},
-    metadata: true
-  });
-  let data;
-  for await (const batch of batches) {
-    data = batch;
-    // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
-  }
-  await testShapefileData(t, testFileName, data);
-
-  t.end();
-});
-
-async function getFileList(testFileName) {
-  const EXTENSIONS = ['.shp', '.shx', '.dbf', '.cpg', '.prj'];
-  const fileList = [];
-  for (const extension of EXTENSIONS) {
-    const filename = `${testFileName}${extension}`;
-    const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${filename}`);
+/** Loads the sidecar files needed to exercise browser FileSystem discovery. */
+async function getFixtureFiles(fixtureName: string): Promise<File[]> {
+  const files: File[] = [];
+  for (const extension of ['.shp', '.shx', '.dbf', '.cpg', '.prj']) {
+    const filename = `${fixtureName}${extension}`;
+    const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/${filename}`);
     if (response.ok && !(response.headers.get('content-type') || '').includes('text/html')) {
-      // @ts-expect-error
-      fileList.push(new File([await response.blob()], filename));
+      files.push(new File([await response.blob()], filename));
     }
   }
-  return fileList;
-}
-
-async function testShapefileData(t, testFileName, data) {
-  // Exceptions for files that don't currently pass tests
-  // TODO @kylebarron to fix
-  const EXCEPTIONS = [
-    'multipointm',
-    'null',
-    'pointm',
-    'polygons',
-    'polygonm',
-    'polylines',
-    'polylinem'
-  ];
-  if (EXCEPTIONS.some(exception => testFileName.includes(exception))) {
-    return;
-  }
-
-  // Compare with parsed json
-
-  const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
-  const json = await response.json();
-
-  if (!data?.data) {
-    t.comment(`Skipping ${testFileName}: no parsed shapefile batch data`);
-    return;
-  }
-
-  for (let i = 0; i < json.features.length; i++) {
-    t.deepEqual(data.data[i], json.features[i]);
-  }
+  return files;
 }

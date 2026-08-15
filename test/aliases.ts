@@ -3,12 +3,14 @@
 import {path} from '@loaders.gl/loader-utils';
 const {resolve} = path;
 
+declare const __TEST_REPOSITORY_ROOT__: string;
+
 /**
  * Converts a local filesystem path into a Vite-served browser URL when needed.
  */
 function resolveTestPath(testPath: string): string {
   if (typeof window !== 'undefined') {
-    return `/@fs/${testPath.replace(/^\.\//, '')}`;
+    return `/__loaders_gl_test_fixtures__/${testPath.replace(/^\.\//, '')}`;
   }
   return resolve(testPath);
 }

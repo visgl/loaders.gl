@@ -6,6 +6,9 @@ on:
     branches:
     - master
   pull_request:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -22,23 +25,31 @@ jobs:
             scope: 'node tests'
             test-command: test-node
             test-arguments: ''
-            sharded: false
+            profile-name: node-26
           - node-version: 24
             coverage: true
             coverage-flag: node
             playwright: false
             scope: 'node tests'
             test-command: test-node-cover
-            test-arguments: ''
-            sharded: false
+            test-arguments: '--reporter=blob'
+            profile-name: node-24
           - node-version: 24
             coverage: true
-            coverage-flag: headless
+            coverage-flag: headless-1
             playwright: true
-            scope: 'headless tests'
+            scope: 'headless tests 1/2'
             test-command: test-headless-cover
-            test-arguments: --maxWorkers=1
-            sharded: true
+            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob'
+            profile-name: headless-1
+          - node-version: 24
+            coverage: true
+            coverage-flag: headless-2
+            playwright: true
+            scope: 'headless tests 2/2'
+            test-command: test-headless-cover
+            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob'
+            profile-name: headless-2
           - node-version: 22
             coverage: false
             coverage-flag: ''
@@ -46,7 +57,7 @@ jobs:
             scope: 'node tests'
             test-command: test-node
             test-arguments: ''
-            sharded: false
+            profile-name: node-22
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,72 +102,160 @@ jobs:
         run: yarn run build-workers
 
       - name: Run tests
-        if: ${{ !matrix.sharded }}
+        env:
+          LOADERS_GL_TEST_PROFILE_OUTPUT: test-results/${{ matrix.profile-name }}.json
         run: |
-          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }}
+          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }} --reporter=default --reporter=./scripts/test-profile-reporter.mjs
 
-      - name: Run headless test shards
-        if: matrix.sharded
+      - name: Upload coverage blob
+        if: matrix.coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-blob-${{ matrix.coverage-flag }}
+          path: .vitest-reports/
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Upload test profile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-profile-${{ matrix.profile-name }}
+          path: test-results/${{ matrix.profile-name }}.json
+          if-no-files-found: warn
+
+  coverage-finished:
+    name: Merge and check coverage
+    needs: test
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack / Yarn 4
         run: |
-          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }} --shard=1/2 --reporter=blob
-          yarn run ${{ matrix.test-command }} ${{ matrix.test-arguments }} --shard=2/2 --reporter=blob
-          yarn vitest --config vitest.config.ts --merge-reports --coverage
+          corepack enable
+          corepack prepare yarn@4.17.1 --activate
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download browser coverage blobs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-blob-headless-*
+          path: .vitest-reports/browser
+          merge-multiple: true
+
+      - name: Download all coverage blobs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-blob-*
+          path: .vitest-reports/all
+          merge-multiple: true
+
+      - name: Merge browser and Node coverage
+        run: yarn vitest --config vitest.config.ts --merge-reports=.vitest-reports/all --coverage --coverage.reportsDirectory=coverage
+
+      - name: Merge browser coverage
+        run: yarn vitest --config vitest.config.ts --merge-reports=.vitest-reports/browser --coverage --coverage.reportsDirectory=coverage/browser
+
+      - name: Enforce per-package coverage ratchets
+        run: yarn test-coverage-check
 
       - name: Sanitize lcov for Coveralls
-        if: matrix.coverage
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const coveragePath = 'coverage/lcov.info';
-          const lines = fs.readFileSync(coveragePath, 'utf8').split(/\r?\n/);
-          const records = [];
-          let currentRecord = [];
-
-          for (const line of lines) {
-            currentRecord.push(line);
-            if (line === 'end_of_record') {
-              const sourceFileLine = currentRecord.find(recordLine => recordLine.startsWith('SF:'));
-              const sourceFile = sourceFileLine ? sourceFileLine.slice(3).trim() : '';
-              if (sourceFile) {
-                records.push(currentRecord.join('\n'));
-              }
-              currentRecord = [];
-            }
-          }
-
-          if (currentRecord.length) {
-            const sourceFileLine = currentRecord.find(recordLine => recordLine.startsWith('SF:'));
-            const sourceFile = sourceFileLine ? sourceFileLine.slice(3).trim() : '';
-            if (sourceFile) {
-              records.push(currentRecord.join('\n'));
-            }
-          }
-
-          fs.writeFileSync(coveragePath, `${records.join('\n')}\n`);
-          NODE
+        run: node ./scripts/sanitize-lcov.mjs coverage/lcov.info
 
       - name: Upload coverage to Coveralls
-        if: matrix.coverage
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: coverage/lcov.info
           format: lcov
-          flag-name: ${{ matrix.coverage-flag }}
-          parallel: true
           fail-on-error: false
 
-  coverage-finished:
-    name: Finish Coveralls coverage
-    needs: test
-    if: ${{ always() }}
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Finish parallel Coveralls build
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+      - name: Upload merged coverage
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
+          name: merged-coverage
+          path: |
+            coverage/
+            test-results/coverage-check.json
+          if-no-files-found: warn
+
+  slow-tests:
+    name: Affected hermetic slow tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.17.1 --activate
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browser dependencies
+        run: yarn playwright install --with-deps chromium
+
+      - name: Build workers
+        run: yarn run build-workers
+
+      - name: Run affected or full slow suite
+        env:
+          VITEST_MAX_WORKERS: 1
+        run: yarn test-slow-affected
+
+  external-tests:
+    name: External service smoke tests
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.17.1 --activate
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browser dependencies
+        run: yarn playwright install --with-deps chromium
+
+      - name: Build workers
+        run: yarn run build-workers
+
+      - name: Run external smoke suite
+        env:
+          VITEST_MAX_WORKERS: 1
+        run: yarn test-external
 
   build:
     name: Build
@@ -201,6 +300,9 @@ jobs:
 
       - name: Run Vitest async guardrails
         run: yarn run test-vitest-async-guardrails
+
+      - name: Run test-suite audit
+        run: yarn run test-audit
 
       - name: Build
         run: yarn run build

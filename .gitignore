@@ -3,6 +3,8 @@ test/data/test.png
 tmp
 !modules/zip/test/data/**/*.zip
 .vitest-attachments/
+test-results/
+.codex-worktrees/
 **/__screenshots__/
 
 # dists

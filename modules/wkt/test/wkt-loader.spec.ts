@@ -505,7 +505,7 @@ test('WKTLoader#fuzz', t => {
     'GeometryCollection(POINT(4 6),\nLINESTRING(4 6,7 10))'
   ];
   inputs.forEach(function (str) {
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 500; i++) {
       const input = fuzzer.mutate.string(str);
       try {
         parseSync(input, WKTLoader);

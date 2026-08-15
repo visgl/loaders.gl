@@ -1,0 +1,16 @@
+{
+  "**/*disabled": "Files explicitly disabled at build time are not part of a published runtime.",
+  "**/deprecated": "Legacy compatibility sources in deprecated directories are outside the current published entrypoint surface.",
+  "**/wip/**": "Work-in-progress sources are not exported by published packages.",
+  "**/libs/**": "Vendored third-party library sources are tested through their owning adapters.",
+  "**/test/**": "Test support code is not production source.",
+  "**/*.d.ts": "TypeScript declarations contain no executable statements.",
+  "**/bundle.+(js|ts)": "Generated bundle entrypoints are covered through their source modules.",
+  "**/*.worker.+(js|ts)": "Worker entrypoints execute in separate worker coverage contexts and contain only generated dispatch wiring.",
+  "**/text-encoding.js": "Vendored text-encoding implementation is exercised through the polyfill adapter.",
+  "**/encoding.js": "Vendored encoding implementation is exercised through the polyfill adapter.",
+  "**/laz-perf.js": "Generated laz-perf WASM glue is covered through LAS backend conformance tests.",
+  "**3d-tiles/src/styles/**": "Unexported legacy Cesium style-port sources are not part of the current package surface.",
+  "**/src/flatgeobuf/**": "Generated and vendored FlatGeobuf implementation code is covered through the public loader adapter.",
+  "modules/worker-utils/src/lib/process-utils/child-process-proxy.ts": "The proxy runs only inside a spawned child process whose V8 coverage is not observable by the parent test process."
+}

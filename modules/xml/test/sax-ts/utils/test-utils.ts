@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from sax-ts & sax under ISC license
 
-import type {Test} from 'test/utils/vitest-tape';
+import {expect} from 'vitest';
 import {SAXParser, SAXParserOptions} from '@loaders.gl/xml';
 
 type TestSAXParams = {
@@ -16,40 +16,31 @@ type TestSAXParams = {
 // if the options contains an xml string, it'll be written and the parser closed.
 // otherwise, it's assumed that the test will write and close.
 
-export function testSax(t: Test, options: TestSAXParams): SAXParser {
+export function testSax(options: TestSAXParams): SAXParser {
   const xml = options.xml;
-  const expect = options.expect;
+  const expectedEvents = options.expect;
 
   let e = 0;
   function onevent(n, ev, parser) {
-    t.comment(`event on${ev} (vs ${expect[e]})`);
-
     // Ignore ready
     // In sax-ts the Parser is instantiated (onready) before handlers are assigned
     if (e === 0 && ev === 'ready') {
       return;
     }
-    if (e >= expect.length && (ev === 'end' || ev === 'ready')) {
+    if (e >= expectedEvents.length && (ev === 'end' || ev === 'ready')) {
       return;
     }
 
-    t.ok(e < expect.length, 'no unexpected events');
+    expect(e, `unexpected ${ev} event`).toBeLessThan(expectedEvents.length);
 
-    if (!expect[e]) {
-      t.fail('did not expect this event');
-      // , {
-      //   event: ev,
-      //   expect: expect,
-      //   data: n,
-      // });
-      return;
-    }
+    const expectedEvent = expectedEvents[e];
+    expect(expectedEvent, `expected event ${e} is defined`).toBeTruthy();
 
-    t.equal(ev, expect[e][0], expect[e][0]);
+    expect(ev, `event ${e} name`).toBe(expectedEvent[0]);
     if (ev === 'error') {
-      t.equal(n.message, expect[e][1], expect[e][1]);
+      expect(n.message, `event ${e} error`).toBe(expectedEvent[1]);
     } else {
-      t.deepEqual(n, expect[e][1], expect[e][1]);
+      expect(n, `event ${e} data`).toEqual(expectedEvent[1]);
     }
     e++;
     if (ev === 'error') {

@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#xmlns-as-tag-name', t => {
-  testSax(t, {
+test('SAXParser#xmlns-as-tag-name', () => {
+  testSax({
     xml: '<xmlns/>',
     expect: [
       [
@@ -37,6 +31,4 @@ test('SAXParser#xmlns-as-tag-name', t => {
       xmlns: true
     }
   });
-
-  t.end();
 });

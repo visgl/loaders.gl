@@ -1,15 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Forked from sax-ts & sax under ISC license
-
-// unquoted attributes should be ok in non-strict mode
-// https://github.com/isaacs/sax-js/issues/31
-import test from 'test/utils/vitest-tape';
+import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
-
-test('SAXParser#unquoted', t => {
-  testSax(t, {
+test('SAXParser#unquoted', () => {
+  testSax({
     xml: '<span class=test hello=world></span>',
     expect: [
       [
@@ -50,5 +42,4 @@ test('SAXParser#unquoted', t => {
       strict: false
     }
   });
-  t.end();
 });
