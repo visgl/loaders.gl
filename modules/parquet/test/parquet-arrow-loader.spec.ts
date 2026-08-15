@@ -188,6 +188,16 @@ test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async (t) => {
     table.data.schema.fields.find(field => field.name === 'pop_est')?.metadata.has('typeLength'),
     'TypeScript Arrow schema omits absent physical metadata'
   );
+  t.ok(
+    table.data.batches.every(batch => batch.schema === table.data.schema),
+    'TypeScript Arrow batches reuse the table schema'
+  );
+  t.notEqual(
+    table.data.schema.assign(table.data.schema.fields),
+    table.data.schema,
+    'TypeScript Arrow schema restores normal public assignment semantics'
+  );
+  t.equal(table.data.slice(1, 2).numRows, 1, 'TypeScript Arrow table remains sliceable');
   t.end();
 });
 test('ParquetLoader#load supports arrow-table shape', async (t) => {
@@ -269,6 +279,10 @@ test('ParquetJSLoader#empty projection batches preserve their row counts', async
     batchLengths.push(batch.length);
     t.equal(batch.data.numRows, batch.length, 'Arrow rows match the advertised batch length');
     t.equal(batch.data.numCols, 0, 'batch contains no projected columns');
+    t.ok(
+      batch.data.batches.every(recordBatch => recordBatch.schema === batch.data.schema),
+      'empty projection record batches reuse the containing table schema'
+    );
   }
   t.deepEqual(batchLengths, [2, 1], 'preserves requested batching for empty projections');
   t.end();
