@@ -69,6 +69,8 @@ const typedTable = await load(url, CSVLoader, {
 
 For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuffer)` uses a byte-oriented parser for supported CSV options and creates Arrow `Utf8` columns without materializing per-cell JavaScript strings. `CSVLoader.parseText` encodes text to UTF-8 and uses the same byte-oriented path when possible. `CSVLoader.parseInBatches` uses the byte-oriented path when the input can be emitted as one batch, and keeps the streaming string parser for explicit batch sizes.
 
+Set `csv.viewTypes: 'prefer'` to emit `Utf8View` columns when the installed `apache-arrow` runtime supports them, while falling back to `Utf8` with older runtimes. Use `'require'` to throw instead of falling back. The default `'never'` preserves compatibility with Arrow 17 and consumers that do not support view types.
+
 ### Geometry Columns
 
 `CSVLoader` can detect WKT and hex-encoded WKB geometry columns when `csv.detectGeometryColumns` is enabled. Detected geometries are emitted as `geoarrow.wkb` by default. Set `csv.geometryEncoding: 'source'` to preserve WKT columns as `geoarrow.wkt`.
@@ -84,6 +86,7 @@ For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuf
 | `csv.quoteChar`             | `string`                                                                                   | `"`                           | Character used to quote fields.                                                                                              |
 | `csv.escapeChar`            | `string`                                                                                   | `"`                           | Character used to escape the quote character within a field.                                                                 |
 | `csv.dynamicTyping`         | `boolean`                                                                                  | `true`                        | Convert numeric and boolean values from strings to their native types.                                                       |
+| `csv.viewTypes`             | `'never' \| 'prefer' \| 'require'`                                                        | `'never'`                     | Controls whether Arrow output uses supported `Utf8View` columns.                                                             |
 | `csv.comments`              | `boolean`                                                                                  | `false`                       | Skip lines that start with a comment indicator.                                                                              |
 | `csv.skipEmptyLines`        | `boolean \| 'greedy'`                                                                      | `true`                        | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
 | `csv.detectGeometryColumns` | `boolean`                                                                                  | `false`                       | Detect geometry columns when producing geospatial table output.                                                              |

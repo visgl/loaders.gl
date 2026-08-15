@@ -52,6 +52,11 @@ export {
   type RenamedArrowColumns
 } from './lib/utils/rename-arrow-columns';
 export {
+  convertArrowTableVariableWidthTypes,
+  convertArrowVariableWidthVector,
+  type ConvertArrowVariableWidthOptions
+} from './lib/utils/convert-arrow-variable-width';
+export {
   splitArrowBuffers,
   splitArrowTableBuffers,
   type SplitArrowBuffersInput,

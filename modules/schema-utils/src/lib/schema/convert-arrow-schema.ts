@@ -13,14 +13,53 @@ type ArrowDictionaryKeyType =
   | arrow.Uint16
   | arrow.Uint32;
 
+/** Controls whether Arrow schema conversion uses variable-width view types. */
+export type ArrowViewTypeMode = 'never' | 'prefer' | 'require';
+
+/** Options for converting loaders.gl schemas to Apache Arrow schemas. */
+export type ArrowSchemaConversionOptions = {
+  /** Selects standard types, supported view types with fallback, or required view types. */
+  viewTypes?: ArrowViewTypeMode;
+};
+
+/** Runtime support for optional Apache Arrow variable-width view types. */
+export type ArrowViewTypeSupport = {
+  /** Whether the installed Apache Arrow exports `BinaryView`. */
+  binaryView: boolean;
+  /** Whether the installed Apache Arrow exports `Utf8View`. */
+  utf8View: boolean;
+};
+
+type ArrowDataTypeConstructor = new () => arrow.DataType;
+type OptionalArrowViewConstructors = {
+  BinaryView?: ArrowDataTypeConstructor;
+  Utf8View?: ArrowDataTypeConstructor;
+};
+type OptionalArrowViewGuards = {
+  isBinaryView?: (value: unknown) => boolean;
+  isUtf8View?: (value: unknown) => boolean;
+};
+
+/** Returns the variable-width view types exported by the installed Apache Arrow runtime. */
+export function getArrowViewTypeSupport(): ArrowViewTypeSupport {
+  const constructors = getArrowViewConstructors();
+  return {
+    binaryView: typeof constructors.BinaryView === 'function',
+    utf8View: typeof constructors.Utf8View === 'function'
+  };
+}
+
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
 export function convertArrowToSchema(arrowSchema: arrow.Schema): Schema {
   return serializeArrowSchema(arrowSchema);
 }
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
-export function convertSchemaToArrow(schema: Schema): arrow.Schema {
-  return deserializeArrowSchema(schema);
+export function convertSchemaToArrow(
+  schema: Schema,
+  options?: ArrowSchemaConversionOptions
+): arrow.Schema {
+  return deserializeArrowSchema(schema, options);
 }
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
@@ -32,9 +71,12 @@ export function serializeArrowSchema(arrowSchema: arrow.Schema): Schema {
 }
 
 /** Convert a serialized Schema (plain data) to an Apache Arrow Schema (class instance) */
-export function deserializeArrowSchema(schema: Schema): arrow.Schema {
+export function deserializeArrowSchema(
+  schema: Schema,
+  options?: ArrowSchemaConversionOptions
+): arrow.Schema {
   return new arrow.Schema(
-    schema.fields.map(field => deserializeArrowField(field)),
+    schema.fields.map(field => deserializeArrowField(field, options)),
     deserializeArrowMetadata(schema.metadata)
   );
 }
@@ -60,10 +102,13 @@ export function serializeArrowField(field: arrow.Field): Field {
 }
 
 /** Convert a serialized Field (plain data) to an Apache Arrow Field (class instance)*/
-export function deserializeArrowField(field: Field): arrow.Field {
+export function deserializeArrowField(
+  field: Field,
+  options?: ArrowSchemaConversionOptions
+): arrow.Field {
   return new arrow.Field(
     field.name,
-    deserializeArrowType(field.type),
+    deserializeArrowType(field.type, options),
     field.nullable,
     deserializeArrowMetadata(field.metadata)
   );
@@ -72,6 +117,13 @@ export function deserializeArrowField(field: Field): arrow.Field {
 /** Converts a serializable loaders.gl data type to hydrated arrow data type */
 // eslint-disable-next-line complexity
 export function serializeArrowType(arrowType: arrow.DataType): DataType {
+  if (isArrowViewType(arrowType, 'BinaryView')) {
+    return 'binary-view';
+  }
+  if (isArrowViewType(arrowType, 'Utf8View')) {
+    return 'utf8-view';
+  }
+
   switch (arrowType.constructor) {
     case arrow.Null:
       return 'null';
@@ -240,32 +292,39 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
 
 /** Converts a serializable loaders.gl data type to hydrated arrow data type */
 // eslint-disable-next-line complexity
-export function deserializeArrowType(dataType: DataType): arrow.DataType {
+export function deserializeArrowType(
+  dataType: DataType,
+  options?: ArrowSchemaConversionOptions
+): arrow.DataType {
   if (typeof dataType === 'object') {
     switch (dataType.type) {
       case 'decimal':
         return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
       case 'map': {
-        const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
+        const children = dataType.children.map(arrowField =>
+          deserializeArrowField(arrowField, options)
+        );
         return new arrow.Map_(children as any, dataType.keysSorted);
       }
       case 'list': {
-        const field = deserializeArrowField(dataType.children[0]);
+        const field = deserializeArrowField(dataType.children[0], options);
         return new arrow.List(field);
       }
       case 'fixed-size-list': {
-        const child = deserializeArrowField(dataType.children[0]);
+        const child = deserializeArrowField(dataType.children[0], options);
         return new arrow.FixedSizeList(dataType.listSize, child);
       }
       case 'fixed-size-binary':
         return new arrow.FixedSizeBinary(dataType.byteWidth);
       case 'struct': {
-        const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
+        const children = dataType.children.map(arrowField =>
+          deserializeArrowField(arrowField, options)
+        );
         return new arrow.Struct(children);
       }
       case 'dictionary': {
         return new arrow.Dictionary(
-          deserializeArrowType(dataType.dictionary),
+          deserializeArrowType(dataType.dictionary, options),
           deserializeArrowDictionaryKeyType(dataType.indices),
           dataType.id,
           dataType.isOrdered
@@ -280,7 +339,9 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
     case 'null':
       return new arrow.Null();
     case 'binary':
-      return new arrow.Binary();
+      return makeVariableWidthArrowType('BinaryView', new arrow.Binary(), options);
+    case 'binary-view':
+      return makeRequiredArrowViewType('BinaryView');
     case 'bool':
       return new arrow.Bool();
     case 'int8':
@@ -306,7 +367,9 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
     case 'float64':
       return new arrow.Float64();
     case 'utf8':
-      return new arrow.Utf8();
+      return makeVariableWidthArrowType('Utf8View', new arrow.Utf8(), options);
+    case 'utf8-view':
+      return makeRequiredArrowViewType('Utf8View');
     case 'date-day':
       return new arrow.DateDay();
     case 'date-millisecond':
@@ -334,6 +397,58 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
     default:
       throw new Error('array type not supported');
   }
+}
+
+function getArrowViewConstructors(): OptionalArrowViewConstructors {
+  return arrow as unknown as OptionalArrowViewConstructors;
+}
+
+function isArrowViewType(
+  arrowType: arrow.DataType,
+  viewTypeName: keyof OptionalArrowViewConstructors
+): boolean {
+  const constructor = getArrowViewConstructors()[viewTypeName];
+  if (constructor && arrowType instanceof constructor) {
+    return true;
+  }
+
+  const guards = arrow.DataType as unknown as OptionalArrowViewGuards;
+  const guard = viewTypeName === 'BinaryView' ? guards.isBinaryView : guards.isUtf8View;
+  return Boolean(guard?.(arrowType));
+}
+
+function makeVariableWidthArrowType(
+  viewTypeName: keyof OptionalArrowViewConstructors,
+  fallbackType: arrow.DataType,
+  options?: ArrowSchemaConversionOptions
+): arrow.DataType {
+  const viewTypeMode = options?.viewTypes || 'never';
+  if (viewTypeMode === 'never') {
+    return fallbackType;
+  }
+
+  const constructor = getArrowViewConstructors()[viewTypeName];
+  if (constructor) {
+    return new constructor();
+  }
+  if (viewTypeMode === 'require') {
+    throw new Error(
+      `${viewTypeName} requires apache-arrow 21.2.0 or later; the installed runtime does not support it`
+    );
+  }
+  return fallbackType;
+}
+
+function makeRequiredArrowViewType(
+  viewTypeName: keyof OptionalArrowViewConstructors
+): arrow.DataType {
+  const constructor = getArrowViewConstructors()[viewTypeName];
+  if (!constructor) {
+    throw new Error(
+      `${viewTypeName} requires apache-arrow 21.2.0 or later; the installed runtime does not support it`
+    );
+  }
+  return new constructor();
 }
 
 /** Converts Arrow dictionary index types to serializable schema key types. */

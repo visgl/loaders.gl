@@ -40,6 +40,7 @@ the focused `@loaders.gl/arrow/transport` subpath as well as the root export.
 | [`Arrow Table Transport`](/docs/modules/arrow/api-reference/arrow-table-transport) | Dehydrate/hydrate or serialize/deserialize Arrow tables across workers |
 | [`triangulateWKBGeometryColumn`](/docs/modules/arrow/api-reference/triangulate-wkb-geometry-column) | Tessellate a GeoArrow WKB geometry column into index and vertex columns |
 | [`Arrow Schema Utilities`](/docs/modules/arrow/api-reference/arrow-schema-utils) | Runtime schema validation and column-renaming helpers                  |
+| [`Arrow Variable-Width Conversion`](/docs/modules/arrow/api-reference/arrow-variable-width) | Convert Utf8/Binary vectors and tables between standard and view layouts |
 | [`UTF-8 Utilities`](/docs/modules/arrow/api-reference/utf8-utils)                | Compare and parse Arrow UTF-8 byte ranges without decoding strings     |
 
 For the underlying Apache Arrow JS classes, start with the

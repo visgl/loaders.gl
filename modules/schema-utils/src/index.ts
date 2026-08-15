@@ -21,6 +21,12 @@ export {
   serializeArrowType,
   deserializeArrowType
 } from './lib/schema/convert-arrow-schema';
+export type {
+  ArrowSchemaConversionOptions,
+  ArrowViewTypeMode,
+  ArrowViewTypeSupport
+} from './lib/schema/convert-arrow-schema';
+export {getArrowViewTypeSupport} from './lib/schema/convert-arrow-schema';
 export {getDataTypeFromArray} from './lib/schema/data-type';
 
 // TABLE CATEGORY UTILS
@@ -136,6 +142,7 @@ export {
 
 // EXPERIMENTAL APIs
 export {ArrowTableBuilder} from './lib/table/batch-builder/arrow-table-builder';
+export type {ArrowTableBuilderOptions} from './lib/table/batch-builder/arrow-table-builder';
 
 // Schema utils
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';

@@ -17,7 +17,11 @@ import {
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema
 } from '@loaders.gl/gis';
-import {ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {
+  ArrowTableBuilder,
+  convertArrowToSchema,
+  type ArrowViewTypeMode
+} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 type PrimitiveArrowDataType = 'null' | 'bool' | 'float64' | 'utf8' | 'date-millisecond';
@@ -44,6 +48,8 @@ export type JSONArrowSchema = Schema | arrow.Schema;
 
 /** Controls how JSON Arrow conversion handles values that do not match the active schema. */
 export type ArrowConversionOptions = {
+  /** Controls whether supported Arrow runtimes should use BinaryView and Utf8View columns. */
+  viewTypes?: ArrowViewTypeMode;
   /** Behavior when a row value does not match the schema field type. */
   onTypeMismatch?: 'error' | 'null';
   /** Behavior when a row omits a schema field or array column. */
@@ -91,6 +97,7 @@ type ConversionLogger = {
 };
 
 const DEFAULT_ARROW_CONVERSION_OPTIONS: NormalizedArrowConversionOptions = {
+  viewTypes: 'never',
   onTypeMismatch: 'error',
   onMissingField: 'error',
   onExtraField: 'error',
@@ -224,7 +231,9 @@ export function convertRowTableToArrowTable(
     return makeEmptyFieldArrowTable(schema, table.data.length);
   }
 
-  const arrowTableBuilder = new ArrowTableBuilder(schema);
+  const arrowTableBuilder = new ArrowTableBuilder(schema, {
+    viewTypes: conversionOptions.viewTypes
+  });
 
   switch (table.shape) {
     case 'array-row-table':
@@ -303,7 +312,7 @@ function validateGeoArrowSchema(schema: Schema, geometryColumnName: string): voi
     );
   }
 
-  if (geometryField.type !== 'binary') {
+  if (geometryField.type !== 'binary' && geometryField.type !== 'binary-view') {
     throw new Error(
       `JSONLoader: GeoJSON Arrow geometry field "${geometryColumnName}" must have binary type`
     );
@@ -735,7 +744,7 @@ function normalizeValueForArrow(
       return value;
     }
     if (
-      field.type === 'utf8' &&
+      (field.type === 'utf8' || field.type === 'utf8-view') &&
       typeof value === 'number' &&
       conversionOptions.utf8Conversion === 'number-to-string'
     ) {
@@ -957,6 +966,7 @@ function isPrimitiveValueCompatible(value: unknown, type: string): boolean {
       return typeof value === 'number';
 
     case 'utf8':
+    case 'utf8-view':
       return typeof value === 'string';
 
     case 'date-millisecond':
@@ -972,6 +982,7 @@ function isPrimitiveValueCompatible(value: unknown, type: string): boolean {
       return value instanceof Date;
 
     case 'binary':
+    case 'binary-view':
       return value instanceof ArrayBuffer || ArrayBuffer.isView(value);
   }
 
@@ -1040,6 +1051,7 @@ function formatPrimitiveExpectation(type: string): string {
     case 'bool':
       return 'boolean';
     case 'utf8':
+    case 'utf8-view':
       return 'string';
     case 'date-day':
     case 'date-millisecond':
@@ -1053,6 +1065,7 @@ function formatPrimitiveExpectation(type: string): string {
     case 'timestamp-nanosecond':
       return 'Date';
     case 'binary':
+    case 'binary-view':
       return 'binary';
     case 'null':
       return 'null';

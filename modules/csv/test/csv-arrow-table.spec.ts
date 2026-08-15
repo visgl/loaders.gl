@@ -163,6 +163,53 @@ test('CSVLoader#load(numbers-100.csv)', async t => {
   t.end();
 });
 
+test('CSVLoader#load prefers supported Arrow Utf8View columns', async t => {
+  const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      dynamicTyping: false,
+      skipEmptyLines: false,
+      viewTypes: 'require'
+    }
+  });
+
+  t.ok(
+    table.data.schema.fields.every(field => field.type.constructor.name === 'Utf8View'),
+    'all Arrow columns use Utf8View'
+  );
+  t.ok(
+    table.schema.fields.every(field => field.type === 'utf8-view'),
+    'reports Utf8View in the loaders.gl schema'
+  );
+  t.equal(table.data.getChildAt(1)?.get(0), '09857', 'preserves column values');
+  t.end();
+});
+
+test('CSVLoader#parseInBatches reports supported Arrow Utf8View columns', async t => {
+  const csvBuffer = new TextEncoder().encode('name\nArrow\nView\n');
+  const preloadedLoader = await preload(CSVLoader);
+  const iterator = await parseInBatches([csvBuffer], preloadedLoader, {
+    core: {worker: false, batchSize: 1},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      dynamicTyping: false,
+      skipEmptyLines: false,
+      viewTypes: 'require'
+    }
+  });
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    t.equal(batch.data.schema.fields[0]?.type.constructor.name, 'Utf8View');
+    t.equal(batch.schema?.fields[0]?.type, 'utf8-view', 'reports the effective batch schema');
+    rowCount += batch.length;
+  }
+  t.equal(rowCount, 2, 'returns all view-backed rows');
+  t.end();
+});
+
 test('CSVLoader#load matches CSVLoader output across fixture cases', async t => {
   const cases: Array<{
     name: string;
