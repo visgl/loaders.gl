@@ -1,35 +1,63 @@
 name: website-deploy
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - master
       - 4.4-release
+  workflow_dispatch:
 
-concurrency:
-  group: website-deploy
-  cancel-in-progress: false
+concurrency: website-gh-pages
+
+permissions:
+  contents: read
 
 jobs:
+  check_branch:
+    runs-on: ubuntu-22.04
+    outputs:
+      should_deploy: ${{ steps.deploy_config.outputs.should_deploy }}
+      target_folder: ${{ steps.deploy_config.outputs.target_folder }}
+      website_base_url: ${{ steps.deploy_config.outputs.website_base_url }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Resolve deploy config
+        id: deploy_config
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "master" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "target_folder=next" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/next/" >> "$GITHUB_OUTPUT"
+          elif [ "${GITHUB_REF_NAME}" = "4.4-release" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "target_folder=" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "target_folder=" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
-    if: github.repository_owner == 'visgl'
+    needs: check_branch
+    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 20
+
     permissions:
       contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          fetch-depth: 0
-          persist-credentials: true
+          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 22
+          node-version-file: '.nvmrc'
 
       - name: Enable Corepack / Yarn 4
         run: |
@@ -38,28 +66,28 @@ jobs:
           yarn -v
 
       - name: Cache website Yarn artifacts
-        id: website-yarn-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
-            website/.yarn/cache
-            website/.pnp.*
-            website/.yarn/install-state.gz
-          key: website-yarn-cache-${{ runner.os }}-${{ hashFiles('website/yarn.lock') }}
-          restore-keys: |
-            website-yarn-cache-${{ runner.os }}-
+            ~/.yarn/berry/cache
+            .yarn/install-state.gz
+          key: ${{ runner.os }}-yarn4-${{ hashFiles('yarn.lock', '.yarnrc.yml', 'package.json') }}
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Deploy preview website
-        if: github.ref_name == 'master'
+      - name: Install dependencies and build website
+        env:
+          DOCUSAURUS_BASE_URL: ${{ needs.check_branch.outputs.website_base_url }}
         run: |
+          yarn install --immutable
           cd website
-          yarn deploy-preview
+          yarn build
 
-      - name: Deploy production website
-        if: github.ref_name == '4.4-release'
-        run: |
-          cd website
-          yarn deploy-prod
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # 4.8.0
+        with:
+          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+          branch: gh-pages
+          folder: website/build
+          target-folder: ${{ needs.check_branch.outputs.target_folder }}
+          clean: true
+          clean-exclude: |
+            next

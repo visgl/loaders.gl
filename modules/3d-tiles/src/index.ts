@@ -29,9 +29,15 @@ export type {
   Tiles3DTileJSON,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSON,
+  Tiles3DTilesetAsset,
   Tiles3DTilesetJSONPostprocessed,
+  ImplicitTilingData,
   Tiles3DTileContent,
-  ImplicitTilingExensionData
+  ImplicitTilingExensionData,
+  Subtree,
+  Availability,
+  GLTFStyleBuffer,
+  GLTFStyleBufferView
 } from './types';
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 export {Tiles3DArchive} from './3d-tiles-archive/3d-tiles-archive-archive';

@@ -134,7 +134,6 @@
           "modules/textures/api-reference/npy-loader",
           "modules/obj/api-reference/obj-loader",
           "modules/parquet/api-reference/parquet-loader",
-          "modules/parquet/api-reference/parquet-js-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/potree/api-reference/potree-loader",
@@ -175,7 +174,6 @@
           "modules/mvt/api-reference/mvt-writer",
           "modules/obj/api-reference/obj-writer",
           "modules/parquet/api-reference/parquet-writer",
-          "modules/parquet/api-reference/parquet-js-writer",
           "modules/pcd/api-reference/pcd-writer",
           "modules/ply/api-reference/ply-writer",
           "modules/terrain/api-reference/quantized-mesh-writer",
@@ -198,6 +196,7 @@
           "modules/geotiff/api-reference/geotiff-source-loader",
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
+          "modules/parquet/api-reference/parquet-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
@@ -250,6 +249,7 @@
           "modules/loader-utils/README",
           "modules/loader-utils/api-reference/data-source-manager",
           "modules/loader-utils/api-reference/readable-file",
+          "modules/loader-utils/api-reference/http-file",
           "modules/loader-utils/api-reference/request-scheduler",
           "modules/loader-utils/api-reference/range-request-scheduler",
           "modules/loader-utils/api-reference/parse-with-context"
@@ -260,7 +260,18 @@
         "label": "@loaders.gl/3d-tiles",
         "items": [
           "modules/3d-tiles/README",
-          "modules/3d-tiles/concepts/screen-space-error-and-lod"
+          {
+            "type": "category",
+            "label": "Runtime Concepts",
+            "items": [
+              "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
+              "modules/3d-tiles/concepts/screen-space-error-and-lod",
+              "modules/3d-tiles/concepts/request-scheduling-and-priorities",
+              "modules/3d-tiles/concepts/caching-and-memory",
+              "modules/3d-tiles/concepts/runtime-tuning-and-diagnostics"
+            ]
+          }
         ]
       },
       {

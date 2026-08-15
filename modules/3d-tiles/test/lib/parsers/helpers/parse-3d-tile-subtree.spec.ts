@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {coreApi} from '@loaders.gl/core';
 
 import {loadExplicitBitstream} from '../../../../src/lib/parsers/helpers/parse-3d-tile-subtree';
@@ -81,4 +81,18 @@ test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', a
 
   await loadExplicitBitstream(subtree, contentAvailability, internalBinaryBuffer, context());
   t.deepEqual(contentAvailability.explicitBitstream, new Uint8Array([128]));
+});
+
+test('loadExplicitBitstream ignores omitted optional availability', async t => {
+  const subtree: Subtree = {
+    buffers: [],
+    bufferViews: [],
+    tileAvailability: {constant: 1},
+    childSubtreeAvailability: {constant: 0}
+  };
+
+  await loadExplicitBitstream(subtree, undefined, new ArrayBuffer(0), context());
+
+  t.pass('does not require optional content availability');
+  t.end();
 });

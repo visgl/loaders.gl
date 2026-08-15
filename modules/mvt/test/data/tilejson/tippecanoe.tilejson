@@ -286,6 +286,17 @@
             ],
             "min": 4,
             "max": 10
+          },
+          {
+            "attribute": "scalerank|0",
+            "count": 2,
+            "type": "number",
+            "values": [
+              4,
+              5
+            ],
+            "min": 4,
+            "max": 5
           }
         ]
       }

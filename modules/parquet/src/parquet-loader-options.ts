@@ -17,24 +17,18 @@ type ParquetCommonLoaderOptions = {
 type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
   rowGroups?: number[];
   concurrency?: number;
+  /** Cancels an active worker parse by terminating its worker. */
+  signal?: AbortSignal;
+  /** Overrides the packaged Parquet worker asset URL. */
+  workerUrl?: string;
+  /** Overrides the package-local parquet-wasm binary URL. */
   wasmUrl?: string;
-};
-
-/** Internal superset of Parquet loader options that retains backend selection. */
-type ParquetInternalLoaderOptions = ParquetWasmLoaderOptions & {
-  shape?: 'object-row-table' | 'arrow-table';
-  backend?: 'wasm' | 'typescript';
-  /** @deprecated Use `backend` instead. */
-  implementation?: 'wasm' | 'js';
 };
 
 /** Public options for the wasm-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
     shape?: 'object-row-table' | 'arrow-table';
-    backend?: 'wasm' | 'typescript';
-    /** @deprecated Use `backend` instead. */
-    implementation?: 'wasm' | 'js';
   } & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };
@@ -42,21 +36,15 @@ export type ParquetLoaderOptions = LoaderOptions & {
 
 /** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
 export type ParquetJSLoaderOptions = LoaderOptions & {
-  parquet?: {backend?: 'typescript'} & {
-    [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
-  };
-};
-
-/** Internal options used by shared Parquet helpers that need backend selection. */
-export type ParquetLoaderImplementationOptions = LoaderOptions & {
   parquet?: {
-    [Key in keyof ParquetInternalLoaderOptions]?: ParquetInternalLoaderOptions[Key];
+    shape?: 'object-row-table' | 'arrow-table';
+  } & {
+    [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };
 };
 
 /** Shared default option bag for the wasm-backed Parquet loaders. */
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
-  backend: 'wasm',
   columns: undefined,
   preserveBinary: false,
   shape: 'object-row-table'

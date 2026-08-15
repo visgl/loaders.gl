@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {coreApi} from '@loaders.gl/core';
@@ -14,6 +14,14 @@ test('Tileset3D#traverser base class', async t => {
   const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader, coreApi});
   const tileset = new Tileset3D(source);
   await tileset.tilesetInitializationPromise;
+
+  t.equals(
+    tileset.options.progressiveResolutionHeightFraction,
+    0.3,
+    'uses the progressive-resolution default'
+  );
+  t.equals(tileset.options.foveatedScreenSpaceError, true, 'enables foveated priority by default');
+  t.equals(tileset.options.foveatedTimeDelay, 0.2, 'uses the moving-camera delay default');
 
   const traverser = new TilesetTraverser({
     basePath: tileset.basePath,

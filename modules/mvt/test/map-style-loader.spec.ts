@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {parse} from '@loaders.gl/core';
 import {validateLoader} from 'test/common/conformance';
 import {MapStyleLoader} from '@loaders.gl/mvt/bundled';

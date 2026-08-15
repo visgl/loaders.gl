@@ -24,7 +24,6 @@ const modules = {
   'zstd-codec': ZstdCodec
 };
 
-// Start loading compression modules in the background to minimize 
-// time spent during test case execution
+// Register compression modules used by tests.
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 preloadCompressions({modules});

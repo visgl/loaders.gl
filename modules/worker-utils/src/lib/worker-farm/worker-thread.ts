@@ -148,10 +148,11 @@ export default class WorkerThread {
       // Make sure relative URLs start with './'
       const absolute = this.url.includes(':/') || this.url.startsWith('/');
       const url = absolute ? this.url : `./${this.url}`;
+      const workerUrl = url.startsWith('file:') ? new URL(url) : url;
       const type = this.url.endsWith('.ts') || this.url.endsWith('.mjs') ? 'module' : 'commonjs';
       // console.log('Starting work from', url);
       // @ts-expect-error type is not known
-      worker = new NodeWorker(url, {eval: false, type});
+      worker = new NodeWorker(workerUrl, {eval: false, type});
     } else if (this.source) {
       worker = new NodeWorker(this.source, {eval: true});
     } else {

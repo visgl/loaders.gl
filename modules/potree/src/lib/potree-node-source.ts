@@ -14,7 +14,6 @@ import {
   buildPotreeHierarchyFromMetadata
 } from '../parsers/parse-potree-hierarchy-chunk';
 import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
-import {PotreeLoaderWithParser} from '../potree-loader-with-parser';
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -93,6 +92,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       await this.initPromise;
       return;
     }
+    const {PotreeLoaderWithParser} = await import('../potree-loader-with-parser');
     this.metadata = await this.loadWithCoreApi(this.metadataUrl, PotreeLoaderWithParser);
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();

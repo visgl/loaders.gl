@@ -14,6 +14,7 @@ Release Date: 2026
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/gis`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -23,17 +24,28 @@ Release Date: 2026
   `Utf8View`, `Binary`, and `BinaryView` data between standard and view layouts with runtime
   fallback.
 
+**@loaders.gl/3d-tiles**
+
+- [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader) validates tileset metadata at the loader boundary. The runtime `Tiles3DTilesetSchema` and generated `tileset.schema.json` are published for application and tooling use.
+
 **@loaders.gl/draco**
 
 - [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer) now accepts plain `Mesh` data and Mesh Arrow tables in addition to existing Draco attribute-map input.
 
 **@loaders.gl/gltf**
 
-- `GLBLoader` adds draft GLB v3 parsing with 64-bit file and chunk lengths, multi-chunk traversal, and reserved chunk-encoding validation, advancing glTF 2.1 readiness.
+- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) adds draft GLB v3 parsing with 64-bit file and chunk lengths, multi-chunk traversal, and reserved chunk-encoding validation, advancing glTF 2.1 readiness.
+- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) and [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) add draft [GLB v3](/docs/modules/gltf/formats/glb) support for 64-bit lengths, multi-chunk traversal, reserved chunk-encoding validation, and explicit `buffer.chunk` references, advancing glTF 2.1 readiness.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds draft [glTF 2.1 accessor component types](/docs/modules/gltf/formats/gltf#accessor-component-types), including signed 32-bit integers, 16- and 64-bit floats, and signed and unsigned 64-bit integers.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds opt-in loading of draft glTF 2.1 [unified file references](/docs/modules/gltf/formats/gltf) from URIs or buffer views, plus virtual package lookup through `resolveGLTFFile()`.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) resolves the thumbnail index to the processed image.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
 
 **@loaders.gl/las** 
 
 - [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
+- [`LASLoader`](/docs/modules/las/api-reference/las-loader) now uses the pure TypeScript implementation and ships the only prebuilt LAS worker. Compatibility loaders are available through explicit imports and can use an application-provided `las.workerUrl`.
 
 **@loaders.gl/obj**
 
@@ -74,6 +86,19 @@ Release Date: 2026
 - `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
 - `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
 
+**@loaders.gl/compression**
+
+- The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
+
+**@loaders.gl/gis**
+
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/gis`, while matching runtime validators are available from `@loaders.gl/gis/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
+
+**@loaders.gl/i3s**
+
+- Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
+
 **@loaders.gl/deck-layers**
 
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
@@ -87,13 +112,28 @@ Release Date: 2026
 
 **@loaders.gl/parquet**
 
-- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) NEW - add the experimental parquetjs plain-row and plain-table APIs.
-- `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) is now documented for selecting object-row or Arrow output from the canonical wasm-backed loader.
+- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
+- `ParquetSourceLoader` exposes normalized column-chunk statistics, predicate-based row-group pruning, and cumulative transport/decode/Arrow telemetry with exact request and byte counts.
+- `ParquetSourceLoader` now publishes an immutable capability descriptor, deep-freezes cached schema metadata and batch provenance, and preserves caller abort reasons.
+- `ParquetSourceLoader` now materializes selected columns directly into Arrow batches without an intermediate object-row table.
+- `ParquetSourceLoader` can transfer selected compressed column chunks to a dedicated worker for decompression, page decoding, column materialization, and Arrow conversion. It returns Arrow tables through `@loaders.gl/arrow`'s direct transferable-buffer transport rather than Arrow IPC.
+- The wasm-backed `ParquetLoader` can decode in a cancellable worker, transfers Arrow output through Arrow IPC, and resolves its packaged worker and WASM assets without an implicit CDN dependency.
+- The Parquet WASM backend is updated to 0.7.2, and `@loaders.gl/parquet/wasm` exposes its package-local binary URL for explicit asset workflows.
+- `HttpFile` now supports pinned object identity, strict or best-effort validator consistency, cancellable exact range reads, shared scheduling, and immutable request/byte/time telemetry.
+- The Parquet TypeScript backend now reads Data Page V2, `DELTA_BINARY_PACKED`, `DELTA_LENGTH_BYTE_ARRAY`, `DELTA_BYTE_ARRAY`, and legacy Hadoop-framed LZ4 data.
+- The Parquet TypeScript backend now reuses primitive views and materializes flat columns through allocation-conscious fast paths, substantially improving object-row decode throughput without changing output.
+- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
+- Parquet parser selection now follows the imported loader: use the primary worker-capable `ParquetLoader` for WASM or the explicit main-thread `ParquetJSLoader` fallback for parquetjs. Runtime `parquet.backend` and `parquet.implementation` selectors have been removed.
+- `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.
 
 **@loaders.gl/geotiff**
 
 - [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
 - [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
+
+**@loaders.gl/gltf**
+
+- Zod schemas now cover glTF 1.0, glTF 2.0, draft glTF 2.1, and every official Khronos extension schema fragment. Standalone version schemas, an opt-in all-version union, and individually addressable extension JSON Schemas are published for Monaco and other editor integrations.
 
 **@loaders.gl/json**
 
@@ -198,6 +238,23 @@ A minor release that includes:
 
 - **3D Tiles 1.1 Writing** [`Tile3DWriter`](/docs/modules/3d-tiles/api-reference/tile-3d-writer) now supports writing 3DTiles 1.1
 - **3D Tiles 1.1 Extensions** `EXT_mesh_features` and `EXT_structural_metadata` are now supported.
+- **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
+- **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
+- **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
+- **Same-frame dynamic SSE transforms** Animated local tilesets refresh the root transform before density calculation, and tilted oriented boxes derive height from every rotated half axis.
+- **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.
+- **Explicit S2 bounding volumes** `3DTILES_bounding_volume_S2` tile, content, and viewer-request volumes are converted to traversal-ready oriented boxes outside implicit tiling as well.
+- **Progressive tile requests** Coarse viewport coverage receives priority before fine detail through reduced-height SSE.
+- **Foveated tile requests** Perspective tiles near the view axis receive priority over equally needed peripheral detail without changing the final LOD target.
+- **Forward-ray foveation** Volumes behind the camera are classified as peripheral instead of competing with visible center content through the backward half of an infinite view line.
+- **Motion-aware request deferral** Refinement-safe peripheral requests can pause briefly during camera motion and automatically resume after the configured delay.
+- **Queued-request deferral** Peripheral work already waiting for a scheduler slot is canceled before network access when motion makes it deferrable, then resubmitted without a stale penalty after the delay.
+- **Request-priority diagnostics** Tile runtime fields and tests expose progressive, foveated, deferred, and combined priority calculations.
+- **Byte-native cache budgets** `Tileset3D.cacheBytes` and `maximumCacheOverflowBytes` replace ambiguous MiB-era controls with exact byte thresholds and Cesium-compatible 512 MiB 3D Tiles defaults while leaving I3S defaults unchanged.
+- **Memory-aware LOD** Cache pressure above the base-plus-overflow ceiling raises the active SSE incrementally, while usage below the base target restores the configured quality and unused tiles still evict at the base budget.
+- **Cache migration and diagnostics** Deprecated MiB aliases remain synchronized, runtime budget updates avoid stale conversions, and the cache guide documents precedence, tuning, memory estimates, and troubleshooting.
+- **Reliable 3D Tiles example dispatch** The internal `SourceLayer` now preserves URL and Blob inputs for its 3D loader instead of allowing deck.gl's inherited asynchronous `data` prop to replace them before dispatch.
+- **3D Tiles runtime guides** A [sidebar- and tab-linked concepts suite](/docs/modules/3d-tiles/concepts) documents hierarchy refinement, SSE/LOD, request scheduling, foveation, caching, memory, tuning, and diagnostics.
 
 **@loaders.gl/tile-converter**
 

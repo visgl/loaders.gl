@@ -1,6 +1,6 @@
 // TODO - GLTFScenegraph should use these
 import {assert} from '../utils/assert';
-import type {TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray} from '@loaders.gl/schema';
 import type {GLTF, GLTFExternalBuffer, GLTFAccessor} from '../types/gltf-types';
 import {getAccessorArrayTypeAndLength} from './gltf-utils';
 
@@ -32,14 +32,14 @@ export function getTypedArrayForImageData(json, buffers, imageIndex) {
  * @param json - json part of gltf content of a GLTF tile.
  * @param buffers - Array containing buffers of data.
  * @param accessor - accepts accessor index or accessor object.
- * @returns {TypedArray} Typed array with type matching the type of data poited by the accessor.
+ * @returns Typed array with type matching the accessor component type.
  */
 // eslint-disable-next-line complexity
 export function getTypedArrayForAccessor(
   json: GLTF,
   buffers: GLTFExternalBuffer[],
   accessor: GLTFAccessor | number
-): TypedArray {
+): BigTypedArray {
   const gltfAccessor = typeof accessor === 'number' ? json.accessors?.[accessor] : accessor;
   if (!gltfAccessor) {
     throw new Error(`No gltf accessor ${JSON.stringify(accessor)}`);
@@ -63,11 +63,11 @@ export function getTypedArrayForAccessor(
   // Creare an array of component's type where all components (not just elements) will reside
   if (typeof bufferView.byteStride === 'undefined' || bufferView.byteStride === elementByteSize) {
     // No iterleaving
-    const result: TypedArray = new ArrayType(arrayBuffer, byteOffset, length);
+    const result: BigTypedArray = new ArrayType(arrayBuffer, byteOffset, length);
     return result;
   }
   // Iterleaving
-  const result: TypedArray = new ArrayType(length);
+  const result: BigTypedArray = new ArrayType(length);
   for (let i = 0; i < gltfAccessor.count; i++) {
     const values = new ArrayType(
       arrayBuffer,

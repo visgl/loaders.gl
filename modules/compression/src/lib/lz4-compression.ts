@@ -83,13 +83,57 @@ export class LZ4Compression extends Compression {
       }
 
       let uncompressed = new Uint8Array(maxSize);
+      const hadoopSize = this.decodeHadoopBlocks(inputArray, uncompressed);
+      if (hadoopSize !== null) {
+        return toArrayBuffer(uncompressed.slice(0, hadoopSize));
+      }
       const uncompressedSize = this.decodeBlock(inputArray, uncompressed);
+      if (uncompressedSize < 0 || uncompressedSize > maxSize) {
+        throw new Error(`Invalid LZ4 block at byte ${Math.abs(uncompressedSize)}`);
+      }
       uncompressed = uncompressed.slice(0, uncompressedSize);
 
       return toArrayBuffer(uncompressed);
     } catch (error) {
       throw this.improveError(error);
     }
+  }
+
+  /**
+   * Decodes the legacy Hadoop LZ4 block stream used by older Parquet writers.
+   * Returns null when the input is not a valid Hadoop-framed stream.
+   */
+  decodeHadoopBlocks(data: Uint8Array, output: Uint8Array): number | null {
+    let inputOffset = 0;
+    let outputOffset = 0;
+
+    while (inputOffset < data.length) {
+      if (data.length - inputOffset < 8) {
+        return null;
+      }
+      const uncompressedByteLength = readUInt32BE(data, inputOffset);
+      const compressedByteLength = readUInt32BE(data, inputOffset + 4);
+      inputOffset += 8;
+      if (
+        uncompressedByteLength === 0 ||
+        compressedByteLength === 0 ||
+        inputOffset + compressedByteLength > data.length ||
+        outputOffset + uncompressedByteLength > output.length
+      ) {
+        return null;
+      }
+
+      const compressedBlock = data.subarray(inputOffset, inputOffset + compressedByteLength);
+      const outputBlock = output.subarray(outputOffset, outputOffset + uncompressedByteLength);
+      const decodedByteLength = this.decodeBlock(compressedBlock, outputBlock);
+      if (decodedByteLength !== uncompressedByteLength) {
+        return null;
+      }
+      inputOffset += compressedByteLength;
+      outputOffset += uncompressedByteLength;
+    }
+
+    return outputOffset;
   }
 
   /**
@@ -178,4 +222,9 @@ export class LZ4Compression extends Compression {
     const magic = new Uint32Array(data.slice(0, 4));
     return magic[0] === LZ4_MAGIC_NUMBER;
   }
+}
+
+/** Reads one unsigned big-endian 32-bit Hadoop block length. */
+function readUInt32BE(data: Uint8Array, offset: number): number {
+  return new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(offset, false);
 }

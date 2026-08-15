@@ -2,10 +2,7 @@
 
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
-:::caution
-The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does not support LAS v1.4 files.
-For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
-:::
+`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, and RGB, while the raw APIs preserve complete supported point records. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
 
 ## Installation
 

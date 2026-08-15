@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 
 import {PMTILESETS} from './data/tilesets';
@@ -45,7 +45,7 @@ test('PMTilesSourceLoader#Blobs', async t => {
 // TBA - TILE LOADING TESTS
 
 /*
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';

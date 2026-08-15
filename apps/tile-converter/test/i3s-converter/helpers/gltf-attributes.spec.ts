@@ -1,5 +1,5 @@
 import {BoundingSphere} from '@math.gl/culling';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';

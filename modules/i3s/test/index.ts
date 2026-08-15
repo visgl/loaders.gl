@@ -6,6 +6,7 @@ import './i3s-loader.spec';
 import './parse-slpk.spec';
 import './parse-slpk-readable-file.spec';
 import './i3s-node-page-loader.spec';
+import './i3s-zod-schema.spec';
 import './i3s-attribute-loader.spec';
 // TODO v4.0 restore these tests
 // import './i3s-content-loader.spec';

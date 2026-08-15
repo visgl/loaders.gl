@@ -16,11 +16,14 @@ export type {
   GLTFSkin,
   GLTFTexture,
   GLTFImage,
+  GLTFFile,
+  GLTFExternalAsset,
   GLTFObject,
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,
+  GLTF_KHR_meshopt_compression,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp
 } from './lib/types/gltf-json-schema';
@@ -77,7 +80,52 @@ export type {
   GLTFTexturePostprocessed
 } from './lib/types/gltf-postprocessed-schema';
 
-export type {GLTFWithBuffers, FeatureTableJson} from './lib/types/gltf-types';
+export type {
+  GLTFWithBuffers,
+  GLTFExternalFile,
+  FeatureTableJson
+} from './lib/types/gltf-types';
+export {
+  GLTFSchema,
+  GLTFIdSchema,
+  GLTFObjectSchema,
+  GLTFAccessorSchema,
+  GLTFAccessorSparseSchema,
+  GLTFAccessorSparseIndicesSchema,
+  GLTFAccessorSparseValuesSchema,
+  GLTFAnimationSchema,
+  GLTFAnimationChannelSchema,
+  GLTFAnimationChannelTargetSchema,
+  GLTFAnimationSamplerSchema,
+  GLTFAssetSchema,
+  GLTFBufferSchema,
+  GLTFBufferViewSchema,
+  GLTFCameraSchema,
+  GLTFCameraOrthographicSchema,
+  GLTFCameraPerspectiveSchema,
+  GLTFImageSchema,
+  GLTFExternalAssetSchema,
+  GLTFMaterialSchema,
+  GLTFMaterialNormalTextureInfoSchema,
+  GLTFMaterialOcclusionTextureInfoSchema,
+  GLTFMaterialPbrMetallicRoughnessSchema,
+  GLTFMeshSchema,
+  GLTFMeshPrimitiveSchema,
+  GLTFNodeSchema,
+  GLTFSamplerSchema,
+  GLTFSceneSchema,
+  GLTFSkinSchema,
+  GLTFTextureSchema,
+  GLTFTextureInfoSchema,
+  GLTFTextureInfoMetadataSchema,
+  GLTFKHRBinarySchema,
+  GLTFKHRDracoMeshCompressionSchema,
+  GLTFKHRTextureBasisuSchema,
+  GLTFKHRMeshoptCompressionSchema,
+  GLTFEXTMeshoptCompressionSchema,
+  GLTFEXTTextureWebpSchema,
+  GLTFMSFTTextureDdsSchema
+} from './lib/types/gltf-zod-schema';
 export {GLTFFormat, GLBFormat} from './gltf-format';
 
 // glTF loader/writer definition objects
@@ -92,6 +140,10 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
+export {
+  findGLTFFileIndex,
+  resolveGLTFFile
+} from './lib/gltf-utils/resolve-gltf-file';
 
 export {
   createExtStructuralMetadata,

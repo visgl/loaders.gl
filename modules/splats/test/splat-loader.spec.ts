@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {parse, parseSync} from '@loaders.gl/core';
 import {SPLATLoader} from '@loaders.gl/splats';
 import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat-loader';

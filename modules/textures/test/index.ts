@@ -7,6 +7,7 @@ import './utils/format-utils.spec';
 import './texture-api/async-deep-map.spec';
 import './texture-api/load-image.spec';
 import './texture-loader.spec';
+import './composite-image-manifest-schema.spec';
 
 import './basis-loader.spec';
 import './crunch-loader.spec';

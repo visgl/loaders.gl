@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
 
 export const EVENTS = [

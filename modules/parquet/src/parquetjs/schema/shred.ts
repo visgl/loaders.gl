@@ -154,10 +154,9 @@ function shredRecordFields(
  *   }
  */
 export function materializeRows(schema: ParquetSchema, rowGroup: ParquetRowGroup): ParquetRow[] {
-  const rows: ParquetRow[] = [];
-  // rows = new Array(rowGroup.rowCount).fill({})'
+  const rows = new Array<ParquetRow>(rowGroup.rowCount);
   for (let i = 0; i < rowGroup.rowCount; i++) {
-    rows.push({});
+    rows[i] = {};
   }
   for (const key in rowGroup.columnData) {
     const columnData = rowGroup.columnData[key];
@@ -178,6 +177,14 @@ function materializeColumnAsRows(
 ): void {
   const field = schema.findField(key);
   const branch = schema.findFieldBranch(key);
+
+  if (branch.length === 1 && field.repetitionType !== 'REPEATED') {
+    materializeFlatColumnAsRows(field, columnData, rows);
+    return;
+  }
+
+  const logicalType = field.originalType || field.primitiveType!;
+  const fromPrimitive = Types.PARQUET_LOGICAL_TYPES[logicalType].fromPrimitive;
 
   // tslint:disable-next-line:prefer-array-literal
   const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
@@ -219,12 +226,8 @@ function materializeColumnAsRows(
 
     // Leaf node - Add the value
     if (dLevel === field.dLevelMax) {
-      const value = Types.fromPrimitive(
-        // @ts-ignore
-        field.originalType || field.primitiveType,
-        columnData.values[vIndex],
-        field
-      );
+      const primitiveValue = columnData.values[vIndex];
+      const value = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
       vIndex++;
 
       switch (field.repetitionType) {
@@ -244,6 +247,35 @@ function materializeColumnAsRows(
         default:
           record[field.name] = value;
       }
+    }
+  }
+}
+
+/** Materializes a top-level required or optional primitive directly into row objects. */
+function materializeFlatColumnAsRows(
+  field: ParquetField,
+  columnData: ParquetColumnChunk,
+  rows: ParquetRow[]
+): void {
+  const logicalType = field.originalType || field.primitiveType!;
+  const fromPrimitive = Types.PARQUET_LOGICAL_TYPES[logicalType].fromPrimitive;
+  const count = Math.min(columnData.count, rows.length);
+  let valueIndex = 0;
+
+  if (field.repetitionType === 'REQUIRED' && !fromPrimitive) {
+    for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+      rows[rowIndex][field.name] = columnData.values[rowIndex];
+    }
+    return;
+  }
+
+  for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+    if (columnData.dlevels[rowIndex] === field.dLevelMax) {
+      const primitiveValue = columnData.values[valueIndex];
+      rows[rowIndex][field.name] = fromPrimitive
+        ? fromPrimitive(primitiveValue, field)
+        : primitiveValue;
+      valueIndex++;
     }
   }
 }
@@ -300,23 +332,12 @@ function materializeColumnAsColumnarArray(
 
   const columnName = branch[0].name;
 
-  let column: ArrayType | undefined;
-  const {values} = columnData;
-  if (values.length === rowCount && branch[0].primitiveType) {
-    // if (branch[0].repetitionType === `REQUIRED`) {
-    //   switch (branch[0].primitiveType) {
-    //     case 'INT32': return values instanceof Int32Array ? values : new Int32Array(values);
-    //   }
-    // }
-    column = values;
-  }
-
-  if (column) {
-    columns[columnName] = column;
+  if (branch.length === 1 && field.repetitionType !== 'REPEATED') {
+    columns[columnName] = materializeFlatColumn(field, columnData, rowCount);
     return;
   }
 
-  column = new Array(rowCount);
+  const column: ArrayType = new Array(rowCount);
   for (let i = 0; i < rowCount; i++) {
     column[i] = {};
   }
@@ -396,4 +417,35 @@ function materializeColumnAsColumnarArray(
       column[i] = (column[i] as object)[columnName];
     }
   }
+}
+
+/** Materializes a required or optional top-level primitive column with logical type conversion. */
+function materializeFlatColumn(
+  field: ParquetField,
+  columnData: ParquetColumnChunk,
+  rowCount: number
+): ArrayType {
+  const logicalType = field.originalType || field.primitiveType!;
+  const fromPrimitive = Types.PARQUET_LOGICAL_TYPES[logicalType].fromPrimitive;
+  const count = Math.min(columnData.count, rowCount);
+
+  if (
+    field.repetitionType === 'REQUIRED' &&
+    !fromPrimitive &&
+    count === rowCount &&
+    columnData.values.length === rowCount
+  ) {
+    return columnData.values;
+  }
+
+  const column = new Array(rowCount).fill(null);
+  let valueIndex = 0;
+  for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+    if (columnData.dlevels[rowIndex] === field.dLevelMax) {
+      const primitiveValue = columnData.values[valueIndex];
+      column[rowIndex] = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
+      valueIndex++;
+    }
+  }
+  return column;
 }

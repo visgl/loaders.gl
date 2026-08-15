@@ -1,5 +1,5 @@
 /* eslint-disable max-len, camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import type {GLTFWithBuffers, GLTFPostprocessed} from '@loaders.gl/gltf';
 import {postProcessGLTF} from '@loaders.gl/gltf';
@@ -50,5 +50,20 @@ test('gltf#postProcessGLTF', t => {
     const json = postProcessGLTF(testCase.input as unknown as GLTFWithBuffers);
     t.deepEqual(json, testCase.output, testCase.name);
   }
+  t.end();
+});
+
+test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', t => {
+  const json = postProcessGLTF({
+    json: {
+      asset: {version: '2.1', thumbnail: 0},
+      images: [{uri: 'thumbnail.png'}]
+    },
+    buffers: [],
+    images: [{width: 2, height: 2}]
+  } as unknown as GLTFWithBuffers);
+
+  t.equal(json.asset.thumbnail, json.images[0], 'resolves the thumbnail to the processed image');
+  t.equal(json.asset.thumbnail?.image.width, 2, 'preserves the decoded thumbnail image');
   t.end();
 });

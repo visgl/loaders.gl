@@ -13,3 +13,5 @@ Implements the [`Compression](./compression) API.
 ## Methods
 
 ### `constructor(options?: object)`
+
+`options` is optional when using the built-in Brotli decoder.

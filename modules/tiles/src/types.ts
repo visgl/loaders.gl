@@ -13,6 +13,8 @@ export type Viewport = {
   height: number;
   width: number;
   zoom: number;
+  /** Perspective vertical field of view in degrees, when exposed by the viewport. */
+  fovy?: number;
   /** Whether this viewport uses an orthographic projection. */
   orthographic?: boolean;
   /**

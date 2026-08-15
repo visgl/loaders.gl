@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';

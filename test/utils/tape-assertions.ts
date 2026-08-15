@@ -1,5 +1,5 @@
 import {equals, withEpsilon} from '@math.gl/core';
-import type {Test as TapeTest} from '@loaders.gl/devtools-extensions/tape-test-utils';
+import type {Test as TapeTest} from 'test/utils/vitest-tape';
 
 // FOR TAPE TESTING
 // Use tape assert to compares using a.equals(b)

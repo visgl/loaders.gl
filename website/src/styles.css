@@ -564,6 +564,65 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   z-index: 1;
 }
 
+.parquet-benchmark-results {
+  margin-bottom: 2rem;
+  overflow-x: auto;
+}
+
+.parquet-benchmark-table {
+  border: 1px solid var(--ifm-table-border-color);
+  border-collapse: separate;
+  border-radius: 8px;
+  border-spacing: 0;
+  margin: 0;
+  min-width: 620px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.parquet-benchmark-table th,
+.parquet-benchmark-table td {
+  border: 0;
+  border-bottom: 1px solid var(--ifm-table-border-color);
+  padding: 0.7rem 0.8rem;
+  vertical-align: top;
+}
+
+.parquet-benchmark-table thead th {
+  background: var(--ifm-table-head-background);
+  color: var(--ifm-font-color-secondary);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.parquet-benchmark-table tbody + tbody tr:first-child > * {
+  border-top: 1px solid var(--ifm-table-border-color);
+}
+
+.parquet-benchmark-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.parquet-benchmark-table tbody th[scope='rowgroup'] {
+  background: var(--ifm-table-stripe-background);
+  font-weight: 600;
+  width: 34%;
+}
+
+.parquet-benchmark-table .parquet-benchmark-number {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.parquet-benchmark-empty {
+  color: var(--ifm-font-color-secondary);
+  margin: 0;
+  padding: 1rem 0;
+}
+
 .badges {
   align-items: center;
   display: inline-flex;

@@ -4,6 +4,7 @@
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {PotreeLoader as PotreeLoaderMetadata} from './potree-loader';
+import {PotreeMetadataSchema, type PotreeMetadata} from './types/potree-metadata';
 
 const {preload: _PotreeLoaderPreload, ...PotreeLoaderMetadataWithoutPreload} = PotreeLoaderMetadata;
 
@@ -14,6 +15,11 @@ export type POTreeLoaderOptions = LoaderOptions & {
 /** Potree loader */
 export const PotreeLoaderWithParser = {
   ...PotreeLoaderMetadataWithoutPreload,
-  parse: (data: ArrayBuffer) => JSON.parse(new TextDecoder().decode(data)),
-  parseTextSync: text => JSON.parse(text)
-} as const satisfies LoaderWithParser<any, never, POTreeLoaderOptions>;
+  parse: async (data: ArrayBuffer) => parsePotreeMetadata(new TextDecoder().decode(data)),
+  parseTextSync: parsePotreeMetadata
+} as const satisfies LoaderWithParser<PotreeMetadata, never, POTreeLoaderOptions>;
+
+/** Parses and validates one Potree `cloud.js` metadata document. */
+function parsePotreeMetadata(text: string): PotreeMetadata {
+  return PotreeMetadataSchema.parse(JSON.parse(text));
+}

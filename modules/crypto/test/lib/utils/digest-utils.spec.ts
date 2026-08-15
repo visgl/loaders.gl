@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto';
 
 const loadJSON = async (relativePath: string) => {

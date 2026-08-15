@@ -18,9 +18,7 @@ export type ParquetDocsTabId =
   | 'geoparquet'
   | 'parquetloader'
   | 'geoparquetloader'
-  | 'parquetwriter'
-  | 'parquetjsloader'
-  | 'parquetjswriter';
+  | 'parquetwriter';
 
 const PARQUET_DOCS_TABS: ParquetDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/geoparquet'},
@@ -41,16 +39,6 @@ const PARQUET_DOCS_TABS: ParquetDocsTab[] = [
     id: 'parquetwriter',
     label: 'ParquetWriter',
     href: '/docs/modules/parquet/api-reference/parquet-writer'
-  },
-  {
-    id: 'parquetjsloader',
-    label: 'ParquetJSLoader',
-    href: '/docs/modules/parquet/api-reference/parquet-js-loader'
-  },
-  {
-    id: 'parquetjswriter',
-    label: 'ParquetJSWriter',
-    href: '/docs/modules/parquet/api-reference/parquet-js-writer'
   }
 ];
 

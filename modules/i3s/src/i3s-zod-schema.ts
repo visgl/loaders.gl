@@ -1,0 +1,112 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
+import {z} from 'zod';
+import type {
+  MeshGeometry,
+  MeshMaterial,
+  NodeInPage,
+  NodePage,
+  Obb,
+  SceneLayer3D,
+  SpatialReference
+} from './types';
+
+/** Zod schema for an I3S oriented bounding box. */
+export const I3SObbSchema = z
+  .object({
+    center: z.array(z.number().finite()).length(3),
+    halfSize: z.array(z.number().finite().nonnegative()).length(3),
+    quaternion: z.array(z.number().finite()).length(4)
+  })
+  .passthrough() satisfies z.ZodType<Obb>;
+
+/** Zod schema for an I3S mesh material reference in a node page. */
+export const I3SMeshMaterialSchema = z
+  .object({
+    definition: z.number().int().nonnegative(),
+    resource: z.number().int().nonnegative().optional(),
+    texelCountHint: z.number().nonnegative().optional()
+  })
+  .passthrough() satisfies z.ZodType<MeshMaterial>;
+
+/** Zod schema for an I3S mesh geometry reference in a node page. */
+export const I3SMeshGeometrySchema = z
+  .object({
+    definition: z.number().int().nonnegative(),
+    resource: z.number().int().nonnegative(),
+    vertexCount: z.number().int().nonnegative().optional(),
+    featureCount: z.number().int().nonnegative().optional()
+  })
+  .passthrough() satisfies z.ZodType<MeshGeometry>;
+
+/** Zod schema for one I3S node-page node. */
+export const I3SNodeInPageSchema = z
+  .object({
+    index: z.number().int().nonnegative(),
+    parentIndex: z.number().int().nonnegative().optional(),
+    lodThreshold: z.number().finite().nonnegative().optional(),
+    obb: I3SObbSchema,
+    children: z.array(z.number().int().nonnegative()).optional(),
+    mesh: z
+      .object({
+        material: I3SMeshMaterialSchema,
+        geometry: I3SMeshGeometrySchema,
+        attribute: z.object({resource: z.number().int().nonnegative()}).passthrough()
+      })
+      .passthrough()
+      .optional()
+  })
+  .passthrough() satisfies z.ZodType<NodeInPage>;
+
+/** Zod schema for an I3S node-page document. */
+export const I3SNodePageSchema = z
+  .object({nodes: z.array(I3SNodeInPageSchema)})
+  .passthrough() satisfies z.ZodType<NodePage>;
+
+/** Zod schema for the spatial-reference metadata used by an I3S scene layer. */
+export const I3SSpatialReferenceSchema = z
+  .object({
+    latestVcsWkid: z.number().int().optional(),
+    latestWkid: z.number().int().optional(),
+    vcsWkid: z.number().int().optional(),
+    wkid: z.number().int().optional(),
+    wkt: z.string().min(1).optional()
+  })
+  .passthrough()
+  .refine(
+    spatialReference => spatialReference.wkid !== undefined || Boolean(spatialReference.wkt),
+    {
+      message: 'I3S spatialReference must include wkid or wkt'
+    }
+  ) satisfies z.ZodType<SpatialReference>;
+
+/** Zod schema for raw I3S 3D Object and Integrated Mesh scene-layer metadata. */
+export const I3SSceneLayerSchema = z
+  .object({
+    id: z.number().int().nonnegative(),
+    href: z.string().optional(),
+    layerType: z.enum(['3DObject', 'IntegratedMesh']),
+    spatialReference: I3SSpatialReferenceSchema.optional(),
+    version: z.string().min(1),
+    name: z.string().optional(),
+    capabilities: z.array(z.string()),
+    disablePopup: z.boolean(),
+    store: z
+      .object({
+        profile: z.string().min(1),
+        version: z.union([z.number(), z.string().min(1)]),
+        defaultGeometrySchema: z.any()
+      })
+      .passthrough(),
+    nodePages: z
+      .object({
+        nodesPerPage: z.number().int().positive().max(4096),
+        rootIndex: z.number().int().nonnegative().optional(),
+        lodSelectionMetricType: z.literal('maxScreenThresholdSQ')
+      })
+      .passthrough()
+      .optional()
+  })
+  .passthrough() satisfies z.ZodType<SceneLayer3D>;

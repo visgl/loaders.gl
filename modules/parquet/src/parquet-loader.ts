@@ -2,78 +2,114 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
   ArrowTable,
   ArrowTableBatch
 } from '@loaders.gl/schema';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 
-import {ParquetFormat} from './parquet-format';
 import {
-  PARQUET_LOADER_DEFAULT_OPTIONS,
-  type ParquetLoaderOptions as SharedParquetLoaderOptions
-} from './parquet-loader-options';
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './lib/parsers/convert-parquet-tables';
+import {
+  parseParquetFileToArrow,
+  parseParquetFileToArrowInBatches
+} from './lib/parsers/parse-parquet-to-arrow';
+import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
+import {
+  deserializeParquetWorkerResult,
+  serializeParquetWorkerResult
+} from './lib/parquet-worker-transport';
+import {ParquetLoader as ParquetLoaderMetadata} from './parquet-loader-types';
+import type {ParquetLoaderOptions} from './parquet-loader-options';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+export type {ParquetLoaderOptions} from './parquet-loader-options';
 
-/** Options for the parquet loader */
-export type ParquetLoaderOptions = SharedParquetLoaderOptions;
+const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
+  ParquetLoaderMetadata;
 
-/** Preloads the parser-bearing Parquet loader implementation selected by `parquet.backend`. */
-async function preloadParquetLoader(_url: string, options?: LoaderOptions) {
-  const parquetOptions = options as ParquetLoaderOptions | undefined;
-  switch (getParquetBackend(parquetOptions)) {
-    case 'wasm': {
-      const {ParquetWASMLoaderWithParser} = await import('./parquet-wasm-loader-with-parser');
-      return ParquetWASMLoaderWithParser;
-    }
-
-    case 'typescript': {
-      if (parquetOptions?.parquet?.shape === 'arrow-table') {
-        throw new Error('ParquetLoader: backend "typescript" does not support shape "arrow-table"');
-      }
-      const {ParquetLoaderWithParser} = await import('./parquet-loader-with-parser');
-      return ParquetLoaderWithParser;
-    }
-
-    default:
-      throw new Error(`ParquetLoader: unsupported backend "${parquetOptions?.parquet?.backend}"`);
-  }
-}
-
-/** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
-export const ParquetLoader = {
-  ...ParquetFormat,
-
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
-
-  id: 'parquet',
-  module: 'parquet',
-  version: VERSION,
-  worker: false,
-  options: {
-    parquet: {
-      ...PARQUET_LOADER_DEFAULT_OPTIONS
-    }
+/** WASM-backed Parquet table loader supporting object-row and Arrow table output. */
+export const ParquetLoaderWithParser = {
+  ...ParquetLoaderMetadataWithoutPreload,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetTable(new BlobFile(arrayBuffer), options);
   },
-  preload: preloadParquetLoader
-} as const satisfies Loader<
+  parseFile(file, options?: ParquetLoaderOptions) {
+    return parseParquetTable(file, options);
+  },
+  parseFileInBatches(file, options?: ParquetLoaderOptions) {
+    return parseParquetTableInBatches(file, options);
+  },
+  async *parseInBatches(
+    asyncIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options?: ParquetLoaderOptions,
+    _context?: unknown
+  ) {
+    const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
+    yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options);
+  },
+  serializeWorkerResult: serializeParquetWorkerResult,
+  deserializeWorkerResult: deserializeParquetWorkerResult
+} as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,
   ParquetLoaderOptions
 >;
 
-function getParquetBackend(options?: ParquetLoaderOptions): 'wasm' | 'typescript' {
-  if (options?.parquet?.backend) {
-    return options.parquet.backend;
+/**
+ * Parses a Parquet file using the canonical WASM-backed table loader.
+ * @param file readable file abstraction
+ * @param options optional loader options
+ * @returns object-row or Arrow table output depending on `parquet.shape`
+ */
+async function parseParquetTable(
+  file: BlobFile | ReadableFile,
+  options?: ParquetLoaderOptions
+): Promise<ObjectRowTable | ArrowTable> {
+  const parquetOptions = getParquetOptions(options);
+
+  if (parquetOptions.parquet?.shape === 'arrow-table') {
+    return await parseParquetFileToArrow(file, parquetOptions.parquet);
   }
-  if (options?.parquet?.implementation === 'js') {
-    return 'typescript';
+
+  const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
+  return convertArrowTableToObjectRows(arrowTable);
+}
+
+/**
+ * Parses a Parquet file into streamed table batches using the canonical WASM-backed loader.
+ * @param file readable file abstraction
+ * @param options optional loader options
+ * @returns async iterable of object-row or Arrow batches
+ */
+async function* parseParquetTableInBatches(
+  file: BlobFile | ReadableFile,
+  options?: ParquetLoaderOptions
+): AsyncIterable<ObjectRowTableBatch | ArrowTableBatch> {
+  const parquetOptions = getParquetOptions(options);
+
+  if (parquetOptions.parquet?.shape === 'arrow-table') {
+    yield* parseParquetFileToArrowInBatches(file, parquetOptions.parquet);
+    return;
   }
-  return ParquetLoader.options.parquet.backend;
+
+  for await (const batch of parseParquetFileToArrowInBatches(file, parquetOptions.parquet)) {
+    yield convertArrowBatchToObjectRows(batch);
+  }
+}
+
+/**
+ * Normalizes caller options for the canonical WASM-backed Parquet loaders.
+ * @param options caller-supplied loader options
+ * @returns normalized loader options
+ */
+export function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
+  return normalizeParquetOptions(options, ParquetLoaderWithParser.options.parquet);
 }

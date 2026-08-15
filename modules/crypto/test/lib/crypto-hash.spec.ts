@@ -4,7 +4,7 @@
 
 /** eslint-disable @typescript-eslint/unbound-method */
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';

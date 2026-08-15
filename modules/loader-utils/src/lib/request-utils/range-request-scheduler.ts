@@ -22,6 +22,8 @@ export type RangeStats = {
   transportBytes: number;
   /** Number of bytes read from transport responses. */
   responseBytes: number;
+  /** Aggregate time spent awaiting transport requests, in milliseconds. */
+  networkTimeMs: number;
   /** Number of transport-requested bytes that were not part of logical caller requests. */
   overfetchBytes: number;
   /** Number of transport ranges that failed. */
@@ -58,6 +60,8 @@ export type RangeRequest = {
   length: number;
   /** Optional caller abort signal. */
   signal?: AbortSignal;
+  /** Requests only coalesce when this key is identical. Defaults to the shared source identifier. */
+  isolationKey?: unknown;
   /** Fetches bytes for this source. */
   fetchRange: (
     offset: number,
@@ -78,6 +82,8 @@ export type RangeFetchRequest = {
   length: number;
   /** Optional caller abort signal. */
   signal?: AbortSignal;
+  /** Requests only coalesce when this key is identical. Omit it to isolate this fetch call. */
+  isolationKey?: unknown;
   /** Optional fetch implementation for tests or host environments. */
   fetch?: (url: string, options?: RequestInit) => Promise<Response>;
   /** Optional fetch options merged into the transport request. */
@@ -90,8 +96,12 @@ export type RangeRequestTransportResult = {
   arrayBuffer: ArrayBuffer;
   /** HTTP status code or transport-specific equivalent. */
   status?: number;
+  /** Total source length, when known. Used to validate a response clamped at end of file. */
+  sourceByteLength?: number;
   /** Number of response bytes read from the transport before slicing. */
   transportBytes?: number;
+  /** Time spent awaiting this transport request, in milliseconds. */
+  networkTimeMs?: number;
   /** True when the transport returned the complete object and the requested range was sliced locally. */
   fullResponse?: boolean;
 };
@@ -116,6 +126,8 @@ export type RangeRequestEvent = {
   transportBytes?: number;
   /** Bytes returned by the transport before slicing. */
   responseBytes?: number;
+  /** Time spent awaiting the transport request, in milliseconds. */
+  networkTimeMs?: number;
   /** Bytes fetched only to bridge nearby requested ranges. */
   overfetchBytes?: number;
   /** HTTP status code or transport-specific equivalent. */
@@ -129,10 +141,14 @@ export type RangeRequestEvent = {
 type PendingRequest = RangeRequest & {
   resolve: (arrayBuffer: ArrayBuffer) => void;
   reject: (error: unknown) => void;
+  settled: boolean;
+  abortListener?: () => void;
+  onAbort?: () => void;
 };
 
 type MergedRequest = {
   sourceId: string;
+  isolationKey: unknown;
   offset: number;
   endOffset: number;
   fetchRange: RangeRequest['fetchRange'];
@@ -149,6 +165,7 @@ const RANGE_STATS_KEYS: Record<keyof RangeStats, string> = {
   requestedBytes: 'Logical Range Request Bytes',
   transportBytes: 'Range Transport Bytes Requested',
   responseBytes: 'Range Response Bytes',
+  networkTimeMs: 'Range Network Time',
   overfetchBytes: 'Range Overfetch Bytes',
   failedTransportRanges: 'Range Transport Requests Failed',
   abortedLogicalRanges: 'Aborted Logical Range Requests',
@@ -203,11 +220,23 @@ export class RangeRequestScheduler {
     }
 
     if (request.signal?.aborted) {
-      return Promise.reject(new Error('Request aborted'));
+      return Promise.reject(createAbortError());
+    }
+
+    if (request.length === 0) {
+      return Promise.resolve(new ArrayBuffer(0));
     }
 
     const promise = new Promise<ArrayBuffer>((resolve, reject) => {
-      this.pendingRequests.push({...request, resolve, reject});
+      const pendingRequest: PendingRequest = {...request, resolve, reject, settled: false};
+      if (request.signal) {
+        pendingRequest.abortListener = () => {
+          this.abortRequest(pendingRequest);
+          pendingRequest.onAbort?.();
+        };
+        request.signal.addEventListener('abort', pendingRequest.abortListener, {once: true});
+      }
+      this.pendingRequests.push(pendingRequest);
     });
 
     this.trackEvent({
@@ -233,6 +262,9 @@ export class RangeRequestScheduler {
       offset: request.offset,
       length: request.length,
       signal: request.signal,
+      // Different fetch calls may carry different credentials or transport implementations.
+      // Sharing is therefore opt-in through an explicit common isolation key.
+      isolationKey: request.isolationKey ?? {},
       fetchRange: (offset, length, signal) =>
         fetchHttpRange({
           url: request.url,
@@ -256,16 +288,8 @@ export class RangeRequestScheduler {
     this.pendingRequests = [];
 
     const activeRequests = pendingRequests.filter(request => {
-      if (request.signal?.aborted) {
-        request.reject(new Error('Request aborted'));
-        this.trackEvent({
-          type: 'abort',
-          sourceId: request.sourceId,
-          offset: request.offset,
-          length: request.length,
-          logicalRequestCount: 1,
-          logicalBytes: request.length
-        });
+      if (request.settled || request.signal?.aborted) {
+        this.abortRequest(request);
         return false;
       }
       return true;
@@ -310,6 +334,7 @@ export class RangeRequestScheduler {
       } else {
         mergedRequests.push({
           sourceId: request.sourceId,
+          isolationKey: request.isolationKey ?? request.sourceId,
           offset: request.offset,
           endOffset: requestEndOffset,
           fetchRange: request.fetchRange,
@@ -325,7 +350,8 @@ export class RangeRequestScheduler {
   private async fetchMergedRequest(mergedRequest: MergedRequest): Promise<void> {
     const {offset, endOffset, fetchRange, requests} = mergedRequest;
     const abortController = new AbortController();
-    const abortListener = () => {
+    const requestStartTime = getTimestamp();
+    const abortTransportIfUnused = () => {
       if (requests.every(request => request.signal?.aborted)) {
         abortController.abort();
       }
@@ -333,7 +359,11 @@ export class RangeRequestScheduler {
 
     try {
       for (const request of requests) {
-        request.signal?.addEventListener('abort', abortListener, {once: true});
+        request.onAbort = abortTransportIfUnused;
+      }
+      abortTransportIfUnused();
+      if (requests.every(request => request.settled)) {
+        return;
       }
 
       const logicalBytes = getLogicalRequestBytes(requests);
@@ -353,6 +383,18 @@ export class RangeRequestScheduler {
         await fetchRange(offset, length, abortController.signal)
       );
       const {arrayBuffer} = transportResult;
+      const isClampedFullResponse =
+        transportResult.fullResponse && offset === 0 && arrayBuffer.byteLength < length;
+      const isClampedEndOfFile =
+        arrayBuffer.byteLength < length &&
+        Number.isSafeInteger(transportResult.sourceByteLength) &&
+        offset + arrayBuffer.byteLength === transportResult.sourceByteLength;
+      if (arrayBuffer.byteLength !== length && !isClampedFullResponse && !isClampedEndOfFile) {
+        throw new Error(
+          `Byte-range transport returned ${arrayBuffer.byteLength} bytes; expected ${length}`
+        );
+      }
+      const networkTimeMs = transportResult.networkTimeMs ?? getTimestamp() - requestStartTime;
 
       this.trackEvent({
         type: 'response',
@@ -363,26 +405,19 @@ export class RangeRequestScheduler {
         logicalBytes,
         transportBytes: length,
         responseBytes: transportResult.transportBytes ?? arrayBuffer.byteLength,
+        networkTimeMs,
         overfetchBytes: Math.max(length - logicalBytes, 0),
         status: transportResult.status,
         fullResponse: transportResult.fullResponse
       });
 
       for (const request of requests) {
-        if (request.signal?.aborted) {
-          request.reject(new Error('Request aborted'));
-          this.trackEvent({
-            type: 'abort',
-            sourceId: request.sourceId,
-            offset: request.offset,
-            length: request.length,
-            logicalRequestCount: 1,
-            logicalBytes: request.length
-          });
+        if (request.settled) {
           continue;
         }
 
         const start = request.offset - offset;
+        request.settled = true;
         request.resolve(arrayBuffer.slice(start, start + request.length));
       }
     } catch (error) {
@@ -393,23 +428,56 @@ export class RangeRequestScheduler {
         length: endOffset - offset,
         logicalRequestCount: requests.length,
         logicalBytes: getLogicalRequestBytes(requests),
+        networkTimeMs: getTimestamp() - requestStartTime,
         error
       });
 
       for (const request of requests) {
-        request.reject(error);
+        if (request.settled) {
+          continue;
+        }
+        if (request.signal?.aborted) {
+          this.abortRequest(request);
+        } else {
+          request.settled = true;
+          request.reject(error);
+        }
       }
     } finally {
       for (const request of requests) {
-        request.signal?.removeEventListener('abort', abortListener);
+        if (request.abortListener) {
+          request.signal?.removeEventListener('abort', request.abortListener);
+        }
+        request.onAbort = undefined;
       }
     }
+  }
+
+  /** Rejects and tracks one logical request exactly once when its caller aborts. */
+  private abortRequest(request: PendingRequest): void {
+    if (request.settled) {
+      return;
+    }
+    request.settled = true;
+    request.reject(createAbortError());
+    this.trackEvent({
+      type: 'abort',
+      sourceId: request.sourceId,
+      offset: request.offset,
+      length: request.length,
+      logicalRequestCount: 1,
+      logicalBytes: request.length
+    });
   }
 
   /** Emits one event to Stats and to the optional callback. */
   private trackEvent(event: RangeRequestEvent): void {
     trackStatsEvent(this.stats, event);
-    this.onEvent?.(event);
+    try {
+      this.onEvent?.(event);
+    } catch {
+      // Diagnostics must not change transport behavior or orphan queued requests.
+    }
   }
 
   /** Emits one batch event after logical requests have been merged. */
@@ -434,6 +502,10 @@ export class RangeRequestScheduler {
  * Tracks range batching events in a probe.gl Stats object.
  */
 export function trackStatsEvent(stats: Stats, event: RangeRequestEvent): void {
+  if ((event.type === 'response' || event.type === 'error') && event.networkTimeMs !== undefined) {
+    stats.get(RANGE_STATS_KEYS.networkTimeMs, 'time').addTime(event.networkTimeMs);
+  }
+
   switch (event.type) {
     case 'queued':
       stats.get(RANGE_STATS_KEYS.logicalRanges, 'count').incrementCount();
@@ -488,6 +560,7 @@ export function getRangeStats(stats: Stats): RangeStats {
     requestedBytes: stats.get(RANGE_STATS_KEYS.requestedBytes).count,
     transportBytes: stats.get(RANGE_STATS_KEYS.transportBytes).count,
     responseBytes: stats.get(RANGE_STATS_KEYS.responseBytes).count,
+    networkTimeMs: stats.get(RANGE_STATS_KEYS.networkTimeMs).time,
     overfetchBytes: stats.get(RANGE_STATS_KEYS.overfetchBytes).count,
     failedTransportRanges: stats.get(RANGE_STATS_KEYS.failedTransportRanges).count,
     abortedLogicalRanges: stats.get(RANGE_STATS_KEYS.abortedLogicalRanges).count,
@@ -501,8 +574,10 @@ export async function fetchHttpRange(
     Pick<RangeFetchRequest, 'offset' | 'length' | 'signal' | 'fetchOptions'>
 ): Promise<RangeRequestTransportResult> {
   const abortContext = createAbortableFetchContext(request.signal);
+  const requestStartTime = getTimestamp();
 
   try {
+    let fullResponse = false;
     let response = await request.fetch(
       request.url,
       createRangeFetchOptions(
@@ -522,6 +597,7 @@ export async function fetchHttpRange(
         request.url,
         createRangeFetchOptions(request.fetchOptions, 0, actualLength, abortContext.signal)
       );
+      fullResponse = true;
     }
 
     if (response.status === 200) {
@@ -535,10 +611,31 @@ export async function fetchHttpRange(
     }
 
     const arrayBuffer = await response.arrayBuffer();
+    const contentRangeHeader = response.headers.get('Content-Range');
+    const contentRange = parseSatisfiedContentRange(contentRangeHeader);
+    if (contentRangeHeader && !contentRange) {
+      throw new Error(`Invalid Content-Range header: ${contentRangeHeader}`);
+    }
+    if (contentRange) {
+      const responseLength = contentRange.endOffset - contentRange.offset + 1;
+      const requestedEndOffset = request.offset + request.length - 1;
+      if (
+        contentRange.offset !== request.offset ||
+        contentRange.endOffset > requestedEndOffset ||
+        responseLength !== arrayBuffer.byteLength ||
+        (contentRange.sourceByteLength !== undefined &&
+          contentRange.endOffset >= contentRange.sourceByteLength)
+      ) {
+        throw new Error(`Content-Range does not match requested range: ${contentRangeHeader}`);
+      }
+    }
     return {
       arrayBuffer,
       status: response.status,
-      transportBytes: arrayBuffer.byteLength
+      sourceByteLength: contentRange?.sourceByteLength,
+      transportBytes: arrayBuffer.byteLength,
+      networkTimeMs: getTimestamp() - requestStartTime,
+      fullResponse
     };
   } finally {
     abortContext.removeAbortListener();
@@ -552,6 +649,9 @@ function canMergeRequests(
   props: Required<Omit<RangeRequestSchedulerProps, 'stats' | 'onEvent'>>
 ): boolean {
   if (mergedRequest.sourceId !== request.sourceId) {
+    return false;
+  }
+  if (mergedRequest.isolationKey !== (request.isolationKey ?? request.sourceId)) {
     return false;
   }
 
@@ -573,6 +673,7 @@ function initializeStats(stats: Stats): void {
   stats.get(RANGE_STATS_KEYS.transportBytes, 'count');
   stats.get(RANGE_STATS_KEYS.completedTransportRanges, 'count');
   stats.get(RANGE_STATS_KEYS.responseBytes, 'count');
+  stats.get(RANGE_STATS_KEYS.networkTimeMs, 'time');
   stats.get(RANGE_STATS_KEYS.overfetchBytes, 'count');
   stats.get(RANGE_STATS_KEYS.fullResponseFallbacks, 'count');
   stats.get(RANGE_STATS_KEYS.failedTransportRanges, 'count');
@@ -628,6 +729,30 @@ function parseUnsatisfiedContentRange(contentRange: string | null): number | nul
   return match ? Number(match[1]) : null;
 }
 
+/** Parses a `Content-Range: bytes <start>-<end>/<length-or-*>` response header. */
+function parseSatisfiedContentRange(contentRange: string | null): {
+  offset: number;
+  endOffset: number;
+  sourceByteLength?: number;
+} | null {
+  const match = contentRange?.match(/^bytes (\d+)-(\d+)\/(\d+|\*)$/);
+  if (!match) {
+    return null;
+  }
+  const offset = Number(match[1]);
+  const endOffset = Number(match[2]);
+  const sourceByteLength = match[3] === '*' ? undefined : Number(match[3]);
+  if (
+    !Number.isSafeInteger(offset) ||
+    !Number.isSafeInteger(endOffset) ||
+    offset > endOffset ||
+    (sourceByteLength !== undefined && !Number.isSafeInteger(sourceByteLength))
+  ) {
+    return null;
+  }
+  return {offset, endOffset, sourceByteLength};
+}
+
 /** Creates an inner abort controller that follows an optional parent signal and can cancel one fetch. */
 function createAbortableFetchContext(parentSignal?: AbortSignal): {
   signal: AbortSignal;
@@ -651,4 +776,19 @@ function createAbortableFetchContext(parentSignal?: AbortSignal): {
 /** Cancels a response body when a server ignores a `Range` header and starts sending the whole archive. */
 async function cancelIgnoredRangeResponse(response: Response): Promise<void> {
   await response.body?.cancel().catch(() => {});
+}
+
+/** Returns a high-resolution timestamp when available. */
+function getTimestamp(): number {
+  return globalThis.performance?.now() ?? Date.now();
+}
+
+/** Creates a conventional abort error without requiring DOMException in every host. */
+function createAbortError(): Error {
+  if (typeof DOMException !== 'undefined') {
+    return new DOMException('Request aborted', 'AbortError');
+  }
+  const error = new Error('Request aborted');
+  error.name = 'AbortError';
+  return error;
 }

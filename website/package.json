@@ -13,9 +13,7 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-heading-ids": "ts-node scripts/write-heading-ids.ts",
-    "deploy": "./scripts/deploy.sh prod",
-    "deploy-preview": "./scripts/deploy.sh preview",
-    "deploy-prod": "./scripts/deploy.sh prod"
+    "deploy": "docusaurus deploy"
   },
   "dependencies": {
     "@algolia/autocomplete-js": "^1.17.0",
@@ -48,6 +46,7 @@
     "@loaders.gl/las": "workspace:*",
     "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
+    "@loaders.gl/parquet": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/scene": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
@@ -81,6 +80,8 @@
     "docusaurus-node-polyfills": "^1.0.0",
     "esri-loader": "^2.15.0",
     "expr-eval": "^2.0.2",
+    "hyparquet": "1.28.2",
+    "hyparquet-compressors": "1.1.1",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
     "maplibre-gl": "^3.6.2",
     "marked": "^0.7.0",

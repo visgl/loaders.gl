@@ -1,68 +1,29 @@
-/* eslint-disable camelcase */
-import type {GLTF, GLTFBufferView, GLTF_EXT_meshopt_compression} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
+import type {GLTFWithBuffers} from '../types/gltf-types';
+import {decodeMeshoptCompression} from './meshopt-compression';
 
-// @ts-ignore
-// eslint-disable-next-line
-const _DEFAULT_MESHOPT_OPTIONS = {
-  byteOffset: 0,
-  filter: 'NONE'
-};
+/**
+ * Exact glTF identifier for the ratified vendor meshopt buffer-view compression extension.
+ *
+ * This identifier remains supported for existing assets alongside the newer
+ * `KHR_meshopt_compression` identifier.
+ */
+export const name = 'EXT_meshopt_compression';
 
-/** Extension name */
-const EXT_MESHOPT_COMPRESSION = 'EXT_meshopt_compression';
-
-export const name = EXT_MESHOPT_COMPRESSION;
-
-export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions) {
-  const scenegraph = new GLTFScenegraph(gltfData);
-
-  if (!options?.gltf?.decompressMeshes || !options.gltf?.loadBuffers) {
-    return;
-  }
-
-  const promises: Promise<any>[] = [];
-  for (const bufferViewIndex of gltfData.json.bufferViews || []) {
-    promises.push(decodeMeshoptBufferView(scenegraph, bufferViewIndex));
-  }
-
-  // Decompress meshes in parallel
-  await Promise.all(promises);
-
-  // We have now decompressed all primitives, so remove the top-level extension
-  scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
-}
-
-/** Decode one meshopt buffer view */
-async function decodeMeshoptBufferView(
-  scenegraph: GLTFScenegraph,
-  bufferView: GLTFBufferView
-): Promise<void> {
-  const meshoptExtension = scenegraph.getObjectExtension<GLTF_EXT_meshopt_compression>(
-    bufferView,
-    EXT_MESHOPT_COMPRESSION
-  );
-  if (meshoptExtension) {
-    const {
-      byteOffset = 0,
-      byteLength = 0,
-      byteStride,
-      count,
-      mode,
-      filter = 'NONE',
-      buffer: bufferIndex
-    } = meshoptExtension;
-    const buffer = scenegraph.gltf.buffers[bufferIndex];
-
-    const source = new Uint8Array(buffer.arrayBuffer, buffer.byteOffset + byteOffset, byteLength);
-    const result = new Uint8Array(
-      scenegraph.gltf.buffers[bufferView.buffer].arrayBuffer,
-      bufferView.byteOffset,
-      bufferView.byteLength
-    );
-    await meshoptDecodeGltfBuffer(result, count, byteStride, source, mode, filter);
-    scenegraph.removeObjectExtension(bufferView, EXT_MESHOPT_COMPRESSION);
-  }
+/**
+ * Decodes all `EXT_meshopt_compression` buffer views in a loaded glTF document.
+ *
+ * Processing is a no-op unless both `options.gltf.loadBuffers` and
+ * `options.gltf.decompressMeshes` are enabled. EXT streams use version 0 and the original four
+ * post-decode filters; the maintained decoder is shared with KHR processing without changing the
+ * EXT capability contract.
+ *
+ * @param gltfData Parsed glTF JSON together with its resolved source and destination buffers.
+ * @param options glTF loader options controlling buffer loading and mesh decompression.
+ * @returns A promise that resolves after all EXT meshopt buffer views have been decoded.
+ * @throws If KHR and EXT meshopt declarations are mixed on the same buffer view or buffer, or if a
+ * compressed stream is malformed.
+ */
+export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
+  await decodeMeshoptCompression(gltfData, options, name);
 }

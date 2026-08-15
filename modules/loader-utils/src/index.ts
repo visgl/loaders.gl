@@ -145,6 +145,7 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {parseContentType} from './lib/request-utils/parse-content-type';
 export {
   RangeRequestScheduler,
   createRangeStats,
@@ -220,6 +221,13 @@ export {stream};
 export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
 export {BlobFile} from './lib/files/blob-file';
 export {HttpFile} from './lib/files/http-file';
+export type {
+  HttpFileConsistency,
+  HttpFileFetch,
+  HttpFileIdentity,
+  HttpFileOptions,
+  HttpFileTelemetry
+} from './lib/files/http-file';
 export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 
 export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';

@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {createDataSource, encodeSync, fetchFile, isBrowser} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
 
@@ -78,6 +78,49 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
     content?.data.data.getChild('POSITION')?.length,
     content?.pointCount,
     'Arrow table contains one position row per point'
+  );
+  t.end();
+});
+
+test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {
+  if (isBrowser) {
+    t.comment('Skipping browser parity until laz-perf wasm is served as an asset');
+    t.end();
+    return;
+  }
+
+  const lazPerfSource = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {});
+  const typescriptSource = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {
+    copc: {decoder: 'typescript-laz'}
+  });
+  await Promise.all([lazPerfSource.initialize(), typescriptSource.initialize()]);
+
+  const rootTile = await typescriptSource.getRootTile();
+  const [lazPerfContent, typescriptContent] = await Promise.all([
+    lazPerfSource.loadTileContent(rootTile),
+    typescriptSource.loadTileContent(rootTile)
+  ]);
+  const lazPerfPositions = lazPerfContent?.data.data.getChild('POSITION');
+  const typescriptPositions = typescriptContent?.data.data.getChild('POSITION');
+  const lazPerfColors = lazPerfContent?.data.data.getChild('COLOR_0');
+  const typescriptColors = typescriptContent?.data.data.getChild('COLOR_0');
+
+  t.equal(typescriptContent?.pointCount, lazPerfContent?.pointCount, 'point counts match');
+  t.deepEqual(
+    Array.from({length: rootTile.pointCount}, (_, index) =>
+      typescriptPositions?.get(index)?.toArray()
+    ),
+    Array.from({length: rootTile.pointCount}, (_, index) =>
+      lazPerfPositions?.get(index)?.toArray()
+    ),
+    'tile-relative positions match laz-perf'
+  );
+  t.deepEqual(
+    Array.from({length: rootTile.pointCount}, (_, index) =>
+      typescriptColors?.get(index)?.toArray()
+    ),
+    Array.from({length: rootTile.pointCount}, (_, index) => lazPerfColors?.get(index)?.toArray()),
+    'raw colors match laz-perf'
   );
   t.end();
 });

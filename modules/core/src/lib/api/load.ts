@@ -94,6 +94,7 @@ export async function load(
   }
 
   if (!Array.isArray(resolvedLoaders) && isSourceLoader(resolvedLoaders)) {
+    const sourceLoader = await resolveSourceLoader(resolvedLoaders, url, resolvedOptions);
     const runtimeCoreApi = {
       fetchFile,
       parse,
@@ -103,7 +104,7 @@ export async function load(
       load,
       loadInBatches
     };
-    return resolvedLoaders.createDataSource(
+    return sourceLoader.createDataSource(
       url as string | Blob,
       (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
       runtimeCoreApi
@@ -115,6 +116,7 @@ export async function load(
     resolvedLoaders.length === 1 &&
     isSourceLoader(resolvedLoaders[0])
   ) {
+    const sourceLoader = await resolveSourceLoader(resolvedLoaders[0], url, resolvedOptions);
     const runtimeCoreApi = {
       fetchFile,
       parse,
@@ -124,7 +126,7 @@ export async function load(
       load,
       loadInBatches
     };
-    return resolvedLoaders[0].createDataSource(
+    return sourceLoader.createDataSource(
       url as string | Blob,
       (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
       runtimeCoreApi
@@ -138,7 +140,8 @@ export async function load(
     });
 
     if (selectedLoader && isSourceLoader(selectedLoader)) {
-      return selectedLoader.createDataSource(
+      const sourceLoader = await resolveSourceLoader(selectedLoader, url, resolvedOptions);
+      return sourceLoader.createDataSource(
         url,
         (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
         {
@@ -189,4 +192,21 @@ export async function load(
   return Array.isArray(resolvedLoaders)
     ? await parse(data, resolvedLoaders, resolvedOptions, context) // loader array overload
     : await parse(data, resolvedLoaders, resolvedOptions, context); // single loader overload
+}
+
+/** Resolves a lightweight source loader into its runtime implementation when necessary. */
+async function resolveSourceLoader(
+  loader: SourceLoader,
+  url: string | DataType,
+  options?: LoaderOptions
+): Promise<SourceLoader> {
+  if (!loader.preload) {
+    return loader;
+  }
+
+  const sourceLoader = await loader.preload(typeof url === 'string' ? url : '', options);
+  if (!isSourceLoader(sourceLoader)) {
+    throw new Error(`${loader.id} source loader preload() did not return a runtime source loader`);
+  }
+  return sourceLoader;
 }

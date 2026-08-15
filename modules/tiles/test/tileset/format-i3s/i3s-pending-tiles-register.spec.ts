@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {I3SPendingTilesRegister} from '../../../src/tileset-3d/format-i3s/i3s-pending-tiles-register';
 
 test('I3SPendingTilesRegister | one viewport', t => {

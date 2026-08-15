@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {Tiles3DArchiveFileLoader, Tiles3DArchiveSource, Tiles3DLoader} from '../src';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';

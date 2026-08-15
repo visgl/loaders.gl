@@ -8,6 +8,7 @@ import type {ParseGLTFOptions} from '../parsers/parse-gltf';
 import type {
   GLTF,
   GLTFAccessor,
+  GLTFAsset,
   GLTFBufferView,
   GLTFCamera,
   GLTFImage,
@@ -22,6 +23,7 @@ import type {
 
 import type {
   GLTFPostprocessed,
+  Asset,
   GLTFAccessorPostprocessed,
   GLTFBufferPostprocessed,
   GLTFBufferViewPostprocessed,
@@ -66,8 +68,13 @@ const BYTES = {
   5121: 1, // UNSIGNED_BYTE
   5122: 2, // SHORT
   5123: 2, // UNSIGNED_SHORT
+  5124: 4, // INT
   5125: 4, // UNSIGNED_INT
-  5126: 4 // FLOAT
+  5126: 4, // FLOAT
+  5130: 8, // DOUBLE
+  5131: 2, // HALF_FLOAT
+  5134: 8, // INT64
+  5135: 8 // UNSIGNED_INT64
 };
 
 const GL_SAMPLER = {
@@ -157,6 +164,7 @@ class GLTFPostProcessor {
     if (gltf.images) {
       json.images = gltf.images.map((image, i) => this._resolveImage(image, i));
     }
+    json.asset = this._resolveAsset(gltf.asset);
     if (gltf.samplers) {
       json.samplers = gltf.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
     }
@@ -250,6 +258,14 @@ class GLTFPostProcessor {
   }
 
   // PARSING HELPERS
+
+  /** Resolve the draft glTF 2.1 thumbnail image reference in asset metadata. */
+  _resolveAsset(gltfAsset: GLTFAsset): Asset {
+    return {
+      ...gltfAsset,
+      thumbnail: gltfAsset.thumbnail !== undefined ? this.getImage(gltfAsset.thumbnail) : undefined
+    };
+  }
 
   _resolveScene(scene: GLTFScene, index: number): GLTFScenePostprocessed {
     return {

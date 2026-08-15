@@ -1,5 +1,5 @@
 // TODO testing external dataset can be flaky. We need to find a way to test I3S locally
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 // @ts-expect-error promises
 import {readdir} from 'fs/promises';

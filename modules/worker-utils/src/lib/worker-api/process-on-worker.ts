@@ -17,6 +17,9 @@ import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
 /** Options for worker processing */
 export type ProcessOnWorkerOptions = WorkerOptions & {
+  /** Cancels the job by terminating its worker. */
+  signal?: AbortSignal;
+  /** Diagnostic name shown for the worker job. */
   jobName?: string;
   [key: string]: any;
 };
@@ -38,7 +41,8 @@ export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions
     return false;
   }
 
-  return worker.worker && options?.worker;
+  const workerOptions = options?.[worker.id];
+  return Boolean((worker.worker || workerOptions?.workerUrl) && options?.worker);
 }
 
 /**
@@ -53,6 +57,7 @@ export async function processOnWorker(
   context: WorkerContext = {},
   jobContext: WorkerJobContext = {}
 ): Promise<any> {
+  throwIfAborted(options.signal);
   const name = getWorkerName(worker);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
@@ -70,17 +75,40 @@ export async function processOnWorker(
     onMessage.bind(null, context)
   );
 
-  // Kick off the processing in the worker
-  const transferableOptions = getTransferListForWriter(options);
-  const transferableContext = getTransferListForWriter(jobContext);
-  job.postMessage('process', {
-    input: data,
-    options: transferableOptions,
-    context: transferableContext
-  });
+  const abortJob = (): void => job.abort();
+  options.signal?.addEventListener('abort', abortJob, {once: true});
+  if (options.signal?.aborted) {
+    abortJob();
+  }
 
-  const result = await job.result;
-  return result.result;
+  try {
+    // AbortSignal cannot be structured-cloned. It controls the job on this thread only.
+    const {signal: _signal, ...workerOptions} = options;
+    const transferableOptions = getTransferListForWriter(workerOptions);
+    const transferableContext = getTransferListForWriter(jobContext);
+    if (job.isRunning) {
+      job.postMessage('process', {
+        input: data,
+        options: transferableOptions,
+        context: transferableContext
+      });
+    }
+
+    const result = await job.result;
+    return result.result;
+  } finally {
+    options.signal?.removeEventListener('abort', abortJob);
+  }
+}
+
+/** Throws a cross-runtime abort error when a signal is already aborted. */
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) {
+    return;
+  }
+  const error = new Error('Worker job was aborted');
+  error.name = 'AbortError';
+  throw error;
 }
 
 /**

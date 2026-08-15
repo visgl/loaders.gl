@@ -1,15 +1,18 @@
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {registerLoaders, load, parseSync, fetchFile} from '@loaders.gl/core';
+import {registerLoaders, load, parse, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../src/lib/parsers/parse-gltf';
+import {createGLBV3} from './test-utils/create-glb-v3';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
+const PNG_DATA_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
 
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
@@ -34,6 +37,122 @@ test('GLTFLoader#load(binary)', async t => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.json.asset, 'GLTFLoader returned parsed data');
 
+  t.end();
+});
+
+test('GLTFLoader#parse() loads a draft glTF 2.1 thumbnail image', async t => {
+  const gltf = await parse(
+    JSON.stringify({
+      asset: {version: '2.1', thumbnail: 0},
+      images: [{uri: PNG_DATA_URL}]
+    }),
+    GLTFLoader
+  );
+
+  t.ok(gltf.images?.[0], 'loads an image referenced only by asset.thumbnail');
+  t.end();
+});
+
+test('GLTFLoader#parse(v3) resolves explicit buffer chunk indices', async t => {
+  const data = createGLBV3(
+    {
+      asset: {version: '2.1'},
+      buffers: [
+        {byteLength: 4, chunk: 3},
+        {byteLength: 4, chunk: 2}
+      ]
+    },
+    [new Uint8Array([1, 2, 3, 4]), new Uint8Array([5, 6, 7, 8])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+
+  const gltf = await parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}});
+  const firstBuffer = new Uint8Array(
+    gltf.buffers[0].arrayBuffer,
+    gltf.buffers[0].byteOffset,
+    gltf.buffers[0].byteLength
+  );
+  const secondBuffer = new Uint8Array(
+    gltf.buffers[1].arrayBuffer,
+    gltf.buffers[1].byteOffset,
+    gltf.buffers[1].byteLength
+  );
+
+  t.deepEqual(Array.from(firstBuffer), [5, 6, 7, 8], 'resolves buffer 0 from chunk 3');
+  t.deepEqual(Array.from(secondBuffer), [1, 2, 3, 4], 'resolves buffer 1 from chunk 2');
+  t.end();
+});
+
+test('GLTFLoader#parse(v3) preserves legacy implicit buffer mapping', async t => {
+  const data = createGLBV3({asset: {version: '2.1'}, buffers: [{byteLength: 4}]}, [
+    new Uint8Array([1, 2, 3, 4])
+  ]);
+  const gltf = await parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}});
+  const buffer = new Uint8Array(
+    gltf.buffers[0].arrayBuffer,
+    gltf.buffers[0].byteOffset,
+    gltf.buffers[0].byteLength
+  );
+
+  t.deepEqual(Array.from(buffer), [1, 2, 3, 4], 'maps the classic JSON-then-BIN layout');
+  t.end();
+});
+
+test('GLTFLoader#parse(v3) rejects implicit buffers outside the legacy layout', async t => {
+  const data = createGLBV3(
+    {asset: {version: '2.1'}, buffers: [{byteLength: 4}]},
+    [new Uint8Array([1, 2, 3, 4])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+
+  await t.rejects(
+    parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}}),
+    /buffer 0 without a uri must define a valid GLB v3 chunk/,
+    'does not replace an unresolved buffer with zero-filled bytes'
+  );
+  t.end();
+});
+
+test('GLTFLoader#parse(v3) rejects missing buffer chunks', async t => {
+  const data = createGLBV3({
+    asset: {version: '2.1'},
+    buffers: [{byteLength: 4, chunk: 2}]
+  });
+
+  await t.rejects(
+    parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}}),
+    /buffer 0 references missing GLB BIN chunk 2/,
+    'rejects a chunk index that does not select a BIN chunk'
+  );
+  t.end();
+});
+
+test('GLTFLoader#parse(v3) loads embedded glTF 2.1 files', async t => {
+  const data = createGLBV3(
+    {
+      asset: {version: '2.1'},
+      buffers: [{byteLength: 4}],
+      bufferViews: [{buffer: 0, byteLength: 4}],
+      files: [{name: 'nested.glb', mimeType: 'model/gltf-binary', bufferView: 0}]
+    },
+    [new Uint8Array([1, 2, 3, 4])]
+  );
+  const gltf = await parse(data, GLTFLoader, {
+    gltf: {loadBuffers: true, loadFiles: true, loadImages: false}
+  });
+  const file = gltf.files?.[0];
+  t.ok(file, 'returns a parallel resolved file entry');
+  if (!file) {
+    t.end();
+    return;
+  }
+
+  t.equal(file.name, 'nested.glb', 'preserves the virtual package name');
+  t.deepEqual(
+    Array.from(new Uint8Array(file.arrayBuffer, file.byteOffset, file.byteLength)),
+    [1, 2, 3, 4],
+    'loads file bytes from its buffer view'
+  );
   t.end();
 });
 

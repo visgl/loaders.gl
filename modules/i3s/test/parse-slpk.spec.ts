@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {I3SLoader, SLPKLoader, SLPKSource} from '../src';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';

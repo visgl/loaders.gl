@@ -71,7 +71,7 @@ jobs:
             yarn-cache-${{ runner.os }}-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium
@@ -82,8 +82,11 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
-      - name: Run tests from transpiled code
-        run: yarn test-modules dist
+      - name: Run Node tests
+        run: yarn test-node
+
+      - name: Run headless browser tests
+        run: yarn test-headless
 
       - name: Login to NPM
         run: npm config set "//registry.npmjs.org/:_authToken=${NPM_ACCESS_TOKEN}"

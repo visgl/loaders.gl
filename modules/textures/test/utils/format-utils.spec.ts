@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import type {TextureFormat} from '@loaders.gl/schema';
 import {isBrowser} from '@loaders.gl/core';

@@ -15,7 +15,7 @@ import type {
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource, parseContentType} from '@loaders.gl/loader-utils';
 import {
   ImageBitmapLoader,
   type ImageBitmapLoaderOptions,
@@ -40,6 +40,8 @@ export type MVTSourceLoaderOptions = DataSourceOptions & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
     /** Shape of returned vector tile data. */
     shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    /** Ignore successful HTTP tile responses with text, JSON or XML MIME types, report an error, and return null. */
+    ignoreTextResponses?: boolean;
   };
 };
 
@@ -165,6 +167,20 @@ export class MVTTileSource
       this.reportError(
         new Error(`${response.status} ${response.statusText}`),
         `Failed to fetch tile ${tileUrl} ${JSON.stringify(parameters)}`
+      );
+      return null;
+    }
+    const contentType = parseContentType(response.headers.get('content-type'));
+    const isTextResponse =
+      contentType?.startsWith('text/') ||
+      contentType === 'application/json' ||
+      contentType?.endsWith('+json') ||
+      contentType === 'application/xml' ||
+      contentType?.endsWith('+xml');
+    if (this.options.mvt?.ignoreTextResponses && isTextResponse) {
+      this.reportError(
+        new Error(`Unexpected tile content type ${contentType}`),
+        `Rejected textual response from ${tileUrl}`
       );
       return null;
     }

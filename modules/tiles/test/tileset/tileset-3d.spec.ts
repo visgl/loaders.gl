@@ -1,7 +1,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {coreApi, load} from '@loaders.gl/core';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -133,6 +133,18 @@ test('Tileset3D#exports source-backed construction helpers', async t => {
   t.ok(i3sSource);
   t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
   t.equals(tileset.asset.version, '1.0');
+  t.equals(tileset.options.dynamicScreenSpaceError, true, 'dynamic SSE defaults to enabled');
+  t.equals(
+    tileset.options.dynamicScreenSpaceErrorDensity,
+    2.0e-4,
+    'uses the tuned default density'
+  );
+  t.equals(tileset.options.dynamicScreenSpaceErrorFactor, 24, 'uses the tuned default factor');
+  t.equals(
+    tileset.options.dynamicScreenSpaceErrorHeightFalloff,
+    0.25,
+    'uses the tuned default height falloff'
+  );
   t.end();
 });
 

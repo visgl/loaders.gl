@@ -48,7 +48,7 @@ export class BrotliCompression extends Compression {
   readonly isSupported = true;
   readonly options: BrotliCompressionOptions;
 
-  constructor(options: BrotliCompressionOptions) {
+  constructor(options: BrotliCompressionOptions = {}) {
     super(options);
     this.options = options;
     registerJSModules(options?.modules);

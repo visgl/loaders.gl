@@ -16,7 +16,7 @@ export async function encodeArrowToParquet(
   table: ArrowTable,
   options: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
-  const wasmUrl = options.parquet?.wasmUrl!;
+  const wasmUrl = options.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);
 
   // Serialize the table to the IPC format.

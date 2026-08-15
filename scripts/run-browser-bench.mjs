@@ -1,4 +1,4 @@
-import {runBrowserBenchmarks} from '../dev-modules/devtools-extensions/index.mjs';
+import {runBrowserBenchmarks} from './run-browser-benchmarks.mjs';
 
 const headless = process.argv.includes('--headless');
 

@@ -23,14 +23,22 @@ import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-uti
 import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
 
 export type ParquetReaderProps = {
+  /** Maximum dictionary-page read size. */
   defaultDictionarySize?: number;
+  /** Preserve BYTE_ARRAY values instead of decoding them as strings. */
   preserveBinary?: boolean;
+  /** Abort signal forwarded to every underlying random-access read. */
+  signal?: AbortSignal;
 };
 
 /** Properties for initializing a ParquetRowGroupReader */
 export type ParquetIterationProps = {
   /** Filter allowing some columns to be dropped */
   columnList?: string[] | string[][];
+  /** Zero-based row-group indexes to read, in output order. */
+  rowGroups?: number[];
+  /** Abort signal forwarded to row-group and column-chunk reads. */
+  signal?: AbortSignal;
 };
 
 /**
@@ -40,13 +48,14 @@ export type ParquetIterationProps = {
  * rows from a parquet file use the ParquetReader instead
  */
 export class ParquetReader {
-  static defaultProps: Required<ParquetReaderProps> = {
+  static defaultProps: Required<Omit<ParquetReaderProps, 'signal'>> & {signal?: AbortSignal} = {
     // max ArrayBuffer size in js is 2Gb
     defaultDictionarySize: 2147483648,
-    preserveBinary: false
+    preserveBinary: false,
+    signal: undefined
   };
 
-  props: Required<ParquetReaderProps>;
+  props: Required<Omit<ParquetReaderProps, 'signal'>> & {signal?: AbortSignal};
   file: ReadableFile;
   metadata: Promise<FileMetaData> | null = null;
 
@@ -85,28 +94,34 @@ export class ParquetReader {
     // Ensure strings are nested in arrays
     const columnList: string[][] = (props?.columnList || []).map(x => (Array.isArray(x) ? x : [x]));
 
-    const metadata = await this.getFileMetadata();
-    const schema = await this.getSchema();
+    const metadata = await this.getFileMetadata(props?.signal);
+    const schema = await this.getSchema(props?.signal);
 
     const rowGroupCount = metadata?.row_groups.length || 0;
+    const rowGroupIndices =
+      props?.rowGroups || Array.from({length: rowGroupCount}, (_, index) => index);
 
-    for (let rowGroupIndex = 0; rowGroupIndex < rowGroupCount; rowGroupIndex++) {
+    for (const rowGroupIndex of rowGroupIndices) {
+      if (!Number.isInteger(rowGroupIndex) || rowGroupIndex < 0 || rowGroupIndex >= rowGroupCount) {
+        throw new Error(`Invalid Parquet row-group index ${rowGroupIndex}`);
+      }
       const rowGroup = await this.readRowGroup(
         schema,
         metadata.row_groups[rowGroupIndex],
-        columnList
+        columnList,
+        props?.signal
       );
       yield rowGroup;
     }
   }
 
-  async getRowCount(): Promise<number> {
-    const metadata = await this.getFileMetadata();
+  async getRowCount(signal?: AbortSignal): Promise<number> {
+    const metadata = await this.getFileMetadata(signal);
     return Number(metadata.num_rows);
   }
 
-  async getSchema(): Promise<ParquetSchema> {
-    const metadata = await this.getFileMetadata();
+  async getSchema(signal?: AbortSignal): Promise<ParquetSchema> {
+    const metadata = await this.getFileMetadata(signal);
     const root = metadata.schema[0];
     const {schema: schemaDefinition} = decodeSchema(metadata.schema, 1, root.num_children!);
     const schema = new ParquetSchema(schemaDefinition);
@@ -126,10 +141,10 @@ export class ParquetReader {
     return md;
   }
 
-  async getFileMetadata(): Promise<FileMetaData> {
+  async getFileMetadata(signal?: AbortSignal): Promise<FileMetaData> {
     if (!this.metadata) {
-      await this.readHeader();
-      this.metadata = this.readFooter();
+      await this.readHeader(signal);
+      this.metadata = this.readFooter(signal);
     }
     return this.metadata;
   }
@@ -137,8 +152,8 @@ export class ParquetReader {
   // LOW LEVEL METHODS
 
   /** Metadata is stored in the footer */
-  async readHeader(): Promise<void> {
-    const arrayBuffer = await this.file.read(0, PARQUET_MAGIC.length);
+  async readHeader(signal?: AbortSignal): Promise<void> {
+    const arrayBuffer = await this.file.read(0, PARQUET_MAGIC.length, signal ?? this.props.signal);
     const magic = decodeString(toUint8Array(arrayBuffer));
     switch (magic) {
       case PARQUET_MAGIC:
@@ -151,9 +166,13 @@ export class ParquetReader {
   }
 
   /** Metadata is stored in the footer */
-  async readFooter(): Promise<FileMetaData> {
+  async readFooter(signal?: AbortSignal): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
-    const arrayBuffer = await this.file.read(this.file.size - trailerLen, trailerLen);
+    const arrayBuffer = await this.file.read(
+      this.file.size - trailerLen,
+      trailerLen,
+      signal ?? this.props.signal
+    );
     const trailer = toUint8Array(arrayBuffer);
 
     const magic = decodeString(trailer, 4);
@@ -167,7 +186,11 @@ export class ParquetReader {
       throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
 
-    const arrayBuffer2 = await this.file.read(metadataOffset, metadataSize);
+    const arrayBuffer2 = await this.file.read(
+      metadataOffset,
+      metadataSize,
+      signal ?? this.props.signal
+    );
     const metadataBuf = toUint8Array(arrayBuffer2);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
@@ -180,7 +203,8 @@ export class ParquetReader {
   async readRowGroup(
     schema: ParquetSchema,
     rowGroup: RowGroup,
-    columnList: string[][]
+    columnList: string[][],
+    signal?: AbortSignal
   ): Promise<ParquetRowGroup> {
     const buffer: ParquetRowGroup = {
       rowCount: Number(rowGroup.num_rows),
@@ -192,7 +216,7 @@ export class ParquetReader {
       if (columnList.length > 0 && fieldIndexOf(columnList, colKey!) < 0) {
         continue; // eslint-disable-line no-continue
       }
-      buffer.columnData[colKey!.join()] = await this.readColumnChunk(schema, colChunk);
+      buffer.columnData[colKey!.join()] = await this.readColumnChunk(schema, colChunk, signal);
     }
     return buffer;
   }
@@ -200,7 +224,11 @@ export class ParquetReader {
   /**
    * Each row group contains column chunks for all the columns.
    */
-  async readColumnChunk(schema: ParquetSchema, colChunk: ColumnChunk): Promise<ParquetColumnChunk> {
+  async readColumnChunk(
+    schema: ParquetSchema,
+    colChunk: ColumnChunk,
+    signal?: AbortSignal
+  ): Promise<ParquetColumnChunk> {
     if (colChunk.file_path !== undefined && colChunk.file_path !== null) {
       throw new Error('external references are not supported');
     }
@@ -218,13 +246,17 @@ export class ParquetReader {
     ) as any;
 
     const pagesOffset = Number(colChunk.meta_data?.data_page_offset!);
-    let pagesSize = Number(colChunk.meta_data?.total_compressed_size!);
+    const dictionaryPageOffset = colChunk.meta_data?.dictionary_page_offset;
+    const validDictionaryPageOffset =
+      dictionaryPageOffset !== undefined && Number(dictionaryPageOffset) > 0
+        ? Number(dictionaryPageOffset)
+        : undefined;
+    const chunkOffset = Math.min(pagesOffset, validDictionaryPageOffset ?? pagesOffset);
+    const chunkEnd = chunkOffset + Number(colChunk.meta_data?.total_compressed_size!);
+    let pagesSize = Math.max(0, chunkEnd - pagesOffset);
 
     if (!colChunk.file_path) {
-      pagesSize = Math.min(
-        this.file.size - pagesOffset,
-        Number(colChunk.meta_data?.total_compressed_size)
-      );
+      pagesSize = Math.min(this.file.size - pagesOffset, pagesSize);
     }
 
     const context: ParquetReaderContext = {
@@ -241,16 +273,18 @@ export class ParquetReader {
 
     let dictionary;
 
-    const dictionaryPageOffset = colChunk?.meta_data?.dictionary_page_offset;
-
-    if (dictionaryPageOffset) {
-      const dictionaryOffset = Number(dictionaryPageOffset);
+    if (validDictionaryPageOffset !== undefined) {
       // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
-      dictionary = await this.getDictionary(dictionaryOffset, context, pagesOffset);
+      dictionary = await this.getDictionary(
+        validDictionaryPageOffset,
+        context,
+        pagesOffset,
+        signal
+      );
     }
 
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
-    const arrayBuffer = await this.file.read(pagesOffset, pagesSize);
+    const arrayBuffer = await this.file.read(pagesOffset, pagesSize, signal ?? this.props.signal);
     const pagesBuf = toUint8Array(arrayBuffer);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
@@ -265,7 +299,8 @@ export class ParquetReader {
   async getDictionary(
     dictionaryPageOffset: number,
     context: ParquetReaderContext,
-    pagesOffset: number
+    pagesOffset: number,
+    signal?: AbortSignal
   ): Promise<any[]> {
     if (dictionaryPageOffset === 0) {
       // dictionarySize = Math.min(this.fileSize - pagesOffset, this.defaultDictionarySize);
@@ -279,10 +314,15 @@ export class ParquetReader {
     }
 
     const dictionarySize = Math.min(
+      Math.max(0, pagesOffset - dictionaryPageOffset),
       this.file.size - dictionaryPageOffset,
       this.props.defaultDictionarySize
     );
-    const arrayBuffer = await this.file.read(dictionaryPageOffset, dictionarySize);
+    const arrayBuffer = await this.file.read(
+      dictionaryPageOffset,
+      dictionarySize,
+      signal ?? this.props.signal
+    );
     const pagesBuf = toUint8Array(arrayBuffer);
 
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};

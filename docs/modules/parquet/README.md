@@ -9,7 +9,8 @@
 Experimental loader and writer for the Apache Parquet format.
 
 - `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
-- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) provide the experimental parquetjs plain-row and plain-table APIs. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) provides reusable, selective Arrow reads with cached schema and footer metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- `ParquetJSLoader` and `ParquetJSWriter` provide experimental TypeScript parquetjs variants documented with [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants). <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetLoader` supports Arrow output with `parquet.shape: 'arrow-table'`, and `ParquetWriter` accepts loaders.gl Arrow tables.
 
 ## Geospatial Metadata
@@ -28,6 +29,7 @@ metadata before Parquet encoding.
 # Attribution
 
 - Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).
+- Delta decoder improvements include adaptations from https://github.com/hyparam/hyparquet under the MIT license (Copyright (c) Hyperparam contributors).
 - Documentation was inspired by [parquet-go](https://github.com/xitongsys/parquet-go/blob/master/LICENSE) under Apache 2 license.
 
 # License

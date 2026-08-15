@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
@@ -108,6 +108,45 @@ test('Tiles3DLoader#accepts supported required extensions', async t => {
   t.end();
 });
 
+test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async t => {
+  const s2VolumeInfo = {token: '1', minimumHeight: 0, maximumHeight: 10};
+  const s2BoundingVolume = {
+    extensions: {'3DTILES_bounding_volume_S2': s2VolumeInfo}
+  };
+  const tileset = await parse(
+    encodeTilesetJson({
+      extensionsRequired: ['3DTILES_bounding_volume_S2'],
+      root: {
+        geometricError: 0,
+        refine: 'REPLACE',
+        boundingVolume: s2BoundingVolume,
+        viewerRequestVolume: s2BoundingVolume,
+        content: {uri: 'tile.glb', boundingVolume: s2BoundingVolume}
+      }
+    }),
+    Tiles3DLoader,
+    {worker: false, '3d-tiles': {isTileset: true}}
+  );
+
+  t.equal(tileset.root.boundingVolume.box.length, 12, 'normalizes the tile traversal volume');
+  t.equal(
+    tileset.root.content.boundingVolume.box.length,
+    12,
+    'normalizes the explicit content volume'
+  );
+  t.equal(
+    tileset.root.viewerRequestVolume.box.length,
+    12,
+    'normalizes the explicit viewer request volume'
+  );
+  t.deepEqual(
+    tileset.root.boundingVolume.s2VolumeInfo,
+    s2VolumeInfo,
+    'retains S2 metadata for implicit subdivision and diagnostics'
+  );
+  t.end();
+});
+
 test('Tiles3DLoader#allows unknown extensionsUsed entries', async t => {
   const tileset = await parse(
     encodeTilesetJson({extensionsUsed: ['VENDOR_optional_extension']}),
@@ -143,6 +182,20 @@ test('Tiles3DLoader#rejects unsupported required extensions', async t => {
     ),
     /Unsupported required 3D Tiles extensions: VENDOR_first, 3DTILES_multiple_contents/,
     'reports every unsupported extension once in declaration order'
+  );
+  t.end();
+});
+
+test('Tiles3DLoader#rejects unknown binary tile types', async t => {
+  const unknownTile = new TextEncoder().encode('nope').buffer as ArrayBuffer;
+
+  await t.rejects(
+    parse(unknownTile, Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: false}
+    }),
+    /3DTileLoader: unknown type nope/,
+    'reports the unrecognized tile magic'
   );
   t.end();
 });
@@ -233,7 +286,12 @@ test('Tiles3DLoader#loads json from base64 URL', async t => {
   }
   const tilesetJson = {
     asset: {
-      version: 2.0
+      version: '1.1'
+    },
+    geometricError: 0,
+    root: {
+      boundingVolume: {sphere: [0, 0, 0, 1]},
+      geometricError: 0
     }
   };
 

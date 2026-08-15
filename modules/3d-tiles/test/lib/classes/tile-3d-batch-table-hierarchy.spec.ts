@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import Tile3DBatchTableParser from '@loaders.gl/3d-tiles/classes/tile-3d-batch-table-parser';
 import {loadTileset} from '../utils/load-utils';
 

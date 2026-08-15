@@ -38,8 +38,10 @@ export const GLTFLoader = {
     gltf: {
       normalize: true, // Normalize glTF v1 to glTF v2 format (not yet stable)
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
+      loadFiles: false, // Resolve generic glTF 2.1 file references on demand
+      loadExternalAssets: false, // Recursively parse glTF 2.1 external assets
       loadImages: true, // Create image objects
-      decompressMeshes: true // Decompress Draco encoded meshes
+      decompressMeshes: true // Decompress Draco and KHR/EXT meshopt encoded data
     }
   }
 } as const satisfies Loader<GLTFWithBuffers, never, GLTFLoaderOptions>;

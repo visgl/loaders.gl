@@ -4,6 +4,14 @@
 
 These deprecations.removals are being considered for v5
 
+**@loaders.gl/tiles**
+
+- `Tileset3D.maximumMemoryUsage` and the `maximumMemoryUsage` constructor option are deprecated. Use byte-native `cacheBytes`; convert MiB with `maximumMemoryUsage * 1024 * 1024`.
+- `memoryCacheOverflow` is deprecated. Use byte-native `maximumCacheOverflowBytes`; the byte-native option takes precedence when both forms are supplied.
+- The default 3D Tiles cache policy is now a 512 MiB base target plus 512 MiB of current-view overflow headroom, with memory-adjusted SSE enabled. To preserve the previous 32 MiB/1 MiB policy, configure both byte budgets explicitly and set `memoryAdjustedScreenSpaceError: false`.
+
+See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for migration examples and runtime behavior.
+
 **@loaders.gl/core**
 
 - Top-level loader options are no longer supported
@@ -80,7 +88,9 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 
 ### LAS point skipping option removal
 
-`LASLoader` no longer supports `options.las.skip`. The loader now returns all points for every backend. Applications that need sampled point clouds should downsample the parsed mesh/table after loading, or use COPC/source-level filtering when working with large datasets.
+`LASLoader` no longer supports `options.las.skip`. LAS loaders now return all points. Applications that need sampled point clouds should downsample the parsed mesh/table after loading, or use COPC/source-level filtering when working with large datasets.
+
+`LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Import `LAZPerfLoader`, `LASCOPCLoader`, or `LAZRsLoader` explicitly when a compatibility loader is required.
 
 ### SourceLoader migration examples
 
@@ -119,6 +129,7 @@ This unifies top-level loading behavior:
 
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
 - `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
+- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or `ParquetJSLoader` for the TypeScript parquetjs implementation.
 
 **@loaders.gl/images**
 
@@ -137,6 +148,11 @@ This unifies top-level loading behavior:
 - Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
 - The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
+
+**@loaders.gl/textures**
+
+- `@loaders.gl/textures` no longer depends on the deprecated `texture-compressor` package, which pulled in vulnerable versions of `image-size`. The package was only ever used as a command line tool by the experimental `CompressedTextureWriter`, and was installed for every consumer whether or not that writer was used.
+- Applications that use `CompressedTextureWriter` must now install the package themselves, for example with `npm install --save-dev texture-compressor`. It is resolved as an optional peer dependency and called directly, without invoking `npx` or accessing the npm registry. If it cannot be resolved locally, `encodeURLtoURL()` rejects. All other `@loaders.gl/textures` loaders and writers are unaffected.
 
 **@loaders.gl/tiles**
 

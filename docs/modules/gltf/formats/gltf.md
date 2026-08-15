@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # glTF - gl Transfer Format
+
+<GltfDocsTabs active="format" />
 
 - _[`@loaders.gl/gltf`](/docs/modules/gltf)_
 - _[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)_
@@ -8,15 +12,75 @@ glTF is a standard file format for three-dimensional scenes and models, intended
 
 An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation.
 
+## Draft glTF 2.1 Unified File References
+
+Draft glTF 2.1 adds a top-level `files` array for generic dependencies beyond buffers and images.
+Each file has a required `mimeType` and exactly one source: an external or data `uri`, or an
+embedded `bufferView`. `GLTFLoader` can resolve these entries into its parallel `files` result
+array with `gltf.loadFiles: true`.
+
+For packaged assets, [`resolveGLTFFile()`](/docs/modules/gltf/api-reference/gltf-loader) also accepts
+a string reference. It looks up `files[*].name` or the original `files[*].uri`, providing the virtual
+file-system primitive needed to resolve dependencies from an embedded glTF asset. Recursive
+`externalAssets` parsing builds on this file-resolution layer.
+
+This support follows the Khronos [Unified File References draft](https://github.com/KhronosGroup/glTF/issues/2590)
+and [Packaging External Assets draft](https://github.com/KhronosGroup/glTF/issues/2589), and may
+evolve while glTF 2.1 is finalized.
+
+## Draft glTF 2.1 External Assets
+
+The top-level `externalAssets` array references glTF files through `externalAssets[*].file`, and a
+scene node instantiates one of those models with `node.externalAsset`. Set
+`gltf.loadExternalAssets: true` to recursively parse referenced models into the parallel
+`gltf.externalAssets` result array.
+
+URI-backed models resolve their own dependencies relative to their URI. For models embedded in a
+data URI or buffer view, dependency URIs are looked up by name in the containing asset's `files`
+array. The loader caches repeated URI references, leaves unreferenced definitions unloaded, and
+rejects cyclical asset graphs.
+
+This support follows the Khronos [External Assets draft](https://github.com/KhronosGroup/glTF/issues/2586).
+
+## Draft glTF 2.1 Thumbnails
+
+Draft glTF 2.1 adds `asset.thumbnail`, an index into the top-level `images` array. The referenced
+image provides an optional preview that applications can display without rendering the scene.
+
+`GLTFLoader` treats the thumbnail as a referenced image, so `gltf.loadImages: true` loads it even
+when no texture uses that image. The unmodified index remains available at
+`gltf.json.asset.thumbnail`; [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf)
+resolves it to the corresponding processed image object.
+
+This support follows the Khronos [Thumbnails draft](https://github.com/KhronosGroup/glTF/issues/2593).
+
 ## Variants
 
 A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb (binary). Both .gltf and .glb files may reference external binary and texture resources. Alternatively, both formats may be self-contained by directly embedding binary data buffers (as base64-encoded strings in .gltf files or as raw byte arrays in .glb files).
 
 ## Version History
 
+### glTF 2.1 (Draft)
+
+Khronos has [announced glTF 2.1](https://www.khronos.org/blog/introducing-gltf-2.1-with-complex-scenes) as a backwards-compatible update focused on complex scenes and quality-of-life improvements. The specification remains under development.
+
+#### Accessor Component Types
+
+glTF 2.1 defines additional accessor component type constants for extensions and future core features to reference. Defining a type does not automatically make it valid for every existing accessor use; each feature still specifies the component types it accepts.
+
+| `componentType` | Data type            | loaders.gl representation |
+| --------------- | -------------------- | ------------------------- |
+| `5124`          | Signed 32-bit integer | `Int32Array`              |
+| `5130`          | 64-bit float          | `Float64Array`            |
+| `5131`          | 16-bit float          | `Uint16Array`             |
+| `5134`          | Signed 64-bit integer | `BigInt64Array`           |
+| `5135`          | Unsigned 64-bit integer | `BigUint64Array`         |
+
+JavaScript runtimes supported by loaders.gl do not yet consistently provide `Float16Array`. The loader therefore preserves 16-bit floating-point payloads in a `Uint16Array`; `componentType: 5131` records that the words contain IEEE-754 binary16 values rather than unsigned integers.
+
 ### glTF 2.0
 
--GLB was incorporated directly into glTF 2.0.
+- GLB was incorporated directly into glTF 2.0.
 
 ### glTF 1.0
 
@@ -33,7 +97,8 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | Extension                                                 | Preprocessed | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | [KHR_draco_mesh_compression](#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                                                    |
-| [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses meshopt-compressed geometries                                                  |
+| [KHR_meshopt_compression](#khr_meshopt_compression)       | Y            | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                  |
+| [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses existing version 0 meshopt streams                                             |
 | [KHR_texture_basisu](#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
 | [KHR_texture_transform](#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
 | KHR_texture_webp                                          | Y            |
@@ -107,14 +172,80 @@ Parsing support:
 - Existing interleaved buffer views remain untouched so that attributes like positions and normals that share the original data continue to function correctly.
 - When the extension references a different `texCoord` index than the source attribute, the loader creates a new accessor and attribute entry for the transformed coordinates.
 
+### Meshopt compression
+
+[meshoptimizer](https://github.com/zeux/meshoptimizer) is the codec and implementation library.
+`EXT_meshopt_compression` and `KHR_meshopt_compression` are glTF extension contracts that describe
+which buffer ranges use that codec. loaders.gl already supported the EXT contract; support for the
+newer KHR contract is additional rather than a replacement.
+
+| Capability | `EXT_meshopt_compression` | `KHR_meshopt_compression` |
+| ---------- | ------------------------- | ------------------------- |
+| Khronos status | Complete, ratified vendor extension | Release candidate Khronos extension |
+| Attribute bitstream | Version 0 | Versions 0 and 1 |
+| Modes | `ATTRIBUTES`, `TRIANGLES`, `INDICES` | `ATTRIBUTES`, `TRIANGLES`, `INDICES` |
+| Filters | `NONE`, `OCTAHEDRAL`, `QUATERNION`, `EXPONENTIAL` | EXT filters plus `COLOR` |
+| loaders.gl support | Existing assets remain supported | Added in loaders.gl 5.0 |
+
+The exact extension name matters. A glTF document can list either name in `extensionsRequired`, so
+supporting only EXT does not claim the KHR capability. Khronos also recommends that loaders retain
+EXT support because existing assets and tools use it. Version 0 EXT assets are binary-compatible
+with KHR, but loaders.gl does not silently rename unsupported extension declarations.
+
+The KHR extension improves the attribute codec with a version 1 bitstream. It also adds the `COLOR`
+post-decode filter for 4-byte or 8-byte color elements using a YCoCg representation. These features
+required moving from the older decoder that had been embedded in loaders.gl to the maintained
+decoder-only distribution from `meshoptimizer`. Applications do not need to provide or initialize a
+meshopt decoder separately.
+
+#### How loading works
+
+Meshopt compression operates on buffer views, not just mesh primitives. It can therefore represent
+geometry, animation, morph targets, and instance data. For each compressed buffer view:
+
+1. The extension object's `buffer`, `byteOffset`, and `byteLength` select the compressed source
+   bytes.
+2. `mode`, `count`, and `byteStride` define how to reconstruct `count * byteStride` bytes.
+3. The parent buffer view's `buffer`, `byteOffset`, and `byteLength` select the uncompressed
+   destination. That buffer may contain a real uncompressed fallback or be a placeholder allocated
+   for extension-aware loaders.
+4. The loader decodes into the destination range and applies the declared filter.
+
+After all matching buffer views decode successfully, `GLTFLoader` removes their extension objects,
+fallback-buffer markers, and the matching top-level `extensionsUsed` and `extensionsRequired`
+entries. It retains the source buffers containing compressed bytes and does not compact or renumber
+the document's buffers.
+
+Decoding runs during asynchronous loading when both `gltf.loadBuffers` and
+`gltf.decompressMeshes` are `true`, which is the default. If either option is disabled, the
+compressed declarations remain for the application to process. A buffer view or fallback buffer
+that declares both KHR and EXT is invalid and is rejected before any stream is decoded, avoiding a
+partially transformed result.
+
+| Mode or filter | Intended data |
+| -------------- | ------------- |
+| `ATTRIBUTES` | Fixed-stride values such as vertex attributes, animation values, or instance transforms |
+| `TRIANGLES` | Indices representing triangle lists |
+| `INDICES` | Arbitrary index sequences that are not triangle lists |
+| `OCTAHEDRAL` | Quantized unit vectors such as normals and tangents |
+| `QUATERNION` | Quantized rotations |
+| `EXPONENTIAL` | Floating-point data with reduced mantissa precision |
+| `COLOR` | KHR-only quantized color data using a YCoCg representation |
+
+Meshopt and Draco are separate compression paths. Meshopt compresses individual buffer views while
+preserving the parent accessor and buffer-view layout; Draco represents the attributes and indices
+of an entire mesh primitive in one extension object. The `gltf.decompressMeshes` option controls
+both paths. loaders.gl currently decodes, but does not encode, either meshopt extension.
+
+#### KHR_meshopt_compression
+
+[KHR_meshopt_compression specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_meshopt_compression)
+
+#### EXT_meshopt_compression
+
+[EXT_meshopt_compression specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_meshopt_compression)
+
 ## Custom Extensions
-
-### EXT_meshopt_compression
-
-This extension provides a support for the meshopt binary geometry data compression format that is tailored to the common types of data seen in glTF buffers.
-The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parsed glTF data structure.
-
-[EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression)
 
 ### EXT_feature_metadata
 

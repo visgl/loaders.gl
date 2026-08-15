@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 // @ts-expect-error
 import {resolveUrl} from '@loaders.gl/gltf/lib/gltf-utils/resolve-url';
 

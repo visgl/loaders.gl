@@ -9,7 +9,7 @@
 // See README.md in `./data` directory for full license text copy.
 /*
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 // import {validateLoader} from 'test/common/conformance';
 
 import {_WMTSCapabilitiesLoader as WMTSCapabilitiesLoader, _WMTSCapabilities as WMTSCapabilities} from '@loaders.gl/wms';

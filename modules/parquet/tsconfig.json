@@ -9,10 +9,12 @@
   },
   "references": [
     {"path": "../arrow"},
+    {"path": "../bson"},
     {"path": "../compression"},
     {"path": "../geoarrow"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
+    {"path": "../schema-utils"},
     {"path": "../gis"},
     {"path": "../wkt"}
   ]

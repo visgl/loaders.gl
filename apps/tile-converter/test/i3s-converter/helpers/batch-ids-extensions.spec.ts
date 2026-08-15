@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {handleBatchIdsExtensions} from '../../../src/i3s-converter/helpers/batch-ids-extensions';
 
 test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array if no extensions in primitive', async t => {

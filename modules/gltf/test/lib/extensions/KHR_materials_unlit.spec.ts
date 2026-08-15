@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 // @ts-expect-error
 import {decodeExtensions} from '@loaders.gl/gltf/lib/api/gltf-extensions';

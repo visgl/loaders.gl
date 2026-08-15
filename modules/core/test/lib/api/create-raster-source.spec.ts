@@ -228,6 +228,43 @@ test('GeoTIFFRasterSource uses RangeRequestScheduler for remote byte-range reads
   expect(raster.data).toBeInstanceOf(Float32Array);
 });
 
+test('GeoTIFFRasterSource isolates clients that share a range scheduler', async () => {
+  const file = await readFixtureBytes(TIFF_URL);
+  const rangeScheduler = new RangeRequestScheduler({batchDelayMs: 0});
+  const firstRanges: string[] = [];
+  const secondRanges: string[] = [];
+
+  const makeFetch =
+    (requestedRanges: string[]): typeof globalThis.fetch =>
+    async (_url, options) => {
+      const rangeHeader = new Headers(options?.headers).get('Range');
+      const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
+      if (!match) {
+        return new Response(file, {status: 200});
+      }
+
+      const start = Number(match[1]);
+      const end = Math.min(Number(match[2]), file.byteLength - 1);
+      requestedRanges.push(match[0]);
+      return new Response(file.subarray(start, end + 1), {
+        status: 206,
+        headers: {'Content-Range': `bytes ${start}-${end}/${file.byteLength}`}
+      });
+    };
+  const makeSource = (fetch: typeof globalThis.fetch) =>
+    new GeoTIFFRasterSource('https://example.com/shared.tif', {
+      core: {loadOptions: {core: {fetch}}},
+      geotiff: {rangeScheduler}
+    });
+  const firstSource = makeSource(makeFetch(firstRanges));
+  const secondSource = makeSource(makeFetch(secondRanges));
+
+  await Promise.all([firstSource.getMetadata(), secondSource.getMetadata()]);
+
+  expect(firstRanges.length).toBeGreaterThan(0);
+  expect(secondRanges.length).toBeGreaterThan(0);
+});
+
 test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', async () => {
   const file = await readFixtureBytes(TIFF_URL);
   const rangeStats = createRangeStats('geotiff-range-scheduler-props');

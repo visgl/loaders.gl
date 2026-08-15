@@ -35,6 +35,8 @@ export class TilesetTraverser {
   selectedTiles: Record<string, Tile3D> = {};
   // tiles should be loaded from server
   requestedTiles: Record<string, Tile3D> = {};
+  /** Tiles intentionally held until the camera has remained still for the configured delay. */
+  deferredTiles: Record<string, Tile3D> = {};
   // tiles does not have render content
   emptyTiles: Record<string, Tile3D> = {};
 
@@ -73,6 +75,7 @@ export class TilesetTraverser {
 
   reset() {
     this.requestedTiles = {};
+    this.deferredTiles = {};
     this.selectedTiles = {};
     this.emptyTiles = {};
     this._traversalStack.reset();
@@ -235,10 +238,28 @@ export class TilesetTraverser {
   // tile to load from server
   loadTile(tile: Tile3D, frameState: FrameState): void {
     if (this.shouldLoadTile(tile)) {
+      if (this.shouldDeferTileRequest(tile)) {
+        this.deferredTiles[tile.id] = tile;
+        return;
+      }
       tile._requestedFrame = frameState.frameNumber;
       tile._priority = tile._getPriority();
       this.requestedTiles[tile.id] = tile;
     }
+  }
+
+  /**
+   * Returns whether an eligible peripheral request should wait for camera motion to settle.
+   *
+   * Eligibility and the current time window are calculated together when tile visibility updates.
+   * Keeping the active state on the tile also lets a queued scheduler callback cancel work that
+   * became deferred after its original traversal.
+   *
+   * @param tile - Tile considered for loading.
+   * @returns `true` when the request should be retried after the remaining delay.
+   */
+  shouldDeferTileRequest(tile: Tile3D): boolean {
+    return tile.priorityDeferred;
   }
 
   // cache tile

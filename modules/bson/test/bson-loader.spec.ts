@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {load} from '@loaders.gl/core';
 import {BSONLoader} from '@loaders.gl/bson';
 // import corruptScenarios from './data/js-bson/corrupt';

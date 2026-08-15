@@ -19,6 +19,7 @@ export class RangeRequestSource implements Source {
   readonly url: string;
   private readonly fetch: (url: string, options?: RequestInit) => Promise<Response>;
   private readonly scheduler: RangeRequestScheduler;
+  private readonly requestContext = {};
 
   /** Creates a PMTiles package Source backed by scheduled HTTP range requests. */
   constructor(url: string, options: RangeRequestSourceOptions = {}) {
@@ -47,6 +48,7 @@ export class RangeRequestSource implements Source {
       offset,
       length,
       signal,
+      isolationKey: this.requestContext,
       fetch: this.fetch
     });
 

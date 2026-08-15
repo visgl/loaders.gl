@@ -6,7 +6,7 @@
 // under Apache 2 license
 // (only used for test cases)
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 // import {validateLoader} from 'test/common/conformance';
 
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';

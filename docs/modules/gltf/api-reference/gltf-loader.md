@@ -1,4 +1,8 @@
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+
 # GLTFLoader
+
+<GltfDocsTabs active="gltf-loader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
@@ -12,7 +16,7 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | File Extensions | `.glb`, `.gltf`                                                                                                                                                 |
 | File Type       | Binary, JSON, Linked Assets                                                                                                                                     |
-| File Format     | [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
+| File Format     | [glTF v2.1 (draft)](/docs/modules/gltf/formats/gltf#gltf-21-draft), [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
 | Supported APIs  | `load`, `parse`                                                                                                                                                 |
 | Subloaders      | `DracoLoader`, `ImageBitmapLoader`                                                                                                                              |     |
@@ -40,11 +44,15 @@ const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 
 The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
 
+Draft glTF 2.1 readiness includes the [new accessor component type definitions](/docs/modules/gltf/formats/gltf#accessor-component-types). `GLTFScenegraph` and `postProcessGLTF` expose these values through the corresponding JavaScript typed arrays.
+
+The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails). When `asset.thumbnail` references an image, `gltf.loadImages: true` loads that image even if it is not used by a texture.
+
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
-In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
+In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
 
 Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
 
@@ -56,12 +64,53 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 ## Options
 
-| Option                  | Type    | Default |                                                                            | Description |
-| ----------------------- | ------- | ------- | -------------------------------------------------------------------------- | ----------- |
-| `gltf.loadBuffers`      | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS). |
-| `gltf.loadImages`       | Boolean | `false` | Load any referenced image files (and decode base64 encoded URIS).          |
-| `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
-| `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
+| Option                    | Type    | Default | Description                                                                  |
+| ------------------------- | ------- | ------- | ---------------------------------------------------------------------------- |
+| `gltf.loadBuffers`        | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS).   |
+| `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
+| `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
+| `gltf.loadImages`         | Boolean | `false` | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
+| `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
+| `gltf.normalize`          | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.   |
+
+### Meshopt decompression
+
+`GLTFLoader` supports both the existing `EXT_meshopt_compression` extension and the newer
+`KHR_meshopt_compression` extension. KHR adds version 1 attribute streams and the `COLOR` filter;
+support for KHR does not replace EXT because glTF capability negotiation uses the exact extension
+name and existing assets continue to declare EXT.
+
+Meshopt decoding is available during asynchronous parsing when `gltf.loadBuffers` and
+`gltf.decompressMeshes` are both enabled. The maintained decoder ships with `@loaders.gl/gltf`, so
+there is no decoder option or application-level initialization step. Successful decoding writes
+the uncompressed bytes into the buffer range described by the parent buffer view and removes the
+processed extension declarations. The compressed source buffer remains in the returned data.
+
+Set `gltf.decompressMeshes` to `false` to retain both KHR and EXT declarations for another component
+to process. See [Meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression) for the
+stream versions, modes, filters, fallback-buffer behavior, and comparison with Draco.
+
+## Draft glTF 2.1 File Resolution
+
+`resolveGLTFFile(gltf, fileReference, options, context)` resolves one entry from the draft glTF 2.1
+`files` array. `fileReference` can be an array index, a package name matching `files[*].name`, or an
+original URI matching `files[*].uri`. URI-backed files are fetched relative to the containing asset;
+buffer-view-backed files return a view of the already loaded buffer without copying it. Resolved
+entries are cached in the parallel `gltf.files` array.
+
+`findGLTFFileIndex(gltf, reference)` performs only the virtual package lookup and returns `-1` when
+there is no matching entry. Ambiguous package names are rejected.
+
+## Draft glTF 2.1 External Assets
+
+With `gltf.loadExternalAssets: true`, `GLTFLoader` parses external assets referenced by
+`json.nodes[*].externalAsset`. Parsed children are stored in `gltf.externalAssets` at the same index
+as their `json.externalAssets` definition. Repeated references to the same URI share one parsed
+result, and cyclical references are rejected.
+
+Dependencies of URI-backed children resolve relative to the child URI. Dependencies of embedded
+children resolve through the containing asset's `files` array, allowing an unmodified nested glTF
+and its buffers or textures to be packaged together. Unreferenced definitions remain unloaded.
 
 ## Working with GLTF data
 
@@ -104,13 +153,27 @@ However, the objects inside these arrays will have been pre-processed to simplif
   json: Object, // Contains the unmodified parsed glTF JSON (the parsed GLB JSON chunk)
 
   // Length and indices of this array will match `json.buffers`
-  // The GLB bin chunk, if present, will be found in buffer 0.
+  // GLB v1/v2's bin chunk, or GLB v3 chunks selected by json.buffers[*].chunk.
   // Additional glTF json `buffers` are fetched and base64 decoded from the JSON uri:s.
   buffers: [{
     arrayBuffer: ArrayBuffer,
     byteOffset: Number,
     byteLength: Number
   }],
+
+  // Draft glTF 2.1 generic files. Length and indices match json.files.
+  files: [{
+    arrayBuffer: ArrayBuffer,
+    byteOffset: Number,
+    byteLength: Number,
+    mimeType: String,
+    name: String, // optional virtual package name
+    url: String  // optional resolved URL
+  }],
+
+  // Recursively parsed glTF 2.1 assets. Indices match json.externalAssets.
+  // Unreferenced definitions remain null.
+  externalAssets: Array<GLTFWithBuffers | null>,
 
   // Images can optionally be loaded and decoded, they will be stored here.
   // Standard raster images are decoded through ImageBitmapLoader.
@@ -121,6 +184,10 @@ However, the objects inside these arrays will have been pre-processed to simplif
   _glb?: Object
 }
 ```
+
+For draft GLB v3 files, `GLTFLoader` resolves each `json.buffers[*].chunk` index to the
+corresponding BIN chunk. See the [GLB format documentation](../formats/glb) for indexing and
+legacy fallback rules.
 
 | Field                     | Type          | Default | Description                                                      |
 | ------------------------- | ------------- | ------- | ---------------------------------------------------------------- |

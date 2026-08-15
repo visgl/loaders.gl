@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import ClarinetParser from '../../../src/lib/clarinet/clarinet';
 import {fetchFile} from '@loaders.gl/core';
 

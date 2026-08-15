@@ -9,6 +9,13 @@ export {TileJSONLoader} from './tilejson-loader';
 export type {TileJSONLoaderOptions} from './tilejson-loader';
 export type {TileJSON, TileJSONOptions} from './lib/parse-tilejson';
 export {parseTileJSON} from './lib/parse-tilejson';
+export type {
+  TileJSONMetadata,
+  TileJSONVectorLayer,
+  Tilestats,
+  TilestatsLayer,
+  TilestatsLayerAttribute
+} from './tilejson-zod-schema';
 
 // MapStyleLoader
 

@@ -4,7 +4,7 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 /* global TextDecoder */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {GeoJSONWriter} from '@loaders.gl/json';
 import {encodeTableAsText, encodeTableInBatches} from '@loaders.gl/core';

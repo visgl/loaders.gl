@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {encode, load} from '@loaders.gl/core';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import * as parquet from '@loaders.gl/parquet';
 import * as bundledParquet from '@loaders.gl/parquet/bundled';
+import * as parquetSource from '@loaders.gl/parquet/parquet-source-loader';
 import * as unbundledParquet from '@loaders.gl/parquet/unbundled';
 import {ParquetJSLoader, ParquetJSWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
@@ -16,6 +17,22 @@ test('ParquetWriter#writer objects', (t) => {
   t.ok(ParquetWriter, 'ParquetWriter');
   t.ok(ParquetJSLoader, 'ParquetJSLoader');
   t.ok(ParquetJSWriter, 'ParquetJSWriter');
+  t.end();
+});
+
+test('ParquetSource#public exports', (t) => {
+  t.ok(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata');
+  t.notOk('ParquetSource' in parquet, 'root does not export runtime ParquetSource');
+  t.ok(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities');
+  t.ok(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader');
+  t.ok(parquetSource.ParquetSource, 'source subpath exports runtime source');
+  t.ok(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities');
+  t.ok(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader');
+  t.ok(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource');
+  t.ok(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities');
+  t.ok(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader');
+  t.ok(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource');
+  t.ok(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities');
   t.end();
 });
 

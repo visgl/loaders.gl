@@ -5,7 +5,7 @@
 
 // unquoted attributes should be ok in non-strict mode
 // https://github.com/isaacs/sax-js/issues/31
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {testSax} from '../utils/test-utils';
 
 test('SAXParser#unquoted', t => {

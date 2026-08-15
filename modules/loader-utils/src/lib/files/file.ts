@@ -19,7 +19,7 @@ export interface ReadableFile {
   readonly url: string;
 
   /** Read data */
-  read(start?: number | bigint, length?: number): Promise<ArrayBuffer>;
+  read(start?: number | bigint, length?: number, signal?: AbortSignal): Promise<ArrayBuffer>;
   /** Read data */
   fetchRange?(offset: number | bigint, length: number, signal?: AbortSignal): Promise<Response>;
   /** Get information about file */

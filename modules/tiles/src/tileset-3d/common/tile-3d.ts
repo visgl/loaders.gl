@@ -23,6 +23,13 @@ import {
 import {getTiles3DScreenSpaceError} from '../helpers/tiles-3d-lod';
 import {getProjectedRadius} from '../helpers/i3s-lod';
 import {TilesetTraverser} from './tileset-traverser';
+import {
+  calculateFoveatedFactor,
+  calculateTileRequestPriority,
+  isFoveatedRequestDelayActive,
+  isFoveatedRequestDeferred,
+  isProgressiveResolutionPriority
+} from '../helpers/tiles-3d-request-priority';
 
 const scratchVector = new Vector3();
 
@@ -116,6 +123,14 @@ export class Tile3D {
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;
   _screenSpaceError: number = 0;
+  /** SSE calculated at the reduced viewport height used to prioritize coarse coverage. */
+  _screenSpaceErrorProgressiveResolution: number = 0;
+  /** Whether this tile should be promoted into the progressive-resolution request pass. */
+  _priorityProgressiveResolution: boolean = false;
+  /** Angular distance from the camera view axis used to prioritize center tiles. */
+  _foveatedFactor: number = 0;
+  /** Whether this peripheral request is currently inside the camera-motion deferral window. */
+  priorityDeferred: boolean = false;
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
 
@@ -287,13 +302,28 @@ export class Tile3D {
     return this._boundingBox;
   }
 
-  /** Get the tile's screen space error. */
-  getScreenSpaceError(frameState, useParentLodMetric) {
+  /**
+   * Gets the tile's screen-space error for normal refinement or a reduced-height priority pass.
+   *
+   * I3S already supplies a screen-oriented LOD metric and intentionally ignores the optional 3D
+   * Tiles progressive-resolution height fraction.
+   *
+   * @param frameState - Current camera and viewport measurements.
+   * @param useParentLodMetric - Whether to substitute the parent LOD metric.
+   * @param viewportHeightFraction - Fraction of viewport height represented by the priority pass.
+   * @returns Screen-space LOD error for the current tileset format.
+   */
+  getScreenSpaceError(frameState, useParentLodMetric, viewportHeightFraction = 1) {
     switch (this.tileset.type) {
       case TILESET_TYPE.I3S:
         return getProjectedRadius(this, frameState);
       case TILESET_TYPE.TILES3D:
-        return getTiles3DScreenSpaceError(this, frameState, useParentLodMetric);
+        return getTiles3DScreenSpaceError(
+          this,
+          frameState,
+          useParentLodMetric,
+          viewportHeightFraction
+        );
       default:
         // eslint-disable-next-line
         throw new Error('Unsupported tileset type');
@@ -340,6 +370,12 @@ export class Tile3D {
     if (this.tileset._frameNumber - this._touchedFrame >= 1) {
       return -1;
     }
+    // RequestScheduler re-evaluates this callback before a queued request receives a slot. A
+    // negative priority cancels work that became deferred after it was queued; the scheduled
+    // follow-up traversal submits it again after the motion delay expires.
+    if (this.priorityDeferred) {
+      return -1;
+    }
     if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
       return -1;
     }
@@ -354,8 +390,15 @@ export class Tile3D {
 
     const rootScreenSpaceError = traverser.root ? traverser.root._screenSpaceError : 0.0;
 
-    // Map higher SSE to lower values (e.g. root tile is highest priority)
-    return Math.max(rootScreenSpaceError - screenSpaceError, 0);
+    // Map higher SSE to lower values (e.g. root tile is highest priority), then combine the
+    // existing order with independent progressive and foveated priority bands.
+    const reverseScreenSpaceError = Math.max(rootScreenSpaceError - screenSpaceError, 0);
+    return calculateTileRequestPriority({
+      priorityProgressiveResolution: this._priorityProgressiveResolution,
+      foveatedFactor: this._foveatedFactor,
+      reverseScreenSpaceError,
+      rootScreenSpaceError
+    });
   }
 
   /**
@@ -450,12 +493,78 @@ export class Tile3D {
 
     this._distanceToCamera = this.distanceToTile(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
+    this._updateRequestPriorityMetrics(frameState);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
     this._frameNumber = frameState.frameNumber;
     this.viewportIds = viewportIds;
+  }
+
+  /**
+   * Updates progressive-resolution and foveated request metrics for a 3D Tiles traversal frame.
+   *
+   * I3S retains its format-specific screen-threshold ordering and is explicitly isolated from
+   * geometric-error scheduling. Orthographic viewports still receive progressive coverage, but
+   * angular foveation is disabled because an orthographic frustum has no perspective field of view.
+   *
+   * @param frameState - Current camera and viewport measurements.
+   */
+  _updateRequestPriorityMetrics(frameState: FrameState): void {
+    if (this.tileset.type !== TILESET_TYPE.TILES3D) {
+      this._screenSpaceErrorProgressiveResolution = this._screenSpaceError;
+      this._priorityProgressiveResolution = false;
+      this._foveatedFactor = 0;
+      this.priorityDeferred = false;
+      return;
+    }
+
+    const options = this.tileset.options;
+    const progressiveResolutionHeightFraction = options.progressiveResolutionHeightFraction;
+    this._screenSpaceErrorProgressiveResolution = this.getScreenSpaceError(
+      frameState,
+      false,
+      progressiveResolutionHeightFraction
+    );
+    this._priorityProgressiveResolution = isProgressiveResolutionPriority(
+      this._screenSpaceErrorProgressiveResolution,
+      this.parent?._screenSpaceErrorProgressiveResolution,
+      this.tileset.memoryAdjustedScreenSpaceError,
+      progressiveResolutionHeightFraction
+    );
+
+    if (
+      !options.foveatedScreenSpaceError ||
+      frameState.viewport?.orthographic ||
+      !frameState.camera?.position ||
+      !frameState.camera?.direction
+    ) {
+      this._foveatedFactor = 0;
+      this.priorityDeferred = false;
+      return;
+    }
+
+    this._foveatedFactor = calculateFoveatedFactor(this.boundingVolume, frameState.camera);
+    const deferralEligible = isFoveatedRequestDeferred({
+      refinement: this.refine,
+      skipLevelOfDetail: this.tileset._traverser.options.skipLevelOfDetail,
+      foveatedScreenSpaceError: options.foveatedScreenSpaceError,
+      foveatedConeSize: options.foveatedConeSize,
+      minimumScreenSpaceErrorRelaxation: options.foveatedMinimumScreenSpaceErrorRelaxation,
+      interpolationCallback: options.foveatedInterpolationCallback,
+      foveatedFactor: this._foveatedFactor,
+      verticalFieldOfView: frameState.camera.verticalFieldOfView,
+      screenSpaceError: this._screenSpaceError,
+      parentScreenSpaceError: this.parent?._screenSpaceError,
+      maximumScreenSpaceError: this.tileset.memoryAdjustedScreenSpaceError,
+      priorityProgressiveResolution: this._priorityProgressiveResolution
+    });
+    this.priorityDeferred = isFoveatedRequestDelayActive(
+      deferralEligible,
+      frameState.camera.timeSinceMovement,
+      options.foveatedTimeDelay
+    );
   }
 
   // Determines whether the tile's bounding volume intersects the culling volume.
@@ -679,6 +788,10 @@ export class Tile3D {
     this._distanceToCamera = 0;
     this._centerZDepth = 0;
     this._screenSpaceError = 0;
+    this._screenSpaceErrorProgressiveResolution = 0;
+    this._priorityProgressiveResolution = false;
+    this._foveatedFactor = 0;
+    this.priorityDeferred = false;
     this._visibilityPlaneMask = CullingVolume.MASK_INDETERMINATE;
     this._visible = undefined;
     this._inRequestVolume = false;

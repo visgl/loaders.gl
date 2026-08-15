@@ -1,9 +1,10 @@
 /* eslint-disable max-len */
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf/bundled';
+import {createGLBV3} from './test-utils/create-glb-v3';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLB_V1_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';
@@ -38,15 +39,34 @@ test('GLBLoader#load(v1)', async t => {
 });
 
 test('GLBLoader#parseSync(v3)', t => {
-  const data = createGLBV3({asset: {version: '2.1'}}, new Uint8Array([1, 2, 3, 4]));
+  const data = createGLBV3({asset: {version: '2.1'}}, [new Uint8Array([1, 2, 3, 4])]);
   const glbv3 = parseSync(data, GLBLoader);
 
   t.equal(glbv3.version, 3, 'GLBLoader returned correct glb version');
   t.equal(glbv3.header.byteLength, data.byteLength, 'GLBLoader read the 64-bit file length');
   t.equal(glbv3.json.asset.version, '2.1', 'GLBLoader returned correct gltf version');
+  t.equal(glbv3.jsonChunkIndex, 0, 'GLBLoader records the JSON chunk index');
   t.equal(glbv3.binChunks.length, 1, 'GLBLoader returned the BIN chunk');
+  t.equal(glbv3.binChunks[0].chunkIndex, 1, 'GLBLoader records the BIN chunk index');
   t.equal(glbv3.binChunks[0].byteLength, 4, 'GLBLoader read the 64-bit chunk length');
 
+  t.end();
+});
+
+test('GLBLoader#parseSync(v3) preserves absolute chunk indices', t => {
+  const data = createGLBV3(
+    {asset: {version: '2.1'}},
+    [new Uint8Array([1, 2, 3, 4]), new Uint8Array([5, 6, 7, 8])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+  const glbv3 = parseSync(data, GLBLoader);
+
+  t.equal(glbv3.jsonChunkIndex, 1, 'finds the first JSON chunk after a custom chunk');
+  t.deepEqual(
+    glbv3.binChunks.map(chunk => chunk.chunkIndex),
+    [2, 3],
+    'records BIN indices in the full chunk sequence'
+  );
   t.end();
 });
 
@@ -72,35 +92,3 @@ test('GLBLoader#parseSync(v3) rejects unsafe 64-bit lengths', t => {
   );
   t.end();
 });
-
-/** Create a GLB v3 fixture using the draft Khronos binary layout. */
-function createGLBV3(json: Record<string, unknown>, binary?: Uint8Array): ArrayBuffer {
-  const textEncoder = new TextEncoder();
-  const jsonBytes = textEncoder.encode(JSON.stringify(json));
-  const jsonByteLength = Math.ceil(jsonBytes.byteLength / 4) * 4;
-  const binaryByteLength = binary ? Math.ceil(binary.byteLength / 4) * 4 : 0;
-  const fileByteLength = 16 + 16 + jsonByteLength + (binary ? 16 + binaryByteLength : 0);
-  const arrayBuffer = new ArrayBuffer(fileByteLength);
-  const dataView = new DataView(arrayBuffer);
-  const bytes = new Uint8Array(arrayBuffer);
-
-  dataView.setUint32(0, 0x46546c67, true);
-  dataView.setUint32(4, 3, true);
-  dataView.setBigUint64(8, BigInt(fileByteLength), true);
-
-  dataView.setUint32(16, 0x4e4f534a, true);
-  dataView.setUint32(20, 0, true);
-  dataView.setBigUint64(24, BigInt(jsonByteLength), true);
-  bytes.fill(0x20, 32, 32 + jsonByteLength);
-  bytes.set(jsonBytes, 32);
-
-  if (binary) {
-    const binaryHeaderByteOffset = 32 + jsonByteLength;
-    dataView.setUint32(binaryHeaderByteOffset, 0x004e4942, true);
-    dataView.setUint32(binaryHeaderByteOffset + 4, 0, true);
-    dataView.setBigUint64(binaryHeaderByteOffset + 8, BigInt(binaryByteLength), true);
-    bytes.set(binary, binaryHeaderByteOffset + 16);
-  }
-
-  return arrayBuffer;
-}

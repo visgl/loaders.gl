@@ -1,4 +1,4 @@
-import test from 'tape';
+import test from 'test/utils/vitest-tape';
 import {Vector3} from '@math.gl/core';
 import {GL, computeVertexNormals} from '@loaders.gl/math';
 

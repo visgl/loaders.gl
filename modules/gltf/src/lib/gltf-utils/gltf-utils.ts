@@ -19,7 +19,9 @@ type TypedArrayConstructor =
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
-  | Float64ArrayConstructor;
+  | Float64ArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
 
 const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Int8Array, 5120],
@@ -29,7 +31,9 @@ const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Int32Array, 5124],
   [Uint32Array, 5125],
   [Float32Array, 5126],
-  [Float64Array, 5130]
+  [Float64Array, 5130],
+  [BigInt64Array, 5134],
+  [BigUint64Array, 5135]
 ];
 const ARRAY_TO_COMPONENT_TYPE = new Map<TypedArrayConstructor, number>(
   ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT
@@ -52,7 +56,11 @@ const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
   5123: 2,
   5124: 4,
   5125: 4,
-  5126: 4
+  5126: 4,
+  5130: 8,
+  5131: 2,
+  5134: 8,
+  5135: 8
 };
 
 const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
@@ -62,7 +70,13 @@ const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
   5123: Uint16Array,
   5124: Int32Array,
   5125: Uint32Array,
-  5126: Float32Array
+  5126: Float32Array,
+  5130: Float64Array,
+  // JavaScript does not yet provide Float16Array across supported runtimes.
+  // Preserve binary16 payloads in Uint16Array while componentType retains their semantics.
+  5131: Uint16Array,
+  5134: BigInt64Array,
+  5135: BigUint64Array
 };
 
 export function getAccessorTypeFromSize(size) {

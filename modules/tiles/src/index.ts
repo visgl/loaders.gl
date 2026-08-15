@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export type {Tileset3DProps} from './tileset-3d/common/tileset-3d';
+export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-request-priority';
 export {Tileset3D} from './tileset-3d/common/tileset-3d';
 export type {
   TileContentLoadResult,
@@ -84,6 +85,7 @@ export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 
 export {getFrameState} from './tileset-3d/helpers/frame-state';
+export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 
 export {

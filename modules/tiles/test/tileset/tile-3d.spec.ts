@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 // @ts-ignore
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Matrix4} from '@math.gl/core';
 import {Tile3D} from '@loaders.gl/tiles';
 // @ts-ignore

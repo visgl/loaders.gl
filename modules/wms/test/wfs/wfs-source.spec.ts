@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {WFSSourceLoader} from '@loaders.gl/wms';
 
 const WFS_URL = 'https://example.com/geoserver/wfs';

@@ -70,11 +70,14 @@ export async function decodeDataPages(
 
     const valueEncoding = getThriftEnum(
       Encoding,
-      page.pageHeader.data_page_header?.encoding!
+      page.pageHeader.data_page_header?.encoding ?? page.pageHeader.data_page_header_v2?.encoding!
     ) as ParquetCodec;
     // Pages might be in different encodings. We don't need to decode in case
     // of 'PLAIN' encoding because all values are already in place
-    if (dictionary.length && valueEncoding !== 'PLAIN') {
+    if (
+      dictionary.length &&
+      (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY')
+    ) {
       // eslint-disable-next-line no-loop-func
       page.values = page.values.map(value => dictionary[value]);
     }
@@ -304,7 +307,7 @@ async function decodeDataPage(
   const valueEncoding = getThriftEnum(Encoding, header.data_page_header?.encoding!) as ParquetCodec;
   const decodeOptions: ParquetCodecOptions = {
     typeLength: context.column.typeLength,
-    bitWidth: context.column.typeLength
+    bitWidth: getValueBitWidth(context, valueEncoding)
   };
 
   const values = decodeValues(
@@ -336,62 +339,95 @@ async function decodeDataPageV2(
   header: PageHeader,
   context: ParquetReaderContext
 ): Promise<ParquetPageData> {
+  const dataPageHeader = header.data_page_header_v2;
+  if (!dataPageHeader) {
+    throw new Error('Missing Parquet data page v2 header');
+  }
   const cursorEnd = cursor.offset + header.compressed_page_size;
-
-  const valueCount = header.data_page_header_v2?.num_values;
-  // @ts-ignore
-  const valueCountNonNull = valueCount - header.data_page_header_v2?.num_nulls;
-  const valueEncoding = getThriftEnum(
-    Encoding,
-    header.data_page_header_v2?.encoding!
-  ) as ParquetCodec;
+  const levelsOffset = cursor.offset;
+  const valueCount = dataPageHeader.num_values;
+  const valueCountNonNull = valueCount - dataPageHeader.num_nulls;
+  const valueEncoding = getThriftEnum(Encoding, dataPageHeader.encoding) as ParquetCodec;
+  if (
+    header.compressed_page_size < 0 ||
+    cursorEnd > (cursor.size ?? cursor.buffer.length) ||
+    valueCountNonNull < 0
+  ) {
+    throw new Error('Invalid Parquet data page v2 header');
+  }
 
   /* read repetition levels */
   // tslint:disable-next-line:prefer-array-literal
   let rLevels = new Array(valueCount);
   if (context.column.rLevelMax > 0) {
-    rLevels = decodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, cursor, valueCount!, {
-      bitWidth: getBitWidth(context.column.rLevelMax),
-      disableEnvelope: true
-    });
+    const repetitionLevelCursor = createPageSliceCursor(
+      cursor,
+      levelsOffset,
+      dataPageHeader.repetition_levels_byte_length
+    );
+    rLevels = decodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      repetitionLevelCursor,
+      valueCount,
+      {
+        bitWidth: getBitWidth(context.column.rLevelMax),
+        disableEnvelope: true
+      }
+    );
   } else {
     rLevels.fill(0);
   }
+  const definitionLevelsOffset = levelsOffset + dataPageHeader.repetition_levels_byte_length;
 
   /* read definition levels */
   // tslint:disable-next-line:prefer-array-literal
   let dLevels = new Array(valueCount);
   if (context.column.dLevelMax > 0) {
-    dLevels = decodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, cursor, valueCount!, {
-      bitWidth: getBitWidth(context.column.dLevelMax),
-      disableEnvelope: true
-    });
+    const definitionLevelCursor = createPageSliceCursor(
+      cursor,
+      definitionLevelsOffset,
+      dataPageHeader.definition_levels_byte_length
+    );
+    dLevels = decodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      definitionLevelCursor,
+      valueCount,
+      {
+        bitWidth: getBitWidth(context.column.dLevelMax),
+        disableEnvelope: true
+      }
+    );
   } else {
     dLevels.fill(0);
   }
 
   /* read values */
-  let valuesBufCursor = cursor;
-
-  if (header.data_page_header_v2?.is_compressed) {
-    const valuesBuf = await decompress(
-      context.compression,
-      cursor.buffer.slice(cursor.offset, cursorEnd),
-      header.uncompressed_page_size
-    );
-
-    valuesBufCursor = {
-      buffer: valuesBuf,
-      offset: 0,
-      size: valuesBuf.length
-    };
-
-    cursor.offset = cursorEnd;
+  const valuesOffset = definitionLevelsOffset + dataPageHeader.definition_levels_byte_length;
+  const valuesCompressedByteLength = cursorEnd - valuesOffset;
+  const valuesUncompressedByteLength =
+    header.uncompressed_page_size -
+    dataPageHeader.repetition_levels_byte_length -
+    dataPageHeader.definition_levels_byte_length;
+  if (valuesCompressedByteLength < 0 || valuesUncompressedByteLength < 0) {
+    throw new Error('Invalid Parquet data page v2 level lengths');
   }
+  let valuesBuffer = cursor.buffer.subarray(valuesOffset, cursorEnd);
+
+  if (dataPageHeader.is_compressed !== false && context.compression !== 'UNCOMPRESSED') {
+    valuesBuffer = await decompress(
+      context.compression,
+      valuesBuffer,
+      valuesUncompressedByteLength
+    );
+  }
+  const valuesBufCursor = {buffer: valuesBuffer, offset: 0, size: valuesBuffer.length};
+  cursor.offset = cursorEnd;
 
   const decodeOptions = {
     typeLength: context.column.typeLength,
-    bitWidth: context.column.typeLength
+    bitWidth: getValueBitWidth(context, valueEncoding)
   };
 
   const values = decodeValues(
@@ -406,9 +442,34 @@ async function decodeDataPageV2(
     dlevels: dLevels,
     rlevels: rLevels,
     values,
-    count: valueCount!,
+    count: valueCount,
     pageHeader: header
   };
+}
+
+/** Returns the physical value bit width required by encodings such as RLE BOOLEAN. */
+function getValueBitWidth(
+  context: ParquetReaderContext,
+  encoding: ParquetCodec
+): number | undefined {
+  if (encoding === 'RLE' && context.column.primitiveType === 'BOOLEAN') {
+    return 1;
+  }
+  return context.column.typeLength;
+}
+
+/** Creates a bounded cursor over one uncompressed data page v2 level section. */
+function createPageSliceCursor(
+  cursor: CursorBuffer,
+  offset: number,
+  byteLength: number
+): CursorBuffer {
+  const end = offset + byteLength;
+  if (byteLength < 0 || end > (cursor.size ?? cursor.buffer.length)) {
+    throw new Error('Invalid Parquet data page v2 level lengths');
+  }
+  const buffer = cursor.buffer.subarray(offset, end);
+  return {buffer, offset: 0, size: buffer.length};
 }
 
 /**

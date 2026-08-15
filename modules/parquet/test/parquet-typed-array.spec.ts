@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {fetchFile} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/loader-utils';
@@ -12,7 +12,7 @@ import {decodeFileMetadata, decodePageHeader} from '../src/parquetjs/utils/read-
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 import {ParquetEncoder} from '../src/parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../src/parquetjs/schema/schema';
-import {materializeRows} from '../src/parquetjs/schema/shred';
+import {materializeColumns, materializeRows} from '../src/parquetjs/schema/shred';
 import {concatUint8Arrays} from '../src/parquetjs/utils/binary-utils';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data';
@@ -296,6 +296,34 @@ test('Parquet row materializer decodes dictionary-backed UTF8 bytes as strings',
   });
 
   t.equal(rows[0].name, 'hello', 'dictionary-selected UTF8 primitive materializes as string');
+  t.end();
+});
+
+test('Parquet column materializer converts logical values and preserves nulls', t => {
+  const schema = new ParquetSchema({
+    name: {
+      type: 'UTF8',
+      optional: true
+    }
+  });
+
+  const columns = materializeColumns(schema, {
+    rowCount: 3,
+    columnData: {
+      name: {
+        dlevels: [1, 0, 1],
+        rlevels: [0, 0, 0],
+        values: [
+          new Uint8Array([104, 101, 108, 108, 111]),
+          new Uint8Array([119, 111, 114, 108, 100])
+        ],
+        count: 3,
+        pageHeaders: []
+      }
+    }
+  });
+
+  t.deepEqual(columns.name, ['hello', null, 'world']);
   t.end();
 });
 

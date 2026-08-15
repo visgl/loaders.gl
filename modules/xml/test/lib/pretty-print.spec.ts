@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Inspired by a sax-js example under ISC license
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {SAXParser} from '@loaders.gl/xml';
 import {fetchFile} from '@loaders.gl/core';
 

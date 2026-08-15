@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {fetchFile, loadInBatches, NullLoader, isBrowser} from '@loaders.gl/core';
 import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, NodeHash} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';

@@ -72,8 +72,18 @@ Parameters:
   - `options.throttleRequests`=`true` (`Boolean`) - Determines whether or not to throttle tile fetching requests. Throttled requests are prioritized according to tile visibility.
   - `options.maxRequests`=`64` (`Number`) - When throttling tile fetching, the maximum number of simultaneous requests.
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
-  - `options.maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
+  - `options.cacheBytes`=`536870912` (`Number`) - Soft target in bytes for estimated cached 3D Tiles content. Current-frame tiles remain protected. I3S retains a `33554432` default. See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory).
+  - `options.maximumCacheOverflowBytes`=`536870912` (`Number`) - Additional current-frame headroom in bytes before cache pressure raises the active SSE threshold. I3S retains a `1048576` default.
+  - `options.memoryAdjustedScreenSpaceError`=`true` (`Boolean`) - Adapts the active SSE threshold when estimated usage exceeds `cacheBytes + maximumCacheOverflowBytes`. I3S retains its `false` default.
+  - `options.maximumMemoryUsage` (`Number`, deprecated) - MiB compatibility alias for `cacheBytes`; the byte-native option wins when both are supplied.
+  - `options.memoryCacheOverflow` (`Number`, deprecated) - MiB compatibility alias for `maximumCacheOverflowBytes`; the byte-native option wins when both are supplied.
   - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+  - `options.progressiveResolutionHeightFraction`=`0.3` (`Number`) - Prioritizes coarse viewport coverage using SSE at a reduced logical viewport height. Set to `0` to disable; values above `0.5` are ignored. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
+  - `options.foveatedScreenSpaceError`=`true` (`Boolean`) - Prioritizes perspective requests near the camera view axis before peripheral detail. This changes request timing, not the final LOD target. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
+  - `options.foveatedConeSize`=`0.1` (`Number`) - Fraction of the perspective field of view that receives no foveated SSE relaxation. Set to `1` to disable peripheral deferral.
+  - `options.foveatedMinimumScreenSpaceErrorRelaxation`=`0` (`Number`) - Minimum logical-pixel SSE relaxation immediately outside the center cone.
+  - `options.foveatedInterpolationCallback`=`linear interpolation` (`Function`) - Interpolates logical-pixel SSE relaxation from the cone edge toward the viewport edge.
+  - `options.foveatedTimeDelay`=`0.2` (`Number`) - Maximum seconds eligible peripheral requests wait after camera movement. Traditional `REPLACE` traversal is never deferred.
   - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
@@ -96,6 +106,17 @@ For format-specific source behavior, see:
 Cesium 3D tiles specific options:
 
 - `options.maximumScreenSpaceError`=`8` (`Number`) - The maximum screen-space error used to drive level-of-detail refinement. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+- `options.dynamicScreenSpaceError`=`true` (`Boolean`) - Reduces refinement for distant,
+  horizon-facing tiles in perspective views. Orthographic traversal is unaffected.
+- `options.dynamicScreenSpaceErrorDensity`=`0.0002` (`Number`) - Base fog density, in inverse
+  meters, used by dynamic SSE. Higher values reduce distant refinement sooner.
+- `options.dynamicScreenSpaceErrorFactor`=`24` (`Number`) - Maximum dynamic SSE reduction in
+  logical/CSS pixels.
+- `options.dynamicScreenSpaceErrorHeightFalloff`=`0.25` (`Number`) - Fraction of the root tileset
+  height at which dynamic SSE starts to fade as the camera rises. Values are clamped to `[0, 1]`.
+
+See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod#dynamic-perspective-sse)
+for the formulas, worked example, projection boundaries, and tuning guidance.
 
 ## Properties
 
@@ -187,26 +208,41 @@ For formulas, projection-specific behavior, transform scaling, and tuning guidan
 ^default 8 \*
 ^exception `maximumScreenSpaceError` must be greater than or equal to zero.
 
-### maximumMemoryUsage : Number
+### cacheBytes : Number
 
-The maximum amount of GPU memory (in MB) that may be used to cache tiles. This value is estimated from
+The soft target in bytes for estimated tile content retained by the cache. The estimate includes
 geometry, textures, and batch table textures of loaded tiles. For point clouds, this value also
 includes per-point metadata.
 
-Tiles not in view are unloaded to enforce this.
+Tiles not needed in the current frame are unloaded in least-recently-used order to approach this target.
+Tiles used by the current frame remain protected.
 
 If decreasing this value results in unloading tiles, the tiles are unloaded the next frame.
 
-If tiles sized more than `maximumMemoryUsage` are needed
+If tiles sized more than `cacheBytes` are needed
 to meet the desired screen space error, determined by `Tileset3D.maximumScreenSpaceError`,
 for the current view, then the memory usage of the tiles loaded will exceed
-`maximumMemoryUsage`. For example, if the maximum is 256 MB, but
-300 MB of tiles are needed to meet the screen space error, then 300 MB of tiles may be loaded. When
-these tiles go out of view, they will be unloaded.
+`cacheBytes` by up to `maximumCacheOverflowBytes` before memory-adjusted SSE raises the active
+threshold. When current-frame tiles go out of use, they become eligible for eviction.
 
-^default 512 \*
-^exception `maximumMemoryUsage` must be greater than or equal to zero.
+^default 536870912 \*
+^exception `cacheBytes` must be a finite number greater than or equal to zero.
 ^see Tileset3D#gpuMemoryUsageInBytes
+
+### maximumCacheOverflowBytes : Number
+
+Additional current-frame memory headroom in bytes. When estimated usage exceeds
+`cacheBytes + maximumCacheOverflowBytes` and memory adjustment is enabled,
+`memoryAdjustedScreenSpaceError` rises incrementally to reduce future LOD demand. This value does
+not change the base target used to evict unused tiles.
+
+^default 536870912 \*
+^exception `maximumCacheOverflowBytes` must be a finite number greater than or equal to zero.
+
+### maximumMemoryUsage : Number (Deprecated)
+
+Compatibility property and constructor option that expresses `cacheBytes` in mebibytes. Assignments
+remain synchronized with `cacheBytes`. Use the byte-native API for new code.
 
 ### root : Tile3D
 
@@ -233,8 +269,6 @@ tileset.readyPromise.then(function (tileset) {
 
 A 4x4 transformation matrix that transforms the entire tileset.
 
-### maximumMemoryUsage : Number
-
 ### gpuMemoryUsageInBytes : Number
 
 The total amount of GPU memory in bytes used by the tileset. This value is estimated from
@@ -260,7 +294,7 @@ See [Extras](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/speci
 
 Unloads all tiles that weren't selected the previous frame. This can be used to
 explicitly manage the tile cache and reduce the total number of tiles loaded below
-`Tileset3D.maximumMemoryUsage`.
+`Tileset3D.cacheBytes` when unused content is available for eviction.
 
 Tile unloads occur at the next frame to keep all the WebGL delete calls
 within the render loop.

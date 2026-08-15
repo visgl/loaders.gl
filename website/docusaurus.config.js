@@ -229,7 +229,11 @@ const config = {
             '/examples/geoarrow': '/examples/geospatial/geoarrow',
             '/examples/geoparquet': '/examples/geospatial/geoparquet',
             '/examples/geojson': '/examples/geospatial/geojson',
-    
+
+            '/docs/modules/parquet/benchmarks': '/docs/modules/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/parquet/api-reference/parquet-writer',
+
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };
@@ -313,7 +317,7 @@ const config = {
           {
             type: 'html',
             position: 'right',
-            value: '<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: \'\'; height: 80px; width: 100px; margin-top: -30px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>'
+            value: `<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: ''; height: 80px; width: 100px; margin-top: -30px; background-image: url('${baseUrl}images/openjs-foundation.svg'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>`
           },
           {
             href: 'https://github.com/visgl/loaders.gl',

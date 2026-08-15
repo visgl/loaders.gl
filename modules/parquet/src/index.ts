@@ -7,9 +7,33 @@
 export {ParquetFormat} from './parquet-format';
 
 export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
-export {ParquetLoader} from './parquet-loader';
+export {ParquetLoader} from './parquet-loader-types';
 export {GeoParquetLoader} from './geoparquet-loader';
-export {ParquetJSLoader} from './parquet-js-loader';
+export {ParquetJSLoader} from './parquet-js-loader-types';
+
+export {ParquetSourceLoader} from './parquet-source-loader-types';
+export type {
+  ParquetBatch,
+  ParquetBatchMetadata,
+  ParquetBatchProvenance,
+  ParquetColumnChunkMetadata,
+  ParquetColumnChunkStatistics,
+  ParquetMetadataRequestOptions,
+  ParquetObjectVersion,
+  ParquetRangeRequestOptions,
+  ParquetReadOptions,
+  ParquetRowGroupMetadata,
+  ParquetSourceBatch,
+  ParquetSourceLoaderOptions,
+  ParquetSourceMetadata,
+  ParquetSourceReadOptions,
+  ParquetTelemetry,
+  ParquetTelemetryEvent
+} from './parquet-source-types';
+export {
+  PARQUET_SOURCE_CAPABILITIES,
+  type ParquetSourceCapabilities
+} from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
 export type {ParquetJSWriterOptions} from './parquet-js-writer';

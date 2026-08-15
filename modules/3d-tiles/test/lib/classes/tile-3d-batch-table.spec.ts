@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
 import {concatTypedArrays} from '@loaders.gl/math'; // '@math.gl/geometry';
 // import {loadTileset} from '../utils/load-utils';

@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 import {Progress} from '../../../src/i3s-converter/helpers/progress';
 
 // eslint-disable-next-line max-statements

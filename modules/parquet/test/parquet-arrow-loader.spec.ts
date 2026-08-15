@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders.gl/core';
+import {
+  load,
+  loadInBatches,
+  encode,
+  fetchFile,
+  isBrowser,
+  setLoaderOptions
+} from '@loaders.gl/core';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {getGeoMetadata, convertGeometryToWKB} from '@loaders.gl/gis';
@@ -29,6 +36,69 @@ test('ParquetLoader#loader objects', (t) => {
   // Not sure why validateLoader calls parse? Raises an error about "Invalid Parquet file"
   // validateLoader(t, ParquetLoader, 'ParquetLoader');
   // validateLoader(t, ParquetWorkerLoader, 'ParquetWorkerLoader');
+  t.end();
+});
+
+test('ParquetLoader#publishes a module-local worker asset', t => {
+  t.equal(typeof ParquetLoader.worker, 'string', 'declares a concrete packaged worker URL');
+  t.notOk(
+    String(ParquetLoader.worker).includes('unpkg.com'),
+    'does not use the implicit worker CDN fallback'
+  );
+  const workerFile = isBrowser ? '/parquet-worker.js' : '/parquet-worker-node.cjs';
+  t.ok(String(ParquetLoader.worker).endsWith(workerFile), 'targets the packaged runtime worker');
+  t.end();
+});
+
+test('ParquetLoader#worker keeps the browser responsive and rehydrates Arrow output', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const response = await fetchFile(`${PARQUET_DIR}/geoparquet/example.parquet`);
+  const arrayBuffer = await response.arrayBuffer();
+  let mainThreadTicked = false;
+  const tablePromise = load(arrayBuffer, ParquetLoader, {
+    core: {worker: true, reuseWorkers: false},
+    parquet: {shape: 'arrow-table'}
+  }) as Promise<ArrowTable>;
+  await new Promise<void>(resolve =>
+    setTimeout(() => {
+      mainThreadTicked = true;
+      resolve();
+    }, 0)
+  );
+  const table = await tablePromise;
+
+  t.ok(mainThreadTicked, 'the main event loop advances while the worker decodes');
+  t.ok(table.data instanceof arrow.Table, 'rehydrates an Apache Arrow Table on the main thread');
+  t.equal(table.data.getChild('name')?.get(0), 'Fiji', 'rehydrated Arrow vectors retain methods');
+  t.end();
+});
+
+test('ParquetLoader#worker parse is cancellable', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const response = await fetchFile(`${PARQUET_DIR}/geoparquet/example.parquet`);
+  const arrayBuffer = await response.arrayBuffer();
+  const abortController = new AbortController();
+  abortController.abort();
+  const tablePromise = load(arrayBuffer, ParquetLoader, {
+    core: {worker: true, reuseWorkers: true},
+    parquet: {shape: 'arrow-table', signal: abortController.signal}
+  });
+
+  let abortError: unknown;
+  try {
+    await tablePromise;
+  } catch (error) {
+    abortError = error;
+  }
+  t.equal((abortError as Error | undefined)?.name, 'AbortError', 'terminates the active worker parse');
   t.end();
 });
 
@@ -85,22 +155,29 @@ test('ParquetLoader#parse applies reader options without passing wasmUrl upstrea
   t.end();
 });
 
-test('ParquetLoader#arrow-table rejects deprecated js implementation option', async (t) => {
+test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  await t.rejects(
-    load(url, ParquetLoader, {
-      parquet: {
-        shape: 'arrow-table',
-        implementation: 'js',
-        limit: 3
-      }
-    } as any),
-    /does not support shape "arrow-table"/,
-    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
+  const table = (await load(url, ParquetJSLoader, {
+    parquet: {
+      shape: 'arrow-table',
+      limit: 3
+    }
+  })) as ArrowTable;
+
+  t.equal(table.shape, 'arrow-table');
+  t.equal(table.data.numRows, 3, 'TypeScript implementation converts selected rows to Arrow');
+  t.equal(
+    getGeometryColumnsFromSchema(table.schema!).geometry?.encoding,
+    'geoarrow.wkb',
+    'TypeScript implementation annotates the Arrow geometry field'
+  );
+  t.equal(
+    getGeoMetadata(table.schema?.metadata)?.columns.geometry.encoding,
+    'wkb',
+    'TypeScript implementation preserves GeoParquet schema metadata'
   );
   t.end();
 });
-
 test('ParquetLoader#load supports arrow-table shape', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const wrapperTable = (await load(url, ParquetLoader, {
@@ -126,43 +203,35 @@ test('ParquetLoader#load supports arrow-table shape', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#arrow-table loadInBatches rejects deprecated js implementation option', async (t) => {
+test('ParquetJSLoader#arrow-table supports loadInBatches', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  await t.rejects(
-    loadInBatches(url, ParquetLoader, {
+  const iterator = await loadInBatches(
+    url,
+    ParquetJSLoader,
+    {
       parquet: {
         shape: 'arrow-table',
-        implementation: 'js',
         limit: 5,
         batchSize: 2
       }
-    } as any),
-    /does not support shape "arrow-table"/,
-    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
+    }
   );
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    t.equal(batch.shape, 'arrow-table');
+    t.ok(batch.data instanceof arrow.Table, 'returns Apache Arrow table batches');
+    rowCount += batch.length;
+  }
+  t.equal(rowCount, 5, 'returns all requested rows');
   t.end();
 });
-
 test('ParquetWriter#Arrow table round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWriter, {
     worker: false
   });
-  const newTable = (await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false},
-    parquet: {shape: 'arrow-table'}
-  })) as ArrowTable;
-
-  t.deepEqual(table.data.schema, newTable.data.schema);
-  t.end();
-});
-
-test('ParquetWriter#ignores implementation option and stays on wasm', async (t) => {
-  const table = createArrowTable();
-  const parquetBuffer = await encode(table, ParquetWriter, {
-    parquet: {implementation: 'js'}
-  } as any);
   const newTable = (await load(parquetBuffer, ParquetLoader, {
     core: {worker: false},
     parquet: {shape: 'arrow-table'}
@@ -317,8 +386,7 @@ test('GeoParquetLoader#supports arrow-table shape', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table = await load(url, GeoParquetLoader, {
     parquet: {
-      shape: 'arrow-table',
-      backend: 'wasm'
+      shape: 'arrow-table'
     }
   });
 

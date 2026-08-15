@@ -6,12 +6,15 @@
 
 export {LASFormat} from './las-format';
 
-export type {LASLoaderOptions} from './las-loader';
+export type {LASLoaderOptions} from './las-loader-types';
 
 export type {LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
 
-export {LASLoader} from './las-loader';
+export {LASLoader} from './las-loader-types';
+export {LASCOPCLoader} from './las-copc-loader-types';
+export {LAZPerfLoader} from './lazperf-loader-types';
+export {LAZRsLoader} from './laz-rs-loader-types';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
   NeedsMoreData,
@@ -30,4 +33,4 @@ export type {
 
 // DEPRECATED EXPORTS
 /** @deprecated Use LASLoader. */
-export {LASWorkerLoader} from './las-loader';
+export {LASWorkerLoader} from './las-loader-types';

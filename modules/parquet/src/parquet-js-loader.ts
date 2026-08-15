@@ -2,42 +2,84 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
-import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  ObjectRowTable,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 
-import {ParquetFormat} from './parquet-format';
+import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
+import {
+  parseParquetFileToArrowInBatchesWithJs,
+  parseParquetFileToArrowWithJs
+} from './lib/parsers/parse-parquet-to-arrow-js';
+import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
+import {ParquetJSLoader as ParquetJSLoaderMetadata} from './parquet-js-loader-types';
 import type {ParquetJSLoaderOptions} from './parquet-loader-options';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const {preload: _ParquetJSLoaderPreload, ...ParquetJSLoaderMetadataWithoutPreload} =
+  ParquetJSLoaderMetadata;
 
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
-  backend: 'typescript' as const,
   columns: undefined,
   preserveBinary: false
 };
 
-/** Preloads the parser-bearing parquetjs loader implementation. */
-async function preload() {
-  const {ParquetLoaderWithParser} = await import('./parquet-loader-with-parser');
-  return ParquetLoaderWithParser;
-}
-
-/** Metadata-only plain-row Parquet loader backed by the experimental parquetjs implementation. */
-export const ParquetJSLoader = {
-  ...ParquetFormat,
-
-  dataType: null as unknown as ObjectRowTable,
-  batchType: null as unknown as ObjectRowTableBatch,
-
-  id: 'parquet-js',
-  module: 'parquet',
-  version: VERSION,
+/** Parser-bearing TypeScript-only Parquet loader implementation. */
+export const ParquetJSLoaderWithParser = {
+  ...ParquetJSLoaderMetadataWithoutPreload,
   worker: false,
-  options: {
-    parquet: DEFAULT_PARQUET_JS_OPTIONS
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetJSLoaderOptions) {
+    const parquetOptions = getParquetOptions(options);
+    const file = new BlobFile(arrayBuffer);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
+      : parseParquetFile(file, parquetOptions);
   },
-  preload
-} as const satisfies Loader<ObjectRowTable, ObjectRowTableBatch, ParquetJSLoaderOptions>;
+  parseFile(file: ReadableFile, options?: ParquetJSLoaderOptions) {
+    const parquetOptions = getParquetOptions(options);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
+      : parseParquetFile(file, parquetOptions);
+  },
+  parseFileInBatches(file: ReadableFile, options?: ParquetJSLoaderOptions) {
+    const parquetOptions = getParquetOptions(options);
+    return parquetOptions.parquet?.shape === 'arrow-table'
+      ? parseParquetFileToArrowInBatchesWithJs(file, parquetOptions)
+      : parseParquetFileInBatches(file, parquetOptions);
+  },
+  async *parseInBatches(
+    asyncIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options?: ParquetJSLoaderOptions,
+    _context?: unknown
+  ) {
+    const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
+    const parquetOptions = getParquetOptions(options);
+    const file = new BlobFile(arrayBuffer);
+    if (parquetOptions.parquet?.shape === 'arrow-table') {
+      yield* parseParquetFileToArrowInBatchesWithJs(file, parquetOptions);
+    } else {
+      yield* parseParquetFileInBatches(file, parquetOptions);
+    }
+  }
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | ArrowTable,
+  ObjectRowTableBatch | ArrowTableBatch,
+  ParquetJSLoaderOptions
+>;
+
+/**
+ * Normalizes caller options for the TypeScript-backed Parquet loader.
+ * @param options caller-supplied loader options
+ * @returns normalized options with TypeScript defaults applied
+ */
+function getParquetOptions(options?: ParquetJSLoaderOptions): ParquetJSLoaderOptions {
+  return normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS);
+}

@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import test from 'test/utils/vitest-tape';
 
 import {VideoLoader} from '@loaders.gl/video';
 import {isBrowser} from '@loaders.gl/core';
