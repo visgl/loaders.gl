@@ -31,6 +31,7 @@ It is not clear if a counterpart to the `File` class will eventually be supporte
 The preferred way to provide random-access data to loaders.gl is through `ReadableFile` implementations:
 
 - `HttpFile` reads from URLs and issues HTTP range requests when the server supports them.
+- `ArrayBufferFile` provides direct random access to an in-memory `ArrayBuffer` without a `Blob` conversion.
 - `BlobFile` wraps browser `Blob` and `File` instances and exposes efficient slicing.
 - `NodeFile` provides safe, tree-shakeable access to local files under Node.js without importing `fs` in application code.
 - `DataViewReadableFile` adapts in-memory buffers (such as data returned by `fetch`) to the same interface.
