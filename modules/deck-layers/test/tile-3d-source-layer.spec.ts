@@ -6,7 +6,7 @@ import test from 'test/utils/vitest-tape';
 import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-import {createSource} from '@loaders.gl/deck-layers';
+import {createSource, Tile3DSourceLayer} from '@loaders.gl/deck-layers';
 import {loadArrayBufferFromFile} from 'test/utils/readable-files';
 import {
   createSLPKArchiveResolver,
@@ -47,6 +47,14 @@ test('createSource#keeps non-archive loaders on standard source classes', t => {
 
   t.ok(tiles3DSource instanceof Tiles3DSource);
   t.ok(i3sSource instanceof I3SSource);
+  t.end();
+});
+
+test('Tile3DSourceLayer#accepts source-backed data', t => {
+  const source = createSource('https://example.com/data/test.slpk', SLPKLoader, {});
+  const layer = new Tile3DSourceLayer({id: 'slpk-source-layer', data: source});
+
+  t.equal(layer.props.data, source, 'preserves the source passed through the data prop');
   t.end();
 });
 
