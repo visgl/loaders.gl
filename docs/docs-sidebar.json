@@ -194,6 +194,7 @@
           "modules/flatgeobuf/api-reference/flatgeobuf-source-loader",
           "modules/geopackage/api-reference/geopackage-source",
           "modules/geotiff/api-reference/geotiff-source-loader",
+          "modules/zarr/api-reference/geo-zarr-source-loader",
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/zarr/api-reference/ome-zarr-source-loader",
@@ -596,6 +597,7 @@
         "label": "@loaders.gl/zarr",
         "items": [
           "modules/zarr/README",
+          "modules/zarr/api-reference/geo-zarr-source-loader",
           "modules/zarr/api-reference/ome-zarr-source-loader"
         ]
       }

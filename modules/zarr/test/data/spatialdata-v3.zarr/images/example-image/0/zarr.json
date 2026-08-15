@@ -43,5 +43,28 @@
     "y",
     "x"
   ],
-  "attributes": {}
+  "attributes": {
+    "long_name": "Example georeferenced image",
+    "proj:code": "EPSG:4326",
+    "spatial:dimensions": [
+      "y",
+      "x"
+    ],
+    "spatial:bbox": [
+      -20,
+      -6.7,
+      23.9,
+      10
+    ],
+    "spatial:transform": [
+      0.1,
+      0,
+      -20,
+      0,
+      -0.1,
+      10
+    ],
+    "spatial:registration": "pixel",
+    "_FillValue": 0
+  }
 }
