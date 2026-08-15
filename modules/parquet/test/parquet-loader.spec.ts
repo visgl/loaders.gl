@@ -113,11 +113,11 @@ test('ParquetJSLoader#loads the dictionary benchmark fixture', async (t) => {
   t.end();
 });
 
-test('ParquetJSLoader#arrow-table preserves ranged dictionary byte values', async (t) => {
+test('ParquetJSLoader#arrow-table preserves ranged dictionary values', async (t) => {
   const url = '@loaders.gl/parquet/test/data/benchmark-dictionary.parquet';
   const parquetOptions = {
     shape: 'arrow-table' as const,
-    columns: ['category', 'nullableLabel'],
+    columns: ['category', 'nullableLabel', 'quantity', 'price'],
     offset: 4094,
     limit: 5
   };
@@ -140,7 +140,41 @@ test('ParquetJSLoader#arrow-table preserves ranged dictionary byte values', asyn
     );
     for (const columnName of parquetOptions.columns) {
       t.deepEqual(
-        arrowTable.data.getChild(columnName)?.toArray(),
+        Array.from(arrowTable.data.getChild(columnName) || []),
+        objectRowTable.data.map(row => row[columnName] ?? null),
+        `${columnName} values and nulls match object-row decoding`
+      );
+    }
+  }
+  t.end();
+});
+
+test('ParquetJSLoader#arrow-table preserves ranged physical integer values', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/delta_binary_packed.parquet';
+  const columns = ['bitwidth0', 'bitwidth32', 'bitwidth64', 'int_value'];
+  const parquetOptions = {
+    shape: 'arrow-table' as const,
+    columns,
+    offset: 3,
+    limit: 5
+  };
+  const arrowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: parquetOptions
+  });
+  const objectRowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {...parquetOptions, shape: 'object-row-table'}
+  });
+
+  t.equal(arrowTable.shape, 'arrow-table');
+  t.equal(objectRowTable.shape, 'object-row-table');
+  if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
+    for (const columnName of columns) {
+      t.deepEqual(
+        Array.from(arrowTable.data.getChild(columnName) || [], value =>
+          typeof value === 'bigint' ? Number(value) : value
+        ),
         objectRowTable.data.map(row => row[columnName] ?? null),
         `${columnName} values and nulls match object-row decoding`
       );
