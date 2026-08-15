@@ -32,12 +32,23 @@ export function decodeThrift(obj: any, buf: Uint8Array, offset?: number) {
 }
 
 /**
- * FIXME not ideal that this is linear
+ * Returns the generated TypeScript enum member for a Thrift value.
+ * @param thriftEnum generated numeric enum object
+ * @param value serialized enum value
+ * @returns enum member name
  */
-export function getThriftEnum(klass: any, value: number | string): string {
-  for (const k in klass) {
-    if (klass[k] === value) {
-      return k;
+export function getThriftEnum(thriftEnum: object, value: number | string): string {
+  const enumValues = thriftEnum as Record<string | number, number | string>;
+  if (typeof value === 'number') {
+    const enumName = enumValues[value];
+    if (typeof enumName === 'string') {
+      return enumName;
+    }
+  }
+
+  for (const enumName in enumValues) {
+    if (enumValues[enumName] === value) {
+      return enumName;
     }
   }
   throw new Error('Invalid ENUM value');
