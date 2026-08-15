@@ -44,20 +44,32 @@ export async function decodeDataPages(
     size: buffer.length
   };
 
+  const expectedLevelCount =
+    context.numValues === undefined ? undefined : Number(context.numValues);
+  if (
+    expectedLevelCount !== undefined &&
+    (!Number.isSafeInteger(expectedLevelCount) || expectedLevelCount < 0)
+  ) {
+    throw new Error(`Invalid Parquet column value count ${expectedLevelCount}`);
+  }
+
+  const outputCapacity = expectedLevelCount ?? 0;
   const data: ParquetColumnChunk = {
-    rlevels: [],
-    dlevels: [],
-    values: [],
+    rlevels: new Array<number>(outputCapacity),
+    dlevels: new Array<number>(outputCapacity),
+    values: new Array(outputCapacity),
     pageHeaders: [],
     count: 0
   };
 
   let dictionary = context.dictionary || [];
+  let levelOffset = 0;
+  let valueOffset = 0;
 
   while (
     // @ts-ignore size can be undefined
     cursor.offset < cursor.size &&
-    (!context.numValues || data.dlevels.length < Number(context.numValues))
+    (expectedLevelCount === undefined || levelOffset < expectedLevelCount)
   ) {
     // Looks like we have to decode these in sequence due to cursor updates?
     const page = await decodePage(cursor, context);
@@ -74,27 +86,30 @@ export async function decodeDataPages(
     ) as ParquetCodec;
     // Pages might be in different encodings. We don't need to decode in case
     // of 'PLAIN' encoding because all values are already in place
-    if (
+    const usesDictionary =
       dictionary.length &&
-      (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY')
-    ) {
-      // eslint-disable-next-line no-loop-func
-      page.values = page.values.map(value => dictionary[value]);
-    }
+      (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY');
 
     for (let index = 0; index < page.rlevels.length; index++) {
-      data.rlevels.push(page.rlevels[index]);
-      data.dlevels.push(page.dlevels[index]);
-      const value = page.values[index];
+      data.rlevels[levelOffset + index] = page.rlevels[index];
+      data.dlevels[levelOffset + index] = page.dlevels[index];
+    }
+    levelOffset += page.rlevels.length;
 
+    for (let index = 0; index < page.values.length; index++) {
+      const value = usesDictionary ? dictionary[page.values[index]] : page.values[index];
       if (value !== undefined) {
-        data.values.push(value);
+        data.values[valueOffset++] = value;
       }
     }
 
     data.count += page.count;
     data.pageHeaders.push(page.pageHeader);
   }
+
+  data.rlevels.length = levelOffset;
+  data.dlevels.length = levelOffset;
+  data.values.length = valueOffset;
 
   return data;
 }
