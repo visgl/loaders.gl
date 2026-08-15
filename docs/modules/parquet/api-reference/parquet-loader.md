@@ -209,13 +209,22 @@ The suite runs entirely in your browser. Fixture download and parser initializat
 timing; each implementation is warmed up and must return the same row count. The matrix covers
 nullable primitives, nested and repeated data, dictionary and delta encodings, compression, and
 column projection. It focuses on Arrow output and retains one object-row control to expose
-row-materialization cost. Unsupported implementation/fixture combinations are skipped and shown as
-an em dash. Results depend on the browser, hardware, thermal state, and whether this tab remains
-focused.
+row-materialization cost. `N/A` means an implementation is intentionally excluded from a scenario;
+`Failed` means a selected implementation did not pass warm-up or correctness validation. A green
+marker identifies the fastest completed value in each row. Results depend on the browser, hardware,
+thermal state, and whether this tab remains focused.
 
-The live suite includes both loaders.gl loader variants plus a browser-oriented peer reader.
-Dependency versions are pinned in the repository lockfile. The corresponding Node suite covers
-additional codecs and projections with `yarn bench parquet`.
+The throughput cases emphasize sustained work rather than two-row initialization effects: the main
+fixtures span 1,000 to 40,000 rows, up to 66 columns, and multiple row groups. The compression matrix
+covers SNAPPY, GZIP, ZSTD, LZ4_RAW, and legacy LZ4 framing in addition to uncompressed data. Scenario
+labels show their row and top-level column counts so results from differently shaped files are not
+mistaken for equivalent workloads.
+
+The live suite includes `ParquetLoader` plus the browser-oriented `parquet-wasm` and `hyparquet`
+packages. External package versions are displayed in the table headers and pinned in the repository
+lockfile. The hyparquet compression cases use the separately pinned `hyparquet-compressors` 1.1.1
+package. The corresponding Node suite covers additional codecs and projections with
+`yarn bench parquet`.
 
 <BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
   {() => {
