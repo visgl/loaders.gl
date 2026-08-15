@@ -18,8 +18,7 @@ const DELTA_BYTE_ARRAY_PARQUET_URL =
   '@loaders.gl/parquet/test/data/apache/good/delta_byte_array.parquet';
 const DELTA_BINARY_PACKED_PARQUET_URL =
   '@loaders.gl/parquet/test/data/apache/good/delta_binary_packed.parquet';
-const DICTIONARY_PARQUET_URL =
-  '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+const DICTIONARY_PARQUET_URL = '@loaders.gl/parquet/test/data/benchmark-dictionary.parquet';
 const FRUITS_PARQUET_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const GEO_PARQUET_URL = '@loaders.gl/parquet/test/data/geoparquet/airports.parquet';
 const BENCHMARK_OPTIONS = {minIterations: 5, unit: 'rows'};
@@ -108,7 +107,7 @@ export async function parquetBench(suite) {
       implementationIds: ['typescript', 'hyparquet']
     },
     {
-      name: 'RLE_DICTIONARY small-file latency → Arrow',
+      name: 'RLE_DICTIONARY mixed table → Arrow',
       arrayBuffer: dictionaryArrayBuffer,
       shape: 'arrow-table'
     },

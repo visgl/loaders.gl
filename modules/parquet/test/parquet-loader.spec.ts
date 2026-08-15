@@ -91,6 +91,28 @@ test('ParquetJSLoader#load supports arrow-table shape', async (t) => {
   t.end();
 });
 
+test('ParquetJSLoader#loads the dictionary benchmark fixture', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/benchmark-dictionary.parquet';
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table');
+  if (table.shape === 'arrow-table') {
+    t.equal(table.data.numRows, 20_000, 'loads every row across all row groups');
+    t.deepEqual(
+      table.data.schema.fields.map((field) => field.name),
+      ['category', 'region', 'nullableLabel', 'quantity', 'price'],
+      'preserves the benchmark schema'
+    );
+    t.equal(table.data.getChild('category')?.get(0), 'alpha', 'decodes dictionary strings');
+    t.equal(table.data.getChild('nullableLabel')?.get(0), null, 'decodes nullable dictionary data');
+    t.equal(table.data.getChild('quantity')?.get(19_999), 999, 'decodes nullable numeric data');
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#load arrow-table preserves schema for empty results', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
   const table = await load(url, ParquetJSLoader, {

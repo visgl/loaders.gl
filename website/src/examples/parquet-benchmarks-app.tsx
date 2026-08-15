@@ -285,7 +285,7 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
     import.meta.url
   ).toString();
   const dictionaryUrl = new URL(
-    '../../../modules/parquet/test/data/apache/good/alltypes_dictionary.parquet',
+    '../../../modules/parquet/test/data/benchmark-dictionary.parquet',
     import.meta.url
   ).toString();
   const fruitsUrl = new URL(
@@ -331,7 +331,7 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
       implementationIds: ['typescript', 'hyparquet']
     },
     {
-      name: 'RLE_DICTIONARY small-file latency → Arrow',
+      name: 'RLE_DICTIONARY mixed table → Arrow',
       arrayBuffer: dictionaryArrayBuffer,
       shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
