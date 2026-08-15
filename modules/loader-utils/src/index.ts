@@ -179,7 +179,11 @@ export type {
   LAZChunkTableEntry,
   LAZPointDataTarget
 } from './lib/laz/laz-chunk-decoder';
-export {createLAZChunkEncoder, encodeLAZChunk} from './lib/laz/laz-chunk-encoder';
+export {
+  createLAZChunkEncoder,
+  encodeLAZChunk,
+  encodeLAZChunkTable
+} from './lib/laz/laz-chunk-encoder';
 export type {FeedableLAZChunkEncoder} from './lib/laz/laz-chunk-encoder';
 
 // PATH HELPERS

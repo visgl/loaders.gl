@@ -7,6 +7,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {LASCOPCLoader, LASLoader, LASWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
+import {decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
 
 const attributes = {
@@ -77,11 +78,83 @@ test('LASWriter#encode LAS 1.4 point format 7', async t => {
   t.end();
 });
 
-test('LASWriter#rejects compressed formats until TypeScript encoder is complete', t => {
+test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async t => {
+  for (const pointDataRecordFormat of [6, 7, 8] as const) {
+    const arrayBuffer = await encode(mesh, LASWriter, {
+      las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}
+    });
+    const dataView = new DataView(arrayBuffer);
+    const pointDataOffset = dataView.getUint32(96, true);
+    const chunkTableOffset = readUint64(dataView, pointDataOffset);
+    const chunkCount = dataView.getUint32(chunkTableOffset + 4, true);
+    const chunks = decodeLAZChunkTable(new Uint8Array(arrayBuffer, chunkTableOffset + 8), {
+      chunkCount,
+      pointCount: 3,
+      chunkSize: 2,
+      variable: false
+    });
+    const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+    const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+      core: {worker: false}
+    });
+
+    t.equal(
+      dataView.getUint8(104),
+      0x80 | pointDataRecordFormat,
+      `PDRF ${pointDataRecordFormat} sets the compressed format flag`
+    );
+    t.equal(dataView.getUint32(100, true), 1, `PDRF ${pointDataRecordFormat} writes one VLR`);
+    t.equal(chunkCount, 2, `PDRF ${pointDataRecordFormat} writes two chunks`);
+    t.deepEqual(
+      chunks.map(chunk => chunk.pointCount),
+      [2, 1],
+      `PDRF ${pointDataRecordFormat} fixed chunk counts roundtrip`
+    );
+    t.equal(
+      chunks.reduce((byteLength, chunk) => byteLength + chunk.byteLength, 0),
+      chunkTableOffset - pointDataOffset - 8,
+      `PDRF ${pointDataRecordFormat} chunk sizes reach the table`
+    );
+    t.deepEqual(
+      Array.from(data.attributes.POSITION.value),
+      Array.from(wasmData.attributes.POSITION.value),
+      `PDRF ${pointDataRecordFormat} TypeScript positions match WASM`
+    );
+    t.deepEqual(
+      Array.from(data.attributes.intensity.value),
+      Array.from(wasmData.attributes.intensity.value),
+      `PDRF ${pointDataRecordFormat} TypeScript intensities match WASM`
+    );
+    t.deepEqual(
+      Array.from(data.attributes.classification.value),
+      Array.from(wasmData.attributes.classification.value),
+      `PDRF ${pointDataRecordFormat} TypeScript classifications match WASM`
+    );
+  }
+  t.end();
+});
+
+test('LASWriter#validates compressed output options', t => {
   t.throws(
-    () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz'}}),
-    /LAZ encoding is not implemented/,
-    'LAZ writer fails clearly'
+    () =>
+      LASWriter.encodeSync?.(mesh, {
+        las: {format: 'laz', version: '1.2', pointDataRecordFormat: 6}
+      }),
+    /LAZ output requires LAS 1.4/,
+    'LAZ writer rejects legacy LAS versions'
+  );
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(mesh, {
+        las: {format: 'laz', version: '1.4', pointDataRecordFormat: 3}
+      }),
+    /only supports point data record formats 6-8/,
+    'LAZ writer rejects legacy point formats'
+  );
+  t.throws(
+    () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),
+    /invalid LAZ chunk size/,
+    'LAZ writer rejects empty chunks'
   );
   t.throws(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'copc'}}),
@@ -111,3 +184,8 @@ test('LASWriter#preserves normalized byte colors', async t => {
   t.equal(dataView.getUint16(227 + 24, true), 0, 'blue channel preserves zero byte value');
   t.end();
 });
+
+/** Read a little-endian UInt64 that is known to fit in JavaScript's safe integer range. */
+function readUint64(dataView: DataView, byteOffset: number): number {
+  return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;
+}
