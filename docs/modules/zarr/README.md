@@ -47,6 +47,8 @@ root and selecting an image pyramid.
 For climate, weather, ocean, satellite, and other Earth-science stores, use
 `GeoZarrSourceLoader`. It recognizes the current GeoZarr `proj:` and `spatial:` conventions as
 well as the regular one-dimensional coordinate arrays commonly written by xarray/CF workflows.
+The [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) reads a public NASA POWER climatology
+store directly from S3 and renders monthly solar irradiance on an interactive map.
 
 ## Attributions
 
