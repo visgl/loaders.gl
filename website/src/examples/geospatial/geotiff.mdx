@@ -3,7 +3,7 @@ title: "GeoTIFF Raster Source"
 hide_title: true
 ---
 
-import Demo from 'examples/website/geotiff/app';
+import {ClientExample} from '../../components';
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 # GeoTIFF
@@ -11,7 +11,7 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 <GeoTiffDocsTabs active="geotiff-example" />
 
 <div style={{height: 'calc(100vh - 76px)'}}>
-  <Demo>
+  <ClientExample kind="geotiff">
     [**`GeoTIFFSourceLoader`**](/docs/modules/geotiff) loads typed raster data for the current viewport and renders it through a client-side color ramp.
-  </Demo>
+  </ClientExample>
 </div>

@@ -3,7 +3,7 @@ title: "OME-TIFF Source"
 hide_title: true
 ---
 
-import Demo from 'examples/website/ometiff/app';
+import {ClientExample} from '../../components';
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 # OME-TIFF
@@ -11,7 +11,7 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 <GeoTiffDocsTabs active="ometiff-example" />
 
 <div style={{height: 'calc(100vh - 76px)'}}>
-  <Demo>
+  <ClientExample kind="ometiff">
     [**`OMETiffSourceLoader`**](/docs/modules/geotiff/api-reference/ometiff-source-loader) loads non-geospatial OME-TIFF planes and returns typed raster data for channel-aware rendering.
-  </Demo>
+  </ClientExample>
 </div>

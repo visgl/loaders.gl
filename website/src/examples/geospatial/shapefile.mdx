@@ -3,13 +3,13 @@ title: "Shapefile"
 hide_title: true
 ---
 
-import Demo from 'examples/website/geospatial/app';
+import {ClientExample} from '../../components';
 import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
 
 <ShapefileDocsTabs active="try-it" />
 
 <div style={{height: 'calc(100vh - 76px)'}}> 
-  <Demo format="Shapefile" >
+  <ClientExample kind="geospatial" format="Shapefile" >
     [**`ShapefileLoader`**](/docs/modules/arrow/api-reference/geopackage-loader) loads Esri Shapefiles, optionally into GeoJSON.
-  </Demo>
+  </ClientExample>
 </div>

@@ -3,13 +3,13 @@ title: "PMTiles"
 hide_title: true
 ---
 
-import Demo from 'examples/website/tiles/app';
+import {ClientExample} from '../../components';
 import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
 <TileDocsTabs active="pmtiles-example" />
 
 <div style={{height: 'calc(100vh - var(--ifm-navbar-height) - 4rem)'}}> 
-  <Demo format="PMTILES">
+  <ClientExample kind="tiles" format="PMTILES">
      [**`PMTilesSourceLoader`**](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) **dynamically loads** tiles from a single gigantic PMTiles file on cloud storage using HTTP range requests. 
     <small>
       Uses [**`MVTLoader`**](/docs/modules/mvt/api-reference/mvt-loader) for Mapbox Vector Tiles files.
@@ -20,5 +20,5 @@ import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
       `yarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000`, then choose
       the local range server entry.
     </small>
-  </Demo>
+  </ClientExample>
 </div>
