@@ -307,7 +307,8 @@ async function decodeDataPage(
   const valueEncoding = getThriftEnum(Encoding, header.data_page_header?.encoding!) as ParquetCodec;
   const decodeOptions: ParquetCodecOptions = {
     typeLength: context.column.typeLength,
-    bitWidth: getValueBitWidth(context, valueEncoding)
+    bitWidth: getValueBitWidth(context, valueEncoding),
+    retainByteArrayViews: context.retainByteArrayViews
   };
 
   const values = decodeValues(
@@ -427,7 +428,8 @@ async function decodeDataPageV2(
 
   const decodeOptions = {
     typeLength: context.column.typeLength,
-    bitWidth: getValueBitWidth(context, valueEncoding)
+    bitWidth: getValueBitWidth(context, valueEncoding),
+    retainByteArrayViews: context.retainByteArrayViews
   };
 
   const values = decodeValues(

@@ -15,6 +15,8 @@ export interface CursorBuffer {
 export interface ParquetCodecOptions {
   bitWidth?: number;
   disableEnvelope?: boolean;
+  /** Retain byte arrays as views into the decoded page buffer. */
+  retainByteArrayViews?: boolean;
   typeLength?: number;
 }
 

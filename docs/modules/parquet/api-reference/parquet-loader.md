@@ -187,8 +187,9 @@ const table = await load(url, ParquetJSLoader, {
 For `shape: 'arrow-table'`, `ParquetJSLoader` materializes flat selected columns directly into Apache
 Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Flat `UTF8`,
 `BYTE_ARRAY`, and `FIXED_LEN_BYTE_ARRAY` columns are assembled directly into Arrow offset, validity,
-and value buffers without converting their bytes through JavaScript strings. Nested schemas use the
-object-row materializer as a compatibility fallback.
+and value buffers without converting their bytes through JavaScript strings or copying every value
+into an intermediate buffer. Nested schemas use the object-row materializer as a compatibility
+fallback.
 
 ## Worker Execution
 
@@ -205,9 +206,12 @@ checked-in fixtures. They are a reproducible baseline for finding optimization o
 loaders.gl TypeScript backend, not a ranking of projects.
 
 The suite runs entirely in your browser. Fixture download and parser initialization happen before
-timing; each implementation is warmed up and must return the same row count. The suite focuses on
-Arrow output and retains one object-row control to expose row-materialization cost. Results depend on
-the browser, hardware, thermal state, and whether this tab remains focused.
+timing; each implementation is warmed up and must return the same row count. The matrix covers
+nullable primitives, nested and repeated data, dictionary and delta encodings, compression, and
+column projection. It focuses on Arrow output and retains one object-row control to expose
+row-materialization cost. Unsupported implementation/fixture combinations are skipped and shown as
+an em dash. Results depend on the browser, hardware, thermal state, and whether this tab remains
+focused.
 
 The live suite includes both loaders.gl loader variants plus a browser-oriented peer reader.
 Dependency versions are pinned in the repository lockfile. The corresponding Node suite covers
