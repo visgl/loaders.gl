@@ -23,9 +23,11 @@ import type {
 } from '../../parquetjs/schema/declare';
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
-import {toUint8Array} from '../../parquetjs/utils/binary-utils';
 import {normalizeArrowTableGeoMetadata} from '../geo/geospatial-metadata';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
+
+/** Largest byte value copied inline to avoid TypedArray#set call overhead. */
+const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
 
 /**
  * Parses a Parquet file with the TypeScript implementation directly into Arrow batches.
@@ -220,39 +222,57 @@ function createRawByteArrowVector(
 
   const rowCount = end - start;
   const valueOffsets = new Int32Array(rowCount + 1);
-  const nullBitmap = new Uint8Array(Math.ceil(rowCount / 8));
+  const byteValues = columnData.values as Uint8Array[];
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
   let valueIndex = 0;
+  let firstValueIndex = 0;
   let dataByteLength = 0;
   let nullCount = 0;
 
-  for (let rowIndex = 0; rowIndex < start; rowIndex++) {
-    if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
-      valueIndex++;
+  if (!nullBitmap) {
+    valueIndex = start;
+    firstValueIndex = valueIndex;
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      dataByteLength += byteValues[valueIndex++].byteLength;
+      if (dataByteLength > 0x7fffffff) {
+        throw new Error('Arrow Utf8/Binary column exceeds the 32-bit offset range');
+      }
+      valueOffsets[rowIndex + 1] = dataByteLength;
     }
-  }
-  const firstValueIndex = valueIndex;
-
-  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    const sourceRowIndex = start + rowIndex;
-    if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
-      const bytes = toUint8Array(columnData.values[valueIndex++]);
-      dataByteLength += bytes.byteLength;
-      nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
-    } else {
-      nullCount++;
+  } else {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
+        valueIndex++;
+      }
     }
-    if (dataByteLength > 0x7fffffff) {
-      throw new Error('Arrow Utf8/Binary column exceeds the 32-bit offset range');
+    firstValueIndex = valueIndex;
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const sourceRowIndex = start + rowIndex;
+      if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+        dataByteLength += byteValues[valueIndex++].byteLength;
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+      } else {
+        nullCount++;
+      }
+      if (dataByteLength > 0x7fffffff) {
+        throw new Error('Arrow Utf8/Binary column exceeds the 32-bit offset range');
+      }
+      valueOffsets[rowIndex + 1] = dataByteLength;
     }
-    valueOffsets[rowIndex + 1] = dataByteLength;
   }
 
   const data = new Uint8Array(dataByteLength);
   let dataOffset = 0;
   for (let index = firstValueIndex; index < valueIndex; index++) {
-    const bytes = toUint8Array(columnData.values[index]);
-    data.set(bytes, dataOffset);
-    dataOffset += bytes.byteLength;
+    const bytes = byteValues[index];
+    if (bytes.byteLength <= MAXIMUM_INLINE_BYTE_COPY_LENGTH) {
+      for (let byteIndex = 0; byteIndex < bytes.byteLength; byteIndex++) {
+        data[dataOffset++] = bytes[byteIndex];
+      }
+    } else {
+      data.set(bytes, dataOffset);
+      dataOffset += bytes.byteLength;
+    }
   }
 
   const nulls = nullCount ? nullBitmap : undefined;

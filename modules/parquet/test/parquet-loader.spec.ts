@@ -113,6 +113,42 @@ test('ParquetJSLoader#loads the dictionary benchmark fixture', async (t) => {
   t.end();
 });
 
+test('ParquetJSLoader#arrow-table preserves ranged dictionary byte values', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/benchmark-dictionary.parquet';
+  const parquetOptions = {
+    shape: 'arrow-table' as const,
+    columns: ['category', 'nullableLabel'],
+    offset: 4094,
+    limit: 5
+  };
+  const arrowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: parquetOptions
+  });
+  const objectRowTable = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {...parquetOptions, shape: 'object-row-table'}
+  });
+
+  t.equal(arrowTable.shape, 'arrow-table');
+  t.equal(objectRowTable.shape, 'object-row-table');
+  if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
+    t.deepEqual(
+      arrowTable.data.batches.map(batch => batch.numRows),
+      [2, 3],
+      'retains row-group boundaries'
+    );
+    for (const columnName of parquetOptions.columns) {
+      t.deepEqual(
+        arrowTable.data.getChild(columnName)?.toArray(),
+        objectRowTable.data.map(row => row[columnName] ?? null),
+        `${columnName} values and nulls match object-row decoding`
+      );
+    }
+  }
+  t.end();
+});
+
 test('ParquetJSLoader#load arrow-table preserves schema for empty results', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
   const table = await load(url, ParquetJSLoader, {
