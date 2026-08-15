@@ -3,6 +3,7 @@ name: website-deploy
 on:
   push:
     branches:
+      - master
       - 4.4-release
   workflow_dispatch:
 
