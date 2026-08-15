@@ -79,85 +79,215 @@ export function decodeValues(
   type: PrimitiveType,
   cursor: CursorBuffer,
   count: number,
-  opts: ParquetCodecOptions
+  options: ParquetCodecOptions
 ): number[] {
-  if (!('bitWidth' in opts)) {
+  if (!('bitWidth' in options)) {
     throw new Error('bitWidth is required');
   }
+  const bitWidth = options.bitWidth!;
+  if (!Number.isInteger(bitWidth) || bitWidth < 0 || bitWidth > 64) {
+    throw new Error(`invalid bit width: ${bitWidth}`);
+  }
+  if (!Number.isInteger(count) || count < 0) {
+    throw new Error(`invalid value count: ${count}`);
+  }
 
-  if (!opts.disableEnvelope) {
+  if (!options.disableEnvelope) {
+    assertReadable(cursor, 4);
     cursor.offset += 4;
   }
 
-  let values: number[] = [];
-  while (values.length < count) {
-    const header = varint.decode(cursor.buffer as any, cursor.offset);
-    cursor.offset += varint.encodingLength(header);
-    let decodedValues: number[];
-    if (header & 1) {
-      const count = (header >> 1) * 8;
-      decodedValues = decodeRunBitpacked(cursor, count, opts);
+  const values = new Array<number>(count);
+  let outputOffset = 0;
+  while (outputOffset < count) {
+    const header = readUnsignedVarIntNumber(cursor);
+    if (header % 2 === 1) {
+      const runValueCount = ((header - 1) / 2) * 8;
+      if (runValueCount === 0) {
+        throw new Error('invalid RLE bit-packed run length');
+      }
+      const outputCount = Math.min(runValueCount, count - outputOffset);
+      decodeBitPackedRun(cursor, runValueCount, outputCount, bitWidth, values, outputOffset);
+      outputOffset += outputCount;
     } else {
-      const count = header >> 1;
-      decodedValues = decodeRunRepeated(cursor, count, opts);
+      const runValueCount = header / 2;
+      if (runValueCount === 0) {
+        throw new Error('invalid RLE repeated run length');
+      }
+      const outputCount = Math.min(runValueCount, count - outputOffset);
+      const value = decodeRepeatedRun(cursor, bitWidth);
+      values.fill(value, outputOffset, outputOffset + outputCount);
+      outputOffset += outputCount;
     }
-
-    // strange failure in docusaurus / webpack if we don't cast the type here
-    for (const value of decodedValues as any[]) {
-      values.push(value);
-    }
-  }
-  values = values.slice(0, count);
-
-  if (values.length !== count) {
-    throw new Error('invalid RLE encoding');
   }
 
   return values;
 }
 
-function decodeRunBitpacked(
+/** Decodes one complete bit-packed run directly into the caller's output array. */
+function decodeBitPackedRun(
   cursor: CursorBuffer,
-  count: number,
-  opts: ParquetCodecOptions
-): number[] {
-  // @ts-ignore
-  const bitWidth: number = opts.bitWidth;
-
-  if (count % 8 !== 0) {
+  runValueCount: number,
+  outputCount: number,
+  bitWidth: number,
+  output: number[],
+  outputOffset: number
+): void {
+  if (runValueCount % 8 !== 0) {
     throw new Error('must be a multiple of 8');
   }
+  const packedByteLength = bitWidth * (runValueCount / 8);
+  const packedOffset = cursor.offset;
+  const size = cursor.size ?? cursor.buffer.length;
+  // Preserve compatibility with files whose malformed final dictionary run omits encoded bytes.
+  cursor.offset = Math.min(cursor.offset + packedByteLength, size);
 
-  // tslint:disable-next-line:prefer-array-literal
-  const values = new Array(count).fill(0);
-  for (let b = 0; b < bitWidth * count; b++) {
-    if (cursor.buffer[cursor.offset + Math.floor(b / 8)] & (1 << (b % 8))) {
-      values[Math.floor(b / bitWidth)] |= 1 << (b % bitWidth);
-    }
+  if (bitWidth === 0) {
+    output.fill(0, outputOffset, outputOffset + outputCount);
+    return;
+  }
+  if (bitWidth <= 24) {
+    decodeUint32BitPackedRun(
+      cursor.buffer,
+      packedOffset,
+      outputCount,
+      bitWidth,
+      output,
+      outputOffset
+    );
+    return;
+  }
+  if (bitWidth <= 45) {
+    decodeNumberBitPackedRun(
+      cursor.buffer,
+      packedOffset,
+      outputCount,
+      bitWidth,
+      output,
+      outputOffset
+    );
+    return;
   }
 
-  cursor.offset += bitWidth * (count / 8);
-  return values;
+  const bitWidthBigInt = BigInt(bitWidth);
+  const mask = (1n << bitWidthBigInt) - 1n;
+  let packedBits = 0n;
+  let packedBitCount = 0;
+  let byteOffset = packedOffset;
+  for (let valueIndex = 0; valueIndex < outputCount; valueIndex++) {
+    while (packedBitCount < bitWidth) {
+      packedBits |= BigInt(cursor.buffer[byteOffset++] ?? 0) << BigInt(packedBitCount);
+      packedBitCount += 8;
+    }
+    output[outputOffset + valueIndex] = Number(packedBits & mask);
+    packedBits >>= bitWidthBigInt;
+    packedBitCount -= bitWidth;
+  }
 }
 
-function decodeRunRepeated(
-  cursor: CursorBuffer,
+/** Decodes common narrow bit widths with a fast 32-bit reservoir. */
+function decodeUint32BitPackedRun(
+  buffer: Uint8Array,
+  packedOffset: number,
   count: number,
-  opts: ParquetCodecOptions
-): number[] {
-  // @ts-ignore
-  const bitWidth: number = opts.bitWidth;
-
-  let value = 0;
-  for (let i = 0; i < Math.ceil(bitWidth / 8); i++) {
-    // eslint-disable-next-line
-    value << 8; //  TODO - this looks wrong
-    value += cursor.buffer[cursor.offset];
-    cursor.offset += 1;
+  bitWidth: number,
+  output: number[],
+  outputOffset: number
+): void {
+  if (bitWidth === 8) {
+    for (let valueIndex = 0; valueIndex < count; valueIndex++) {
+      output[outputOffset + valueIndex] = buffer[packedOffset + valueIndex] ?? 0;
+    }
+    return;
   }
 
-  // tslint:disable-next-line:prefer-array-literal
-  return new Array(count).fill(value);
+  const mask = 2 ** bitWidth - 1;
+  let packedBits = 0;
+  let packedBitCount = 0;
+  let byteOffset = packedOffset;
+  for (let valueIndex = 0; valueIndex < count; valueIndex++) {
+    while (packedBitCount < bitWidth) {
+      packedBits |= (buffer[byteOffset++] ?? 0) << packedBitCount;
+      packedBitCount += 8;
+    }
+    output[outputOffset + valueIndex] = packedBits & mask;
+    packedBits >>>= bitWidth;
+    packedBitCount -= bitWidth;
+  }
+}
+
+/** Decodes a bit-packed run with an exact number-based bit reservoir. */
+function decodeNumberBitPackedRun(
+  buffer: Uint8Array,
+  packedOffset: number,
+  count: number,
+  bitWidth: number,
+  output: number[],
+  outputOffset: number
+): void {
+  const divisor = 2 ** bitWidth;
+  let packedBits = 0;
+  let packedBitCount = 0;
+  let byteOffset = packedOffset;
+  for (let valueIndex = 0; valueIndex < count; valueIndex++) {
+    while (packedBitCount < bitWidth) {
+      packedBits += (buffer[byteOffset++] ?? 0) * 2 ** packedBitCount;
+      packedBitCount += 8;
+    }
+    output[outputOffset + valueIndex] = packedBits % divisor;
+    packedBits = Math.floor(packedBits / divisor);
+    packedBitCount -= bitWidth;
+  }
+}
+
+/** Decodes the single little-endian value stored by a repeated run. */
+function decodeRepeatedRun(cursor: CursorBuffer, bitWidth: number): number {
+  const byteWidth = Math.ceil(bitWidth / 8);
+  assertReadable(cursor, byteWidth);
+  if (byteWidth <= 6) {
+    let value = 0;
+    let multiplier = 1;
+    for (let byteIndex = 0; byteIndex < byteWidth; byteIndex++) {
+      value += cursor.buffer[cursor.offset++] * multiplier;
+      multiplier *= 256;
+    }
+    return value;
+  }
+
+  let value = 0n;
+  for (let byteIndex = 0; byteIndex < byteWidth; byteIndex++) {
+    value |= BigInt(cursor.buffer[cursor.offset++]) << BigInt(byteIndex * 8);
+  }
+  return Number(value);
+}
+
+/** Reads an unsigned base-128 run header without allocating an intermediate buffer. */
+function readUnsignedVarIntNumber(cursor: CursorBuffer): number {
+  let value = 0;
+  let multiplier = 1;
+  for (let byteIndex = 0; byteIndex < 10; byteIndex++) {
+    assertReadable(cursor, 1);
+    const byte = cursor.buffer[cursor.offset++];
+    value += (byte & 0x7f) * multiplier;
+    if ((byte & 0x80) === 0) {
+      if (!Number.isSafeInteger(value)) {
+        throw new Error('RLE run header exceeds the safe integer range');
+      }
+      return value;
+    }
+    multiplier *= 128;
+  }
+  throw new Error('invalid RLE run header');
+}
+
+/** Ensures an RLE read stays within the current cursor. */
+function assertReadable(cursor: CursorBuffer, byteLength: number): void {
+  const size = cursor.size ?? cursor.buffer.length;
+  if (byteLength < 0 || cursor.offset + byteLength > size) {
+    throw new Error(
+      `unexpected end of RLE data (offset=${cursor.offset}, requested=${byteLength}, size=${size})`
+    );
+  }
 }
 
 function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Uint8Array {
