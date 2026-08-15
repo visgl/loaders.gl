@@ -165,6 +165,17 @@ function convertRowGroupSliceToArrow(
   for (const field of arrowSchema.fields) {
     const parquetField = parquetSchema.findField(field.name);
     const columnData = rowGroup.columnData[field.name];
+    const primitiveVector = createRawPrimitiveArrowVector(
+      field.type,
+      parquetField,
+      columnData,
+      start,
+      end
+    );
+    if (primitiveVector) {
+      vectors[field.name] = primitiveVector;
+      continue;
+    }
     const byteVector = createRawByteArrowVector(field.type, parquetField, columnData, start, end);
     if (byteVector) {
       vectors[field.name] = byteVector;
@@ -206,6 +217,79 @@ function createArrowTable(
   // Struct to zero rows. Restore the explicit Parquet selection length after construction.
   Object.defineProperty(recordBatch.data, 'length', {value: rowCount});
   return new arrow.Table(schema, [recordBatch]);
+}
+
+/** Typed arrays accepted by the direct primitive Arrow materialization path. */
+type RawPrimitiveArrowArray = Float32Array | Float64Array | Int32Array;
+
+/** Creates a fixed-width Arrow vector directly from decoded primitive Parquet values. */
+function createRawPrimitiveArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk | undefined,
+  start: number,
+  end: number
+): arrow.Vector | undefined {
+  if (!columnData) {
+    return undefined;
+  }
+  const rowCount = end - start;
+  const data = createRawPrimitiveArrowArray(arrowType, parquetField, rowCount);
+  if (!data) {
+    return undefined;
+  }
+
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let valueIndex = 0;
+  let nullCount = 0;
+
+  if (!nullBitmap) {
+    valueIndex = start;
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      data[rowIndex] = Number(columnData.values[valueIndex++]);
+    }
+  } else {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
+        valueIndex++;
+      }
+    }
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const sourceRowIndex = start + rowIndex;
+      if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+        data[rowIndex] = Number(columnData.values[valueIndex++]);
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+      } else {
+        nullCount++;
+      }
+    }
+  }
+
+  const nulls = nullCount ? nullBitmap : undefined;
+  return new arrow.Vector([
+    arrow.makeData({type: arrowType, data, nullBitmap: nulls, nullCount} as any)
+  ]);
+}
+
+/** Allocates the Arrow typed array matching an unconverted physical Parquet primitive. */
+function createRawPrimitiveArrowArray(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  rowCount: number
+): RawPrimitiveArrowArray | undefined {
+  if (parquetField.originalType) {
+    return undefined;
+  }
+  if (parquetField.primitiveType === 'FLOAT' && arrowType instanceof arrow.Float32) {
+    return new Float32Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'DOUBLE' && arrowType instanceof arrow.Float64) {
+    return new Float64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int32) {
+    return new Int32Array(rowCount);
+  }
+  return undefined;
 }
 
 /** Creates an Arrow Utf8 or Binary vector directly from decoded Parquet byte arrays. */
