@@ -7,8 +7,29 @@ import {DTYPE_LOOKUP} from './lib/zarr-pixel-source';
 export type SupportedDtype = (typeof DTYPE_LOOKUP)[keyof typeof DTYPE_LOOKUP];
 export type SupportedTypedArray = InstanceType<(typeof globalThis)[`${SupportedDtype}Array`]>;
 
+/** Named OME axis matching one Zarr array dimension. */
+interface MultiscaleAxis {
+  /** Axis name used for dimension selection. */
+  name?: string;
+  /** Semantic axis type such as `space`, `time`, or `channel`. */
+  type?: string;
+}
+
+/** One resolution level in an OME multiscale pyramid. */
+interface MultiscaleDataset {
+  /** Array path relative to the image group. */
+  path: string;
+  /** Transformations from array coordinates into the multiscale coordinate system. */
+  coordinateTransformations?: unknown[];
+}
+
 interface Multiscale {
-  datasets: {path: string}[];
+  /** Ordered OME axis descriptors matching the Zarr array dimensions. */
+  axes?: Array<string | MultiscaleAxis>;
+  /** Resolution levels and their transforms into the multiscale coordinate system. */
+  datasets: MultiscaleDataset[];
+  /** Transformations applied uniformly after each resolution-level transformation. */
+  coordinateTransformations?: unknown[];
   version?: string;
 }
 
@@ -27,7 +48,9 @@ interface Channel {
 interface Omero {
   channels: Channel[];
   rdefs: {
+    /** Default time index used for display. */
     defaultT?: number;
+    /** Default z index used for display. */
     defaultZ?: number;
     model: string;
   };
@@ -36,13 +59,22 @@ interface Omero {
 
 interface MultiscaleAttrs {
   multiscales: Multiscale[];
+  /** Non-standard legacy location retained for compatibility. */
+  coordinateTransformations?: unknown[];
 }
 
 interface OmeAttrs extends MultiscaleAttrs {
   omero: Omero;
 }
 
-export type RootAttrs = MultiscaleAttrs | OmeAttrs;
+interface OMEV05Attrs {
+  /** OME-Zarr v0.5 metadata envelope. */
+  ome?: Partial<OmeAttrs>;
+}
+
+export type RootAttrs = MultiscaleAttrs | OmeAttrs | OMEV05Attrs;
+
+export type {Channel, Multiscale, Omero};
 
 export interface PixelData {
   data: SupportedTypedArray;

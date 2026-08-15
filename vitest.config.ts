@@ -21,7 +21,6 @@ const excludePatterns = [
   'modules/polyfills/test/load-library/require-utils.spec.ts',
   'modules/video/test/**',
   'modules/xml/test/sax-ts/testcases/issue-30.spec.ts',
-  'modules/zarr/test/**',
   'test/browser.ts',
   'test/init-browser-test.ts',
   'test/init-tests.ts',
