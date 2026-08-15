@@ -105,7 +105,14 @@ function getFieldMetadata(field: FieldDefinition): Record<string, string> | unde
     if (key === 'name' || fieldValue === undefined) {
       continue;
     }
-    const metadataValue = typeof fieldValue === 'string' ? fieldValue : JSON.stringify(fieldValue);
+    const metadataValue =
+      typeof fieldValue === 'string'
+        ? fieldValue
+        : typeof fieldValue === 'boolean'
+          ? fieldValue
+            ? 'true'
+            : 'false'
+          : JSON.stringify(fieldValue);
     if (metadataValue === undefined) {
       continue;
     }

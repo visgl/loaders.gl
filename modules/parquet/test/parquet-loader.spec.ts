@@ -87,6 +87,18 @@ test('ParquetJSLoader#load supports arrow-table shape', async (t) => {
   t.equal(table.shape, 'arrow-table');
   if (table.shape === 'arrow-table') {
     t.equal(table.data.numRows, 2);
+    const identifierField = table.data.schema.fields.find(field => field.name === 'id');
+    t.deepEqual(
+      Object.fromEntries(identifierField?.metadata || []),
+      {
+        type: 'INT32',
+        optional: 'true',
+        repeated: 'false',
+        encoding: 'PLAIN',
+        compression: 'UNCOMPRESSED'
+      },
+      'preserves serialized Parquet field metadata in the Arrow schema'
+    );
   }
   t.end();
 });
