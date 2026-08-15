@@ -276,6 +276,13 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                 ...scenarioRows.map(row => row.throughput),
                 Number.NEGATIVE_INFINITY
               );
+              const isScenarioComplete = scenario.implementationIds.every(implementationId => {
+                const cellKey = getBenchmarkCellKey(scenario.name, implementationId);
+                return (
+                  scenarioRows.some(row => row.implementationId === implementationId) ||
+                  failedCellKeys.has(cellKey)
+                );
+              });
               return (
                 <tr key={scenario.name}>
                   <th scope="row">{scenario.name}</th>
@@ -287,7 +294,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                     const cellKey = getBenchmarkCellKey(scenario.name, implementationId);
                     const isApplicable = scenario.implementationIds.includes(implementationId);
                     const isBestResult =
-                      status === 'complete' && result?.throughput === bestThroughput;
+                      isScenarioComplete && result?.throughput === bestThroughput;
                     return (
                       <td
                         key={implementationId}
@@ -304,7 +311,10 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                         ) : !isApplicable ? (
                           <span className="parquet-benchmark-not-applicable">N/A</span>
                         ) : (
-                          <span className="parquet-benchmark-pending">—</span>
+                          <span
+                            className="parquet-benchmark-pending"
+                            aria-label="Benchmark pending"
+                          />
                         )}
                       </td>
                     );

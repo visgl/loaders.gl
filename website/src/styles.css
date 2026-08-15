@@ -628,7 +628,26 @@ body:has(.benchmark-page) footer.theme-layout-footer {
 }
 
 .parquet-benchmark-pending {
-  color: var(--ifm-font-color-secondary);
+  animation: parquet-benchmark-spin 0.8s linear infinite;
+  border: 2px solid var(--ifm-table-border-color);
+  border-radius: 50%;
+  border-top-color: var(--ifm-color-primary);
+  display: inline-block;
+  height: 0.9rem;
+  vertical-align: -0.1rem;
+  width: 0.9rem;
+}
+
+@keyframes parquet-benchmark-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parquet-benchmark-pending {
+    animation: none;
+  }
 }
 
 .parquet-benchmark-empty {
