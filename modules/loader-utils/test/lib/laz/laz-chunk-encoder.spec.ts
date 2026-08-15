@@ -6,7 +6,9 @@ import test from 'test/utils/vitest-tape';
 import {
   createLAZChunkEncoder,
   decodeLAZChunk,
+  decodeLAZChunkTable,
   encodeLAZChunk,
+  encodeLAZChunkTable,
   getLAZChunkByteLength
 } from '@loaders.gl/loader-utils';
 
@@ -82,6 +84,43 @@ test('LAZChunkEncoder#validates input and item versions', t => {
     () => encodeLAZChunk(rawPointData, {...metadata, point14ItemVersion: 4}),
     /only supports Point14 item version 3/,
     'unsupported Point14 versions are rejected'
+  );
+  t.end();
+});
+
+test('LAZChunkEncoder#encodes fixed and variable chunk tables', t => {
+  const chunks = [
+    {pointCount: 50_000, byteLength: 100_000},
+    {pointCount: 50_000, byteLength: 90_000},
+    {pointCount: 23, byteLength: 800}
+  ];
+  const fixedTable = encodeLAZChunkTable(chunks);
+  t.deepEqual(
+    decodeLAZChunkTable(fixedTable, {
+      chunkCount: chunks.length,
+      pointCount: 100_023,
+      chunkSize: 50_000,
+      variable: false
+    }),
+    chunks,
+    'fixed-size chunk table roundtrips'
+  );
+
+  const variableTable = encodeLAZChunkTable(chunks, {variable: true});
+  t.deepEqual(
+    decodeLAZChunkTable(variableTable, {
+      chunkCount: chunks.length,
+      pointCount: 100_023,
+      chunkSize: 0xffffffff,
+      variable: true
+    }),
+    chunks,
+    'variable-size chunk table roundtrips'
+  );
+  t.throws(
+    () => encodeLAZChunkTable([{pointCount: 0, byteLength: 1}]),
+    /Invalid LAZ chunk point count/,
+    'empty chunks are rejected'
   );
   t.end();
 });

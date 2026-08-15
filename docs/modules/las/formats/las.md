@@ -70,13 +70,15 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 `encodeLAZChunk()` and `createLAZChunkEncoder()` encode raw LAS point records into one LASzip layered chunk. They do not write the surrounding LAS header, LASzip VLR, chunk table, or `.laz` file container.
 
+`LASWriter` uses the chunk encoder to write complete LAS 1.4 `.laz` files for PDRF 6-8, including the LASzip VLR, fixed-size chunks, chunk-table pointer, and version 0 chunk table.
+
 | LASzip feature | Supported TypeScript combinations |
 | --- | --- |
 | Modern PDRF 6-8 items | Layered compressor 3, arithmetic coder 0, and Point14/RGB14/RGBNIR14 item version 3. |
 | Extra Bytes | Byte14 item version 3 is losslessly encoded as independent layers. |
 | Input modes | Complete raw point buffers and feedable raw byte ranges. Feedable input is buffered until `close()` and `encode()` are called. |
 | Interoperability | PDRF 6-8 output is tested byte-for-byte through the TypeScript decoder and laz-perf. |
-| Unsupported modes | Legacy PDRF 0-5, waveform PDRF 9-10, item versions 2 and 4, and complete `.laz` file writing. |
+| Unsupported modes | Legacy PDRF 0-5, waveform PDRF 9-10, and item versions 2 and 4. |
 
 #### Point Record Formats
 
