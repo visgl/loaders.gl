@@ -83,7 +83,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Raster Formats',
-      items: ['geospatial/geotiff']
+      items: ['geospatial/geotiff', 'geospatial/geo-zarr']
     },
     {
       type: 'category',

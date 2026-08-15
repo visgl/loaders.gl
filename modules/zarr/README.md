@@ -42,6 +42,9 @@ const raster = await source.getRaster({
 The first version supports axis-aligned affine grids and native-resolution window reads. It does
 not reproject, resample, or handle curvilinear two-dimensional coordinate arrays.
 
+The [GeoZarr deck.gl example](https://loaders.gl/examples/geospatial/geo-zarr) reads NASA POWER
+climatology data directly from a public Zarr store and renders it on an interactive map.
+
 ## OME-Zarr SourceLoader
 
 `OMEZarrSourceLoader` is the first source-loader abstraction in this module. It is image-first:

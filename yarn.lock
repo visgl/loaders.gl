@@ -19663,6 +19663,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"geozarr-deck-example@workspace:examples/website/geozarr":
+  version: 0.0.0-use.local
+  resolution: "geozarr-deck-example@workspace:examples/website/geozarr"
+  dependencies:
+    "@deck.gl/core": "npm:^9.3.0"
+    "@deck.gl/layers": "npm:^9.3.0"
+    "@deck.gl/react": "npm:^9.3.0"
+    "@loaders.gl/core": "workspace:*"
+    "@loaders.gl/zarr": "workspace:*"
+    "@luma.gl/core": "npm:^9.3.2"
+    "@luma.gl/engine": "npm:^9.3.2"
+    "@luma.gl/shadertools": "npm:^9.3.2"
+    mapbox-gl: "npm:maplibre-gl@^3.6.2"
+    maplibre-gl: "npm:^3.6.2"
+    react: "npm:^19.2.5"
+    react-dom: "npm:^19.2.5"
+    react-map-gl: "npm:^7.1.7"
+    typescript: "npm:^5.6.0"
+    vite: "npm:^7.2.7"
+  languageName: unknown
+  linkType: soft
+
 "get-caller-file@npm:2.0.5, get-caller-file@npm:^2.0.1, get-caller-file@npm:^2.0.5":
   version: 2.0.5
   resolution: "get-caller-file@npm:2.0.5"

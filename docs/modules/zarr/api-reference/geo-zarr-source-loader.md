@@ -89,6 +89,10 @@ Reads the native-resolution array window intersecting `parameters.viewport`.
 The returned raster contains one typed-array band, exact source-coordinate bounds for the selected
 pixel window, and the normalized CRS.
 
+See the [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) for a complete browser workflow
+that selects monthly NASA POWER climatology data, colorizes the returned typed raster, and displays
+it with deck.gl's `BitmapLayer`.
+
 ## Current scope
 
 This first version is intentionally limited to regular, axis-aligned 2D grids with optional named
