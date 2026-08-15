@@ -259,6 +259,21 @@ test('ParquetCodec::PLAIN#should decode BYTE_ARRAY values', assert => {
   assert.end();
 });
 
+test('ParquetCodec::PLAIN#can retain BYTE_ARRAY views for direct materialization', assert => {
+  const buf = {
+    offset: 0,
+    buffer: bytes([0x03, 0x00, 0x00, 0x00, 0x6f, 0x6e, 0x65])
+  };
+
+  const vals = PARQUET_CODECS.PLAIN.decodeValues('BYTE_ARRAY', buf, 1, {
+    retainByteArrayViews: true
+  });
+
+  assert.equal(vals[0].buffer, buf.buffer.buffer, 'retains the decoded page buffer');
+  assert.deepEqual(vals, [utf8Bytes('one')]);
+  assert.end();
+});
+
 test('ParquetCodec::PLAIN#should encode FIXED_LEN_BYTE_ARRAY values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
     'FIXED_LEN_BYTE_ARRAY',

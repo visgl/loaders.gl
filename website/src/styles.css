@@ -617,6 +617,16 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   white-space: nowrap;
 }
 
+.parquet-benchmark-loader-name,
+.parquet-benchmark-loader-runtime {
+  display: block;
+}
+
+.parquet-benchmark-loader-runtime {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 .parquet-benchmark-pending {
   color: var(--ifm-font-color-secondary);
 }

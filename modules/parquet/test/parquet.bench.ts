@@ -16,6 +16,10 @@ const HADOOP_LZ4_PARQUET_URL =
   '@loaders.gl/parquet/test/data/apache/good/hadoop_lz4_compressed_larger.parquet';
 const DELTA_BYTE_ARRAY_PARQUET_URL =
   '@loaders.gl/parquet/test/data/apache/good/delta_byte_array.parquet';
+const DELTA_BINARY_PACKED_PARQUET_URL =
+  '@loaders.gl/parquet/test/data/apache/good/delta_binary_packed.parquet';
+const DICTIONARY_PARQUET_URL = '@loaders.gl/parquet/test/data/benchmark-dictionary.parquet';
+const FRUITS_PARQUET_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const GEO_PARQUET_URL = '@loaders.gl/parquet/test/data/geoparquet/airports.parquet';
 const BENCHMARK_OPTIONS = {minIterations: 5, unit: 'rows'};
 const BENCHMARK_WARMUP_ITERATIONS = 2;
@@ -45,18 +49,38 @@ type ParquetBenchmarkImplementation = {
 };
 
 export async function parquetBench(suite) {
-  const [lz4ParquetResponse, hadoopLz4ParquetResponse, deltaByteArrayParquetResponse, geoParquetResponse] =
-    await Promise.all([
+  const [
+    lz4ParquetResponse,
+    hadoopLz4ParquetResponse,
+    deltaByteArrayParquetResponse,
+    deltaBinaryPackedParquetResponse,
+    dictionaryParquetResponse,
+    fruitsParquetResponse,
+    geoParquetResponse
+  ] = await Promise.all([
     fetchFile(LZ4_PARQUET_URL),
     fetchFile(HADOOP_LZ4_PARQUET_URL),
     fetchFile(DELTA_BYTE_ARRAY_PARQUET_URL),
+    fetchFile(DELTA_BINARY_PACKED_PARQUET_URL),
+    fetchFile(DICTIONARY_PARQUET_URL),
+    fetchFile(FRUITS_PARQUET_URL),
     fetchFile(GEO_PARQUET_URL)
   ]);
-  const [lz4ArrayBuffer, hadoopLz4ArrayBuffer, deltaByteArrayBuffer, geoArrayBuffer] =
-    await Promise.all([
+  const [
+    lz4ArrayBuffer,
+    hadoopLz4ArrayBuffer,
+    deltaByteArrayBuffer,
+    deltaBinaryPackedArrayBuffer,
+    dictionaryArrayBuffer,
+    fruitsArrayBuffer,
+    geoArrayBuffer
+  ] = await Promise.all([
       lz4ParquetResponse.arrayBuffer(),
       hadoopLz4ParquetResponse.arrayBuffer(),
       deltaByteArrayParquetResponse.arrayBuffer(),
+      deltaBinaryPackedParquetResponse.arrayBuffer(),
+      dictionaryParquetResponse.arrayBuffer(),
+      fruitsParquetResponse.arrayBuffer(),
       geoParquetResponse.arrayBuffer()
     ]);
   const [typescriptLoader, wasmLoader] = await Promise.all([
@@ -66,6 +90,32 @@ export async function parquetBench(suite) {
   const implementations = createParquetBenchmarkImplementations(typescriptLoader, wasmLoader);
   const scenarios: ParquetBenchmarkScenario[] = [
     {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
+    {
+      name: 'PLAIN nullable primitive projection → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'PLAIN nested and repeated projection → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['stock', 'colour'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'RLE_DICTIONARY mixed table → Arrow',
+      arrayBuffer: dictionaryArrayBuffer,
+      shape: 'arrow-table'
+    },
+    {
+      name: 'DELTA_BINARY_PACKED integer table → Arrow',
+      arrayBuffer: deltaBinaryPackedArrayBuffer,
+      shape: 'arrow-table'
+    },
     {
       name: 'LZ4_RAW full table → Arrow',
       arrayBuffer: lz4ArrayBuffer,
@@ -234,11 +284,16 @@ async function validateParquetBenchmarkScenario(
 ): Promise<number> {
   const rowCounts: number[] = [];
   for (const implementation of implementations) {
-    let rowCount = 0;
-    for (let iteration = 0; iteration < BENCHMARK_WARMUP_ITERATIONS; iteration++) {
-      rowCount = await implementation.decode(scenario);
+    try {
+      let rowCount = 0;
+      for (let iteration = 0; iteration < BENCHMARK_WARMUP_ITERATIONS; iteration++) {
+        rowCount = await implementation.decode(scenario);
+      }
+      rowCounts.push(rowCount);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`${scenario.name} / ${implementation.name}: ${message}`, {cause: error});
     }
-    rowCounts.push(rowCount);
   }
 
   const expectedRowCount = rowCounts[0];

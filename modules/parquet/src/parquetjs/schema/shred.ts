@@ -307,12 +307,28 @@ export function materializeColumns(
 ): Record<string, ArrayType> {
   const columns: Record<string, ArrayType> = {};
   for (const key in rowGroup.columnData) {
-    const columnData = rowGroup.columnData[key];
-    if (columnData.count) {
-      materializeColumnAsColumnarArray(schema, columnData, rowGroup.rowCount, key, columns);
+    const column = materializeColumn(schema, rowGroup, key);
+    if (column) {
+      columns[schema.findFieldBranch(key)[0].name] = column;
     }
   }
   return columns;
+}
+
+/** Materializes one decoded Parquet column into its top-level columnar representation. */
+export function materializeColumn(
+  schema: ParquetSchema,
+  rowGroup: ParquetRowGroup,
+  key: string
+): ArrayType | undefined {
+  const columnData = rowGroup.columnData[key];
+  if (!columnData?.count) {
+    return undefined;
+  }
+
+  const columns: Record<string, ArrayType> = {};
+  materializeColumnAsColumnarArray(schema, columnData, rowGroup.rowCount, key, columns);
+  return columns[schema.findFieldBranch(key)[0].name];
 }
 
 // eslint-disable-next-line max-statements, complexity

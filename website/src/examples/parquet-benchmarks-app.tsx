@@ -65,9 +65,18 @@ const PARQUET_BENCHMARK_IMPLEMENTATION_LABELS: Record<
   ParquetBenchmarkImplementationId,
   string
 > = {
-  typescript: 'ParquetJSLoader',
-  wasm: 'ParquetLoader',
-  hyparquet: 'hyparquet'
+  typescript: 'ParquetLoader (JS)',
+  wasm: 'ParquetLoader (WASM)',
+  hyparquet: 'hyparquet (JS)'
+};
+
+const PARQUET_BENCHMARK_IMPLEMENTATION_HEADERS: Record<
+  ParquetBenchmarkImplementationId,
+  {name: string; runtime: string}
+> = {
+  typescript: {name: 'ParquetLoader', runtime: 'JS'},
+  wasm: {name: 'ParquetLoader', runtime: 'WASM'},
+  hyparquet: {name: 'hyparquet', runtime: 'JS'}
 };
 
 const PARQUET_BENCHMARK_IMPLEMENTATION_IDS: ParquetBenchmarkImplementationId[] = [
@@ -193,15 +202,19 @@ export default function ParquetBenchmarksApp(): JSX.Element {
           <thead>
             <tr>
               <th scope="col">Test</th>
-              {PARQUET_BENCHMARK_IMPLEMENTATION_IDS.map(implementationId => (
-                <th
-                  key={implementationId}
-                  scope="col"
-                  className="parquet-benchmark-number"
-                >
-                  {PARQUET_BENCHMARK_IMPLEMENTATION_LABELS[implementationId]}
-                </th>
-              ))}
+              {PARQUET_BENCHMARK_IMPLEMENTATION_IDS.map(implementationId => {
+                const header = PARQUET_BENCHMARK_IMPLEMENTATION_HEADERS[implementationId];
+                return (
+                  <th
+                    key={implementationId}
+                    scope="col"
+                    className="parquet-benchmark-number"
+                  >
+                    <span className="parquet-benchmark-loader-name">{header.name}</span>
+                    <span className="parquet-benchmark-loader-runtime">{header.runtime}</span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -267,13 +280,65 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
     '../../../modules/parquet/test/data/apache/good/delta_byte_array.parquet',
     import.meta.url
   ).toString();
-  const geoParquetArrayBuffer = await fetchParquetFixture(geoParquetUrl);
-  const lz4ArrayBuffer = await fetchParquetFixture(lz4Url);
-  const deltaByteArrayBuffer = await fetchParquetFixture(deltaByteArrayUrl);
+  const deltaBinaryPackedUrl = new URL(
+    '../../../modules/parquet/test/data/apache/good/delta_binary_packed.parquet',
+    import.meta.url
+  ).toString();
+  const dictionaryUrl = new URL(
+    '../../../modules/parquet/test/data/benchmark-dictionary.parquet',
+    import.meta.url
+  ).toString();
+  const fruitsUrl = new URL(
+    '../../../modules/parquet/test/data/fruits.parquet',
+    import.meta.url
+  ).toString();
+  const [
+    geoParquetArrayBuffer,
+    lz4ArrayBuffer,
+    deltaByteArrayBuffer,
+    deltaBinaryPackedArrayBuffer,
+    dictionaryArrayBuffer,
+    fruitsArrayBuffer
+  ] = await Promise.all([
+    fetchParquetFixture(geoParquetUrl),
+    fetchParquetFixture(lz4Url),
+    fetchParquetFixture(deltaByteArrayUrl),
+    fetchParquetFixture(deltaBinaryPackedUrl),
+    fetchParquetFixture(dictionaryUrl),
+    fetchParquetFixture(fruitsUrl)
+  ]);
   return [
     {
       name: 'GeoParquet → Arrow',
       arrayBuffer: geoParquetArrayBuffer,
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'PLAIN nullable primitive projection → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'PLAIN nested and repeated projection → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['stock', 'colour'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
+    {
+      name: 'RLE_DICTIONARY mixed table → Arrow',
+      arrayBuffer: dictionaryArrayBuffer,
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BINARY_PACKED integer table → Arrow',
+      arrayBuffer: deltaBinaryPackedArrayBuffer,
       shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },

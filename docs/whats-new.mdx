@@ -118,6 +118,7 @@ Release Date: 2026
 - `ParquetSourceLoader` exposes normalized column-chunk statistics, predicate-based row-group pruning, and cumulative transport/decode/Arrow telemetry with exact request and byte counts.
 - `ParquetSourceLoader` now publishes an immutable capability descriptor, deep-freezes cached schema metadata and batch provenance, and preserves caller abort reasons.
 - `ParquetSourceLoader` now materializes selected columns directly into Arrow batches without an intermediate object-row table.
+- `ParquetJSLoader` now constructs flat Arrow Utf8 and Binary vectors directly from decoded Parquet byte arrays, avoiding decode-to-string, re-encode, and intermediate per-value copies.
 - `ParquetSourceLoader` can transfer selected compressed column chunks to a dedicated worker for decompression, page decoding, column materialization, and Arrow conversion. It returns Arrow tables through `@loaders.gl/arrow`'s direct transferable-buffer transport rather than Arrow IPC.
 - The wasm-backed `ParquetLoader` can decode in a cancellable worker, transfers Arrow output through Arrow IPC, and resolves its packaged worker and WASM assets without an implicit CDN dependency.
 - The Parquet WASM backend is updated to 0.7.2, and `@loaders.gl/parquet/wasm` exposes its package-local binary URL for explicit asset workflows.

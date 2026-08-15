@@ -66,7 +66,7 @@ export function decodeValues(
     case 'DOUBLE':
       return decodeValues_DOUBLE(cursor, count);
     case 'BYTE_ARRAY':
-      return decodeValues_BYTE_ARRAY(cursor, count);
+      return decodeValues_BYTE_ARRAY(cursor, count, opts);
     case 'FIXED_LEN_BYTE_ARRAY':
       return decodeValues_FIXED_LEN_BYTE_ARRAY(cursor, count, opts);
     default:
@@ -209,14 +209,17 @@ function encodeValues_BYTE_ARRAY(values: any[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Uint8Array[] {
+function decodeValues_BYTE_ARRAY(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): Uint8Array[] {
   const values = new Array<Uint8Array>(count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     const len = dataView.getUint32(cursor.offset, true);
     cursor.offset += 4;
-    values[i] = copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + len));
-    cursor.offset += len;
+    values[i] = readByteArray(cursor, len, options.retainByteArrayViews);
   }
   return values;
 }
@@ -244,12 +247,20 @@ function decodeValues_FIXED_LEN_BYTE_ARRAY(
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
   for (let i = 0; i < count; i++) {
-    values[i] = copyUint8Array(
-      cursor.buffer.subarray(cursor.offset, cursor.offset + opts.typeLength)
-    );
-    cursor.offset += opts.typeLength;
+    values[i] = readByteArray(cursor, opts.typeLength, opts.retainByteArrayViews);
   }
   return values;
+}
+
+/** Reads one byte-array value, optionally retaining a view into the decoded page buffer. */
+function readByteArray(
+  cursor: CursorBuffer,
+  byteLength: number,
+  retainByteArrayView: boolean | undefined
+): Uint8Array {
+  const value = cursor.buffer.subarray(cursor.offset, cursor.offset + byteLength);
+  cursor.offset += byteLength;
+  return retainByteArrayView ? value : copyUint8Array(value);
 }
 
 /** Creates one reusable DataView for all primitive reads from a codec cursor. */

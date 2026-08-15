@@ -27,6 +27,8 @@ export type ParquetReaderProps = {
   defaultDictionarySize?: number;
   /** Preserve BYTE_ARRAY values instead of decoding them as strings. */
   preserveBinary?: boolean;
+  /** Retain byte arrays as views into decoded page buffers for direct materialization. */
+  retainByteArrayViews?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
 };
@@ -52,6 +54,7 @@ export class ParquetReader {
     // max ArrayBuffer size in js is 2Gb
     defaultDictionarySize: 2147483648,
     preserveBinary: false,
+    retainByteArrayViews: false,
     signal: undefined
   };
 
@@ -268,7 +271,8 @@ export class ParquetReader {
       numValues: colChunk.meta_data?.num_values,
       dictionary: [],
       // Options - TBD is this the right place for these?
-      preserveBinary: this.props.preserveBinary
+      preserveBinary: this.props.preserveBinary,
+      retainByteArrayViews: this.props.retainByteArrayViews
     };
 
     let dictionary;

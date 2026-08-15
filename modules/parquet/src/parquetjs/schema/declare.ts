@@ -121,6 +121,8 @@ export interface ParquetReaderContext {
   dictionary?: ParquetDictionary;
   /** If true, binary values are not converted to strings */
   preserveBinary?: boolean;
+  /** Retain byte arrays as views into decoded page buffers for direct materialization. */
+  retainByteArrayViews?: boolean;
 }
 
 export interface ParquetPageData {
