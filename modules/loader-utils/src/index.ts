@@ -219,6 +219,7 @@ export {stream};
 // EXPERIMENTAL: FILE SYSTEMS
 
 export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
+export {ArrayBufferFile} from './lib/files/array-buffer-file';
 export {BlobFile} from './lib/files/blob-file';
 export {HttpFile} from './lib/files/http-file';
 export type {

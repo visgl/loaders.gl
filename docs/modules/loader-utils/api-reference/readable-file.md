@@ -5,6 +5,7 @@
 ## Available classes
 
 - [`HttpFile`](./http-file) (browser & Node.js) – validates HTTP byte-range reads and pins remote object identity.
+- `ArrayBufferFile` (browser & Node.js) – provides direct random-access reads over an in-memory `ArrayBuffer` without wrapping it in a `Blob`.
 - `BlobFile` (browser & Node.js) – provides random access reads on `Blob` or `File` instances via the standard slicing APIs.
 - `NodeFile` (Node.js) – exposes random access reads backed by the local file system without importing `fs` directly in application code.
 - `DataViewReadableFile` (browser & Node.js) – adapts an in-memory `ArrayBuffer`/`DataView` into the `ReadableFile` interface for archive parsing or other buffer-first workflows.
@@ -52,10 +53,10 @@ const footerBytes = await nodeFile.read(size - footerLength, footerLength);
 ### Adapting an `ArrayBuffer`
 
 ```typescript
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 
 const archiveBuffer = await fetch(url).then((response) => response.arrayBuffer());
-const archiveFile = new DataViewReadableFile(new DataView(archiveBuffer));
+const archiveFile = new ArrayBufferFile(archiveBuffer);
 const header = await archiveFile.read(0, 8);
 ```
 
