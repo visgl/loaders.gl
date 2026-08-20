@@ -9,6 +9,7 @@ modules/gltf/test/glb-loader.spec.ts::modules/gltf/test/data/gltf-2.0/2CylinderE
 modules/gltf/test/gltf-loader.spec.ts::modules/gltf/test/data/gltf-2.0/2CylinderEngine.glb # Canonical multi-mesh glTF preserves realistic scene and resource integration coverage.
 modules/loader-utils/test/lib/iterators/make-iterator.spec.ts::modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin # Iterator chunk-boundary coverage needs a buffer large enough to span many chunks.
 modules/parquet/test/parquet-loader.spec.ts::modules/parquet/test/data/fruits.parquet # Canonical Parquet interoperability fixture covers encoded pages and schema metadata.
+modules/parquet/test/parquet-nested-arrow.spec.ts::modules/parquet/test/data/fruits.parquet # Canonical nested/repeated fixture validates projected Arrow offsets, struct children, and row slicing.
 modules/parquet/test/parquetjs/integration.spec.ts::modules/parquet/test/data/fruits.parquet # JavaScript backend parity is checked against the canonical encoded-page fixture.
 modules/parquet/test/parquetjs/reader.spec.ts::modules/parquet/test/data/fruits.parquet # Reader integration retains realistic row-group and metadata behavior.
 modules/ply/test/ply-loader.spec.js::modules/ply/test/data/bun_zipper.ply # Canonical Stanford bunny fixture covers a realistic mesh header and vertex corpus.
