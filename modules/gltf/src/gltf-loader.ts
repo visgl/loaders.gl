@@ -43,7 +43,7 @@ export const GLTFLoader = {
       normalize: true, // Normalize glTF v1 to glTF v2 format (not yet stable)
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
-      decompressMeshes: true // Decompress Draco encoded meshes
+      decompressMeshes: true // Decompress Draco and KHR/EXT meshopt encoded data
     }
   }
 } as const satisfies LoaderWithParser<GLTFWithBuffers, never, GLTFLoaderOptions>;

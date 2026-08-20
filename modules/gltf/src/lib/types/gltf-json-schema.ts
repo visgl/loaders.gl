@@ -775,23 +775,58 @@ export type GLTF_KHR_texture_basisu = {
 };
 
 /**
- * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression
- * buffer: number; //	The index of the buffer with compressed data.	✅ Required
- * byteOffset	integer	The offset into the buffer in bytes.	Default: 0
- * byteLength	integer	The length of the compressed data in bytes.	✅ Required
- * byteStride	integer	The stride, in bytes.	✅ Required
- * count	integer	The number of elements.	✅ Required
- * mode	string	The compression mode.	✅ Required
- * filter	string	The compression filter.	Default: "NONE"
+ * Ratified vendor meshopt buffer-view compression extension.
+ *
+ * The extension object describes compressed source bytes. Its parent `GLTFBufferView` describes
+ * the uncompressed destination, whose `byteLength` is `count * byteStride`.
+ *
+ * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_meshopt_compression
  */
 export type GLTF_EXT_meshopt_compression = {
+  /** Index of the buffer containing the compressed source bytes. */
   buffer: number;
+  /** Byte offset of the compressed data within `buffer`; defaults to `0`. */
   byteOffset?: number;
+  /** Length of the compressed source range in bytes. */
   byteLength: number;
+  /** Stride of each decompressed element in bytes. */
   byteStride: number;
+  /** Number of fixed-stride elements in the decompressed parent buffer view. */
   count: number;
+  /** Meshopt bitstream mode used for the compressed source range. */
   mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
+  /** EXT post-decode filter; defaults to `NONE` and is valid only for `ATTRIBUTES` mode. */
   filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
+  /** Application-specific extension data. */
+  extras?: any;
+};
+
+/**
+ * Khronos meshopt buffer-view compression extension.
+ *
+ * The KHR extension preserves the EXT JSON layout and version 0 bitstream compatibility while
+ * adding version 1 attribute encoding and the `COLOR` post-decode filter. Its extension object
+ * describes compressed source bytes; the parent `GLTFBufferView` describes the uncompressed
+ * destination, whose `byteLength` is `count * byteStride`.
+ *
+ * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_meshopt_compression
+ */
+export type GLTF_KHR_meshopt_compression = {
+  /** Index of the buffer containing the compressed source bytes. */
+  buffer: number;
+  /** Byte offset of the compressed data within `buffer`; defaults to `0`. */
+  byteOffset?: number;
+  /** Length of the compressed source range in bytes. */
+  byteLength: number;
+  /** Stride of each decompressed element in bytes. */
+  byteStride: number;
+  /** Number of fixed-stride elements in the decompressed parent buffer view. */
+  count: number;
+  /** Meshopt bitstream mode used for the compressed source range. */
+  mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
+  /** KHR post-decode filter; defaults to `NONE` and is valid only for `ATTRIBUTES` mode. */
+  filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL' | 'COLOR';
+  /** Application-specific extension data. */
   extras?: any;
 };
 

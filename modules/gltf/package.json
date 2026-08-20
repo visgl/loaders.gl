@@ -48,7 +48,8 @@
     "@loaders.gl/loader-utils": "4.4.4",
     "@loaders.gl/schema": "4.4.4",
     "@loaders.gl/textures": "4.4.4",
-    "@math.gl/core": "^4.1.0"
+    "@math.gl/core": "^4.1.0",
+    "meshoptimizer": "^1.2.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"
