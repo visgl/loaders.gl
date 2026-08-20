@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {createDataSource} from '@loaders.gl/core';
 import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql';

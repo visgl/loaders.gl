@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {ExcelLoader} from '@loaders.gl/excel';
 import {load} from '@loaders.gl/core';
 
