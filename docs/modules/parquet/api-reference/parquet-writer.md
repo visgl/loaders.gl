@@ -64,9 +64,35 @@ const parquetBuffer = await encode(arrowTable, ParquetWriter, {
 
 ## Options
 
+### TypeScript writer options
+
+`ParquetJSWriter` accepts `parquet.columnEncodings`, keyed by top-level column name. Use
+`BYTE_STREAM_SPLIT` for fixed-width numeric or binary columns when the following page compression can
+benefit from grouping corresponding bytes. Unsupported physical types are rejected instead of
+silently falling back to `PLAIN`.
+
+```typescript
+const parquet = await encode(table, ParquetJSWriter, {
+  parquet: {
+    useDataPageV2: true,
+    columnEncodings: {
+      temperature: 'BYTE_STREAM_SPLIT',
+      timestamp: 'BYTE_STREAM_SPLIT'
+    }
+  }
+});
+```
+
+See the [Parquet format page](/docs/modules/parquet/formats/parquet#value-encodings) for the complete
+read/write encoding matrix.
+
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter`. |
+| `parquet.columnEncodings` | `Record<string, 'PLAIN' \| 'BYTE_STREAM_SPLIT'>` | `{}` | Selects value encodings by top-level column name for `ParquetJSWriter`. |
+| `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |
+| `parquet.pageSize` | `number` | implementation default | Sets the target value count per page for `ParquetJSWriter`. |
+| `parquet.useDataPageV2` | `boolean` | `false` | Emits Data Page V2 from `ParquetJSWriter`. |
 
 ## Writer Variants
 

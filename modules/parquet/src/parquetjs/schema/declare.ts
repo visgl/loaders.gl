@@ -15,7 +15,8 @@ export type ParquetCodec =
   | 'RLE_DICTIONARY'
   | 'DELTA_BINARY_PACKED'
   | 'DELTA_LENGTH_BYTE_ARRAY'
-  | 'DELTA_BYTE_ARRAY';
+  | 'DELTA_BYTE_ARRAY'
+  | 'BYTE_STREAM_SPLIT';
 export type ParquetCompression =
   | 'UNCOMPRESSED'
   | 'GZIP'
