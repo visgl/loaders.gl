@@ -128,48 +128,64 @@ export type ParquetMetadataRequestOptions = {
 /** Scalar values supported by exact Parquet source predicates. */
 export type ParquetPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
 
+/** Reference to one top-level Parquet column in a predicate expression. */
+export type ParquetPredicateProperty = {
+  /** Top-level column name. */
+  property: string;
+};
+
 /** Comparison predicate applied to one top-level Parquet column. */
 export type ParquetComparisonPredicate = {
-  /** Top-level column name. */
-  column: string;
-  /** Exact comparison operator. Null column values never match comparisons. */
-  operator: '=' | '!=' | '<' | '<=' | '>' | '>=';
-  /** Scalar value compared with each non-null column value. */
-  value: ParquetPredicateValue;
+  /** CQL2-shaped exact comparison operator. */
+  op: '=' | '<>' | '<' | '<=' | '>' | '>=';
+  /** Column reference followed by the scalar value to compare. */
+  args: readonly [ParquetPredicateProperty, ParquetPredicateValue];
 };
 
 /** Membership predicate applied to one top-level Parquet column. */
 export type ParquetInPredicate = {
-  /** Top-level column name. */
-  column: string;
-  /** Exact membership operator. Null column values never match. */
-  operator: 'in';
-  /** Candidate scalar values. */
-  values: readonly ParquetPredicateValue[];
+  /** CQL2-shaped membership operator. */
+  op: 'in';
+  /** Column reference followed by the candidate scalar values. */
+  args: readonly [ParquetPredicateProperty, readonly ParquetPredicateValue[]];
 };
 
 /** Null predicate applied to one top-level Parquet column. */
 export type ParquetNullPredicate = {
-  /** Top-level column name. */
-  column: string;
-  /** Tests whether the column value is null or non-null. */
-  operator: 'is-null' | 'is-not-null';
+  /** CQL2-shaped null test operator. */
+  op: 'isNull';
+  /** Column reference to test. */
+  args: readonly [ParquetPredicateProperty];
 };
 
 /** Logical composition of serializable Parquet predicates. */
 export type ParquetLogicalPredicate = {
-  /** Logical operator applied to the child predicates. */
-  operator: 'and' | 'or';
-  /** Non-empty list of child predicates. */
-  predicates: readonly ParquetPredicate[];
+  /** CQL2-shaped logical operator applied to the child predicates. */
+  op: 'and' | 'or';
+  /** At least two child predicates. */
+  args: readonly ParquetPredicate[];
 };
 
-/** Serializable exact row predicate used by selective Parquet source reads. */
+/** Negation of one serializable Parquet predicate. */
+export type ParquetNotPredicate = {
+  /** CQL2-shaped logical negation operator. */
+  op: 'not';
+  /** Single child predicate. */
+  args: readonly [ParquetPredicate];
+};
+
+/**
+ * Serializable exact row predicate used by selective Parquet source reads.
+ *
+ * The expression shape is directionally aligned with CQL2 JSON, but this experimental subset does
+ * not claim CQL2 conformance.
+ */
 export type ParquetPredicate =
   | ParquetComparisonPredicate
   | ParquetInPredicate
   | ParquetNullPredicate
-  | ParquetLogicalPredicate;
+  | ParquetLogicalPredicate
+  | ParquetNotPredicate;
 
 /** Options for one selective `ParquetSource.read()` operation. */
 export type ParquetSourceReadOptions = {

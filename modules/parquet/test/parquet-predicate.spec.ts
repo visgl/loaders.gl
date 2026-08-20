@@ -30,14 +30,14 @@ import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport'
 
 test('Parquet predicates validate, expose filter columns, and preserve exact row indexes', () => {
   const predicate: ParquetPredicate = {
-    operator: 'and',
-    predicates: [
-      {column: 'id', operator: '>=', value: 2},
+    op: 'and',
+    args: [
+      {op: '>=', args: [{property: 'id'}, 2]},
       {
-        operator: 'or',
-        predicates: [
-          {column: 'category', operator: '=', value: 'a'},
-          {column: 'category', operator: 'is-null'}
+        op: 'or',
+        args: [
+          {op: '=', args: [{property: 'category'}, 'a']},
+          {op: 'isNull', args: [{property: 'category'}]}
         ]
       }
     ]
@@ -55,25 +55,31 @@ test('Parquet predicates validate, expose filter columns, and preserve exact row
     payload: ['three', 'four']
   });
   expect(() =>
-    validateParquetPredicate({column: 'missing', operator: '=', value: 1}, new Set(['id']))
+    validateParquetPredicate({op: '=', args: [{property: 'missing'}, 1]}, new Set(['id']))
   ).toThrow(/predicate column not found: missing/);
   expect(() =>
-    validateParquetPredicate({operator: 'or', predicates: []}, new Set(['id']))
-  ).toThrow(/requires at least one child/);
+    validateParquetPredicate({op: 'or', args: []}, new Set(['id']))
+  ).toThrow(/requires at least two child/);
   expect(() =>
-    validateParquetPredicate({column: 'id', operator: 'in', values: []}, new Set(['id']))
+    validateParquetPredicate({op: 'in', args: [{property: 'id'}, []]}, new Set(['id']))
   ).toThrow(/requires at least one value/);
 });
 
 test.each([
-  [{column: 'value', operator: '=' as const, value: 2}, [1]],
-  [{column: 'value', operator: '!=' as const, value: 2}, [0, 3]],
-  [{column: 'value', operator: '<' as const, value: 2}, [0]],
-  [{column: 'value', operator: '<=' as const, value: 2}, [0, 1]],
-  [{column: 'value', operator: '>' as const, value: 2}, [3]],
-  [{column: 'value', operator: '>=' as const, value: 2}, [1, 3]],
-  [{column: 'value', operator: 'is-null' as const}, [2]],
-  [{column: 'value', operator: 'is-not-null' as const}, [0, 1, 3]]
+  [{op: '=' as const, args: [{property: 'value'}, 2] as const}, [1]],
+  [{op: '<>' as const, args: [{property: 'value'}, 2] as const}, [0, 3]],
+  [{op: '<' as const, args: [{property: 'value'}, 2] as const}, [0]],
+  [{op: '<=' as const, args: [{property: 'value'}, 2] as const}, [0, 1]],
+  [{op: '>' as const, args: [{property: 'value'}, 2] as const}, [3]],
+  [{op: '>=' as const, args: [{property: 'value'}, 2] as const}, [1, 3]],
+  [{op: 'isNull' as const, args: [{property: 'value'}] as const}, [2]],
+  [
+    {
+      op: 'not' as const,
+      args: [{op: 'isNull' as const, args: [{property: 'value'}] as const}] as const
+    },
+    [0, 1, 3]
+  ]
 ])('Parquet exact predicate %o selects expected rows', (predicate, expectedRowIndices) => {
   expect(filterParquetRowIndices(predicate, {value: [1, 2, null, 3]}, 4)).toEqual(
     expectedRowIndices
@@ -84,10 +90,10 @@ test('Parquet predicates compare binary values and snapshot mutable values', () 
   const binaryValue = new Uint8Array([1, 2]);
   const dateValue = new Date('2026-08-20T00:00:00Z');
   const predicate: ParquetPredicate = {
-    operator: 'and',
-    predicates: [
-      {column: 'binary', operator: '=', value: binaryValue},
-      {column: 'date', operator: '>=', value: dateValue}
+    op: 'and',
+    args: [
+      {op: '=', args: [{property: 'binary'}, binaryValue]},
+      {op: '>=', args: [{property: 'date'}, dateValue]}
     ]
   };
   const copiedPredicate = copyParquetPredicate(predicate);
@@ -110,24 +116,29 @@ test('Parquet predicates compare binary values and snapshot mutable values', () 
 test('Parquet footer statistics only prune predicates proven impossible', () => {
   const rowGroup = createRowGroupMetadata({minimum: 10, maximum: 19, nullCount: 0});
 
-  expect(canParquetRowGroupMatch({column: 'id', operator: '<', value: 10}, rowGroup)).toBe(false);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '=', value: 15}, rowGroup)).toBe(true);
-  expect(canParquetRowGroupMatch({column: 'id', operator: 'in', values: [1, 20]}, rowGroup)).toBe(
+  expect(canParquetRowGroupMatch({op: '<', args: [{property: 'id'}, 10]}, rowGroup)).toBe(false);
+  expect(canParquetRowGroupMatch({op: '=', args: [{property: 'id'}, 15]}, rowGroup)).toBe(true);
+  expect(canParquetRowGroupMatch({op: 'in', args: [{property: 'id'}, [1, 20]]}, rowGroup)).toBe(
     false
   );
-  expect(canParquetRowGroupMatch({column: 'id', operator: 'is-null'}, rowGroup)).toBe(false);
-  expect(canParquetRowGroupMatch({column: 'id', operator: 'is-not-null'}, rowGroup)).toBe(true);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '!=', value: 15}, rowGroup)).toBe(true);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '>', value: 19}, rowGroup)).toBe(false);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '>=', value: 20}, rowGroup)).toBe(false);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '<=', value: 9}, rowGroup)).toBe(false);
+  expect(canParquetRowGroupMatch({op: 'isNull', args: [{property: 'id'}]}, rowGroup)).toBe(false);
+  expect(
+    canParquetRowGroupMatch(
+      {op: 'not', args: [{op: 'isNull', args: [{property: 'id'}]}]},
+      rowGroup
+    )
+  ).toBe(true);
+  expect(canParquetRowGroupMatch({op: '<>', args: [{property: 'id'}, 15]}, rowGroup)).toBe(true);
+  expect(canParquetRowGroupMatch({op: '>', args: [{property: 'id'}, 19]}, rowGroup)).toBe(false);
+  expect(canParquetRowGroupMatch({op: '>=', args: [{property: 'id'}, 20]}, rowGroup)).toBe(false);
+  expect(canParquetRowGroupMatch({op: '<=', args: [{property: 'id'}, 9]}, rowGroup)).toBe(false);
   expect(
     canParquetRowGroupMatch(
       {
-        operator: 'or',
-        predicates: [
-          {column: 'id', operator: '<', value: 10},
-          {column: 'unknown', operator: '=', value: 1}
+        op: 'or',
+        args: [
+          {op: '<', args: [{property: 'id'}, 10]},
+          {op: '=', args: [{property: 'unknown'}, 1]}
         ]
       },
       rowGroup
@@ -135,20 +146,31 @@ test('Parquet footer statistics only prune predicates proven impossible', () => 
   ).toBe(true);
 
   const allNullRowGroup = createRowGroupMetadata({minimum: 0, maximum: 0, nullCount: 10});
-  expect(canParquetRowGroupMatch({column: 'id', operator: 'is-null'}, allNullRowGroup)).toBe(true);
-  expect(canParquetRowGroupMatch({column: 'id', operator: '=', value: 0}, allNullRowGroup)).toBe(
+  expect(canParquetRowGroupMatch({op: 'isNull', args: [{property: 'id'}]}, allNullRowGroup)).toBe(
+    true
+  );
+  expect(canParquetRowGroupMatch({op: '=', args: [{property: 'id'}, 0]}, allNullRowGroup)).toBe(
     false
   );
 
   const inexactRowGroup = createRowGroupMetadata({minimum: 10, maximum: 19, nullCount: 0});
   inexactRowGroup.columns[0].statistics!.minIsExact = false;
   inexactRowGroup.columns[0].statistics!.maxIsExact = false;
-  expect(canParquetRowGroupMatch({column: 'id', operator: '<', value: 10}, inexactRowGroup)).toBe(
+  expect(canParquetRowGroupMatch({op: '<', args: [{property: 'id'}, 10]}, inexactRowGroup)).toBe(
     true
   );
-  expect(canParquetRowGroupMatch({column: 'id', operator: '>', value: 19}, inexactRowGroup)).toBe(
+  expect(canParquetRowGroupMatch({op: '>', args: [{property: 'id'}, 19]}, inexactRowGroup)).toBe(
     true
   );
+});
+
+test('Parquet predicate negation preserves CQL2 null semantics', () => {
+  const predicate: ParquetPredicate = {
+    op: 'not',
+    args: [{op: '=', args: [{property: 'value'}, 2]}]
+  };
+
+  expect(filterParquetRowIndices(predicate, {value: [1, 2, null]}, 3)).toEqual([0]);
 });
 
 test('Parquet Thrift statistics retain modern exactness flags', () => {
@@ -172,11 +194,11 @@ test('ParquetSource applies exact predicates without returning hidden filter col
       columns: ['payload'],
       batchSize: 2,
       predicate: {
-        operator: 'and',
-        predicates: [
-          {column: 'id', operator: '>=', value: 3},
-          {column: 'id', operator: '<', value: 10},
-          {column: 'category', operator: 'in', values: ['even']}
+        op: 'and',
+        args: [
+          {op: '>=', args: [{property: 'id'}, 3]},
+          {op: '<', args: [{property: 'id'}, 10]},
+          {op: 'in', args: [{property: 'category'}, ['even']]}
         ]
       }
     })
@@ -211,7 +233,7 @@ test('ParquetSource transfers serializable predicates through worker decoding', 
     source.read({
       columns: ['payload'],
       batchSize: 2,
-      predicate: {column: 'id', operator: 'in', values: [1, 5, 10]}
+      predicate: {op: 'in', args: [{property: 'id'}, [1, 5, 10]]}
     })
   );
 

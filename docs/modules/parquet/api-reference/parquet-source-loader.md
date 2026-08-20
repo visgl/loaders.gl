@@ -32,10 +32,10 @@ try {
     rowGroups: [4, 7, 8],
     columns: ['x', 'y', 'source_id'],
     predicate: {
-      operator: 'and',
-      predicates: [
-        {column: 'timestamp', operator: '>=', value: start},
-        {column: 'timestamp', operator: '<', value: end}
+      op: 'and',
+      args: [
+        {op: '>=', args: [{property: 'timestamp'}, start]},
+        {op: '<', args: [{property: 'timestamp'}, end]}
       ]
     },
     batchSize: 524_288,
@@ -123,8 +123,11 @@ retain their composite values while primitive and logical columns flow through t
 
 ### Predicate filtering and row-group pruning
 
-Use the serializable `predicate` option for exact row filtering. Predicates support `=`, `!=`, `<`,
-`<=`, `>`, `>=`, `in`, `is-null`, and `is-not-null`, composed with `and` and `or`. Comparison and
+Use the serializable `predicate` option for exact row filtering. Its experimental `op`/`args`
+expression shape is directionally aligned with
+[CQL2 JSON](https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-json), but it is only a small
+Parquet-focused subset and does not claim CQL2 conformance. Predicates support `=`, `<>`, `<`,
+`<=`, `>`, `>=`, `in`, and `isNull`, composed with `and`, `or`, and `not`. Comparison and
 membership predicates do not match null column values. Filter columns are fetched automatically,
 but they are omitted from Arrow output unless they also appear in `columns`.
 
@@ -138,11 +141,11 @@ only improve I/O and cannot change query results.
 const batches = source.read({
   columns: ['timestamp', 'value'],
   predicate: {
-    operator: 'and',
-    predicates: [
-      {column: 'timestamp', operator: '>=', value: start},
-      {column: 'timestamp', operator: '<', value: end},
-      {column: 'status', operator: 'in', values: ['valid', 'estimated']}
+    op: 'and',
+    args: [
+      {op: '>=', args: [{property: 'timestamp'}, start]},
+      {op: '<', args: [{property: 'timestamp'}, end]},
+      {op: 'in', args: [{property: 'status'}, ['valid', 'estimated']]}
     ]
   }
 });

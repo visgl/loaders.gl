@@ -5,6 +5,8 @@
 import type {ArrayType} from '@loaders.gl/schema';
 
 import type {
+  ParquetLogicalPredicate,
+  ParquetNotPredicate,
   ParquetPredicate,
   ParquetPredicateValue,
   ParquetRowGroupMetadata
@@ -14,8 +16,9 @@ import type {
 export function getParquetPredicateColumns(predicate: ParquetPredicate): string[] {
   const columns = new Set<string>();
   visitParquetPredicate(predicate, child => {
-    if ('column' in child) {
-      columns.add(child.column);
+    const property = getPredicateProperty(child);
+    if (property) {
+      columns.add(property.property);
     }
   });
   return [...columns];
@@ -23,27 +26,32 @@ export function getParquetPredicateColumns(predicate: ParquetPredicate): string[
 
 /** Copies a predicate tree and mutable scalar values for read-scoped option snapshots. */
 export function copyParquetPredicate(predicate: ParquetPredicate): ParquetPredicate {
-  if ('predicates' in predicate) {
+  if (isParquetLogicalPredicate(predicate)) {
     return {
-      operator: predicate.operator,
-      predicates: predicate.predicates.map(copyParquetPredicate)
+      op: predicate.op,
+      args: predicate.args.map(copyParquetPredicate)
     };
   }
-  if ('values' in predicate) {
+  if (isParquetNotPredicate(predicate)) {
     return {
-      column: predicate.column,
-      operator: predicate.operator,
-      values: predicate.values.map(copyPredicateValue)
+      op: 'not',
+      args: [copyParquetPredicate(predicate.args[0])]
     };
   }
-  if ('value' in predicate) {
+  const property = copyPredicateProperty(predicate.args[0]);
+  if (predicate.op === 'isNull') {
+    return {op: 'isNull', args: [property]};
+  }
+  if (predicate.op === 'in') {
     return {
-      column: predicate.column,
-      operator: predicate.operator,
-      value: copyPredicateValue(predicate.value)
+      op: 'in',
+      args: [property, predicate.args[1].map(copyPredicateValue)]
     };
   }
-  return {...predicate};
+  return {
+    op: predicate.op,
+    args: [property, copyPredicateValue(predicate.args[1])]
+  };
 }
 
 /** Validates a predicate and every referenced top-level column. */
@@ -52,18 +60,20 @@ export function validateParquetPredicate(
   availableColumns: ReadonlySet<string>
 ): void {
   visitParquetPredicate(predicate, child => {
-    if ('predicates' in child) {
-      if (child.predicates.length === 0) {
-        throw new Error(
-          `Parquet predicate ${child.operator} requires at least one child predicate`
-        );
+    if (isParquetLogicalPredicate(child)) {
+      if (child.args.length < 2) {
+        throw new Error(`Parquet predicate ${child.op} requires at least two child predicates`);
       }
       return;
     }
-    if (!availableColumns.has(child.column)) {
-      throw new Error(`Parquet predicate column not found: ${child.column}`);
+    if (isParquetNotPredicate(child)) {
+      return;
     }
-    if ('values' in child && child.values.length === 0) {
+    const property = child.args[0];
+    if (!availableColumns.has(property.property)) {
+      throw new Error(`Parquet predicate column not found: ${property.property}`);
+    }
+    if (child.op === 'in' && child.args[1].length === 0) {
       throw new Error('Parquet predicate in requires at least one value');
     }
   });
@@ -74,30 +84,33 @@ export function canParquetRowGroupMatch(
   predicate: ParquetPredicate,
   rowGroup: ParquetRowGroupMetadata
 ): boolean {
-  if ('predicates' in predicate) {
-    return predicate.operator === 'and'
-      ? predicate.predicates.every(child => canParquetRowGroupMatch(child, rowGroup))
-      : predicate.predicates.some(child => canParquetRowGroupMatch(child, rowGroup));
+  if (isParquetLogicalPredicate(predicate)) {
+    return predicate.op === 'and'
+      ? predicate.args.every(child => canParquetRowGroupMatch(child, rowGroup))
+      : predicate.args.some(child => canParquetRowGroupMatch(child, rowGroup));
+  }
+  if (isParquetNotPredicate(predicate)) {
+    const child = predicate.args[0];
+    if (child.op !== 'isNull') {
+      return true;
+    }
+    const column = getRowGroupColumn(rowGroup, child.args[0].property);
+    return !column?.statistics || column.statistics.nullCount !== rowGroup.rowCount;
   }
 
-  const column = rowGroup.columns.find(
-    columnChunk => columnChunk.path.length === 1 && columnChunk.path[0] === predicate.column
-  );
+  const column = getRowGroupColumn(rowGroup, predicate.args[0].property);
   const statistics = column?.statistics;
   if (!statistics) {
     return true;
   }
   if (statistics.nullCount === rowGroup.rowCount) {
-    return predicate.operator === 'is-null';
+    return predicate.op === 'isNull';
   }
-  if (predicate.operator === 'is-null') {
+  if (predicate.op === 'isNull') {
     return statistics.nullCount !== 0;
   }
-  if (predicate.operator === 'is-not-null') {
-    return statistics.nullCount !== rowGroup.rowCount;
-  }
-  if (predicate.operator === 'in') {
-    return predicate.values.some(value =>
+  if (predicate.op === 'in') {
+    return predicate.args[1].some(value =>
       canComparisonMatch(
         '=',
         value,
@@ -106,15 +119,12 @@ export function canParquetRowGroupMatch(
       )
     );
   }
-  if ('value' in predicate) {
-    return canComparisonMatch(
-      predicate.operator,
-      predicate.value,
-      statistics.minIsExact === false ? undefined : statistics.min,
-      statistics.maxIsExact === false ? undefined : statistics.max
-    );
-  }
-  return true;
+  return canComparisonMatch(
+    predicate.op,
+    predicate.args[1],
+    statistics.minIsExact === false ? undefined : statistics.min,
+    statistics.maxIsExact === false ? undefined : statistics.max
+  );
 }
 
 /** Returns exact source row indexes matching a predicate. */
@@ -128,7 +138,7 @@ export function filterParquetRowIndices(
   }
   const rowIndices: number[] = [];
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    if (evaluateParquetPredicate(predicate, columns, rowIndex)) {
+    if (evaluateParquetPredicate(predicate, columns, rowIndex) === true) {
       rowIndices.push(rowIndex);
     }
   }
@@ -156,33 +166,33 @@ function evaluateParquetPredicate(
   predicate: ParquetPredicate,
   columns: Record<string, ArrayType>,
   rowIndex: number
-): boolean {
-  if ('predicates' in predicate) {
-    return predicate.operator === 'and'
-      ? predicate.predicates.every(child => evaluateParquetPredicate(child, columns, rowIndex))
-      : predicate.predicates.some(child => evaluateParquetPredicate(child, columns, rowIndex));
+): boolean | null {
+  if (isParquetLogicalPredicate(predicate)) {
+    const results = predicate.args.map(child => evaluateParquetPredicate(child, columns, rowIndex));
+    if (predicate.op === 'and') {
+      return results.includes(false) ? false : results.includes(null) ? null : true;
+    }
+    return results.includes(true) ? true : results.includes(null) ? null : false;
   }
-  const value = getColumnValue(columns[predicate.column], rowIndex);
-  if (predicate.operator === 'is-null') {
+  if (isParquetNotPredicate(predicate)) {
+    const result = evaluateParquetPredicate(predicate.args[0], columns, rowIndex);
+    return result === null ? null : !result;
+  }
+  const value = getColumnValue(columns[predicate.args[0].property], rowIndex);
+  if (predicate.op === 'isNull') {
     return value === null || value === undefined;
   }
-  if (predicate.operator === 'is-not-null') {
-    return value !== null && value !== undefined;
-  }
   if (value === null || value === undefined) {
-    return false;
+    return null;
   }
-  if (predicate.operator === 'in') {
-    return predicate.values.some(candidate => comparePredicateValues(value, candidate) === 0);
+  if (predicate.op === 'in') {
+    return predicate.args[1].some(candidate => comparePredicateValues(value, candidate) === 0);
   }
-  if (!('value' in predicate)) {
-    return false;
-  }
-  const comparison = comparePredicateValues(value, predicate.value);
-  switch (predicate.operator) {
+  const comparison = comparePredicateValues(value, predicate.args[1]);
+  switch (predicate.op) {
     case '=':
       return comparison === 0;
-    case '!=':
+    case '<>':
       return comparison !== 0;
     case '<':
       return comparison < 0;
@@ -197,7 +207,7 @@ function evaluateParquetPredicate(
 
 /** Returns whether footer min/max leave any possible match for one comparison. */
 function canComparisonMatch(
-  operator: '=' | '!=' | '<' | '<=' | '>' | '>=',
+  operator: '=' | '<>' | '<' | '<=' | '>' | '>=',
   value: ParquetPredicateValue,
   minimum: unknown,
   maximum: unknown
@@ -209,7 +219,7 @@ function canComparisonMatch(
           (minimum !== undefined && comparePredicateValues(value, minimum) < 0) ||
           (maximum !== undefined && comparePredicateValues(value, maximum) > 0)
         );
-      case '!=':
+      case '<>':
         return !(
           minimum !== undefined &&
           maximum !== undefined &&
@@ -277,15 +287,46 @@ function copyPredicateValue(value: ParquetPredicateValue): ParquetPredicateValue
   return value;
 }
 
+/** Copies a predicate property reference. */
+function copyPredicateProperty(property: {property: string}): {property: string} {
+  return {property: property.property};
+}
+
+/** Returns the property reference from a leaf predicate. */
+function getPredicateProperty(predicate: ParquetPredicate): {property: string} | undefined {
+  return isParquetLogicalPredicate(predicate) || isParquetNotPredicate(predicate)
+    ? undefined
+    : predicate.args[0];
+}
+
+/** Returns one top-level column chunk from normalized row-group metadata. */
+function getRowGroupColumn(rowGroup: ParquetRowGroupMetadata, property: string) {
+  return rowGroup.columns.find(
+    columnChunk => columnChunk.path.length === 1 && columnChunk.path[0] === property
+  );
+}
+
 /** Visits every predicate node depth-first. */
 function visitParquetPredicate(
   predicate: ParquetPredicate,
   visit: (predicate: ParquetPredicate) => void
 ): void {
   visit(predicate);
-  if ('predicates' in predicate) {
-    for (const child of predicate.predicates) {
+  if (isParquetLogicalPredicate(predicate) || isParquetNotPredicate(predicate)) {
+    for (const child of predicate.args) {
       visitParquetPredicate(child, visit);
     }
   }
+}
+
+/** Returns whether a predicate combines multiple child predicates. */
+function isParquetLogicalPredicate(
+  predicate: ParquetPredicate
+): predicate is ParquetLogicalPredicate {
+  return predicate.op === 'and' || predicate.op === 'or';
+}
+
+/** Returns whether a predicate negates one child predicate. */
+function isParquetNotPredicate(predicate: ParquetPredicate): predicate is ParquetNotPredicate {
+  return predicate.op === 'not';
 }

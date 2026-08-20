@@ -260,7 +260,7 @@ async function addParquetSourceBenchmarks(suite) {
       try {
         const batches = source.read({
           columns: ['payload'],
-          predicate: {column: 'category', operator: '=', value: 'category-3'}
+          predicate: {op: '=', args: [{property: 'category'}, 'category-3']}
         });
         for await (const batch of batches as AsyncIterable<ParquetSourceBatch>) {
           matchedRowCount += batch.length;
