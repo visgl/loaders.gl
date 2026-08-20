@@ -30,6 +30,12 @@ MIT License reproduced above.
 
 Copyright (c) 2016-17 Karl Cheng
 
+Portions of modules/schema-utils/src/lib/utils/async-queue.ts are adapted from
+async-iter-demo (https://github.com/rauschma/async-iter-demo) under the MIT
+License reproduced above.
+
+Copyright (c) 2016 Axel Rauschmayer
+
 loaders.gl includes certain files from Cesium (https://github.com/CesiumGS/cesium)
 under the Apache 2.0 License, including files in modules/3d-tiles and modules/math.
 

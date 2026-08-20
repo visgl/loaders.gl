@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {BinaryFeatureCollection, Feature} from '@loaders.gl/schema';
 import {transformBinaryCoords, transformGeoJsonCoords} from '@loaders.gl/gis';

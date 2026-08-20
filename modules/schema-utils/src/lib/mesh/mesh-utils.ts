@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Mesh category utilities
 // TODO - move to mesh category module, or to math.gl/geometry module
 import {MeshAttributes} from '@loaders.gl/schema';
