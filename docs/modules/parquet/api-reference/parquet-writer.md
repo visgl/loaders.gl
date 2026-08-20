@@ -66,22 +66,44 @@ const parquetBuffer = await encode(arrowTable, ParquetWriter, {
 
 ### TypeScript writer options
 
-`ParquetJSWriter` accepts `parquet.columnEncodings`, keyed by top-level column name. Use
-`BYTE_STREAM_SPLIT` for fixed-width numeric or binary columns when the following page compression can
-benefit from grouping corresponding bytes. Unsupported physical types are rejected instead of
-silently falling back to `PLAIN`.
+`ParquetJSWriter` accepts `parquet.columnEncodings`, keyed by top-level column name. It also supports
+adaptive or forced chunk dictionaries independently of the primary encoding. Unsupported
+encoding/type combinations and unknown column names are rejected instead of silently falling back.
 
 ```typescript
 const parquet = await encode(table, ParquetJSWriter, {
   parquet: {
     useDataPageV2: true,
+    pageSize: 8192,
+    dictionary: 'auto',
+    columnDictionaries: {
+      identifier: false
+    },
     columnEncodings: {
       temperature: 'BYTE_STREAM_SPLIT',
-      timestamp: 'BYTE_STREAM_SPLIT'
+      timestamp: 'DELTA_BINARY_PACKED',
+      identifier: 'DELTA_BYTE_ARRAY'
     }
   }
 });
 ```
+
+The selectable primary encodings are:
+
+| Encoding | Physical types | Typical data |
+| -------- | -------------- | ------------ |
+| `PLAIN` | All | Baseline or already-compressed values |
+| `BYTE_STREAM_SPLIT` | `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `FIXED_LEN_BYTE_ARRAY` | Fixed-width numeric values followed by compression |
+| `DELTA_BINARY_PACKED` | `INT32`, `INT64` | Ordered counters, timestamps, and low-delta integers |
+| `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | Variable-width values with compressible lengths |
+| `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | Sorted or shared-prefix strings and binary values |
+
+Dictionary encoding is configured separately because it emits a PLAIN dictionary page followed by
+`RLE_DICTIONARY` data pages. `dictionary: 'auto'` uses a dictionary only when its uncompressed value
+payload plus index stream are smaller than the selected primary encoding. `dictionary: true` forces
+one when it fits the size limit, and `false` disables it. If a forced dictionary exceeds
+`dictionaryPageSizeLimit`, the complete column chunk uses its primary encoding instead of mixing
+incompatible dictionary domains.
 
 See the [Parquet format page](/docs/modules/parquet/formats/parquet#value-encodings) for the complete
 read/write encoding matrix.
@@ -89,9 +111,12 @@ read/write encoding matrix.
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter`. |
-| `parquet.columnEncodings` | `Record<string, 'PLAIN' \| 'BYTE_STREAM_SPLIT'>` | `{}` | Selects value encodings by top-level column name for `ParquetJSWriter`. |
+| `parquet.columnEncodings` | `Record<string, ParquetJSWriterEncoding>` | `{}` | Selects the primary value encoding by top-level column name for `ParquetJSWriter`. |
+| `parquet.dictionary` | `boolean \| 'auto'` | `'auto'` | Enables, disables, or adaptively selects a chunk-wide dictionary. |
+| `parquet.columnDictionaries` | `Record<string, boolean \| 'auto'>` | `{}` | Overrides the dictionary policy by top-level column name. |
+| `parquet.dictionaryPageSizeLimit` | `number` | `1048576` | Maximum uncompressed PLAIN dictionary payload in bytes; oversized dictionaries fall back for the complete chunk. |
 | `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |
-| `parquet.pageSize` | `number` | implementation default | Sets the target value count per page for `ParquetJSWriter`. |
+| `parquet.pageSize` | `number` | `8192` | Sets the target shredded level-entry count per page. Boundaries remain aligned to top-level rows. |
 | `parquet.useDataPageV2` | `boolean` | `false` | Emits Data Page V2 from `ParquetJSWriter`. |
 
 ## Writer Variants
@@ -112,8 +137,10 @@ const parquetBuffer = await encode(table, ParquetJSWriter, {
 });
 ```
 
-`ParquetJSWriter` supports `parquet.rowGroupSize`, `parquet.pageSize`, and
-`parquet.useDataPageV2`; their defaults are selected by the implementation.
+`ParquetJSWriter` emits multiple pages when a column chunk exceeds `parquet.pageSize`. A repeated row
+larger than the target stays intact in one page. Dictionary pages are shared by all data pages in a
+column chunk, and footer offsets plus encoding statistics identify the dictionary and data-page
+regions for other readers.
 
 The TypeScript writer emits Parquet 2.13 `LogicalType` metadata for Arrow-compatible integer,
 date/time/timestamp, decimal, FLOAT16, and string fields. Nanosecond and unsigned 64-bit values are

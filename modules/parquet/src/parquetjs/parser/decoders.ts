@@ -786,14 +786,27 @@ async function decodeDictionaryPage(
   }
 
   const numValues = pageHeader?.dictionary_page_header?.num_values || 0;
+  const declaredEncoding = getThriftEnum(
+    Encoding,
+    pageHeader.dictionary_page_header?.encoding!
+  ) as ParquetCodec;
+  // Some established writers put the data-page dictionary encoding in this field even though
+  // dictionary values themselves use PLAIN. Preserve compatibility with those files.
+  const dictionaryValueEncoding =
+    declaredEncoding === 'PLAIN_DICTIONARY' || declaredEncoding === 'RLE_DICTIONARY'
+      ? 'PLAIN'
+      : declaredEncoding;
 
   const decodedDictionaryValues = decodeValues(
     context.column.primitiveType!,
-    context.column.encoding!,
+    dictionaryValueEncoding,
     dictCursor,
     numValues,
-    // TODO - this looks wrong?
-    {...context, int64AsBigInt: shouldDecodeInt64AsBigInt(context)} as ParquetCodecOptions
+    {
+      ...context,
+      typeLength: context.column.typeLength,
+      int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+    } as ParquetCodecOptions
   );
 
   return decodedDictionaryValues as (string | ArrayBuffer)[];
