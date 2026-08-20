@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 Copyright (c) 2015 Uber Technologies, Inc.
 
-loaders.gl includes certain files from Cesium (https://github.com/AnalyticalGraphicsInc/cesium) 
-under the  Apache 2 License (found in the submodule: modules/3d-tiles):)
+loaders.gl includes certain files from Cesium (https://github.com/CesiumGS/cesium)
+under the Apache 2.0 License, including files in modules/3d-tiles and modules/math.
 
 Copyright 2011-2018 CesiumJS Contributors
 
@@ -38,4 +38,3 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
-

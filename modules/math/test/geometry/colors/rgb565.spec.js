@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 // import {encodeRGB565, decodeRGB565} from '@loaders.gl/math';
 

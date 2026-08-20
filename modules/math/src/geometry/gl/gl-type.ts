@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {TypedArray} from '@math.gl/core';
 import {GL_TYPE as GL} from '../constants';
 
