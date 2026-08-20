@@ -6,6 +6,7 @@
 
 import Int64 from 'node-int64';
 import type {PageHeader} from '../parquet-thrift';
+import type {ParquetValueBuffer} from '../codecs/declare';
 
 export type ParquetCodec =
   | 'PLAIN'
@@ -123,13 +124,17 @@ export interface ParquetReaderContext {
   preserveBinary?: boolean;
   /** Retain byte arrays as views into decoded page buffers for direct materialization. */
   retainByteArrayViews?: boolean;
+  /** Decode primitive values into typed column buffers when their physical type permits it. */
+  useTypedValueBuffers?: boolean;
 }
 
 export interface ParquetPageData {
   dlevels: number[];
   rlevels: number[];
   /** Actual column chunks */
-  values: any[]; // ArrayLike<any>;
+  values: ParquetValueBuffer;
+  /** Number of values written directly into the column destination, if one was supplied. */
+  directValuesWritten?: number;
   count: number;
   dictionary?: ParquetDictionary;
   /** The "raw" page header from the file */
@@ -158,7 +163,7 @@ export class ParquetRowGroup {
 export interface ParquetColumnChunk {
   dlevels: number[];
   rlevels: number[];
-  values: any[];
+  values: ParquetValueBuffer;
   count: number;
   pageHeaders: PageHeader[];
 }

@@ -5,7 +5,12 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 import type {PrimitiveType} from '../schema/declare';
-import type {CursorBuffer, ParquetCodecOptions} from './declare';
+import {
+  getParquetValueOutput,
+  type CursorBuffer,
+  type ParquetCodecOptions,
+  type ParquetValueBuffer
+} from './declare';
 import {concatUint8Arrays, writeUInt32LE} from '../utils/binary-utils';
 import varint from 'varint';
 
@@ -80,7 +85,7 @@ export function decodeValues(
   cursor: CursorBuffer,
   count: number,
   options: ParquetCodecOptions
-): number[] {
+): ParquetValueBuffer {
   if (!('bitWidth' in options)) {
     throw new Error('bitWidth is required');
   }
@@ -97,7 +102,7 @@ export function decodeValues(
     cursor.offset += 4;
   }
 
-  const values = new Array<number>(count);
+  const {output, outputOffset: initialOutputOffset} = getParquetValueOutput(options, count);
   let outputOffset = 0;
   while (outputOffset < count) {
     const header = readUnsignedVarIntNumber(cursor);
@@ -107,7 +112,15 @@ export function decodeValues(
         throw new Error('invalid RLE bit-packed run length');
       }
       const outputCount = Math.min(runValueCount, count - outputOffset);
-      decodeBitPackedRun(cursor, runValueCount, outputCount, bitWidth, values, outputOffset);
+      decodeBitPackedRun(
+        cursor,
+        runValueCount,
+        outputCount,
+        bitWidth,
+        output,
+        initialOutputOffset + outputOffset,
+        options.dictionary
+      );
       outputOffset += outputCount;
     } else {
       const runValueCount = header / 2;
@@ -116,12 +129,15 @@ export function decodeValues(
       }
       const outputCount = Math.min(runValueCount, count - outputOffset);
       const value = decodeRepeatedRun(cursor, bitWidth);
-      values.fill(value, outputOffset, outputOffset + outputCount);
+      const resolvedValue = resolveDictionaryValue(value, options.dictionary);
+      for (let index = 0; index < outputCount; index++) {
+        output[initialOutputOffset + outputOffset + index] = resolvedValue;
+      }
       outputOffset += outputCount;
     }
   }
 
-  return values;
+  return output;
 }
 
 /** Decodes one complete bit-packed run directly into the caller's output array. */
@@ -130,8 +146,9 @@ function decodeBitPackedRun(
   runValueCount: number,
   outputCount: number,
   bitWidth: number,
-  output: number[],
-  outputOffset: number
+  output: ParquetValueBuffer,
+  outputOffset: number,
+  dictionary?: readonly unknown[]
 ): void {
   if (runValueCount % 8 !== 0) {
     throw new Error('must be a multiple of 8');
@@ -143,7 +160,10 @@ function decodeBitPackedRun(
   cursor.offset = Math.min(cursor.offset + packedByteLength, size);
 
   if (bitWidth === 0) {
-    output.fill(0, outputOffset, outputOffset + outputCount);
+    const resolvedValue = resolveDictionaryValue(0, dictionary);
+    for (let index = 0; index < outputCount; index++) {
+      output[outputOffset + index] = resolvedValue;
+    }
     return;
   }
   if (bitWidth <= 24) {
@@ -153,7 +173,8 @@ function decodeBitPackedRun(
       outputCount,
       bitWidth,
       output,
-      outputOffset
+      outputOffset,
+      dictionary
     );
     return;
   }
@@ -164,7 +185,8 @@ function decodeBitPackedRun(
       outputCount,
       bitWidth,
       output,
-      outputOffset
+      outputOffset,
+      dictionary
     );
     return;
   }
@@ -179,7 +201,8 @@ function decodeBitPackedRun(
       packedBits |= BigInt(cursor.buffer[byteOffset++] ?? 0) << BigInt(packedBitCount);
       packedBitCount += 8;
     }
-    output[outputOffset + valueIndex] = Number(packedBits & mask);
+    const value = Number(packedBits & mask);
+    output[outputOffset + valueIndex] = resolveDictionaryValue(value, dictionary);
     packedBits >>= bitWidthBigInt;
     packedBitCount -= bitWidth;
   }
@@ -191,12 +214,14 @@ function decodeUint32BitPackedRun(
   packedOffset: number,
   count: number,
   bitWidth: number,
-  output: number[],
-  outputOffset: number
+  output: ParquetValueBuffer,
+  outputOffset: number,
+  dictionary?: readonly unknown[]
 ): void {
   if (bitWidth === 8) {
     for (let valueIndex = 0; valueIndex < count; valueIndex++) {
-      output[outputOffset + valueIndex] = buffer[packedOffset + valueIndex] ?? 0;
+      const value = buffer[packedOffset + valueIndex] ?? 0;
+      output[outputOffset + valueIndex] = resolveDictionaryValue(value, dictionary);
     }
     return;
   }
@@ -210,7 +235,8 @@ function decodeUint32BitPackedRun(
       packedBits |= (buffer[byteOffset++] ?? 0) << packedBitCount;
       packedBitCount += 8;
     }
-    output[outputOffset + valueIndex] = packedBits & mask;
+    const value = packedBits & mask;
+    output[outputOffset + valueIndex] = resolveDictionaryValue(value, dictionary);
     packedBits >>>= bitWidth;
     packedBitCount -= bitWidth;
   }
@@ -222,8 +248,9 @@ function decodeNumberBitPackedRun(
   packedOffset: number,
   count: number,
   bitWidth: number,
-  output: number[],
-  outputOffset: number
+  output: ParquetValueBuffer,
+  outputOffset: number,
+  dictionary?: readonly unknown[]
 ): void {
   const divisor = 2 ** bitWidth;
   let packedBits = 0;
@@ -234,10 +261,22 @@ function decodeNumberBitPackedRun(
       packedBits += (buffer[byteOffset++] ?? 0) * 2 ** packedBitCount;
       packedBitCount += 8;
     }
-    output[outputOffset + valueIndex] = packedBits % divisor;
+    const value = packedBits % divisor;
+    output[outputOffset + valueIndex] = resolveDictionaryValue(value, dictionary);
     packedBits = Math.floor(packedBits / divisor);
     packedBitCount -= bitWidth;
   }
+}
+
+/** Resolves one dictionary index and rejects corrupt out-of-range references. */
+function resolveDictionaryValue(value: number, dictionary?: readonly unknown[]): unknown {
+  if (!dictionary) {
+    return value;
+  }
+  if (value < 0 || value >= dictionary.length) {
+    throw new Error(`Invalid Parquet dictionary index ${value}`);
+  }
+  return dictionary[value];
 }
 
 /** Decodes the single little-endian value stored by a repeated run. */

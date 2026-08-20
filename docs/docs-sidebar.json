@@ -661,6 +661,7 @@
         "label": "Concepts",
         "items": [
           "developer-guide/concepts/javascript-apis",
+          "developer-guide/concepts/javascript-and-wasm-performance",
           "developer-guide/concepts/binary-data",
           "developer-guide/concepts/streaming",
           "developer-guide/concepts/async-iterators",

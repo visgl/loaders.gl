@@ -394,7 +394,7 @@ async function encodeDataPage(
   }
 
   /* encode values */
-  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
+  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values as any[], {
     typeLength: column.typeLength,
     bitWidth: column.typeLength
   });
@@ -437,7 +437,7 @@ async function encodeDataPageV2(
   page: Uint8Array;
 }> {
   /* encode values */
-  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
+  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values as any[], {
     typeLength: column.typeLength,
     bitWidth: column.typeLength
   });

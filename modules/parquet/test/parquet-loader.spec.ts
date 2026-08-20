@@ -184,9 +184,7 @@ test('ParquetJSLoader#arrow-table preserves ranged physical integer values', asy
   if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
     for (const columnName of columns) {
       t.deepEqual(
-        Array.from(arrowTable.data.getChild(columnName) || [], value =>
-          typeof value === 'bigint' ? Number(value) : value
-        ),
+        Array.from(arrowTable.data.getChild(columnName) || []),
         objectRowTable.data.map(row => row[columnName] ?? null),
         `${columnName} values and nulls match object-row decoding`
       );
@@ -542,9 +540,11 @@ test('ParquetJSLoader#load repeated_no_annotation file as an Arrow table', async
 
   t.equal(table.shape, 'arrow-table');
   if (table.shape === 'arrow-table') {
-    const lastRow = JSON.parse(JSON.stringify(table.data.get(5)?.toJSON())) as {
-      phoneNumbers: {phone: Array<{number: number; kind: string | null}>};
-    };
+    const lastRow = JSON.parse(
+      JSON.stringify(table.data.get(5)?.toJSON(), (_key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
+    ) as {phoneNumbers: {phone: Array<{number: string; kind: string | null}>}};
     t.equal(table.data.numRows, 6);
     t.ok(JSON.stringify(table.schema).includes('"type":"list"'), 'schema contains Arrow lists');
     t.equal(lastRow.phoneNumbers.phone.length, 3, 'all repeated structs are retained');

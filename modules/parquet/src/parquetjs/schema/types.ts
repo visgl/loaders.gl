@@ -291,12 +291,24 @@ function toPrimitive_UINT32(value: any): number {
   return v;
 }
 
-function toPrimitive_INT64(value: any): number {
-  const v = parseInt(value, 10);
-  if (Number.isNaN(v)) {
+function toPrimitive_INT64(value: unknown): number | bigint {
+  if (typeof value === 'number') {
+    if (!Number.isSafeInteger(value)) {
+      throw new Error(`invalid value for INT64: ${value}`);
+    }
+    return value;
+  }
+
+  let primitiveValue: bigint;
+  try {
+    primitiveValue = BigInt(value as bigint | boolean | string);
+  } catch {
     throw new Error(`invalid value for INT64: ${value}`);
   }
-  return v;
+  if (primitiveValue < -(2n ** 63n) || primitiveValue > 2n ** 63n - 1n) {
+    throw new Error(`invalid value for INT64: ${value}`);
+  }
+  return primitiveValue;
 }
 
 function decimalToPrimitive_INT64(value: number, field: ParquetField) {

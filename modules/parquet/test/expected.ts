@@ -7,6 +7,7 @@
 const TEXT_ENCODER = new TextEncoder();
 
 const RAW_TEXT_FIELDS = new Set(['c1', 'date_string_col', 'string_col']);
+const BIGINT_FIELDS = new Set(['bigint_col', 'c0', 'item', 'number']);
 
 function bytes(values: number[]): Uint8Array {
   return new Uint8Array(values);
@@ -25,7 +26,10 @@ function toTypedParquetFixture(value: unknown, key?: string): unknown {
     if (RAW_TEXT_FIELDS.has(key || '')) {
       return utf8Bytes(value);
     }
-    return isNumericString(value) ? Number(value) : value;
+    if (!isNumericString(value)) {
+      return value;
+    }
+    return BIGINT_FIELDS.has(key || '') && /^-?\d+$/.test(value) ? BigInt(value) : Number(value);
   }
 
   if (Array.isArray(value)) {
@@ -413,7 +417,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
 
 export const NO_NULLABLE_EXPECTED = typedParquetRows([
   {
-    ID: 8,
+    ID: 8n,
     Int_Array: { list: [{ element: -1 }] },
     int_array_array: { list: [{ element: { list: [{ element: -1 }, { element: -2 }] } }, { element: {} }] },
     Int_Map: {map: [{key: 'k1', value: -1}]},
@@ -448,7 +452,7 @@ export const NO_NULLABLE_EXPECTED = typedParquetRows([
 
 export const NULLABLE_EXPECTED = typedParquetRows([
   {
-    id: 1,
+    id: 1n,
     int_array: {
       list: [
         { element: '1' },
@@ -492,7 +496,7 @@ export const NULLABLE_EXPECTED = typedParquetRows([
     }
   },
   {
-    id: 2,
+    id: 2n,
     int_array: {
       list: [
         {},
@@ -553,7 +557,7 @@ export const NULLABLE_EXPECTED = typedParquetRows([
     }
   },
   {
-    id: 3,
+    id: 3n,
     int_array: {},
     int_array_Array: { list: [{}] },
     int_map: {},
@@ -561,14 +565,14 @@ export const NULLABLE_EXPECTED = typedParquetRows([
     nested_struct: { C: { d: {} }, g: {} }
   },
   {
-    id: 4,
+    id: 4n,
     int_array_Array: {},
     int_map: {},
     int_Map_Array: {},
     nested_struct: { C: {} }
   },
   {
-    id: 5,
+    id: 5n,
     int_map: {},
     nested_struct: {
       g: {
@@ -579,10 +583,10 @@ export const NULLABLE_EXPECTED = typedParquetRows([
     }
   },
   {
-    id: 6
+    id: 6n
   },
   {
-    id: 7,
+    id: 7n,
     int_array_Array: { list: [{}, { element: { list: [{ element: '5' }, { element: '6' }] } }] },
     int_map: { map: [{ key: 'k1' }, { key: 'k3' }] },
     nested_struct: {
@@ -652,22 +656,22 @@ export const LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED = {
 
 export const LZ4_RAW_COMPRESSED_EXPECTED = [
   {
-    c0: 1593604800,
+    c0: 1593604800n,
     c1: utf8Bytes('abc'),
     v11: 42
   },
   {
-    c0: 1593604800,
+    c0: 1593604800n,
     c1: utf8Bytes('def'),
     v11: 7.7
   },
   {
-    c0: 1593604801,
+    c0: 1593604801n,
     c1: utf8Bytes('abc'),
     v11: 42.125
   },
   {
-    c0: 1593604801,
+    c0: 1593604801n,
     c1: utf8Bytes('def'),
     v11: 7.7
   }
