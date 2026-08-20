@@ -86,22 +86,36 @@ function convertFieldToParquetFieldDefinition(
       return {type: 'BOOLEAN', optional: nullable};
 
     case 'int':
-    case 'int8':
-    case 'int16':
     case 'int32':
+      return {type: 'INT_32', optional: nullable};
+
+    case 'int8':
+      return {type: 'INT_8', optional: nullable};
+
+    case 'int16':
+      return {type: 'INT_16', optional: nullable};
+
     case 'uint8':
+      return {type: 'UINT_8', optional: nullable};
+
     case 'uint16':
+      return {type: 'UINT_16', optional: nullable};
+
     case 'uint32':
-      return {type: 'INT32', optional: nullable};
+      return {type: 'UINT_32', optional: nullable};
 
     case 'int64':
+      return {type: 'INT_64', optional: nullable};
+
     case 'uint64':
-      return {type: 'INT64', optional: nullable};
+      return {type: 'UINT_64', optional: nullable};
 
     case 'float':
-    case 'float16':
     case 'float32':
       return {type: 'FLOAT', optional: nullable};
+
+    case 'float16':
+      return {type: 'FLOAT16', optional: nullable};
 
     case 'float64':
       return {type: 'DOUBLE', optional: nullable};
@@ -121,18 +135,40 @@ function convertFieldToParquetFieldDefinition(
       return {type: 'TIMESTAMP_MILLIS', optional: nullable};
 
     case 'timestamp-microsecond':
-    case 'timestamp-nanosecond':
       return {type: 'TIMESTAMP_MICROS', optional: nullable};
+
+    case 'timestamp-nanosecond':
+      return {type: 'TIMESTAMP_NANOS', optional: nullable};
 
     case 'time-second':
     case 'time-millisecond':
       return {type: 'TIME_MILLIS', optional: nullable};
 
     case 'time-microsecond':
-    case 'time-nanosecond':
       return {type: 'TIME_MICROS', optional: nullable};
 
+    case 'time-nanosecond':
+      return {type: 'TIME_NANOS', optional: nullable};
+
     default:
+      if (typeof dataType === 'object' && dataType.type === 'decimal') {
+        const physicalType =
+          dataType.precision <= 9
+            ? 'DECIMAL_INT32'
+            : dataType.precision <= 18
+              ? 'DECIMAL_INT64'
+              : 'DECIMAL_FIXED_LEN_BYTE_ARRAY';
+        return {
+          type: physicalType,
+          typeLength:
+            physicalType === 'DECIMAL_FIXED_LEN_BYTE_ARRAY'
+              ? getDecimalByteWidth(dataType.precision)
+              : undefined,
+          precision: dataType.precision,
+          scale: dataType.scale,
+          optional: nullable
+        };
+      }
       if (typeof dataType === 'object' && dataType.type === 'fixed-size-binary') {
         return {
           type: 'FIXED_LEN_BYTE_ARRAY',
@@ -145,6 +181,15 @@ function convertFieldToParquetFieldDefinition(
         `ParquetJSWriter: Unsupported field "${field.name}" with type ${formatDataType(dataType)}`
       );
   }
+}
+
+/** Returns the minimum fixed byte width required by one decimal precision. */
+function getDecimalByteWidth(precision: number): number {
+  for (let byteWidth = 1; byteWidth <= 32; byteWidth++) {
+    const maximumPrecision = Math.floor(Math.log10(2 ** (8 * byteWidth - 1) - 1));
+    if (precision <= maximumPrecision) return byteWidth;
+  }
+  throw new Error(`ParquetJSWriter: Decimal precision ${precision} exceeds 32 bytes`);
 }
 
 /**

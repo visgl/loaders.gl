@@ -130,7 +130,7 @@ function shredRecordFields(
         data[field.key].rlevels.push(rlvl);
         data[field.key].dlevels.push(field.dLevelMax);
         (data[field.key].values as unknown[]).push(
-          Types.toPrimitive((field.originalType || field.primitiveType)!, values[i])
+          Types.toPrimitive((field.originalType || field.primitiveType)!, values[i], field)
         );
       }
     }

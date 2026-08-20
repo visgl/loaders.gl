@@ -60,8 +60,10 @@ export type OriginalType =
   | 'DATE' // 6
   | 'TIME_MILLIS' // 7
   | 'TIME_MICROS' // 8
+  | 'TIME_NANOS'
   | 'TIMESTAMP_MILLIS' // 9
   | 'TIMESTAMP_MICROS' // 10
+  | 'TIMESTAMP_NANOS'
   | 'UINT_8' // 11
   | 'UINT_16' // 12
   | 'UINT_32' // 13
@@ -70,9 +72,63 @@ export type OriginalType =
   | 'INT_16' // 16
   | 'INT_32' // 17
   | 'INT_64' // 18
+  | 'ENUM'
+  | 'UUID'
+  | 'FLOAT16'
+  | 'UNKNOWN'
+  | 'VARIANT'
+  | 'GEOMETRY'
+  | 'GEOGRAPHY'
   | 'JSON' // 19
   | 'BSON' // 20
   | 'INTERVAL'; // 21
+
+/** Units carried by Parquet TIME and TIMESTAMP logical type annotations. */
+export type ParquetTimeUnit = 'MILLIS' | 'MICROS' | 'NANOS';
+
+/** Logical type names defined by the Parquet 2.13 format. */
+export type ParquetLogicalTypeName =
+  | 'STRING'
+  | 'MAP'
+  | 'LIST'
+  | 'ENUM'
+  | 'DECIMAL'
+  | 'DATE'
+  | 'TIME'
+  | 'TIMESTAMP'
+  | 'INTEGER'
+  | 'UNKNOWN'
+  | 'JSON'
+  | 'BSON'
+  | 'UUID'
+  | 'FLOAT16'
+  | 'VARIANT'
+  | 'GEOMETRY'
+  | 'GEOGRAPHY';
+
+/** Serializable representation of one Parquet logical type annotation. */
+export interface ParquetLogicalType {
+  /** Logical type discriminator. */
+  type: ParquetLogicalTypeName;
+  /** Integer width for INTEGER annotations. */
+  bitWidth?: 8 | 16 | 32 | 64;
+  /** Whether an INTEGER annotation is signed. */
+  isSigned?: boolean;
+  /** Time unit for TIME and TIMESTAMP annotations. */
+  unit?: ParquetTimeUnit;
+  /** Whether a TIME or TIMESTAMP value represents a UTC-normalized instant. */
+  isAdjustedToUTC?: boolean;
+  /** Decimal precision. */
+  precision?: number;
+  /** Decimal scale. */
+  scale?: number;
+  /** Variant specification version. */
+  specificationVersion?: number;
+  /** Coordinate reference system for geospatial logical types. */
+  crs?: string;
+  /** Edge interpolation algorithm for GEOGRAPHY values. */
+  algorithm?: string;
+}
 
 export type ParquetDictionary = any[];
 
@@ -82,9 +138,18 @@ export interface SchemaDefinition {
 
 export interface FieldDefinition {
   type?: ParquetType;
+  /** Physical type declared by the file, retained independently from its logical type. */
+  physicalType?: PrimitiveType;
   typeLength?: number;
+  /** @deprecated Use `precision`. */
   presision?: number;
+  /** Decimal precision. */
+  precision?: number;
   scale?: number;
+  /** Modern Parquet logical type annotation. */
+  logicalType?: ParquetLogicalType;
+  /** Stable field identifier declared by the Parquet schema. */
+  fieldId?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;
   optional?: boolean;
@@ -98,9 +163,16 @@ export interface ParquetField {
   key: string;
   primitiveType?: PrimitiveType;
   originalType?: OriginalType;
+  /** Modern Parquet logical type annotation. */
+  logicalType?: ParquetLogicalType;
+  /** Stable field identifier declared by the Parquet schema. */
+  fieldId?: number;
   repetitionType: RepetitionType;
   typeLength?: number;
+  /** @deprecated Use `precision`. */
   presision?: number;
+  /** Decimal precision. */
+  precision?: number;
   scale?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;

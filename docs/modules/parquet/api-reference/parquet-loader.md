@@ -144,6 +144,13 @@ Unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` columns are returned
 for example `UTF8` values are returned as JavaScript strings and `JSON` values are
 returned as parsed JavaScript values.
 
+`ParquetJSLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
+`ConvertedType` fallback. Arrow output preserves exact signed and unsigned integer widths,
+date/time/timestamp units through nanoseconds, Decimal128/256 precision and scale, UUID fixed-size
+binary width, and FLOAT16 values. Parameterized logical metadata such as field IDs, UTC adjustment,
+Variant versions, coordinate reference systems, and Geography edge algorithms is retained in the
+serialized field metadata.
+
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.

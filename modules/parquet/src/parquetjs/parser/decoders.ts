@@ -9,6 +9,8 @@ import {
   ParquetColumnChunk,
   ParquetReaderContext,
   ParquetPageData,
+  ParquetLogicalType,
+  ParquetTimeUnit,
   ParquetType,
   PrimitiveType,
   SchemaDefinition
@@ -17,6 +19,7 @@ import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index
 import type {ParquetValueBuffer} from '../codecs/declare';
 import {
   ConvertedType,
+  EdgeInterpolationAlgorithm,
   Encoding,
   FieldRepetitionType,
   PageHeader,
@@ -25,6 +28,7 @@ import {
   Type
 } from '../parquet-thrift/index';
 import {decompress} from '../compression';
+import type {TimeUnit as ParquetThriftTimeUnit} from '../parquet-thrift/TimeUnit';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
 
@@ -218,31 +222,28 @@ export function decodeSchema(
       const res = decodeSchema(schemaElements, next + 1, schemaElement.num_children!);
       next = res.next;
       schema[schemaElement.name] = {
-        // type: undefined,
         optional,
         repeated,
+        logicalType: decodeSchemaLogicalType(schemaElement),
+        fieldId: schemaElement.field_id,
         fields: res.schema
       };
     } else {
-      const type = getThriftEnum(Type, schemaElement.type!);
-      let logicalType = type;
-
-      if (schemaElement.converted_type !== undefined && schemaElement.converted_type !== null) {
-        logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
-      }
-
-      switch (logicalType) {
-        case 'DECIMAL':
-          logicalType = `${logicalType}_${type}` as ParquetType;
-          break;
-        default:
-      }
+      const physicalType = getThriftEnum(Type, schemaElement.type!) as PrimitiveType;
+      const logicalType = decodeSchemaLogicalType(schemaElement);
+      const parquetType = getSchemaParquetType(schemaElement, physicalType, logicalType);
+      const precision = logicalType?.precision ?? schemaElement.precision;
+      const scale = logicalType?.scale ?? schemaElement.scale;
 
       schema[schemaElement.name] = {
-        type: logicalType as ParquetType,
+        type: parquetType,
+        physicalType,
         typeLength: schemaElement.type_length,
-        presision: schemaElement.precision,
-        scale: schemaElement.scale,
+        presision: precision,
+        precision,
+        scale,
+        logicalType,
+        fieldId: schemaElement.field_id,
         optional,
         repeated
       };
@@ -250,6 +251,166 @@ export function decodeSchema(
     }
   }
   return {schema, offset, next};
+}
+
+/** Decodes the parameterized Parquet LogicalType union, falling back to ConvertedType metadata. */
+function decodeSchemaLogicalType(schemaElement: SchemaElement): ParquetLogicalType | undefined {
+  const logicalType = schemaElement.logicalType;
+  if (logicalType?.STRING) return {type: 'STRING'};
+  if (logicalType?.MAP) return {type: 'MAP'};
+  if (logicalType?.LIST) return {type: 'LIST'};
+  if (logicalType?.ENUM) return {type: 'ENUM'};
+  if (logicalType?.DECIMAL) {
+    return {
+      type: 'DECIMAL',
+      precision: logicalType.DECIMAL.precision,
+      scale: logicalType.DECIMAL.scale
+    };
+  }
+  if (logicalType?.DATE) return {type: 'DATE'};
+  if (logicalType?.TIME) {
+    return {
+      type: 'TIME',
+      unit: decodeTimeUnit(logicalType.TIME.unit),
+      isAdjustedToUTC: logicalType.TIME.isAdjustedToUTC
+    };
+  }
+  if (logicalType?.TIMESTAMP) {
+    return {
+      type: 'TIMESTAMP',
+      unit: decodeTimeUnit(logicalType.TIMESTAMP.unit),
+      isAdjustedToUTC: logicalType.TIMESTAMP.isAdjustedToUTC
+    };
+  }
+  if (logicalType?.INTEGER) {
+    const bitWidth = logicalType.INTEGER.bitWidth;
+    if (bitWidth !== 8 && bitWidth !== 16 && bitWidth !== 32 && bitWidth !== 64) {
+      throw new Error(`parquet: invalid INTEGER bit width ${bitWidth}`);
+    }
+    return {type: 'INTEGER', bitWidth, isSigned: logicalType.INTEGER.isSigned};
+  }
+  if (logicalType?.UNKNOWN) return {type: 'UNKNOWN'};
+  if (logicalType?.JSON) return {type: 'JSON'};
+  if (logicalType?.BSON) return {type: 'BSON'};
+  if (logicalType?.UUID) return {type: 'UUID'};
+  if (logicalType?.FLOAT16) return {type: 'FLOAT16'};
+  if (logicalType?.VARIANT) {
+    return {type: 'VARIANT', specificationVersion: logicalType.VARIANT.specification_version};
+  }
+  if (logicalType?.GEOMETRY) return {type: 'GEOMETRY', crs: logicalType.GEOMETRY.crs};
+  if (logicalType?.GEOGRAPHY) {
+    return {
+      type: 'GEOGRAPHY',
+      crs: logicalType.GEOGRAPHY.crs,
+      algorithm:
+        logicalType.GEOGRAPHY.algorithm === undefined
+          ? undefined
+          : getThriftEnum(EdgeInterpolationAlgorithm, logicalType.GEOGRAPHY.algorithm)
+    };
+  }
+
+  if (schemaElement.converted_type === undefined || schemaElement.converted_type === null) {
+    return undefined;
+  }
+  const convertedType = getThriftEnum(ConvertedType, schemaElement.converted_type);
+  switch (convertedType) {
+    case 'UTF8':
+      return {type: 'STRING'};
+    case 'MAP':
+    case 'MAP_KEY_VALUE':
+      return {type: 'MAP'};
+    case 'LIST':
+      return {type: 'LIST'};
+    case 'ENUM':
+      return {type: 'ENUM'};
+    case 'DECIMAL':
+      return {type: 'DECIMAL', precision: schemaElement.precision, scale: schemaElement.scale};
+    case 'DATE':
+      return {type: 'DATE'};
+    case 'TIME_MILLIS':
+      return {type: 'TIME', unit: 'MILLIS', isAdjustedToUTC: true};
+    case 'TIME_MICROS':
+      return {type: 'TIME', unit: 'MICROS', isAdjustedToUTC: true};
+    case 'TIMESTAMP_MILLIS':
+      return {type: 'TIMESTAMP', unit: 'MILLIS', isAdjustedToUTC: true};
+    case 'TIMESTAMP_MICROS':
+      return {type: 'TIMESTAMP', unit: 'MICROS', isAdjustedToUTC: true};
+    case 'UINT_8':
+    case 'UINT_16':
+    case 'UINT_32':
+    case 'UINT_64':
+      return {
+        type: 'INTEGER',
+        bitWidth: Number(convertedType.slice(5)) as 8 | 16 | 32 | 64,
+        isSigned: false
+      };
+    case 'INT_8':
+    case 'INT_16':
+    case 'INT_32':
+    case 'INT_64':
+      return {
+        type: 'INTEGER',
+        bitWidth: Number(convertedType.slice(4)) as 8 | 16 | 32 | 64,
+        isSigned: true
+      };
+    case 'JSON':
+      return {type: 'JSON'};
+    case 'BSON':
+      return {type: 'BSON'};
+    default:
+      return undefined;
+  }
+}
+
+/** Resolves one physical/logical pair to the internal Parquet value converter. */
+function getSchemaParquetType(
+  schemaElement: SchemaElement,
+  physicalType: PrimitiveType,
+  logicalType?: ParquetLogicalType
+): ParquetType {
+  if (!logicalType) {
+    return schemaElement.converted_type === undefined || schemaElement.converted_type === null
+      ? physicalType
+      : (getThriftEnum(ConvertedType, schemaElement.converted_type) as ParquetType);
+  }
+  switch (logicalType.type) {
+    case 'STRING':
+      return 'UTF8';
+    case 'ENUM':
+      return 'ENUM';
+    case 'DECIMAL':
+      return `DECIMAL_${physicalType}` as ParquetType;
+    case 'DATE':
+      return 'DATE';
+    case 'TIME':
+      return `TIME_${logicalType.unit}` as ParquetType;
+    case 'TIMESTAMP':
+      return `TIMESTAMP_${logicalType.unit}` as ParquetType;
+    case 'INTEGER':
+      return `${logicalType.isSigned ? 'INT' : 'UINT'}_${logicalType.bitWidth}` as ParquetType;
+    case 'UNKNOWN':
+    case 'JSON':
+    case 'BSON':
+    case 'UUID':
+    case 'FLOAT16':
+    case 'VARIANT':
+    case 'GEOMETRY':
+    case 'GEOGRAPHY':
+      return logicalType.type;
+    default:
+      if (schemaElement.converted_type !== undefined && schemaElement.converted_type !== null) {
+        return getThriftEnum(ConvertedType, schemaElement.converted_type) as ParquetType;
+      }
+      return physicalType;
+  }
+}
+
+/** Returns the selected member of the Parquet TimeUnit union. */
+function decodeTimeUnit(timeUnit: ParquetThriftTimeUnit): ParquetTimeUnit {
+  if (timeUnit?.MILLIS) return 'MILLIS';
+  if (timeUnit?.MICROS) return 'MICROS';
+  if (timeUnit?.NANOS) return 'NANOS';
+  throw new Error('parquet: TIME or TIMESTAMP logical type is missing its unit');
 }
 
 /**
@@ -525,10 +686,7 @@ function isDictionaryEncoding(encoding: ParquetCodec): boolean {
 
 /** Preserves exact physical signed INT64 values in every output shape. */
 function shouldDecodeInt64AsBigInt(context: ParquetReaderContext): boolean {
-  return Boolean(
-    context.column.primitiveType === 'INT64' &&
-      (!context.column.originalType || context.column.originalType === 'INT_64')
-  );
+  return context.column.primitiveType === 'INT64';
 }
 
 /** Allocates the narrowest lossless column buffer supported by the current JavaScript decoder. */
@@ -545,9 +703,7 @@ function createParquetColumnValueBuffer(
     case 'INT32':
       return new Int32Array(capacity);
     case 'INT64':
-      return !context.column.originalType || context.column.originalType === 'INT_64'
-        ? new BigInt64Array(capacity)
-        : new Float64Array(capacity);
+      return new BigInt64Array(capacity);
     case 'INT96':
     case 'DOUBLE':
       return new Float64Array(capacity);

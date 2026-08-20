@@ -64,6 +64,12 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
     toPrimitive: toPrimitive_UTF8,
     fromPrimitive: fromPrimitive_UTF8
   },
+  ENUM: {
+    primitiveType: 'BYTE_ARRAY',
+    originalType: 'ENUM',
+    toPrimitive: toPrimitive_UTF8,
+    fromPrimitive: fromPrimitive_UTF8
+  },
   TIME_MILLIS: {
     primitiveType: 'INT32',
     originalType: 'TIME_MILLIS',
@@ -73,6 +79,11 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
     primitiveType: 'INT64',
     originalType: 'TIME_MICROS',
     toPrimitive: toPrimitive_TIME_MICROS
+  },
+  TIME_NANOS: {
+    primitiveType: 'INT64',
+    originalType: 'TIME_NANOS',
+    toPrimitive: toPrimitive_TIME_NANOS
   },
   DATE: {
     primitiveType: 'INT32',
@@ -91,6 +102,11 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
     originalType: 'TIMESTAMP_MICROS',
     toPrimitive: toPrimitive_TIMESTAMP_MICROS,
     fromPrimitive: fromPrimitive_TIMESTAMP_MICROS
+  },
+  TIMESTAMP_NANOS: {
+    primitiveType: 'INT64',
+    originalType: 'TIMESTAMP_NANOS',
+    toPrimitive: toPrimitive_TIMESTAMP_NANOS
   },
   UINT_8: {
     primitiveType: 'INT32',
@@ -143,6 +159,39 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
     originalType: 'BSON',
     toPrimitive: toPrimitive_BSON,
     fromPrimitive: fromPrimitive_BSON
+  },
+  UUID: {
+    primitiveType: 'FIXED_LEN_BYTE_ARRAY',
+    originalType: 'UUID',
+    typeLength: 16,
+    toPrimitive: toPrimitive_BYTE_ARRAY
+  },
+  FLOAT16: {
+    primitiveType: 'FIXED_LEN_BYTE_ARRAY',
+    originalType: 'FLOAT16',
+    typeLength: 2,
+    toPrimitive: toPrimitive_FLOAT16,
+    fromPrimitive: fromPrimitive_FLOAT16
+  },
+  UNKNOWN: {
+    primitiveType: 'BYTE_ARRAY',
+    originalType: 'UNKNOWN',
+    toPrimitive: toPrimitive_BYTE_ARRAY
+  },
+  VARIANT: {
+    primitiveType: 'BYTE_ARRAY',
+    originalType: 'VARIANT',
+    toPrimitive: toPrimitive_BYTE_ARRAY
+  },
+  GEOMETRY: {
+    primitiveType: 'BYTE_ARRAY',
+    originalType: 'GEOMETRY',
+    toPrimitive: toPrimitive_BYTE_ARRAY
+  },
+  GEOGRAPHY: {
+    primitiveType: 'BYTE_ARRAY',
+    originalType: 'GEOGRAPHY',
+    toPrimitive: toPrimitive_BYTE_ARRAY
   },
   INTERVAL: {
     primitiveType: 'FIXED_LEN_BYTE_ARRAY',
@@ -221,6 +270,58 @@ function toPrimitive_FLOAT(value: any): number {
   return v;
 }
 
+/** Converts a JavaScript number to the two-byte IEEE 754 binary16 representation. */
+function toPrimitive_FLOAT16(value: unknown): Uint8Array {
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue) && !Number.isNaN(value)) {
+    throw new Error(`invalid value for FLOAT16: ${value}`);
+  }
+
+  const float32 = new Float32Array([numberValue]);
+  const bits = new Uint32Array(float32.buffer)[0];
+  const sign = (bits >>> 16) & 0x8000;
+  const exponent = (bits >>> 23) & 0xff;
+  const mantissa = bits & 0x7fffff;
+  let half: number;
+  if (exponent === 0xff) {
+    half = sign | 0x7c00 | (mantissa ? 0x0200 : 0);
+  } else {
+    const halfExponent = exponent - 127 + 15;
+    if (halfExponent >= 0x1f) {
+      half = sign | 0x7c00;
+    } else if (halfExponent <= 0) {
+      if (halfExponent < -10) {
+        half = sign;
+      } else {
+        const normalizedMantissa = mantissa | 0x800000;
+        half = sign | (normalizedMantissa >>> (14 - halfExponent));
+      }
+    } else {
+      half = sign | (halfExponent << 10) | (mantissa >>> 13);
+    }
+  }
+  return new Uint8Array([half & 0xff, half >>> 8]);
+}
+
+/** Converts little-endian IEEE 754 binary16 bytes to a JavaScript number. */
+function fromPrimitive_FLOAT16(value: unknown): number {
+  const bytes = toUint8Array(value as ArrayBuffer | ArrayBufferView);
+  if (bytes.byteLength !== 2) {
+    throw new Error(`invalid FLOAT16 byte length: ${bytes.byteLength}`);
+  }
+  const half = bytes[0] | (bytes[1] << 8);
+  const sign = half & 0x8000 ? -1 : 1;
+  const exponent = (half >>> 10) & 0x1f;
+  const mantissa = half & 0x03ff;
+  if (exponent === 0x1f) {
+    return mantissa ? Number.NaN : sign * Number.POSITIVE_INFINITY;
+  }
+  if (exponent === 0) {
+    return sign * 2 ** -14 * (mantissa / 1024);
+  }
+  return sign * 2 ** (exponent - 15) * (1 + mantissa / 1024);
+}
+
 function toPrimitive_DOUBLE(value: any): number {
   const v = parseFloat(value);
   if (Number.isNaN(v)) {
@@ -285,7 +386,7 @@ function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
 
 function toPrimitive_UINT32(value: any): number {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xffffffffffff || Number.isNaN(v)) {
+  if (v < 0 || v > 0xffffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT32: ${value}`);
   }
   return v;
@@ -321,13 +422,12 @@ function decimalToPrimitive_INT64(value: number, field: ParquetField) {
   return v;
 }
 
-function toPrimitive_UINT64(value: any) {
-  const v = parseInt(value, 10);
-  if (v < 0 || Number.isNaN(v)) {
+function toPrimitive_UINT64(value: unknown): bigint {
+  const primitiveValue = BigInt(value as bigint | boolean | number | string);
+  if (primitiveValue < 0n || primitiveValue > 2n ** 64n - 1n) {
     throw new Error(`invalid value for UINT64: ${value}`);
   }
-
-  return v;
+  return BigInt.asIntN(64, primitiveValue);
 }
 
 function toPrimitive_INT96(value: any) {
@@ -376,20 +476,27 @@ function fromPrimitive_BSON(value: any) {
 
 function toPrimitive_TIME_MILLIS(value: any) {
   const v = parseInt(value, 10);
-  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-  if (v < 0 || v > 0xffffffffffffffff || Number.isNaN(v)) {
+  if (v < 0 || v >= kMillisPerDay || Number.isNaN(v)) {
     throw new Error(`invalid value for TIME_MILLIS: ${value}`);
   }
 
   return v;
 }
 
-function toPrimitive_TIME_MICROS(value: any): number {
-  const v = parseInt(value, 10);
-  if (v < 0 || Number.isNaN(v)) {
+function toPrimitive_TIME_MICROS(value: unknown): bigint {
+  const primitiveValue = BigInt(value as bigint | boolean | number | string);
+  if (primitiveValue < 0n || primitiveValue >= 86_400_000_000n) {
     throw new Error(`invalid value for TIME_MICROS: ${value}`);
   }
-  return v;
+  return primitiveValue;
+}
+
+function toPrimitive_TIME_NANOS(value: unknown): bigint {
+  const primitiveValue = BigInt(value as bigint | boolean | number | string);
+  if (primitiveValue < 0n || primitiveValue >= 86_400_000_000_000n) {
+    throw new Error(`invalid value for TIME_NANOS: ${value}`);
+  }
+  return primitiveValue;
 }
 
 const kMillisPerDay = 86400000;
@@ -403,7 +510,7 @@ function toPrimitive_DATE(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || Number.isNaN(v)) {
+    if (v < -0x80000000 || v > 0x7fffffff || Number.isNaN(v)) {
       throw new Error(`invalid value for DATE: ${value}`);
     }
 
@@ -424,7 +531,7 @@ function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || Number.isNaN(v)) {
+    if (!Number.isSafeInteger(v)) {
       throw new Error(`invalid value for TIMESTAMP_MILLIS: ${value}`);
     }
 
@@ -433,28 +540,36 @@ function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
 }
 
 function fromPrimitive_TIMESTAMP_MILLIS(value: any): Date {
-  return new Date(value);
+  return new Date(Number(value));
 }
 
-function toPrimitive_TIMESTAMP_MICROS(value: any) {
+function toPrimitive_TIMESTAMP_MICROS(value: unknown): bigint {
   /* convert from date */
   if (value instanceof Date) {
-    return value.getTime() * 1000;
+    return BigInt(value.getTime()) * 1000n;
   }
 
   /* convert from integer */
   {
-    const v = parseInt(value, 10);
-    if (v < 0 || Number.isNaN(v)) {
+    let primitiveValue: bigint;
+    try {
+      primitiveValue = BigInt(value as bigint | boolean | number | string);
+    } catch {
       throw new Error(`invalid value for TIMESTAMP_MICROS: ${value}`);
     }
-
-    return v;
+    return primitiveValue;
   }
 }
 
 function fromPrimitive_TIMESTAMP_MICROS(value: any) {
-  return new Date(value / 1000);
+  return new Date(Number(value) / 1000);
+}
+
+function toPrimitive_TIMESTAMP_NANOS(value: unknown): bigint {
+  if (value instanceof Date) {
+    return BigInt(value.getTime()) * 1_000_000n;
+  }
+  return BigInt(value as bigint | boolean | number | string);
 }
 
 function toPrimitive_INTERVAL(value: any) {
@@ -482,8 +597,10 @@ function fromPrimitive_INTERVAL(value: any) {
 }
 
 function decimalFromPrimitive_INT(value: any, field: ParquetField) {
-  const presisionInt = Math.round(((value * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
-  return presisionInt * 10 ** -(field.scale || 0);
+  const numberValue = Number(value);
+  const precision = field.precision ?? field.presision!;
+  const precisionInt = Math.round(((numberValue * 10 ** -precision) % 1) * 10 ** precision);
+  return precisionInt * 10 ** -(field.scale || 0);
 }
 
 function decimalFromPrimitive_BYTE_ARRAY(value: any, field: ParquetField) {

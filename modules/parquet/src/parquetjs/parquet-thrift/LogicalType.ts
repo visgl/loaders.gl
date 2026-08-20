@@ -15,6 +15,9 @@ import * as BsonType from './BsonType';
 import * as DateType from './DateType';
 import * as DecimalType from './DecimalType';
 import * as EnumType from './EnumType';
+import * as Float16Type from './Float16Type';
+import * as GeographyType from './GeographyType';
+import * as GeometryType from './GeometryType';
 import * as IntType from './IntType';
 import * as JsonType from './JsonType';
 import * as ListType from './ListType';
@@ -24,6 +27,7 @@ import * as StringType from './StringType';
 import * as TimestampType from './TimestampType';
 import * as TimeType from './TimeType';
 import * as UUIDType from './UUIDType';
+import * as VariantType from './VariantType';
 export interface ILogicalTypeArgs {
   STRING?: StringType.StringType;
   MAP?: MapType.MapType;
@@ -38,6 +42,10 @@ export interface ILogicalTypeArgs {
   JSON?: JsonType.JsonType;
   BSON?: BsonType.BsonType;
   UUID?: UUIDType.UUIDType;
+  FLOAT16?: Float16Type.Float16Type;
+  VARIANT?: VariantType.VariantType;
+  GEOMETRY?: GeometryType.GeometryType;
+  GEOGRAPHY?: GeographyType.GeographyType;
 }
 export class LogicalType {
   public STRING?: StringType.StringType;
@@ -53,6 +61,10 @@ export class LogicalType {
   public JSON?: JsonType.JsonType;
   public BSON?: BsonType.BsonType;
   public UUID?: UUIDType.UUIDType;
+  public FLOAT16?: Float16Type.Float16Type;
+  public VARIANT?: VariantType.VariantType;
+  public GEOMETRY?: GeometryType.GeometryType;
+  public GEOGRAPHY?: GeographyType.GeographyType;
   constructor(args?: ILogicalTypeArgs) {
     let _fieldsSet: number = 0;
     if (args != null) {
@@ -108,6 +120,22 @@ export class LogicalType {
         _fieldsSet++;
         this.UUID = args.UUID;
       }
+      if (args.FLOAT16 != null) {
+        _fieldsSet++;
+        this.FLOAT16 = args.FLOAT16;
+      }
+      if (args.VARIANT != null) {
+        _fieldsSet++;
+        this.VARIANT = args.VARIANT;
+      }
+      if (args.GEOMETRY != null) {
+        _fieldsSet++;
+        this.GEOMETRY = args.GEOMETRY;
+      }
+      if (args.GEOGRAPHY != null) {
+        _fieldsSet++;
+        this.GEOGRAPHY = args.GEOGRAPHY;
+      }
       if (_fieldsSet > 1) {
         throw new thrift.Thrift.TProtocolException(
           thrift.Thrift.TProtocolExceptionType.INVALID_DATA,
@@ -159,6 +187,18 @@ export class LogicalType {
   }
   public static fromUUID(UUID: UUIDType.UUIDType): LogicalType {
     return new LogicalType({UUID});
+  }
+  public static fromFLOAT16(FLOAT16: Float16Type.Float16Type): LogicalType {
+    return new LogicalType({FLOAT16});
+  }
+  public static fromVARIANT(VARIANT: VariantType.VariantType): LogicalType {
+    return new LogicalType({VARIANT});
+  }
+  public static fromGEOMETRY(GEOMETRY: GeometryType.GeometryType): LogicalType {
+    return new LogicalType({GEOMETRY});
+  }
+  public static fromGEOGRAPHY(GEOGRAPHY: GeographyType.GeographyType): LogicalType {
+    return new LogicalType({GEOGRAPHY});
   }
   public write(output: thrift.TProtocol): void {
     output.writeStructBegin('LogicalType');
@@ -225,6 +265,26 @@ export class LogicalType {
     if (this.UUID != null) {
       output.writeFieldBegin('UUID', thrift.Thrift.Type.STRUCT, 14);
       this.UUID.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.FLOAT16 != null) {
+      output.writeFieldBegin('FLOAT16', thrift.Thrift.Type.STRUCT, 15);
+      this.FLOAT16.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.VARIANT != null) {
+      output.writeFieldBegin('VARIANT', thrift.Thrift.Type.STRUCT, 16);
+      this.VARIANT.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.GEOMETRY != null) {
+      output.writeFieldBegin('GEOMETRY', thrift.Thrift.Type.STRUCT, 17);
+      this.GEOMETRY.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.GEOGRAPHY != null) {
+      output.writeFieldBegin('GEOGRAPHY', thrift.Thrift.Type.STRUCT, 18);
+      this.GEOGRAPHY.write(output);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -356,6 +416,42 @@ export class LogicalType {
             _fieldsSet++;
             const value_13: UUIDType.UUIDType = UUIDType.UUIDType.read(input);
             _returnValue = LogicalType.fromUUID(value_13);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 15:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _fieldsSet++;
+            const value_14: Float16Type.Float16Type = Float16Type.Float16Type.read(input);
+            _returnValue = LogicalType.fromFLOAT16(value_14);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 16:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _fieldsSet++;
+            const value_15: VariantType.VariantType = VariantType.VariantType.read(input);
+            _returnValue = LogicalType.fromVARIANT(value_15);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 17:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _fieldsSet++;
+            const value_16: GeometryType.GeometryType = GeometryType.GeometryType.read(input);
+            _returnValue = LogicalType.fromGEOMETRY(value_16);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 18:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _fieldsSet++;
+            const value_17: GeographyType.GeographyType = GeographyType.GeographyType.read(input);
+            _returnValue = LogicalType.fromGEOGRAPHY(value_17);
           } else {
             input.skip(fieldType);
           }

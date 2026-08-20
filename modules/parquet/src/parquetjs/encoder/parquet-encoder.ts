@@ -13,27 +13,51 @@ import {
   ParquetCodec,
   ParquetColumnChunk,
   ParquetField,
+  ParquetLogicalType,
   PrimitiveType,
   ParquetRow
 } from '../schema/declare';
 import {ParquetSchema} from '../schema/schema';
 import * as Shred from '../schema/shred';
 import {
+  BsonType,
   ColumnChunk,
   ColumnMetaData,
   CompressionCodec,
   ConvertedType,
   DataPageHeader,
   DataPageHeaderV2,
+  DateType,
+  DecimalType,
+  EdgeInterpolationAlgorithm,
   Encoding,
+  EnumType,
   FieldRepetitionType,
   FileMetaData,
+  Float16Type,
+  GeographyType,
+  GeometryType,
+  IntType,
+  JsonType,
   KeyValue,
+  ListType,
+  LogicalType,
+  MapType,
+  MicroSeconds,
+  MilliSeconds,
+  NanoSeconds,
+  NullType,
   PageHeader,
   PageType,
   RowGroup,
   SchemaElement,
-  Type
+  StringType,
+  TimeType,
+  TimeUnit,
+  TimestampType,
+  Type,
+  UUIDType,
+  VariantType
 } from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
@@ -628,10 +652,20 @@ function encodeFooter(
     }
 
     if (field.originalType) {
-      schemaElem.converted_type = ConvertedType[field.originalType] as ConvertedType;
+      const convertedType = ConvertedType[field.originalType as keyof typeof ConvertedType];
+      if (typeof convertedType === 'number') {
+        schemaElem.converted_type = convertedType;
+      }
     }
 
     schemaElem.type_length = field.typeLength;
+    schemaElem.precision = field.precision ?? field.presision;
+    schemaElem.scale = field.scale;
+    schemaElem.field_id = field.fieldId;
+    const logicalType = getFieldLogicalType(field);
+    if (logicalType) {
+      schemaElem.logicalType = encodeParquetLogicalType(logicalType);
+    }
 
     metadata.schema.push(schemaElem);
   }
@@ -643,6 +677,138 @@ function encodeFooter(
   writeUInt32LE(footerEncoded, metadataEncoded.length, metadataEncoded.length);
   footerEncoded.set(PARQUET_MAGIC_BYTES, metadataEncoded.length + 4);
   return footerEncoded;
+}
+
+/** Returns an explicit or inferred modern logical annotation for a writer field. */
+function getFieldLogicalType(field: ParquetField): ParquetLogicalType | undefined {
+  if (field.logicalType) return field.logicalType;
+  const originalType = field.originalType;
+  if (!originalType) return undefined;
+  if (originalType === 'UTF8') return {type: 'STRING'};
+  if (originalType === 'ENUM') return {type: 'ENUM'};
+  if (originalType.startsWith('DECIMAL_')) {
+    return {
+      type: 'DECIMAL',
+      precision: field.precision ?? field.presision,
+      scale: field.scale
+    };
+  }
+  if (originalType === 'DATE') return {type: 'DATE'};
+  if (originalType.startsWith('TIME_')) {
+    return {type: 'TIME', unit: originalType.slice(5) as ParquetLogicalType['unit']};
+  }
+  if (originalType.startsWith('TIMESTAMP_')) {
+    return {type: 'TIMESTAMP', unit: originalType.slice(10) as ParquetLogicalType['unit']};
+  }
+  if (originalType.startsWith('UINT_') || originalType.startsWith('INT_')) {
+    return {
+      type: 'INTEGER',
+      bitWidth: Number(originalType.slice(originalType.indexOf('_') + 1)) as 8 | 16 | 32 | 64,
+      isSigned: originalType.startsWith('INT_')
+    };
+  }
+  if (originalType === 'JSON' || originalType === 'BSON') return {type: originalType};
+  if (
+    originalType === 'UUID' ||
+    originalType === 'FLOAT16' ||
+    originalType === 'UNKNOWN' ||
+    originalType === 'VARIANT' ||
+    originalType === 'GEOMETRY' ||
+    originalType === 'GEOGRAPHY'
+  ) {
+    return {type: originalType};
+  }
+  return undefined;
+}
+
+/** Converts the internal logical annotation into the Parquet 2.13 Thrift union. */
+function encodeParquetLogicalType(logicalType: ParquetLogicalType): LogicalType {
+  switch (logicalType.type) {
+    case 'STRING':
+      return LogicalType.fromSTRING(new StringType());
+    case 'MAP':
+      return LogicalType.fromMAP(new MapType());
+    case 'LIST':
+      return LogicalType.fromLIST(new ListType());
+    case 'ENUM':
+      return LogicalType.fromENUM(new EnumType());
+    case 'DECIMAL':
+      if (logicalType.precision === undefined || logicalType.scale === undefined) {
+        throw new Error('Parquet DECIMAL requires precision and scale');
+      }
+      return LogicalType.fromDECIMAL(
+        new DecimalType({precision: logicalType.precision, scale: logicalType.scale})
+      );
+    case 'DATE':
+      return LogicalType.fromDATE(new DateType());
+    case 'TIME':
+      return LogicalType.fromTIME(
+        new TimeType({
+          isAdjustedToUTC: logicalType.isAdjustedToUTC ?? false,
+          unit: encodeParquetTimeUnit(logicalType.unit)
+        })
+      );
+    case 'TIMESTAMP':
+      return LogicalType.fromTIMESTAMP(
+        new TimestampType({
+          isAdjustedToUTC: logicalType.isAdjustedToUTC ?? false,
+          unit: encodeParquetTimeUnit(logicalType.unit)
+        })
+      );
+    case 'INTEGER':
+      if (logicalType.bitWidth === undefined || logicalType.isSigned === undefined) {
+        throw new Error('Parquet INTEGER requires bitWidth and isSigned');
+      }
+      return LogicalType.fromINTEGER(
+        new IntType({bitWidth: logicalType.bitWidth, isSigned: logicalType.isSigned})
+      );
+    case 'UNKNOWN':
+      return LogicalType.fromUNKNOWN(new NullType());
+    case 'JSON':
+      return LogicalType.fromJSON(new JsonType());
+    case 'BSON':
+      return LogicalType.fromBSON(new BsonType());
+    case 'UUID':
+      return LogicalType.fromUUID(new UUIDType());
+    case 'FLOAT16':
+      return LogicalType.fromFLOAT16(new Float16Type());
+    case 'VARIANT':
+      return LogicalType.fromVARIANT(
+        new VariantType({specification_version: logicalType.specificationVersion})
+      );
+    case 'GEOMETRY':
+      return LogicalType.fromGEOMETRY(new GeometryType({crs: logicalType.crs}));
+    case 'GEOGRAPHY':
+      return LogicalType.fromGEOGRAPHY(
+        new GeographyType({
+          crs: logicalType.crs,
+          algorithm:
+            logicalType.algorithm === undefined
+              ? undefined
+              : EdgeInterpolationAlgorithm[
+                  logicalType.algorithm as keyof typeof EdgeInterpolationAlgorithm
+                ]
+        })
+      );
+    default:
+      throw new Error(
+        `Unsupported Parquet logical type ${(logicalType as ParquetLogicalType).type}`
+      );
+  }
+}
+
+/** Encodes one Parquet logical time unit. */
+function encodeParquetTimeUnit(unit: ParquetLogicalType['unit']): TimeUnit {
+  switch (unit) {
+    case 'MILLIS':
+      return TimeUnit.fromMILLIS(new MilliSeconds());
+    case 'MICROS':
+      return TimeUnit.fromMICROS(new MicroSeconds());
+    case 'NANOS':
+      return TimeUnit.fromNANOS(new NanoSeconds());
+    default:
+      throw new Error('Parquet TIME and TIMESTAMP require a unit');
+  }
 }
 
 /** Wrap a writer metadata number in the thrift int64 compatibility object. */
