@@ -78,11 +78,20 @@ export type RasterData = {
 };
 
 /**
+ * Named indices selected from non-spatial raster dimensions.
+ *
+ * Sources define the supported dimension names in their source-specific metadata.
+ */
+export type RasterSelection = Readonly<Record<string, number>>;
+
+/**
  * Parameters for {@link RasterSource.getRaster}.
  */
 export type GetRasterParameters = {
   /** Requested output viewport. */
   viewport: RasterViewport;
+  /** Optional named indices for non-spatial dimensions such as time or vertical level. */
+  selection?: RasterSelection;
   /** Optional sample indices to request. */
   bands?: number[];
   /** Whether to interleave multi-band output. Defaults to `false`. */
@@ -145,17 +154,25 @@ export type RasterSourceMetadata = {
 
 /**
  * RasterSource - data sources that allow typed raster data to be queried by viewport.
+ *
+ * @typeParam DataT Raster payload returned by the source.
+ * @typeParam ParametersT Request parameters accepted by the source.
+ * @typeParam MetadataT Metadata returned by the source.
  */
-export abstract class RasterSource {
+export abstract class RasterSource<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> {
   /** Canonical source type identifier used during source selection. */
   static type: string = 'template';
   /** URL matcher used during automatic source selection. */
   static testURL = (url: string): boolean => false;
 
   /** Returns normalized dataset metadata without loading raster samples. */
-  abstract getMetadata(): Promise<RasterSourceMetadata>;
+  abstract getMetadata(): Promise<MetadataT>;
   /** Loads raster samples for the supplied viewport request. */
-  abstract getRaster(parameters: GetRasterParameters): Promise<RasterData>;
+  abstract getRaster(parameters: ParametersT): Promise<DataT>;
 }
 
 /**
