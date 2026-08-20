@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 
