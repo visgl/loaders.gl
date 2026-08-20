@@ -5659,8 +5659,6 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.1"
     "@loaders.gl/wkt": "npm:5.0.0-alpha.1"
     "@probe.gl/log": "npm:^4.1.1"
-    "@types/node-int64": "npm:^0.4.29"
-    "@types/thrift": "npm:^0.10.8"
     "@types/varint": "npm:^5.0.0"
     async-mutex: "npm:^0.2.2"
     brotli: "npm:^1.3.2"
@@ -5668,12 +5666,9 @@ __metadata:
     hyparquet-compressors: "npm:1.1.1"
     isomorphic-ws: "npm:^5.0.0"
     lz4js: "npm:^0.2.0"
-    node-int64: "npm:^0.4.0"
     object-stream: "npm:0.0.1"
     parquet-wasm: "npm:0.7.2"
     snappyjs: "npm:^0.6.0"
-    thrift: "npm:^0.24.0"
-    util: "npm:^0.12.5"
     varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
   peerDependencies:
@@ -11161,15 +11156,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-int64@npm:*, @types/node-int64@npm:^0.4.29":
-  version: 0.4.32
-  resolution: "@types/node-int64@npm:0.4.32"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/eec30798c202dcf879d78d440fb48a6e26510701801653c0a7543a0843bfe4faa9c185a035fc35be13986bb45cf9b93ce8171215e37b32af3e828bbcc5eab2ed
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:*, @types/node@npm:^25.3.0":
   version: 25.3.0
   resolution: "@types/node@npm:25.3.0"
@@ -11259,13 +11245,6 @@ __metadata:
   version: 2.5.6
   resolution: "@types/proj4@npm:2.5.6"
   checksum: 10c0/7590dd982cb0e4a0de57f6089ea932b2821ec13198b1255980b950a27208838965f8f3346d3130a9e9668e345f22d77ada3971b493179281d1b168aba2d6d252
-  languageName: node
-  linkType: hard
-
-"@types/q@npm:*":
-  version: 1.5.8
-  resolution: "@types/q@npm:1.5.8"
-  checksum: 10c0/6b2903a03f23ce737503b8a4c409a4133f15009a70e125b5efd5d8c315a5426e64b574ee65288c9dd655c631dcc51c69e4b540b59905ad0b1398952ba367d88b
   languageName: node
   linkType: hard
 
@@ -11498,17 +11477,6 @@ __metadata:
   version: 3.2.3
   resolution: "@types/svg-arc-to-cubic-bezier@npm:3.2.3"
   checksum: 10c0/4afa5ba95111291016f209a741370e4602a53e3c71c3c43590d58df2d7813ecb7b3afa349e27b35386d0676913db2b2951f2d5f369fe25779ce15557a788cd3e
-  languageName: node
-  linkType: hard
-
-"@types/thrift@npm:^0.10.8":
-  version: 0.10.17
-  resolution: "@types/thrift@npm:0.10.17"
-  dependencies:
-    "@types/node": "npm:*"
-    "@types/node-int64": "npm:*"
-    "@types/q": "npm:*"
-  checksum: 10c0/e56ea2f6f84d636a7f97ca0f5f48b498048e6fed29cd3123999aac76c82ffd39923395f66598ee74f8f1cdf42675d5a218c2145ab025fdfbe114d95e417733c1
   languageName: node
   linkType: hard
 
@@ -13934,13 +13902,6 @@ __metadata:
   dependencies:
     base64-js: "npm:^1.1.2"
   checksum: 10c0/9d24e24f8b7eabf44af034ed5f7d5530008b835f09a107a84ac060723e86dd43c6aa68958691fe5df524f59473b35f5ce2e0854aa1152c0a254d1010f51bcf22
-  languageName: node
-  linkType: hard
-
-"browser-or-node@npm:^1.2.1":
-  version: 1.3.0
-  resolution: "browser-or-node@npm:1.3.0"
-  checksum: 10c0/a914790dd6a857149b1bb128a39872a95172f6f1db7824dd014b88cc2f88ce6433013ec83388fff83512fb815e7dc2ea60ddbfe8ff150d4f233092ff0d60ec60
   languageName: node
   linkType: hard
 
@@ -22235,15 +22196,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isomorphic-ws@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "isomorphic-ws@npm:4.0.1"
-  peerDependencies:
-    ws: "*"
-  checksum: 10c0/7cb90dc2f0eb409825558982fb15d7c1d757a88595efbab879592f9d2b63820d6bbfb5571ab8abe36c715946e165a413a99f6aafd9f40ab1f514d73487bc9996
-  languageName: node
-  linkType: hard
-
 "isomorphic-ws@npm:^5.0.0":
   version: 5.0.0
   resolution: "isomorphic-ws@npm:5.0.0"
@@ -25628,13 +25580,6 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10c0/3ed046746a5a7d90950cd8b0547332b06598443f31fe213ef4332a7174c7b7d259e1704835feda79b87d3f02e59d7791842aac60642ede4396ab25fdf0f8f759
-  languageName: node
-  linkType: hard
-
-"node-int64@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "node-int64@npm:0.4.0"
-  checksum: 10c0/a6a4d8369e2f2720e9c645255ffde909c0fbd41c92ea92a5607fc17055955daac99c1ff589d421eee12a0d24e99f7bfc2aabfeb1a4c14742f6c099a51863f31a
   languageName: node
   linkType: hard
 
@@ -32219,19 +32164,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"thrift@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "thrift@npm:0.24.0"
-  dependencies:
-    browser-or-node: "npm:^1.2.1"
-    isomorphic-ws: "npm:^4.0.1"
-    node-int64: "npm:^0.4.0"
-    uuid: "npm:^14.0.0"
-    ws: "npm:^8.21.0"
-  checksum: 10c0/79d15a1cc57f6ac6b94321da5602ab938019bfeed47d8f0898d98bee845987a6110cd40794dd997dd892425f5207824e464c5d4305bd51aadb644920089a7c14
-  languageName: node
-  linkType: hard
-
 "through2@npm:^2.0.0":
   version: 2.0.5
   resolution: "through2@npm:2.0.5"
@@ -33449,15 +33381,6 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^14.0.0":
-  version: 14.0.1
-  resolution: "uuid@npm:14.0.1"
-  bin:
-    uuid: dist-node/bin/uuid
-  checksum: 10c0/2d961289097cb68c37d93d1da0b5c3aafc1eb9948a455cca8d0ae53a099b2fe583b8933254a84097f700e6bac2e23033364904df0467c22551d5d9611febcaf6
   languageName: node
   linkType: hard
 
@@ -34738,21 +34661,6 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10c0/4741d9b9bc3f9c791880882414f96e36b8b254e34d4b503279d6400d9a4b87a033834856dbdd94ee4b637944df17ea8afc4bce0ff4a1560d2166be8855da5b04
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.21.0":
-  version: 8.21.1
-  resolution: "ws@npm:8.21.1"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/c4c6f1d95f6d465262de2037c57c715725d67e078dd49420ede4e19115668aba159cb64d85c5e89c06eb2826be599e62e5095860ad6cc54ff42e8bd7684e1db8
   languageName: node
   linkType: hard
 

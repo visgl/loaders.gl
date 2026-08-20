@@ -19,7 +19,7 @@ const PARQUET_DIR = '@loaders.gl/parquet/test/data';
 const TEXT_DECODER = new TextDecoder();
 
 type MutableGlobalThis = typeof globalThis & {
-  Buffer?: typeof Buffer;
+  Buffer?: unknown;
 };
 
 /** Copy bytes into an ArrayBuffer that has no hidden prefix or suffix bytes. */

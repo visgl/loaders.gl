@@ -4,7 +4,7 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import Int64 from 'node-int64';
+import {CompactInt64 as Int64} from '../utils/uint8-array-compact-protocol';
 import type {PageHeader} from '../parquet-thrift';
 import type {ParquetValueBuffer} from '../codecs/declare';
 

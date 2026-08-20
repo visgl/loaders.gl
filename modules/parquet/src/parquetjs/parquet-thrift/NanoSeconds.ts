@@ -4,7 +4,7 @@
 
 /* tslint:disable */
 /* eslint-disable */
-import * as thrift from 'thrift';
+import * as thrift from '../utils/thrift-runtime';
 
 export interface INanoSecondsArgs {}
 export class NanoSeconds {

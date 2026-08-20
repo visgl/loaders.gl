@@ -6,6 +6,7 @@ import type {DehydratedArrowTable} from '@loaders.gl/arrow';
 import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
+import type {ParquetPredicate} from '../parquet-source-types';
 import type {SchemaDefinition} from '../parquetjs/schema/declare';
 
 /** One transferable range containing a selected Parquet column chunk. */
@@ -56,6 +57,8 @@ export type ParquetSourceWorkerInput = {
   ranges: ParquetSourceWorkerRange[];
   /** Maximum rows per returned Arrow table batch. */
   batchSize: number;
+  /** Serializable exact predicate evaluated after decoding. */
+  predicate?: ParquetPredicate;
   /** Whether BYTE_ARRAY values stay binary during logical conversion. */
   preserveBinary: boolean;
 };
@@ -66,12 +69,16 @@ export type ParquetSourceWorkerBatch = {
   rowGroupRowOffset: number;
   /** Logical rows in this batch. */
   rowCount: number;
+  /** Exact source row indexes represented by this batch. */
+  rowGroupRowIndices?: number[];
   /** Dehydrated Arrow table whose primitive buffers are directly transferable. */
   arrowTable: DehydratedArrowTable;
 };
 
 /** Result returned by one worker-backed Parquet source row-group decode. */
 export type ParquetSourceWorkerResult = {
+  /** Logical row count in the decoded source row group before filtering. */
+  sourceRowCount: number;
   /** Logical row count in the decoded row group. */
   rowCount: number;
   /** Directly transferable Arrow batches produced in row order. */

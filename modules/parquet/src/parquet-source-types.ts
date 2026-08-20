@@ -31,6 +31,10 @@ export type ParquetColumnChunkStatistics = {
   nullCount?: number;
   /** Number of distinct values when reported by the writer. */
   distinctCount?: number;
+  /** Whether the reported minimum is exact rather than truncated. */
+  minIsExact?: boolean;
+  /** Whether the reported maximum is exact rather than truncated. */
+  maxIsExact?: boolean;
 };
 
 /** Normalized metadata for one Parquet column chunk. */
@@ -121,6 +125,68 @@ export type ParquetMetadataRequestOptions = {
   signal?: AbortSignal;
 };
 
+/** Scalar values supported by exact Parquet source predicates. */
+export type ParquetPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
+
+/** Reference to one top-level Parquet column in a predicate expression. */
+export type ParquetPredicateProperty = {
+  /** Top-level column name. */
+  property: string;
+};
+
+/** Comparison predicate applied to one top-level Parquet column. */
+export type ParquetComparisonPredicate = {
+  /** CQL2-shaped exact comparison operator. */
+  op: '=' | '<>' | '<' | '<=' | '>' | '>=';
+  /** Column reference followed by the scalar value to compare. */
+  args: readonly [ParquetPredicateProperty, ParquetPredicateValue];
+};
+
+/** Membership predicate applied to one top-level Parquet column. */
+export type ParquetInPredicate = {
+  /** CQL2-shaped membership operator. */
+  op: 'in';
+  /** Column reference followed by the candidate scalar values. */
+  args: readonly [ParquetPredicateProperty, readonly ParquetPredicateValue[]];
+};
+
+/** Null predicate applied to one top-level Parquet column. */
+export type ParquetNullPredicate = {
+  /** CQL2-shaped null test operator. */
+  op: 'isNull';
+  /** Column reference to test. */
+  args: readonly [ParquetPredicateProperty];
+};
+
+/** Logical composition of serializable Parquet predicates. */
+export type ParquetLogicalPredicate = {
+  /** CQL2-shaped logical operator applied to the child predicates. */
+  op: 'and' | 'or';
+  /** At least two child predicates. */
+  args: readonly ParquetPredicate[];
+};
+
+/** Negation of one serializable Parquet predicate. */
+export type ParquetNotPredicate = {
+  /** CQL2-shaped logical negation operator. */
+  op: 'not';
+  /** Single child predicate. */
+  args: readonly [ParquetPredicate];
+};
+
+/**
+ * Serializable exact row predicate used by selective Parquet source reads.
+ *
+ * The expression shape is directionally aligned with CQL2 JSON, but this experimental subset does
+ * not claim CQL2 conformance.
+ */
+export type ParquetPredicate =
+  | ParquetComparisonPredicate
+  | ParquetInPredicate
+  | ParquetNullPredicate
+  | ParquetLogicalPredicate
+  | ParquetNotPredicate;
+
 /** Options for one selective `ParquetSource.read()` operation. */
 export type ParquetSourceReadOptions = {
   /** Zero-based row-group indexes to decode, in output order. Defaults to all row groups. */
@@ -133,6 +199,8 @@ export type ParquetSourceReadOptions = {
   concurrency?: number;
   /** Retains candidate row groups for which the predicate returns true. */
   rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
+  /** Serializable exact row predicate, conservatively pushed into row-group statistics. */
+  predicate?: ParquetPredicate;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
@@ -164,14 +232,20 @@ export type ParquetTelemetry = {
   arrowConversionDurationMs: number;
   /** Candidate row groups considered by read operations. */
   rowGroupsRequested: number;
-  /** Candidate row groups rejected by `rowGroupFilter`. */
+  /** Candidate row groups rejected by callbacks or automatic statistics pruning. */
   rowGroupsPruned: number;
+  /** Candidate row groups proven impossible using footer statistics. */
+  rowGroupsPrunedByStatistics: number;
   /** Row groups successfully decoded. */
   rowGroupsDecoded: number;
   /** Arrow batches emitted by read operations. */
   batchesEmitted: number;
   /** Rows emitted by read operations. */
   rowsEmitted: number;
+  /** Decoded rows tested by exact predicates. */
+  predicateRowsTested: number;
+  /** Decoded rows retained by exact predicates. */
+  predicateRowsMatched: number;
   /** Read operations cancelled by signals, source close, or early iterator return. */
   cancellationCount: number;
   /** Read operations that failed for reasons other than cancellation. */
@@ -185,6 +259,7 @@ export type ParquetTelemetryEvent = {
     | 'range-request'
     | 'cache-hit'
     | 'row-group-prune'
+    | 'predicate-filter'
     | 'decode'
     | 'arrow-conversion'
     | 'batch'
@@ -218,6 +293,10 @@ export type ParquetBatchProvenance = {
   readonly rowGroupRowOffset: number;
   /** Number of rows in the batch. */
   readonly rowCount: number;
+  /** Source row indexes within the row group when filtering produces a non-contiguous batch. */
+  readonly rowGroupRowIndices?: readonly number[];
+  /** Absolute source row indexes when filtering produces a non-contiguous batch. */
+  readonly rowIndices?: readonly number[];
 };
 
 /** Compatibility alias for Parquet batch provenance. */
