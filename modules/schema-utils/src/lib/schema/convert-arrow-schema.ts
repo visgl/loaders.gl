@@ -299,7 +299,7 @@ export function deserializeArrowType(
   if (typeof dataType === 'object') {
     switch (dataType.type) {
       case 'decimal':
-        return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
+        return new arrow.Decimal(dataType.scale, dataType.precision, dataType.bitWidth);
       case 'map': {
         const children = dataType.children.map(arrowField =>
           deserializeArrowField(arrowField, options)

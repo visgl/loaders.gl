@@ -89,6 +89,10 @@ const parquetBuffer = await encode(table, ParquetJSWriter, {
 `ParquetJSWriter` supports `parquet.rowGroupSize`, `parquet.pageSize`, and
 `parquet.useDataPageV2`; their defaults are selected by the implementation.
 
+The TypeScript writer emits Parquet 2.13 `LogicalType` metadata for Arrow-compatible integer,
+date/time/timestamp, decimal, FLOAT16, and string fields. Nanosecond and unsigned 64-bit values are
+written without conversion through JavaScript `number`.
+
 ## Supported Files
 
 The Parquet format supports a large set of features (data types, encodings, compressions, encryptions etc) it require time and contributions for the loaders.gl implementation to provide support for all variations.

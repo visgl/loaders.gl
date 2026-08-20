@@ -18,12 +18,15 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   BYTE_ARRAY: 'binary',
   FIXED_LEN_BYTE_ARRAY: 'binary',
   UTF8: 'utf8',
-  DATE: 'int32',
-  TIME_MILLIS: 'int64',
-  TIME_MICROS: 'int64',
-  TIMESTAMP_MILLIS: 'int64',
-  TIMESTAMP_MICROS: 'int64',
-  UINT_8: 'int32',
+  ENUM: 'utf8',
+  DATE: 'date-day',
+  TIME_MILLIS: 'time-millisecond',
+  TIME_MICROS: 'time-microsecond',
+  TIME_NANOS: 'time-nanosecond',
+  TIMESTAMP_MILLIS: 'timestamp-millisecond',
+  TIMESTAMP_MICROS: 'timestamp-microsecond',
+  TIMESTAMP_NANOS: 'timestamp-nanosecond',
+  UINT_8: 'uint8',
   UINT_16: 'uint16',
   UINT_32: 'uint32',
   UINT_64: 'uint64',
@@ -31,14 +34,20 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   INT_16: 'int16',
   INT_32: 'int32',
   INT_64: 'int64',
+  UUID: {type: 'fixed-size-binary', byteWidth: 16},
+  FLOAT16: 'float16',
+  UNKNOWN: 'null',
+  VARIANT: 'binary',
+  GEOMETRY: 'binary',
+  GEOGRAPHY: 'binary',
   JSON: 'binary',
   BSON: 'binary',
   // TODO check interal type
   INTERVAL: 'binary',
-  DECIMAL_INT32: 'float32',
-  DECIMAL_INT64: 'float64',
-  DECIMAL_BYTE_ARRAY: 'float64',
-  DECIMAL_FIXED_LEN_BYTE_ARRAY: 'float64'
+  DECIMAL_INT32: {type: 'decimal', bitWidth: 128, precision: 38, scale: 0},
+  DECIMAL_INT64: {type: 'decimal', bitWidth: 128, precision: 38, scale: 0},
+  DECIMAL_BYTE_ARRAY: {type: 'decimal', bitWidth: 128, precision: 38, scale: 0},
+  DECIMAL_FIXED_LEN_BYTE_ARRAY: {type: 'decimal', bitWidth: 128, precision: 38, scale: 0}
 };
 
 export function convertParquetSchema(
@@ -72,11 +81,12 @@ function getField(name: string, field: FieldDefinition): Field {
     ? {
         name,
         type: {type: 'struct', children: getFields(field.fields)},
-        nullable: Boolean(field.optional)
+        nullable: Boolean(field.optional),
+        metadata: getFieldMetadata(field)
       }
     : {
         name,
-        type: PARQUET_TYPE_MAPPING[field.type!],
+        type: getFieldType(field),
         nullable: Boolean(field.optional),
         metadata: getFieldMetadata(field)
       };
@@ -96,13 +106,38 @@ function getField(name: string, field: FieldDefinition): Field {
   };
 }
 
+/** Returns the exact serialized Arrow type for one decoded Parquet field. */
+function getFieldType(field: FieldDefinition): DataType {
+  if (field.logicalType?.type === 'DECIMAL') {
+    const precision = field.precision ?? field.presision;
+    const scale = field.scale;
+    if (!precision || scale === undefined) {
+      throw new Error('Parquet DECIMAL logical type requires precision and scale');
+    }
+    if (precision > 76) {
+      throw new Error(`Parquet DECIMAL precision ${precision} exceeds Arrow Decimal256`);
+    }
+    return {type: 'decimal', bitWidth: precision <= 38 ? 128 : 256, precision, scale};
+  }
+  if (field.logicalType?.type === 'UUID') {
+    return {type: 'fixed-size-binary', byteWidth: field.typeLength || 16};
+  }
+  return PARQUET_TYPE_MAPPING[field.type!];
+}
+
 /** Returns defined physical field properties as Arrow-compatible string metadata. */
 function getFieldMetadata(field: FieldDefinition): Record<string, string> | undefined {
   let metadata: Record<string, string> | undefined;
 
   for (const key in field) {
     const fieldValue = field[key];
-    if (key === 'name' || fieldValue === undefined) {
+    if (
+      key === 'name' ||
+      key === 'fields' ||
+      (key === 'physicalType' && fieldValue === field.type) ||
+      (key === 'presision' && field.precision !== undefined) ||
+      fieldValue === undefined
+    ) {
       continue;
     }
     const metadataValue =

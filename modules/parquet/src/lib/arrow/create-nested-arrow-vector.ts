@@ -14,7 +14,17 @@ import type {
 const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
 
 /** Primitive Arrow arrays emitted directly from decoded physical Parquet values. */
-type NestedPrimitiveArrowArray = Float32Array | Float64Array | Int32Array | BigInt64Array;
+type NestedPrimitiveArrowArray =
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | BigInt64Array
+  | BigUint64Array;
 
 /** Selected decoded values and their Arrow validity information. */
 type SelectedLeafValues = {
@@ -433,20 +443,48 @@ function createNestedPrimitiveArray(
   parquetField: ParquetField,
   length: number
 ): NestedPrimitiveArrowArray | undefined {
-  if (parquetField.originalType && parquetField.originalType !== 'INT_64') {
-    return undefined;
-  }
   if (parquetField.primitiveType === 'FLOAT' && arrowType instanceof arrow.Float32) {
     return new Float32Array(length);
   }
   if (parquetField.primitiveType === 'DOUBLE' && arrowType instanceof arrow.Float64) {
     return new Float64Array(length);
   }
-  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int32) {
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int8) {
+    return new Int8Array(length);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int16) {
+    return new Int16Array(length);
+  }
+  if (
+    parquetField.primitiveType === 'INT32' &&
+    (arrowType instanceof arrow.Int32 ||
+      arrowType instanceof arrow.DateDay ||
+      arrowType instanceof arrow.TimeMillisecond)
+  ) {
     return new Int32Array(length);
   }
-  if (parquetField.primitiveType === 'INT64' && arrowType instanceof arrow.Int64) {
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint8) {
+    return new Uint8Array(length);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint16) {
+    return new Uint16Array(length);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint32) {
+    return new Uint32Array(length);
+  }
+  if (
+    parquetField.primitiveType === 'INT64' &&
+    (arrowType instanceof arrow.Int64 ||
+      arrowType instanceof arrow.TimeMicrosecond ||
+      arrowType instanceof arrow.TimeNanosecond ||
+      arrowType instanceof arrow.TimestampMillisecond ||
+      arrowType instanceof arrow.TimestampMicrosecond ||
+      arrowType instanceof arrow.TimestampNanosecond)
+  ) {
     return new BigInt64Array(length);
+  }
+  if (parquetField.primitiveType === 'INT64' && arrowType instanceof arrow.Uint64) {
+    return new BigUint64Array(length);
   }
   return undefined;
 }
@@ -459,6 +497,11 @@ function setNestedPrimitiveValue(
 ): void {
   if (data instanceof BigInt64Array) {
     data[index] = typeof value === 'bigint' ? value : BigInt(value as number | string);
+  } else if (data instanceof BigUint64Array) {
+    data[index] = BigInt.asUintN(
+      64,
+      typeof value === 'bigint' ? value : BigInt(value as number | string)
+    );
   } else {
     data[index] = Number(value);
   }
@@ -516,11 +559,13 @@ function createSelectedByteData(
 /** Returns whether one Parquet byte leaf maps directly to Arrow Utf8 or Binary. */
 function supportsNestedByteData(arrowType: arrow.DataType, parquetField: ParquetField): boolean {
   if (arrowType instanceof arrow.Utf8) {
-    return parquetField.originalType === 'UTF8';
+    return parquetField.originalType === 'UTF8' || parquetField.originalType === 'ENUM';
   }
   return (
     arrowType instanceof arrow.Binary &&
-    !parquetField.originalType &&
+    (!parquetField.originalType ||
+      parquetField.originalType === 'GEOMETRY' ||
+      parquetField.originalType === 'GEOGRAPHY') &&
     (parquetField.primitiveType === 'BYTE_ARRAY' ||
       parquetField.primitiveType === 'FIXED_LEN_BYTE_ARRAY')
   );

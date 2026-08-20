@@ -13,13 +13,16 @@
 import * as thrift from 'thrift';
 import * as MicroSeconds from './MicroSeconds';
 import * as MilliSeconds from './MilliSeconds';
+import * as NanoSeconds from './NanoSeconds';
 export interface ITimeUnitArgs {
   MILLIS?: MilliSeconds.MilliSeconds;
   MICROS?: MicroSeconds.MicroSeconds;
+  NANOS?: NanoSeconds.NanoSeconds;
 }
 export class TimeUnit {
   public MILLIS?: MilliSeconds.MilliSeconds;
   public MICROS?: MicroSeconds.MicroSeconds;
+  public NANOS?: NanoSeconds.NanoSeconds;
   constructor(args?: ITimeUnitArgs) {
     let _fieldsSet: number = 0;
     if (args != null) {
@@ -30,6 +33,10 @@ export class TimeUnit {
       if (args.MICROS != null) {
         _fieldsSet++;
         this.MICROS = args.MICROS;
+      }
+      if (args.NANOS != null) {
+        _fieldsSet++;
+        this.NANOS = args.NANOS;
       }
       if (_fieldsSet > 1) {
         throw new thrift.Thrift.TProtocolException(
@@ -50,6 +57,9 @@ export class TimeUnit {
   public static fromMICROS(MICROS: MicroSeconds.MicroSeconds): TimeUnit {
     return new TimeUnit({MICROS});
   }
+  public static fromNANOS(NANOS: NanoSeconds.NanoSeconds): TimeUnit {
+    return new TimeUnit({NANOS});
+  }
   public write(output: thrift.TProtocol): void {
     output.writeStructBegin('TimeUnit');
     if (this.MILLIS != null) {
@@ -60,6 +70,11 @@ export class TimeUnit {
     if (this.MICROS != null) {
       output.writeFieldBegin('MICROS', thrift.Thrift.Type.STRUCT, 2);
       this.MICROS.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.NANOS != null) {
+      output.writeFieldBegin('NANOS', thrift.Thrift.Type.STRUCT, 3);
+      this.NANOS.write(output);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -92,6 +107,15 @@ export class TimeUnit {
             _fieldsSet++;
             const value_2: MicroSeconds.MicroSeconds = MicroSeconds.MicroSeconds.read(input);
             _returnValue = TimeUnit.fromMICROS(value_2);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 3:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _fieldsSet++;
+            const value_3: NanoSeconds.NanoSeconds = NanoSeconds.NanoSeconds.read(input);
+            _returnValue = TimeUnit.fromNANOS(value_3);
           } else {
             input.skip(fieldType);
           }
