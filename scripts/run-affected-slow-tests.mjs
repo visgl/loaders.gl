@@ -26,6 +26,7 @@ const testCommand = coverage ? 'test-slow-cover' : 'test-slow';
 process.exitCode = await runProcess('yarn', [
   testCommand,
   ...(testFilters || []),
+  ...(testFilters ? ['--passWithNoTests'] : []),
   ...testArguments
 ]);
 
