@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {makeAttributeIterator} from '../iterators/attribute-iterator';
 import {assert} from '../utils/assert';
 
