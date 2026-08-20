@@ -5820,8 +5820,19 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.1"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.1"
     apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
+    "@duckdb/duckdb-wasm": ^1.33.1-dev45.0
+    "@duckdb/node-api": ^1.5.2-r.1
     "@loaders.gl/core": ~5.0.0-alpha.0
+    zod: ^4.1.12
+  peerDependenciesMeta:
+    "@duckdb/duckdb-wasm":
+      optional: true
+    "@duckdb/node-api":
+      optional: true
+    zod:
+      optional: true
   languageName: unknown
   linkType: soft
 
