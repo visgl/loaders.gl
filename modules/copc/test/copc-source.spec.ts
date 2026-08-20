@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {createDataSource, encodeSync, fetchFile, isBrowser} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
