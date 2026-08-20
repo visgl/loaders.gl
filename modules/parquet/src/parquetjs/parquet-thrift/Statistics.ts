@@ -19,6 +19,8 @@ export interface IStatisticsArgs {
   distinct_count?: number | Int64;
   max_value?: Uint8Array;
   min_value?: Uint8Array;
+  is_max_value_exact?: boolean;
+  is_min_value_exact?: boolean;
 }
 export class Statistics {
   public max?: Uint8Array;
@@ -27,6 +29,8 @@ export class Statistics {
   public distinct_count?: Int64;
   public max_value?: Uint8Array;
   public min_value?: Uint8Array;
+  public is_max_value_exact?: boolean;
+  public is_min_value_exact?: boolean;
   constructor(args?: IStatisticsArgs) {
     if (args != null && args.max != null) {
       this.max = args.max;
@@ -53,6 +57,12 @@ export class Statistics {
     }
     if (args != null && args.min_value != null) {
       this.min_value = args.min_value;
+    }
+    if (args != null && args.is_max_value_exact != null) {
+      this.is_max_value_exact = args.is_max_value_exact;
+    }
+    if (args != null && args.is_min_value_exact != null) {
+      this.is_min_value_exact = args.is_min_value_exact;
     }
   }
   public write(output: thrift.TProtocol): void {
@@ -85,6 +95,16 @@ export class Statistics {
     if (this.min_value != null) {
       output.writeFieldBegin('min_value', thrift.Thrift.Type.STRING, 6);
       output.writeBinary(this.min_value);
+      output.writeFieldEnd();
+    }
+    if (this.is_max_value_exact != null) {
+      output.writeFieldBegin('is_max_value_exact', thrift.Thrift.Type.BOOL, 7);
+      output.writeBool(this.is_max_value_exact);
+      output.writeFieldEnd();
+    }
+    if (this.is_min_value_exact != null) {
+      output.writeFieldBegin('is_min_value_exact', thrift.Thrift.Type.BOOL, 8);
+      output.writeBool(this.is_min_value_exact);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -146,6 +166,22 @@ export class Statistics {
           if (fieldType === thrift.Thrift.Type.STRING) {
             const value_6: Uint8Array = input.readBinary();
             _args.min_value = value_6;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 7:
+          if (fieldType === thrift.Thrift.Type.BOOL) {
+            const value_7: boolean = input.readBool();
+            _args.is_max_value_exact = value_7;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 8:
+          if (fieldType === thrift.Thrift.Type.BOOL) {
+            const value_8: boolean = input.readBool();
+            _args.is_min_value_exact = value_8;
           } else {
             input.skip(fieldType);
           }
