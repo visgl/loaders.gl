@@ -26,6 +26,7 @@ import type {
 } from '../../parquetjs/schema/declare';
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
+import {createNestedArrowVector} from '../arrow/create-nested-arrow-vector';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 
 /** Largest byte value copied inline to avoid TypedArray#set call overhead. */
@@ -247,7 +248,7 @@ function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, stri
   return arrowMetadata;
 }
 
-/** Builds Arrow from one selected row-group range and falls back for nested columns. */
+/** Builds Arrow from one selected row-group range with per-column fallbacks. */
 function convertRowGroupSliceToArrow(
   schema: Schema,
   arrowSchema: arrow.Schema,
@@ -256,19 +257,16 @@ function convertRowGroupSliceToArrow(
   start: number,
   end: number
 ): ArrowTable {
-  if (Object.keys(rowGroup.columnData).some(columnKey => columnKey.includes(','))) {
-    const table: ObjectRowTable = {
-      shape: 'object-row-table',
-      schema,
-      data: materializeRows(parquetSchema, rowGroup).slice(start, end)
-    };
-    return convertTable(table, 'arrow-table');
-  }
-
   const vectors: Record<string, arrow.Vector> = {};
+  let materializedRows: Record<string, unknown>[] | undefined;
   for (const field of arrowSchema.fields) {
     const parquetField = parquetSchema.findField(field.name);
     const columnData = rowGroup.columnData[field.name];
+    const nestedVector = createNestedArrowVector(field.type, parquetField, rowGroup, start, end);
+    if (nestedVector) {
+      vectors[field.name] = nestedVector;
+      continue;
+    }
     const primitiveVector = createRawPrimitiveArrowVector(
       field.type,
       parquetField,
@@ -286,9 +284,26 @@ function convertRowGroupSliceToArrow(
       continue;
     }
 
-    const fullColumn =
-      materializeColumn(parquetSchema, rowGroup, field.name) ||
-      new Array(rowGroup.rowCount).fill(null);
+    let fullColumn = materializeColumn(parquetSchema, rowGroup, field.name);
+    if (!fullColumn && parquetField.fields) {
+      materializedRows ||= materializeRows(parquetSchema, rowGroup);
+      const fallbackTable: ObjectRowTable = {
+        shape: 'object-row-table',
+        schema: {
+          ...schema,
+          fields: schema.fields.filter(schemaField => schemaField.name === field.name)
+        },
+        data: materializedRows.slice(start, end)
+      };
+      const fallbackArrowTable = convertTable(fallbackTable, 'arrow-table');
+      const fallbackVector = fallbackArrowTable.data.getChild(field.name);
+      if (!fallbackVector) {
+        throw new Error(`Failed to materialize nested Parquet column ${field.name}`);
+      }
+      vectors[field.name] = fallbackVector;
+      continue;
+    }
+    fullColumn ||= new Array(rowGroup.rowCount).fill(null);
     const column = sliceColumn(fullColumn, start, end);
     vectors[field.name] = arrow.vectorFromArray(
       normalizeArrowColumn(column, field.type),
