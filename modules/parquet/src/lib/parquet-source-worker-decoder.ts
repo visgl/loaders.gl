@@ -7,6 +7,7 @@ import type {ArrayType} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
 import {preloadCompressions} from '../parquetjs/compression';
+import {filterParquetRowIndices, gatherParquetColumns} from './parquet-predicate';
 import type {RowGroup} from '../parquetjs/parquet-thrift/index';
 import {ParquetReader} from '../parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../parquetjs/schema/schema';
@@ -30,17 +31,26 @@ export async function decodeParquetSourceWorkerInput(
   const decodeStartTime = getCurrentTime();
   const decodedRowGroup = await reader.readRowGroup(schema, rowGroup, []);
   const columns = schema.materializeColumns(decodedRowGroup);
+  const rowIndices = input.predicate
+    ? filterParquetRowIndices(input.predicate, columns, input.rowCount)
+    : undefined;
   const decodeDurationMs = getCurrentTime() - decodeStartTime;
 
   const conversionStartTime = getCurrentTime();
   const batches: ParquetSourceWorkerBatch[] = [];
+  const outputColumns = new Set(input.projectedSchema.fields.map(field => field.name));
+  const outputRowCount = rowIndices?.length ?? input.rowCount;
   for (
-    let rowGroupRowOffset = 0;
-    rowGroupRowOffset < input.rowCount;
-    rowGroupRowOffset += input.batchSize
+    let outputRowOffset = 0;
+    outputRowOffset < outputRowCount;
+    outputRowOffset += input.batchSize
   ) {
-    const rowCount = Math.min(input.batchSize, input.rowCount - rowGroupRowOffset);
-    const batchColumns = sliceColumns(columns, rowGroupRowOffset, rowGroupRowOffset + rowCount);
+    const rowCount = Math.min(input.batchSize, outputRowCount - outputRowOffset);
+    const batchRowIndices = rowIndices?.slice(outputRowOffset, outputRowOffset + rowCount);
+    const rowGroupRowOffset = batchRowIndices?.[0] ?? outputRowOffset;
+    const batchColumns = batchRowIndices
+      ? gatherParquetColumns(columns, batchRowIndices, outputColumns)
+      : sliceColumns(columns, outputRowOffset, outputRowOffset + rowCount);
     const arrowTable = convertTable(
       {
         shape: 'columnar-table',
@@ -52,11 +62,34 @@ export async function decodeParquetSourceWorkerInput(
     batches.push({
       rowGroupRowOffset,
       rowCount,
+      rowGroupRowIndices: batchRowIndices,
       arrowTable: dehydrateArrowTable(arrowTable.data)
     });
   }
   const arrowConversionDurationMs = getCurrentTime() - conversionStartTime;
-  return {rowCount: input.rowCount, batches, decodeDurationMs, arrowConversionDurationMs};
+  return {
+    sourceRowCount: input.rowCount,
+    rowCount: outputRowCount,
+    batches,
+    decodeDurationMs,
+    arrowConversionDurationMs
+  };
+}
+
+/** Returns a contiguous row slice of every decoded column without constructing row objects. */
+function sliceColumns(
+  columns: Record<string, ArrayType>,
+  start: number,
+  end: number
+): Record<string, ArrayType> {
+  const slicedColumns: Record<string, ArrayType> = {};
+  for (const [name, column] of Object.entries(columns)) {
+    const slice = (column as ArrayType & {slice?: (start: number, end: number) => ArrayType}).slice;
+    slicedColumns[name] = slice
+      ? slice.call(column, start, end)
+      : Array.prototype.slice.call(column, start, end);
+  }
+  return slicedColumns;
 }
 
 /** Reconstructs the minimal Thrift-compatible row-group object used by the decoder. */
@@ -79,22 +112,6 @@ function createWorkerRowGroup(input: ParquetSourceWorkerInput): RowGroup {
       }
     }))
   } as unknown as RowGroup;
-}
-
-/** Returns a row slice of every decoded column without constructing row objects. */
-function sliceColumns(
-  columns: Record<string, ArrayType>,
-  start: number,
-  end: number
-): Record<string, ArrayType> {
-  const slicedColumns: Record<string, ArrayType> = {};
-  for (const [name, column] of Object.entries(columns)) {
-    const slice = (column as ArrayType & {slice?: (start: number, end: number) => ArrayType}).slice;
-    slicedColumns[name] = slice
-      ? slice.call(column, start, end)
-      : Array.prototype.slice.call(column, start, end);
-  }
-  return slicedColumns;
 }
 
 /** Returns a monotonic timestamp when available and falls back to wall-clock time. */

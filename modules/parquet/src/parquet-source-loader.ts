@@ -10,6 +10,14 @@ import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {
+  canParquetRowGroupMatch,
+  copyParquetPredicate,
+  filterParquetRowIndices,
+  gatherParquetColumns,
+  getParquetPredicateColumns,
+  validateParquetPredicate
+} from './lib/parquet-predicate';
+import {
   canDecodeParquetSourceOnWorker,
   decodeParquetSourceRowGroupOnWorker
 } from './lib/parquet-source-worker-client';
@@ -30,6 +38,7 @@ import type {
   ParquetColumnChunkStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetPredicate,
   ParquetRowGroupMetadata,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
@@ -72,6 +81,12 @@ export type {
   ParquetColumnChunkStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetComparisonPredicate,
+  ParquetInPredicate,
+  ParquetLogicalPredicate,
+  ParquetNullPredicate,
+  ParquetPredicate,
+  ParquetPredicateValue,
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
@@ -103,6 +118,8 @@ type ParquetRowGroupReadResult = {
   rowGroupIndex: number;
   /** Number of logical rows in the decoded row group. */
   rowCount: number;
+  /** Exact source row indexes retained by the predicate. */
+  rowIndices?: number[];
   /** Caller-thread columns when worker decoding is unavailable or disabled. */
   columns?: Record<string, ArrayType>;
   /** Directly transferable Arrow batches when worker decoding is enabled. */
@@ -209,24 +226,41 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         readOptions.rowGroups,
         initialization.fileMetadata.row_groups.length
       );
-      const rowGroupIndices = readOptions.rowGroupFilter
+      const callbackFilteredRowGroupIndices = readOptions.rowGroupFilter
         ? candidateRowGroupIndices.filter(rowGroupIndex =>
             readOptions.rowGroupFilter!(initialization.metadata.rowGroups[rowGroupIndex])
           )
         : candidateRowGroupIndices;
+      const predicate = readOptions.predicate;
+      const availableColumns = new Set(initialization.schema.fields.map(field => field.name));
+      if (predicate) {
+        validateParquetPredicate(predicate, availableColumns);
+      }
+      const rowGroupIndices = predicate
+        ? callbackFilteredRowGroupIndices.filter(rowGroupIndex =>
+            canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
+          )
+        : callbackFilteredRowGroupIndices;
+      const rowGroupsPrunedByStatistics =
+        callbackFilteredRowGroupIndices.length - rowGroupIndices.length;
       this.recordTelemetry(
         'row-group-prune',
         {
           rowGroupsRequested: candidateRowGroupIndices.length,
-          rowGroupsPruned: candidateRowGroupIndices.length - rowGroupIndices.length
+          rowGroupsPruned: candidateRowGroupIndices.length - rowGroupIndices.length,
+          rowGroupsPrunedByStatistics
         },
         {}
       );
       const columns = normalizeColumns(readOptions.columns, initialization.schema);
-      const columnList = columns.map(column => [column]);
+      const predicateColumns = predicate ? getParquetPredicateColumns(predicate) : [];
+      const decodedColumns =
+        columns.length === 0 ? [] : [...new Set([...columns, ...predicateColumns])];
+      const columnList = decodedColumns.map(column => [column]);
       const batchSize = normalizeBatchSize(readOptions.batchSize);
       const concurrency = normalizeConcurrency(readOptions.concurrency);
       const projectedSchema = projectSchema(initialization.schema, columns);
+      const projectedColumnNames = columns.length ? new Set(columns) : undefined;
       const workerOptions = this.getWorkerOptions(concurrency, readContext.abortController.signal);
       const decodeOnWorker = canDecodeParquetSourceOnWorker(workerOptions);
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
@@ -245,6 +279,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             columnList,
             projectedSchema,
             batchSize,
+            predicate,
             decodeOnWorker ? workerOptions : undefined,
             readContext.abortController.signal
           ).then(
@@ -266,7 +301,13 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           throw settledRead.error;
         }
 
-        const {rowGroupIndex, columns: decodedColumns, rowCount, workerResult} = settledRead.result;
+        const {
+          rowGroupIndex,
+          columns: materializedColumns,
+          rowCount,
+          rowIndices,
+          workerResult
+        } = settledRead.result;
         if (workerResult) {
           for (const workerBatch of workerResult.batches) {
             throwIfAborted(readContext.abortController.signal);
@@ -284,7 +325,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
               rowGroupIndex,
               workerBatch.rowGroupRowOffset,
               arrowTable,
-              workerBatch.rowCount
+              workerBatch.rowCount,
+              workerBatch.rowGroupRowIndices
             );
             this.recordTelemetry(
               'batch',
@@ -296,27 +338,31 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           continue;
         }
 
-        const outputBatchSize = batchSize || Math.max(rowCount, 1);
+        const outputRowCount = predicate ? rowIndices!.length : rowCount;
+        const outputBatchSize = batchSize || Math.max(outputRowCount, 1);
         for (
-          let rowGroupRowOffset = 0;
-          rowGroupRowOffset < rowCount;
-          rowGroupRowOffset += outputBatchSize
+          let outputRowOffset = 0;
+          outputRowOffset < outputRowCount;
+          outputRowOffset += outputBatchSize
         ) {
           throwIfAborted(readContext.abortController.signal);
-          const batchRowCount = Math.min(outputBatchSize, rowCount - rowGroupRowOffset);
-          const columns = sliceColumns(
-            decodedColumns!,
-            rowGroupRowOffset,
-            rowGroupRowOffset + batchRowCount
-          );
+          const batchRowCount = Math.min(outputBatchSize, outputRowCount - outputRowOffset);
+          const batchRowIndices = predicate
+            ? rowIndices!.slice(outputRowOffset, outputRowOffset + batchRowCount)
+            : undefined;
+          const rowGroupRowOffset = batchRowIndices?.[0] ?? outputRowOffset;
+          const batchColumns = batchRowIndices
+            ? gatherParquetColumns(materializedColumns!, batchRowIndices, projectedColumnNames)
+            : sliceColumns(materializedColumns!, outputRowOffset, outputRowOffset + batchRowCount);
           const conversionStartTime = getCurrentTime();
           const batch = createParquetBatch(
             initialization.metadata,
             projectedSchema,
             rowGroupIndex,
             rowGroupRowOffset,
-            columns,
-            batchRowCount
+            batchColumns,
+            batchRowCount,
+            batchRowIndices
           );
           const conversionDurationMs = getCurrentTime() - conversionStartTime;
           this.recordTelemetry(
@@ -399,10 +445,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
   private getReadOptions(options: ParquetSourceReadOptions): ParquetSourceReadOptions {
     const rowGroups = options.rowGroups ?? this.options.parquet?.rowGroups;
     const columns = options.columns ?? this.options.parquet?.columns;
+    const predicate = options.predicate ?? this.options.parquet?.predicate;
     return {
       rowGroups: rowGroups && [...rowGroups],
       columns: columns && [...columns],
       rowGroupFilter: options.rowGroupFilter ?? this.options.parquet?.rowGroupFilter,
+      predicate: predicate ? copyParquetPredicate(predicate) : undefined,
       batchSize: options.batchSize ?? this.options.parquet?.batchSize,
       concurrency: options.concurrency ?? this.options.parquet?.concurrency,
       signal: options.signal
@@ -435,6 +483,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     columnList: string[][],
     projectedSchema: Schema,
     batchSize: number | undefined,
+    predicate: ParquetPredicate | undefined,
     workerOptions: ParquetSourceWorkerOptions | undefined,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
@@ -445,6 +494,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         columnList,
         projectedSchema,
         batchSize,
+        predicate,
         workerOptions,
         signal
       );
@@ -460,13 +510,26 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     );
     throwIfAborted(signal);
     const columns = initialization.parquetSchema.materializeColumns(decodedRowGroup);
+    const rowIndices = predicate
+      ? filterParquetRowIndices(predicate, columns, decodedRowGroup.rowCount)
+      : undefined;
     const decodeDurationMs = getCurrentTime() - decodeStartTime;
     this.recordTelemetry(
       'decode',
       {decodeDurationMs, rowGroupsDecoded: 1},
       {rowGroupIndex, durationMs: decodeDurationMs}
     );
-    return {rowGroupIndex, columns, rowCount: decodedRowGroup.rowCount};
+    if (predicate) {
+      this.recordTelemetry(
+        'predicate-filter',
+        {
+          predicateRowsTested: decodedRowGroup.rowCount,
+          predicateRowsMatched: rowIndices!.length
+        },
+        {rowGroupIndex, rowCount: rowIndices!.length}
+      );
+    }
+    return {rowGroupIndex, columns, rowCount: decodedRowGroup.rowCount, rowIndices};
   }
 
   /** Fetches selected chunks and transfers their decompression and Arrow conversion to a worker. */
@@ -476,6 +539,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     columnList: string[][],
     projectedSchema: Schema,
     batchSize: number | undefined,
+    predicate: ParquetPredicate | undefined,
     workerOptions: ParquetSourceWorkerOptions,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
@@ -504,6 +568,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
           ranges,
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
+          predicate,
           preserveBinary: Boolean(this.options.parquet?.preserveBinary)
         },
         workerOptions
@@ -523,6 +588,16 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       {arrowConversionDurationMs: workerResult.arrowConversionDurationMs},
       {rowGroupIndex, durationMs: workerResult.arrowConversionDurationMs}
     );
+    if (predicate) {
+      this.recordTelemetry(
+        'predicate-filter',
+        {
+          predicateRowsTested: workerResult.sourceRowCount,
+          predicateRowsMatched: workerResult.rowCount
+        },
+        {rowGroupIndex, rowCount: workerResult.rowCount}
+      );
+    }
     return {rowGroupIndex, rowCount: workerResult.rowCount, workerResult};
   }
 
@@ -698,7 +773,9 @@ function createColumnChunkStatistics(
   const result: ParquetColumnChunkStatistics = {
     nullCount: statistics.null_count === undefined ? undefined : Number(statistics.null_count),
     distinctCount:
-      statistics.distinct_count === undefined ? undefined : Number(statistics.distinct_count)
+      statistics.distinct_count === undefined ? undefined : Number(statistics.distinct_count),
+    minIsExact: statistics.is_min_value_exact,
+    maxIsExact: statistics.is_max_value_exact
   };
   if (minBytes) {
     result.min = decodeStatisticsValueSafely(toUint8Array(minBytes), field);
@@ -710,7 +787,9 @@ function createColumnChunkStatistics(
     result.min === undefined &&
     result.max === undefined &&
     result.nullCount === undefined &&
-    result.distinctCount === undefined
+    result.distinctCount === undefined &&
+    result.minIsExact === undefined &&
+    result.maxIsExact === undefined
   ) {
     return undefined;
   }
@@ -831,7 +910,8 @@ function createParquetBatch(
   rowGroupIndex: number,
   rowGroupRowOffset: number,
   columns: Record<string, ArrayType>,
-  rowCount: number
+  rowCount: number,
+  rowGroupRowIndices?: readonly number[]
 ): ParquetBatch {
   const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow-table');
   return createParquetBatchFromArrow(
@@ -840,7 +920,8 @@ function createParquetBatch(
     rowGroupIndex,
     rowGroupRowOffset,
     arrowTable.data,
-    rowCount
+    rowCount,
+    rowGroupRowIndices
   );
 }
 
@@ -851,7 +932,8 @@ function createParquetBatchFromArrow(
   rowGroupIndex: number,
   rowGroupRowOffset: number,
   data: ArrowTable['data'],
-  rowCount: number
+  rowCount: number,
+  rowGroupRowIndices?: readonly number[]
 ): ParquetBatch {
   const rowGroup = metadata.rowGroups[rowGroupIndex];
   const sourceId = metadata.url || metadata.name;
@@ -862,7 +944,11 @@ function createParquetBatchFromArrow(
     rowGroupIndex,
     rowOffset: rowGroup.rowOffset + rowGroupRowOffset,
     rowGroupRowOffset,
-    rowCount
+    rowCount,
+    rowGroupRowIndices: rowGroupRowIndices ? Object.freeze([...rowGroupRowIndices]) : undefined,
+    rowIndices: rowGroupRowIndices
+      ? Object.freeze(rowGroupRowIndices.map(rowIndex => rowGroup.rowOffset + rowIndex))
+      : undefined
   });
   return {
     batchType: 'data',
@@ -876,7 +962,7 @@ function createParquetBatchFromArrow(
   };
 }
 
-/** Returns a row slice of every decoded column without constructing row objects. */
+/** Returns a contiguous row slice of every decoded column without constructing row objects. */
 function sliceColumns(
   columns: Record<string, ArrayType>,
   start: number,
@@ -972,9 +1058,12 @@ function createParquetTelemetry(): ParquetTelemetry {
     arrowConversionDurationMs: 0,
     rowGroupsRequested: 0,
     rowGroupsPruned: 0,
+    rowGroupsPrunedByStatistics: 0,
     rowGroupsDecoded: 0,
     batchesEmitted: 0,
     rowsEmitted: 0,
+    predicateRowsTested: 0,
+    predicateRowsMatched: 0,
     cancellationCount: 0,
     failedReadCount: 0
   };

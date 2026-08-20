@@ -7,8 +7,10 @@ import {
   ParquetJSLoader,
   ParquetJSWriter,
   ParquetLoader,
-  type ParquetJSWriterOptions
+  type ParquetJSWriterOptions,
+  type ParquetSourceBatch
 } from '@loaders.gl/parquet';
+import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
@@ -191,6 +193,7 @@ export async function parquetBench(suite) {
   }
 
   suite = await addParquetWriterBenchmarks(suite);
+  suite = await addParquetSourceBenchmarks(suite);
 
   suite = suite.group('GeoParquetLoader');
 
@@ -220,6 +223,59 @@ export async function parquetBench(suite) {
   //     core: {worker: false}
   //   });
   // });
+}
+
+/** Adds an exact predicate and hidden-filter-column throughput case at meaningful scale. */
+async function addParquetSourceBenchmarks(suite) {
+  const rowCount = 100_000;
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'id', type: 'int32', nullable: false},
+        {name: 'category', type: 'utf8', nullable: false},
+        {name: 'payload', type: 'float64', nullable: false}
+      ],
+      metadata: {}
+    },
+    data: Array.from({length: rowCount}, (_, index) => ({
+      id: index,
+      category: `category-${index % 10}`,
+      payload: index * 0.5
+    }))
+  };
+  const parquet = await encode(table, ParquetJSWriter, {
+    worker: false,
+    parquet: {rowGroupSize: 10_000, dictionary: 'auto'}
+  });
+  const expectedMatchCount = rowCount / 10;
+
+  suite = suite.groupSorted('ParquetSource scale');
+  suite.addAsync(
+    'ParquetSource - exact predicate + hidden filter columns → Arrow',
+    {...BENCHMARK_OPTIONS, multiplier: rowCount},
+    async () => {
+      const source = new ParquetSource(new Blob([parquet]), {core: {worker: false}});
+      let matchedRowCount = 0;
+      try {
+        const batches = source.read({
+          columns: ['payload'],
+          predicate: {column: 'category', operator: '=', value: 'category-3'}
+        });
+        for await (const batch of batches as AsyncIterable<ParquetSourceBatch>) {
+          matchedRowCount += batch.length;
+        }
+      } finally {
+        await source.close();
+      }
+      if (matchedRowCount !== expectedMatchCount) {
+        throw new Error(
+          `ParquetSource matched ${matchedRowCount} rows; expected ${expectedMatchCount}`
+        );
+      }
+    }
+  );
+  return suite;
 }
 
 /** Adds scale-oriented writer throughput cases and records the resulting bytes per row. */

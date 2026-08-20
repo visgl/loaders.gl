@@ -18,6 +18,8 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', t
     supportsCooperativeReadCancellation: true,
     supportsLocalWasmAsset: true,
     supportsColumnStatistics: true,
+    supportsPredicatePushdown: true,
+    supportsExactPredicateFiltering: true,
     supportsCustomRangeTransport: true,
     supportsObjectVersionValidation: true,
     supportsNetworkTelemetry: true,

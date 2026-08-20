@@ -31,6 +31,13 @@ try {
   for await (const batch of source.read({
     rowGroups: [4, 7, 8],
     columns: ['x', 'y', 'source_id'],
+    predicate: {
+      operator: 'and',
+      predicates: [
+        {column: 'timestamp', operator: '>=', value: start},
+        {column: 'timestamp', operator: '<', value: end}
+      ]
+    },
     batchSize: 524_288,
     concurrency: 2,
     signal: abortController.signal
@@ -71,7 +78,8 @@ Returns cached plain JavaScript metadata copied from the Parquet footer:
 - row counts, absolute row offsets, and compressed/uncompressed byte lengths for each row group;
 - column path, compression, encodings, value count, physical range, byte lengths, and page offsets
   for each column chunk;
-- decoded minimum, maximum, null-count, and distinct-count statistics when supplied by the writer;
+- decoded minimum, maximum, null-count, distinct-count, and bound-exactness statistics when
+  supplied by the writer;
   and
 - `ETag` or `Last-Modified` validators captured from remote objects.
 
@@ -94,6 +102,8 @@ Every batch includes provenance as top-level properties and in `batch.metadata`:
 | `rowOffset` | Absolute source-row offset of the first batch row. |
 | `rowGroupRowOffset` | Offset of the first batch row within the row group. |
 | `rowCount` | Number of rows in the batch. |
+| `rowGroupRowIndices` | Exact row-group-relative indexes when a predicate produces a non-contiguous batch. |
+| `rowIndices` | Exact absolute source-row indexes when a predicate produces a non-contiguous batch. |
 
 Rows are yielded in the requested row-group order even when `concurrency` allows multiple groups to
 decode at once. Ending iteration early, aborting `signal`, or calling `close()` cancels outstanding
@@ -111,11 +121,35 @@ version validation.
 Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
 retain their composite values while primitive and logical columns flow through the columnar path.
 
-### Row-group pruning
+### Predicate filtering and row-group pruning
 
-Use `rowGroupFilter` to remove candidate row groups using the normalized footer statistics before
-any selected column chunk is fetched. The filter runs after `rowGroups`, so explicit selection and
-statistics pruning can be combined.
+Use the serializable `predicate` option for exact row filtering. Predicates support `=`, `!=`, `<`,
+`<=`, `>`, `>=`, `in`, `is-null`, and `is-not-null`, composed with `and` and `or`. Comparison and
+membership predicates do not match null column values. Filter columns are fetched automatically,
+but they are omitted from Arrow output unless they also appear in `columns`.
+
+Before fetching column chunks, the source conservatively applies the predicate to footer min, max,
+and null-count statistics. A row group is pruned only when those statistics prove that it cannot
+contain a match. Missing, malformed, or insufficient statistics retain the row group. Every row in
+the surviving groups is then evaluated exactly on the caller thread or worker, so statistics can
+only improve I/O and cannot change query results.
+
+```typescript
+const batches = source.read({
+  columns: ['timestamp', 'value'],
+  predicate: {
+    operator: 'and',
+    predicates: [
+      {column: 'timestamp', operator: '>=', value: start},
+      {column: 'timestamp', operator: '<', value: end},
+      {column: 'status', operator: 'in', values: ['valid', 'estimated']}
+    ]
+  }
+});
+```
+
+`rowGroupFilter` remains available for application-specific metadata policies that cannot be
+serialized. It runs after `rowGroups` and before automatic predicate pruning.
 
 ```typescript
 const batches = source.read({
@@ -131,8 +165,8 @@ const batches = source.read({
 });
 ```
 
-Statistics are optional because Parquet writers are not required to emit them. A safe predicate
-retains a row group whenever the statistics required to prove exclusion are absent.
+Callbacks are not transferred to workers and do not perform exact row filtering; use `predicate`
+when the returned rows must satisfy a condition.
 
 ## Telemetry
 
@@ -152,16 +186,17 @@ console.log(source.getTelemetry());
 ```
 
 The frozen snapshot reports exact transport counts and bytes, range-cache hits, cumulative
-network/decode/Arrow durations, candidate/pruned/decoded row groups, emitted batches and rows,
-retries, cancellations, and failures. `retryCount` remains zero while the source uses its fail-fast
-range policy.
+network/decode/Arrow durations, candidate/pruned/decoded row groups, statistics-pruned groups,
+predicate rows tested/matched, emitted batches and rows, retries, cancellations, and failures.
+`retryCount` remains zero while the source uses its fail-fast range policy.
 
 ### `capabilities: ParquetSourceCapabilities`
 
 The source exposes the frozen `PARQUET_SOURCE_CAPABILITIES` descriptor synchronously, before any
 network or decoding work starts. It reports support for cached immutable metadata, row-group and
 column selection, provenance, cancellation, custom range transport, object-version validation,
-statistics, transport/decode telemetry, package-local assets, and worker-backed selective decoding.
+statistics-driven predicate pushdown, exact predicate filtering, transport/decode telemetry,
+package-local assets, and worker-backed selective decoding.
 
 ### `close(): Promise<void>`
 
@@ -184,6 +219,7 @@ individual read.
 | `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
 | `parquet.rowGroupFilter` / `read.rowGroupFilter` | `(rowGroup: ParquetRowGroupMetadata) => boolean` | keep all | Retains candidate row groups before their column chunks are fetched. |
+| `parquet.predicate` / `read.predicate` | `ParquetPredicate` | `undefined` | Prunes impossible row groups using statistics, then exactly filters decoded rows. |
 | `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
 | `parquet.concurrency` / `read.concurrency` | `number` | `1` | Maximum row groups decoded concurrently. |
 | `read.signal` | `AbortSignal` | `undefined` | Cancels this read and its outstanding ranges. |
@@ -208,3 +244,5 @@ serve the package's WASM loader and writer paths.
 - Range fetching remains on the caller thread so custom fetch implementations and authenticated,
   version-pinned requests do not cross the worker boundary.
 - Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
+- Predicate pushdown currently uses row-group footer statistics. Page-index and Bloom-filter range
+  planning remain future work.

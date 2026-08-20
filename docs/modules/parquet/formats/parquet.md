@@ -232,7 +232,7 @@ can make selective reads much cheaper.
 | ------- | ------- | -------- | ---------------- |
 | File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetSourceLoader` |
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
-| Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Exposed through `ParquetSource.getMetadata()` and usable by `rowGroupFilter` |
+| Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Drive conservative `ParquetSource` predicate pushdown and remain exposed in metadata |
 | Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
 | Column index | ❌ | ❌ | Page-level min/max/null pruning is a roadmap item |
 | Offset index | ❌ | ❌ | Page locations and first-row indexes are not yet used for range planning |
@@ -240,8 +240,11 @@ can make selective reads much cheaper.
 | Size statistics | ❌ | ❌ | Histogram metadata from newer format versions is not yet exposed |
 | Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |
 
-`ParquetSourceLoader` currently prunes at row-group granularity. Page indexes and Bloom filters are
-the main remaining steps toward precise predicate-driven range reads.
+`ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using
+footer statistics, and exactly filters surviving rows on the caller thread or worker. Filter-only
+columns are not returned in the projected Arrow schema. Pruning currently stops at row-group
+granularity; page indexes and Bloom filters are the main remaining steps toward more precise range
+reads.
 
 ## Integrity and Encryption
 
@@ -274,7 +277,7 @@ corpora run in the slow lane.
 The TypeScript implementation is aiming for complete stable-format read support. The largest known
 gaps are currently:
 
-1. page-index and Bloom-filter reads for page-level pruning;
+1. page-index and Bloom-filter reads for page-level predicate pruning;
 2. complete high-level nested-schema writing;
 3. Variant value decoding and shredding;
 4. page CRC verification and emission;
