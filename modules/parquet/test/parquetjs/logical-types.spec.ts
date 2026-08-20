@@ -7,6 +7,7 @@ import {describe, expect, test} from 'vitest';
 import {convertParquetSchema, ParquetSchema} from '@loaders.gl/parquet';
 import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
 import {decodeSchema} from '../../src/parquetjs/parser/decoders';
+import {toPrimitive} from '../../src/parquetjs/schema/types';
 import {
   ConvertedType,
   DecimalType,
@@ -117,6 +118,25 @@ describe('Parquet 2.13 logical type schema decoding', () => {
     expect(serializedSchema.fields[1].metadata).toMatchObject({fieldId: '42'});
   });
 
+  test('encodes high-precision decimals as sign-extended two\'s-complement bytes', () => {
+    const field = new ParquetSchema({
+      decimal: {
+        type: 'DECIMAL_FIXED_LEN_BYTE_ARRAY',
+        typeLength: 17,
+        precision: 40,
+        scale: 0
+      }
+    }).fields.decimal;
+    const magnitude = 1_234_567_890_123_456_789_012_345_678_901_234_567_890n;
+
+    expect(bytesToHex(toPrimitive(field.originalType!, magnitude, field) as Uint8Array)).toBe(
+      '03a0c92075c0dbf3b8acbc5f96ce3f0ad2'
+    );
+    expect(bytesToHex(toPrimitive(field.originalType!, -magnitude, field) as Uint8Array)).toBe(
+      'fc5f36df8a3f240c475343a06931c0f52e'
+    );
+  });
+
   test('preserves logical annotations on nested group fields', () => {
     const schemaElements = [
       new SchemaElement({name: 'schema', num_children: 1}),
@@ -167,3 +187,8 @@ describe('Parquet 2.13 logical type schema decoding', () => {
     ]);
   });
 });
+
+/** Formats bytes as a lowercase hexadecimal string for exact representation assertions. */
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
