@@ -323,9 +323,7 @@ function writePolygonPartsToWKB(
     const startPoint = getPartStart(view, layout, partIndex);
     const endPoint = getPartEnd(view, layout, partIndex);
     builder.beginLinearRing(endPoint - startPoint);
-    for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
-      writeRecordCoordinate(builder, view, layout, pointIndex);
-    }
+    writePolygonRingCoordinates(builder, view, layout, startPoint, endPoint);
   }
 }
 
@@ -341,9 +339,29 @@ function writePolygonPartsToGeoArrow(
     const startPoint = getPartStart(view, layout, partIndex);
     const endPoint = getPartEnd(view, layout, partIndex);
     builder.beginLinearRing(endPoint - startPoint);
-    for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
-      writeRecordCoordinate(builder, view, layout, pointIndex);
-    }
+    writePolygonRingCoordinates(builder, view, layout, startPoint, endPoint);
+  }
+}
+
+/**
+ * Writes a Shapefile polygon ring using the GeoJSON right-hand winding order.
+ * Shapefile exterior and interior rings use the opposite winding, so coordinates are emitted in reverse.
+ *
+ * @param builder Geometry builder receiving the ring coordinates.
+ * @param view Record data containing the coordinates.
+ * @param layout Coordinate layout within the record.
+ * @param startPoint First coordinate index in the source ring.
+ * @param endPoint Coordinate index immediately after the source ring.
+ */
+function writePolygonRingCoordinates(
+  builder: WKBBuilder | GeoArrowBuilder,
+  view: DataView,
+  layout: SHPPointRecordLayout,
+  startPoint: number,
+  endPoint: number
+): void {
+  for (let pointIndex = endPoint - 1; pointIndex >= startPoint; pointIndex--) {
+    writeRecordCoordinate(builder, view, layout, pointIndex);
   }
 }
 
