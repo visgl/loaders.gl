@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {isSVG, getBlob} from './svg-utils';
 import {parseToImage} from './parse-to-image';
 
