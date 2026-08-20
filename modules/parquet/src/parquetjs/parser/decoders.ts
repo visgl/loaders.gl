@@ -28,11 +28,14 @@ import {decompress} from '../compression';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
 
-/** Preallocated column destination used to bypass page-local value arrays. */
+/** Preallocated column destination used to bypass page-local value and level arrays. */
 type ParquetPageDecodeTarget = {
   values: ParquetValueBuffer;
   valueOffset: number;
   dictionary: readonly unknown[];
+  rlevels: number[];
+  dlevels: number[];
+  levelOffset: number;
 };
 
 /**
@@ -63,8 +66,14 @@ export async function decodeDataPages(
 
   const outputCapacity = expectedLevelCount ?? 0;
   const data: ParquetColumnChunk = {
-    rlevels: new Array<number>(outputCapacity),
-    dlevels: new Array<number>(outputCapacity),
+    rlevels:
+      context.rLevelMax > 0
+        ? new Array<number>(outputCapacity)
+        : new Array<number>(outputCapacity).fill(0),
+    dlevels:
+      context.dLevelMax > 0
+        ? new Array<number>(outputCapacity)
+        : new Array<number>(outputCapacity).fill(0),
     values: createParquetColumnValueBuffer(context, outputCapacity),
     pageHeaders: [],
     count: 0
@@ -83,7 +92,10 @@ export async function decodeDataPages(
     const page = await decodePage(cursor, context, {
       values: data.values,
       valueOffset,
-      dictionary
+      dictionary,
+      rlevels: data.rlevels,
+      dlevels: data.dlevels,
+      levelOffset
     });
 
     if (page.dictionary) {
@@ -92,11 +104,7 @@ export async function decodeDataPages(
       continue;
     }
 
-    for (let index = 0; index < page.rlevels.length; index++) {
-      data.rlevels[levelOffset + index] = page.rlevels[index];
-      data.dlevels[levelOffset + index] = page.dlevels[index];
-    }
-    levelOffset += page.rlevels.length;
+    levelOffset += page.count;
 
     if (page.directValuesWritten !== undefined) {
       valueOffset += page.directValuesWritten;
@@ -297,39 +305,39 @@ async function decodeDataPage(
     Encoding,
     header.data_page_header?.repetition_level_encoding!
   ) as ParquetCodec;
-  // tslint:disable-next-line:prefer-array-literal
-  let rLevels = new Array(valueCount);
-
-  if (context.column.rLevelMax > 0) {
-    rLevels = decodeValues(PARQUET_RDLVL_TYPE, rLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: getBitWidth(context.column.rLevelMax),
-      disableEnvelope: false
-      // column: opts.column
-    }) as number[];
-  } else {
-    rLevels.fill(0);
-  }
+  const rLevels = decodeLevels(
+    dataCursor,
+    valueCount!,
+    context.column.rLevelMax,
+    rLevelEncoding,
+    false,
+    target?.rlevels,
+    target?.levelOffset
+  );
 
   /* read definition levels */
   const dLevelEncoding = getThriftEnum(
     Encoding,
     header.data_page_header?.definition_level_encoding!
   ) as ParquetCodec;
-  // tslint:disable-next-line:prefer-array-literal
-  let dLevels = new Array(valueCount);
+  const dLevels = decodeLevels(
+    dataCursor,
+    valueCount!,
+    context.column.dLevelMax,
+    dLevelEncoding,
+    false,
+    target?.dlevels,
+    target?.levelOffset
+  );
+  let valueCountNonNull = valueCount!;
   if (context.column.dLevelMax > 0) {
-    dLevels = decodeValues(PARQUET_RDLVL_TYPE, dLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: getBitWidth(context.column.dLevelMax),
-      disableEnvelope: false
-      // column: opts.column
-    }) as number[];
-  } else {
-    dLevels.fill(0);
-  }
-  let valueCountNonNull = 0;
-  for (const dlvl of dLevels) {
-    if (dlvl === context.column.dLevelMax) {
-      valueCountNonNull++;
+    valueCountNonNull = 0;
+    const decodedDefinitionLevels = target?.dlevels || dLevels;
+    const definitionLevelOffset = target?.levelOffset || 0;
+    for (let index = 0; index < valueCount!; index++) {
+      if (decodedDefinitionLevels[definitionLevelOffset + index] === context.column.dLevelMax) {
+        valueCountNonNull++;
+      }
     }
   }
 
@@ -394,49 +402,47 @@ async function decodeDataPageV2(
   }
 
   /* read repetition levels */
-  // tslint:disable-next-line:prefer-array-literal
-  let rLevels = new Array(valueCount);
+  let rLevels: number[] = [];
   if (context.column.rLevelMax > 0) {
     const repetitionLevelCursor = createPageSliceCursor(
       cursor,
       levelsOffset,
       dataPageHeader.repetition_levels_byte_length
     );
-    rLevels = decodeValues(
-      PARQUET_RDLVL_TYPE,
-      PARQUET_RDLVL_ENCODING,
+    rLevels = decodeLevels(
       repetitionLevelCursor,
       valueCount,
-      {
-        bitWidth: getBitWidth(context.column.rLevelMax),
-        disableEnvelope: true
-      }
-    ) as number[];
-  } else {
+      context.column.rLevelMax,
+      PARQUET_RDLVL_ENCODING,
+      true,
+      target?.rlevels,
+      target?.levelOffset
+    );
+  } else if (!target) {
+    rLevels = new Array(valueCount);
     rLevels.fill(0);
   }
   const definitionLevelsOffset = levelsOffset + dataPageHeader.repetition_levels_byte_length;
 
   /* read definition levels */
-  // tslint:disable-next-line:prefer-array-literal
-  let dLevels = new Array(valueCount);
+  let dLevels: number[] = [];
   if (context.column.dLevelMax > 0) {
     const definitionLevelCursor = createPageSliceCursor(
       cursor,
       definitionLevelsOffset,
       dataPageHeader.definition_levels_byte_length
     );
-    dLevels = decodeValues(
-      PARQUET_RDLVL_TYPE,
-      PARQUET_RDLVL_ENCODING,
+    dLevels = decodeLevels(
       definitionLevelCursor,
       valueCount,
-      {
-        bitWidth: getBitWidth(context.column.dLevelMax),
-        disableEnvelope: true
-      }
-    ) as number[];
-  } else {
+      context.column.dLevelMax,
+      PARQUET_RDLVL_ENCODING,
+      true,
+      target?.dlevels,
+      target?.levelOffset
+    );
+  } else if (!target) {
+    dLevels = new Array(valueCount);
     dLevels.fill(0);
   }
 
@@ -488,6 +494,28 @@ async function decodeDataPageV2(
     count: valueCount,
     pageHeader: header
   };
+}
+
+/** Decodes repetition or definition levels into an optional column-level destination. */
+function decodeLevels(
+  cursor: CursorBuffer,
+  count: number,
+  levelMax: number,
+  encoding: ParquetCodec,
+  disableEnvelope: boolean,
+  output?: number[],
+  outputOffset = 0
+): number[] {
+  if (levelMax === 0) {
+    return output ? [] : new Array<number>(count).fill(0);
+  }
+  const levels = decodeValues(PARQUET_RDLVL_TYPE, encoding, cursor, count, {
+    bitWidth: getBitWidth(levelMax),
+    disableEnvelope,
+    output,
+    outputOffset
+  }) as number[];
+  return output ? [] : levels;
 }
 
 /** Returns whether an encoding stores RLE dictionary indices instead of physical values. */
