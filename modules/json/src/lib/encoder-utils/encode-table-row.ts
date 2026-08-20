@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import type {Feature, Table} from '@loaders.gl/schema';
+import type {Feature, Geometry, Table} from '@loaders.gl/schema';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
-import {getRowPropertyObject} from './encode-utils';
+import {getRowPropertyObject, parseGeometryString} from './encode-utils';
 import {Utf8ArrayBufferEncoder} from './utf8-encoder';
 
 type Row = {[key: string]: unknown};
@@ -38,7 +38,7 @@ function getFeatureFromRow(table: Table, row: Row, geometryColumnIndex: number):
   // Extract geometry feature
   const columnName = table.schema?.fields[geometryColumnIndex].name;
   let featureOrGeometry =
-    columnName && (row[columnName] as {[key: string]: unknown} | string | null | undefined);
+    columnName && (row[columnName] as Feature | Geometry | string | null | undefined);
 
   // GeoJSON support null geometries
   if (!featureOrGeometry) {
@@ -46,15 +46,12 @@ function getFeatureFromRow(table: Table, row: Row, geometryColumnIndex: number):
     return {type: 'Feature', geometry: null, properties};
   }
 
-  // Support string geometries?
-  // TODO: This assumes GeoJSON strings, which may not be the correct format
-  // (could be WKT, encoded WKB...)
   if (typeof featureOrGeometry === 'string') {
-    try {
-      featureOrGeometry = JSON.parse(featureOrGeometry);
-    } catch (_err) {
+    const parsedGeometry = parseGeometryString(featureOrGeometry);
+    if (!parsedGeometry) {
       throw new Error('Invalid string geometry');
     }
+    featureOrGeometry = parsedGeometry;
   }
 
   if (typeof featureOrGeometry !== 'object' || typeof featureOrGeometry?.type !== 'string') {
