@@ -36,15 +36,15 @@ export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
     decodeValues: DICTIONARY.decodeValues
   },
   DELTA_BINARY_PACKED: {
-    encodeValues: DELTA.encodeValues,
+    encodeValues: DELTA.encodeDeltaBinaryPackedValues,
     decodeValues: DELTA.decodeDeltaBinaryPackedValues
   },
   DELTA_LENGTH_BYTE_ARRAY: {
-    encodeValues: DELTA.encodeValues,
+    encodeValues: DELTA.encodeDeltaLengthByteArrayValues,
     decodeValues: DELTA.decodeDeltaLengthByteArrayValues
   },
   DELTA_BYTE_ARRAY: {
-    encodeValues: DELTA.encodeValues,
+    encodeValues: DELTA.encodeDeltaByteArrayValues,
     decodeValues: DELTA.decodeDeltaByteArrayValues
   },
   BYTE_STREAM_SPLIT: {

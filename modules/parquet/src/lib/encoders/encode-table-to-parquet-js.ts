@@ -61,10 +61,16 @@ function convertSchemaToParquetSchema(
 ): SchemaDefinition {
   const parquetFields: SchemaDefinition = {};
   const columnEncodings = options.parquet?.columnEncodings || {};
+  const columnDictionaries = options.parquet?.columnDictionaries || {};
   const fieldNames = new Set(schema.fields.map(field => field.name));
   for (const columnName of Object.keys(columnEncodings)) {
     if (!fieldNames.has(columnName)) {
       throw new Error(`ParquetJSWriter: Unknown column encoding override "${columnName}"`);
+    }
+  }
+  for (const columnName of Object.keys(columnDictionaries)) {
+    if (!fieldNames.has(columnName)) {
+      throw new Error(`ParquetJSWriter: Unknown column dictionary override "${columnName}"`);
     }
   }
 

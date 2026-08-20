@@ -333,18 +333,23 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Uint8A
   // @ts-ignore
   const bitWidth: number = opts.bitWidth;
 
-  for (let i = 0; i < values.length % 8; i++) {
-    values.push(0);
+  const paddedValues = values.slice();
+  const padding = (8 - (paddedValues.length % 8)) % 8;
+  for (let index = 0; index < padding; index++) {
+    paddedValues.push(0);
   }
 
-  const buf = new Uint8Array(Math.ceil(bitWidth * (values.length / 8)));
-  for (let b = 0; b < bitWidth * values.length; b++) {
-    if ((values[Math.floor(b / bitWidth)] & (1 << (b % bitWidth))) > 0) {
+  const buf = new Uint8Array(Math.ceil(bitWidth * (paddedValues.length / 8)));
+  for (let b = 0; b < bitWidth * paddedValues.length; b++) {
+    if ((paddedValues[Math.floor(b / bitWidth)] & (1 << (b % bitWidth))) > 0) {
       buf[Math.floor(b / 8)] |= 1 << (b % 8);
     }
   }
 
-  return concatUint8Arrays([Uint8Array.from(varint.encode(((values.length / 8) << 1) | 1)), buf]);
+  return concatUint8Arrays([
+    Uint8Array.from(varint.encode(((paddedValues.length / 8) << 1) | 1)),
+    buf
+  ]);
 }
 
 function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Uint8Array {
@@ -355,8 +360,7 @@ function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptio
 
   for (let i = 0; i < buf.length; i++) {
     buf[i] = value & 0xff;
-    // eslint-disable-next-line
-    value >> 8; //  TODO - this looks wrong
+    value = Math.floor(value / 256);
   }
 
   return concatUint8Arrays([Uint8Array.from(varint.encode(count << 1)), buf]);

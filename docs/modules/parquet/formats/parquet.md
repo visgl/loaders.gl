@@ -149,12 +149,14 @@ need to inflate an entire column chunk at once.
 | ------------ | ------- | -------- | ----- |
 | Data Page V1 | ✅ | ✅ | Levels and values share one compressed payload |
 | Data Page V2 | ✅ | ✅ | Levels remain uncompressed; value compression is independently declared |
-| Dictionary page | ✅ | ❌ | New dictionaries are not yet emitted by the TypeScript writer |
+| Dictionary page | ✅ | ✅ | One chunk-wide dictionary may be shared by multiple data pages |
 | Optional page CRC | ⚠️ | ❌ | CRC metadata is decoded but payload verification is not yet enforced |
 | Legacy `INDEX_PAGE` | ❌ | ❌ | Deprecated and distinct from the modern page-index structures |
 
 `ParquetJSWriter` selects Data Page V2 with `parquet.useDataPageV2`. The reader accepts both versions
-within the same file.
+within the same file. `parquet.pageSize` is a target number of shredded level entries per page. Page
+boundaries are aligned to top-level rows, so a repeated row is never split between pages; a single
+row larger than the target remains one page.
 
 ## Value Encodings
 
@@ -167,25 +169,39 @@ uses, while each page identifies its actual value encoding.
 | `PLAIN_DICTIONARY` | All physical types | ✅ | ❌ | Deprecated dictionary identifier |
 | `RLE` | Boolean, levels, dictionary indexes | ✅ | ✅ | Writer uses it for definition/repetition levels |
 | `BIT_PACKED` | Legacy levels | ❌ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid |
-| `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ❌ | Effective for ordered integer sequences |
-| `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | ✅ | ❌ | Delta-encodes lengths followed by concatenated bytes |
-| `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ❌ | Prefix/suffix encoding for related byte strings |
-| `RLE_DICTIONARY` | All physical types | ✅ | ❌ | Modern dictionary index encoding |
+| `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ✅ | Effective for ordered integer sequences |
+| `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | ✅ | ✅ | Delta-encodes lengths followed by concatenated bytes |
+| `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ✅ | Prefix/suffix encoding for related byte strings |
+| `RLE_DICTIONARY` | All physical types | ✅ | ✅ | Modern dictionary index encoding |
 | `BYTE_STREAM_SPLIT` | `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ✅ | Transposes fixed-width bytes to improve later compression |
 | `ALP` | `FLOAT`, `DOUBLE` | ❌ | ❌ | Preview encoding in the current Apache specification |
 
-The TypeScript writer can opt individual top-level columns into byte-stream split:
+The TypeScript writer can select stable non-dictionary encodings by top-level column name:
 
 ```typescript
 const parquet = await encode(table, ParquetJSWriter, {
   parquet: {
     columnEncodings: {
       temperature: 'BYTE_STREAM_SPLIT',
-      timestamp: 'BYTE_STREAM_SPLIT'
-    }
+      timestamp: 'DELTA_BINARY_PACKED',
+      identifier: 'DELTA_BYTE_ARRAY'
+    },
+    dictionary: 'auto'
   }
 });
 ```
+
+Dictionary encoding is a column-chunk policy rather than a primary `columnEncodings` value because
+one chunk can start with a PLAIN dictionary page and then use `RLE_DICTIONARY` data pages. With
+`dictionary: 'auto'`, the writer builds a candidate dictionary and uses it only when the dictionary
+payload plus indexes are smaller than the selected primary encoding. `dictionary: true` forces the
+dictionary when it fits `dictionaryPageSizeLimit`; an oversized dictionary falls back for the
+complete chunk. `columnDictionaries` can override the policy for individual columns.
+
+The dictionary is planned across the complete column chunk and shared by every data page. This
+avoids page-to-page dictionary churn and lets the writer make one stable size decision before
+emitting bytes. High-cardinality data therefore stays on its selected PLAIN, delta, or
+byte-stream-split encoding instead of paying dictionary overhead.
 
 ## Compression
 
@@ -259,10 +275,10 @@ The TypeScript implementation is aiming for complete stable-format read support.
 gaps are currently:
 
 1. page-index and Bloom-filter reads for page-level pruning;
-2. dictionary and delta encoding in the writer;
-3. complete high-level nested-schema writing;
-4. Variant value decoding and shredding;
-5. page CRC verification and emission; and
+2. complete high-level nested-schema writing;
+3. Variant value decoding and shredding;
+4. page CRC verification and emission;
+5. statistics and page-index writing; and
 6. Parquet modular encryption.
 
 Preview features such as ALP are tracked separately from stable-format completeness.

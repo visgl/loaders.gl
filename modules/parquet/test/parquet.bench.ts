@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GeoParquetLoader, ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
-import {fetchFile, load, parse, preload} from '@loaders.gl/core';
+import {
+  GeoParquetLoader,
+  ParquetJSLoader,
+  ParquetJSWriter,
+  ParquetLoader,
+  type ParquetJSWriterOptions
+} from '@loaders.gl/parquet';
+import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/schema-utils';
@@ -46,6 +52,15 @@ type ParquetBenchmarkImplementation = {
   name: string;
   /** Hot decode operation returning the validated output row count. */
   decode: (scenario: ParquetBenchmarkScenario) => Promise<number>;
+};
+
+type ParquetWriterBenchmarkScenario = {
+  /** Human-readable data distribution and encoding label. */
+  name: string;
+  /** Scale-oriented input table prepared outside the timed callback. */
+  table: ObjectRowTable;
+  /** TypeScript writer options used by the timed callback. */
+  options: ParquetJSWriterOptions;
 };
 
 export async function parquetBench(suite) {
@@ -175,6 +190,8 @@ export async function parquetBench(suite) {
     }
   }
 
+  suite = await addParquetWriterBenchmarks(suite);
+
   suite = suite.group('GeoParquetLoader');
 
   suite.addAsync(
@@ -203,6 +220,98 @@ export async function parquetBench(suite) {
   //     core: {worker: false}
   //   });
   // });
+}
+
+/** Adds scale-oriented writer throughput cases and records the resulting bytes per row. */
+async function addParquetWriterBenchmarks(suite) {
+  const rowCount = 100_000;
+  const monotonicIntegerTable = makeObjectRowTable(
+    'sequence',
+    'int32',
+    Array.from({length: rowCount}, (_, index) => index * 10)
+  );
+  const lowCardinalityStringTable = makeObjectRowTable(
+    'label',
+    'utf8',
+    Array.from({length: rowCount}, (_, index) => `category-${index % 16}`)
+  );
+  const sharedPrefixStringTable = makeObjectRowTable(
+    'identifier',
+    'utf8',
+    Array.from({length: rowCount}, (_, index) => `customer/account/2026/08/${index}`)
+  );
+  const writerScenarios: ParquetWriterBenchmarkScenario[] = [
+    {
+      name: 'PLAIN monotonic INT32',
+      table: monotonicIntegerTable,
+      options: {parquet: {dictionary: false, columnEncodings: {sequence: 'PLAIN'}}}
+    },
+    {
+      name: 'DELTA_BINARY_PACKED monotonic INT32',
+      table: monotonicIntegerTable,
+      options: {
+        parquet: {dictionary: false, columnEncodings: {sequence: 'DELTA_BINARY_PACKED'}}
+      }
+    },
+    {
+      name: 'PLAIN low-cardinality STRING',
+      table: lowCardinalityStringTable,
+      options: {parquet: {dictionary: false, columnEncodings: {label: 'PLAIN'}}}
+    },
+    {
+      name: 'AUTO DICTIONARY low-cardinality STRING',
+      table: lowCardinalityStringTable,
+      options: {parquet: {dictionary: 'auto'}}
+    },
+    {
+      name: 'PLAIN shared-prefix STRING',
+      table: sharedPrefixStringTable,
+      options: {parquet: {dictionary: false, columnEncodings: {identifier: 'PLAIN'}}}
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY shared-prefix STRING',
+      table: sharedPrefixStringTable,
+      options: {
+        parquet: {dictionary: false, columnEncodings: {identifier: 'DELTA_BYTE_ARRAY'}}
+      }
+    }
+  ];
+
+  suite = suite.groupSorted('ParquetJSWriter scale');
+  for (const scenario of writerScenarios) {
+    const sample = await encode(scenario.table, ParquetJSWriter, {
+      ...scenario.options,
+      worker: false
+    });
+    const bytesPerRow = sample.byteLength / rowCount;
+    suite.addAsync(
+      `ParquetJSWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
+      {...BENCHMARK_OPTIONS, multiplier: rowCount},
+      async () => {
+        const parquet = await encode(scenario.table, ParquetJSWriter, {
+          ...scenario.options,
+          worker: false
+        });
+        if (parquet.byteLength === 0) {
+          throw new Error(`${scenario.name} produced an empty Parquet file`);
+        }
+      }
+    );
+  }
+  return suite;
+}
+
+/** Creates a single-column object-row table for a deterministic writer benchmark. */
+function makeObjectRowTable(
+  name: string,
+  type: 'int32' | 'utf8',
+  values: Array<number | string>
+): ObjectRowTable {
+  return {
+    shape: 'object-row-table',
+    schema: {fields: [{name, type, nullable: false}], metadata: {}},
+    data: values.map(value => ({[name]: value}))
+  };
 }
 
 /** Creates equivalent Arrow-table decode cases for the maintained Parquet implementations. */
