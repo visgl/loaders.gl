@@ -5,7 +5,12 @@
 
 import type {PrimitiveType} from '../schema/declare';
 import {copyUint8Array} from '../utils/binary-utils';
-import type {CursorBuffer, ParquetCodecOptions} from './declare';
+import {
+  getParquetValueOutput,
+  type CursorBuffer,
+  type ParquetCodecOptions,
+  type ParquetValueBuffer
+} from './declare';
 
 /** Delta encodings are currently decoder-only in loaders.gl. */
 export function encodeValues(
@@ -21,13 +26,13 @@ export function decodeDeltaBinaryPackedValues(
   type: PrimitiveType,
   cursor: CursorBuffer,
   count: number,
-  _options: ParquetCodecOptions
-): number[] {
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
   if (type !== 'INT32' && type !== 'INT64') {
     throw new Error(`DELTA_BINARY_PACKED does not support Parquet type ${type}`);
   }
   if (count === 0) {
-    return [];
+    return getParquetValueOutput(options, 0).output;
   }
 
   const blockSize = readUnsignedVarIntNumber(cursor);
@@ -48,8 +53,14 @@ export function decodeDeltaBinaryPackedValues(
   }
 
   return type === 'INT32'
-    ? decodeDeltaBinaryPackedInt32Values(cursor, count, miniBlockCount, valuesPerMiniBlock)
-    : decodeDeltaBinaryPackedInt64Values(cursor, count, miniBlockCount, valuesPerMiniBlock);
+    ? decodeDeltaBinaryPackedInt32Values(cursor, count, miniBlockCount, valuesPerMiniBlock, options)
+    : decodeDeltaBinaryPackedInt64Values(
+        cursor,
+        count,
+        miniBlockCount,
+        valuesPerMiniBlock,
+        options
+      );
 }
 
 /** Decodes DELTA_BINARY_PACKED INT32 values without entering the BigInt hot path. */
@@ -57,12 +68,13 @@ function decodeDeltaBinaryPackedInt32Values(
   cursor: CursorBuffer,
   count: number,
   miniBlockCount: number,
-  valuesPerMiniBlock: number
-): number[] {
-  const values = new Array<number>(count);
+  valuesPerMiniBlock: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   let value = readZigZagVarInt32(cursor);
   let outputIndex = 0;
-  values[outputIndex++] = value;
+  output[outputOffset + outputIndex++] = value;
 
   while (outputIndex < count) {
     const minimumDelta = readZigZagVarInt32(cursor);
@@ -79,8 +91,8 @@ function decodeDeltaBinaryPackedInt32Values(
         valueCount,
         minimumDelta,
         value,
-        values,
-        outputIndex
+        output,
+        outputOffset + outputIndex
       );
       outputIndex += valueCount;
       cursor.offset += packedByteLength;
@@ -90,7 +102,7 @@ function decodeDeltaBinaryPackedInt32Values(
     }
   }
 
-  return values;
+  return output;
 }
 
 /** Decodes one INT32 mini-block with an exact number-based bit reservoir. */
@@ -101,7 +113,7 @@ function decodeInt32MiniBlock(
   count: number,
   minimumDelta: number,
   initialValue: number,
-  output: number[],
+  output: ParquetValueBuffer,
   outputOffset: number
 ): number {
   let value = initialValue;
@@ -136,12 +148,13 @@ function decodeDeltaBinaryPackedInt64Values(
   cursor: CursorBuffer,
   count: number,
   miniBlockCount: number,
-  valuesPerMiniBlock: number
-): number[] {
-  const values = new Array<number>(count);
+  valuesPerMiniBlock: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   let value = readZigZagVarInt(cursor);
   let outputIndex = 0;
-  values[outputIndex++] = Number(BigInt.asIntN(64, value));
+  writeInt64Output(output, outputOffset + outputIndex++, value, options.int64AsBigInt);
 
   while (outputIndex < count) {
     const minimumDelta = readZigZagVarInt(cursor);
@@ -158,8 +171,9 @@ function decodeDeltaBinaryPackedInt64Values(
         valueCount,
         minimumDelta,
         value,
-        values,
-        outputIndex
+        output,
+        outputOffset + outputIndex,
+        options.int64AsBigInt
       );
       outputIndex += valueCount;
       cursor.offset += packedByteLength;
@@ -169,7 +183,7 @@ function decodeDeltaBinaryPackedInt64Values(
     }
   }
 
-  return values;
+  return output;
 }
 
 /** Decodes one INT64 mini-block, using numbers whenever the packed value remains exact. */
@@ -180,14 +194,15 @@ function decodeInt64MiniBlock(
   count: number,
   minimumDelta: bigint,
   initialValue: bigint,
-  output: number[],
-  outputOffset: number
+  output: ParquetValueBuffer,
+  outputOffset: number,
+  int64AsBigInt: boolean | undefined
 ): bigint {
   let value = initialValue;
   if (bitWidth === 0) {
     for (let index = 0; index < count; index++) {
       value += minimumDelta;
-      output[outputOffset + index] = Number(BigInt.asIntN(64, value));
+      writeInt64Output(output, outputOffset + index, value, int64AsBigInt);
     }
     return value;
   }
@@ -206,7 +221,7 @@ function decodeInt64MiniBlock(
       packedBits = Math.floor(packedBits / divisor);
       packedBitCount -= bitWidth;
       value += minimumDelta + BigInt(packedDelta);
-      output[outputOffset + index] = Number(BigInt.asIntN(64, value));
+      writeInt64Output(output, outputOffset + index, value, int64AsBigInt);
     }
     return value;
   }
@@ -232,9 +247,21 @@ function decodeInt64MiniBlock(
     packedBits >>= bitWidthBigInt;
     packedBitCount -= bitWidth;
     value += minimumDelta + packedDelta;
-    output[outputOffset + index] = Number(BigInt.asIntN(64, value));
+    writeInt64Output(output, outputOffset + index, value, int64AsBigInt);
   }
   return value;
+}
+
+/** Writes one signed INT64 without a bigint-to-number round trip for Arrow destinations. */
+function writeInt64Output(
+  output: ParquetValueBuffer,
+  outputIndex: number,
+  value: bigint,
+  int64AsBigInt: boolean | undefined
+): void {
+  (output as unknown[])[outputIndex] = int64AsBigInt
+    ? BigInt.asIntN(64, value)
+    : Number(BigInt.asIntN(64, value));
 }
 
 /** Decodes lengths with delta packing followed by contiguous byte-array payloads. */
@@ -243,10 +270,14 @@ export function decodeDeltaLengthByteArrayValues(
   cursor: CursorBuffer,
   count: number,
   options: ParquetCodecOptions
-): Uint8Array[] {
+): ParquetValueBuffer {
   assertByteArrayType(type, 'DELTA_LENGTH_BYTE_ARRAY');
-  const lengths = decodeDeltaBinaryPackedValues('INT32', cursor, count, options);
-  return lengths.map(length => readByteArray(cursor, length));
+  const lengths = decodeDeltaBinaryPackedValues('INT32', cursor, count, {});
+  const {output, outputOffset} = getParquetValueOutput(options, count);
+  for (let index = 0; index < count; index++) {
+    output[outputOffset + index] = readByteArray(cursor, Number(lengths[index]));
+  }
+  return output;
 }
 
 /** Decodes prefix lengths and delta-length suffixes into complete byte-array values. */
@@ -255,30 +286,32 @@ export function decodeDeltaByteArrayValues(
   cursor: CursorBuffer,
   count: number,
   options: ParquetCodecOptions
-): Uint8Array[] {
+): ParquetValueBuffer {
   assertByteArrayType(type, 'DELTA_BYTE_ARRAY');
-  const prefixLengths = decodeDeltaBinaryPackedValues('INT32', cursor, count, options);
-  const suffixes = decodeDeltaLengthByteArrayValues(type, cursor, count, options);
-  const values: Uint8Array[] = [];
+  const prefixLengths = decodeDeltaBinaryPackedValues('INT32', cursor, count, {});
+  const suffixes = decodeDeltaLengthByteArrayValues(type, cursor, count, {});
+  const {output, outputOffset} = getParquetValueOutput(options, count);
+  let previousValue: Uint8Array | undefined;
 
   for (let index = 0; index < count; index++) {
-    const previousValue = values[index - 1];
-    const prefixLength = prefixLengths[index];
-    const suffix = suffixes[index];
+    const prefixLength = Number(prefixLengths[index]);
+    const suffix = suffixes[index] as Uint8Array;
     if (prefixLength < 0 || (prefixLength > 0 && prefixLength > (previousValue?.length || 0))) {
       throw new Error(`Invalid DELTA_BYTE_ARRAY prefix length ${prefixLength}`);
     }
     if (prefixLength === 0) {
-      values.push(suffix);
+      output[outputOffset + index] = suffix;
+      previousValue = suffix;
       continue;
     }
     const value = new Uint8Array(prefixLength + suffix.length);
-    value.set(previousValue.subarray(0, prefixLength));
+    value.set(previousValue!.subarray(0, prefixLength));
     value.set(suffix, prefixLength);
-    values.push(value);
+    output[outputOffset + index] = value;
+    previousValue = value;
   }
 
-  return values;
+  return output;
 }
 
 /** Reads and validates a sequence of one-byte mini-block bit widths. */

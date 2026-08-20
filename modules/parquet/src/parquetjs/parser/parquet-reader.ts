@@ -32,6 +32,8 @@ export type ParquetReaderProps = {
   preserveBinary?: boolean;
   /** Retain byte arrays as views into decoded page buffers for direct materialization. */
   retainByteArrayViews?: boolean;
+  /** Decode supported primitive columns into typed buffers instead of boxed JavaScript arrays. */
+  useTypedValueBuffers?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
 };
@@ -58,6 +60,7 @@ export class ParquetReader {
     defaultDictionarySize: 2147483648,
     preserveBinary: false,
     retainByteArrayViews: false,
+    useTypedValueBuffers: false,
     signal: undefined
   };
 
@@ -296,7 +299,8 @@ export class ParquetReader {
       dictionary: [],
       // Options - TBD is this the right place for these?
       preserveBinary: this.props.preserveBinary,
-      retainByteArrayViews: this.props.retainByteArrayViews
+      retainByteArrayViews: this.props.retainByteArrayViews,
+      useTypedValueBuffers: this.props.useTypedValueBuffers
     };
 
     let dictionary: any[] | undefined;

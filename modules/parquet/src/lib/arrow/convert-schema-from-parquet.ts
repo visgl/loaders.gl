@@ -11,7 +11,7 @@ import {FileMetaData} from '../../parquetjs/parquet-thrift';
 export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   BOOLEAN: 'bool',
   INT32: 'int32',
-  INT64: 'float64',
+  INT64: 'int64',
   INT96: 'float64',
   FLOAT: 'float32',
   DOUBLE: 'float64',

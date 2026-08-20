@@ -6,7 +6,12 @@
 
 /* eslint-disable camelcase */
 import type {PrimitiveType} from '../schema/declare';
-import type {CursorBuffer, ParquetCodecOptions} from './declare';
+import {
+  getParquetValueOutput,
+  type CursorBuffer,
+  type ParquetCodecOptions,
+  type ParquetValueBuffer
+} from './declare';
 import {
   concatUint8Arrays,
   copyUint8Array,
@@ -51,20 +56,20 @@ export function decodeValues(
   cursor: CursorBuffer,
   count: number,
   opts: ParquetCodecOptions
-): any[] {
+): ParquetValueBuffer {
   switch (type) {
     case 'BOOLEAN':
-      return decodeValues_BOOLEAN(cursor, count);
+      return decodeValues_BOOLEAN(cursor, count, opts);
     case 'INT32':
-      return decodeValues_INT32(cursor, count);
+      return decodeValues_INT32(cursor, count, opts);
     case 'INT64':
-      return decodeValues_INT64(cursor, count);
+      return decodeValues_INT64(cursor, count, opts);
     case 'INT96':
-      return decodeValues_INT96(cursor, count);
+      return decodeValues_INT96(cursor, count, opts);
     case 'FLOAT':
-      return decodeValues_FLOAT(cursor, count);
+      return decodeValues_FLOAT(cursor, count, opts);
     case 'DOUBLE':
-      return decodeValues_DOUBLE(cursor, count);
+      return decodeValues_DOUBLE(cursor, count, opts);
     case 'BYTE_ARRAY':
       return decodeValues_BYTE_ARRAY(cursor, count, opts);
     case 'FIXED_LEN_BYTE_ARRAY':
@@ -84,14 +89,19 @@ function encodeValues_BOOLEAN(values: boolean[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_BOOLEAN(cursor: CursorBuffer, count: number): boolean[] {
-  const values = new Array<boolean>(count);
+function decodeValues_BOOLEAN(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   for (let i = 0; i < count; i++) {
     const b = cursor.buffer[cursor.offset + Math.floor(i / 8)];
-    values[i] = (b & (1 << (i % 8))) > 0;
+    const value = (b & (1 << (i % 8))) > 0;
+    output[outputOffset + i] = output instanceof Uint8Array ? Number(value) : value;
   }
   cursor.offset += Math.ceil(count / 8);
-  return values;
+  return output;
 }
 
 function encodeValues_INT32(values: number[]): Uint8Array {
@@ -102,17 +112,21 @@ function encodeValues_INT32(values: number[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_INT32(cursor: CursorBuffer, count: number): number[] {
-  const values = new Array<number>(count);
+function decodeValues_INT32(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values[i] = dataView.getInt32(cursor.offset, true);
+    output[outputOffset + i] = dataView.getInt32(cursor.offset, true);
     cursor.offset += 4;
   }
-  return values;
+  return output;
 }
 
-function encodeValues_INT64(values: number[]): Uint8Array {
+function encodeValues_INT64(values: Array<number | bigint>): Uint8Array {
   const buf = new Uint8Array(8 * values.length);
   for (let i = 0; i < values.length; i++) {
     writeInt64LE(buf, values[i], i * 8);
@@ -120,14 +134,19 @@ function encodeValues_INT64(values: number[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_INT64(cursor: CursorBuffer, count: number): number[] {
-  const values = new Array<number>(count);
+function decodeValues_INT64(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values[i] = Number(dataView.getBigInt64(cursor.offset, true));
+    const value = dataView.getBigInt64(cursor.offset, true);
+    output[outputOffset + i] = options.int64AsBigInt ? value : Number(value);
     cursor.offset += 8;
   }
-  return values;
+  return output;
 }
 
 function encodeValues_INT96(values: number[]): Uint8Array {
@@ -139,20 +158,24 @@ function encodeValues_INT96(values: number[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_INT96(cursor: CursorBuffer, count: number): number[] {
-  const values = new Array<number>(count);
+function decodeValues_INT96(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     const low = Number(dataView.getBigInt64(cursor.offset, true));
     const high = dataView.getUint32(cursor.offset + 8, true);
     if (high === 0xffffffff) {
-      values[i] = ~-low + 1; // truncate to 64 actual precision
+      output[outputOffset + i] = ~-low + 1; // truncate to 64 actual precision
     } else {
-      values[i] = low; // truncate to 64 actual precision
+      output[outputOffset + i] = low; // truncate to 64 actual precision
     }
     cursor.offset += 12;
   }
-  return values;
+  return output;
 }
 
 function encodeValues_FLOAT(values: number[]): Uint8Array {
@@ -163,14 +186,18 @@ function encodeValues_FLOAT(values: number[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_FLOAT(cursor: CursorBuffer, count: number): number[] {
-  const values = new Array<number>(count);
+function decodeValues_FLOAT(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values[i] = dataView.getFloat32(cursor.offset, true);
+    output[outputOffset + i] = dataView.getFloat32(cursor.offset, true);
     cursor.offset += 4;
   }
-  return values;
+  return output;
 }
 
 function encodeValues_DOUBLE(values: number[]): Uint8Array {
@@ -181,14 +208,18 @@ function encodeValues_DOUBLE(values: number[]): Uint8Array {
   return buf;
 }
 
-function decodeValues_DOUBLE(cursor: CursorBuffer, count: number): number[] {
-  const values = new Array<number>(count);
+function decodeValues_DOUBLE(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    values[i] = dataView.getFloat64(cursor.offset, true);
+    output[outputOffset + i] = dataView.getFloat64(cursor.offset, true);
     cursor.offset += 8;
   }
-  return values;
+  return output;
 }
 
 function encodeValues_BYTE_ARRAY(values: any[]): Uint8Array {
@@ -213,15 +244,15 @@ function decodeValues_BYTE_ARRAY(
   cursor: CursorBuffer,
   count: number,
   options: ParquetCodecOptions
-): Uint8Array[] {
-  const values = new Array<Uint8Array>(count);
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     const len = dataView.getUint32(cursor.offset, true);
     cursor.offset += 4;
-    values[i] = readByteArray(cursor, len, options.retainByteArrayViews);
+    output[outputOffset + i] = readByteArray(cursor, len, options.retainByteArrayViews);
   }
-  return values;
+  return output;
 }
 
 function encodeValues_FIXED_LEN_BYTE_ARRAY(values: any[], opts: ParquetCodecOptions): Uint8Array {
@@ -241,15 +272,15 @@ function decodeValues_FIXED_LEN_BYTE_ARRAY(
   cursor: CursorBuffer,
   count: number,
   opts: ParquetCodecOptions
-): Uint8Array[] {
-  const values = new Array<Uint8Array>(count);
+): ParquetValueBuffer {
+  const {output, outputOffset} = getParquetValueOutput(opts, count);
   if (!opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
   for (let i = 0; i < count; i++) {
-    values[i] = readByteArray(cursor, opts.typeLength, opts.retainByteArrayViews);
+    output[outputOffset + i] = readByteArray(cursor, opts.typeLength, opts.retainByteArrayViews);
   }
-  return values;
+  return output;
 }
 
 /** Reads one byte-array value, optionally retaining a view into the decoded page buffer. */

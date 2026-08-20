@@ -130,6 +130,7 @@ This unifies top-level loading behavior:
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
 - `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
 - `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or `ParquetJSLoader` for the TypeScript parquetjs implementation.
+- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 **@loaders.gl/images**
 

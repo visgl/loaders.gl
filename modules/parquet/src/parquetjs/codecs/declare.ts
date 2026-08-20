@@ -6,6 +6,15 @@
 
 import {PrimitiveType} from '../schema/declare';
 
+/** Mutable destination accepted by Parquet value decoders. */
+export type ParquetValueBuffer =
+  | unknown[]
+  | Uint8Array
+  | Int32Array
+  | BigInt64Array
+  | Float32Array
+  | Float64Array;
+
 export interface CursorBuffer {
   buffer: Uint8Array;
   offset: number;
@@ -18,6 +27,14 @@ export interface ParquetCodecOptions {
   /** Retain byte arrays as views into the decoded page buffer. */
   retainByteArrayViews?: boolean;
   typeLength?: number;
+  /** Optional destination that lets a codec avoid allocating a page-local values array. */
+  output?: ParquetValueBuffer;
+  /** First element in `output` written by the codec. */
+  outputOffset?: number;
+  /** Optional dictionary resolved while decoding dictionary indices. */
+  dictionary?: readonly unknown[];
+  /** Preserve decoded INT64 values as bigint instead of converting them to number. */
+  int64AsBigInt?: boolean;
 }
 
 export interface ParquetCodecKit {
@@ -27,5 +44,16 @@ export interface ParquetCodecKit {
     cursor: CursorBuffer,
     count: number,
     opts: ParquetCodecOptions
-  ): any[];
+  ): ParquetValueBuffer;
+}
+
+/** Allocates a page-local output or returns the caller-provided column destination. */
+export function getParquetValueOutput(
+  options: ParquetCodecOptions,
+  count: number
+): {output: ParquetValueBuffer; outputOffset: number} {
+  return {
+    output: options.output || new Array<unknown>(count),
+    outputOffset: options.outputOffset || 0
+  };
 }

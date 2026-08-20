@@ -170,6 +170,9 @@ Supports table category options such as `batchType` and `batchSize`.
   `batchSize`, and `preserveBinary`.
 
 The implementation is selected by the loader import. There is no runtime backend option.
+The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
+concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost
+can matter more than the language used for a decoder's inner loop.
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -190,6 +193,10 @@ Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. 
 and value buffers without converting their bytes through JavaScript strings or copying every value
 into an intermediate buffer. Nested schemas use the object-row materializer as a compatibility
 fallback.
+
+Physical Parquet `INT64` columns map to Arrow `Int64`. Both Arrow and object-row output return exact
+JavaScript `bigint` values; callers that accept precision loss can convert them to `number`
+explicitly.
 
 ## Worker Execution
 

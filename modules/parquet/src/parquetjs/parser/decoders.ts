@@ -14,6 +14,7 @@ import {
   SchemaDefinition
 } from '../schema/declare';
 import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
+import type {ParquetValueBuffer} from '../codecs/declare';
 import {
   ConvertedType,
   Encoding,
@@ -26,6 +27,13 @@ import {
 import {decompress} from '../compression';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
+
+/** Preallocated column destination used to bypass page-local value arrays. */
+type ParquetPageDecodeTarget = {
+  values: ParquetValueBuffer;
+  valueOffset: number;
+  dictionary: readonly unknown[];
+};
 
 /**
  * Decode data pages
@@ -57,7 +65,7 @@ export async function decodeDataPages(
   const data: ParquetColumnChunk = {
     rlevels: new Array<number>(outputCapacity),
     dlevels: new Array<number>(outputCapacity),
-    values: new Array(outputCapacity),
+    values: createParquetColumnValueBuffer(context, outputCapacity),
     pageHeaders: [],
     count: 0
   };
@@ -72,7 +80,11 @@ export async function decodeDataPages(
     (expectedLevelCount === undefined || levelOffset < expectedLevelCount)
   ) {
     // Looks like we have to decode these in sequence due to cursor updates?
-    const page = await decodePage(cursor, context);
+    const page = await decodePage(cursor, context, {
+      values: data.values,
+      valueOffset,
+      dictionary
+    });
 
     if (page.dictionary) {
       dictionary = page.dictionary;
@@ -80,26 +92,27 @@ export async function decodeDataPages(
       continue;
     }
 
-    const valueEncoding = getThriftEnum(
-      Encoding,
-      page.pageHeader.data_page_header?.encoding ?? page.pageHeader.data_page_header_v2?.encoding!
-    ) as ParquetCodec;
-    // Pages might be in different encodings. We don't need to decode in case
-    // of 'PLAIN' encoding because all values are already in place
-    const usesDictionary =
-      dictionary.length &&
-      (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY');
-
     for (let index = 0; index < page.rlevels.length; index++) {
       data.rlevels[levelOffset + index] = page.rlevels[index];
       data.dlevels[levelOffset + index] = page.dlevels[index];
     }
     levelOffset += page.rlevels.length;
 
-    for (let index = 0; index < page.values.length; index++) {
-      const value = usesDictionary ? dictionary[page.values[index]] : page.values[index];
-      if (value !== undefined) {
-        data.values[valueOffset++] = value;
+    if (page.directValuesWritten !== undefined) {
+      valueOffset += page.directValuesWritten;
+    } else {
+      const valueEncoding = getThriftEnum(
+        Encoding,
+        page.pageHeader.data_page_header?.encoding ?? page.pageHeader.data_page_header_v2?.encoding!
+      ) as ParquetCodec;
+      const usesDictionary =
+        dictionary.length &&
+        (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY');
+      for (let index = 0; index < page.values.length; index++) {
+        const value = usesDictionary ? dictionary[Number(page.values[index])] : page.values[index];
+        if (value !== undefined) {
+          data.values[valueOffset++] = value;
+        }
       }
     }
 
@@ -109,7 +122,7 @@ export async function decodeDataPages(
 
   data.rlevels.length = levelOffset;
   data.dlevels.length = levelOffset;
-  data.values.length = valueOffset;
+  data.values = trimParquetValueBuffer(data.values, valueOffset);
 
   return data;
 }
@@ -121,7 +134,8 @@ export async function decodeDataPages(
  */
 export async function decodePage(
   cursor: CursorBuffer,
-  context: ParquetReaderContext
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
 ): Promise<ParquetPageData> {
   let page;
 
@@ -132,10 +146,10 @@ export async function decodePage(
 
   switch (pageType) {
     case 'DATA_PAGE':
-      page = await decodeDataPage(cursor, pageHeader, context);
+      page = await decodeDataPage(cursor, pageHeader, context, target);
       break;
     case 'DATA_PAGE_V2':
-      page = await decodeDataPageV2(cursor, pageHeader, context);
+      page = await decodeDataPageV2(cursor, pageHeader, context, target);
       break;
     case 'DICTIONARY_PAGE':
       page = {
@@ -239,7 +253,7 @@ function decodeValues(
   cursor: CursorBuffer,
   count: number,
   opts: ParquetCodecOptions
-): any[] {
+): ParquetValueBuffer {
   if (!(encoding in PARQUET_CODECS)) {
     throw new Error(`invalid encoding: ${encoding}`);
   }
@@ -255,7 +269,8 @@ function decodeValues(
 async function decodeDataPage(
   cursor: CursorBuffer,
   header: PageHeader,
-  context: ParquetReaderContext
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
 ): Promise<ParquetPageData> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
   const valueCount = header.data_page_header?.num_values;
@@ -290,7 +305,7 @@ async function decodeDataPage(
       bitWidth: getBitWidth(context.column.rLevelMax),
       disableEnvelope: false
       // column: opts.column
-    });
+    }) as number[];
   } else {
     rLevels.fill(0);
   }
@@ -307,7 +322,7 @@ async function decodeDataPage(
       bitWidth: getBitWidth(context.column.dLevelMax),
       disableEnvelope: false
       // column: opts.column
-    });
+    }) as number[];
   } else {
     dLevels.fill(0);
   }
@@ -323,7 +338,11 @@ async function decodeDataPage(
   const decodeOptions: ParquetCodecOptions = {
     typeLength: context.column.typeLength,
     bitWidth: getValueBitWidth(context, valueEncoding),
-    retainByteArrayViews: context.retainByteArrayViews
+    retainByteArrayViews: context.retainByteArrayViews,
+    output: target?.values,
+    outputOffset: target?.valueOffset,
+    dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
   };
 
   const values = decodeValues(
@@ -338,6 +357,7 @@ async function decodeDataPage(
     dlevels: dLevels,
     rlevels: rLevels,
     values,
+    directValuesWritten: target ? valueCountNonNull : undefined,
     count: valueCount!,
     pageHeader: header
   };
@@ -353,7 +373,8 @@ async function decodeDataPage(
 async function decodeDataPageV2(
   cursor: CursorBuffer,
   header: PageHeader,
-  context: ParquetReaderContext
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
 ): Promise<ParquetPageData> {
   const dataPageHeader = header.data_page_header_v2;
   if (!dataPageHeader) {
@@ -390,7 +411,7 @@ async function decodeDataPageV2(
         bitWidth: getBitWidth(context.column.rLevelMax),
         disableEnvelope: true
       }
-    );
+    ) as number[];
   } else {
     rLevels.fill(0);
   }
@@ -414,7 +435,7 @@ async function decodeDataPageV2(
         bitWidth: getBitWidth(context.column.dLevelMax),
         disableEnvelope: true
       }
-    );
+    ) as number[];
   } else {
     dLevels.fill(0);
   }
@@ -444,7 +465,11 @@ async function decodeDataPageV2(
   const decodeOptions = {
     typeLength: context.column.typeLength,
     bitWidth: getValueBitWidth(context, valueEncoding),
-    retainByteArrayViews: context.retainByteArrayViews
+    retainByteArrayViews: context.retainByteArrayViews,
+    output: target?.values,
+    outputOffset: target?.valueOffset,
+    dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
   };
 
   const values = decodeValues(
@@ -459,9 +484,59 @@ async function decodeDataPageV2(
     dlevels: dLevels,
     rlevels: rLevels,
     values,
+    directValuesWritten: target ? valueCountNonNull : undefined,
     count: valueCount,
     pageHeader: header
   };
+}
+
+/** Returns whether an encoding stores RLE dictionary indices instead of physical values. */
+function isDictionaryEncoding(encoding: ParquetCodec): boolean {
+  return encoding === 'PLAIN_DICTIONARY' || encoding === 'RLE_DICTIONARY';
+}
+
+/** Preserves exact physical signed INT64 values in every output shape. */
+function shouldDecodeInt64AsBigInt(context: ParquetReaderContext): boolean {
+  return Boolean(
+    context.column.primitiveType === 'INT64' &&
+      (!context.column.originalType || context.column.originalType === 'INT_64')
+  );
+}
+
+/** Allocates the narrowest lossless column buffer supported by the current JavaScript decoder. */
+function createParquetColumnValueBuffer(
+  context: ParquetReaderContext,
+  capacity: number
+): ParquetValueBuffer {
+  if (!context.useTypedValueBuffers || capacity === 0) {
+    return new Array<unknown>(capacity);
+  }
+  switch (context.column.primitiveType) {
+    case 'BOOLEAN':
+      return new Uint8Array(capacity);
+    case 'INT32':
+      return new Int32Array(capacity);
+    case 'INT64':
+      return !context.column.originalType || context.column.originalType === 'INT_64'
+        ? new BigInt64Array(capacity)
+        : new Float64Array(capacity);
+    case 'INT96':
+    case 'DOUBLE':
+      return new Float64Array(capacity);
+    case 'FLOAT':
+      return new Float32Array(capacity);
+    default:
+      return new Array<unknown>(capacity);
+  }
+}
+
+/** Restricts an overallocated typed column buffer to its decoded non-null values. */
+function trimParquetValueBuffer(values: ParquetValueBuffer, length: number): ParquetValueBuffer {
+  if (Array.isArray(values)) {
+    values.length = length;
+    return values;
+  }
+  return values.subarray(0, length) as ParquetValueBuffer;
 }
 
 /** Returns the physical value bit width required by encodings such as RLE BOOLEAN. */
@@ -534,8 +609,8 @@ async function decodeDictionaryPage(
     dictCursor,
     numValues,
     // TODO - this looks wrong?
-    context as ParquetCodecOptions
+    {...context, int64AsBigInt: shouldDecodeInt64AsBigInt(context)} as ParquetCodecOptions
   );
 
-  return decodedDictionaryValues;
+  return decodedDictionaryValues as (string | ArrayBuffer)[];
 }

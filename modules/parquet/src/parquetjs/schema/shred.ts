@@ -67,7 +67,10 @@ export function shredRecord(
   for (const field of schema.fieldList) {
     Array.prototype.push.apply(rowGroup.columnData[field.key].rlevels, data[field.key].rlevels);
     Array.prototype.push.apply(rowGroup.columnData[field.key].dlevels, data[field.key].dlevels);
-    Array.prototype.push.apply(rowGroup.columnData[field.key].values, data[field.key].values);
+    Array.prototype.push.apply(
+      rowGroup.columnData[field.key].values as unknown[],
+      data[field.key].values as unknown as unknown[]
+    );
     rowGroup.columnData[field.key].count += data[field.key].count;
   }
 }
@@ -126,7 +129,7 @@ function shredRecordFields(
         data[field.key].count += 1;
         data[field.key].rlevels.push(rlvl);
         data[field.key].dlevels.push(field.dLevelMax);
-        data[field.key].values.push(
+        (data[field.key].values as unknown[]).push(
           Types.toPrimitive((field.originalType || field.primitiveType)!, values[i])
         );
       }
