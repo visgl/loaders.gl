@@ -16,7 +16,7 @@ export async function encodeTableToParquetJs(
   options: ParquetJSWriterOptions
 ): Promise<ArrayBuffer> {
   const parquetSchema = new ParquetSchema(
-    convertSchemaToParquetSchema(table.schema!, objectRowTable)
+    convertSchemaToParquetSchema(table.schema!, objectRowTable, options)
   );
   const chunks: Uint8Array[] = [];
   const outputStream = {
@@ -56,12 +56,23 @@ export async function encodeTableToParquetJs(
  */
 function convertSchemaToParquetSchema(
   schema: Schema,
-  objectRowTable: ObjectRowTable
+  objectRowTable: ObjectRowTable,
+  options: ParquetJSWriterOptions
 ): SchemaDefinition {
   const parquetFields: SchemaDefinition = {};
+  const columnEncodings = options.parquet?.columnEncodings || {};
+  const fieldNames = new Set(schema.fields.map(field => field.name));
+  for (const columnName of Object.keys(columnEncodings)) {
+    if (!fieldNames.has(columnName)) {
+      throw new Error(`ParquetJSWriter: Unknown column encoding override "${columnName}"`);
+    }
+  }
 
   for (const field of schema.fields) {
-    parquetFields[field.name] = convertFieldToParquetFieldDefinition(field, objectRowTable.data);
+    parquetFields[field.name] = {
+      ...convertFieldToParquetFieldDefinition(field, objectRowTable.data),
+      encoding: columnEncodings[field.name]
+    };
   }
 
   return parquetFields;

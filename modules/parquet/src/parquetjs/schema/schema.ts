@@ -5,6 +5,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 import {PARQUET_CODECS} from '../codecs/index';
+import {isByteStreamSplitType} from '../codecs/byte-stream-split';
 import {PARQUET_COMPRESSION_METHODS} from '../compression';
 import {
   FieldDefinition,
@@ -167,6 +168,10 @@ function buildFields(
     if (!(opts.encoding in PARQUET_CODECS)) {
       throw new Error(`unsupported parquet encoding: ${opts.encoding}`);
     }
+    const primitiveType = opts.physicalType || typeDef.primitiveType;
+    if (opts.encoding === 'BYTE_STREAM_SPLIT' && !isByteStreamSplitType(primitiveType)) {
+      throw new Error(`BYTE_STREAM_SPLIT does not support ${primitiveType}`);
+    }
 
     opts.compression = opts.compression || 'UNCOMPRESSED';
     if (!(opts.compression in PARQUET_COMPRESSION_METHODS)) {
@@ -177,7 +182,7 @@ function buildFields(
     const cpath = path.concat([name]);
     fieldList[name] = {
       name,
-      primitiveType: opts.physicalType || typeDef.primitiveType,
+      primitiveType,
       originalType: typeDef.originalType,
       logicalType: opts.logicalType,
       fieldId: opts.fieldId,

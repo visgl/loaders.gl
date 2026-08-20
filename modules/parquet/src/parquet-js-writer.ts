@@ -14,8 +14,13 @@ import {ParquetFormat} from './parquet-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Stable value encodings selectable by the TypeScript Parquet writer. */
+export type ParquetJSWriterEncoding = 'PLAIN' | 'BYTE_STREAM_SPLIT';
+
 /** Encoder-specific options for the experimental parquetjs writer. */
 type ParquetJSWriterEncoderOptions = {
+  /** Value encoding overrides keyed by top-level column name. */
+  columnEncodings?: Record<string, ParquetJSWriterEncoding>;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;

@@ -294,13 +294,28 @@ function toPrimitive_FLOAT16(value: unknown): Uint8Array {
         half = sign;
       } else {
         const normalizedMantissa = mantissa | 0x800000;
-        half = sign | (normalizedMantissa >>> (14 - halfExponent));
+        half = sign | roundRightShiftToNearestEven(normalizedMantissa, 14 - halfExponent);
       }
     } else {
-      half = sign | (halfExponent << 10) | (mantissa >>> 13);
+      const halfMantissa = roundRightShiftToNearestEven(mantissa, 13);
+      if (halfMantissa === 0x400) {
+        const roundedExponent = halfExponent + 1;
+        half = roundedExponent >= 0x1f ? sign | 0x7c00 : sign | (roundedExponent << 10);
+      } else {
+        half = sign | (halfExponent << 10) | halfMantissa;
+      }
     }
   }
   return new Uint8Array([half & 0xff, half >>> 8]);
+}
+
+/** Rounds a non-negative integer right shift using IEEE round-to-nearest, ties-to-even. */
+function roundRightShiftToNearestEven(value: number, shift: number): number {
+  const divisor = 2 ** shift;
+  const quotient = Math.floor(value / divisor);
+  const remainder = value - quotient * divisor;
+  const halfway = divisor / 2;
+  return quotient + (remainder > halfway || (remainder === halfway && quotient % 2 === 1) ? 1 : 0);
 }
 
 /** Converts little-endian IEEE 754 binary16 bytes to a JavaScript number. */
@@ -443,9 +458,90 @@ function toPrimitive_BYTE_ARRAY(value: any): Uint8Array {
   return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
 }
 
-function decimalToPrimitive_BYTE_ARRAY(value: any): Uint8Array {
-  // TBD
-  return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
+function decimalToPrimitive_BYTE_ARRAY(value: unknown, field: ParquetField): Uint8Array {
+  if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+    const bytes = toUint8Array(value);
+    if (field.typeLength !== undefined && bytes.byteLength !== field.typeLength) {
+      throw new Error(
+        `invalid DECIMAL byte width: expected ${field.typeLength}, received ${bytes.byteLength}`
+      );
+    }
+    return bytes;
+  }
+
+  const unscaledValue = getUnscaledDecimalInteger(value, field.scale || 0);
+  const precision = field.precision ?? field.presision;
+  if (precision !== undefined && getDecimalDigitCount(unscaledValue) > precision) {
+    throw new Error(`DECIMAL value ${value} exceeds precision ${precision}`);
+  }
+  const byteWidth = field.typeLength ?? getSignedBigIntByteWidth(unscaledValue);
+  const bitWidth = BigInt(byteWidth * 8);
+  const minimum = -(1n << (bitWidth - 1n));
+  const maximum = (1n << (bitWidth - 1n)) - 1n;
+  if (unscaledValue < minimum || unscaledValue > maximum) {
+    throw new Error(`DECIMAL value ${value} does not fit in ${byteWidth} bytes`);
+  }
+
+  const bytes = new Uint8Array(byteWidth);
+  let unsignedValue = BigInt.asUintN(byteWidth * 8, unscaledValue);
+  for (let byteIndex = byteWidth - 1; byteIndex >= 0; byteIndex--) {
+    bytes[byteIndex] = Number(unsignedValue & 0xffn);
+    unsignedValue >>= 8n;
+  }
+  return bytes;
+}
+
+/** Converts a logical decimal value to its exact scaled integer. */
+function getUnscaledDecimalInteger(value: unknown, scale: number): bigint {
+  if (!Number.isInteger(scale) || scale < 0) {
+    throw new Error(`invalid DECIMAL scale: ${scale}`);
+  }
+  if (typeof value === 'bigint') {
+    return value * 10n ** BigInt(scale);
+  }
+  if (typeof value === 'number') {
+    const scaledValue = Math.round(value * 10 ** scale);
+    if (!Number.isFinite(value) || !Number.isSafeInteger(scaledValue)) {
+      throw new Error(`DECIMAL number ${value} cannot be represented exactly; use a string`);
+    }
+    return BigInt(scaledValue);
+  }
+  if (typeof value !== 'string') {
+    throw new Error(`invalid value for DECIMAL: ${value}`);
+  }
+
+  const match = /^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/.exec(value.trim());
+  if (!match) {
+    throw new Error(`invalid value for DECIMAL: ${value}`);
+  }
+  const sign = match[1] === '-' ? -1n : 1n;
+  const fraction = match[3] || '';
+  let unscaledValue = BigInt(`${match[2]}${fraction}` || '0');
+  const decimalShift = scale + Number(match[4] || 0) - fraction.length;
+  if (decimalShift >= 0) {
+    unscaledValue *= 10n ** BigInt(decimalShift);
+  } else {
+    const divisor = 10n ** BigInt(-decimalShift);
+    if (unscaledValue % divisor !== 0n) {
+      throw new Error(`DECIMAL value ${value} has more fractional digits than scale ${scale}`);
+    }
+    unscaledValue /= divisor;
+  }
+  return sign * unscaledValue;
+}
+
+/** Returns the number of base-10 digits in a signed integer, treating zero as one digit. */
+function getDecimalDigitCount(value: bigint): number {
+  return (value < 0n ? -value : value).toString().length;
+}
+
+/** Returns the smallest two's-complement byte width that can contain a signed integer. */
+function getSignedBigIntByteWidth(value: bigint): number {
+  let byteWidth = 1;
+  while (value < -(1n << BigInt(byteWidth * 8 - 1)) || value >= 1n << BigInt(byteWidth * 8 - 1)) {
+    byteWidth++;
+  }
+  return byteWidth;
 }
 
 function toPrimitive_UTF8(value: any): Uint8Array {

@@ -36,7 +36,7 @@ export {
 } from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
-export type {ParquetJSWriterOptions} from './parquet-js-writer';
+export type {ParquetJSWriterEncoding, ParquetJSWriterOptions} from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API

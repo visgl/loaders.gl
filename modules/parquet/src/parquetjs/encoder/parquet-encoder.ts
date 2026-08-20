@@ -695,10 +695,18 @@ function getFieldLogicalType(field: ParquetField): ParquetLogicalType | undefine
   }
   if (originalType === 'DATE') return {type: 'DATE'};
   if (originalType.startsWith('TIME_')) {
-    return {type: 'TIME', unit: originalType.slice(5) as ParquetLogicalType['unit']};
+    return {
+      type: 'TIME',
+      unit: originalType.slice(5) as ParquetLogicalType['unit'],
+      isAdjustedToUTC: true
+    };
   }
   if (originalType.startsWith('TIMESTAMP_')) {
-    return {type: 'TIMESTAMP', unit: originalType.slice(10) as ParquetLogicalType['unit']};
+    return {
+      type: 'TIMESTAMP',
+      unit: originalType.slice(10) as ParquetLogicalType['unit'],
+      isAdjustedToUTC: true
+    };
   }
   if (originalType.startsWith('UINT_') || originalType.startsWith('INT_')) {
     return {

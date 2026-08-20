@@ -4,13 +4,15 @@
 
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
-import {ParquetJSLoader, ParquetJSWriter} from '@loaders.gl/parquet';
+import {BlobFile} from '@loaders.gl/loader-utils';
+import {ParquetJSLoader, ParquetJSWriter, ParquetReader} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 
 const TIMESTAMP_NANOS = 1_700_000_000_123_456_789n;
 const TIME_NANOS = 43_200_123_456_789n;
 const UINT64_MAXIMUM = 18_446_744_073_709_551_615n;
+const DECIMAL256_VALUE = 1_234_567_890_123_456_789_012_345_678_901_234_567_890n;
 
 test('ParquetJS logical types round-trip into exact Arrow vectors', async () => {
   const input: ObjectRowTable = {
@@ -26,6 +28,11 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
           type: {type: 'decimal', bitWidth: 128, precision: 18, scale: 3},
           nullable: false
         },
+        {
+          name: 'decimal256',
+          type: {type: 'decimal', bitWidth: 256, precision: 40, scale: 0},
+          nullable: false
+        },
         {name: 'half', type: 'float16', nullable: false},
         {name: 'date', type: 'date-day', nullable: false}
       ],
@@ -38,7 +45,8 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
         timeNanos: TIME_NANOS,
         timestampNanos: TIMESTAMP_NANOS,
         decimal: 12_345.678,
-        half: 1.5,
+        decimal256: DECIMAL256_VALUE,
+        half: 1.0006,
         date: -1
       }
     ]
@@ -60,6 +68,7 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
     arrow.TimeNanosecond,
     arrow.TimestampNanosecond,
     arrow.Decimal,
+    arrow.Decimal,
     arrow.Float16,
     arrow.DateDay
   ]);
@@ -69,6 +78,28 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
   expect(output.data.getChild('timestampNanos')?.data[0].values[0]).toBe(TIMESTAMP_NANOS);
   expect(output.data.getChild('decimal')?.data[0].values[0]).toBe(12_345_678);
   expect(output.data.getChild('decimal')?.type).toMatchObject({precision: 18, scale: 3, bitWidth: 128});
-  expect(output.data.getChild('half')?.get(0)).toBe(1.5);
+  expect(readArrowDecimalValue(output.data.getChild('decimal256')!, 256)).toBe(DECIMAL256_VALUE);
+  expect(output.data.getChild('decimal256')?.type).toMatchObject({
+    precision: 40,
+    scale: 0,
+    bitWidth: 256
+  });
+  expect(output.data.getChild('half')?.get(0)).toBe(1.0009765625);
   expect(output.data.getChild('date')?.get(0)).toBe(-86_400_000);
+
+  const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
+  const timeNanosSchema = metadata.schema.find(field => field.name === 'timeNanos');
+  const timestampNanosSchema = metadata.schema.find(field => field.name === 'timestampNanos');
+  expect(timeNanosSchema?.logicalType?.TIME?.isAdjustedToUTC).toBe(true);
+  expect(timestampNanosSchema?.logicalType?.TIMESTAMP?.isAdjustedToUTC).toBe(true);
 });
+
+/** Reads one little-endian signed Arrow Decimal128/256 value from its word buffer. */
+function readArrowDecimalValue(vector: arrow.Vector, bitWidth: 128 | 256): bigint {
+  const words = vector.data[0].values as Uint32Array;
+  let unsignedValue = 0n;
+  for (let wordIndex = bitWidth / 32 - 1; wordIndex >= 0; wordIndex--) {
+    unsignedValue = (unsignedValue << 32n) | BigInt(words[wordIndex]);
+  }
+  return BigInt.asIntN(bitWidth, unsignedValue);
+}

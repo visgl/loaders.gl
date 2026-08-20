@@ -9,113 +9,260 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 ![apache-logo](../../../images/logos/apache-logo.png)
 
 - _[`@loaders.gl/parquet`](/docs/modules/parquet)_
-- _[Parquet](https://parquet.apache.org/docs/file-format/)_
+- _[Apache Parquet format specification](https://github.com/apache/parquet-format)_
+- _[Apache Parquet file-format documentation](https://parquet.apache.org/docs/file-format/)_
 
-Parquet is a binary columnar format optimized for compact storage on disk.
+Apache Parquet is a binary, column-oriented format designed for compact storage and selective
+retrieval of tabular and nested data. Values are organized so that a reader can fetch selected
+row groups and columns without downloading or decoding the complete file.
 
-The GitHUB specification of [Apache Parquet](https://github.com/apache/parquet-format/blob/master/README.md).
+This page describes both the format and the current `@loaders.gl/parquet` TypeScript implementation.
+The support tables use these symbols:
+
+| Symbol | Meaning |
+| ------ | ------- |
+| ✅ | Supported by the TypeScript reader or writer |
+| ⚠️ | Partially supported, metadata-only, legacy, or dependent on an injected codec |
+| ❌ | Not currently supported |
+
+`ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation;
+their coverage can differ from the TypeScript `ParquetJSLoader`, `ParquetSourceLoader`, and
+`ParquetJSWriter` described in the matrices below.
+
+## File Layout
+
+A Parquet file starts and ends with the four-byte `PAR1` magic value. The Thrift-encoded file
+metadata and its little-endian length are stored at the end so a writer can produce the file in one
+forward pass and a random-access reader can discover the layout with a small suffix read.
+
+```text
+PAR1
+  row group 0
+    column chunk 0: dictionary page?, data pages...
+    column chunk 1: dictionary page?, data pages...
+  row group 1
+    column chunk 0: dictionary page?, data pages...
+    column chunk 1: dictionary page?, data pages...
+  ...
+file metadata (Thrift compact protocol)
+file metadata byte length (4-byte little endian)
+PAR1
+```
+
+The format has four important storage units:
+
+| Unit | Purpose | Natural unit of work |
+| ---- | ------- | -------------------- |
+| File | Schema, row-group directory, user metadata, and optional indexes | Dataset discovery |
+| Row group | Horizontal partition containing a column chunk for every leaf column | Parallelism and row pruning |
+| Column chunk | Contiguous values for one leaf column within one row group | Projection and range I/O |
+| Page | Independently encoded and compressed values within a column chunk | Compression, decoding, page pruning |
+
+This hierarchy is why Parquet is random-access rather than a conventional streaming format.
+`ParquetSourceLoader` first reads and caches the footer, then issues ranges for selected row groups
+and column chunks. `parseInBatches` can yield row-group-sized batches incrementally, but the footer
+must normally be available before useful data ranges can be located.
+
+## Schema
+
+Parquet deliberately has a small set of physical storage types. Logical type annotations describe
+how those bytes should be interpreted. Repetition declarations and Dremel definition/repetition
+levels describe nulls and nesting.
+
+Each schema element can contain:
+
+- a name and optional stable field ID
+- a physical type for leaf fields
+- `REQUIRED`, `OPTIONAL`, or `REPEATED` repetition
+- a modern `LogicalType` annotation or deprecated `ConvertedType` annotation
+- type parameters such as fixed byte width, decimal precision/scale, time unit, or UTC adjustment
+
+The TypeScript reader gives modern `LogicalType` metadata precedence and uses `ConvertedType` only
+as a compatibility fallback.
+
+### Physical Types
+
+| Physical type | On-disk representation | JS read | JS write | Notes |
+| ------------- | ---------------------- | ------- | -------- | ----- |
+| `BOOLEAN` | One bit per value in plain encoding | ✅ | ✅ | Nulls are represented by definition levels, not value bits |
+| `INT32` | 32-bit little-endian signed integer | ✅ | ✅ | Also carries dates, narrow integers, and some decimals |
+| `INT64` | 64-bit little-endian signed integer | ✅ | ✅ | Preserved as exact `bigint` when required |
+| `INT96` | 12-byte legacy integer | ⚠️ | ⚠️ | Deprecated; no complete portable logical interpretation |
+| `FLOAT` | IEEE-754 binary32, little endian | ✅ | ✅ | Maps to Arrow Float32 |
+| `DOUBLE` | IEEE-754 binary64, little endian | ✅ | ✅ | Maps to Arrow Float64 |
+| `BYTE_ARRAY` | 32-bit length followed by bytes | ✅ | ✅ | Used for binary, strings, JSON, BSON, and arbitrary precision decimals |
+| `FIXED_LEN_BYTE_ARRAY` | Schema-defined fixed byte width | ✅ | ✅ | Used for UUID, Float16, decimals, and fixed binary data |
+
+### Logical Types
+
+The exact physical constraints and sort orders are defined by Apache's
+[Logical Types specification](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md).
+
+| Logical type | Physical representation | Arrow result | JS read | JS write | Notes |
+| ------------ | ----------------------- | ------------ | ------- | -------- | ----- |
+| `STRING` | `BYTE_ARRAY` | Utf8 | ✅ | ✅ | UTF-8 validated through the logical type |
+| `ENUM` | `BYTE_ARRAY` | Utf8 | ✅ | ✅ | Semantic enum membership is application-defined |
+| `INTEGER` | `INT32` or `INT64` | Int/Uint 8, 16, 32, or 64 | ✅ | ✅ | Signedness and bit width are preserved |
+| `DECIMAL` | `INT32`, `INT64`, or byte array | Decimal128/256 | ✅ | ✅ | Precision, scale, sign, and big-endian byte representation are preserved |
+| `DATE` | `INT32` days since Unix epoch | DateDay | ✅ | ✅ | Supports dates before the epoch |
+| `TIME` | `INT32` millis or `INT64` micros/nanos | Matching Arrow Time unit | ✅ | ✅ | Retains `isAdjustedToUTC` metadata |
+| `TIMESTAMP` | `INT64` millis/micros/nanos | Matching Arrow Timestamp unit | ✅ | ✅ | Local versus instant semantics are retained in metadata |
+| `UUID` | 16-byte `FIXED_LEN_BYTE_ARRAY` | FixedSizeBinary(16) | ✅ | ✅ | Stored in network byte order |
+| `FLOAT16` | 2-byte `FIXED_LEN_BYTE_ARRAY` | Float16 | ✅ | ✅ | IEEE-754 binary16 |
+| `JSON` | `BYTE_ARRAY` | Binary/object fallback | ✅ | ✅ | Object-row reads parse JSON; raw bytes remain available |
+| `BSON` | `BYTE_ARRAY` | Binary/object fallback | ✅ | ✅ | Uses the BSON logical annotation |
+| `UNKNOWN` | Any physical type | Null | ✅ | ⚠️ | Values must be treated as null; writing is low-level only |
+| `LIST` | Three-level nested structure | List | ✅ | ⚠️ | High-level TypeScript writer support for arbitrary nested Arrow schemas is incomplete |
+| `MAP` | Repeated key/value structure | Map/struct fallback | ✅ | ⚠️ | Keys must be required; high-level writer support is incomplete |
+| `VARIANT` | Variant metadata/value byte columns | Binary plus metadata | ⚠️ | ❌ | Metadata is retained; Variant payload decoding and shredding remain roadmap items |
+| `GEOMETRY` | `BYTE_ARRAY` | Binary plus metadata | ⚠️ | ⚠️ | CRS metadata is retained; see GeoParquet for interoperable geometry tables |
+| `GEOGRAPHY` | `BYTE_ARRAY` | Binary plus metadata | ⚠️ | ⚠️ | CRS and edge interpolation metadata are retained |
+| legacy `INTERVAL` | 12-byte `FIXED_LEN_BYTE_ARRAY` | Binary/object fallback | ✅ | ✅ | Deprecated converted type retained for compatibility |
+
+## Nested Data and Nulls
+
+Parquet uses the record-shredding algorithm from the Dremel paper. Every leaf column stores:
+
+- **definition levels**, indicating how much of an optional path is present; and
+- **repetition levels**, indicating at which repeated ancestor a new value begins.
+
+Null values therefore consume definition-level entries but no value bytes. Runs of nulls are very
+compact. Lists and maps use standardized nested group layouts; legacy two-level and writer-specific
+layouts require compatibility handling.
+
+| Repetition | JS read | JS write | Meaning |
+| ---------- | ------- | -------- | ------- |
+| `REQUIRED` | ✅ | ✅ | Every parent instance has a value |
+| `OPTIONAL` | ✅ | ✅ | Definition level distinguishes null from present |
+| `REPEATED` | ✅ | ✅ | Repetition levels delimit zero or more values |
+
+The TypeScript Arrow path builds supported nested vectors directly from decoded column buffers.
+Unusual legacy nesting layouts can fall back to row assembly for correctness.
 
 ## Pages
 
-columns can be divided into pages (similar to Apache Arrow record batches) so that partial columns covering a range of rows can be read without reading the entire file.
+A column chunk contains page headers serialized with Thrift compact protocol followed by page bodies.
+Encoding is applied before optional compression. Compression is page-local, so a reader does not
+need to inflate an entire column chunk at once.
 
-## Alternatives
+| Page feature | JS read | JS write | Notes |
+| ------------ | ------- | -------- | ----- |
+| Data Page V1 | ✅ | ✅ | Levels and values share one compressed payload |
+| Data Page V2 | ✅ | ✅ | Levels remain uncompressed; value compression is independently declared |
+| Dictionary page | ✅ | ❌ | New dictionaries are not yet emitted by the TypeScript writer |
+| Optional page CRC | ⚠️ | ❌ | CRC metadata is decoded but payload verification is not yet enforced |
+| Legacy `INDEX_PAGE` | ❌ | ❌ | Deprecated and distinct from the modern page-index structures |
 
-In contrast to Arrow which is designed to minimize serialization and deserialization, Parquet is optimized for storage on disk.
+`ParquetJSWriter` selects Data Page V2 with `parquet.useDataPageV2`. The reader accepts both versions
+within the same file.
+
+## Value Encodings
+
+Encodings transform uncompressed values inside a page. A column chunk declares every encoding it
+uses, while each page identifies its actual value encoding.
+
+| Encoding | Valid targets | JS read | JS write | Status |
+| -------- | ------------- | ------- | -------- | ------ |
+| `PLAIN` | All physical types | ✅ | ✅ | Required baseline encoding |
+| `PLAIN_DICTIONARY` | All physical types | ✅ | ❌ | Deprecated dictionary identifier |
+| `RLE` | Boolean, levels, dictionary indexes | ✅ | ✅ | Writer uses it for definition/repetition levels |
+| `BIT_PACKED` | Legacy levels | ❌ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid |
+| `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ❌ | Effective for ordered integer sequences |
+| `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | ✅ | ❌ | Delta-encodes lengths followed by concatenated bytes |
+| `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ❌ | Prefix/suffix encoding for related byte strings |
+| `RLE_DICTIONARY` | All physical types | ✅ | ❌ | Modern dictionary index encoding |
+| `BYTE_STREAM_SPLIT` | `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ✅ | Transposes fixed-width bytes to improve later compression |
+| `ALP` | `FLOAT`, `DOUBLE` | ❌ | ❌ | Preview encoding in the current Apache specification |
+
+The TypeScript writer can opt individual top-level columns into byte-stream split:
+
+```typescript
+const parquet = await encode(table, ParquetJSWriter, {
+  parquet: {
+    columnEncodings: {
+      temperature: 'BYTE_STREAM_SPLIT',
+      timestamp: 'BYTE_STREAM_SPLIT'
+    }
+  }
+});
+```
 
 ## Compression
 
-Since Parquet is designed for read-write access, compression is applied per column chunk.
+Compression is selected per column chunk and applied independently to each page. Availability of a
+JavaScript fallback codec is separate from browser-native `DecompressionStream` support.
 
-A wide range of compression codecs are supported. Internal parquet compression formats.
+| Compression codec | JS read | JS write | Notes |
+| ----------------- | ------- | -------- | ----- |
+| `UNCOMPRESSED` | ✅ | ✅ | Encoding still applies |
+| `SNAPPY` | ✅ | ✅ | Common Parquet default |
+| `GZIP` | ✅ | ✅ | Native decompression is used when available |
+| `BROTLI` | ✅ | ❌ | Native or injected decoder, depending on runtime |
+| `LZO` | ❌ | ❌ | No maintained browser-capable implementation is bundled |
+| legacy `LZ4` | ✅ | ✅ | Accepts raw, framed, and Hadoop-framed legacy data |
+| `ZSTD` | ✅ | ✅ | Native when available; otherwise inject `zstd-codec` |
+| `LZ4_RAW` | ✅ | ✅ | Interoperable LZ4 block format introduced after legacy `LZ4` |
 
-| Type           | Read | Write |                                                                         |
-| -------------- | ---- | ----- | ----------------------------------------------------------------------- |
-| `UNCOMPRESSED` | ✅   | ✅    |                                                                         |
-| `GZIP`         | ✅   | ✅    |                                                                         |
-| `SNAPPY`       | ✅   | ✅    |                                                                         |
-| `BROTLI`       | ✅   | No    |                                                                         |
-| `LZO`          | ❌   | ❌    | There is currently no readily available browser-based LZO module for JS |
-| `LZ4`          | ✅   | ✅    | Reads raw blocks, framed streams, and legacy Hadoop-framed Parquet data |
-| `LZ4_RAW`      | ✅   | ✅    |                                                                         |
-| `ZSTD`         | ✅   | ✅    |                                                                         |
+Codec code is loaded lazily. This keeps the default browser bundle small and lets runtimes use native
+decompression before downloading a JavaScript fallback.
 
-## Encoding
+## Metadata, Statistics, and Indexes
 
-Some encodings are intended to improve successive column compression by organizing data so that it is less random.
+The file footer contains the schema, row-group directory, column-chunk offsets and sizes, row counts,
+codec/encoding declarations, writer identity, and arbitrary key/value metadata. Additional metadata
+can make selective reads much cheaper.
 
-The following Parquet encodings are supported:
+| Feature | JS read | JS write | Current behavior |
+| ------- | ------- | -------- | ---------------- |
+| File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetSourceLoader` |
+| Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
+| Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Exposed through `ParquetSource.getMetadata()` and usable by `rowGroupFilter` |
+| Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
+| Column index | ❌ | ❌ | Page-level min/max/null pruning is a roadmap item |
+| Offset index | ❌ | ❌ | Page locations and first-row indexes are not yet used for range planning |
+| Bloom filters | ❌ | ❌ | Split-block Bloom filter lookup and writing are roadmap items |
+| Size statistics | ❌ | ❌ | Histogram metadata from newer format versions is not yet exposed |
+| Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |
 
-| Encoding                  | Read | Write | Types                                                                                                                                                                    |
-| ------------------------- | ---- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PLAIN`                   | ✅   | ✅    | All                                                                                                                                                                      |
-| `PLAIN_DICTIONARY`        | ✅   | ✅    | All                                                                                                                                                                      |
-| `RLE_DICTIONARY`          | ✅   | ❌    | All                                                                                                                                                                      |
-| `DELTA_BINARY_PACKED`     | ✅   | ❌    | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
-| `DELTA_BYTE_ARRAY`        | ✅   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
-| `DELTA_LENGTH_BYTE_ARRAY` | ✅   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+`ParquetSourceLoader` currently prunes at row-group granularity. Page indexes and Bloom filters are
+the main remaining steps toward precise predicate-driven range reads.
 
-The TypeScript backend reads both Data Page V1 and Data Page V2. Delta encodings are decoder-only; the TypeScript writer continues to use its existing encodings.
+## Integrity and Encryption
 
-## Repetition
+| Feature | JS read | JS write | Notes |
+| ------- | ------- | -------- | ----- |
+| Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
+| Page CRC verification | ❌ | ❌ | Optional CRC fields are not yet verified or emitted |
+| Parquet modular encryption | ❌ | ❌ | Encrypted footer and encrypted-column files use the `PARE` magic value |
+| External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
-There are three repetition types in Parquet:
+## Parquet and Arrow
 
-| Repetition | Supported |
-| ---------- | --------- |
-| `REQUIRED` | ✅        |
-| `OPTIONAL` | ✅        |
-| `REPEATED` | ✅        |
+Parquet is optimized for storage and selective I/O; Arrow is optimized for in-memory analytics.
+They share a columnar model but not a byte layout. A performant reader must still decode levels,
+encodings, and compression and then construct Arrow validity, offset, and value buffers.
 
-### Record Shredding
+The TypeScript loader directly constructs Arrow buffers for supported primitive, byte, decimal, and
+nested columns. This avoids object-row materialization and can outperform a WebAssembly path that
+must copy or serialize data across a language boundary. See
+[JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
+for the broader tradeoffs.
 
-The optional and repeated flags allow for very flexible, nested JSON like data storage in table cells.
+## Interoperability and Roadmap
 
-The algorithm for compacting is referred to as [Record Shredding](https://www.joekearney.co.uk/posts/understanding-record-shredding)
+The compatibility suite uses checked-in files from
+[apache/parquet-testing](https://github.com/apache/parquet-testing) and differential comparisons with
+maintained browser-capable implementations. Required tests are hermetic; large and exhaustive
+corpora run in the slow lane.
 
-## Types
+The TypeScript implementation is aiming for complete stable-format read support. The largest known
+gaps are currently:
 
-TBA - This table is not complete
+1. page-index and Bloom-filter reads for page-level pruning;
+2. dictionary and delta encoding in the writer;
+3. complete high-level nested-schema writing;
+4. Variant value decoding and shredding;
+5. page CRC verification and emission; and
+6. Parquet modular encryption.
 
-| Name                | Type                                                                                            | Supported |
-| ------------------- | ----------------------------------------------------------------------------------------------- | --------- |
-| `bool`              | `BOOLEAN"`                                                                                      |           |
-| `int32`             | `INT32"`                                                                                        |           |
-| `int64`             | `INT64"`                                                                                        |           |
-| `int96`             | `INT96"`                                                                                        |           |
-| `float`             | `FLOAT"`                                                                                        |           |
-| `double`            | `DOUBLE"`                                                                                       |           |
-| `bytearray`         | `BYTE_ARRAY"`                                                                                   |           |
-| `FixedLenByteArray` | `FIXED_LEN_BYTE_ARRAY, length=10"`                                                              |           |
-| `utf8`              | `BYTE_ARRAY, convertedtype=UTF8, encoding=PLAIN_DICTIONARY"`                                    |           |
-| `int_8`             | `INT32, convertedtype=INT32, convertedtype=INT_8"`                                              |           |
-| `int_16`            | `INT32, convertedtype=INT_16"`                                                                  |           |
-| `int_32`            | `INT32, convertedtype=INT_32"`                                                                  |           |
-| `int_64`            | `INT64, convertedtype=INT_64"`                                                                  |           |
-| `uint_8`            | `INT32, convertedtype=UINT_8"`                                                                  |           |
-| `uint_16`           | `INT32, convertedtype=UINT_16"`                                                                 |           |
-| `uint_32`           | `INT32, convertedtype=UINT_32"`                                                                 |           |
-| `uint_64`           | `INT64, convertedtype=UINT_64"`                                                                 |           |
-| `date`              | `INT32, convertedtype=DATE"`                                                                    |           |
-| `date2`             | `INT32, convertedtype=DATE, logicaltype=DATE"`                                                  |           |
-| `timemillis`        | `INT32, convertedtype=TIME_MILLIS"`                                                             |           |
-| `timemillis2`       | `INT32, logicaltype=TIME, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`           |           |
-| `timemicros`        | `INT64, convertedtype=TIME_MICROS"`                                                             |           |
-| `timemicros2`       | `INT64, logicaltype=TIME, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`          |           |
-| `timestampmillis`   | `INT64, convertedtype=TIMESTAMP_MILLIS"`                                                        |           |
-| `timestampmillis2`  | `INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=true, logicaltype.unit=MILLIS"`      |           |
-| `timestampmicros`   | `INT64, convertedtype=TIMESTAMP_MICROS"`                                                        |           |
-| `timestampmicros2`  | `INT64, logicaltype=TIMESTAMP, logicaltype.isadjustedtoutc=false, logicaltype.unit=MICROS"`     |           |
-| `interval`          | `BYTE_ARRAY, convertedtype=INTERVAL"`                                                           |           |
-| `decimal1`          | `INT32, convertedtype=DECIMAL, scale=2, precision=9"`                                           |           |
-| `decimal2`          | `INT64, convertedtype=DECIMAL, scale=2, precision=18"`                                          |           |
-| `decimal3`          | `FIXED_LEN_BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=10, length=12"`                |           |
-| `decimal4`          | `BYTE_ARRAY, convertedtype=DECIMAL, scale=2, precision=20"`                                     |           |
-| `decimal5`          | `INT32, logicaltype=DECIMAL, logicaltype.precision=10, logicaltype.scale=2"`                    |           |
-| `parquet`           | `map, type=MAP, convertedtype=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"` |           |
-| `list`              | `MAP` convertedtype=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8                         |           |
-| `repeated           | `INT32` repetitiontype=REPEATED"`                                                               |           |
-
-## Format Structure
-
-![parquet-file-format](../images/parquet-file-format.png)
+Preview features such as ALP are tracked separately from stable-format completeness.
