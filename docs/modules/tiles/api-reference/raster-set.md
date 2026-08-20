@@ -63,13 +63,21 @@ Supported options include:
 
 Convenience factory for wrapping a loaders.gl `RasterSource`.
 
-### `loadMetadata(): Promise<RasterSourceMetadata>`
+The returned `RasterSet` infers the source's raster data, request, and metadata types. This lets a
+GeoZarr source preserve named selections such as `selection: {time: 6}` through request callbacks,
+refetch policies, and the accepted `currentRequest`, while GeoTIFF callers continue to use the
+common `bands` and `interleaved` parameters.
+
+### `loadMetadata(): Promise<MetadataT>`
 
 Loads and caches source metadata.
 
-### `requestRaster(parameters: GetRasterParameters, debounceTime?): number`
+### `requestRaster(parameters: ParametersT, debounceTime?): number`
 
 Schedules a viewport-driven raster request and returns the assigned request id.
+
+`GetRasterParameters.selection` optionally maps non-spatial dimension names to integer indices.
+Individual sources define the supported names and may expose a narrower request type.
 
 ### `subscribe(listener): () => void`
 
@@ -87,8 +95,8 @@ Available callbacks include:
 
 ### Properties
 
-- `metadata: RasterSourceMetadata | null`
-- `raster: RasterData | null`
-- `currentRequest: RasterSetRequest | null`
-- `rasterSource: RasterSource | null`
+- `metadata: MetadataT | null`
+- `raster: DataT | null`
+- `currentRequest: RasterSetRequest<DataT, ParametersT> | null`
+- `rasterSource: RasterSource<DataT, ParametersT, MetadataT> | null`
 - `isLoaded: boolean`

@@ -146,6 +146,9 @@ Release Date: 2026
 **@loaders.gl/tiles**
 
 - `RasterSet` NEW - loading manager for `RasterSource` implementations with metadata caching, debounced viewport requests, and loading lifecycle callbacks.
+- `RasterSet` now preserves source-specific request and metadata types, including named
+  `GetRasterParameters.selection` indices for time, vertical level, and other non-spatial raster
+  dimensions.
 
 **@loaders.gl/zarr**
 

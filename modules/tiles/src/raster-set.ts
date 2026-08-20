@@ -10,57 +10,76 @@ import type {
 } from '@loaders.gl/loader-utils';
 
 /** Accepted raster request currently retained by {@link RasterSet}. */
-export type RasterSetRequest<DataT = RasterData> = {
+export type RasterSetRequest<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters
+> = {
   /** Unique request id assigned by the manager. */
   requestId: number;
   /** Raster request parameters that produced the accepted raster payload. */
-  parameters: GetRasterParameters;
+  parameters: ParametersT;
   /** Raster retained as the current output. */
   raster: DataT;
 };
 
 /** Arguments supplied to {@link RasterSetBaseProps.shouldRefetch}. */
-export type RasterSetShouldRefetchArgs<DataT = RasterData> = {
+export type RasterSetShouldRefetchArgs<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> = {
   /** Current accepted request retained by the raster manager, if any. */
-  currentRequest: RasterSetRequest<DataT> | null;
+  currentRequest: RasterSetRequest<DataT, ParametersT> | null;
   /** Source metadata resolved by {@link RasterSet.loadMetadata}, if available. */
-  metadata: RasterSourceMetadata | null;
+  metadata: MetadataT | null;
   /** Candidate raster request parameters under evaluation. */
-  nextParameters: GetRasterParameters;
+  nextParameters: ParametersT;
 };
 
 /** Configuration shared by all {@link RasterSet} instances. */
-export type RasterSetBaseProps<DataT = RasterData> = {
+export type RasterSetBaseProps<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> = {
   /** Callback used to load source metadata. */
-  getMetadata: () => Promise<RasterSourceMetadata>;
+  getMetadata: () => Promise<MetadataT>;
   /** Callback used to load raster data for a viewport-derived request. */
-  getRaster: (parameters: GetRasterParameters) => Promise<DataT>;
+  getRaster: (parameters: ParametersT) => Promise<DataT>;
   /** Debounce interval applied before issuing raster requests. */
   debounceTime?: number;
   /** Optional policy callback that can skip redundant raster requests. */
-  shouldRefetch?: (args: RasterSetShouldRefetchArgs<DataT>) => boolean;
+  shouldRefetch?: (args: RasterSetShouldRefetchArgs<DataT, ParametersT, MetadataT>) => boolean;
 };
 
 /** Options for creating a {@link RasterSet}. */
-export type RasterSetProps<DataT = RasterData> = Partial<RasterSetBaseProps<DataT>> & {
+export type RasterSetProps<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> = Partial<RasterSetBaseProps<DataT, ParametersT, MetadataT>> & {
   /** Optional loaders.gl raster source backing this manager. */
-  rasterSource?: RasterSource | null;
+  rasterSource?: RasterSource<DataT, ParametersT, MetadataT> | null;
 };
 
 /** Subscription callbacks emitted by {@link RasterSet}. */
-export type RasterSetListener<DataT = RasterData> = {
+export type RasterSetListener<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> = {
   /** Fired when metadata/raster loading starts or stops. */
   onLoadingStateChange?: (isLoading: boolean) => void;
   /** Fired when source metadata resolves successfully. */
-  onMetadataLoad?: (metadata: RasterSourceMetadata) => void;
+  onMetadataLoad?: (metadata: MetadataT) => void;
   /** Fired when metadata loading fails. */
   onMetadataLoadError?: (error: Error) => void;
   /** Fired when a new raster request is issued. */
-  onRasterLoadStart?: (requestId: number, parameters: GetRasterParameters) => void;
+  onRasterLoadStart?: (requestId: number, parameters: ParametersT) => void;
   /** Fired when a raster request resolves and becomes current. */
-  onRasterLoad?: (request: RasterSetRequest<DataT>) => void;
+  onRasterLoad?: (request: RasterSetRequest<DataT, ParametersT>) => void;
   /** Fired when a raster request fails. */
-  onRasterLoadError?: (requestId: number, error: Error, parameters: GetRasterParameters) => void;
+  onRasterLoadError?: (requestId: number, error: Error, parameters: ParametersT) => void;
   /** Fired when metadata or the current raster changes. */
   onUpdate?: () => void;
 };
@@ -84,14 +103,24 @@ const DEFAULT_RASTERSET_PROPS: Required<Omit<RasterSetProps, 'rasterSource'>> = 
   shouldRefetch: () => true
 };
 
-/** Shared raster request manager used by viewport-driven raster examples and layers. */
-export class RasterSet<DataT = RasterData> {
+/**
+ * Shared raster request manager used by viewport-driven raster examples and layers.
+ *
+ * @typeParam DataT Raster payload retained by the manager.
+ * @typeParam ParametersT Request parameters accepted by the source.
+ * @typeParam MetadataT Metadata returned by the source.
+ */
+export class RasterSet<
+  DataT extends RasterData = RasterData,
+  ParametersT extends GetRasterParameters = GetRasterParameters,
+  MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+> {
   /** Cached metadata returned by the backing source, if any. */
-  metadata: RasterSourceMetadata | null = null;
+  metadata: MetadataT | null = null;
 
-  private _opts: Required<RasterSetProps<DataT>>;
-  private _listeners = new Set<RasterSetListener<DataT>>();
-  private _currentRequest: RasterSetRequest<DataT> | null = null;
+  private _opts: Required<RasterSetProps<DataT, ParametersT, MetadataT>>;
+  private _listeners = new Set<RasterSetListener<DataT, ParametersT, MetadataT>>();
+  private _currentRequest: RasterSetRequest<DataT, ParametersT> | null = null;
   private _lastAcceptedRequestId = -1;
   private _nextRequestId = 0;
   private _loadCounter = 0;
@@ -100,7 +129,7 @@ export class RasterSet<DataT = RasterData> {
   private _finalized = false;
 
   /** Creates a raster manager from a source or direct callbacks. */
-  constructor(opts: RasterSetProps<DataT>) {
+  constructor(opts: RasterSetProps<DataT, ParametersT, MetadataT>) {
     this._opts = this._normalizeOptions(opts);
     if (!this._opts.rasterSource && (!opts.getRaster || !opts.getMetadata)) {
       throw new Error(
@@ -110,11 +139,18 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Convenience factory for wrapping a loaders.gl {@link RasterSource}. */
-  static fromRasterSource<DataT = RasterData>(
-    rasterSource: RasterSource,
-    opts: Omit<RasterSetProps<DataT>, 'rasterSource' | 'getRaster' | 'getMetadata'> = {}
-  ): RasterSet<DataT> {
-    return new RasterSet<DataT>({...opts, rasterSource});
+  static fromRasterSource<
+    DataT extends RasterData = RasterData,
+    ParametersT extends GetRasterParameters = GetRasterParameters,
+    MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+  >(
+    rasterSource: RasterSource<DataT, ParametersT, MetadataT>,
+    opts: Omit<
+      RasterSetProps<DataT, ParametersT, MetadataT>,
+      'rasterSource' | 'getRaster' | 'getMetadata'
+    > = {}
+  ): RasterSet<DataT, ParametersT, MetadataT> {
+    return new RasterSet<DataT, ParametersT, MetadataT>({...opts, rasterSource});
   }
 
   /** Whether the manager has no requests in flight and a current raster. */
@@ -128,23 +164,23 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Current accepted request and raster payload, if any. */
-  get currentRequest(): RasterSetRequest<DataT> | null {
+  get currentRequest(): RasterSetRequest<DataT, ParametersT> | null {
     return this._currentRequest;
   }
 
   /** Backing raster source when constructed from one. */
-  get rasterSource(): RasterSource | null {
+  get rasterSource(): RasterSource<DataT, ParametersT, MetadataT> | null {
     return this._opts.rasterSource;
   }
 
   /** Subscribes to metadata and raster lifecycle events. */
-  subscribe(listener: RasterSetListener<DataT>): () => void {
+  subscribe(listener: RasterSetListener<DataT, ParametersT, MetadataT>): () => void {
     this._listeners.add(listener);
     return () => this._listeners.delete(listener);
   }
 
   /** Updates source callbacks or debounce settings, resetting state when the source changes. */
-  setOptions(opts: RasterSetProps<DataT>): void {
+  setOptions(opts: RasterSetProps<DataT, ParametersT, MetadataT>): void {
     const previousRasterSource = this._opts.rasterSource;
     const nextOptions = this._normalizeOptions({...this._opts, ...opts});
     const sourceChanged =
@@ -165,7 +201,7 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Loads metadata from the current raster source or callbacks. */
-  async loadMetadata(): Promise<RasterSourceMetadata> {
+  async loadMetadata(): Promise<MetadataT> {
     this._startLoading();
     try {
       const metadata = await this._opts.getMetadata();
@@ -192,7 +228,7 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Debounces and issues a new raster request for the supplied parameters. */
-  requestRaster(parameters: GetRasterParameters, debounceTime = this._opts.debounceTime): number {
+  requestRaster(parameters: ParametersT, debounceTime = this._opts.debounceTime): number {
     if (!this.shouldRefetchRaster(parameters)) {
       return this._currentRequest?.requestId ?? -1;
     }
@@ -213,7 +249,7 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Returns `true` when the supplied parameters warrant a new raster fetch. */
-  shouldRefetchRaster(parameters: GetRasterParameters): boolean {
+  shouldRefetchRaster(parameters: ParametersT): boolean {
     return this._opts.shouldRefetch({
       currentRequest: this._currentRequest,
       metadata: this.metadata,
@@ -230,7 +266,7 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Loads a raster immediately and accepts it only if it is the newest completed request. */
-  private async _loadRaster(requestId: number, parameters: GetRasterParameters): Promise<void> {
+  private async _loadRaster(requestId: number, parameters: ParametersT): Promise<void> {
     if (this._finalized) {
       return;
     }
@@ -276,7 +312,9 @@ export class RasterSet<DataT = RasterData> {
   }
 
   /** Resolves current options from either a source or direct callbacks. */
-  private _normalizeOptions(opts: RasterSetProps<DataT>): Required<RasterSetProps<DataT>> {
+  private _normalizeOptions(
+    opts: RasterSetProps<DataT, ParametersT, MetadataT>
+  ): Required<RasterSetProps<DataT, ParametersT, MetadataT>> {
     const rasterSource = opts.rasterSource || null;
     return {
       ...DEFAULT_RASTERSET_PROPS,
@@ -288,22 +326,22 @@ export class RasterSet<DataT = RasterData> {
           if (rasterSource) {
             return rasterSource.getMetadata();
           }
-          return DEFAULT_RASTERSET_PROPS.getMetadata();
+          return DEFAULT_RASTERSET_PROPS.getMetadata() as Promise<MetadataT>;
         }),
       getRaster:
         opts.getRaster ||
-        ((parameters: GetRasterParameters) => {
+        ((parameters: ParametersT) => {
           if (rasterSource) {
-            return rasterSource.getRaster(parameters) as Promise<DataT>;
+            return rasterSource.getRaster(parameters);
           }
           return DEFAULT_RASTERSET_PROPS.getRaster(parameters) as Promise<DataT>;
         }),
       debounceTime: opts.debounceTime ?? DEFAULT_RASTERSET_PROPS.debounceTime,
       shouldRefetch:
         (opts.shouldRefetch as
-          | ((args: RasterSetShouldRefetchArgs<DataT>) => boolean)
+          | ((args: RasterSetShouldRefetchArgs<DataT, ParametersT, MetadataT>) => boolean)
           | undefined) ||
-        ((args: RasterSetShouldRefetchArgs<DataT>) =>
+        ((args: RasterSetShouldRefetchArgs<DataT, ParametersT, MetadataT>) =>
           DEFAULT_RASTERSET_PROPS.shouldRefetch(args as RasterSetShouldRefetchArgs))
     };
   }

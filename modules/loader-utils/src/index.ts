@@ -278,6 +278,7 @@ export type {
   RasterBoundingBox,
   RasterViewport,
   RasterData,
+  RasterSelection,
   GetRasterParameters,
   RasterOverview,
   RasterSourceMetadata

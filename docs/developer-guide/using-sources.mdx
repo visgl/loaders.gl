@@ -65,10 +65,16 @@ Use it when a source needs to:
 
 - accept a viewport request instead of a tile index
 - return typed raster values rather than browser image objects
+- select named non-spatial dimensions such as time or vertical level
 - preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
 
-`GeoTIFFSourceLoader` is the first built-in `RasterSource`. It accepts a `RasterViewport`, returns
-`RasterData`, and preserves native CRS metadata instead of reprojecting in v1.
+`GeoTIFFSourceLoader` and `GeoZarrSourceLoader` are built-in `RasterSource` implementations. Both
+accept a `RasterViewport` and return `RasterData`. GeoTIFF requests can select numeric bands, while
+GeoZarr requests can use the common `selection` map for named dimensions declared by the source.
+
+`RasterSource` is generic over its raster data, request parameters, and metadata. Higher-level
+managers such as `RasterSet` preserve those source-specific types while retaining defaults for
+applications that only need the common raster contract.
 
 ## Options
 
