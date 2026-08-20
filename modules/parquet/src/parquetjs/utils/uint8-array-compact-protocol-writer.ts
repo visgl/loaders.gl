@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as thrift from 'thrift';
+import * as thrift from './thrift-runtime';
 import {concatUint8Arrays, encodeUtf8, toUint8Array, writeDoubleLE} from './binary-utils';
 
 const COMPACT_TYPE_STOP = 0x00;

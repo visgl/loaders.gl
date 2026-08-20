@@ -156,7 +156,7 @@ test('ParquetReader#fruits.parquet', async t => {
         price: 2.6,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 1000 * i),
-        finger: Buffer.from("FNORD"),
+        finger: new TextEncoder().encode('FNORD'),
         inter: { months: 42, days: 23, milliseconds: 777 },
         stock: [
           { quantity: [10], warehouse: "A" },
@@ -171,7 +171,7 @@ test('ParquetReader#fruits.parquet', async t => {
         price: 2.7,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 2000 * i),
-        finger: Buffer.from("FNORD"),
+        finger: new TextEncoder().encode('FNORD'),
         inter: { months: 42, days: 23, milliseconds: 777 },
         stock: [
           { quantity: [50, 33], warehouse: "X" }
@@ -184,7 +184,7 @@ test('ParquetReader#fruits.parquet', async t => {
         price: 4.2,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 8000 * i),
-        finger: Buffer.from("FNORD"),
+        finger: new TextEncoder().encode('FNORD'),
         inter: { months: 42, days: 23, milliseconds: 777 },
         stock: [
           { quantity: [42], warehouse: "f" },
@@ -199,7 +199,7 @@ test('ParquetReader#fruits.parquet', async t => {
         price: 3.2,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 6000 * i),
-        finger: Buffer.from("FNORD"),
+        finger: new TextEncoder().encode('FNORD'),
         inter: { months: 42, days: 23, milliseconds: 777 },
         colour: [ 'yellow' ],
         meta_json: { shape: 'curved' }
