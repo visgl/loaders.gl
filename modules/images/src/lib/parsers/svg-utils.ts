@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // SVG parsing has limitations, e.g:
 // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
 

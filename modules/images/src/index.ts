@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
 export type {ImageLoaderOptions} from './image-loader';

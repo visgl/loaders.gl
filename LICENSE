@@ -24,6 +24,12 @@ THE SOFTWARE.
 
 Copyright (c) 2015 Uber Technologies, Inc.
 
+Portions of modules/images/src/lib/category-api/binary-image-api.ts are based on
+binary-gltf-utils (https://github.com/Qantas94Heavy/binary-gltf-utils) under the
+MIT License reproduced above.
+
+Copyright (c) 2016-17 Karl Cheng
+
 loaders.gl includes certain files from Cesium (https://github.com/CesiumGS/cesium)
 under the Apache 2.0 License, including files in modules/3d-tiles and modules/math.
 

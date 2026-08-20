@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Image loading/saving for browser and Node.js
 import {ImageDataType} from '../../types';
 import {getImageSize} from '../category-api/parsed-image-api';

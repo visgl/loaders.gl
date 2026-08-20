@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ImageDataType} from '../../types';
 import {assert} from '@loaders.gl/loader-utils';
 import {getBinaryImageMetadata} from '../category-api/binary-image-api';
