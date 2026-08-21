@@ -15,7 +15,7 @@ import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed}
 import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
 import {
   preprocess3DTileContent,
-  type Preprocessed3DTileContent,
+  type Preprocessed3DTileContent
 } from './lib/parsers/preprocess-3d-tile-content';
 
 /**
@@ -191,10 +191,7 @@ function validateRequiredExtensions(tilesetJson: Tiles3DTilesetJSON): void {
  */
 async function parseTile(
   arrayBuffer: ArrayBuffer,
-  preprocessedContent: Exclude<
-    Preprocessed3DTileContent,
-    {contentType: 'externalTileset'}
-  >,
+  preprocessedContent: Exclude<Preprocessed3DTileContent, {contentType: 'externalTileset'}>,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTileContent> {
