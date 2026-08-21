@@ -19,6 +19,8 @@ For an explicit tileset, the pipeline is:
 
 Detection happens after fetching. It removes naming assumptions from parsing; it does not discover a resource URL before the tileset supplies one.
 
+Implicit subtree availability uses the same source boundary but a different lifecycle. Initial tileset parsing resolves and records the subtree template without fetching it. Visibility and SSE later select a concrete coordinate URL, apply inherited queries, and request it through the source's normal resolver. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees).
+
 ## Structure-first content detection
 
 `Tiles3DLoader` uses the resource itself as the authority:
@@ -27,6 +29,7 @@ Detection happens after fetching. It removes naming assumptions from parsing; it
 | --- | --- | --- |
 | `b3dm`, `i3dm`, `cmpt`, or `pnts` four-byte magic | Legacy 3D Tiles binary content | Uses the matching tile parser. Composite children inspect their own embedded magic. |
 | `glTF` four-byte magic | Binary glTF (`glb`) | Uses the glTF tile-content path. |
+| `subt` four-byte magic requested by an implicit reference | Parsed subtree availability | Materializes one hierarchy chunk and leaves child subtrees lazy. |
 | JSON with object-valued `asset` and `root` properties | External tileset | Validates required extensions, normalizes headers, and attaches the nested hierarchy. |
 | JSON with an object-valued `asset` property and no tileset `root` | JSON glTF (`gltf`) | Uses the glTF tile-content path. |
 

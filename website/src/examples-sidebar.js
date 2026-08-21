@@ -34,6 +34,7 @@ const sidebars = {
         'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
+        'geospatial/overture-parquet',
         'geospatial/geopackage',
         'geospatial/kml',
         'geospatial/gpx',

@@ -344,6 +344,7 @@ export class TilesetTraverser {
   // Ignores visibility.
   executeEmptyTraversal(root: Tile3D, frameState: FrameState): boolean {
     let allDescendantsLoaded = true;
+    let hasPendingLazyChildren = false;
     const stack = this._emptyTraversalStack;
     stack.push(root);
 
@@ -352,6 +353,12 @@ export class TilesetTraverser {
 
       const traverse = !tile.hasRenderContent && this.canTraverse(tile, frameState);
       const emptyLeaf = !tile.hasRenderContent && tile.children.length === 0;
+      if (tile.header.implicitSubtree) {
+        // An unresolved implicit boundary is not a proven empty leaf. Treating it as loaded would
+        // allow REPLACE traversal to drop its ancestor before availability and content are known.
+        hasPendingLazyChildren = true;
+        allDescendantsLoaded = false;
+      }
 
       // Traversal stops but the tile does not have content yet
       // There will be holes if the parent tries to refine to its children, so don't refine
@@ -374,6 +381,6 @@ export class TilesetTraverser {
         }
       }
     }
-    return root.hasEmptyContent || allDescendantsLoaded;
+    return (root.hasEmptyContent && !hasPendingLazyChildren) || allDescendantsLoaded;
   }
 }

@@ -18,6 +18,7 @@ import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata'
 import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression';
 import * as KHR_meshopt_compression from '../extensions/KHR_meshopt_compression';
 import * as EXT_texture_webp from '../extensions/EXT_texture_webp';
+import * as EXT_texture_avif from '../extensions/EXT_texture_avif';
 import * as KHR_texture_basisu from '../extensions/KHR_texture_basisu';
 import * as KHR_draco_mesh_compression from '../extensions/KHR_draco_mesh_compression';
 import * as KHR_texture_transform from '../extensions/KHR_texture_transform';
@@ -30,7 +31,11 @@ import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_meta
 
 type GLTFExtensionPlugin = {
   name: string;
-  preprocess?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions, context) => void;
+  preprocess?: (
+    gltfData: {json: GLTF},
+    options: GLTFLoaderOptions,
+    context
+  ) => void | Promise<void>;
   decode?: (
     gltfData: {
       json: GLTF;
@@ -57,6 +62,7 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_mesh_features,
   KHR_meshopt_compression,
   EXT_meshopt_compression,
+  EXT_texture_avif,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided
   KHR_texture_basisu,
@@ -74,10 +80,10 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
 const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [EXT_structural_metadata, EXT_mesh_features];
 
 /** Call before any resource loading starts */
-export function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
+export async function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
   const extensions = EXTENSIONS.filter(extension => useExtension(extension.name, options));
   for (const extension of extensions) {
-    extension.preprocess?.(gltf, options, context);
+    await extension.preprocess?.(gltf, options, context);
   }
 }
 

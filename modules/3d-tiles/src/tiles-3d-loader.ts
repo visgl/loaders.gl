@@ -25,6 +25,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
        * bytes and JSON structure; explicit booleans assert the expected category.
        */
       isTileset?: boolean | 'auto';
+      /** Maximum parsed implicit-subtree resources retained by each 3D Tiles source. */
+      maximumCachedSubtrees?: number;
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
     };
@@ -45,6 +47,7 @@ export const Tiles3DLoader = {
       loadGLTF: true,
       decodeQuantizedPositions: false,
       isTileset: 'auto',
+      maximumCachedSubtrees: 32,
       assetGltfUpAxis: null
     }
   }

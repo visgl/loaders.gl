@@ -21,6 +21,12 @@ For each viewport, `Tileset3D`:
 
 Loading is asynchronous. A traversal may initially select an available ancestor, request descendants, and select those descendants in a later traversal after their content becomes ready. Applications should call `update()` or `selectTiles()` as the camera changes; `onTileLoad` can trigger another update after loads complete.
 
+## Implicit Hierarchies
+
+An implicit root initially has no materialized runtime children. It carries a lazy subtree reference that still supplies a bounding volume and geometric error, so traversal can cull it and calculate SSE before any availability request. Only a visible, in-volume tile that still needs refinement requests its subtree. The request installs one subtree's available headers and leaves deeper subtree roots lazy.
+
+While a child subtree is loading, its existing tile stays the traversal boundary. This preserves safe `REPLACE` coverage and normal `ADD` accumulation instead of speculatively traversing descendants whose availability is not known. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees) for level indexing, cache behavior, and diagnostics.
+
 ## Refinement Modes
 
 `REPLACE` means descendants eventually replace the parent's representation. Traditional replacement traversal keeps a parent visible until every required child is ready, preventing holes. That safety rule is why these child requests can be prioritized center-first but are not paused by moving-camera foveated deferral.

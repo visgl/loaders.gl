@@ -131,6 +131,24 @@ test('Tile3D#destroys', t => {
   t.end();
 });
 
+test('Tile3D#preserves viewer request volume when an implicit root materializes without content', t => {
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    content: {uri: 'content/{level}.b3dm'},
+    viewerRequestVolume: {sphere: [0, 0, 0, 2]}
+  });
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    contentUrl: undefined,
+    content: undefined,
+    type: 'empty'
+  });
+
+  t.ok(tile._viewerRequestVolume, 'retains the inherited traversal request-volume restriction');
+  t.end();
+});
+
 test('Tile3D#throws if boundingVolume is undefined', t => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
 
