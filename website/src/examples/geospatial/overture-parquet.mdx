@@ -1,0 +1,16 @@
+---
+title: "Overture GeoParquet Query"
+hide_title: true
+---
+
+import {ClientExample} from '../../components';
+
+# Overture GeoParquet query in the browser
+
+<div style={{height: 'calc(100vh - var(--ifm-navbar-height))'}}>
+  <ClientExample kind="overture-parquet">
+    [**`ParquetDatasetSource`**](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) combines live STAC discovery, selective GeoParquet range reads, Arrow batches, and deck.gl rendering without a server-side query runtime.
+
+    Overture's ZSTD pages decode in the Parquet source worker using native `DecompressionStream` support when available and a lightweight JavaScript fallback otherwise.
+  </ClientExample>
+</div>
