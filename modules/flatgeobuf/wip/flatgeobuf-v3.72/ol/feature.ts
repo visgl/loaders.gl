@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 import OlFeature from 'ol/Feature.js';
 
 import { Feature } from '../flat-geobuf/feature.js';

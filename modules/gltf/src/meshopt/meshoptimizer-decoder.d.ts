@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * Compatibility declaration for meshoptimizer's decoder-only export.
  *

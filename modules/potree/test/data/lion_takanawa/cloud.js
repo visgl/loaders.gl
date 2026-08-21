@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 {
 	"version": "1.7",
 	"octreeDir": "data",

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import {expect, test} from 'vitest';
 
 test('TextEncoder', () => {

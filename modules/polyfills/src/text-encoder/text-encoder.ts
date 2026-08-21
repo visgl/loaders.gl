@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Unlicense
+
 // @ts-nocheck
 /* eslint-disable */
 

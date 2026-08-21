@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // @ts-nocheck
 import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/loader-utils';
