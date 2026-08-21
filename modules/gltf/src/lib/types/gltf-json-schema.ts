@@ -901,6 +901,14 @@ export type GLTF_EXT_texture_webp = {
 };
 
 /**
+ * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif
+ */
+export type GLTF_EXT_texture_avif = {
+  source: GLTFId;
+  extras?: any;
+};
+
+/**
  * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_texture_dds
  */
 export type GLTF_MSFT_texture_dds = {
