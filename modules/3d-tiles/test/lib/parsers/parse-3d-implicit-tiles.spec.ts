@@ -68,7 +68,7 @@ test('parseImplicitTiles#supports subtrees without content availability', async 
     loaderOptions: {}
   });
 
-  t.equal(tile.contentUrl, '');
+  t.equal(tile.contentUrl, undefined, 'omits a render URL when content availability is absent');
   t.equal(tile.children.length, 0);
   t.end();
 });
