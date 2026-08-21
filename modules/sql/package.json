@@ -26,6 +26,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./sql-predicate": {
+      "types": "./dist/sql-predicate.d.ts",
+      "import": "./dist/sql-predicate.js",
+      "require": "./dist/sql-predicate.cjs"
+    },
     "./sql-predicate-zod": {
       "types": "./dist/sql-predicate-zod.d.ts",
       "import": "./dist/sql-predicate-zod.js",

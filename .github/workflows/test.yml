@@ -235,11 +235,12 @@ jobs:
       - name: Build workers
         run: yarn run build-workers
 
-      - name: Run affected or full slow suite
+      - name: Run full slow suite for comparable coverage
         env:
           VITEST_MAX_WORKERS: 1
         run: >-
           yarn test-slow-affected-cover
+          --all
           --reporter=default
           --reporter=blob
           --outputFile.blob=.vitest-reports/blob-slow.json

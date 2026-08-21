@@ -421,18 +421,28 @@ async function encodeDataPage(
   /* encode repetition and definition levels */
   let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
-    rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: getBitWidth(column.rLevelMax)
-      // disableEnvelope: false
-    });
+    rLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.rlevels as number[],
+      {
+        bitWidth: getBitWidth(column.rLevelMax)
+        // disableEnvelope: false
+      }
+    );
   }
 
   let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
-    dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: getBitWidth(column.dLevelMax)
-      // disableEnvelope: false
-    });
+    dLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.dlevels as number[],
+      {
+        bitWidth: getBitWidth(column.dLevelMax)
+        // disableEnvelope: false
+      }
+    );
   }
 
   /* encode values */
@@ -492,18 +502,28 @@ async function encodeDataPageV2(
   /* encode repetition and definition levels */
   let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
-    rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: getBitWidth(column.rLevelMax),
-      disableEnvelope: true
-    });
+    rLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.rlevels as number[],
+      {
+        bitWidth: getBitWidth(column.rLevelMax),
+        disableEnvelope: true
+      }
+    );
   }
 
   let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
-    dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: getBitWidth(column.dLevelMax),
-      disableEnvelope: true
-    });
+    dLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.dlevels as number[],
+      {
+        bitWidth: getBitWidth(column.dLevelMax),
+        disableEnvelope: true
+      }
+    );
   }
 
   /* build page header */

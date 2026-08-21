@@ -199,7 +199,12 @@ export interface ParquetReaderContext {
   retainByteArrayViews?: boolean;
   /** Decode primitive values into typed column buffers when their physical type permits it. */
   useTypedValueBuffers?: boolean;
+  /** Decode repetition and definition levels into compact unsigned typed arrays. */
+  useTypedLevelBuffers?: boolean;
 }
+
+/** Mutable storage for decoded Parquet repetition and definition levels. */
+export type ParquetLevelBuffer = number[] | Uint8Array | Uint16Array | Uint32Array;
 
 export interface ParquetPageData {
   dlevels: number[];
@@ -234,8 +239,8 @@ export class ParquetRowGroup {
 
 /** Holds the data for one column chunk */
 export interface ParquetColumnChunk {
-  dlevels: number[];
-  rlevels: number[];
+  dlevels: ParquetLevelBuffer;
+  rlevels: ParquetLevelBuffer;
   values: ParquetValueBuffer;
   count: number;
   pageHeaders: PageHeader[];

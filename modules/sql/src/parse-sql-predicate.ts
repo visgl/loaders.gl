@@ -39,8 +39,11 @@ export function parseSQLPredicate(
 
 /** Dependency-free recursive-descent parser for one SQL predicate expression. */
 class SQLPredicateParser {
+  /** Token stream parsed by this parser instance. */
   private readonly tokens: readonly SQLPredicateToken[];
+  /** Named scalar parameters available to the expression. */
   private readonly parameters: Readonly<Record<string, SQLPredicateValue>>;
+  /** Current index in the token stream. */
   private position = 0;
 
   constructor(source: string, parameters: Readonly<Record<string, SQLPredicateValue>>) {

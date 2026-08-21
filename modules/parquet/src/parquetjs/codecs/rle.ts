@@ -130,9 +130,12 @@ export function decodeValues(
       const outputCount = Math.min(runValueCount, count - outputOffset);
       const value = decodeRepeatedRun(cursor, bitWidth);
       const resolvedValue = resolveDictionaryValue(value, options.dictionary);
-      for (let index = 0; index < outputCount; index++) {
-        output[initialOutputOffset + outputOffset + index] = resolvedValue;
-      }
+      fillParquetValueBuffer(
+        output,
+        resolvedValue,
+        initialOutputOffset + outputOffset,
+        initialOutputOffset + outputOffset + outputCount
+      );
       outputOffset += outputCount;
     }
   }
@@ -161,9 +164,7 @@ function decodeBitPackedRun(
 
   if (bitWidth === 0) {
     const resolvedValue = resolveDictionaryValue(0, dictionary);
-    for (let index = 0; index < outputCount; index++) {
-      output[outputOffset + index] = resolvedValue;
-    }
+    fillParquetValueBuffer(output, resolvedValue, outputOffset, outputOffset + outputCount);
     return;
   }
   if (bitWidth <= 24) {
@@ -206,6 +207,24 @@ function decodeBitPackedRun(
     packedBits >>= bitWidthBigInt;
     packedBitCount -= bitWidth;
   }
+}
+
+/** Fills a decoder destination while preserving bigint typed-array semantics. */
+function fillParquetValueBuffer(
+  output: ParquetValueBuffer,
+  value: unknown,
+  start: number,
+  end: number
+): void {
+  if (output instanceof BigInt64Array) {
+    output.fill(typeof value === 'bigint' ? value : BigInt(value as number), start, end);
+    return;
+  }
+  if (Array.isArray(output)) {
+    output.fill(value, start, end);
+    return;
+  }
+  output.fill(Number(value), start, end);
 }
 
 /** Decodes common narrow bit widths with a fast 32-bit reservoir. */

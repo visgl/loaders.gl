@@ -8,6 +8,8 @@ import {ParquetJSLoader, ParquetJSWriter} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 
+import {readInt64LE, readUInt64LE} from '../src/parquetjs/utils/binary-utils';
+
 const EXACT_INT64_VALUES = [9007199254740993n, -9007199254740993n, 9223372036854775807n];
 
 /** Creates a physical INT64 Parquet fixture containing values that cannot be represented as numbers. */
@@ -50,6 +52,16 @@ test('ParquetJSLoader preserves physical INT64 values in Arrow Int64 vectors', a
     expect(table.data.schema.fields[0].type).toBeInstanceOf(arrow.Int64);
     expect(Array.from(table.data.getChildAt(0) || [])).toEqual(EXACT_INT64_VALUES);
   }
+});
+
+test('Parquet INT64 statistics retain values beyond safe integers', () => {
+  const signedBytes = new Uint8Array(8);
+  const unsignedBytes = new Uint8Array(8);
+  new DataView(signedBytes.buffer).setBigInt64(0, -9007199254740993n, true);
+  new DataView(unsignedBytes.buffer).setBigUint64(0, 18446744073709551615n, true);
+
+  expect(readInt64LE(signedBytes, 0)).toBe(-9007199254740993n);
+  expect(readUInt64LE(unsignedBytes, 0)).toBe(18446744073709551615n);
 });
 
 test('ParquetJSWriter rejects unsafe number inputs instead of silently corrupting INT64 values', async () => {

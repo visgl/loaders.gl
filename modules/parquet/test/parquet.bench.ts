@@ -105,7 +105,21 @@ export async function parquetBench(suite) {
     preload(ParquetLoader, {core: {worker: false}})
   ]);
   const implementations = createParquetBenchmarkImplementations(typescriptLoader, wasmLoader);
+  const wideScaleArrayBuffer = await createWideScaleParquetFixture();
   const scenarios: ParquetBenchmarkScenario[] = [
+    {
+      name: 'Wide nullable mixed 100K × 20 → Arrow',
+      arrayBuffer: wideScaleArrayBuffer,
+      shape: 'arrow-table'
+    },
+    {
+      name: 'Wide nullable mixed projection 100K × 5 → Arrow',
+      arrayBuffer: wideScaleArrayBuffer,
+      columns: ['id', 'count_0', 'metric_0', 'category_0', 'label_0'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 fails to materialize this projected mixed schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
     {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
     {
       name: 'PLAIN nullable primitive projection → Arrow',
@@ -223,6 +237,69 @@ export async function parquetBench(suite) {
   //     core: {worker: false}
   //   });
   // });
+}
+
+/** Encodes a wide mixed-type fixture that exposes decode allocation and scaling costs. */
+async function createWideScaleParquetFixture(): Promise<ArrayBuffer> {
+  const rowCount = 100_000;
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'id', type: 'int32', nullable: false},
+        ...Array.from({length: 6}, (_, index) => ({
+          name: `count_${index}`,
+          type: 'int32' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 6}, (_, index) => ({
+          name: `metric_${index}`,
+          type: 'float64' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 4}, (_, index) => ({
+          name: `category_${index}`,
+          type: 'utf8' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 3}, (_, index) => ({
+          name: `label_${index}`,
+          type: 'utf8' as const,
+          nullable: true
+        }))
+      ],
+      metadata: {}
+    },
+    data: Array.from({length: rowCount}, (_, rowIndex) => {
+      const row: Record<string, unknown> = {id: rowIndex};
+      for (let columnIndex = 0; columnIndex < 6; columnIndex++) {
+        row[`count_${columnIndex}`] =
+          (rowIndex + columnIndex) % 17 === 0 ? null : rowIndex * (columnIndex + 1);
+        row[`metric_${columnIndex}`] =
+          (rowIndex + columnIndex) % 23 === 0
+            ? null
+            : rowIndex * 0.125 + columnIndex / 10;
+      }
+      for (let columnIndex = 0; columnIndex < 4; columnIndex++) {
+        row[`category_${columnIndex}`] =
+          (rowIndex + columnIndex) % 29 === 0
+            ? null
+            : `category-${columnIndex}-${rowIndex % 32}`;
+      }
+      for (let columnIndex = 0; columnIndex < 3; columnIndex++) {
+        row[`label_${columnIndex}`] =
+          (rowIndex + columnIndex) % 31 === 0
+            ? null
+            : `tenant/${columnIndex}/record/${rowIndex}`;
+      }
+      return row;
+    })
+  };
+
+  return await encode(table, ParquetJSWriter, {
+    worker: false,
+    parquet: {dictionary: 'auto', pageSize: 64 * 1024, rowGroupSize: 25_000}
+  });
 }
 
 /** Adds an exact predicate and hidden-filter-column throughput case at meaningful scale. */

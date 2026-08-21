@@ -34,6 +34,8 @@ export type ParquetReaderProps = {
   retainByteArrayViews?: boolean;
   /** Decode supported primitive columns into typed buffers instead of boxed JavaScript arrays. */
   useTypedValueBuffers?: boolean;
+  /** Decode repetition and definition levels into compact unsigned typed arrays. */
+  useTypedLevelBuffers?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
 };
@@ -61,6 +63,7 @@ export class ParquetReader {
     preserveBinary: false,
     retainByteArrayViews: false,
     useTypedValueBuffers: false,
+    useTypedLevelBuffers: false,
     signal: undefined
   };
 
@@ -300,7 +303,8 @@ export class ParquetReader {
       // Options - TBD is this the right place for these?
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
-      useTypedValueBuffers: this.props.useTypedValueBuffers
+      useTypedValueBuffers: this.props.useTypedValueBuffers,
+      useTypedLevelBuffers: this.props.useTypedLevelBuffers
     };
 
     let dictionary: any[] | undefined;

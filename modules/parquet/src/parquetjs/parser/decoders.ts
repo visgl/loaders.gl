@@ -10,6 +10,7 @@ import {
   ParquetReaderContext,
   ParquetPageData,
   ParquetLogicalType,
+  ParquetLevelBuffer,
   ParquetTimeUnit,
   ParquetType,
   PrimitiveType,
@@ -37,8 +38,8 @@ type ParquetPageDecodeTarget = {
   values: ParquetValueBuffer;
   valueOffset: number;
   dictionary: readonly unknown[];
-  rlevels: number[];
-  dlevels: number[];
+  rlevels: ParquetLevelBuffer;
+  dlevels: ParquetLevelBuffer;
   levelOffset: number;
 };
 
@@ -70,14 +71,8 @@ export async function decodeDataPages(
 
   const outputCapacity = expectedLevelCount ?? 0;
   const data: ParquetColumnChunk = {
-    rlevels:
-      context.rLevelMax > 0
-        ? new Array<number>(outputCapacity)
-        : new Array<number>(outputCapacity).fill(0),
-    dlevels:
-      context.dLevelMax > 0
-        ? new Array<number>(outputCapacity)
-        : new Array<number>(outputCapacity).fill(0),
+    rlevels: createParquetLevelBuffer(context, outputCapacity, context.rLevelMax),
+    dlevels: createParquetLevelBuffer(context, outputCapacity, context.dLevelMax),
     values: createParquetColumnValueBuffer(context, outputCapacity),
     pageHeaders: [],
     count: 0
@@ -132,8 +127,8 @@ export async function decodeDataPages(
     data.pageHeaders.push(page.pageHeader);
   }
 
-  data.rlevels.length = levelOffset;
-  data.dlevels.length = levelOffset;
+  data.rlevels = trimParquetLevelBuffer(data.rlevels, levelOffset);
+  data.dlevels = trimParquetLevelBuffer(data.dlevels, levelOffset);
   data.values = trimParquetValueBuffer(data.values, valueOffset);
 
   return data;
@@ -664,7 +659,7 @@ function decodeLevels(
   levelMax: number,
   encoding: ParquetCodec,
   disableEnvelope: boolean,
-  output?: number[],
+  output?: ParquetLevelBuffer,
   outputOffset = 0
 ): number[] {
   if (levelMax === 0) {
@@ -677,6 +672,33 @@ function decodeLevels(
     outputOffset
   }) as number[];
   return output ? [] : levels;
+}
+
+/** Allocates compact unsigned storage for repetition and definition levels. */
+function createParquetLevelBuffer(
+  context: ParquetReaderContext,
+  capacity: number,
+  levelMax: number
+): ParquetLevelBuffer {
+  if (!context.useTypedLevelBuffers || capacity === 0) {
+    return levelMax > 0 ? new Array<number>(capacity) : new Array<number>(capacity).fill(0);
+  }
+  if (levelMax <= 0xff) {
+    return new Uint8Array(capacity);
+  }
+  if (levelMax <= 0xffff) {
+    return new Uint16Array(capacity);
+  }
+  return new Uint32Array(capacity);
+}
+
+/** Restricts an overallocated level buffer to the number of decoded levels. */
+function trimParquetLevelBuffer(levels: ParquetLevelBuffer, length: number): ParquetLevelBuffer {
+  if (Array.isArray(levels)) {
+    levels.length = length;
+    return levels;
+  }
+  return levels.subarray(0, length) as ParquetLevelBuffer;
 }
 
 /** Returns whether an encoding stores RLE dictionary indices instead of physical values. */

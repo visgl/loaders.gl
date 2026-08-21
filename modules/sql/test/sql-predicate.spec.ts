@@ -9,7 +9,7 @@ import {
   parseSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
   validateSQLPredicate
-} from '@loaders.gl/sql';
+} from '@loaders.gl/sql/sql-predicate';
 import {SQLPredicateSchema} from '@loaders.gl/sql/sql-predicate-zod';
 
 test('parseSQLPredicate emits a CQL2-shaped AST with SQL precedence', () => {

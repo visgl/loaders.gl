@@ -10,6 +10,8 @@ import {PrimitiveType} from '../schema/declare';
 export type ParquetValueBuffer =
   | unknown[]
   | Uint8Array
+  | Uint16Array
+  | Uint32Array
   | Int32Array
   | BigInt64Array
   | Float32Array

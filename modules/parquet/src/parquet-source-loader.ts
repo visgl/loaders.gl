@@ -69,6 +69,7 @@ import {
   readFloatLE,
   readInt32LE,
   readInt64LE,
+  readUInt64LE,
   toUint8Array
 } from './parquetjs/utils/binary-utils';
 import {fieldIndexOf} from './parquetjs/utils/read-utils';
@@ -570,7 +571,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
           ranges,
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
-          predicate,
+          predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           preserveBinary: Boolean(this.options.parquet?.preserveBinary)
         },
         workerOptions
@@ -810,7 +811,8 @@ function decodeStatisticsValueSafely(bytes: Uint8Array, field: ParquetField): un
         primitiveValue = readInt32LE(bytes, 0);
         break;
       case 'INT64':
-        primitiveValue = readInt64LE(bytes, 0);
+        primitiveValue =
+          field.originalType === 'UINT_64' ? readUInt64LE(bytes, 0) : readInt64LE(bytes, 0);
         break;
       case 'FLOAT':
         primitiveValue = readFloatLE(bytes, 0);
