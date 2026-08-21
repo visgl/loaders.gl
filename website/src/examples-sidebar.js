@@ -34,12 +34,16 @@ const sidebars = {
         'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
-        'geospatial/overture-parquet',
         'geospatial/geopackage',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx'
       ]
+    },
+    {
+      type: 'category',
+      label: 'Cloud-Native Queries',
+      items: ['geospatial/overture-parquet', 'geospatial/fsq-places']
     },
     {
       type: 'category',

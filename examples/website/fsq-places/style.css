@@ -1,0 +1,227 @@
+.fsq-example {
+  --panel-background: rgba(2, 28, 49, 0.94);
+  --panel-border: rgba(151, 218, 248, 0.24);
+  --text: #ffffff;
+  --muted: #b9d1dc;
+  --accent: #2ed9c3;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  overflow: hidden;
+  background: #022b4f;
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.fsq-panel {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  left: 20px;
+  width: min(410px, calc(100% - 40px));
+  max-height: calc(100% - 40px);
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  background: var(--panel-background);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(18px);
+}
+
+.fsq-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.fsq-brand span {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.fsq-brand img {
+  display: block;
+  width: 170px;
+  height: auto;
+}
+
+.fsq-eyebrow {
+  color: #97daf8;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.fsq-panel h1 {
+  margin: 8px 0 10px;
+  color: var(--text);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.08;
+}
+
+.fsq-copy,
+.fsq-doc-copy,
+.fsq-credit {
+  color: var(--muted);
+  font-size: 0.81rem;
+  line-height: 1.48;
+}
+
+.fsq-copy,
+.fsq-doc-copy {
+  margin: 0 0 14px;
+}
+
+.fsq-doc-copy p {
+  margin: 0;
+}
+
+.fsq-doc-copy a,
+.fsq-credit a {
+  color: var(--accent);
+}
+
+.fsq-panel button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #022b4f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.fsq-panel button:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.fsq-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(2, 43, 79, 0.25);
+  border-top-color: #022b4f;
+  border-radius: 50%;
+  animation: fsq-spin 0.7s linear infinite;
+}
+
+.fsq-status,
+.fsq-error {
+  margin: 12px 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.fsq-status {
+  border: 1px solid rgba(46, 217, 195, 0.26);
+  background: rgba(46, 217, 195, 0.09);
+}
+
+.fsq-error {
+  border: 1px solid rgba(255, 122, 122, 0.4);
+  background: rgba(255, 122, 122, 0.12);
+  color: #ffd1d1;
+}
+
+.fsq-telemetry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.fsq-metric {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(151, 218, 248, 0.14);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.fsq-metric span,
+.fsq-metric strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fsq-metric span {
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.fsq-metric strong {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fsq-credit {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(151, 218, 248, 0.15);
+  font-size: 0.7rem;
+}
+
+.fsq-credit strong {
+  color: #97daf8;
+}
+
+.fsq-partners {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 5px 0 4px;
+}
+
+.fsq-partners a {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fsq-partners img {
+  display: block;
+  width: auto;
+  height: 25px;
+  max-width: 150px;
+}
+
+.fsq-partners .fsq-fused-logo {
+  filter: invert(1);
+}
+
+@keyframes fsq-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .fsq-panel {
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-height: 58%;
+    padding: 16px;
+  }
+}
