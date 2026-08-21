@@ -52,9 +52,6 @@ import {WebMercatorViewport} from '@deck.gl/core';
 const tilesetUrl = 'https://assets.cesium.ion.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 
-// if your tileset file doesn't have the .json extension, set `3d-tiles.isTileset` to true
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
-
 const tileset3d = new Tileset3D(tilesetJson, {
   throttleRequests: false,
   onTileLoad: (tile) => console.log(tile)
@@ -100,7 +97,7 @@ Both schemas enforce the same structural constraints, including that a tileset c
 
 | Option               | Type             | Default | Description                                                                                                                                                           |
 | -------------------- | ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `3d-tiles.isTileset` | `Bool` or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                       |
+| `3d-tiles.isTileset` | `Boolean` or `auto` | `auto` | Selects tileset-header or render-content parsing. `auto` inspects binary magic and JSON structure, independent of the URL extension or MIME type. Explicit `true` or `false` asserts the expected category and rejects a mismatch. |
 | `3d-tiles.headers`   | `Object`         | `null`  | Used to load data from server                                                                                                                                         |
 | `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
 | `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
@@ -118,6 +115,8 @@ For i3dm and b3dm tiles:
 | `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
 If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options. Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+
+See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
 
 ## Notes about Tile Types
 

@@ -6,7 +6,6 @@
 // TODO maybe setPathPrefix is enough?
 import ALIASES from '../../test/aliases';
 import {_addAliases} from '@loaders.gl/loader-utils';
-
 _addAliases(ALIASES);
 
 /**
@@ -71,6 +70,12 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
     await jsonBench(suite);
   }
 
+  if (shouldRunBenchmark('3d-tiles')) {
+    const {default: tiles3dBench} = await import('@loaders.gl/3d-tiles/test/tiles-3d-loader.bench');
+    await tiles3dBench(suite);
+  }
+
+  // await mvtBench(suite);
   if (shouldRunBenchmark('loader-utils')) {
     const {default: loaderUtilsBench} = await import(
       '@loaders.gl/loader-utils/test/loader-utils.bench'
