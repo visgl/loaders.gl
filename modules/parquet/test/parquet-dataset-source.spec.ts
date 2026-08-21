@@ -66,6 +66,35 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('emits the first file while lazy discovery of later files is blocked', async () => {
+    let releaseDiscovery: (() => void) | undefined;
+    const discoveryBlocked = new Promise<void>(resolve => {
+      releaseDiscovery = resolve;
+    });
+    const source = new ParquetDatasetSource(
+      async function* () {
+        yield {data: westernFile, id: 'first'};
+        await discoveryBlocked;
+        yield {data: easternFile, id: 'second'};
+      },
+      {core: {worker: false}, parquetDataset: {fileConcurrency: 2}}
+    );
+    const iterator = source.read()[Symbol.asyncIterator]();
+
+    const first = await Promise.race([
+      iterator.next(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('first batch waited for later discovery')), 1000)
+      )
+    ]);
+    expect(first.value?.datasetFileId).toBe('first');
+
+    releaseDiscovery?.();
+    const remaining = await collectBatches({[Symbol.asyncIterator]: () => iterator});
+    expect(remaining.map(batch => batch.datasetFileId)).toEqual(['second']);
+    await source.close();
+  });
+
   test('passes discovery constraints to providers and conservatively prunes descriptors', async () => {
     let providerQuery: ParquetDatasetFileQuery | undefined;
     const source = new ParquetDatasetSource(
@@ -182,6 +211,16 @@ describe('ParquetDatasetSource', () => {
     await expect(collectBatches(invalidConcurrencySource.read())).rejects.toThrow(
       'fileConcurrency must be a positive integer'
     );
+
+    const oneShotFiles = (function* () {
+      yield {data: westernFile};
+    })();
+    expect(
+      () =>
+        new ParquetDatasetSource(
+          oneShotFiles as unknown as ConstructorParameters<typeof ParquetDatasetSource>[0]
+        )
+    ).toThrow('reusable descriptor array or a provider function');
   });
 
   test('aborts active reads when closed and rejects later operations', async () => {

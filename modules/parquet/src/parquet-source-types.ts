@@ -401,8 +401,8 @@ export type ParquetDatasetFileProvider = (
   query: ParquetDatasetFileQuery
 ) => ParquetDatasetFileCollection | Promise<ParquetDatasetFileCollection>;
 
-/** Static descriptors or a lazy catalog-backed provider accepted by `ParquetDatasetSource`. */
-export type ParquetDatasetFiles = ParquetDatasetFileCollection | ParquetDatasetFileProvider;
+/** Reusable static descriptors or a lazy catalog-backed provider accepted by the dataset source. */
+export type ParquetDatasetFiles = readonly ParquetDatasetFile[] | ParquetDatasetFileProvider;
 
 /** Options for constructing a multi-file `ParquetDatasetSource`. */
 export type ParquetDatasetSourceOptions = ParquetSourceLoaderOptions & {

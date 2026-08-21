@@ -82,6 +82,11 @@ export class ParquetDatasetSource {
     options: ParquetDatasetSourceOptions = {},
     coreApi?: CoreAPI
   ) {
+    if (!Array.isArray(files) && typeof files !== 'function') {
+      throw new Error(
+        'ParquetDatasetSource files must be a reusable descriptor array or a provider function'
+      );
+    }
     this.files = files;
     this.options = options;
     this.coreApi = coreApi;
@@ -136,6 +141,7 @@ export class ParquetDatasetSource {
     let nextSchedulePosition = 0;
     let nextYieldPosition = 0;
     let providerComplete = false;
+    let discoveryError: unknown;
     const fileConcurrency = normalizeFileConcurrency(
       options.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
     );
@@ -155,10 +161,20 @@ export class ParquetDatasetSource {
       scheduledReads.set(position, {queue, task});
     };
 
-    try {
-      while (scheduledReads.size < fileConcurrency && !providerComplete) {
-        await scheduleNext();
+    const fillAvailableSlots = async (): Promise<void> => {
+      try {
+        while (scheduledReads.size < fileConcurrency && !providerComplete) {
+          await scheduleNext();
+        }
+      } catch (error) {
+        discoveryError = error;
+        providerComplete = true;
       }
+    };
+
+    try {
+      await scheduleNext();
+      let discoveryPromise = fillAvailableSlots();
 
       while (scheduledReads.size > 0) {
         const scheduledRead = scheduledReads.get(nextYieldPosition);
@@ -173,7 +189,15 @@ export class ParquetDatasetSource {
         }
         await scheduledRead.task;
         scheduledReads.delete(nextYieldPosition++);
-        await scheduleNext();
+        await discoveryPromise;
+        if (discoveryError !== undefined) {
+          throw discoveryError;
+        }
+        discoveryPromise = fillAvailableSlots();
+      }
+      await discoveryPromise;
+      if (discoveryError !== undefined) {
+        throw discoveryError;
       }
     } finally {
       readContext.abortController.abort();
@@ -301,7 +325,7 @@ async function getFileCollection(
   files: ParquetDatasetFiles,
   query: ParquetDatasetFileQuery
 ): Promise<ParquetDatasetFileCollection> {
-  return typeof files === 'function' ? await (files as ParquetDatasetFileProvider)(query) : files;
+  return typeof files === 'function' ? await files(query) : files;
 }
 
 /** Attaches dataset-level descriptor provenance without copying Arrow buffers. */

@@ -65,7 +65,7 @@ const source = createDataSource(url, [ParquetSourceLoader], {});
 ## Multi-file datasets
 
 `ParquetDatasetSource` composes a lazy file provider with one selective `ParquetSource` per selected
-file. The provider may be backed by STAC, a database, an application manifest, or a static list;
+file. The provider may be backed by STAC, a database, an application manifest, or a static array;
 the Parquet module does not depend on any catalog protocol.
 
 ```ts
@@ -121,6 +121,10 @@ later files in memory. Each batch adds `datasetFileIndex`, `datasetFileId`, `dat
 `datasetFileMetadata` without copying its Arrow buffers. Predicates, projection, batching, range
 requests, worker decoding, cancellation, and exact row provenance remain the responsibility of each
 child `ParquetSource`.
+
+Static descriptors must be supplied as a reusable array. Streaming or one-shot iterables belong
+inside a provider function so every `getSchema()` or `read()` operation receives a fresh collection.
+Catalog discovery for later files overlaps decoding and consumption of the first selected file.
 
 Files must expose the same field schema by default. Set `parquetDataset.validateSchema` to `false`
 only when the caller intentionally handles heterogeneous Arrow batches. `getTelemetry()` reports
