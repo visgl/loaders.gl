@@ -588,7 +588,9 @@ export class Tile3D {
     this._initializeLodMetric(materializedHeader);
     this._updateLodMetricScale();
     this._initializeBoundingVolumes(this.header);
-    this._initializeContent(materializedHeader);
+    // Use the merged header so inherited viewer-request-volume metadata remains available when a
+    // materialized implicit tile has no render content of its own.
+    this._initializeContent(this.header);
   }
 
   // Unloads the tile's content.
