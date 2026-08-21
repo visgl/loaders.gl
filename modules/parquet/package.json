@@ -52,6 +52,11 @@
       "import": "./dist/parquet-source-loader.js",
       "require": "./dist/parquet-source-loader.cjs"
     },
+    "./parquet-dataset-source": {
+      "types": "./dist/parquet-dataset-source.d.ts",
+      "import": "./dist/parquet-dataset-source.js",
+      "require": "./dist/parquet-dataset-source.cjs"
+    },
     "./parquet-worker.js": {
       "import": "./dist/parquet-worker.js"
     },

@@ -21,6 +21,7 @@ import './parquetjs/reader.spec';
 import './parquet-arrow-loader.spec';
 import './parquet-arrow-writer.spec';
 import './parquet-source-loader.spec';
+import './parquet-dataset-source.spec';
 import './parquet-source-capabilities.spec';
 
 import './parquet-loader.spec';

@@ -356,3 +356,103 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
   /** Byte-range scheduling and diagnostics configuration. */
   rangeRequests?: ParquetRangeRequestOptions;
 };
+
+/** Four- or six-dimensional extent used for conservative Parquet dataset file pruning. */
+export type ParquetDatasetBoundingBox =
+  | readonly [number, number, number, number]
+  | readonly [number, number, number, number, number, number];
+
+/** Scalar value carried by a partitioned Parquet dataset file descriptor. */
+export type ParquetDatasetPartitionValue = string | number | boolean | null;
+
+/** One independently range-readable file in a logical Parquet dataset. */
+export type ParquetDatasetFile = {
+  /** URL or Blob passed to the child `ParquetSource`. */
+  readonly data: string | Blob;
+  /** Stable application-defined file identifier. */
+  readonly id?: string;
+  /** Conservative spatial extent used before opening the file. */
+  readonly bbox?: ParquetDatasetBoundingBox;
+  /** Hive-style or catalog-derived partition values. */
+  readonly partitions?: Readonly<Record<string, ParquetDatasetPartitionValue>>;
+  /** Opaque catalog metadata copied into emitted batch provenance. */
+  readonly metadata?: Readonly<Record<string, unknown>>;
+};
+
+/** File-discovery constraints passed to a Parquet dataset provider. */
+export type ParquetDatasetFileQuery = {
+  /** Spatial extent used by catalog-backed providers and local descriptor pruning. */
+  bbox?: ParquetDatasetBoundingBox;
+  /** Exact partition values, or accepted values for each requested partition. */
+  partitions?: Readonly<
+    Record<string, ParquetDatasetPartitionValue | readonly ParquetDatasetPartitionValue[]>
+  >;
+  /** Aborts catalog traversal or file discovery. */
+  signal?: AbortSignal;
+};
+
+/** Synchronous or asynchronous collection returned by a Parquet dataset provider. */
+export type ParquetDatasetFileCollection =
+  | Iterable<ParquetDatasetFile>
+  | AsyncIterable<ParquetDatasetFile>;
+
+/** Lazy catalog adapter that discovers Parquet files for one dataset query. */
+export type ParquetDatasetFileProvider = (
+  query: ParquetDatasetFileQuery
+) => ParquetDatasetFileCollection | Promise<ParquetDatasetFileCollection>;
+
+/** Static descriptors or a lazy catalog-backed provider accepted by `ParquetDatasetSource`. */
+export type ParquetDatasetFiles = ParquetDatasetFileCollection | ParquetDatasetFileProvider;
+
+/** Options for constructing a multi-file `ParquetDatasetSource`. */
+export type ParquetDatasetSourceOptions = ParquetSourceLoaderOptions & {
+  parquetDataset?: {
+    /** Maximum files read concurrently. Defaults to 4. */
+    fileConcurrency?: number;
+    /** Require every selected file to have the same field schema. Defaults to true. */
+    validateSchema?: boolean;
+  };
+};
+
+/** Options for one multi-file Parquet dataset read. */
+export type ParquetDatasetReadOptions = Omit<ParquetSourceReadOptions, 'rowGroups' | 'signal'> &
+  ParquetDatasetFileQuery & {
+    /** Maximum files read concurrently for this operation. */
+    fileConcurrency?: number;
+  };
+
+/** Dataset and file provenance attached to an emitted Arrow batch. */
+export type ParquetDatasetBatchProvenance = ParquetBatchProvenance & {
+  /** Zero-based descriptor position in provider output, before local pruning. */
+  readonly datasetFileIndex: number;
+  /** Stable descriptor identifier, falling back to child source identity. */
+  readonly datasetFileId: string;
+  /** Partition values supplied by the file descriptor. */
+  readonly datasetPartitions?: Readonly<Record<string, ParquetDatasetPartitionValue>>;
+  /** Opaque catalog metadata supplied by the file descriptor. */
+  readonly datasetFileMetadata?: Readonly<Record<string, unknown>>;
+};
+
+/** Arrow batch emitted by `ParquetDatasetSource.read()`. */
+export type ParquetDatasetBatch = ArrowTableBatch<ParquetDatasetBatchProvenance> &
+  ParquetDatasetBatchProvenance;
+
+/** Cumulative discovery, pruning, output, and child-source counters for one dataset source. */
+export type ParquetDatasetTelemetry = {
+  /** File descriptors returned by the provider. */
+  filesDiscovered: number;
+  /** File descriptors retained after local pruning. */
+  filesSelected: number;
+  /** Files rejected using descriptor bounding boxes. */
+  filesPrunedByBoundingBox: number;
+  /** Files rejected using descriptor partition values. */
+  filesPrunedByPartitions: number;
+  /** Child Parquet sources opened. */
+  filesOpened: number;
+  /** Arrow batches emitted across all files. */
+  batchesEmitted: number;
+  /** Rows emitted across all files. */
+  rowsEmitted: number;
+  /** Aggregated child-source telemetry for completed or failed file reads. */
+  parquet: ParquetTelemetry;
+};
