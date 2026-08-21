@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {JSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 import {earcut} from '@math.gl/polygon';

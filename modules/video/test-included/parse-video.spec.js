@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test, {testIfBrowser} from 'test/utils/vitest-tape';
 
 import parseVideo, {parseVideoBlob} from '../src/lib/parsers/parse-video';

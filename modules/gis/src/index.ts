@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Types from `@loaders.gl/schema`
 export type {Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
 export {GIS_CONVERTERS} from './converters';
