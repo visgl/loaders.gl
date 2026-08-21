@@ -26,6 +26,8 @@ import {
   readFloatLE,
   readInt32LE,
   readInt64LE,
+  readUInt32LE,
+  readUInt64LE,
   toUint8Array
 } from '../parquetjs/utils/binary-utils';
 import {Uint8ArrayCompactProtocol} from '../parquetjs/utils/uint8-array-compact-protocol';
@@ -113,9 +115,10 @@ export async function createParquetPagePruningPlan(
     selectedColumnChunks.map(async columnChunk => {
       const path = columnChunk.meta_data!.path_in_schema;
       const pathKey = path.join('.');
-      const offsetIndexRange = getIndexRange(
+      const offsetIndexRange = getParquetIndexRange(
         columnChunk.offset_index_offset,
-        columnChunk.offset_index_length
+        columnChunk.offset_index_length,
+        file.size
       );
       if (!offsetIndexRange) {
         return;
@@ -137,9 +140,10 @@ export async function createParquetPagePruningPlan(
       if (path.length !== 1 || !predicateColumns.has(path[0])) {
         return;
       }
-      const columnIndexRange = getIndexRange(
+      const columnIndexRange = getParquetIndexRange(
         columnChunk.column_index_offset,
-        columnChunk.column_index_length
+        columnChunk.column_index_length,
+        file.size
       );
       if (!columnIndexRange) {
         return;
@@ -343,10 +347,10 @@ function decodeColumnIndex(
   return pages.map((_page, pageIndex) => ({
     min: columnIndex.null_pages[pageIndex]
       ? undefined
-      : decodeStatisticsValue(columnIndex.min_values[pageIndex], field),
+      : decodeParquetPageStatisticsValue(columnIndex.min_values[pageIndex], field),
     max: columnIndex.null_pages[pageIndex]
       ? undefined
-      : decodeStatisticsValue(columnIndex.max_values[pageIndex], field),
+      : decodeParquetPageStatisticsValue(columnIndex.max_values[pageIndex], field),
     nullCount:
       columnIndex.null_counts?.[pageIndex] !== undefined
         ? Number(columnIndex.null_counts[pageIndex])
@@ -358,18 +362,20 @@ function decodeColumnIndex(
   }));
 }
 
-/** Decodes one physical statistics value and applies its Parquet logical annotation. */
-function decodeStatisticsValue(bytes: Uint8Array, field: ParquetField): unknown {
+/** Decodes one physical page-index statistic and applies its Parquet logical annotation. */
+export function decodeParquetPageStatisticsValue(bytes: Uint8Array, field: ParquetField): unknown {
   let primitiveValue: unknown;
   switch (field.primitiveType) {
     case 'BOOLEAN':
       primitiveValue = Boolean(bytes[0]);
       break;
     case 'INT32':
-      primitiveValue = readInt32LE(bytes, 0);
+      primitiveValue =
+        field.originalType === 'UINT_32' ? readUInt32LE(bytes, 0) : readInt32LE(bytes, 0);
       break;
     case 'INT64':
-      primitiveValue = readInt64LE(bytes, 0);
+      primitiveValue =
+        field.originalType === 'UINT_64' ? readUInt64LE(bytes, 0) : readInt64LE(bytes, 0);
       break;
     case 'FLOAT':
       primitiveValue = readFloatLE(bytes, 0);
@@ -431,10 +437,11 @@ function isSafeFlatPageSelection(
   );
 }
 
-/** Validates one optional footer index byte range. */
-function getIndexRange(
+/** Validates one optional footer index byte range against the containing file. */
+export function getParquetIndexRange(
   offsetValue: ColumnChunk['offset_index_offset'],
-  lengthValue: number | undefined
+  lengthValue: number | undefined,
+  fileSize: number
 ): {offset: number; length: number} | undefined {
   if (offsetValue === undefined || lengthValue === undefined) {
     return undefined;
@@ -443,8 +450,11 @@ function getIndexRange(
   if (
     !Number.isSafeInteger(offset) ||
     !Number.isSafeInteger(lengthValue) ||
+    !Number.isSafeInteger(fileSize) ||
     offset < 0 ||
-    lengthValue <= 0
+    lengthValue <= 0 ||
+    fileSize < 0 ||
+    offset > fileSize - lengthValue
   ) {
     return undefined;
   }

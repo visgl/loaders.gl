@@ -74,6 +74,7 @@ import {
   readFloatLE,
   readInt32LE,
   readInt64LE,
+  readUInt32LE,
   readUInt64LE,
   toUint8Array
 } from './parquetjs/utils/binary-utils';
@@ -899,7 +900,8 @@ function decodeStatisticsValueSafely(bytes: Uint8Array, field: ParquetField): un
         primitiveValue = Boolean(bytes[0]);
         break;
       case 'INT32':
-        primitiveValue = readInt32LE(bytes, 0);
+        primitiveValue =
+          field.originalType === 'UINT_32' ? readUInt32LE(bytes, 0) : readInt32LE(bytes, 0);
         break;
       case 'INT64':
         primitiveValue =
