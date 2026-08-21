@@ -20,6 +20,6 @@ import './parquet-arrow-loader.spec';
 import './parquet-arrow-writer.spec';
 
 import './parquet-json-loader.spec';
+import './parquet-js-loader.spec';
 import './geoparquet-loader.spec';
 // import './parquet-json-columnar-loader.spec';
-

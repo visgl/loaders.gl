@@ -1,0 +1,31 @@
+# Splats
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.5-blue.svg?style=flat-square" alt="From-v4.5" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
+
+The `@loaders.gl/splats` module loads binary Gaussian splat files for rendering,
+processing, or paged level-of-detail streaming.
+
+## Installation
+
+```bash
+npm install @loaders.gl/core @loaders.gl/splats
+```
+
+## Loaders
+
+| Loader                                                                    | Description                                               |
+| ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [`SPLATLoader`](/docs/modules/splats/api-reference/splat-loader)          | Loads raw `.splat` Gaussian splat files.                  |
+| [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader)        | Loads GaussianSplats3D `.ksplat` files from full buffers. |
+| [`SPZLoader`](/docs/modules/splats/api-reference/spz-loader)              | Loads Niantic Spatial `.spz` files from full buffers.     |
+| [`RADLoader`](/docs/modules/splats/api-reference/rad-source-loader)       | Loads Spark `.rad` metadata from full buffers.            |
+| [`RADSourceLoader`](/docs/modules/splats/api-reference/rad-source-loader) | Creates a source for Spark `.rad` metadata and chunks.    |
+
+## Formats
+
+| Format                                                            | Description                                         |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
+| [SPLAT / KSPLAT / SPZ / RAD](/docs/modules/splats/formats/splats) | Binary Gaussian splat formats for real-time scenes. |

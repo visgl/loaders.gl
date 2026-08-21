@@ -55,6 +55,10 @@
           "modules/parquet/api-reference/parquet-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
+          "modules/splats/api-reference/splat-loader",
+          "modules/splats/api-reference/ksplat-loader",
+          "modules/splats/api-reference/spz-loader",
+          "modules/splats/api-reference/rad-source-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
           "modules/shapefile/api-reference/shapefile-loader",
           "modules/terrain/api-reference/terrain-loader",
@@ -121,6 +125,7 @@
       "modules/draco/formats/draco",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
+      "modules/splats/formats/splats",
       "modules/flatgeobuf/formats/flatgeobuf",
       "modules/json/formats/geojson",
       "modules/json/formats/geojson-geometry",
@@ -392,6 +397,11 @@
         "type": "category",
         "label": "@loaders.gl/ply",
         "items": ["modules/ply/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/splats",
+        "items": ["modules/splats/README"]
       },
       {
         "type": "category",

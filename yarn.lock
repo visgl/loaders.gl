@@ -5079,6 +5079,7 @@ __metadata:
     "@loaders.gl/gis": "npm:4.5.0-alpha.1"
     "@loaders.gl/loader-utils": "npm:4.5.0-alpha.1"
     "@loaders.gl/schema": "npm:4.5.0-alpha.1"
+    "@loaders.gl/schema-utils": "npm:4.5.0-alpha.1"
     "@loaders.gl/wkt": "npm:4.5.0-alpha.1"
     "@probe.gl/log": "npm:^4.1.1"
     "@types/node-int64": "npm:^0.4.29"
@@ -5244,6 +5245,21 @@ __metadata:
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
+  languageName: unknown
+  linkType: soft
+
+"@loaders.gl/splats@workspace:modules/splats":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/splats@workspace:modules/splats"
+  dependencies:
+    "@loaders.gl/compression": "npm:4.5.0-alpha.1"
+    "@loaders.gl/loader-utils": "npm:4.5.0-alpha.1"
+    "@loaders.gl/schema": "npm:4.5.0-alpha.1"
+    apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
+    zstd-codec: "npm:^0.1.0"
+  peerDependencies:
+    "@loaders.gl/core": ~4.5.0-alpha.1
   languageName: unknown
   linkType: soft
 
@@ -19649,6 +19665,7 @@ __metadata:
     pre-push: "npm:^0.1.1"
     puppeteer: "npm:^23.4.0"
     tap-spec: "npm:^5.0.0"
+    zod: "npm:^4.1.12"
   languageName: unknown
   linkType: soft
 
@@ -29587,7 +29604,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zstd-codec@npm:^0.1, zstd-codec@npm:^0.1.4":
+"zod@npm:^4.1.12":
+  version: 4.4.3
+  resolution: "zod@npm:4.4.3"
+  checksum: 10c0/7ea31b558e88f9faf44f31dd185e2e1cbf51fed3081787fb96cc2534749b50c0acfc6da7f0922a7353ed092dd358c7d50c28ea96c94d04af64191bd33152eca3
+  languageName: node
+  linkType: hard
+
+"zstd-codec@npm:^0.1, zstd-codec@npm:^0.1.0, zstd-codec@npm:^0.1.4":
   version: 0.1.5
   resolution: "zstd-codec@npm:0.1.5"
   checksum: 10c0/8b7e6d9ce86f00fc4ea16c949aab5538505a1f3f1a9c7c095b2a7308b4ed894deec7bdb2c614e1486a337abdce09a6e56282dc0e39fe9f880953b094f8c7810b

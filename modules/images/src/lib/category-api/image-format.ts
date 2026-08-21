@@ -19,7 +19,7 @@ const MIME_TYPES = [
 ];
 
 /** Only one round of tests is performed */
-const mimeTypeSupportedPromise: Promise<Set<string>> | null = null;
+let mimeTypeSupportedPromise: Promise<Set<string>> | null = null;
 
 /** Run-time browser detection of file formats requires async tests for most precise results */
 export async function getSupportedImageFormats(): Promise<Set<string>> {
@@ -27,6 +27,12 @@ export async function getSupportedImageFormats(): Promise<Set<string>> {
     return await mimeTypeSupportedPromise;
   }
 
+  mimeTypeSupportedPromise = getSupportedImageFormatsAsync();
+  return await mimeTypeSupportedPromise;
+}
+
+/** Detects the image MIME types that the active runtime can decode. */
+async function getSupportedImageFormatsAsync(): Promise<Set<string>> {
   const supportedMimeTypes = new Set<string>();
   for (const mimeType of MIME_TYPES) {
     const supported = isBrowser
@@ -36,7 +42,6 @@ export async function getSupportedImageFormats(): Promise<Set<string>> {
       supportedMimeTypes.add(mimeType);
     }
   }
-
   return supportedMimeTypes;
 }
 

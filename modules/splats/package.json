@@ -1,0 +1,93 @@
+{
+  "name": "@loaders.gl/splats",
+  "version": "4.5.0-alpha.1",
+  "description": "Framework-independent loaders for Gaussian splat formats",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "point cloud",
+    "gaussian splats",
+    "splat",
+    "ksplat"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./splat-loader": {
+      "types": "./dist/splat-loader.d.ts",
+      "import": "./dist/splat-loader.js"
+    },
+    "./ksplat-loader": {
+      "types": "./dist/ksplat-loader.d.ts",
+      "import": "./dist/ksplat-loader.js"
+    },
+    "./spz-loader": {
+      "types": "./dist/spz-loader.d.ts",
+      "import": "./dist/spz-loader.js"
+    },
+    "./rad-loader": {
+      "types": "./dist/rad-loader.d.ts",
+      "import": "./dist/rad-loader.js"
+    },
+    "./rad-source-loader": {
+      "types": "./dist/rad-source-loader.d.ts",
+      "import": "./dist/rad-source-loader.js"
+    },
+    "./rad-zod-schema": {
+      "types": "./dist/rad-zod-schema.d.ts",
+      "import": "./dist/rad-zod-schema.js",
+      "require": "./dist/rad-zod-schema.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./rad-metadata.schema.json": "./dist/rad-metadata.schema.json",
+    "./radc-metadata.schema.json": "./dist/radc-metadata.schema.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADMetadataJSONSchema --output ./dist/rad-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/rad-metadata.schema.json --title 'loaders.gl Spark RAD metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADChunkMetadataJSONSchema --output ./dist/radc-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/radc-metadata.schema.json --title 'loaders.gl Spark RADC chunk metadata'",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+  },
+  "dependencies": {
+    "@loaders.gl/compression": "4.5.0-alpha.1",
+    "@loaders.gl/loader-utils": "4.5.0-alpha.1",
+    "@loaders.gl/schema": "4.5.0-alpha.1",
+    "apache-arrow": ">= 17.0.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "zstd-codec": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.5.0-alpha.1"
+  }
+}

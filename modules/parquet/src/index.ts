@@ -30,6 +30,11 @@ export type {ParquetArrowLoaderOptions} from './parquet-arrow-loader';
 export {ParquetArrowLoader, ParquetArrowWorkerLoader} from './parquet-arrow-loader';
 export {ParquetArrowWriter} from './parquet-arrow-writer';
 
+// Experimental TypeScript-backed Parquet parser. The existing ParquetLoader aliases retain
+// their current behavior for 4.5 compatibility.
+export type {ParquetJSLoaderOptions} from './parquet-js-loader';
+export {ParquetJSLoader} from './parquet-js-loader';
+
 // EXPERIMENTAL - expose the internal parquetjs API
 
 export {preloadCompressions} from './parquetjs/compression';

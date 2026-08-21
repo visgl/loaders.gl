@@ -33,6 +33,10 @@
     },
     "./parquet-worker.js": {
       "import": "./dist/parquet-worker.js"
+    },
+    "./parquet-js-loader": {
+      "types": "./dist/parquet-js-loader.d.ts",
+      "import": "./dist/parquet-js-loader.js"
     }
   },
   "sideEffects": false,

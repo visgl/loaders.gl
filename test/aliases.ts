@@ -39,6 +39,7 @@ function makeAliases() {
     '@loaders.gl/potree/test': resolve('./modules/potree/test'),
     '@loaders.gl/shapefile/test': resolve('./modules/shapefile/test'),
     '@loaders.gl/schema/test': resolve('./modules/schema/test'),
+    '@loaders.gl/splats/test': resolve('./modules/splats/test'),
     '@loaders.gl/terrain/test': resolve('./modules/terrain/test'),
     '@loaders.gl/textures/test': resolve('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolve('./apps/tile-converter/test'),

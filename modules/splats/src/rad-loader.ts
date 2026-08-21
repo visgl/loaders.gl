@@ -1,0 +1,22 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {parseRADHeader} from './lib/parse-rad';
+import type {RADMetadata} from './lib/parse-rad';
+import {RADLoader as RADLoaderMetadata} from './rad-loader-types';
+
+export {parseRADChunkHeader, parseRADHeader, tryParseRADHeader} from './lib/parse-rad';
+export {
+  parseRADChunk,
+  parseRADChunkToGaussianSplats,
+  type RADChunkDecodeOptions
+} from './lib/parse-rad-chunk';
+
+/** Parser-bearing loader for Spark `.rad` paged LoD Gaussian splat container metadata. */
+export const RADLoaderWithParser = {
+  ...RADLoaderMetadata,
+  parse: async (arrayBuffer: ArrayBuffer) => parseRADHeader(arrayBuffer),
+  parseSync: (arrayBuffer: ArrayBuffer) => parseRADHeader(arrayBuffer)
+} as const satisfies LoaderWithParser<RADMetadata, never, LoaderOptions>;

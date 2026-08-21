@@ -1,5 +1,13 @@
 # CHANGELOG for loaders.gl
 
+## v4.5
+
+### v4.5.0-alpha.1
+
+- feat(splats): add SPLAT, KSPLAT, SPZ, RAD, and RAD source loaders
+- feat(parquet): add an experimental TypeScript-backed Parquet loader
+- fix(gltf): support per-texture UV transforms and AVIF texture sources
+
 ## v4.4
 
 ### v4.4.5

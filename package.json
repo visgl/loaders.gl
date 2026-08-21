@@ -65,7 +65,8 @@
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "puppeteer": "^23.4.0",
-    "tap-spec": "^5.0.0"
+    "tap-spec": "^5.0.0",
+    "zod": "^4.1.12"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
@@ -94,6 +95,7 @@
     "@loaders.gl/ply": "^4.4.0",
     "@loaders.gl/schema": "^4.4.0",
     "@loaders.gl/schema-utils": "^4.4.0",
+    "@loaders.gl/splats": "^4.5.0-alpha.1",
     "@loaders.gl/terrain": "^4.4.0",
     "@loaders.gl/textures": "^4.4.0",
     "@loaders.gl/tiles": "^4.4.0",

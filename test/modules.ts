@@ -31,6 +31,7 @@ import '@loaders.gl/draco/test';
 import '@loaders.gl/obj/test';
 import '@loaders.gl/pcd/test';
 import '@loaders.gl/ply/test';
+import '@loaders.gl/splats/test';
 import '@loaders.gl/terrain/test';
 
 // Scenegraph Formats

@@ -74,7 +74,7 @@ export async function parseGLTF(
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
 
-  preprocessExtensions(gltf, options, context);
+  await preprocessExtensions(gltf, options, context);
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
