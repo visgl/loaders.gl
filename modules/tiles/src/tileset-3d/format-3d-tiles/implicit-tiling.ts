@@ -21,7 +21,7 @@ export type ImplicitTileCoordinates = {
 
 /** Serializable information shared by every subtree in one implicit-tile hierarchy. */
 export type ImplicitTilingDescriptor = {
-  /** Absolute template URL for render content. */
+  /** Absolute template URL for render content, or an empty string for a contentless hierarchy. */
   contentUrlTemplate: string;
   /** Non-URI content metadata inherited by each available implicit content resource. */
   contentHeader?: Record<string, any>;
@@ -65,8 +65,11 @@ export type ImplicitAvailability = {
 export type ParsedImplicitSubtree = {
   /** Availability of tiles inside this subtree. */
   tileAvailability: ImplicitAvailability;
-  /** Availability of tile content; only the first multiple-content stream is currently used. */
-  contentAvailability: ImplicitAvailability | ImplicitAvailability[];
+  /**
+   * Availability of tile content; only the first multiple-content stream is currently used.
+   * Omitted availability denotes a metadata-only subtree with no render content.
+   */
+  contentAvailability?: ImplicitAvailability | ImplicitAvailability[];
   /** Availability of subtree roots immediately below this subtree. */
   childSubtreeAvailability: ImplicitAvailability;
 };
@@ -294,9 +297,10 @@ function formatImplicitTileHeader(
   contentAvailable: boolean,
   children: ImplicitTileHeader[]
 ): ImplicitTileHeader {
-  const contentUrl = contentAvailable
-    ? replaceImplicitUrlTemplate(descriptor.contentUrlTemplate, coordinates)
-    : undefined;
+  const contentUrl =
+    contentAvailable && descriptor.contentUrlTemplate
+      ? replaceImplicitUrlTemplate(descriptor.contentUrlTemplate, coordinates)
+      : undefined;
   const lodMetricValue = descriptor.rootLodMetricValue / 2 ** coordinates.level;
 
   return {
@@ -358,9 +362,11 @@ function getAvailabilityValue(availability: ImplicitAvailability, index: number)
  * @returns Primary content availability declaration.
  */
 function getPrimaryContentAvailability(
-  availability: ImplicitAvailability | ImplicitAvailability[]
+  availability: ImplicitAvailability | ImplicitAvailability[] | undefined
 ): ImplicitAvailability {
-  return Array.isArray(availability) ? availability[0] || {constant: 0} : availability;
+  return Array.isArray(availability)
+    ? availability[0] || {constant: 0}
+    : availability || {constant: 0};
 }
 
 /**

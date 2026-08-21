@@ -37,8 +37,43 @@ export async function parseImplicitTiles(params: {
   void params.loaderOptions;
   void params.context;
   const coordinates = params.subtreeData || {level: 0, x: 0, y: 0, z: 0};
-  const reference = createImplicitSubtreeReference(params.implicitOptions, coordinates);
+  const descriptor = getImplicitTilingDescriptor(params.implicitOptions);
+  const reference = createImplicitSubtreeReference(descriptor, coordinates);
   return materializeImplicitSubtree(params.subtree, reference).root;
+}
+
+/**
+ * Adapts the former parser descriptor spelling to the shared lazy-runtime descriptor.
+ *
+ * Historical callers supplied `subtreesUriTemplate` together with `basePath`; normalized modern
+ * headers already supply an absolute `subtreesUrlTemplate`. Maintaining this boundary keeps the
+ * compatibility helper usable without letting legacy URL spelling leak into the tiles runtime.
+ *
+ * @param implicitOptions - Modern descriptor or legacy parser-compatible equivalent.
+ * @returns Descriptor with an absolute subtree URL template.
+ * @throws If neither supported subtree URL template is present.
+ */
+function getImplicitTilingDescriptor(implicitOptions: ImplicitOptions): ImplicitOptions {
+  if (implicitOptions.subtreesUrlTemplate) {
+    return implicitOptions;
+  }
+
+  const legacyImplicitOptions = implicitOptions as ImplicitOptions & {
+    /** Legacy relative subtree URL template retained by the parser compatibility helper. */
+    subtreesUriTemplate?: string;
+    /** Legacy base URL used to resolve {@link subtreesUriTemplate}. */
+    basePath?: string;
+  };
+  if (!legacyImplicitOptions.subtreesUriTemplate) {
+    throw new Error('Implicit tiling requires a subtrees URL template');
+  }
+
+  const basePath = legacyImplicitOptions.basePath?.replace(/\/$/, '') || '';
+  const subtreePath = legacyImplicitOptions.subtreesUriTemplate.replace(/^\//, '');
+  return {
+    ...implicitOptions,
+    subtreesUrlTemplate: basePath ? `${basePath}/${subtreePath}` : subtreePath
+  };
 }
 
 /**
