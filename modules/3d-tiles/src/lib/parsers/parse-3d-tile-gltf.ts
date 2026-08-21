@@ -69,6 +69,6 @@ async function parseParsedJsonGltf(
   options: Tiles3DLoaderOptions | undefined,
   context: LoaderContext
 ) {
-  const gltfLoaderWithParser = await GLTFLoader.preload('', options);
+  const gltfLoaderWithParser = await GLTFLoader.preload();
   return await gltfLoaderWithParser.parse(jsonPayload, options, context);
 }

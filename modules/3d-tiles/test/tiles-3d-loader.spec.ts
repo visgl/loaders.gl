@@ -257,8 +257,8 @@ test('Tiles3DLoader#rejects unknown binary tile types', async t => {
       worker: false,
       '3d-tiles': {isTileset: false}
     }),
-    /3DTileLoader: unknown type nope/,
-    'reports the unrecognized tile magic'
+    /Invalid 3D Tiles content: expected supported binary magic or JSON object/,
+    'reports an unsupported resource-boundary payload'
   );
   t.end();
 });

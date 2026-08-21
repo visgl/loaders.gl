@@ -152,8 +152,12 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
 
     gltf._glb = glb;
     gltf.json = glb.json;
+  } else if (data && typeof data === 'object') {
+    // Callers that already decoded JSON can retain the parsed object. This avoids a second
+    // serialization/parsing pass while preserving the normal extension and external-asset flow.
+    gltf.json = data;
   } else {
-    assert(false, 'GLTF: must be ArrayBuffer or string');
+    assert(false, 'GLTF: must be ArrayBuffer, string, or parsed JSON object');
   }
 
   // Populate buffers
