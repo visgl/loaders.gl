@@ -1,5 +1,5 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT AND BSD
+// SPDX-License-Identifier: MIT AND BSD-2-Clause
 // Copyright (c) vis.gl contributors
 // This is a fork of the clarinet library, originally BSD license (see LICENSE file)
 // loaders.gl changes:
