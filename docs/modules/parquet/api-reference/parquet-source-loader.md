@@ -76,8 +76,8 @@ Returns cached plain JavaScript metadata copied from the Parquet footer:
 - file byte length, format version, writer, and row count;
 - key/value footer metadata;
 - row counts, absolute row offsets, and compressed/uncompressed byte lengths for each row group;
-- column path, compression, encodings, value count, physical range, byte lengths, and page offsets
-  for each column chunk;
+- column path, compression, encodings, value count, physical range, byte lengths, data/dictionary
+  page offsets, and optional column/offset index ranges for each column chunk;
 - decoded minimum, maximum, null-count, distinct-count, and bound-exactness statistics when
   supplied by the writer;
   and
@@ -121,7 +121,7 @@ version validation.
 Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
 retain their composite values while primitive and logical columns flow through the columnar path.
 
-### Predicate filtering and row-group pruning
+### Predicate filtering and page pruning
 
 Use the serializable `predicate` option for exact row filtering. Its experimental `op`/`args`
 expression shape is directionally aligned with
@@ -133,8 +133,14 @@ but they are omitted from Arrow output unless they also appear in `columns`.
 
 Before fetching column chunks, the source conservatively applies the predicate to footer min, max,
 and null-count statistics. A row group is pruned only when those statistics prove that it cannot
-contain a match. Missing, malformed, or insufficient statistics retain the row group. Every row in
-the surviving groups is then evaluated exactly on the caller thread or worker, so statistics can
+contain a match.
+
+For flat primitive columns, the source then reads available Parquet column indexes and offset
+indexes. Per-page min/max/null statistics produce candidate row ranges, and page locations turn
+those ranges into actual byte reads for projected and hidden filter columns. Candidate ranges are
+expanded when columns have different page boundaries, preventing duplicate or misaligned rows.
+Missing, malformed, nested, or insufficient indexes fall back to complete selected column chunks.
+Every candidate row is still evaluated exactly on the caller thread or worker, so page pruning can
 only improve I/O and cannot change query results.
 
 ```typescript
@@ -189,7 +195,8 @@ console.log(source.getTelemetry());
 ```
 
 The frozen snapshot reports exact transport counts and bytes, range-cache hits, cumulative
-network/decode/Arrow durations, candidate/pruned/decoded row groups, statistics-pruned groups,
+network/decode/Arrow durations, candidate/pruned/decoded row groups, statistics- and page-index-
+pruned groups, index blobs read, data pages read/pruned, rows eliminated before page reads,
 predicate rows tested/matched, emitted batches and rows, retries, cancellations, and failures.
 `retryCount` remains zero while the source uses its fail-fast range policy.
 
@@ -198,8 +205,8 @@ predicate rows tested/matched, emitted batches and rows, retries, cancellations,
 The source exposes the frozen `PARQUET_SOURCE_CAPABILITIES` descriptor synchronously, before any
 network or decoding work starts. It reports support for cached immutable metadata, row-group and
 column selection, provenance, cancellation, custom range transport, object-version validation,
-statistics-driven predicate pushdown, exact predicate filtering, transport/decode telemetry,
-package-local assets, and worker-backed selective decoding.
+statistics-driven row-group and page-index predicate pushdown, exact predicate filtering,
+transport/decode telemetry, package-local assets, and worker-backed selective decoding.
 
 ### `close(): Promise<void>`
 
@@ -247,5 +254,6 @@ serve the package's WASM loader and writer paths.
 - Range fetching remains on the caller thread so custom fetch implementations and authenticated,
   version-pinned requests do not cross the worker boundary.
 - Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
-- Predicate pushdown currently uses row-group footer statistics. Page-index and Bloom-filter range
-  planning remain future work.
+- Page-index range planning currently requires independently materializable flat primitive columns;
+  nested or repeated selections conservatively use complete selected column chunks.
+- Bloom-filter range planning remains future work.

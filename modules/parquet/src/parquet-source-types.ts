@@ -63,6 +63,14 @@ export type ParquetColumnChunkMetadata = {
   readonly dataPageOffset: number;
   /** Absolute file offset of the dictionary page, when present. */
   readonly dictionaryPageOffset?: number;
+  /** Absolute file offset of the optional per-page column statistics index. */
+  readonly columnIndexOffset?: number;
+  /** Serialized byte length of the optional per-page column statistics index. */
+  readonly columnIndexByteLength?: number;
+  /** Absolute file offset of the optional data-page location index. */
+  readonly offsetIndexOffset?: number;
+  /** Serialized byte length of the optional data-page location index. */
+  readonly offsetIndexByteLength?: number;
   /** Optional min/max and count statistics decoded from the footer. */
   readonly statistics?: ParquetColumnChunkStatistics;
 };
@@ -236,6 +244,16 @@ export type ParquetTelemetry = {
   rowGroupsPruned: number;
   /** Candidate row groups proven impossible using footer statistics. */
   rowGroupsPrunedByStatistics: number;
+  /** Row groups proven impossible using page-level column indexes. */
+  rowGroupsPrunedByPageIndex: number;
+  /** Column-index and offset-index blobs decoded for selective reads. */
+  pageIndexesRead: number;
+  /** Data pages fetched for page-index-planned reads. */
+  pagesRead: number;
+  /** Data pages avoided by page-index-planned reads. */
+  pagesPruned: number;
+  /** Candidate rows eliminated before data-page reads. */
+  rowsPrunedByPageIndex: number;
   /** Row groups successfully decoded. */
   rowGroupsDecoded: number;
   /** Arrow batches emitted by read operations. */
@@ -259,6 +277,7 @@ export type ParquetTelemetryEvent = {
     | 'range-request'
     | 'cache-hit'
     | 'row-group-prune'
+    | 'page-index-prune'
     | 'predicate-filter'
     | 'decode'
     | 'arrow-conversion'

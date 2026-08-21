@@ -7,6 +7,7 @@ import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
 import type {ParquetPredicate} from '../parquet-source-types';
+import type {ParquetPagePruningPlan} from './parquet-page-index';
 import type {SchemaDefinition} from '../parquetjs/schema/declare';
 
 /** One transferable range containing a selected Parquet column chunk. */
@@ -59,6 +60,8 @@ export type ParquetSourceWorkerInput = {
   batchSize: number;
   /** Serializable exact predicate evaluated after decoding. */
   predicate?: ParquetPredicate;
+  /** Selective data-page plan prepared from column and offset indexes on the caller thread. */
+  pagePlan?: ParquetPagePruningPlan;
   /** Whether BYTE_ARRAY values stay binary during logical conversion. */
   preserveBinary: boolean;
 };

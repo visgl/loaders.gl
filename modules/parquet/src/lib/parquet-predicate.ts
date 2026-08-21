@@ -5,8 +5,12 @@
 import type {ArrayType} from '@loaders.gl/schema';
 
 import type {
+  ParquetColumnChunkStatistics,
+  ParquetComparisonPredicate,
+  ParquetInPredicate,
   ParquetLogicalPredicate,
   ParquetNotPredicate,
+  ParquetNullPredicate,
   ParquetPredicate,
   ParquetPredicateValue,
   ParquetRowGroupMetadata
@@ -104,28 +108,27 @@ export function canParquetRowGroupMatch(
   if (!statistics) {
     return true;
   }
-  if (statistics.nullCount === rowGroup.rowCount) {
+  return canParquetStatisticsMatch(predicate, statistics, rowGroup.rowCount);
+}
+
+/** Conservatively determines whether one predicate leaf can match supplied statistics. */
+export function canParquetStatisticsMatch(
+  predicate: ParquetComparisonPredicate | ParquetInPredicate | ParquetNullPredicate,
+  statistics: ParquetColumnChunkStatistics,
+  rowCount: number
+): boolean {
+  if (statistics.nullCount === rowCount) {
     return predicate.op === 'isNull';
   }
   if (predicate.op === 'isNull') {
     return statistics.nullCount !== 0;
   }
+  const minimum = statistics.minIsExact === false ? undefined : statistics.min;
+  const maximum = statistics.maxIsExact === false ? undefined : statistics.max;
   if (predicate.op === 'in') {
-    return predicate.args[1].some(value =>
-      canComparisonMatch(
-        '=',
-        value,
-        statistics.minIsExact === false ? undefined : statistics.min,
-        statistics.maxIsExact === false ? undefined : statistics.max
-      )
-    );
+    return predicate.args[1].some(value => canComparisonMatch('=', value, minimum, maximum));
   }
-  return canComparisonMatch(
-    predicate.op,
-    predicate.args[1],
-    statistics.minIsExact === false ? undefined : statistics.min,
-    statistics.maxIsExact === false ? undefined : statistics.max
-  );
+  return canComparisonMatch(predicate.op, predicate.args[1], minimum, maximum);
 }
 
 /** Returns exact source row indexes matching a predicate. */
