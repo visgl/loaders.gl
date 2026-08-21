@@ -43,7 +43,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Cloud-Native Queries',
-      items: ['geospatial/overture-parquet', 'geospatial/fsq-places']
+      items: ['geospatial/fsq-places', 'geospatial/overture-parquet']
     },
     {
       type: 'category',
