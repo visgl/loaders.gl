@@ -58,8 +58,7 @@
     "@loaders.gl/gis": "5.0.0-alpha.1",
     "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "@loaders.gl/schema": "5.0.0-alpha.1",
-    "@math.gl/proj4": "^4.1.0",
-    "flatgeobuf": "3.27.2"
+    "@math.gl/proj4": "^4.1.0"
   },
   "devDependencies": {
     "stream-buffers": "3.0.2"
