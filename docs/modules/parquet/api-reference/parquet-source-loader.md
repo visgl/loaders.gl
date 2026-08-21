@@ -62,6 +62,70 @@ import {ParquetSourceLoader} from '@loaders.gl/parquet/parquet-source-loader';
 const source = createDataSource(url, [ParquetSourceLoader], {});
 ```
 
+## Multi-file datasets
+
+`ParquetDatasetSource` composes a lazy file provider with one selective `ParquetSource` per selected
+file. The provider may be backed by STAC, a database, an application manifest, or a static list;
+the Parquet module does not depend on any catalog protocol.
+
+```ts
+import {ParquetDatasetSource} from '@loaders.gl/parquet/parquet-dataset-source';
+import {STACSource} from '@loaders.gl/stac/stac-source';
+
+const catalog = new STACSource('https://stac.overturemaps.org/catalog.json', {});
+const dataset = new ParquetDatasetSource(
+  async function* getOvertureFiles(query) {
+    for await (const item of catalog.traverse({
+      bbox: query.bbox,
+      signal: query.signal,
+      maxRequests: 500
+    })) {
+      for (const asset of catalog.getAssets(item, {roles: ['data']})) {
+        if (asset.href.endsWith('.parquet')) {
+          yield {
+            id: `${item.id}/${asset.key}`,
+            data: asset.href,
+            bbox: item.bbox,
+            partitions: {
+              theme: String(item.properties.theme),
+              type: String(item.properties.type)
+            },
+            metadata: {stacItemId: item.id}
+          };
+        }
+      }
+    }
+  },
+  {parquetDataset: {fileConcurrency: 4}}
+);
+
+for await (const batch of dataset.read({
+  bbox: [-71.12, 42.32, -70.98, 42.42],
+  partitions: {theme: 'places'},
+  columns: ['id', 'names', 'categories', 'geometry'],
+  predicate: {op: '=', args: [{property: 'confidence'}, 1]}
+})) {
+  console.log(batch.datasetFileId, batch.datasetPartitions, batch.data);
+}
+```
+
+The dataset source forwards `bbox`, `partitions`, and `signal` to the provider, then conservatively
+rechecks descriptor bounding boxes and known partition values before opening files. Missing
+descriptor metadata is never treated as proof that a file cannot match. The `bbox` in this initial
+API selects files; exact spatial row filtering and GeoParquet covering-column pruning are separate
+operations.
+
+Selected files decode concurrently, while emitted Arrow batches retain provider order. A one-batch
+queue per active file applies backpressure, so deterministic output does not require materializing
+later files in memory. Each batch adds `datasetFileIndex`, `datasetFileId`, `datasetPartitions`, and
+`datasetFileMetadata` without copying its Arrow buffers. Predicates, projection, batching, range
+requests, worker decoding, cancellation, and exact row provenance remain the responsibility of each
+child `ParquetSource`.
+
+Files must expose the same field schema by default. Set `parquetDataset.validateSchema` to `false`
+only when the caller intentionally handles heterogeneous Arrow batches. `getTelemetry()` reports
+file discovery/pruning counts, emitted rows and batches, and aggregated child-source telemetry.
+
 ## API
 
 ### `getSchema(options?): Promise<Schema>`

@@ -19,6 +19,15 @@ export {
   type ParquetSourceBatch
 } from './parquet-source-loader';
 export {
+  ParquetDatasetSource,
+  type ParquetDatasetBatch,
+  type ParquetDatasetFile,
+  type ParquetDatasetFileProvider,
+  type ParquetDatasetReadOptions,
+  type ParquetDatasetSourceOptions,
+  type ParquetDatasetTelemetry
+} from './parquet-dataset-source';
+export {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
