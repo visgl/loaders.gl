@@ -12,6 +12,7 @@ import type {
   ParquetNotPredicate,
   ParquetNullPredicate,
   ParquetPredicate,
+  ParquetPredicateProperty,
   ParquetPredicateValue,
   ParquetRowGroupMetadata
 } from '../parquet-source-types';
@@ -19,14 +20,20 @@ import {encodeUtf8} from '../parquetjs/utils/binary-utils';
 
 /** Returns the unique top-level columns referenced by a predicate. */
 export function getParquetPredicateColumns(predicate: ParquetPredicate): string[] {
-  const columns = new Set<string>();
+  return [...new Set(getParquetPredicatePaths(predicate).map(path => path[0]))];
+}
+
+/** Returns the unique physical schema paths referenced by a predicate. */
+export function getParquetPredicatePaths(predicate: ParquetPredicate): string[][] {
+  const paths = new Map<string, string[]>();
   visitParquetPredicate(predicate, child => {
     const property = getPredicateProperty(child);
     if (property) {
-      columns.add(property.property);
+      const path = [...getParquetPredicatePath(property)];
+      paths.set(path.join('\0'), path);
     }
   });
-  return [...columns];
+  return [...paths.values()];
 }
 
 /** Copies a predicate tree and mutable scalar values for read-scoped option snapshots. */
@@ -75,8 +82,12 @@ export function validateParquetPredicate(
       return;
     }
     const property = child.args[0];
-    if (!availableColumns.has(property.property)) {
-      throw new Error(`Parquet predicate column not found: ${property.property}`);
+    const path = getParquetPredicatePath(property);
+    if (!path.length || path.some(pathComponent => !pathComponent)) {
+      throw new Error('Parquet predicate property path must contain non-empty strings');
+    }
+    if (!availableColumns.has(path[0])) {
+      throw new Error(`Parquet predicate column not found: ${path.join('.')}`);
     }
     if (child.op === 'in' && child.args[1].length === 0) {
       throw new Error('Parquet predicate in requires at least one value');
@@ -99,11 +110,11 @@ export function canParquetRowGroupMatch(
     if (child.op !== 'isNull') {
       return true;
     }
-    const column = getRowGroupColumn(rowGroup, child.args[0].property);
+    const column = getRowGroupColumn(rowGroup, getParquetPredicatePath(child.args[0]));
     return !column?.statistics || column.statistics.nullCount !== rowGroup.rowCount;
   }
 
-  const column = getRowGroupColumn(rowGroup, predicate.args[0].property);
+  const column = getRowGroupColumn(rowGroup, getParquetPredicatePath(predicate.args[0]));
   const statistics = column?.statistics;
   if (!statistics) {
     return true;
@@ -160,7 +171,7 @@ export function gatherParquetColumns(
     if (selectedColumns && !selectedColumns.has(name)) {
       continue;
     }
-    gatheredColumns[name] = rowIndices.map(rowIndex => getColumnValue(column, rowIndex));
+    gatheredColumns[name] = rowIndices.map(rowIndex => (column as ArrayLike<unknown>)[rowIndex]);
   }
   return gatheredColumns;
 }
@@ -182,7 +193,7 @@ function evaluateParquetPredicate(
     const result = evaluateParquetPredicate(predicate.args[0], columns, rowIndex);
     return result === null ? null : !result;
   }
-  const value = getColumnValue(columns[predicate.args[0].property], rowIndex);
+  const value = getColumnValue(columns, getParquetPredicatePath(predicate.args[0]), rowIndex);
   if (predicate.op === 'isNull') {
     return value === null || value === undefined;
   }
@@ -311,11 +322,27 @@ function compareUint8Arrays(left: Uint8Array, right: Uint8Array): number {
 }
 
 /** Reads one value from an array-like materialized Parquet column. */
-function getColumnValue(column: ArrayType | undefined, rowIndex: number): unknown {
+function getColumnValue(
+  columns: Record<string, ArrayType>,
+  path: readonly string[],
+  rowIndex: number
+): unknown {
+  const column = columns[path[0]];
   if (!column) {
     throw new Error('Parquet predicate column was not decoded');
   }
-  return (column as ArrayLike<unknown>)[rowIndex];
+  let value = (column as ArrayLike<unknown>)[rowIndex];
+  for (let pathIndex = 1; pathIndex < path.length; pathIndex++) {
+    if (value === null || value === undefined || typeof value !== 'object') {
+      return undefined;
+    }
+    const property = path[pathIndex];
+    value =
+      typeof (value as {get?: unknown}).get === 'function'
+        ? (value as {get: (name: string) => unknown}).get(property)
+        : (value as Record<string, unknown>)[property];
+  }
+  return value;
 }
 
 /** Copies mutable binary and date predicate values. */
@@ -330,21 +357,30 @@ function copyPredicateValue(value: ParquetPredicateValue): ParquetPredicateValue
 }
 
 /** Copies a predicate property reference. */
-function copyPredicateProperty(property: {property: string}): {property: string} {
-  return {property: property.property};
+function copyPredicateProperty(property: ParquetPredicateProperty): ParquetPredicateProperty {
+  return {
+    property: Array.isArray(property.property) ? [...property.property] : property.property
+  };
+}
+
+/** Returns one predicate property as an explicit Parquet schema path. */
+export function getParquetPredicatePath(property: ParquetPredicateProperty): readonly string[] {
+  return Array.isArray(property.property) ? property.property : [property.property as string];
 }
 
 /** Returns the property reference from a leaf predicate. */
-function getPredicateProperty(predicate: ParquetPredicate): {property: string} | undefined {
+function getPredicateProperty(predicate: ParquetPredicate): ParquetPredicateProperty | undefined {
   return isParquetLogicalPredicate(predicate) || isParquetNotPredicate(predicate)
     ? undefined
     : predicate.args[0];
 }
 
 /** Returns one top-level column chunk from normalized row-group metadata. */
-function getRowGroupColumn(rowGroup: ParquetRowGroupMetadata, property: string) {
+function getRowGroupColumn(rowGroup: ParquetRowGroupMetadata, path: readonly string[]) {
   return rowGroup.columns.find(
-    columnChunk => columnChunk.path.length === 1 && columnChunk.path[0] === property
+    columnChunk =>
+      columnChunk.path.length === path.length &&
+      columnChunk.path.every((pathComponent, index) => pathComponent === path[index])
   );
 }
 

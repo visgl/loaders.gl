@@ -202,17 +202,56 @@ describe('Parquet page-index pruning', () => {
     expect(source.getTelemetry().rowsPrunedByPageIndex).toBeGreaterThan(0);
     await source.close();
   });
+
+  test('uses a GeoParquet covering to prune nested bbox pages and filter exact candidates', async () => {
+    const source = createRemoteSource(pageIndexFixture, {
+      core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+    });
+    const batches = await collectBatches(
+      source.read({
+        columns: ['id'],
+        bbox: [SELECTED_ROW_START, -1, SELECTED_ROW_END - 1, 1]
+      })
+    );
+
+    expect(getBatchValues(batches, 'id')).toEqual(
+      Array.from(
+        {length: SELECTED_ROW_END - SELECTED_ROW_START},
+        (_, index) => SELECTED_ROW_START + index
+      )
+    );
+    expect(batches[0].data.getChild('bbox')).toBeNull();
+    expect(source.getTelemetry().rowsPrunedByPageIndex).toBeGreaterThan(0);
+    expect(source.getTelemetry().predicateRowsTested).toBeLessThan(ROW_COUNT);
+    await source.close();
+  });
 });
 
 /** Creates a multi-page fixture whose page and chunk statistics are written by parquet-rs. */
 async function createPageIndexFixture(): Promise<ArrayBuffer> {
   const wasm = await loadWasm();
+  const boundingBoxType = new arrow.Struct([
+    new arrow.Field('xmin', new arrow.Float64(), false),
+    new arrow.Field('ymin', new arrow.Float64(), false),
+    new arrow.Field('xmax', new arrow.Float64(), false),
+    new arrow.Field('ymax', new arrow.Float64(), false)
+  ]);
   const table = arrow.tableFromArrays({
     id: Int32Array.from({length: ROW_COUNT}, (_, index) => index),
     category: Array.from({length: ROW_COUNT}, (_, index) => `group-${Math.floor(index / 1024)}`),
     payload: Array.from(
       {length: ROW_COUNT},
       (_, index) => `payload-${index}-${'-'.repeat(20)}`
+    ),
+    geometry: Array.from({length: ROW_COUNT}, (_, index) => createPointWkb(index, 0)),
+    bbox: arrow.vectorFromArray(
+      Array.from({length: ROW_COUNT}, (_, index) => ({
+        xmin: index,
+        ymin: 0,
+        xmax: index,
+        ymax: 0
+      })),
+      boundingBoxType
     )
   });
   const wasmTable = wasm.Table.fromIPCStream(arrow.tableToIPC(table));
@@ -221,9 +260,45 @@ async function createPageIndexFixture(): Promise<ArrayBuffer> {
     .setDataPageSizeLimit(1024)
     .setDictionaryEnabled(false)
     .setColumnDictionaryEnabled('category', true)
+    .setKeyValueMetadata(
+      new Map([
+        [
+          'geo',
+          JSON.stringify({
+            version: '1.1.0',
+            primary_column: 'geometry',
+            columns: {
+              geometry: {
+                encoding: 'WKB',
+                geometry_types: [],
+                covering: {
+                  bbox: {
+                    xmin: ['bbox', 'xmin'],
+                    ymin: ['bbox', 'ymin'],
+                    xmax: ['bbox', 'xmax'],
+                    ymax: ['bbox', 'ymax']
+                  }
+                }
+              }
+            }
+          })
+        ]
+      ])
+    )
     .build();
   const bytes = wasm.writeParquet(wasmTable, writerProperties);
   return bytes.slice().buffer;
+}
+
+/** Encodes one little-endian two-dimensional WKB point. */
+function createPointWkb(x: number, y: number): Uint8Array {
+  const bytes = new Uint8Array(21);
+  const view = new DataView(bytes.buffer);
+  view.setUint8(0, 1);
+  view.setUint32(1, 1, true);
+  view.setFloat64(5, x, true);
+  view.setFloat64(13, y, true);
+  return bytes;
 }
 
 /** Creates a strict in-memory HTTP range source for the generated fixture. */

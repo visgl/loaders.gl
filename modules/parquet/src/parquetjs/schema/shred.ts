@@ -318,10 +318,52 @@ export function materializeColumns(
   for (const key in rowGroup.columnData) {
     const column = materializeColumn(schema, rowGroup, key);
     if (column) {
-      columns[schema.findFieldBranch(key)[0].name] = column;
+      const columnName = schema.findFieldBranch(key)[0].name;
+      columns[columnName] = columns[columnName]
+        ? mergeMaterializedColumn(columns[columnName], column)
+        : column;
     }
   }
   return columns;
+}
+
+/** Merges independently decoded nested leaf columns into one top-level column. */
+function mergeMaterializedColumn(existing: ArrayType, incoming: ArrayType): ArrayType {
+  const length = Math.max(existing.length, incoming.length);
+  const merged = new Array(length);
+  for (let index = 0; index < length; index++) {
+    merged[index] = mergeMaterializedValue(existing[index], incoming[index]);
+  }
+  return merged;
+}
+
+/** Recursively combines objects and corresponding repeated elements without losing scalar leaves. */
+function mergeMaterializedValue(existing: unknown, incoming: unknown): unknown {
+  if (existing === null || existing === undefined) {
+    return incoming;
+  }
+  if (incoming === null || incoming === undefined) {
+    return existing;
+  }
+  if (Array.isArray(existing) && Array.isArray(incoming)) {
+    const length = Math.max(existing.length, incoming.length);
+    return Array.from({length}, (_, index) =>
+      mergeMaterializedValue(existing[index], incoming[index])
+    );
+  }
+  if (
+    typeof existing === 'object' &&
+    typeof incoming === 'object' &&
+    !ArrayBuffer.isView(existing) &&
+    !ArrayBuffer.isView(incoming)
+  ) {
+    const merged: Record<string, unknown> = {...(existing as Record<string, unknown>)};
+    for (const [key, value] of Object.entries(incoming as Record<string, unknown>)) {
+      merged[key] = mergeMaterializedValue(merged[key], value);
+    }
+    return merged;
+  }
+  return incoming;
 }
 
 /** Materializes one decoded Parquet column into its top-level columnar representation. */

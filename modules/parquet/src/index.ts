@@ -16,6 +16,7 @@ export type {
   ParquetBatch,
   ParquetBatchMetadata,
   ParquetBatchProvenance,
+  ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
   ParquetDatasetBatch,

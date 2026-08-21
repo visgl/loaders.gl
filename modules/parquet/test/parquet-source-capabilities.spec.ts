@@ -20,6 +20,7 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', t
     supportsColumnStatistics: true,
     supportsPredicatePushdown: true,
     supportsPageIndexPruning: true,
+    supportsGeoParquetSpatialPruning: true,
     supportsExactPredicateFiltering: true,
     supportsCustomRangeTransport: true,
     supportsObjectVersionValidation: true,

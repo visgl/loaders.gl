@@ -115,9 +115,10 @@ for await (const batch of dataset.read({
 
 The dataset source forwards `bbox`, `partitions`, and `signal` to the provider, then conservatively
 rechecks descriptor bounding boxes and known partition values before opening files. Missing
-descriptor metadata is never treated as proof that a file cannot match. The `bbox` in this initial
-API selects files; exact spatial row filtering and GeoParquet covering-column pruning are separate
-operations.
+descriptor metadata is never treated as proof that a file cannot match. For files with a valid
+GeoParquet 1.1 `bbox` covering, the same `bbox` also creates a hidden nested predicate: footer
+statistics prune row groups, column/offset indexes prune pages, and surviving rows are filtered by
+exact bounding-box intersection. Files without a supported covering remain conservatively selected.
 
 Selected files decode concurrently, while emitted Arrow batches retain provider order. A one-batch
 queue per active file applies backpressure, so deterministic output does not require materializing
@@ -200,20 +201,45 @@ expression shape is directionally aligned with
 [CQL2 JSON](https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-json), but it is only a small
 Parquet-focused subset and does not claim CQL2 conformance. Predicates support `=`, `<>`, `<`,
 `<=`, `>`, `>=`, `in`, and `isNull`, composed with `and`, `or`, and `not`. Comparison and
-membership predicates do not match null column values. Filter columns are fetched automatically,
-but they are omitted from Arrow output unless they also appear in `columns`.
+membership predicates do not match null column values. A property can be a top-level column name or
+an explicit Parquet schema path such as `{property: ['bbox', 'xmin']}`. Filter columns are fetched
+automatically, but they are omitted from Arrow output unless they also appear in `columns`.
 
 Before fetching column chunks, the source conservatively applies the predicate to footer min, max,
 and null-count statistics. A row group is pruned only when those statistics prove that it cannot
 contain a match.
 
-For flat primitive columns, the source then reads available Parquet column indexes and offset
-indexes. Per-page min/max/null statistics produce candidate row ranges, and page locations turn
-those ranges into actual byte reads for projected and hidden filter columns. Candidate ranges are
-expanded when columns have different page boundaries, preventing duplicate or misaligned rows.
-Missing, malformed, nested, or insufficient indexes fall back to complete selected column chunks.
-Every candidate row is still evaluated exactly on the caller thread or worker, so page pruning can
-only improve I/O and cannot change query results.
+For independently materializable non-repeated leaf columns, including children of structs, the
+source then reads available Parquet column indexes and offset indexes. Per-page min/max/null
+statistics produce candidate row ranges, and page locations turn those ranges into actual byte
+reads for projected and hidden filter columns. Candidate ranges are expanded when columns have
+different page boundaries, preventing duplicate or misaligned rows. Missing, malformed, repeated,
+or insufficient indexes fall back to complete selected column chunks. Every candidate row is still
+evaluated exactly on the caller thread or worker, so page pruning can only improve I/O and cannot
+change query results.
+
+### GeoParquet spatial pruning
+
+Pass `bbox` to a `ParquetSource` or `ParquetDatasetSource` read to use the primary geometry
+column's normative GeoParquet 1.1 bounding-box covering. `geometryColumn` selects another geometry
+column when needed. The covering's `xmin`, `ymin`, `xmax`, and `ymax` paths become a hidden nested
+predicate and are omitted from output unless their top-level bbox struct is explicitly projected.
+The query bbox must use the selected geometry column's coordinate reference system; loaders.gl does
+not transform query coordinates during source pruning.
+
+```typescript
+for await (const batch of source.read({
+  bbox: [-71.12, 42.32, -70.98, 42.42],
+  columns: ['id', 'geometry']
+})) {
+  console.log(batch.rowIndices, batch.data);
+}
+```
+
+Malformed or missing coverings and bounding boxes that cross the antimeridian fall back
+conservatively instead of excluding rows. A covering proves bounding-box intersection, which is an
+exact filter for points and a conservative candidate filter for lines and polygons; applications
+requiring geometry-level intersection must still run that spatial operation on the candidates.
 
 ```typescript
 const batches = source.read({
@@ -278,7 +304,8 @@ The source exposes the frozen `PARQUET_SOURCE_CAPABILITIES` descriptor synchrono
 network or decoding work starts. It reports support for cached immutable metadata, row-group and
 column selection, provenance, cancellation, custom range transport, object-version validation,
 statistics-driven row-group and page-index predicate pushdown, exact predicate filtering,
-transport/decode telemetry, package-local assets, and worker-backed selective decoding.
+GeoParquet bbox-covering spatial pruning, transport/decode telemetry, package-local assets, and
+worker-backed selective decoding.
 
 ### `close(): Promise<void>`
 
@@ -302,6 +329,8 @@ individual read.
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
 | `parquet.rowGroupFilter` / `read.rowGroupFilter` | `(rowGroup: ParquetRowGroupMetadata) => boolean` | keep all | Retains candidate row groups before their column chunks are fetched. |
 | `parquet.predicate` / `read.predicate` | `ParquetPredicate` | `undefined` | Prunes impossible row groups using statistics, then exactly filters decoded rows. |
+| `parquet.bbox` / `read.bbox` | `ParquetBoundingBox` | `undefined` | Uses a valid GeoParquet 1.1 bbox covering for spatial row-group/page pruning and per-row bbox filtering. |
+| `parquet.geometryColumn` / `read.geometryColumn` | `string` | GeoParquet `primary_column` | Selects the geometry column whose bbox covering serves `bbox`. |
 | `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
 | `parquet.concurrency` / `read.concurrency` | `number` | `1` | Maximum row groups decoded concurrently. |
 | `read.signal` | `AbortSignal` | `undefined` | Cancels this read and its outstanding ranges. |
@@ -326,6 +355,6 @@ serve the package's WASM loader and writer paths.
 - Range fetching remains on the caller thread so custom fetch implementations and authenticated,
   version-pinned requests do not cross the worker boundary.
 - Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
-- Page-index range planning currently requires independently materializable flat primitive columns;
-  nested or repeated selections conservatively use complete selected column chunks.
+- Page-index range planning supports non-repeated primitive leaves, including struct children;
+  repeated selections conservatively use complete selected column chunks.
 - Bloom-filter range planning remains future work.

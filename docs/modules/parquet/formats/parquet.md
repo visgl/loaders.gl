@@ -241,10 +241,10 @@ can make selective reads much cheaper.
 | Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |
 
 `ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using
-footer statistics, and uses column/offset indexes to avoid irrelevant data pages for flat primitive
-columns. Filter-only columns are not returned in the projected Arrow schema. Candidate rows are
-still filtered exactly on the caller thread or worker. Nested/repeated page planning and Bloom
-filters remain the main steps toward broader page-level pruning.
+footer statistics, and uses column/offset indexes to avoid irrelevant data pages for non-repeated
+primitive leaves, including struct children. Filter-only columns are not returned in the projected
+Arrow schema. Candidate rows are still filtered exactly on the caller thread or worker. Repeated
+page planning and Bloom filters remain the main steps toward broader page-level pruning.
 
 ## Integrity and Encryption
 
@@ -277,7 +277,7 @@ corpora run in the slow lane.
 The TypeScript implementation is aiming for complete stable-format read support. The largest known
 gaps are currently:
 
-1. split-block Bloom-filter reads and nested/repeated page-index planning;
+1. split-block Bloom-filter reads and repeated-column page-index planning;
 2. complete high-level nested-schema writing;
 3. Variant value decoding and shredding;
 4. page CRC verification and emission;

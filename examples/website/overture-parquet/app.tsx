@@ -18,7 +18,6 @@ import {
   ParquetDatasetSource,
   type ParquetDatasetTelemetry
 } from '@loaders.gl/parquet/parquet-dataset-source';
-import type {ParquetRowGroupMetadata} from '@loaders.gl/parquet';
 import type {Table as ArrowTable} from 'apache-arrow';
 import maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl';
@@ -118,7 +117,6 @@ export default function App(props: AppProps = {}) {
         bbox,
         columns: ['id', 'geometry', 'basic_category', 'confidence'],
         predicate: {op: '>=', args: [{property: 'confidence'}, minimumConfidence]},
-        rowGroupFilter: rowGroup => canRowGroupIntersect(rowGroup, bbox),
         batchSize: 12_500,
         concurrency: 2,
         fileConcurrency: 2
@@ -259,9 +257,8 @@ export default function App(props: AppProps = {}) {
           {error ? <div className="overture-error">{error}</div> : null}
           <TelemetryGrid telemetry={telemetry} resultBatches={resultBatches} summary={summary} />
           <div className="overture-note">
-            Spatial filtering currently uses STAC file extents and nested GeoParquet bbox statistics
-            for conservative candidates. Exact covering-column pushdown is the next framework
-            tranche.
+            Spatial filtering uses STAC file extents plus the GeoParquet bbox covering to prune row
+            groups and pages before exact per-row bbox filtering.
           </div>
         </aside>
       ) : null}
@@ -353,37 +350,6 @@ function getViewBoundingBox(viewState: MapViewState): [number, number, number, n
   });
   const [west, south, east, north] = viewport.getBounds();
   return [west, south, east, north];
-}
-
-/** Conservatively tests nested Overture bbox statistics for one Parquet row group. */
-export function canRowGroupIntersect(
-  rowGroup: ParquetRowGroupMetadata,
-  bbox: readonly [number, number, number, number]
-): boolean {
-  const [west, south, east, north] = bbox;
-  const minimumX = getBoundingStatistic(rowGroup, 'xmin', 'min');
-  const minimumY = getBoundingStatistic(rowGroup, 'ymin', 'min');
-  const maximumX = getBoundingStatistic(rowGroup, 'xmax', 'max');
-  const maximumY = getBoundingStatistic(rowGroup, 'ymax', 'max');
-  return !(
-    (minimumX !== undefined && minimumX > east) ||
-    (maximumX !== undefined && maximumX < west) ||
-    (minimumY !== undefined && minimumY > north) ||
-    (maximumY !== undefined && maximumY < south)
-  );
-}
-
-/** Reads one numeric min/max statistic from an Overture `bbox` leaf column. */
-function getBoundingStatistic(
-  rowGroup: ParquetRowGroupMetadata,
-  leaf: string,
-  bound: 'min' | 'max'
-): number | undefined {
-  const column = rowGroup.columns.find(
-    candidate => candidate.path[0] === 'bbox' && candidate.path.at(-1) === leaf
-  );
-  const value = column?.statistics?.[bound];
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 /** Returns a human-readable error message. */

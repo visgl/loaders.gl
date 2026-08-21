@@ -10,6 +10,10 @@ import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {
+  combineParquetPredicates,
+  createGeoParquetBoundingBoxPredicate
+} from './lib/geo/geoparquet-covering';
+import {
   canParquetRowGroupMatch,
   copyParquetPredicate,
   filterParquetRowIndices,
@@ -84,6 +88,7 @@ export type {
   ParquetBatch,
   ParquetBatchMetadata,
   ParquetBatchProvenance,
+  ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
   ParquetMetadataRequestOptions,
@@ -240,7 +245,14 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             readOptions.rowGroupFilter!(initialization.metadata.rowGroups[rowGroupIndex])
           )
         : candidateRowGroupIndices;
-      const predicate = readOptions.predicate;
+      const spatialPredicate = readOptions.bbox
+        ? createGeoParquetBoundingBoxPredicate(
+            initialization.metadata,
+            readOptions.bbox,
+            readOptions.geometryColumn
+          )
+        : undefined;
+      const predicate = combineParquetPredicates(readOptions.predicate, spatialPredicate);
       const availableColumns = new Set(initialization.schema.fields.map(field => field.name));
       if (predicate) {
         validateParquetPredicate(predicate, availableColumns);
@@ -458,11 +470,14 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     const rowGroups = options.rowGroups ?? this.options.parquet?.rowGroups;
     const columns = options.columns ?? this.options.parquet?.columns;
     const predicate = options.predicate ?? this.options.parquet?.predicate;
+    const bbox = options.bbox ?? this.options.parquet?.bbox;
     return {
       rowGroups: rowGroups && [...rowGroups],
       columns: columns && [...columns],
       rowGroupFilter: options.rowGroupFilter ?? this.options.parquet?.rowGroupFilter,
       predicate: predicate ? copyParquetPredicate(predicate) : undefined,
+      bbox: bbox ? ([...bbox] as ParquetSourceReadOptions['bbox']) : undefined,
+      geometryColumn: options.geometryColumn ?? this.options.parquet?.geometryColumn,
       batchSize: options.batchSize ?? this.options.parquet?.batchSize,
       concurrency: options.concurrency ?? this.options.parquet?.concurrency,
       signal: options.signal

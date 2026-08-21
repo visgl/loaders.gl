@@ -136,11 +136,16 @@ export type ParquetMetadataRequestOptions = {
 /** Scalar values supported by exact Parquet source predicates. */
 export type ParquetPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
 
-/** Reference to one top-level Parquet column in a predicate expression. */
+/** Reference to one Parquet column in a predicate expression. */
 export type ParquetPredicateProperty = {
-  /** Top-level column name. */
-  property: string;
+  /** Top-level column name or explicit nested Parquet schema path. */
+  property: string | readonly string[];
 };
+
+/** Four- or six-dimensional extent used for conservative Parquet spatial pruning. */
+export type ParquetBoundingBox =
+  | readonly [number, number, number, number]
+  | readonly [number, number, number, number, number, number];
 
 /** Comparison predicate applied to one top-level Parquet column. */
 export type ParquetComparisonPredicate = {
@@ -209,6 +214,10 @@ export type ParquetSourceReadOptions = {
   rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
   /** Serializable exact row predicate, conservatively pushed into row-group statistics. */
   predicate?: ParquetPredicate;
+  /** Spatial extent applied through a valid GeoParquet 1.1 bounding-box covering when present. */
+  bbox?: ParquetBoundingBox;
+  /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
+  geometryColumn?: string;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
@@ -358,9 +367,7 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
 };
 
 /** Four- or six-dimensional extent used for conservative Parquet dataset file pruning. */
-export type ParquetDatasetBoundingBox =
-  | readonly [number, number, number, number]
-  | readonly [number, number, number, number, number, number];
+export type ParquetDatasetBoundingBox = ParquetBoundingBox;
 
 /** Scalar value carried by a partitioned Parquet dataset file descriptor. */
 export type ParquetDatasetPartitionValue = string | number | boolean | null;
