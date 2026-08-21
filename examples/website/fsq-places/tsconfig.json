@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {"@loaders.gl/*": ["../../../modules/*/dist"]},
+    "jsx": "react-jsx"
+  },
+  "include": ["./app.tsx", "./fsq-places-catalog.ts", "./react-dom-client.d.ts", "./style-modules.d.ts"]
+}

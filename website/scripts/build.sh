@@ -3,7 +3,7 @@ set -e
 
 node scripts/validate-token.js
 
-# Build the worker bundle imported by the cloud-native Parquet example.
+# Build the worker bundle imported by the cloud-native Parquet examples.
 (
   cd ..
   npm run build-source-worker --prefix modules/parquet

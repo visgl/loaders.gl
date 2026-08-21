@@ -103,9 +103,11 @@ export default function App(props: AppProps = {}) {
         ? {
             core: {
               type: currentExample.sourceType,
+              worker: false,
               attributions: currentExample.attributions,
               loaders: [GeoJSONLoader],
               loadOptions: {
+                core: {worker: false},
                 tilejson: {maxValues: 10}
               }
             },
@@ -527,9 +529,11 @@ function createTileSource(
     {
       core: {
         type: example.sourceType,
+        worker: false,
         attributions: example.attributions,
         loaders: [GeoJSONLoader],
         loadOptions: {
+          core: {worker: false},
           tilejson: {maxValues: 10}
         }
       },

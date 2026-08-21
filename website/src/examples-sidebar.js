@@ -43,6 +43,11 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Cloud-Native Queries',
+      items: ['geospatial/fsq-places', 'geospatial/overture-parquet']
+    },
+    {
+      type: 'category',
       label: 'Tiled Geospatial Formats',
       items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
     },
@@ -61,13 +66,13 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
+      label: 'OGC Services',
+      items: ['tiles/wms', 'tiles/wfs']
+    },
+    {
+      type: 'category',
+      label: 'ArcGIS Services',
+      items: ['tiles/arcgis-image-server', 'tiles/arcgis-feature-server']
     },
     {
       type: 'category',
