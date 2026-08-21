@@ -23,7 +23,22 @@ describe('CSWCatalogSource', () => {
     expect(CSWSourceLoader.testURL('https://example.test/csw')).toBe(true);
     expect(CSWSourceLoader.testURL('https://example.test/wfs')).toBe(false);
   });
+
+  test('accepts successful responses without an error content type', () => {
+    const source = new TestCSWCatalogSource('https://example.test/csw', {});
+    const response = new Response(null, {status: 200});
+
+    expect(() => source.checkResponse(response, new ArrayBuffer(0))).not.toThrow();
+  });
 });
+
+/** Test facade exposing the protected response validator. */
+class TestCSWCatalogSource extends CSWCatalogSource {
+  /** Invokes the protected response validator for focused behavior coverage. */
+  checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
+    this._checkResponse(response, arrayBuffer);
+  }
+}
 
 async function collect<T>(values: AsyncIterable<T>): Promise<T[]> {
   const result: T[] = [];
