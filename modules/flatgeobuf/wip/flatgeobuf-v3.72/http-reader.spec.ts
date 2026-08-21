@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 import { HttpReader } from './http-reader';
 import { fromFeature } from './geojson/feature';

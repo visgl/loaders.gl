@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import {IOBuffer} from '../iobuffer/iobuffer';
 
 export const TYPES = {

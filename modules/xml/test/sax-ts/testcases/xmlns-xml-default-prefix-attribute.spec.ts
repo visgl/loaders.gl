@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: ISC
+
 import { expect, test } from "vitest";
 import { testSax } from '../utils/test-utils';
 test('SAXParser#xmlns-xml-default-prefix-attribute', () => {

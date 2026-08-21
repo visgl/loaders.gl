@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // @ts-nocheck
 import test from 'test/utils/vitest-tape';
 import {fetchFile} from '@loaders.gl/core';

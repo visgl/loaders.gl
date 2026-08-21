@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 /* eslint-disable */
 // @ts-nocheck
 import test from 'test/utils/vitest-tape';

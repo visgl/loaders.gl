@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 import {
     serialize,
     deserialize as genericDeserialize,

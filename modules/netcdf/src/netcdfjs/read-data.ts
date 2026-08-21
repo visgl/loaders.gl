@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import type {IOBuffer} from '../iobuffer/iobuffer';
 import type {NetCDFRecordDimension, NetCDFVariable} from './netcdf-types';
 import {readType, str2num, num2bytes} from './read-type';

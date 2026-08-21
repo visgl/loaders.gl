@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: ISC
+
 import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
 // stray ending tags should just be ignored in non-strict mode.

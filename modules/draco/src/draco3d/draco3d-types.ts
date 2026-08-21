@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // A set of typescript types manually adapted from the Draco web IDL
 // Draco JS is a bit tricky to work with due to the C++ emscripten code base
 // sparse documentation, so these types provide an extra safety net.

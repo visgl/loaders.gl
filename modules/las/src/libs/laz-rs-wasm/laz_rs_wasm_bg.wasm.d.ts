@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;

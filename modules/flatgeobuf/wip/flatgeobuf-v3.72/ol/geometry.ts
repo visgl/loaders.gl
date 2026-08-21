@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 import { GeometryType } from '../flat-geobuf/geometry-type.js';
 import { Geometry } from '../flat-geobuf/geometry.js';
 

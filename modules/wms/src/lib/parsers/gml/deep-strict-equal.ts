@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // https://github.com/nodejs/node/commit/c1d82ac2ff15594840e2a1b9531b506ae067ed27;
 
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
