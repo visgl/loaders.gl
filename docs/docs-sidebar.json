@@ -53,6 +53,7 @@
       "modules/pmtiles/formats/pmtiles",
       "modules/textures/formats/pvr",
       "modules/shapefile/formats/shapefile",
+      "modules/stac/formats/stac",
       "modules/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
@@ -202,6 +203,7 @@
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
+          "modules/stac/api-reference/stac-source-loader",
           "modules/tiles/api-reference/tiles-3d-source",
           "modules/tiles/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
@@ -509,6 +511,13 @@
           "modules/shapefile/README",
           "modules/shapefile/api-reference/shp-loader",
           "modules/shapefile/api-reference/dbf-loader"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/stac",
+        "items": [
+          "modules/stac/README"
         ]
       },
       {

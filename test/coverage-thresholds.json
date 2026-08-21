@@ -587,6 +587,21 @@
         "branches": 49
       }
     },
+    "@loaders.gl/stac": {
+      "path": "modules/stac",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      }
+    },
     "@loaders.gl/terrain": {
       "path": "modules/terrain",
       "browser": {

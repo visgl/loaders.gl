@@ -4,7 +4,13 @@
 
 /* eslint-disable camelcase */
 
-import type {CoreAPI, SourceLoader, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {
+  CatalogSource,
+  CatalogSourceCapabilities,
+  CoreAPI,
+  SourceLoader,
+  DataSourceOptions
+} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
 import type {CSWCapabilities} from './csw-capabilities-loader';
@@ -17,6 +23,10 @@ import type {CSWDomain} from './csw-domain-loader';
 import {CSWDomainLoaderWithParser} from './csw-domain-loader-with-parser';
 
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Describes a service or resource exposed by the catalog */
 export type Service = {
@@ -47,7 +57,7 @@ export type CSWGetRecordsParameters = CSWCommonParameters & {
   /** Request type */
   request?: 'GetRecords';
   /** type of records */
-  typenames: 'csw:Record';
+  typenames?: 'csw:Record';
 };
 
 export type CSWGetDomainParameters = CSWCommonParameters & {
@@ -57,7 +67,18 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
 };
 
 export type CSWSourceLoaderOptions = DataSourceOptions & {
-  csw?: {};
+  csw?: Record<string, never>;
+};
+
+/** One catalog record returned by a CSW `GetRecords` response. */
+export type CSWRecord = CSWRecords['records'][number];
+
+/** Query accepted by the shared catalog search interface. */
+export type CSWCatalogQuery = {
+  /** Standard CSW `GetRecords` parameters. */
+  parameters?: CSWGetRecordsParameters;
+  /** Vendor-specific query parameters appended to the request. */
+  vendorParameters?: Record<string, unknown>;
 };
 
 export const CSWSourceLoader = {
@@ -66,22 +87,18 @@ export const CSWSourceLoader = {
   name: 'CSW',
   id: 'csw',
   module: 'wms',
-  version: '0.0.0',
+  version: VERSION,
   extensions: [],
   mimeTypes: [],
   type: 'csw',
   fromUrl: true,
   fromBlob: false,
 
-  options: {
-    wfs: {}
-  },
+  options: {csw: {}},
 
-  defaultOptions: {
-    wfs: {}
-  },
+  defaultOptions: {csw: {}},
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
+  testURL: (url: string): boolean => CSWCatalogSource.testURL(url),
   createDataSource: (
     url: string,
     options: CSWSourceLoaderOptions,
@@ -95,11 +112,26 @@ export const CSWSourceLoader = {
  * - provides type safe methods to query and parse results (and errors) from a CSW service
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions> {
+export class CSWCatalogSource
+  extends DataSource<string, CSWSourceLoaderOptions>
+  implements CatalogSource<CSWRecord, CSWCatalogQuery, CSWCapabilities>
+{
   static readonly type = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
-  capabilities: CSWCapabilities | null = null;
+  /** Features exposed through the protocol-neutral catalog interface. */
+  readonly capabilities: CatalogSourceCapabilities = Object.freeze({
+    search: true,
+    pagination: false,
+    hierarchy: false,
+    spatialFilter: false,
+    temporalFilter: false,
+    textFilter: false,
+    cql2Filter: false,
+    collections: false,
+    assets: false
+  });
+
   /** A list of loaders used by the CSWCatalogSource methods */
   readonly loaders = [WMSErrorLoaderWithParser, CSWCapabilitiesLoaderWithParser];
 
@@ -115,6 +147,12 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
 
   normalizeMetadata(capabilities: CSWCapabilities): CSWCapabilities {
     return capabilities;
+  }
+
+  /** Searches one page of CSW records through the shared catalog interface. */
+  async *search(query: CSWCatalogQuery = {}): AsyncIterable<CSWRecord> {
+    const records = await this.getRecords(query.parameters, query.vendorParameters);
+    yield* records.records;
   }
 
   async getServiceDirectory(options?: {includeUnknown?: boolean}): Promise<Service[]> {
@@ -277,8 +315,8 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
 
   /** Checks for and parses a CSW XML formatted ServiceError and throws an exception */
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
-    const contentType = response.headers['content-type'];
-    if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.includes(contentType)) {
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.some(type => type === contentType)) {
       const error = WMSErrorLoaderWithParser.parseSync?.(
         arrayBuffer,
         this.options.core.loadOptions
