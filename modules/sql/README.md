@@ -39,6 +39,28 @@ const rows = await dataSource.queryRows('SELECT * FROM numbers');
 Use `queryArrow()` when the backing adapter supports Arrow-native results, or when you want
 loaders.gl to convert row results into an Arrow table.
 
+## Lightweight Arrow queries
+
+`@loaders.gl/sql/arrow-query` provides an experimental in-memory query path for Arrow tables. It
+supports the portable predicate AST, projection, and limits. This is useful for lightweight local
+filtering; it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsing,
+aggregation, or joins.
+
+```ts
+import {parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
+import {queryArrowTable} from '@loaders.gl/sql/arrow-query';
+
+const flights = queryArrowTable(arrowTable, {
+  predicate: parseSQLPredicate('year >= 2024 AND cancelled = FALSE'),
+  columns: ['carrier', 'fare'],
+  limit: 100
+});
+```
+
+Projection and limit-only queries preserve Arrow's zero-copy table views. Predicate queries
+currently materialize matching rows while keeping predicate columns out of the result unless
+selected explicitly.
+
 ## SQL predicate expressions
 
 `parseSQLPredicate()` accepts the expression after `WHERE`, not a complete `SELECT` statement. It

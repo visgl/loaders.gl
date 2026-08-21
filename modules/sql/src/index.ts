@@ -5,6 +5,7 @@
 export {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from './sql-source';
 export {DuckDBSQLSource, DuckDBSQLDataSource} from './duckdb-sql-source';
 export {SnowflakeSQLSource, SnowflakeSQLDataSource} from './snowflake-sql-source';
+export {queryArrowTable} from './query-arrow-table';
 export {parseSQLPredicate} from './parse-sql-predicate';
 export {
   isSQLPredicate,
@@ -38,3 +39,5 @@ export type {
   SQLSourceOptions,
   SQLTableInfo
 } from './sql-types';
+
+export type {ArrowQueryOptions} from './query-arrow-table';
