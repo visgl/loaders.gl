@@ -13,7 +13,6 @@ import type {
   ParquetDatasetBoundingBox,
   ParquetDatasetFile,
   ParquetDatasetFileCollection,
-  ParquetDatasetFileProvider,
   ParquetDatasetFileQuery,
   ParquetDatasetFiles,
   ParquetDatasetPartitionValue,
