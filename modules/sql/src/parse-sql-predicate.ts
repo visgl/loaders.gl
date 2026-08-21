@@ -5,6 +5,7 @@
 import type {
   SQLLogicalPredicate,
   SQLPredicate,
+  SQLPredicateParameterValues,
   SQLPredicateParserOptions,
   SQLPredicateProperty,
   SQLPredicateValue
@@ -31,7 +32,11 @@ export function parseSQLPredicate(
   source: string,
   options: SQLPredicateParserOptions = {}
 ): SQLPredicate {
-  const parser = new SQLPredicateParser(source, options.parameters ?? {});
+  const parser = new SQLPredicateParser(
+    source,
+    options.parameters ?? {},
+    options.preserveParameters === true
+  );
   const predicate = parser.parse();
   validateSQLPredicate(predicate);
   return predicate;
@@ -42,13 +47,20 @@ class SQLPredicateParser {
   /** Token stream parsed by this parser instance. */
   private readonly tokens: readonly SQLPredicateToken[];
   /** Named scalar parameters available to the expression. */
-  private readonly parameters: Readonly<Record<string, SQLPredicateValue>>;
+  private readonly parameters: SQLPredicateParameterValues;
+  /** Whether named parameters remain references in the parsed AST. */
+  private readonly preserveParameters: boolean;
   /** Current index in the token stream. */
   private position = 0;
 
-  constructor(source: string, parameters: Readonly<Record<string, SQLPredicateValue>>) {
+  constructor(
+    source: string,
+    parameters: SQLPredicateParameterValues,
+    preserveParameters: boolean
+  ) {
     this.tokens = tokenizeSQLPredicate(source);
     this.parameters = parameters;
+    this.preserveParameters = preserveParameters;
   }
 
   /** Parses the complete token stream. */
@@ -163,6 +175,9 @@ class SQLPredicateParser {
       return token.value;
     }
     if (token.kind === 'parameter') {
+      if (this.preserveParameters) {
+        return {parameter: token.value};
+      }
       if (!Object.hasOwn(this.parameters, token.value)) {
         throw new Error(`SQL predicate parameter ":${token.value}" requires a value`);
       }

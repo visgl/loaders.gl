@@ -5,6 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {
+  bindSQLPredicate,
   isSQLPredicate,
   parseSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
@@ -74,6 +75,28 @@ test('parseSQLPredicate preserves escaped strings and structured-cloneable param
   });
 });
 
+test('parseSQLPredicate can preserve named parameters for late binding', () => {
+  const predicate = parseSQLPredicate('value >= :minimum AND active = :active', {
+    preserveParameters: true
+  });
+
+  expect(predicate).toEqual({
+    op: 'and',
+    args: [
+      {op: '>=', args: [{property: 'value'}, {parameter: 'minimum'}]},
+      {op: '=', args: [{property: 'active'}, {parameter: 'active'}]}
+    ]
+  });
+  expect(bindSQLPredicate(predicate, {minimum: 10, active: true})).toEqual({
+    op: 'and',
+    args: [
+      {op: '>=', args: [{property: 'value'}, 10]},
+      {op: '=', args: [{property: 'active'}, true]}
+    ]
+  });
+  expect(() => bindSQLPredicate(predicate, {minimum: 10})).toThrow(/:active/);
+});
+
 test('SQL predicate validators accept supported ASTs and reject malformed payloads', () => {
   const predicate = {op: '=', args: [{property: 'value'}, 4]} as const;
   expect(isSQLPredicate(predicate)).toBe(true);
@@ -90,7 +113,7 @@ test('SQL predicate validators accept supported ASTs and reject malformed payloa
 test('SQL predicate JSON Schema describes the dependency-free JSON payload subset', () => {
   expect(SQL_PREDICATE_JSON_SCHEMA.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
   expect(SQL_PREDICATE_JSON_SCHEMA.$defs.logical.properties.args.minItems).toBe(2);
-  expect(SQL_PREDICATE_JSON_SCHEMA.$defs.value.type).toEqual(['boolean', 'number', 'string']);
+  expect(SQL_PREDICATE_JSON_SCHEMA.$defs.value.oneOf).toHaveLength(2);
 });
 
 test.each([

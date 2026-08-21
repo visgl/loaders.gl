@@ -5,7 +5,11 @@
 export {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from './sql-source';
 export {DuckDBSQLSource, DuckDBSQLDataSource} from './duckdb-sql-source';
 export {SnowflakeSQLSource, SnowflakeSQLDataSource} from './snowflake-sql-source';
+export {queryArrowTable} from './query-arrow-table';
 export {parseSQLPredicate} from './parse-sql-predicate';
+export {bindSQLPredicate} from './bind-sql-predicate';
+export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
+export {isSQLPredicateParameter} from './sql-predicate-types';
 export {
   isSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
@@ -19,8 +23,11 @@ export type {
   SQLNotPredicate,
   SQLNullPredicate,
   SQLPredicate,
+  SQLPredicateParameter,
+  SQLPredicateParameterValues,
   SQLPredicateParserOptions,
   SQLPredicateProperty,
+  SQLPredicateScalar,
   SQLPredicateValue
 } from './sql-predicate-types';
 
@@ -38,3 +45,14 @@ export type {
   SQLSourceOptions,
   SQLTableInfo
 } from './sql-types';
+
+export type {ArrowQueryOptions} from './query-arrow-table';
+export type {
+  TableQueryFilterStep,
+  TableQueryLimitStep,
+  TableQueryOptions,
+  TableQueryPlan,
+  TableQueryPlanStep,
+  TableQueryProjectStep,
+  TableQueryScanStep
+} from './table-query';

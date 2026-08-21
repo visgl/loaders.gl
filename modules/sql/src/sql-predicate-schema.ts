@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SQLPredicate, SQLPredicateValue} from './sql-predicate-types';
+import {
+  isSQLPredicateParameter,
+  type SQLPredicate,
+  type SQLPredicateValue
+} from './sql-predicate-types';
 
 const MAXIMUM_PREDICATE_DEPTH = 64;
 const MAXIMUM_PREDICATE_NODES = 4096;
@@ -31,7 +35,17 @@ export const SQL_PREDICATE_JSON_SCHEMA = {
       properties: {property: {type: 'string', minLength: 1}},
       additionalProperties: false
     },
-    value: {type: ['boolean', 'number', 'string']},
+    value: {
+      oneOf: [
+        {type: ['boolean', 'number', 'string']},
+        {
+          type: 'object',
+          required: ['parameter'],
+          properties: {parameter: {type: 'string', minLength: 1}},
+          additionalProperties: false
+        }
+      ]
+    },
     comparison: {
       type: 'object',
       required: ['op', 'args'],
@@ -197,6 +211,9 @@ function validatePredicateProperty(value: unknown, path: string): void {
 
 /** Validates one structured-cloneable predicate scalar. */
 function validatePredicateValue(value: unknown, path: string): asserts value is SQLPredicateValue {
+  if (isSQLPredicateParameter(value)) {
+    return;
+  }
   if (
     typeof value === 'boolean' ||
     typeof value === 'bigint' ||

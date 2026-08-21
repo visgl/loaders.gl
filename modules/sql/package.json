@@ -31,6 +31,16 @@
       "import": "./dist/sql-predicate.js",
       "require": "./dist/sql-predicate.cjs"
     },
+    "./arrow-query": {
+      "types": "./dist/arrow-query.d.ts",
+      "import": "./dist/arrow-query.js",
+      "require": "./dist/arrow-query.cjs"
+    },
+    "./table-query": {
+      "types": "./dist/table-query.d.ts",
+      "import": "./dist/table-query.js",
+      "require": "./dist/table-query.cjs"
+    },
     "./sql-predicate-zod": {
       "types": "./dist/sql-predicate-zod.d.ts",
       "import": "./dist/sql-predicate-zod.js",
