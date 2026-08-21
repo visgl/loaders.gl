@@ -32,7 +32,11 @@ import {
 } from '../parquetjs/utils/binary-utils';
 import {Uint8ArrayCompactProtocol} from '../parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../parquetjs/utils/uint8-array-transport';
-import {canParquetStatisticsMatch, getParquetPredicateColumns} from './parquet-predicate';
+import {
+  canParquetStatisticsMatch,
+  getParquetPredicatePath,
+  getParquetPredicatePaths
+} from './parquet-predicate';
 
 /** Half-open logical row range relative to one Parquet row group. */
 export type ParquetRowRange = {
@@ -89,7 +93,7 @@ type ParquetColumnPageStatistics = {
 /**
  * Builds a conservative selective-page plan from Parquet column and offset indexes.
  *
- * Returns `undefined` when indexes or the current flat-column decoder cannot safely avoid full
+ * Returns `undefined` when indexes or the current non-repeated-column decoder cannot safely avoid full
  * column-chunk reads. An empty `rowRanges` array means the indexes prove the predicate cannot match.
  */
 export async function createParquetPagePruningPlan(
@@ -102,19 +106,21 @@ export async function createParquetPagePruningPlan(
 ): Promise<ParquetPagePruningPlan | undefined> {
   const rowCount = Number(rowGroup.num_rows);
   const selectedColumnChunks = getSelectedColumnChunks(rowGroup, selectedColumnPaths);
-  if (!isSafeFlatPageSelection(schema, selectedColumnChunks) || rowCount <= 0) {
+  if (!isSafePageSelection(schema, selectedColumnChunks) || rowCount <= 0) {
     return undefined;
   }
 
   const pageLocations: ParquetPageLocations = {};
   const pageStatistics: Record<string, ParquetColumnPageStatistics> = {};
-  const predicateColumns = new Set(getParquetPredicateColumns(predicate));
+  const predicatePaths = new Set(
+    getParquetPredicatePaths(predicate).map(path => JSON.stringify(path))
+  );
   let indexCount = 0;
 
   await Promise.all(
     selectedColumnChunks.map(async columnChunk => {
       const path = columnChunk.meta_data!.path_in_schema;
-      const pathKey = path.join('.');
+      const pathKey = JSON.stringify(path);
       const offsetIndexRange = getParquetIndexRange(
         columnChunk.offset_index_offset,
         columnChunk.offset_index_length,
@@ -137,7 +143,7 @@ export async function createParquetPagePruningPlan(
       pageLocations[pathKey] = pages;
       indexCount++;
 
-      if (path.length !== 1 || !predicateColumns.has(path[0])) {
+      if (!predicatePaths.has(pathKey)) {
         return;
       }
       const columnIndexRange = getParquetIndexRange(
@@ -155,7 +161,7 @@ export async function createParquetPagePruningPlan(
       );
       const field = schema.findField(path);
       try {
-        pageStatistics[path[0]] = {
+        pageStatistics[pathKey] = {
           pages,
           statistics: decodeColumnIndex(toUint8Array(columnIndexBytes), pages, field)
         };
@@ -168,7 +174,7 @@ export async function createParquetPagePruningPlan(
 
   if (
     selectedColumnChunks.some(
-      columnChunk => !pageLocations[columnChunk.meta_data!.path_in_schema.join('.')]
+      columnChunk => !pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)]
     )
   ) {
     return undefined;
@@ -211,7 +217,7 @@ export function getParquetPageReadRanges(
   const ranges: Array<{offset: number; length: number}> = [];
   for (const columnChunk of getSelectedColumnChunks(rowGroup, selectedColumnPaths)) {
     const columnMetadata = columnChunk.meta_data!;
-    const pages = plan.pageLocations[columnMetadata.path_in_schema.join('.')];
+    const pages = plan.pageLocations[JSON.stringify(columnMetadata.path_in_schema)];
     const selectedPages = pages.filter(page =>
       plan.rowRanges.some(range => page.endRowIndex > range.start && page.firstRowIndex < range.end)
     );
@@ -308,7 +314,7 @@ function getPredicateRowRanges(
     | ParquetComparisonPredicate
     | ParquetInPredicate
     | ParquetNullPredicate;
-  const column = columns[leafPredicate.args[0].property];
+  const column = columns[JSON.stringify(getParquetPredicatePath(leafPredicate.args[0]))];
   if (!column) {
     return undefined;
   }
@@ -409,16 +415,13 @@ function getSelectedColumnChunks(
   });
 }
 
-/** Restricts selective page reads to independently materializable flat primitive columns. */
-function isSafeFlatPageSelection(
-  schema: ParquetSchema,
-  columnChunks: readonly ColumnChunk[]
-): boolean {
+/** Restricts selective page reads to independently materializable non-repeated leaf columns. */
+function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
     columnChunks.every(columnChunk => {
       const path = columnChunk.meta_data?.path_in_schema;
-      if (!path || path.length !== 1) {
+      if (!path) {
         return false;
       }
       const field = schema.findField(path);
@@ -427,7 +430,6 @@ function isSafeFlatPageSelection(
       );
       const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
       return (
-        field.path.length === 1 &&
         field.repetitionType !== 'REPEATED' &&
         field.rLevelMax === 0 &&
         (!dictionaryEncoded ||

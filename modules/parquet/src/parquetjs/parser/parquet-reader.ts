@@ -258,7 +258,7 @@ export class ParquetReader {
     };
   }
 
-  /** Reads independently materializable flat columns for one logical row range using page indexes. */
+  /** Reads independently materializable non-repeated columns for one row range using page indexes. */
   async readRowGroupRange(
     schema: ParquetSchema,
     rowGroup: RowGroup,
@@ -274,7 +274,7 @@ export class ParquetReader {
     const columnEntries = await Promise.all(
       selectedColumnChunks.map(async columnChunk => {
         const columnKey = columnChunk.meta_data!.path_in_schema.join();
-        const pages = pageLocations[columnChunk.meta_data!.path_in_schema.join('.')];
+        const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
         if (!pages) {
           throw new Error(`Parquet offset index missing for ${columnKey}`);
         }
@@ -371,7 +371,7 @@ export class ParquetReader {
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
-  /** Reads and decodes only the contiguous data pages overlapping one flat-column row range. */
+  /** Reads and decodes only the contiguous data pages overlapping one non-repeated row range. */
   async readColumnChunkRange(
     schema: ParquetSchema,
     columnChunk: ColumnChunk,
@@ -384,8 +384,8 @@ export class ParquetReader {
     }
     const columnMetadata = columnChunk.meta_data!;
     const field = schema.findField(columnMetadata.path_in_schema);
-    if (field.path.length !== 1 || field.repetitionType === 'REPEATED' || field.rLevelMax !== 0) {
-      throw new Error('Selective Parquet page reads currently require flat primitive columns');
+    if (field.repetitionType === 'REPEATED' || field.rLevelMax !== 0) {
+      throw new Error('Selective Parquet page reads currently require non-repeated columns');
     }
     const type: PrimitiveType = getThriftEnum(Type, columnMetadata.type) as any;
     if (type !== field.primitiveType) {
@@ -433,7 +433,7 @@ export class ParquetReader {
     const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
     const relativeStart = rowRange.start - firstPage.firstRowIndex;
     const relativeEnd = relativeStart + rowRange.end - rowRange.start;
-    return sliceFlatColumnChunk(decoded, field.dLevelMax, relativeStart, relativeEnd);
+    return sliceNonRepeatedColumnChunk(decoded, field.dLevelMax, relativeStart, relativeEnd);
   }
 
   /**
@@ -485,8 +485,8 @@ async function decodeDictionaryBuffer(
   return decodedPage.dictionary!;
 }
 
-/** Slices one decoded flat column chunk while preserving optional-value alignment. */
-function sliceFlatColumnChunk(
+/** Slices one decoded non-repeated column chunk while preserving optional-value alignment. */
+function sliceNonRepeatedColumnChunk(
   columnChunk: ParquetColumnChunk,
   definitionLevelMaximum: number,
   start: number,
@@ -504,7 +504,7 @@ function sliceFlatColumnChunk(
   };
 }
 
-/** Counts defined primitive values represented by one flat level interval. */
+/** Counts defined primitive values represented by one non-repeated level interval. */
 function countDefinedValues(
   definitionLevels: ParquetLevelBuffer,
   definitionLevelMaximum: number,

@@ -237,6 +237,8 @@ export class ParquetDatasetSource {
         concurrency: options.concurrency,
         rowGroupFilter: options.rowGroupFilter,
         predicate: options.predicate,
+        bbox: options.bbox,
+        geometryColumn: options.geometryColumn,
         signal
       })) {
         await queue.push(createDatasetBatch(batch, indexedFile), signal);

@@ -20,8 +20,10 @@ export type ParquetSourceCapabilities = Readonly<{
   supportsColumnStatistics: boolean;
   /** Serializable predicates can prune impossible row groups using column statistics. */
   supportsPredicatePushdown: boolean;
-  /** Column and offset indexes can avoid irrelevant data-page range reads for flat columns. */
+  /** Column and offset indexes can avoid irrelevant data-page reads for non-repeated columns. */
   supportsPageIndexPruning: boolean;
+  /** GeoParquet 1.1 bbox coverings drive spatial row-group, page, and exact-row filtering. */
+  supportsGeoParquetSpatialPruning: boolean;
   /** Surviving decoded rows are filtered exactly on the caller thread or worker. */
   supportsExactPredicateFiltering: boolean;
   /** Callers can supply the random-access transport used by the source. */
@@ -47,6 +49,7 @@ export const PARQUET_SOURCE_CAPABILITIES: ParquetSourceCapabilities = Object.fre
   supportsColumnStatistics: true,
   supportsPredicatePushdown: true,
   supportsPageIndexPruning: true,
+  supportsGeoParquetSpatialPruning: true,
   supportsExactPredicateFiltering: true,
   supportsCustomRangeTransport: true,
   supportsObjectVersionValidation: true,
