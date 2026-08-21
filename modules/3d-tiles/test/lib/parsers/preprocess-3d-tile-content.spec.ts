@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {preprocess3DTileContent} from '../../../src/lib/parsers/preprocess-3d-tile-content';
 
 /** Encodes a JSON object as an independent ArrayBuffer. */
@@ -20,44 +20,38 @@ function encodeMagic(magic: string, trailingByteLength = 0): ArrayBuffer {
   return bytes.buffer;
 }
 
-test('preprocess3DTileContent detects supported binary magic', t => {
+test('preprocess3DTileContent detects supported binary magic', () => {
   for (const contentType of ['b3dm', 'i3dm', 'cmpt', 'pnts'] as const) {
     const arrayBuffer = encodeMagic(contentType, 8);
     const content = preprocess3DTileContent(arrayBuffer);
-    t.equal(content.contentType, contentType);
-    t.equal('binaryPayload' in content && content.binaryPayload, arrayBuffer, 'preserves payload');
+    expect(content.contentType).toBe(contentType);
+    expect('binaryPayload' in content && content.binaryPayload).toBe(arrayBuffer);
   }
 
   const glbContent = preprocess3DTileContent(encodeMagic('glTF', 8));
-  t.equal(glbContent.contentType, 'glb', 'normalizes binary glTF magic');
-  t.end();
+  expect(glbContent.contentType).toBe('glb');
 });
 
-test('preprocess3DTileContent classifies tileset and glTF JSON by structure', t => {
+test('preprocess3DTileContent classifies tileset and glTF JSON by structure', () => {
   const tileset = preprocess3DTileContent(
     encodeJson({asset: {version: '1.1'}, root: {geometricError: 0}})
   );
-  t.equal(tileset.contentType, 'externalTileset');
-  t.equal('jsonPayload' in tileset && tileset.jsonPayload.asset.version, '1.1');
+  expect(tileset.contentType).toBe('externalTileset');
+  expect('jsonPayload' in tileset && tileset.jsonPayload.asset.version).toBe('1.1');
 
   const gltf = preprocess3DTileContent(encodeJson({asset: {version: '2.0'}, meshes: []}));
-  t.equal(gltf.contentType, 'gltf');
-  t.equal('jsonPayload' in gltf && gltf.jsonPayload.asset.version, '2.0');
-  t.end();
+  expect(gltf.contentType).toBe('gltf');
+  expect('jsonPayload' in gltf && gltf.jsonPayload.asset.version).toBe('2.0');
 });
 
-test('preprocess3DTileContent rejects truncated, malformed, and unsupported payloads', t => {
-  t.throws(
-    () => preprocess3DTileContent(new Uint8Array([1, 2, 3]).buffer),
+test('preprocess3DTileContent rejects truncated, malformed, and unsupported payloads', () => {
+  expect(() => preprocess3DTileContent(new Uint8Array([1, 2, 3]).buffer)).toThrow(
     /expected supported binary magic or JSON object/
   );
-  t.throws(
-    () => preprocess3DTileContent(new TextEncoder().encode('{broken').buffer),
+  expect(() => preprocess3DTileContent(new TextEncoder().encode('{broken').buffer)).toThrow(
     /expected supported binary magic or JSON object/
   );
-  t.throws(
-    () => preprocess3DTileContent(encodeJson({hello: 'world'})),
+  expect(() => preprocess3DTileContent(encodeJson({hello: 'world'}))).toThrow(
     /JSON must describe a tileset.*or a glTF asset/
   );
-  t.end();
 });

@@ -16,7 +16,6 @@ import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
 import {
   preprocess3DTileContent,
   type Preprocessed3DTileContent,
-  type Tiles3DContentType
 } from './lib/parsers/preprocess-3d-tile-content';
 
 /**
@@ -86,7 +85,7 @@ async function parse(
   if (getIsTileset(preprocessedContent, loaderOptions.isTileset)) {
     return parseTileset(preprocessedContent.jsonPayload as Tiles3DTilesetJSON, options, context);
   }
-  return parseTile(data, preprocessedContent.contentType, options, context);
+  return parseTile(data, preprocessedContent, options, context);
 }
 
 /**
@@ -183,27 +182,33 @@ function validateRequiredExtensions(tilesetJson: Tiles3DTilesetJSON): void {
  * Parses renderable content using its structure-first type classification.
  *
  * @param arrayBuffer - Original resource bytes.
- * @param contentType - Detected binary or JSON glTF type.
+ * @param preprocessedContent - Detected payload category and, for JSON, its parsed object.
  * @param options - Loader options forwarded to tile and glTF parsers.
  * @param context - Loader context used for external glTF resources.
  * @returns Parsed renderable tile content.
  */
 async function parseTile(
   arrayBuffer: ArrayBuffer,
-  contentType: Tiles3DContentType,
+  preprocessedContent: Exclude<Preprocessed3DTileContent, {contentType: 'externalTileset'}>,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTileContent> {
-  const tile = {
+  const tile: {content: Tiles3DTileContent} = {
     content: {
       shape: 'tile3d',
       featureIds: null
     }
   };
   const byteOffset = 0;
-  // @ts-expect-error
-  await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content, contentType);
-  // @ts-expect-error
+  await parse3DTile(
+    arrayBuffer,
+    byteOffset,
+    options,
+    context,
+    tile.content,
+    preprocessedContent.contentType,
+    preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : undefined
+  );
   return tile.content;
 }
 

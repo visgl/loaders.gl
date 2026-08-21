@@ -31,6 +31,7 @@ import type {Tiles3DBinaryContentType, Tiles3DContentType} from './preprocess-3d
  * @param context - Loader context used for nested glTF resources.
  * @param tile - Mutable result object populated by the format parser.
  * @param contentType - Optional resource-boundary classification from preprocessing.
+ * @param jsonPayload - Parsed JSON glTF payload from preprocessing, when available.
  * @returns Number of bytes consumed by the parsed content.
  */
 export async function parse3DTile(
@@ -39,7 +40,8 @@ export async function parse3DTile(
   options: Tiles3DLoaderOptions | undefined,
   context: LoaderContext | undefined,
   tile: Tiles3DTileContent = {shape: 'tile3d'},
-  contentType?: Tiles3DContentType
+  contentType?: Tiles3DContentType,
+  jsonPayload?: Record<string, unknown>
 ): Promise<number> {
   tile.byteOffset = byteOffset;
   tile.type = getParserContentType(contentType) || getMagicString(arrayBuffer, byteOffset);
@@ -60,7 +62,7 @@ export async function parse3DTile(
       return await parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options, context);
 
     case TILE3D_TYPE.GLTF:
-      return await parseGltf3DTile(tile, arrayBuffer, options, context);
+      return await parseGltf3DTile(tile, arrayBuffer, options, context, jsonPayload);
 
     case TILE3D_TYPE.INSTANCED_3D_MODEL:
       return await parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options, context);

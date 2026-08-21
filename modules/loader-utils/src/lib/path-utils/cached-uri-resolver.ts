@@ -52,7 +52,7 @@ export class CachedUriResolver {
     let resolvedUri: string;
     if (this.baseUrl) {
       resolvedUri = decodeURI(new URL(uri, this.baseUrl).toString());
-    } else if (uri.startsWith('/')) {
+    } else if (uri.startsWith('/') || URI_SCHEME_PATTERN.test(uri)) {
       resolvedUri = uri;
     } else {
       resolvedUri = path.resolve(this.basePath, uri);

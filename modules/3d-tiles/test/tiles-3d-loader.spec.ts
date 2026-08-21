@@ -117,6 +117,24 @@ test('Tiles3DLoader#detects JSON glTF tile content from structure', async t => {
   t.end();
 });
 
+test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', async t => {
+  const gltfJson = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+  );
+  const gltfArrayBuffer = gltfJson.buffer.slice(
+    gltfJson.byteOffset,
+    gltfJson.byteOffset + gltfJson.byteLength
+  ) as ArrayBuffer;
+  const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
+    worker: false,
+    '3d-tiles': {loadGLTF: true}
+  });
+
+  t.equal(tile.type, 'glTF');
+  t.equal(tile.gltf?.json.asset.version, '2.0', 'parses the preprocessed JSON glTF object');
+  t.end();
+});
+
 test('Tiles3DLoader#reports explicit content-mode mismatches', async t => {
   await t.rejects(
     parse(encodeTilesetJson(), Tiles3DLoader, {
