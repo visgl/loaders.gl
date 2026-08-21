@@ -180,7 +180,7 @@ export const PARQUET_FILES: ParquetTestFile[] = [
   {
     title: 'nested_structs',
     path: 'good/nested_structs.rust.parquet',
-    supportedJs: false,
+    supportedJs: true,
     supportedWasm: true,
     supportedHyparquet: true
   },

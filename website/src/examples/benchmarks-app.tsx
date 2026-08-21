@@ -13,6 +13,9 @@ import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
 
+// @probe.gl/bench reads this process-wide configuration without guarding its existence.
+globalThis.probe ||= {};
+
 const SAMPLE_CSV_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/csv/test/data/sample-very-long.csv';
 const ROW_COUNT = 2000;

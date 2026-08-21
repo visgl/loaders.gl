@@ -29,7 +29,8 @@ const TYPESCRIPT_DIFFERENTIAL_FIXTURES = new Set([
   'delta_binary_packed',
   'delta_byte_array',
   'delta_encoding_optional_column',
-  'delta_encoding_required_column'
+  'delta_encoding_required_column',
+  'nested_structs'
 ]);
 
 for (const backend of ['typescript', 'wasm'] as const) {

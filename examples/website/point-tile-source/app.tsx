@@ -31,9 +31,9 @@ import {PointTileSourceLayer} from './point-tile-source-layer';
 const INITIAL_MAP_VIEW_STATE: PointTileMapViewState = {
   longitude: -96,
   latitude: 37.8,
-  pitch: 0,
+  pitch: 50,
   maxPitch: 60,
-  bearing: 0,
+  bearing: -25,
   minZoom: 1,
   maxZoom: 22,
   zoom: 3.5,
@@ -295,10 +295,14 @@ export default function App({
   const availableExamples = format
     ? POINT_TILE_SOURCE_EXAMPLES.filter((example) => example.format === format)
     : POINT_TILE_SOURCE_EXAMPLES;
-  const initialExampleId = availableExamples[0]?.id || DEFAULT_EXAMPLE_ID;
+  const preferredExampleId =
+    format === 'potree' ? 'potree-lion' : format === 'copc' ? 'copc-miami' : DEFAULT_EXAMPLE_ID;
+  const initialExample =
+    availableExamples.find((example) => example.id === preferredExampleId) || availableExamples[0];
+  const initialExampleId = initialExample?.id || DEFAULT_EXAMPLE_ID;
   const [viewState, setViewState] = useState<PointTileViewState>(INITIAL_MAP_VIEW_STATE);
   const [selectedExampleId, setSelectedExampleId] = useState<string>(initialExampleId);
-  const [selectedUrl, setSelectedUrl] = useState<string>(availableExamples[0]?.url || '');
+  const [selectedUrl, setSelectedUrl] = useState<string>(initialExample?.url || '');
   const [dataSource, setDataSource] = useState<PointCloudTilesetSource | null>(null);
   const [tilesetSummary, setTilesetSummary] = useState<TilesetSummary | null>(null);
   const [metadataText, setMetadataText] = useState<string>('Loading metadata...');
@@ -336,10 +340,13 @@ export default function App({
 
           setDataSource(nextDataSource);
           const sourceViewState = await nextDataSource.getViewState?.();
-          const mapViewState = getMapPointCloudViewState(
-            sourceViewState?.cartographicCenter,
-            sourceViewState?.zoom
-          );
+          const mapViewState =
+            selectedExample.viewMode === 'map'
+              ? getMapPointCloudViewState(
+                  sourceViewState?.cartographicCenter,
+                  sourceViewState?.zoom
+                )
+              : null;
           const nextViewMode = mapViewState ? 'map' : selectedExample.viewMode;
           const nextViewState =
             nextViewMode === 'map'
@@ -395,7 +402,7 @@ export default function App({
           dataSource,
           pointSize: selectedExample?.pointSize || 1,
           getPointColor: selectedExample?.color || [55, 126, 184],
-          showTileBoundingBoxes: true,
+          showTileBoundingBoxes: false,
           pointTilesetOptions: {
             minimumNodePixelSize: 150,
             pointBudget: 2_000_000

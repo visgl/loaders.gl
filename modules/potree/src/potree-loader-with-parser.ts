@@ -21,5 +21,6 @@ export const PotreeLoaderWithParser = {
 
 /** Parses and validates one Potree `cloud.js` metadata document. */
 function parsePotreeMetadata(text: string): PotreeMetadata {
-  return PotreeMetadataSchema.parse(JSON.parse(text));
+  const jsonText = text.replace(/^\uFEFF/, '').replace(/^(?:\s*\/\/[^\r\n]*(?:\r?\n|$))*/, '');
+  return PotreeMetadataSchema.parse(JSON.parse(jsonText));
 }

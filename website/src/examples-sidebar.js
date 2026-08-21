@@ -34,11 +34,17 @@ const sidebars = {
         'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
+        'geospatial/overture-parquet',
         'geospatial/geopackage',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx'
       ]
+    },
+    {
+      type: 'category',
+      label: 'Cloud-Native Queries',
+      items: ['geospatial/fsq-places', 'geospatial/overture-parquet']
     },
     {
       type: 'category',
@@ -60,13 +66,13 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
+      label: 'OGC Services',
+      items: ['tiles/wms', 'tiles/wfs']
+    },
+    {
+      type: 'category',
+      label: 'ArcGIS Services',
+      items: ['tiles/arcgis-image-server', 'tiles/arcgis-feature-server']
     },
     {
       type: 'category',

@@ -118,6 +118,7 @@ Release Date: 2026
 **@loaders.gl/parquet**
 
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
+- [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) NEW - coordinates lazy catalog-backed file discovery, conservative file pruning, bounded concurrent Parquet reads, and deterministic Arrow batches. The [Overture GeoParquet example](/examples/geospatial/overture-parquet) runs the complete STAC-to-map query in the browser.
 - `ParquetSourceLoader` exposes normalized column-chunk statistics, predicate-based row-group pruning, and cumulative transport/decode/Arrow telemetry with exact request and byte counts.
 - `ParquetSourceLoader` reads column and offset indexes for flat primitive selections, converts page statistics into candidate row ranges, and fetches only the required data-page ranges before exact filtering on the caller thread or worker.
 - `ParquetSourceLoader` now publishes an immutable capability descriptor, deep-freezes cached schema metadata and batch provenance, and preserves caller abort reasons.

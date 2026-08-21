@@ -7,7 +7,6 @@ import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 import {
   registerJSModules,
-  checkJSModule,
   getJSModule,
   getJSModuleOrNull,
   ensureArrayBuffer
@@ -42,7 +41,6 @@ export class ZstdCompression extends Compression {
 
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
-    checkJSModule('zstd-codec', this.name);
     const ZstdCodec = getJSModuleOrNull('zstd-codec');
     // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
@@ -71,8 +69,14 @@ export class ZstdCompression extends Compression {
 
   async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
     await this.preload();
-    const simpleZstd = new zstd.Streaming();
     const inputArray = new Uint8Array(input);
+
+    if (!zstd) {
+      const {decompress} = await import('fzstd');
+      return ensureArrayBuffer(decompress(inputArray));
+    }
+
+    const simpleZstd = new zstd.Streaming();
 
     const chunks: Uint8Array[] = [];
     for (let i = 0; i <= inputArray.length; i += CHUNK_SIZE) {

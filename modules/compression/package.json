@@ -92,6 +92,7 @@
     "@loaders.gl/worker-utils": "5.0.0-alpha.1",
     "@types/pako": "^1.0.1",
     "fflate": "0.7.4",
+    "fzstd": "0.1.1",
     "pako": "1.0.11",
     "snappyjs": "^0.6.1"
   },
