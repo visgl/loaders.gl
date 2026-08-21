@@ -5836,6 +5836,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/stac@workspace:modules/stac":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/stac@workspace:modules/stac"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.1"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/terrain@npm:^5.0.0-alpha.0, @loaders.gl/terrain@workspace:modules/terrain":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/terrain@workspace:modules/terrain"

@@ -280,6 +280,15 @@
       "@loaders.gl/splats/test": [
         "modules/splats/test"
       ],
+      "@loaders.gl/stac": [
+        "modules/stac/src"
+      ],
+      "@loaders.gl/stac/*": [
+        "modules/stac/src/*"
+      ],
+      "@loaders.gl/stac/test": [
+        "modules/stac/test"
+      ],
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],

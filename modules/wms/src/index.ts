@@ -69,7 +69,12 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // OGC Services
 
-// export {CSWSourceLoader} from './csw-source-loader';
+export type {
+  CSWCatalogQuery,
+  CSWRecord,
+  CSWSourceLoaderOptions
+} from './csw-source-loader';
+export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 

@@ -13,7 +13,12 @@ import {
 } from '@loaders.gl/parquet/parquet-source-loader';
 import * as arrow from 'apache-arrow';
 
+import {
+  decodeParquetPageStatisticsValue,
+  getParquetIndexRange
+} from '../src/lib/parquet-page-index';
 import {loadWasm} from '../src/lib/utils/load-wasm';
+import type {ParquetField} from '../src/parquetjs/schema/declare';
 
 const ROW_COUNT = 8192;
 const SELECTED_ROW_START = 7000;
@@ -27,6 +32,34 @@ beforeAll(async () => {
 });
 
 describe('Parquet page-index pruning', () => {
+  test('decodes unsigned page-index statistics without sign extension', () => {
+    const uint32Bytes = new Uint8Array(4);
+    new DataView(uint32Bytes.buffer).setUint32(0, 0xffffffff, true);
+    const uint64Bytes = new Uint8Array(8);
+    new DataView(uint64Bytes.buffer).setBigUint64(0, 0xffffffffffffffffn, true);
+
+    expect(
+      decodeParquetPageStatisticsValue(
+        uint32Bytes,
+        {primitiveType: 'INT32', originalType: 'UINT_32'} as ParquetField
+      )
+    ).toBe(0xffffffff);
+    expect(
+      decodeParquetPageStatisticsValue(
+        uint64Bytes,
+        {primitiveType: 'INT64', originalType: 'UINT_64'} as ParquetField
+      )
+    ).toBe(0xffffffffffffffffn);
+  });
+
+  test('rejects optional index ranges outside the containing file', () => {
+    expect(getParquetIndexRange(80n, 20, 100)).toEqual({offset: 80, length: 20});
+    expect(getParquetIndexRange(80n, 21, 100)).toBeUndefined();
+    expect(getParquetIndexRange(101n, 1, 100)).toBeUndefined();
+    expect(getParquetIndexRange(-1n, 1, 100)).toBeUndefined();
+    expect(getParquetIndexRange(0n, 0, 100)).toBeUndefined();
+  });
+
   test('reads only candidate pages and preserves exact predicate results', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
     const metadata = await source.getMetadata();
