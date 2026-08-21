@@ -131,7 +131,7 @@ test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', asyn
   });
 
   t.equal(tile.type, 'glTF');
-  t.equal(tile.gltf?.json.asset.version, '2.0', 'parses the preprocessed JSON glTF object');
+  t.equal(tile.gltf?.asset.version, '2.0', 'parses the preprocessed JSON glTF object');
   t.end();
 });
 

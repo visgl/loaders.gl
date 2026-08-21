@@ -189,7 +189,10 @@ function validateRequiredExtensions(tilesetJson: Tiles3DTilesetJSON): void {
  */
 async function parseTile(
   arrayBuffer: ArrayBuffer,
-  preprocessedContent: Exclude<Preprocessed3DTileContent, {contentType: 'externalTileset'}>,
+  preprocessedContent: Exclude<
+    Preprocessed3DTileContent,
+    {contentType: 'externalTileset'}
+  >,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
 ): Promise<Tiles3DTileContent> {
