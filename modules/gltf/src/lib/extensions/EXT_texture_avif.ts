@@ -9,7 +9,7 @@
 import type {GLTF, GLTF_EXT_texture_avif} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import {isImageFormatSupported} from '@loaders.gl/images';
+import {getSupportedImageFormats} from '@loaders.gl/images';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 const EXT_TEXTURE_AVIF = 'EXT_texture_avif';
@@ -26,11 +26,15 @@ export const name = EXT_TEXTURE_AVIF;
  * @param gltfData Parsed glTF JSON whose texture sources may be updated in place.
  * @param options glTF loader options. The extension currently has no custom options.
  */
-export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): void {
+export async function preprocess(
+  gltfData: {json: GLTF},
+  options: GLTFLoaderOptions
+): Promise<void> {
   void options;
   const scenegraph = new GLTFScenegraph(gltfData);
 
-  if (!isImageFormatSupported('image/avif')) {
+  const supportedImageFormats = await getSupportedImageFormats();
+  if (!supportedImageFormats.has('image/avif')) {
     if (scenegraph.getRequiredExtensions().includes(EXT_TEXTURE_AVIF)) {
       throw new Error(`gltf: Required extension ${EXT_TEXTURE_AVIF} not supported by browser`);
     }

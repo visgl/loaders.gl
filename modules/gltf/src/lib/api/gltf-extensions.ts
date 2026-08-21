@@ -31,7 +31,11 @@ import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_meta
 
 type GLTFExtensionPlugin = {
   name: string;
-  preprocess?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions, context) => void;
+  preprocess?: (
+    gltfData: {json: GLTF},
+    options: GLTFLoaderOptions,
+    context
+  ) => void | Promise<void>;
   decode?: (
     gltfData: {
       json: GLTF;
@@ -76,10 +80,10 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
 const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [EXT_structural_metadata, EXT_mesh_features];
 
 /** Call before any resource loading starts */
-export function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
+export async function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
   const extensions = EXTENSIONS.filter(extension => useExtension(extension.name, options));
   for (const extension of extensions) {
-    extension.preprocess?.(gltf, options, context);
+    await extension.preprocess?.(gltf, options, context);
   }
 }
 

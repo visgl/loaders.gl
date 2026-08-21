@@ -904,7 +904,9 @@ export type GLTF_EXT_texture_webp = {
  * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif
  */
 export type GLTF_EXT_texture_avif = {
+  /** Index of the AVIF image used in place of the ordinary texture source. */
   source: GLTFId;
+  /** Application-specific extension data. */
   extras?: any;
 };
 
