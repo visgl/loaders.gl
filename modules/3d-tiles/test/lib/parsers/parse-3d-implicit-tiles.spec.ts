@@ -5,6 +5,7 @@
 import test from 'test/utils/vitest-tape';
 import type {Subtree} from '../../../src/types';
 import type {ImplicitOptions} from '../../../src/lib/parsers/parse-3d-tile-header';
+import {normalizeImplicitTileHeaders} from '../../../src/lib/parsers/parse-3d-tile-header';
 import {parseImplicitTiles} from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
 
@@ -70,5 +71,54 @@ test('parseImplicitTiles#supports subtrees without content availability', async 
 
   t.equal(tile.contentUrl, undefined, 'omits a render URL when content availability is absent');
   t.equal(tile.children.length, 0);
+  t.end();
+});
+
+test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates its descriptor', async t => {
+  const tile = {
+    geometricError: 16,
+    refine: 'REPLACE',
+    boundingVolume: {region: [0, 0, 1, 1, 0, 10]},
+    implicitTiling: {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 1,
+      availableLevels: 1,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+  const normalizedTile = await normalizeImplicitTileHeaders(
+    tile as any,
+    {root: tile} as any,
+    'https://example.com/tiles',
+    tile.implicitTiling as any,
+    {}
+  );
+
+  t.equal(normalizedTile?.contentUrl, undefined);
+  t.equal(normalizedTile?.implicitSubtree.descriptor.maximumLevel, 0);
+  t.equal(
+    normalizedTile?.implicitSubtree.subtreeUrl,
+    'https://example.com/tiles/subtrees/0/0/0.subtree'
+  );
+  await t.rejects(
+    normalizeImplicitTileHeaders(
+      tile as any,
+      {root: tile} as any,
+      'https://example.com/tiles',
+      {...tile.implicitTiling, availableLevels: 0} as any,
+      {}
+    ),
+    /availableLevels to include at least the root level/
+  );
+  await t.rejects(
+    normalizeImplicitTileHeaders(
+      tile as any,
+      {root: tile} as any,
+      'https://example.com/tiles',
+      {...tile.implicitTiling, subdivisionScheme: 'TRIANGLE'} as any,
+      {}
+    ),
+    /Unsupported implicit subdivision scheme/
+  );
   t.end();
 });
