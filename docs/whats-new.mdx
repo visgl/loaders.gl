@@ -116,6 +116,7 @@ Release Date: 2026
 
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
 - `ParquetSourceLoader` exposes normalized column-chunk statistics, predicate-based row-group pruning, and cumulative transport/decode/Arrow telemetry with exact request and byte counts.
+- `ParquetSourceLoader` reads column and offset indexes for flat primitive selections, converts page statistics into candidate row ranges, and fetches only the required data-page ranges before exact filtering on the caller thread or worker.
 - `ParquetSourceLoader` now publishes an immutable capability descriptor, deep-freezes cached schema metadata and batch provenance, and preserves caller abort reasons.
 - `ParquetSourceLoader` now materializes selected columns directly into Arrow batches without an intermediate object-row table.
 - `ParquetJSLoader` now constructs flat Arrow Utf8 and Binary vectors directly from decoded Parquet byte arrays, avoiding decode-to-string, re-encode, and intermediate per-value copies.

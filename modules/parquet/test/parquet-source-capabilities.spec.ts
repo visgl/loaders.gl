@@ -19,6 +19,7 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', t
     supportsLocalWasmAsset: true,
     supportsColumnStatistics: true,
     supportsPredicatePushdown: true,
+    supportsPageIndexPruning: true,
     supportsExactPredicateFiltering: true,
     supportsCustomRangeTransport: true,
     supportsObjectVersionValidation: true,

@@ -20,6 +20,8 @@ export type ParquetSourceCapabilities = Readonly<{
   supportsColumnStatistics: boolean;
   /** Serializable predicates can prune impossible row groups using column statistics. */
   supportsPredicatePushdown: boolean;
+  /** Column and offset indexes can avoid irrelevant data-page range reads for flat columns. */
+  supportsPageIndexPruning: boolean;
   /** Surviving decoded rows are filtered exactly on the caller thread or worker. */
   supportsExactPredicateFiltering: boolean;
   /** Callers can supply the random-access transport used by the source. */
@@ -44,6 +46,7 @@ export const PARQUET_SOURCE_CAPABILITIES: ParquetSourceCapabilities = Object.fre
   supportsLocalWasmAsset: true,
   supportsColumnStatistics: true,
   supportsPredicatePushdown: true,
+  supportsPageIndexPruning: true,
   supportsExactPredicateFiltering: true,
   supportsCustomRangeTransport: true,
   supportsObjectVersionValidation: true,

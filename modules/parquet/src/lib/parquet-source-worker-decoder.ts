@@ -29,17 +29,32 @@ export async function decodeParquetSourceWorkerInput(
   const rowGroup = createWorkerRowGroup(input);
 
   const decodeStartTime = getCurrentTime();
-  const decodedRowGroup = await reader.readRowGroup(schema, rowGroup, []);
-  const columns = schema.materializeColumns(decodedRowGroup);
-  const rowIndices = input.predicate
-    ? filterParquetRowIndices(input.predicate, columns, input.rowCount)
+  const decodedRowGroups = input.pagePlan
+    ? await Promise.all(
+        input.pagePlan.rowRanges.map(rowRange =>
+          reader.readRowGroupRange(schema, rowGroup, [], rowRange, input.pagePlan!.pageLocations)
+        )
+      )
+    : [await reader.readRowGroup(schema, rowGroup, [])];
+  const columns = concatenateMaterializedColumns(
+    decodedRowGroups.map(decodedRowGroup => schema.materializeColumns(decodedRowGroup))
+  );
+  const sourceRowIndices = input.pagePlan
+    ? input.pagePlan.rowRanges.flatMap(rowRange =>
+        Array.from({length: rowRange.end - rowRange.start}, (_, index) => rowRange.start + index)
+      )
     : undefined;
+  const sourceRowCount = sourceRowIndices?.length ?? input.rowCount;
+  const localRowIndices = input.predicate
+    ? filterParquetRowIndices(input.predicate, columns, sourceRowCount)
+    : undefined;
+  const rowIndices = localRowIndices?.map(rowIndex => sourceRowIndices?.[rowIndex] ?? rowIndex);
   const decodeDurationMs = getCurrentTime() - decodeStartTime;
 
   const conversionStartTime = getCurrentTime();
   const batches: ParquetSourceWorkerBatch[] = [];
   const outputColumns = new Set(input.projectedSchema.fields.map(field => field.name));
-  const outputRowCount = rowIndices?.length ?? input.rowCount;
+  const outputRowCount = rowIndices?.length ?? sourceRowCount;
   for (
     let outputRowOffset = 0;
     outputRowOffset < outputRowCount;
@@ -47,9 +62,13 @@ export async function decodeParquetSourceWorkerInput(
   ) {
     const rowCount = Math.min(input.batchSize, outputRowCount - outputRowOffset);
     const batchRowIndices = rowIndices?.slice(outputRowOffset, outputRowOffset + rowCount);
+    const batchLocalRowIndices = localRowIndices?.slice(
+      outputRowOffset,
+      outputRowOffset + rowCount
+    );
     const rowGroupRowOffset = batchRowIndices?.[0] ?? outputRowOffset;
-    const batchColumns = batchRowIndices
-      ? gatherParquetColumns(columns, batchRowIndices, outputColumns)
+    const batchColumns = batchLocalRowIndices
+      ? gatherParquetColumns(columns, batchLocalRowIndices, outputColumns)
       : sliceColumns(columns, outputRowOffset, outputRowOffset + rowCount);
     const arrowTable = convertTable(
       {
@@ -68,12 +87,29 @@ export async function decodeParquetSourceWorkerInput(
   }
   const arrowConversionDurationMs = getCurrentTime() - conversionStartTime;
   return {
-    sourceRowCount: input.rowCount,
+    sourceRowCount,
     rowCount: outputRowCount,
     batches,
     decodeDurationMs,
     arrowConversionDurationMs
   };
+}
+
+/** Concatenates materialized page-range fragments without constructing row objects. */
+function concatenateMaterializedColumns(
+  fragments: readonly Record<string, ArrayType>[]
+): Record<string, ArrayType> {
+  const columns: Record<string, unknown[]> = {};
+  for (const fragment of fragments) {
+    for (const [name, values] of Object.entries(fragment)) {
+      columns[name] ||= [];
+      const destination = columns[name];
+      for (let index = 0; index < values.length; index++) {
+        destination.push(values[index]);
+      }
+    }
+  }
+  return columns as Record<string, ArrayType>;
 }
 
 /** Returns a contiguous row slice of every decoded column without constructing row objects. */
