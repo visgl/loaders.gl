@@ -45,6 +45,8 @@ The GLTF post processor copies objects in the input gltf json field as necessary
 - The `GLTFPostprocessed` type has less optional fields. Many optional `GLTF` fields will be required and populated with empty arrays etc as appropriate.
 - "Resolves" references to GLTF objects. glTF objects reference other object with integer indexes. Such indexes will be replaced with object references, simplifying iteration over the scenegraph.
 - Generates required `id` fields for all objects.
+- Expands `LINE_LOOP` and `TRIANGLE_FAN` primitives into portable indexed `LINES` and `TRIANGLES`
+  without changing the loaded source JSON or buffers.
 
 ## Post Processing of glTF Extensions
 
@@ -76,6 +78,15 @@ Background: The GLTF file format describes a tree structure, however it links no
 ### Adds `id` to every node
 
 The postprocessor makes sure each node and an `id` value, unless already present.
+
+### Normalizes WebGL-only primitive topologies
+
+WebGPU does not support the glTF `LINE_LOOP` and `TRIANGLE_FAN` primitive modes.
+`postProcessGLTF` expands those modes into indexed `LINES` and `TRIANGLES`, respectively. Indexed
+and non-indexed source primitives are both supported, winding is preserved, and generated indices
+use `Uint16Array` or `Uint32Array` according to the largest referenced vertex. The original glTF
+primitive, accessor, and buffer data remain unchanged. Bufferless index accessors are materialized
+from their implicit-zero base and optional sparse substitutions before topology expansion.
 
 ## Node Specific Post Processing
 
