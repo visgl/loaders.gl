@@ -11,12 +11,18 @@ import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
-import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
+import {
+  Subtree,
+  Tiles3DTilesetJSON,
+  Tiles3DTileContent,
+  Tiles3DTilesetJSONPostprocessed
+} from './types';
 import {Tiles3DLoader as Tiles3DLoaderMetadata} from './tiles-3d-loader';
 import {
   preprocess3DTileContent,
   type Preprocessed3DTileContent
 } from './lib/parsers/preprocess-3d-tile-content';
+import parse3DTilesSubtree from './lib/parsers/helpers/parse-3d-tile-subtree';
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
@@ -52,6 +58,10 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
        * bytes and JSON structure; explicit booleans assert the expected category.
        */
       isTileset?: boolean | 'auto';
+      /** Internal source hint that parses a requested implicit-subtree resource. */
+      isSubtree?: boolean;
+      /** Maximum parsed implicit-subtree resources retained by each 3D Tiles source. */
+      maximumCachedSubtrees?: number;
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
     };
@@ -64,7 +74,7 @@ export const Tiles3DLoaderWithParser = {
   ...Tiles3DLoaderMetadataWithoutPreload,
   parse
 } as const satisfies LoaderWithParser<
-  Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
+  Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed | Subtree,
   never,
   Tiles3DLoaderOptions
 >;
@@ -81,8 +91,11 @@ async function parse(
   data: ArrayBuffer,
   options: Tiles3DLoaderOptions = {},
   context?: LoaderContext
-): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed> {
+): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed | Subtree> {
   const loaderOptions = options['3d-tiles'] || {};
+  if (loaderOptions.isSubtree) {
+    return await parse3DTilesSubtree(data, options, context);
+  }
   const preprocessedContent = preprocess3DTileContent(data);
   if (getIsTileset(preprocessedContent, loaderOptions.isTileset)) {
     return parseTileset(preprocessedContent.jsonPayload as Tiles3DTilesetJSON, options, context);

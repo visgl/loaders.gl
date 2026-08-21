@@ -12,7 +12,7 @@ import {CullingVolume} from '@math.gl/culling';
 import type {Tileset3D} from './tileset-3d';
 import type {DoublyLinkedListNode} from '../../utils/doubly-linked-list-node';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../../constants';
-import type {TileContentLoadResult} from './tileset-source';
+import type {TileChildrenLoadResult, TileContentLoadResult} from './tileset-source';
 
 import {FrameState} from '../helpers/frame-state';
 import {
@@ -50,6 +50,9 @@ export type Tile3DProps = {
   parentHeader: Tile3D;
   extendedId: string;
 };
+
+/** Lifecycle of a source-managed lazy child-header group. */
+export type TileChildrenState = 'unloaded' | 'loading' | 'ready' | 'failed';
 
 /**
  * A Tile3DHeader represents a tile as Tileset3D. When a tile is first created, its content is not loaded;
@@ -93,6 +96,8 @@ export class Tile3D {
 
   /** The tile's children - an array of Tile3D objects. */
   children: Tile3D[] = [];
+  /** Current lifecycle state for a lazy implicit subtree rooted at this tile. */
+  childrenState: TileChildrenState = 'ready';
   depth: number = 0;
   viewportIds: any[] = [];
   transform = new Matrix4();
@@ -117,6 +122,9 @@ export class Tile3D {
   // TODO Cesium 3d tiles specific
   private _expireDate: any = null;
   private _expiredContent: any = null;
+
+  /** In-flight source request shared by repeated traversal frames. */
+  private _childrenPromise: Promise<TileChildrenLoadResult> | null = null;
 
   private _boundingBox?: CartographicBounds = undefined;
 
@@ -191,6 +199,7 @@ export class Tile3D {
     this.refine = this._getRefine(header.refine);
     this.type = header.type;
     this.contentUrl = header.contentUrl;
+    this.childrenState = header.implicitSubtree ? 'unloaded' : 'ready';
 
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
@@ -229,7 +238,24 @@ export class Tile3D {
 
   /** Returns true if tile has children */
   get hasChildren() {
-    return this.children.length > 0 || (this.header.children && this.header.children.length > 0);
+    return (
+      this.children.length > 0 ||
+      (this.header.children && this.header.children.length > 0) ||
+      Boolean(this.header.implicitSubtree && this.childrenState !== 'ready')
+    );
+  }
+
+  /** Returns whether traversal may request an unresolved lazy child-header group. */
+  get hasUnloadedChildren(): boolean {
+    return Boolean(
+      this.header.implicitSubtree &&
+        (this.childrenState === 'unloaded' || this.childrenState === 'failed')
+    );
+  }
+
+  /** Returns whether a lazy child-header request is currently in flight. */
+  get childrenLoading(): boolean {
+    return this.childrenState === 'loading';
   }
 
   /**
@@ -345,12 +371,36 @@ export class Tile3D {
     return this.content.gpuMemoryUsageInBytes || this.content.byteLength || 0;
   }
 
-  /*
-   * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
-   * Tiles are prioritized by screen space error.
+  /**
+   * Returns scheduler priority for render-content requests.
+   *
+   * @returns Numeric priority, or a negative value when the queued request should be cancelled.
+   */
+  _getPriority(): number {
+    return this._calculateRequestPriority(false);
+  }
+
+  /**
+   * Returns scheduler priority for lazy child-header requests.
+   *
+   * Contentless implicit placeholders intentionally retain `UNLOADED` content state, so metadata
+   * scheduling skips only that render-content cancellation check and preserves every visibility,
+   * recency, progressive, foveated, and motion-deferral rule.
+   *
+   * @returns Numeric priority, or a negative value when the queued request should be cancelled.
+   */
+  private _getChildrenPriority(): number {
+    return this._calculateRequestPriority(true);
+  }
+
+  /**
+   * Calculates the common scheduler priority for content or hierarchy metadata.
+   *
+   * @param allowUnloadedContent - Whether an empty placeholder may request child metadata.
+   * @returns Numeric priority, or a negative value when the queued request should be cancelled.
    */
   // eslint-disable-next-line complexity
-  _getPriority() {
+  private _calculateRequestPriority(allowUnloadedContent: boolean): number {
     const traverser = this.tileset._traverser;
     const {skipLevelOfDetail} = traverser.options;
 
@@ -376,7 +426,7 @@ export class Tile3D {
     if (this.priorityDeferred) {
       return -1;
     }
-    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
+    if (!allowUnloadedContent && this.contentState === TILE_CONTENT_STATE.UNLOADED) {
       return -1;
     }
 
@@ -451,6 +501,96 @@ export class Tile3D {
     } finally {
       requestToken.done();
     }
+  }
+
+  /**
+   * Requests and installs this tile's lazy child-header group through its source.
+   *
+   * The same request scheduler and SSE/foveated priority value used for render content are reused
+   * for subtree metadata. Repeated traversal frames share one promise, and scheduler cancellation
+   * restores the unloaded state so a later frame can retry.
+   *
+   * @param frameState - View state that made the subtree eligible for refinement.
+   * @returns Source load result, or an unloaded result if scheduling was cancelled.
+   */
+  async loadChildren(frameState: FrameState): Promise<TileChildrenLoadResult> {
+    if (!this.header.implicitSubtree || this.childrenState === 'ready') {
+      return {loaded: false, tileCount: 0, childSubtreeCount: 0};
+    }
+    if (this._childrenPromise) {
+      return await this._childrenPromise;
+    }
+    if (!this.tileset.source.loadTileChildren) {
+      throw new Error('Tileset source does not support lazy tile children');
+    }
+
+    this.childrenState = 'loading';
+    this._childrenPromise = this._loadChildrenWithScheduler(frameState);
+    try {
+      return await this._childrenPromise;
+    } finally {
+      this._childrenPromise = null;
+    }
+  }
+
+  /**
+   * Runs one lazy child-header load after obtaining a scheduler token.
+   *
+   * @param frameState - View state forwarded to the source implementation.
+   * @returns Source load result.
+   */
+  private async _loadChildrenWithScheduler(
+    frameState: FrameState
+  ): Promise<TileChildrenLoadResult> {
+    const requestToken = await this.tileset._requestScheduler.scheduleRequest(
+      `${this.id}:implicit-subtree`,
+      this._getChildrenPriority.bind(this)
+    );
+    if (!requestToken) {
+      this.childrenState = 'unloaded';
+      return {loaded: false, tileCount: 0, childSubtreeCount: 0};
+    }
+
+    try {
+      const loadResult = await this.tileset.source.loadTileChildren!(this, frameState);
+      this.childrenState = loadResult.loaded ? 'ready' : 'unloaded';
+      return loadResult;
+    } catch (error) {
+      this.childrenState = 'failed';
+      throw error;
+    } finally {
+      requestToken.done();
+    }
+  }
+
+  /**
+   * Replaces a contentless implicit placeholder with its materialized subtree-root header.
+   *
+   * Transform state is intentionally preserved: the placeholder already owns the composed
+   * transform, and reapplying the root transform here would double-transform bounds and geometric
+   * error. Content and raw geometric error are reinitialized from the newly available header.
+   *
+   * @param materializedHeader - Available root header produced from one subtree resource.
+   */
+  applyImplicitSubtreeHeader(materializedHeader: Record<string, any>): void {
+    const existingTransform = this.header.transform;
+    const existingTransformMatrix = this.header.transformMatrix;
+    this.header = {
+      ...this.header,
+      ...materializedHeader,
+      transform: existingTransform,
+      transformMatrix: existingTransformMatrix,
+      implicitSubtree: undefined
+    };
+    this.refine = this._getRefine(materializedHeader.refine);
+    this.type = materializedHeader.type;
+    this.contentUrl = materializedHeader.contentUrl;
+    this._initializeLodMetric(materializedHeader);
+    this._updateLodMetricScale();
+    this._initializeBoundingVolumes(this.header);
+    // Use the merged header so inherited viewer-request-volume metadata remains available when a
+    // materialized implicit tile has no render content of its own.
+    this._initializeContent(this.header);
   }
 
   // Unloads the tile's content.
@@ -851,6 +991,17 @@ export class Tile3D {
       this.boundingVolume
     );
 
+    // Viewer request volumes constrain traversal, not just render content. A contentless implicit
+    // connector can still own an inherited request volume, so initialize it before the
+    // content-specific early return below.
+    if (header.viewerRequestVolume) {
+      this._viewerRequestVolume = createBoundingVolume(
+        header.viewerRequestVolume,
+        this.computedTransform,
+        this._viewerRequestVolume
+      );
+    }
+
     const content = header.content;
     if (!content) {
       return;
@@ -867,13 +1018,6 @@ export class Tile3D {
         content.boundingVolume,
         this.computedTransform,
         this._contentBoundingVolume
-      );
-    }
-    if (header.viewerRequestVolume) {
-      this._viewerRequestVolume = createBoundingVolume(
-        header.viewerRequestVolume,
-        this.computedTransform,
-        this._viewerRequestVolume
       );
     }
   }

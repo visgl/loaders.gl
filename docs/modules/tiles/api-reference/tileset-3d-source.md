@@ -16,6 +16,7 @@ A `Tileset3DSource` implementation is responsible for:
 - creating runtime tile headers
 - resolving tile content URLs
 - loading tile content
+- optionally loading a view-eligible lazy child-header group
 - deriving format-specific view state metadata
 - performing format-specific bookkeeping after tile content loads
 
@@ -27,14 +28,17 @@ A `Tileset3DSource` implementation is responsible for:
 2. `getRootTileset()` returns the normalized root payload
 3. `initializeTileHeaders()` creates the runtime tile tree
 4. `createTraverser()` provides the traversal implementation
-5. `loadTileContent()` fetches content for selected tiles
-6. `onTileLoaded()` optionally updates format-specific state
+5. `loadTileChildren()` optionally expands source-managed lazy hierarchy metadata after traversal eligibility
+6. `loadTileContent()` fetches content for selected tiles
+7. `onTileLoaded()` optionally updates format-specific state
+8. `destroy()` optionally releases source-local caches and guards late asynchronous work
 
 ## Core Shape
 
 ```ts
 export interface Tileset3DSource {
   initialize(): Promise<void>
+  destroy?(): void
   getMetadata(): TilesetSourceMetadata
   getRootTileset(): Promise<TilesetJSON>
   initializeTileHeaders(
@@ -43,6 +47,7 @@ export interface Tileset3DSource {
     parentTile?: Tile3D | null
   ): Tile3D
   createTraverser(options: TilesetTraverserProps): TilesetTraverser
+  loadTileChildren?(tile: Tile3D, frameState: FrameState): Promise<TileChildrenLoadResult>
   loadTileContent(tile: Tile3D): Promise<TileContentLoadResult>
   getTileUrl(tilePath: string): string
   getViewState(rootTile: Tile3D | null): TilesetSourceViewState

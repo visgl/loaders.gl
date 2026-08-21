@@ -31,6 +31,8 @@ Geometric error is a world-space distance. It becomes useful for a particular vi
 
 A lower `maximumScreenSpaceError` demands greater visual accuracy and generally loads more tiles. A higher value accepts a coarser approximation and generally reduces requests, memory, and drawing work.
 
+For implicit tiling, the same comparison also gates hierarchy metadata. A contentless subtree placeholder has a derived bounding volume and geometric error, so it can calculate SSE before the subtree availability file is present. The runtime requests that file only when the placeholder is visible, inside its request volume, and above the threshold. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees).
+
 ## Perspective SSE
 
 Perspective projection makes an object appear smaller as its distance from the camera increases. loaders.gl uses this approximation:
