@@ -65,13 +65,13 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
+      label: 'OGC Services',
+      items: ['tiles/wms', 'tiles/wfs']
+    },
+    {
+      type: 'category',
+      label: 'ArcGIS Services',
+      items: ['tiles/arcgis-image-server', 'tiles/arcgis-feature-server']
     },
     {
       type: 'category',
