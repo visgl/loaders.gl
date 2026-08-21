@@ -1,5 +1,5 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT license
+// SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
 import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';

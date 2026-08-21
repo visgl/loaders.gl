@@ -1,5 +1,5 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT and ISC
+// SPDX-License-Identifier: MIT AND ISC
 // Copyright (c) vis.gl contributors
 
 /*
