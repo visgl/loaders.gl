@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export type GLBBinChunk = {
   /** Zero-based index of this chunk in the GLB container. */
   chunkIndex: number;

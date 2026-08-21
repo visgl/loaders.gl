@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {I3SLoader, I3STilesetHeader, SceneLayer3D} from '@loaders.gl/i3s';
 import {coreApi} from '@loaders.gl/core';
 import {I3SSource, Tile3D, Tileset3D, TILESET_TYPE} from '@loaders.gl/tiles';

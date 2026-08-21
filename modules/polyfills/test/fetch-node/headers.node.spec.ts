@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 // https://fetch.spec.whatwg.org/#headers-class
 // Run the tests both under browser and Node (ensures they conform to built-in)

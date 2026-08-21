@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export const COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';

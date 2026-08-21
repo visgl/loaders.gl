@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Tileset3D} from '../common/tileset-3d';
 
 export function get3dTilesOptions(tileset: Tileset3D): {assetGltfUpAxis: 'X' | 'Y' | 'Z'} {

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import './meshopt/meshopt-decoder.spec';
 
 import './lib/gltf-utils/gltf-attribute-utils.spec';

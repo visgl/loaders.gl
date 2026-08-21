@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {FileProviderInterface} from './file-provider-interface';
 import {copyToArrayBuffer} from '../binary-utils/memory-conversion-utils';
 

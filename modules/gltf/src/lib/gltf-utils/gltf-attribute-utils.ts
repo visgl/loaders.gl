@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // import type {TypedArray} from '../types/loader-utils';
 import type {GLTFAccessor} from '../types/gltf-json-schema';
 // TODO - remove

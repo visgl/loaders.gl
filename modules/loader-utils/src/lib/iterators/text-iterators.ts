@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // TextDecoder iterators
 // TextDecoder will keep any partial undecoded bytes between calls to `decode`
 

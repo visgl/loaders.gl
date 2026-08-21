@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 
 import type {TypedArray, MeshAttribute, MeshGeometry} from '@loaders.gl/schema';

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 const EPSILON = 0.000000001;
 export function areNumberArraysEqual(array1, array2) {
   let result = true;

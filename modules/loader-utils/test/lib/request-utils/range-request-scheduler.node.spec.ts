@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {expect, test} from 'vitest';
 import {advanceTimersAndFlush, withFakeTimers} from '@loaders.gl/test-utils/vitest';

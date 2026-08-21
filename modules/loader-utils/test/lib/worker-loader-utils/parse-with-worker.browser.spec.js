@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';

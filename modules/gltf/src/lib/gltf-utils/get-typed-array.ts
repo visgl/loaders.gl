@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // TODO - GLTFScenegraph should use these
 import {assert} from '../utils/assert';
 import type {BigTypedArray} from '@loaders.gl/schema';

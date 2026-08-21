@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import '@loaders.gl/polyfills';
 import test from 'test/utils/vitest-tape';
 import {composeHashFile} from '../../src/hash-file-utility';

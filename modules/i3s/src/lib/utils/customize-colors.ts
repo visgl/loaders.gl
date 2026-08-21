@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
 import type {AttributeStorageInfo, COLOR, Field} from '../../types';
 

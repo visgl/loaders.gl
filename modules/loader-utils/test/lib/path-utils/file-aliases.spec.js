@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 // NOTE: addAliases is not a public export, already used by test setup

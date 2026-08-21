@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 // @ts-expect-error
 import {resolveUrl} from '@loaders.gl/gltf/lib/gltf-utils/resolve-url';

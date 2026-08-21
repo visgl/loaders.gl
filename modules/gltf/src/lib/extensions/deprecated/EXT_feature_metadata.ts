@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 import type {GLTF, GLTFTextureInfoMetadata} from '../../types/gltf-json-schema';
 import type {

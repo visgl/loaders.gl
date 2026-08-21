@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
 
 // GENERAL UTILITIES

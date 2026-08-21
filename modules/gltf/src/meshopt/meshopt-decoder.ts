@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /// <reference path="./meshoptimizer-decoder.d.ts" />
 
 import {MeshoptDecoder} from 'meshoptimizer/decoder';

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {MD5Hash} from '@loaders.gl/crypto';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';

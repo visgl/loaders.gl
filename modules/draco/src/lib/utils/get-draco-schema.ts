@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {MeshAttribute, Schema, Field} from '@loaders.gl/schema';
 import {deduceMeshField} from '@loaders.gl/schema-utils';
 import type {DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
