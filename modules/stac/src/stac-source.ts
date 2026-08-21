@@ -102,8 +102,9 @@ export class STACSource
 
   /** Returns the cached root Catalog or Collection. */
   async getRoot(options: {signal?: AbortSignal} = {}): Promise<STACCatalog | STACCollection> {
+    throwIfAborted(options.signal);
     if (!this.rootPromise) {
-      const rootPromise = this.fetchObject(this.url, options.signal).then(object => {
+      const rootPromise = this.fetchObject(this.url).then(object => {
         if (!isCatalog(object) && !isCollection(object)) {
           throw new Error(`STAC root must be a Catalog or Collection: ${this.url}`);
         }
@@ -116,7 +117,7 @@ export class STACSource
         }
       });
     }
-    return await this.rootPromise;
+    return await waitForPromiseWithSignal(this.rootPromise, options.signal);
   }
 
   /** Returns root metadata and whether a STAC API search relation was discovered. */
@@ -343,6 +344,11 @@ export class STACSource
     assertResponse(response, url);
     const object = validateObject(await response.json(), url);
     this.attachDocumentUrl(object, url);
+    if (isItemCollection(object)) {
+      for (const item of object.features) {
+        this.attachDocumentUrl(item, url);
+      }
+    }
     return object;
   }
 
@@ -452,6 +458,22 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw signal.reason || new DOMException('The operation was aborted', 'AbortError');
   }
+}
+
+/** Waits for shared work while applying cancellation only to the current caller. */
+function waitForPromiseWithSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) {
+    return promise;
+  }
+  throwIfAborted(signal);
+  return new Promise<T>((resolve, reject) => {
+    const handleAbort = (): void =>
+      reject(signal.reason || new DOMException('The operation was aborted', 'AbortError'));
+    signal.addEventListener('abort', handleAbort, {once: true});
+    void promise
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener('abort', handleAbort));
+  });
 }
 
 /** Validates a core STAC document while preserving extension fields. */

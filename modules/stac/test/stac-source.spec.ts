@@ -125,13 +125,18 @@ describe('STACSource static catalogs', () => {
   });
 
   test('reads linked ItemCollections and exercises all local Item constraints', async () => {
-    const included = createItem('included', 'places', [0, 0, 0, 1, 1, 1]);
+    const included = createItem('included', 'places', [0, 0, 0, 1, 1, 1], '2026-01-01T00:00:00Z', {
+      data: {href: 'data.parquet', roles: ['data']}
+    });
     const wrongId = createItem('wrong-id', 'places', [0, 0, 1, 1]);
     const noCollection = createItem('included', '', [0, 0, 1, 1]);
     delete noCollection.collection;
     const documents: Record<string, unknown> = {
-      [ROOT_URL]: createCatalog('root', [{rel: 'item', href: 'items.json'}]),
-      'https://example.test/items.json': createItemCollection([included, wrongId, noCollection], [])
+      [ROOT_URL]: createCatalog('root', [{rel: 'item', href: 'pages/items.json'}]),
+      'https://example.test/pages/items.json': createItemCollection(
+        [included, wrongId, noCollection],
+        []
+      )
     };
     const source = createSource(ROOT_URL, createFetch(documents));
 
@@ -143,6 +148,9 @@ describe('STACSource static catalogs', () => {
       })
     );
     expect(items).toEqual([included]);
+    expect(source.getAssets(items[0], {roles: ['data']})).toEqual([
+      expect.objectContaining({href: 'https://example.test/pages/data.parquet'})
+    ]);
 
     const detachedItem = createItem('detached', 'places', [0, 0, 1, 1], null, {
       data: {href: 'data.parquet', type: 'application/vnd.apache.parquet'},
@@ -183,6 +191,34 @@ describe('STACSource static catalogs', () => {
       createFetch({[ROOT_URL]: {type: 'Catalog', id: 7, links: []}})
     );
     await expect(invalidCatalog.getRoot()).rejects.toThrow(/Invalid STAC Catalog/);
+  });
+
+  test('isolates concurrent caller aborts from the cached root fetch', async () => {
+    const firstRequest = createDeferredResponse();
+    const firstFetch = vi.fn(async () => await firstRequest.promise);
+    const firstSource = createSource(ROOT_URL, firstFetch);
+    const firstAbortController = new AbortController();
+    const cancelledFirstCaller = firstSource.getRoot({signal: firstAbortController.signal});
+    const activeSecondCaller = firstSource.getRoot();
+    firstAbortController.abort(new Error('cancel first caller'));
+    firstRequest.resolve(jsonResponse(createCatalog('first-root', [])));
+
+    await expect(cancelledFirstCaller).rejects.toThrow('cancel first caller');
+    await expect(activeSecondCaller).resolves.toMatchObject({id: 'first-root'});
+    expect(firstFetch).toHaveBeenCalledOnce();
+
+    const secondRequest = createDeferredResponse();
+    const secondFetch = vi.fn(async () => await secondRequest.promise);
+    const secondSource = createSource(ROOT_URL, secondFetch);
+    const activeFirstCaller = secondSource.getRoot();
+    const secondAbortController = new AbortController();
+    const cancelledSecondCaller = secondSource.getRoot({signal: secondAbortController.signal});
+    secondAbortController.abort(new Error('cancel second caller'));
+    secondRequest.resolve(jsonResponse(createCatalog('second-root', [])));
+
+    await expect(cancelledSecondCaller).rejects.toThrow('cancel second caller');
+    await expect(activeFirstCaller).resolves.toMatchObject({id: 'second-root'});
+    expect(secondFetch).toHaveBeenCalledOnce();
   });
 
   test('bounds Collection traversal independently from Item traversal', async () => {
@@ -422,4 +458,16 @@ async function collect<T>(values: AsyncIterable<T>): Promise<T[]> {
     result.push(value);
   }
   return result;
+}
+
+/** Creates a manually resolved response promise for concurrent cancellation tests. */
+function createDeferredResponse(): {
+  promise: Promise<Response>;
+  resolve: (response: Response) => void;
+} {
+  let resolve!: (response: Response) => void;
+  const promise = new Promise<Response>(resolvePromise => {
+    resolve = resolvePromise;
+  });
+  return {promise, resolve};
 }
