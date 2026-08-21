@@ -5,8 +5,14 @@
 import test from 'test/utils/vitest-tape';
 import type {Subtree} from '../../../src/types';
 import type {ImplicitOptions} from '../../../src/lib/parsers/parse-3d-tile-header';
-import {normalizeImplicitTileHeaders} from '../../../src/lib/parsers/parse-3d-tile-header';
-import {parseImplicitTiles} from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
+import {
+  normalizeImplicitTileHeaders,
+  normalizeImplicitTileData
+} from '../../../src/lib/parsers/parse-3d-tile-header';
+import {
+  parseImplicitTiles,
+  replaceContentUrlTemplate
+} from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
 
 test('parseImplicitTiles#supports a single available level', async t => {
@@ -120,5 +126,36 @@ test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates
     ),
     /Unsupported implicit subdivision scheme/
   );
+  t.end();
+});
+
+test('implicit parser compatibility helpers materialize one subtree and replace URL coordinates', async t => {
+  const implicitOptions: ImplicitOptions = {
+    contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
+    subtreesUrlTemplate: 'https://example.com/subtrees/{level}/{x}/{y}.subtree',
+    subdivisionScheme: 'QUADTREE',
+    subtreeLevels: 1,
+    maximumLevel: 0,
+    refine: TILE_REFINEMENT.REPLACE,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    rootLodMetricValue: 16,
+    rootBoundingVolume: {region: [0, 0, 1, 1, 0, 10]}
+  };
+  const tile = await normalizeImplicitTileData(
+    {geometricError: 16, boundingVolume: implicitOptions.rootBoundingVolume} as any,
+    '',
+    {
+      buffers: [],
+      bufferViews: [],
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 1},
+      childSubtreeAvailability: {constant: 0}
+    },
+    implicitOptions,
+    {}
+  );
+
+  t.equal(tile?.contentUrl, 'https://example.com/content/0/0/0.b3dm');
+  t.equal(replaceContentUrlTemplate('/{LEVEL}/{X}/{y}/{z}', 1, 2, 3, 4), '/1/2/3/4');
   t.end();
 });
