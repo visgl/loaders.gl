@@ -65,8 +65,14 @@ export function shredRecord(
   }
   rowGroup.rowCount += 1;
   for (const field of schema.fieldList) {
-    Array.prototype.push.apply(rowGroup.columnData[field.key].rlevels, data[field.key].rlevels);
-    Array.prototype.push.apply(rowGroup.columnData[field.key].dlevels, data[field.key].dlevels);
+    Array.prototype.push.apply(
+      rowGroup.columnData[field.key].rlevels as number[],
+      data[field.key].rlevels as number[]
+    );
+    Array.prototype.push.apply(
+      rowGroup.columnData[field.key].dlevels as number[],
+      data[field.key].dlevels as number[]
+    );
     Array.prototype.push.apply(
       rowGroup.columnData[field.key].values as unknown[],
       data[field.key].values as unknown as unknown[]
@@ -114,8 +120,8 @@ function shredRecordFields(
         shredRecordFields(field.fields!, null!, data, rLevel, dLevel);
       } else {
         data[field.key].count += 1;
-        data[field.key].rlevels.push(rLevel);
-        data[field.key].dlevels.push(dLevel);
+        (data[field.key].rlevels as number[]).push(rLevel);
+        (data[field.key].dlevels as number[]).push(dLevel);
       }
       continue; // eslint-disable-line no-continue
     }
@@ -127,8 +133,8 @@ function shredRecordFields(
         shredRecordFields(field.fields!, values[i], data, rlvl, field.dLevelMax);
       } else {
         data[field.key].count += 1;
-        data[field.key].rlevels.push(rlvl);
-        data[field.key].dlevels.push(field.dLevelMax);
+        (data[field.key].rlevels as number[]).push(rlvl);
+        (data[field.key].dlevels as number[]).push(field.dLevelMax);
         (data[field.key].values as unknown[]).push(
           Types.toPrimitive((field.originalType || field.primitiveType)!, values[i], field)
         );

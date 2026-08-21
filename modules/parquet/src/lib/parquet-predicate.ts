@@ -11,6 +11,7 @@ import type {
   ParquetPredicateValue,
   ParquetRowGroupMetadata
 } from '../parquet-source-types';
+import {encodeUtf8} from '../parquetjs/utils/binary-utils';
 
 /** Returns the unique top-level columns referenced by a predicate. */
 export function getParquetPredicateColumns(predicate: ParquetPredicate): string[] {
@@ -216,48 +217,75 @@ function canComparisonMatch(
     switch (operator) {
       case '=':
         return !(
-          (minimum !== undefined && comparePredicateValues(value, minimum) < 0) ||
-          (maximum !== undefined && comparePredicateValues(value, maximum) > 0)
+          (minimum !== undefined && compareStatisticsValues(value, minimum) < 0) ||
+          (maximum !== undefined && compareStatisticsValues(value, maximum) > 0)
         );
       case '<>':
         return !(
           minimum !== undefined &&
           maximum !== undefined &&
-          comparePredicateValues(value, minimum) === 0 &&
-          comparePredicateValues(value, maximum) === 0
+          compareStatisticsValues(value, minimum) === 0 &&
+          compareStatisticsValues(value, maximum) === 0
         );
       case '<':
-        return minimum === undefined || comparePredicateValues(minimum, value) < 0;
+        return minimum === undefined || compareStatisticsValues(minimum, value) < 0;
       case '<=':
-        return minimum === undefined || comparePredicateValues(minimum, value) <= 0;
+        return minimum === undefined || compareStatisticsValues(minimum, value) <= 0;
       case '>':
-        return maximum === undefined || comparePredicateValues(maximum, value) > 0;
+        return maximum === undefined || compareStatisticsValues(maximum, value) > 0;
       case '>=':
-        return maximum === undefined || comparePredicateValues(maximum, value) >= 0;
+        return maximum === undefined || compareStatisticsValues(maximum, value) >= 0;
     }
   } catch {
     return true;
   }
 }
 
-/** Compares predicate-compatible scalar values, including binary values lexicographically. */
+/** Compares statistics using Parquet's unsigned UTF-8 byte ordering for strings. */
+function compareStatisticsValues(left: unknown, right: unknown): number {
+  if (typeof left === 'string' && typeof right === 'string') {
+    return compareUint8Arrays(encodeUtf8(left), encodeUtf8(right));
+  }
+  return comparePredicateValues(left, right);
+}
+
+/** Compares predicate-compatible scalar values and rejects incomparable types. */
 function comparePredicateValues(left: unknown, right: unknown): number {
   if (left instanceof Uint8Array && right instanceof Uint8Array) {
-    const length = Math.min(left.length, right.length);
-    for (let index = 0; index < length; index++) {
-      if (left[index] !== right[index]) {
-        return left[index] < right[index] ? -1 : 1;
-      }
-    }
-    return Math.sign(left.length - right.length);
+    return compareUint8Arrays(left, right);
   }
-  const comparableLeft = left instanceof Date ? left.getTime() : left;
-  const comparableRight = right instanceof Date ? right.getTime() : right;
+  if (left instanceof Uint8Array || right instanceof Uint8Array) {
+    throw new Error('Parquet binary predicates require binary values on both sides');
+  }
+  if (left instanceof Date || right instanceof Date) {
+    if (!(left instanceof Date) || !(right instanceof Date)) {
+      throw new Error('Parquet date predicates require date values on both sides');
+    }
+    const leftTime = left.getTime();
+    const rightTime = right.getTime();
+    if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+      throw new Error('Invalid dates cannot be ordered by a Parquet predicate');
+    }
+    return leftTime < rightTime ? -1 : leftTime > rightTime ? 1 : 0;
+  }
+  const leftType = typeof left;
+  const rightType = typeof right;
+  const bothNumeric =
+    (leftType === 'number' || leftType === 'bigint') &&
+    (rightType === 'number' || rightType === 'bigint');
+  if (!bothNumeric && leftType !== rightType) {
+    throw new Error(`Parquet predicate cannot compare ${leftType} with ${rightType}`);
+  }
+  if (!bothNumeric && leftType !== 'string' && leftType !== 'boolean') {
+    throw new Error(`Parquet predicate does not support ${leftType} values`);
+  }
+  const comparableLeft = left as string | boolean | number | bigint;
+  const comparableRight = right as string | boolean | number | bigint;
   if (
-    (typeof comparableLeft === 'number' && Number.isNaN(comparableLeft)) ||
-    (typeof comparableRight === 'number' && Number.isNaN(comparableRight))
+    (typeof comparableLeft === 'number' && !Number.isFinite(comparableLeft)) ||
+    (typeof comparableRight === 'number' && !Number.isFinite(comparableRight))
   ) {
-    throw new Error('NaN cannot be ordered by a Parquet predicate');
+    throw new Error('Non-finite numbers cannot be ordered by a Parquet predicate');
   }
   if ((comparableLeft as never) < (comparableRight as never)) {
     return -1;
@@ -266,6 +294,17 @@ function comparePredicateValues(left: unknown, right: unknown): number {
     return 1;
   }
   return 0;
+}
+
+/** Compares two byte sequences using unsigned lexicographic ordering. */
+function compareUint8Arrays(left: Uint8Array, right: Uint8Array): number {
+  const length = Math.min(left.length, right.length);
+  for (let index = 0; index < length; index++) {
+    if (left[index] !== right[index]) {
+      return left[index] < right[index] ? -1 : 1;
+    }
+  }
+  return Math.sign(left.length - right.length);
 }
 
 /** Reads one value from an array-like materialized Parquet column. */

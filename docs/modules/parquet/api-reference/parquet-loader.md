@@ -224,7 +224,8 @@ timing; each implementation is warmed up and must return the same row count. The
 nullable primitives, nested and repeated data, dictionary and delta encodings, compression, and
 column projection. It focuses on Arrow output and retains one object-row control to expose
 row-materialization cost. `N/A` means an implementation is intentionally excluded from a scenario;
-`Failed` means a selected implementation did not pass warm-up or correctness validation. A green
+`Failed` means a selected implementation threw or could not complete; and `Incorrect` means it
+completed but returned a different row count from the validated result. A green
 marker identifies the fastest completed value in each row. Results depend on the browser, hardware,
 thermal state, and whether this tab remains focused.
 

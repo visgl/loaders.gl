@@ -39,6 +39,27 @@ test('decodeDataPages#returns preallocated empty column data', async t => {
   t.end();
 });
 
+test('decodeDataPages#uses compact typed level buffers when requested', async t => {
+  const [data, wideData, veryWideData] = await Promise.all(
+    [1, 256, 65_536].map(dLevelMax =>
+      decodeDataPages(new Uint8Array(), {
+        ...TEST_CONTEXT,
+        dLevelMax,
+        numValues: 4 as unknown as Int64,
+        useTypedLevelBuffers: true
+      })
+    )
+  );
+
+  t.ok(data.rlevels instanceof Uint8Array, 'uses a typed repetition-level buffer');
+  t.ok(data.dlevels instanceof Uint8Array, 'uses a typed definition-level buffer');
+  t.ok(wideData.dlevels instanceof Uint16Array, 'widens definition levels when required');
+  t.ok(veryWideData.dlevels instanceof Uint32Array, 'supports deeply nested definition levels');
+  t.equal(data.rlevels.length, 0, 'trims repetition levels to the decoded length');
+  t.equal(data.dlevels.length, 0, 'trims definition levels to the decoded length');
+  t.end();
+});
+
 test('decodeDataPages#rejects invalid metadata value counts', async t => {
   await t.rejects(
     decodeDataPages(new Uint8Array(), {

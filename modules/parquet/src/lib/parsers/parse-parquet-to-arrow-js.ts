@@ -148,7 +148,8 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
     retainByteArrayViews: true,
-    useTypedValueBuffers: true
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true
   });
   const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
   const arrowSchema = createParquetArrowSchema(schema);

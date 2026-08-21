@@ -113,6 +113,23 @@ test('Parquet predicates compare binary values and snapshot mutable values', () 
   expect(gatherParquetColumns({binary: [binaryValue]}, [0])).toEqual({binary: [binaryValue]});
 });
 
+test('Parquet predicates reject incomparable scalar types during exact filtering', () => {
+  expect(() =>
+    filterParquetRowIndices(
+      {op: '=', args: [{property: 'value'}, 1]},
+      {value: ['1']},
+      1
+    )
+  ).toThrow(/cannot compare string with number/);
+  expect(() =>
+    filterParquetRowIndices(
+      {op: '=', args: [{property: 'value'}, new Uint8Array([1])]},
+      {value: ['\u0001']},
+      1
+    )
+  ).toThrow(/binary predicates require binary values/);
+});
+
 test('Parquet footer statistics only prune predicates proven impossible', () => {
   const rowGroup = createRowGroupMetadata({minimum: 10, maximum: 19, nullCount: 0});
 
@@ -162,6 +179,25 @@ test('Parquet footer statistics only prune predicates proven impossible', () => 
   expect(canParquetRowGroupMatch({op: '>', args: [{property: 'id'}, 19]}, inexactRowGroup)).toBe(
     true
   );
+});
+
+test('Parquet footer statistics use UTF-8 byte ordering and retain incomparable groups', () => {
+  const unicodeRowGroup = createRowGroupMetadata({
+    minimum: '\uE000',
+    maximum: '\u{10000}',
+    nullCount: 0
+  });
+  expect(
+    canParquetRowGroupMatch(
+      {op: '>=', args: [{property: 'id'}, '\u{10000}']},
+      unicodeRowGroup
+    )
+  ).toBe(true);
+
+  const numericRowGroup = createRowGroupMetadata({minimum: 10, maximum: 19, nullCount: 0});
+  expect(
+    canParquetRowGroupMatch({op: '=', args: [{property: 'id'}, '15']}, numericRowGroup)
+  ).toBe(true);
 });
 
 test('Parquet predicate negation preserves CQL2 null semantics', () => {
@@ -233,16 +269,16 @@ test('ParquetSource transfers serializable predicates through worker decoding', 
     source.read({
       columns: ['payload'],
       batchSize: 2,
-      predicate: {op: 'in', args: [{property: 'id'}, [1, 5, 10]]}
+      predicate: {op: '=', args: [{property: 'binary'}, new Uint8Array([1])]}
     })
   );
 
   expect(batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || []))).toEqual([
     'row-1',
     'row-5',
-    'row-10'
+    'row-9'
   ]);
-  expect(batches.map(batch => batch.rowIndices)).toEqual([[1], [5], [10]]);
+  expect(batches.map(batch => batch.rowIndices)).toEqual([[1], [5], [9]]);
   expect(source.getTelemetry()).toMatchObject({
     predicateRowsTested: 12,
     predicateRowsMatched: 3,
@@ -253,8 +289,8 @@ test('ParquetSource transfers serializable predicates through worker decoding', 
 
 /** Creates normalized row-group metadata for conservative statistics tests. */
 function createRowGroupMetadata(statistics: {
-  minimum: number;
-  maximum: number;
+  minimum: unknown;
+  maximum: unknown;
   nullCount: number;
 }): ParquetRowGroupMetadata {
   return {
@@ -296,14 +332,16 @@ async function createPredicateFixture(): Promise<ArrayBuffer> {
         fields: [
           {name: 'id', type: 'int32', nullable: false},
           {name: 'category', type: 'utf8', nullable: false},
-          {name: 'payload', type: 'utf8', nullable: false}
+          {name: 'payload', type: 'utf8', nullable: false},
+          {name: 'binary', type: 'binary', nullable: false}
         ],
         metadata: {}
       },
       data: Array.from({length: 12}, (_, index) => ({
         id: index,
         category: index % 2 === 0 ? 'even' : 'odd',
-        payload: `row-${index}`
+        payload: `row-${index}`,
+        binary: new Uint8Array([index % 4])
       }))
     } satisfies ObjectRowTable,
     ParquetJSWriter,

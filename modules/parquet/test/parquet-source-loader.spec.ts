@@ -178,8 +178,8 @@ test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) =
     column => column.path.join('.') === 'int_map.map.key'
   )?.statistics;
 
-  t.equal(idStatistics?.min, 1, 'decodes physical INT64 minimum');
-  t.equal(idStatistics?.max, 7, 'decodes physical INT64 maximum');
+  t.equal(idStatistics?.min, 1n, 'decodes physical INT64 minimum exactly');
+  t.equal(idStatistics?.max, 7n, 'decodes physical INT64 maximum exactly');
   t.equal(idStatistics?.nullCount, 0, 'retains an explicit zero null count');
   t.equal(keyStatistics?.min, 'k1', 'converts a logical UTF8 minimum');
   t.equal(keyStatistics?.max, 'k3', 'converts a logical UTF8 maximum');

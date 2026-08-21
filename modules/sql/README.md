@@ -46,7 +46,7 @@ supports comparisons, `IN`, `IS [NOT] NULL`, `AND`, `OR`, `NOT`, parentheses, sc
 named parameters.
 
 ```ts
-import {parseSQLPredicate} from '@loaders.gl/sql';
+import {parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
 
 const predicate = parseSQLPredicate(
   "timestamp >= :start AND status IN ('valid', 'estimated')",
@@ -61,7 +61,8 @@ for await (const batch of parquetSource.read({
 }
 ```
 
-The resulting `op`/`args` representation is directionally aligned with CQL2 JSON but does not
+The dependency-free `sql-predicate` subpath does not load or traverse the optional database
+adapters. The resulting `op`/`args` representation is directionally aligned with CQL2 JSON but does not
 claim CQL2 conformance. `SQL_PREDICATE_JSON_SCHEMA`, `validateSQLPredicate()`, and
 `isSQLPredicate()` support dependency-free payload validation.
 
