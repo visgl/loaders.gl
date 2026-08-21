@@ -29,7 +29,7 @@ export const ExampleCard = styled.a`
   outline: none;
   padding: 4px;
   position: relative;
-  img {
+  > img {
     transition-property: filter;
     transition-duration: var(--ifm-transition-slow);
     transition-timing-function: var(--ifm-transition-timing-default);
@@ -37,7 +37,7 @@ export const ExampleCard = styled.a`
   &:hover {
     box-shadow: var(--ifm-global-shadow-md);
   }
-  &:hover img {
+  &:hover > img {
     filter: contrast(0.2);
   }
   ${isMobile} {
@@ -46,6 +46,21 @@ export const ExampleCard = styled.a`
   }
   @media screen and (max-width: 632px) {
     width: 50%;
+  }
+`;
+
+export const ExampleLogo = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 24px;
+  background: var(--ifm-color-white);
+  img {
+    width: 72%;
+    height: 64%;
+    object-fit: contain;
   }
 `;
 
