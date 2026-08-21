@@ -64,6 +64,10 @@ const source = createDataSource(url, [ParquetSourceLoader], {});
 
 ## Multi-file datasets
 
+The [Overture GeoParquet browser example](/examples/geospatial/overture-parquet) demonstrates this
+API against the live Overture STAC catalog. It discovers the current places release, reads only
+selected Parquet byte ranges, streams Arrow batches, and renders them directly with deck.gl.
+
 `ParquetDatasetSource` composes a lazy file provider with one selective `ParquetSource` per selected
 file. The provider may be backed by STAC, a database, an application manifest, or a static array;
 the Parquet module does not depend on any catalog protocol.

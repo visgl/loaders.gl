@@ -38,10 +38,16 @@ test('GeoArrowTableAdapter#converts native point, line, and polygon tables', asy
 
   t.equal(pointData.shape, 'binary-feature-collection', 'point data is binary GeoJSON');
   t.ok(pointData.points?.positions.value.length, 'point positions are populated');
+  t.ok(pointData.lines && pointData.polygons, 'point data includes empty deck.gl geometry bins');
   t.equal(lineData.shape, 'binary-feature-collection', 'line data is binary GeoJSON');
   t.ok(lineData.lines?.pathIndices.value.length, 'line path indices are populated');
+  t.ok(lineData.points && lineData.polygons, 'line data includes empty deck.gl geometry bins');
   t.equal(polygonData.shape, 'binary-feature-collection', 'polygon data is binary GeoJSON');
   t.ok(polygonData.polygons?.polygonIndices.value.length, 'polygon indices are populated');
+  t.ok(
+    polygonData.points && polygonData.lines,
+    'polygon data includes empty deck.gl geometry bins'
+  );
   t.end();
 });
 
@@ -54,6 +60,7 @@ test('GeoArrowTableAdapter#converts WKB tables and loaders.gl table wrappers', a
 
   t.equal(binaryData.shape, 'binary-feature-collection', 'wrapper data is binary GeoJSON');
   t.ok(binaryData.points?.positions.value.length, 'WKB point positions are populated');
+  t.ok(binaryData.lines && binaryData.polygons, 'WKB data includes empty deck.gl geometry bins');
   t.equal(getApacheArrowTable(table), table, 'raw Apache Arrow table is returned as-is');
   t.equal(
     getApacheArrowTable({shape: 'arrow-table', data: table}),

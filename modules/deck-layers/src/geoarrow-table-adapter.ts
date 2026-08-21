@@ -60,22 +60,38 @@ export function convertGeoArrowTableToBinaryFeatureCollection(
     const {binaryGeometries} = convertGeoArrowToBinaryFeatureCollection(column, encoding, {
       triangulate: isPolygonEncoding(encoding)
     });
-    return mergeNativeBinaryGeometries(binaryGeometries, encoding);
+    return completeBinaryFeatureCollection(mergeNativeBinaryGeometries(binaryGeometries, encoding));
   }
 
   if (encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt') {
-    return convertGeometryValuesToBinaryFeatureCollection(
-      column as unknown as ArrayLike<ArrayBufferLike | ArrayBufferView | string | null | undefined>,
-      {
-        geometryEncoding: encoding === 'geoarrow.wkb' ? 'wkb' : 'wkt',
-        scratch: options.scratch,
-        triangulate: true,
-        getProperties: createArrowPropertyResolver(table, geometryColumn)
-      }
+    return completeBinaryFeatureCollection(
+      convertGeometryValuesToBinaryFeatureCollection(
+        column as unknown as ArrayLike<
+          ArrayBufferLike | ArrayBufferView | string | null | undefined
+        >,
+        {
+          geometryEncoding: encoding === 'geoarrow.wkb' ? 'wkb' : 'wkt',
+          scratch: options.scratch,
+          triangulate: true,
+          getProperties: createArrowPropertyResolver(table, geometryColumn)
+        }
+      )
     );
   }
 
-  return {shape: 'binary-feature-collection'};
+  return completeBinaryFeatureCollection({shape: 'binary-feature-collection'});
+}
+
+/** Adds the empty geometry bins required by deck.gl's binary GeoJSON detector. */
+function completeBinaryFeatureCollection(
+  collection: BinaryFeatureCollection
+): BinaryFeatureCollection {
+  return {
+    shape: 'binary-feature-collection',
+    points: collection.points || createEmptyPointFeature(),
+    lines: collection.lines || createEmptyLineFeature(),
+    polygons: collection.polygons || createEmptyPolygonFeature()
+  };
 }
 
 /**
