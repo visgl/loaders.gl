@@ -41,7 +41,9 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
     '3d-tiles'?: {
-      /** Whether to parse any embedded glTF binaries (or extract memory for independent glTF parsing) */
+      /**
+       * Whether to parse embedded glTF binaries or retain their bytes for independent parsing.
+       */
       loadGLTF?: boolean;
       /** If renderer doesn't support quantized positions, loader can decode them on CPU */
       decodeQuantizedPositions?: boolean;
