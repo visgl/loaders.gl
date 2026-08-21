@@ -45,6 +45,7 @@ Release Date: 2026
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) resolves the thumbnail index to the processed image.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
+- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) selects `EXT_texture_avif` image sources when the active image decoder supports AVIF, and applies independent `KHR_texture_transform` transforms for textures that share a UV attribute.
 
 **@loaders.gl/las** 
 
@@ -183,6 +184,18 @@ Release Date: 2026
 - [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) is the dedicated table-returning JSON API. [`JSONLoader`](/docs/modules/json/api-reference/json-loader) remains the arbitrary JSON document loader.
 - [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
 - [`JSONWriter`](/docs/modules/json/api-reference/json-writer) now accepts Arrow table inputs and decodes GeoArrow WKB geometry columns to GeoJSON geometry objects by default.
+
+## v4.5 (Alpha)
+
+v4.5 adds experimental Gaussian splat and TypeScript Parquet support while improving glTF texture handling.
+
+**Highlights**
+
+- **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADSourceLoader` supports progressive chunk loading for paged RAD scenes.
+- **@loaders.gl/parquet** - New experimental `ParquetJSLoader` makes the TypeScript Parquet backend available through an explicit loader import.
+- **@loaders.gl/gltf** - `KHR_texture_transform` now supports independent transforms on textures that share a UV attribute, and `GLTFLoader` selects `EXT_texture_avif` sources when AVIF is available.
+
+The release also includes `KHR_meshopt_compression` support and portable `LINE_LOOP` / `TRIANGLE_FAN` normalization from v4.4.5.
 
 ## v4.4
 
