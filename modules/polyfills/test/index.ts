@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import './text-encoding/text-encoding.node.spec';
 
 import './fetch-node/decode-data-uri.node.spec';

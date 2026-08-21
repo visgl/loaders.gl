@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export const signature = new Uint8Array([0x01, 0x00]);

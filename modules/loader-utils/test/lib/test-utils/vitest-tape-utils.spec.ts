@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test, {isBrowser, isNode, testIf, testIfBrowser, testIfNode} from 'test/utils/vitest-tape';
 
 test('vitest tape runtime utils#runtime flags are exclusive', t => {

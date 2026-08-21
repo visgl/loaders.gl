@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Use stackgl modules for DOM-less reading and writing of images
 
 import savePixels from 'save-pixels';

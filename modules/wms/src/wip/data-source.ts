@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 /** General data source class */
 // export abstract class DataSource {};

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import './helpers/i3s-nodepages-tiles.spec';
 import './lib/parsers/url-utils.spec';
 import './lib/utils/customize-colors.spec';

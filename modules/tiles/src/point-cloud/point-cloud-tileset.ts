@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Vector3} from '@math.gl/core';
 import {BoundingSphere, CullingVolume, Plane} from '@math.gl/culling';
 import type {Viewport} from '../types';

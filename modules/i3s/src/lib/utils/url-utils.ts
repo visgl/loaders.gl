@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Node3DIndexDocument, SceneLayer3D} from '../../types';
 
 /**

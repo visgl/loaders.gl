@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';

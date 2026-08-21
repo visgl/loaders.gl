@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {BoundingSphere} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 

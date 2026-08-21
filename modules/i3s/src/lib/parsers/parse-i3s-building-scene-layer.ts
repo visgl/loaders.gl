@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {BuildingSceneLayerTileset, BuildingSceneSublayer} from '../../types';
 
 const OBJECT_3D_LAYER_TYPE = '3DObject';

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable no-restricted-globals */
 import type {CoreAPI} from '../sources/data-source';
 import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';

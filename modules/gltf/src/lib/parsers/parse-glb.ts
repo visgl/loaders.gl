@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase, max-statements */
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 // Draft GLB v3 layout: https://github.com/KhronosGroup/glTF/issues/2594

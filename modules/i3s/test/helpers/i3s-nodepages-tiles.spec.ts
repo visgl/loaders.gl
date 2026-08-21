@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';

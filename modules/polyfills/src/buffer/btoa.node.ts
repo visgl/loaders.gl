@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // btoa, atob polyfills for Node.js
 // Note: The atob and btoa functions (not just the polyfills!) are not unicode safe
 // But still useful for unit testing

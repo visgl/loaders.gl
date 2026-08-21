@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {getCartographicOriginFromBoundingBox} from '../../src/utils/bounding-box-utils';
 import {createProjection} from '../../src/utils/projection-utils';

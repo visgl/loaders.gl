@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 import * as KHR_binary_glTF from '../extensions/KHR_binary_gltf';
 

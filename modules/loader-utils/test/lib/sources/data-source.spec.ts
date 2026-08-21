@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import type {DataSourceOptions} from '../../../src';
 import {DataSource} from '../../../src';

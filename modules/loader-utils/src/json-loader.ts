@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from './loader-types';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 

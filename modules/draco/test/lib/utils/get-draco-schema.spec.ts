@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 import test from 'test/utils/vitest-tape';
 import {getDracoSchema} from '../../../src/lib/utils/get-draco-schema';

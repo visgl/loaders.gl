@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffersAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';

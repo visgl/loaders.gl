@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ReadableOptions} from 'stream';
 import * as Stream from 'stream';
 
