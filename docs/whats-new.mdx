@@ -1,5 +1,12 @@
 # What's New
 
+## v4.5 (Alpha)
+
+The first v4.5 alpha carries forward recent glTF improvements:
+
+- **@loaders.gl/gltf** - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter.
+- **@loaders.gl/gltf** - [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) expands WebGL-only `LINE_LOOP` and `TRIANGLE_FAN` primitives into portable indexed `LINES` and `TRIANGLES` without mutating the loaded source data.
+
 ## v4.4
 
 Release Date: March 31, 2026
