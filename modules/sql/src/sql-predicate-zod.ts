@@ -13,7 +13,8 @@ export const SQLPredicateValueSchema: z.ZodType<SQLPredicateValue> = z.union([
   z.bigint(),
   z.string(),
   z.date(),
-  z.instanceof(Uint8Array)
+  z.instanceof(Uint8Array),
+  z.object({parameter: z.string().min(1)}).strict()
 ]);
 
 const SQLPredicatePropertySchema = z.object({property: z.string().min(1)}).strict();

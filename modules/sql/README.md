@@ -42,9 +42,14 @@ loaders.gl to convert row results into an Arrow table.
 ## Lightweight Arrow queries
 
 `@loaders.gl/sql/arrow-query` provides an experimental in-memory query path for Arrow tables. It
-supports the portable predicate AST, projection, and limits. This is useful for lightweight local
-filtering; it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsing,
-aggregation, or joins.
+uses the shared `TableQueryOptions` planner, which always orders operations as scan, filter,
+project, then limit. The same immutable plan can be lowered by GPU dataframe implementations
+without adopting Arrow's materialization strategy. This is useful for lightweight local filtering;
+it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsing, aggregation,
+or joins.
+
+Backends that only need the portable query contract can import `TableQueryOptions` and
+`planTableQuery()` from `@loaders.gl/sql/table-query` without importing the Arrow executor.
 
 ```ts
 import {parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
@@ -60,6 +65,16 @@ const flights = queryArrowTable(arrowTable, {
 Projection and limit-only queries preserve Arrow's zero-copy table views. Predicate queries
 currently materialize matching rows while keeping predicate columns out of the result unless
 selected explicitly.
+
+Named SQL parameters can remain unresolved while a caller builds or compiles a query. Bind them
+immediately before an Arrow backend executes the predicate:
+
+```ts
+import {bindSQLPredicate, parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
+
+const predicate = parseSQLPredicate('fare >= :minimumFare', {preserveParameters: true});
+const boundPredicate = bindSQLPredicate(predicate, {minimumFare: 250});
+```
 
 ## SQL predicate expressions
 

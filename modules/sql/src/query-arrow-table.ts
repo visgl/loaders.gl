@@ -6,27 +6,33 @@ import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
-import type {
-  SQLComparisonPredicate,
-  SQLInPredicate,
-  SQLLogicalPredicate,
-  SQLNotPredicate,
-  SQLNullPredicate,
-  SQLPredicate,
-  SQLPredicateValue
+import {
+  isSQLPredicateParameter,
+  type SQLComparisonPredicate,
+  type SQLInPredicate,
+  type SQLLogicalPredicate,
+  type SQLNotPredicate,
+  type SQLNullPredicate,
+  type SQLPredicate,
+  type SQLPredicateValue
 } from './sql-predicate-types';
+import {
+  getSQLPredicateColumnNames,
+  planTableQuery,
+  type TableQueryFilterStep,
+  type TableQueryLimitStep,
+  type TableQueryOptions,
+  type TableQueryPlanStep,
+  type TableQueryProjectStep,
+  type TableQueryScanStep
+} from './table-query';
 
 /** Options for the lightweight in-memory Arrow query executor. */
-export type ArrowQueryOptions = Readonly<{
-  /** Filters source rows using the portable SQL predicate representation. */
-  predicate?: SQLPredicate;
-  /** Selects output columns in the supplied order. Defaults to all source columns. */
-  columns?: readonly string[];
-  /** Restricts the result to the first matching rows. */
-  limit?: number;
-  /** Cancels the query before or during predicate evaluation. */
-  signal?: AbortSignal;
-}>;
+export type ArrowQueryOptions = TableQueryOptions &
+  Readonly<{
+    /** Cancels the query before or during predicate evaluation. */
+    signal?: AbortSignal;
+  }>;
 
 type SQLTruthValue = boolean | null;
 
@@ -42,26 +48,30 @@ export function queryArrowTable(
   sourceTable: ArrowTable,
   options: ArrowQueryOptions = {}
 ): ArrowTable {
-  validateArrowQueryOptions(options);
   throwIfAborted(options.signal);
 
   const sourceData = sourceTable.data;
-  const columnNames = getOutputColumnNames(sourceData, options.columns);
-  const predicateColumnNames = options.predicate ? getPredicateColumnNames(options.predicate) : [];
-  validateColumnNames(sourceData, columnNames);
-  validateColumnNames(sourceData, predicateColumnNames);
-
-  const projectedData = sourceData.select(columnNames);
-  const limit = options.limit ?? Number.POSITIVE_INFINITY;
-  if (!options.predicate) {
+  const plan = planTableQuery(
+    sourceData.schema.fields.map(field => field.name),
+    options
+  );
+  const scannedData = sourceData.select([...getScanStep(plan).columns]);
+  const projectedData = scannedData.select([...getProjectStep(plan).columns]);
+  const predicate = getFilterStep(plan)?.predicate;
+  const limit = getLimitStep(plan)?.limit ?? Number.POSITIVE_INFINITY;
+  if (!predicate) {
     return wrapArrowTable(projectedData.slice(0, limit));
   }
 
-  const predicateColumns = getPredicateColumns(sourceData, predicateColumnNames);
+  const predicateColumns = getPredicateColumns(scannedData, getSQLPredicateColumnNames(predicate));
   const matchingRowIndices: number[] = [];
-  for (let rowIndex = 0; rowIndex < sourceData.numRows && matchingRowIndices.length < limit; rowIndex++) {
+  for (
+    let rowIndex = 0;
+    rowIndex < scannedData.numRows && matchingRowIndices.length < limit;
+    rowIndex++
+  ) {
     throwIfAborted(options.signal);
-    if (evaluatePredicate(options.predicate, predicateColumns, rowIndex) === true) {
+    if (evaluatePredicate(predicate, predicateColumns, rowIndex) === true) {
       matchingRowIndices.push(rowIndex);
     }
   }
@@ -82,42 +92,6 @@ export function queryArrowTable(
   return wrapArrowTable(new arrow.Table(projectedData.schema, outputColumns));
 }
 
-/** Returns requested output columns, defaulting to all source columns. */
-function getOutputColumnNames(
-  sourceTable: arrow.Table,
-  requestedColumnNames: readonly string[] | undefined
-): string[] {
-  if (requestedColumnNames === undefined) {
-    return sourceTable.schema.fields.map(field => field.name);
-  }
-  return [...requestedColumnNames];
-}
-
-/** Validates public query options before any table processing begins. */
-function validateArrowQueryOptions(options: ArrowQueryOptions): void {
-  if (
-    options.limit !== undefined &&
-    (!Number.isSafeInteger(options.limit) || options.limit < 0)
-  ) {
-    throw new Error('Arrow query limit must be a non-negative safe integer.');
-  }
-}
-
-/** Validates that every selected or predicate-referenced column exists exactly once. */
-function validateColumnNames(sourceTable: arrow.Table, columnNames: readonly string[]): void {
-  const availableColumnNames = new Set(sourceTable.schema.fields.map(field => field.name));
-  const seenColumnNames = new Set<string>();
-  for (const columnName of columnNames) {
-    if (!availableColumnNames.has(columnName)) {
-      throw new Error(`Arrow query column not found: ${columnName}`);
-    }
-    if (seenColumnNames.has(columnName)) {
-      throw new Error(`Arrow query column was selected more than once: ${columnName}`);
-    }
-    seenColumnNames.add(columnName);
-  }
-}
-
 /** Creates a predicate-column lookup so values are not resolved for every source row. */
 function getPredicateColumns(
   sourceTable: arrow.Table,
@@ -132,18 +106,6 @@ function getPredicateColumns(
     columns[columnName] = column;
   }
   return columns;
-}
-
-/** Collects each column property referenced by a portable predicate exactly once. */
-function getPredicateColumnNames(predicate: SQLPredicate): string[] {
-  const columnNames = new Set<string>();
-  visitPredicate(predicate, currentPredicate => {
-    if (isLogicalPredicate(currentPredicate) || isNotPredicate(currentPredicate)) {
-      return;
-    }
-    columnNames.add(currentPredicate.args[0].property);
-  });
-  return [...columnNames];
 }
 
 /** Evaluates a predicate against one Arrow table row using SQL three-valued Boolean logic. */
@@ -214,10 +176,7 @@ function evaluateIn(value: unknown, candidates: readonly SQLPredicateValue[]): S
 }
 
 /** Evaluates a binary SQL comparison with SQL null propagation. */
-function evaluateComparison(
-  value: unknown,
-  predicate: SQLComparisonPredicate
-): SQLTruthValue {
+function evaluateComparison(value: unknown, predicate: SQLComparisonPredicate): SQLTruthValue {
   if (value === null || value === undefined) {
     return null;
   }
@@ -240,6 +199,11 @@ function evaluateComparison(
 
 /** Compares supported predicate values and rejects comparisons without an unambiguous ordering. */
 function compareValues(left: unknown, right: SQLPredicateValue): number {
+  if (isSQLPredicateParameter(right)) {
+    throw new Error(
+      `Arrow query parameter ":${right.parameter}" must be bound before query execution.`
+    );
+  }
   if (left instanceof Date && right instanceof Date) {
     return compareNumbers(left.getTime(), right.getTime());
   }
@@ -299,16 +263,6 @@ function getValueType(value: unknown): string {
   return typeof value;
 }
 
-/** Recursively visits the predicate tree depth-first. */
-function visitPredicate(predicate: SQLPredicate, visit: (predicate: SQLPredicate) => void): void {
-  visit(predicate);
-  if (isLogicalPredicate(predicate) || isNotPredicate(predicate)) {
-    for (const child of predicate.args) {
-      visitPredicate(child, visit);
-    }
-  }
-}
-
 /** Returns whether the predicate combines two or more child predicates. */
 function isLogicalPredicate(predicate: SQLPredicate): predicate is SQLLogicalPredicate {
   return predicate.op === 'and' || predicate.op === 'or';
@@ -327,6 +281,36 @@ function isNullPredicate(predicate: SQLPredicate): predicate is SQLNullPredicate
 /** Returns whether the predicate tests a column against several values. */
 function isInPredicate(predicate: SQLPredicate): predicate is SQLInPredicate {
   return predicate.op === 'in';
+}
+
+/** Returns the mandatory source scan from a normalized table-query plan. */
+function getScanStep(plan: readonly TableQueryPlanStep[]): TableQueryScanStep {
+  const step = plan.find((candidate): candidate is TableQueryScanStep => candidate.kind === 'scan');
+  if (!step) {
+    throw new Error('Arrow query plan is missing a scan step.');
+  }
+  return step;
+}
+
+/** Returns the optional predicate filter from a normalized table-query plan. */
+function getFilterStep(plan: readonly TableQueryPlanStep[]): TableQueryFilterStep | undefined {
+  return plan.find((candidate): candidate is TableQueryFilterStep => candidate.kind === 'filter');
+}
+
+/** Returns the mandatory output projection from a normalized table-query plan. */
+function getProjectStep(plan: readonly TableQueryPlanStep[]): TableQueryProjectStep {
+  const step = plan.find(
+    (candidate): candidate is TableQueryProjectStep => candidate.kind === 'project'
+  );
+  if (!step) {
+    throw new Error('Arrow query plan is missing a project step.');
+  }
+  return step;
+}
+
+/** Returns the optional result limit from a normalized table-query plan. */
+function getLimitStep(plan: readonly TableQueryPlanStep[]): TableQueryLimitStep | undefined {
+  return plan.find((candidate): candidate is TableQueryLimitStep => candidate.kind === 'limit');
 }
 
 /** Throws a standard cancellation error if a caller has aborted the query. */

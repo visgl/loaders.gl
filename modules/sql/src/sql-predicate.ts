@@ -8,6 +8,8 @@ export {
   SQL_PREDICATE_JSON_SCHEMA,
   validateSQLPredicate
 } from './sql-predicate-schema';
+export {bindSQLPredicate} from './bind-sql-predicate';
+export {isSQLPredicateParameter} from './sql-predicate-types';
 
 export type {
   SQLComparisonPredicate,
@@ -16,7 +18,10 @@ export type {
   SQLNotPredicate,
   SQLNullPredicate,
   SQLPredicate,
+  SQLPredicateParameter,
+  SQLPredicateParameterValues,
   SQLPredicateParserOptions,
   SQLPredicateProperty,
+  SQLPredicateScalar,
   SQLPredicateValue
 } from './sql-predicate-types';

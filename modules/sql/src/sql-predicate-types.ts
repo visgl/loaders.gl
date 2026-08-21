@@ -3,7 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 /** Scalar values supported by portable SQL predicate expressions. */
-export type SQLPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
+export type SQLPredicateScalar = boolean | number | bigint | string | Date | Uint8Array;
+
+/** Named parameter reference retained in a portable SQL predicate until execution time. */
+export type SQLPredicateParameter = Readonly<{
+  /** Parameter name without the leading SQL colon. */
+  parameter: string;
+}>;
+
+/** Scalar value or unresolved named parameter accepted by a portable predicate expression. */
+export type SQLPredicateValue = SQLPredicateScalar | SQLPredicateParameter;
+
+/** Runtime values used to bind named predicate parameters before a backend executes them. */
+export type SQLPredicateParameterValues = Readonly<Record<string, SQLPredicateScalar>>;
 
 /** Reference to one column in a portable SQL predicate expression. */
 export type SQLPredicateProperty = Readonly<{
@@ -67,5 +79,21 @@ export type SQLPredicate =
 /** Options for parsing one SQL predicate expression. */
 export type SQLPredicateParserOptions = Readonly<{
   /** Named values referenced using SQL parameters such as `:minimumFare`. */
-  parameters?: Readonly<Record<string, SQLPredicateValue>>;
+  parameters?: SQLPredicateParameterValues;
+  /** Retains named references in the emitted AST instead of resolving them while parsing. */
+  preserveParameters?: boolean;
 }>;
+
+/** Returns whether a value is a named parameter reference. */
+export function isSQLPredicateParameter(value: unknown): value is SQLPredicateParameter {
+  const parameterValue = value as {parameter?: unknown};
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 1 &&
+    Object.hasOwn(value, 'parameter') &&
+    typeof parameterValue.parameter === 'string' &&
+    parameterValue.parameter.length > 0
+  );
+}

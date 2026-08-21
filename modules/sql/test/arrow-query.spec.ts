@@ -7,7 +7,12 @@ import {expect, test} from 'vitest';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
-import {parseSQLPredicate, queryArrowTable} from '@loaders.gl/sql';
+import {
+  bindSQLPredicate,
+  parseSQLPredicate,
+  planTableQuery,
+  queryArrowTable
+} from '@loaders.gl/sql';
 
 test('queryArrowTable filters, projects, and limits Arrow data', () => {
   const table = makeArrowTable({
@@ -50,6 +55,33 @@ test('queryArrowTable permits a projected column to also appear in the predicate
   });
 
   expect(toRows(result)).toEqual([{status: 'valid'}, {status: 'valid'}]);
+});
+
+test('planTableQuery retains predicate columns before projecting the requested output', () => {
+  const predicate = parseSQLPredicate('year >= 2024 AND cancelled = FALSE');
+
+  expect(
+    planTableQuery(['year', 'cancelled', 'carrier', 'fare'], {
+      predicate,
+      columns: ['carrier', 'fare'],
+      limit: 20
+    })
+  ).toEqual([
+    {kind: 'scan', columns: ['year', 'cancelled', 'carrier', 'fare']},
+    {kind: 'filter', predicate},
+    {kind: 'project', columns: ['carrier', 'fare']},
+    {kind: 'limit', limit: 20}
+  ]);
+});
+
+test('queryArrowTable requires named parameters to be bound immediately before execution', () => {
+  const predicate = parseSQLPredicate('value >= :minimum', {preserveParameters: true});
+  const table = makeArrowTable({value: [1, 2, 3]});
+
+  expect(() => queryArrowTable(table, {predicate})).toThrow(/must be bound/);
+  expect(
+    toRows(queryArrowTable(table, {predicate: bindSQLPredicate(predicate, {minimum: 2})}))
+  ).toEqual([{value: 2}, {value: 3}]);
 });
 
 test('queryArrowTable retains zero-copy Arrow views for projection and limit without filtering', () => {
