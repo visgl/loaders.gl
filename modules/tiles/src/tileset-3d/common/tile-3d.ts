@@ -991,6 +991,17 @@ export class Tile3D {
       this.boundingVolume
     );
 
+    // Viewer request volumes constrain traversal, not just render content. A contentless implicit
+    // connector can still own an inherited request volume, so initialize it before the
+    // content-specific early return below.
+    if (header.viewerRequestVolume) {
+      this._viewerRequestVolume = createBoundingVolume(
+        header.viewerRequestVolume,
+        this.computedTransform,
+        this._viewerRequestVolume
+      );
+    }
+
     const content = header.content;
     if (!content) {
       return;
@@ -1007,13 +1018,6 @@ export class Tile3D {
         content.boundingVolume,
         this.computedTransform,
         this._contentBoundingVolume
-      );
-    }
-    if (header.viewerRequestVolume) {
-      this._viewerRequestVolume = createBoundingVolume(
-        header.viewerRequestVolume,
-        this.computedTransform,
-        this._viewerRequestVolume
       );
     }
   }
