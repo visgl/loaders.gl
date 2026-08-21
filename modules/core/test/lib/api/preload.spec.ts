@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {describe, expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync, preload, preloadSync} from '@loaders.gl/core';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/csv/unbundled';

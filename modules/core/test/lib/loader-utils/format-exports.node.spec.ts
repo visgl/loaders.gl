@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {describe, expect, test} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
