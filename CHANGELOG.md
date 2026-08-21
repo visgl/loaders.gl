@@ -2,6 +2,11 @@
 
 ## v4.4
 
+### v4.4.5
+
+- feat(gltf): support KHR_meshopt_compression (#3617)
+- feat(gltf): normalize LINE_LOOP and TRIANGLE_FAN primitives (#3619)
+
 ### v4.4.4
 
 - chore(kml): update xmldom to 0.8.12 (#3478)
