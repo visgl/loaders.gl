@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {test} from 'vitest';
 // import {isBrowser} from '@loaders.gl/core';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {load, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
