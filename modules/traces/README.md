@@ -7,6 +7,19 @@
 The `@loaders.gl/traces` module hosts trace format parsers for Chrome Trace, Perfetto Trace,
 OpenTelemetry OTLP, Jaeger, and Zipkin trace data.
 
+## Choosing a Format
+
+- Use **OTLP protobuf** by default for new distributed tracing pipelines, or OTLP JSON/JSON Lines
+  when readability or incremental text processing is required.
+- Use **Perfetto protobuf** for compact, high-volume system and application timelines.
+- Use **Chrome Trace Event JSON** for custom profiler instrumentation and compatibility with
+  browser, Node.js, and Trace Event tooling.
+- Use **Jaeger JSON** or **Zipkin v2 JSON** when interoperating with their existing APIs. Both are
+  simpler but less expressive than OTLP, so conversions from OTLP may be lossy.
+
+See the [trace format comparison](https://loaders.gl/docs/modules/traces#choosing-a-trace-format)
+for detailed advantages, tradeoffs, and recommendations.
+
 ## Included APIs
 
 - `ChromeTraceLoader` for Chrome Trace Event JSON to Arrow conversion
@@ -19,9 +32,9 @@ OpenTelemetry OTLP, Jaeger, and Zipkin trace data.
 - `streamChromeTraceEventChunks(...)`, `streamChromeTraceArrowChunks(...)`, and `streamChromeTraceFileChunks(...)`
 - `createTraceStreamSession(...)` and the Chrome trace stream consumers
 
-Streamed `ChromeTraceLoader` Arrow parsing uses the fast JSON table parser over `traceEvents`.
-It emits direct Chrome trace event columns, converts numeric id-like fields to Utf8, and preserves
-nested `args` and `id2` JSON payloads as source-faithful Utf8 text.
+Streamed `ChromeTraceLoader` Arrow parsing uses the same canonical event parser and lossless Arrow
+schema as whole-file parsing. It normalizes identifier columns to UTF-8 while retaining original
+numeric or string types and unmodeled fields in `extraJson` for reconstruction by the writer.
 
 `PerfettoTraceLoader` returns typed Arrow tables for stable TrackEvent tracks, slices, processes,
 and threads. Its batched API incrementally tokenizes TracePackets and emits tagged Arrow record

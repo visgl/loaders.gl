@@ -29,6 +29,51 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 | [Jaeger JSON traces](/docs/modules/traces/formats/jaeger-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
 | [Zipkin v2 JSON traces](/docs/modules/traces/formats/zipkin-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
 
+## Choosing a Trace Format
+
+There is no single best trace format. Chrome Trace and Perfetto are timeline-oriented formats for
+profiling one machine or runtime. OTLP, Jaeger, and Zipkin are span-oriented formats for tracing
+requests across services.
+
+| Format | Best fit | Advantages | Tradeoffs |
+| --- | --- | --- | --- |
+| [Chrome Trace Event JSON](/docs/modules/traces/formats/chrome-trace) | Application, browser, Node.js, and accelerator timeline profiling | Simple JSON; broad profiler and viewer support; flexible duration, instant, counter, async, flow, and metadata events; easy to inspect and generate | Verbose at scale; loosely specified extension fields; source-defined time units; no standard resource, service, trace-ID, or span-link model |
+| [Perfetto protobuf](/docs/modules/traces/formats/perfetto-trace) | High-volume operating-system and application timelines | Compact binary encoding; nanosecond-oriented timestamps; hierarchical tracks; incremental packets and interned data; strong Perfetto tooling | Not human-readable; full format is very broad; clocks may require normalization; this module intentionally supports the stable TrackEvent projection rather than every packet family |
+| [OpenTelemetry OTLP](/docs/modules/traces/formats/otlp-trace) | New vendor-neutral distributed tracing pipelines and archival interchange | Standard resource, scope, span, event, link, status, typed-attribute, and nanosecond models; efficient protobuf plus debuggable JSON; strongest cross-vendor semantics | More structured and complex than Zipkin or Jaeger JSON; not a native CPU/GPU scheduling timeline; protobuf is not directly readable |
+| [Jaeger JSON](/docs/modules/traces/formats/jaeger-trace) | Existing Jaeger Query API, archive, and migration workflows | Human-readable; explicit process descriptors, typed scalar tags, logs, and references; straightforward compatibility with Jaeger deployments | Microsecond precision; legacy model has fewer semantics than OTLP; arrays, maps, scope metadata, status detail, and some links cannot round-trip losslessly |
+| [Zipkin v2 JSON](/docs/modules/traces/formats/zipkin-trace) | Lightweight Zipkin HTTP API integrations and legacy interoperability | Small conceptual model; easy JSON; familiar client/server endpoints, annotations, and tags; simple to produce | Microsecond precision; string-only tags; no native instrumentation scopes, typed attributes, span links, or OTLP-style loss counters |
+
+### Recommendations
+
+- Use **OTLP protobuf** as the default for new distributed tracing systems. Choose OTLP JSON when
+  human inspection matters more than payload size, and JSON Lines when traces must be emitted or
+  processed incrementally.
+- Use **Perfetto** for compact, high-volume system or application timelines that will be analyzed
+  with Perfetto-compatible tooling. Use Trace Processor instead of this module when analysis
+  depends on ftrace, heap profiles, SQL metrics, or cross-clock normalization.
+- Use **Chrome Trace** when producers and consumers already use the Trace Event ecosystem, or when
+  a transparent JSON timeline is more valuable than compact storage. It is usually the easiest
+  format for custom profiler instrumentation.
+- Use **Jaeger JSON** or **Zipkin JSON** primarily at compatibility boundaries. They are appropriate
+  when integrating with their native APIs, but OTLP retains more information as a long-term
+  canonical representation.
+- Do not convert a system timeline to a distributed-span format merely for uniformity. Tracks,
+  counters, flows, scheduler events, and clock-domain information do not map cleanly to spans.
+- Expect conversions from OTLP to Jaeger or Zipkin to be lossy. Review each writer's fidelity
+  section before using a converted file for archival or compliance purposes.
+
+### Quick Decisions
+
+| Requirement | Recommended format |
+| --- | --- |
+| Vendor-neutral service tracing | OTLP protobuf |
+| Readable service-trace exchange | OTLP JSON |
+| Incremental service-trace JSON | OTLP JSON Lines |
+| Compact system timeline | Perfetto protobuf |
+| Custom profiler JSON or browser tooling | Chrome Trace Event JSON |
+| Existing Jaeger API or archive | Jaeger JSON |
+| Existing Zipkin v2 API | Zipkin v2 JSON |
+
 | API | Purpose |
 | --- | --- |
 | [`ChromeTraceLoader`](/docs/modules/traces/api-reference/chrome-trace-loader) | Load Chrome Trace JSON as JSON or Arrow. |
