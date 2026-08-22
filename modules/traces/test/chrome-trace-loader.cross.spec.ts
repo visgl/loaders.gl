@@ -255,7 +255,7 @@ describe('ChromeTraceLoader', () => {
     });
   });
 
-  it('emits direct streamed Arrow record batches through fast JSON table parsing', async () => {
+  it('emits lossless streamed Arrow record batches through the canonical parser', async () => {
     const traceFile = createChromeTraceFixture();
     const batchIterable = await parseInBatches(
       streamChromeTraceFixture(traceFile),
@@ -289,17 +289,19 @@ describe('ChromeTraceLoader', () => {
       'tts',
       'id',
       'bind_id',
-      's',
       'scope',
       'args',
-      'id2'
+      'extraJson'
     ]);
     expect(combinedTable.getChild('pid')?.get(0)).toBe('7');
     expect(combinedTable.getChild('tid')?.get(2)).toBe('9');
     expect(combinedTable.getChild('bind_id')?.get(2)).toBe('42');
     expect(combinedTable.getChild('args')?.get(1)).toBe('{"nested":{"ok":true}}');
-    expect(combinedTable.getChild('id2')?.get(1)).toBe('{"global":"g-1"}');
-    expect(combinedTable.getChild('extraJson')).toBeNull();
+    expect(JSON.parse(combinedTable.getChild('extraJson')?.get(1) as string)).toEqual({
+      pid: 7,
+      id2: {global: 'g-1'},
+      custom_flag: true
+    });
 
     expect(batches[1].schema.metadata.get('chromeTrace.metadataJson')).toBe(
       JSON.stringify(traceFile.metadata)
@@ -328,8 +330,14 @@ describe('ChromeTraceLoader', () => {
     const table = new arrow.Table(batches[0].schema, batches);
     expect(table.getChild('pid')?.get(0)).toBe('7');
     expect(table.getChild('tid')?.get(0)).toBe('8');
-    expect(table.getChild('args')?.get(0)).toBe('{ "nested" : ["\\\\u2603", {"ok":true}] }');
-    expect(table.getChild('id2')?.get(0)).toBe('{ "global" : 9 }');
+    expect(JSON.parse(table.getChild('args')?.get(0) as string)).toEqual({
+      nested: ['\\u2603', {ok: true}]
+    });
+    expect(JSON.parse(table.getChild('extraJson')?.get(0) as string)).toEqual({
+      pid: 7,
+      tid: 8,
+      id2: {global: 9}
+    });
   });
 
   it('streams a large mixed Chrome trace fixture across multiple Arrow batches', async () => {
@@ -364,8 +372,13 @@ describe('ChromeTraceLoader', () => {
     expect(table.getChild('args')?.get(5)).toBe(fixture.expectedArgsJson);
     expect(table.getChild('args')?.get(7)).toBeNull();
     expect(table.getChild('args')?.get(11)).toBeNull();
-    expect(table.getChild('id2')?.get(12)).toBe(fixture.expectedId2Json);
-    expect(table.getChild('id2')?.get(13)).toBeNull();
+    expect(JSON.parse(table.getChild('extraJson')?.get(12) as string).id2).toEqual(
+      JSON.parse(fixture.expectedId2Json)
+    );
+    expect(JSON.parse(table.getChild('extraJson')?.get(13) as string)).toEqual({
+      id2: null,
+      ignored_extra_field: {eventIndex: 13}
+    });
     expect(table.getChild('ignored_extra_field')).toBeNull();
     expect(batches.at(-1)?.schema.metadata.get('chromeTrace.metadataJson')).toBe(
       JSON.stringify(fixture.metadata)

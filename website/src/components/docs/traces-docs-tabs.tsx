@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -11,7 +13,25 @@ type TracesDocsTab = {
 };
 
 /** Traces documentation tab identifiers. */
-export type TracesDocsTabId = 'try-it' | 'overview' | 'chrome-trace' | 'chrometraceloader';
+export type TracesDocsTabId =
+  | 'try-it'
+  | 'overview'
+  | 'chrome-trace'
+  | 'chrometraceloader'
+  | 'chrometracewriter'
+  | 'streaming'
+  | 'perfetto-trace'
+  | 'perfettotraceloader'
+  | 'perfettotracewriter'
+  | 'otlp-trace'
+  | 'otlptraceloader'
+  | 'otlptracewriter'
+  | 'jaeger-trace'
+  | 'jaegertraceloader'
+  | 'jaegertracewriter'
+  | 'zipkin-trace'
+  | 'zipkintraceloader'
+  | 'zipkintracewriter';
 
 const TRACES_DOCS_TABS: TracesDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/traces/chrome-trace'},
@@ -25,6 +45,76 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     id: 'chrometraceloader',
     label: 'ChromeTraceLoader',
     href: '/docs/modules/traces/api-reference/chrome-trace-loader'
+  },
+  {
+    id: 'chrometracewriter',
+    label: 'ChromeTraceWriter',
+    href: '/docs/modules/traces/api-reference/chrome-trace-writer'
+  },
+  {
+    id: 'streaming',
+    label: 'Streaming',
+    href: '/docs/modules/traces/api-reference/chrome-trace-streaming'
+  },
+  {
+    id: 'perfetto-trace',
+    label: 'Perfetto',
+    href: '/docs/modules/traces/formats/perfetto-trace'
+  },
+  {
+    id: 'perfettotraceloader',
+    label: 'PerfettoTraceLoader',
+    href: '/docs/modules/traces/api-reference/perfetto-trace-loader'
+  },
+  {
+    id: 'perfettotracewriter',
+    label: 'PerfettoTraceWriter',
+    href: '/docs/modules/traces/api-reference/perfetto-trace-writer'
+  },
+  {
+    id: 'otlp-trace',
+    label: 'OTLP',
+    href: '/docs/modules/traces/formats/otlp-trace'
+  },
+  {
+    id: 'otlptraceloader',
+    label: 'OTLP Loaders',
+    href: '/docs/modules/traces/api-reference/otlp-trace-loader'
+  },
+  {
+    id: 'otlptracewriter',
+    label: 'OTLP Writers',
+    href: '/docs/modules/traces/api-reference/otlp-trace-writer'
+  },
+  {
+    id: 'jaeger-trace',
+    label: 'Jaeger',
+    href: '/docs/modules/traces/formats/jaeger-trace'
+  },
+  {
+    id: 'jaegertraceloader',
+    label: 'JaegerTraceLoader',
+    href: '/docs/modules/traces/api-reference/jaeger-trace-loader'
+  },
+  {
+    id: 'jaegertracewriter',
+    label: 'JaegerTraceWriter',
+    href: '/docs/modules/traces/api-reference/jaeger-trace-writer'
+  },
+  {
+    id: 'zipkin-trace',
+    label: 'Zipkin',
+    href: '/docs/modules/traces/formats/zipkin-trace'
+  },
+  {
+    id: 'zipkintraceloader',
+    label: 'ZipkinTraceLoader',
+    href: '/docs/modules/traces/api-reference/zipkin-trace-loader'
+  },
+  {
+    id: 'zipkintracewriter',
+    label: 'ZipkinTraceWriter',
+    href: '/docs/modules/traces/api-reference/zipkin-trace-writer'
   }
 ];
 

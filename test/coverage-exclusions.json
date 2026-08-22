@@ -12,5 +12,6 @@
   "**/laz-perf.js": "Generated laz-perf WASM glue is covered through LAS backend conformance tests.",
   "**3d-tiles/src/styles/**": "Unexported legacy Cesium style-port sources are not part of the current package surface.",
   "**/src/flatgeobuf/**": "Generated and vendored FlatGeobuf implementation code is covered through the public loader adapter.",
+  "modules/traces/src/otlp-proto/generated/**": "Generated OpenTelemetry protobuf descriptors are covered through the public OTLP loaders and writers.",
   "modules/worker-utils/src/lib/process-utils/child-process-proxy.ts": "The proxy runs only inside a spawned child process whose V8 coverage is not observable by the parent test process."
 }
