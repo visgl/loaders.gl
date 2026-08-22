@@ -6,8 +6,7 @@ import {parseChromeTraceArrowSchemaMetadata} from './chrome-trace-arrow-parser';
 
 import type {
   ChromeTraceEventArrowRecordBatch,
-  ChromeTraceEventArrowTable,
-  ChromeTraceEventStreamArrowRecordBatch
+  ChromeTraceEventArrowTable
 } from './chrome-trace-arrow-schema';
 import type {ChromeTraceEventPhase, ChromeTraceEventSchema} from './chrome-trace-schema';
 
@@ -16,7 +15,6 @@ import type {ChromeTraceEventPhase, ChromeTraceEventSchema} from './chrome-trace
  */
 export type ChromeTraceArrowSourceItem =
   | ChromeTraceEventArrowRecordBatch
-  | ChromeTraceEventStreamArrowRecordBatch
   | ChromeTraceEventArrowTable;
 
 /**

@@ -5,8 +5,8 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 import type {
-  ChromeTraceEventArrowTable,
-  ChromeTraceEventStreamArrowRecordBatch
+  ChromeTraceEventArrowRecordBatch,
+  ChromeTraceEventArrowTable
 } from './chrome-trace-arrow-schema';
 import type {ChromeTraceFileSchema, ChromeTraceValidationOptions} from './chrome-trace-schema';
 
@@ -42,13 +42,13 @@ export const ChromeTraceLoader = {
   mimeTypes: ['application/json', 'application/x-chrome-trace+json'],
   text: true,
   dataType: null as unknown as ChromeTraceFileSchema | ChromeTraceEventArrowTable,
-  batchType: null as unknown as ChromeTraceEventStreamArrowRecordBatch,
+  batchType: null as unknown as ChromeTraceEventArrowRecordBatch,
   options: CHROME_TRACE_LOADER_OPTIONS,
   tests: [testChromeTraceLoader],
   preload
 } as const satisfies Loader<
   ChromeTraceFileSchema | ChromeTraceEventArrowTable,
-  ChromeTraceEventStreamArrowRecordBatch,
+  ChromeTraceEventArrowRecordBatch,
   ChromeTraceLoaderOptions
 >;
 

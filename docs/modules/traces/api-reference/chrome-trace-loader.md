@@ -44,7 +44,7 @@ The legacy top-level `shape` option is also accepted. Prefer `chromeTrace.shape`
 ## Batched Parsing
 
 `parseInBatches` requires `chromeTrace.shape: 'arrow-table'` and yields
-`ChromeTraceEventStreamArrowRecordBatch` values.
+`ChromeTraceEventArrowRecordBatch` values with the same lossless schema used by whole-file parsing.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';

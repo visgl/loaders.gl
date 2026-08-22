@@ -31,6 +31,7 @@ import type {OtlpTrace} from './otlp-trace-arrow-schema';
 export function buildOtlpTracesData(trace: OtlpTrace): ExportTraceServiceRequest {
   const resourceSpansById = new Map<number, ResourceSpans>();
   const scopeSpansById = new Map<number, ScopeSpans>();
+  const resourceIdByScopeId = new Map<number, number>();
   const spansByKey = new Map<string, Span>();
 
   for (const row of readRows(trace.resources)) {
@@ -48,11 +49,8 @@ export function buildOtlpTracesData(trace: OtlpTrace): ExportTraceServiceRequest
 
   for (const row of readRows(trace.scopes)) {
     const scopeId = readNumber(row.scope_id);
-    const resourceSpans = getRequiredMapValue(
-      resourceSpansById,
-      readNumber(row.resource_id),
-      'resource_id'
-    );
+    const resourceId = readNumber(row.resource_id);
+    const resourceSpans = getRequiredMapValue(resourceSpansById, resourceId, 'resource_id');
     const scopeSpans = create(ScopeSpansSchema, {
       scope: create(InstrumentationScopeSchema, {
         name: readString(row.name),
@@ -65,9 +63,19 @@ export function buildOtlpTracesData(trace: OtlpTrace): ExportTraceServiceRequest
     });
     resourceSpans.scopeSpans.push(scopeSpans);
     scopeSpansById.set(scopeId, scopeSpans);
+    resourceIdByScopeId.set(scopeId, resourceId);
   }
 
   for (const row of readRows(trace.spans)) {
+    const scopeId = readNumber(row.scope_id);
+    const resourceId = readNumber(row.resource_id);
+    const scopeResourceId = getRequiredMapValue(resourceIdByScopeId, scopeId, 'scope_id');
+    if (resourceId !== scopeResourceId) {
+      throw new Error(
+        `OTLP span resource_id ${resourceId} does not match scope_id ${scopeId} resource_id ${scopeResourceId}.`
+      );
+    }
+
     const traceId = readBytes(row.trace_id, 16);
     const spanId = readBytes(row.span_id, 8);
     const span = create(SpanSchema, {
@@ -91,7 +99,7 @@ export function buildOtlpTracesData(trace: OtlpTrace): ExportTraceServiceRequest
         message: readString(row.status_message)
       })
     });
-    getRequiredMapValue(scopeSpansById, readNumber(row.scope_id), 'scope_id').spans.push(span);
+    getRequiredMapValue(scopeSpansById, scopeId, 'scope_id').spans.push(span);
     spansByKey.set(buildSpanKey(traceId, spanId), span);
   }
 
@@ -217,9 +225,8 @@ function getRequiredMapValue<Key, Value>(
   key: Key,
   fieldName: string
 ): Value {
-  const value = map.get(key);
-  if (!value) {
+  if (!map.has(key)) {
     throw new Error(`OTLP Arrow data references an unknown ${fieldName}.`);
   }
-  return value;
+  return map.get(key) as Value;
 }

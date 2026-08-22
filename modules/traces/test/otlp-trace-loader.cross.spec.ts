@@ -318,6 +318,10 @@ describe('OTLP trace loaders and writers', () => {
       ...trace,
       spans: replaceColumn(trace.spans, 'scope_id', [99])
     } as OtlpTrace;
+    const mismatchedSpanResource = {
+      ...trace,
+      spans: replaceColumn(trace.spans, 'resource_id', [99])
+    } as OtlpTrace;
     const missingNumber = {
       ...trace,
       spans: replaceColumn(trace.spans, 'flags', [null])
@@ -339,6 +343,7 @@ describe('OTLP trace loaders and writers', () => {
       invalidAttributes,
       unknownResource,
       unknownScope,
+      mismatchedSpanResource,
       missingNumber,
       missingTimestamp,
       missingString,

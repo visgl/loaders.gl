@@ -68,6 +68,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'ows-context', label: 'OWS Context', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'parquet', label: 'Parquet', logo: 'parquet-logo.png', tags: ['tables']},
   {slug: 'pcd', label: 'PCD', logo: 'format-logo.svg', tags: ['pointclouds']},
+  {slug: 'perfetto-trace', label: 'Perfetto Trace', logo: 'format-logo.svg', tags: []},
   {slug: 'ply', label: 'PLY', logo: 'format-logo.svg', tags: ['pointclouds', 'meshes']},
   {slug: 'pmtiles', label: 'PMTiles', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'pvr', label: 'PVR', logo: 'format-logo.svg', tags: ['textures']},

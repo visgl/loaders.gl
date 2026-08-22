@@ -55,6 +55,32 @@ describe('trace format writers', () => {
     expect(JSON.parse(new TextDecoder().decode(encoded))).toEqual(source);
   });
 
+  it('preserves numeric identifiers when writing streamed Chrome Arrow batches', async () => {
+    const source = {
+      traceEvents: [
+        {
+          name: 'flow',
+          ph: 's',
+          ts: 10,
+          pid: 7,
+          tid: 8,
+          id: 9,
+          bind_id: 10
+        }
+      ]
+    };
+    const batches = await parseInBatches(
+      [new TextEncoder().encode(JSON.stringify(source))],
+      ChromeTraceLoader,
+      {chromeTrace: {shape: 'arrow-table', batchSize: 1}}
+    );
+
+    for await (const batch of batches) {
+      const encoded = encodeSync(batch, ChromeTraceWriter);
+      expect(JSON.parse(new TextDecoder().decode(encoded))).toEqual(source);
+    }
+  });
+
   it('loads an official Perfetto TrackEvent fixture', () => {
     expect(officialTrace.tracks.numRows).toBe(10);
     expect(officialTrace.slices.numRows).toBe(15);

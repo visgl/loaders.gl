@@ -63,8 +63,7 @@ export type {
 export {PerfettoTraceWriter, type PerfettoTraceWriterOptions} from './perfetto-trace-writer';
 export {
   type ChromeTraceEventArrowRecordBatch,
-  type ChromeTraceEventArrowTable,
-  type ChromeTraceEventStreamArrowRecordBatch
+  type ChromeTraceEventArrowTable
 } from './chrome-trace-arrow-schema';
 export type {
   ChromeTraceEventSchema,
