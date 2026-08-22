@@ -14,7 +14,8 @@ import type {
   PerfettoTraceBatch,
   PerfettoTraceTableName
 } from './perfetto-trace-arrow-schema';
-import {parsePerfettoTrace} from './perfetto-trace-parser';
+import {streamProtobufMessages} from './perfetto-protobuf';
+import {parsePerfettoTrace, PerfettoTraceParser} from './perfetto-trace-parser';
 
 const {preload: _preload, ...PerfettoTraceLoaderMetadataWithoutPreload} =
   PerfettoTraceLoaderMetadata;
@@ -31,32 +32,30 @@ export const PerfettoTraceLoaderWithParser = {
   PerfettoTraceLoaderOptions
 >;
 
-/** Collects a binary stream and emits bounded tagged Arrow batches per logical table. */
+/** Streams TracePackets and emits bounded tagged Arrow batches per logical table. */
 async function* parsePerfettoTraceInBatches(
   iterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: PerfettoTraceLoaderOptions
 ): AsyncIterable<PerfettoTraceBatch> {
-  const chunks: Uint8Array[] = [];
-  let byteLength = 0;
-  for await (const chunk of iterator) {
-    const bytes = ArrayBuffer.isView(chunk)
-      ? new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength)
-      : new Uint8Array(chunk);
-    chunks.push(bytes);
-    byteLength += bytes.byteLength;
-  }
-
-  const bytes = new Uint8Array(byteLength);
-  let byteOffset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, byteOffset);
-    byteOffset += chunk.byteLength;
-  }
-
-  const trace = parsePerfettoTrace(bytes);
   const batchSize = normalizeBatchSize(options?.perfettoTrace?.batchSize);
+  const parser = new PerfettoTraceParser();
+  let packetCount = 0;
+
+  for await (const packet of streamProtobufMessages(iterator, 1)) {
+    parser.addTracePacket(packet);
+    packetCount++;
+    if (packetCount >= batchSize) {
+      yield* emitTraceBatches(parser.drain(), batchSize);
+      packetCount = 0;
+    }
+  }
+  yield* emitTraceBatches(parser.drain(), batchSize);
+}
+
+/** Emits all non-empty logical tables from one parser drain. */
+function* emitTraceBatches(trace: PerfettoTrace, batchSize: number): Iterable<PerfettoTraceBatch> {
   yield* emitTableBatches('tracks', trace.tracks, batchSize);
   yield* emitTableBatches('slices', trace.slices, batchSize);
   yield* emitTableBatches('processes', trace.processes, batchSize);

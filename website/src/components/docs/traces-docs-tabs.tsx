@@ -16,8 +16,11 @@ export type TracesDocsTabId =
   | 'overview'
   | 'chrome-trace'
   | 'chrometraceloader'
+  | 'chrometracewriter'
+  | 'streaming'
   | 'perfetto-trace'
-  | 'perfettotraceloader';
+  | 'perfettotraceloader'
+  | 'perfettotracewriter';
 
 const TRACES_DOCS_TABS: TracesDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/traces/chrome-trace'},
@@ -33,6 +36,16 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     href: '/docs/modules/traces/api-reference/chrome-trace-loader'
   },
   {
+    id: 'chrometracewriter',
+    label: 'ChromeTraceWriter',
+    href: '/docs/modules/traces/api-reference/chrome-trace-writer'
+  },
+  {
+    id: 'streaming',
+    label: 'Streaming',
+    href: '/docs/modules/traces/api-reference/chrome-trace-streaming'
+  },
+  {
     id: 'perfetto-trace',
     label: 'Perfetto',
     href: '/docs/modules/traces/formats/perfetto-trace'
@@ -41,6 +54,11 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     id: 'perfettotraceloader',
     label: 'PerfettoTraceLoader',
     href: '/docs/modules/traces/api-reference/perfetto-trace-loader'
+  },
+  {
+    id: 'perfettotracewriter',
+    label: 'PerfettoTraceWriter',
+    href: '/docs/modules/traces/api-reference/perfetto-trace-writer'
   }
 ];
 

@@ -47,10 +47,10 @@ function encodePerfettoTrace(trace: PerfettoTrace): ArrayBuffer {
   const packets: Uint8Array[] = [];
 
   for (const row of processRows) {
-    packets.push(wrapTracePacket(5, encodeProcessDescriptor(row)));
+    packets.push(wrapTracePacket(43, encodeProcessDescriptor(row)));
   }
   for (const row of threadRows) {
-    packets.push(wrapTracePacket(6, encodeThreadDescriptor(row)));
+    packets.push(wrapTracePacket(44, encodeThreadDescriptor(row)));
   }
   for (const row of readArrowRows(trace.tracks)) {
     packets.push(wrapTracePacket(60, encodeTrackDescriptor(row, processNames, threadDetails)));
@@ -64,11 +64,11 @@ function encodePerfettoTrace(trace: PerfettoTrace): ArrayBuffer {
   for (const row of sliceRows) {
     const duration = readBigInt(row.dur);
     if (duration === 0n) {
-      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 3, readBigInt(row.ts), true)));
+      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 3, true), readBigInt(row.ts)));
     } else {
       const timestamp = readBigInt(row.ts);
-      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 1, timestamp, true)));
-      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 2, timestamp + duration, false)));
+      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 1, true), timestamp));
+      packets.push(wrapTracePacket(11, encodeTrackEvent(row, 2, false), timestamp + duration));
     }
   }
 
@@ -79,8 +79,10 @@ function encodePerfettoTrace(trace: PerfettoTrace): ArrayBuffer {
 }
 
 /** Wraps one nested descriptor or event in a TracePacket. */
-function wrapTracePacket(fieldNumber: number, message: Uint8Array): Uint8Array {
-  return encodeProtobufBytesField(fieldNumber, message);
+function wrapTracePacket(fieldNumber: number, message: Uint8Array, timestamp?: bigint): Uint8Array {
+  const fields = timestamp === undefined ? [] : [encodeProtobufVarintField(8, timestamp)];
+  fields.push(encodeProtobufBytesField(fieldNumber, message));
+  return concatenateUint8Arrays(fields);
 }
 
 /** Encodes a standalone process descriptor. */
@@ -117,9 +119,9 @@ function encodeTrackDescriptor(
   const fields: Uint8Array[] = [];
   const name = readOptionalString(row.name);
   if (name !== undefined) {
-    fields.push(encodeProtobufStringField(1, name));
+    fields.push(encodeProtobufStringField(2, name));
   }
-  fields.push(encodeProtobufVarintField(2, readBigInt(row.track_uuid)));
+  fields.push(encodeProtobufVarintField(1, readBigInt(row.track_uuid)));
   const parentTrackUuid = readOptionalBigInt(row.parent_track_uuid);
   if (parentTrackUuid !== undefined) {
     fields.push(encodeProtobufVarintField(5, parentTrackUuid));
@@ -142,7 +144,7 @@ function encodeTrackDescriptor(
     );
   } else if (type === 'counter') {
     fields.push(
-      encodeProtobufBytesField(6, name ? encodeProtobufStringField(1, name) : new Uint8Array())
+      encodeProtobufBytesField(8, name ? encodeProtobufStringField(1, name) : new Uint8Array())
     );
   }
 
@@ -153,12 +155,10 @@ function encodeTrackDescriptor(
 function encodeTrackEvent(
   row: Record<string, unknown>,
   type: 1 | 2 | 3,
-  timestamp: bigint,
   includeName: boolean
 ): Uint8Array {
   const fields = [
-    encodeProtobufVarintField(1, type),
-    encodeProtobufVarintField(8, timestamp),
+    encodeProtobufVarintField(9, type),
     encodeProtobufVarintField(11, readBigInt(row.track_uuid))
   ];
   const name = readOptionalString(row.name);

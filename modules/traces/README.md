@@ -17,7 +17,8 @@ Streamed `ChromeTraceLoader` Arrow parsing uses the fast JSON table parser over 
 It emits direct Chrome trace event columns, converts numeric id-like fields to Utf8, and preserves
 nested `args` and `id2` JSON payloads as source-faithful Utf8 text.
 
-`PerfettoTraceLoader` returns typed Arrow tables for tracks, slices, processes, and threads. Its
-batched API emits tagged Arrow record batches so consumers can distinguish the logical tables.
+`PerfettoTraceLoader` returns typed Arrow tables for stable TrackEvent tracks, slices, processes,
+and threads. Its batched API incrementally tokenizes TracePackets and emits tagged Arrow record
+batches so consumers can distinguish the logical tables.
 
 For documentation please visit the [website](https://loaders.gl).

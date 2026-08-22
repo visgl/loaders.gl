@@ -4,33 +4,64 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
 <TracesDocsTabs active="chrometraceloader" />
 
-`ChromeTraceLoader` loads Chrome Trace Event JSON payloads. By default it returns a validated JSON
-trace object. Set `chromeTrace.shape: 'arrow-table'` to convert trace events into an Apache Arrow
-table.
+`ChromeTraceLoader` loads Chrome Trace Event JSON. It returns a validated JSON container by default
+or an Apache Arrow event table when `chromeTrace.shape` is `arrow-table`.
 
 ## Usage
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
 import {ChromeTraceLoader} from '@loaders.gl/traces';
 
-const trace = await load(url, ChromeTraceLoader);
-
-const table = await load(url, ChromeTraceLoader, {
+const traceFile = await load('trace.json', ChromeTraceLoader);
+const eventTable = await load('trace.json', ChromeTraceLoader, {
   chromeTrace: {shape: 'arrow-table'}
 });
+const parsed = await parse(jsonText, ChromeTraceLoader);
 ```
+
+The package-root export is metadata-only. Async core APIs preload the parser from
+`@loaders.gl/traces/chrome-trace-loader`. Synchronous code that needs a parser-bearing loader must
+import `ChromeTraceLoaderWithParser` from that subpath.
+
+## Return Types
+
+| Shape | Return value |
+| --- | --- |
+| `json` | `ChromeTraceFileSchema`, preserving top-level and event passthrough fields. |
+| `arrow-table` | `ChromeTraceEventArrowTable`, with file metadata attached to the Arrow schema. |
 
 ## Options
 
-| Option                    | Type                         | Default | Description                                      |
-| ------------------------- | ---------------------------- | ------- | ------------------------------------------------ |
-| `chromeTrace.shape`       | `'json' \| 'arrow-table'`    | `json`  | Selects the whole-file parser output shape.      |
-| `chromeTrace.batchSize`   | `number`                     | `256`   | Maximum events per Arrow record batch.           |
-| `maxLength`               | `number`                     |         | Maximum input byte length accepted by the loader. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `chromeTrace.shape` | `'json' \| 'arrow-table'` | `'json'` | Whole-file result shape. |
+| `chromeTrace.batchSize` | `number` | `256` | Maximum events per streamed Arrow record batch. |
+| `maxLength` | `number` | `1000` | Maximum number of events structurally validated; all events are still returned. |
 
-## Streaming
+The legacy top-level `shape` option is also accepted. Prefer `chromeTrace.shape` in new code.
 
-`parseInBatches` currently requires `chromeTrace.shape: 'arrow-table'` and yields Arrow record
-batches. The module also exports helpers that consume Chrome trace file chunks or Arrow batches and
-publish trace snapshots.
+## Batched Parsing
+
+`parseInBatches` requires `chromeTrace.shape: 'arrow-table'` and yields
+`ChromeTraceEventStreamArrowRecordBatch` values.
+
+```typescript
+import {parseInBatches} from '@loaders.gl/core';
+import {ChromeTraceLoader} from '@loaders.gl/traces';
+
+const batches = await parseInBatches(chunks, ChromeTraceLoader, {
+  chromeTrace: {shape: 'arrow-table', batchSize: 1024}
+});
+
+for await (const batch of batches) {
+  console.log(batch.numRows);
+}
+```
+
+The tokenizer accepts string, `ArrayBuffer`, and typed-array chunks at arbitrary UTF-8 and JSON
+boundaries. `displayTimeUnit` and top-level `metadata` are attached to emitted schema metadata once
+they are available.
+
+Use [Chrome trace streaming](./chrome-trace-streaming) when the destination expects live
+`TraceStreamChunk` snapshots instead of Arrow record batches.

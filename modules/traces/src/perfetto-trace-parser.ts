@@ -26,114 +26,255 @@ type SliceRow = {trackUuid: bigint; ts: bigint; dur: bigint; name: string};
 type ProcessRow = {pid: number; name: string | null};
 type ThreadRow = {tid: number; pid: number | null; name: string | null};
 type OpenSlice = {ts: bigint; name: string};
+type SequenceState = {defaultTrackUuid: bigint; eventNames: Map<bigint, string>};
 
 /** Decodes a canonical Perfetto protobuf trace into typed Arrow tables. */
 export function parsePerfettoTrace(bytes: Uint8Array): PerfettoTrace {
-  const tracks: TrackRow[] = [];
-  const slices: SliceRow[] = [];
-  const processes = new Map<number, ProcessRow>();
-  const threads = new Map<number, ThreadRow>();
-  const openSlices = new Map<bigint, OpenSlice[]>();
+  const parser = new PerfettoTraceParser();
 
   for (const traceField of readProtobufFields(bytes)) {
-    if (traceField.fieldNumber !== 1 || !(traceField.value instanceof Uint8Array)) {
-      continue;
+    if (traceField.fieldNumber === 1 && traceField.value instanceof Uint8Array) {
+      parser.addTracePacket(traceField.value);
     }
-    parseTracePacket(traceField.value, {tracks, slices, processes, threads, openSlices});
   }
-
-  return {
-    tracks: buildTrackTable(tracks),
-    slices: buildSliceTable(slices),
-    processes: buildProcessTable([...processes.values()]),
-    threads: buildThreadTable([...threads.values()])
-  };
+  return parser.finish();
 }
 
-/** Parses one TracePacket from the outer Perfetto Trace message. */
-function parseTracePacket(
-  bytes: Uint8Array,
-  state: {
-    tracks: TrackRow[];
-    slices: SliceRow[];
-    processes: Map<number, ProcessRow>;
-    threads: Map<number, ThreadRow>;
-    openSlices: Map<bigint, OpenSlice[]>;
+/** Stateful decoder for canonical Perfetto TracePacket messages. */
+export class PerfettoTraceParser {
+  /** Latest descriptor for each globally unique track UUID. */
+  private readonly tracks = new Map<bigint, TrackRow>();
+  /** Completed slices and instant events waiting to be returned. */
+  private readonly slices: SliceRow[] = [];
+  /** Latest process descriptor for each process ID. */
+  private readonly processes = new Map<number, ProcessRow>();
+  /** Latest thread descriptor for each thread ID. */
+  private readonly threads = new Map<number, ThreadRow>();
+  /** Nested slice starts waiting for matching end events, keyed by track UUID. */
+  private readonly openSlices = new Map<bigint, OpenSlice[]>();
+  /** Incremental TrackEvent state keyed by trusted packet sequence ID. */
+  private readonly sequences = new Map<number, SequenceState>();
+  /** Track descriptor updates waiting for the next streaming drain. */
+  private readonly pendingTracks = new Map<bigint, TrackRow>();
+  /** Process descriptor updates waiting for the next streaming drain. */
+  private readonly pendingProcesses = new Map<number, ProcessRow>();
+  /** Thread descriptor updates waiting for the next streaming drain. */
+  private readonly pendingThreads = new Map<number, ThreadRow>();
+
+  /** Adds one decoded TracePacket to the accumulated trace. */
+  addTracePacket(bytes: Uint8Array): void {
+    const fields = readProtobufFields(bytes);
+    const sequenceId = readNumberField(fields, 10) ?? 0;
+    const sequenceFlags = readNumberField(fields, 13) ?? 0;
+    const incrementalStateCleared = readNumberField(fields, 41) === 1 || (sequenceFlags & 1) !== 0;
+    let sequence = this.sequences.get(sequenceId);
+    if (!sequence || incrementalStateCleared) {
+      sequence = {defaultTrackUuid: 0n, eventNames: new Map()};
+      this.sequences.set(sequenceId, sequence);
+    }
+
+    const internedData = readBytesField(fields, 12);
+    if (internedData) {
+      parseInternedData(internedData, sequence);
+    }
+    const defaults = readBytesField(fields, 59);
+    if (defaults) {
+      parseTracePacketDefaults(defaults, sequence);
+    }
+
+    for (const field of fields) {
+      if (!(field.value instanceof Uint8Array)) {
+        continue;
+      }
+      if (field.fieldNumber === 60) {
+        this.parseTrackDescriptor(field.value);
+      } else if (field.fieldNumber === 11) {
+        const timestamp = readBigIntField(fields, 8);
+        if (timestamp !== undefined) {
+          this.parseTrackEvent(field.value, timestamp, sequence);
+        }
+      } else if (field.fieldNumber === 43) {
+        const process = parseProcessDescriptor(field.value);
+        if (process) {
+          this.setProcess(process);
+        }
+      } else if (field.fieldNumber === 44) {
+        const thread = parseThreadDescriptor(field.value);
+        if (thread) {
+          this.setThread(thread);
+        }
+      }
+    }
   }
-): void {
+
+  /** Drains completed rows accumulated since the previous drain into Arrow tables. */
+  drain(): PerfettoTrace {
+    const trace = {
+      tracks: buildTrackTable([...this.pendingTracks.values()]),
+      slices: buildSliceTable(this.slices),
+      processes: buildProcessTable([...this.pendingProcesses.values()]),
+      threads: buildThreadTable([...this.pendingThreads.values()])
+    };
+    this.pendingTracks.clear();
+    this.slices.length = 0;
+    this.pendingProcesses.clear();
+    this.pendingThreads.clear();
+    return trace;
+  }
+
+  /** Finishes a non-streaming parse and returns the complete Arrow-backed trace. */
+  finish(): PerfettoTrace {
+    return {
+      tracks: buildTrackTable([...this.tracks.values()]),
+      slices: buildSliceTable(this.slices),
+      processes: buildProcessTable([...this.processes.values()]),
+      threads: buildThreadTable([...this.threads.values()])
+    };
+  }
+
+  /** Parses one TrackDescriptor and any embedded ownership descriptor. */
+  private parseTrackDescriptor(bytes: Uint8Array): void {
+    const fields = readProtobufFields(bytes);
+    const trackUuid = readBigIntField(fields, 1);
+    if (trackUuid === undefined) {
+      return;
+    }
+
+    const processBytes = readBytesField(fields, 3);
+    const threadBytes = readBytesField(fields, 4);
+    const process = processBytes ? parseProcessDescriptor(processBytes) : null;
+    const thread = threadBytes ? parseThreadDescriptor(threadBytes) : null;
+    if (process) {
+      this.setProcess(process);
+    }
+    if (thread) {
+      this.setThread(thread);
+    }
+
+    const previous = this.tracks.get(trackUuid);
+    const track: TrackRow = {
+      trackUuid,
+      parentTrackUuid: readBigIntField(fields, 5) ?? previous?.parentTrackUuid ?? null,
+      type: process
+        ? 'process'
+        : thread
+          ? 'thread'
+          : readBytesField(fields, 8)
+            ? 'counter'
+            : (previous?.type ?? 'slice'),
+      name:
+        readStringField(fields, 2) ??
+        readStringField(fields, 10) ??
+        readStringField(fields, 13) ??
+        previous?.name ??
+        null,
+      pid: process?.pid ?? thread?.pid ?? previous?.pid ?? null,
+      tid: thread?.tid ?? previous?.tid ?? null
+    };
+    this.tracks.set(trackUuid, track);
+    this.pendingTracks.set(trackUuid, track);
+  }
+
+  /** Parses a TrackEvent and resolves begin/end events into complete slices. */
+  private parseTrackEvent(bytes: Uint8Array, timestamp: bigint, sequence: SequenceState): void {
+    const fields = readProtobufFields(bytes);
+    const legacyEvent = readBytesField(fields, 6);
+    const legacyFields = legacyEvent ? readProtobufFields(legacyEvent) : [];
+    const legacyPhase = readNumberField(legacyFields, 2);
+    const type = readNumberField(fields, 9) ?? getTrackEventTypeFromLegacyPhase(legacyPhase);
+    const trackUuid = readBigIntField(fields, 11) ?? sequence.defaultTrackUuid;
+    if (type === undefined) {
+      return;
+    }
+    const nameIid = readBigIntField(fields, 10);
+    const name =
+      readStringField(fields, 23) ??
+      (nameIid === undefined ? undefined : sequence.eventNames.get(nameIid)) ??
+      '';
+
+    if (type === 1) {
+      const stack = this.openSlices.get(trackUuid) ?? [];
+      stack.push({ts: timestamp, name});
+      this.openSlices.set(trackUuid, stack);
+    } else if (type === 2) {
+      const begin = this.openSlices.get(trackUuid)?.pop();
+      if (begin && timestamp >= begin.ts) {
+        this.slices.push({trackUuid, ts: begin.ts, dur: timestamp - begin.ts, name: begin.name});
+      }
+    } else if (type === 3) {
+      this.slices.push({trackUuid, ts: timestamp, dur: 0n, name});
+    } else if (legacyPhase === 88) {
+      const durationMicroseconds = readBigIntField(legacyFields, 3) ?? 0n;
+      this.slices.push({
+        trackUuid,
+        ts: timestamp,
+        dur: BigInt.asIntN(64, durationMicroseconds) * 1000n,
+        name
+      });
+    }
+  }
+
+  /** Merges a process descriptor without discarding a previously known name. */
+  private setProcess(process: ProcessRow): void {
+    const previous = this.processes.get(process.pid);
+    const merged = {pid: process.pid, name: process.name ?? previous?.name ?? null};
+    this.processes.set(process.pid, merged);
+    this.pendingProcesses.set(process.pid, merged);
+  }
+
+  /** Merges a thread descriptor without discarding known ownership or names. */
+  private setThread(thread: ThreadRow): void {
+    const previous = this.threads.get(thread.tid);
+    const merged = {
+      tid: thread.tid,
+      pid: thread.pid ?? previous?.pid ?? null,
+      name: thread.name ?? previous?.name ?? null
+    };
+    this.threads.set(thread.tid, merged);
+    this.pendingThreads.set(thread.tid, merged);
+  }
+}
+
+/** Maps legacy Chrome trace phases that have direct TrackEvent equivalents. */
+function getTrackEventTypeFromLegacyPhase(phase: number | undefined): number | undefined {
+  if (phase === 66) {
+    return 1;
+  }
+  if (phase === 69) {
+    return 2;
+  }
+  if (phase === 73 || phase === 105) {
+    return 3;
+  }
+  if (phase === 88) {
+    return 4;
+  }
+  return undefined;
+}
+
+/** Adds stable TrackEvent interned names to one packet sequence. */
+function parseInternedData(bytes: Uint8Array, sequence: SequenceState): void {
   for (const field of readProtobufFields(bytes)) {
-    if (!(field.value instanceof Uint8Array)) {
-      continue;
-    }
-
-    if (field.fieldNumber === 60) {
-      parseTrackDescriptor(field.value, state);
-    } else if (field.fieldNumber === 11) {
-      parseTrackEvent(field.value, state.slices, state.openSlices);
-    } else if (field.fieldNumber === 5) {
-      const process = parseProcessDescriptor(field.value);
-      if (process) {
-        setProcess(state.processes, process);
-      }
-    } else if (field.fieldNumber === 6) {
-      const thread = parseThreadDescriptor(field.value);
-      if (thread) {
-        setThread(state.threads, thread);
+    if (field.fieldNumber === 2 && field.value instanceof Uint8Array) {
+      const eventNameFields = readProtobufFields(field.value);
+      const iid = readBigIntField(eventNameFields, 1);
+      const name = readStringField(eventNameFields, 2);
+      if (iid !== undefined && name !== undefined) {
+        sequence.eventNames.set(iid, name);
       }
     }
   }
 }
 
-/** Parses one TrackDescriptor and any embedded ownership descriptor. */
-function parseTrackDescriptor(
-  bytes: Uint8Array,
-  state: {
-    tracks: TrackRow[];
-    processes: Map<number, ProcessRow>;
-    threads: Map<number, ThreadRow>;
+/** Applies TrackEvent defaults for one packet sequence. */
+function parseTracePacketDefaults(bytes: Uint8Array, sequence: SequenceState): void {
+  const trackEventDefaults = readBytesField(readProtobufFields(bytes), 11);
+  if (trackEventDefaults) {
+    const trackUuid = readBigIntField(readProtobufFields(trackEventDefaults), 11);
+    if (trackUuid !== undefined) {
+      sequence.defaultTrackUuid = trackUuid;
+    }
   }
-): void {
-  const fields = readProtobufFields(bytes);
-  const trackUuid = readBigIntField(fields, 2);
-  if (trackUuid === undefined) {
-    return;
-  }
-
-  const processBytes = readBytesField(fields, 3);
-  const threadBytes = readBytesField(fields, 4);
-  const process = processBytes ? parseProcessDescriptor(processBytes) : null;
-  const thread = threadBytes ? parseThreadDescriptor(threadBytes) : null;
-  if (process) {
-    setProcess(state.processes, process);
-  }
-  if (thread) {
-    setThread(state.threads, thread);
-  }
-
-  state.tracks.push({
-    trackUuid,
-    parentTrackUuid: readBigIntField(fields, 5) ?? null,
-    type: process ? 'process' : thread ? 'thread' : readBytesField(fields, 6) ? 'counter' : 'slice',
-    name: readStringField(fields, 1) ?? null,
-    pid: process?.pid ?? thread?.pid ?? null,
-    tid: thread?.tid ?? null
-  });
-}
-
-/** Merges duplicate process descriptors without discarding a previously known name. */
-function setProcess(processes: Map<number, ProcessRow>, process: ProcessRow): void {
-  const previous = processes.get(process.pid);
-  processes.set(process.pid, {pid: process.pid, name: process.name ?? previous?.name ?? null});
-}
-
-/** Merges duplicate thread descriptors without discarding known ownership or names. */
-function setThread(threads: Map<number, ThreadRow>, thread: ThreadRow): void {
-  const previous = threads.get(thread.tid);
-  threads.set(thread.tid, {
-    tid: thread.tid,
-    pid: thread.pid ?? previous?.pid ?? null,
-    name: thread.name ?? previous?.name ?? null
-  });
 }
 
 /** Parses one ProcessDescriptor. */
@@ -154,39 +295,6 @@ function parseThreadDescriptor(bytes: Uint8Array): ThreadRow | null {
         pid: readNumberField(fields, 1) ?? null,
         name: readStringField(fields, 5) ?? null
       };
-}
-
-/** Parses one TrackEvent and resolves begin/end events into complete slices. */
-function parseTrackEvent(
-  bytes: Uint8Array,
-  slices: SliceRow[],
-  openSlices: Map<bigint, OpenSlice[]>
-): void {
-  const fields = readProtobufFields(bytes);
-  const type = readNumberField(fields, 1);
-  const trackUuid = readBigIntField(fields, 11);
-  const timestamp = readBigIntField(fields, 8);
-  if (type === undefined || trackUuid === undefined || timestamp === undefined) {
-    return;
-  }
-
-  if (type === 1) {
-    const stack = openSlices.get(trackUuid) ?? [];
-    stack.push({ts: timestamp, name: readStringField(fields, 23) ?? ''});
-    openSlices.set(trackUuid, stack);
-  } else if (type === 2) {
-    const begin = openSlices.get(trackUuid)?.pop();
-    if (begin && timestamp >= begin.ts) {
-      slices.push({trackUuid, ts: begin.ts, dur: timestamp - begin.ts, name: begin.name});
-    }
-  } else if (type === 3) {
-    slices.push({
-      trackUuid,
-      ts: timestamp,
-      dur: 0n,
-      name: readStringField(fields, 23) ?? ''
-    });
-  }
 }
 
 /** Reads one varint field as a bigint. */

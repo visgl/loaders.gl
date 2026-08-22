@@ -5,6 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 import type {PerfettoTrace, PerfettoTraceBatch} from './perfetto-trace-arrow-schema';
+import {testPerfettoTrace} from './perfetto-trace-detector';
 
 /** Perfetto protobuf trace loader options. */
 export type PerfettoTraceLoaderOptions = LoaderOptions & {
@@ -31,7 +32,7 @@ export const PerfettoTraceLoader = {
   dataType: null as unknown as PerfettoTrace,
   batchType: null as unknown as PerfettoTraceBatch,
   options: PERFETTO_TRACE_LOADER_OPTIONS,
-  tests: [testPerfettoTraceLoader],
+  tests: [testPerfettoTrace],
   preload
 } as const satisfies Loader<PerfettoTrace, PerfettoTraceBatch, PerfettoTraceLoaderOptions>;
 
@@ -39,9 +40,4 @@ export const PerfettoTraceLoader = {
 async function preload() {
   const {PerfettoTraceLoaderWithParser} = await import('@loaders.gl/traces/perfetto-trace-loader');
   return PerfettoTraceLoaderWithParser;
-}
-
-/** Sniffs the outer Trace packet field used by canonical Perfetto protobuf files. */
-function testPerfettoTraceLoader(arrayBuffer: ArrayBuffer): boolean {
-  return new Uint8Array(arrayBuffer)[0] === 0x0a;
 }

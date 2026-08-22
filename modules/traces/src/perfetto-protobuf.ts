@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** One decoded protobuf field used by the minimal Perfetto codec. */
+/** One decoded protobuf field used by the Perfetto codec. */
 export type ProtobufField = {
   fieldNumber: number;
   wireType: number;
@@ -57,6 +57,32 @@ export function readProtobufFields(bytes: Uint8Array): ProtobufField[] {
   }
 
   return fields;
+}
+
+/** Streams length-delimited messages from a repeated field in an outer protobuf message. */
+export async function* streamProtobufMessages(
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  fieldNumber: number
+): AsyncIterable<Uint8Array> {
+  let pending: Uint8Array<ArrayBufferLike> = new Uint8Array();
+
+  for await (const chunk of iterator) {
+    const bytes = toUint8Array(chunk);
+    pending = concatenateUint8Arrays([pending, bytes]);
+    const parsed = readCompleteFields(pending, fieldNumber);
+    pending = pending.subarray(parsed.byteOffset);
+    yield* parsed.messages;
+  }
+
+  if (pending.byteLength > 0) {
+    const parsed = readCompleteFields(pending, fieldNumber);
+    yield* parsed.messages;
+    if (parsed.byteOffset !== pending.byteLength) {
+      throw new Error('Truncated protobuf stream.');
+    }
+  }
 }
 
 /** Encodes one unsigned protobuf varint. */
@@ -132,4 +158,93 @@ function readProtobufVarint(
   }
 
   throw new Error('Invalid or truncated protobuf varint.');
+}
+
+/** Reads all complete fields currently buffered and returns matching nested messages. */
+function readCompleteFields(
+  bytes: Uint8Array,
+  targetFieldNumber: number
+): {byteOffset: number; messages: Uint8Array[]} {
+  const messages: Uint8Array[] = [];
+  let byteOffset = 0;
+
+  while (byteOffset < bytes.byteLength) {
+    const fieldStartOffset = byteOffset;
+    const tag = tryReadProtobufVarint(bytes, byteOffset);
+    if (!tag) {
+      break;
+    }
+    byteOffset = tag.offset;
+    const fieldNumber = Number(tag.value >> 3n);
+    const wireType = Number(tag.value & 7n);
+    if (fieldNumber === 0) {
+      throw new Error('Invalid protobuf field number 0.');
+    }
+
+    if (wireType === 0) {
+      const value = tryReadProtobufVarint(bytes, byteOffset);
+      if (!value) {
+        byteOffset = fieldStartOffset;
+        break;
+      }
+      byteOffset = value.offset;
+    } else if (wireType === 1 || wireType === 5) {
+      const byteLength = wireType === 1 ? 8 : 4;
+      if (byteOffset + byteLength > bytes.byteLength) {
+        byteOffset = fieldStartOffset;
+        break;
+      }
+      byteOffset += byteLength;
+    } else if (wireType === 2) {
+      const length = tryReadProtobufVarint(bytes, byteOffset);
+      if (!length || length.value > BigInt(Number.MAX_SAFE_INTEGER)) {
+        byteOffset = fieldStartOffset;
+        break;
+      }
+      const valueStartOffset = length.offset;
+      const valueEndOffset = valueStartOffset + Number(length.value);
+      if (valueEndOffset > bytes.byteLength) {
+        byteOffset = fieldStartOffset;
+        break;
+      }
+      if (fieldNumber === targetFieldNumber) {
+        messages.push(bytes.slice(valueStartOffset, valueEndOffset));
+      }
+      byteOffset = valueEndOffset;
+    } else {
+      throw new Error(`Unsupported protobuf wire type ${wireType}.`);
+    }
+  }
+
+  return {byteOffset, messages};
+}
+
+/** Attempts to read a varint, returning undefined until all bytes are available. */
+function tryReadProtobufVarint(
+  bytes: Uint8Array,
+  startOffset: number
+): {value: bigint; offset: number} | undefined {
+  let value = 0n;
+  let shift = 0n;
+  let offset = startOffset;
+
+  while (offset < bytes.byteLength && shift < 70n) {
+    const byte = bytes[offset++];
+    value |= BigInt(byte & 0x7f) << shift;
+    if ((byte & 0x80) === 0) {
+      return {value, offset};
+    }
+    shift += 7n;
+  }
+  if (shift >= 70n) {
+    throw new Error('Invalid protobuf varint.');
+  }
+  return undefined;
+}
+
+/** Normalizes one binary stream chunk without copying it. */
+function toUint8Array(chunk: ArrayBufferLike | ArrayBufferView): Uint8Array {
+  return ArrayBuffer.isView(chunk)
+    ? new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+    : new Uint8Array(chunk);
 }
