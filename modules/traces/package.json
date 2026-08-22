@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/traces",
   "version": "5.0.0-alpha.1",
-  "description": "Trace format parsers for Chrome Trace and Perfetto Trace",
+  "description": "Trace format parsers for Chrome Trace, Perfetto Trace, and OpenTelemetry OTLP",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -15,6 +15,8 @@
     "trace",
     "chrome trace",
     "perfetto",
+    "opentelemetry",
+    "otlp",
     "parser",
     "loader",
     "writer"
@@ -35,6 +37,14 @@
     "./perfetto-trace-loader": {
       "types": "./dist/perfetto-trace-loader.d.ts",
       "import": "./dist/perfetto-trace-loader.js"
+    },
+    "./otlp-trace-loader": {
+      "types": "./dist/otlp-trace-loader.d.ts",
+      "import": "./dist/otlp-trace-loader.js"
+    },
+    "./otlp-trace-json-loader": {
+      "types": "./dist/otlp-trace-json-loader.d.ts",
+      "import": "./dist/otlp-trace-json-loader.js"
     }
   },
   "sideEffects": false,
@@ -47,6 +57,7 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/traces\""
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.14.0",
     "@loaders.gl/json": "5.0.0-alpha.1",
     "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "apache-arrow": ">= 17.0.0",

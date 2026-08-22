@@ -8,6 +8,26 @@ export {
 } from './chrome-trace-loader-types';
 export {ChromeTraceWriter, type ChromeTraceWriterOptions} from './chrome-trace-writer';
 export {
+  OtlpTraceJsonLoader,
+  OtlpTraceLoader,
+  type OtlpTraceLoaderOptions
+} from './otlp-trace-loader-types';
+export type {
+  OtlpEventArrowTable,
+  OtlpLinkArrowTable,
+  OtlpResourceArrowTable,
+  OtlpScopeArrowTable,
+  OtlpSpanArrowTable,
+  OtlpTrace,
+  OtlpTraceBatch,
+  OtlpTraceTableName
+} from './otlp-trace-arrow-schema';
+export {
+  OtlpTraceJsonWriter,
+  type OtlpTraceJsonWriterOptions
+} from './otlp-trace-json-writer';
+export {OtlpTraceWriter, type OtlpTraceWriterOptions} from './otlp-trace-writer';
+export {
   PerfettoTraceLoader,
   type PerfettoTraceLoaderOptions
 } from './perfetto-trace-loader-types';

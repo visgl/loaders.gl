@@ -1,3 +1,5 @@
+{/* SPDX-License-Identifier: MIT */}
+
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
 # Traces
@@ -7,6 +9,8 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 The `@loaders.gl/traces` module reads and writes performance trace formats without requiring a
 specific visualization framework. Chrome Trace Event JSON can be loaded as validated JSON or
 Apache Arrow. Stable Perfetto TrackEvent protobuf data is projected into four typed Arrow tables.
+OpenTelemetry OTLP traces in protobuf, protobuf-JSON, or JSON Lines are normalized into five
+relational Arrow tables.
 
 ## Installation
 
@@ -20,6 +24,7 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 | --- | --- | --- | --- |
 | [Chrome Trace Event JSON](/docs/modules/traces/formats/chrome-trace) | Validated JSON or one Arrow event table | Arrow event record batches | Arrow event table or record batch |
 | [Perfetto protobuf](/docs/modules/traces/formats/perfetto-trace) | `tracks`, `slices`, `processes`, and `threads` Arrow tables | Tagged `{table, data}` record batches | The same four Arrow tables |
+| [OpenTelemetry OTLP traces](/docs/modules/traces/formats/otlp-trace) | `resources`, `scopes`, `spans`, `events`, and `links` Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
 
 | API | Purpose |
 | --- | --- |
@@ -27,6 +32,8 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 | [`ChromeTraceWriter`](/docs/modules/traces/api-reference/chrome-trace-writer) | Reconstruct Chrome Trace JSON from Arrow events. |
 | [`PerfettoTraceLoader`](/docs/modules/traces/api-reference/perfetto-trace-loader) | Load stable Perfetto TrackEvent data as Arrow. |
 | [`PerfettoTraceWriter`](/docs/modules/traces/api-reference/perfetto-trace-writer) | Encode the package's Perfetto Arrow projection as protobuf. |
+| [`OtlpTraceLoader` and `OtlpTraceJsonLoader`](/docs/modules/traces/api-reference/otlp-trace-loader) | Load OTLP protobuf, protobuf-JSON, or JSON Lines as Arrow. |
+| [`OtlpTraceWriter` and `OtlpTraceJsonWriter`](/docs/modules/traces/api-reference/otlp-trace-writer) | Encode the OTLP Arrow projection as protobuf or protobuf-JSON. |
 | [Chrome trace streaming](/docs/modules/traces/api-reference/chrome-trace-streaming) | Adapt event, Arrow, or JSON chunk streams into live trace snapshots. |
 
 ## Quick Start
@@ -36,6 +43,9 @@ import {load, encode} from '@loaders.gl/core';
 import {
   ChromeTraceLoader,
   ChromeTraceWriter,
+  OtlpTraceJsonLoader,
+  OtlpTraceLoader,
+  OtlpTraceWriter,
   PerfettoTraceLoader,
   PerfettoTraceWriter
 } from '@loaders.gl/traces';
@@ -47,6 +57,11 @@ const chromeJson = await encode(chromeEvents, ChromeTraceWriter);
 
 const perfettoTables = await load('trace.perfetto-trace', PerfettoTraceLoader);
 const perfettoProtobuf = await encode(perfettoTables, PerfettoTraceWriter);
+
+const otlpTables = await load('traces.otlp', OtlpTraceLoader);
+const otlpProtobuf = await encode(otlpTables, OtlpTraceWriter);
+
+const otlpJsonTables = await load('traces.otlp.json', OtlpTraceJsonLoader);
 ```
 
 ## Bundle Splitting
@@ -61,6 +76,8 @@ subpaths:
 ```typescript
 import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace-loader';
 import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto-trace-loader';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.

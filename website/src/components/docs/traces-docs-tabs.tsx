@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -20,7 +22,10 @@ export type TracesDocsTabId =
   | 'streaming'
   | 'perfetto-trace'
   | 'perfettotraceloader'
-  | 'perfettotracewriter';
+  | 'perfettotracewriter'
+  | 'otlp-trace'
+  | 'otlptraceloader'
+  | 'otlptracewriter';
 
 const TRACES_DOCS_TABS: TracesDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/traces/chrome-trace'},
@@ -59,6 +64,21 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     id: 'perfettotracewriter',
     label: 'PerfettoTraceWriter',
     href: '/docs/modules/traces/api-reference/perfetto-trace-writer'
+  },
+  {
+    id: 'otlp-trace',
+    label: 'OTLP',
+    href: '/docs/modules/traces/formats/otlp-trace'
+  },
+  {
+    id: 'otlptraceloader',
+    label: 'OTLP Loaders',
+    href: '/docs/modules/traces/api-reference/otlp-trace-loader'
+  },
+  {
+    id: 'otlptracewriter',
+    label: 'OTLP Writers',
+    href: '/docs/modules/traces/api-reference/otlp-trace-writer'
   }
 ];
 
