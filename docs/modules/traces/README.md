@@ -17,8 +17,10 @@ npm install @loaders.gl/core @loaders.gl/traces
 | Loader                                                                      | Description                                      |
 | --------------------------------------------------------------------------- | ------------------------------------------------ |
 | [`ChromeTraceLoader`](/docs/modules/traces/api-reference/chrome-trace-loader) | Loads Chrome Trace Event JSON as JSON or Arrow. |
+| [`PerfettoTraceLoader`](/docs/modules/traces/api-reference/perfetto-trace-loader) | Loads Perfetto protobuf traces as typed Arrow tables. |
 
 ## Additional APIs
 
-`@loaders.gl/traces` also exports `parseChromeTrace(...)` and streaming helpers for logical events,
-Arrow batches, and chunked Chrome trace files.
+`@loaders.gl/traces` also exports `ChromeTraceWriter`, `PerfettoTraceWriter`,
+`parseChromeTrace(...)`, and streaming helpers for logical events, Arrow batches, and chunked
+Chrome trace files.

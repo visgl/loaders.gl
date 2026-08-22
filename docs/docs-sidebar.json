@@ -550,7 +550,9 @@
         "items": [
           "modules/traces/README",
           "modules/traces/formats/chrome-trace",
-          "modules/traces/api-reference/chrome-trace-loader"
+          "modules/traces/api-reference/chrome-trace-loader",
+          "modules/traces/formats/perfetto-trace",
+          "modules/traces/api-reference/perfetto-trace-loader"
         ]
       },
       {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {JSONTableLoader} from '@loaders.gl/json';
 import * as arrow from 'apache-arrow';
 
@@ -12,6 +12,10 @@ import {
 } from './chrome-trace-arrow-parser';
 import {tryParseChromeTraceFileText} from './chrome-trace-json-stream';
 import {validateChromeTraceFile} from './chrome-trace-schema';
+import {
+  ChromeTraceLoader as ChromeTraceLoaderMetadata,
+  type ChromeTraceLoaderOptions
+} from './chrome-trace-loader-types';
 
 import type {
   ChromeTraceEventArrowTable,
@@ -20,41 +24,13 @@ import type {
 import {chromeTraceEventStreamArrowSchema} from './chrome-trace-arrow-schema';
 import type {ChromeTraceFileSchema, ChromeTraceValidationOptions} from './chrome-trace-schema';
 
-const CHROME_TRACE_LOADER_VERSION = '4.4.0';
-
-/**
- * Chrome trace loader options.
- */
-export type ChromeTraceLoaderOptions = LoaderOptions &
-  ChromeTraceValidationOptions & {
-    /** Selects the returned data shape for whole-file parsing. */
-    shape?: 'json' | 'arrow-table';
-    /** Chrome trace loader-specific options. */
-    chromeTrace?: {
-      /** Selects the returned data shape for whole-file parsing. */
-      shape?: 'json' | 'arrow-table';
-      /** Maximum number of events emitted in one Arrow record batch. */
-      batchSize?: number;
-    };
-  };
+const {preload: _preload, ...ChromeTraceLoaderMetadataWithoutPreload} = ChromeTraceLoaderMetadata;
 
 /**
  * loaders.gl-compatible loader for Chrome trace JSON payloads.
  */
-export const ChromeTraceLoader = {
-  name: 'Chrome Trace Loader',
-  id: 'chromeTrace',
-  module: 'traces',
-  version: CHROME_TRACE_LOADER_VERSION,
-  extensions: ['json'],
-  mimeTypes: ['application/json', 'application/x-chrome-trace+json'],
-  text: true,
-  options: {
-    chromeTrace: {
-      shape: 'json',
-      batchSize: 256
-    }
-  } satisfies ChromeTraceLoaderOptions,
+export const ChromeTraceLoaderWithParser = {
+  ...ChromeTraceLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: ChromeTraceLoaderOptions) =>
     parseChromeTraceArrayBuffer(arrayBuffer, options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: ChromeTraceLoaderOptions) =>
@@ -74,8 +50,7 @@ export const ChromeTraceLoader = {
     }
 
     yield* parseChromeTraceArrowBatchesWithJSONTable(iterator, options);
-  },
-  tests: [testChromeTraceLoader]
+  }
 } as const satisfies LoaderWithParser<
   ChromeTraceFileSchema | ChromeTraceEventArrowTable,
   ChromeTraceEventStreamArrowRecordBatch,
@@ -297,12 +272,4 @@ function decodeChromeTraceChunk(chunk: ArrayBufferLike | ArrayBufferView): strin
   }
 
   return new TextDecoder().decode(new Uint8Array(chunk));
-}
-
-/**
- * Sniffs a candidate file header to see whether it resembles a Chrome trace payload.
- */
-function testChromeTraceLoader(arrayBuffer: ArrayBuffer): boolean {
-  const header = new TextDecoder().decode(new Uint8Array(arrayBuffer).slice(0, 2048));
-  return header.includes('"traceEvents"');
 }

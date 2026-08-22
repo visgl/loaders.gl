@@ -11,7 +11,13 @@ type TracesDocsTab = {
 };
 
 /** Traces documentation tab identifiers. */
-export type TracesDocsTabId = 'try-it' | 'overview' | 'chrome-trace' | 'chrometraceloader';
+export type TracesDocsTabId =
+  | 'try-it'
+  | 'overview'
+  | 'chrome-trace'
+  | 'chrometraceloader'
+  | 'perfetto-trace'
+  | 'perfettotraceloader';
 
 const TRACES_DOCS_TABS: TracesDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/traces/chrome-trace'},
@@ -25,6 +31,16 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     id: 'chrometraceloader',
     label: 'ChromeTraceLoader',
     href: '/docs/modules/traces/api-reference/chrome-trace-loader'
+  },
+  {
+    id: 'perfetto-trace',
+    label: 'Perfetto',
+    href: '/docs/modules/traces/formats/perfetto-trace'
+  },
+  {
+    id: 'perfettotraceloader',
+    label: 'PerfettoTraceLoader',
+    href: '/docs/modules/traces/api-reference/perfetto-trace-loader'
   }
 ];
 

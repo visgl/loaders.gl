@@ -5,7 +5,22 @@
 export {
   ChromeTraceLoader,
   type ChromeTraceLoaderOptions
-} from './chrome-trace-loader';
+} from './chrome-trace-loader-types';
+export {ChromeTraceWriter, type ChromeTraceWriterOptions} from './chrome-trace-writer';
+export {
+  PerfettoTraceLoader,
+  type PerfettoTraceLoaderOptions
+} from './perfetto-trace-loader-types';
+export type {
+  PerfettoProcessArrowTable,
+  PerfettoSliceArrowTable,
+  PerfettoThreadArrowTable,
+  PerfettoTrace,
+  PerfettoTraceBatch,
+  PerfettoTraceTableName,
+  PerfettoTrackArrowTable
+} from './perfetto-trace-arrow-schema';
+export {PerfettoTraceWriter, type PerfettoTraceWriterOptions} from './perfetto-trace-writer';
 export {
   type ChromeTraceEventArrowRecordBatch,
   type ChromeTraceEventArrowTable,

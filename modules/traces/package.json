@@ -4,7 +4,9 @@
   "description": "Trace format parsers for Chrome Trace and Perfetto Trace",
   "license": "MIT",
   "type": "module",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -14,7 +16,8 @@
     "chrome trace",
     "perfetto",
     "parser",
-    "loader"
+    "loader",
+    "writer"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
@@ -24,6 +27,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./chrome-trace-loader": {
+      "types": "./dist/chrome-trace-loader.d.ts",
+      "import": "./dist/chrome-trace-loader.js"
+    },
+    "./perfetto-trace-loader": {
+      "types": "./dist/perfetto-trace-loader.d.ts",
+      "import": "./dist/perfetto-trace-loader.js"
     }
   },
   "sideEffects": false,

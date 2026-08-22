@@ -1,0 +1,47 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+
+import type {PerfettoTrace, PerfettoTraceBatch} from './perfetto-trace-arrow-schema';
+
+/** Perfetto protobuf trace loader options. */
+export type PerfettoTraceLoaderOptions = LoaderOptions & {
+  perfettoTrace?: {
+    /** Maximum rows emitted in one tagged Arrow record batch. */
+    batchSize?: number;
+  };
+};
+
+/** Default Perfetto trace loader options. */
+export const PERFETTO_TRACE_LOADER_OPTIONS = {
+  perfettoTrace: {batchSize: 4096}
+} as const satisfies PerfettoTraceLoaderOptions;
+
+/** Perfetto protobuf format metadata and lazy parser entrypoint. */
+export const PerfettoTraceLoader = {
+  name: 'Perfetto Trace Loader',
+  id: 'perfettoTrace',
+  module: 'traces',
+  version: 'latest',
+  extensions: ['perfetto-trace', 'pftrace'],
+  mimeTypes: ['application/x-perfetto-trace', 'application/vnd.google.protobuf'],
+  binary: true,
+  dataType: null as unknown as PerfettoTrace,
+  batchType: null as unknown as PerfettoTraceBatch,
+  options: PERFETTO_TRACE_LOADER_OPTIONS,
+  tests: [testPerfettoTraceLoader],
+  preload
+} as const satisfies Loader<PerfettoTrace, PerfettoTraceBatch, PerfettoTraceLoaderOptions>;
+
+/** Loads the parser-bearing Perfetto trace loader. */
+async function preload() {
+  const {PerfettoTraceLoaderWithParser} = await import('@loaders.gl/traces/perfetto-trace-loader');
+  return PerfettoTraceLoaderWithParser;
+}
+
+/** Sniffs the outer Trace packet field used by canonical Perfetto protobuf files. */
+function testPerfettoTraceLoader(arrayBuffer: ArrayBuffer): boolean {
+  return new Uint8Array(arrayBuffer)[0] === 0x0a;
+}
