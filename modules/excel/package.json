@@ -59,7 +59,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "apache-arrow": ">= 17.0.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "npm:@stackline/xlsx@^1.0.6"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
