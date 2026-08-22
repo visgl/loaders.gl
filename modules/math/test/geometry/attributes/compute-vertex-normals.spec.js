@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {Vector3} from '@math.gl/core';
 import {GL, computeVertexNormals} from '@loaders.gl/math';

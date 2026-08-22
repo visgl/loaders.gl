@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
 import {resolvePath} from '@loaders.gl/loader-utils';
 

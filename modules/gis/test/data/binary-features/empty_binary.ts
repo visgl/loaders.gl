@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {BinaryFeatureCollection} from '@loaders.gl/schema';
 
 export const EMPTY_BINARY_DATA: BinaryFeatureCollection = {

@@ -9,11 +9,108 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
   IndexedArchiveTilesetSource,
   I3SSource,
+  createImplicitSubtreeReference,
+  LOD_METRIC_TYPE,
+  Tile3D,
   Tiles3DSource,
+  Tileset3D,
+  TILE_REFINEMENT,
   isTileset3DSource,
+  type ImplicitTilingDescriptor,
   type TilesetJSON,
   type TilesetSourceResolver
 } from '@loaders.gl/tiles';
+
+test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async t => {
+  const descriptor: ImplicitTilingDescriptor = {
+    contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
+    subtreesUrlTemplate: 'https://example.com/subtrees/{level}/{x}/{y}.subtree',
+    subdivisionScheme: 'QUADTREE',
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    refine: TILE_REFINEMENT.REPLACE,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    rootLodMetricValue: 16,
+    rootBoundingVolume: {region: [0, 0, 1, 1, 0, 10]}
+  };
+  const implicitSubtree = createImplicitSubtreeReference(descriptor, {
+    level: 0,
+    x: 0,
+    y: 0,
+    z: 0
+  });
+  /** Creates an independent runtime placeholder for the same subtree resource. */
+  const createRootHeader = () => ({
+    id: `${implicitSubtree.subtreeUrl}#implicit=0/0/0/0`,
+    children: [],
+    implicitSubtree,
+    boundingVolume: descriptor.rootBoundingVolume,
+    geometricError: 16,
+    lodMetricType: descriptor.lodMetricType,
+    lodMetricValue: 16,
+    refine: descriptor.refine,
+    type: 'empty'
+  });
+  const requestedUrls: string[] = [];
+  let subtreeMode: unknown;
+  const resolver: TilesetSourceResolver = {
+    async loadRoot() {
+      throw new Error('preloaded metadata should not request a root resource');
+    },
+    async loadResource(url, _loader, loadOptions) {
+      requestedUrls.push(url);
+      subtreeMode = (loadOptions['3d-tiles'] as Record<string, unknown>)?.isSubtree;
+      return {
+        tileAvailability: {constant: 1},
+        contentAvailability: {constant: 1},
+        childSubtreeAvailability: {constant: 1}
+      };
+    }
+  };
+  const tilesetJson: TilesetJSON = {
+    shape: 'tileset3d',
+    type: 'TILES3D',
+    url: 'https://example.com/tileset.json',
+    basePath: 'https://example.com',
+    loader: Tiles3DLoader,
+    resolver,
+    asset: {version: '1.1'},
+    queryString: 'token=abc',
+    lodMetricType: descriptor.lodMetricType,
+    lodMetricValue: 16,
+    root: createRootHeader()
+  };
+  const source = new Tiles3DSource(tilesetJson, {
+    '3d-tiles': {maximumCachedSubtrees: 2}
+  });
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  t.equal(requestedUrls.length, 0, 'initialization performs no implicit subtree request');
+  const root = tileset.root!;
+  await root.loadChildren({} as any);
+  t.equal(subtreeMode, true, 'routes bytes through subtree parsing mode');
+  t.deepEqual(requestedUrls, ['https://example.com/subtrees/0/0/0.subtree?token=abc']);
+  t.equal(root.contentUrl, 'https://example.com/content/0/0/0.b3dm');
+  t.equal(root.children.length, 4, 'installs only the requested subtree boundary');
+  t.ok(root.children.every(child => child.hasUnloadedChildren));
+  t.equal(root.childrenState, 'ready');
+
+  const duplicateRoot = new Tile3D(tileset, createRootHeader());
+  await duplicateRoot.loadChildren({} as any);
+  t.equal(requestedUrls.length, 1, 'deduplicates the final subtree URL through parsed cache');
+  t.deepEqual(source.getImplicitTilingStats(), {
+    requestedSubtrees: 1,
+    loadedSubtrees: 2,
+    cacheHits: 1,
+    cachedSubtrees: 1,
+    pendingSubtrees: 0,
+    materializedTiles: 8
+  });
+  tileset.destroy();
+  t.equal(source.getImplicitTilingStats().cachedSubtrees, 0, 'destroy releases parsed metadata');
+  t.end();
+});
 
 test('isTileset3DSource recognizes explicit source implementations', t => {
   const tiles3DSource = new Tiles3DSource({
@@ -117,14 +214,16 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
   const tileContent = {content: 'from-resolver'};
   let rootLoadCount = 0;
   let resourceLoadCount = 0;
+  let resourceTilesetMode: unknown;
 
   const resolver: TilesetSourceResolver = {
     async loadRoot() {
       rootLoadCount++;
       return rootTileset;
     },
-    async loadResource() {
+    async loadResource(_url, _loader, loadOptions) {
       resourceLoadCount++;
+      resourceTilesetMode = (loadOptions['3d-tiles'] as Record<string, unknown>)?.isTileset;
       return tileContent;
     }
   };
@@ -144,8 +243,62 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
 
   t.equal(rootLoadCount, 1, 'root metadata goes through the injected resolver');
   t.equal(resourceLoadCount, 1, 'tile content goes through the injected resolver');
+  t.equal(resourceTilesetMode, 'auto', 'content kind is detected from bytes rather than URL');
   t.equal(tile.content, tileContent);
   t.notOk(loadResult.nestedTileset);
+  t.end();
+});
+
+test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape', async t => {
+  const nestedTileset = {shape: 'tileset3d', asset: {version: '1.1'}, root: {}};
+  const resolver: TilesetSourceResolver = {
+    async loadRoot() {
+      return {
+        asset: {version: '1.1'},
+        root: {refine: 'REPLACE'},
+        lodMetricType: 'geometricError',
+        lodMetricValue: 1
+      };
+    },
+    async loadResource() {
+      return nestedTileset;
+    }
+  };
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    resolver
+  });
+  await source.initialize();
+
+  const tile = {contentUrl: 'https://example.com/nested/signed-resource?token=one'} as any;
+  const loadResult = await source.loadTileContent(tile);
+  t.equal(loadResult.nestedTileset, nestedTileset);
+  t.equal(tile.content, nestedTileset);
+  t.end();
+});
+
+test('Tiles3DSource invalidates cached URLs when inherited query state changes', async t => {
+  const source = new Tiles3DSource({
+    type: 'tileset',
+    url: 'https://example.com/tileset.json',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'},
+    lodMetricType: 'geometricError',
+    lodMetricValue: 1,
+    queryString: 'token=one'
+  } as any);
+  await source.initialize();
+
+  const tilePath = 'https://example.com/tile.b3dm';
+  t.equal(source.getTileUrl(tilePath), `${tilePath}?token=one`);
+  (source as any).setQueryParameter('token', 'two');
+  t.equal(
+    source.getTileUrl(tilePath),
+    `${tilePath}?token=two`,
+    'does not return a stale cached URL'
+  );
   t.end();
 });
 

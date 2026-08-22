@@ -29,7 +29,7 @@ GeoParquet file is a Parquet file that additionally follows these conventions:
 | Geometry column encoding: single-geometry type encodings based on the GeoArrow specification | ✅ metadata pass-through and mapping |
 | "crs" column metadata: transformt CRS to WGS84 with longitude, latitude representation.      | ❌        |
 | "orientation" column metadata: reorder vertices if set "counterclockwise"                    | ❌        |
-| "covering" column metadata: per-row bounding boxes                                           | ❌        |
+| GeoParquet 1.1 `covering.bbox`: per-row bounding boxes                                       | ✅ `ParquetSource.read({bbox})` |
 
 ## Metadata behavior in Arrow output
 
@@ -42,10 +42,16 @@ When a GeoParquet file is loaded as Arrow:
 GeoParquet-only metadata such as `primary_column`, `geometry_types`, `bbox`, and `covering`
 remains in the schema-level `geo` metadata rather than being mirrored into field metadata.
 
-## Data size limitation
+## Spatial queries
 
-Parquet files might be large in size (multiple gigabytes). The capacity of GeoParquetLoader is limited by the memory limitations of your current platform. As an example a Chrome tab crashes when it reaches a certain platform dependent size.
-As "covering" metadata is not supported yet, it is not possible to make an efficient filtering of data. To prevent memory overflow it is possible to use the `limit` loader option that limits number of rows being parsed. In that case the loader will return first `limit` rows, omitting the rest of file.
+GeoParquet 1.1 defined an optional `covering.bbox` object whose four values are two-level Parquet
+schema paths such as `['bbox', 'xmin']`. `ParquetSourceLoader` validates that normative shape and
+uses it for spatial row-group statistics, nested page-index pruning, and exact per-row bounding-box
+intersection. The bbox struct is fetched as a hidden filter column when it is not projected.
+
+GeoParquet 2.0 removes covering metadata in favor of Parquet's native `GEOMETRY` and `GEOGRAPHY`
+logical types and geospatial statistics. GeoParquet 1.1 coverings remain important for current
+datasets; native Parquet geospatial-statistics pruning is tracked separately.
 
 ## Alternatives
 

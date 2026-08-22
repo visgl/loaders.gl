@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {fetchFile, _fetchProgress} from '@loaders.gl/core';
 const PROGRESS_IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.jpeg';

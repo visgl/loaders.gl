@@ -14,7 +14,9 @@ type Tiles3DDocsTab = {
 export type Tiles3DDocsTabId =
   | 'module'
   | 'runtime'
+  | 'resources'
   | 'hierarchy'
+  | 'implicit'
   | 'sse-lod'
   | 'requests'
   | 'cache'
@@ -24,9 +26,19 @@ const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
   {id: 'module', label: 'Module', href: '/docs/modules/3d-tiles'},
   {id: 'runtime', label: 'Runtime', href: '/docs/modules/3d-tiles/concepts'},
   {
+    id: 'resources',
+    label: 'Resources',
+    href: '/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection'
+  },
+  {
     id: 'hierarchy',
     label: 'Hierarchy',
     href: '/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement'
+  },
+  {
+    id: 'implicit',
+    label: 'Implicit',
+    href: '/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees'
   },
   {
     id: 'sse-lod',

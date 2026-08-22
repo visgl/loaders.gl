@@ -94,6 +94,10 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
+For optional WebP or AVIF extensions, `GLTFLoader` retains the ordinary texture source when the
+active runtime cannot decode the extension image. A required extension fails before image loading
+when its image MIME type is unsupported.
+
 | Extension                                                 | Preprocessed | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | [KHR_draco_mesh_compression](#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                                                    |
@@ -101,7 +105,8 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses existing version 0 meshopt streams                                             |
 | [KHR_texture_basisu](#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
 | [KHR_texture_transform](#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
-| KHR_texture_webp                                          | Y            |
+| [EXT_texture_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp) | Y | Selects the WebP source when the active decoder supports it |
+| [EXT_texture_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif) | Y | Selects the AVIF source when the active decoder supports it |
 | [EXT_mesh_features](#ext_mesh_features)                   | Y            | 3D tiles extension                                                                          |
 | [EXT_structural_metadata](#ext_structural_metadata)       | Y            | 3D tiles extension                                                                          |
 | [KHR_lights_punctual](#khr_lights_punctual)               | Y\*          | Deprecated                                                                                  |

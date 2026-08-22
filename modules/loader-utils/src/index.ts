@@ -184,6 +184,7 @@ export type {FeedableLAZChunkEncoder} from './lib/laz/laz-chunk-encoder';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
+export {CachedUriResolver} from './lib/path-utils/cached-uri-resolver';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases';
 
 // MICRO LOADERS
@@ -249,6 +250,8 @@ export type {
 } from './lib/sources/data-source-manager';
 export {DataSourceManager} from './lib/sources/data-source-manager';
 
+export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
+
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceMetadata} from './lib/sources/image-source';
@@ -278,6 +281,7 @@ export type {
   RasterBoundingBox,
   RasterViewport,
   RasterData,
+  RasterSelection,
   GetRasterParameters,
   RasterOverview,
   RasterSourceMetadata

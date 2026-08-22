@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
  * Iterates over a single attribute
  * NOTE: For performance, re-yields the same modified element

@@ -54,6 +54,7 @@
       "modules/pmtiles/formats/pmtiles",
       "modules/textures/formats/pvr",
       "modules/shapefile/formats/shapefile",
+      "modules/stac/formats/stac",
       "modules/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
@@ -206,6 +207,7 @@
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
+          "modules/stac/api-reference/stac-source-loader",
           "modules/tiles/api-reference/tiles-3d-source",
           "modules/tiles/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
@@ -271,7 +273,9 @@
             "label": "Runtime Concepts",
             "items": [
               "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/resource-resolution-and-content-detection",
               "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
+              "modules/3d-tiles/concepts/implicit-tiling-and-subtrees",
               "modules/3d-tiles/concepts/screen-space-error-and-lod",
               "modules/3d-tiles/concepts/request-scheduling-and-priorities",
               "modules/3d-tiles/concepts/caching-and-memory",
@@ -517,6 +521,13 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/stac",
+        "items": [
+          "modules/stac/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/tiles",
         "items": [
           "modules/tiles/README",
@@ -670,6 +681,7 @@
         "label": "Concepts",
         "items": [
           "developer-guide/concepts/javascript-apis",
+          "developer-guide/concepts/javascript-and-wasm-performance",
           "developer-guide/concepts/binary-data",
           "developer-guide/concepts/streaming",
           "developer-guide/concepts/async-iterators",

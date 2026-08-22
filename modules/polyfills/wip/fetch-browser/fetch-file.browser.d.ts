@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // File reader fetch "polyfill" for the browser
 export class FileReadableResponse {
   constructor(fileOrBlob, options);

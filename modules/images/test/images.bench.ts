@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {ImageBitmapLoader, isImageTypeSupported} from '@loaders.gl/images';
 import {fetchFile, parse} from '@loaders.gl/core';
 

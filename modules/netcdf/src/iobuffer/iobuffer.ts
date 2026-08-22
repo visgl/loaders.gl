@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 const DEFAULT_BYTE_LENGTH = 1024 * 8;
 
 type InputData = number | ArrayBufferLike | ArrayBufferView | IOBuffer | Buffer;

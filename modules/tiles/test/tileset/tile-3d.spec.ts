@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
@@ -126,6 +128,24 @@ test('Tile3D#destroys', t => {
   t.equals(tile.isDestroyed(), false);
   tile.destroy();
   t.equals(tile.isDestroyed(), true);
+  t.end();
+});
+
+test('Tile3D#preserves viewer request volume when an implicit root materializes without content', t => {
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    content: {uri: 'content/{level}.b3dm'},
+    viewerRequestVolume: {sphere: [0, 0, 0, 2]}
+  });
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    contentUrl: undefined,
+    content: undefined,
+    type: 'empty'
+  });
+
+  t.ok(tile._viewerRequestVolume, 'retains the inherited traversal request-volume restriction');
   t.end();
 });
 

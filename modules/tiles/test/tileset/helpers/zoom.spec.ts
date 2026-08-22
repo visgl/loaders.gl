@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Vector3} from '@math.gl/core';

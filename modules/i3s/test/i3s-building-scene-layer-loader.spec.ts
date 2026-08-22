@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {load} from '@loaders.gl/core';
 import {I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';

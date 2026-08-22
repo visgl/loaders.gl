@@ -7,6 +7,7 @@
 import './csw/csw-capabilities-loader.spec';
 import './csw/csw-domain-loader.spec';
 import './csw/csw-records-loader.spec';
+import './csw/csw-source.spec';
 
 // WMS - Web Map Service
 

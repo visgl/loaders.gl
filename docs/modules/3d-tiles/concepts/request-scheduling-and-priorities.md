@@ -19,6 +19,8 @@ visible hierarchy -> desired LOD -> missing request candidates
 
 Progressive and foveated measurements do not loosen the final `maximumScreenSpaceError` target. They improve perceived responsiveness on the way to that target. The same ordinary URLs and loader options are used when requests start.
 
+Implicit subtree metadata uses this same eligibility and priority path. A subtree is considered only after its placeholder is visible, inside its viewer request volume, and above the SSE threshold. Its request then competes for a normal scheduler slot using the tile's progressive and foveated metrics. Loading availability never recursively starts deeper subtrees; each new boundary returns to traversal for another view-dependent decision. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees).
+
 ## Progressive Coarse Coverage
 
 `progressiveResolutionHeightFraction` calculates SSE at a reduced logical viewport height:

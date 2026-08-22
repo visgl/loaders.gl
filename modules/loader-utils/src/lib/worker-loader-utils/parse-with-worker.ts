@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {canProcessOnWorker, isBrowser, processOnWorker} from '@loaders.gl/worker-utils';
 import type {Loader, StrictLoaderOptions, LoaderContext} from '../../loader-types';
 

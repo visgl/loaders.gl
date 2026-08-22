@@ -81,7 +81,8 @@ Returns normalized raster metadata plus:
 
 Reads the native-resolution array window intersecting `parameters.viewport`.
 
-- `selection?: Record<string, number>` selects named non-spatial indices.
+- `selection?: RasterSelection` selects named non-spatial indices through the common
+  `GetRasterParameters` contract.
 - `signal?: AbortSignal` cancels metadata and chunk requests.
 - `resampleMethod?: 'nearest'` is accepted for API compatibility. Bilinear resampling is not yet
   implemented.

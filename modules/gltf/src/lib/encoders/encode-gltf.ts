@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {encodeGLBSync} from './encode-glb';
 import {GLTFWriterOptions} from '../../gltf-writer';
 import {GLTFWithBuffers} from '@loaders.gl/gltf';

@@ -19,6 +19,7 @@ type BenchmarkResultRow = {
 };
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
+type BenchmarkCellOutcome = 'failed' | 'incorrect';
 
 type ParquetBenchmarkImplementationId = 'typescript' | 'wasm' | 'hyparquet';
 type ParquetBenchmarkShape = 'arrow-table' | 'object-row-table';
@@ -111,7 +112,7 @@ const PARQUET_BENCHMARK_IMPLEMENTATION_IDS: ParquetBenchmarkImplementationId[] =
 export default function ParquetBenchmarksApp(): JSX.Element {
   const [rows, setRows] = useState<BenchmarkResultRow[]>([]);
   const [scenarios, setScenarios] = useState<ParquetBenchmarkScenarioSummary[]>([]);
-  const [failedCellKeys, setFailedCellKeys] = useState<Set<string>>(new Set());
+  const [cellOutcomes, setCellOutcomes] = useState<Map<string, BenchmarkCellOutcome>>(new Map());
   const [warnings, setWarnings] = useState<string[]>([]);
   const [status, setStatus] = useState<BenchmarkStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -121,7 +122,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
     let isMounted = true;
     setRows([]);
     setScenarios([]);
-    setFailedCellKeys(new Set());
+    setCellOutcomes(new Map());
     setWarnings([]);
     setStatus('loading');
     setErrorMessage(null);
@@ -144,16 +145,17 @@ export default function ParquetBenchmarksApp(): JSX.Element {
       }
     };
 
-    /** Marks one selected implementation/scenario pair as a failed benchmark cell. */
-    const markCellFailed = (
+    /** Records why one selected implementation/scenario pair has no benchmark result. */
+    const markCellOutcome = (
       scenario: string,
-      implementationId: ParquetBenchmarkImplementationId
+      implementationId: ParquetBenchmarkImplementationId,
+      outcome: BenchmarkCellOutcome
     ): void => {
       if (isMounted) {
-        setFailedCellKeys(previousKeys => {
-          const nextKeys = new Set(previousKeys);
-          nextKeys.add(getBenchmarkCellKey(scenario, implementationId));
-          return nextKeys;
+        setCellOutcomes(previousOutcomes => {
+          const nextOutcomes = new Map(previousOutcomes);
+          nextOutcomes.set(getBenchmarkCellKey(scenario, implementationId), outcome);
+          return nextOutcomes;
         });
       }
     };
@@ -188,7 +190,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
             scenarios,
             implementations,
             appendWarning,
-            markCellFailed
+            markCellOutcome
           );
         });
         if (isMounted) {
@@ -239,7 +241,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
       {errorMessage ? <pre className="benchmark-error">{errorMessage}</pre> : null}
       {warnings.length > 0 ? (
         <aside>
-          <strong>Failed benchmark cases</strong>
+          <strong>Benchmark diagnostics</strong>
           <ul>
             {warnings.map(warning => (
               <li key={warning}>{warning}</li>
@@ -280,7 +282,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                 const cellKey = getBenchmarkCellKey(scenario.name, implementationId);
                 return (
                   scenarioRows.some(row => row.implementationId === implementationId) ||
-                  failedCellKeys.has(cellKey)
+                  cellOutcomes.has(cellKey)
                 );
               });
               return (
@@ -292,6 +294,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                         row.scenario === scenario.name && row.implementationId === implementationId
                     );
                     const cellKey = getBenchmarkCellKey(scenario.name, implementationId);
+                    const cellOutcome = cellOutcomes.get(cellKey);
                     const isApplicable = scenario.implementationIds.includes(implementationId);
                     const isBestResult =
                       isScenarioComplete && result?.throughput === bestThroughput;
@@ -306,8 +309,10 @@ export default function ParquetBenchmarksApp(): JSX.Element {
                             {isBestResult ? <span aria-label="Best throughput">🟢 </span> : null}
                             <strong>{result.formattedValue}</strong> rows/s
                           </>
-                        ) : failedCellKeys.has(cellKey) ? (
+                        ) : cellOutcome === 'failed' ? (
                           <span className="parquet-benchmark-failed">Failed</span>
+                        ) : cellOutcome === 'incorrect' ? (
+                          <span className="parquet-benchmark-incorrect">Incorrect</span>
                         ) : !isApplicable ? (
                           <span className="parquet-benchmark-not-applicable">N/A</span>
                         ) : (
@@ -627,9 +632,10 @@ async function addParquetBenchmarksToSuite(
   scenarios: ParquetBenchmarkScenario[],
   implementations: ParquetBenchmarkImplementation[],
   onWarning: (warning: string) => void,
-  onCellFailed: (
+  onCellOutcome: (
     scenario: string,
-    implementationId: ParquetBenchmarkImplementationId
+    implementationId: ParquetBenchmarkImplementationId,
+    outcome: BenchmarkCellOutcome
   ) => void
 ): Promise<void> {
   for (const scenario of scenarios) {
@@ -641,7 +647,7 @@ async function addParquetBenchmarksToSuite(
         scenario,
         scenarioImplementations,
         onWarning,
-        onCellFailed
+        onCellOutcome
       );
       const rowCount = validatedImplementations[0]?.rowCount;
       if (rowCount === undefined) {
@@ -667,7 +673,7 @@ async function addParquetBenchmarksToSuite(
       const message = error instanceof Error ? error.message : String(error);
       onWarning(`${scenario.name}: ${message}`);
       for (const implementationId of scenario.implementationIds) {
-        onCellFailed(scenario.name, implementationId);
+        onCellOutcome(scenario.name, implementationId, 'failed');
       }
     }
   }
@@ -678,9 +684,10 @@ async function validateParquetBenchmarkScenario(
   scenario: ParquetBenchmarkScenario,
   implementations: ParquetBenchmarkImplementation[],
   onWarning: (warning: string) => void,
-  onCellFailed: (
+  onCellOutcome: (
     scenario: string,
-    implementationId: ParquetBenchmarkImplementationId
+    implementationId: ParquetBenchmarkImplementationId,
+    outcome: BenchmarkCellOutcome
   ) => void
 ): Promise<ValidatedParquetBenchmarkImplementation[]> {
   const validatedImplementations: ValidatedParquetBenchmarkImplementation[] = [];
@@ -693,7 +700,7 @@ async function validateParquetBenchmarkScenario(
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       onWarning(`${scenario.name} / ${implementation.name}: ${message}`);
-      onCellFailed(scenario.name, implementation.id);
+      onCellOutcome(scenario.name, implementation.id, 'failed');
     }
   }
   const expectedRowCount = validatedImplementations[0]?.rowCount;
@@ -702,7 +709,7 @@ async function validateParquetBenchmarkScenario(
       onWarning(
         `${scenario.name} / ${implementation.name}: decoded ${rowCount} rows; expected ${expectedRowCount}`
       );
-      onCellFailed(scenario.name, implementation.id);
+      onCellOutcome(scenario.name, implementation.id, 'incorrect');
       return false;
     }
     return true;

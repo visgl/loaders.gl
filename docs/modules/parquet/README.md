@@ -10,6 +10,7 @@ Experimental loader and writer for the Apache Parquet format.
 
 - `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) provides reusable, selective Arrow reads with cached schema and footer metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetJSLoader` and `ParquetJSWriter` provide experimental TypeScript parquetjs variants documented with [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants). <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetLoader` supports Arrow output with `parquet.shape: 'arrow-table'`, and `ParquetWriter` accepts loaders.gl Arrow tables.
 

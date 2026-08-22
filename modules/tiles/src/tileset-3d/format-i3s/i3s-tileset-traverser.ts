@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {TilesetTraverser} from '../common/tileset-traverser';
 
 import {getLodStatus} from '../helpers/i3s-lod';

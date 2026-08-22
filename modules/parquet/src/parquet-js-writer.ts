@@ -14,8 +14,24 @@ import {ParquetFormat} from './parquet-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Stable value encodings selectable by the TypeScript Parquet writer. */
+export type ParquetJSWriterEncoding =
+  | 'PLAIN'
+  | 'BYTE_STREAM_SPLIT'
+  | 'DELTA_BINARY_PACKED'
+  | 'DELTA_LENGTH_BYTE_ARRAY'
+  | 'DELTA_BYTE_ARRAY';
+
 /** Encoder-specific options for the experimental parquetjs writer. */
 type ParquetJSWriterEncoderOptions = {
+  /** Value encoding overrides keyed by top-level column name. */
+  columnEncodings?: Record<string, ParquetJSWriterEncoding>;
+  /** Enables dictionary pages globally when forced or size-beneficial. */
+  dictionary?: boolean | 'auto';
+  /** Dictionary policy overrides keyed by top-level column name. */
+  columnDictionaries?: Record<string, boolean | 'auto'>;
+  /** Maximum uncompressed PLAIN dictionary payload per column chunk. */
+  dictionaryPageSizeLimit?: number;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;

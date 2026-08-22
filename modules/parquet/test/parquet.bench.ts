@@ -2,8 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GeoParquetLoader, ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
-import {fetchFile, load, parse, preload} from '@loaders.gl/core';
+import {
+  GeoParquetLoader,
+  ParquetJSLoader,
+  ParquetJSWriter,
+  ParquetLoader,
+  type ParquetJSWriterOptions,
+  type ParquetSourceBatch
+} from '@loaders.gl/parquet';
+import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
+import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/schema-utils';
@@ -48,6 +56,15 @@ type ParquetBenchmarkImplementation = {
   decode: (scenario: ParquetBenchmarkScenario) => Promise<number>;
 };
 
+type ParquetWriterBenchmarkScenario = {
+  /** Human-readable data distribution and encoding label. */
+  name: string;
+  /** Scale-oriented input table prepared outside the timed callback. */
+  table: ObjectRowTable;
+  /** TypeScript writer options used by the timed callback. */
+  options: ParquetJSWriterOptions;
+};
+
 export async function parquetBench(suite) {
   const [
     lz4ParquetResponse,
@@ -88,7 +105,21 @@ export async function parquetBench(suite) {
     preload(ParquetLoader, {core: {worker: false}})
   ]);
   const implementations = createParquetBenchmarkImplementations(typescriptLoader, wasmLoader);
+  const wideScaleArrayBuffer = await createWideScaleParquetFixture();
   const scenarios: ParquetBenchmarkScenario[] = [
+    {
+      name: 'Wide nullable mixed 100K × 20 → Arrow',
+      arrayBuffer: wideScaleArrayBuffer,
+      shape: 'arrow-table'
+    },
+    {
+      name: 'Wide nullable mixed projection 100K × 5 → Arrow',
+      arrayBuffer: wideScaleArrayBuffer,
+      columns: ['id', 'count_0', 'metric_0', 'category_0', 'label_0'],
+      shape: 'arrow-table',
+      // parquet-wasm 0.7.2 fails to materialize this projected mixed schema.
+      implementationIds: ['typescript', 'hyparquet']
+    },
     {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
     {
       name: 'PLAIN nullable primitive projection → Arrow',
@@ -175,6 +206,9 @@ export async function parquetBench(suite) {
     }
   }
 
+  suite = await addParquetWriterBenchmarks(suite);
+  suite = await addParquetSourceBenchmarks(suite);
+
   suite = suite.group('GeoParquetLoader');
 
   suite.addAsync(
@@ -203,6 +237,214 @@ export async function parquetBench(suite) {
   //     core: {worker: false}
   //   });
   // });
+}
+
+/** Encodes a wide mixed-type fixture that exposes decode allocation and scaling costs. */
+async function createWideScaleParquetFixture(): Promise<ArrayBuffer> {
+  const rowCount = 100_000;
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'id', type: 'int32', nullable: false},
+        ...Array.from({length: 6}, (_, index) => ({
+          name: `count_${index}`,
+          type: 'int32' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 6}, (_, index) => ({
+          name: `metric_${index}`,
+          type: 'float64' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 4}, (_, index) => ({
+          name: `category_${index}`,
+          type: 'utf8' as const,
+          nullable: true
+        })),
+        ...Array.from({length: 3}, (_, index) => ({
+          name: `label_${index}`,
+          type: 'utf8' as const,
+          nullable: true
+        }))
+      ],
+      metadata: {}
+    },
+    data: Array.from({length: rowCount}, (_, rowIndex) => {
+      const row: Record<string, unknown> = {id: rowIndex};
+      for (let columnIndex = 0; columnIndex < 6; columnIndex++) {
+        row[`count_${columnIndex}`] =
+          (rowIndex + columnIndex) % 17 === 0 ? null : rowIndex * (columnIndex + 1);
+        row[`metric_${columnIndex}`] =
+          (rowIndex + columnIndex) % 23 === 0
+            ? null
+            : rowIndex * 0.125 + columnIndex / 10;
+      }
+      for (let columnIndex = 0; columnIndex < 4; columnIndex++) {
+        row[`category_${columnIndex}`] =
+          (rowIndex + columnIndex) % 29 === 0
+            ? null
+            : `category-${columnIndex}-${rowIndex % 32}`;
+      }
+      for (let columnIndex = 0; columnIndex < 3; columnIndex++) {
+        row[`label_${columnIndex}`] =
+          (rowIndex + columnIndex) % 31 === 0
+            ? null
+            : `tenant/${columnIndex}/record/${rowIndex}`;
+      }
+      return row;
+    })
+  };
+
+  return await encode(table, ParquetJSWriter, {
+    worker: false,
+    parquet: {dictionary: 'auto', pageSize: 64 * 1024, rowGroupSize: 25_000}
+  });
+}
+
+/** Adds an exact predicate and hidden-filter-column throughput case at meaningful scale. */
+async function addParquetSourceBenchmarks(suite) {
+  const rowCount = 100_000;
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'id', type: 'int32', nullable: false},
+        {name: 'category', type: 'utf8', nullable: false},
+        {name: 'payload', type: 'float64', nullable: false}
+      ],
+      metadata: {}
+    },
+    data: Array.from({length: rowCount}, (_, index) => ({
+      id: index,
+      category: `category-${index % 10}`,
+      payload: index * 0.5
+    }))
+  };
+  const parquet = await encode(table, ParquetJSWriter, {
+    worker: false,
+    parquet: {rowGroupSize: 10_000, dictionary: 'auto'}
+  });
+  const expectedMatchCount = rowCount / 10;
+
+  suite = suite.groupSorted('ParquetSource scale');
+  suite.addAsync(
+    'ParquetSource - exact predicate + hidden filter columns → Arrow',
+    {...BENCHMARK_OPTIONS, multiplier: rowCount},
+    async () => {
+      const source = new ParquetSource(new Blob([parquet]), {core: {worker: false}});
+      let matchedRowCount = 0;
+      try {
+        const batches = source.read({
+          columns: ['payload'],
+          predicate: {op: '=', args: [{property: 'category'}, 'category-3']}
+        });
+        for await (const batch of batches as AsyncIterable<ParquetSourceBatch>) {
+          matchedRowCount += batch.length;
+        }
+      } finally {
+        await source.close();
+      }
+      if (matchedRowCount !== expectedMatchCount) {
+        throw new Error(
+          `ParquetSource matched ${matchedRowCount} rows; expected ${expectedMatchCount}`
+        );
+      }
+    }
+  );
+  return suite;
+}
+
+/** Adds scale-oriented writer throughput cases and records the resulting bytes per row. */
+async function addParquetWriterBenchmarks(suite) {
+  const rowCount = 100_000;
+  const monotonicIntegerTable = makeObjectRowTable(
+    'sequence',
+    'int32',
+    Array.from({length: rowCount}, (_, index) => index * 10)
+  );
+  const lowCardinalityStringTable = makeObjectRowTable(
+    'label',
+    'utf8',
+    Array.from({length: rowCount}, (_, index) => `category-${index % 16}`)
+  );
+  const sharedPrefixStringTable = makeObjectRowTable(
+    'identifier',
+    'utf8',
+    Array.from({length: rowCount}, (_, index) => `customer/account/2026/08/${index}`)
+  );
+  const writerScenarios: ParquetWriterBenchmarkScenario[] = [
+    {
+      name: 'PLAIN monotonic INT32',
+      table: monotonicIntegerTable,
+      options: {parquet: {dictionary: false, columnEncodings: {sequence: 'PLAIN'}}}
+    },
+    {
+      name: 'DELTA_BINARY_PACKED monotonic INT32',
+      table: monotonicIntegerTable,
+      options: {
+        parquet: {dictionary: false, columnEncodings: {sequence: 'DELTA_BINARY_PACKED'}}
+      }
+    },
+    {
+      name: 'PLAIN low-cardinality STRING',
+      table: lowCardinalityStringTable,
+      options: {parquet: {dictionary: false, columnEncodings: {label: 'PLAIN'}}}
+    },
+    {
+      name: 'AUTO DICTIONARY low-cardinality STRING',
+      table: lowCardinalityStringTable,
+      options: {parquet: {dictionary: 'auto'}}
+    },
+    {
+      name: 'PLAIN shared-prefix STRING',
+      table: sharedPrefixStringTable,
+      options: {parquet: {dictionary: false, columnEncodings: {identifier: 'PLAIN'}}}
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY shared-prefix STRING',
+      table: sharedPrefixStringTable,
+      options: {
+        parquet: {dictionary: false, columnEncodings: {identifier: 'DELTA_BYTE_ARRAY'}}
+      }
+    }
+  ];
+
+  suite = suite.groupSorted('ParquetJSWriter scale');
+  for (const scenario of writerScenarios) {
+    const sample = await encode(scenario.table, ParquetJSWriter, {
+      ...scenario.options,
+      worker: false
+    });
+    const bytesPerRow = sample.byteLength / rowCount;
+    suite.addAsync(
+      `ParquetJSWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
+      {...BENCHMARK_OPTIONS, multiplier: rowCount},
+      async () => {
+        const parquet = await encode(scenario.table, ParquetJSWriter, {
+          ...scenario.options,
+          worker: false
+        });
+        if (parquet.byteLength === 0) {
+          throw new Error(`${scenario.name} produced an empty Parquet file`);
+        }
+      }
+    );
+  }
+  return suite;
+}
+
+/** Creates a single-column object-row table for a deterministic writer benchmark. */
+function makeObjectRowTable(
+  name: string,
+  type: 'int32' | 'utf8',
+  values: Array<number | string>
+): ObjectRowTable {
+  return {
+    shape: 'object-row-table',
+    schema: {fields: [{name, type, nullable: false}], metadata: {}},
+    data: values.map(value => ({[name]: value}))
+  };
 }
 
 /** Creates equivalent Arrow-table decode cases for the maintained Parquet implementations. */

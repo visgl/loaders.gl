@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {Writer, WriterOptions} from '../../writer-types';
 import {isBrowser} from '../env-utils/globals';

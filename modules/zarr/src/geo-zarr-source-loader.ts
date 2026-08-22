@@ -80,10 +80,7 @@ export type GeoZarrSourceLoaderOptions = ZarrSourceLoaderOptions & {
 };
 
 /** Parameters used to request a native-resolution spatial window from a GeoZarr array. */
-export type GetGeoZarrParameters = Omit<GetRasterParameters, 'bands' | 'interleaved'> & {
-  /** Named indices for non-spatial dimensions such as time, vertical level, or band. */
-  selection?: Record<string, number>;
-};
+export type GetGeoZarrParameters = Omit<GetRasterParameters, 'bands' | 'interleaved'>;
 
 type GeoZarrAttributes = Record<string, unknown>;
 
@@ -166,7 +163,10 @@ export const GeoZarrSourceLoader = {
 } as const satisfies SourceLoader<GeoZarrRasterSource>;
 
 /** Viewport-driven raster source for GeoZarr and regular CF/xarray Zarr data variables. */
-export class GeoZarrRasterSource extends ZarrSource implements RasterSource {
+export class GeoZarrRasterSource
+  extends ZarrSource
+  implements RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>
+{
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
 

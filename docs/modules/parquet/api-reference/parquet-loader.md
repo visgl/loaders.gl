@@ -144,6 +144,13 @@ Unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` columns are returned
 for example `UTF8` values are returned as JavaScript strings and `JSON` values are
 returned as parsed JavaScript values.
 
+`ParquetJSLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
+`ConvertedType` fallback. Arrow output preserves exact signed and unsigned integer widths,
+date/time/timestamp units through nanoseconds, Decimal128/256 precision and scale, UUID fixed-size
+binary width, and FLOAT16 values. Parameterized logical metadata such as field IDs, UTC adjustment,
+Variant versions, coordinate reference systems, and Geography edge algorithms is retained in the
+serialized field metadata.
+
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
@@ -170,6 +177,9 @@ Supports table category options such as `batchType` and `batchSize`.
   `batchSize`, and `preserveBinary`.
 
 The implementation is selected by the loader import. There is no runtime backend option.
+The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
+concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost
+can matter more than the language used for a decoder's inner loop.
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -191,6 +201,10 @@ and value buffers without converting their bytes through JavaScript strings or c
 into an intermediate buffer. Nested schemas use the object-row materializer as a compatibility
 fallback.
 
+Physical Parquet `INT64` columns map to Arrow `Int64`. Both Arrow and object-row output return exact
+JavaScript `bigint` values; callers that accept precision loss can convert them to `number`
+explicitly.
+
 ## Worker Execution
 
 The primary `ParquetLoader` can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and Arrow output returns as a transferable Arrow IPC payload that is rehydrated into Apache Arrow class instances on the main thread. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
@@ -210,7 +224,8 @@ timing; each implementation is warmed up and must return the same row count. The
 nullable primitives, nested and repeated data, dictionary and delta encodings, compression, and
 column projection. It focuses on Arrow output and retains one object-row control to expose
 row-materialization cost. `N/A` means an implementation is intentionally excluded from a scenario;
-`Failed` means a selected implementation did not pass warm-up or correctness validation. A green
+`Failed` means a selected implementation threw or could not complete; and `Incorrect` means it
+completed but returned a different row count from the validated result. A green
 marker identifies the fastest completed value in each row. Results depend on the browser, hardware,
 thermal state, and whether this tab remains focused.
 

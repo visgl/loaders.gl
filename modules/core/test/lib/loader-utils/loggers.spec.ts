@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {NullLog, ConsoleLog} from '@loaders.gl/core/lib/loader-utils/loggers';
 

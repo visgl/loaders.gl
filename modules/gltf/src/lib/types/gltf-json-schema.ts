@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-interface` on 2018-02-24
 
@@ -897,6 +899,16 @@ export type GLTF_KHR_meshopt_compression = {
  */
 export type GLTF_EXT_texture_webp = {
   source: GLTFId;
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif
+ */
+export type GLTF_EXT_texture_avif = {
+  /** Index of the AVIF image used in place of the ordinary texture source. */
+  source: GLTFId;
+  /** Application-specific extension data. */
   extras?: any;
 };
 

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/sql",
   "description": "Framework-independent SQL data sources",
-  "version": "5.0.0-alpha.1",
+  "version": "5.0.0-alpha.2",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -25,6 +25,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./sql-predicate": {
+      "types": "./dist/sql-predicate.d.ts",
+      "import": "./dist/sql-predicate.js",
+      "require": "./dist/sql-predicate.cjs"
+    },
+    "./arrow-query": {
+      "types": "./dist/arrow-query.d.ts",
+      "import": "./dist/arrow-query.js",
+      "require": "./dist/arrow-query.cjs"
+    },
+    "./table-query": {
+      "types": "./dist/table-query.d.ts",
+      "import": "./dist/table-query.js",
+      "require": "./dist/table-query.cjs"
+    },
+    "./sql-predicate-zod": {
+      "types": "./dist/sql-predicate-zod.d.ts",
+      "import": "./dist/sql-predicate-zod.js",
+      "require": "./dist/sql-predicate-zod.cjs"
     }
   },
   "sideEffects": false,
@@ -43,14 +63,31 @@
     "build-bundle": "# ocular-bundle ./bundle.ts --external:{util,fs,path}"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
-    "@duckdb/node-api": "^1.5.2-r.1",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.1",
-    "@loaders.gl/schema": "5.0.0-alpha.1",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.1",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
+    "@duckdb/node-api": "^1.5.2-r.1",
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "zod": "^4.1.12"
+  },
+  "peerDependenciesMeta": {
+    "@duckdb/duckdb-wasm": {
+      "optional": true
+    },
+    "@duckdb/node-api": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
+    "@duckdb/node-api": "^1.5.2-r.1",
+    "zod": "^4.1.12"
   }
 }

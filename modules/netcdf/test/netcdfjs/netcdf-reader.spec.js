@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import {describe, it, expect} from 'test/utils/expect-assertions';
 import {NetCDFReader} from '@loaders.gl/netcdf';
 import {fetchFile} from '@loaders.gl/core';

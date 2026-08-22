@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ImageType, ImageTypeEnum, ImageDataType} from '../../types';
 
 type GetImageBitmapDataNode = (image: unknown) => ImageDataType | ImageData;

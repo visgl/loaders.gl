@@ -1,3 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {copyFile, mkdtemp, rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {expect, test} from 'vitest';
 import '@loaders.gl/polyfills';
 import {NodeFile} from '@loaders.gl/loader-utils';
@@ -14,11 +21,20 @@ test('NodeFile#open and read', async () => {
   expect(reference.compare(Buffer.from(arrayBuffer))).toBe(0);
 });
 test('NodeFile#truncate and append', async () => {
-  const provider = new NodeFile(SLPK_URL, 'a+');
-  const initialSize = await getSize(provider);
-  const ending = await provider.read(TEST_OFFSET, Number(initialSize - TEST_OFFSET));
-  await provider.truncate(Number(TEST_OFFSET));
-  expect(await getSize(provider)).toBe(TEST_OFFSET);
-  await provider.append(new Uint8Array(ending));
-  expect(await getSize(provider)).toBe(initialSize);
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'loaders-gl-node-file-'));
+  const temporaryFile = join(temporaryDirectory, 'test.slpk');
+  await copyFile(SLPK_URL, temporaryFile);
+
+  const provider = new NodeFile(temporaryFile, 'a+');
+  try {
+    const initialSize = await getSize(provider);
+    const ending = await provider.read(TEST_OFFSET, Number(initialSize - TEST_OFFSET));
+    await provider.truncate(Number(TEST_OFFSET));
+    expect(await getSize(provider)).toBe(TEST_OFFSET);
+    await provider.append(new Uint8Array(ending));
+    expect(await getSize(provider)).toBe(initialSize);
+  } finally {
+    await provider.close();
+    await rm(temporaryDirectory, {recursive: true, force: true});
+  }
 });

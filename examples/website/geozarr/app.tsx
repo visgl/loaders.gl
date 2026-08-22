@@ -167,15 +167,15 @@ export default function App(props: AppProps = {}) {
   }, [metadata, source, timeIndex]);
 
   useEffect(() => {
-    if (!playing) {
+    if (!playing || loading) {
       return;
     }
-    const interval = globalThis.setInterval(
+    const timeout = globalThis.setTimeout(
       () => setTimeIndex(currentTimeIndex => (currentTimeIndex + 1) % TIME_LABELS.length),
       1200
     );
-    return () => globalThis.clearInterval(interval);
-  }, [playing]);
+    return () => globalThis.clearTimeout(timeout);
+  }, [loading, playing, timeIndex]);
 
   const layers = useMemo(
     () =>
@@ -268,7 +268,7 @@ function renderRaster(
       const sourceIndex = row * raster.width + column;
       const targetIndex = (targetRow * raster.width + column) * 4;
       const value = source[sourceIndex];
-      if (!Number.isFinite(value)) {
+      if (!Number.isFinite(value) || value === raster.noData) {
         imageData.data[targetIndex + 3] = 0;
         continue;
       }

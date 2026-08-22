@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export {PotreeFormat, PotreeHierarchyChunkFormat, PotreeBinFormat} from './potree-format';
 export {PotreeLoader} from './potree-loader';
 export {PotreeHierarchyChunkLoader} from './potree-hierarchy-chunk-loader';

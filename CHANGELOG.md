@@ -2,6 +2,13 @@
 
 ## v5.0
 
+### v5.0.0-alpha.2
+
+- feat(gltf): select AVIF texture sources when the active image decoder supports them, and support independent `KHR_texture_transform` transforms for textures that share UV data (#3611, #3632)
+- feat(parquet): expand the TypeScript Parquet backend with direct Arrow materialization, selective range reads, dataset discovery, browser worker decoding, and Parquet 2.13 logical-type support (#3539, #3556, #3570, #3606, #3623, #3626, #3631)
+- feat(splats): publish SPLAT, KSPLAT, SPZ, RAD, RAD source, and Gaussian PLY support, including RAD metadata validation schemas (#3408, #3430, #3569)
+- feat(gltf): add portable primitive topology normalization and `KHR_meshopt_compression` support (#3511, #3571)
+
 ### v5.0.0-alpha.1
 
 - feat: Add data source APIs and backend-selected loaders (#3435)

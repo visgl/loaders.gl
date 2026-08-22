@@ -5,6 +5,8 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 import {PARQUET_CODECS} from '../codecs/index';
+import {isByteStreamSplitType} from '../codecs/byte-stream-split';
+import {isDeltaEncodingType} from '../codecs/delta';
 import {PARQUET_COMPRESSION_METHODS} from '../compression';
 import {
   FieldDefinition,
@@ -146,6 +148,8 @@ function buildFields(
         name,
         path: cpath,
         key: cpath.join(),
+        logicalType: opts.logicalType,
+        fieldId: opts.fieldId,
         repetitionType,
         rLevelMax,
         dLevelMax,
@@ -165,6 +169,13 @@ function buildFields(
     if (!(opts.encoding in PARQUET_CODECS)) {
       throw new Error(`unsupported parquet encoding: ${opts.encoding}`);
     }
+    const primitiveType = opts.physicalType || typeDef.primitiveType;
+    if (opts.encoding === 'BYTE_STREAM_SPLIT' && !isByteStreamSplitType(primitiveType)) {
+      throw new Error(`BYTE_STREAM_SPLIT does not support ${primitiveType}`);
+    }
+    if (opts.encoding.startsWith('DELTA_') && !isDeltaEncodingType(opts.encoding, primitiveType)) {
+      throw new Error(`${opts.encoding} does not support ${primitiveType}`);
+    }
 
     opts.compression = opts.compression || 'UNCOMPRESSED';
     if (!(opts.compression in PARQUET_COMPRESSION_METHODS)) {
@@ -175,15 +186,18 @@ function buildFields(
     const cpath = path.concat([name]);
     fieldList[name] = {
       name,
-      primitiveType: typeDef.primitiveType,
+      primitiveType,
       originalType: typeDef.originalType,
+      logicalType: opts.logicalType,
+      fieldId: opts.fieldId,
       path: cpath,
       key: cpath.join(),
       repetitionType,
       encoding: opts.encoding,
       compression: opts.compression,
       typeLength: opts.typeLength || typeDef.typeLength,
-      presision: opts.presision,
+      presision: opts.precision ?? opts.presision,
+      precision: opts.precision ?? opts.presision,
       scale: opts.scale,
       rLevelMax,
       dLevelMax

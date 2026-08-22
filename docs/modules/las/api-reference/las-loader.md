@@ -43,6 +43,9 @@ const copcDecodedData = await load(url, LASCOPCLoader, options);
 | `LAZRsLoader` | Rust/WASM laz-rs | No | Compatibility and parity-testing variant. |
 
 Loader variants are selected by the loader import. There is no runtime backend option.
+See [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
+for the pipeline effects that can let the TypeScript loader outperform a WASM variant, including
+selective field decoding, direct typed output, memory copies, and module startup.
 
 ## Options
 

@@ -8,28 +8,37 @@ import {
   ExamplesGroup,
   ExampleCard,
   ExampleHeader,
+  ExampleLogo,
   ExampleTitle
 } from './styled';
 
 const DEFAULT_EXAMPLE_THUMBNAIL = '/images/maps.jpg';
 
-function renderItem(item, getThumbnail, defaultThumbnail) {
+function renderItem(item, getThumbnail, getLogo, defaultThumbnail) {
   const imageUrl = useBaseUrl(getThumbnail(item));
+  const logoPath = getLogo?.(item);
+  const logoUrl = useBaseUrl(logoPath || '');
   const fallbackImageUrl = useBaseUrl(defaultThumbnail);
   const {label, href} = item;
 
   return (
     <ExampleCard key={label} href={href}>
-      <img
-        width="100%"
-        src={imageUrl}
-        alt={label}
-        onError={(event) => {
-          const image = event.currentTarget;
-          image.onerror = null;
-          image.src = fallbackImageUrl;
-        }}
-      />
+      {logoPath ? (
+        <ExampleLogo>
+          <img src={logoUrl} alt={`${label} logo`} />
+        </ExampleLogo>
+      ) : (
+        <img
+          width="100%"
+          src={imageUrl}
+          alt={label}
+          onError={(event) => {
+            const image = event.currentTarget;
+            image.onerror = null;
+            image.src = fallbackImageUrl;
+          }}
+        />
+      )}
       <ExampleTitle>
         <span>{label}</span>
       </ExampleTitle>
@@ -37,17 +46,18 @@ function renderItem(item, getThumbnail, defaultThumbnail) {
   );
 }
 
-function renderCategory({label, items}, getThumbnail, defaultThumbnail) {
+function renderCategory({label, items}, getThumbnail, getLogo, defaultThumbnail) {
   return [
     <ExampleHeader key={`${label}-header`}>{label}</ExampleHeader>,
     <ExamplesGroup key={label}>
-      {items.map(item => renderItem(item, getThumbnail, defaultThumbnail))}
+      {items.map(item => renderItem(item, getThumbnail, getLogo, defaultThumbnail))}
     </ExamplesGroup>
   ];
 }
 
 export default function ExamplesIndex({
   getThumbnail,
+  getLogo,
   defaultThumbnail = DEFAULT_EXAMPLE_THUMBNAIL
 }) {
   const mainSidebar = useDocsSidebar();
@@ -57,7 +67,7 @@ export default function ExamplesIndex({
     <MainExamples>
       {sidebarItems.map(item => {
         if (item.type === 'category' && item.items && item.label) {
-          return renderCategory(item, getThumbnail, defaultThumbnail);
+          return renderCategory(item, getThumbnail, getLogo, defaultThumbnail);
         }
         return null;
       })}

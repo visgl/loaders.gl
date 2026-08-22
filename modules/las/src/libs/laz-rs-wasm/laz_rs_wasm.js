@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // @ts-nocheck
 /* eslint-disable */
 

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
  * Counter to register pending tile headers for the particular frameNumber
  * Until all tiles are loaded we won't call `onTraversalEnd` callback

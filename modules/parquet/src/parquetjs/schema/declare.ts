@@ -4,8 +4,9 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import Int64 from 'node-int64';
+import {CompactInt64 as Int64} from '../utils/uint8-array-compact-protocol';
 import type {PageHeader} from '../parquet-thrift';
+import type {ParquetValueBuffer} from '../codecs/declare';
 
 export type ParquetCodec =
   | 'PLAIN'
@@ -14,7 +15,8 @@ export type ParquetCodec =
   | 'RLE_DICTIONARY'
   | 'DELTA_BINARY_PACKED'
   | 'DELTA_LENGTH_BYTE_ARRAY'
-  | 'DELTA_BYTE_ARRAY';
+  | 'DELTA_BYTE_ARRAY'
+  | 'BYTE_STREAM_SPLIT';
 export type ParquetCompression =
   | 'UNCOMPRESSED'
   | 'GZIP'
@@ -59,8 +61,10 @@ export type OriginalType =
   | 'DATE' // 6
   | 'TIME_MILLIS' // 7
   | 'TIME_MICROS' // 8
+  | 'TIME_NANOS'
   | 'TIMESTAMP_MILLIS' // 9
   | 'TIMESTAMP_MICROS' // 10
+  | 'TIMESTAMP_NANOS'
   | 'UINT_8' // 11
   | 'UINT_16' // 12
   | 'UINT_32' // 13
@@ -69,9 +73,63 @@ export type OriginalType =
   | 'INT_16' // 16
   | 'INT_32' // 17
   | 'INT_64' // 18
+  | 'ENUM'
+  | 'UUID'
+  | 'FLOAT16'
+  | 'UNKNOWN'
+  | 'VARIANT'
+  | 'GEOMETRY'
+  | 'GEOGRAPHY'
   | 'JSON' // 19
   | 'BSON' // 20
   | 'INTERVAL'; // 21
+
+/** Units carried by Parquet TIME and TIMESTAMP logical type annotations. */
+export type ParquetTimeUnit = 'MILLIS' | 'MICROS' | 'NANOS';
+
+/** Logical type names defined by the Parquet 2.13 format. */
+export type ParquetLogicalTypeName =
+  | 'STRING'
+  | 'MAP'
+  | 'LIST'
+  | 'ENUM'
+  | 'DECIMAL'
+  | 'DATE'
+  | 'TIME'
+  | 'TIMESTAMP'
+  | 'INTEGER'
+  | 'UNKNOWN'
+  | 'JSON'
+  | 'BSON'
+  | 'UUID'
+  | 'FLOAT16'
+  | 'VARIANT'
+  | 'GEOMETRY'
+  | 'GEOGRAPHY';
+
+/** Serializable representation of one Parquet logical type annotation. */
+export interface ParquetLogicalType {
+  /** Logical type discriminator. */
+  type: ParquetLogicalTypeName;
+  /** Integer width for INTEGER annotations. */
+  bitWidth?: 8 | 16 | 32 | 64;
+  /** Whether an INTEGER annotation is signed. */
+  isSigned?: boolean;
+  /** Time unit for TIME and TIMESTAMP annotations. */
+  unit?: ParquetTimeUnit;
+  /** Whether a TIME or TIMESTAMP value represents a UTC-normalized instant. */
+  isAdjustedToUTC?: boolean;
+  /** Decimal precision. */
+  precision?: number;
+  /** Decimal scale. */
+  scale?: number;
+  /** Variant specification version. */
+  specificationVersion?: number;
+  /** Coordinate reference system for geospatial logical types. */
+  crs?: string;
+  /** Edge interpolation algorithm for GEOGRAPHY values. */
+  algorithm?: string;
+}
 
 export type ParquetDictionary = any[];
 
@@ -81,9 +139,18 @@ export interface SchemaDefinition {
 
 export interface FieldDefinition {
   type?: ParquetType;
+  /** Physical type declared by the file, retained independently from its logical type. */
+  physicalType?: PrimitiveType;
   typeLength?: number;
+  /** @deprecated Use `precision`. */
   presision?: number;
+  /** Decimal precision. */
+  precision?: number;
   scale?: number;
+  /** Modern Parquet logical type annotation. */
+  logicalType?: ParquetLogicalType;
+  /** Stable field identifier declared by the Parquet schema. */
+  fieldId?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;
   optional?: boolean;
@@ -97,9 +164,16 @@ export interface ParquetField {
   key: string;
   primitiveType?: PrimitiveType;
   originalType?: OriginalType;
+  /** Modern Parquet logical type annotation. */
+  logicalType?: ParquetLogicalType;
+  /** Stable field identifier declared by the Parquet schema. */
+  fieldId?: number;
   repetitionType: RepetitionType;
   typeLength?: number;
+  /** @deprecated Use `precision`. */
   presision?: number;
+  /** Decimal precision. */
+  precision?: number;
   scale?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;
@@ -123,13 +197,22 @@ export interface ParquetReaderContext {
   preserveBinary?: boolean;
   /** Retain byte arrays as views into decoded page buffers for direct materialization. */
   retainByteArrayViews?: boolean;
+  /** Decode primitive values into typed column buffers when their physical type permits it. */
+  useTypedValueBuffers?: boolean;
+  /** Decode repetition and definition levels into compact unsigned typed arrays. */
+  useTypedLevelBuffers?: boolean;
 }
+
+/** Mutable storage for decoded Parquet repetition and definition levels. */
+export type ParquetLevelBuffer = number[] | Uint8Array | Uint16Array | Uint32Array;
 
 export interface ParquetPageData {
   dlevels: number[];
   rlevels: number[];
   /** Actual column chunks */
-  values: any[]; // ArrayLike<any>;
+  values: ParquetValueBuffer;
+  /** Number of values written directly into the column destination, if one was supplied. */
+  directValuesWritten?: number;
   count: number;
   dictionary?: ParquetDictionary;
   /** The "raw" page header from the file */
@@ -156,9 +239,9 @@ export class ParquetRowGroup {
 
 /** Holds the data for one column chunk */
 export interface ParquetColumnChunk {
-  dlevels: number[];
-  rlevels: number[];
-  values: any[];
+  dlevels: ParquetLevelBuffer;
+  rlevels: ParquetLevelBuffer;
+  values: ParquetValueBuffer;
   count: number;
   pageHeaders: PageHeader[];
 }

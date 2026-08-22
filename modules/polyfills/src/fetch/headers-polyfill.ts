@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * Polyfill for Browser Headers
  * Based on https://github.com/github/fetch under MIT license

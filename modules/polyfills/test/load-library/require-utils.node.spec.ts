@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Fork of https://github.com/floatdrop/require-from-string/blob/master/index.js
 // Copyright (c) Vsevolod Strukchinsky <floatdrop@gmail.com> (github.com/floatdrop)
 // MIT license

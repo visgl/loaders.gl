@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /** A chunk to place before the JSON chunk in a draft GLB v3 fixture. */
 export type GLBV3PrefixChunk = {
   /** Four-byte GLB chunk type. */

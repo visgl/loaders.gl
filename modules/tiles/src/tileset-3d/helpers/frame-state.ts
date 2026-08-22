@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Tile3D} from '../common/tile-3d';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';

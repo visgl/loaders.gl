@@ -13,32 +13,60 @@ import {
   ParquetCodec,
   ParquetColumnChunk,
   ParquetField,
+  ParquetLogicalType,
   PrimitiveType,
   ParquetRow
 } from '../schema/declare';
 import {ParquetSchema} from '../schema/schema';
 import * as Shred from '../schema/shred';
 import {
+  BsonType,
   ColumnChunk,
   ColumnMetaData,
   CompressionCodec,
   ConvertedType,
   DataPageHeader,
   DataPageHeaderV2,
+  DateType,
+  DecimalType,
+  DictionaryPageHeader,
+  EdgeInterpolationAlgorithm,
   Encoding,
+  EnumType,
   FieldRepetitionType,
   FileMetaData,
+  Float16Type,
+  GeographyType,
+  GeometryType,
+  IntType,
+  JsonType,
   KeyValue,
+  ListType,
+  LogicalType,
+  MapType,
+  MicroSeconds,
+  MilliSeconds,
+  NanoSeconds,
+  NullType,
   PageHeader,
+  PageEncodingStats,
   PageType,
   RowGroup,
   SchemaElement,
-  Type
+  StringType,
+  TimeType,
+  TimeUnit,
+  TimestampType,
+  Type,
+  UUIDType,
+  VariantType
 } from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-utils';
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
+import {planColumnPages} from './page-planner';
+import {planDictionary, type ParquetDictionaryPolicy} from './dictionary-planner';
 
 /**
  * Parquet File Magic String
@@ -68,6 +96,9 @@ export interface ParquetEncoderOptions {
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;
+  dictionary?: ParquetDictionaryPolicy;
+  columnDictionaries?: Record<string, ParquetDictionaryPolicy>;
+  dictionaryPageSizeLimit?: number;
 
   // Write Stream Options
   flags?: string;
@@ -244,6 +275,9 @@ export class ParquetEnvelopeWriter {
   public rowGroups: RowGroup[];
   public pageSize: number;
   public useDataPageV2: boolean;
+  public dictionary: ParquetDictionaryPolicy;
+  public columnDictionaries: Record<string, ParquetDictionaryPolicy>;
+  public dictionaryPageSizeLimit: number;
 
   constructor(
     schema: ParquetSchema,
@@ -260,6 +294,9 @@ export class ParquetEnvelopeWriter {
     this.rowGroups = [];
     this.pageSize = opts.pageSize || PARQUET_DEFAULT_PAGE_SIZE;
     this.useDataPageV2 = 'useDataPageV2' in opts ? Boolean(opts.useDataPageV2) : false;
+    this.dictionary = opts.dictionary ?? 'auto';
+    this.columnDictionaries = opts.columnDictionaries || {};
+    this.dictionaryPageSizeLimit = opts.dictionaryPageSizeLimit ?? 1024 * 1024;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -282,7 +319,10 @@ export class ParquetEnvelopeWriter {
     const rgroup = await encodeRowGroup(this.schema, records, {
       baseOffset: this.offset,
       pageSize: this.pageSize,
-      useDataPageV2: this.useDataPageV2
+      useDataPageV2: this.useDataPageV2,
+      dictionary: this.dictionary,
+      columnDictionaries: this.columnDictionaries,
+      dictionaryPageSizeLimit: this.dictionaryPageSizeLimit
     });
 
     this.rowCount += records.rowCount;
@@ -370,7 +410,9 @@ function encodeValues(
  */
 async function encodeDataPage(
   column: ParquetField,
-  data: ParquetColumnChunk
+  data: ParquetColumnChunk,
+  valueEncoding: ParquetCodec = column.encoding!,
+  valueBitWidth?: number
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -379,24 +421,34 @@ async function encodeDataPage(
   /* encode repetition and definition levels */
   let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
-    rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: getBitWidth(column.rLevelMax)
-      // disableEnvelope: false
-    });
+    rLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.rlevels as number[],
+      {
+        bitWidth: getBitWidth(column.rLevelMax)
+        // disableEnvelope: false
+      }
+    );
   }
 
   let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
-    dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: getBitWidth(column.dLevelMax)
-      // disableEnvelope: false
-    });
+    dLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.dlevels as number[],
+      {
+        bitWidth: getBitWidth(column.dLevelMax)
+        // disableEnvelope: false
+      }
+    );
   }
 
   /* encode values */
-  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
+  const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength
   });
 
   const dataBuf = concatUint8Arrays([rLevelsBuf, dLevelsBuf, valuesBuf]);
@@ -409,7 +461,7 @@ async function encodeDataPage(
     type: PageType.DATA_PAGE,
     data_page_header: new DataPageHeader({
       num_values: data.count,
-      encoding: Encoding[column.encoding!] as any,
+      encoding: Encoding[valueEncoding] as any,
       definition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING], // [PARQUET_RDLVL_ENCODING],
       repetition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING] // [PARQUET_RDLVL_ENCODING]
     }),
@@ -430,16 +482,18 @@ async function encodeDataPage(
 async function encodeDataPageV2(
   column: ParquetField,
   data: ParquetColumnChunk,
-  rowCount: number
+  rowCount: number,
+  valueEncoding: ParquetCodec = column.encoding!,
+  valueBitWidth?: number
 ): Promise<{
   header: PageHeader;
   headerSize: number;
   page: Uint8Array;
 }> {
   /* encode values */
-  const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
+  const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength
   });
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
@@ -448,18 +502,28 @@ async function encodeDataPageV2(
   /* encode repetition and definition levels */
   let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
-    rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
-      bitWidth: getBitWidth(column.rLevelMax),
-      disableEnvelope: true
-    });
+    rLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.rlevels as number[],
+      {
+        bitWidth: getBitWidth(column.rLevelMax),
+        disableEnvelope: true
+      }
+    );
   }
 
   let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
-    dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
-      bitWidth: getBitWidth(column.dLevelMax),
-      disableEnvelope: true
-    });
+    dLevelsBuf = encodeValues(
+      PARQUET_RDLVL_TYPE,
+      PARQUET_RDLVL_ENCODING,
+      data.dlevels as number[],
+      {
+        bitWidth: getBitWidth(column.dLevelMax),
+        disableEnvelope: true
+      }
+    );
   }
 
   /* build page header */
@@ -469,7 +533,7 @@ async function encodeDataPageV2(
       num_values: data.count,
       num_nulls: data.count - data.values.length,
       num_rows: rowCount,
-      encoding: Encoding[column.encoding!] as any,
+      encoding: Encoding[valueEncoding] as any,
       definition_levels_byte_length: dLevelsBuf.length,
       repetition_levels_byte_length: rLevelsBuf.length,
       is_compressed: column.compression !== 'UNCOMPRESSED'
@@ -482,6 +546,32 @@ async function encodeDataPageV2(
   const headerBuf = serializeThrift(header);
   const page = concatUint8Arrays([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf]);
   return {header, headerSize: headerBuf.length, page};
+}
+
+/** Encodes one chunk-wide PLAIN dictionary page. */
+async function encodeDictionaryPage(
+  column: ParquetField,
+  dictionaryValues: unknown[]
+): Promise<{header: PageHeader; headerSize: number; page: Uint8Array}> {
+  const valuesBuffer = encodeValues(column.primitiveType!, 'PLAIN', dictionaryValues as any[], {
+    typeLength: column.typeLength
+  });
+  const compressedBuffer = await Compression.deflate(column.compression!, valuesBuffer);
+  const header = new PageHeader({
+    type: PageType.DICTIONARY_PAGE,
+    dictionary_page_header: new DictionaryPageHeader({
+      num_values: dictionaryValues.length,
+      encoding: Encoding.PLAIN
+    }),
+    uncompressed_page_size: valuesBuffer.length,
+    compressed_page_size: compressedBuffer.length
+  });
+  const headerBuffer = serializeThrift(header);
+  return {
+    header,
+    headerSize: headerBuffer.length,
+    page: concatUint8Arrays([headerBuffer, compressedBuffer])
+  };
 }
 
 /**
@@ -500,31 +590,85 @@ async function encodeColumnChunk(
   const data = buffer.columnData[column.path.join()];
   const baseOffset = (opts.baseOffset || 0) + offset;
   /* encode data page(s) */
-  // const pages: Uint8Array[] = [];
-  let pageBuf: Uint8Array;
+  const pages: Uint8Array[] = [];
   // tslint:disable-next-line:variable-name
   let total_uncompressed_size = 0;
   // tslint:disable-next-line:variable-name
   let total_compressed_size = 0;
-  {
-    const result = opts.useDataPageV2
-      ? await encodeDataPageV2(column, data, buffer.rowCount)
-      : await encodeDataPage(column, data);
-    // pages.push(result.page);
-    pageBuf = result.page;
+  const plannedPages = planColumnPages(
+    column,
+    data,
+    buffer.rowCount,
+    opts.pageSize || PARQUET_DEFAULT_PAGE_SIZE
+  );
+  const dictionaryPolicy =
+    opts.columnDictionaries?.[column.path[0]] ?? opts.dictionary ?? ('auto' as const);
+  const dictionaryPlan = planDictionary(
+    column,
+    Array.from(data.values),
+    dictionaryPolicy,
+    opts.dictionaryPageSizeLimit ?? 1024 * 1024
+  );
+  if (dictionaryPlan) {
+    const result = await encodeDictionaryPage(column, dictionaryPlan.values);
+    pages.push(result.page);
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
 
-  // const pagesBuf = concatUint8Arrays(pages);
+  const valueEncoding: ParquetCodec = dictionaryPlan ? 'RLE_DICTIONARY' : column.encoding!;
+  let dictionaryIndexOffset = 0;
+  for (const plannedPage of plannedPages) {
+    const pageData = dictionaryPlan
+      ? {
+          ...plannedPage.data,
+          values: dictionaryPlan.indices.slice(
+            dictionaryIndexOffset,
+            dictionaryIndexOffset + plannedPage.data.values.length
+          )
+        }
+      : plannedPage.data;
+    dictionaryIndexOffset += plannedPage.data.values.length;
+    const result = opts.useDataPageV2
+      ? await encodeDataPageV2(
+          column,
+          pageData,
+          plannedPage.rowCount,
+          valueEncoding,
+          dictionaryPlan?.bitWidth
+        )
+      : await encodeDataPage(column, pageData, valueEncoding, dictionaryPlan?.bitWidth);
+    pages.push(result.page);
+    total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
+    total_compressed_size += result.header.compressed_page_size + result.headerSize;
+  }
+
+  const pagesBuf = concatUint8Arrays(pages);
   // const compression = column.compression === 'UNCOMPRESSED' ? (opts.compression || 'UNCOMPRESSED') : column.compression;
 
   /* prepare metadata header */
   const metadata = new ColumnMetaData({
     path_in_schema: column.path,
     num_values: int64(data.count),
-    data_page_offset: int64(baseOffset),
+    data_page_offset: int64(baseOffset + (dictionaryPlan ? pages[0].length : 0)),
+    dictionary_page_offset: dictionaryPlan ? int64(baseOffset) : undefined,
     encodings: [],
+    encoding_stats: [
+      ...(dictionaryPlan
+        ? [
+            new PageEncodingStats({
+              page_type: PageType.DICTIONARY_PAGE,
+              encoding: Encoding.PLAIN,
+              count: 1
+            })
+          ]
+        : []),
+      new PageEncodingStats({
+        page_type: opts.useDataPageV2 ? PageType.DATA_PAGE_V2 : PageType.DATA_PAGE,
+        encoding: Encoding[valueEncoding],
+        count: plannedPages.length
+      })
+    ],
     total_uncompressed_size: int64(total_uncompressed_size), //  : pagesBuf.length,
     total_compressed_size: int64(total_compressed_size),
     type: Type[column.primitiveType!],
@@ -533,11 +677,12 @@ async function encodeColumnChunk(
 
   /* list encodings */
   metadata.encodings.push(Encoding[PARQUET_RDLVL_ENCODING]);
-  metadata.encodings.push(Encoding[column.encoding!]);
+  if (dictionaryPlan) metadata.encodings.push(Encoding.PLAIN);
+  metadata.encodings.push(Encoding[valueEncoding]);
 
   /* concat metadata header and data pages */
-  const metadataOffset = baseOffset + pageBuf.length;
-  const body = concatUint8Arrays([pageBuf, serializeThrift(metadata)]);
+  const metadataOffset = baseOffset + pagesBuf.length;
+  const body = concatUint8Arrays([pagesBuf, serializeThrift(metadata)]);
   return {body, metadata, metadataOffset};
 }
 
@@ -628,10 +773,20 @@ function encodeFooter(
     }
 
     if (field.originalType) {
-      schemaElem.converted_type = ConvertedType[field.originalType] as ConvertedType;
+      const convertedType = ConvertedType[field.originalType as keyof typeof ConvertedType];
+      if (typeof convertedType === 'number') {
+        schemaElem.converted_type = convertedType;
+      }
     }
 
     schemaElem.type_length = field.typeLength;
+    schemaElem.precision = field.precision ?? field.presision;
+    schemaElem.scale = field.scale;
+    schemaElem.field_id = field.fieldId;
+    const logicalType = getFieldLogicalType(field);
+    if (logicalType) {
+      schemaElem.logicalType = encodeParquetLogicalType(logicalType);
+    }
 
     metadata.schema.push(schemaElem);
   }
@@ -643,6 +798,146 @@ function encodeFooter(
   writeUInt32LE(footerEncoded, metadataEncoded.length, metadataEncoded.length);
   footerEncoded.set(PARQUET_MAGIC_BYTES, metadataEncoded.length + 4);
   return footerEncoded;
+}
+
+/** Returns an explicit or inferred modern logical annotation for a writer field. */
+function getFieldLogicalType(field: ParquetField): ParquetLogicalType | undefined {
+  if (field.logicalType) return field.logicalType;
+  const originalType = field.originalType;
+  if (!originalType) return undefined;
+  if (originalType === 'UTF8') return {type: 'STRING'};
+  if (originalType === 'ENUM') return {type: 'ENUM'};
+  if (originalType.startsWith('DECIMAL_')) {
+    return {
+      type: 'DECIMAL',
+      precision: field.precision ?? field.presision,
+      scale: field.scale
+    };
+  }
+  if (originalType === 'DATE') return {type: 'DATE'};
+  if (originalType.startsWith('TIME_')) {
+    return {
+      type: 'TIME',
+      unit: originalType.slice(5) as ParquetLogicalType['unit'],
+      isAdjustedToUTC: true
+    };
+  }
+  if (originalType.startsWith('TIMESTAMP_')) {
+    return {
+      type: 'TIMESTAMP',
+      unit: originalType.slice(10) as ParquetLogicalType['unit'],
+      isAdjustedToUTC: true
+    };
+  }
+  if (originalType.startsWith('UINT_') || originalType.startsWith('INT_')) {
+    return {
+      type: 'INTEGER',
+      bitWidth: Number(originalType.slice(originalType.indexOf('_') + 1)) as 8 | 16 | 32 | 64,
+      isSigned: originalType.startsWith('INT_')
+    };
+  }
+  if (originalType === 'JSON' || originalType === 'BSON') return {type: originalType};
+  if (
+    originalType === 'UUID' ||
+    originalType === 'FLOAT16' ||
+    originalType === 'UNKNOWN' ||
+    originalType === 'VARIANT' ||
+    originalType === 'GEOMETRY' ||
+    originalType === 'GEOGRAPHY'
+  ) {
+    return {type: originalType};
+  }
+  return undefined;
+}
+
+/** Converts the internal logical annotation into the Parquet 2.13 Thrift union. */
+function encodeParquetLogicalType(logicalType: ParquetLogicalType): LogicalType {
+  switch (logicalType.type) {
+    case 'STRING':
+      return LogicalType.fromSTRING(new StringType());
+    case 'MAP':
+      return LogicalType.fromMAP(new MapType());
+    case 'LIST':
+      return LogicalType.fromLIST(new ListType());
+    case 'ENUM':
+      return LogicalType.fromENUM(new EnumType());
+    case 'DECIMAL':
+      if (logicalType.precision === undefined || logicalType.scale === undefined) {
+        throw new Error('Parquet DECIMAL requires precision and scale');
+      }
+      return LogicalType.fromDECIMAL(
+        new DecimalType({precision: logicalType.precision, scale: logicalType.scale})
+      );
+    case 'DATE':
+      return LogicalType.fromDATE(new DateType());
+    case 'TIME':
+      return LogicalType.fromTIME(
+        new TimeType({
+          isAdjustedToUTC: logicalType.isAdjustedToUTC ?? false,
+          unit: encodeParquetTimeUnit(logicalType.unit)
+        })
+      );
+    case 'TIMESTAMP':
+      return LogicalType.fromTIMESTAMP(
+        new TimestampType({
+          isAdjustedToUTC: logicalType.isAdjustedToUTC ?? false,
+          unit: encodeParquetTimeUnit(logicalType.unit)
+        })
+      );
+    case 'INTEGER':
+      if (logicalType.bitWidth === undefined || logicalType.isSigned === undefined) {
+        throw new Error('Parquet INTEGER requires bitWidth and isSigned');
+      }
+      return LogicalType.fromINTEGER(
+        new IntType({bitWidth: logicalType.bitWidth, isSigned: logicalType.isSigned})
+      );
+    case 'UNKNOWN':
+      return LogicalType.fromUNKNOWN(new NullType());
+    case 'JSON':
+      return LogicalType.fromJSON(new JsonType());
+    case 'BSON':
+      return LogicalType.fromBSON(new BsonType());
+    case 'UUID':
+      return LogicalType.fromUUID(new UUIDType());
+    case 'FLOAT16':
+      return LogicalType.fromFLOAT16(new Float16Type());
+    case 'VARIANT':
+      return LogicalType.fromVARIANT(
+        new VariantType({specification_version: logicalType.specificationVersion})
+      );
+    case 'GEOMETRY':
+      return LogicalType.fromGEOMETRY(new GeometryType({crs: logicalType.crs}));
+    case 'GEOGRAPHY':
+      return LogicalType.fromGEOGRAPHY(
+        new GeographyType({
+          crs: logicalType.crs,
+          algorithm:
+            logicalType.algorithm === undefined
+              ? undefined
+              : EdgeInterpolationAlgorithm[
+                  logicalType.algorithm as keyof typeof EdgeInterpolationAlgorithm
+                ]
+        })
+      );
+    default:
+      throw new Error(
+        `Unsupported Parquet logical type ${(logicalType as ParquetLogicalType).type}`
+      );
+  }
+}
+
+/** Encodes one Parquet logical time unit. */
+function encodeParquetTimeUnit(unit: ParquetLogicalType['unit']): TimeUnit {
+  switch (unit) {
+    case 'MILLIS':
+      return TimeUnit.fromMILLIS(new MilliSeconds());
+    case 'MICROS':
+      return TimeUnit.fromMICROS(new MicroSeconds());
+    case 'NANOS':
+      return TimeUnit.fromNANOS(new NanoSeconds());
+    default:
+      throw new Error('Parquet TIME and TIMESTAMP require a unit');
+  }
 }
 
 /** Wrap a writer metadata number in the thrift int64 compatibility object. */

@@ -1,4 +1,6 @@
-// loaders./gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import {TypedArray} from '../../types';
 import {padToNBytes} from './memory-copy-utils';

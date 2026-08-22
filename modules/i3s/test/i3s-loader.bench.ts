@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {loadI3STile} from '@loaders.gl/i3s/test/test-utils/load-utils';
 
 export default async function i3sLoaderBench(suite) {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-2-Clause
+
 // This file is derived from the Cesium code base under BSD 2-clause license
 // See LICENSE.md and https://github.com/potree/potree/blob/develop/LICENSE
 

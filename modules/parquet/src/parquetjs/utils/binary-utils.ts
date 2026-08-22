@@ -60,9 +60,14 @@ export function readUInt32LE(binary: Uint8Array, offset: number): number {
   return getDataView(binary).getUint32(offset, true);
 }
 
-/** Read signed little-endian 64-bit integer as number. */
-export function readInt64LE(binary: Uint8Array, offset: number): number {
-  return Number(getDataView(binary).getBigInt64(offset, true));
+/** Read signed little-endian 64-bit integer without losing precision. */
+export function readInt64LE(binary: Uint8Array, offset: number): bigint {
+  return getDataView(binary).getBigInt64(offset, true);
+}
+
+/** Read unsigned little-endian 64-bit integer without losing precision. */
+export function readUInt64LE(binary: Uint8Array, offset: number): bigint {
+  return getDataView(binary).getBigUint64(offset, true);
 }
 
 /** Read little-endian 32-bit float. */

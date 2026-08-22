@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {fetchFile, parse, encode} from '@loaders.gl/core';
 import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
 import type {DracoWriterOptions} from '@loaders.gl/draco';

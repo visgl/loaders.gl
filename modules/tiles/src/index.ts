@@ -7,6 +7,7 @@ export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-
 export {Tileset3D} from './tileset-3d/common/tileset-3d';
 export type {
   TileContentLoadResult,
+  TileChildrenLoadResult,
   TilesetContentFormats,
   TilesetJSON,
   TilesetSourceInput,
@@ -20,7 +21,23 @@ export {isTileset3DSource} from './tileset-3d/common/tileset-source';
 export type {IndexedArchiveTilesetSourceOptions} from './tileset-3d/common/indexed-archive-tileset-source';
 export {IndexedArchiveTilesetSource} from './tileset-3d/common/indexed-archive-tileset-source';
 export {Tile3D} from './tileset-3d/common/tile-3d';
+export type {TileChildrenState} from './tileset-3d/common/tile-3d';
 export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {ImplicitTilingStats} from './tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {
+  ImplicitAvailability,
+  ImplicitSubtreeReference,
+  ImplicitTileCoordinates,
+  ImplicitTileHeader,
+  ImplicitTilingDescriptor,
+  MaterializedImplicitSubtree,
+  ParsedImplicitSubtree
+} from './tileset-3d/format-3d-tiles/implicit-tiling';
+export {
+  createImplicitSubtreeReference,
+  materializeImplicitSubtree,
+  replaceImplicitUrlTemplate
+} from './tileset-3d/format-3d-tiles/implicit-tiling';
 export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
 
 export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {BinaryFeatureCollection, BinaryGeometry, Feature} from '@loaders.gl/schema';
 
 type TransformCoordinate = (coord: number[]) => number[];

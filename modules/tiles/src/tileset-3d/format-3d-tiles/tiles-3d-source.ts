@@ -10,6 +10,7 @@ import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
 import type {
+  TileChildrenLoadResult,
   TileContentLoadResult,
   TilesetContentFormats,
   TilesetJSON,
@@ -24,12 +25,36 @@ import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import {getZoomFromBoundingVolume} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
+import type {FrameState} from '../helpers/frame-state';
+import {
+  materializeImplicitSubtree,
+  type ImplicitSubtreeReference,
+  type ParsedImplicitSubtree
+} from './implicit-tiling';
 
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
   meshopt: false,
   dds: false,
   ktx2: false
+};
+
+const DEFAULT_MAXIMUM_CACHED_SUBTREES = 32;
+
+/** Diagnostics for source-managed implicit subtree loading. */
+export type ImplicitTilingStats = {
+  /** Subtree resources requested from the resolver or core API. */
+  requestedSubtrees: number;
+  /** Successful subtree materializations, including parsed-cache hits. */
+  loadedSubtrees: number;
+  /** Requests served by the source's parsed-subtree cache. */
+  cacheHits: number;
+  /** Parsed subtree resources currently retained for reuse. */
+  cachedSubtrees: number;
+  /** Subtree resource requests currently in flight. */
+  pendingSubtrees: number;
+  /** Runtime headers created below already-existing subtree-root placeholders. */
+  materializedTiles: number;
 };
 
 /**
@@ -65,6 +90,26 @@ export class Tiles3DSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private readonly queryParams: Record<string, string> = {};
+  /** Final request URLs cached by unmodified tile content URL. */
+  private readonly tileUrlCache: Map<string, string> = new Map();
+  /** Parsed subtree promises keyed by final source URL for request deduplication and LRU reuse. */
+  private readonly implicitSubtreeCache: Map<string, Promise<ParsedImplicitSubtree>> = new Map();
+  /** URLs whose subtree resource requests have not settled. */
+  private readonly pendingImplicitSubtreeUrls: Set<string> = new Set();
+  /** Maximum number of settled parsed subtrees retained by this source. */
+  private readonly maximumCachedSubtrees: number;
+  /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
+  private readonly implicitTilingStats: Omit<
+    ImplicitTilingStats,
+    'cachedSubtrees' | 'pendingSubtrees'
+  > = {
+    requestedSubtrees: 0,
+    loadedSubtrees: 0,
+    cacheHits: 0,
+    materializedTiles: 0
+  };
+  /** Whether the owning tileset has released this source. */
+  private destroyed = false;
   private readonly extensionsUsed: string[] = [];
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
@@ -84,6 +129,25 @@ export class Tiles3DSource implements Tileset3DSource {
     this.resolver = request.resolver;
     this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
+    const maximumCachedSubtrees = Number(
+      (loadOptions['3d-tiles'] as Record<string, unknown> | undefined)?.maximumCachedSubtrees
+    );
+    this.maximumCachedSubtrees = Number.isFinite(maximumCachedSubtrees)
+      ? Math.max(0, Math.floor(maximumCachedSubtrees))
+      : DEFAULT_MAXIMUM_CACHED_SUBTREES;
+  }
+
+  /**
+   * Releases URL and parsed-subtree caches and blocks late subtree installation.
+   *
+   * The injected resolver or core API remains responsible for transport-level abort signals. A
+   * request that cannot be aborted may finish parsing, but it will not mutate destroyed tiles.
+   */
+  destroy(): void {
+    this.destroyed = true;
+    this.tileUrlCache.clear();
+    this.implicitSubtreeCache.clear();
+    this.pendingImplicitSubtreeUrls.clear();
   }
 
   /**
@@ -104,7 +168,9 @@ export class Tiles3DSource implements Tileset3DSource {
 
     if (this.rootTileset.queryString) {
       const searchParams = new URLSearchParams(this.rootTileset.queryString);
-      Object.assign(this.queryParams, Object.fromEntries(searchParams.entries()));
+      for (const [parameterName, parameterValue] of searchParams.entries()) {
+        this.setQueryParameter(parameterName, parameterValue);
+      }
     }
 
     this.asset = this.rootTileset.asset;
@@ -120,7 +186,7 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     if ('tilesetVersion' in this.asset) {
-      this.queryParams.v = this.asset.tilesetVersion;
+      this.setQueryParameter('v', this.asset.tilesetVersion);
     }
 
     this.properties = this.rootTileset.properties;
@@ -161,7 +227,7 @@ export class Tiles3DSource implements Tileset3DSource {
   }
 
   /**
-   * Builds the eager runtime tile tree for a 3D Tiles subtree.
+   * Builds explicit runtime headers while leaving implicit subtree references lazy.
    */
   initializeTileHeaders(
     tileset: Tileset3D,
@@ -186,7 +252,7 @@ export class Tiles3DSource implements Tileset3DSource {
           const url = new URL(childTile.contentUrl);
           const session = url.searchParams.get('session');
           if (session) {
-            this.queryParams.session = session;
+            this.setQueryParameter('session', session);
           }
         }
         tile.children.push(childTile);
@@ -216,7 +282,9 @@ export class Tiles3DSource implements Tileset3DSource {
       ...this.loadOptions,
       [this.loader.id]: {
         ...tilesetLoaderOptions,
-        isTileset: tile.type === 'json',
+        // Content bytes, rather than URL suffixes, distinguish external tilesets from renderable
+        // payloads. This is required for signed and extensionless resources.
+        isTileset: 'auto',
         assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y'
       }
     };
@@ -226,19 +294,89 @@ export class Tiles3DSource implements Tileset3DSource {
 
     return {
       loaded: true,
-      nestedTileset: tile.contentUrl.includes('.json') ? content : undefined
+      nestedTileset: content?.shape === 'tileset3d' ? content : undefined
+    };
+  }
+
+  /**
+   * Loads, materializes, and installs exactly one implicit subtree.
+   *
+   * Final URLs pass through the same query inheritance and archive/custom resolver path as render
+   * content. Parsed resources are deduplicated by final URL, while the pure materializer creates
+   * lazy placeholders for every available child subtree instead of recursively fetching them.
+   *
+   * @param tile - Existing contentless subtree-root placeholder.
+   * @param frameState - View state that made this request eligible; priority is consumed earlier.
+   * @returns Counts describing the installed subtree.
+   */
+  async loadTileChildren(tile: Tile3D, frameState: FrameState): Promise<TileChildrenLoadResult> {
+    void frameState;
+    const reference = tile.header.implicitSubtree as ImplicitSubtreeReference | undefined;
+    if (!reference) {
+      return {loaded: false, tileCount: 0, childSubtreeCount: 0};
+    }
+
+    const subtreeUrl = this.getTileUrl(reference.subtreeUrl);
+    const subtree = await this.loadImplicitSubtreeResource(subtreeUrl);
+    if (this.destroyed || tile.isDestroyed()) {
+      return {loaded: false, tileCount: 0, childSubtreeCount: 0};
+    }
+    const materializedSubtree = materializeImplicitSubtree(subtree, {
+      ...reference,
+      subtreeUrl
+    });
+
+    tile.applyImplicitSubtreeHeader(materializedSubtree.root);
+    const materializedTileCount = this.initializeMaterializedChildren(
+      tile.tileset,
+      tile,
+      materializedSubtree.root.children
+    );
+    this.implicitTilingStats.loadedSubtrees++;
+    this.implicitTilingStats.materializedTiles += materializedTileCount;
+
+    return {
+      loaded: true,
+      tileCount: materializedSubtree.tileCount,
+      childSubtreeCount: materializedSubtree.childSubtreeCount
+    };
+  }
+
+  /**
+   * Returns a snapshot of implicit-subtree request, cache, and materialization counters.
+   *
+   * @returns Immutable-by-convention diagnostic values for runtime inspection.
+   */
+  getImplicitTilingStats(): ImplicitTilingStats {
+    return {
+      ...this.implicitTilingStats,
+      cachedSubtrees: this.implicitSubtreeCache.size - this.pendingImplicitSubtreeUrls.size,
+      pendingSubtrees: this.pendingImplicitSubtreeUrls.size
     };
   }
 
   /**
    * Resolves a tile content URL with source-managed query parameters.
+   *
+   * Existing per-resource parameters take precedence over inherited root, version, and session
+   * values. Completed URLs are cached by the original tile path; {@link setQueryParameter}
+   * invalidates the cache before changed source state can be observed.
+   *
+   * @param tilePath - Unmodified absolute content URL or data URL from the tile header.
+   * @returns Content URL with any missing source parameters appended.
    */
   getTileUrl(tilePath: string): string {
     if (tilePath.startsWith('data:')) {
       return tilePath;
     }
 
+    const cachedTileUrl = this.tileUrlCache.get(tilePath);
+    if (cachedTileUrl) {
+      return cachedTileUrl;
+    }
+
     if (!Object.keys(this.queryParams).length) {
+      this.tileUrlCache.set(tilePath, tilePath);
       return tilePath;
     }
 
@@ -252,7 +390,27 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const queryParams = mergedQueryParams.toString();
-    return queryParams ? `${pathWithoutQuery}?${queryParams}` : pathWithoutQuery;
+    const tileUrl = queryParams ? `${pathWithoutQuery}?${queryParams}` : pathWithoutQuery;
+    this.tileUrlCache.set(tilePath, tileUrl);
+    return tileUrl;
+  }
+
+  /**
+   * Updates an inherited source query parameter and invalidates derived request URLs.
+   *
+   * Root tokens and tileset versions normally settle during initialization. Some providers expose
+   * a session parameter on a child URL, so invalidation is required to prevent URLs cached earlier
+   * in header construction from retaining stale authentication state.
+   *
+   * @param parameterName - Query parameter name.
+   * @param parameterValue - Query parameter value.
+   */
+  private setQueryParameter(parameterName: string, parameterValue: string): void {
+    if (this.queryParams[parameterName] === parameterValue) {
+      return;
+    }
+    this.queryParams[parameterName] = parameterValue;
+    this.tileUrlCache.clear();
   }
 
   /**
@@ -319,12 +477,16 @@ export class Tiles3DSource implements Tileset3DSource {
   /**
    * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
    */
-  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
+  private async loadWithCoreApi(
+    url: string,
+    options: LoaderOptions,
+    loader: LoaderWithParser = this.loader
+  ): Promise<any> {
     if (!this.coreApi) {
       throw new Error('Tiles3DSource requires an injected coreApi to load tileset data');
     }
 
-    return await this.coreApi.load(url, this.loader, options);
+    return await this.coreApi.load(url, loader, options);
   }
 
   /**
@@ -339,14 +501,105 @@ export class Tiles3DSource implements Tileset3DSource {
   }
 
   /**
-   * Loads tile content through an injected resolver when present, otherwise through the injected core API.
+   * Loads an arbitrary source resource through an injected resolver or core API.
    */
-  private async loadResourceData(url: string, options: LoaderOptions): Promise<any> {
+  private async loadResourceData(
+    url: string,
+    options: LoaderOptions,
+    loader: LoaderWithParser = this.loader
+  ): Promise<any> {
     if (this.resolver) {
-      return await this.resolver.loadResource(url, this.loader, options);
+      return await this.resolver.loadResource(url, loader, options);
     }
 
-    return await this.loadWithCoreApi(url, options);
+    return await this.loadWithCoreApi(url, options, loader);
+  }
+
+  /**
+   * Returns a parsed subtree from the LRU cache or starts one source-managed request.
+   *
+   * @param subtreeUrl - Final subtree URL after query inheritance.
+   * @returns Parsed subtree availability data.
+   */
+  private async loadImplicitSubtreeResource(subtreeUrl: string): Promise<ParsedImplicitSubtree> {
+    const cachedSubtree = this.implicitSubtreeCache.get(subtreeUrl);
+    if (cachedSubtree) {
+      this.implicitTilingStats.cacheHits++;
+      this.implicitSubtreeCache.delete(subtreeUrl);
+      this.implicitSubtreeCache.set(subtreeUrl, cachedSubtree);
+      return await cachedSubtree;
+    }
+
+    this.implicitTilingStats.requestedSubtrees++;
+    this.pendingImplicitSubtreeUrls.add(subtreeUrl);
+    const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
+    const subtreePromise = this.loadResourceData(subtreeUrl, {
+      ...this.loadOptions,
+      [this.loader.id]: {
+        ...loaderOptions,
+        isTileset: false,
+        isSubtree: true
+      }
+    }) as Promise<ParsedImplicitSubtree>;
+    this.implicitSubtreeCache.set(subtreeUrl, subtreePromise);
+
+    try {
+      return await subtreePromise;
+    } catch (error) {
+      this.implicitSubtreeCache.delete(subtreeUrl);
+      throw error;
+    } finally {
+      this.pendingImplicitSubtreeUrls.delete(subtreeUrl);
+      this.trimImplicitSubtreeCache();
+    }
+  }
+
+  /**
+   * Instantiates every header represented by one materialized subtree.
+   *
+   * @param tileset - Owning runtime tileset.
+   * @param parentTile - Existing materialized parent.
+   * @param childHeaders - Headers to install below the parent.
+   * @returns Number of newly allocated runtime tile nodes.
+   */
+  private initializeMaterializedChildren(
+    tileset: Tileset3D,
+    parentTile: Tile3D,
+    childHeaders: Record<string, any>[]
+  ): number {
+    let materializedTileCount = 0;
+    const stack: Array<{parentTile: Tile3D; childHeaders: Record<string, any>[]}> = [
+      {parentTile, childHeaders}
+    ];
+    while (stack.length > 0) {
+      const entry = stack.pop()!;
+      for (const childHeader of entry.childHeaders) {
+        const childTile = new Tile3DNode(tileset, childHeader, entry.parentTile);
+        entry.parentTile.children.push(childTile);
+        childTile.depth = entry.parentTile.depth + 1;
+        tileset.stats.get('Tiles In Tileset(s)').incrementCount();
+        materializedTileCount++;
+        if (childHeader.children?.length) {
+          stack.push({parentTile: childTile, childHeaders: childHeader.children});
+        }
+      }
+    }
+    return materializedTileCount;
+  }
+
+  /** Evicts least-recently-used settled subtree entries until the configured bound is met. */
+  private trimImplicitSubtreeCache(): void {
+    if (this.implicitSubtreeCache.size <= this.maximumCachedSubtrees) {
+      return;
+    }
+    for (const subtreeUrl of this.implicitSubtreeCache.keys()) {
+      if (!this.pendingImplicitSubtreeUrls.has(subtreeUrl)) {
+        this.implicitSubtreeCache.delete(subtreeUrl);
+      }
+      if (this.implicitSubtreeCache.size <= this.maximumCachedSubtrees) {
+        break;
+      }
+    }
   }
 }
 

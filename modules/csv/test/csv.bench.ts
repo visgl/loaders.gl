@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {encodeTableAsText, fetchFile, parse, preload} from '@loaders.gl/core';
 import {CSVLoader, CSVWriter} from '@loaders.gl/csv';
 import type {Loader} from '@loaders.gl/loader-utils';

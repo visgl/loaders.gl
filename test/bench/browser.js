@@ -9,9 +9,6 @@ import {installSortedGroupBenchOverride} from './group-sorted';
 
 installSortedGroupBenchOverride(Bench);
 
-const {Buffer} = await import('buffer');
-globalThis.Buffer = Buffer;
-await import('@loaders.gl/polyfills');
 const {addModuleBenchmarksToSuite} = await import('./modules');
 
 // Sets up aliases for file reader
@@ -20,8 +17,9 @@ _addAliases(ALIASES);
 const suite = new Bench({
   minIterations: 1
 });
+const benchmarkFilters = new URLSearchParams(globalThis.location.search).getAll('module');
 
-addModuleBenchmarksToSuite(suite)
+addModuleBenchmarksToSuite(suite, benchmarkFilters)
   .then(_ => suite.run())
   .then(() => globalThis.browserTestDriver_finish?.())
   .catch(error => {

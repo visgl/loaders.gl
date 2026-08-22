@@ -82,7 +82,7 @@ export function createGeoJsonLayerProps(
   pathLayerProps?: Partial<PathLayerProps>,
   solidPolygonLayerProps?: Partial<SolidPolygonLayerProps>
 ): Partial<GeoJsonLayerProps> {
-  return {
+  const geoJsonLayerProps: Partial<GeoJsonLayerProps> = {
     pointType: 'circle',
     filled: solidPolygonLayerProps?.filled ?? true,
     extruded: solidPolygonLayerProps?.extruded,
@@ -105,4 +105,10 @@ export function createGeoJsonLayerProps(
     pointRadiusMaxPixels: pointLayerProps?.radiusMaxPixels,
     getElevation: solidPolygonLayerProps?.getElevation
   };
+  for (const propertyName of Object.keys(geoJsonLayerProps) as Array<keyof GeoJsonLayerProps>) {
+    if (geoJsonLayerProps[propertyName] === undefined) {
+      delete geoJsonLayerProps[propertyName];
+    }
+  }
+  return geoJsonLayerProps;
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as thrift from 'thrift';
+import * as thrift from './thrift-runtime';
 import {readDoubleLE} from './binary-utils';
 import {Uint8ArrayTransport} from './uint8-array-transport';
 
@@ -26,8 +26,8 @@ export class CompactInt64 {
   private readonly value: bigint;
 
   /** Create a compact-protocol int64 wrapper from a bigint. */
-  constructor(value: bigint) {
-    this.value = value;
+  constructor(value: bigint | number | string | {toString(): string}) {
+    this.value = typeof value === 'bigint' ? value : BigInt(value.toString());
   }
 
   /** Return the payload as a JavaScript number. */

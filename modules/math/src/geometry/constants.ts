@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Subset of WebGL constants
 
 export const GL_PRIMITIVE = {

@@ -16,10 +16,31 @@ export type {
   ParquetBatch,
   ParquetBatchMetadata,
   ParquetBatchProvenance,
+  ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetDatasetBatch,
+  ParquetDatasetBatchProvenance,
+  ParquetDatasetBoundingBox,
+  ParquetDatasetFile,
+  ParquetDatasetFileCollection,
+  ParquetDatasetFileProvider,
+  ParquetDatasetFileQuery,
+  ParquetDatasetFiles,
+  ParquetDatasetPartitionValue,
+  ParquetDatasetReadOptions,
+  ParquetDatasetSourceOptions,
+  ParquetDatasetTelemetry,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetComparisonPredicate,
+  ParquetInPredicate,
+  ParquetLogicalPredicate,
+  ParquetNotPredicate,
+  ParquetNullPredicate,
+  ParquetPredicate,
+  ParquetPredicateProperty,
+  ParquetPredicateValue,
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
@@ -36,7 +57,7 @@ export {
 } from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
-export type {ParquetJSWriterOptions} from './parquet-js-writer';
+export type {ParquetJSWriterEncoding, ParquetJSWriterOptions} from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API

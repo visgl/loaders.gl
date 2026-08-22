@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {I3STileHeader} from '@loaders.gl/i3s/src';
 import {TILE_TYPE} from '../../src';
 

@@ -31,6 +31,10 @@ export type ParquetColumnChunkStatistics = {
   nullCount?: number;
   /** Number of distinct values when reported by the writer. */
   distinctCount?: number;
+  /** Whether the reported minimum is exact rather than truncated. */
+  minIsExact?: boolean;
+  /** Whether the reported maximum is exact rather than truncated. */
+  maxIsExact?: boolean;
 };
 
 /** Normalized metadata for one Parquet column chunk. */
@@ -59,6 +63,14 @@ export type ParquetColumnChunkMetadata = {
   readonly dataPageOffset: number;
   /** Absolute file offset of the dictionary page, when present. */
   readonly dictionaryPageOffset?: number;
+  /** Absolute file offset of the optional per-page column statistics index. */
+  readonly columnIndexOffset?: number;
+  /** Serialized byte length of the optional per-page column statistics index. */
+  readonly columnIndexByteLength?: number;
+  /** Absolute file offset of the optional data-page location index. */
+  readonly offsetIndexOffset?: number;
+  /** Serialized byte length of the optional data-page location index. */
+  readonly offsetIndexByteLength?: number;
   /** Optional min/max and count statistics decoded from the footer. */
   readonly statistics?: ParquetColumnChunkStatistics;
 };
@@ -121,6 +133,73 @@ export type ParquetMetadataRequestOptions = {
   signal?: AbortSignal;
 };
 
+/** Scalar values supported by exact Parquet source predicates. */
+export type ParquetPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
+
+/** Reference to one Parquet column in a predicate expression. */
+export type ParquetPredicateProperty = {
+  /** Top-level column name or explicit nested Parquet schema path. */
+  property: string | readonly string[];
+};
+
+/** Four- or six-dimensional extent used for conservative Parquet spatial pruning. */
+export type ParquetBoundingBox =
+  | readonly [number, number, number, number]
+  | readonly [number, number, number, number, number, number];
+
+/** Comparison predicate applied to one top-level Parquet column. */
+export type ParquetComparisonPredicate = {
+  /** CQL2-shaped exact comparison operator. */
+  op: '=' | '<>' | '<' | '<=' | '>' | '>=';
+  /** Column reference followed by the scalar value to compare. */
+  args: readonly [ParquetPredicateProperty, ParquetPredicateValue];
+};
+
+/** Membership predicate applied to one top-level Parquet column. */
+export type ParquetInPredicate = {
+  /** CQL2-shaped membership operator. */
+  op: 'in';
+  /** Column reference followed by the candidate scalar values. */
+  args: readonly [ParquetPredicateProperty, readonly ParquetPredicateValue[]];
+};
+
+/** Null predicate applied to one top-level Parquet column. */
+export type ParquetNullPredicate = {
+  /** CQL2-shaped null test operator. */
+  op: 'isNull';
+  /** Column reference to test. */
+  args: readonly [ParquetPredicateProperty];
+};
+
+/** Logical composition of serializable Parquet predicates. */
+export type ParquetLogicalPredicate = {
+  /** CQL2-shaped logical operator applied to the child predicates. */
+  op: 'and' | 'or';
+  /** At least two child predicates. */
+  args: readonly ParquetPredicate[];
+};
+
+/** Negation of one serializable Parquet predicate. */
+export type ParquetNotPredicate = {
+  /** CQL2-shaped logical negation operator. */
+  op: 'not';
+  /** Single child predicate. */
+  args: readonly [ParquetPredicate];
+};
+
+/**
+ * Serializable exact row predicate used by selective Parquet source reads.
+ *
+ * The expression shape is directionally aligned with CQL2 JSON, but this experimental subset does
+ * not claim CQL2 conformance.
+ */
+export type ParquetPredicate =
+  | ParquetComparisonPredicate
+  | ParquetInPredicate
+  | ParquetNullPredicate
+  | ParquetLogicalPredicate
+  | ParquetNotPredicate;
+
 /** Options for one selective `ParquetSource.read()` operation. */
 export type ParquetSourceReadOptions = {
   /** Zero-based row-group indexes to decode, in output order. Defaults to all row groups. */
@@ -133,6 +212,12 @@ export type ParquetSourceReadOptions = {
   concurrency?: number;
   /** Retains candidate row groups for which the predicate returns true. */
   rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
+  /** Serializable exact row predicate, conservatively pushed into row-group statistics. */
+  predicate?: ParquetPredicate;
+  /** Spatial extent applied through a valid GeoParquet 1.1 bounding-box covering when present. */
+  bbox?: ParquetBoundingBox;
+  /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
+  geometryColumn?: string;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
@@ -164,14 +249,30 @@ export type ParquetTelemetry = {
   arrowConversionDurationMs: number;
   /** Candidate row groups considered by read operations. */
   rowGroupsRequested: number;
-  /** Candidate row groups rejected by `rowGroupFilter`. */
+  /** Candidate row groups rejected by callbacks or automatic statistics pruning. */
   rowGroupsPruned: number;
+  /** Candidate row groups proven impossible using footer statistics. */
+  rowGroupsPrunedByStatistics: number;
+  /** Row groups proven impossible using page-level column indexes. */
+  rowGroupsPrunedByPageIndex: number;
+  /** Column-index and offset-index blobs decoded for selective reads. */
+  pageIndexesRead: number;
+  /** Data pages fetched for page-index-planned reads. */
+  pagesRead: number;
+  /** Data pages avoided by page-index-planned reads. */
+  pagesPruned: number;
+  /** Candidate rows eliminated before data-page reads. */
+  rowsPrunedByPageIndex: number;
   /** Row groups successfully decoded. */
   rowGroupsDecoded: number;
   /** Arrow batches emitted by read operations. */
   batchesEmitted: number;
   /** Rows emitted by read operations. */
   rowsEmitted: number;
+  /** Decoded rows tested by exact predicates. */
+  predicateRowsTested: number;
+  /** Decoded rows retained by exact predicates. */
+  predicateRowsMatched: number;
   /** Read operations cancelled by signals, source close, or early iterator return. */
   cancellationCount: number;
   /** Read operations that failed for reasons other than cancellation. */
@@ -185,6 +286,8 @@ export type ParquetTelemetryEvent = {
     | 'range-request'
     | 'cache-hit'
     | 'row-group-prune'
+    | 'page-index-prune'
+    | 'predicate-filter'
     | 'decode'
     | 'arrow-conversion'
     | 'batch'
@@ -218,6 +321,10 @@ export type ParquetBatchProvenance = {
   readonly rowGroupRowOffset: number;
   /** Number of rows in the batch. */
   readonly rowCount: number;
+  /** Source row indexes within the row group when filtering produces a non-contiguous batch. */
+  readonly rowGroupRowIndices?: readonly number[];
+  /** Absolute source row indexes when filtering produces a non-contiguous batch. */
+  readonly rowIndices?: readonly number[];
 };
 
 /** Compatibility alias for Parquet batch provenance. */
@@ -257,4 +364,102 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
   };
   /** Byte-range scheduling and diagnostics configuration. */
   rangeRequests?: ParquetRangeRequestOptions;
+};
+
+/** Four- or six-dimensional extent used for conservative Parquet dataset file pruning. */
+export type ParquetDatasetBoundingBox = ParquetBoundingBox;
+
+/** Scalar value carried by a partitioned Parquet dataset file descriptor. */
+export type ParquetDatasetPartitionValue = string | number | boolean | null;
+
+/** One independently range-readable file in a logical Parquet dataset. */
+export type ParquetDatasetFile = {
+  /** URL or Blob passed to the child `ParquetSource`. */
+  readonly data: string | Blob;
+  /** Stable application-defined file identifier. */
+  readonly id?: string;
+  /** Conservative spatial extent used before opening the file. */
+  readonly bbox?: ParquetDatasetBoundingBox;
+  /** Hive-style or catalog-derived partition values. */
+  readonly partitions?: Readonly<Record<string, ParquetDatasetPartitionValue>>;
+  /** Opaque catalog metadata copied into emitted batch provenance. */
+  readonly metadata?: Readonly<Record<string, unknown>>;
+};
+
+/** File-discovery constraints passed to a Parquet dataset provider. */
+export type ParquetDatasetFileQuery = {
+  /** Spatial extent used by catalog-backed providers and local descriptor pruning. */
+  bbox?: ParquetDatasetBoundingBox;
+  /** Exact partition values, or accepted values for each requested partition. */
+  partitions?: Readonly<
+    Record<string, ParquetDatasetPartitionValue | readonly ParquetDatasetPartitionValue[]>
+  >;
+  /** Aborts catalog traversal or file discovery. */
+  signal?: AbortSignal;
+};
+
+/** Synchronous or asynchronous collection returned by a Parquet dataset provider. */
+export type ParquetDatasetFileCollection =
+  | Iterable<ParquetDatasetFile>
+  | AsyncIterable<ParquetDatasetFile>;
+
+/** Lazy catalog adapter that discovers Parquet files for one dataset query. */
+export type ParquetDatasetFileProvider = (
+  query: ParquetDatasetFileQuery
+) => ParquetDatasetFileCollection | Promise<ParquetDatasetFileCollection>;
+
+/** Reusable static descriptors or a lazy catalog-backed provider accepted by the dataset source. */
+export type ParquetDatasetFiles = readonly ParquetDatasetFile[] | ParquetDatasetFileProvider;
+
+/** Options for constructing a multi-file `ParquetDatasetSource`. */
+export type ParquetDatasetSourceOptions = ParquetSourceLoaderOptions & {
+  parquetDataset?: {
+    /** Maximum files read concurrently. Defaults to 4. */
+    fileConcurrency?: number;
+    /** Require every selected file to have the same field schema. Defaults to true. */
+    validateSchema?: boolean;
+  };
+};
+
+/** Options for one multi-file Parquet dataset read. */
+export type ParquetDatasetReadOptions = Omit<ParquetSourceReadOptions, 'rowGroups' | 'signal'> &
+  ParquetDatasetFileQuery & {
+    /** Maximum files read concurrently for this operation. */
+    fileConcurrency?: number;
+  };
+
+/** Dataset and file provenance attached to an emitted Arrow batch. */
+export type ParquetDatasetBatchProvenance = ParquetBatchProvenance & {
+  /** Zero-based descriptor position in provider output, before local pruning. */
+  readonly datasetFileIndex: number;
+  /** Stable descriptor identifier, falling back to child source identity. */
+  readonly datasetFileId: string;
+  /** Partition values supplied by the file descriptor. */
+  readonly datasetPartitions?: Readonly<Record<string, ParquetDatasetPartitionValue>>;
+  /** Opaque catalog metadata supplied by the file descriptor. */
+  readonly datasetFileMetadata?: Readonly<Record<string, unknown>>;
+};
+
+/** Arrow batch emitted by `ParquetDatasetSource.read()`. */
+export type ParquetDatasetBatch = ArrowTableBatch<ParquetDatasetBatchProvenance> &
+  ParquetDatasetBatchProvenance;
+
+/** Cumulative discovery, pruning, output, and child-source counters for one dataset source. */
+export type ParquetDatasetTelemetry = {
+  /** File descriptors returned by the provider. */
+  filesDiscovered: number;
+  /** File descriptors retained after local pruning. */
+  filesSelected: number;
+  /** Files rejected using descriptor bounding boxes. */
+  filesPrunedByBoundingBox: number;
+  /** Files rejected using descriptor partition values. */
+  filesPrunedByPartitions: number;
+  /** Child Parquet sources opened. */
+  filesOpened: number;
+  /** Arrow batches emitted across all files. */
+  batchesEmitted: number;
+  /** Rows emitted across all files. */
+  rowsEmitted: number;
+  /** Aggregated child-source telemetry for completed or failed file reads. */
+  parquet: ParquetTelemetry;
 };

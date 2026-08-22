@@ -13,6 +13,7 @@ const GENERATED_PARQUET_DIRECTORY = 'tmp/test-artifacts/parquet';
 const GENERATED_PARQUET_FILE = `${GENERATED_PARQUET_DIRECTORY}/fruits.parquet`;
 const TEST_NUM_ROWS = 10000;
 const TEST_VTIME = Date.now();
+const FNORD_BYTES = new TextEncoder().encode('FNORD');
 
 function mkTestSchema(opts) {
   return new ParquetSchema({
@@ -220,7 +221,7 @@ async function readTestFile(t: Test) {
         price: 2.6,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 1000 * i),
-        finger: Buffer.from('FNORD'),
+        finger: FNORD_BYTES,
         inter: {months: 42, days: 23, milliseconds: 777},
         stock: [
           {quantity: [10], warehouse: 'A'},
@@ -235,7 +236,7 @@ async function readTestFile(t: Test) {
         price: 2.7,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 2000 * i),
-        finger: Buffer.from('FNORD'),
+        finger: FNORD_BYTES,
         inter: {months: 42, days: 23, milliseconds: 777},
         stock: [{quantity: [50, 33], warehouse: 'X'}],
         colour: ['orange']
@@ -246,7 +247,7 @@ async function readTestFile(t: Test) {
         price: 4.2,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 8000 * i),
-        finger: Buffer.from('FNORD'),
+        finger: FNORD_BYTES,
         inter: {months: 42, days: 23, milliseconds: 777},
         stock: [
           {quantity: [42], warehouse: 'f'},
@@ -261,7 +262,7 @@ async function readTestFile(t: Test) {
         price: 3.2,
         day: new Date('2017-11-26'),
         date: new Date(TEST_VTIME + 6000 * i),
-        finger: Buffer.from('FNORD'),
+        finger: FNORD_BYTES,
         inter: {months: 42, days: 23, milliseconds: 777},
         colour: ['yellow'],
         meta_json: {shape: 'curved'}

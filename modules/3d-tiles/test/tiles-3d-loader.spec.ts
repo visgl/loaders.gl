@@ -6,10 +6,11 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'test/utils/vitest-tape';
-import {parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
+import {coreApi, parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {DracoLoader} from '@loaders.gl/draco';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
 
@@ -29,22 +30,8 @@ const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/FullQuadtree/tileset.json';
 const IMPLICIT_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/tileset.json';
-
-function checkRegionBoundingBox(t, tile) {
-  if (tile.children.length) {
-    return tile.children.forEach(childTile => checkRegionBoundingBox(t, childTile));
-  }
-
-  return t.ok(tile.boundingVolume.box) && t.equal(tile.boundingVolume.box.length, 12);
-}
-
-function checkRegionBoundingVolumes(t, tile) {
-  if (tile.children.length) {
-    return tile.children.forEach(childTile => checkRegionBoundingVolumes(t, childTile));
-  }
-
-  return t.ok(tile.boundingVolume.region) && t.equal(tile.boundingVolume.region.length, 6);
-}
+const IMPLICIT_QUADTREE_SUBTREE_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/subtrees/0/0/0.subtree';
 
 /** Encodes a minimal valid tileset with optional top-level or root overrides. */
 function encodeTilesetJson(overrides: {[key: string]: any} = {}): ArrayBuffer {
@@ -87,6 +74,69 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.equals(tileset.root.lodMetricValue, 0);
   t.equals(tileset.root.type, 'scenegraph');
 
+  t.end();
+});
+
+test('Tiles3DLoader#detects extensionless tileset JSON from structure', async t => {
+  const tileset = await parse(encodeTilesetJson(), Tiles3DLoader, {worker: false});
+
+  t.equal(tileset.shape, 'tileset3d');
+  t.equal(tileset.asset.version, '1.1');
+  t.equal(tileset.root.lodMetricValue, 0);
+  t.end();
+});
+
+test('Tiles3DLoader#detects JSON glTF tile content from structure', async t => {
+  const gltfJson = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+  );
+  const gltfArrayBuffer = gltfJson.buffer.slice(
+    gltfJson.byteOffset,
+    gltfJson.byteOffset + gltfJson.byteLength
+  ) as ArrayBuffer;
+  const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
+    worker: false,
+    '3d-tiles': {loadGLTF: false}
+  });
+
+  t.equal(tile.type, 'glTF', 'routes JSON glTF through the shared glTF content parser');
+  t.equal(tile.gltfArrayBuffer, gltfArrayBuffer, 'preserves JSON glTF bytes for deferred parsing');
+  t.end();
+});
+
+test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', async t => {
+  const gltfJson = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+  );
+  const gltfArrayBuffer = gltfJson.buffer.slice(
+    gltfJson.byteOffset,
+    gltfJson.byteOffset + gltfJson.byteLength
+  ) as ArrayBuffer;
+  const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
+    worker: false,
+    '3d-tiles': {loadGLTF: true}
+  });
+
+  t.equal(tile.type, 'glTF');
+  t.equal(tile.gltf?.asset.version, '2.0', 'parses the preprocessed JSON glTF object');
+  t.end();
+});
+
+test('Tiles3DLoader#reports explicit content-mode mismatches', async t => {
+  await t.rejects(
+    parse(encodeTilesetJson(), Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: false}
+    }),
+    /Expected 3D tile render content; detected external tileset JSON/
+  );
+  await t.rejects(
+    parse(new TextEncoder().encode(JSON.stringify({asset: {version: '2.0'}})), Tiles3DLoader, {
+      worker: false,
+      '3d-tiles': {isTileset: true}
+    }),
+    /Expected 3D Tiles tileset JSON; detected gltf/
+  );
   t.end();
 });
 
@@ -194,8 +244,8 @@ test('Tiles3DLoader#rejects unknown binary tile types', async t => {
       worker: false,
       '3d-tiles': {isTileset: false}
     }),
-    /3DTileLoader: unknown type nope/,
-    'reports the unrecognized tile magic'
+    /Invalid 3D Tiles content: expected supported binary magic or JSON object/,
+    'reports an unsupported resource-boundary payload'
   );
   t.end();
 });
@@ -235,6 +285,41 @@ test('Tiles3DLoader#validates required extensions before implicit subtree fetchi
     'rejects before normalization starts'
   );
   t.equals(fetchCallCount, 0, 'does not request an implicit subtree');
+  t.end();
+});
+
+test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching', async t => {
+  let fetchCallCount = 0;
+  const tileset = await parse(
+    encodeTilesetJson({
+      extensionsRequired: ['3DTILES_implicit_tiling'],
+      root: {
+        geometricError: 8,
+        refine: 'REPLACE',
+        boundingVolume: {region: [0, 0, 1, 1, 0, 10]},
+        content: {uri: 'content/{level}/{x}/{y}.b3dm'},
+        implicitTiling: {
+          subdivisionScheme: 'QUADTREE',
+          subtreeLevels: 1,
+          availableLevels: 1,
+          subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+        }
+      }
+    }),
+    Tiles3DLoader,
+    {
+      worker: false,
+      '3d-tiles': {isTileset: true},
+      fetch: async () => {
+        fetchCallCount++;
+        throw new Error('initial tileset parsing must not fetch subtree availability');
+      }
+    }
+  );
+
+  t.equal(fetchCallCount, 0);
+  t.equal(tileset.root.children.length, 0);
+  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 0);
   t.end();
 });
 
@@ -317,8 +402,7 @@ test('Tiles3DLoader#Tile GLTF content extension', async t => {
   t.ok(glbTileContent.gltf);
 });
 
-// eslint-disable-next-line max-statements
-test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async t => {
+test('Tiles3DLoader#normalizes an implicit octree without subtree requests', async t => {
   const IMPLICIT_TILING_EXPECTED = {
     subdivisionScheme: 'OCTREE',
     subtreeLevels: 3,
@@ -329,70 +413,22 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   const response = await fetchFile(IMPLICIT_OCTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
 
-  // root
   t.ok(tileset);
   t.ok(tileset.root);
   t.deepEqual(tileset.root.implicitTiling, IMPLICIT_TILING_EXPECTED);
-  t.equal(tileset.root.implicitTiling.subdivisionScheme, 'OCTREE');
-  t.equal(tileset.root.implicitTiling.subtreeLevels, 3);
-  t.equal(tileset.root.implicitTiling.availableLevels, 6);
-
   t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}/{z}.glb');
   t.equal(tileset.root.lodMetricValue, 32);
   t.equal(tileset.root.type, 'empty');
   t.equal(tileset.root.refine, 1);
-  t.equal(tileset.root.children.length, 5);
-
-  // first children tree
-  t.equal(tileset.root.children[0].type, 'scenegraph');
-  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0/0.glb');
-  t.equal(tileset.root.children[0].children.length, 0);
-
-  // second children tree
-  t.equal(tileset.root.children[1].content.uri, '');
-  t.equal(tileset.root.children[1].children[0].content.uri, 'content/2/2/0/0.glb');
-  t.equal(tileset.root.children[1].children[1].content.uri, 'content/2/3/1/1.glb');
-
-  // third children tree
-  t.equal(tileset.root.children[2].content.uri, '');
-  t.equal(tileset.root.children[2].children[0].content.uri, '');
-  t.equal(tileset.root.children[2].children[0].children[0].content.uri, 'content/3/0/4/0.glb');
-  t.equal(tileset.root.children[2].children[0].children[1].content.uri, 'content/3/1/5/1.glb');
-
-  // fourth children tree
-  t.equal(tileset.root.children[3].content.uri, '');
-  t.equal(tileset.root.children[3].children[0].content.uri, '');
-  t.equal(tileset.root.children[3].children[0].children[0].content.uri, '');
-  t.equal(
-    tileset.root.children[3].children[0].children[0].children[0].content.uri,
-    'content/4/8/8/0.glb'
-  );
-  t.equal(
-    tileset.root.children[3].children[0].children[0].children[1].content.uri,
-    'content/4/9/9/1.glb'
-  );
-
-  // fifth children tree
-  t.equal(tileset.root.children[4].content.uri, '');
-  t.equal(tileset.root.children[4].children[0].content.uri, '');
-  t.equal(tileset.root.children[4].children[0].children[0].content.uri, '');
-  t.equal(tileset.root.children[4].children[0].children[0].children[0].content.uri, '');
-  t.equal(
-    tileset.root.children[4].children[0].children[0].children[0].children[0].content.uri,
-    'content/5/16/16/16.glb'
-  );
-  t.equal(
-    tileset.root.children[4].children[0].children[0].children[0].children[1].content.uri,
-    'content/5/17/17/17.glb'
-  );
-
-  checkRegionBoundingBox(t, tileset.root);
+  t.equal(tileset.root.children.length, 0, 'does not eagerly materialize subtree headers');
+  t.equal(tileset.root.implicitSubtree.coordinates.level, 0);
+  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 5);
+  t.ok(tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0/0.subtree'));
 
   t.end();
 });
 
-// eslint-disable-next-line max-statements
-test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', async t => {
+test('Tiles3DLoader#normalizes a legacy implicit quadtree as a lazy root', async t => {
   const ROOT_EXTENSION_EXPECTED = {
     '3DTILES_implicit_tiling': {
       subdivisionScheme: 'QUADTREE',
@@ -405,52 +441,23 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', a
   const response = await fetchFile(IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
 
-  // root
   t.ok(tileset);
   t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
   t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
   t.ok(tileset.root);
-  t.equal(tileset.root.content.uri, 'content/0/0/0.b3dm');
+  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}.b3dm');
   t.equal(tileset.root.lodMetricValue, 5000);
-  t.equal(tileset.root.type, 'scenegraph');
+  t.equal(tileset.root.type, 'empty');
   t.equal(tileset.root.refine, 1);
-  t.equal(tileset.root.children.length, 4);
+  t.equal(tileset.root.children.length, 0);
   t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
-
-  // first children tree
-  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0.b3dm');
-  t.equal(tileset.root.children[0].children[0].content.uri, 'content/2/0/0.b3dm');
-  t.equal(tileset.root.children[0].children[1].content.uri, 'content/2/1/0.b3dm');
-  t.equal(tileset.root.children[0].children[2].content.uri, 'content/2/0/1.b3dm');
-  t.equal(tileset.root.children[0].children[3].content.uri, 'content/2/1/1.b3dm');
-
-  // second children tree
-  t.equal(tileset.root.children[1].content.uri, 'content/1/1/0.b3dm');
-  t.equal(tileset.root.children[1].children[0].content.uri, 'content/2/2/0.b3dm');
-  t.equal(tileset.root.children[1].children[1].content.uri, 'content/2/3/0.b3dm');
-  t.equal(tileset.root.children[1].children[2].content.uri, 'content/2/2/1.b3dm');
-  t.equal(tileset.root.children[1].children[3].content.uri, 'content/2/3/1.b3dm');
-
-  // third children tree
-  t.equal(tileset.root.children[2].content.uri, 'content/1/0/1.b3dm');
-  t.equal(tileset.root.children[2].children[0].content.uri, 'content/2/0/2.b3dm');
-  t.equal(tileset.root.children[2].children[1].content.uri, 'content/2/1/2.b3dm');
-  t.equal(tileset.root.children[2].children[2].content.uri, 'content/2/0/3.b3dm');
-  t.equal(tileset.root.children[2].children[3].content.uri, 'content/2/1/3.b3dm');
-
-  // fourth children tree
-  t.equal(tileset.root.children[3].content.uri, 'content/1/1/1.b3dm');
-  t.equal(tileset.root.children[3].children[0].content.uri, 'content/2/2/2.b3dm');
-  t.equal(tileset.root.children[3].children[1].content.uri, 'content/2/3/2.b3dm');
-  t.equal(tileset.root.children[3].children[2].content.uri, 'content/2/2/3.b3dm');
-  t.equal(tileset.root.children[3].children[3].content.uri, 'content/2/3/3.b3dm');
-
-  checkRegionBoundingVolumes(t, tileset.root);
+  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 2);
+  t.ok(tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0.subtree'));
 
   t.end();
 });
 
-test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async t => {
+test('Tiles3DLoader#preserves ADD refinement on a lazy implicit root', async t => {
   const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
 
@@ -463,28 +470,51 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', asyn
     }
   };
 
-  // root
   t.ok(tileset);
   t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
   t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
   t.ok(tileset.root);
-  t.equal(tileset.root.content.uri, 'content/0/0/0.b3dm');
+  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}.b3dm');
   t.equal(tileset.root.lodMetricValue, 5000);
-  t.equal(tileset.root.type, 'scenegraph');
+  t.equal(tileset.root.type, 'empty');
   t.equal(tileset.root.refine, 2);
-  t.equal(tileset.root.children.length, 2);
+  t.equal(tileset.root.children.length, 0);
   t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
+  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 1);
 
-  // children
-  t.equal(tileset.root.children[0].content.uri, 'content/1/1/0.b3dm');
-  t.equal(tileset.root.children[0].lodMetricValue, 2500);
-  t.equal(tileset.root.children[0].children.length, 0);
+  t.end();
+});
 
-  t.equal(tileset.root.children[1].content.uri, 'content/1/0/1.b3dm');
-  t.equal(tileset.root.children[1].lodMetricValue, 2500);
-  t.equal(tileset.root.children[1].children.length, 0);
+test('Tiles3DLoader#parses source-managed implicit subtree resources', async t => {
+  const response = await fetchFile(IMPLICIT_QUADTREE_SUBTREE_URL);
+  const subtree = await parse(response, BundledTiles3DLoader, {
+    worker: false,
+    '3d-tiles': {isSubtree: true}
+  } as any);
 
-  checkRegionBoundingVolumes(t, tileset.root);
+  t.ok(subtree.tileAvailability.explicitBitstream);
+  t.ok(subtree.contentAvailability.explicitBitstream);
+  t.equal(subtree.childSubtreeAvailability.constant, 0);
+  t.end();
+});
 
+test('Tiles3DSource#loads an actual implicit subtree after initialization', async t => {
+  const tilesetJson = await load(IMPLICIT_QUADTREE_TILESET_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
+  await tileset.tilesetInitializationPromise;
+
+  const root = tileset.root!;
+  t.equal(root.children.length, 0, 'starts with the lazy implicit root only');
+  await root.loadChildren({} as any);
+
+  t.equal(root.childrenState, 'ready');
+  t.ok(root.contentUrl.endsWith('/content/0/0/0.b3dm'));
+  t.equal(root.children.length, 3, 'installs every available sparse tile header');
+  t.equal(
+    root.children.filter(child => child.hasRenderContent).length,
+    2,
+    'preserves the two content-bearing children'
+  );
+  t.ok(root.children.every(child => child.depth === 1));
   t.end();
 });

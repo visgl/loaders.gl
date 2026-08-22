@@ -91,26 +91,31 @@ export function getBitWidth(val: number): number {
   return Math.ceil(Math.log2(val + 1));
 }
 
-// Supports MQTT path wildcards
-// + all immediate children
-// # all descendents
+/**
+ * Finds the selected field path that contains a Parquet leaf path.
+ * A selected parent includes all descendant leaves. MQTT-style `+` and `#` path wildcards are
+ * retained for internal callers (`+` matches one segment and `#` matches all remaining segments).
+ */
 export function fieldIndexOf(arr: string[][], elem: string[]): number {
-  for (let j = 0; j < arr.length; j++) {
-    if (arr[j].length > elem.length) {
-      continue; // eslint-disable-line no-continue
-    }
-    let m = true;
-    for (let i = 0; i < elem.length; i++) {
-      if (arr[j][i] === elem[i] || arr[j][i] === '+' || arr[j][i] === '#') {
-        continue; // eslint-disable-line no-continue
+  for (let fieldIndex = 0; fieldIndex < arr.length; fieldIndex++) {
+    const selectedPath = arr[fieldIndex];
+    let matches = true;
+    for (let pathIndex = 0; pathIndex < selectedPath.length; pathIndex++) {
+      const selectedSegment = selectedPath[pathIndex];
+      if (selectedSegment === '#') {
+        return fieldIndex;
       }
-      if (i >= arr[j].length && arr[j][arr[j].length - 1] === '#') {
-        continue; // eslint-disable-line no-continue
+      if (
+        pathIndex >= elem.length ||
+        (selectedSegment !== '+' && selectedSegment !== elem[pathIndex])
+      ) {
+        matches = false;
+        break;
       }
-      m = false;
-      break;
     }
-    if (m) return j;
+    if (matches) {
+      return fieldIndex;
+    }
   }
   return -1;
 }

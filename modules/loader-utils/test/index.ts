@@ -14,6 +14,7 @@ import './lib/iterators/make-transform-iterator.spec';
 import './lib/option-utils/merge-loader-options.spec';
 
 import './lib/path-utils/file-aliases.spec';
+import './lib/path-utils/cached-uri-resolver.spec';
 
 import './lib/request-utils/request-scheduler.spec';
 import './lib/request-utils/range-request-scheduler.node.spec';

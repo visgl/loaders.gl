@@ -61,6 +61,11 @@ test('GeoArrowLayer renders GeoJsonLayer binary data for point data', async t =>
 
   t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
   t.equal(
+    (sublayer as GeoJsonLayer).props.getLineWidth,
+    1,
+    'preserves the GeoJsonLayer default for omitted accessors'
+  );
+  t.equal(
     (sublayer as GeoJsonLayer).props.data.points.positions.value.length,
     4,
     'passes point binary feature data'

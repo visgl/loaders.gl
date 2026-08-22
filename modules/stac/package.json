@@ -1,0 +1,48 @@
+{
+  "name": "@loaders.gl/stac",
+  "version": "5.0.0-alpha.2",
+  "description": "Framework-independent source for SpatioTemporal Asset Catalogs",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "STAC",
+    "SpatioTemporal Asset Catalog",
+    "catalog",
+    "geospatial",
+    "cloud native"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./stac-source": {
+      "types": "./dist/stac-source.d.ts",
+      "import": "./dist/stac-source.js",
+      "require": "./dist/stac-source.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}

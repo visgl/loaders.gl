@@ -5,8 +5,8 @@
 import test from 'test/utils/vitest-tape';
 import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
 import {FlatGeobufSourceLoader, FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
-import {convertBinaryFeatureCollectionToGeojson, convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {getTableRowAsObject} from '@loaders.gl/schema-utils';
+import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/gis';
+import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
 
 const FLATGEOBUF_COUNTRIES_DATA_URL = resolvePath('@loaders.gl/flatgeobuf/test/data/countries.fgb');
 const REMOTE_FGB_URL = 'https://example.com/countries.fgb';
@@ -93,12 +93,13 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
   t.equal(arrow.shape, 'arrow-table', 'returns Arrow tables');
   const geometryField = arrow.schema.fields[arrow.schema.fields.length - 1];
   t.equal(geometryField?.name, 'geometry', 'Arrow schema appends geometry');
-  t.equal(geometryField?.type, 'binary', 'Arrow geometry is WKB');
-  t.ok(arrow.schema.metadata?.geo, 'Arrow schema includes geo metadata');
-  const arrowGeojson = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrow.schema, data: getRowsFromArrowTable(arrow)},
-    arrow.schema
+  t.equal(
+    geometryField?.metadata?.['ARROW:extension:name'],
+    'geoarrow.multipolygon',
+    'Arrow geometry uses native GeoArrow encoding'
   );
+  t.ok(arrow.schema.metadata?.geo, 'Arrow schema includes geo metadata');
+  const arrowGeojson = convertGeoArrowToTable(arrow.data, 'geojson-table');
   t.deepEqual(
     getFeatureKeys(arrowGeojson.features),
     getFeatureKeys(geojson.features),
@@ -121,10 +122,7 @@ test('FlatGeobufSourceLoader#getFeatures reprojects Arrow and GeoJSON consistent
     format: 'arrow',
     crs: 'EPSG:3857'
   });
-  const arrowGeojson = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrow.schema, data: getRowsFromArrowTable(arrow)},
-    arrow.schema
-  );
+  const arrowGeojson = convertGeoArrowToTable(arrow.data, 'geojson-table');
 
   t.deepEqual(
     getFeatureKeys(arrowGeojson.features),
@@ -241,14 +239,6 @@ async function createRangeFetch(options: {delayMs?: number} = {}) {
       }
     });
   };
-}
-
-function getRowsFromArrowTable(table): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(getTableRowAsObject(table, rowIndex, {}));
-  }
-  return rows;
 }
 
 function normalizeFeatures(features: any[]) {

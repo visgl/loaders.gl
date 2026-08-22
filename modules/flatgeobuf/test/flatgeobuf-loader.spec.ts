@@ -8,9 +8,7 @@ import test from 'test/utils/vitest-tape';
 import {validateLoader} from 'test/common/conformance';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {setLoaderOptions, load, loadInBatches} from '@loaders.gl/core';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {getGeoMetadata} from '@loaders.gl/geoarrow';
-import {getTableRowAsObject} from '@loaders.gl/schema-utils';
+import {convertGeoArrowToTable, getGeoMetadata} from '@loaders.gl/geoarrow';
 
 const FLATGEOBUF_COUNTRIES_DATA_URL = '@loaders.gl/flatgeobuf/test/data/countries.fgb';
 const FGB_METADATA = {
@@ -71,7 +69,10 @@ test('FlatGeobufLoader#load', async t => {
   });
   t.equal(geojsonTable.features.length, 179);
   t.equal(geojsonTable.schema.fields.length, 2);
-  t.deepEqual(geojsonTable.schema, FGB_METADATA);
+  t.deepEqual(
+    geojsonTable.schema.fields.map(field => field.name),
+    ['id', 'name']
+  );
   t.end();
 });
 
@@ -88,26 +89,27 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async t => {
   t.equal(arrowTable.data.numRows, geojsonTable.features.length, 'preserves row count');
   t.equal(arrowTable.schema.fields.length, 3, 'adds a geometry field');
   t.equal(arrowTable.schema.fields[2].name, 'geometry', 'geometry field appended');
-  t.equal(arrowTable.schema.fields[2].type, 'binary', 'geometry field is binary');
+  t.equal(arrowTable.schema.fields[2].type.type, 'list', 'geometry field is a nested Arrow list');
   t.equal(
     arrowTable.schema.fields[2].metadata?.['ARROW:extension:name'],
-    'geoarrow.wkb',
-    'geometry field includes GeoArrow WKB field metadata'
+    'geoarrow.multipolygon',
+    'geometry field includes native GeoArrow metadata'
   );
 
   const geoMetadata = getGeoMetadata(arrowTable.schema.metadata);
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
-  t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
+  t.equal(
+    geoMetadata?.columns.geometry.encoding,
+    'multipolygon',
+    'geo metadata uses native encoding'
+  );
   t.deepEqual(
     geoMetadata?.columns.geometry.geometry_types,
     ['MultiPolygon'],
     'geo metadata captures FlatGeobuf geometry type'
   );
 
-  const roundTripped = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
-    arrowTable.schema
-  );
+  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
   t.deepEqual(
     normalizeFeatures(roundTripped.features),
     normalizeFeatures(geojsonTable.features),
@@ -127,10 +129,7 @@ test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async t 
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
 
-  const roundTripped = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
-    arrowTable.schema
-  );
+  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
 
   t.deepEqual(
     normalizeFeatures(roundTripped.features),
@@ -162,21 +161,18 @@ test('FlatGeobufLoader#loadInBatches arrow-table yields stable schema', async t 
     flatgeobuf: {shape: 'arrow-table'}
   });
 
-  const rows: Record<string, unknown>[] = [];
+  let arrowTable = null;
   let schema = null;
 
   for await (const batch of iterator) {
     schema ||= batch.schema;
     t.deepEqual(batch.schema, schema, 'batch schema remains stable');
-    rows.push(...getRowsFromArrowTable(batch));
+    arrowTable = batch;
   }
 
   t.ok(schema, 'Arrow batches expose schema');
 
-  const roundTripped = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema, data: rows},
-    schema
-  );
+  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false}
   });
@@ -188,14 +184,6 @@ test('FlatGeobufLoader#loadInBatches arrow-table yields stable schema', async t 
   );
   t.end();
 });
-
-function getRowsFromArrowTable(table): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(getTableRowAsObject(table, rowIndex, {}));
-  }
-  return rows;
-}
 
 function normalizeFeatures(features: any[]) {
   return features.map(feature => ({

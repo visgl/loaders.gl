@@ -1,5 +1,23 @@
 # Upgrade Guide
 
+## Upgrading to v4.5
+
+v4.5 is additive. Existing loaders and defaults continue to work unchanged.
+
+**@loaders.gl/splats**
+
+- Install the new experimental package with `npm install @loaders.gl/splats` and load SPLAT, KSPLAT, SPZ, or RAD data through its exported loaders.
+- SPZ and compressed RAD data require an application-provided `zstd-codec` module; pass it through `options.modules`.
+
+**@loaders.gl/parquet**
+
+- `ParquetLoader` and the deprecated Parquet JSON aliases retain their existing behavior.
+- To opt into the TypeScript parser, import `ParquetJSLoader` from `@loaders.gl/parquet` or `@loaders.gl/parquet/parquet-js-loader`.
+
+**@loaders.gl/gltf**
+
+- No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
+
 ## Upgrading to v5.0
 
 These deprecations.removals are being considered for v5
@@ -130,6 +148,7 @@ This unifies top-level loading behavior:
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
 - `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
 - `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or `ParquetJSLoader` for the TypeScript parquetjs implementation.
+- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 **@loaders.gl/images**
 

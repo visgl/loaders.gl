@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
 import {decodeDataUri} from '../../src/fetch/decode-data-uri';
 const toString = arrayBuffer => new TextDecoder().decode(arrayBuffer);

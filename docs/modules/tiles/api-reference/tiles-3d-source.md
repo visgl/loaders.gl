@@ -42,7 +42,9 @@ Parameters:
 - propagates root query parameters
 - appends `tilesetVersion` as the `v` query parameter
 - tracks `session` query parameters found in child content URLs
-- eagerly builds the runtime hierarchy from the root tileset JSON
+- builds explicit runtime headers from root JSON while retaining implicit subtrees as lazy references
+- requests an implicit subtree only after visibility, request-volume, and SSE eligibility
+- deduplicates final subtree URLs and retains a bounded parsed-subtree LRU
 - expands nested external tilesets after tile content loads
 - exposes `gltfUpAxis`, properties, extras, credits, and extension metadata
 - tracks observed content formats such as Draco, Meshopt, and KTX2
@@ -61,6 +63,18 @@ Builds the runtime tile subtree for a 3D Tiles payload.
 
 Loads tile content and returns a nested tileset payload when the tile points at an external tileset JSON.
 
+### `loadTileChildren(tile, frameState)`
+
+Loads and installs one lazy implicit subtree. Traversal calls this hook only after the tile is visible, inside its viewer request volume, and above the current SSE threshold. Child subtrees remain lazy.
+
+### `getImplicitTilingStats()`
+
+Returns request, parsed-cache, pending, and materialized-header counters for implicit traversal. See [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees#runtime-diagnostics).
+
 ### `getTileUrl(tilePath)`
 
 Resolves the final request URL for tile content, including propagated query parameters.
+
+## Implicit Subtree Cache
+
+Set `loadOptions['3d-tiles'].maximumCachedSubtrees` to the maximum number of settled parsed subtree resources retained by this source. The default is `32`; `0` keeps only active requests long enough to deduplicate them. This metadata cache is independent of `Tileset3D.cacheBytes`.

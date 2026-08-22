@@ -17,10 +17,17 @@ import {
   ParquetCompression,
   ParquetColumnChunk,
   PrimitiveType,
-  ParquetReaderContext
+  ParquetReaderContext,
+  type ParquetLevelBuffer
 } from '../schema/declare';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
 import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
+import {CompactInt64} from '../utils/uint8-array-compact-protocol';
+import type {
+  ParquetDataPageLocation,
+  ParquetPageLocations,
+  ParquetRowRange
+} from '../../lib/parquet-page-index';
 
 /** Bounds concurrent range requests when a row group contains unusually many selected columns. */
 const MAXIMUM_CONCURRENT_COLUMN_READS = 16;
@@ -32,6 +39,10 @@ export type ParquetReaderProps = {
   preserveBinary?: boolean;
   /** Retain byte arrays as views into decoded page buffers for direct materialization. */
   retainByteArrayViews?: boolean;
+  /** Decode supported primitive columns into typed buffers instead of boxed JavaScript arrays. */
+  useTypedValueBuffers?: boolean;
+  /** Decode repetition and definition levels into compact unsigned typed arrays. */
+  useTypedLevelBuffers?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
 };
@@ -58,6 +69,8 @@ export class ParquetReader {
     defaultDictionarySize: 2147483648,
     preserveBinary: false,
     retainByteArrayViews: false,
+    useTypedValueBuffers: false,
+    useTypedLevelBuffers: false,
     signal: undefined
   };
 
@@ -245,6 +258,42 @@ export class ParquetReader {
     };
   }
 
+  /** Reads independently materializable non-repeated columns for one row range using page indexes. */
+  async readRowGroupRange(
+    schema: ParquetSchema,
+    rowGroup: RowGroup,
+    columnList: string[][],
+    rowRange: ParquetRowRange,
+    pageLocations: ParquetPageLocations,
+    signal?: AbortSignal
+  ): Promise<ParquetRowGroup> {
+    const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+      const columnKey = columnChunk.meta_data?.path_in_schema;
+      return columnList.length === 0 || fieldIndexOf(columnList, columnKey!) >= 0;
+    });
+    const columnEntries = await Promise.all(
+      selectedColumnChunks.map(async columnChunk => {
+        const columnKey = columnChunk.meta_data!.path_in_schema.join();
+        const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
+        if (!pages) {
+          throw new Error(`Parquet offset index missing for ${columnKey}`);
+        }
+        const columnData = await this.readColumnChunkRange(
+          schema,
+          columnChunk,
+          rowRange,
+          pages,
+          signal
+        );
+        return [columnKey, columnData] as const;
+      })
+    );
+    return {
+      rowCount: rowRange.end - rowRange.start,
+      columnData: Object.fromEntries(columnEntries)
+    };
+  }
+
   /**
    * Each row group contains column chunks for all the columns.
    */
@@ -296,7 +345,9 @@ export class ParquetReader {
       dictionary: [],
       // Options - TBD is this the right place for these?
       preserveBinary: this.props.preserveBinary,
-      retainByteArrayViews: this.props.retainByteArrayViews
+      retainByteArrayViews: this.props.retainByteArrayViews,
+      useTypedValueBuffers: this.props.useTypedValueBuffers,
+      useTypedLevelBuffers: this.props.useTypedLevelBuffers
     };
 
     let dictionary: any[] | undefined;
@@ -318,6 +369,71 @@ export class ParquetReader {
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
     const pagesBuf = chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
+  }
+
+  /** Reads and decodes only the contiguous data pages overlapping one non-repeated row range. */
+  async readColumnChunkRange(
+    schema: ParquetSchema,
+    columnChunk: ColumnChunk,
+    rowRange: ParquetRowRange,
+    pages: readonly ParquetDataPageLocation[],
+    signal?: AbortSignal
+  ): Promise<ParquetColumnChunk> {
+    if (columnChunk.file_path !== undefined && columnChunk.file_path !== null) {
+      throw new Error('external references are not supported');
+    }
+    const columnMetadata = columnChunk.meta_data!;
+    const field = schema.findField(columnMetadata.path_in_schema);
+    if (field.repetitionType === 'REPEATED' || field.rLevelMax !== 0) {
+      throw new Error('Selective Parquet page reads currently require non-repeated columns');
+    }
+    const type: PrimitiveType = getThriftEnum(Type, columnMetadata.type) as any;
+    if (type !== field.primitiveType) {
+      throw new Error(`chunk type not matching schema: ${type}`);
+    }
+    const compression: ParquetCompression = getThriftEnum(
+      CompressionCodec,
+      columnMetadata.codec
+    ) as any;
+    const overlappingPages = pages.filter(
+      page => page.endRowIndex > rowRange.start && page.firstRowIndex < rowRange.end
+    );
+    if (!overlappingPages.length) {
+      throw new Error('Parquet page plan does not overlap the requested row range');
+    }
+    const firstPage = overlappingPages[0];
+    const lastPage = overlappingPages[overlappingPages.length - 1];
+    const context: ParquetReaderContext = {
+      type,
+      rLevelMax: field.rLevelMax,
+      dLevelMax: field.dLevelMax,
+      compression,
+      column: field,
+      numValues: new CompactInt64(lastPage.endRowIndex - firstPage.firstRowIndex),
+      dictionary: [],
+      preserveBinary: this.props.preserveBinary,
+      retainByteArrayViews: this.props.retainByteArrayViews,
+      useTypedValueBuffers: this.props.useTypedValueBuffers
+    };
+
+    let dictionary: any[] | undefined;
+    const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset);
+    if (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0) {
+      const dictionaryLength = Math.max(0, pages[0].offset - dictionaryPageOffset);
+      const dictionaryBuffer = toUint8Array(
+        await this.file.read(dictionaryPageOffset, dictionaryLength, signal ?? this.props.signal)
+      );
+      dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
+    }
+
+    const dataLength = lastPage.offset + lastPage.compressedByteLength - firstPage.offset;
+    const dataBuffer = toUint8Array(
+      await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
+    );
+    const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
+    const relativeStart = rowRange.start - firstPage.firstRowIndex;
+    const relativeEnd = relativeStart + rowRange.end - rowRange.start;
+    return sliceNonRepeatedColumnChunk(decoded, field.dLevelMax, relativeStart, relativeEnd);
   }
 
   /**
@@ -367,4 +483,39 @@ async function decodeDictionaryBuffer(
   const cursor = {buffer: dictionaryBuffer, offset: 0, size: dictionaryBuffer.length};
   const decodedPage = await decodePage(cursor, context);
   return decodedPage.dictionary!;
+}
+
+/** Slices one decoded non-repeated column chunk while preserving optional-value alignment. */
+function sliceNonRepeatedColumnChunk(
+  columnChunk: ParquetColumnChunk,
+  definitionLevelMaximum: number,
+  start: number,
+  end: number
+): ParquetColumnChunk {
+  const valueStart = countDefinedValues(columnChunk.dlevels, definitionLevelMaximum, 0, start);
+  const valueEnd =
+    valueStart + countDefinedValues(columnChunk.dlevels, definitionLevelMaximum, start, end);
+  return {
+    rlevels: columnChunk.rlevels.slice(start, end),
+    dlevels: columnChunk.dlevels.slice(start, end),
+    values: columnChunk.values.slice(valueStart, valueEnd) as typeof columnChunk.values,
+    count: end - start,
+    pageHeaders: columnChunk.pageHeaders
+  };
+}
+
+/** Counts defined primitive values represented by one non-repeated level interval. */
+function countDefinedValues(
+  definitionLevels: ParquetLevelBuffer,
+  definitionLevelMaximum: number,
+  start: number,
+  end: number
+): number {
+  let count = 0;
+  for (let index = start; index < Math.min(end, definitionLevels.length); index++) {
+    if (definitionLevels[index] === definitionLevelMaximum) {
+      count++;
+    }
+  }
+  return count;
 }

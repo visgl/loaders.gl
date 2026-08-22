@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 
 var BASIS = (function() {
   var _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined;

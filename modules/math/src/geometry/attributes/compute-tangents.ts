@@ -1,3 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+//
+// Portions adapted from THREE.js (MIT)
+// Copyright (c) 2010-2026 three.js authors
+
 /*
 export function computeTangents({indices, positions, normals, uvs}) {
   var index = geometry.index;

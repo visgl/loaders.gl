@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scene",
-  "version": "5.0.0-alpha.1",
+  "version": "5.0.0-alpha.2",
   "description": "Framework-independent loaders for scene description formats",
   "license": "MIT",
   "type": "module",
@@ -46,7 +46,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.1"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

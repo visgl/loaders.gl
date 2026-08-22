@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {FrameState} from '../helpers/frame-state';
 import {I3SPendingTilesRegister} from './i3s-pending-tiles-register';
 

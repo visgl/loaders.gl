@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {isBrowser} from '@loaders.gl/loader-utils';
 import type {ImageTypeEnum} from '../../types';
 

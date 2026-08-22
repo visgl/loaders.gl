@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export const VIEWPORT_DEFAULT = {
   width: 1848,
   height: 980,

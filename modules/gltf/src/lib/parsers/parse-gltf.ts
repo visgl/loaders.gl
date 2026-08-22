@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
@@ -91,7 +95,7 @@ async function parseGLTFWithExternalAssets(
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
 
-  preprocessExtensions(gltf, options, context);
+  await preprocessExtensions(gltf, options, context);
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
@@ -148,8 +152,12 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
 
     gltf._glb = glb;
     gltf.json = glb.json;
+  } else if (data && typeof data === 'object') {
+    // Callers that already decoded JSON can retain the parsed object. This avoids a second
+    // serialization/parsing pass while preserving the normal extension and external-asset flow.
+    gltf.json = data;
   } else {
-    assert(false, 'GLTF: must be ArrayBuffer or string');
+    assert(false, 'GLTF: must be ArrayBuffer, string, or parsed JSON object');
   }
 
   // Populate buffers

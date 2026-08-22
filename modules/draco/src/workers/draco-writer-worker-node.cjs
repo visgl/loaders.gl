@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // `@loaders.gl/draco` is an ESM package, so Node.js treats `.js` files as ES modules when executed directly.
 // The prebuilt Node worker bundle is emitted as CommonJS, so we load it by compiling it as CommonJS.
 const fs = require('node:fs');

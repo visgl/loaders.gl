@@ -26,6 +26,7 @@ import type {
 } from '../../parquetjs/schema/declare';
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
+import {createNestedArrowVector} from '../arrow/create-nested-arrow-vector';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 
 /** Largest byte value copied inline to avoid TypedArray#set call overhead. */
@@ -41,6 +42,7 @@ const PARQUET_ARROW_PRIMITIVE_TYPES: Partial<Record<Extract<DataType, string>, a
   int16: new arrow.Int16(),
   int32: new arrow.Int32(),
   int64: new arrow.Int64(),
+  uint8: new arrow.Uint8(),
   uint16: new arrow.Uint16(),
   uint32: new arrow.Uint32(),
   uint64: new arrow.Uint64(),
@@ -145,7 +147,9 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
 
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
-    retainByteArrayViews: true
+    retainByteArrayViews: true,
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true
   });
   const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
   const arrowSchema = createParquetArrowSchema(schema);
@@ -246,7 +250,7 @@ function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, stri
   return arrowMetadata;
 }
 
-/** Builds Arrow from one selected row-group range and falls back for nested columns. */
+/** Builds Arrow from one selected row-group range with per-column fallbacks. */
 function convertRowGroupSliceToArrow(
   schema: Schema,
   arrowSchema: arrow.Schema,
@@ -255,19 +259,27 @@ function convertRowGroupSliceToArrow(
   start: number,
   end: number
 ): ArrowTable {
-  if (Object.keys(rowGroup.columnData).some(columnKey => columnKey.includes(','))) {
-    const table: ObjectRowTable = {
-      shape: 'object-row-table',
-      schema,
-      data: materializeRows(parquetSchema, rowGroup).slice(start, end)
-    };
-    return convertTable(table, 'arrow-table');
-  }
-
   const vectors: Record<string, arrow.Vector> = {};
+  let materializedRows: Record<string, unknown>[] | undefined;
   for (const field of arrowSchema.fields) {
     const parquetField = parquetSchema.findField(field.name);
     const columnData = rowGroup.columnData[field.name];
+    const nestedVector = createNestedArrowVector(field.type, parquetField, rowGroup, start, end);
+    if (nestedVector) {
+      vectors[field.name] = nestedVector;
+      continue;
+    }
+    const decimalVector = createDecimalArrowVector(
+      field.type,
+      parquetField,
+      columnData,
+      start,
+      end
+    );
+    if (decimalVector) {
+      vectors[field.name] = decimalVector;
+      continue;
+    }
     const primitiveVector = createRawPrimitiveArrowVector(
       field.type,
       parquetField,
@@ -285,9 +297,26 @@ function convertRowGroupSliceToArrow(
       continue;
     }
 
-    const fullColumn =
-      materializeColumn(parquetSchema, rowGroup, field.name) ||
-      new Array(rowGroup.rowCount).fill(null);
+    let fullColumn = materializeColumn(parquetSchema, rowGroup, field.name);
+    if (!fullColumn && parquetField.fields) {
+      materializedRows ||= materializeRows(parquetSchema, rowGroup);
+      const fallbackTable: ObjectRowTable = {
+        shape: 'object-row-table',
+        schema: {
+          ...schema,
+          fields: schema.fields.filter(schemaField => schemaField.name === field.name)
+        },
+        data: materializedRows.slice(start, end)
+      };
+      const fallbackArrowTable = convertTable(fallbackTable, 'arrow-table');
+      const fallbackVector = fallbackArrowTable.data.getChild(field.name);
+      if (!fallbackVector) {
+        throw new Error(`Failed to materialize nested Parquet column ${field.name}`);
+      }
+      vectors[field.name] = fallbackVector;
+      continue;
+    }
+    fullColumn ||= new Array(rowGroup.rowCount).fill(null);
     const column = sliceColumn(fullColumn, start, end);
     vectors[field.name] = arrow.vectorFromArray(
       normalizeArrowColumn(column, field.type),
@@ -300,6 +329,90 @@ function convertRowGroupSliceToArrow(
     schema,
     data: createArrowTable(arrowSchema, vectors, end - start)
   };
+}
+
+/** Creates an exact Arrow Decimal128/256 vector from unscaled Parquet decimal values. */
+function createDecimalArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk | undefined,
+  start: number,
+  end: number
+): arrow.Vector | undefined {
+  if (!(arrowType instanceof arrow.Decimal) || !columnData) {
+    return undefined;
+  }
+  const rowCount = end - start;
+  const wordCount = arrowType.bitWidth / 32;
+  const data = new Uint32Array(rowCount * wordCount);
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let nullCount = 0;
+  let valueIndex = 0;
+
+  if (nullBitmap) {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) valueIndex++;
+    }
+  } else {
+    valueIndex = start;
+  }
+
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+    const sourceRowIndex = start + rowIndex;
+    if (!nullBitmap || columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+      writeArrowDecimal(
+        data,
+        rowIndex * wordCount,
+        wordCount,
+        getUnscaledDecimal(columnData.values[valueIndex++]),
+        arrowType.bitWidth
+      );
+      if (nullBitmap) nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+    } else {
+      nullCount++;
+    }
+  }
+
+  return new arrow.Vector([
+    arrow.makeData({
+      type: arrowType,
+      data,
+      nullBitmap: nullCount ? nullBitmap : undefined,
+      nullCount
+    })
+  ]);
+}
+
+/** Converts one Parquet decimal physical value to its signed unscaled integer. */
+function getUnscaledDecimal(value: unknown): bigint {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'number') return BigInt(value);
+  const bytes = value as Uint8Array;
+  let unsignedValue = 0n;
+  for (const byte of bytes) unsignedValue = (unsignedValue << 8n) | BigInt(byte);
+  return bytes.length && bytes[0] & 0x80
+    ? unsignedValue - (1n << BigInt(bytes.length * 8))
+    : unsignedValue;
+}
+
+/** Writes one signed bigint into Arrow's little-endian two's-complement decimal buffer. */
+function writeArrowDecimal(
+  data: Uint32Array,
+  offset: number,
+  wordCount: number,
+  value: bigint,
+  bitWidth: number
+): void {
+  const minimum = -(1n << BigInt(bitWidth - 1));
+  const maximum = (1n << BigInt(bitWidth - 1)) - 1n;
+  if (value < minimum || value > maximum) {
+    throw new Error(`Parquet decimal value ${value} exceeds Arrow Decimal${bitWidth}`);
+  }
+  let unsignedValue = BigInt.asUintN(bitWidth, value);
+  for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
+    data[offset + wordIndex] = Number(unsignedValue & 0xffffffffn);
+    unsignedValue >>= 32n;
+  }
 }
 
 /** Creates an Arrow table while retaining row counts for a schema with no projected fields. */
@@ -353,7 +466,17 @@ function createParquetRecordBatch(
 }
 
 /** Typed arrays accepted by the direct primitive Arrow materialization path. */
-type RawPrimitiveArrowArray = Float32Array | Float64Array | Int32Array;
+type RawPrimitiveArrowArray =
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | BigInt64Array
+  | BigUint64Array;
 
 /** Creates a fixed-width Arrow vector directly from decoded primitive Parquet values. */
 function createRawPrimitiveArrowVector(
@@ -367,7 +490,14 @@ function createRawPrimitiveArrowVector(
     return undefined;
   }
   const rowCount = end - start;
-  const data = createRawPrimitiveArrowArray(arrowType, parquetField, rowCount);
+  const directData = createRawPrimitiveArrowArrayView(
+    arrowType,
+    parquetField,
+    columnData,
+    start,
+    end
+  );
+  const data = directData || createRawPrimitiveArrowArray(arrowType, parquetField, rowCount);
   if (!data) {
     return undefined;
   }
@@ -377,9 +507,11 @@ function createRawPrimitiveArrowVector(
   let nullCount = 0;
 
   if (!nullBitmap) {
-    valueIndex = start;
-    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-      data[rowIndex] = Number(columnData.values[valueIndex++]);
+    if (!directData) {
+      valueIndex = start;
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        setRawPrimitiveArrowValue(data, rowIndex, columnData.values[valueIndex++]);
+      }
     }
   } else {
     for (let rowIndex = 0; rowIndex < start; rowIndex++) {
@@ -390,7 +522,7 @@ function createRawPrimitiveArrowVector(
     for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
       const sourceRowIndex = start + rowIndex;
       if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
-        data[rowIndex] = Number(columnData.values[valueIndex++]);
+        setRawPrimitiveArrowValue(data, rowIndex, columnData.values[valueIndex++]);
         nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
       } else {
         nullCount++;
@@ -404,25 +536,124 @@ function createRawPrimitiveArrowVector(
   ]);
 }
 
+/** Reuses a typed decoded column as the Arrow value buffer for required primitive fields. */
+function createRawPrimitiveArrowArrayView(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  start: number,
+  end: number
+): RawPrimitiveArrowArray | undefined {
+  if (parquetField.repetitionType !== 'REQUIRED') {
+    return undefined;
+  }
+  const values = columnData.values;
+  if (
+    parquetField.primitiveType === 'FLOAT' &&
+    arrowType instanceof arrow.Float32 &&
+    values instanceof Float32Array
+  ) {
+    return values.subarray(start, end);
+  }
+  if (
+    parquetField.primitiveType === 'DOUBLE' &&
+    arrowType instanceof arrow.Float64 &&
+    values instanceof Float64Array
+  ) {
+    return values.subarray(start, end);
+  }
+  if (
+    parquetField.primitiveType === 'INT32' &&
+    (arrowType instanceof arrow.Int32 ||
+      arrowType instanceof arrow.DateDay ||
+      arrowType instanceof arrow.TimeMillisecond) &&
+    values instanceof Int32Array
+  ) {
+    return values.subarray(start, end);
+  }
+  if (
+    parquetField.primitiveType === 'INT64' &&
+    (arrowType instanceof arrow.Int64 ||
+      arrowType instanceof arrow.TimeMicrosecond ||
+      arrowType instanceof arrow.TimeNanosecond ||
+      arrowType instanceof arrow.TimestampMillisecond ||
+      arrowType instanceof arrow.TimestampMicrosecond ||
+      arrowType instanceof arrow.TimestampNanosecond) &&
+    values instanceof BigInt64Array
+  ) {
+    return values.subarray(start, end);
+  }
+  return undefined;
+}
+
 /** Allocates the Arrow typed array matching an unconverted physical Parquet primitive. */
 function createRawPrimitiveArrowArray(
   arrowType: arrow.DataType,
   parquetField: ParquetField,
   rowCount: number
 ): RawPrimitiveArrowArray | undefined {
-  if (parquetField.originalType) {
-    return undefined;
-  }
   if (parquetField.primitiveType === 'FLOAT' && arrowType instanceof arrow.Float32) {
     return new Float32Array(rowCount);
   }
   if (parquetField.primitiveType === 'DOUBLE' && arrowType instanceof arrow.Float64) {
     return new Float64Array(rowCount);
   }
-  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int32) {
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int8) {
+    return new Int8Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int16) {
+    return new Int16Array(rowCount);
+  }
+  if (
+    parquetField.primitiveType === 'INT32' &&
+    (arrowType instanceof arrow.Int32 ||
+      arrowType instanceof arrow.DateDay ||
+      arrowType instanceof arrow.TimeMillisecond)
+  ) {
     return new Int32Array(rowCount);
   }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint8) {
+    return new Uint8Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint16) {
+    return new Uint16Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint32) {
+    return new Uint32Array(rowCount);
+  }
+  if (
+    parquetField.primitiveType === 'INT64' &&
+    (arrowType instanceof arrow.Int64 ||
+      arrowType instanceof arrow.TimeMicrosecond ||
+      arrowType instanceof arrow.TimeNanosecond ||
+      arrowType instanceof arrow.TimestampMillisecond ||
+      arrowType instanceof arrow.TimestampMicrosecond ||
+      arrowType instanceof arrow.TimestampNanosecond)
+  ) {
+    return new BigInt64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT64' && arrowType instanceof arrow.Uint64) {
+    return new BigUint64Array(rowCount);
+  }
   return undefined;
+}
+
+/** Writes a decoded primitive into the exact TypedArray expected by Arrow. */
+function setRawPrimitiveArrowValue(
+  data: RawPrimitiveArrowArray,
+  index: number,
+  value: unknown
+): void {
+  if (data instanceof BigInt64Array) {
+    data[index] = typeof value === 'bigint' ? value : BigInt(value as number | string);
+  } else if (data instanceof BigUint64Array) {
+    data[index] = BigInt.asUintN(
+      64,
+      typeof value === 'bigint' ? value : BigInt(value as number | string)
+    );
+  } else {
+    data[index] = Number(value);
+  }
 }
 
 /** Creates an Arrow Utf8 or Binary vector directly from decoded Parquet byte arrays. */
@@ -524,11 +755,13 @@ function supportsRawByteArrowVector(
   parquetField: ParquetField
 ): boolean {
   if (arrowType instanceof arrow.Utf8) {
-    return parquetField.originalType === 'UTF8';
+    return parquetField.originalType === 'UTF8' || parquetField.originalType === 'ENUM';
   }
   if (arrowType instanceof arrow.Binary) {
     return (
-      !parquetField.originalType &&
+      (!parquetField.originalType ||
+        parquetField.originalType === 'GEOMETRY' ||
+        parquetField.originalType === 'GEOGRAPHY') &&
       (parquetField.primitiveType === 'BYTE_ARRAY' ||
         parquetField.primitiveType === 'FIXED_LEN_BYTE_ARRAY')
     );

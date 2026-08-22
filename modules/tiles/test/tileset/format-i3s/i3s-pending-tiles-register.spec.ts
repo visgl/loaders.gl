@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'test/utils/vitest-tape';
 import {I3SPendingTilesRegister} from '../../../src/tileset-3d/format-i3s/i3s-pending-tiles-register';
 

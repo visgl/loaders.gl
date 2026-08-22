@@ -1,5 +1,9 @@
-// This file is derived from the Cesium code base under Apache 2 license
-// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+// loaders.gl
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2011-2018 CesiumJS Contributors
+//
+// This file is derived from the Cesium code base under the Apache 2.0 License.
+// See LICENSE and https://github.com/CesiumGS/cesium/blob/main/LICENSE.md
 
 // Attribute compression and decompression functions.
 
