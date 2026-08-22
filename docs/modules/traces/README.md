@@ -10,7 +10,8 @@ The `@loaders.gl/traces` module reads and writes performance trace formats witho
 specific visualization framework. Chrome Trace Event JSON can be loaded as validated JSON or
 Apache Arrow. Stable Perfetto TrackEvent protobuf data is projected into four typed Arrow tables.
 OpenTelemetry OTLP traces in protobuf, protobuf-JSON, or JSON Lines are normalized into five
-relational Arrow tables.
+relational Arrow tables. Jaeger and Zipkin JSON use the same five-table projection for direct
+interoperability.
 
 ## Installation
 
@@ -25,6 +26,8 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 | [Chrome Trace Event JSON](/docs/modules/traces/formats/chrome-trace) | Validated JSON or one Arrow event table | Arrow event record batches | Arrow event table or record batch |
 | [Perfetto protobuf](/docs/modules/traces/formats/perfetto-trace) | `tracks`, `slices`, `processes`, and `threads` Arrow tables | Tagged `{table, data}` record batches | The same four Arrow tables |
 | [OpenTelemetry OTLP traces](/docs/modules/traces/formats/otlp-trace) | `resources`, `scopes`, `spans`, `events`, and `links` Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
+| [Jaeger JSON traces](/docs/modules/traces/formats/jaeger-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
+| [Zipkin v2 JSON traces](/docs/modules/traces/formats/zipkin-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
 
 | API | Purpose |
 | --- | --- |
@@ -34,6 +37,10 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 | [`PerfettoTraceWriter`](/docs/modules/traces/api-reference/perfetto-trace-writer) | Encode the package's Perfetto Arrow projection as protobuf. |
 | [`OtlpTraceLoader` and `OtlpTraceJsonLoader`](/docs/modules/traces/api-reference/otlp-trace-loader) | Load OTLP protobuf, protobuf-JSON, or JSON Lines as Arrow. |
 | [`OtlpTraceWriter` and `OtlpTraceJsonWriter`](/docs/modules/traces/api-reference/otlp-trace-writer) | Encode the OTLP Arrow projection as protobuf or protobuf-JSON. |
+| [`JaegerTraceLoader`](/docs/modules/traces/api-reference/jaeger-trace-loader) | Load Jaeger Query API, archive, span-array, or JSON Lines data as Arrow. |
+| [`JaegerTraceWriter`](/docs/modules/traces/api-reference/jaeger-trace-writer) | Encode the shared OTLP Arrow projection as Jaeger JSON. |
+| [`ZipkinTraceLoader`](/docs/modules/traces/api-reference/zipkin-trace-loader) | Load Zipkin v2 span arrays, trace lists, or JSON Lines as Arrow. |
+| [`ZipkinTraceWriter`](/docs/modules/traces/api-reference/zipkin-trace-writer) | Encode the shared OTLP Arrow projection as Zipkin v2 JSON. |
 | [Chrome trace streaming](/docs/modules/traces/api-reference/chrome-trace-streaming) | Adapt event, Arrow, or JSON chunk streams into live trace snapshots. |
 
 ## Quick Start
@@ -43,11 +50,15 @@ import {load, encode} from '@loaders.gl/core';
 import {
   ChromeTraceLoader,
   ChromeTraceWriter,
+  JaegerTraceLoader,
+  JaegerTraceWriter,
   OtlpTraceJsonLoader,
   OtlpTraceLoader,
   OtlpTraceWriter,
   PerfettoTraceLoader,
-  PerfettoTraceWriter
+  PerfettoTraceWriter,
+  ZipkinTraceLoader,
+  ZipkinTraceWriter
 } from '@loaders.gl/traces';
 
 const chromeEvents = await load('trace.json', ChromeTraceLoader, {
@@ -62,6 +73,12 @@ const otlpTables = await load('traces.otlp', OtlpTraceLoader);
 const otlpProtobuf = await encode(otlpTables, OtlpTraceWriter);
 
 const otlpJsonTables = await load('traces.otlp.json', OtlpTraceJsonLoader);
+
+const jaegerTables = await load('trace.jaeger.json', JaegerTraceLoader);
+const jaegerJson = await encode(jaegerTables, JaegerTraceWriter);
+
+const zipkinTables = await load('trace.zipkin.json', ZipkinTraceLoader);
+const zipkinJson = await encode(zipkinTables, ZipkinTraceWriter);
 ```
 
 ## Bundle Splitting
@@ -78,6 +95,8 @@ import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace-loade
 import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto-trace-loader';
 import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
 import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loader';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin-trace-loader';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.

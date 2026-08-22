@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/traces",
   "version": "5.0.0-alpha.1",
-  "description": "Trace format parsers for Chrome Trace, Perfetto Trace, and OpenTelemetry OTLP",
+  "description": "Trace format parsers for Chrome Trace, Perfetto Trace, OpenTelemetry OTLP, Jaeger, and Zipkin",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -17,6 +17,8 @@
     "perfetto",
     "opentelemetry",
     "otlp",
+    "jaeger",
+    "zipkin",
     "parser",
     "loader",
     "writer"
@@ -45,6 +47,14 @@
     "./otlp-trace-json-loader": {
       "types": "./dist/otlp-trace-json-loader.d.ts",
       "import": "./dist/otlp-trace-json-loader.js"
+    },
+    "./jaeger-trace-loader": {
+      "types": "./dist/jaeger-trace-loader.d.ts",
+      "import": "./dist/jaeger-trace-loader.js"
+    },
+    "./zipkin-trace-loader": {
+      "types": "./dist/zipkin-trace-loader.d.ts",
+      "import": "./dist/zipkin-trace-loader.js"
     }
   },
   "sideEffects": false,

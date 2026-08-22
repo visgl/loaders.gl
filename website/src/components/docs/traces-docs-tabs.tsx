@@ -25,7 +25,13 @@ export type TracesDocsTabId =
   | 'perfettotracewriter'
   | 'otlp-trace'
   | 'otlptraceloader'
-  | 'otlptracewriter';
+  | 'otlptracewriter'
+  | 'jaeger-trace'
+  | 'jaegertraceloader'
+  | 'jaegertracewriter'
+  | 'zipkin-trace'
+  | 'zipkintraceloader'
+  | 'zipkintracewriter';
 
 const TRACES_DOCS_TABS: TracesDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/traces/chrome-trace'},
@@ -79,6 +85,36 @@ const TRACES_DOCS_TABS: TracesDocsTab[] = [
     id: 'otlptracewriter',
     label: 'OTLP Writers',
     href: '/docs/modules/traces/api-reference/otlp-trace-writer'
+  },
+  {
+    id: 'jaeger-trace',
+    label: 'Jaeger',
+    href: '/docs/modules/traces/formats/jaeger-trace'
+  },
+  {
+    id: 'jaegertraceloader',
+    label: 'JaegerTraceLoader',
+    href: '/docs/modules/traces/api-reference/jaeger-trace-loader'
+  },
+  {
+    id: 'jaegertracewriter',
+    label: 'JaegerTraceWriter',
+    href: '/docs/modules/traces/api-reference/jaeger-trace-writer'
+  },
+  {
+    id: 'zipkin-trace',
+    label: 'Zipkin',
+    href: '/docs/modules/traces/formats/zipkin-trace'
+  },
+  {
+    id: 'zipkintraceloader',
+    label: 'ZipkinTraceLoader',
+    href: '/docs/modules/traces/api-reference/zipkin-trace-loader'
+  },
+  {
+    id: 'zipkintracewriter',
+    label: 'ZipkinTraceWriter',
+    href: '/docs/modules/traces/api-reference/zipkin-trace-writer'
   }
 ];
 

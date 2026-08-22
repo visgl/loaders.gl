@@ -28,6 +28,26 @@ export {
 } from './otlp-trace-json-writer';
 export {OtlpTraceWriter, type OtlpTraceWriterOptions} from './otlp-trace-writer';
 export {
+  JaegerTraceLoader,
+  type JaegerTraceLoaderOptions
+} from './jaeger-trace-loader-types';
+export {JaegerTraceWriter, type JaegerTraceWriterOptions} from './jaeger-trace-writer';
+export type {
+  JaegerLog,
+  JaegerProcess,
+  JaegerQueryResponse,
+  JaegerSpan,
+  JaegerSpanReference,
+  JaegerTag,
+  JaegerTrace
+} from './jaeger-trace-types';
+export {
+  ZipkinTraceLoader,
+  type ZipkinTraceLoaderOptions
+} from './zipkin-trace-loader-types';
+export {ZipkinTraceWriter, type ZipkinTraceWriterOptions} from './zipkin-trace-writer';
+export type {ZipkinAnnotation, ZipkinEndpoint, ZipkinSpan} from './zipkin-trace-types';
+export {
   PerfettoTraceLoader,
   type PerfettoTraceLoaderOptions
 } from './perfetto-trace-loader-types';
