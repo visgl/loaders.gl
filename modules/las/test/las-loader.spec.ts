@@ -110,6 +110,22 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
       getArrowColumnValues(uncompressed, columnName)
     );
   }
+
+  const header = parseLASHeader(lasArrayBuffer);
+  const pointDataView = new DataView(lasArrayBuffer);
+  const expectedScanDirectionFlags: number[] = [];
+  const expectedEdgeOfFlightLines: number[] = [];
+  for (let pointIndex = 0; pointIndex < header.pointsCount; pointIndex++) {
+    const returnFlags = pointDataView.getUint8(
+      header.pointsOffset + pointIndex * header.pointsStructSize + 14
+    );
+    expectedScanDirectionFlags.push((returnFlags >> 6) & 1);
+    expectedEdgeOfFlightLines.push((returnFlags >> 7) & 1);
+  }
+  expect(getArrowColumnValues(uncompressed, 'scanDirectionFlag')).toEqual(
+    expectedScanDirectionFlags
+  );
+  expect(getArrowColumnValues(uncompressed, 'edgeOfFlightLine')).toEqual(expectedEdgeOfFlightLines);
 });
 
 test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () => {

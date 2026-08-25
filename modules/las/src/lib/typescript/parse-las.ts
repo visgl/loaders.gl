@@ -1378,10 +1378,12 @@ function populateLASAttributesFromDataView(
       scannerChannels[targetPointIndex] = pointsFormatId <= 5 ? 0 : (scanFlags >> 4) & 0x03;
     }
     if (scanDirectionFlags) {
-      scanDirectionFlags[targetPointIndex] = (scanFlags >> 6) & 1;
+      scanDirectionFlags[targetPointIndex] =
+        pointsFormatId <= 5 ? (returnFlags >> 6) & 1 : (scanFlags >> 6) & 1;
     }
     if (edgeOfFlightLines) {
-      edgeOfFlightLines[targetPointIndex] = (scanFlags >> 7) & 1;
+      edgeOfFlightLines[targetPointIndex] =
+        pointsFormatId <= 5 ? (returnFlags >> 7) & 1 : (scanFlags >> 7) & 1;
     }
     if (waveforms) {
       const waveformOffset = getWaveformOffset(pointsFormatId);
