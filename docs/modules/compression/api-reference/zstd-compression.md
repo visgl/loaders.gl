@@ -1,12 +1,16 @@
 # ZstdCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://img.shields.io/badge/Deprecated-v5.0-orange.svg?style=flat-square" alt="Deprecated in v5.0" />
 </p>
 
-Compresses / decompresses Zstandard encoded data.
+`ZstdCompression` is the combined Zstandard compatibility codec. Async decoding tries a built-in
+stream first and falls back to compact `fzstd`. Encoding and synchronous compatibility operations
+use an injected `zstd-codec` module.
 
-See the [compression benchmarks](/docs/modules/compression/benchmarks) for built-in and fallback decompression comparisons.
+For new code, use `ZstdFzstdDecompressor` for compact decoding or select a direction-specific
+`compress-utils` adapter. See the [implementation tables](/docs/modules/compression) and
+[live benchmarks](/docs/modules/compression/benchmarks).
 
 Inject `zstd-codec` through `options.modules` for compression and decompression through this
 codec-backed class. Async-only callers can probe future native Zstandard support through the
@@ -15,11 +19,12 @@ lightweight `@loaders.gl/compression/native-decompression` entrypoint without im
 
 ## Interface
 
-Implements the [`Compression](./compression) API.
+Implements the deprecated combined [`Compression`](./compression) API.
 
 ## Methods
 
 ### `constructor(options?: object)`
 
-`options` is optional at construction time. Supply `{modules: {'zstd-codec': ZstdCodec}}` before
-calling compression or decompression methods.
+`options` is optional for async decompression. Supply
+`{modules: {'zstd-codec': ZstdCodec}}` for compression or synchronous compatibility methods.
+`options.zstd.useNative: false` disables built-in stream probing.

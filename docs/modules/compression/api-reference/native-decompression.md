@@ -1,13 +1,12 @@
 # Native Decompression
 
-The lightweight `@loaders.gl/compression/native-decompression` entrypoint exposes async
-decompression through the runtime's `DecompressionStream` API without importing fallback codecs.
-It supports `gzip`, `deflate`, `deflate-raw`, `brotli`, and forward-compatible `zstd`
-constructor probing.
-<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
+</p>
 
-The helpers return `null` only when `DecompressionStream` or the requested format is unavailable.
-After a native stream is created, decompression errors are propagated to the caller.
+The lightweight `@loaders.gl/compression/native-decompression` entrypoint exposes the runtime's
+`DecompressionStream` API without importing a fallback codec. Use it when the smallest initial
+bundle matters and dynamically import a selected fallback if it returns `null`.
 
 ```typescript
 import {
@@ -15,14 +14,22 @@ import {
 } from '@loaders.gl/compression/native-decompression';
 
 async function decompressGzip(compressedData: ArrayBuffer): Promise<ArrayBuffer> {
-  const output = await decompressWithNativeDecompressionStream(compressedData, 'gzip');
-  if (output) {
-    return output;
+  const builtInOutput = await decompressWithNativeDecompressionStream(compressedData, 'gzip');
+  if (builtInOutput) {
+    return builtInOutput;
   }
-  const {GZipCompression} = await import('@loaders.gl/compression/gzip-compression');
-  return new GZipCompression().decompress(compressedData);
+
+  const {GZipFflateDecompressor} = await import(
+    '@loaders.gl/compression/gzip-fflate-decompressor'
+  );
+  return new GZipFflateDecompressor().decompress(compressedData);
 }
 ```
+
+The helpers accept `gzip`, `deflate`, `deflate-raw`, `brotli`, and `zstd`. Actual support is
+determined by the current runtime. A helper returns `null` when `DecompressionStream` or the
+requested format is unavailable. Once a stream has been created, decoding errors are reported to
+the caller.
 
 ## Functions
 
@@ -33,6 +40,7 @@ does not support the requested format.
 
 ### `decompressBatchesWithNativeDecompressionStream(inputBatches, format)`
 
-Creates an incremental native decompression stream for iterable or async iterable `ArrayBuffer`
-batches. It returns an async iterable of exact `ArrayBuffer` chunks, or `null` when the runtime
-does not support the requested format.
+Creates an incremental built-in decompression stream for iterable or async iterable input. Returns
+an async iterable of exactly sized `ArrayBuffer` chunks, or `null` when the format is unavailable.
+
+See [built-in compression](./native-compression) for the corresponding encode helpers.

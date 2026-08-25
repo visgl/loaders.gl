@@ -319,6 +319,8 @@
           "modules/compression/README",
           "modules/compression/benchmarks",
           "modules/compression/api-reference/compression",
+          "modules/compression/api-reference/native-compression",
+          "modules/compression/api-reference/native-decompression",
           "modules/compression/api-reference/bzip2-compression",
           "modules/compression/api-reference/brotli-compression",
           "modules/compression/api-reference/deflate-compression",

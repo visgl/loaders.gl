@@ -1,19 +1,13 @@
 # LZOCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://img.shields.io/badge/Removed-v4.4-red.svg?style=flat-square" alt="Removed in v4.4" />
 </p>
 
-:::danger
-The LZOCompression was removed in loaders.gl v4.4 due to maintenance and licensing concerns with the underlying lzo-wasm library.
+:::caution Historical API
+`LZOCompression` was removed in loaders.gl v4.4 because of maintenance and licensing concerns
+with the underlying `lzo-wasm` library.
 :::
 
-Compresses / decompresses LZO encoded data.
-
-## Interface
-
-Implements the [`Compression](./compression) API.
-
-## Methods
-
-### `constructor(options?: object)`
+This page is retained so older links explain the removal. LZO is deprecated in the Parquet format
+and is not part of the v5 codec overhaul.

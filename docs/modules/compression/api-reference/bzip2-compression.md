@@ -1,22 +1,35 @@
 # BZip2Compression
 
-Decompresses bzip2 data through an optional, lazy `compress-utils` decoder.
+<p class="badges">
+  <img src="https://img.shields.io/badge/Deprecated-v5.0-orange.svg?style=flat-square" alt="Deprecated in v5.0" />
+</p>
 
-Install `compress-utils` only when bzip2 support is needed. See the
-[compression benchmarks](/docs/modules/compression/benchmarks) for fallback
-comparisons and focused bundle footprint.
+`BZip2Compression` is the combined bzip2 compatibility codec. It dynamically imports the
+requested `compress-utils` direction, so encoding code is not initialized by a decode-only call.
+
+New code should import `BZip2CompressUtilsCompressor` or
+`BZip2CompressUtilsDecompressor` from the direction-specific subpath listed in the
+[implementation tables](/docs/modules/compression).
 
 ## Interface
 
-Implements the [`Compression`](./compression) API.
+Implements the deprecated combined [`Compression`](./compression) API.
 
 ## Methods
 
 ### `constructor(options?: object)`
 
-Creates a bzip2 decompressor. Import `BZip2CompressUtilsCompression` from
-`@loaders.gl/compression/bzip2-compress-utils` when compression or incremental operation is needed.
+Creates a bzip2 compatibility codec. Install the optional `compress-utils` peer dependency before
+calling it.
 
 ### `decompress(data: ArrayBuffer): Promise<ArrayBuffer>`
 
 Asynchronously decompresses bzip2 data.
+
+### `compress(data: ArrayBuffer): Promise<ArrayBuffer>`
+
+Asynchronously compresses bzip2 data.
+
+The direction-specific adapters also expose incremental operation. See the
+[live benchmarks](/docs/modules/compression/benchmarks) for focused bundle size and decoding
+throughput.

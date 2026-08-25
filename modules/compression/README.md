@@ -1,36 +1,34 @@
 # @loaders.gl/compression
 
-This module contains compression/decompression "transforms" for loaders.gl, a collection of framework-independent 3D and geospatial loaders (parsers).
+Lossless compression and decompression for loaders.gl, with a bundle-conscious choice of built-in,
+compact JavaScript, and optional codec implementations.
 
-For documentation please visit the [website](https://loaders.gl).
+## Design
 
-The asynchronous compression APIs prefer runtime-native `CompressionStream` and
-`DecompressionStream` implementations. Compact JavaScript fallbacks are used
-when native support is unavailable; larger codecs such as Brotli, LZ4, and
-Zstandard can be injected or loaded lazily. Synchronous methods are available
-for codecs with synchronous fallbacks, but native and WASM-backed codecs should
-be used through the asynchronous APIs.
+- Async codecs prefer the runtime's `CompressionStream` and `DecompressionStream` support.
+- Direction-specific subpaths let decode-only applications exclude encoders, and vice versa.
+- Compact `fflate`, `fzstd`, Snappy, LZ4 block, and Brotli fallbacks cover common read paths.
+- Larger or specialized implementations are selected through explicit, independently importable
+  subpaths.
+- Combined classes ending in `Compression` remain available as deprecated v5 compatibility
+  facades and implement both the `Compressor` and `Decompressor` interfaces.
 
-For Brotli in runtimes without native support, load the optional
-`@loaders.gl/compression/brotli-decode` entrypoint and inject its decoder. This
-keeps the fallback out of applications that use native Brotli support.
+## Example
 
-The package root exports lightweight format metadata such as `gzipCompression`
-and `zstdCompression`. Call `preload()` to select built-in support or lazily
-load a concrete implementation. Concrete classes are available from their
-explicit subpaths, for example `@loaders.gl/compression/gzip-compression`.
+```typescript
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-fflate-decompressor';
 
-From v5, applications select independent compressor and decompressor classes
-through exact library subpaths such as
-`@loaders.gl/compression/gzip-fflate-compressor`,
-`@loaders.gl/compression/gzip-fflate-decompressor`, and
-`@loaders.gl/compression/zstd-compress-utils-decompressor`. This makes both the
-library and codec direction explicit in the bundle.
+const decompressor = new GZipFflateDecompressor();
+const data = await decompressor.decompress(compressedData);
+```
 
-`compress-utils` is an optional peer dependency. Its Brotli, bzip2, DEFLATE,
-GZIP, LZ4, Snappy, XZ, and Zstandard bindings are loaded from direction-specific
-algorithm subpaths and support asynchronous one-shot and incremental operation.
-The former combined classes ending in `Compression` remain as deprecated
-compatibility facades. They implement both the `Compressor` and `Decompressor`
-contracts, while new direction-specific classes expose only the operation they
-support.
+For the smallest initial browser bundle, probe a built-in codec and dynamically import a fallback:
+
+```typescript
+import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
+
+const builtInOutput = await decompressWithNativeDecompressionStream(compressedData, 'gzip');
+```
+
+See the [compression module documentation](https://loaders.gl/docs/modules/compression) for the
+implementation guide, API reference, migration notes, and live browser benchmarks.

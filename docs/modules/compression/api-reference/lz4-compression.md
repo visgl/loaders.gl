@@ -1,17 +1,24 @@
 # LZ4Compression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://img.shields.io/badge/Deprecated-v5.0-orange.svg?style=flat-square" alt="Deprecated in v5.0" />
 </p>
 
-Compresses / decompresses LZ4 encoded data.
+`LZ4Compression` is the combined LZ4 compatibility codec. It decodes raw LZ4 blocks and legacy
+Hadoop-framed blocks with the compact loaders.gl implementation. LZ4 frame encoding and decoding
+use the optional `lz4js` module.
 
-See the [compression benchmarks](/docs/modules/compression/benchmarks) for fallback decompression comparisons.
+For new LZ4 frame code, select the `compress-utils` adapter for the required direction. See the
+[implementation tables](/docs/modules/compression) and
+[live benchmarks](/docs/modules/compression/benchmarks).
 
 ## Interface
 
-Implements the [`Compression](./compression) API.
+Implements the deprecated combined [`Compression`](./compression) API.
 
 ## Methods
 
 ### `constructor(options?: object)`
+
+`options.modules.lz4js` may inject the frame codec. Raw block decoding also requires the expected
+uncompressed size as the second argument to `decompress()` or `decompressSync()`.

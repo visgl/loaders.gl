@@ -1,19 +1,25 @@
 # DeflateCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://img.shields.io/badge/Deprecated-v5.0-orange.svg?style=flat-square" alt="Deprecated in v5.0" />
 </p>
 
-Compresses / decompresses DEFLATE encoded data.
+`DeflateCompression` is the combined DEFLATE compatibility codec. Async methods prefer built-in
+streams; the compact `fflate` implementation provides the synchronous and fallback paths.
 
-See the [compression benchmarks](/docs/modules/compression/benchmarks) for built-in and fallback decompression comparisons.
+New code should select a direction-specific `fflate`, Pako, or `compress-utils` adapter from the
+[implementation tables](/docs/modules/compression). Compare them in the
+[live benchmarks](/docs/modules/compression/benchmarks).
 
 ## Interface
 
-Implements the [`Compression](./compression) API.
+Implements the deprecated combined [`Compression`](./compression) API.
 
 ## Methods
 
 ### `constructor(options?: object)`
 
-- `options` are passed through to the underlying `zlib` or `pako` libraries.
+- `options.raw` selects raw DEFLATE without the zlib wrapper.
+- `options.deflate.level` selects a compression level.
+- `options.deflate.useNative` disables or enables built-in stream probing.
+- `options.deflate.useZlib` selects Node's built-in `zlib` implementation.
