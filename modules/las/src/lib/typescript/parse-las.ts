@@ -109,6 +109,9 @@ type PointDataBatchState = {
   classifications: Uint8Array | null;
   gpsTimes: Float64Array | null;
   nir: Uint16Array | null;
+  scanAngles: Int16Array | null;
+  userData: Uint8Array | null;
+  pointSourceIds: Uint16Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -230,7 +233,10 @@ function parseCompleteLAZFileToArrowTable(
     state.intensities,
     state.classifications,
     state.gpsTimes,
-    state.nir
+    state.nir,
+    state.scanAngles,
+    state.userData,
+    state.pointSourceIds
   );
 }
 
@@ -1057,6 +1063,9 @@ function parseLASArrowTableBatch(
     selection.nir && getNirOffset(lasHeader.pointsFormatId) >= 0
       ? new Uint16Array(batchSize)
       : null;
+  const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
+  const userData = selection.userData ? new Uint8Array(batchSize) : null;
+  const pointSourceIds = selection.pointSourceId ? new Uint16Array(batchSize) : null;
 
   populateLASAttributesFromDataView(makeDataView(arrayBuffer), lasHeader, options, {
     positions,
@@ -1065,6 +1074,9 @@ function parseLASArrowTableBatch(
     classifications,
     gpsTimes,
     nir,
+    scanAngles,
+    userData,
+    pointSourceIds,
     pointOffset: 0,
     sourcePointIndex: 0,
     pointCount: batchSize
@@ -1077,7 +1089,10 @@ function parseLASArrowTableBatch(
     intensities,
     classifications,
     gpsTimes,
-    nir
+    nir,
+    scanAngles,
+    userData,
+    pointSourceIds
   );
 }
 
@@ -1088,7 +1103,10 @@ function makeLASArrowTableFromAttributes(
   intensities: Uint16Array | null,
   classifications: Uint8Array | null,
   gpsTimes: Float64Array | null,
-  nir: Uint16Array | null
+  nir: Uint16Array | null,
+  scanAngles: Int16Array | null,
+  userData: Uint8Array | null,
+  pointSourceIds: Uint16Array | null
 ): LASArrowTable {
   const attributes: MeshAttributes = {
     POSITION: {value: positions, size: 3}
@@ -1107,6 +1125,15 @@ function makeLASArrowTableFromAttributes(
   }
   if (nir) {
     attributes.NIR = {value: nir, size: 1};
+  }
+  if (scanAngles) {
+    attributes.scanAngle = {value: scanAngles, size: 1};
+  }
+  if (userData) {
+    attributes.userData = {value: userData, size: 1};
+  }
+  if (pointSourceIds) {
+    attributes.pointSourceId = {value: pointSourceIds, size: 1};
   }
 
   const schema = getLASSchema(lasHeader, attributes);
@@ -1142,6 +1169,9 @@ function populateLASAttributesFromDataView(
     classifications: Uint8Array | null;
     gpsTimes: Float64Array | null;
     nir: Uint16Array | null;
+    scanAngles: Int16Array | null;
+    userData: Uint8Array | null;
+    pointSourceIds: Uint16Array | null;
     pointOffset: number;
     sourcePointIndex: number;
     pointCount: number;
@@ -1168,6 +1198,9 @@ function populateLASAttributesFromDataView(
   const classifications = target.classifications;
   const gpsTimes = target.gpsTimes;
   const nir = target.nir;
+  const scanAngles = target.scanAngles;
+  const userData = target.userData;
+  const pointSourceIds = target.pointSourceIds;
   const gpsTimeOffset = gpsTimes ? getGpsTimeOffset(pointsFormatId) : -1;
   const nirOffset = nir ? getNirOffset(pointsFormatId) : -1;
 
@@ -1192,6 +1225,21 @@ function populateLASAttributesFromDataView(
     }
     if (nir && nirOffset >= 0) {
       nir[targetPointIndex] = dataView.getUint16(pointOffset + nirOffset, true);
+    }
+    if (scanAngles) {
+      scanAngles[targetPointIndex] =
+        pointsFormatId <= 5
+          ? dataView.getInt8(pointOffset + 16)
+          : dataView.getInt16(pointOffset + 18, true);
+    }
+    if (userData) {
+      userData[targetPointIndex] = dataView.getUint8(pointOffset + 17);
+    }
+    if (pointSourceIds) {
+      pointSourceIds[targetPointIndex] = dataView.getUint16(
+        pointOffset + (pointsFormatId <= 5 ? 18 : 20),
+        true
+      );
     }
 
     if (colorOffset >= 0 && target.colors) {
@@ -1790,6 +1838,9 @@ function createPointDataBatchState(
       : null;
   const nir =
     selection.nir && getNirOffset(header.pointsFormatId) >= 0 ? new Uint16Array(batchSize) : null;
+  const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
+  const userData = selection.userData ? new Uint8Array(batchSize) : null;
+  const pointSourceIds = selection.pointSourceId ? new Uint16Array(batchSize) : null;
   return {
     batchCapacity: batchSize,
     positions,
@@ -1799,12 +1850,18 @@ function createPointDataBatchState(
     classifications,
     gpsTimes,
     nir,
+    scanAngles,
+    userData,
+    pointSourceIds,
     target: {
       positions,
       intensities,
       classifications,
       gpsTimes,
       nir,
+      scanAngles,
+      userData,
+      pointSourceIds,
       colors,
       rawColors,
       pointOffset: 0,
@@ -1994,6 +2051,21 @@ function flushPointDataBatch(
       : state.gpsTimes.subarray(0, batchPointCount)
     : null;
   const nir = state.nir ? (fullBatch ? state.nir : state.nir.subarray(0, batchPointCount)) : null;
+  const scanAngles = state.scanAngles
+    ? fullBatch
+      ? state.scanAngles
+      : state.scanAngles.subarray(0, batchPointCount)
+    : null;
+  const userData = state.userData
+    ? fullBatch
+      ? state.userData
+      : state.userData.subarray(0, batchPointCount)
+    : null;
+  const pointSourceIds = state.pointSourceIds
+    ? fullBatch
+      ? state.pointSourceIds
+      : state.pointSourceIds.subarray(0, batchPointCount)
+    : null;
   const table = makeLASArrowTableFromAttributes(
     batchHeader,
     positions,
@@ -2001,7 +2073,10 @@ function flushPointDataBatch(
     intensities,
     classifications,
     gpsTimes,
-    nir
+    nir,
+    scanAngles,
+    userData,
+    pointSourceIds
   );
 
   state.batchPointCount = 0;
@@ -2016,6 +2091,11 @@ function flushPointDataBatch(
       : null;
     state.gpsTimes = state.gpsTimes ? new Float64Array(state.gpsTimes.length) : null;
     state.nir = state.nir ? new Uint16Array(state.nir.length) : null;
+    state.scanAngles = state.scanAngles ? new Int16Array(state.scanAngles.length) : null;
+    state.userData = state.userData ? new Uint8Array(state.userData.length) : null;
+    state.pointSourceIds = state.pointSourceIds
+      ? new Uint16Array(state.pointSourceIds.length)
+      : null;
     state.target.positions = state.positions;
     state.target.colors = state.colors;
     state.target.rawColors = state.rawColors;
@@ -2023,6 +2103,9 @@ function flushPointDataBatch(
     state.target.classifications = state.classifications;
     state.target.gpsTimes = state.gpsTimes;
     state.target.nir = state.nir;
+    state.target.scanAngles = state.scanAngles;
+    state.target.userData = state.userData;
+    state.target.pointSourceIds = state.pointSourceIds;
   }
   return table;
 }
@@ -2034,10 +2117,22 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   color: boolean;
   gpsTime: boolean;
   nir: boolean;
+  scanAngle: boolean;
+  userData: boolean;
+  pointSourceId: boolean;
 } {
   const columns = options.las?.columns;
   if (!columns) {
-    return {intensity: true, classification: true, color: true, gpsTime: true, nir: true};
+    return {
+      intensity: true,
+      classification: true,
+      color: true,
+      gpsTime: true,
+      nir: true,
+      scanAngle: true,
+      userData: true,
+      pointSourceId: true
+    };
   }
 
   let intensity = false;
@@ -2045,6 +2140,9 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   let color = false;
   let gpsTime = false;
   let nir = false;
+  let scanAngle = false;
+  let userData = false;
+  let pointSourceId = false;
   for (const column of columns as readonly string[]) {
     switch (column) {
       case 'POSITION':
@@ -2064,11 +2162,20 @@ function getLASColumnSelection(options: LASLoaderOptions): {
       case 'NIR':
         nir = true;
         break;
+      case 'scanAngle':
+        scanAngle = true;
+        break;
+      case 'userData':
+        userData = true;
+        break;
+      case 'pointSourceId':
+        pointSourceId = true;
+        break;
       default:
         throw new Error(`LASLoader: unsupported column ${column}`);
     }
   }
-  return {intensity, classification, color, gpsTime, nir};
+  return {intensity, classification, color, gpsTime, nir, scanAngle, userData, pointSourceId};
 }
 
 function convertRawColorsToUint8(

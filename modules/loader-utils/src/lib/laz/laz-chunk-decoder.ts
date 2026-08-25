@@ -35,6 +35,12 @@ export type LAZPointDataTarget = {
   gpsTimes?: Float64Array | null;
   /** Optional near-infrared channel values from RGBNIR14. */
   nir?: Uint16Array | null;
+  /** Optional scan angle values. */
+  scanAngles?: Int16Array | null;
+  /** Optional user data values. */
+  userData?: Uint8Array | null;
+  /** Optional point source identifiers. */
+  pointSourceIds?: Uint16Array | null;
   /** Optional final RGBA colors as 8-bit channel values. */
   colors?: Uint8Array | null;
   /** Optional raw RGB colors as 16-bit LAS channel values. */
@@ -70,6 +76,9 @@ type LAZPointDataSelection = {
   gpsTime: boolean;
   /** Decode NIR values when the point format has an RGBNIR item. */
   nir: boolean;
+  scanAngle: boolean;
+  userData: boolean;
+  pointSourceId: boolean;
 };
 
 /** Error raised when a feedable decoder needs more compressed bytes. */
@@ -281,7 +290,10 @@ function getLAZPointDataSelection(target: LAZPointDataTarget): LAZPointDataSelec
     classification: Boolean(target.classifications),
     color: Boolean(target.colors || target.rawColors),
     gpsTime: Boolean(target.gpsTimes),
-    nir: Boolean(target.nir)
+    nir: Boolean(target.nir),
+    scanAngle: Boolean(target.scanAngles),
+    userData: Boolean(target.userData),
+    pointSourceId: Boolean(target.pointSourceIds)
   };
 }
 
@@ -292,7 +304,10 @@ function getLAZPointDataSelectionKey(selection: LAZPointDataSelection): number {
     (selection.classification ? 2 : 0) |
     (selection.color ? 4 : 0) |
     (selection.gpsTime ? 8 : 0) |
-    (selection.nir ? 16 : 0)
+    (selection.nir ? 16 : 0) |
+    (selection.scanAngle ? 32 : 0) |
+    (selection.userData ? 64 : 0) |
+    (selection.pointSourceId ? 128 : 0)
   );
 }
 
@@ -1347,11 +1362,17 @@ class Point14Context {
       this.intensity = createIntegerDecompressor(16, 4);
       this.lastIntensity = new Array<number>(8).fill(0);
     }
+    if (mode === Point14DecompressionMode.Full || selection?.userData) {
+      this.userDataModel = createModels(64, 256);
+    }
+    if (mode === Point14DecompressionMode.Full || selection?.scanAngle) {
+      this.scanAngle = createIntegerDecompressor(16, 2);
+    }
+    if (mode === Point14DecompressionMode.Full || selection?.pointSourceId) {
+      this.pointSourceId = createIntegerDecompressor(16, 1);
+    }
     if (mode === Point14DecompressionMode.Full) {
       this.flagModel = createModels(64, 64);
-      this.userDataModel = createModels(64, 256);
-      this.scanAngle = createIntegerDecompressor(16, 2);
-      this.pointSourceId = createIntegerDecompressor(16, 1);
     }
     if (mode === Point14DecompressionMode.Full || selection?.gpsTime) {
       this.gpsTimeMultiModel = new ArithmeticModel(515);
@@ -1403,9 +1424,12 @@ class Point14Decompressor {
     this.flags = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
     this.intensity =
       this.decompressOptionalFields || selection?.intensity ? new ArithmeticDecoder() : null;
-    this.scanAngle = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
-    this.userData = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
-    this.pointSourceId = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.scanAngle =
+      this.decompressOptionalFields || selection?.scanAngle ? new ArithmeticDecoder() : null;
+    this.userData =
+      this.decompressOptionalFields || selection?.userData ? new ArithmeticDecoder() : null;
+    this.pointSourceId =
+      this.decompressOptionalFields || selection?.pointSourceId ? new ArithmeticDecoder() : null;
     this.gpsTime =
       this.decompressOptionalFields || selection?.gpsTime ? new ArithmeticDecoder() : null;
   }
@@ -2792,6 +2816,7 @@ class PointFormat6Decompressor implements PointDecompressor {
         targetPointIndex++
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
     }
   }
 
@@ -2919,6 +2944,7 @@ class PointFormat7Decompressor implements PointDecompressor {
         targetPointIndex
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
       if (colors && this.rgb) {
         const colorOffset = targetPointIndex * 4;
         colors[colorOffset] = this.rgb.decodedRed & 0xff;
@@ -3072,6 +3098,7 @@ class PointFormat8Decompressor implements PointDecompressor {
         targetPointIndex
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
       if (colors && this.rgb) {
         const colorOffset = targetPointIndex * 4;
         colors[colorOffset] = this.rgb.decodedRed & 0xff;
@@ -3212,6 +3239,7 @@ class PointFormat9Decompressor implements PointDecompressor {
         targetPointIndex++
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
     }
   }
 
@@ -3370,6 +3398,7 @@ class PointFormat10Decompressor implements PointDecompressor {
         targetPointIndex
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
       if (colors && this.rgb) {
         const colorOffset = targetPointIndex * 4;
         colors[colorOffset] = this.rgb.decodedRed & 0xff;
@@ -3676,6 +3705,22 @@ function writeGpsTimeToPointDataTarget(
 ): void {
   if (target.gpsTimes) {
     target.gpsTimes[targetPointIndex] = point.gpsTime;
+  }
+}
+
+function writePoint14MetadataToPointDataTarget(
+  point: Point14,
+  target: LAZPointDataTarget,
+  targetPointIndex: number
+): void {
+  if (target.scanAngles) {
+    target.scanAngles[targetPointIndex] = point.scanAngle;
+  }
+  if (target.userData) {
+    target.userData[targetPointIndex] = point.userData;
+  }
+  if (target.pointSourceIds) {
+    target.pointSourceIds[targetPointIndex] = point.pointSourceId;
   }
 }
 
