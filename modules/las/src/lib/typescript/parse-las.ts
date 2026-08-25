@@ -963,6 +963,9 @@ function parseLASWaveformDescriptor(
   recordId: number,
   data: Uint8Array
 ): LASWaveformPacketDescriptor {
+  if (data.byteLength < 28) {
+    throw new Error(`LASLoader: waveform descriptor VLR ${recordId} is truncated`);
+  }
   const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
   return {
     recordId,

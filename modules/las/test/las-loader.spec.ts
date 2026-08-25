@@ -194,6 +194,12 @@ test('LASLoader#columns validates unsupported names', async () => {
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
   const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');
+  const geoKeyDirectory = new Uint8Array(8);
+  new DataView(geoKeyDirectory.buffer).setUint16(0, 1, true);
+  new DataView(geoKeyDirectory.buffer).setUint16(2, 1, true);
+  const geoDoubleParameters = new ArrayBuffer(8);
+  new DataView(geoDoubleParameters).setFloat64(0, 4326, true);
+  const geoAsciiParameters = new TextEncoder().encode('WGS 84|');
   const waveform = new ArrayBuffer(28);
   const waveformView = new DataView(waveform);
   waveformView.setUint8(2, 16);
@@ -206,6 +212,9 @@ test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const records = [
     makeLASVLR('LASF_Projection', 2111, wktMathTransform),
     makeLASVLR('LASF_Projection', 2112, wktCoordinateSystem),
+    makeLASVLR('LASF_Projection', 34735, geoKeyDirectory),
+    makeLASVLR('LASF_Projection', 34736, new Uint8Array(geoDoubleParameters)),
+    makeLASVLR('LASF_Projection', 34737, geoAsciiParameters),
     makeLASVLR('LASF_Spec', 100, new Uint8Array(waveform))
   ];
   const headerSize = 375;
@@ -233,6 +242,9 @@ test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   expect(metadata.projectId).toBe('12345678-1234-5678-9abcdef012345678');
   expect(metadata.wkt).toBe('GEOGCS["coordinate-system"]');
   expect(metadata.wktMathTransform).toBe('PARAM_MT["transform"]');
+  expect(metadata.geotiff?.keys).toEqual(new Uint16Array([1, 1, 0, 0]));
+  expect(metadata.geotiff?.doubles).toEqual(new Float64Array([4326]));
+  expect(metadata.geotiff?.ascii).toBe('WGS 84|');
   expect(metadata.waveformPacketDescriptors[0]).toMatchObject({
     bitsPerSample: 16,
     numberOfSamples: 128,
