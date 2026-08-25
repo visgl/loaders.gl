@@ -307,6 +307,32 @@ test('LASLoader#columns preserves waveform packet references for PDRF 9 and 10',
   }
 });
 
+test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const options = {
+    las: {shape: 'arrow-table' as const, columns: ['POSITION', 'EXTRA_BYTES'] as const},
+    core: {worker: false}
+  };
+  const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  expect(getArrowColumnValues(compressed, 'EXTRA_BYTES')).toEqual(
+    getArrowColumnValues(uncompressed, 'EXTRA_BYTES')
+  );
+  const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+    batchSize: 127,
+    las: options.las,
+    core: {worker: false}
+  });
+  const streamedExtraBytes: unknown[] = [];
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    streamedExtraBytes.push(...getArrowColumnValues(batch, 'EXTRA_BYTES'));
+  }
+  expect(streamedExtraBytes).toEqual(getArrowColumnValues(uncompressed, 'EXTRA_BYTES'));
+});
+
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
   const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');

@@ -53,6 +53,8 @@ export type LAZPointDataTarget = {
   edgeOfFlightLines?: Uint8Array | null;
   /** Optional 29-byte LAS waveform packet references, packed one record per point. */
   waveforms?: Uint8Array | null;
+  /** Optional raw Extra Bytes payload, packed one record per point. */
+  extraBytes?: Uint8Array | null;
   /** Optional final RGBA colors as 8-bit channel values. */
   colors?: Uint8Array | null;
   /** Optional raw RGB colors as 16-bit LAS channel values. */

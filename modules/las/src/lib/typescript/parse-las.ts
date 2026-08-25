@@ -118,6 +118,7 @@ type PointDataBatchState = {
   scanDirectionFlags: Uint8Array | null;
   edgeOfFlightLines: Uint8Array | null;
   waveforms: Uint8Array | null;
+  extraBytes: Uint8Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -248,7 +249,8 @@ function parseCompleteLAZFileToArrowTable(
     state.scannerChannels,
     state.scanDirectionFlags,
     state.edgeOfFlightLines,
-    state.waveforms
+    state.waveforms,
+    state.extraBytes
   );
 }
 
@@ -273,7 +275,8 @@ function decodeCompleteLAZChunkToPointData(
   );
   state.target.pointOffset = targetPointOffset;
   const target = state.waveforms ? {...state.target, waveforms: null} : state.target;
-  const decodedPointCount = cursor.decodeIntoPointData(target, pointCount);
+  const decodedTarget = state.extraBytes ? {...target, extraBytes: null} : target;
+  const decodedPointCount = cursor.decodeIntoPointData(decodedTarget, pointCount);
   if (decodedPointCount !== pointCount) {
     throw new Error(
       `LASLoader: decoded ${decodedPointCount} points from a ${pointCount}-point LAZ chunk`
@@ -292,6 +295,23 @@ function decodeCompleteLAZChunkToPointData(
           pointIndex * header.pointsStructSize + waveformOffset + 29
         ),
         (targetPointOffset + pointIndex) * 29
+      );
+    }
+  }
+  if (state.extraBytes) {
+    const rawPointData = decodeLAZChunk(
+      compressed,
+      createLAZChunkMetadata(header, laszip, pointCount)
+    );
+    const extraByteOffset = getLAZPointDataRecordBaseLength(header.pointsFormatId);
+    const extraByteCount = header.pointsStructSize - extraByteOffset;
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      state.extraBytes.set(
+        rawPointData.subarray(
+          pointIndex * header.pointsStructSize + extraByteOffset,
+          pointIndex * header.pointsStructSize + extraByteOffset + extraByteCount
+        ),
+        (targetPointOffset + pointIndex) * extraByteCount
       );
     }
   }
@@ -1104,6 +1124,12 @@ function parseLASArrowTableBatch(
     selection.waveform && getWaveformOffset(lasHeader.pointsFormatId) >= 0
       ? new Uint8Array(batchSize * 29)
       : null;
+  const extraByteCount = Math.max(
+    0,
+    lasHeader.pointsStructSize - getLAZPointDataRecordBaseLength(lasHeader.pointsFormatId)
+  );
+  const extraBytes =
+    selection.extraBytes && extraByteCount ? new Uint8Array(batchSize * extraByteCount) : null;
 
   populateLASAttributesFromDataView(makeDataView(arrayBuffer), lasHeader, options, {
     positions,
@@ -1121,6 +1147,7 @@ function parseLASArrowTableBatch(
     scanDirectionFlags,
     edgeOfFlightLines,
     waveforms,
+    extraBytes,
     pointOffset: 0,
     sourcePointIndex: 0,
     pointCount: batchSize
@@ -1142,7 +1169,8 @@ function parseLASArrowTableBatch(
     scannerChannels,
     scanDirectionFlags,
     edgeOfFlightLines,
-    waveforms
+    waveforms,
+    extraBytes
   );
 }
 
@@ -1162,7 +1190,8 @@ function makeLASArrowTableFromAttributes(
   scannerChannels: Uint8Array | null,
   scanDirectionFlags: Uint8Array | null,
   edgeOfFlightLines: Uint8Array | null,
-  waveforms: Uint8Array | null
+  waveforms: Uint8Array | null,
+  extraBytes: Uint8Array | null
 ): LASArrowTable {
   const attributes: MeshAttributes = {
     POSITION: {value: positions, size: 3}
@@ -1209,6 +1238,12 @@ function makeLASArrowTableFromAttributes(
   if (waveforms) {
     attributes.WAVEFORM = {value: waveforms, size: 29};
   }
+  if (extraBytes) {
+    attributes.EXTRA_BYTES = {
+      value: extraBytes,
+      size: extraBytes.length / Math.max(lasHeader.pointsCount, 1)
+    };
+  }
 
   const schema = getLASSchema(lasHeader, attributes);
   return {
@@ -1252,6 +1287,7 @@ function populateLASAttributesFromDataView(
     scanDirectionFlags: Uint8Array | null;
     edgeOfFlightLines: Uint8Array | null;
     waveforms: Uint8Array | null;
+    extraBytes: Uint8Array | null;
     pointOffset: number;
     sourcePointIndex: number;
     pointCount: number;
@@ -1287,6 +1323,7 @@ function populateLASAttributesFromDataView(
   const scanDirectionFlags = target.scanDirectionFlags;
   const edgeOfFlightLines = target.edgeOfFlightLines;
   const waveforms = target.waveforms;
+  const extraBytes = target.extraBytes;
   const gpsTimeOffset = gpsTimes ? getGpsTimeOffset(pointsFormatId) : -1;
   const nirOffset = nir ? getNirOffset(pointsFormatId) : -1;
 
@@ -1355,6 +1392,20 @@ function populateLASAttributesFromDataView(
           29
         );
         waveforms.set(waveformBytes, targetPointIndex * 29);
+      }
+    }
+    if (extraBytes) {
+      const extraByteOffset = getLAZPointDataRecordBaseLength(pointsFormatId);
+      const extraByteCount = lasHeader.pointsStructSize - extraByteOffset;
+      if (extraByteCount > 0) {
+        extraBytes.set(
+          new Uint8Array(
+            dataView.buffer,
+            dataView.byteOffset + pointOffset + extraByteOffset,
+            extraByteCount
+          ),
+          targetPointIndex * extraByteCount
+        );
       }
     }
 
@@ -1982,6 +2033,12 @@ function createPointDataBatchState(
     selection.waveform && getWaveformOffset(header.pointsFormatId) >= 0
       ? new Uint8Array(batchSize * 29)
       : null;
+  const extraByteCount = Math.max(
+    0,
+    header.pointsStructSize - getLAZPointDataRecordBaseLength(header.pointsFormatId)
+  );
+  const extraBytes =
+    selection.extraBytes && extraByteCount ? new Uint8Array(batchSize * extraByteCount) : null;
   return {
     batchCapacity: batchSize,
     positions,
@@ -2000,6 +2057,7 @@ function createPointDataBatchState(
     scanDirectionFlags,
     edgeOfFlightLines,
     waveforms,
+    extraBytes,
     target: {
       positions,
       intensities,
@@ -2015,6 +2073,7 @@ function createPointDataBatchState(
       scanDirectionFlags,
       edgeOfFlightLines,
       waveforms,
+      extraBytes,
       colors,
       rawColors,
       pointOffset: 0,
@@ -2093,7 +2152,14 @@ function* appendDecodedLAZChunkToPointDataBatches(
   const decoder = createLAZChunkDecoderCursor(compressedChunk, metadata);
   const rawPointData = state.waveforms ? decodeLAZChunk(compressedChunk, metadata) : null;
   const waveformOffset = getWaveformOffset(header.pointsFormatId);
-  const target = state.waveforms ? {...state.target, waveforms: null} : state.target;
+  const extraByteOffset = getLAZPointDataRecordBaseLength(header.pointsFormatId);
+  const extraByteCount = header.pointsStructSize - extraByteOffset;
+  const rawChunkData =
+    state.extraBytes && !rawPointData ? decodeLAZChunk(compressedChunk, metadata) : rawPointData;
+  const target =
+    state.waveforms || state.extraBytes
+      ? {...state.target, waveforms: null, extraBytes: null}
+      : state.target;
   let decodedChunkPointCount = 0;
 
   while (decoder.remainingPointCount > 0) {
@@ -2107,6 +2173,18 @@ function* appendDecodedLAZChunkToPointDataBatches(
         state.waveforms.set(
           rawPointData.subarray(sourceOffset + waveformOffset, sourceOffset + waveformOffset + 29),
           (state.batchPointCount + pointIndex) * 29
+        );
+      }
+    }
+    if (rawChunkData && state.extraBytes && extraByteCount > 0) {
+      for (let pointIndex = 0; pointIndex < pointsDecoded; pointIndex++) {
+        const sourceOffset = (decodedChunkPointCount + pointIndex) * header.pointsStructSize;
+        state.extraBytes.set(
+          rawChunkData.subarray(
+            sourceOffset + extraByteOffset,
+            sourceOffset + extraByteOffset + extraByteCount
+          ),
+          (state.batchPointCount + pointIndex) * extraByteCount
         );
       }
     }
@@ -2263,6 +2341,12 @@ function flushPointDataBatch(
       ? state.waveforms
       : state.waveforms.subarray(0, batchPointCount * 29)
     : null;
+  const extraByteCount = state.extraBytes ? state.extraBytes.length / state.batchCapacity : 0;
+  const extraBytes = state.extraBytes
+    ? fullBatch
+      ? state.extraBytes
+      : state.extraBytes.subarray(0, batchPointCount * extraByteCount)
+    : null;
   const table = makeLASArrowTableFromAttributes(
     batchHeader,
     positions,
@@ -2279,7 +2363,8 @@ function flushPointDataBatch(
     scannerChannels,
     scanDirectionFlags,
     edgeOfFlightLines,
-    waveforms
+    waveforms,
+    extraBytes
   );
 
   state.batchPointCount = 0;
@@ -2313,6 +2398,7 @@ function flushPointDataBatch(
       ? new Uint8Array(state.edgeOfFlightLines.length)
       : null;
     state.waveforms = state.waveforms ? new Uint8Array(state.waveforms.length) : null;
+    state.extraBytes = state.extraBytes ? new Uint8Array(state.extraBytes.length) : null;
     state.target.positions = state.positions;
     state.target.colors = state.colors;
     state.target.rawColors = state.rawColors;
@@ -2329,6 +2415,7 @@ function flushPointDataBatch(
     state.target.scanDirectionFlags = state.scanDirectionFlags;
     state.target.edgeOfFlightLines = state.edgeOfFlightLines;
     state.target.waveforms = state.waveforms;
+    state.target.extraBytes = state.extraBytes;
   }
   return table;
 }
@@ -2349,6 +2436,7 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   scanDirectionFlag: boolean;
   edgeOfFlightLine: boolean;
   waveform: boolean;
+  extraBytes: boolean;
 } {
   const columns = options.las?.columns;
   if (!columns) {
@@ -2366,7 +2454,8 @@ function getLASColumnSelection(options: LASLoaderOptions): {
       scannerChannel: true,
       scanDirectionFlag: true,
       edgeOfFlightLine: true,
-      waveform: true
+      waveform: true,
+      extraBytes: false
     };
   }
 
@@ -2384,6 +2473,7 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   let scanDirectionFlag = false;
   let edgeOfFlightLine = false;
   let waveform = false;
+  let extraBytes = false;
   for (const column of columns as readonly string[]) {
     switch (column) {
       case 'POSITION':
@@ -2430,6 +2520,9 @@ function getLASColumnSelection(options: LASLoaderOptions): {
       case 'WAVEFORM':
         waveform = true;
         break;
+      case 'EXTRA_BYTES':
+        extraBytes = true;
+        break;
       default:
         throw new Error(`LASLoader: unsupported column ${column}`);
     }
@@ -2448,7 +2541,8 @@ function getLASColumnSelection(options: LASLoaderOptions): {
     scannerChannel,
     scanDirectionFlag,
     edgeOfFlightLine,
-    waveform
+    waveform,
+    extraBytes
   };
 }
 

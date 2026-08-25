@@ -31,12 +31,12 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | --- | --- |
 | Uncompressed LAS 1.0-1.4 | Partial. Reads common public-header fields and PDRF 0-10 record layouts. Dedicated conformance fixtures do not yet cover every header version/PDRF combination. |
 | LAS 1.5 | Partial. Extended point counts, typed header metadata, and PDRF 9/10 files are fixture-tested; full LAS 1.5 conformance rules are not complete. |
-| Arrow columns | `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, and `WAVEFORM` where present. `WAVEFORM` is a fixed-width 29-byte LAS waveform packet reference column. `las.columns` selects optional output columns; `POSITION` is always returned. |
+| Arrow columns | `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES` where present. `WAVEFORM` is a fixed-width 29-byte LAS waveform packet reference column; `EXTRA_BYTES` is the fixed-width raw user-byte payload from each point record. `las.columns` selects optional output columns; `POSITION` is always returned. |
 | GPS time | Exposed as `GPS_TIME` for PDRF 1, 3-5, and 6-10. |
 | NIR | Exposed as `NIR` for PDRF 8 and 10. |
 | Return flags and scanner channel | Exposed as typed Arrow columns for supported point formats. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Waveform sample payload handling is not implemented. |
-| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; extra point fields are still preserved through raw records rather than Arrow columns. |
+| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through the opt-in `EXTRA_BYTES` Arrow column. Descriptor-level typed conversion remains separate. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
 | `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ can emit complete rows with bounded replay; layered PDRF 6-10 emits after each complete compressed chunk. |
 
@@ -247,8 +247,8 @@ The TypeScript implementation should be completed in stages, with parity tests a
 | 2 | Complete LAS metadata parsing. | Public header, VLRs, EVLRs, WKT, GeoTIFF CRS records, Extra Bytes VLRs, and waveform metadata are parsed and exposed consistently. |
 | 3 | Complete raw LAS point readers and writers. | PDRF 0-10 fields round-trip where loaders.gl has an attribute representation, and unsupported fields are explicitly preserved or documented. |
 | 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
-| 5 | Expose waveform metadata and payload access. | PDRF 4/5/9/10 packet references become typed output metadata, and internal EVLR or external WDP sample payloads can be loaded on demand. Raw-record decompression is implemented. |
-| 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size or variable-size chunk tables that established decoders can read. |
+| 5 | Expose waveform payload access and typed Extra Bytes. | `WAVEFORM` packet-reference rows and raw `EXTRA_BYTES` payloads are typed Arrow output; internal EVLR or external WDP sample payloads and descriptor-level Extra Bytes conversion remain follow-up work. |
+| 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size chunk tables that established decoders can read. |
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
 | 9 | Implement COPC writing. | `COPCWriter` emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |
