@@ -121,6 +121,11 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const keyPointAttribute = mesh.attributes.keyPoint;
   const withheldAttribute = mesh.attributes.withheld;
   const overlapAttribute = mesh.attributes.overlap;
+  const waveformDescriptorAttribute = mesh.attributes.wavePacketDescriptorIndex;
+  const waveformOffsetAttribute = mesh.attributes.wavePacketOffset;
+  const waveformSizeAttribute = mesh.attributes.wavePacketSize;
+  const waveformReturnPointAttribute = mesh.attributes.wavePacketReturnPoint;
+  const waveformVectorAttribute = mesh.attributes.wavePacketVector;
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
   const returnCounts = getReturnCounts(returnNumberAttribute, vertexCount);
   const scale = getScale(mesh, options);
@@ -193,6 +198,11 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
         keyPointAttribute,
         withheldAttribute,
         overlapAttribute,
+        waveformDescriptorAttribute,
+        waveformOffsetAttribute,
+        waveformSizeAttribute,
+        waveformReturnPointAttribute,
+        waveformVectorAttribute,
         extraByteFields
       }
     );
@@ -645,7 +655,12 @@ function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void 
     'keyPoint',
     'withheld',
     'overlap',
-    'nir'
+    'nir',
+    'wavePacketDescriptorIndex',
+    'wavePacketOffset',
+    'wavePacketSize',
+    'wavePacketReturnPoint',
+    'wavePacketVector'
   ];
   for (const attributeName of scalarAttributeNames) {
     const attribute = mesh.attributes[attributeName];
@@ -656,6 +671,10 @@ function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void 
   const colorAttribute = mesh.attributes.COLOR_0;
   if (colorAttribute) {
     validateOptionalAttribute('COLOR_0', colorAttribute, vertexCount, 3, false);
+  }
+  const waveformVectorAttribute = mesh.attributes.wavePacketVector;
+  if (waveformVectorAttribute) {
+    validateOptionalAttribute('wavePacketVector', waveformVectorAttribute, vertexCount, 3);
   }
 }
 
@@ -794,6 +813,11 @@ function writePointRecord(
     keyPointAttribute?: MeshAttribute;
     withheldAttribute?: MeshAttribute;
     overlapAttribute?: MeshAttribute;
+    waveformDescriptorAttribute?: MeshAttribute;
+    waveformOffsetAttribute?: MeshAttribute;
+    waveformSizeAttribute?: MeshAttribute;
+    waveformReturnPointAttribute?: MeshAttribute;
+    waveformVectorAttribute?: MeshAttribute;
     extraByteFields: readonly LASExtraByteField[];
   }
 ): void {
@@ -831,6 +855,35 @@ function writePointRecord(
         getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
         true
       );
+    }
+    if (pointDataRecordFormat === 4 || pointDataRecordFormat === 5) {
+      const waveformOffset = pointDataRecordFormat === 4 ? 28 : 34;
+      dataView.setUint8(
+        pointOffset + waveformOffset,
+        getUInt8Attribute(attributes.waveformDescriptorAttribute, vertexIndex)
+      );
+      dataView.setBigUint64(
+        pointOffset + waveformOffset + 1,
+        getBigUint64Attribute(attributes.waveformOffsetAttribute, vertexIndex),
+        true
+      );
+      dataView.setUint32(
+        pointOffset + waveformOffset + 9,
+        getUInt32Attribute(attributes.waveformSizeAttribute, vertexIndex),
+        true
+      );
+      dataView.setFloat32(
+        pointOffset + waveformOffset + 13,
+        getAttributeValue(attributes.waveformReturnPointAttribute, vertexIndex),
+        true
+      );
+      for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+        dataView.setFloat32(
+          pointOffset + waveformOffset + 17 + componentIndex * 4,
+          getComponent(attributes.waveformVectorAttribute, vertexIndex, componentIndex),
+          true
+        );
+      }
     }
   } else {
     const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 0x0f;
@@ -1034,11 +1087,11 @@ function writeString(
 
 /** Return a single attribute component with 0 as the missing component fallback. */
 function getComponent(
-  attribute: MeshAttribute,
+  attribute: MeshAttribute | undefined,
   vertexIndex: number,
   componentIndex: number
 ): number {
-  return attribute.value[vertexIndex * attribute.size + componentIndex] || 0;
+  return attribute ? attribute.value[vertexIndex * attribute.size + componentIndex] || 0 : 0;
 }
 
 /** Return a LAS UInt16 attribute value. */
@@ -1046,6 +1099,22 @@ function getUInt16Attribute(attribute: MeshAttribute | undefined, vertexIndex: n
   return attribute
     ? Math.max(0, Math.min(65535, Math.round(getComponent(attribute, vertexIndex, 0))))
     : 0;
+}
+
+/** Return a LAS unsigned 32-bit attribute value. */
+function getUInt32Attribute(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+  return attribute
+    ? Math.max(0, Math.min(0xffffffff, Math.round(getComponent(attribute, vertexIndex, 0))))
+    : 0;
+}
+
+/** Return a lossless unsigned 64-bit waveform offset attribute value. */
+function getBigUint64Attribute(attribute: MeshAttribute | undefined, vertexIndex: number): bigint {
+  if (!attribute) {
+    return 0n;
+  }
+  const value = attribute.value[vertexIndex * attribute.size];
+  return typeof value === 'bigint' ? value : BigInt(Math.max(0, Math.round(Number(value))));
 }
 
 /** Return a LAS UInt8 attribute value. */
