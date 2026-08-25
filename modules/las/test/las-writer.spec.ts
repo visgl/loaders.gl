@@ -220,13 +220,13 @@ test('LASWriter#validates compressed output options', t => {
     /LAZ output requires LAS 1.4/,
     'LAZ writer rejects legacy LAS versions'
   );
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(mesh, {
-        las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
-      }),
-    /currently supports point data record formats 0-3 and 6-8/,
-    'LAZ writer rejects unsupported waveform point formats'
+  const waveform = LASWriter.encodeSync?.(mesh, {
+    las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
+  });
+  t.equal(
+    new DataView(waveform!).getUint8(104) & 0x7f,
+    5,
+    'LAZ writer supports legacy waveform point formats'
   );
   t.throws(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),

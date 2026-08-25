@@ -235,6 +235,15 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
 
 /** Validate that the selected LAS header can represent the point record format. */
 function validatePointDataRecordVersion(version: string, pointDataRecordFormat: number): void {
+  if (
+    pointDataRecordFormat >= 4 &&
+    pointDataRecordFormat <= 5 &&
+    !['1.3', '1.4'].includes(version)
+  ) {
+    throw new Error(
+      `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.3; received ${version}`
+    );
+  }
   if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(
       `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.4; received ${version}`
@@ -458,12 +467,21 @@ function validateLAZOptions(
       `LASWriter: LAZ PDRF ${pointDataRecordFormat} output requires LAS 1.2 or newer; received ${version}`
     );
   }
+  if (
+    pointDataRecordFormat >= 4 &&
+    pointDataRecordFormat <= 5 &&
+    !['1.3', '1.4'].includes(version)
+  ) {
+    throw new Error(
+      `LASWriter: LAZ PDRF ${pointDataRecordFormat} requires LAS 1.3 or newer; received ${version}`
+    );
+  }
   if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![0, 1, 2, 3, 6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 1, 2, 3, 4, 5, 6, 7, 8].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output currently supports point data record formats 0-3 and 6-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0-8; received ${pointDataRecordFormat}`
     );
   }
   if (
@@ -794,14 +812,25 @@ function writePointRecord(
       pointOffset + 15,
       getUInt8Attribute(attributes.classificationAttribute, vertexIndex) & 0x1f
     );
-    dataView.setInt8(pointOffset + 16, 0);
+    dataView.setInt8(
+      pointOffset + 16,
+      getInt16Attribute(attributes.scanAngleAttribute, vertexIndex)
+    );
     dataView.setUint8(
       pointOffset + 17,
       getUInt8Attribute(attributes.userDataAttribute, vertexIndex)
     );
-    dataView.setUint16(pointOffset + 18, 0, true);
+    dataView.setUint16(
+      pointOffset + 18,
+      getUInt16Attribute(attributes.pointSourceIdAttribute, vertexIndex),
+      true
+    );
     if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 4) {
-      dataView.setFloat64(pointOffset + 20, 0, true);
+      dataView.setFloat64(
+        pointOffset + 20,
+        getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
+        true
+      );
     }
   } else {
     const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 0x0f;
