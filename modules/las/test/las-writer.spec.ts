@@ -7,7 +7,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {LASCOPCLoader, LASLoader, LASWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
-import {decodeLAZChunkTable} from '@loaders.gl/loader-utils';
+import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
 
 const attributes = {
@@ -228,6 +228,34 @@ test('LASWriter#preserves modern LAS point fields', t => {
   t.equal(dataView.getInt16(pointOffset + 18, true), -12, 'writes scan angle');
   t.equal(dataView.getUint16(pointOffset + 20, true), 99, 'writes point source id');
   t.equal(dataView.getFloat64(pointOffset + 22, true), 123.5, 'writes GPS time');
+
+  const lazArrayBuffer = LASWriter.encodeSync?.(modernMesh, {
+    las: {format: 'laz', pointDataRecordFormat: 7, chunkSize: 1}
+  });
+  if (!lazArrayBuffer) {
+    throw new Error('LASWriter did not return a LAZ ArrayBuffer');
+  }
+  const lazDataView = new DataView(lazArrayBuffer);
+  const lazPointDataOffset = lazDataView.getUint32(96, true);
+  const lazChunkTableOffset = readUint64(lazDataView, lazPointDataOffset);
+  const lazChunk = decodeLAZChunk(
+    lazArrayBuffer.slice(lazPointDataOffset + 8, lazChunkTableOffset),
+    {
+      pointDataRecordFormat: 7,
+      pointDataRecordLength: 36,
+      pointCount: 1,
+      point14ItemVersion: 3,
+      rgb14ItemVersion: 3,
+      byte14ItemVersion: 3
+    }
+  );
+  const lazPointView = new DataView(lazChunk.buffer);
+  t.equal(lazPointView.getUint8(14), 0x3f, 'LAZ preserves return number, count, and flags');
+  t.equal(lazPointView.getUint8(15), 0xe0, 'LAZ preserves scanner and flight-line flags');
+  t.equal(lazPointView.getUint8(17), 7, 'LAZ preserves user data');
+  t.equal(lazPointView.getInt16(18, true), -12, 'LAZ preserves scan angle');
+  t.equal(lazPointView.getUint16(20, true), 99, 'LAZ preserves point source id');
+  t.equal(lazPointView.getFloat64(22, true), 123.5, 'LAZ preserves GPS time');
   t.end();
 });
 
