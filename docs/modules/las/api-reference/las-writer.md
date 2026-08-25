@@ -50,4 +50,4 @@ LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder
 | `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
 | `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
 
-For modern PDRFs, the writer also maps optional point attributes named `gpsTime`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `synthetic`, `keyPoint`, `withheld`, and `overlap`. Missing fields are zero-filled.
+For modern PDRFs, the writer also maps optional point attributes named `gpsTime`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `synthetic`, `keyPoint`, `withheld`, and `overlap`. For PDRF 8, the optional `nir` attribute is written as a 16-bit near-infrared channel. Missing fields are zero-filled.

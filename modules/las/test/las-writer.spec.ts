@@ -259,6 +259,40 @@ test('LASWriter#preserves modern LAS point fields', t => {
   t.end();
 });
 
+test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
+  const nirAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3},
+    nir: {value: new Uint16Array([1234]), size: 1}
+  };
+  const nirMesh = {
+    attributes: nirAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(nirAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(nirMesh, {
+    las: {format: 'laz', pointDataRecordFormat: 8, chunkSize: 1}
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return a LAZ ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = readUint64(dataView, pointDataOffset);
+  const chunk = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+    pointDataRecordFormat: 8,
+    pointDataRecordLength: 38,
+    pointCount: 1,
+    point14ItemVersion: 3,
+    rgb14ItemVersion: 3,
+    byte14ItemVersion: 3
+  });
+
+  t.equal(new DataView(chunk.buffer).getUint16(36, true), 1234, 'LAZ preserves NIR');
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,

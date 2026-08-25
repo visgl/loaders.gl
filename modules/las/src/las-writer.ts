@@ -88,6 +88,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
   const classificationAttribute = mesh.attributes.classification;
+  const nirAttribute = mesh.attributes.nir;
   const gpsTimeAttribute = mesh.attributes.gpsTime;
   const scanAngleAttribute = mesh.attributes.scanAngle;
   const userDataAttribute = mesh.attributes.userData;
@@ -140,6 +141,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     writePointRecord(pointDataView, pointOffset, vertexIndex, pointDataRecordFormat, {
       intensityAttribute,
       classificationAttribute,
+      nirAttribute,
       colorAttribute,
       gpsTimeAttribute,
       scanAngleAttribute,
@@ -412,6 +414,7 @@ function writePointRecord(
   attributes: {
     intensityAttribute?: MeshAttribute;
     classificationAttribute?: MeshAttribute;
+    nirAttribute?: MeshAttribute;
     colorAttribute?: MeshAttribute;
     gpsTimeAttribute?: MeshAttribute;
     scanAngleAttribute?: MeshAttribute;
@@ -499,6 +502,13 @@ function writePointRecord(
     pointDataRecordFormat,
     attributes.colorAttribute
   );
+  if (pointDataRecordFormat === 8) {
+    dataView.setUint16(
+      pointOffset + 36,
+      getUInt16Attribute(attributes.nirAttribute, vertexIndex),
+      true
+    );
+  }
 }
 
 /** Write RGB values for point formats that include color. */
