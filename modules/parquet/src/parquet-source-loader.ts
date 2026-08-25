@@ -4,7 +4,7 @@
 
 import {hydrateArrowTable} from '@loaders.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
-import {BlobFile, DataSource, isBrowser} from '@loaders.gl/loader-utils';
+import {BlobFile, DataSource, isBrowser, validateTableQueryLimit} from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
@@ -36,8 +36,10 @@ import {
   type ParquetSourceWorkerOptions,
   type ParquetSourceWorkerResult
 } from './lib/parquet-source-worker-types';
+import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
 import {
+  PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
@@ -59,6 +61,7 @@ import type {
   ParquetTelemetryEvent
 } from './parquet-source-types';
 export {
+  PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
@@ -180,6 +183,8 @@ export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
 export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
+  /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
+  readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Immutable feature support for the current range-backed source implementation. */
   readonly capabilities: ParquetSourceCapabilities = PARQUET_SOURCE_CAPABILITIES;
   /** Shared initialization for this source instance. */
@@ -301,6 +306,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       const decodeOnWorker = canDecodeParquetSourceOnWorker(workerOptions);
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
+      let remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
+
+      if (remainingRows === 0) {
+        completed = true;
+        return;
+      }
 
       const scheduleReads = (): void => {
         while (
@@ -356,21 +367,29 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
               {arrowConversionDurationMs: deserializationDurationMs},
               {rowGroupIndex, durationMs: deserializationDurationMs}
             );
-            const batch = createParquetBatchFromArrow(
-              initialization.metadata,
-              projectedSchema,
-              rowGroupIndex,
-              workerBatch.rowGroupRowOffset,
-              arrowTable,
-              workerBatch.rowCount,
-              workerBatch.rowGroupRowIndices
+            const batch = sliceParquetBatch(
+              createParquetBatchFromArrow(
+                initialization.metadata,
+                projectedSchema,
+                rowGroupIndex,
+                workerBatch.rowGroupRowOffset,
+                arrowTable,
+                workerBatch.rowCount,
+                workerBatch.rowGroupRowIndices
+              ),
+              Math.min(workerBatch.rowCount, remainingRows)
             );
             this.recordTelemetry(
               'batch',
-              {batchesEmitted: 1, rowsEmitted: workerBatch.rowCount},
-              {rowGroupIndex, rowCount: workerBatch.rowCount}
+              {batchesEmitted: 1, rowsEmitted: batch.length},
+              {rowGroupIndex, rowCount: batch.length}
             );
             yield batch;
+            remainingRows -= batch.length;
+            if (remainingRows === 0) {
+              completed = true;
+              return;
+            }
           }
           continue;
         }
@@ -383,7 +402,11 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           outputRowOffset += outputBatchSize
         ) {
           throwIfAborted(readContext.abortController.signal);
-          const batchRowCount = Math.min(outputBatchSize, outputRowCount - outputRowOffset);
+          const batchRowCount = Math.min(
+            outputBatchSize,
+            outputRowCount - outputRowOffset,
+            remainingRows
+          );
           const batchRowIndices = rowIndices
             ? rowIndices!.slice(outputRowOffset, outputRowOffset + batchRowCount)
             : undefined;
@@ -415,6 +438,11 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             {rowGroupIndex, rowCount: batchRowCount}
           );
           yield batch;
+          remainingRows -= batch.length;
+          if (remainingRows === 0) {
+            completed = true;
+            return;
+          }
         }
       }
       completed = true;
@@ -486,11 +514,14 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     const columns = options.columns ?? this.options.parquet?.columns;
     const predicate = options.predicate ?? this.options.parquet?.predicate;
     const bbox = options.bbox ?? this.options.parquet?.bbox;
+    const limit = options.limit ?? this.options.parquet?.limit;
+    validateTableQueryLimit(limit);
     return {
       rowGroups: rowGroups && [...rowGroups],
       columns: columns && [...columns],
       rowGroupFilter: options.rowGroupFilter ?? this.options.parquet?.rowGroupFilter,
       predicate: predicate ? copyParquetPredicate(predicate) : undefined,
+      limit,
       bbox: bbox ? ([...bbox] as ParquetSourceReadOptions['bbox']) : undefined,
       geometryColumn: options.geometryColumn ?? this.options.parquet?.geometryColumn,
       batchSize: options.batchSize ?? this.options.parquet?.batchSize,

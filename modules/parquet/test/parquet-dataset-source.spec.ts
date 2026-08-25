@@ -189,6 +189,43 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('applies one post-filter limit across file and batch boundaries', async () => {
+    const source = new ParquetDatasetSource(
+      [{data: westernFile}, {data: easternFile}],
+      {core: {worker: false}, parquetDataset: {fileConcurrency: 2}}
+    );
+
+    const batches = await collectBatches(
+      source.read({
+        columns: ['value'],
+        predicate: {op: '>=', args: [{property: 'id'}, 2]},
+        batchSize: 2,
+        limit: 2
+      })
+    );
+
+    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+      'west-two',
+      'east-one'
+    ]);
+    expect(batches.map(batch => batch.length)).toEqual([1, 1]);
+    expect(source.getTelemetry().rowsEmitted).toBe(2);
+    await source.close();
+  });
+
+  test('a zero limit avoids file discovery and validates invalid limits', async () => {
+    let discoveryCount = 0;
+    const source = new ParquetDatasetSource(() => {
+      discoveryCount++;
+      return [{data: westernFile}];
+    });
+
+    await expect(collectBatches(source.read({limit: 0}))).resolves.toEqual([]);
+    expect(discoveryCount).toBe(0);
+    await expect(collectBatches(source.read({limit: -1}))).rejects.toThrow(/non-negative/);
+    await source.close();
+  });
+
   test('rejects incompatible file schemas by default', async () => {
     const source = new ParquetDatasetSource(
       [

@@ -85,6 +85,7 @@ export type {
   ParquetTelemetryEvent
 } from './parquet-source-types';
 export {
+  PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';

@@ -2,8 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {TableQueryCapabilities} from '@loaders.gl/loader-utils';
+
+/** Portable table-query capabilities of Parquet-backed scans. */
+export const PARQUET_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object.freeze({
+  projection: 'pushdown',
+  predicate: 'pushdown',
+  limit: 'pushdown',
+  streaming: true,
+  cancellation: true
+});
+
 /** Feature support advertised by a {@link ParquetSource}. */
 export type ParquetSourceCapabilities = Readonly<{
+  /** Common portable query contract supported by this source. */
+  tableQuery: TableQueryCapabilities;
   /** Schema and footer metadata are cached for the lifetime of the source. */
   supportsCachedMetadata: boolean;
   /** Reads can select explicit Parquet row groups. */
@@ -40,6 +53,7 @@ export type ParquetSourceCapabilities = Readonly<{
 
 /** Capabilities of the current range-backed TypeScript {@link ParquetSource}. */
 export const PARQUET_SOURCE_CAPABILITIES: ParquetSourceCapabilities = Object.freeze({
+  tableQuery: PARQUET_TABLE_QUERY_CAPABILITIES,
   supportsCachedMetadata: true,
   supportsRowGroupSelection: true,
   supportsColumnProjection: true,

@@ -11,6 +11,13 @@ import {
 
 test('ParquetSourceCapabilities#advertises implemented and deferred features', t => {
   const expectedCapabilities: ParquetSourceCapabilities = {
+    tableQuery: {
+      projection: 'pushdown',
+      predicate: 'pushdown',
+      limit: 'pushdown',
+      streaming: true,
+      cancellation: true
+    },
     supportsCachedMetadata: true,
     supportsRowGroupSelection: true,
     supportsColumnProjection: true,
