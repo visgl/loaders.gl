@@ -601,6 +601,27 @@ test('LASWriter#validates Extra Bytes declarations', t => {
     /point data record length .* exceeds the LAS limit/,
     'rejects an Extra Bytes record that exceeds the LAS limit'
   );
+
+  const vlrAttributes: Record<string, {value: Uint8Array | Float64Array; size: number}> = {
+    POSITION: scalarAttributes.POSITION
+  };
+  for (let index = 0; index < 342; index++) {
+    vlrAttributes[`value-${index}`] = {value: new Uint8Array([1]), size: 1};
+  }
+  const vlrMesh = {
+    attributes: vlrAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(vlrAttributes, {topology: 'point-list', mode: '0'})
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(vlrMesh, {
+        las: {extraBytes: Array.from({length: 342}, (_, index) => ({attribute: `value-${index}`}))}
+      }),
+    /Extra Bytes VLR payload .* exceeds the LAS limit/,
+    'rejects an Extra Bytes VLR that exceeds its length field'
+  );
   t.end();
 });
 

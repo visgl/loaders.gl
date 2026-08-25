@@ -136,6 +136,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
       `LASWriter: point data record length ${pointDataRecordLength} exceeds the LAS limit`
     );
   }
+  validateExtraBytesVLR(extraByteFields);
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
   const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
   if (format === 'laz') {
@@ -417,6 +418,16 @@ function encodeExtraBytesVLR(fields: readonly LASExtraByteField[]): Uint8Array {
   writeString(headerView, 22, 'Extra Bytes', 32);
   bytes.set(payload, VLR_HEADER_LENGTH);
   return bytes;
+}
+
+/** Validate that the Extra Bytes VLR payload fits its 16-bit length field. */
+function validateExtraBytesVLR(fields: readonly LASExtraByteField[]): void {
+  const payloadByteLength = fields.length * EXTRA_BYTES_DESCRIPTOR_LENGTH;
+  if (payloadByteLength > 0xffff) {
+    throw new Error(
+      `LASWriter: Extra Bytes VLR payload ${payloadByteLength} exceeds the LAS limit`
+    );
+  }
 }
 
 /** Validate the intentionally narrow LAZ container writer surface. */
