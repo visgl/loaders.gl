@@ -289,6 +289,54 @@ test('LASWriter#preserves modern LAS point fields', t => {
   t.end();
 });
 
+test('LASWriter#encodes extended return histograms', t => {
+  const extendedReturnAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    returnNumber: {value: new Uint8Array([15]), size: 1},
+    numberOfReturns: {value: new Uint8Array([15]), size: 1}
+  };
+  const extendedReturnMesh = {
+    attributes: extendedReturnAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(extendedReturnAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(extendedReturnMesh, {
+    las: {version: '1.4', pointDataRecordFormat: 7}
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return an ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  t.equal(dataView.getUint8(375 + 14), 0xff, 'encodes the fifteenth return number and count');
+  t.equal(dataView.getUint32(367, true), 1, 'writes the fifteenth extended return count');
+  t.end();
+});
+
+test('LASWriter#encodes legacy return metadata', t => {
+  const legacyReturnAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    returnNumber: {value: new Uint8Array([2]), size: 1},
+    numberOfReturns: {value: new Uint8Array([3]), size: 1}
+  };
+  const legacyReturnMesh = {
+    attributes: legacyReturnAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(legacyReturnAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(legacyReturnMesh, {
+    las: {pointDataRecordFormat: 0}
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return an ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  t.equal(dataView.getUint8(227 + 14), 0x1a, 'encodes legacy return number and count');
+  t.equal(dataView.getUint32(115, true), 1, 'writes the legacy second-return count');
+  t.end();
+});
+
 test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
   const nirAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
