@@ -287,6 +287,21 @@
         "branches": 63
       }
     },
+    "@loaders.gl/lance": {
+      "path": "modules/lance",
+      "browser": {
+        "statements": 45,
+        "lines": 45,
+        "functions": 66,
+        "branches": 40
+      },
+      "merged": {
+        "statements": 45,
+        "lines": 45,
+        "functions": 66,
+        "branches": 40
+      }
+    },
     "@loaders.gl/las": {
       "path": "modules/las",
       "browser": {
