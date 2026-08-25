@@ -142,11 +142,11 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
 
   expect(metadata.rowGroups.map(rowGroup => rowGroup.columns[0].geospatialStatistics)).toEqual([
     {
-      bbox: {xmin: -10, xmax: 20, ymin: 2, ymax: 30, zmin: -5, zmax: 8, mmin: 50, mmax: 100},
+      bbox: undefined,
       geometryTypes: [3002]
     },
     {
-      bbox: {xmin: 100, xmax: 100, ymin: -20, ymax: -20},
+      bbox: undefined,
       geometryTypes: [1]
     }
   ]);
@@ -159,8 +159,8 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
   });
 
   const batches = await collectBatches(source.read({bbox: [-11, 1, 21, 31]}));
-  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([0]);
-  expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(1);
+  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([0, 1]);
+  expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(0);
 });
 
 test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB metadata', async () => {
@@ -194,7 +194,7 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.algorithm).toBe(1);
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
-    bbox: {xmin: 1, xmax: 1, ymin: 2, ymax: 2},
+    bbox: undefined,
     geometryTypes: [1]
   });
 });

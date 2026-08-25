@@ -586,13 +586,19 @@ function createGeospatialStatistics(
   if (logicalType !== 'GEOMETRY' && logicalType !== 'GEOGRAPHY') return undefined;
   const geometryTypes = new Set<number>();
   let bbox: WKBGeometryBoundingBox | undefined;
+  // Vertex bounds are not conservative for GEOGRAPHY: non-linear edge algorithms can reach
+  // extrema between vertices. Until edge-aware geodesic bounds are available, omit the bbox while
+  // retaining the useful geometry-type statistics.
+  const canWriteBoundingBox = logicalType === 'GEOMETRY';
   for (const value of values) {
     if (!(value instanceof ArrayBuffer) && !ArrayBuffer.isView(value)) {
       throw new Error(`${logicalType} columns must contain WKB binary values`);
     }
     const statistics = getWKBGeometryStatistics(value);
     geometryTypes.add(statistics.geometryType);
-    bbox = mergeGeometryBoundingBoxes(bbox, statistics.bbox);
+    if (canWriteBoundingBox) {
+      bbox = mergeGeometryBoundingBoxes(bbox, statistics.bbox);
+    }
   }
   return new GeospatialStatistics({
     bbox: bbox ? new BoundingBox(bbox) : undefined,
