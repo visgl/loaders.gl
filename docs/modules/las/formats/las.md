@@ -49,7 +49,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Point data record formats | PDRF 0-8 are selectable. Only position, intensity, classification, and RGB input attributes are represented; other fields are zero-filled. |
 | LAZ writing | Supported for LAS 1.4 PDRF 6-8 with fixed-size or variable-size LASzip chunk tables. |
 | COPC writing | Supported by `@loaders.gl/copc` through its separate `COPCWriter` entry point. |
-| VLRs, EVLRs, CRS, Extra Bytes VLRs | The LASzip VLR is written for LAZ; broader metadata records remain incomplete. |
+| VLRs, EVLRs, CRS, Extra Bytes VLRs | LASzip and configured Extra Bytes VLRs are written; broader metadata records remain incomplete. |
 | Streaming writing | `encodeInBatches` may buffer input so final counts, bounds, offsets, and headers can be written correctly. |
 
 ### TypeScript LAZ Decoder

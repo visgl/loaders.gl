@@ -293,6 +293,54 @@ test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
   t.end();
 });
 
+test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
+  const extraAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    extraIntensity: {value: new Uint16Array([1234]), size: 1}
+  };
+  const extraMesh = {
+    attributes: extraAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(extraAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const options = {
+    las: {
+      format: 'laz' as const,
+      pointDataRecordFormat: 7 as const,
+      chunkSize: 1,
+      extraBytes: [
+        {attribute: 'extraIntensity', name: 'extra intensity', description: 'test field'}
+      ]
+    }
+  };
+  const lazArrayBuffer = LASWriter.encodeSync?.(extraMesh, options);
+  if (!lazArrayBuffer) {
+    throw new Error('LASWriter did not return a LAZ ArrayBuffer');
+  }
+  const lazDataView = new DataView(lazArrayBuffer);
+  const lazPointDataOffset = lazDataView.getUint32(96, true);
+  const lazChunkTableOffset = readUint64(lazDataView, lazPointDataOffset);
+  const lazChunk = decodeLAZChunk(
+    lazArrayBuffer.slice(lazPointDataOffset + 8, lazChunkTableOffset),
+    {
+      pointDataRecordFormat: 7,
+      pointDataRecordLength: 38,
+      pointCount: 1,
+      point14ItemVersion: 3,
+      rgb14ItemVersion: 3,
+      byte14ItemVersion: 3
+    }
+  );
+  const lazPointView = new DataView(lazChunk.buffer);
+
+  t.equal(lazDataView.getUint32(100, true), 2, 'writes Extra Bytes and LASzip VLRs');
+  t.equal(lazDataView.getUint16(375 + 20, true), 192, 'writes one Extra Bytes descriptor');
+  t.equal(lazDataView.getUint8(375 + 54 + 2), 3, 'declares the Uint16 Extra Bytes type');
+  t.equal(lazPointView.getUint16(36, true), 1234, 'LAZ preserves the Extra Bytes value');
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
