@@ -13,7 +13,8 @@ import type {
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
-  SourceLoader
+  SourceLoader,
+  LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -157,7 +158,7 @@ export async function load(
       );
     }
 
-    if (selectedLoader) {
+    if (selectedLoader && typeof url === 'string') {
       const loaderImplementation = await getLoaderImplementation(
         selectedLoader,
         resolvedOptions,
