@@ -124,6 +124,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const returnCounts = getReturnCounts(returnNumberAttribute, vertexCount);
   const scale = getScale(mesh, options);
   const offset = getOffset(mesh, options, boundingBox);
+  validateCoordinateEncoding(positionAttribute, vertexCount, scale, offset);
   const pointDataRecordFormat =
     options.las?.pointDataRecordFormat ?? getDefaultPointDataRecordFormat(options, colorAttribute);
   const basePointDataRecordLength = POINT_RECORD_LENGTHS[pointDataRecordFormat];
@@ -566,6 +567,34 @@ function validatePositionAttribute(attribute: MeshAttribute): void {
   }
   if (attribute.value.length % attribute.size !== 0) {
     throw new Error(`LASWriter: POSITION attribute length must be divisible by its size`);
+  }
+}
+
+/** Validate coordinate quantization before writing LAS signed 32-bit coordinates. */
+function validateCoordinateEncoding(
+  attribute: MeshAttribute,
+  vertexCount: number,
+  scale: [number, number, number],
+  offset: [number, number, number]
+): void {
+  for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+    if (!Number.isFinite(scale[componentIndex]) || scale[componentIndex] <= 0) {
+      throw new Error(`LASWriter: coordinate scale must be finite and positive`);
+    }
+    if (!Number.isFinite(offset[componentIndex])) {
+      throw new Error(`LASWriter: coordinate offset must be finite`);
+    }
+  }
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+      const encodedValue = Math.round(
+        (getComponent(attribute, vertexIndex, componentIndex) - offset[componentIndex]) /
+          scale[componentIndex]
+      );
+      if (encodedValue < -2147483648 || encodedValue > 2147483647) {
+        throw new Error(`LASWriter: encoded coordinate exceeds the signed 32-bit LAS range`);
+      }
+    }
   }
 }
 

@@ -705,6 +705,35 @@ test('LASWriter#rejects four-component Extra Bytes fields', t => {
   t.end();
 });
 
+test('LASWriter#validates coordinate quantization', t => {
+  t.throws(
+    () => LASWriter.encodeSync?.(mesh, {las: {scale: [0, 0.001, 0.001]}}),
+    /coordinate scale must be finite and positive/
+  );
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(mesh, {
+        las: {scale: [0.001, 0.001, 0.001], offset: [Number.NaN, 0, 0]}
+      }),
+    /coordinate offset must be finite/
+  );
+  const overflowingMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      POSITION: {value: new Float64Array([5000000, 0, 0]), size: 3}
+    }
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(overflowingMesh, {
+        las: {scale: [0.001, 0.001, 0.001], offset: [0, 0, 0]}
+      }),
+    /encoded coordinate exceeds the signed 32-bit LAS range/
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
