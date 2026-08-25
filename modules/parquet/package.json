@@ -71,10 +71,6 @@
       "types": "./dist/iceberg-rest-catalog.d.ts",
       "import": "./dist/iceberg-rest-catalog.js"
     },
-    "./delta-table-source": {
-      "types": "./dist/delta-table-source.d.ts",
-      "import": "./dist/delta-table-source.js"
-    },
     "./parquet-js-loader": {
       "types": "./dist/parquet-js-loader.d.ts",
       "import": "./dist/parquet-js-loader.js"

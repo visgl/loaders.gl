@@ -21,8 +21,8 @@ import type {
   ParquetPredicate,
   ParquetPredicateValue,
   ParquetRowGroupMetadata
-} from '../parquet-source-types';
-import {encodeUtf8} from '../parquetjs/utils/binary-utils';
+} from './parquet-source-types';
+import {encodeUtf8} from './parquetjs/utils/binary-utils';
 
 /** Returns the unique top-level columns referenced by a predicate. */
 export function getParquetPredicateColumns(predicate: ParquetPredicate): string[] {

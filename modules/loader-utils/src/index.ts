@@ -278,8 +278,6 @@ export type {
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
 
-export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
-
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceMetadata} from './lib/sources/image-source';

@@ -139,6 +139,10 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
         if (isDeletedManifestEntry(entry)) continue;
         const dataFile = entry.data_file as IcebergDataFile | undefined;
         if (!dataFile || typeof dataFile.file_path !== 'string') continue;
+        const sequenceNumber =
+          getNumberValue(getIcebergRecordValue(entry, 'data_sequence_number')) ??
+          getNumberValue(getIcebergRecordValue(entry, 'data-sequence-number')) ??
+          getNumberValue(getIcebergRecordValue(manifest, 'sequence_number'));
         if (isDelete) {
           deleteFiles.push(
             createIcebergDeleteFile(
@@ -146,7 +150,8 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
               dataFile,
               manifest,
               snapshot['snapshot-id'],
-              schemaId
+              schemaId,
+              sequenceNumber
             )
           );
         } else if (dataFile.file_format?.toLowerCase() === 'parquet') {
@@ -156,7 +161,8 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
               dataFile,
               manifest,
               snapshot['snapshot-id'],
-              schemaId
+              schemaId,
+              sequenceNumber
             )
           );
         }
@@ -396,6 +402,12 @@ function applyIcebergDeletes(
     selectedColumns.some((column, index) => column !== allColumns[index]);
   if (keptIndexes.length === batch.length && !needsColumnProjection) return batch;
   const columns: Record<string, unknown[]> = {};
+  const fields = selectedColumns.map(columnName => {
+    const field = batch.data.schema.fields.find(candidate => candidate.name === columnName);
+    if (!field)
+      throw new Error(`Equality delete column is missing from Parquet output: ${columnName}`);
+    return field;
+  });
   for (const columnName of selectedColumns) {
     const column = batch.data.getChild(columnName);
     if (!column)
@@ -406,7 +418,13 @@ function applyIcebergDeletes(
     index => batch.rowGroupRowIndices?.[index] ?? batch.rowGroupRowOffset + index
   );
   const rowIndices = keptIndexes.map(index => batch.rowIndices?.[index] ?? batch.rowOffset + index);
-  const data = arrow.tableFromArrays(columns);
+  const columnVectors = Object.fromEntries(
+    fields.map(field => [field.name, arrow.vectorFromArray(columns[field.name], field.type)])
+  );
+  const data = new arrow.Table(
+    new arrow.Schema(fields, batch.data.schema.metadata),
+    columnVectors as unknown as Record<string, arrow.Vector>
+  );
   return {
     ...batch,
     data,
@@ -657,16 +675,16 @@ function decodeIcebergBound(value: unknown, fieldType: unknown): unknown {
       return value.length === 1 ? value[0] !== 0 : undefined;
     case 'int':
     case 'date':
-      return value.length === 4 ? dataView.getInt32(0, false) : undefined;
+      return value.length === 4 ? dataView.getInt32(0, true) : undefined;
     case 'long':
     case 'time':
     case 'timestamp':
     case 'timestz':
-      return value.length === 8 ? dataView.getBigInt64(0, false) : undefined;
+      return value.length === 8 ? dataView.getBigInt64(0, true) : undefined;
     case 'float':
-      return value.length === 4 ? dataView.getFloat32(0, false) : undefined;
+      return value.length === 4 ? dataView.getFloat32(0, true) : undefined;
     case 'double':
-      return value.length === 8 ? dataView.getFloat64(0, false) : undefined;
+      return value.length === 8 ? dataView.getFloat64(0, true) : undefined;
     case 'string':
       return new TextDecoder().decode(value);
     default:
@@ -814,7 +832,8 @@ function createIcebergParquetFile(
   dataFile: IcebergDataFile,
   manifest: IcebergManifestFile,
   snapshotId: number,
-  schemaId: number | undefined
+  schemaId: number | undefined,
+  sequenceNumber?: number
 ): IcebergParquetFile {
   return {
     data: resolveIcebergLocation(baseLocation, dataFile.file_path),
@@ -828,6 +847,7 @@ function createIcebergParquetFile(
     snapshotId,
     schemaId,
     dataSequenceNumber:
+      sequenceNumber ??
       dataFile.data_sequence_number ??
       (getIcebergRecordValue(dataFile, 'data_sequence_number') as number | undefined)
   };
@@ -839,7 +859,8 @@ function createIcebergDeleteFile(
   dataFile: IcebergDataFile,
   manifest: IcebergManifestFile,
   snapshotId: number,
-  schemaId: number | undefined
+  schemaId: number | undefined,
+  sequenceNumber?: number
 ): IcebergDeleteFile {
   return {
     data: resolveIcebergLocation(baseLocation, dataFile.file_path),
@@ -861,6 +882,7 @@ function createIcebergDeleteFile(
     snapshotId,
     schemaId,
     dataSequenceNumber:
+      sequenceNumber ??
       dataFile.data_sequence_number ??
       (getIcebergRecordValue(dataFile, 'data_sequence_number') as number | undefined)
   };
