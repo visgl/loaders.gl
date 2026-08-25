@@ -354,6 +354,51 @@ test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
   t.end();
 });
 
+test('LASWriter#validates Extra Bytes declarations', t => {
+  const scalarAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    value: {value: new Uint8Array([1]), size: 1}
+  };
+  const scalarMesh = {
+    attributes: scalarAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(scalarAttributes, {topology: 'point-list', mode: '0'})
+  };
+
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(scalarMesh, {
+        las: {extraBytes: [{attribute: 'value'}, {attribute: 'value'}]}
+      }),
+    /duplicate Extra Bytes attribute value/,
+    'rejects duplicate Extra Bytes attributes'
+  );
+
+  const largeAttributes: Record<string, {value: Uint8Array | Float64Array; size: number}> = {
+    POSITION: scalarAttributes.POSITION
+  };
+  for (let index = 0; index < 65536; index++) {
+    largeAttributes[`value-${index}`] = {value: new Uint8Array([1]), size: 1};
+  }
+  const largeMesh = {
+    attributes: largeAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(largeAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const extraBytes = Array.from({length: 65536}, (_, index) => ({
+    attribute: `value-${index}`,
+    name: `field-${index}`
+  }));
+  t.throws(
+    () => LASWriter.encodeSync?.(largeMesh, {las: {extraBytes}}),
+    /point data record length .* exceeds the LAS limit/,
+    'rejects an Extra Bytes record that exceeds the LAS limit'
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,

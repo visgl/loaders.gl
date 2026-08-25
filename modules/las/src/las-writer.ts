@@ -130,6 +130,11 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const pointDataRecordLength =
     basePointDataRecordLength +
     extraByteFields.reduce((byteLength, field) => byteLength + field.byteLength, 0);
+  if (pointDataRecordLength > 0xffff) {
+    throw new Error(
+      `LASWriter: point data record length ${pointDataRecordLength} exceeds the LAS limit`
+    );
+  }
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
   const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
   if (format === 'laz') {
@@ -321,7 +326,12 @@ function encodeLAZFile(
 /** Build validated Extra Bytes field descriptions from mesh attributes. */
 function getExtraByteFields(mesh: Mesh, options: LASWriterOptions): LASExtraByteField[] {
   const extraBytes = options.las?.extraBytes || [];
+  const attributes = new Set<string>();
   return extraBytes.map(field => {
+    if (attributes.has(field.attribute)) {
+      throw new Error(`LASWriter: duplicate Extra Bytes attribute ${field.attribute}`);
+    }
+    attributes.add(field.attribute);
     const meshAttribute = mesh.attributes[field.attribute];
     if (!meshAttribute) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is missing`);
