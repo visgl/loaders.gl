@@ -15,6 +15,10 @@ const PDRF_7_LAS_URL = '@loaders.gl/las/test/data/pdrf7-v4-1.4.las';
 const PDRF_7_LAZ_URL = '@loaders.gl/las/test/data/pdrf7-v4-1.4.laz';
 const PDRF_8_LAS_URL = '@loaders.gl/las/test/data/pdrf8-1.4.las';
 const PDRF_8_LAZ_URL = '@loaders.gl/las/test/data/pdrf8-1.4.laz';
+const PDRF_9_LAS_URL = '@loaders.gl/las/test/data/pdrf9-1.4.las';
+const PDRF_9_LAZ_URL = '@loaders.gl/las/test/data/pdrf9-1.4.laz';
+const PDRF_10_LAS_URL = '@loaders.gl/las/test/data/pdrf10-1.4.las';
+const PDRF_10_LAZ_URL = '@loaders.gl/las/test/data/pdrf10-1.4.laz';
 const POINT_COUNT = 1024;
 
 test('LASLoader#loader conformance', () => {
@@ -76,13 +80,32 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
   const options = {
     las: {
       shape: 'arrow-table' as const,
-      columns: ['POSITION', 'scanAngle', 'userData', 'pointSourceId'] as const
+      columns: [
+        'POSITION',
+        'scanAngle',
+        'userData',
+        'pointSourceId',
+        'returnNumber',
+        'numberOfReturns',
+        'scannerChannel',
+        'scanDirectionFlag',
+        'edgeOfFlightLine'
+      ] as const
     },
     core: {worker: false}
   };
   const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
   const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
-  for (const columnName of ['scanAngle', 'userData', 'pointSourceId']) {
+  for (const columnName of [
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  ]) {
     expect(getArrowColumnValues(compressed, columnName)).toEqual(
       getArrowColumnValues(uncompressed, columnName)
     );
@@ -103,7 +126,12 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
         'GPS_TIME',
         'scanAngle',
         'userData',
-        'pointSourceId'
+        'pointSourceId',
+        'returnNumber',
+        'numberOfReturns',
+        'scannerChannel',
+        'scanDirectionFlag',
+        'edgeOfFlightLine'
       ] as const
     },
     core: {worker: false}
@@ -117,7 +145,12 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     'GPS_TIME',
     'scanAngle',
     'userData',
-    'pointSourceId'
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
   ]);
   expect(getArrowColumnValues(compressed, 'POSITION')).toEqual(
     getArrowColumnValues(uncompressed, 'POSITION')
@@ -128,7 +161,16 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
   expect(getArrowColumnValues(compressed, 'GPS_TIME')).toEqual(
     getArrowColumnValues(uncompressed, 'GPS_TIME')
   );
-  for (const columnName of ['scanAngle', 'userData', 'pointSourceId']) {
+  for (const columnName of [
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  ]) {
     expect(getArrowColumnValues(compressed, columnName)).toEqual(
       getArrowColumnValues(uncompressed, columnName)
     );
@@ -229,6 +271,66 @@ test('LASLoader#columns validates unsupported names', async () => {
       core: {worker: false}
     })
   ).rejects.toThrow('LASLoader: unsupported column unsupported');
+});
+
+test('LASLoader#columns preserves waveform packet references for PDRF 9 and 10', async () => {
+  for (const [lasUrl, lazUrl] of [
+    [PDRF_4_LAS_URL, PDRF_4_LAZ_URL],
+    ['@loaders.gl/las/test/data/pdrf5-1.3.las', '@loaders.gl/las/test/data/pdrf5-1.3.laz'],
+    [PDRF_9_LAS_URL, PDRF_9_LAZ_URL],
+    [PDRF_10_LAS_URL, PDRF_10_LAZ_URL]
+  ]) {
+    const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+      fetchFile(lasUrl).then(response => response.arrayBuffer()),
+      fetchFile(lazUrl).then(response => response.arrayBuffer())
+    ]);
+    const options = {
+      las: {shape: 'arrow-table' as const, columns: ['POSITION', 'WAVEFORM'] as const},
+      core: {worker: false}
+    };
+    const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    expect(getArrowColumnNames(compressed)).toEqual(['POSITION', 'WAVEFORM']);
+    expect(getArrowColumnValues(compressed, 'WAVEFORM')).toEqual(
+      getArrowColumnValues(uncompressed, 'WAVEFORM')
+    );
+    const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+      batchSize: 127,
+      las: options.las,
+      core: {worker: false}
+    });
+    const streamedWaveforms: unknown[] = [];
+    for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+      streamedWaveforms.push(...getArrowColumnValues(batch, 'WAVEFORM'));
+    }
+    expect(streamedWaveforms).toEqual(getArrowColumnValues(uncompressed, 'WAVEFORM'));
+  }
+});
+
+test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const options = {
+    las: {shape: 'arrow-table' as const, columns: ['POSITION', 'EXTRA_BYTES'] as const},
+    core: {worker: false}
+  };
+  const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  expect(getArrowColumnValues(compressed, 'EXTRA_BYTES')).toEqual(
+    getArrowColumnValues(uncompressed, 'EXTRA_BYTES')
+  );
+  const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+    batchSize: 127,
+    las: options.las,
+    core: {worker: false}
+  });
+  const streamedExtraBytes: unknown[] = [];
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    streamedExtraBytes.push(...getArrowColumnValues(batch, 'EXTRA_BYTES'));
+  }
+  expect(streamedExtraBytes).toEqual(getArrowColumnValues(uncompressed, 'EXTRA_BYTES'));
 });
 
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {

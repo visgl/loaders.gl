@@ -41,6 +41,20 @@ export type LAZPointDataTarget = {
   userData?: Uint8Array | null;
   /** Optional point source identifiers. */
   pointSourceIds?: Uint16Array | null;
+  /** Optional return number values. */
+  returnNumbers?: Uint8Array | null;
+  /** Optional number of returns values. */
+  numberOfReturns?: Uint8Array | null;
+  /** Optional scanner channel values. */
+  scannerChannels?: Uint8Array | null;
+  /** Optional scan direction flags. */
+  scanDirectionFlags?: Uint8Array | null;
+  /** Optional edge-of-flight-line flags. */
+  edgeOfFlightLines?: Uint8Array | null;
+  /** Optional 29-byte LAS waveform packet references, packed one record per point. */
+  waveforms?: Uint8Array | null;
+  /** Optional raw Extra Bytes payload, packed one record per point. */
+  extraBytes?: Uint8Array | null;
   /** Optional final RGBA colors as 8-bit channel values. */
   colors?: Uint8Array | null;
   /** Optional raw RGB colors as 16-bit LAS channel values. */
@@ -79,6 +93,8 @@ type LAZPointDataSelection = {
   scanAngle: boolean;
   userData: boolean;
   pointSourceId: boolean;
+  flags: boolean;
+  waveform: boolean;
 };
 
 /** Error raised when a feedable decoder needs more compressed bytes. */
@@ -293,7 +309,9 @@ function getLAZPointDataSelection(target: LAZPointDataTarget): LAZPointDataSelec
     nir: Boolean(target.nir),
     scanAngle: Boolean(target.scanAngles),
     userData: Boolean(target.userData),
-    pointSourceId: Boolean(target.pointSourceIds)
+    pointSourceId: Boolean(target.pointSourceIds),
+    flags: Boolean(target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines),
+    waveform: Boolean(target.waveforms)
   };
 }
 
@@ -307,7 +325,9 @@ function getLAZPointDataSelectionKey(selection: LAZPointDataSelection): number {
     (selection.nir ? 16 : 0) |
     (selection.scanAngle ? 32 : 0) |
     (selection.userData ? 64 : 0) |
-    (selection.pointSourceId ? 128 : 0)
+    (selection.pointSourceId ? 128 : 0) |
+    (selection.flags ? 256 : 0) |
+    (selection.waveform ? 512 : 0)
   );
 }
 
@@ -1371,7 +1391,7 @@ class Point14Context {
     if (mode === Point14DecompressionMode.Full || selection?.pointSourceId) {
       this.pointSourceId = createIntegerDecompressor(16, 1);
     }
-    if (mode === Point14DecompressionMode.Full) {
+    if (mode === Point14DecompressionMode.Full || selection?.flags) {
       this.flagModel = createModels(64, 64);
     }
     if (mode === Point14DecompressionMode.Full || selection?.gpsTime) {
@@ -1421,7 +1441,7 @@ class Point14Decompressor {
     this.decompressOptionalFields = mode === Point14DecompressionMode.Full;
     this.classification =
       this.decompressOptionalFields || selection?.classification ? new ArithmeticDecoder() : null;
-    this.flags = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.flags = this.decompressOptionalFields || selection?.flags ? new ArithmeticDecoder() : null;
     this.intensity =
       this.decompressOptionalFields || selection?.intensity ? new ArithmeticDecoder() : null;
     this.scanAngle =
@@ -2079,6 +2099,11 @@ class WavePacket14Decompressor {
     return outputOffset + 29;
   }
 
+  /** Decode one waveform packet reference into a caller-owned 29-byte buffer. */
+  decompressToTarget(target: Uint8Array, targetOffset: number, scannerChannel: number): void {
+    this.decompress(target, targetOffset, scannerChannel);
+  }
+
   /** Decode changed waveform fields into one scanner-channel context. */
   private decodeContext(
     codingContext: WavePacketDecompressionContext,
@@ -2636,6 +2661,11 @@ class WavePacket13Decompressor {
     return outputOffset + 29;
   }
 
+  /** Decode one waveform packet reference into a caller-owned 29-byte buffer. */
+  decompressToTarget(target: Uint8Array, targetOffset: number): void {
+    this.decompress(target, targetOffset);
+  }
+
   /** Initialize waveform predictors from the first uncompressed item. */
   private readContext(input: Uint8Array, inputOffset: number): void {
     const context = this.context;
@@ -3167,6 +3197,7 @@ class PointFormat9Decompressor implements PointDecompressor {
   private extraByteCount: number;
   /** Whether the first point and layered stream metadata remain unread. */
   private first = true;
+  private waveformScratch = new Uint8Array(29);
 
   constructor(
     stream: ByteReader,
@@ -3184,7 +3215,7 @@ class PointFormat9Decompressor implements PointDecompressor {
       selection
     );
     this.wavePacket =
-      outputMode === 'raw'
+      outputMode === 'raw' || Boolean(selection?.waveform)
         ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
         : null;
     this.bytes =
@@ -3207,8 +3238,16 @@ class PointFormat9Decompressor implements PointDecompressor {
   /** Decode one PDRF 9 point directly into represented Arrow columns. */
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
     const point = this.point.decompressPoint();
+    if (this.wavePacket) {
+      this.wavePacket.decompressToTarget(this.waveformScratch, 0, this.point.itemContextChannel);
+      if (target.waveforms) {
+        target.waveforms.set(this.waveformScratch, targetPointIndex * 29);
+      }
+    } else if (this.first) {
+      this.stream.consume(29);
+    }
     if (this.first) {
-      this.stream.consume(29 + this.extraByteCount);
+      this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
@@ -3225,8 +3264,16 @@ class PointFormat9Decompressor implements PointDecompressor {
 
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
       const point = this.point.decompressPoint();
+      if (this.wavePacket) {
+        this.wavePacket.decompressToTarget(this.waveformScratch, 0, this.point.itemContextChannel);
+        if (target.waveforms) {
+          target.waveforms.set(this.waveformScratch, targetPointIndex * 29);
+        }
+      } else if (this.first) {
+        this.stream.consume(29);
+      }
       if (this.first) {
-        this.stream.consume(29 + this.extraByteCount);
+        this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
       writePoint14ToPointDataArrays(
@@ -3292,6 +3339,7 @@ class PointFormat10Decompressor implements PointDecompressor {
   private extraByteCount: number;
   /** Whether the first point and layered stream metadata remain unread. */
   private first = true;
+  private waveformScratch = new Uint8Array(29);
 
   constructor(
     stream: ByteReader,
@@ -3317,7 +3365,7 @@ class PointFormat10Decompressor implements PointDecompressor {
         ? new NIR14Decompressor(stream, metadata.rgb14ItemVersion ?? 3)
         : null;
     this.wavePacket =
-      outputMode === 'raw'
+      outputMode === 'raw' || Boolean(selection?.waveform)
         ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
         : null;
     this.bytes =
@@ -3349,7 +3397,18 @@ class PointFormat10Decompressor implements PointDecompressor {
     }
     const nir = this.nir ? this.nir.decompressNir(this.point.itemContextChannel) : 0;
     if (this.first) {
-      this.stream.consume((this.nir ? 0 : 2) + 29 + this.extraByteCount);
+      this.stream.consume(this.nir ? 0 : 2);
+    }
+    if (this.wavePacket) {
+      this.wavePacket.decompressToTarget(this.waveformScratch, 0, this.point.itemContextChannel);
+      if (target.waveforms) {
+        target.waveforms.set(this.waveformScratch, targetPointIndex * 29);
+      }
+    } else if (this.first) {
+      this.stream.consume(29);
+    }
+    if (this.first) {
+      this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
@@ -3385,7 +3444,18 @@ class PointFormat10Decompressor implements PointDecompressor {
       }
       const nir = this.nir ? this.nir.decompressNir(this.point.itemContextChannel) : 0;
       if (this.first) {
-        this.stream.consume((this.nir ? 0 : 2) + 29 + this.extraByteCount);
+        this.stream.consume(this.nir ? 0 : 2);
+      }
+      if (this.wavePacket) {
+        this.wavePacket.decompressToTarget(this.waveformScratch, 0, this.point.itemContextChannel);
+        if (target.waveforms) {
+          target.waveforms.set(this.waveformScratch, targetPointIndex * 29);
+        }
+      } else if (this.first) {
+        this.stream.consume(29);
+      }
+      if (this.first) {
+        this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
       writePoint14ToPointDataArrays(
@@ -3721,6 +3791,21 @@ function writePoint14MetadataToPointDataTarget(
   }
   if (target.pointSourceIds) {
     target.pointSourceIds[targetPointIndex] = point.pointSourceId;
+  }
+  if (target.returnNumbers) {
+    target.returnNumbers[targetPointIndex] = point.returns & 0x0f;
+  }
+  if (target.numberOfReturns) {
+    target.numberOfReturns[targetPointIndex] = point.returns >> 4;
+  }
+  if (target.scannerChannels) {
+    target.scannerChannels[targetPointIndex] = (point.flags >> 4) & 0x03;
+  }
+  if (target.scanDirectionFlags) {
+    target.scanDirectionFlags[targetPointIndex] = (point.flags >> 6) & 1;
+  }
+  if (target.edgeOfFlightLines) {
+    target.edgeOfFlightLines[targetPointIndex] = (point.flags >> 7) & 1;
   }
 }
 
