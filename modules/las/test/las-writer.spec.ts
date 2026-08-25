@@ -779,6 +779,14 @@ test('LASWriter#validates coordinate quantization', t => {
       }),
     /encoded coordinate exceeds the signed 32-bit LAS range/
   );
+  const nonFiniteMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      POSITION: {value: new Float64Array([Number.NaN, 0, 0]), size: 3}
+    }
+  };
+  t.throws(() => LASWriter.encodeSync?.(nonFiniteMesh), /POSITION values must be finite/);
   t.end();
 });
 

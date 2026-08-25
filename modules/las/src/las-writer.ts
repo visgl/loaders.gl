@@ -589,9 +589,12 @@ function validateCoordinateEncoding(
   }
   for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
     for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+      const positionValue = attribute.value[vertexIndex * attribute.size + componentIndex];
+      if (!Number.isFinite(positionValue)) {
+        throw new Error(`LASWriter: POSITION values must be finite`);
+      }
       const encodedValue = Math.round(
-        (getComponent(attribute, vertexIndex, componentIndex) - offset[componentIndex]) /
-          scale[componentIndex]
+        (positionValue - offset[componentIndex]) / scale[componentIndex]
       );
       if (encodedValue < -2147483648 || encodedValue > 2147483647) {
         throw new Error(`LASWriter: encoded coordinate exceeds the signed 32-bit LAS range`);
