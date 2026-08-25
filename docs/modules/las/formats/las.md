@@ -49,7 +49,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Point data record formats | PDRF 0-8 are selectable. Only position, intensity, classification, and RGB input attributes are represented; other fields are zero-filled. |
 | LAZ writing | Supported for LAS 1.4 PDRF 6-8 with fixed-size or variable-size LASzip chunk tables. |
 | COPC writing | Supported by `@loaders.gl/copc` through its separate `COPCWriter` entry point. |
-| VLRs, EVLRs, CRS, Extra Bytes VLRs | The LASzip VLR is written for LAZ; broader metadata records remain incomplete. |
+| VLRs, EVLRs, CRS, Extra Bytes VLRs | LASzip and configured Extra Bytes VLRs are written; broader metadata records remain incomplete. |
 | Streaming writing | `encodeInBatches` may buffer input so final counts, bounds, offsets, and headers can be written correctly. |
 
 ### TypeScript LAZ Decoder
@@ -70,7 +70,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 `encodeLAZChunk()` and `createLAZChunkEncoder()` encode raw LAS point records into one LASzip layered chunk. They do not write the surrounding LAS header, LASzip VLR, chunk table, or `.laz` file container.
 
-`LASWriter` uses the chunk encoder to write complete LAS 1.4 `.laz` files for PDRF 6-8, including the LASzip VLR, fixed-size chunks, chunk-table pointer, and version 0 chunk table.
+`LASWriter` uses the chunk encoder to write complete LAS 1.4 `.laz` files for PDRF 6-8, including the LASzip VLR, fixed-size or variable-size chunks, chunk-table pointer, and version 0 chunk table.
 
 | LASzip feature | Supported TypeScript combinations |
 | --- | --- |
@@ -248,7 +248,7 @@ The TypeScript implementation should be completed in stages, with parity tests a
 | 3 | Complete raw LAS point readers and writers. | PDRF 0-10 fields round-trip where loaders.gl has an attribute representation, and unsupported fields are explicitly preserved or documented. |
 | 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
 | 5 | Expose waveform metadata and payload access. | PDRF 4/5/9/10 packet references become typed output metadata, and internal EVLR or external WDP sample payloads can be loaded on demand. Raw-record decompression is implemented. |
-| 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size chunk tables that established decoders can read. |
+| 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size or variable-size chunk tables that established decoders can read. |
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
 | 9 | Implement COPC writing. | `COPCWriter` emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |

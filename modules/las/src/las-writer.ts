@@ -20,8 +20,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
+const VLR_HEADER_LENGTH = 54;
+const EXTRA_BYTES_DESCRIPTOR_LENGTH = 192;
 const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
 const VARIABLE_LAZ_CHUNK_SIZE = 0xffffffff;
+const LAS_RETURN_BUCKET_COUNT = 15;
 const POINT_RECORD_LENGTHS: Record<number, number> = {
   0: 20,
   1: 28,
@@ -32,6 +35,16 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
   6: 30,
   7: 36,
   8: 38
+};
+
+/** Description of a typed mesh attribute stored in LAS Extra Bytes. */
+export type LASExtraBytesWriter = {
+  /** Name of the mesh attribute to append to each point record. */
+  attribute: string;
+  /** Optional LAS Extra Bytes field name. */
+  name?: string;
+  /** Optional LAS Extra Bytes field description. */
+  description?: string;
 };
 
 /** Options for `LASWriter`. */
@@ -54,6 +67,8 @@ export type LASWriterOptions = WriterOptions & {
     chunkSize?: number;
     /** Write a variable-size LAZ chunk table instead of a fixed-size table. */
     variableChunkTable?: boolean;
+    /** Typed mesh attributes with one or three components to append as Extra Bytes fields. */
+    extraBytes?: LASExtraBytesWriter[];
   };
 };
 
@@ -85,24 +100,54 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const format = options.las?.format || 'las';
   const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
+  validatePositionAttribute(positionAttribute);
+  const vertexCount = positionAttribute.value.length / positionAttribute.size;
+  validateOptionalPointAttributes(mesh, vertexCount);
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
   const classificationAttribute = mesh.attributes.classification;
-  const vertexCount = positionAttribute.value.length / positionAttribute.size;
+  const nirAttribute = mesh.attributes.nir;
+  const extraByteFields = getExtraByteFields(mesh, options, vertexCount);
+  const gpsTimeAttribute = mesh.attributes.gpsTime;
+  const scanAngleAttribute = mesh.attributes.scanAngle;
+  const userDataAttribute = mesh.attributes.userData;
+  const pointSourceIdAttribute = mesh.attributes.pointSourceId;
+  const returnNumberAttribute = mesh.attributes.returnNumber;
+  const numberOfReturnsAttribute = mesh.attributes.numberOfReturns;
+  const scannerChannelAttribute = mesh.attributes.scannerChannel;
+  const scanDirectionFlagAttribute = mesh.attributes.scanDirectionFlag;
+  const edgeOfFlightLineAttribute = mesh.attributes.edgeOfFlightLine;
+  const syntheticAttribute = mesh.attributes.synthetic;
+  const keyPointAttribute = mesh.attributes.keyPoint;
+  const withheldAttribute = mesh.attributes.withheld;
+  const overlapAttribute = mesh.attributes.overlap;
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
+  const returnCounts = getReturnCounts(returnNumberAttribute, vertexCount);
   const scale = getScale(mesh, options);
   const offset = getOffset(mesh, options, boundingBox);
+  validateCoordinateEncoding(positionAttribute, vertexCount, scale, offset);
   const pointDataRecordFormat =
     options.las?.pointDataRecordFormat ?? getDefaultPointDataRecordFormat(options, colorAttribute);
-  const pointDataRecordLength = POINT_RECORD_LENGTHS[pointDataRecordFormat];
-  if (!pointDataRecordLength) {
+  validateReturnAttributes(mesh, vertexCount, pointDataRecordFormat);
+  const basePointDataRecordLength = POINT_RECORD_LENGTHS[pointDataRecordFormat];
+  if (!basePointDataRecordLength) {
     throw new Error(`LASWriter: unsupported point data record format ${pointDataRecordFormat}`);
   }
+  const pointDataRecordLength =
+    basePointDataRecordLength +
+    extraByteFields.reduce((byteLength, field) => byteLength + field.byteLength, 0);
+  if (pointDataRecordLength > 0xffff) {
+    throw new Error(
+      `LASWriter: point data record length ${pointDataRecordLength} exceeds the LAS limit`
+    );
+  }
+  validateExtraBytesVLR(extraByteFields);
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
   const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
   if (format === 'laz') {
     validateLAZOptions(version, pointDataRecordFormat, options.las?.chunkSize);
   }
+  validatePointDataRecordVersion(version, pointDataRecordFormat);
 
   const rawPointData = new Uint8Array(vertexCount * pointDataRecordLength);
   const pointDataView = new DataView(rawPointData.buffer);
@@ -124,11 +169,33 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
       Math.round((getComponent(positionAttribute, vertexIndex, 2) - offset[2]) / scale[2]),
       true
     );
-    writePointRecord(pointDataView, pointOffset, vertexIndex, pointDataRecordFormat, {
-      intensityAttribute,
-      classificationAttribute,
-      colorAttribute
-    });
+    writePointRecord(
+      pointDataView,
+      pointOffset,
+      vertexIndex,
+      pointDataRecordFormat,
+      basePointDataRecordLength,
+      {
+        intensityAttribute,
+        classificationAttribute,
+        nirAttribute,
+        colorAttribute,
+        gpsTimeAttribute,
+        scanAngleAttribute,
+        userDataAttribute,
+        pointSourceIdAttribute,
+        returnNumberAttribute,
+        numberOfReturnsAttribute,
+        scannerChannelAttribute,
+        scanDirectionFlagAttribute,
+        edgeOfFlightLineAttribute,
+        syntheticAttribute,
+        keyPointAttribute,
+        withheldAttribute,
+        overlapAttribute,
+        extraByteFields
+      }
+    );
   }
 
   const writeParameters: LASWriteParameters = {
@@ -139,21 +206,40 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     version,
     headerLength,
     pointDataRecordFormat,
-    pointDataRecordLength
+    pointDataRecordLength,
+    returnCounts
   };
   if (format === 'laz') {
     return encodeLAZFile(
       rawPointData,
       writeParameters,
       options.las?.chunkSize,
-      options.las?.variableChunkTable
+      options.las?.variableChunkTable,
+      extraByteFields
     );
   }
 
-  const arrayBuffer = new ArrayBuffer(headerLength + rawPointData.byteLength);
-  writeHeader(new DataView(arrayBuffer), {...writeParameters, pointDataOffset: headerLength});
-  new Uint8Array(arrayBuffer, headerLength).set(rawPointData);
+  const extraBytesVLR = encodeExtraBytesVLR(extraByteFields);
+  const pointDataOffset = headerLength + extraBytesVLR.byteLength;
+  const arrayBuffer = new ArrayBuffer(pointDataOffset + rawPointData.byteLength);
+  writeHeader(new DataView(arrayBuffer), {
+    ...writeParameters,
+    pointDataOffset,
+    vlrCount: extraBytesVLR.byteLength ? 1 : 0
+  });
+  const bytes = new Uint8Array(arrayBuffer);
+  bytes.set(extraBytesVLR, headerLength);
+  bytes.set(rawPointData, pointDataOffset);
   return arrayBuffer;
+}
+
+/** Validate that the selected LAS header can represent the point record format. */
+function validatePointDataRecordVersion(version: string, pointDataRecordFormat: number): void {
+  if (pointDataRecordFormat >= 6 && version !== '1.4') {
+    throw new Error(
+      `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.4; received ${version}`
+    );
+  }
 }
 
 /** Values shared by LAS header and point-data encoding. */
@@ -174,6 +260,20 @@ type LASWriteParameters = {
   pointDataRecordFormat: number;
   /** Byte length of each raw point record. */
   pointDataRecordLength: number;
+  /** Counts for the fifteen LAS 1.4 return-number buckets. */
+  returnCounts: number[];
+};
+
+/** Internal description of one encoded LAS Extra Bytes field. */
+type LASExtraByteField = LASExtraBytesWriter & {
+  /** Mesh attribute containing the field values. */
+  meshAttribute: MeshAttribute;
+  /** LAS Extra Bytes data type code. */
+  dataType: number;
+  /** Number of bytes occupied by one field value. */
+  byteLength: number;
+  /** Number of components in one field value. */
+  componentCount: number;
 };
 
 /** Assemble raw LAS point records into a complete fixed-chunk LAZ file. */
@@ -181,7 +281,8 @@ function encodeLAZFile(
   rawPointData: Uint8Array,
   parameters: LASWriteParameters,
   requestedChunkSize?: number,
-  variableChunkTable = false
+  variableChunkTable = false,
+  extraByteFields: LASExtraByteField[] = []
 ): ArrayBuffer {
   const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
   const laszipVLR = encodeLASzipVLR({
@@ -189,7 +290,8 @@ function encodeLAZFile(
     pointDataRecordLength: parameters.pointDataRecordLength,
     chunkSize: variableChunkTable ? VARIABLE_LAZ_CHUNK_SIZE : chunkSize
   });
-  const pointDataOffset = parameters.headerLength + laszipVLR.byteLength;
+  const extraBytesVLR = encodeExtraBytesVLR(extraByteFields);
+  const pointDataOffset = parameters.headerLength + extraBytesVLR.byteLength + laszipVLR.byteLength;
   const compressedChunks: Uint8Array[] = [];
   const chunkTableEntries: LAZChunkTableEntry[] = [];
 
@@ -226,10 +328,11 @@ function encodeLAZFile(
   writeHeader(dataView, {
     ...parameters,
     pointDataOffset,
-    vlrCount: 1,
+    vlrCount: extraBytesVLR.byteLength ? 2 : 1,
     compressed: true
   });
-  bytes.set(laszipVLR, parameters.headerLength);
+  bytes.set(extraBytesVLR, parameters.headerLength);
+  bytes.set(laszipVLR, parameters.headerLength + extraBytesVLR.byteLength);
   writeUint64Fallback(dataView, pointDataOffset, chunkTableOffset);
   let compressedOffset = pointDataOffset + 8;
   for (const chunk of compressedChunks) {
@@ -242,18 +345,125 @@ function encodeLAZFile(
   return arrayBuffer;
 }
 
-/** Validate the intentionally narrow LAZ container writer surface. */
+/** Build validated Extra Bytes field descriptions from mesh attributes. */
+function getExtraByteFields(
+  mesh: Mesh,
+  options: LASWriterOptions,
+  vertexCount: number
+): LASExtraByteField[] {
+  const extraBytes = options.las?.extraBytes || [];
+  const attributes = new Set<string>();
+  return extraBytes.map(field => {
+    if (attributes.has(field.attribute)) {
+      throw new Error(`LASWriter: duplicate Extra Bytes attribute ${field.attribute}`);
+    }
+    attributes.add(field.attribute);
+    const meshAttribute = mesh.attributes[field.attribute];
+    if (!meshAttribute) {
+      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is missing`);
+    }
+    if (![1, 3].includes(meshAttribute.size)) {
+      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} must have size 1 or 3`);
+    }
+    if (meshAttribute.value.length < vertexCount * meshAttribute.size) {
+      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is too short`);
+    }
+    validateFiniteAttributeValues(field.attribute, meshAttribute);
+    const dataType = getExtraBytesDataType(meshAttribute.value, meshAttribute.size);
+    return {
+      ...field,
+      meshAttribute,
+      dataType,
+      byteLength: getExtraBytesDataTypeByteLength(dataType, meshAttribute.size),
+      componentCount: meshAttribute.size
+    };
+  });
+}
+
+/** Return the LAS Extra Bytes data type code for a typed array and component count. */
+function getExtraBytesDataType(values: MeshAttribute['value'], componentCount: number): number {
+  let scalarDataType = 0;
+  if (values instanceof Uint8Array) scalarDataType = 1;
+  else if (values instanceof Int8Array) scalarDataType = 2;
+  else if (values instanceof Uint16Array) scalarDataType = 3;
+  else if (values instanceof Int16Array) scalarDataType = 4;
+  else if (values instanceof Uint32Array) scalarDataType = 5;
+  else if (values instanceof Int32Array) scalarDataType = 6;
+  else if (values instanceof BigUint64Array) scalarDataType = 7;
+  else if (values instanceof BigInt64Array) scalarDataType = 8;
+  else if (values instanceof Float32Array) scalarDataType = 9;
+  else if (values instanceof Float64Array) scalarDataType = 10;
+  if (scalarDataType) {
+    return scalarDataType + (componentCount === 3 ? 20 : 0);
+  }
+  throw new Error('LASWriter: Extra Bytes attributes require a supported typed array');
+}
+
+/** Return the byte width for a LAS Extra Bytes data type. */
+function getExtraBytesDataTypeByteLength(dataType: number, componentCount: number): number {
+  const scalarDataType = dataType > 20 ? dataType - 20 : dataType > 10 ? dataType - 10 : dataType;
+  const scalarByteLength =
+    scalarDataType <= 2
+      ? 1
+      : scalarDataType <= 4
+        ? 2
+        : scalarDataType <= 6 || scalarDataType === 9
+          ? 4
+          : 8;
+  return scalarByteLength * componentCount;
+}
+
+/** Encode the LAS Extra Bytes VLR, or an empty buffer when no fields are configured. */
+function encodeExtraBytesVLR(fields: readonly LASExtraByteField[]): Uint8Array {
+  if (fields.length === 0) {
+    return new Uint8Array(0);
+  }
+  const payload = new Uint8Array(fields.length * EXTRA_BYTES_DESCRIPTOR_LENGTH);
+  const dataView = new DataView(payload.buffer);
+  let byteOffset = 0;
+  for (const field of fields) {
+    dataView.setUint8(byteOffset + 2, field.dataType);
+    writeString(dataView, byteOffset + 4, field.name || field.attribute, 32);
+    writeString(dataView, byteOffset + 160, field.description || '', 32);
+    byteOffset += EXTRA_BYTES_DESCRIPTOR_LENGTH;
+  }
+  const bytes = new Uint8Array(VLR_HEADER_LENGTH + payload.byteLength);
+  const headerView = new DataView(bytes.buffer);
+  writeString(headerView, 2, 'LASF_Spec', 16);
+  headerView.setUint16(18, 4, true);
+  headerView.setUint16(20, payload.byteLength, true);
+  writeString(headerView, 22, 'Extra Bytes', 32);
+  bytes.set(payload, VLR_HEADER_LENGTH);
+  return bytes;
+}
+
+/** Validate that the Extra Bytes VLR payload fits its 16-bit length field. */
+function validateExtraBytesVLR(fields: readonly LASExtraByteField[]): void {
+  const payloadByteLength = fields.length * EXTRA_BYTES_DESCRIPTOR_LENGTH;
+  if (payloadByteLength > 0xffff) {
+    throw new Error(
+      `LASWriter: Extra Bytes VLR payload ${payloadByteLength} exceeds the LAS limit`
+    );
+  }
+}
+
+/** Validate the currently supported LAZ container writer surface. */
 function validateLAZOptions(
   version: string,
   pointDataRecordFormat: number,
   chunkSize?: number
 ): void {
-  if (version !== '1.4') {
+  if (pointDataRecordFormat <= 3 && !['1.2', '1.3', '1.4'].includes(version)) {
+    throw new Error(
+      `LASWriter: LAZ PDRF ${pointDataRecordFormat} output requires LAS 1.2 or newer; received ${version}`
+    );
+  }
+  if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 1, 2, 3, 6, 7, 8].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output only supports point data record formats 6-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0-3 and 6-8; received ${pointDataRecordFormat}`
     );
   }
   if (
@@ -292,6 +502,8 @@ function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowT
   const firstMesh = meshes[0];
   const mergedAttributes: Mesh['attributes'] = {};
 
+  validateBatchAttributes(meshes);
+
   for (const attributeName of Object.keys(firstMesh.attributes)) {
     const firstAttribute = firstMesh.attributes[attributeName];
     const values = meshes.map(mesh => mesh.attributes[attributeName]?.value);
@@ -323,6 +535,30 @@ function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowT
   };
 }
 
+/** Ensure batched meshes expose the same attributes and typed layouts. */
+function validateBatchAttributes(meshes: Mesh[]): void {
+  const attributeNames = Object.keys(meshes[0].attributes);
+  for (const mesh of meshes.slice(1)) {
+    const meshAttributeNames = Object.keys(mesh.attributes);
+    if (
+      meshAttributeNames.length !== attributeNames.length ||
+      attributeNames.some(attributeName => !mesh.attributes[attributeName])
+    ) {
+      throw new Error('LASWriter: encodeInBatches requires consistent attribute names');
+    }
+    for (const attributeName of attributeNames) {
+      const firstAttribute = meshes[0].attributes[attributeName];
+      const attribute = mesh.attributes[attributeName];
+      if (
+        attribute.size !== firstAttribute.size ||
+        attribute.value.constructor !== firstAttribute.value.constructor
+      ) {
+        throw new Error(`LASWriter: encodeInBatches requires a consistent ${attributeName} layout`);
+      }
+    }
+  }
+}
+
 /** Return a required mesh attribute or throw a format-specific error. */
 function getRequiredAttribute(mesh: Mesh, attributeName: string): MeshAttribute {
   const attribute = mesh.attributes[attributeName];
@@ -330,6 +566,136 @@ function getRequiredAttribute(mesh: Mesh, attributeName: string): MeshAttribute 
     throw new Error(`LASWriter: ${attributeName} attribute is required`);
   }
   return attribute;
+}
+
+/** Validate the required LAS position attribute shape. */
+function validatePositionAttribute(attribute: MeshAttribute): void {
+  if (attribute.size !== 3) {
+    throw new Error(`LASWriter: POSITION attribute must have size 3`);
+  }
+  if (attribute.value.length % attribute.size !== 0) {
+    throw new Error(`LASWriter: POSITION attribute length must be divisible by its size`);
+  }
+}
+
+/** Validate coordinate quantization before writing LAS signed 32-bit coordinates. */
+function validateCoordinateEncoding(
+  attribute: MeshAttribute,
+  vertexCount: number,
+  scale: [number, number, number],
+  offset: [number, number, number]
+): void {
+  for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+    if (!Number.isFinite(scale[componentIndex]) || scale[componentIndex] <= 0) {
+      throw new Error(`LASWriter: coordinate scale must be finite and positive`);
+    }
+    if (!Number.isFinite(offset[componentIndex])) {
+      throw new Error(`LASWriter: coordinate offset must be finite`);
+    }
+  }
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+      const positionValue = attribute.value[vertexIndex * attribute.size + componentIndex];
+      if (!Number.isFinite(positionValue)) {
+        throw new Error(`LASWriter: POSITION values must be finite`);
+      }
+      const encodedValue = Math.round(
+        (positionValue - offset[componentIndex]) / scale[componentIndex]
+      );
+      if (encodedValue < -2147483648 || encodedValue > 2147483647) {
+        throw new Error(`LASWriter: encoded coordinate exceeds the signed 32-bit LAS range`);
+      }
+    }
+  }
+}
+
+/** Validate lengths and component shapes for mapped optional point attributes. */
+function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void {
+  const scalarAttributeNames = [
+    'intensity',
+    'classification',
+    'gpsTime',
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
+    'nir'
+  ];
+  for (const attributeName of scalarAttributeNames) {
+    const attribute = mesh.attributes[attributeName];
+    if (attribute) {
+      validateOptionalAttribute(attributeName, attribute, vertexCount, 1);
+    }
+  }
+  const colorAttribute = mesh.attributes.COLOR_0;
+  if (colorAttribute) {
+    validateOptionalAttribute('COLOR_0', colorAttribute, vertexCount, 3, false);
+  }
+}
+
+/** Validate return-number ranges against the selected LAS point-data format. */
+function validateReturnAttributes(
+  mesh: Mesh,
+  vertexCount: number,
+  pointDataRecordFormat: number
+): void {
+  const maximumReturnNumber = pointDataRecordFormat >= 6 ? 15 : 5;
+  const returnNumberAttribute = mesh.attributes.returnNumber;
+  const numberOfReturnsAttribute = mesh.attributes.numberOfReturns;
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    const returnNumber = getUInt8Attribute(returnNumberAttribute, vertexIndex, 1);
+    const numberOfReturns = getUInt8Attribute(numberOfReturnsAttribute, vertexIndex, 1);
+    if (returnNumber < 1 || returnNumber > maximumReturnNumber) {
+      throw new Error(
+        `LASWriter: returnNumber must be between 1 and ${maximumReturnNumber} for point data record format ${pointDataRecordFormat}`
+      );
+    }
+    if (numberOfReturns < 1 || numberOfReturns > maximumReturnNumber) {
+      throw new Error(
+        `LASWriter: numberOfReturns must be between 1 and ${maximumReturnNumber} for point data record format ${pointDataRecordFormat}`
+      );
+    }
+    if (returnNumber > numberOfReturns) {
+      throw new Error(`LASWriter: returnNumber cannot exceed numberOfReturns`);
+    }
+  }
+}
+
+/** Validate one optional mapped attribute against the point count. */
+function validateOptionalAttribute(
+  attributeName: string,
+  attribute: MeshAttribute,
+  vertexCount: number,
+  minimumSize: number,
+  requirePointCount = true
+): void {
+  if (minimumSize === 1 ? attribute.size !== 1 : attribute.size < minimumSize) {
+    throw new Error(`LASWriter: ${attributeName} attribute must have size ${minimumSize}`);
+  }
+  validateFiniteAttributeValues(attributeName, attribute);
+  if (requirePointCount && attribute.value.length < vertexCount * attribute.size) {
+    throw new Error(`LASWriter: ${attributeName} attribute is too short`);
+  }
+  if (!requirePointCount && attribute.value.length < attribute.size) {
+    throw new Error(`LASWriter: ${attributeName} attribute is too short`);
+  }
+}
+
+/** Reject NaN and infinite values before numeric LAS conversion. */
+function validateFiniteAttributeValues(attributeName: string, attribute: MeshAttribute): void {
+  for (const value of attribute.value) {
+    if (!Number.isFinite(Number(value))) {
+      throw new Error(`LASWriter: ${attributeName} attribute must contain finite values`);
+    }
+  }
 }
 
 /** Write the LAS 1.2 public header block. */
@@ -356,7 +722,13 @@ function writeHeader(
   dataView.setUint8(104, parameters.pointDataRecordFormat | (parameters.compressed ? 0x80 : 0));
   dataView.setUint16(105, parameters.pointDataRecordLength, true);
   dataView.setUint32(107, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
-  dataView.setUint32(111, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
+  for (let returnIndex = 0; returnIndex < 5; returnIndex++) {
+    dataView.setUint32(
+      111 + returnIndex * 4,
+      parameters.version === '1.4' ? 0 : parameters.returnCounts[returnIndex],
+      true
+    );
+  }
 
   dataView.setFloat64(131, parameters.scale[0], true);
   dataView.setFloat64(139, parameters.scale[1], true);
@@ -373,7 +745,9 @@ function writeHeader(
 
   if (parameters.version === '1.4') {
     writeUint64Fallback(dataView, 247, parameters.vertexCount);
-    writeUint64Fallback(dataView, 255, parameters.vertexCount);
+    for (let returnIndex = 0; returnIndex < LAS_RETURN_BUCKET_COUNT; returnIndex++) {
+      writeUint64Fallback(dataView, 255 + returnIndex * 8, parameters.returnCounts[returnIndex]);
+    }
   }
 }
 
@@ -383,10 +757,26 @@ function writePointRecord(
   pointOffset: number,
   vertexIndex: number,
   pointDataRecordFormat: number,
+  basePointDataRecordLength: number,
   attributes: {
     intensityAttribute?: MeshAttribute;
     classificationAttribute?: MeshAttribute;
+    nirAttribute?: MeshAttribute;
     colorAttribute?: MeshAttribute;
+    gpsTimeAttribute?: MeshAttribute;
+    scanAngleAttribute?: MeshAttribute;
+    userDataAttribute?: MeshAttribute;
+    pointSourceIdAttribute?: MeshAttribute;
+    returnNumberAttribute?: MeshAttribute;
+    numberOfReturnsAttribute?: MeshAttribute;
+    scannerChannelAttribute?: MeshAttribute;
+    scanDirectionFlagAttribute?: MeshAttribute;
+    edgeOfFlightLineAttribute?: MeshAttribute;
+    syntheticAttribute?: MeshAttribute;
+    keyPointAttribute?: MeshAttribute;
+    withheldAttribute?: MeshAttribute;
+    overlapAttribute?: MeshAttribute;
+    extraByteFields: readonly LASExtraByteField[];
   }
 ): void {
   dataView.setUint16(
@@ -396,28 +786,62 @@ function writePointRecord(
   );
 
   if (pointDataRecordFormat <= 5) {
-    dataView.setUint8(pointOffset + 14, 0);
+    const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 7;
+    const numberOfReturns =
+      getUInt8Attribute(attributes.numberOfReturnsAttribute, vertexIndex, 1) & 7;
+    dataView.setUint8(pointOffset + 14, returnNumber | (numberOfReturns << 3));
     dataView.setUint8(
       pointOffset + 15,
       getUInt8Attribute(attributes.classificationAttribute, vertexIndex) & 0x1f
     );
     dataView.setInt8(pointOffset + 16, 0);
-    dataView.setUint8(pointOffset + 17, 0);
+    dataView.setUint8(
+      pointOffset + 17,
+      getUInt8Attribute(attributes.userDataAttribute, vertexIndex)
+    );
     dataView.setUint16(pointOffset + 18, 0, true);
     if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 4) {
       dataView.setFloat64(pointOffset + 20, 0, true);
     }
   } else {
-    dataView.setUint8(pointOffset + 14, 0);
-    dataView.setUint8(pointOffset + 15, 0);
+    const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 0x0f;
+    const numberOfReturns =
+      getUInt8Attribute(attributes.numberOfReturnsAttribute, vertexIndex, 1) & 0x0f;
+    const scannerChannel = getUInt8Attribute(attributes.scannerChannelAttribute, vertexIndex) & 3;
+    const returnFlags = returnNumber | (numberOfReturns << 4);
+    const classificationFlags =
+      (getBooleanAttribute(attributes.syntheticAttribute, vertexIndex) ? 1 << 0 : 0) |
+      (getBooleanAttribute(attributes.keyPointAttribute, vertexIndex) ? 1 << 1 : 0) |
+      (getBooleanAttribute(attributes.withheldAttribute, vertexIndex) ? 1 << 2 : 0) |
+      (getBooleanAttribute(attributes.overlapAttribute, vertexIndex) ? 1 << 3 : 0) |
+      (scannerChannel << 4) |
+      (getBooleanAttribute(attributes.scanDirectionFlagAttribute, vertexIndex) ? 1 << 6 : 0) |
+      (getBooleanAttribute(attributes.edgeOfFlightLineAttribute, vertexIndex) ? 1 << 7 : 0);
+    dataView.setUint8(pointOffset + 14, returnFlags);
+    dataView.setUint8(pointOffset + 15, classificationFlags);
     dataView.setUint8(
       pointOffset + 16,
       getUInt8Attribute(attributes.classificationAttribute, vertexIndex)
     );
-    dataView.setUint8(pointOffset + 17, 0);
-    dataView.setInt16(pointOffset + 18, 0, true);
-    dataView.setUint16(pointOffset + 20, 0, true);
-    dataView.setFloat64(pointOffset + 22, 0, true);
+    dataView.setUint8(
+      pointOffset + 17,
+      getUInt8Attribute(attributes.userDataAttribute, vertexIndex)
+    );
+    dataView.setInt16(
+      pointOffset + 18,
+      getInt16Attribute(attributes.scanAngleAttribute, vertexIndex),
+      true
+    );
+    dataView.setUint16(
+      pointOffset + 20,
+      getUInt16Attribute(attributes.pointSourceIdAttribute, vertexIndex),
+      true
+    );
+    dataView.setFloat64(
+      pointOffset + 22,
+      getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
+      true
+    );
   }
 
   writePointColor(
@@ -427,6 +851,88 @@ function writePointRecord(
     pointDataRecordFormat,
     attributes.colorAttribute
   );
+  if (pointDataRecordFormat === 8) {
+    dataView.setUint16(
+      pointOffset + 36,
+      getUInt16Attribute(attributes.nirAttribute, vertexIndex),
+      true
+    );
+  }
+  writeExtraBytes(
+    dataView,
+    pointOffset,
+    vertexIndex,
+    basePointDataRecordLength,
+    attributes.extraByteFields
+  );
+}
+
+/** Write configured Extra Bytes values into one raw LAS point record. */
+function writeExtraBytes(
+  dataView: DataView,
+  pointOffset: number,
+  vertexIndex: number,
+  basePointDataRecordLength: number,
+  fields: readonly LASExtraByteField[]
+): void {
+  let byteOffset = pointOffset + basePointDataRecordLength;
+  for (const field of fields) {
+    for (let componentIndex = 0; componentIndex < field.componentCount; componentIndex++) {
+      writeExtraBytesValue(dataView, byteOffset, vertexIndex, componentIndex, field);
+      byteOffset += field.byteLength / field.componentCount;
+    }
+  }
+}
+
+/** Write one typed Extra Bytes component using its LAS data type code. */
+function writeExtraBytesValue(
+  dataView: DataView,
+  byteOffset: number,
+  vertexIndex: number,
+  componentIndex: number,
+  field: LASExtraByteField
+): void {
+  const value = field.meshAttribute.value[vertexIndex * field.componentCount + componentIndex];
+  const scalarDataType =
+    field.dataType > 20
+      ? field.dataType - 20
+      : field.dataType > 10
+        ? field.dataType - 10
+        : field.dataType;
+  switch (scalarDataType) {
+    case 1:
+      dataView.setUint8(byteOffset, Number(value));
+      break;
+    case 2:
+      dataView.setInt8(byteOffset, Number(value));
+      break;
+    case 3:
+      dataView.setUint16(byteOffset, Number(value), true);
+      break;
+    case 4:
+      dataView.setInt16(byteOffset, Number(value), true);
+      break;
+    case 5:
+      dataView.setUint32(byteOffset, Number(value), true);
+      break;
+    case 6:
+      dataView.setInt32(byteOffset, Number(value), true);
+      break;
+    case 7:
+      dataView.setBigUint64(byteOffset, BigInt(value), true);
+      break;
+    case 8:
+      dataView.setBigInt64(byteOffset, BigInt(value), true);
+      break;
+    case 9:
+      dataView.setFloat32(byteOffset, Number(value), true);
+      break;
+    case 10:
+      dataView.setFloat64(byteOffset, Number(value), true);
+      break;
+    default:
+      throw new Error(`LASWriter: unsupported Extra Bytes data type ${field.dataType}`);
+  }
 }
 
 /** Write RGB values for point formats that include color. */
@@ -514,10 +1020,46 @@ function getUInt16Attribute(attribute: MeshAttribute | undefined, vertexIndex: n
 }
 
 /** Return a LAS UInt8 attribute value. */
-function getUInt8Attribute(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+function getUInt8Attribute(
+  attribute: MeshAttribute | undefined,
+  vertexIndex: number,
+  defaultValue = 0
+): number {
   return attribute
     ? Math.max(0, Math.min(255, Math.round(getComponent(attribute, vertexIndex, 0))))
+    : defaultValue;
+}
+
+/** Return a LAS signed 16-bit attribute value. */
+function getInt16Attribute(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+  return attribute
+    ? Math.max(-32768, Math.min(32767, Math.round(getComponent(attribute, vertexIndex, 0))))
     : 0;
+}
+
+/** Return a numeric point attribute value, using zero when it is absent. */
+function getAttributeValue(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+  return attribute ? getComponent(attribute, vertexIndex, 0) : 0;
+}
+
+/** Return a point flag attribute as a boolean. */
+function getBooleanAttribute(attribute: MeshAttribute | undefined, vertexIndex: number): boolean {
+  return Boolean(getAttributeValue(attribute, vertexIndex));
+}
+
+/** Count point records by return number for the LAS header histograms. */
+function getReturnCounts(
+  returnNumberAttribute: MeshAttribute | undefined,
+  vertexCount: number
+): number[] {
+  const returnCounts = new Array<number>(LAS_RETURN_BUCKET_COUNT).fill(0);
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    const returnNumber = getUInt8Attribute(returnNumberAttribute, vertexIndex, 1) & 0x0f;
+    if (returnNumber >= 1 && returnNumber <= LAS_RETURN_BUCKET_COUNT) {
+      returnCounts[returnNumber - 1]++;
+    }
+  }
+  return returnCounts;
 }
 
 /** Return one color component as a LAS UInt16 color value. */

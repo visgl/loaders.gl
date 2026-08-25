@@ -49,3 +49,7 @@ LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder
 | `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
 | `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
 | `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
+
+Use `las.extraBytes` to append one- or three-component typed mesh attributes to each point record and emit an Extra Bytes VLR. Each entry accepts an `attribute` name and optional `name` and `description`; the writer infers the LAS data type from the typed array and attribute size. LAS Extra Bytes has no four-component data type, so four-component attributes are rejected.
+
+For modern PDRFs, the writer also maps optional point attributes named `gpsTime`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `synthetic`, `keyPoint`, `withheld`, and `overlap`. For PDRF 8, the optional `nir` attribute is written as a 16-bit near-infrared channel. Missing fields are zero-filled.
