@@ -254,6 +254,27 @@ export type {
   DataSourceSubscriber
 } from './lib/sources/data-source-manager';
 export {DataSourceManager} from './lib/sources/data-source-manager';
+export {
+  copyColumnarPredicate,
+  filterColumnarRowIndices,
+  gatherColumnarColumns,
+  getColumnarPredicateColumns,
+  getColumnarPredicatePath,
+  getColumnarPredicatePaths,
+  validateColumnarPredicate
+} from './lib/scan-utils/columnar-predicate';
+export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
+export type {
+  ColumnarComparisonPredicate,
+  ColumnarInPredicate,
+  ColumnarLogicalPredicate,
+  ColumnarNotPredicate,
+  ColumnarNullPredicate,
+  ColumnarPredicate,
+  ColumnarPredicateProperty,
+  ColumnarPredicateValue
+} from './lib/scan-utils/columnar-predicate';
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
 

@@ -194,13 +194,7 @@ export async function* parseAvroInBatchesFromUrl(
   let offset = header.dataOffset;
   let blockIndex = 0;
   let batch: Record<string, unknown>[] = [];
-  const selectedBlockIndices = options?.blockIndices?.slice().sort((a, b) => a - b);
   while (true) {
-    if (
-      selectedBlockIndices &&
-      (selectedBlockIndices.length === 0 || blockIndex > selectedBlockIndices.at(-1)!)
-    )
-      break;
     const blockHeader = await fetchAvroRange(url, offset, offset + 31, options);
     if (!blockHeader) break;
     if (blockHeader.fullFile) {
@@ -215,12 +209,6 @@ export async function* parseAvroInBatchesFromUrl(
       throw new Error('Invalid Avro OCF block header');
     const dataOffset = offset + sizeResult.offset;
     const blockEnd = dataOffset + sizeResult.value + header.syncMarker.length - 1;
-    const selected = !selectedBlockIndices || selectedBlockIndices.includes(blockIndex);
-    if (!selected) {
-      offset = blockEnd + 1;
-      blockIndex++;
-      continue;
-    }
     const block = await fetchAvroRange(url, dataOffset, blockEnd, options);
     if (!block) throw new Error('Truncated Avro OCF block');
     const blockBytes = block.bytes;
@@ -230,22 +218,25 @@ export async function* parseAvroInBatchesFromUrl(
     for (let index = 0; index < header.syncMarker.length; index++)
       if (blockBytes[syncOffset + index] !== header.syncMarker[index])
         throw new Error('Invalid Avro OCF sync marker');
-    const reader = new AvroReader(
-      await decompressAvro(header.codec, blockBytes.subarray(0, sizeResult.value)),
-      header.schema,
-      options
-    );
-    for (let index = 0; index < countResult.value; index++) {
-      const value = reader.readValue(header.schema);
-      if (!isRecord(value)) throw new Error('Avro root schema must be a record');
-      batch.push(
-        options?.readerSchema
-          ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
-          : value
+    const selected = !options?.blockIndices || options.blockIndices.includes(blockIndex);
+    if (selected) {
+      const reader = new AvroReader(
+        await decompressAvro(header.codec, blockBytes.subarray(0, sizeResult.value)),
+        header.schema,
+        options
       );
-      if (batch.length >= batchSize) {
-        yield createAvroBatch(batch);
-        batch = [];
+      for (let index = 0; index < countResult.value; index++) {
+        const value = reader.readValue(header.schema);
+        if (!isRecord(value)) throw new Error('Avro root schema must be a record');
+        batch.push(
+          options?.readerSchema
+            ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
+            : value
+        );
+        if (batch.length >= batchSize) {
+          yield createAvroBatch(batch);
+          batch = [];
+        }
       }
     }
     offset = dataOffset + sizeResult.value + header.syncMarker.length;
@@ -618,9 +609,8 @@ function resolveReaderValue(
     return value;
   }
   if (readerSchema.type === 'array' && Array.isArray(value)) {
-    const writerItemsSchema = getArrayItemsSchema(writerSchema);
     return value.map(item =>
-      resolveReaderValue(item, writerItemsSchema || writerSchema, readerSchema.items as AvroSchema)
+      resolveReaderValue(item, writerSchema, readerSchema.items as AvroSchema)
     );
   }
   if (readerSchema.type === 'map' && value instanceof Map) {
@@ -656,18 +646,6 @@ function getRecordSchema(schema: AvroSchema): AvroRecordSchema | undefined {
   return !Array.isArray(schema) && typeof schema !== 'string' && schema.type === 'record'
     ? (schema as AvroRecordSchema)
     : undefined;
-}
-
-/** Returns the item schema from an Avro array schema or union containing one. */
-function getArrayItemsSchema(schema: AvroSchema): AvroSchema | undefined {
-  if (Array.isArray(schema)) {
-    const arrayBranch = schema.find(branch => getArrayItemsSchema(branch));
-    return arrayBranch ? getArrayItemsSchema(arrayBranch) : undefined;
-  }
-  if (typeof schema === 'string') return undefined;
-  if (Array.isArray(schema.type)) return getArrayItemsSchema(schema.type);
-  if (typeof schema.type !== 'string') return getArrayItemsSchema(schema.type);
-  return schema.type === 'array' ? schema.items : undefined;
 }
 
 /** Returns a fixed schema when the schema is a fixed object. */

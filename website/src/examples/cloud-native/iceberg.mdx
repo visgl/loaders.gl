@@ -1,0 +1,12 @@
+import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-live-example';
+
+# Apache Iceberg
+
+This example discovers a public Apache Iceberg table in the browser, selects its current snapshot,
+plans the manifests, and scans the selected Parquet data into Arrow batches.
+
+<IcebergScanLiveExample />
+
+The demo uses Hyperparam's public [bunnies Iceberg table](https://s3.amazonaws.com/hyperparam-iceberg/spark/bunnies).
+The source is read-only and performs the complete metadata → manifest → Parquet → Arrow workflow
+without a server-side query engine.

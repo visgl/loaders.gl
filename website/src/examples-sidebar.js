@@ -18,12 +18,12 @@ const sidebars = {
     {
       type: 'category',
       label: 'General Data Formats',
-      items: ['table/arrow', 'table/bson', 'table/json', 'table/xml']
+      items: ['table/bson', 'table/json', 'table/xml']
     },
     {
       type: 'category',
       label: 'Table Formats',
-      items: ['table/avro', 'table/orc']
+      items: ['table/arrow', 'table/parquet', 'table/avro', 'table/orc', 'table/csv']
     },
     {
       type: 'category',
@@ -38,8 +38,8 @@ const sidebars = {
         'geospatial/shapefile',
         'geospatial/geojson',
         'geospatial/geoarrow',
+        'geospatial/flatgeobuf',
         'geospatial/geoparquet',
-        'geospatial/overture-parquet',
         'geospatial/geopackage',
         'geospatial/kml',
         'geospatial/gpx',
@@ -49,7 +49,11 @@ const sidebars = {
     {
       type: 'category',
       label: 'Cloud-Native Queries',
-      items: ['geospatial/fsq-places', 'geospatial/overture-parquet']
+      items: [
+        'geospatial/fsq-places',
+        'geospatial/overture-parquet',
+        'cloud-native/iceberg'
+      ]
     },
     {
       type: 'category',
@@ -103,7 +107,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'General Formats',
+      label: 'Image Formats',
       collapsed: false,
       items: [
         'textures',

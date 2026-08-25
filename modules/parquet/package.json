@@ -63,6 +63,14 @@
       "types": "./dist/avro-ocf.d.ts",
       "import": "./dist/avro-ocf.js"
     },
+    "./iceberg-table-source": {
+      "types": "./dist/iceberg-table-source.d.ts",
+      "import": "./dist/iceberg-table-source.js"
+    },
+    "./iceberg-rest-catalog": {
+      "types": "./dist/iceberg-rest-catalog.d.ts",
+      "import": "./dist/iceberg-rest-catalog.js"
+    },
     "./parquet-js-loader": {
       "types": "./dist/parquet-js-loader.d.ts",
       "import": "./dist/parquet-js-loader.js"

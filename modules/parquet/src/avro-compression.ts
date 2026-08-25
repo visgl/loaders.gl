@@ -2,35 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Compression} from '@loaders.gl/compression';
 import {
-  BZip2Compressor,
-  BZip2Decompressor,
-  DeflateCompressor,
-  DeflateDecompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  XZCompressor,
-  XZDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor
+  bzip2Compression,
+  deflateCompression,
+  snappyCompression,
+  xzCompression,
+  zstdCompression
 } from '@loaders.gl/compression';
-import type {Compressor, Decompressor} from '@loaders.gl/compression';
 import {toArrayBuffer, toUint8Array} from './parquetjs/utils/binary-utils';
 
 type AvroCodec = 'null' | 'deflate' | 'snappy' | 'zstandard' | 'bzip2' | 'xz';
 
 export type {AvroCodec};
 
-const decompressionPromises: Partial<Record<Exclude<AvroCodec, 'null'>, Promise<Decompressor>>> =
-  {};
-const compressionPromises: Partial<Record<Exclude<AvroCodec, 'null'>, Promise<Compressor>>> = {};
+const compressionPromises: Partial<Record<Exclude<AvroCodec, 'null'>, Promise<Compression>>> = {};
 
 /** Decompresses one Avro data block using a codec from the compression module. */
 export async function decompressAvro(codec: string, value: Uint8Array): Promise<Uint8Array> {
   if (codec === 'null') return value;
   if (!isAvroCodec(codec)) throw new Error(`avro: unsupported compression codec "${codec}"`);
 
-  const compression = await getAvroDecompressor(codec);
+  const compression = await getAvroCompression(codec);
   const compressedValue = codec === 'snappy' ? value.subarray(0, -4) : value;
   const output = toUint8Array(await compression.decompress(toArrayBuffer(compressedValue)));
 
@@ -46,7 +39,7 @@ export async function decompressAvro(codec: string, value: Uint8Array): Promise<
 export async function compressAvro(codec: string, value: Uint8Array): Promise<Uint8Array> {
   if (codec === 'null') return value;
   if (!isAvroCodec(codec)) throw new Error(`avro: unsupported compression codec "${codec}"`);
-  const compression = await getAvroCompressor(codec);
+  const compression = await getAvroCompression(codec);
   const compressed = toUint8Array(await compression.compress(toArrayBuffer(value)));
   if (codec !== 'snappy') return compressed;
   const result = new Uint8Array(compressed.length + 4);
@@ -71,41 +64,24 @@ function isAvroCodec(codec: string): codec is Exclude<AvroCodec, 'null'> {
 }
 
 /** Lazily constructs an Avro codec implementation. */
-async function getAvroDecompressor(codec: Exclude<AvroCodec, 'null'>): Promise<Decompressor> {
-  decompressionPromises[codec] ||= createAvroDecompressor(codec);
-  return await decompressionPromises[codec];
-}
-
-/** Creates one decompressor from the shared compression module. */
-async function createAvroDecompressor(codec: Exclude<AvroCodec, 'null'>): Promise<Decompressor> {
-  const decompressor = {
-    deflate: new DeflateDecompressor({raw: true}),
-    snappy: new SnappyDecompressor(),
-    zstandard: new ZstdDecompressor(),
-    bzip2: new BZip2Decompressor(),
-    xz: new XZDecompressor()
-  }[codec];
-  await decompressor.preload();
-  return decompressor;
-}
-
-/** Creates one compressor from the shared compression module. */
-async function getAvroCompressor(codec: Exclude<AvroCodec, 'null'>): Promise<Compressor> {
-  compressionPromises[codec] ||= createAvroCompressor(codec);
+async function getAvroCompression(codec: Exclude<AvroCodec, 'null'>): Promise<Compression> {
+  compressionPromises[codec] ||= createAvroCompression(codec);
   return await compressionPromises[codec];
 }
 
-/** Creates one compressor from the shared compression module. */
-async function createAvroCompressor(codec: Exclude<AvroCodec, 'null'>): Promise<Compressor> {
-  const compressor = {
-    deflate: new DeflateCompressor({raw: true}),
-    snappy: new SnappyCompressor(),
-    zstandard: new ZstdCompressor(),
-    bzip2: new BZip2Compressor(),
-    xz: new XZCompressor()
+/** Creates one codec implementation from the shared compression module. */
+async function createAvroCompression(codec: Exclude<AvroCodec, 'null'>): Promise<Compression> {
+  const metadata = {
+    deflate: deflateCompression,
+    snappy: snappyCompression,
+    zstandard: zstdCompression,
+    bzip2: bzip2Compression,
+    xz: xzCompression
   }[codec];
-  await compressor.preload();
-  return compressor;
+  if (metadata) {
+    return await metadata.preload(codec === 'deflate' ? {raw: true} : {});
+  }
+  throw new Error(`avro: unsupported compression codec "${codec}"`);
 }
 
 /** Reads a big-endian unsigned 32-bit integer. */

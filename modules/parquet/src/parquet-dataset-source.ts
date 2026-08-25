@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import {executeScanTasks, type CoreAPI, type ScanTask} from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
-import {SingleBatchQueue} from './lib/sources/single-batch-queue';
 import {ParquetSource} from './parquet-source-loader';
 import type {
   ParquetDatasetBatch,
@@ -45,13 +44,6 @@ type IndexedParquetDatasetFile = {
   file: ParquetDatasetFile;
   /** Position in provider output before local pruning. */
   index: number;
-};
-
-type ScheduledFileRead = {
-  /** Bounded batch queue for this file. */
-  queue: SingleBatchQueue<ParquetDatasetBatch>;
-  /** File task used for deterministic cleanup. */
-  task: Promise<void>;
 };
 
 /**
@@ -131,79 +123,24 @@ export class ParquetDatasetSource {
     this.assertOpen();
     const readContext = createDatasetAbortContext(options.signal);
     this.activeReadControllers.add(readContext.abortController);
-    const selectedFiles = this.getSelectedFiles({
-      ...options,
-      signal: readContext.abortController.signal
-    });
-    const iterator = selectedFiles[Symbol.asyncIterator]();
-    const scheduledReads = new Map<number, ScheduledFileRead>();
-    let nextSchedulePosition = 0;
-    let nextYieldPosition = 0;
-    let providerComplete = false;
-    let discoveryError: unknown;
+    const tasks = this.getReadTasks(options, readContext.abortController.signal);
     const fileConcurrency = normalizeFileConcurrency(
       options.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
     );
 
-    const scheduleNext = async (): Promise<void> => {
-      if (providerComplete) {
-        return;
-      }
-      const next = await iterator.next();
-      if (next.done) {
-        providerComplete = true;
-        return;
-      }
-      const position = nextSchedulePosition++;
-      const queue = new SingleBatchQueue<ParquetDatasetBatch>();
-      const task = this.readFile(next.value, options, queue, readContext.abortController.signal);
-      scheduledReads.set(position, {queue, task});
-    };
-
-    const fillAvailableSlots = async (): Promise<void> => {
-      try {
-        while (scheduledReads.size < fileConcurrency && !providerComplete) {
-          await scheduleNext();
-        }
-      } catch (error) {
-        discoveryError = error;
-        providerComplete = true;
-      }
-    };
-
     try {
-      await scheduleNext();
-      let discoveryPromise = fillAvailableSlots();
-
-      while (scheduledReads.size > 0) {
-        const scheduledRead = scheduledReads.get(nextYieldPosition);
-        if (!scheduledRead) {
-          throw new Error('ParquetDatasetSource internal file ordering error');
-        }
-        for await (const batch of scheduledRead.queue) {
-          throwIfAborted(readContext.abortController.signal);
-          this.telemetry.batchesEmitted++;
-          this.telemetry.rowsEmitted += batch.length;
-          yield batch;
-        }
-        await scheduledRead.task;
-        scheduledReads.delete(nextYieldPosition++);
-        await discoveryPromise;
-        if (discoveryError !== undefined) {
-          throw discoveryError;
-        }
-        discoveryPromise = fillAvailableSlots();
-      }
-      await discoveryPromise;
-      if (discoveryError !== undefined) {
-        throw discoveryError;
+      for await (const batch of executeScanTasks(tasks, {
+        concurrency: fileConcurrency,
+        signal: readContext.abortController.signal
+      })) {
+        this.telemetry.batchesEmitted++;
+        this.telemetry.rowsEmitted += batch.length;
+        yield batch;
       }
     } finally {
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
-      await iterator.return?.();
-      await Promise.allSettled([...scheduledReads.values()].map(read => read.task));
     }
   }
 
@@ -219,12 +156,22 @@ export class ParquetDatasetSource {
   }
 
   /** Reads one child source into its bounded file-order queue. */
-  private async readFile(
+  private async *getReadTasks(
+    options: ParquetDatasetReadOptions,
+    signal: AbortSignal
+  ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
+    const selectedFiles = this.getSelectedFiles({...options, signal});
+    for await (const indexedFile of selectedFiles) {
+      yield {run: taskSignal => this.readFile(indexedFile, options, taskSignal)};
+    }
+  }
+
+  /** Reads one child source as an asynchronous batch iterable. */
+  private async *readFile(
     indexedFile: IndexedParquetDatasetFile,
     options: ParquetDatasetReadOptions,
-    queue: SingleBatchQueue<ParquetDatasetBatch>,
     signal: AbortSignal
-  ): Promise<void> {
+  ): AsyncIterable<ParquetDatasetBatch> {
     const source = this.createSource(indexedFile.file);
     this.telemetry.filesOpened++;
     try {
@@ -237,15 +184,12 @@ export class ParquetDatasetSource {
         concurrency: options.concurrency,
         rowGroupFilter: options.rowGroupFilter,
         predicate: options.predicate,
-        bbox: options.bbox,
-        geometryColumn: options.geometryColumn,
         signal
       })) {
-        await queue.push(createDatasetBatch(batch, indexedFile), signal);
+        yield createDatasetBatch(batch, indexedFile);
       }
-      queue.finish();
     } catch (error) {
-      queue.fail(error);
+      throw error;
     } finally {
       await source.close();
       this.addParquetTelemetry(source.getTelemetry());
