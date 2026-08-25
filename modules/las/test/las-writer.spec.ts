@@ -370,6 +370,65 @@ test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
   t.end();
 });
 
+test('LASWriter#preserves LAZ fields through encodeInBatches', async t => {
+  const createBatch = (positions: number[], intensities: number[], extraValues: number[]) => {
+    const batchAttributes = {
+      POSITION: {value: new Float64Array(positions), size: 3},
+      intensity: {value: new Uint16Array(intensities), size: 1},
+      extraIntensity: {value: new Uint16Array(extraValues), size: 1}
+    };
+    return {
+      attributes: batchAttributes,
+      topology: 'point-list' as const,
+      mode: 0,
+      schema: deduceMeshSchema(batchAttributes, {topology: 'point-list', mode: '0'})
+    };
+  };
+  const batches = [
+    createBatch([0, 0, 0, 1, 0, 0], [10, 20], [100, 200]),
+    createBatch([0, 1, 0, 1, 1, 0], [30, 40], [300, 400])
+  ];
+  const encodedBatches = LASWriter.encodeInBatches?.(
+    (async function* () {
+      yield* batches;
+    })(),
+    {
+      las: {
+        format: 'laz',
+        pointDataRecordFormat: 7,
+        chunkSize: 2,
+        extraBytes: [{attribute: 'extraIntensity'}]
+      }
+    }
+  );
+  if (!encodedBatches) {
+    throw new Error('LASWriter does not support batch encoding');
+  }
+  let arrayBuffer: ArrayBuffer | undefined;
+  for await (const encodedBatch of encodedBatches) {
+    arrayBuffer = encodedBatch;
+  }
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not emit a batch output');
+  }
+  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = readUint64(dataView, pointDataOffset);
+  const chunk = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 38,
+    pointCount: 2,
+    point14ItemVersion: 3,
+    rgb14ItemVersion: 3,
+    byte14ItemVersion: 3
+  });
+
+  t.deepEqual(Array.from(data.attributes.intensity.value), [10, 20, 30, 40], 'merges batches');
+  t.equal(new DataView(chunk.buffer).getUint16(36, true), 100, 'preserves first batch Extra Bytes');
+  t.end();
+});
+
 test('LASWriter#validates Extra Bytes declarations', t => {
   const scalarAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
