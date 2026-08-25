@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DeflateCompression} from '@loaders.gl/compression';
+import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {GaussianSplats, SplatsLoaderOptions} from '../types';
 import {

@@ -4,7 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 import {parse} from '@loaders.gl/core';
-import {ZstdCompression} from '@loaders.gl/compression';
+import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
 import {SPZLoader} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';

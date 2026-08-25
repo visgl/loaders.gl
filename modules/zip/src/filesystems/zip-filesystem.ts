@@ -6,7 +6,7 @@ import {FileSystem, isBrowser, BlobFile, NodeFile} from '@loaders.gl/loader-util
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {DeflateCompression} from '@loaders.gl/compression';
+import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import {IndexedArchive} from './IndexedArchive';
 import {readRange} from '../parse-zip/readable-file-utils';
 

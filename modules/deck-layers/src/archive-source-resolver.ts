@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {DeflateCompression, GZipCompression, NoCompression} from '@loaders.gl/compression';
+import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
+import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
+import {NoCompression} from '@loaders.gl/compression/no-compression';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
 import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';

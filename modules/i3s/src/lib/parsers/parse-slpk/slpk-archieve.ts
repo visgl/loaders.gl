@@ -5,7 +5,7 @@
 import {MD5Hash} from '@loaders.gl/crypto';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
-import {GZipCompression} from '@loaders.gl/compression';
+import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
 
 /** Description of real paths for different file types */
 const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
