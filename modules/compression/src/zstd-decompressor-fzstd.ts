@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Compression, type CompressionOptions} from './lib/compression';
+import {Decompressor, type CompressionOptions} from './lib/compression';
 import {decompress} from 'fzstd';
 
-/**
- * Zstandard decompression explicitly backed by the compact fzstd decoder.
- * @deprecated Use `ZstdFzstdDecompressor` from `zstd-decompressor-fzstd`.
- */
-export class ZstdFzstdCompression extends Compression {
+/** Zstandard decompressor explicitly backed by the compact fzstd decoder. */
+export class ZstdFzstdDecompressor extends Decompressor {
   readonly name = 'zstd';
   readonly extensions = ['zst'];
   readonly contentEncodings = ['zstd'];
@@ -25,4 +22,4 @@ export class ZstdFzstdCompression extends Compression {
   }
 }
 
-export type {CompressionOptions as ZstdFzstdCompressionOptions};
+export type {CompressionOptions as ZstdFzstdDecompressorOptions};

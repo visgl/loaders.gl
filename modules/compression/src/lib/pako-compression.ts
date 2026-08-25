@@ -26,7 +26,7 @@ export type DeflatePakoCompressionOptions = CompressionOptions & {
 
 /**
  * DEFLATE compression explicitly backed by Pako.
- * @deprecated Import `deflate-pako-compressor` and/or `deflate-pako-decompressor`.
+ * @deprecated Import `deflate-compressor-pako` and/or `deflate-decompressor-pako`.
  */
 export class DeflatePakoCompression extends Compression {
   readonly name = 'deflate';
@@ -67,7 +67,7 @@ export type GZipPakoCompressionOptions = CompressionOptions & {
 
 /**
  * GZIP compression explicitly backed by Pako.
- * @deprecated Import `gzip-pako-compressor` and/or `gzip-pako-decompressor`.
+ * @deprecated Import `gzip-compressor-pako` and/or `gzip-decompressor-pako`.
  */
 export class GZipPakoCompression extends Compression {
   readonly name = 'gzip';

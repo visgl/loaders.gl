@@ -6,10 +6,10 @@ import {BrotliCompression, type BrotliCompressionOptions} from './lib/brotli-com
 import {BrotliDecode} from './brotli-decode';
 
 /**
- * Brotli decompression backed by the loaders.gl JavaScript decoder.
- * @deprecated Import `BrotliLoadersGLDecompressor` from `brotli-loaders-gl-decompressor`.
+ * Brotli decompression backed by the bundled JavaScript decoder shim.
+ * @deprecated Import `BrotliShimDecompressor` from `brotli-decompressor-shim`.
  */
-export class BrotliLoadersGLCompression extends BrotliCompression {
+export class BrotliShimCompression extends BrotliCompression {
   constructor(options: BrotliCompressionOptions = {}) {
     super({
       ...options,
@@ -17,7 +17,7 @@ export class BrotliLoadersGLCompression extends BrotliCompression {
         ...options.modules,
         brotli: {
           compress: () => {
-            throw new Error('BrotliLoadersGLCompression does not provide a Brotli encoder');
+            throw new Error('BrotliShimCompression does not provide a Brotli encoder');
           },
           decompress: (input: Uint8Array) => BrotliDecode(input, undefined)
         }
@@ -26,4 +26,4 @@ export class BrotliLoadersGLCompression extends BrotliCompression {
   }
 }
 
-export type {BrotliCompressionOptions as BrotliLoadersGLCompressionOptions};
+export type {BrotliCompressionOptions as BrotliShimCompressionOptions};

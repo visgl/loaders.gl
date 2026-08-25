@@ -18,7 +18,7 @@ async function compressGzip(data: ArrayBuffer): Promise<ArrayBuffer> {
   }
 
   const {GZipFflateCompressor} = await import(
-    '@loaders.gl/compression/gzip-fflate-compressor'
+    '@loaders.gl/compression/gzip-compressor-fflate'
   );
   return new GZipFflateCompressor().compress(data);
 }

@@ -106,6 +106,10 @@
       "types": "./dist/gzip-pako.d.ts",
       "import": "./dist/gzip-pako.js"
     },
+    "./zstd-decompressor-fzstd": {
+      "types": "./dist/zstd-decompressor-fzstd.d.ts",
+      "import": "./dist/zstd-decompressor-fzstd.js"
+    },
     "./zstd-fzstd": {
       "types": "./dist/zstd-fzstd.d.ts",
       "import": "./dist/zstd-fzstd.js"
@@ -126,13 +130,13 @@
       "types": "./dist/brotli-compress-utils.d.ts",
       "import": "./dist/brotli-compress-utils.js"
     },
-    "./brotli-loaders-gl": {
-      "types": "./dist/brotli-loaders-gl.d.ts",
-      "import": "./dist/brotli-loaders-gl.js"
+    "./brotli-shim": {
+      "types": "./dist/brotli-shim.d.ts",
+      "import": "./dist/brotli-shim.js"
     },
-    "./brotli-loaders-gl-decompressor": {
-      "types": "./dist/brotli-loaders-gl-decompressor.d.ts",
-      "import": "./dist/brotli-loaders-gl-decompressor.js"
+    "./brotli-decompressor-shim": {
+      "types": "./dist/brotli-decompressor-shim.d.ts",
+      "import": "./dist/brotli-decompressor-shim.js"
     },
     "./bzip2-compress-utils": {
       "types": "./dist/bzip2-compress-utils.d.ts",
@@ -162,29 +166,29 @@
       "types": "./dist/zstd-compress-utils.d.ts",
       "import": "./dist/zstd-compress-utils.js"
     },
-    "./*-compress-utils-compressor": {
-      "types": "./dist/*-compress-utils-compressor.d.ts",
-      "import": "./dist/*-compress-utils-compressor.js"
+    "./*-compressor-compress-utils": {
+      "types": "./dist/*-compressor-compress-utils.d.ts",
+      "import": "./dist/*-compressor-compress-utils.js"
     },
-    "./*-compress-utils-decompressor": {
-      "types": "./dist/*-compress-utils-decompressor.d.ts",
-      "import": "./dist/*-compress-utils-decompressor.js"
+    "./*-decompressor-compress-utils": {
+      "types": "./dist/*-decompressor-compress-utils.d.ts",
+      "import": "./dist/*-decompressor-compress-utils.js"
     },
-    "./*-fflate-compressor": {
-      "types": "./dist/*-fflate-compressor.d.ts",
-      "import": "./dist/*-fflate-compressor.js"
+    "./*-compressor-fflate": {
+      "types": "./dist/*-compressor-fflate.d.ts",
+      "import": "./dist/*-compressor-fflate.js"
     },
-    "./*-fflate-decompressor": {
-      "types": "./dist/*-fflate-decompressor.d.ts",
-      "import": "./dist/*-fflate-decompressor.js"
+    "./*-decompressor-fflate": {
+      "types": "./dist/*-decompressor-fflate.d.ts",
+      "import": "./dist/*-decompressor-fflate.js"
     },
-    "./*-pako-compressor": {
-      "types": "./dist/*-pako-compressor.d.ts",
-      "import": "./dist/*-pako-compressor.js"
+    "./*-compressor-pako": {
+      "types": "./dist/*-compressor-pako.d.ts",
+      "import": "./dist/*-compressor-pako.js"
     },
-    "./*-pako-decompressor": {
-      "types": "./dist/*-pako-decompressor.d.ts",
-      "import": "./dist/*-pako-decompressor.js"
+    "./*-decompressor-pako": {
+      "types": "./dist/*-decompressor-pako.d.ts",
+      "import": "./dist/*-decompressor-pako.js"
     },
     "./compression-worker.js": {
       "import": "./dist/compression-worker.js"

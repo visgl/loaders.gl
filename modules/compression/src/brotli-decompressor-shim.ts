@@ -5,8 +5,8 @@
 import {Decompressor, type CompressionOptions} from './lib/compression';
 import {BrotliDecode} from './brotli-decode';
 
-/** Brotli decompressor backed by the loaders.gl JavaScript decoder. */
-export class BrotliLoadersGLDecompressor extends Decompressor {
+/** Brotli decompressor backed by the bundled JavaScript decoder shim. */
+export class BrotliShimDecompressor extends Decompressor {
   readonly name = 'brotli';
   readonly extensions = ['br'];
   readonly contentEncodings = ['br'];
@@ -22,4 +22,4 @@ export class BrotliLoadersGLDecompressor extends Decompressor {
   }
 }
 
-export type {CompressionOptions as BrotliLoadersGLDecompressorOptions};
+export type {CompressionOptions as BrotliShimDecompressorOptions};

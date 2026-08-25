@@ -5,24 +5,24 @@
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
-import {BrotliLoadersGLDecompressor} from '@loaders.gl/compression/brotli-loaders-gl-decompressor';
-import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-fflate-compressor';
-import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-fflate-decompressor';
-import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-fflate-decompressor';
-import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-pako-decompressor';
-import {GZipPakoDecompressor} from '@loaders.gl/compression/gzip-pako-decompressor';
+import {BrotliShimDecompressor} from '@loaders.gl/compression/brotli-decompressor-shim';
+import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
+import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-decompressor-fflate';
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
+import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-decompressor-pako';
+import {GZipPakoDecompressor} from '@loaders.gl/compression/gzip-decompressor-pako';
 import {LZ4JSCompression} from '@loaders.gl/compression/lz4-lz4js';
 import {SnappyJSCompression} from '@loaders.gl/compression/snappy-snappyjs';
-import {ZstdFzstdDecompressor} from '@loaders.gl/compression/zstd-fzstd';
+import {ZstdFzstdDecompressor} from '@loaders.gl/compression/zstd-decompressor-fzstd';
 import {ZstdCodecCompression} from '@loaders.gl/compression/zstd-zstd-codec';
-import {BrotliCompressUtilsDecompressor} from '@loaders.gl/compression/brotli-compress-utils-decompressor';
-import {BZip2CompressUtilsDecompressor} from '@loaders.gl/compression/bzip2-compress-utils-decompressor';
-import {DeflateCompressUtilsDecompressor} from '@loaders.gl/compression/deflate-compress-utils-decompressor';
-import {GZipCompressUtilsDecompressor} from '@loaders.gl/compression/gzip-compress-utils-decompressor';
-import {LZ4CompressUtilsDecompressor} from '@loaders.gl/compression/lz4-compress-utils-decompressor';
-import {SnappyCompressUtilsDecompressor} from '@loaders.gl/compression/snappy-compress-utils-decompressor';
-import {XZCompressUtilsDecompressor} from '@loaders.gl/compression/xz-compress-utils-decompressor';
-import {ZstdCompressUtilsDecompressor} from '@loaders.gl/compression/zstd-compress-utils-decompressor';
+import {BrotliCompressUtilsDecompressor} from '@loaders.gl/compression/brotli-decompressor-compress-utils';
+import {BZip2CompressUtilsDecompressor} from '@loaders.gl/compression/bzip2-decompressor-compress-utils';
+import {DeflateCompressUtilsDecompressor} from '@loaders.gl/compression/deflate-decompressor-compress-utils';
+import {GZipCompressUtilsDecompressor} from '@loaders.gl/compression/gzip-decompressor-compress-utils';
+import {LZ4CompressUtilsDecompressor} from '@loaders.gl/compression/lz4-decompressor-compress-utils';
+import {SnappyCompressUtilsDecompressor} from '@loaders.gl/compression/snappy-decompressor-compress-utils';
+import {XZCompressUtilsDecompressor} from '@loaders.gl/compression/xz-decompressor-compress-utils';
+import {ZstdCompressUtilsDecompressor} from '@loaders.gl/compression/zstd-decompressor-compress-utils';
 import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
@@ -319,8 +319,8 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyUrl: 'https://github.com/nodeca/pako',
       dependencyNpmUrl: 'https://www.npmjs.com/package/pako'
     },
-    BrotliDecode: {
-      dependency: '@loaders.gl/compression',
+    'Brotli shim': {
+      dependency: 'bundled decoder shim',
       dependencyVersion: 'internal',
       dependencySize: '~210 KB source',
       dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/brotli',
@@ -490,8 +490,8 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       nativeFormat: 'brotli',
       externalCompressions: [
         {
-          name: 'BrotliDecode',
-          decompress: input => new BrotliLoadersGLDecompressor().decompress(input)
+          name: 'Brotli shim',
+          decompress: input => new BrotliShimDecompressor().decompress(input)
         },
         {
           name: 'compress-utils',

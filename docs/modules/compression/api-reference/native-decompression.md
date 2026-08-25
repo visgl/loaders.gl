@@ -20,7 +20,7 @@ async function decompressGzip(compressedData: ArrayBuffer): Promise<ArrayBuffer>
   }
 
   const {GZipFflateDecompressor} = await import(
-    '@loaders.gl/compression/gzip-fflate-decompressor'
+    '@loaders.gl/compression/gzip-decompressor-fflate'
   );
   return new GZipFflateDecompressor().decompress(compressedData);
 }

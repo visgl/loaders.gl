@@ -6,7 +6,7 @@ import {DeflateCompression, type DeflateCompressionOptions} from './lib/deflate-
 
 /**
  * DEFLATE compression explicitly backed by fflate.
- * @deprecated Import `deflate-fflate-compressor` and/or `deflate-fflate-decompressor`.
+ * @deprecated Import `deflate-compressor-fflate` and/or `deflate-decompressor-fflate`.
  */
 export class DeflateFflateCompression extends DeflateCompression {
   constructor(options: DeflateCompressionOptions = {}) {

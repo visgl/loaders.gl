@@ -21,7 +21,7 @@ Choose an implementation based on what your application values most:
 | --- | --- |
 | Smallest initial browser bundle | Try `native-compression` or `native-decompression`, then dynamically import a fallback |
 | Compact synchronous GZIP or DEFLATE | Use the `fflate` compressor or decompressor |
-| Brotli decompression without WASM | Use the loaders.gl Brotli decompressor |
+| Brotli decompression without WASM | Use the bundled JavaScript decoder shim |
 | Compact synchronous Zstandard decompression | Use the `fzstd` decompressor |
 | Incremental or broader format support | Use a direction-specific `compress-utils` adapter |
 | Existing v4 code | Keep the combined `*Compression` class while migrating; these classes are deprecated, not removed |
@@ -35,7 +35,7 @@ Import only the direction and implementation you need. This example uses the com
 binding and does not retain a GZIP encoder in a decode-only application:
 
 ```typescript
-import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-fflate-decompressor';
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 
 const decompressor = new GZipFflateDecompressor();
 const data = await decompressor.decompress(compressedData);
@@ -46,8 +46,8 @@ through loaders, writers, or application code:
 
 ```typescript
 import type {Compressor, Decompressor} from '@loaders.gl/compression';
-import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-fflate-compressor';
-import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-fflate-decompressor';
+import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 
 const compressors: Compressor[] = [new GZipFflateCompressor()];
 const decompressors: Decompressor[] = [new GZipFflateDecompressor()];
@@ -71,7 +71,7 @@ async function decompressGzip(input: ArrayBuffer): Promise<ArrayBuffer> {
   }
 
   const {GZipFflateDecompressor} = await import(
-    '@loaders.gl/compression/gzip-fflate-decompressor'
+    '@loaders.gl/compression/gzip-decompressor-fflate'
   );
   return new GZipFflateDecompressor().decompress(input);
 }
@@ -88,31 +88,32 @@ support is still runtime-dependent. See
 | GZIP | `CompressionStream` / `DecompressionStream` | `fflate` or Pako |
 | DEFLATE | `CompressionStream` / `DecompressionStream` | `fflate` or Pako |
 | Raw DEFLATE | `DecompressionStream` when supported | `fflate` or Pako |
-| Brotli | Runtime-dependent | loaders.gl decoder or `compress-utils` |
+| Brotli | Runtime-dependent | bundled JavaScript decoder shim or `compress-utils` |
 | Zstandard | Runtime-dependent | `fzstd`, `zstd-codec`, or `compress-utils` |
 | Snappy, LZ4, bzip2, XZ | Not exposed by the stream APIs | Selected library adapter |
 
 ## Choose a compressor
 
-Each subpath names both the format and its implementation. The `compress-utils` adapters are
-asynchronous, incremental, and backed by an optional dependency. The `fflate` and Pako adapters
-are synchronous JavaScript implementations.
+Each subpath follows `FORMAT-DIRECTION-IMPLEMENTATION` order, making its role apparent before the
+library choice—for example, `brotli-decompressor-compress-utils`. The `compress-utils` adapters
+are asynchronous, incremental, and backed by an optional dependency. The `fflate` and Pako
+adapters are synchronous JavaScript implementations.
 
 | Format | Class | Import subpath | Best for |
 | --- | --- | --- | --- |
 | Uncompressed | `NoCompressor` | `no-compressor` | Pass-through pipelines |
-| GZIP | `GZipFflateCompressor` | `gzip-fflate-compressor` | Compact synchronous JavaScript |
-| GZIP | `GZipPakoCompressor` | `gzip-pako-compressor` | Existing Pako-based applications |
-| GZIP | `GZipCompressUtilsCompressor` | `gzip-compress-utils-compressor` | Incremental operation |
-| DEFLATE | `DeflateFflateCompressor` | `deflate-fflate-compressor` | Compact synchronous JavaScript |
-| DEFLATE | `DeflatePakoCompressor` | `deflate-pako-compressor` | Existing Pako-based applications |
-| DEFLATE | `DeflateCompressUtilsCompressor` | `deflate-compress-utils-compressor` | Incremental operation |
-| Brotli | `BrotliCompressUtilsCompressor` | `brotli-compress-utils-compressor` | Brotli encoding |
-| Zstandard | `ZstdCompressUtilsCompressor` | `zstd-compress-utils-compressor` | Zstandard encoding |
-| Snappy | `SnappyCompressUtilsCompressor` | `snappy-compress-utils-compressor` | Snappy encoding |
-| LZ4 frame | `LZ4CompressUtilsCompressor` | `lz4-compress-utils-compressor` | LZ4 frame encoding |
-| bzip2 | `BZip2CompressUtilsCompressor` | `bzip2-compress-utils-compressor` | bzip2 encoding |
-| XZ/LZMA | `XZCompressUtilsCompressor` | `xz-compress-utils-compressor` | XZ/LZMA encoding |
+| GZIP | `GZipFflateCompressor` | `gzip-compressor-fflate` | Compact synchronous JavaScript |
+| GZIP | `GZipPakoCompressor` | `gzip-compressor-pako` | Existing Pako-based applications |
+| GZIP | `GZipCompressUtilsCompressor` | `gzip-compressor-compress-utils` | Incremental operation |
+| DEFLATE | `DeflateFflateCompressor` | `deflate-compressor-fflate` | Compact synchronous JavaScript |
+| DEFLATE | `DeflatePakoCompressor` | `deflate-compressor-pako` | Existing Pako-based applications |
+| DEFLATE | `DeflateCompressUtilsCompressor` | `deflate-compressor-compress-utils` | Incremental operation |
+| Brotli | `BrotliCompressUtilsCompressor` | `brotli-compressor-compress-utils` | Brotli encoding |
+| Zstandard | `ZstdCompressUtilsCompressor` | `zstd-compressor-compress-utils` | Zstandard encoding |
+| Snappy | `SnappyCompressUtilsCompressor` | `snappy-compressor-compress-utils` | Snappy encoding |
+| LZ4 frame | `LZ4CompressUtilsCompressor` | `lz4-compressor-compress-utils` | LZ4 frame encoding |
+| bzip2 | `BZip2CompressUtilsCompressor` | `bzip2-compressor-compress-utils` | bzip2 encoding |
+| XZ/LZMA | `XZCompressUtilsCompressor` | `xz-compressor-compress-utils` | XZ/LZMA encoding |
 
 ## Choose a decompressor
 
@@ -122,20 +123,20 @@ being retained in applications that only read data.
 | Format | Class | Import subpath | Best for |
 | --- | --- | --- | --- |
 | Uncompressed | `NoDecompressor` | `no-decompressor` | Pass-through pipelines |
-| GZIP | `GZipFflateDecompressor` | `gzip-fflate-decompressor` | Compact synchronous JavaScript |
-| GZIP | `GZipPakoDecompressor` | `gzip-pako-decompressor` | Existing Pako-based applications |
-| GZIP | `GZipCompressUtilsDecompressor` | `gzip-compress-utils-decompressor` | Incremental operation |
-| DEFLATE | `DeflateFflateDecompressor` | `deflate-fflate-decompressor` | Compact synchronous JavaScript |
-| DEFLATE | `DeflatePakoDecompressor` | `deflate-pako-decompressor` | Existing Pako-based applications |
-| DEFLATE | `DeflateCompressUtilsDecompressor` | `deflate-compress-utils-decompressor` | Incremental operation |
-| Brotli | `BrotliLoadersGLDecompressor` | `brotli-loaders-gl-decompressor` | Compact synchronous JavaScript |
-| Brotli | `BrotliCompressUtilsDecompressor` | `brotli-compress-utils-decompressor` | Incremental operation |
-| Zstandard | `ZstdFzstdDecompressor` | `zstd-fzstd` | Compact synchronous JavaScript |
-| Zstandard | `ZstdCompressUtilsDecompressor` | `zstd-compress-utils-decompressor` | Incremental operation |
-| Snappy | `SnappyCompressUtilsDecompressor` | `snappy-compress-utils-decompressor` | Snappy decoding |
-| LZ4 frame | `LZ4CompressUtilsDecompressor` | `lz4-compress-utils-decompressor` | LZ4 frame decoding |
-| bzip2 | `BZip2CompressUtilsDecompressor` | `bzip2-compress-utils-decompressor` | bzip2 decoding |
-| XZ/LZMA | `XZCompressUtilsDecompressor` | `xz-compress-utils-decompressor` | XZ/LZMA decoding |
+| GZIP | `GZipFflateDecompressor` | `gzip-decompressor-fflate` | Compact synchronous JavaScript |
+| GZIP | `GZipPakoDecompressor` | `gzip-decompressor-pako` | Existing Pako-based applications |
+| GZIP | `GZipCompressUtilsDecompressor` | `gzip-decompressor-compress-utils` | Incremental operation |
+| DEFLATE | `DeflateFflateDecompressor` | `deflate-decompressor-fflate` | Compact synchronous JavaScript |
+| DEFLATE | `DeflatePakoDecompressor` | `deflate-decompressor-pako` | Existing Pako-based applications |
+| DEFLATE | `DeflateCompressUtilsDecompressor` | `deflate-decompressor-compress-utils` | Incremental operation |
+| Brotli | `BrotliShimDecompressor` | `brotli-decompressor-shim` | Bundled JavaScript decoder shim |
+| Brotli | `BrotliCompressUtilsDecompressor` | `brotli-decompressor-compress-utils` | Incremental operation |
+| Zstandard | `ZstdFzstdDecompressor` | `zstd-decompressor-fzstd` | Compact synchronous JavaScript |
+| Zstandard | `ZstdCompressUtilsDecompressor` | `zstd-decompressor-compress-utils` | Incremental operation |
+| Snappy | `SnappyCompressUtilsDecompressor` | `snappy-decompressor-compress-utils` | Snappy decoding |
+| LZ4 frame | `LZ4CompressUtilsDecompressor` | `lz4-decompressor-compress-utils` | LZ4 frame decoding |
+| bzip2 | `BZip2CompressUtilsDecompressor` | `bzip2-decompressor-compress-utils` | bzip2 decoding |
+| XZ/LZMA | `XZCompressUtilsDecompressor` | `xz-decompressor-compress-utils` | XZ/LZMA decoding |
 
 ## Async, sync, and streaming
 

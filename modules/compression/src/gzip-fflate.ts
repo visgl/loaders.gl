@@ -6,7 +6,7 @@ import {GZipCompression, type GZipCompressionOptions} from './lib/gzip-compressi
 
 /**
  * GZIP compression explicitly backed by fflate.
- * @deprecated Import `gzip-fflate-compressor` and/or `gzip-fflate-decompressor`.
+ * @deprecated Import `gzip-compressor-fflate` and/or `gzip-decompressor-fflate`.
  */
 export class GZipFflateCompression extends GZipCompression {
   constructor(options: GZipCompressionOptions = {}) {
