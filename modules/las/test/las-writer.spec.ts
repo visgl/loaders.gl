@@ -790,6 +790,35 @@ test('LASWriter#validates coordinate quantization', t => {
   t.end();
 });
 
+test('LASWriter#rejects non-finite mapped attributes', t => {
+  const nonFiniteGPSMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      gpsTime: {value: new Float64Array([Number.NaN, 1, 2]), size: 1}
+    }
+  };
+  t.throws(
+    () => LASWriter.encodeSync?.(nonFiniteGPSMesh, {las: {pointDataRecordFormat: 7}}),
+    /gpsTime attribute must contain finite values/
+  );
+  const nonFiniteExtraMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      extraValue: {value: new Float32Array([Number.POSITIVE_INFINITY, 1, 2]), size: 1}
+    }
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(nonFiniteExtraMesh, {
+        las: {extraBytes: [{attribute: 'extraValue'}]}
+      }),
+    /extraValue attribute must contain finite values/
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,

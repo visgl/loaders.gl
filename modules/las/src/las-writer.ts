@@ -368,6 +368,7 @@ function getExtraByteFields(
     if (meshAttribute.value.length < vertexCount * meshAttribute.size) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is too short`);
     }
+    validateFiniteAttributeValues(field.attribute, meshAttribute);
     const dataType = getExtraBytesDataType(meshAttribute.value, meshAttribute.size);
     return {
       ...field,
@@ -671,11 +672,21 @@ function validateOptionalAttribute(
   if (minimumSize === 1 ? attribute.size !== 1 : attribute.size < minimumSize) {
     throw new Error(`LASWriter: ${attributeName} attribute must have size ${minimumSize}`);
   }
+  validateFiniteAttributeValues(attributeName, attribute);
   if (requirePointCount && attribute.value.length < vertexCount * attribute.size) {
     throw new Error(`LASWriter: ${attributeName} attribute is too short`);
   }
   if (!requirePointCount && attribute.value.length < attribute.size) {
     throw new Error(`LASWriter: ${attributeName} attribute is too short`);
+  }
+}
+
+/** Reject NaN and infinite values before numeric LAS conversion. */
+function validateFiniteAttributeValues(attributeName: string, attribute: MeshAttribute): void {
+  for (const value of attribute.value) {
+    if (!Number.isFinite(Number(value))) {
+      throw new Error(`LASWriter: ${attributeName} attribute must contain finite values`);
+    }
   }
 }
 
