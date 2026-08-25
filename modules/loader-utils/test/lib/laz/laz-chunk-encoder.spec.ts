@@ -8,6 +8,7 @@ import {
   decodeLAZChunk,
   decodeLAZChunkTable,
   encodeLAZChunk,
+  encodeLASzipVLR,
   encodeLAZChunkTable,
   getLAZChunkByteLength
 } from '@loaders.gl/loader-utils';
@@ -74,6 +75,17 @@ test('LAZChunkEncoder#validates input and item versions', t => {
       }),
     /does not support point format 4/,
     'waveform legacy point formats remain unsupported'
+  );
+  t.throws(
+    () =>
+      encodeLASzipVLR({
+        pointDataRecordFormat: 0,
+        pointDataRecordLength: 20,
+        chunkSize: 1,
+        itemVersion: 3
+      }),
+    /Legacy LASzip point formats require item version 2/,
+    'legacy item version overrides are rejected'
   );
   t.throws(
     () => encodeLAZChunk(rawPointData.subarray(1), metadata),
