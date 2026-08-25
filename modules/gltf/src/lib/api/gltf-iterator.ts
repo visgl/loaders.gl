@@ -63,57 +63,103 @@ type GLTFIteratorData = {
   extensions?: Record<string, any>;
 };
 
-/** Base class for a lightweight view of one raw glTF object. */
-export abstract class GLTFObjectIterator<
+/** Metadata and explicit mutation helpers for a proxied raw glTF object. */
+export class GLTFProxyContext<
   DataT extends GLTFIteratorData,
-  TypeT extends GLTFIteratorType
+  TypeT extends GLTFIteratorType,
+  ParentT = undefined
 > {
   /** Original glTF container. */
   readonly gltf: GLTFWithBuffers;
 
-  /** Stable tag identifying the wrapped object type. */
+  /** Stable tag identifying the proxied object type. */
   readonly type: TypeT;
 
   /** Index in the object's top-level or parent-local collection. */
   readonly index: number;
 
-  /** Exact unmodified object from the source glTF JSON. */
-  readonly data: DataT;
+  /** Exact mutable object from the source glTF JSON. */
+  readonly raw: DataT;
 
   /** Human-readable path to the raw object. */
   readonly path: string;
 
-  /** Root iterator used to resolve linked indices. */
-  protected readonly iterator: GLTFIterator;
+  /** Proxy containing this nested object, when applicable. */
+  readonly parent: ParentT;
 
-  /** Create a lightweight wrapper for a raw glTF object. */
-  constructor(iterator: GLTFIterator, type: TypeT, index: number, data: DataT, path: string) {
+  /** Root iterator used by extension mutation helpers. */
+  private readonly iterator: GLTFIterator;
+
+  /** Create metadata for one proxied raw glTF object. */
+  constructor(
+    iterator: GLTFIterator,
+    type: TypeT,
+    index: number,
+    raw: DataT,
+    path: string,
+    parent: ParentT
+  ) {
     this.iterator = iterator;
     this.gltf = iterator.gltf;
     this.type = type;
     this.index = index;
-    this.data = data;
+    this.raw = raw;
     this.path = path;
+    this.parent = parent;
   }
 
   /** Return an extension payload without modifying the raw object. */
   getExtension<ExtensionT = unknown>(extensionName: string): ExtensionT | undefined {
-    return this.data.extensions?.[extensionName] as ExtensionT | undefined;
+    return this.raw.extensions?.[extensionName] as ExtensionT | undefined;
   }
 
   /** Set an extension payload and register the extension as used. */
   setExtension<ExtensionT>(extensionName: string, extension: ExtensionT): void {
-    this.data.extensions ||= {};
-    this.data.extensions[extensionName] = extension;
+    this.raw.extensions ||= {};
+    this.raw.extensions[extensionName] = extension;
     this.iterator.registerUsedExtension(extensionName);
   }
 
   /** Remove an extension payload while preserving glTF extension bookkeeping. */
   removeExtension(extensionName: string): void {
-    if (this.data.extensions?.[extensionName] !== undefined) {
+    if (this.raw.extensions?.[extensionName] !== undefined) {
       this.iterator.recordRemovedExtension(extensionName);
-      delete this.data.extensions[extensionName];
+      delete this.raw.extensions[extensionName];
     }
+  }
+}
+
+/** Base class for a lightweight view of one raw glTF object. */
+export abstract class GLTFObjectIterator<
+  DataT extends GLTFIteratorData,
+  TypeT extends GLTFIteratorType,
+  ParentT = undefined
+> {
+  /** Metadata and explicit mutation helpers for this JavaScript Proxy. */
+  readonly _proxy: GLTFProxyContext<DataT, TypeT, ParentT>;
+
+  /** Root iterator used to resolve linked indices. */
+  protected readonly iterator: GLTFIterator;
+
+  /** Raw source object used internally by resolved reference getters. */
+  protected readonly _data: DataT;
+
+  /** Raw object path used internally for precise reference errors. */
+  protected readonly _path: string;
+
+  /** Create a lightweight wrapper for a raw glTF object. */
+  constructor(
+    iterator: GLTFIterator,
+    type: TypeT,
+    index: number,
+    data: DataT,
+    path: string,
+    parent: ParentT = undefined as ParentT
+  ) {
+    this.iterator = iterator;
+    this._data = data;
+    this._path = path;
+    this._proxy = new GLTFProxyContext(iterator, type, index, data, path, parent);
   }
 }
 
@@ -121,11 +167,8 @@ export abstract class GLTFObjectIterator<
 export abstract class GLTFNestedObjectIterator<
   DataT extends GLTFIteratorData,
   TypeT extends GLTFIteratorType,
-  ParentT extends GLTFObjectIterator<GLTFIteratorData, GLTFIteratorType>
-> extends GLTFObjectIterator<DataT, TypeT> {
-  /** Wrapper containing this nested object. */
-  readonly parent: ParentT;
-
+  ParentT extends GLTFObjectIterator<GLTFIteratorData, GLTFIteratorType, any>
+> extends GLTFObjectIterator<DataT, TypeT, ParentT> {
   /** Create a wrapper for a parent-local raw glTF object. */
   constructor(
     iterator: GLTFIterator,
@@ -135,8 +178,7 @@ export abstract class GLTFNestedObjectIterator<
     path: string,
     parent: ParentT
   ) {
-    super(iterator, type, index, data, path);
-    this.parent = parent;
+    super(iterator, type, index, data, path, parent);
   }
 }
 
@@ -144,17 +186,20 @@ export abstract class GLTFNestedObjectIterator<
 export class GLTFAccessorIterator extends GLTFObjectIterator<GLTFAccessor, 'accessor'> {
   /** Resolve the accessor's buffer view. */
   get bufferView(): GLTFBufferViewIterator | undefined {
-    return this.data.bufferView === undefined
+    return this._data.bufferView === undefined
       ? undefined
-      : this.iterator.resolveBufferView(this.data.bufferView, `${this.path}.bufferView`);
+      : this.iterator.resolveBufferView(this._data.bufferView, `${this._path}.bufferView`);
   }
 }
+
+/** Raw accessor properties exposed directly by the accessor Proxy. */
+export interface GLTFAccessorIterator extends Omit<GLTFAccessor, 'bufferView'> {}
 
 /** Lightweight animation wrapper. */
 export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'animation'> {
   /** Iterate animation channels in source order. */
   get channels(): IterableIterator<GLTFAnimationChannelIterator> {
-    return iterateValues(this.data.channels, (channel, channelIndex) =>
+    return iterateValues(this._data.channels, (channel, channelIndex) =>
       this.iterator.getOrCreateNested(
         channel,
         () =>
@@ -163,7 +208,7 @@ export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'an
             'animationChannel',
             channelIndex,
             channel,
-            `${this.path}.channels[${channelIndex}]`,
+            `${this._path}.channels[${channelIndex}]`,
             this
           )
       )
@@ -172,7 +217,7 @@ export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'an
 
   /** Iterate animation samplers in source order. */
   get samplers(): IterableIterator<GLTFAnimationSamplerIterator> {
-    return iterateValues(this.data.samplers, (sampler, samplerIndex) =>
+    return iterateValues(this._data.samplers, (sampler, samplerIndex) =>
       this.iterator.getOrCreateNested(
         sampler,
         () =>
@@ -181,13 +226,16 @@ export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'an
             'animationSampler',
             samplerIndex,
             sampler,
-            `${this.path}.samplers[${samplerIndex}]`,
+            `${this._path}.samplers[${samplerIndex}]`,
             this
           )
       )
     );
   }
 }
+
+/** Raw animation properties exposed directly by the animation Proxy. */
+export interface GLTFAnimationIterator extends Omit<GLTFAnimation, 'channels' | 'samplers'> {}
 
 /** Lightweight animation channel wrapper. */
 export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
@@ -197,11 +245,11 @@ export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
 > {
   /** Resolve the animation-local sampler. */
   get sampler(): GLTFAnimationSamplerIterator {
-    const samplers = this.parent.data.samplers;
-    const sampler = samplers[this.data.sampler];
+    const samplers = this._proxy.parent._proxy.raw.samplers;
+    const sampler = samplers[this._data.sampler];
     if (!sampler) {
       throw new Error(
-        `Invalid glTF reference at ${this.path}.sampler: animation sampler index ${this.data.sampler} is out of range`
+        `Invalid glTF reference at ${this._path}.sampler: animation sampler index ${this._data.sampler} is out of range`
       );
     }
     return this.iterator.getOrCreateNested(
@@ -210,10 +258,10 @@ export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
         new GLTFAnimationSamplerIterator(
           this.iterator,
           'animationSampler',
-          this.data.sampler,
+          this._data.sampler,
           sampler,
-          `${this.parent.path}.samplers[${this.data.sampler}]`,
-          this.parent
+          `${this._proxy.parent._proxy.path}.samplers[${this._data.sampler}]`,
+          this._proxy.parent
         )
     );
   }
@@ -221,19 +269,23 @@ export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
   /** Return the channel target wrapper. */
   get target(): GLTFAnimationChannelTargetIterator {
     return this.iterator.getOrCreateNested(
-      this.data.target,
+      this._data.target,
       () =>
         new GLTFAnimationChannelTargetIterator(
           this.iterator,
           'animationChannelTarget',
           0,
-          this.data.target,
-          `${this.path}.target`,
+          this._data.target,
+          `${this._path}.target`,
           this
         )
     );
   }
 }
+
+/** Raw channel properties exposed directly by the animation-channel Proxy. */
+export interface GLTFAnimationChannelIterator
+  extends Omit<GLTFAnimationChannel, 'sampler' | 'target'> {}
 
 /** Lightweight animation channel target wrapper. */
 export class GLTFAnimationChannelTargetIterator extends GLTFNestedObjectIterator<
@@ -243,11 +295,15 @@ export class GLTFAnimationChannelTargetIterator extends GLTFNestedObjectIterator
 > {
   /** Resolve the target node when one is specified. */
   get node(): GLTFNodeIterator | undefined {
-    return this.data.node === undefined
+    return this._data.node === undefined
       ? undefined
-      : this.iterator.resolveNode(this.data.node, `${this.path}.node`);
+      : this.iterator.resolveNode(this._data.node, `${this._path}.node`);
   }
 }
+
+/** Raw target properties exposed directly by the animation-target Proxy. */
+export interface GLTFAnimationChannelTargetIterator
+  extends Omit<GLTFAnimationChannelTarget, 'node'> {}
 
 /** Lightweight animation sampler wrapper. */
 export class GLTFAnimationSamplerIterator extends GLTFNestedObjectIterator<
@@ -257,28 +313,35 @@ export class GLTFAnimationSamplerIterator extends GLTFNestedObjectIterator<
 > {
   /** Resolve the sampler input accessor. */
   get input(): GLTFAccessorIterator {
-    return this.iterator.resolveAccessor(this.data.input, `${this.path}.input`);
+    return this.iterator.resolveAccessor(this._data.input, `${this._path}.input`);
   }
 
   /** Resolve the sampler output accessor. */
   get output(): GLTFAccessorIterator {
-    return this.iterator.resolveAccessor(this.data.output, `${this.path}.output`);
+    return this.iterator.resolveAccessor(this._data.output, `${this._path}.output`);
   }
 }
+
+/** Raw sampler properties exposed directly by the animation-sampler Proxy. */
+export interface GLTFAnimationSamplerIterator
+  extends Omit<GLTFAnimationSampler, 'input' | 'output'> {}
 
 /** Lightweight buffer wrapper. */
 export class GLTFBufferIterator extends GLTFObjectIterator<GLTFBuffer, 'buffer'> {
   /** Return the loaded byte range parallel to this JSON buffer, when available. */
   get loadedBuffer(): GLTFWithBuffers['buffers'][number] | undefined {
-    return this.gltf.buffers[this.index];
+    return this._proxy.gltf.buffers[this._proxy.index];
   }
 }
+
+/** Raw buffer properties exposed directly by the buffer Proxy. */
+export interface GLTFBufferIterator extends GLTFBuffer {}
 
 /** Lightweight buffer-view wrapper. */
 export class GLTFBufferViewIterator extends GLTFObjectIterator<GLTFBufferView, 'bufferView'> {
   /** Resolve the backing JSON buffer. */
   get buffer(): GLTFBufferIterator {
-    return this.iterator.resolveBuffer(this.data.buffer, `${this.path}.buffer`);
+    return this.iterator.resolveBuffer(this._data.buffer, `${this._path}.buffer`);
   }
 
   /** Return a byte view over the loaded buffer-view range. */
@@ -287,13 +350,19 @@ export class GLTFBufferViewIterator extends GLTFObjectIterator<GLTFBufferView, '
     if (!loadedBuffer) {
       return undefined;
     }
-    const byteOffset = loadedBuffer.byteOffset + (this.data.byteOffset || 0);
-    return new Uint8Array(loadedBuffer.arrayBuffer, byteOffset, this.data.byteLength);
+    const byteOffset = loadedBuffer.byteOffset + (this._data.byteOffset || 0);
+    return new Uint8Array(loadedBuffer.arrayBuffer, byteOffset, this._data.byteLength);
   }
 }
 
+/** Raw buffer-view properties exposed directly by the buffer-view Proxy. */
+export interface GLTFBufferViewIterator extends Omit<GLTFBufferView, 'buffer'> {}
+
 /** Lightweight camera wrapper. */
 export class GLTFCameraIterator extends GLTFObjectIterator<GLTFCamera, 'camera'> {}
+
+/** Raw camera properties exposed directly by the camera Proxy. */
+export interface GLTFCameraIterator extends GLTFCamera {}
 
 /** Lightweight external-asset wrapper for draft glTF 2.1. */
 export class GLTFExternalAssetIterator extends GLTFObjectIterator<
@@ -302,51 +371,60 @@ export class GLTFExternalAssetIterator extends GLTFObjectIterator<
 > {
   /** Resolve the file containing the external glTF asset. */
   get file(): GLTFFileIterator {
-    return this.iterator.resolveFile(this.data.file, `${this.path}.file`);
+    return this.iterator.resolveFile(this._data.file, `${this._path}.file`);
   }
 
   /** Return the parsed external glTF loaded parallel to this definition. */
   get loadedAsset(): GLTFWithBuffers | null | undefined {
-    return this.gltf.externalAssets?.[this.index];
+    return this._proxy.gltf.externalAssets?.[this._proxy.index];
   }
 }
+
+/** Raw external-asset properties exposed directly by the external-asset Proxy. */
+export interface GLTFExternalAssetIterator extends Omit<GLTFExternalAsset, 'file'> {}
 
 /** Lightweight file wrapper for draft glTF 2.1. */
 export class GLTFFileIterator extends GLTFObjectIterator<GLTFFile, 'file'> {
   /** Resolve the optional buffer view containing this file. */
   get bufferView(): GLTFBufferViewIterator | undefined {
-    return this.data.bufferView === undefined
+    return this._data.bufferView === undefined
       ? undefined
-      : this.iterator.resolveBufferView(this.data.bufferView, `${this.path}.bufferView`);
+      : this.iterator.resolveBufferView(this._data.bufferView, `${this._path}.bufferView`);
   }
 
   /** Return the resolved file loaded parallel to this definition. */
   get loadedFile(): NonNullable<GLTFWithBuffers['files']>[number] | undefined {
-    return this.gltf.files?.[this.index];
+    return this._proxy.gltf.files?.[this._proxy.index];
   }
 }
+
+/** Raw file properties exposed directly by the file Proxy. */
+export interface GLTFFileIterator extends Omit<GLTFFile, 'bufferView'> {}
 
 /** Lightweight image wrapper. */
 export class GLTFImageIterator extends GLTFObjectIterator<GLTFImage, 'image'> {
   /** Resolve the optional buffer view containing this image. */
   get bufferView(): GLTFBufferViewIterator | undefined {
-    return this.data.bufferView === undefined
+    return this._data.bufferView === undefined
       ? undefined
-      : this.iterator.resolveBufferView(this.data.bufferView, `${this.path}.bufferView`);
+      : this.iterator.resolveBufferView(this._data.bufferView, `${this._path}.bufferView`);
   }
 
   /** Return the decoded image loaded parallel to this definition. */
   get loadedImage(): NonNullable<GLTFWithBuffers['images']>[number] | undefined {
-    return this.gltf.images?.[this.index];
+    return this._proxy.gltf.images?.[this._proxy.index];
   }
 }
+
+/** Raw image properties exposed directly by the image Proxy. */
+export interface GLTFImageIterator extends Omit<GLTFImage, 'bufferView'> {}
 
 /** Lightweight material wrapper. */
 export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'material'> {
   /** Resolve the base-color texture info. */
   get baseColorTexture(): GLTFTextureInfoIterator | undefined {
     return this.getTextureInfo(
-      this.data.pbrMetallicRoughness?.baseColorTexture,
+      this._data.pbrMetallicRoughness?.baseColorTexture,
       0,
       'pbrMetallicRoughness.baseColorTexture'
     );
@@ -355,7 +433,7 @@ export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'mate
   /** Resolve the metallic-roughness texture info. */
   get metallicRoughnessTexture(): GLTFTextureInfoIterator | undefined {
     return this.getTextureInfo(
-      this.data.pbrMetallicRoughness?.metallicRoughnessTexture,
+      this._data.pbrMetallicRoughness?.metallicRoughnessTexture,
       1,
       'pbrMetallicRoughness.metallicRoughnessTexture'
     );
@@ -363,17 +441,17 @@ export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'mate
 
   /** Resolve the normal texture info. */
   get normalTexture(): GLTFTextureInfoIterator | undefined {
-    return this.getTextureInfo(this.data.normalTexture, 2, 'normalTexture');
+    return this.getTextureInfo(this._data.normalTexture, 2, 'normalTexture');
   }
 
   /** Resolve the occlusion texture info. */
   get occlusionTexture(): GLTFTextureInfoIterator | undefined {
-    return this.getTextureInfo(this.data.occlusionTexture, 3, 'occlusionTexture');
+    return this.getTextureInfo(this._data.occlusionTexture, 3, 'occlusionTexture');
   }
 
   /** Resolve the emissive texture info. */
   get emissiveTexture(): GLTFTextureInfoIterator | undefined {
-    return this.getTextureInfo(this.data.emissiveTexture, 4, 'emissiveTexture');
+    return this.getTextureInfo(this._data.emissiveTexture, 4, 'emissiveTexture');
   }
 
   /** Resolve standard texture-info properties in their schema order. */
@@ -407,13 +485,17 @@ export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'mate
               'textureInfo',
               index,
               textureInfo,
-              `${this.path}.${propertyPath}`,
+              `${this._path}.${propertyPath}`,
               this
             )
         )
       : undefined;
   }
 }
+
+/** Raw material properties exposed directly by the material Proxy. */
+export interface GLTFMaterialIterator
+  extends Omit<GLTFMaterial, 'normalTexture' | 'occlusionTexture' | 'emissiveTexture'> {}
 
 /** Lightweight texture-info wrapper nested in a material. */
 export class GLTFTextureInfoIterator extends GLTFNestedObjectIterator<
@@ -423,15 +505,24 @@ export class GLTFTextureInfoIterator extends GLTFNestedObjectIterator<
 > {
   /** Resolve the texture referenced by the raw texture-info `index` field. */
   get texture(): GLTFTextureIterator {
-    return this.iterator.resolveTexture(this.data.index, `${this.path}.index`);
+    return this.iterator.resolveTexture(this._data.index, `${this._path}.index`);
   }
+}
+
+/** Raw texture-info properties exposed directly by the texture-info Proxy. */
+export interface GLTFTextureInfoIterator extends GLTFTextureInfo {
+  /** Scalar multiplier for a normal texture. */
+  scale?: number;
+
+  /** Strength multiplier for an occlusion texture. */
+  strength?: number;
 }
 
 /** Lightweight mesh wrapper. */
 export class GLTFMeshIterator extends GLTFObjectIterator<GLTFMesh, 'mesh'> {
   /** Iterate mesh primitives in source order. */
   get primitives(): IterableIterator<GLTFMeshPrimitiveIterator> {
-    return iterateValues(this.data.primitives, (primitive, primitiveIndex) =>
+    return iterateValues(this._data.primitives, (primitive, primitiveIndex) =>
       this.iterator.getOrCreateNested(
         primitive,
         () =>
@@ -440,13 +531,16 @@ export class GLTFMeshIterator extends GLTFObjectIterator<GLTFMesh, 'mesh'> {
             'primitive',
             primitiveIndex,
             primitive,
-            `${this.path}.primitives[${primitiveIndex}]`,
+            `${this._path}.primitives[${primitiveIndex}]`,
             this
           )
       )
     );
   }
 }
+
+/** Raw mesh properties exposed directly by the mesh Proxy. */
+export interface GLTFMeshIterator extends Omit<GLTFMesh, 'primitives'> {}
 
 /** Lightweight mesh primitive wrapper. */
 export class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
@@ -457,37 +551,37 @@ export class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
   /** Resolve every vertex attribute accessor by semantic name. */
   get attributes(): ReadonlyMap<string, GLTFAccessorIterator> {
     return new Map(
-      Object.entries(this.data.attributes).map(([attributeName, accessorIndex]) => [
+      Object.entries(this._data.attributes).map(([attributeName, accessorIndex]) => [
         attributeName,
-        this.iterator.resolveAccessor(accessorIndex, `${this.path}.attributes.${attributeName}`)
+        this.iterator.resolveAccessor(accessorIndex, `${this._path}.attributes.${attributeName}`)
       ])
     );
   }
 
   /** Resolve the optional index accessor. */
   get indices(): GLTFAccessorIterator | undefined {
-    return this.data.indices === undefined
+    return this._data.indices === undefined
       ? undefined
-      : this.iterator.resolveAccessor(this.data.indices, `${this.path}.indices`);
+      : this.iterator.resolveAccessor(this._data.indices, `${this._path}.indices`);
   }
 
   /** Resolve the optional material. */
   get material(): GLTFMaterialIterator | undefined {
-    return this.data.material === undefined
+    return this._data.material === undefined
       ? undefined
-      : this.iterator.resolveMaterial(this.data.material, `${this.path}.material`);
+      : this.iterator.resolveMaterial(this._data.material, `${this._path}.material`);
   }
 
   /** Resolve morph-target attribute accessors without rewriting target dictionaries. */
   get targets(): ReadonlyArray<ReadonlyMap<string, GLTFAccessorIterator>> {
-    return (this.data.targets || []).map(
+    return (this._data.targets || []).map(
       (target, targetIndex) =>
         new Map(
           Object.entries(target).map(([attributeName, accessorIndex]) => [
             attributeName,
             this.iterator.resolveAccessor(
               accessorIndex,
-              `${this.path}.targets[${targetIndex}].${attributeName}`
+              `${this._path}.targets[${targetIndex}].${attributeName}`
             )
           ])
         )
@@ -495,114 +589,135 @@ export class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
   }
 }
 
+/** Raw primitive properties exposed directly by the primitive Proxy. */
+export interface GLTFMeshPrimitiveIterator
+  extends Omit<GLTFMeshPrimitive, 'attributes' | 'indices' | 'material' | 'targets'> {}
+
 /** Lightweight node wrapper. */
 export class GLTFNodeIterator extends GLTFObjectIterator<GLTFNode, 'node'> {
   /** Resolve the optional camera. */
   get camera(): GLTFCameraIterator | undefined {
-    return this.data.camera === undefined
+    return this._data.camera === undefined
       ? undefined
-      : this.iterator.resolveCamera(this.data.camera, `${this.path}.camera`);
+      : this.iterator.resolveCamera(this._data.camera, `${this._path}.camera`);
   }
 
   /** Iterate resolved child nodes in source order. */
   get children(): IterableIterator<GLTFNodeIterator> {
-    return iterateValues(this.data.children || [], (childNodeIndex, childIndex) =>
-      this.iterator.resolveNode(childNodeIndex, `${this.path}.children[${childIndex}]`)
+    return iterateValues(this._data.children || [], (childNodeIndex, childIndex) =>
+      this.iterator.resolveNode(childNodeIndex, `${this._path}.children[${childIndex}]`)
     );
   }
 
   /** Resolve the optional skin. */
   get skin(): GLTFSkinIterator | undefined {
-    return this.data.skin === undefined
+    return this._data.skin === undefined
       ? undefined
-      : this.iterator.resolveSkin(this.data.skin, `${this.path}.skin`);
+      : this.iterator.resolveSkin(this._data.skin, `${this._path}.skin`);
   }
 
   /** Resolve the optional mesh definition. */
   get mesh(): GLTFMeshIterator | undefined {
-    return this.data.mesh === undefined
+    return this._data.mesh === undefined
       ? undefined
-      : this.iterator.resolveMesh(this.data.mesh, `${this.path}.mesh`);
+      : this.iterator.resolveMesh(this._data.mesh, `${this._path}.mesh`);
   }
 
   /** Resolve the optional draft glTF 2.1 external asset. */
   get externalAsset(): GLTFExternalAssetIterator | undefined {
-    return this.data.externalAsset === undefined
+    return this._data.externalAsset === undefined
       ? undefined
-      : this.iterator.resolveExternalAsset(this.data.externalAsset, `${this.path}.externalAsset`);
+      : this.iterator.resolveExternalAsset(this._data.externalAsset, `${this._path}.externalAsset`);
   }
 }
 
+/** Raw node properties exposed directly by the node Proxy. */
+export interface GLTFNodeIterator
+  extends Omit<GLTFNode, 'camera' | 'children' | 'skin' | 'mesh' | 'externalAsset'> {}
+
 /** Lightweight texture sampler wrapper. */
 export class GLTFSamplerIterator extends GLTFObjectIterator<GLTFSampler, 'sampler'> {}
+
+/** Raw texture-sampler properties exposed directly by the sampler Proxy. */
+export interface GLTFSamplerIterator extends GLTFSampler {}
 
 /** Lightweight scene wrapper. */
 export class GLTFSceneIterator extends GLTFObjectIterator<GLTFScene, 'scene'> {
   /** Iterate resolved scene root nodes in source order. */
   get nodes(): IterableIterator<GLTFNodeIterator> {
-    return iterateValues(this.data.nodes || [], (nodeIndex, sceneNodeIndex) =>
-      this.iterator.resolveNode(nodeIndex, `${this.path}.nodes[${sceneNodeIndex}]`)
+    return iterateValues(this._data.nodes || [], (nodeIndex, sceneNodeIndex) =>
+      this.iterator.resolveNode(nodeIndex, `${this._path}.nodes[${sceneNodeIndex}]`)
     );
   }
 }
+
+/** Raw scene properties exposed directly by the scene Proxy. */
+export interface GLTFSceneIterator extends Omit<GLTFScene, 'nodes'> {}
 
 /** Lightweight skin wrapper. */
 export class GLTFSkinIterator extends GLTFObjectIterator<GLTFSkin, 'skin'> {
   /** Resolve the optional inverse-bind-matrix accessor. */
   get inverseBindMatrices(): GLTFAccessorIterator | undefined {
-    return this.data.inverseBindMatrices === undefined
+    return this._data.inverseBindMatrices === undefined
       ? undefined
       : this.iterator.resolveAccessor(
-          this.data.inverseBindMatrices,
-          `${this.path}.inverseBindMatrices`
+          this._data.inverseBindMatrices,
+          `${this._path}.inverseBindMatrices`
         );
   }
 
   /** Resolve the optional skeleton root node. */
   get skeleton(): GLTFNodeIterator | undefined {
-    return this.data.skeleton === undefined
+    return this._data.skeleton === undefined
       ? undefined
-      : this.iterator.resolveNode(this.data.skeleton, `${this.path}.skeleton`);
+      : this.iterator.resolveNode(this._data.skeleton, `${this._path}.skeleton`);
   }
 
   /** Iterate resolved joint nodes in source order. */
   get joints(): IterableIterator<GLTFNodeIterator> {
-    return iterateValues(this.data.joints, (jointNodeIndex, jointIndex) =>
-      this.iterator.resolveNode(jointNodeIndex, `${this.path}.joints[${jointIndex}]`)
+    return iterateValues(this._data.joints, (jointNodeIndex, jointIndex) =>
+      this.iterator.resolveNode(jointNodeIndex, `${this._path}.joints[${jointIndex}]`)
     );
   }
 }
+
+/** Raw skin properties exposed directly by the skin Proxy. */
+export interface GLTFSkinIterator
+  extends Omit<GLTFSkin, 'inverseBindMatrices' | 'skeleton' | 'joints'> {}
 
 /** Lightweight texture wrapper. */
 export class GLTFTextureIterator extends GLTFObjectIterator<GLTFTexture, 'texture'> {
   /** Resolve the optional sampler. */
   get sampler(): GLTFSamplerIterator | undefined {
-    return this.data.sampler === undefined
+    return this._data.sampler === undefined
       ? undefined
-      : this.iterator.resolveSampler(this.data.sampler, `${this.path}.sampler`);
+      : this.iterator.resolveSampler(this._data.sampler, `${this._path}.sampler`);
   }
 
   /** Resolve the optional source image. */
   get source(): GLTFImageIterator | undefined {
-    return this.data.source === undefined
+    return this._data.source === undefined
       ? undefined
-      : this.iterator.resolveImage(this.data.source, `${this.path}.source`);
+      : this.iterator.resolveImage(this._data.source, `${this._path}.source`);
   }
 }
 
+/** Raw texture properties exposed directly by the texture Proxy. */
+export interface GLTFTextureIterator extends Omit<GLTFTexture, 'sampler' | 'source'> {}
+
 /**
- * Traverse and transform raw glTF data through lazy, identity-preserving object wrappers.
+ * Traverse and transform raw glTF data through lazy, identity-preserving JavaScript Proxies.
  *
- * The iterator never clones, links, normalizes, or otherwise postprocesses its input. Wrapper
- * `data` fields are the original mutable JSON objects so extension handlers can transform them in
- * place while using typed reference getters for navigation.
+ * The iterator never clones, links, normalizes, or otherwise postprocesses its input. Ordinary
+ * properties read and write the original raw JSON, same-name reference getters resolve linked
+ * objects, and `_proxy` exposes metadata plus explicit extension mutation helpers.
  */
 export class GLTFIterator {
   /** Original glTF container traversed by this iterator. */
   readonly gltf: GLTFWithBuffers;
 
   /** Cached wrapper for each raw source object. */
-  private readonly objectCache = new WeakMap<object, GLTFObjectIterator<any, any>>();
+  private readonly objectCache = new WeakMap<object, GLTFObjectIterator<any, any, any>>();
 
   /** Create an iterator over an existing parsed glTF container. */
   constructor(gltf: GLTFWithBuffers) {
@@ -840,7 +955,7 @@ export class GLTFIterator {
   }
 
   /** Return a cached nested wrapper or create it once. */
-  getOrCreateNested<IteratorT extends GLTFObjectIterator<any, any>>(
+  getOrCreateNested<IteratorT extends GLTFObjectIterator<any, any, any>>(
     data: object,
     createIterator: () => IteratorT
   ): IteratorT {
@@ -850,7 +965,7 @@ export class GLTFIterator {
   /** Iterate one top-level glTF collection lazily. */
   private iterateCollection(
     type: GLTFCollectionType
-  ): IterableIterator<GLTFObjectIterator<any, any>> {
+  ): IterableIterator<GLTFObjectIterator<any, any, any>> {
     const values = this.getCollection(type);
     return iterateValues(values, (_, index) => this.resolveCollectionObject(type, index, type));
   }
@@ -860,7 +975,7 @@ export class GLTFIterator {
     type: GLTFCollectionType,
     index: number,
     sourcePath: string
-  ): GLTFObjectIterator<any, any> {
+  ): GLTFObjectIterator<any, any, any> {
     const values = this.getCollection(type);
     const data = values[index] as GLTFIteratorData | undefined;
     if (!data) {
@@ -912,7 +1027,7 @@ export class GLTFIterator {
     type: GLTFCollectionType,
     index: number,
     data: GLTFIteratorData
-  ): GLTFObjectIterator<any, any> {
+  ): GLTFObjectIterator<any, any, any> {
     const path = `${getCollectionName(type)}[${index}]`;
     switch (type) {
       case 'accessor':
@@ -949,7 +1064,7 @@ export class GLTFIterator {
   }
 
   /** Reuse a wrapper for the same raw source object. */
-  private getOrCreate<IteratorT extends GLTFObjectIterator<any, any>>(
+  private getOrCreate<IteratorT extends GLTFObjectIterator<any, any, any>>(
     data: object,
     createIterator: () => IteratorT
   ): IteratorT {
@@ -958,9 +1073,77 @@ export class GLTFIterator {
       return cachedIterator as IteratorT;
     }
     const iterator = createIterator();
-    this.objectCache.set(data, iterator);
-    return iterator;
+    const proxy = createGLTFProxy(iterator);
+    this.objectCache.set(data, proxy);
+    return proxy;
   }
+}
+
+/** Create a natural object view over a raw glTF object and its resolved reference getters. */
+function createGLTFProxy<IteratorT extends GLTFObjectIterator<any, any, any>>(
+  iterator: IteratorT
+): IteratorT {
+  return new Proxy(iterator, {
+    get(target, property, receiver) {
+      if (property === 'toJSON') {
+        return () => target._proxy.raw;
+      }
+      if (property === '_proxy') {
+        return target._proxy;
+      }
+      if (typeof property === 'string' && hasPrototypeProperty(target, property)) {
+        return Reflect.get(target, property, receiver);
+      }
+      if (property in target._proxy.raw) {
+        return Reflect.get(target._proxy.raw, property, target._proxy.raw);
+      }
+      return Reflect.get(target, property, receiver);
+    },
+    set(target, property, value) {
+      if (
+        property === '_proxy' ||
+        property === 'toJSON' ||
+        property in target ||
+        (typeof property === 'string' && hasPrototypeProperty(target, property))
+      ) {
+        return false;
+      }
+      return Reflect.set(target._proxy.raw, property, value, target._proxy.raw);
+    },
+    deleteProperty(target, property) {
+      if (property === '_proxy' || property in target) {
+        return false;
+      }
+      return Reflect.deleteProperty(target._proxy.raw, property);
+    },
+    has(target, property) {
+      return (
+        property === '_proxy' ||
+        property === 'toJSON' ||
+        property in target._proxy.raw ||
+        property in target
+      );
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(target._proxy.raw);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target._proxy.raw, property);
+      return descriptor ? {...descriptor, configurable: true} : undefined;
+    }
+  });
+}
+
+/** Return whether a wrapper prototype defines a resolved property or helper method. */
+function hasPrototypeProperty(target: object, property: string): boolean {
+  let prototype = Object.getPrototypeOf(target);
+  while (prototype && prototype !== GLTFObjectIterator.prototype) {
+    if (Object.prototype.hasOwnProperty.call(prototype, property)) {
+      return true;
+    }
+    prototype = Object.getPrototypeOf(prototype);
+  }
+  return false;
 }
 
 /** Iterate raw array values without creating wrapper arrays. */

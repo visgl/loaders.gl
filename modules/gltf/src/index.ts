@@ -144,6 +144,7 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {
   GLTFIterator,
+  GLTFProxyContext,
   GLTFObjectIterator,
   GLTFNestedObjectIterator,
   GLTFAccessorIterator,

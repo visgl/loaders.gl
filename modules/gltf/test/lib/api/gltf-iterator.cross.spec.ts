@@ -7,7 +7,7 @@ import {GLTFIterator} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '../../../src/lib/types/gltf-types';
 
 describe('GLTFIterator', () => {
-  test('iterates raw collections with stable identity metadata without mutation', () => {
+  test('iterates raw collections with stable Proxy metadata without mutation', () => {
     const gltf = makeGLTF();
     const jsonBeforeIteration = JSON.stringify(gltf.json);
     const iterator = new GLTFIterator(gltf);
@@ -15,16 +15,33 @@ describe('GLTFIterator', () => {
     const [mesh] = Array.from(iterator.meshes);
     const [primitive] = Array.from(mesh.primitives);
 
-    expect(mesh.gltf).toBe(gltf);
-    expect(mesh.type).toBe('mesh');
-    expect(mesh.index).toBe(0);
-    expect(mesh.data).toBe(gltf.json.meshes?.[0]);
-    expect(mesh.path).toBe('meshes[0]');
-    expect(primitive.type).toBe('primitive');
-    expect(primitive.index).toBe(0);
-    expect(primitive.parent).toBe(mesh);
-    expect(primitive.data).toBe(gltf.json.meshes?.[0].primitives[0]);
+    expect(mesh._proxy.gltf).toBe(gltf);
+    expect(mesh._proxy.type).toBe('mesh');
+    expect(mesh._proxy.index).toBe(0);
+    expect(mesh._proxy.raw).toBe(gltf.json.meshes?.[0]);
+    expect(mesh._proxy.path).toBe('meshes[0]');
+    expect(primitive._proxy.type).toBe('primitive');
+    expect(primitive._proxy.index).toBe(0);
+    expect(primitive._proxy.parent).toBe(mesh);
+    expect(primitive._proxy.raw).toBe(gltf.json.meshes?.[0].primitives[0]);
+    expect(mesh.name).toBe('triangle');
+    expect(Object.keys(mesh)).toEqual(Object.keys(gltf.json.meshes![0]));
+    expect(JSON.stringify(mesh)).toBe(JSON.stringify(gltf.json.meshes![0]));
     expect(JSON.stringify(gltf.json)).toBe(jsonBeforeIteration);
+  });
+
+  test('forwards ordinary raw properties and keeps reference assignment explicit', () => {
+    const gltf = makeGLTF();
+    const iterator = new GLTFIterator(gltf);
+    const [mesh] = Array.from(iterator.meshes);
+    const [node] = Array.from(iterator.nodes);
+
+    mesh.name = 'renamed';
+    expect(gltf.json.meshes![0].name).toBe('renamed');
+    expect(Reflect.set(node, 'mesh', 1)).toBe(false);
+    expect(gltf.json.nodes![0].mesh).toBe(0);
+    node._proxy.raw.mesh = 1;
+    expect(gltf.json.nodes![0].mesh).toBe(1);
   });
 
   test('resolves and caches standard references lazily', () => {
@@ -54,6 +71,9 @@ describe('GLTFIterator', () => {
     expect(animationSampler.input).toBe(Array.from(iterator.accessors)[0]);
     expect(animationSampler.output).toBe(Array.from(iterator.accessors)[1]);
     expect(material.baseColorTexture).toBe(textureInfo);
+    expect(Array.from(iterator.accessors)[0].type).toBe('VEC3');
+    expect(Array.from(iterator.cameras)[0].type).toBe('perspective');
+    expect(textureInfo.index).toBe(0);
     expect(textureInfo.texture).toBe(Array.from(iterator.textures)[0]);
     expect(Array.from(iterator.textures)[0].source).toBe(Array.from(iterator.images)[0]);
     expect(Array.from(iterator.textures)[0].sampler).toBe(Array.from(iterator.samplers)[0]);
@@ -120,6 +140,7 @@ function makeGLTF(): GLTFWithBuffers {
       materials: [{pbrMetallicRoughness: {baseColorTexture: {index: 0}}}],
       meshes: [
         {
+          name: 'triangle',
           primitives: [{attributes: {POSITION: 0}, indices: 1, material: 0}]
         }
       ],

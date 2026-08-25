@@ -1,6 +1,6 @@
 # GLTFIterator
 
-The `GLTFIterator` class traverses the original glTF JSON through lightweight typed wrappers. It resolves numeric references lazily without copying, linking, normalizing, or otherwise postprocessing the source document.
+The `GLTFIterator` class traverses the original glTF JSON through lightweight typed JavaScript `Proxy` objects. Raw properties are available naturally, while numeric references resolve lazily without copying, linking, normalizing, or otherwise postprocessing the source document.
 
 This makes it suitable for implementing glTF extensions that transform the standards-shaped JSON in place.
 
@@ -18,34 +18,35 @@ for (const mesh of iterator.meshes) {
     const positions = primitive.attributes.get('POSITION');
     const material = primitive.material;
 
-    // The raw JSON remains available and mutable.
-    primitive.data.mode = 4;
+    // Ordinary raw JSON fields remain directly available and mutable.
+    primitive.mode = 4;
   }
 }
 ```
 
 ## Wrapper identity
 
-Every wrapper contains enough information to identify its source object:
+Every Proxy exposes its navigation metadata under `_proxy` so that metadata does not collide with raw glTF fields such as an accessor's `type` or a texture info's `index`:
 
-- `gltf`: the original `GLTFWithBuffers` container;
-- `type`: a stable tag such as `mesh`, `node`, `accessor`, or `primitive`;
-- `index`: the top-level or parent-local array index;
-- `data`: the exact raw JSON object; and
-- `parent`: the containing wrapper for nested objects such as primitives and animation channels.
+- `_proxy.gltf`: the original `GLTFWithBuffers` container;
+- `_proxy.type`: a stable tag such as `mesh`, `node`, `accessor`, or `primitive`;
+- `_proxy.index`: the top-level or parent-local array index;
+- `_proxy.raw`: the exact raw JSON object;
+- `_proxy.path`: the raw object's glTF path; and
+- `_proxy.parent`: the containing Proxy for nested objects such as primitives and animation channels.
 
-Wrappers are cached by raw object identity. Resolving the same mesh through `iterator.meshes` and `node.mesh`, for example, returns the same wrapper instance.
+`_proxy` refers specifically to the JavaScript `Proxy` control surface. It is not enumerable and is omitted from JSON serialization. Proxies are cached by raw object identity. Resolving the same mesh through `iterator.meshes` and `node.mesh`, for example, returns the same Proxy instance.
 
 ## Collections and references
 
 Top-level collection getters mirror the standard glTF arrays and return `IterableIterator` objects. They include `accessors`, `animations`, `buffers`, `bufferViews`, `cameras`, `images`, `materials`, `meshes`, `nodes`, `samplers`, `scenes`, `skins`, and `textures`, plus draft glTF 2.1 `files` and `externalAssets`.
 
-Reference getters use the corresponding glTF field name while the numeric source remains on `data`:
+Reference getters use the corresponding glTF field name while the numeric source remains on `_proxy.raw`:
 
 ```typescript
 const [node] = Array.from(iterator.nodes);
 
-node.data.mesh; // numeric source index
+node._proxy.raw.mesh; // numeric source index
 node.mesh; // GLTFMeshIterator | undefined
 ```
 
@@ -55,14 +56,14 @@ Loaded resource companions are exposed separately, such as `buffer.loadedBuffer`
 
 ## Extension transformations
 
-`data` deliberately remains mutable. `getExtension()`, `setExtension()`, and `removeExtension()` operate on individual wrappers, while the root iterator provides top-level extension declaration and payload helpers.
+Ordinary non-reference assignments are forwarded to the raw object. Reference assignment is deliberately explicit through `_proxy.raw`, avoiding ambiguity between assigning a numeric glTF index and assigning another Proxy. `_proxy.getExtension()`, `_proxy.setExtension()`, and `_proxy.removeExtension()` operate on individual objects, while the root iterator provides top-level extension declaration and payload helpers.
 
 ```typescript
 for (const texture of iterator.textures) {
-  const extension = texture.getExtension<{source: number}>('VENDOR_texture_format');
+  const extension = texture._proxy.getExtension<{source: number}>('VENDOR_texture_format');
   if (extension) {
-    texture.data.source = extension.source;
-    texture.removeExtension('VENDOR_texture_format');
+    texture._proxy.raw.source = extension.source;
+    texture._proxy.removeExtension('VENDOR_texture_format');
   }
 }
 iterator.removeExtension('VENDOR_texture_format');
