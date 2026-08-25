@@ -10,9 +10,9 @@ npm install @loaders.gl/core @loaders.gl/excel
 
 ## Loaders and Writers
 
-| Loader                                                                        |
-| ----------------------------------------------------------------------------- |
-| [`ExcelLoader`](/docs/modules/excel/api-reference/excel-loader#excelloader)   |
+| Loader | Description |
+| ------ | ----------- |
+| [`ExcelLoader`](/docs/modules/excel/api-reference/excel-loader#excelloader) | Loads Excel workbooks as loaders.gl tables. |
 
 ## Additional APIs
 

@@ -17,10 +17,10 @@ npm install @loaders.gl/core @loaders.gl/bson
 
 ## Loaders and Writers
 
-| Loader                                                       |
-| ------------------------------------------------------------ |
-| [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) |
-| [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) |
+| Loader / Writer | Description |
+| --------------- | ----------- |
+| [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) | Loads BSON binary documents into JSON-like JavaScript objects. |
+| [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) | Writes JSON-like JavaScript objects as BSON binary documents. |
 
 ## Attribution
 

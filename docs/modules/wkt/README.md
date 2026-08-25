@@ -14,14 +14,14 @@ The `@loaders.gl/wkt` module handles the following formats:
 
 ## Loaders and Writers
 
-| Loader                                                           |
-| ---------------------------------------------------------------- |
-| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader)        |
-| [`WKBWriter`](/docs/modules/wkt/api-reference/wkb-writer)        |
-| [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader)        |
-| [`WKTWriter`](/docs/modules/wkt/api-reference/wkt-writer)        |
-| [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) |
-| [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) |
+| Loader / Writer | Description |
+| --------------- | ----------- |
+| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) | Parses Well-Known Binary geometry. |
+| [`WKBWriter`](/docs/modules/wkt/api-reference/wkb-writer) | Writes geometry as Well-Known Binary. |
+| [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Parses Well-Known Text geometry. |
+| [`WKTWriter`](/docs/modules/wkt/api-reference/wkt-writer) | Writes geometry as Well-Known Text. |
+| [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) | Parses Well-Known Text coordinate reference systems. |
+| [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) | Writes coordinate reference systems as WKT-CRS. |
 
 ## Attribution
 
