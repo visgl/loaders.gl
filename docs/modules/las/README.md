@@ -2,7 +2,7 @@
 
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
-`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, and RGB, while the raw APIs preserve complete supported point records. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
+`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, RGB, GPS time, and NIR where present, while the raw APIs preserve complete supported point records. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
 
 ## Installation
 

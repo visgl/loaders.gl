@@ -6,7 +6,7 @@
 
 export {LASFormat} from './las-format';
 
-export type {LASLoaderOptions} from './las-loader-types';
+export type {LASColumnName, LASLoaderOptions} from './las-loader-types';
 
 export type {LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';

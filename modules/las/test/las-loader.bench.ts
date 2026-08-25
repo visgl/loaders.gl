@@ -20,6 +20,7 @@ const LAZ_1_2_PDRF_3 = 3;
 const LAZ_1_4_PDRF_7 = 7;
 const BATCH_SIZE = 25_000;
 const STREAMING_LAZ_CHUNK_SIZE = 64 * 1024;
+const RENDER_COLUMNS = ['POSITION', 'COLOR_0'] as const;
 const LAZ_1_2_LOADER_VARIANTS = [
   {name: 'typescript', loader: LASLoader},
   {name: 'laz-perf', loader: LAZPerfLoader},
@@ -109,6 +110,36 @@ export default async function lasLoaderBench(bench) {
         batchSize: BATCH_SIZE,
         core: {worker: false},
         las: {shape: 'arrow-table'}
+      });
+      for await (const _batch of batches) {
+        _batch;
+      }
+    }
+  );
+
+  bench.groupSorted('LASLoader selective parse LAZ 1.4 PDRF 7');
+
+  bench.addAsync(
+    'parse LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=typescript',
+    laz14BenchmarkOptions,
+    async () => {
+      await parse(laz14ArrayBuffer, LASLoader, {
+        core: {worker: false},
+        las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
+      });
+    }
+  );
+
+  bench.groupSorted('LASLoader selective parseInBatches streaming LAZ 1.4 PDRF 7');
+
+  bench.addAsync(
+    'parseInBatches streaming LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=typescript',
+    laz14BenchmarkOptions,
+    async () => {
+      const batches = await parseInBatches(laz14Chunks, LASLoader, {
+        batchSize: BATCH_SIZE,
+        core: {worker: false},
+        las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
       });
       for await (const _batch of batches) {
         _batch;

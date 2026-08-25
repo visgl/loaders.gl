@@ -31,9 +31,9 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | --- | --- |
 | Uncompressed LAS 1.0-1.4 | Partial. Reads common public-header fields and PDRF 0-10 record layouts. Dedicated conformance fixtures do not yet cover every header version/PDRF combination. |
 | LAS 1.5 | Partial. Extended point counts and PDRF 9/10 files are fixture-tested; LAS 1.5 metadata and conformance rules are not complete. |
-| Arrow columns | `POSITION`, `intensity`, `classification`, and `COLOR_0` for RGB formats. |
-| GPS time | Parsed only indirectly by format layout today; not exposed as a first-class attribute by the TypeScript path. |
-| NIR | Not exposed as a first-class attribute. |
+| Arrow columns | `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, and `NIR` where present. `las.columns` selects optional output columns; `POSITION` is always returned. |
+| GPS time | Exposed as `GPS_TIME` for PDRF 1, 3-5, and 6-10. |
+| NIR | Exposed as `NIR` for PDRF 8 and 10. |
 | Return flags, scanner channel, scan angle, point source ID, user data | Incomplete. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are preserved by the raw TypeScript LAZ APIs but are not exposed as Arrow columns. Waveform payload handling is not implemented. |
 | Extra bytes | Raw record length is respected, but Extra Bytes VLR metadata is not mapped to output attributes. |
@@ -87,16 +87,16 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | PDRF | Valid LAS versions | Raw LAZ decode | Arrow output | Dedicated fixture coverage |
 | --- | --- | --- | --- | --- |
 | 0 | 1.0-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification. | Synthetic chunk unit test. |
-| 1 | 1.1-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification; GPS time omitted. | Synthetic chunk unit test. |
+| 1 | 1.1-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification, `GPS_TIME`. | Synthetic chunk unit test. |
 | 2 | 1.2-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB. | Synthetic chunk unit test. |
-| 3 | 1.2-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB; GPS time omitted. | Full-file parity with laz-rs on two LAS 1.2 files. |
-| 4 | 1.3-1.4 | Supported, including WavePacket13 and Extra Bytes. | XYZ, intensity, classification; GPS time and waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
-| 5 | 1.3-1.4 | Supported, including RGB, WavePacket13, and Extra Bytes. | XYZ, intensity, classification, RGB; GPS time and waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
-| 6 | 1.4-1.5 | Supported for Point14 item versions 2-4. | XYZ, intensity, classification. | LAS 1.4 byte parity plus COPC decoder parity. |
-| 7 | 1.4-1.5 | Supported for Point14/RGB14 item versions 2-4. | XYZ, intensity, classification, RGB. | LAS 1.4 v3 decoder parity and v4 byte parity across all scanner channels. |
-| 8 | 1.4-1.5 | Supported for Point14/RGBNIR14 item versions 2-4. | XYZ, intensity, classification, RGB; NIR omitted. | LAS 1.4 byte parity including NIR and Extra Bytes. |
-| 9 | 1.4-1.5 | Supported, including WavePacket14 versions 3-4 and exact 64-bit offsets. | XYZ, intensity, classification; waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
-| 10 | 1.4-1.5 | Supported, including RGB, NIR, WavePacket14 versions 3-4, and exact 64-bit offsets. | XYZ, intensity, classification, RGB; NIR and waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
+| 3 | 1.2-1.4 | Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB, `GPS_TIME`. | Full-file parity with laz-rs on two LAS 1.2 files. |
+| 4 | 1.3-1.4 | Supported, including WavePacket13 and Extra Bytes. | XYZ, intensity, classification, `GPS_TIME`; waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
+| 5 | 1.3-1.4 | Supported, including RGB, WavePacket13, and Extra Bytes. | XYZ, intensity, classification, RGB, `GPS_TIME`; waveform reference omitted. | Byte-for-byte paired LAS/LAZ fixture. |
+| 6 | 1.4-1.5 | Supported for Point14 item versions 2-4. | XYZ, intensity, classification, `GPS_TIME`. | LAS 1.4 byte parity plus COPC decoder parity. |
+| 7 | 1.4-1.5 | Supported for Point14/RGB14 item versions 2-4. | XYZ, intensity, classification, RGB, `GPS_TIME`. | LAS 1.4 v3 decoder parity and v4 byte parity across all scanner channels. |
+| 8 | 1.4-1.5 | Supported for Point14/RGBNIR14 item versions 2-4. | XYZ, intensity, classification, RGB, `GPS_TIME`, `NIR`. | LAS 1.4 byte parity including NIR and Extra Bytes. |
+| 9 | 1.4-1.5 | Supported, including WavePacket14 versions 3-4 and exact 64-bit offsets. | XYZ, intensity, classification, `GPS_TIME`; waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
+| 10 | 1.4-1.5 | Supported, including RGB, NIR, WavePacket14 versions 3-4, and exact 64-bit offsets. | XYZ, intensity, classification, RGB, `GPS_TIME`, `NIR`; waveform reference omitted. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
 
 #### Streaming Granularity
 
@@ -110,15 +110,17 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 #### Selective LAZ 1.4 Decoding
 
-For complete-buffer `parse` and streaming `parseInBatches`, the TypeScript parser writes positions, intensity, classification, and RGB values directly into Arrow column buffers. PDRF 6-10 store groups of fields in independent compressed layers. The parser therefore avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, GPS time, NIR, waveform packet references, and Extra Bytes layers that are not represented in the returned table.
+For complete-buffer `parse` and streaming `parseInBatches`, the TypeScript parser writes requested positions, intensity, classification, RGB, GPS time, and NIR values directly into Arrow column buffers. `las.columns` accepts `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, and `NIR`; positions remain mandatory for point-cloud output. Omitting the option returns all represented fields, while an empty array returns positions only.
 
-The direct chunk target is more selective: intensity, classification, and RGB arrays are optional, and omitted layers are skipped without constructing their arithmetic decoders or models. The COPC rendering path uses this to request positions and RGB only, avoiding unused intensity and classification allocations and decompression.
+PDRF 6-10 store groups of fields in independent compressed layers. Omitted intensity, classification, RGB, GPS time, and NIR layers are skipped without allocating their output arrays or constructing their arithmetic decoders and models. The parser also avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, waveform packet references, and Extra Bytes layers that are not represented in the returned table. The COPC rendering path uses the same direct target to request positions and RGB only.
+
+Legacy PDRF 0-5 fields share an interleaved entropy stream. Column selection still avoids output arrays, color-depth detection, and field extraction for omitted columns, but it cannot skip the corresponding entropy decoding.
 
 Compressed field layers are decoded as bounded ranges of the original chunk instead of copied into per-layer readers. LASzip v3's historical item-context channel behavior is preserved separately from each point's actual scanner channel, while LASzip v4 uses the corrected context-switch behavior declared by each item in the LASzip VLR. These details reduce temporary allocation and property lookup overhead without changing the complete-record APIs.
 
 `decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between raw and selective output, or change its selected fields, after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
 
-Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represented Arrow attribute against matching uncompressed LAS records. LASzip-generated PDRF 4/5 fixtures validate legacy WavePacket13 and PDRF 5 field ordering. A current-LASzip PDRF 7 fixture verifies Point14, RGB14, and Byte14 item version 4 across all four scanner-channel contexts while retaining a LAS 1.4 header. The bundled COPC decoder misdecodes that fixture's RGB values after scanner-channel changes, and bundled laz-rs rejects item version 4, so current LASzip plus uncompressed LAS provide its correctness oracle. PDRF 8 coverage includes NIR, Extra Bytes, and scanner-channel transitions. PDRF 9/10 coverage exercises all waveform-offset predictor modes, exact 64-bit offsets above `Number.MAX_SAFE_INTEGER`, packet sizes, float vector fields, and Extra Bytes. LASzip-generated LAS 1.5 PDRF 9/10 fixtures additionally verify item version 4 across all four scanner-channel contexts. NIR, waveform references, and Extra Bytes are preserved by raw decoding but are not yet exposed as Arrow columns.
+Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represented Arrow attribute against matching uncompressed LAS records. LASzip-generated PDRF 4/5 fixtures validate legacy WavePacket13 and PDRF 5 field ordering. A current-LASzip PDRF 7 fixture verifies Point14, RGB14, and Byte14 item version 4 across all four scanner-channel contexts while retaining a LAS 1.4 header. The bundled COPC decoder misdecodes that fixture's RGB values after scanner-channel changes, and bundled laz-rs rejects item version 4, so current LASzip plus uncompressed LAS provide its correctness oracle. PDRF 8 coverage includes NIR, GPS time, Extra Bytes, and scanner-channel transitions. PDRF 9/10 coverage exercises all waveform-offset predictor modes, exact 64-bit offsets above `Number.MAX_SAFE_INTEGER`, packet sizes, float vector fields, GPS time, NIR, and Extra Bytes. LASzip-generated LAS 1.5 PDRF 9/10 fixtures additionally verify item version 4 across all four scanner-channel contexts. Waveform references and Extra Bytes are preserved by raw decoding but are not yet exposed as Arrow columns.
 
 ### TypeScript COPC Path
 
