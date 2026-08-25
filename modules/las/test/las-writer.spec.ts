@@ -334,10 +334,23 @@ test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
   );
   const lazPointView = new DataView(lazChunk.buffer);
 
+  const lasArrayBuffer = LASWriter.encodeSync?.(extraMesh, {
+    las: {pointDataRecordFormat: 7, extraBytes: options.las.extraBytes}
+  });
+  if (!lasArrayBuffer) {
+    throw new Error('LASWriter did not return a LAS ArrayBuffer');
+  }
+  const lasDataView = new DataView(lasArrayBuffer);
+  const lasPointDataOffset = lasDataView.getUint32(96, true);
+
   t.equal(lazDataView.getUint32(100, true), 2, 'writes Extra Bytes and LASzip VLRs');
+  t.equal(lazDataView.getUint16(105, true), 38, 'includes Extra Bytes in the LAZ record length');
   t.equal(lazDataView.getUint16(375 + 20, true), 192, 'writes one Extra Bytes descriptor');
   t.equal(lazDataView.getUint8(375 + 54 + 2), 3, 'declares the Uint16 Extra Bytes type');
   t.equal(lazPointView.getUint16(36, true), 1234, 'LAZ preserves the Extra Bytes value');
+  t.equal(lasDataView.getUint32(100, true), 1, 'writes an Extra Bytes VLR for LAS');
+  t.equal(lasDataView.getUint16(105, true), 38, 'includes Extra Bytes in the LAS record length');
+  t.equal(lasDataView.getUint16(lasPointDataOffset + 36, true), 1234, 'LAS preserves Extra Bytes');
   t.end();
 });
 
