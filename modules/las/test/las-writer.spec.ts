@@ -5,7 +5,7 @@
 import test from 'test/utils/vitest-tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
-import {LASCOPCLoader, LASLoader, LASWriter} from '@loaders.gl/las';
+import {LASCOPCLoader, LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
@@ -22,6 +22,9 @@ const mesh = {
   mode: 0,
   schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
 };
+
+const exportedExtraBytesTypeCheck: LASExtraBytesWriter = {attribute: 'value'};
+void exportedExtraBytesTypeCheck;
 
 test('LASWriter#writer conformance', t => {
   validateWriter(t, LASWriter, 'LASWriter');

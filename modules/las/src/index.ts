@@ -8,7 +8,7 @@ export {LASFormat} from './las-format';
 
 export type {LASLoaderOptions} from './las-loader-types';
 
-export type {LASWriterOptions} from './las-writer';
+export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
 
 export {LASLoader} from './las-loader-types';
