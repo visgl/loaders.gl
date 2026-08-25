@@ -15,7 +15,14 @@ import {
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
-import type {LASHeader} from '../las-types';
+import type {
+  LASExtendedVariableLengthRecord,
+  LASExtraBytesDescriptor,
+  LASHeader,
+  LASMetadata,
+  LASVariableLengthRecord,
+  LASWaveformPacketDescriptor
+} from '../las-types';
 
 /** Arrow table returned by the TypeScript LAS parser with LAS loader metadata attached. */
 export type LASArrowTable = MeshArrowTable & {
@@ -785,7 +792,7 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     dataView.getFloat64(219, true)
   ];
 
-  return {
+  const header: LASHeader = {
     pointsOffset,
     pointsFormatId,
     pointsStructSize,
@@ -802,6 +809,215 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     headerSize,
     vlrCount
   };
+  if (hasCompleteLASMetadata(arrayBuffer, header)) {
+    header.metadata = parseLASMetadata(arrayBuffer, header);
+  }
+  return header;
+}
+
+function hasCompleteLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): boolean {
+  const vlrEnd = header.headerSize! + header.vlrCount! * 54;
+  return arrayBuffer.byteLength >= Math.max(vlrEnd, header.pointsOffset);
+}
+
+function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASMetadata {
+  const dataView = new DataView(arrayBuffer);
+  const version = header.versionAsString || '1.0';
+  const versionParts = version.split('.').map(Number);
+  const isAtLeast14 = versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 4);
+  const vlrs = parseLASVariableLengthRecords(dataView, header);
+  const evlrOffset = isAtLeast14 ? readUint64(dataView, 235) : 0;
+  const evlrCount = isAtLeast14 ? dataView.getUint32(243, true) : 0;
+  const evlrs = parseLASExtendedVariableLengthRecords(dataView, evlrOffset, evlrCount);
+  const metadata: LASMetadata = {
+    fileSourceId: dataView.getUint16(4, true),
+    globalEncoding: dataView.getUint16(6, true),
+    projectId: formatLASProjectId(new Uint8Array(arrayBuffer, 8, 16)),
+    systemIdentifier: readLASString(new Uint8Array(arrayBuffer), 26, 32),
+    generatingSoftware: readLASString(new Uint8Array(arrayBuffer), 58, 32),
+    creationDayOfYear: dataView.getUint16(90, true),
+    creationYear: dataView.getUint16(92, true),
+    headerSize: header.headerSize!,
+    vlrCount: header.vlrCount!,
+    evlrOffset: evlrOffset || undefined,
+    evlrCount: evlrCount || undefined,
+    pointsByReturn: parsePointsByReturn(dataView, isAtLeast14),
+    vlrs,
+    evlrs,
+    extraBytes: [],
+    waveformPacketDescriptors: []
+  };
+
+  for (const record of vlrs.concat(
+    evlrs.map(evlr => ({...evlr, data: evlr.data || new Uint8Array()}))
+  )) {
+    parseTypedLASMetadataRecord(record, metadata);
+  }
+  return metadata;
+}
+
+function parseLASVariableLengthRecords(
+  dataView: DataView,
+  header: LASHeader
+): LASVariableLengthRecord[] {
+  const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
+  const records: LASVariableLengthRecord[] = [];
+  let offset = header.headerSize!;
+  for (let index = 0; index < header.vlrCount!; index++) {
+    if (offset + 54 > bytes.byteLength) {
+      break;
+    }
+    const dataLength = dataView.getUint16(offset + 20, true);
+    const dataOffset = offset + 54;
+    if (dataOffset + dataLength > bytes.byteLength) {
+      break;
+    }
+    records.push({
+      reserved: dataView.getUint16(offset, true),
+      userId: readLASString(bytes, offset + 2, 16),
+      recordId: dataView.getUint16(offset + 18, true),
+      description: readLASString(bytes, offset + 22, 32),
+      offset,
+      data: bytes.slice(dataOffset, dataOffset + dataLength)
+    });
+    offset = dataOffset + dataLength;
+  }
+  return records;
+}
+
+function parseLASExtendedVariableLengthRecords(
+  dataView: DataView,
+  evlrOffset: number,
+  evlrCount: number
+): LASExtendedVariableLengthRecord[] {
+  if (!evlrOffset || !evlrCount || evlrOffset >= dataView.byteLength) {
+    return [];
+  }
+  const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
+  const records: LASExtendedVariableLengthRecord[] = [];
+  let offset = evlrOffset;
+  for (let index = 0; index < evlrCount; index++) {
+    if (offset + 60 > bytes.byteLength) {
+      break;
+    }
+    const dataLength = readUint64(dataView, offset + 20);
+    const dataOffset = offset + 60;
+    if (dataLength > bytes.byteLength - dataOffset) {
+      break;
+    }
+    records.push({
+      reserved: dataView.getUint16(offset, true),
+      userId: readLASString(bytes, offset + 2, 16),
+      recordId: dataView.getUint16(offset + 18, true),
+      description: readLASString(bytes, offset + 28, 32),
+      offset,
+      data: bytes.slice(dataOffset, dataOffset + dataLength),
+      dataOffset,
+      dataLength
+    });
+    offset = dataOffset + dataLength;
+  }
+  return records;
+}
+
+function parseTypedLASMetadataRecord(
+  record: LASVariableLengthRecord | LASExtendedVariableLengthRecord,
+  metadata: LASMetadata
+): void {
+  const data = record.data;
+  if (!data) {
+    return;
+  }
+  if (record.userId === 'LASF_Spec' && record.recordId === 4) {
+    metadata.extraBytes.push(...parseLASExtraBytes(data));
+  } else if (record.userId === 'LASF_Spec' && record.recordId >= 100 && record.recordId <= 355) {
+    metadata.waveformPacketDescriptors.push(parseLASWaveformDescriptor(record.recordId, data));
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 2111) {
+    metadata.wkt = decodeLASString(data);
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 2112) {
+    metadata.wktMathTransform = decodeLASString(data);
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34735) {
+    metadata.geotiff = {...metadata.geotiff, keys: readUint16Array(data)};
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34736) {
+    metadata.geotiff = {...metadata.geotiff, doubles: readFloat64Array(data)};
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34737) {
+    metadata.geotiff = {...metadata.geotiff, ascii: decodeLASString(data)};
+  }
+}
+
+function parseLASExtraBytes(data: Uint8Array): LASExtraBytesDescriptor[] {
+  const descriptors: LASExtraBytesDescriptor[] = [];
+  for (let offset = 0; offset + 192 <= data.byteLength; offset += 192) {
+    descriptors.push({
+      dataType: data[offset + 2],
+      options: data[offset + 3],
+      name: readLASString(data, offset + 4, 32),
+      description: readLASString(data, offset + 160, 32),
+      data: data.slice(offset, offset + 192)
+    });
+  }
+  return descriptors;
+}
+
+function parseLASWaveformDescriptor(
+  recordId: number,
+  data: Uint8Array
+): LASWaveformPacketDescriptor {
+  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return {
+    recordId,
+    bitsPerSample: dataView.getUint8(2),
+    compressionType: dataView.getUint8(3),
+    numberOfSamples: dataView.getUint32(4, true),
+    temporalSampleSpacing: dataView.getFloat64(8, true),
+    digitizerGain: dataView.getFloat32(16, true),
+    digitizerOffset: dataView.getFloat32(20, true)
+  };
+}
+
+function parsePointsByReturn(dataView: DataView, isAtLeast14: boolean): number[] {
+  const count = isAtLeast14 ? 15 : 5;
+  const offset = isAtLeast14 ? 255 : 111;
+  const values: number[] = [];
+  for (let index = 0; index < count; index++) {
+    values.push(
+      isAtLeast14
+        ? readUint64(dataView, offset + index * 8)
+        : dataView.getUint32(offset + index * 4, true)
+    );
+  }
+  return values;
+}
+
+function readLASString(bytes: Uint8Array, offset: number, length: number): string {
+  return decodeLASString(bytes.subarray(offset, offset + length));
+}
+
+function decodeLASString(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes).replace(/\0+$/, '').trim();
+}
+
+function formatLASProjectId(bytes: Uint8Array): string {
+  const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function readUint16Array(bytes: Uint8Array): Uint16Array {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const values = new Uint16Array(Math.floor(bytes.byteLength / 2));
+  for (let index = 0; index < values.length; index++) {
+    values[index] = dataView.getUint16(index * 2, true);
+  }
+  return values;
+}
+
+function readFloat64Array(bytes: Uint8Array): Float64Array {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const values = new Float64Array(Math.floor(bytes.byteLength / 8));
+  for (let index = 0; index < values.length; index++) {
+    values[index] = dataView.getFloat64(index * 8, true);
+  }
+  return values;
 }
 
 /**

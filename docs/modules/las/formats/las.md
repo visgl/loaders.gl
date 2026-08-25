@@ -30,14 +30,14 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Capability | TypeScript status |
 | --- | --- |
 | Uncompressed LAS 1.0-1.4 | Partial. Reads common public-header fields and PDRF 0-10 record layouts. Dedicated conformance fixtures do not yet cover every header version/PDRF combination. |
-| LAS 1.5 | Partial. Extended point counts and PDRF 9/10 files are fixture-tested; LAS 1.5 metadata and conformance rules are not complete. |
+| LAS 1.5 | Partial. Extended point counts, typed header metadata, and PDRF 9/10 files are fixture-tested; full LAS 1.5 conformance rules are not complete. |
 | Arrow columns | `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, and `NIR` where present. `las.columns` selects optional output columns; `POSITION` is always returned. |
 | GPS time | Exposed as `GPS_TIME` for PDRF 1, 3-5, and 6-10. |
 | NIR | Exposed as `NIR` for PDRF 8 and 10. |
 | Return flags, scanner channel, scan angle, point source ID, user data | Incomplete. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are preserved by the raw TypeScript LAZ APIs but are not exposed as Arrow columns. Waveform payload handling is not implemented. |
-| Extra bytes | Raw record length is respected, but Extra Bytes VLR metadata is not mapped to output attributes. |
-| VLRs, EVLRs, CRS, WKT, GeoTIFF records | The LASzip VLR is parsed for decompression. General metadata records are not fully parsed or preserved. |
+| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; extra point fields are still preserved through raw records rather than Arrow columns. |
+| VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT, GeoTIFF, Extra Bytes, waveform descriptors, and LASzip records are recognized; CRS interpretation remains a follow-up. |
 | `parseInBatches` | Incremental for uncompressed LAS point records after enough header/point bytes are available. |
 
 ### TypeScript LAS Writer

@@ -10,6 +10,14 @@ export type {LASColumnName, LASLoaderOptions} from './las-loader-types';
 
 export type {LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
+export type {
+  LASExtendedVariableLengthRecord,
+  LASExtraBytesDescriptor,
+  LASHeader,
+  LASMetadata,
+  LASVariableLengthRecord,
+  LASWaveformPacketDescriptor
+} from './lib/las-types';
 
 export {LASLoader} from './las-loader-types';
 export {LASCOPCLoader} from './las-copc-loader-types';

@@ -151,6 +151,12 @@ test('LASLoader#columns decodes GPS time and NIR for PDRF 8', async () => {
   expect(getArrowColumnValues(compressed, 'NIR')).toEqual(
     getArrowColumnValues(uncompressed, 'NIR')
   );
+  const metadata = compressed.loaderData.metadata;
+  expect(
+    metadata?.vlrs.some(record => record.userId === 'LASF_Spec' && record.recordId === 4)
+  ).toBe(true);
+  expect(metadata?.extraBytes).toHaveLength(4);
+  expect(metadata?.extraBytes[0].data.byteLength).toBe(192);
 
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
     batchSize: 127,
