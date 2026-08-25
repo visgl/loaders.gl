@@ -1,6 +1,11 @@
 # @loaders.gl/orc
 
-> **Status:** v5.0 experimental / work in progress. The Arrow-based ORC loader and writer are available for evaluation and do not yet provide complete ORC feature coverage.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
+
+The Arrow-based ORC loader and writer are available for evaluation and do not yet provide complete ORC feature coverage.
 
 Initial Apache ORC support for loaders.gl.
 
