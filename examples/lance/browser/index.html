@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lance read-only MVP</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; background: #f4f6f8; color: #17202a; }
+      main { max-width: 900px; margin: 48px auto; padding: 32px; background: white; border-radius: 16px; box-shadow: 0 10px 30px #0001; }
+      h1 { margin-top: 0; }
+      .panels { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 24px; }
+      .panel { border: 1px solid #d8dee5; border-radius: 10px; padding: 20px; }
+      .panel h2 { font-size: 1rem; margin-top: 0; }
+      .pager { align-items: center; display: flex; gap: 12px; margin-top: 16px; }
+      .picker { display: grid; gap: 12px; grid-template-columns: 1fr 2fr 110px auto; margin: 20px 0; }
+      .picker label { display: grid; gap: 5px; color: #66727e; font-size: 0.85rem; }
+      input, select { border: 1px solid #aeb8c2; border-radius: 6px; min-width: 0; padding: 8px; font: inherit; color: inherit; background: white; }
+      .empty { color: #66727e; }
+      #deck-panel[hidden] { display: none; }
+      #deck-canvas { display: block; height: 360px; width: 100%; }
+      button { border: 1px solid #aeb8c2; border-radius: 6px; padding: 7px 12px; }
+      button:disabled { cursor: not-allowed; opacity: 0.45; }
+      dl { display: grid; gap: 10px; grid-template-columns: auto 1fr; margin: 0; }
+      dt { color: #66727e; }
+      dd { margin: 0; font-weight: 600; }
+      table { border-collapse: collapse; min-width: 180px; }
+      th, td { border: 1px solid #ccd3da; padding: 10px 16px; text-align: left; }
+      th { background: #edf1f5; }
+      pre { padding: 16px; overflow: auto; background: #17202a; color: #d9f99d; border-radius: 8px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Lance → Arrow</h1>
+      <p id="status">Choose a Lance dataset to read…</p>
+      <section class="picker" aria-label="Lance dataset source">
+        <label>Curated source<select id="dataset-picker"></select></label>
+        <label>Lance dataset URL<input id="dataset-url" type="url" spellcheck="false" /></label>
+        <label>Manifest version<input id="dataset-version" type="text" /></label>
+        <button id="load-dataset" type="button">Load</button>
+      </section>
+      <section class="panels">
+        <article class="panel">
+          <h2>Lance dataset</h2>
+          <dl id="dataset-details"></dl>
+        </article>
+        <article class="panel">
+          <h2>Arrow table</h2>
+          <p id="arrow-status"></p>
+          <table>
+            <thead><tr id="arrow-head"></tr></thead>
+            <tbody id="arrow-rows"></tbody>
+          </table>
+          <div class="pager">
+            <button id="previous-page" type="button">Previous</button>
+            <span id="page-status"></span>
+            <button id="next-page" type="button">Next</button>
+          </div>
+        </article>
+        <article class="panel" id="deck-panel" hidden>
+          <h2>deck.gl coordinate view</h2>
+          <p>PushT observation coordinates in its 500×300 workspace. The orange line is the sampled trajectory.</p>
+          <canvas id="deck-canvas" width="640" height="360"></canvas>
+        </article>
+      </section>
+    </main>
+    <script type="module" src="./app.ts"></script>
+  </body>
+</html>

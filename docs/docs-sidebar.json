@@ -434,6 +434,13 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/lance",
+        "items": [
+          "modules/lance/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/lerc",
         "items": [
           "modules/lerc/README"

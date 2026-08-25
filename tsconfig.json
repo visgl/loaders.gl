@@ -247,6 +247,18 @@
       "@loaders.gl/parquet/test": [
         "modules/parquet/test"
       ],
+      "@loaders.gl/lance": [
+        "modules/lance/src"
+      ],
+      "@loaders.gl/lance/*": [
+        "modules/lance/src/*"
+      ],
+      "@loaders.gl/lance/test": [
+        "modules/lance/test"
+      ],
+      ],
+      ],
+      ],
       "@loaders.gl/pcd": [
         "modules/pcd/src"
       ],

@@ -1,0 +1,71 @@
+{
+  "name": "@loaders.gl/lance",
+  "version": "5.0.0-alpha.2",
+  "description": "Read-only loader and data source scaffold for Lance datasets",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "loader",
+    "parser",
+    "table",
+    "lance",
+    "multimodal",
+    "arrow"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./lance-loader": {
+      "types": "./dist/lance-loader.d.ts",
+      "import": "./dist/lance-loader.js"
+    },
+    "./lance-source-loader": {
+      "types": "./dist/lance-source-loader.d.ts",
+      "import": "./dist/lance-source-loader.js"
+    },
+    "./lance-file": {
+      "types": "./dist/lance-file.d.ts",
+      "import": "./dist/lance-file.js"
+    },
+    "./lance-decoder": {
+      "types": "./dist/lance-decoder.d.ts",
+      "import": "./dist/lance-decoder.js"
+    },
+    "./lance-arrow": {
+      "types": "./dist/lance-arrow.d.ts",
+      "import": "./dist/lance-arrow.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+}
