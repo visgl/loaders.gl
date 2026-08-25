@@ -20,7 +20,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
+const VLR_HEADER_LENGTH = 54;
 const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
+const VARIABLE_LAZ_CHUNK_SIZE = 0xffffffff;
 const POINT_RECORD_LENGTHS: Record<number, number> = {
   0: 20,
   1: 28,
@@ -51,6 +53,10 @@ export type LASWriterOptions = WriterOptions & {
     colorDepth?: number | string;
     /** Number of points per fixed-size LAZ chunk. */
     chunkSize?: number;
+    /** Write a variable-size LAZ chunk table instead of a fixed-size table. */
+    variableChunkTable?: boolean;
+    /** Optional OGC WKT coordinate reference system VLR. */
+    wkt?: string;
   };
 };
 
@@ -97,6 +103,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   }
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
   const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
+  const wktVLR = options.las?.wkt ? encodeWKTVLR(options.las.wkt) : null;
   if (format === 'laz') {
     validateLAZOptions(version, pointDataRecordFormat, options.las?.chunkSize);
   }
@@ -139,12 +146,27 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     pointDataRecordLength
   };
   if (format === 'laz') {
-    return encodeLAZFile(rawPointData, writeParameters, options.las?.chunkSize);
+    return encodeLAZFile(
+      rawPointData,
+      writeParameters,
+      options.las?.chunkSize,
+      options.las?.variableChunkTable,
+      wktVLR
+    );
   }
 
-  const arrayBuffer = new ArrayBuffer(headerLength + rawPointData.byteLength);
-  writeHeader(new DataView(arrayBuffer), {...writeParameters, pointDataOffset: headerLength});
-  new Uint8Array(arrayBuffer, headerLength).set(rawPointData);
+  const pointDataOffset = headerLength + (wktVLR?.byteLength || 0);
+  const arrayBuffer = new ArrayBuffer(pointDataOffset + rawPointData.byteLength);
+  writeHeader(new DataView(arrayBuffer), {
+    ...writeParameters,
+    pointDataOffset,
+    vlrCount: wktVLR ? 1 : 0
+  });
+  const bytes = new Uint8Array(arrayBuffer);
+  if (wktVLR) {
+    bytes.set(wktVLR, headerLength);
+  }
+  bytes.set(rawPointData, pointDataOffset);
   return arrayBuffer;
 }
 
@@ -172,15 +194,18 @@ type LASWriteParameters = {
 function encodeLAZFile(
   rawPointData: Uint8Array,
   parameters: LASWriteParameters,
-  requestedChunkSize?: number
+  requestedChunkSize?: number,
+  variableChunkTable = false,
+  wktVLR: Uint8Array | null = null
 ): ArrayBuffer {
   const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
   const laszipVLR = encodeLASzipVLR({
     pointDataRecordFormat: parameters.pointDataRecordFormat,
     pointDataRecordLength: parameters.pointDataRecordLength,
-    chunkSize
+    chunkSize: variableChunkTable ? VARIABLE_LAZ_CHUNK_SIZE : chunkSize
   });
-  const pointDataOffset = parameters.headerLength + laszipVLR.byteLength;
+  const pointDataOffset =
+    parameters.headerLength + (wktVLR?.byteLength || 0) + laszipVLR.byteLength;
   const compressedChunks: Uint8Array[] = [];
   const chunkTableEntries: LAZChunkTableEntry[] = [];
 
@@ -206,7 +231,9 @@ function encodeLAZFile(
     (byteLength, chunk) => byteLength + chunk.byteLength,
     0
   );
-  const chunkTablePayload = encodeLAZChunkTable(chunkTableEntries);
+  const chunkTablePayload = encodeLAZChunkTable(chunkTableEntries, {
+    variable: variableChunkTable
+  });
   const chunkTableOffset = pointDataOffset + 8 + compressedPointDataByteLength;
   const arrayBuffer = new ArrayBuffer(chunkTableOffset + 8 + chunkTablePayload.byteLength);
   const bytes = new Uint8Array(arrayBuffer);
@@ -215,10 +242,13 @@ function encodeLAZFile(
   writeHeader(dataView, {
     ...parameters,
     pointDataOffset,
-    vlrCount: 1,
+    vlrCount: wktVLR ? 2 : 1,
     compressed: true
   });
-  bytes.set(laszipVLR, parameters.headerLength);
+  if (wktVLR) {
+    bytes.set(wktVLR, parameters.headerLength);
+  }
+  bytes.set(laszipVLR, parameters.headerLength + (wktVLR?.byteLength || 0));
   writeUint64Fallback(dataView, pointDataOffset, chunkTableOffset);
   let compressedOffset = pointDataOffset + 8;
   for (const chunk of compressedChunks) {
@@ -229,6 +259,19 @@ function encodeLAZFile(
   dataView.setUint32(chunkTableOffset + 4, chunkTableEntries.length, true);
   bytes.set(chunkTablePayload, chunkTableOffset + 8);
   return arrayBuffer;
+}
+
+/** Encode an OGC WKT coordinate system as a LAS WKT VLR. */
+function encodeWKTVLR(wkt: string): Uint8Array {
+  const payload = new TextEncoder().encode(`${wkt}\0`);
+  const bytes = new Uint8Array(VLR_HEADER_LENGTH + payload.byteLength);
+  const dataView = new DataView(bytes.buffer);
+  writeString(dataView, 2, 'LASF_Projection', 16);
+  dataView.setUint16(18, 2112, true);
+  dataView.setUint16(20, payload.byteLength, true);
+  writeString(dataView, 22, 'OGC WKT coordinate system', 32);
+  bytes.set(payload, VLR_HEADER_LENGTH);
+  return bytes;
 }
 
 /** Validate the intentionally narrow LAZ container writer surface. */

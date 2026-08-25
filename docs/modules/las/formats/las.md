@@ -47,9 +47,9 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Uncompressed LAS writing | Partial. Supports LAS output for represented mesh/table fields. |
 | LAS versions | Versions 1.0-1.4 are selectable and LAS 1.5 is rejected. Round-trip coverage currently targets default LAS 1.2 and LAS 1.4/PDRF 7; full version conformance is not claimed. |
 | Point data record formats | PDRF 0-8 are selectable. Only position, intensity, classification, and RGB input attributes are represented; other fields are zero-filled. |
-| LAZ writing | Supported for LAS 1.4 PDRF 6-8 with fixed-size LASzip chunk tables. |
+| LAZ writing | Supported for LAS 1.4 PDRF 6-8 with fixed-size or variable-size LASzip chunk tables. |
 | COPC writing | Supported by `@loaders.gl/copc` through its separate `COPCWriter` entry point. |
-| VLRs, EVLRs, CRS, Extra Bytes VLRs | Not complete. |
+| VLRs, EVLRs, CRS, Extra Bytes VLRs | WKT VLR writing is supported through `LASWriter`; broader metadata remains incomplete. |
 | Streaming writing | `encodeInBatches` may buffer input so final counts, bounds, offsets, and headers can be written correctly. |
 
 ### TypeScript LAZ Decoder

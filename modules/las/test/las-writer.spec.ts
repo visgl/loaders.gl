@@ -159,6 +159,40 @@ test('LASWriter#validates compressed output options', t => {
   t.end();
 });
 
+test('LASWriter#encodes variable LAZ chunks and WKT metadata', async t => {
+  const arrayBuffer = await encode(mesh, LASWriter, {
+    las: {
+      format: 'laz',
+      pointDataRecordFormat: 7,
+      chunkSize: 2,
+      variableChunkTable: true,
+      wkt: 'PROJCRS["WGS 84 / UTM zone 10N"]'
+    }
+  });
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = readUint64(dataView, pointDataOffset);
+  const chunkCount = dataView.getUint32(chunkTableOffset + 4, true);
+  const chunks = decodeLAZChunkTable(new Uint8Array(arrayBuffer, chunkTableOffset + 8), {
+    chunkCount,
+    pointCount: 3,
+    chunkSize: 0xffffffff,
+    variable: true
+  });
+  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const fileText = new TextDecoder().decode(new Uint8Array(arrayBuffer));
+
+  t.equal(dataView.getUint32(100, true), 2, 'writes LASzip and WKT VLRs');
+  t.deepEqual(
+    chunks.map(chunk => chunk.pointCount),
+    [2, 1],
+    'variable chunk table preserves point counts'
+  );
+  t.equal(data.attributes.POSITION.value.length, 9, 'variable LAZ parses through LASLoader');
+  t.ok(fileText.includes('WGS 84 / UTM zone 10N'), 'writes WKT payload');
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
