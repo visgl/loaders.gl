@@ -118,8 +118,9 @@ The job of `GLTFLoader` is to open the glTF container file(s) and extract the gl
 
 If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this 'storage optimized" form, traversing the loaded glTF scene graph tends to required verbose and repetitive code with lots of checks and guards.
 
-To simplify traversal and manipulation of glTF data, loaders.gl provides two separate mechanisms:
+To simplify traversal and manipulation of glTF data, loaders.gl provides three separate mechanisms:
 
+- The [`GLTFIterator`](./gltf-iterator) class lazily resolves references while preserving the original glTF JSON objects, making it suitable for extension transformations.
 - The [`postProcessGLTF()`](./post-process-gltf) function converts the glTF JSON into a largely equivalent JavaScript structure that significantly simpler to work with.
 - The [`GLTFScenegraph`](./gltf-scenegraph) function accepts glTF data and provides methods for accessing or modifying APIS.
 

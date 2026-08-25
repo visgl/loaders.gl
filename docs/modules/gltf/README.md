@@ -21,6 +21,10 @@ Optionally, to support Draco encoded gltf files
 npm install @loaders.gl/draco
 ```
 
+## GLTFIterator API
+
+The [`GLTFIterator`](/docs/modules/gltf/api-reference/gltf-iterator) class provides lazy, typed traversal of the original glTF JSON. It is intended for extension handlers and applications that need resolved references while retaining and optionally transforming the standards-shaped source document.
+
 ## GLTFScenegraph API
 
 To simplify traversing and building glTF data objects, the [`GLTFScenegraph`](/docs/modules/gltf/api-reference/gltf-scenegraph) class can be used.

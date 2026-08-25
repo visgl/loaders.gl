@@ -384,6 +384,7 @@
         "label": "@loaders.gl/gltf",
         "items": [
           "modules/gltf/README",
+          "modules/gltf/api-reference/gltf-iterator",
           "modules/gltf/api-reference/gltf-scenegraph",
           "modules/gltf/api-reference/post-process-gltf"
         ]

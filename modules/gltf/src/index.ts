@@ -142,6 +142,32 @@ export {GLBWriter} from './glb-writer';
 
 // glTF Data Access Helper Class
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
+export {
+  GLTFIterator,
+  GLTFObjectIterator,
+  GLTFNestedObjectIterator,
+  GLTFAccessorIterator,
+  GLTFAnimationIterator,
+  GLTFAnimationChannelIterator,
+  GLTFAnimationChannelTargetIterator,
+  GLTFAnimationSamplerIterator,
+  GLTFBufferIterator,
+  GLTFBufferViewIterator,
+  GLTFCameraIterator,
+  GLTFExternalAssetIterator,
+  GLTFFileIterator,
+  GLTFImageIterator,
+  GLTFMaterialIterator,
+  GLTFMeshIterator,
+  GLTFMeshPrimitiveIterator,
+  GLTFNodeIterator,
+  GLTFSamplerIterator,
+  GLTFSceneIterator,
+  GLTFSkinIterator,
+  GLTFTextureIterator,
+  GLTFTextureInfoIterator,
+  type GLTFIteratorType
+} from './lib/api/gltf-iterator';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
 export {

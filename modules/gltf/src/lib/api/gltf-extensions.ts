@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import {GLTF} from '../types/gltf-json-schema';
+import type {GLTF} from '../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import {GLTFWriterOptions} from '../../gltf-writer';
 
@@ -32,7 +33,7 @@ import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_meta
 type GLTFExtensionPlugin = {
   name: string;
   preprocess?: (
-    gltfData: {json: GLTF},
+    gltfData: GLTFWithBuffers,
     options: GLTFLoaderOptions,
     context
   ) => void | Promise<void>;
