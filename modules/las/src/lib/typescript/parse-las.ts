@@ -15,7 +15,14 @@ import {
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
-import type {LASHeader} from '../las-types';
+import type {
+  LASExtendedVariableLengthRecord,
+  LASExtraBytesDescriptor,
+  LASHeader,
+  LASMetadata,
+  LASVariableLengthRecord,
+  LASWaveformPacketDescriptor
+} from '../las-types';
 
 /** Arrow table returned by the TypeScript LAS parser with LAS loader metadata attached. */
 export type LASArrowTable = MeshArrowTable & {
@@ -102,6 +109,9 @@ type PointDataBatchState = {
   classifications: Uint8Array | null;
   gpsTimes: Float64Array | null;
   nir: Uint16Array | null;
+  scanAngles: Int16Array | null;
+  userData: Uint8Array | null;
+  pointSourceIds: Uint16Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -223,7 +233,10 @@ function parseCompleteLAZFileToArrowTable(
     state.intensities,
     state.classifications,
     state.gpsTimes,
-    state.nir
+    state.nir,
+    state.scanAngles,
+    state.userData,
+    state.pointSourceIds
   );
 }
 
@@ -785,7 +798,7 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     dataView.getFloat64(219, true)
   ];
 
-  return {
+  const header: LASHeader = {
     pointsOffset,
     pointsFormatId,
     pointsStructSize,
@@ -802,6 +815,225 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     headerSize,
     vlrCount
   };
+  if (hasCompleteLASMetadata(arrayBuffer, header)) {
+    header.metadata = parseLASMetadata(arrayBuffer, header);
+  }
+  return header;
+}
+
+function hasCompleteLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): boolean {
+  const vlrEnd = header.headerSize! + header.vlrCount! * 54;
+  return arrayBuffer.byteLength >= Math.max(vlrEnd, header.pointsOffset);
+}
+
+function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASMetadata {
+  const dataView = new DataView(arrayBuffer);
+  const version = header.versionAsString || '1.0';
+  const versionParts = version.split('.').map(Number);
+  const isAtLeast14 = versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 4);
+  const vlrs = parseLASVariableLengthRecords(dataView, header);
+  const evlrOffset = isAtLeast14 ? readUint64(dataView, 235) : 0;
+  const evlrCount = isAtLeast14 ? dataView.getUint32(243, true) : 0;
+  const evlrs = parseLASExtendedVariableLengthRecords(dataView, evlrOffset, evlrCount);
+  const metadata: LASMetadata = {
+    fileSourceId: dataView.getUint16(4, true),
+    globalEncoding: dataView.getUint16(6, true),
+    projectId: formatLASProjectId(new Uint8Array(arrayBuffer, 8, 16)),
+    systemIdentifier: readLASString(new Uint8Array(arrayBuffer), 26, 32),
+    generatingSoftware: readLASString(new Uint8Array(arrayBuffer), 58, 32),
+    creationDayOfYear: dataView.getUint16(90, true),
+    creationYear: dataView.getUint16(92, true),
+    headerSize: header.headerSize!,
+    vlrCount: header.vlrCount!,
+    evlrOffset: evlrOffset || undefined,
+    evlrCount: evlrCount || undefined,
+    pointsByReturn: parsePointsByReturn(dataView, isAtLeast14),
+    vlrs,
+    evlrs,
+    extraBytes: [],
+    waveformPacketDescriptors: []
+  };
+
+  for (const record of vlrs.concat(
+    evlrs.map(evlr => ({...evlr, data: evlr.data || new Uint8Array()}))
+  )) {
+    parseTypedLASMetadataRecord(record, metadata);
+  }
+  return metadata;
+}
+
+function parseLASVariableLengthRecords(
+  dataView: DataView,
+  header: LASHeader
+): LASVariableLengthRecord[] {
+  const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
+  const records: LASVariableLengthRecord[] = [];
+  let offset = header.headerSize!;
+  for (let index = 0; index < header.vlrCount!; index++) {
+    if (offset + 54 > bytes.byteLength) {
+      break;
+    }
+    const dataLength = dataView.getUint16(offset + 20, true);
+    const dataOffset = offset + 54;
+    if (dataOffset + dataLength > bytes.byteLength) {
+      break;
+    }
+    records.push({
+      reserved: dataView.getUint16(offset, true),
+      userId: readLASString(bytes, offset + 2, 16),
+      recordId: dataView.getUint16(offset + 18, true),
+      description: readLASString(bytes, offset + 22, 32),
+      offset,
+      data: bytes.slice(dataOffset, dataOffset + dataLength)
+    });
+    offset = dataOffset + dataLength;
+  }
+  return records;
+}
+
+function parseLASExtendedVariableLengthRecords(
+  dataView: DataView,
+  evlrOffset: number,
+  evlrCount: number
+): LASExtendedVariableLengthRecord[] {
+  if (!evlrOffset || !evlrCount || evlrOffset >= dataView.byteLength) {
+    return [];
+  }
+  const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
+  const records: LASExtendedVariableLengthRecord[] = [];
+  let offset = evlrOffset;
+  for (let index = 0; index < evlrCount; index++) {
+    if (offset + 60 > bytes.byteLength) {
+      break;
+    }
+    const dataLength = readUint64(dataView, offset + 20);
+    const dataOffset = offset + 60;
+    if (dataLength > bytes.byteLength - dataOffset) {
+      break;
+    }
+    records.push({
+      reserved: dataView.getUint16(offset, true),
+      userId: readLASString(bytes, offset + 2, 16),
+      recordId: dataView.getUint16(offset + 18, true),
+      description: readLASString(bytes, offset + 28, 32),
+      offset,
+      data: bytes.slice(dataOffset, dataOffset + dataLength),
+      dataOffset,
+      dataLength
+    });
+    offset = dataOffset + dataLength;
+  }
+  return records;
+}
+
+function parseTypedLASMetadataRecord(
+  record: LASVariableLengthRecord | LASExtendedVariableLengthRecord,
+  metadata: LASMetadata
+): void {
+  const data = record.data;
+  if (!data) {
+    return;
+  }
+  if (record.userId === 'LASF_Spec' && record.recordId === 4) {
+    metadata.extraBytes.push(...parseLASExtraBytes(data));
+  } else if (record.userId === 'LASF_Spec' && record.recordId >= 100 && record.recordId <= 355) {
+    metadata.waveformPacketDescriptors.push(parseLASWaveformDescriptor(record.recordId, data));
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 2111) {
+    metadata.wktMathTransform = decodeLASString(data);
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 2112) {
+    metadata.wkt = decodeLASString(data);
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34735) {
+    metadata.geotiff = {...metadata.geotiff, keys: readUint16Array(data)};
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34736) {
+    metadata.geotiff = {...metadata.geotiff, doubles: readFloat64Array(data)};
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 34737) {
+    metadata.geotiff = {...metadata.geotiff, ascii: decodeLASString(data)};
+  }
+}
+
+function parseLASExtraBytes(data: Uint8Array): LASExtraBytesDescriptor[] {
+  const descriptors: LASExtraBytesDescriptor[] = [];
+  for (let offset = 0; offset + 192 <= data.byteLength; offset += 192) {
+    descriptors.push({
+      dataType: data[offset + 2],
+      options: data[offset + 3],
+      name: readLASString(data, offset + 4, 32),
+      description: readLASString(data, offset + 160, 32),
+      data: data.slice(offset, offset + 192)
+    });
+  }
+  return descriptors;
+}
+
+function parseLASWaveformDescriptor(
+  recordId: number,
+  data: Uint8Array
+): LASWaveformPacketDescriptor {
+  if (data.byteLength < 28) {
+    throw new Error(`LASLoader: waveform descriptor VLR ${recordId} is truncated`);
+  }
+  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return {
+    recordId,
+    bitsPerSample: dataView.getUint8(2),
+    compressionType: dataView.getUint8(3),
+    numberOfSamples: dataView.getUint32(4, true),
+    temporalSampleSpacing: dataView.getUint32(8, true),
+    digitizerGain: dataView.getFloat64(12, true),
+    digitizerOffset: dataView.getFloat64(20, true)
+  };
+}
+
+function parsePointsByReturn(dataView: DataView, isAtLeast14: boolean): number[] {
+  const count = isAtLeast14 ? 15 : 5;
+  const offset = isAtLeast14 ? 255 : 111;
+  const values: number[] = [];
+  for (let index = 0; index < count; index++) {
+    values.push(
+      isAtLeast14
+        ? readUint64(dataView, offset + index * 8)
+        : dataView.getUint32(offset + index * 4, true)
+    );
+  }
+  return values;
+}
+
+function readLASString(bytes: Uint8Array, offset: number, length: number): string {
+  return decodeLASString(bytes.subarray(offset, offset + length));
+}
+
+function decodeLASString(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes).replace(/\0+$/, '').trim();
+}
+
+function formatLASProjectId(bytes: Uint8Array): string {
+  const formatLittleEndian = (start: number, length: number): string =>
+    Array.from(bytes.subarray(start, start + length), byte => byte.toString(16).padStart(2, '0'))
+      .reverse()
+      .join('');
+  const formatBigEndian = (start: number, length: number): string =>
+    Array.from(bytes.subarray(start, start + length), byte =>
+      byte.toString(16).padStart(2, '0')
+    ).join('');
+  return `${formatLittleEndian(0, 4)}-${formatLittleEndian(4, 2)}-${formatLittleEndian(6, 2)}-${formatBigEndian(8, 2)}${formatBigEndian(10, 6)}`;
+}
+
+function readUint16Array(bytes: Uint8Array): Uint16Array {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const values = new Uint16Array(Math.floor(bytes.byteLength / 2));
+  for (let index = 0; index < values.length; index++) {
+    values[index] = dataView.getUint16(index * 2, true);
+  }
+  return values;
+}
+
+function readFloat64Array(bytes: Uint8Array): Float64Array {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const values = new Float64Array(Math.floor(bytes.byteLength / 8));
+  for (let index = 0; index < values.length; index++) {
+    values[index] = dataView.getFloat64(index * 8, true);
+  }
+  return values;
 }
 
 /**
@@ -831,6 +1063,9 @@ function parseLASArrowTableBatch(
     selection.nir && getNirOffset(lasHeader.pointsFormatId) >= 0
       ? new Uint16Array(batchSize)
       : null;
+  const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
+  const userData = selection.userData ? new Uint8Array(batchSize) : null;
+  const pointSourceIds = selection.pointSourceId ? new Uint16Array(batchSize) : null;
 
   populateLASAttributesFromDataView(makeDataView(arrayBuffer), lasHeader, options, {
     positions,
@@ -839,6 +1074,9 @@ function parseLASArrowTableBatch(
     classifications,
     gpsTimes,
     nir,
+    scanAngles,
+    userData,
+    pointSourceIds,
     pointOffset: 0,
     sourcePointIndex: 0,
     pointCount: batchSize
@@ -851,7 +1089,10 @@ function parseLASArrowTableBatch(
     intensities,
     classifications,
     gpsTimes,
-    nir
+    nir,
+    scanAngles,
+    userData,
+    pointSourceIds
   );
 }
 
@@ -862,7 +1103,10 @@ function makeLASArrowTableFromAttributes(
   intensities: Uint16Array | null,
   classifications: Uint8Array | null,
   gpsTimes: Float64Array | null,
-  nir: Uint16Array | null
+  nir: Uint16Array | null,
+  scanAngles: Int16Array | null,
+  userData: Uint8Array | null,
+  pointSourceIds: Uint16Array | null
 ): LASArrowTable {
   const attributes: MeshAttributes = {
     POSITION: {value: positions, size: 3}
@@ -881,6 +1125,15 @@ function makeLASArrowTableFromAttributes(
   }
   if (nir) {
     attributes.NIR = {value: nir, size: 1};
+  }
+  if (scanAngles) {
+    attributes.scanAngle = {value: scanAngles, size: 1};
+  }
+  if (userData) {
+    attributes.userData = {value: userData, size: 1};
+  }
+  if (pointSourceIds) {
+    attributes.pointSourceId = {value: pointSourceIds, size: 1};
   }
 
   const schema = getLASSchema(lasHeader, attributes);
@@ -916,6 +1169,9 @@ function populateLASAttributesFromDataView(
     classifications: Uint8Array | null;
     gpsTimes: Float64Array | null;
     nir: Uint16Array | null;
+    scanAngles: Int16Array | null;
+    userData: Uint8Array | null;
+    pointSourceIds: Uint16Array | null;
     pointOffset: number;
     sourcePointIndex: number;
     pointCount: number;
@@ -942,6 +1198,9 @@ function populateLASAttributesFromDataView(
   const classifications = target.classifications;
   const gpsTimes = target.gpsTimes;
   const nir = target.nir;
+  const scanAngles = target.scanAngles;
+  const userData = target.userData;
+  const pointSourceIds = target.pointSourceIds;
   const gpsTimeOffset = gpsTimes ? getGpsTimeOffset(pointsFormatId) : -1;
   const nirOffset = nir ? getNirOffset(pointsFormatId) : -1;
 
@@ -966,6 +1225,21 @@ function populateLASAttributesFromDataView(
     }
     if (nir && nirOffset >= 0) {
       nir[targetPointIndex] = dataView.getUint16(pointOffset + nirOffset, true);
+    }
+    if (scanAngles) {
+      scanAngles[targetPointIndex] =
+        pointsFormatId <= 5
+          ? dataView.getInt8(pointOffset + 16)
+          : dataView.getInt16(pointOffset + 18, true);
+    }
+    if (userData) {
+      userData[targetPointIndex] = dataView.getUint8(pointOffset + 17);
+    }
+    if (pointSourceIds) {
+      pointSourceIds[targetPointIndex] = dataView.getUint16(
+        pointOffset + (pointsFormatId <= 5 ? 18 : 20),
+        true
+      );
     }
 
     if (colorOffset >= 0 && target.colors) {
@@ -1564,6 +1838,9 @@ function createPointDataBatchState(
       : null;
   const nir =
     selection.nir && getNirOffset(header.pointsFormatId) >= 0 ? new Uint16Array(batchSize) : null;
+  const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
+  const userData = selection.userData ? new Uint8Array(batchSize) : null;
+  const pointSourceIds = selection.pointSourceId ? new Uint16Array(batchSize) : null;
   return {
     batchCapacity: batchSize,
     positions,
@@ -1573,12 +1850,18 @@ function createPointDataBatchState(
     classifications,
     gpsTimes,
     nir,
+    scanAngles,
+    userData,
+    pointSourceIds,
     target: {
       positions,
       intensities,
       classifications,
       gpsTimes,
       nir,
+      scanAngles,
+      userData,
+      pointSourceIds,
       colors,
       rawColors,
       pointOffset: 0,
@@ -1768,6 +2051,21 @@ function flushPointDataBatch(
       : state.gpsTimes.subarray(0, batchPointCount)
     : null;
   const nir = state.nir ? (fullBatch ? state.nir : state.nir.subarray(0, batchPointCount)) : null;
+  const scanAngles = state.scanAngles
+    ? fullBatch
+      ? state.scanAngles
+      : state.scanAngles.subarray(0, batchPointCount)
+    : null;
+  const userData = state.userData
+    ? fullBatch
+      ? state.userData
+      : state.userData.subarray(0, batchPointCount)
+    : null;
+  const pointSourceIds = state.pointSourceIds
+    ? fullBatch
+      ? state.pointSourceIds
+      : state.pointSourceIds.subarray(0, batchPointCount)
+    : null;
   const table = makeLASArrowTableFromAttributes(
     batchHeader,
     positions,
@@ -1775,7 +2073,10 @@ function flushPointDataBatch(
     intensities,
     classifications,
     gpsTimes,
-    nir
+    nir,
+    scanAngles,
+    userData,
+    pointSourceIds
   );
 
   state.batchPointCount = 0;
@@ -1790,6 +2091,11 @@ function flushPointDataBatch(
       : null;
     state.gpsTimes = state.gpsTimes ? new Float64Array(state.gpsTimes.length) : null;
     state.nir = state.nir ? new Uint16Array(state.nir.length) : null;
+    state.scanAngles = state.scanAngles ? new Int16Array(state.scanAngles.length) : null;
+    state.userData = state.userData ? new Uint8Array(state.userData.length) : null;
+    state.pointSourceIds = state.pointSourceIds
+      ? new Uint16Array(state.pointSourceIds.length)
+      : null;
     state.target.positions = state.positions;
     state.target.colors = state.colors;
     state.target.rawColors = state.rawColors;
@@ -1797,6 +2103,9 @@ function flushPointDataBatch(
     state.target.classifications = state.classifications;
     state.target.gpsTimes = state.gpsTimes;
     state.target.nir = state.nir;
+    state.target.scanAngles = state.scanAngles;
+    state.target.userData = state.userData;
+    state.target.pointSourceIds = state.pointSourceIds;
   }
   return table;
 }
@@ -1808,10 +2117,22 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   color: boolean;
   gpsTime: boolean;
   nir: boolean;
+  scanAngle: boolean;
+  userData: boolean;
+  pointSourceId: boolean;
 } {
   const columns = options.las?.columns;
   if (!columns) {
-    return {intensity: true, classification: true, color: true, gpsTime: true, nir: true};
+    return {
+      intensity: true,
+      classification: true,
+      color: true,
+      gpsTime: true,
+      nir: true,
+      scanAngle: true,
+      userData: true,
+      pointSourceId: true
+    };
   }
 
   let intensity = false;
@@ -1819,6 +2140,9 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   let color = false;
   let gpsTime = false;
   let nir = false;
+  let scanAngle = false;
+  let userData = false;
+  let pointSourceId = false;
   for (const column of columns as readonly string[]) {
     switch (column) {
       case 'POSITION':
@@ -1838,11 +2162,20 @@ function getLASColumnSelection(options: LASLoaderOptions): {
       case 'NIR':
         nir = true;
         break;
+      case 'scanAngle':
+        scanAngle = true;
+        break;
+      case 'userData':
+        userData = true;
+        break;
+      case 'pointSourceId':
+        pointSourceId = true;
+        break;
       default:
         throw new Error(`LASLoader: unsupported column ${column}`);
     }
   }
-  return {intensity, classification, color, gpsTime, nir};
+  return {intensity, classification, color, gpsTime, nir, scanAngle, userData, pointSourceId};
 }
 
 function convertRawColorsToUint8(

@@ -18,7 +18,10 @@ export type LASColumnName =
   | 'classification'
   | 'COLOR_0'
   | 'GPS_TIME'
-  | 'NIR';
+  | 'NIR'
+  | 'scanAngle'
+  | 'userData'
+  | 'pointSourceId';
 
 /** Options accepted by LAS loader implementations. */
 export type LASLoaderOptions = LoaderOptions & {
