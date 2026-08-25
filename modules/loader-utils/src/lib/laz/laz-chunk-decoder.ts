@@ -1352,7 +1352,6 @@ class Point14Context {
       this.userDataModel = createModels(64, 256);
       this.scanAngle = createIntegerDecompressor(16, 2);
       this.pointSourceId = createIntegerDecompressor(16, 1);
-      this.multiExtremeCounter = new Array<number>(4).fill(0);
     }
     if (mode === Point14DecompressionMode.Full || selection?.gpsTime) {
       this.gpsTimeMultiModel = new ArithmeticModel(515);
@@ -1360,6 +1359,7 @@ class Point14Context {
       this.gpsTime = createIntegerDecompressor(32, 9);
       this.lastGpsTime = new Array<number>(4).fill(0);
       this.lastGpsTimeDiff = new Array<number>(4).fill(0);
+      this.multiExtremeCounter = new Array<number>(4).fill(0);
     }
   }
 }

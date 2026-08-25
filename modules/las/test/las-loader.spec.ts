@@ -73,18 +73,24 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     fetchFile(PDRF_7_LAZ_URL).then(response => response.arrayBuffer())
   ]);
   const options = {
-    las: {shape: 'arrow-table' as const, columns: ['POSITION', 'COLOR_0'] as const},
+    las: {
+      shape: 'arrow-table' as const,
+      columns: ['POSITION', 'COLOR_0', 'GPS_TIME'] as const
+    },
     core: {worker: false}
   };
   const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
   const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
 
-  expect(getArrowColumnNames(compressed)).toEqual(['POSITION', 'COLOR_0']);
+  expect(getArrowColumnNames(compressed)).toEqual(['POSITION', 'COLOR_0', 'GPS_TIME']);
   expect(getArrowColumnValues(compressed, 'POSITION')).toEqual(
     getArrowColumnValues(uncompressed, 'POSITION')
   );
   expect(getArrowColumnValues(compressed, 'COLOR_0')).toEqual(
     getArrowColumnValues(uncompressed, 'COLOR_0')
+  );
+  expect(getArrowColumnValues(compressed, 'GPS_TIME')).toEqual(
+    getArrowColumnValues(uncompressed, 'GPS_TIME')
   );
 
   const positionsOnlyMesh = await parse(lasArrayBuffer, LASLoader, {
