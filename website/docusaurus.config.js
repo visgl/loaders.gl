@@ -145,6 +145,7 @@ const config = {
             '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),
             '@loaders.gl/parquet': resolve('../modules/parquet/src'),
+            '@loaders.gl/orc': resolve('../modules/orc/src'),
             '@loaders.gl/pcd': resolve('../modules/pcd/src'),
             '@loaders.gl/ply': resolve('../modules/ply/src'),
             '@loaders.gl/pmtiles': resolve('../modules/pmtiles/src'),

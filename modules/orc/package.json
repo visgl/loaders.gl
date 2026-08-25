@@ -1,0 +1,63 @@
+{
+  "name": "@loaders.gl/orc",
+  "version": "5.0.0-alpha.2",
+  "description": "Framework-independent loader for Apache ORC files",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "loader",
+    "parser",
+    "table",
+    "orc",
+    "apache-orc"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./orc-loader": {
+      "types": "./dist/orc-loader.d.ts",
+      "import": "./dist/orc-loader.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+  },
+  "dependencies": {
+    "@loaders.gl/compression": "5.0.0-alpha.2",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">=17.0.0"
+  }
+}

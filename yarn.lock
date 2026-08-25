@@ -5671,6 +5671,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/orc@workspace:*, @loaders.gl/orc@workspace:modules/orc":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/orc@workspace:modules/orc"
+  dependencies:
+    "@loaders.gl/compression": "npm:5.0.0-alpha.2"
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.2"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+    apache-arrow: ">=17.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/parquet@workspace:modules/parquet"
@@ -28564,6 +28577,7 @@ __metadata:
     "@loaders.gl/las": "workspace:*"
     "@loaders.gl/loader-utils": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
+    "@loaders.gl/orc": "workspace:*"
     "@loaders.gl/parquet": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
     "@loaders.gl/scene": "workspace:*"

@@ -256,6 +256,15 @@
       "@loaders.gl/lance/test": [
         "modules/lance/test"
       ],
+      "@loaders.gl/orc": [
+        "modules/orc/src"
+      ],
+      "@loaders.gl/orc/*": [
+        "modules/orc/src/*"
+      ],
+      "@loaders.gl/orc/test": [
+        "modules/orc/test"
+      ],
       "@loaders.gl/pcd": [
         "modules/pcd/src"
       ],

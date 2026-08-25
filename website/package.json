@@ -46,6 +46,7 @@
     "@loaders.gl/las": "workspace:*",
     "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
+    "@loaders.gl/orc": "workspace:*",
     "@loaders.gl/parquet": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/scene": "workspace:*",

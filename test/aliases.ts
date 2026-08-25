@@ -46,6 +46,7 @@ function makeAliases() {
     '@loaders.gl/obj/test': resolveTestPath('./modules/obj/test'),
     '@loaders.gl/parquet/test': resolveTestPath('./modules/parquet/test'),
     '@loaders.gl/lance/test': resolveTestPath('./modules/lance/test'),
+    '@loaders.gl/orc/test': resolveTestPath('./modules/orc/test'),
     '@loaders.gl/pcd/test': resolveTestPath('./modules/pcd/test'),
     '@loaders.gl/ply/test': resolveTestPath('./modules/ply/test'),
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),

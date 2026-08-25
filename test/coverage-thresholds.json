@@ -422,6 +422,21 @@
         "branches": 54
       }
     },
+    "@loaders.gl/orc": {
+      "path": "modules/orc",
+      "browser": {
+        "statements": 66,
+        "lines": 70,
+        "functions": 78,
+        "branches": 48
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 70,
+        "functions": 78,
+        "branches": 48
+      }
+    },
     "@loaders.gl/parquet": {
       "path": "modules/parquet",
       "browser": {

@@ -23,7 +23,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Table Formats',
-      items: ['table/avro']
+      items: ['table/avro', 'table/orc']
     },
     {
       type: 'category',
