@@ -21,6 +21,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
 const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
+const VARIABLE_LAZ_CHUNK_SIZE = 0xffffffff;
 const POINT_RECORD_LENGTHS: Record<number, number> = {
   0: 20,
   1: 28,
@@ -51,6 +52,8 @@ export type LASWriterOptions = WriterOptions & {
     colorDepth?: number | string;
     /** Number of points per fixed-size LAZ chunk. */
     chunkSize?: number;
+    /** Write a variable-size LAZ chunk table instead of a fixed-size table. */
+    variableChunkTable?: boolean;
   };
 };
 
@@ -139,7 +142,12 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     pointDataRecordLength
   };
   if (format === 'laz') {
-    return encodeLAZFile(rawPointData, writeParameters, options.las?.chunkSize);
+    return encodeLAZFile(
+      rawPointData,
+      writeParameters,
+      options.las?.chunkSize,
+      options.las?.variableChunkTable
+    );
   }
 
   const arrayBuffer = new ArrayBuffer(headerLength + rawPointData.byteLength);
@@ -172,13 +180,14 @@ type LASWriteParameters = {
 function encodeLAZFile(
   rawPointData: Uint8Array,
   parameters: LASWriteParameters,
-  requestedChunkSize?: number
+  requestedChunkSize?: number,
+  variableChunkTable = false
 ): ArrayBuffer {
   const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
   const laszipVLR = encodeLASzipVLR({
     pointDataRecordFormat: parameters.pointDataRecordFormat,
     pointDataRecordLength: parameters.pointDataRecordLength,
-    chunkSize
+    chunkSize: variableChunkTable ? VARIABLE_LAZ_CHUNK_SIZE : chunkSize
   });
   const pointDataOffset = parameters.headerLength + laszipVLR.byteLength;
   const compressedChunks: Uint8Array[] = [];
@@ -206,7 +215,9 @@ function encodeLAZFile(
     (byteLength, chunk) => byteLength + chunk.byteLength,
     0
   );
-  const chunkTablePayload = encodeLAZChunkTable(chunkTableEntries);
+  const chunkTablePayload = encodeLAZChunkTable(chunkTableEntries, {
+    variable: variableChunkTable
+  });
   const chunkTableOffset = pointDataOffset + 8 + compressedPointDataByteLength;
   const arrayBuffer = new ArrayBuffer(chunkTableOffset + 8 + chunkTablePayload.byteLength);
   const bytes = new Uint8Array(arrayBuffer);
