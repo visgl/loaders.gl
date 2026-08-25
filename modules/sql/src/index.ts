@@ -8,6 +8,7 @@ export {SnowflakeSQLSource, SnowflakeSQLDataSource} from './snowflake-sql-source
 export {queryArrowTable} from './query-arrow-table';
 export {parseSQLPredicate} from './parse-sql-predicate';
 export {bindSQLPredicate} from './bind-sql-predicate';
+export {compileSQLTableQuery} from './compile-table-query';
 export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
 export {isSQLPredicateParameter} from './sql-predicate-types';
 export {
@@ -40,6 +41,7 @@ export type {
   SQLColumnInfo,
   SQLMetadata,
   SQLParameterValues,
+  SQLQuery,
   SQLQueryOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
@@ -47,6 +49,12 @@ export type {
 } from './sql-types';
 
 export type {ArrowQueryOptions} from './query-arrow-table';
+export type {
+  CompiledSQLTableQuery,
+  SQLTableQuery,
+  SQLTableQueryCompilerOptions,
+  SQLTableQueryDialect
+} from './compile-table-query';
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,

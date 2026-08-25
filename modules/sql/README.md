@@ -34,6 +34,23 @@ await dataSource.queryRows('CREATE TABLE numbers AS SELECT 1 AS value');
 const rows = await dataSource.queryRows('SELECT * FROM numbers');
 ```
 
+SQL data sources also accept a portable table query. The source compiles its predicate, projection,
+and limit to quoted SQL with bound parameters:
+
+```ts
+import {parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
+
+const rows = await dataSource.queryRows(
+  {
+    tableName: 'numbers',
+    columns: ['value'],
+    predicate: parseSQLPredicate('value >= :minimum', {preserveParameters: true}),
+    limit: 100
+  },
+  {parameters: {minimum: 1}}
+);
+```
+
 ## Arrow queries
 
 Use `queryArrow()` when the backing adapter supports Arrow-native results, or when you want
