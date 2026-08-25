@@ -203,7 +203,7 @@ test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
     if (pointDataRecordFormat === 3) {
       t.deepEqual(
         Array.from(data.attributes.COLOR_0?.value || []),
-        [10, 20, 30, 255, 246, 246, 246, 255, 70, 80, 90, 255],
+        [10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 90, 255],
         'PDRF 3 RGB roundtrips through TypeScript decoder'
       );
     }
