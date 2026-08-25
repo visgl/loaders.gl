@@ -429,6 +429,49 @@ test('LASWriter#preserves LAZ fields through encodeInBatches', async t => {
   t.end();
 });
 
+test('LASWriter#writes vector Extra Bytes fields', t => {
+  const vectorAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    extraVector: {value: new Float32Array([1.5, 2.5, 3.5]), size: 3}
+  };
+  const vectorMesh = {
+    attributes: vectorAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(vectorAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(vectorMesh, {
+    las: {
+      format: 'laz',
+      pointDataRecordFormat: 7,
+      chunkSize: 1,
+      extraBytes: [{attribute: 'extraVector', name: 'vector'}]
+    }
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return a LAZ ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = readUint64(dataView, pointDataOffset);
+  const chunk = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 48,
+    pointCount: 1,
+    point14ItemVersion: 3,
+    rgb14ItemVersion: 3,
+    byte14ItemVersion: 3
+  });
+  const pointView = new DataView(chunk.buffer);
+
+  t.equal(dataView.getUint16(105, true), 48, 'includes vector Extra Bytes width');
+  t.equal(dataView.getUint8(375 + 54 + 2), 19, 'declares a three-component float type');
+  t.equal(pointView.getFloat32(36, true), 1.5, 'preserves vector component one');
+  t.equal(pointView.getFloat32(40, true), 2.5, 'preserves vector component two');
+  t.equal(pointView.getFloat32(44, true), 3.5, 'preserves vector component three');
+  t.end();
+});
+
 test('LASWriter#validates Extra Bytes declarations', t => {
   const scalarAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},

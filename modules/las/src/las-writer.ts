@@ -36,7 +36,7 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
   8: 38
 };
 
-/** Description of a scalar mesh attribute stored in LAS Extra Bytes. */
+/** Description of a typed mesh attribute stored in LAS Extra Bytes. */
 export type LASExtraBytesWriter = {
   /** Name of the mesh attribute to append to each point record. */
   attribute: string;
@@ -66,7 +66,7 @@ export type LASWriterOptions = WriterOptions & {
     chunkSize?: number;
     /** Write a variable-size LAZ chunk table instead of a fixed-size table. */
     variableChunkTable?: boolean;
-    /** Scalar mesh attributes to append as LAS Extra Bytes fields. */
+    /** Typed mesh attributes with one, three, or four components to append as Extra Bytes fields. */
     extraBytes?: LASExtraBytesWriter[];
   };
 };
@@ -249,10 +249,12 @@ type LASWriteParameters = {
 type LASExtraByteField = LASExtraBytesWriter & {
   /** Mesh attribute containing the field values. */
   meshAttribute: MeshAttribute;
-  /** LAS Extra Bytes scalar data type code. */
+  /** LAS Extra Bytes data type code. */
   dataType: number;
   /** Number of bytes occupied by one field value. */
   byteLength: number;
+  /** Number of components in one field value. */
+  componentCount: number;
 };
 
 /** Assemble raw LAS point records into a complete fixed-chunk LAZ file. */
@@ -341,40 +343,56 @@ function getExtraByteFields(
     if (!meshAttribute) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is missing`);
     }
-    if (meshAttribute.size !== 1) {
-      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} must be scalar`);
+    if (![1, 3, 4].includes(meshAttribute.size)) {
+      throw new Error(
+        `LASWriter: Extra Bytes attribute ${field.attribute} must have size 1, 3, or 4`
+      );
     }
-    if (meshAttribute.value.length < vertexCount) {
+    if (meshAttribute.value.length < vertexCount * meshAttribute.size) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is too short`);
     }
-    const dataType = getExtraBytesDataType(meshAttribute.value);
+    const dataType = getExtraBytesDataType(meshAttribute.value, meshAttribute.size);
     return {
       ...field,
       meshAttribute,
       dataType,
-      byteLength: getExtraBytesDataTypeByteLength(dataType)
+      byteLength: getExtraBytesDataTypeByteLength(dataType, meshAttribute.size),
+      componentCount: meshAttribute.size
     };
   });
 }
 
-/** Return the LAS Extra Bytes scalar data type code for a typed array. */
-function getExtraBytesDataType(values: MeshAttribute['value']): number {
-  if (values instanceof Uint8Array) return 1;
-  if (values instanceof Int8Array) return 2;
-  if (values instanceof Uint16Array) return 3;
-  if (values instanceof Int16Array) return 4;
-  if (values instanceof Uint32Array) return 5;
-  if (values instanceof Int32Array) return 6;
-  if (values instanceof BigUint64Array) return 7;
-  if (values instanceof BigInt64Array) return 8;
-  if (values instanceof Float32Array) return 9;
-  if (values instanceof Float64Array) return 10;
+/** Return the LAS Extra Bytes data type code for a typed array and component count. */
+function getExtraBytesDataType(values: MeshAttribute['value'], componentCount: number): number {
+  let scalarDataType = 0;
+  if (values instanceof Uint8Array) scalarDataType = 1;
+  else if (values instanceof Int8Array) scalarDataType = 2;
+  else if (values instanceof Uint16Array) scalarDataType = 3;
+  else if (values instanceof Int16Array) scalarDataType = 4;
+  else if (values instanceof Uint32Array) scalarDataType = 5;
+  else if (values instanceof Int32Array) scalarDataType = 6;
+  else if (values instanceof BigUint64Array) scalarDataType = 7;
+  else if (values instanceof BigInt64Array) scalarDataType = 8;
+  else if (values instanceof Float32Array) scalarDataType = 9;
+  else if (values instanceof Float64Array) scalarDataType = 10;
+  if (scalarDataType) {
+    return scalarDataType + (componentCount === 3 ? 10 : componentCount === 4 ? 20 : 0);
+  }
   throw new Error('LASWriter: Extra Bytes attributes require a supported typed array');
 }
 
-/** Return the byte width for a LAS Extra Bytes scalar data type. */
-function getExtraBytesDataTypeByteLength(dataType: number): number {
-  return dataType <= 2 ? 1 : dataType <= 4 ? 2 : dataType <= 6 ? 4 : 8;
+/** Return the byte width for a LAS Extra Bytes data type. */
+function getExtraBytesDataTypeByteLength(dataType: number, componentCount: number): number {
+  const scalarDataType = dataType > 20 ? dataType - 20 : dataType > 10 ? dataType - 10 : dataType;
+  const scalarByteLength =
+    scalarDataType <= 2
+      ? 1
+      : scalarDataType <= 4
+        ? 2
+        : scalarDataType <= 6 || scalarDataType === 9
+          ? 4
+          : 8;
+  return scalarByteLength * componentCount;
 }
 
 /** Encode the LAS Extra Bytes VLR, or an empty buffer when no fields are configured. */
@@ -661,7 +679,7 @@ function writePointRecord(
   );
 }
 
-/** Write configured scalar Extra Bytes values into one raw LAS point record. */
+/** Write configured Extra Bytes values into one raw LAS point record. */
 function writeExtraBytes(
   dataView: DataView,
   pointOffset: number,
@@ -672,20 +690,29 @@ function writeExtraBytes(
   let byteOffset = pointOffset;
   for (const field of fields) {
     byteOffset += basePointDataRecordLength;
-    writeExtraBytesValue(dataView, byteOffset, vertexIndex, field);
-    byteOffset += field.byteLength;
+    for (let componentIndex = 0; componentIndex < field.componentCount; componentIndex++) {
+      writeExtraBytesValue(dataView, byteOffset, vertexIndex, componentIndex, field);
+      byteOffset += field.byteLength / field.componentCount;
+    }
   }
 }
 
-/** Write one typed Extra Bytes scalar using its LAS data type code. */
+/** Write one typed Extra Bytes component using its LAS data type code. */
 function writeExtraBytesValue(
   dataView: DataView,
   byteOffset: number,
   vertexIndex: number,
+  componentIndex: number,
   field: LASExtraByteField
 ): void {
-  const value = field.meshAttribute.value[vertexIndex];
-  switch (field.dataType) {
+  const value = field.meshAttribute.value[vertexIndex * field.componentCount + componentIndex];
+  const scalarDataType =
+    field.dataType > 20
+      ? field.dataType - 20
+      : field.dataType > 10
+        ? field.dataType - 10
+        : field.dataType;
+  switch (scalarDataType) {
     case 1:
       dataView.setUint8(byteOffset, Number(value));
       break;
