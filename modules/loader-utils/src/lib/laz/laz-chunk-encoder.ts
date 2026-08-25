@@ -12,12 +12,21 @@ import {
   toInt32
 } from './laz-arithmetic-encoder';
 
-const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {0: 20, 6: 30, 7: 36, 8: 38};
+const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {
+  0: 20,
+  1: 28,
+  2: 26,
+  3: 34,
+  6: 30,
+  7: 36,
+  8: 38
+};
 const LASZIP_VLR_HEADER_LENGTH = 54;
 const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
 const GPS_TIME_MULTI = 500;
 const GPS_TIME_MULTI_MINUS = -10;
 const GPS_TIME_MULTI_CODE_FULL = 511;
+const GPS_TIME10_MULTI_CODE_FULL = GPS_TIME_MULTI - GPS_TIME_MULTI_MINUS + 2;
 
 const NUMBER_RETURN_MAP_6_CONTEXT: number[][] = [
   [0, 1, 2, 3, 4, 5, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5],
@@ -131,8 +140,8 @@ export function encodeLAZChunk(
     return new Uint8Array(0);
   }
 
-  if (metadata.pointDataRecordFormat === 0) {
-    return encodeLegacyPointFormat0Chunk(rawBytes, metadata);
+  if (metadata.pointDataRecordFormat <= 3) {
+    return encodeLegacyPointFormatChunk(rawBytes, metadata);
   }
 
   const pointRecordLength = metadata.pointDataRecordLength;
@@ -296,24 +305,35 @@ type Point10 = {
 };
 
 /** Encode the legacy LAS point-format 0 item and optional Extra Bytes. */
-function encodeLegacyPointFormat0Chunk(
+function encodeLegacyPointFormatChunk(
   rawBytes: Uint8Array,
   metadata: LAZChunkMetadata
 ): Uint8Array {
   const pointRecordLength = metadata.pointDataRecordLength;
-  const extraByteCount = pointRecordLength - 20;
+  const pointFormat = metadata.pointDataRecordFormat;
+  const baseRecordLength = POINT_FORMAT_BASE_LENGTHS[pointFormat];
+  const extraByteCount = pointRecordLength - baseRecordLength;
   const firstRecord = rawBytes.subarray(0, pointRecordLength);
   const encoder = new ArithmeticEncoder();
   const pointEncoder = new Point10LayerEncoder(encoder, readPoint10(firstRecord, 0));
+  const gpsTimeEncoder =
+    pointFormat === 1 || pointFormat === 3
+      ? new GpsTime10LayerEncoder(encoder, readFloat64(firstRecord, 20))
+      : null;
+  const rgbOffset = pointFormat === 2 ? 20 : pointFormat === 3 ? 28 : -1;
+  const rgbEncoder =
+    rgbOffset >= 0 ? new RGB10LayerEncoder(encoder, readRgb(firstRecord, rgbOffset)) : null;
   const extraBytesEncoder = extraByteCount
-    ? new Byte10LayerEncoder(encoder, firstRecord.subarray(20, pointRecordLength))
+    ? new Byte10LayerEncoder(encoder, firstRecord.subarray(baseRecordLength, pointRecordLength))
     : null;
 
   for (let pointIndex = 1; pointIndex < metadata.pointCount; pointIndex++) {
     const recordOffset = pointIndex * pointRecordLength;
     const record = rawBytes.subarray(recordOffset, recordOffset + pointRecordLength);
     pointEncoder.encode(readPoint10(record, 0));
-    extraBytesEncoder?.encode(record.subarray(20, pointRecordLength));
+    gpsTimeEncoder?.encode(readFloat64(record, 20));
+    rgbEncoder?.encode(readRgb(record, rgbOffset));
+    extraBytesEncoder?.encode(record.subarray(baseRecordLength, pointRecordLength));
   }
 
   return concatenateUint8Arrays([firstRecord, encoder.finish()]);
@@ -422,6 +442,212 @@ class Point10LayerEncoder {
     );
     this.lastHeight[levelContext] = point.z;
     this.last = {...point};
+  }
+}
+
+/** Encode the legacy LASzip GPS-time item on the shared arithmetic stream. */
+class GpsTime10LayerEncoder {
+  private readonly gpsTimeMultiModel: ArithmeticModel;
+  private readonly gpsTime0DiffModel: ArithmeticModel;
+  private readonly gpsTime: IntegerCompressor;
+  private readonly lastGpsTime: number[];
+  private readonly lastGpsTimeDifference = [0, 0, 0, 0];
+  private readonly multiExtremeCounter = [0, 0, 0, 0];
+  private lastGpsSequence = 0;
+  private nextGpsSequence = 0;
+
+  /** Initialize GPS prediction state from the first raw timestamp. */
+  constructor(
+    private readonly encoder: ArithmeticEncoder,
+    firstGpsTime: number
+  ) {
+    this.gpsTimeMultiModel = new ArithmeticModel(516);
+    this.gpsTime0DiffModel = new ArithmeticModel(6);
+    this.gpsTime = new IntegerCompressor(encoder, 32, 9);
+    this.lastGpsTime = [firstGpsTime, 0, 0, 0];
+  }
+
+  /** Encode one GPS timestamp after the first raw timestamp. */
+  encode(gpsTime: number): void {
+    const sequence = this.lastGpsSequence;
+    const difference64 = float64BitDifference(gpsTime, this.lastGpsTime[sequence]);
+    const difference = Number(BigInt.asIntN(32, difference64));
+    const differenceFits = difference64 === BigInt(difference);
+
+    if (this.lastGpsTimeDifference[sequence] === 0) {
+      if (differenceFits) {
+        this.encoder.encodeSymbol(this.gpsTime0DiffModel, 0);
+        this.gpsTime.compress(0, difference, 0);
+        this.lastGpsTimeDifference[sequence] = difference;
+        this.multiExtremeCounter[sequence] = 0;
+      } else if (this.selectSequence(gpsTime, false)) {
+        this.encode(gpsTime);
+        return;
+      } else {
+        this.encoder.encodeSymbol(this.gpsTime0DiffModel, 1);
+        this.startSequence(gpsTime);
+      }
+    } else if (differenceFits) {
+      const lastDifference = this.lastGpsTimeDifference[sequence];
+      const multiplier = quantizeFloat32(difference, lastDifference);
+      if (multiplier === 1) {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, 1);
+        this.gpsTime.compress(lastDifference, difference, 1);
+        this.multiExtremeCounter[sequence] = 0;
+      } else if (multiplier > 0 && multiplier < GPS_TIME_MULTI) {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, multiplier);
+        this.gpsTime.compress(
+          toInt32(multiplier * lastDifference),
+          difference,
+          multiplier < 10 ? 2 : 3
+        );
+      } else if (multiplier >= GPS_TIME_MULTI) {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, GPS_TIME_MULTI);
+        this.gpsTime.compress(toInt32(GPS_TIME_MULTI * lastDifference), difference, 4);
+        this.recordExtremeDifference(sequence, difference);
+      } else if (multiplier < 0 && multiplier > GPS_TIME_MULTI_MINUS) {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, GPS_TIME_MULTI - multiplier);
+        this.gpsTime.compress(toInt32(multiplier * lastDifference), difference, 5);
+      } else if (multiplier < 0) {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, GPS_TIME_MULTI - GPS_TIME_MULTI_MINUS);
+        this.gpsTime.compress(toInt32(GPS_TIME_MULTI_MINUS * lastDifference), difference, 6);
+        this.recordExtremeDifference(sequence, difference);
+      } else {
+        this.encoder.encodeSymbol(this.gpsTimeMultiModel, 0);
+        this.gpsTime.compress(0, difference, 7);
+        this.recordExtremeDifference(sequence, difference);
+      }
+    } else if (this.selectSequence(gpsTime, true)) {
+      this.encode(gpsTime);
+      return;
+    } else {
+      this.encoder.encodeSymbol(this.gpsTimeMultiModel, GPS_TIME10_MULTI_CODE_FULL);
+      this.startSequence(gpsTime);
+    }
+    this.lastGpsTime[this.lastGpsSequence] = gpsTime;
+  }
+
+  private selectSequence(gpsTime: number, hasLastDifference: boolean): boolean {
+    for (let index = 1; index < 4; index++) {
+      const sequence = (this.lastGpsSequence + index) & 3;
+      const difference = float64BitDifference(gpsTime, this.lastGpsTime[sequence]);
+      if (difference === BigInt.asIntN(32, difference)) {
+        this.encoder.encodeSymbol(
+          hasLastDifference ? this.gpsTimeMultiModel : this.gpsTime0DiffModel,
+          hasLastDifference ? GPS_TIME10_MULTI_CODE_FULL + index : index + 1
+        );
+        this.lastGpsSequence = sequence;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private startSequence(gpsTime: number): void {
+    const previousBits = float64ToBigUint64(this.lastGpsTime[this.lastGpsSequence]);
+    const nextBits = float64ToBigUint64(gpsTime);
+    this.gpsTime.compress(
+      Number(BigInt.asIntN(32, previousBits >> 32n)),
+      Number(BigInt.asIntN(32, nextBits >> 32n)),
+      8
+    );
+    this.encoder.writeInt(Number(nextBits & 0xffffffffn));
+    this.nextGpsSequence = (this.nextGpsSequence + 1) & 3;
+    this.lastGpsSequence = this.nextGpsSequence;
+    this.lastGpsTimeDifference[this.lastGpsSequence] = 0;
+    this.multiExtremeCounter[this.lastGpsSequence] = 0;
+  }
+
+  private recordExtremeDifference(sequence: number, difference: number): void {
+    this.multiExtremeCounter[sequence]++;
+    if (this.multiExtremeCounter[sequence] > 3) {
+      this.multiExtremeCounter[sequence] = 0;
+      this.lastGpsTimeDifference[sequence] = difference;
+    }
+  }
+}
+
+/** Encode the legacy LASzip RGB item on the shared arithmetic stream. */
+class RGB10LayerEncoder {
+  private readonly usedModel = new ArithmeticModel(128);
+  private readonly differenceModels = createModels(6, 256);
+  private red: number;
+  private green: number;
+  private blue: number;
+
+  /** Initialize RGB prediction state from the first raw color. */
+  constructor(
+    private readonly encoder: ArithmeticEncoder,
+    firstColor: Rgb14
+  ) {
+    this.red = firstColor.red;
+    this.green = firstColor.green;
+    this.blue = firstColor.blue;
+  }
+
+  /** Encode one RGB value after the first raw value. */
+  encode(color: Rgb14): void {
+    const lastRed = this.red;
+    const lastGreen = this.green;
+    const lastBlue = this.blue;
+    let symbol =
+      ((color.red & 0xff) !== (lastRed & 0xff) ? 1 : 0) |
+      ((color.red & 0xff00) !== (lastRed & 0xff00) ? 2 : 0) |
+      ((color.green & 0xff) !== (lastGreen & 0xff) ? 4 : 0) |
+      ((color.green & 0xff00) !== (lastGreen & 0xff00) ? 8 : 0) |
+      ((color.blue & 0xff) !== (lastBlue & 0xff) ? 16 : 0) |
+      ((color.blue & 0xff00) !== (lastBlue & 0xff00) ? 32 : 0);
+    if (
+      (color.red & 0xff) !== (color.green & 0xff) ||
+      (color.red & 0xff) !== (color.blue & 0xff) ||
+      (color.red & 0xff00) !== (color.green & 0xff00) ||
+      (color.red & 0xff00) !== (color.blue & 0xff00)
+    ) {
+      symbol |= 64;
+    }
+    this.encoder.encodeSymbol(this.usedModel, symbol);
+
+    let lowDifference = 0;
+    let highDifference = 0;
+    if (symbol & 1) {
+      lowDifference = (color.red & 0xff) - (lastRed & 0xff);
+      this.encoder.encodeSymbol(this.differenceModels[0], foldUint8(lowDifference));
+    }
+    if (symbol & 2) {
+      highDifference = (color.red >> 8) - (lastRed >> 8);
+      this.encoder.encodeSymbol(this.differenceModels[1], foldUint8(highDifference));
+    }
+    if (symbol & 64) {
+      if (symbol & 4) {
+        this.encoder.encodeSymbol(
+          this.differenceModels[2],
+          foldUint8((color.green & 0xff) - clampUint8(lowDifference + (lastGreen & 0xff)))
+        );
+      }
+      if (symbol & 16) {
+        lowDifference = Math.trunc((lowDifference + (color.green & 0xff) - (lastGreen & 0xff)) / 2);
+        this.encoder.encodeSymbol(
+          this.differenceModels[4],
+          foldUint8((color.blue & 0xff) - clampUint8(lowDifference + (lastBlue & 0xff)))
+        );
+      }
+      if (symbol & 8) {
+        this.encoder.encodeSymbol(
+          this.differenceModels[3],
+          foldUint8((color.green >> 8) - clampUint8(highDifference + (lastGreen >> 8)))
+        );
+      }
+      if (symbol & 32) {
+        highDifference = Math.trunc((highDifference + (color.green >> 8) - (lastGreen >> 8)) / 2);
+        this.encoder.encodeSymbol(
+          this.differenceModels[5],
+          foldUint8((color.blue >> 8) - clampUint8(highDifference + (lastBlue >> 8)))
+        );
+      }
+    }
+    this.red = color.red;
+    this.green = color.green;
+    this.blue = color.blue;
   }
 }
 
@@ -1229,8 +1455,14 @@ function getLASzipItems(
       `Invalid point record length ${pointDataRecordLength} for point format ${pointDataRecordFormat}`
     );
   }
-  if (pointDataRecordFormat === 0) {
+  if (pointDataRecordFormat <= 3) {
     const legacyItems: LASzipItem[] = [{type: 6, size: 20}];
+    if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3) {
+      legacyItems.push({type: 7, size: 8});
+    }
+    if (pointDataRecordFormat === 2 || pointDataRecordFormat === 3) {
+      legacyItems.push({type: 8, size: 6});
+    }
     const legacyExtraByteCount = pointDataRecordLength - baseLength;
     if (legacyExtraByteCount > 0) {
       legacyItems.push({type: 0, size: legacyExtraByteCount});
@@ -1291,6 +1523,24 @@ function readRgb(bytes: Uint8Array, offset: number): Rgb14 {
     green: readUint16(bytes, offset + 2),
     blue: readUint16(bytes, offset + 4)
   };
+}
+
+/** Read an IEEE-754 timestamp from a legacy point record. */
+function readFloat64(bytes: Uint8Array, offset: number): number {
+  return new DataView(bytes.buffer, bytes.byteOffset + offset, 8).getFloat64(0, true);
+}
+
+/** Return the signed 64-bit difference between two IEEE-754 timestamps. */
+function float64BitDifference(value: number, previousValue: number): bigint {
+  return BigInt.asIntN(64, float64ToBigUint64(value) - float64ToBigUint64(previousValue));
+}
+
+/** Read the raw IEEE-754 bits of a JavaScript number. */
+function float64ToBigUint64(value: number): bigint {
+  const buffer = new ArrayBuffer(8);
+  const view = new DataView(buffer);
+  view.setFloat64(0, value, true);
+  return view.getBigUint64(0, true);
 }
 
 /** Read one little-endian unsigned 16-bit integer. */

@@ -157,6 +157,60 @@ test('LASWriter#encodes legacy PDRF 0 LAZ', async t => {
   t.end();
 });
 
+test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
+  const legacyAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3, 2, 3, 4, 3, 4, 5]), size: 3},
+    gpsTime: {value: new Float64Array([123.5, 123.500001, 123.500002]), size: 1},
+    COLOR_0: {value: new Uint8Array([10, 20, 30, 40, 50, 60, 70, 80, 90]), size: 3}
+  };
+  const legacyMesh = {
+    attributes: legacyAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(legacyAttributes, {topology: 'point-list', mode: '0'})
+  };
+
+  for (const pointDataRecordFormat of [1, 2, 3] as const) {
+    const arrayBuffer = await encode(legacyMesh, LASWriter, {
+      las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}
+    });
+    const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+    const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+      core: {worker: false}
+    });
+    t.equal(
+      data.loaderData.pointsFormatId,
+      pointDataRecordFormat,
+      `writes PDRF ${pointDataRecordFormat}`
+    );
+    t.deepEqual(
+      Array.from(data.attributes.POSITION.value),
+      Array.from(legacyAttributes.POSITION.value),
+      `PDRF ${pointDataRecordFormat} positions roundtrip`
+    );
+    t.deepEqual(
+      Array.from(data.attributes.gpsTime?.value || []),
+      Array.from(wasmData.attributes.gpsTime?.value || []),
+      `PDRF ${pointDataRecordFormat} GPS time matches WASM`
+    );
+    if (pointDataRecordFormat >= 2 && pointDataRecordFormat < 3) {
+      t.deepEqual(
+        Array.from(data.attributes.COLOR_0?.value || []),
+        Array.from(wasmData.attributes.COLOR_0?.value || []),
+        `PDRF ${pointDataRecordFormat} RGB matches WASM`
+      );
+    }
+    if (pointDataRecordFormat === 3) {
+      t.deepEqual(
+        Array.from(data.attributes.COLOR_0?.value || []),
+        [10, 20, 30, 255, 246, 246, 246, 255, 70, 80, 90, 255],
+        'PDRF 3 RGB roundtrips through TypeScript decoder'
+      );
+    }
+  }
+  t.end();
+});
+
 test('LASWriter#validates compressed output options', t => {
   t.throws(
     () =>
@@ -169,10 +223,10 @@ test('LASWriter#validates compressed output options', t => {
   t.throws(
     () =>
       LASWriter.encodeSync?.(mesh, {
-        las: {format: 'laz', version: '1.4', pointDataRecordFormat: 3}
+        las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
       }),
-    /currently supports point data record formats 0 and 6-8/,
-    'LAZ writer rejects unsupported legacy point formats'
+    /currently supports point data record formats 0-3 and 6-8/,
+    'LAZ writer rejects unsupported waveform point formats'
   );
   t.throws(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),

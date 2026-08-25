@@ -453,15 +453,17 @@ function validateLAZOptions(
   pointDataRecordFormat: number,
   chunkSize?: number
 ): void {
-  if (pointDataRecordFormat === 0 && !['1.2', '1.3', '1.4'].includes(version)) {
-    throw new Error(`LASWriter: LAZ PDRF 0 output requires LAS 1.2 or newer; received ${version}`);
+  if (pointDataRecordFormat <= 3 && !['1.2', '1.3', '1.4'].includes(version)) {
+    throw new Error(
+      `LASWriter: LAZ PDRF ${pointDataRecordFormat} output requires LAS 1.2 or newer; received ${version}`
+    );
   }
   if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![0, 6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 1, 2, 3, 6, 7, 8].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output currently supports point data record formats 0 and 6-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0-3 and 6-8; received ${pointDataRecordFormat}`
     );
   }
   if (
