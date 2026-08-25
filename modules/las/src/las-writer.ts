@@ -37,8 +37,8 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
 export type LASWriterOptions = WriterOptions & {
   /** LAS-specific writer options. */
   las?: {
-    /** Output container format. COPC writing is not yet implemented. */
-    format?: 'las' | 'laz' | 'copc';
+    /** Output container format. COPC has its own writer in @loaders.gl/copc. */
+    format?: 'las' | 'laz';
     /** LAS file version to write. LAS 1.5 writing is intentionally not supported. */
     version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
     /** LAS point data record format to write. */
@@ -80,10 +80,6 @@ export const LASWriter = {
 /** Encode mesh category data as LAS or LAZ bytes. */
 function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
   const format = options.las?.format || 'las';
-  if (format === 'copc') {
-    throw new Error('LASWriter: TypeScript COPC encoding is not implemented yet');
-  }
-
   const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   const colorAttribute = mesh.attributes.COLOR_0;

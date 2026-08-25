@@ -156,11 +156,6 @@ test('LASWriter#validates compressed output options', t => {
     /invalid LAZ chunk size/,
     'LAZ writer rejects empty chunks'
   );
-  t.throws(
-    () => LASWriter.encodeSync?.(mesh, {las: {format: 'copc'}}),
-    /COPC encoding is not implemented/,
-    'COPC writer fails clearly'
-  );
   t.end();
 });
 

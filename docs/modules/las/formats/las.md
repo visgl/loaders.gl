@@ -47,8 +47,8 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Uncompressed LAS writing | Partial. Supports LAS output for represented mesh/table fields. |
 | LAS versions | Versions 1.0-1.4 are selectable and LAS 1.5 is rejected. Round-trip coverage currently targets default LAS 1.2 and LAS 1.4/PDRF 7; full version conformance is not claimed. |
 | Point data record formats | PDRF 0-8 are selectable. Only position, intensity, classification, and RGB input attributes are represented; other fields are zero-filled. |
-| LAZ writing | Not implemented. |
-| COPC writing | Not implemented. |
+| LAZ writing | Supported for LAS 1.4 PDRF 6-8 with fixed-size LASzip chunk tables. |
+| COPC writing | Supported by `@loaders.gl/copc` through its separate `COPCWriter` entry point. |
 | VLRs, EVLRs, CRS, Extra Bytes VLRs | Not complete. |
 | Streaming writing | `encodeInBatches` may buffer input so final counts, bounds, offsets, and headers can be written correctly. |
 
@@ -129,7 +129,7 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 | Point decoding | Supported for COPC nodes using LAZ 1.4 PDRF 6, 7, or 8. |
 | Render attribute output | The TypeScript path decodes positions and RGB directly into typed Arrow attributes, skipping intensity/classification layers and avoiding their arrays, an intermediate raw-record buffer, and a second point traversal. |
 | Progressive point output while range data arrives | Not implemented. |
-| COPC writer | Not implemented. |
+| COPC writer | Implemented in `@loaders.gl/copc` as `COPCWriter`; it emits range-readable COPC 1.0-compatible output. |
 
 ## Version History
 
@@ -243,4 +243,4 @@ The TypeScript implementation should be completed in stages, with parity tests a
 | 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size chunk tables that established decoders can read. |
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
-| 9 | Implement COPC writing. | Writer emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |
+| 9 | Implement COPC writing. | `COPCWriter` emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |
