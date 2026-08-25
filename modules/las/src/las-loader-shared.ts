@@ -21,7 +21,12 @@ export type LASColumnName =
   | 'NIR'
   | 'scanAngle'
   | 'userData'
-  | 'pointSourceId';
+  | 'pointSourceId'
+  | 'returnNumber'
+  | 'numberOfReturns'
+  | 'scannerChannel'
+  | 'scanDirectionFlag'
+  | 'edgeOfFlightLine';
 
 /** Options accepted by LAS loader implementations. */
 export type LASLoaderOptions = LoaderOptions & {

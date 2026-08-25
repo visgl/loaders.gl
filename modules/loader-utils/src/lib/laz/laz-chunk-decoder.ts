@@ -41,6 +41,16 @@ export type LAZPointDataTarget = {
   userData?: Uint8Array | null;
   /** Optional point source identifiers. */
   pointSourceIds?: Uint16Array | null;
+  /** Optional return number values. */
+  returnNumbers?: Uint8Array | null;
+  /** Optional number of returns values. */
+  numberOfReturns?: Uint8Array | null;
+  /** Optional scanner channel values. */
+  scannerChannels?: Uint8Array | null;
+  /** Optional scan direction flags. */
+  scanDirectionFlags?: Uint8Array | null;
+  /** Optional edge-of-flight-line flags. */
+  edgeOfFlightLines?: Uint8Array | null;
   /** Optional final RGBA colors as 8-bit channel values. */
   colors?: Uint8Array | null;
   /** Optional raw RGB colors as 16-bit LAS channel values. */
@@ -79,6 +89,7 @@ type LAZPointDataSelection = {
   scanAngle: boolean;
   userData: boolean;
   pointSourceId: boolean;
+  flags: boolean;
 };
 
 /** Error raised when a feedable decoder needs more compressed bytes. */
@@ -293,7 +304,8 @@ function getLAZPointDataSelection(target: LAZPointDataTarget): LAZPointDataSelec
     nir: Boolean(target.nir),
     scanAngle: Boolean(target.scanAngles),
     userData: Boolean(target.userData),
-    pointSourceId: Boolean(target.pointSourceIds)
+    pointSourceId: Boolean(target.pointSourceIds),
+    flags: Boolean(target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines)
   };
 }
 
@@ -307,7 +319,8 @@ function getLAZPointDataSelectionKey(selection: LAZPointDataSelection): number {
     (selection.nir ? 16 : 0) |
     (selection.scanAngle ? 32 : 0) |
     (selection.userData ? 64 : 0) |
-    (selection.pointSourceId ? 128 : 0)
+    (selection.pointSourceId ? 128 : 0) |
+    (selection.flags ? 256 : 0)
   );
 }
 
@@ -1371,7 +1384,7 @@ class Point14Context {
     if (mode === Point14DecompressionMode.Full || selection?.pointSourceId) {
       this.pointSourceId = createIntegerDecompressor(16, 1);
     }
-    if (mode === Point14DecompressionMode.Full) {
+    if (mode === Point14DecompressionMode.Full || selection?.flags) {
       this.flagModel = createModels(64, 64);
     }
     if (mode === Point14DecompressionMode.Full || selection?.gpsTime) {
@@ -1421,7 +1434,7 @@ class Point14Decompressor {
     this.decompressOptionalFields = mode === Point14DecompressionMode.Full;
     this.classification =
       this.decompressOptionalFields || selection?.classification ? new ArithmeticDecoder() : null;
-    this.flags = this.decompressOptionalFields ? new ArithmeticDecoder() : null;
+    this.flags = this.decompressOptionalFields || selection?.flags ? new ArithmeticDecoder() : null;
     this.intensity =
       this.decompressOptionalFields || selection?.intensity ? new ArithmeticDecoder() : null;
     this.scanAngle =
@@ -3721,6 +3734,21 @@ function writePoint14MetadataToPointDataTarget(
   }
   if (target.pointSourceIds) {
     target.pointSourceIds[targetPointIndex] = point.pointSourceId;
+  }
+  if (target.returnNumbers) {
+    target.returnNumbers[targetPointIndex] = point.returns & 0x0f;
+  }
+  if (target.numberOfReturns) {
+    target.numberOfReturns[targetPointIndex] = point.returns >> 4;
+  }
+  if (target.scannerChannels) {
+    target.scannerChannels[targetPointIndex] = (point.flags >> 4) & 0x03;
+  }
+  if (target.scanDirectionFlags) {
+    target.scanDirectionFlags[targetPointIndex] = (point.flags >> 6) & 1;
+  }
+  if (target.edgeOfFlightLines) {
+    target.edgeOfFlightLines[targetPointIndex] = (point.flags >> 7) & 1;
   }
 }
 

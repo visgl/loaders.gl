@@ -76,13 +76,32 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
   const options = {
     las: {
       shape: 'arrow-table' as const,
-      columns: ['POSITION', 'scanAngle', 'userData', 'pointSourceId'] as const
+      columns: [
+        'POSITION',
+        'scanAngle',
+        'userData',
+        'pointSourceId',
+        'returnNumber',
+        'numberOfReturns',
+        'scannerChannel',
+        'scanDirectionFlag',
+        'edgeOfFlightLine'
+      ] as const
     },
     core: {worker: false}
   };
   const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
   const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
-  for (const columnName of ['scanAngle', 'userData', 'pointSourceId']) {
+  for (const columnName of [
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  ]) {
     expect(getArrowColumnValues(compressed, columnName)).toEqual(
       getArrowColumnValues(uncompressed, columnName)
     );
@@ -103,7 +122,12 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
         'GPS_TIME',
         'scanAngle',
         'userData',
-        'pointSourceId'
+        'pointSourceId',
+        'returnNumber',
+        'numberOfReturns',
+        'scannerChannel',
+        'scanDirectionFlag',
+        'edgeOfFlightLine'
       ] as const
     },
     core: {worker: false}
@@ -117,7 +141,12 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     'GPS_TIME',
     'scanAngle',
     'userData',
-    'pointSourceId'
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
   ]);
   expect(getArrowColumnValues(compressed, 'POSITION')).toEqual(
     getArrowColumnValues(uncompressed, 'POSITION')
@@ -128,7 +157,16 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
   expect(getArrowColumnValues(compressed, 'GPS_TIME')).toEqual(
     getArrowColumnValues(uncompressed, 'GPS_TIME')
   );
-  for (const columnName of ['scanAngle', 'userData', 'pointSourceId']) {
+  for (const columnName of [
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  ]) {
     expect(getArrowColumnValues(compressed, columnName)).toEqual(
       getArrowColumnValues(uncompressed, columnName)
     );
