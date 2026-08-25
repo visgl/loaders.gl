@@ -415,6 +415,38 @@ test('LASWriter#validates Extra Bytes declarations', t => {
   t.end();
 });
 
+test('LASWriter#validates point attribute shapes', t => {
+  const invalidPositionMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      POSITION: {value: new Float32Array([0, 0]), size: 2}
+    }
+  };
+  t.throws(
+    () => LASWriter.encodeSync?.(invalidPositionMesh),
+    /POSITION attribute must have size 3/,
+    'rejects non-three-component positions'
+  );
+
+  const shortExtraMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      shortExtra: {value: new Uint8Array([1]), size: 1}
+    }
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(shortExtraMesh, {
+        las: {extraBytes: [{attribute: 'shortExtra'}]}
+      }),
+    /Extra Bytes attribute shortExtra is too short/,
+    'rejects Extra Bytes arrays shorter than the point count'
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,

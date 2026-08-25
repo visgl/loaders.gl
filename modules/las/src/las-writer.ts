@@ -99,11 +99,13 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const format = options.las?.format || 'las';
   const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
+  validatePositionAttribute(positionAttribute);
+  const vertexCount = positionAttribute.value.length / positionAttribute.size;
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
   const classificationAttribute = mesh.attributes.classification;
   const nirAttribute = mesh.attributes.nir;
-  const extraByteFields = getExtraByteFields(mesh, options);
+  const extraByteFields = getExtraByteFields(mesh, options, vertexCount);
   const gpsTimeAttribute = mesh.attributes.gpsTime;
   const scanAngleAttribute = mesh.attributes.scanAngle;
   const userDataAttribute = mesh.attributes.userData;
@@ -117,7 +119,6 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const keyPointAttribute = mesh.attributes.keyPoint;
   const withheldAttribute = mesh.attributes.withheld;
   const overlapAttribute = mesh.attributes.overlap;
-  const vertexCount = positionAttribute.value.length / positionAttribute.size;
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
   const scale = getScale(mesh, options);
   const offset = getOffset(mesh, options, boundingBox);
@@ -324,7 +325,11 @@ function encodeLAZFile(
 }
 
 /** Build validated Extra Bytes field descriptions from mesh attributes. */
-function getExtraByteFields(mesh: Mesh, options: LASWriterOptions): LASExtraByteField[] {
+function getExtraByteFields(
+  mesh: Mesh,
+  options: LASWriterOptions,
+  vertexCount: number
+): LASExtraByteField[] {
   const extraBytes = options.las?.extraBytes || [];
   const attributes = new Set<string>();
   return extraBytes.map(field => {
@@ -338,6 +343,9 @@ function getExtraByteFields(mesh: Mesh, options: LASWriterOptions): LASExtraByte
     }
     if (meshAttribute.size !== 1) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} must be scalar`);
+    }
+    if (meshAttribute.value.length < vertexCount) {
+      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is too short`);
     }
     const dataType = getExtraBytesDataType(meshAttribute.value);
     return {
@@ -481,6 +489,16 @@ function getRequiredAttribute(mesh: Mesh, attributeName: string): MeshAttribute 
     throw new Error(`LASWriter: ${attributeName} attribute is required`);
   }
   return attribute;
+}
+
+/** Validate the required LAS position attribute shape. */
+function validatePositionAttribute(attribute: MeshAttribute): void {
+  if (attribute.size !== 3) {
+    throw new Error(`LASWriter: POSITION attribute must have size 3`);
+  }
+  if (attribute.value.length % attribute.size !== 0) {
+    throw new Error(`LASWriter: POSITION attribute length must be divisible by its size`);
+  }
 }
 
 /** Write the LAS 1.2 public header block. */
