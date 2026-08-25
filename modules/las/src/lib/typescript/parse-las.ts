@@ -933,9 +933,9 @@ function parseTypedLASMetadataRecord(
   } else if (record.userId === 'LASF_Spec' && record.recordId >= 100 && record.recordId <= 355) {
     metadata.waveformPacketDescriptors.push(parseLASWaveformDescriptor(record.recordId, data));
   } else if (record.userId === 'LASF_Projection' && record.recordId === 2111) {
-    metadata.wkt = decodeLASString(data);
-  } else if (record.userId === 'LASF_Projection' && record.recordId === 2112) {
     metadata.wktMathTransform = decodeLASString(data);
+  } else if (record.userId === 'LASF_Projection' && record.recordId === 2112) {
+    metadata.wkt = decodeLASString(data);
   } else if (record.userId === 'LASF_Projection' && record.recordId === 34735) {
     metadata.geotiff = {...metadata.geotiff, keys: readUint16Array(data)};
   } else if (record.userId === 'LASF_Projection' && record.recordId === 34736) {
@@ -969,9 +969,9 @@ function parseLASWaveformDescriptor(
     bitsPerSample: dataView.getUint8(2),
     compressionType: dataView.getUint8(3),
     numberOfSamples: dataView.getUint32(4, true),
-    temporalSampleSpacing: dataView.getFloat64(8, true),
-    digitizerGain: dataView.getFloat32(16, true),
-    digitizerOffset: dataView.getFloat32(20, true)
+    temporalSampleSpacing: dataView.getUint32(8, true),
+    digitizerGain: dataView.getFloat64(12, true),
+    digitizerOffset: dataView.getFloat64(20, true)
   };
 }
 
@@ -998,8 +998,15 @@ function decodeLASString(bytes: Uint8Array): string {
 }
 
 function formatLASProjectId(bytes: Uint8Array): string {
-  const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  const formatLittleEndian = (start: number, length: number): string =>
+    Array.from(bytes.subarray(start, start + length), byte => byte.toString(16).padStart(2, '0'))
+      .reverse()
+      .join('');
+  const formatBigEndian = (start: number, length: number): string =>
+    Array.from(bytes.subarray(start, start + length), byte =>
+      byte.toString(16).padStart(2, '0')
+    ).join('');
+  return `${formatLittleEndian(0, 4)}-${formatLittleEndian(4, 2)}-${formatLittleEndian(6, 2)}-${formatBigEndian(8, 2)}${formatBigEndian(10, 6)}`;
 }
 
 function readUint16Array(bytes: Uint8Array): Uint16Array {

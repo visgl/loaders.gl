@@ -7,6 +7,7 @@ import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {validateLoader} from 'test/common/conformance';
+import {parseLASHeader} from '../src/lib/typescript/parse-las';
 
 const PDRF_4_LAS_URL = '@loaders.gl/las/test/data/pdrf4-1.3.las';
 const PDRF_4_LAZ_URL = '@loaders.gl/las/test/data/pdrf4-1.3.laz';
@@ -190,6 +191,57 @@ test('LASLoader#columns validates unsupported names', async () => {
   ).rejects.toThrow('LASLoader: unsupported column unsupported');
 });
 
+test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
+  const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
+  const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');
+  const waveform = new ArrayBuffer(28);
+  const waveformView = new DataView(waveform);
+  waveformView.setUint8(2, 16);
+  waveformView.setUint8(3, 0);
+  waveformView.setUint32(4, 128, true);
+  waveformView.setUint32(8, 250, true);
+  waveformView.setFloat64(12, 1.5, true);
+  waveformView.setFloat64(20, -2.5, true);
+
+  const records = [
+    makeLASVLR('LASF_Projection', 2111, wktMathTransform),
+    makeLASVLR('LASF_Projection', 2112, wktCoordinateSystem),
+    makeLASVLR('LASF_Spec', 100, new Uint8Array(waveform))
+  ];
+  const headerSize = 375;
+  const pointsOffset = headerSize + records.reduce((size, record) => size + record.byteLength, 0);
+  const arrayBuffer = new ArrayBuffer(pointsOffset);
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+  dataView.setUint32(0, 0x4653414c, true);
+  bytes[24] = 1;
+  bytes[25] = 4;
+  dataView.setUint16(94, headerSize, true);
+  dataView.setUint32(96, pointsOffset, true);
+  dataView.setUint32(100, records.length, true);
+  bytes[104] = 0;
+  dataView.setUint16(105, 20, true);
+  bytes.set(Uint8Array.from([0x78, 0x56, 0x34, 0x12, 0x34, 0x12, 0x78, 0x56]), 8);
+  bytes.set(Uint8Array.from([0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x34, 0x56, 0x78]), 16);
+  let offset = headerSize;
+  for (const record of records) {
+    bytes.set(record, offset);
+    offset += record.byteLength;
+  }
+
+  const metadata = parseLASHeader(arrayBuffer).metadata!;
+  expect(metadata.projectId).toBe('12345678-1234-5678-9abcdef012345678');
+  expect(metadata.wkt).toBe('GEOGCS["coordinate-system"]');
+  expect(metadata.wktMathTransform).toBe('PARAM_MT["transform"]');
+  expect(metadata.waveformPacketDescriptors[0]).toMatchObject({
+    bitsPerSample: 16,
+    numberOfSamples: 128,
+    temporalSampleSpacing: 250,
+    digitizerGain: 1.5,
+    digitizerOffset: -2.5
+  });
+});
+
 /** Return Arrow field names in schema order. */
 function getArrowColumnNames(table: MeshArrowTable): string[] {
   return table.data.schema.fields.map(field => field.name);
@@ -215,4 +267,14 @@ function splitArrayBuffer(arrayBuffer: ArrayBuffer, chunkByteLength: number): Ar
     chunks.push(arrayBuffer.slice(byteOffset, byteOffset + chunkByteLength));
   }
   return chunks;
+}
+
+function makeLASVLR(userId: string, recordId: number, data: Uint8Array): Uint8Array {
+  const bytes = new Uint8Array(54 + data.byteLength);
+  const dataView = new DataView(bytes.buffer);
+  bytes.set(new TextEncoder().encode(userId).subarray(0, 16), 2);
+  dataView.setUint16(18, recordId, true);
+  dataView.setUint16(20, data.byteLength, true);
+  bytes.set(data, 54);
+  return bytes;
 }
