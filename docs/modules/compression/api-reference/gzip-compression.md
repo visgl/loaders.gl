@@ -7,8 +7,8 @@
 `GZipCompression` is the combined GZIP compatibility codec. Async methods prefer built-in streams;
 the compact `fflate` implementation provides the synchronous and fallback paths.
 
-New code should select a direction-specific `fflate`, Pako, or `compress-utils` adapter from the
-[implementation tables](/docs/modules/compression). Compare them in the
+New code should use `GZipCompressor` or `GZipDecompressor`. Select a specific `fflate`, Pako,
+or `compress-utils` adapter only when pinning an implementation. Compare them in the
 [live benchmarks](/docs/modules/compression/benchmarks).
 
 ## Interface

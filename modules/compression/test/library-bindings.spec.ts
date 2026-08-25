@@ -6,6 +6,22 @@ import {describe, expect, test} from 'vitest';
 import type {Compression, Compressor, Decompressor} from '@loaders.gl/compression';
 import {NoCompressor} from '@loaders.gl/compression/no-compressor';
 import {NoDecompressor} from '@loaders.gl/compression/no-decompressor';
+import {BrotliCompressor} from '@loaders.gl/compression/brotli-compressor';
+import {BrotliDecompressor} from '@loaders.gl/compression/brotli-decompressor';
+import {BZip2Compressor} from '@loaders.gl/compression/bzip2-compressor';
+import {BZip2Decompressor} from '@loaders.gl/compression/bzip2-decompressor';
+import {DeflateCompressor} from '@loaders.gl/compression/deflate-compressor';
+import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
+import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {LZ4Compressor} from '@loaders.gl/compression/lz4-compressor';
+import {LZ4Decompressor} from '@loaders.gl/compression/lz4-decompressor';
+import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
+import {SnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor';
+import {XZCompressor} from '@loaders.gl/compression/xz-compressor';
+import {XZDecompressor} from '@loaders.gl/compression/xz-decompressor';
+import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
+import {ZstdDecompressor} from '@loaders.gl/compression/zstd-decompressor';
 import {DeflateFflateCompression} from '@loaders.gl/compression/deflate-fflate';
 import {GZipFflateCompression} from '@loaders.gl/compression/gzip-fflate';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
@@ -29,12 +45,67 @@ import {LZ4CompressUtilsCompression} from '@loaders.gl/compression/lz4-compress-
 import {SnappyCompressUtilsCompression} from '@loaders.gl/compression/snappy-compress-utils';
 import {XZCompressUtilsCompression} from '@loaders.gl/compression/xz-compress-utils';
 import {ZstdCompressUtilsCompression} from '@loaders.gl/compression/zstd-compress-utils';
+import {
+  installRecordingDecompressionStream,
+  supportsNativeDecompressionStream
+} from './utils/native-decompression-test-utils';
 
 const TEST_BYTES = new TextEncoder().encode(
   'Explicit compression implementation bindings should remain independently importable. '.repeat(8)
 );
 
 describe('compression library bindings', () => {
+  test.each([
+    ['gzip', new GZipCompressor({useNative: false}), new GZipDecompressor({useNative: false})],
+    [
+      'deflate',
+      new DeflateCompressor({useNative: false}),
+      new DeflateDecompressor({useNative: false})
+    ],
+    [
+      'raw deflate',
+      new DeflateCompressor({raw: true}),
+      new DeflateDecompressor({raw: true, useNative: false})
+    ],
+    [
+      'brotli',
+      new BrotliCompressor({useNative: false}),
+      new BrotliDecompressor({useNative: false})
+    ],
+    ['snappy', new SnappyCompressor(), new SnappyDecompressor()],
+    ['lz4', new LZ4Compressor(), new LZ4Decompressor()],
+    ['zstd', new ZstdCompressor({useNative: false}), new ZstdDecompressor({useNative: false})],
+    ['bzip2', new BZip2Compressor(), new BZip2Decompressor()],
+    ['xz', new XZCompressor(), new XZDecompressor()]
+  ])('%s defaults round trip data', async (_name, compressor, decompressor) => {
+    await expectDirectionalRoundTrip(compressor, decompressor);
+  });
+
+  test('default GZIP codecs stream incrementally', async () => {
+    const compressor = new GZipCompressor({useNative: false});
+    const decompressor = new GZipDecompressor({useNative: false});
+    const inputBatches = [TEST_BYTES.subarray(0, 80), TEST_BYTES.subarray(80)].map(copyArrayBuffer);
+    const compressedBatches = await collectBatches(compressor.compressBatches(inputBatches));
+    const outputBatches = await collectBatches(decompressor.decompressBatches(compressedBatches));
+    expect(concatenateBatches(outputBatches)).toEqual(TEST_BYTES);
+  });
+
+  test('default GZIP decompressor prefers built-in support', async () => {
+    if (!(await supportsNativeDecompressionStream('gzip'))) return;
+    const formats: string[] = [];
+    const restoreDecompressionStream = installRecordingDecompressionStream(formats);
+    try {
+      const compressed = await new GZipCompressor({useNative: false}).compress(
+        copyArrayBuffer(TEST_BYTES)
+      );
+      const output = await new GZipDecompressor().decompress(compressed);
+      expect(new Uint8Array(output)).toEqual(TEST_BYTES);
+      expect(formats).toEqual(['gzip']);
+    } finally {
+      restoreDecompressionStream();
+    }
+  });
+
   test.each([
     ['deflate-fflate', new DeflateFflateCompression()],
     ['gzip-fflate', new GZipFflateCompression()],

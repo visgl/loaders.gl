@@ -7,8 +7,8 @@
 `XZCompression` is the combined XZ/LZMA compatibility codec. It dynamically imports the requested
 `compress-utils` direction, so encoding code is not initialized by a decode-only call.
 
-New code should import `XZCompressUtilsCompressor` or `XZCompressUtilsDecompressor` from the
-direction-specific subpath listed in the [implementation tables](/docs/modules/compression).
+New code should import `XZCompressor` or `XZDecompressor`. These defaults currently use the lazy
+`compress-utils` implementation.
 
 ## Interface
 

@@ -19,11 +19,9 @@ Choose an implementation based on what your application values most:
 
 | Need | Recommended path |
 | --- | --- |
-| Smallest initial browser bundle | Try `native-compression` or `native-decompression`, then dynamically import a fallback |
-| Compact synchronous GZIP or DEFLATE | Use the `fflate` compressor or decompressor |
-| Brotli decompression without WASM | Use the bundled JavaScript decoder shim |
-| Compact synchronous Zstandard decompression | Use the `fzstd` decompressor |
-| Incremental or broader format support | Use a direction-specific `compress-utils` adapter |
+| Normal application use | Import the library-neutral `FormatCompressor` or `FormatDecompressor` |
+| Smallest possible initial bundle | Try `native-compression` or `native-decompression`, then dynamically import a fallback |
+| A specific backend or reproducible benchmark | Import an implementation-named class |
 | Existing v4 code | Keep the combined `*Compression` class while migrating; these classes are deprecated, not removed |
 
 The [live benchmarks](/docs/modules/compression/benchmarks) compare the implementations in your
@@ -31,13 +29,13 @@ browser, including throughput and focused bundle size.
 
 ## Quick start
 
-Import only the direction and implementation you need. This example uses the compact `fflate`
-binding and does not retain a GZIP encoder in a decode-only application:
+Import the default class for the direction you need. The default owns the built-in and fallback
+policy, so application imports stay stable as runtime support improves:
 
 ```typescript
-import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
 
-const decompressor = new GZipFflateDecompressor();
+const decompressor = new GZipDecompressor();
 const data = await decompressor.decompress(compressedData);
 ```
 
@@ -46,11 +44,11 @@ through loaders, writers, or application code:
 
 ```typescript
 import type {Compressor, Decompressor} from '@loaders.gl/compression';
-import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
-import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
+import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
 
-const compressors: Compressor[] = [new GZipFflateCompressor()];
-const decompressors: Decompressor[] = [new GZipFflateDecompressor()];
+const compressors: Compressor[] = [new GZipCompressor()];
+const decompressors: Decompressor[] = [new GZipDecompressor()];
 ```
 
 ## Built-in codecs first
@@ -70,10 +68,8 @@ async function decompressGzip(input: ArrayBuffer): Promise<ArrayBuffer> {
     return builtInOutput;
   }
 
-  const {GZipFflateDecompressor} = await import(
-    '@loaders.gl/compression/gzip-decompressor-fflate'
-  );
-  return new GZipFflateDecompressor().decompress(input);
+  const {GZipDecompressor} = await import('@loaders.gl/compression/gzip-decompressor');
+  return new GZipDecompressor({useNative: false}).decompress(input);
 }
 ```
 
@@ -90,14 +86,45 @@ support is still runtime-dependent. See
 | Raw DEFLATE | `DecompressionStream` when supported | `fflate` or Pako |
 | Brotli | Runtime-dependent | bundled JavaScript decoder shim or `compress-utils` |
 | Zstandard | Runtime-dependent | `fzstd`, `zstd-codec`, or `compress-utils` |
-| Snappy, LZ4, bzip2, XZ | Not exposed by the stream APIs | Selected library adapter |
+| Snappy, LZ4, bzip2, XZ | Not exposed by the stream APIs | Default format implementation |
 
-## Choose a compressor
+## Default compressors
 
-Each subpath follows `FORMAT-DIRECTION-IMPLEMENTATION` order, making its role apparent before the
-library choice—for example, `brotli-decompressor-compress-utils`. The `compress-utils` adapters
-are asynchronous, incremental, and backed by an optional dependency. The `fflate` and Pako
-adapters are synchronous JavaScript implementations.
+These are the recommended application imports. Defaults are deliberately library-neutral and
+optimized for balanced bundle size and runtime performance.
+
+| Format | Class | Import subpath | Default policy |
+| --- | --- | --- | --- |
+| Uncompressed | `NoCompressor` | `no-compressor` | Pass-through |
+| GZIP | `GZipCompressor` | `gzip-compressor` | Built-in stream, then `fflate` |
+| DEFLATE | `DeflateCompressor` | `deflate-compressor` | Built-in stream, then `fflate` |
+| Brotli | `BrotliCompressor` | `brotli-compressor` | Built-in stream, then lazy `compress-utils` |
+| Zstandard | `ZstdCompressor` | `zstd-compressor` | Built-in stream, then lazy `compress-utils` |
+| Snappy | `SnappyCompressor` | `snappy-compressor` | Compact `snappyjs` |
+| LZ4 frame | `LZ4Compressor` | `lz4-compressor` | Lazy `lz4js` |
+| bzip2 | `BZip2Compressor` | `bzip2-compressor` | Lazy `compress-utils` |
+| XZ/LZMA | `XZCompressor` | `xz-compressor` | Lazy `compress-utils` |
+
+## Default decompressors
+
+| Format | Class | Import subpath | Default policy |
+| --- | --- | --- | --- |
+| Uncompressed | `NoDecompressor` | `no-decompressor` | Pass-through |
+| GZIP | `GZipDecompressor` | `gzip-decompressor` | Built-in stream, then `fflate` |
+| DEFLATE | `DeflateDecompressor` | `deflate-decompressor` | Built-in stream, then `fflate` |
+| Brotli | `BrotliDecompressor` | `brotli-decompressor` | Built-in stream, then bundled JavaScript shim |
+| Zstandard | `ZstdDecompressor` | `zstd-decompressor` | Built-in stream, then compact `fzstd` |
+| Snappy | `SnappyDecompressor` | `snappy-decompressor` | Compact `snappyjs` |
+| LZ4 | `LZ4Decompressor` | `lz4-decompressor` | Hand-written block/Hadoop decoder; lazy `lz4js` for frames |
+| bzip2 | `BZip2Decompressor` | `bzip2-decompressor` | Lazy `compress-utils` |
+| XZ/LZMA | `XZDecompressor` | `xz-decompressor` | Lazy `compress-utils` |
+
+## Specific compressor implementations
+
+Most applications should use a default above. Choose a specific implementation only to pin a
+backend, inject a different performance/size tradeoff, or run comparisons. Specific subpaths follow
+`FORMAT-DIRECTION-IMPLEMENTATION` order—for example,
+`brotli-decompressor-compress-utils`.
 
 | Format | Class | Import subpath | Best for |
 | --- | --- | --- | --- |
@@ -110,15 +137,16 @@ adapters are synchronous JavaScript implementations.
 | DEFLATE | `DeflateCompressUtilsCompressor` | `deflate-compressor-compress-utils` | Incremental operation |
 | Brotli | `BrotliCompressUtilsCompressor` | `brotli-compressor-compress-utils` | Brotli encoding |
 | Zstandard | `ZstdCompressUtilsCompressor` | `zstd-compressor-compress-utils` | Zstandard encoding |
+| Snappy | `SnappyJSCompressor` | `snappy-compressor-snappyjs` | Compact JavaScript |
 | Snappy | `SnappyCompressUtilsCompressor` | `snappy-compressor-compress-utils` | Snappy encoding |
+| LZ4 frame | `LZ4JSCompressor` | `lz4-compressor-lz4js` | Compact JavaScript |
 | LZ4 frame | `LZ4CompressUtilsCompressor` | `lz4-compressor-compress-utils` | LZ4 frame encoding |
 | bzip2 | `BZip2CompressUtilsCompressor` | `bzip2-compressor-compress-utils` | bzip2 encoding |
 | XZ/LZMA | `XZCompressUtilsCompressor` | `xz-compressor-compress-utils` | XZ/LZMA encoding |
 
-## Choose a decompressor
+## Specific decompressor implementations
 
-Decode-only entrypoints are especially useful in loaders: they prevent compression code from
-being retained in applications that only read data.
+These imports bypass the default selection policy and pin one backend.
 
 | Format | Class | Import subpath | Best for |
 | --- | --- | --- | --- |
@@ -133,7 +161,9 @@ being retained in applications that only read data.
 | Brotli | `BrotliCompressUtilsDecompressor` | `brotli-decompressor-compress-utils` | Incremental operation |
 | Zstandard | `ZstdFzstdDecompressor` | `zstd-decompressor-fzstd` | Compact synchronous JavaScript |
 | Zstandard | `ZstdCompressUtilsDecompressor` | `zstd-decompressor-compress-utils` | Incremental operation |
+| Snappy | `SnappyJSDecompressor` | `snappy-decompressor-snappyjs` | Compact JavaScript |
 | Snappy | `SnappyCompressUtilsDecompressor` | `snappy-decompressor-compress-utils` | Snappy decoding |
+| LZ4 frame | `LZ4JSDecompressor` | `lz4-decompressor-lz4js` | Compact JavaScript |
 | LZ4 frame | `LZ4CompressUtilsDecompressor` | `lz4-decompressor-compress-utils` | LZ4 frame decoding |
 | bzip2 | `BZip2CompressUtilsDecompressor` | `bzip2-decompressor-compress-utils` | bzip2 decoding |
 | XZ/LZMA | `XZCompressUtilsDecompressor` | `xz-decompressor-compress-utils` | XZ/LZMA decoding |

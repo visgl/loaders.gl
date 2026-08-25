@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {gzipSync, type GzipOptions} from 'fflate';
+import {Gzip, gzipSync, type GzipOptions} from 'fflate';
 import {Compressor, type CompressionOptions} from './lib/compression';
+import {transformFflateBatches} from './lib/fflate-stream';
 
 /** Options for the fflate GZIP compressor. */
 export type GZipFflateCompressorOptions = CompressionOptions & {gzip?: GzipOptions};
@@ -24,5 +25,12 @@ export class GZipFflateCompressor extends Compressor {
   /** Compresses one GZIP payload synchronously. */
   compressSync(input: ArrayBuffer): ArrayBuffer {
     return gzipSync(new Uint8Array(input), this.options.gzip).slice().buffer as ArrayBuffer;
+  }
+
+  /** Compresses GZIP batches incrementally. */
+  async *compressBatches(
+    inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  ): AsyncIterable<ArrayBuffer> {
+    yield* transformFflateBatches(new Gzip(this.options.gzip || {}), inputBatches);
   }
 }

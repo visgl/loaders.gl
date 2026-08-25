@@ -7,9 +7,8 @@
 `BZip2Compression` is the combined bzip2 compatibility codec. It dynamically imports the
 requested `compress-utils` direction, so encoding code is not initialized by a decode-only call.
 
-New code should import `BZip2CompressUtilsCompressor` or
-`BZip2CompressUtilsDecompressor` from the direction-specific subpath listed in the
-[implementation tables](/docs/modules/compression).
+New code should import `BZip2Compressor` or `BZip2Decompressor`. These defaults currently use
+the lazy `compress-utils` implementation.
 
 ## Interface
 

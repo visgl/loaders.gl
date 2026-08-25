@@ -54,6 +54,70 @@
       "types": "./dist/no-decompressor.d.ts",
       "import": "./dist/no-decompressor.js"
     },
+    "./gzip-compressor": {
+      "types": "./dist/gzip-compressor.d.ts",
+      "import": "./dist/gzip-compressor.js"
+    },
+    "./gzip-decompressor": {
+      "types": "./dist/gzip-decompressor.d.ts",
+      "import": "./dist/gzip-decompressor.js"
+    },
+    "./deflate-compressor": {
+      "types": "./dist/deflate-compressor.d.ts",
+      "import": "./dist/deflate-compressor.js"
+    },
+    "./deflate-decompressor": {
+      "types": "./dist/deflate-decompressor.d.ts",
+      "import": "./dist/deflate-decompressor.js"
+    },
+    "./brotli-compressor": {
+      "types": "./dist/brotli-compressor.d.ts",
+      "import": "./dist/brotli-compressor.js"
+    },
+    "./brotli-decompressor": {
+      "types": "./dist/brotli-decompressor.d.ts",
+      "import": "./dist/brotli-decompressor.js"
+    },
+    "./zstd-compressor": {
+      "types": "./dist/zstd-compressor.d.ts",
+      "import": "./dist/zstd-compressor.js"
+    },
+    "./zstd-decompressor": {
+      "types": "./dist/zstd-decompressor.d.ts",
+      "import": "./dist/zstd-decompressor.js"
+    },
+    "./snappy-compressor": {
+      "types": "./dist/snappy-compressor.d.ts",
+      "import": "./dist/snappy-compressor.js"
+    },
+    "./snappy-decompressor": {
+      "types": "./dist/snappy-decompressor.d.ts",
+      "import": "./dist/snappy-decompressor.js"
+    },
+    "./lz4-compressor": {
+      "types": "./dist/lz4-compressor.d.ts",
+      "import": "./dist/lz4-compressor.js"
+    },
+    "./lz4-decompressor": {
+      "types": "./dist/lz4-decompressor.d.ts",
+      "import": "./dist/lz4-decompressor.js"
+    },
+    "./bzip2-compressor": {
+      "types": "./dist/bzip2-compressor.d.ts",
+      "import": "./dist/bzip2-compressor.js"
+    },
+    "./bzip2-decompressor": {
+      "types": "./dist/bzip2-decompressor.d.ts",
+      "import": "./dist/bzip2-decompressor.js"
+    },
+    "./xz-compressor": {
+      "types": "./dist/xz-compressor.d.ts",
+      "import": "./dist/xz-compressor.js"
+    },
+    "./xz-decompressor": {
+      "types": "./dist/xz-decompressor.d.ts",
+      "import": "./dist/xz-decompressor.js"
+    },
     "./gzip-compression": {
       "types": "./dist/gzip-compression.d.ts",
       "import": "./dist/gzip-compression.js"
@@ -122,9 +186,25 @@
       "types": "./dist/snappy-snappyjs.d.ts",
       "import": "./dist/snappy-snappyjs.js"
     },
+    "./snappy-compressor-snappyjs": {
+      "types": "./dist/snappy-compressor-snappyjs.d.ts",
+      "import": "./dist/snappy-compressor-snappyjs.js"
+    },
+    "./snappy-decompressor-snappyjs": {
+      "types": "./dist/snappy-decompressor-snappyjs.d.ts",
+      "import": "./dist/snappy-decompressor-snappyjs.js"
+    },
     "./lz4-lz4js": {
       "types": "./dist/lz4-lz4js.d.ts",
       "import": "./dist/lz4-lz4js.js"
+    },
+    "./lz4-compressor-lz4js": {
+      "types": "./dist/lz4-compressor-lz4js.d.ts",
+      "import": "./dist/lz4-compressor-lz4js.js"
+    },
+    "./lz4-decompressor-lz4js": {
+      "types": "./dist/lz4-decompressor-lz4js.d.ts",
+      "import": "./dist/lz4-decompressor-lz4js.js"
     },
     "./brotli-compress-utils": {
       "types": "./dist/brotli-compress-utils.d.ts",

@@ -9,8 +9,9 @@ runtime's built-in stream first. Decompression lazily loads the loaders.gl JavaS
 built-in Brotli is unavailable; compression requires built-in support, Node `zlib`, or an injected
 encoder.
 
-For new code, choose `BrotliShimDecompressor` for the bundled JavaScript fallback or a
-direction-specific `compress-utils` adapter. See the [implementation table](/docs/modules/compression) and
+For new code, use the library-neutral `BrotliCompressor` or `BrotliDecompressor`. Choose
+`BrotliShimDecompressor` or a `compress-utils` adapter only when pinning an implementation. See
+the [implementation table](/docs/modules/compression) and
 [live benchmarks](/docs/modules/compression/benchmarks).
 
 ## Interface

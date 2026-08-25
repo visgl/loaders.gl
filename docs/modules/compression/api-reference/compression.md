@@ -20,7 +20,7 @@ function createLoader(decompressors: Decompressor[]) {
 }
 ```
 
-Concrete implementations are listed in the
+Library-neutral defaults and advanced implementation choices are listed in the
 [compressor and decompressor tables](/docs/modules/compression).
 
 ## Shared fields
@@ -98,5 +98,6 @@ const compressors: Compressor[] = [gzip];
 const decompressors: Decompressor[] = [gzip];
 ```
 
-The combined classes are retained for migration. New code should choose a direction-specific
-implementation so it does not bundle operations it never calls.
+The combined classes are retained for migration. New code should choose the library-neutral
+compressor or decompressor for its format. Import an implementation-named class only when the
+application needs to pin that backend.

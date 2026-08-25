@@ -8,8 +8,9 @@
 stream first and falls back to compact `fzstd`. Encoding and synchronous compatibility operations
 use an injected `zstd-codec` module.
 
-For new code, use `ZstdFzstdDecompressor` for compact decoding or select a direction-specific
-`compress-utils` adapter. See the [implementation tables](/docs/modules/compression) and
+For new code, use `ZstdCompressor` or `ZstdDecompressor`. Select `fzstd`, `zstd-codec`, or a
+`compress-utils` adapter only when pinning an implementation. See the
+[implementation tables](/docs/modules/compression) and
 [live benchmarks](/docs/modules/compression/benchmarks).
 
 Inject `zstd-codec` through `options.modules` for compression and decompression through this

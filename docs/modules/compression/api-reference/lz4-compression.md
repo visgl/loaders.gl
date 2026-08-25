@@ -8,8 +8,8 @@
 Hadoop-framed blocks with the compact loaders.gl implementation. LZ4 frame encoding and decoding
 use the optional `lz4js` module.
 
-For new LZ4 frame code, select the `compress-utils` adapter for the required direction. See the
-[implementation tables](/docs/modules/compression) and
+For new code, use `LZ4Compressor` or `LZ4Decompressor`. Select an `lz4js` or `compress-utils`
+adapter only when pinning an implementation. See the [implementation tables](/docs/modules/compression) and
 [live benchmarks](/docs/modules/compression/benchmarks).
 
 ## Interface
