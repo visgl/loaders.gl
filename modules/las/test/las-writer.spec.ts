@@ -159,6 +159,11 @@ test('LASWriter#validates compressed output options', t => {
     /invalid LAZ chunk size/,
     'LAZ writer rejects empty chunks'
   );
+  t.throws(
+    () => LASWriter.encodeSync?.(mesh, {las: {version: '1.2', pointDataRecordFormat: 7}}),
+    /point data record format 7 requires LAS 1.4/,
+    'LASWriter rejects modern point formats in legacy LAS headers'
+  );
   t.end();
 });
 

@@ -142,6 +142,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   if (format === 'laz') {
     validateLAZOptions(version, pointDataRecordFormat, options.las?.chunkSize);
   }
+  validatePointDataRecordVersion(version, pointDataRecordFormat);
 
   const rawPointData = new Uint8Array(vertexCount * pointDataRecordLength);
   const pointDataView = new DataView(rawPointData.buffer);
@@ -224,6 +225,15 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   bytes.set(extraBytesVLR, headerLength);
   bytes.set(rawPointData, pointDataOffset);
   return arrayBuffer;
+}
+
+/** Validate that the selected LAS header can represent the point record format. */
+function validatePointDataRecordVersion(version: string, pointDataRecordFormat: number): void {
+  if (pointDataRecordFormat >= 6 && version !== '1.4') {
+    throw new Error(
+      `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.4; received ${version}`
+    );
+  }
 }
 
 /** Values shared by LAS header and point-data encoding. */
