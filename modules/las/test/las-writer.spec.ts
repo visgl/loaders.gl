@@ -243,8 +243,13 @@ test('LASWriter#preserves modern LAS point fields', t => {
   const dataView = new DataView(arrayBuffer);
   const pointOffset = 375;
 
-  t.equal(dataView.getUint8(pointOffset + 14), 0x3f, 'writes return number, count, and flags');
-  t.equal(dataView.getUint8(pointOffset + 15), 0xe0, 'writes scanner and flight-line flags');
+  t.equal(dataView.getUint8(pointOffset + 14), 0x32, 'writes return number and count');
+  t.equal(
+    dataView.getUint8(pointOffset + 15),
+    0xef,
+    'writes classification, scanner, and flight-line flags'
+  );
+  t.equal(dataView.getUint32(263, true), 1, 'writes the extended second-return count');
   t.equal(dataView.getUint8(pointOffset + 17), 7, 'writes user data');
   t.equal(dataView.getInt16(pointOffset + 18, true), -12, 'writes scan angle');
   t.equal(dataView.getUint16(pointOffset + 20, true), 99, 'writes point source id');
@@ -271,8 +276,12 @@ test('LASWriter#preserves modern LAS point fields', t => {
     }
   );
   const lazPointView = new DataView(lazChunk.buffer);
-  t.equal(lazPointView.getUint8(14), 0x3f, 'LAZ preserves return number, count, and flags');
-  t.equal(lazPointView.getUint8(15), 0xe0, 'LAZ preserves scanner and flight-line flags');
+  t.equal(lazPointView.getUint8(14), 0x32, 'LAZ preserves return number and count');
+  t.equal(
+    lazPointView.getUint8(15),
+    0xef,
+    'LAZ preserves classification, scanner, and flight-line flags'
+  );
   t.equal(lazPointView.getUint8(17), 7, 'LAZ preserves user data');
   t.equal(lazPointView.getInt16(18, true), -12, 'LAZ preserves scan angle');
   t.equal(lazPointView.getUint16(20, true), 99, 'LAZ preserves point source id');

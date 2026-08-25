@@ -121,6 +121,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const withheldAttribute = mesh.attributes.withheld;
   const overlapAttribute = mesh.attributes.overlap;
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
+  const returnCounts = getReturnCounts(returnNumberAttribute, vertexCount);
   const scale = getScale(mesh, options);
   const offset = getOffset(mesh, options, boundingBox);
   const pointDataRecordFormat =
@@ -202,7 +203,8 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     version,
     headerLength,
     pointDataRecordFormat,
-    pointDataRecordLength
+    pointDataRecordLength,
+    returnCounts
   };
   if (format === 'laz') {
     return encodeLAZFile(
@@ -255,6 +257,8 @@ type LASWriteParameters = {
   pointDataRecordFormat: number;
   /** Byte length of each raw point record. */
   pointDataRecordLength: number;
+  /** Counts for the five standard return-number buckets. */
+  returnCounts: [number, number, number, number, number];
 };
 
 /** Internal description of one encoded LAS Extra Bytes field. */
@@ -642,7 +646,13 @@ function writeHeader(
   dataView.setUint8(104, parameters.pointDataRecordFormat | (parameters.compressed ? 0x80 : 0));
   dataView.setUint16(105, parameters.pointDataRecordLength, true);
   dataView.setUint32(107, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
-  dataView.setUint32(111, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
+  for (let returnIndex = 0; returnIndex < 5; returnIndex++) {
+    dataView.setUint32(
+      111 + returnIndex * 4,
+      parameters.version === '1.4' ? 0 : parameters.returnCounts[returnIndex],
+      true
+    );
+  }
 
   dataView.setFloat64(131, parameters.scale[0], true);
   dataView.setFloat64(139, parameters.scale[1], true);
@@ -659,7 +669,9 @@ function writeHeader(
 
   if (parameters.version === '1.4') {
     writeUint64Fallback(dataView, 247, parameters.vertexCount);
-    writeUint64Fallback(dataView, 255, parameters.vertexCount);
+    for (let returnIndex = 0; returnIndex < 5; returnIndex++) {
+      writeUint64Fallback(dataView, 255 + returnIndex * 8, parameters.returnCounts[returnIndex]);
+    }
   }
 }
 
@@ -717,14 +729,12 @@ function writePointRecord(
     const numberOfReturns =
       getUInt8Attribute(attributes.numberOfReturnsAttribute, vertexIndex) & 0x0f;
     const scannerChannel = getUInt8Attribute(attributes.scannerChannelAttribute, vertexIndex) & 3;
-    const returnFlags =
-      returnNumber |
-      (numberOfReturns << 4) |
+    const returnFlags = returnNumber | (numberOfReturns << 4);
+    const classificationFlags =
       (getBooleanAttribute(attributes.syntheticAttribute, vertexIndex) ? 1 << 0 : 0) |
       (getBooleanAttribute(attributes.keyPointAttribute, vertexIndex) ? 1 << 1 : 0) |
       (getBooleanAttribute(attributes.withheldAttribute, vertexIndex) ? 1 << 2 : 0) |
-      (getBooleanAttribute(attributes.overlapAttribute, vertexIndex) ? 1 << 3 : 0);
-    const classificationFlags =
+      (getBooleanAttribute(attributes.overlapAttribute, vertexIndex) ? 1 << 3 : 0) |
       (scannerChannel << 4) |
       (getBooleanAttribute(attributes.scanDirectionFlagAttribute, vertexIndex) ? 1 << 6 : 0) |
       (getBooleanAttribute(attributes.edgeOfFlightLineAttribute, vertexIndex) ? 1 << 7 : 0);
@@ -952,6 +962,24 @@ function getAttributeValue(attribute: MeshAttribute | undefined, vertexIndex: nu
 /** Return a point flag attribute as a boolean. */
 function getBooleanAttribute(attribute: MeshAttribute | undefined, vertexIndex: number): boolean {
   return Boolean(getAttributeValue(attribute, vertexIndex));
+}
+
+/** Count point records by return number for the LAS header histograms. */
+function getReturnCounts(
+  returnNumberAttribute: MeshAttribute | undefined,
+  vertexCount: number
+): [number, number, number, number, number] {
+  const returnCounts: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    const returnNumber = getUInt8Attribute(returnNumberAttribute, vertexIndex) & 0x0f;
+    if (returnNumber >= 1 && returnNumber <= 5) {
+      returnCounts[returnNumber - 1]++;
+    }
+  }
+  if (!returnNumberAttribute) {
+    returnCounts[0] = vertexCount;
+  }
+  return returnCounts;
 }
 
 /** Return one color component as a LAS UInt16 color value. */
