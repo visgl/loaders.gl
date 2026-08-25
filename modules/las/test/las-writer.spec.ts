@@ -137,6 +137,26 @@ test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async t => {
   t.end();
 });
 
+test('LASWriter#encodes legacy PDRF 0 LAZ', async t => {
+  const arrayBuffer = await encode(mesh, LASWriter, {
+    las: {format: 'laz', pointDataRecordFormat: 0, chunkSize: 2}
+  });
+  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  t.equal(data.loaderData.pointsFormatId, 0, 'writes legacy point format 0');
+  t.equal(data.loaderData.versionAsString, '1.2', 'writes the default legacy LAS version');
+  t.deepEqual(
+    Array.from(data.attributes.POSITION.value),
+    Array.from(attributes.POSITION.value),
+    'legacy LAZ positions roundtrip'
+  );
+  t.deepEqual(
+    Array.from(data.attributes.intensity.value),
+    Array.from(attributes.intensity.value),
+    'legacy LAZ intensities roundtrip'
+  );
+  t.end();
+});
+
 test('LASWriter#validates compressed output options', t => {
   t.throws(
     () =>
@@ -151,8 +171,8 @@ test('LASWriter#validates compressed output options', t => {
       LASWriter.encodeSync?.(mesh, {
         las: {format: 'laz', version: '1.4', pointDataRecordFormat: 3}
       }),
-    /only supports point data record formats 6-8/,
-    'LAZ writer rejects legacy point formats'
+    /currently supports point data record formats 0 and 6-8/,
+    'LAZ writer rejects unsupported legacy point formats'
   );
   t.throws(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),

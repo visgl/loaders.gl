@@ -447,18 +447,21 @@ function validateExtraBytesVLR(fields: readonly LASExtraByteField[]): void {
   }
 }
 
-/** Validate the intentionally narrow LAZ container writer surface. */
+/** Validate the currently supported LAZ container writer surface. */
 function validateLAZOptions(
   version: string,
   pointDataRecordFormat: number,
   chunkSize?: number
 ): void {
-  if (version !== '1.4') {
+  if (pointDataRecordFormat === 0 && !['1.2', '1.3', '1.4'].includes(version)) {
+    throw new Error(`LASWriter: LAZ PDRF 0 output requires LAS 1.2 or newer; received ${version}`);
+  }
+  if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 6, 7, 8].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output only supports point data record formats 6-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0 and 6-8; received ${pointDataRecordFormat}`
     );
   }
   if (

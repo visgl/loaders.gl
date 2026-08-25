@@ -69,11 +69,11 @@ test('LAZChunkEncoder#validates input and item versions', t => {
     () =>
       encodeLAZChunk(new Uint8Array(20), {
         pointCount: 1,
-        pointDataRecordFormat: 0,
-        pointDataRecordLength: 20
+        pointDataRecordFormat: 1,
+        pointDataRecordLength: 28
       }),
-    /does not support point format 0/,
-    'legacy point formats are rejected'
+    /does not support point format 1/,
+    'unsupported legacy point formats are rejected'
   );
   t.throws(
     () => encodeLAZChunk(rawPointData.subarray(1), metadata),
@@ -85,6 +85,36 @@ test('LAZChunkEncoder#validates input and item versions', t => {
     /only supports Point14 item version 3/,
     'unsupported Point14 versions are rejected'
   );
+  t.end();
+});
+
+test('LAZChunkEncoder#encodes LASzip v2 PDRF 0 chunks', t => {
+  const pointCount = 32;
+  const pointDataRecordLength = 22;
+  const rawPointData = new Uint8Array(pointCount * pointDataRecordLength);
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const offset = pointIndex * pointDataRecordLength;
+    const view = new DataView(rawPointData.buffer, offset, pointDataRecordLength);
+    view.setInt32(0, pointIndex * 100, true);
+    view.setInt32(4, -pointIndex * 50, true);
+    view.setInt32(8, pointIndex * 3, true);
+    view.setUint16(12, 100 + pointIndex, true);
+    view.setUint8(14, 0x09);
+    view.setUint8(15, pointIndex % 8);
+    view.setInt8(16, (pointIndex % 7) - 3);
+    view.setUint8(17, pointIndex * 2);
+    view.setUint16(18, 500 + pointIndex, true);
+    view.setUint8(20, pointIndex);
+    view.setUint8(21, 255 - pointIndex);
+  }
+  const metadata = {
+    pointCount,
+    pointDataRecordFormat: 0,
+    pointDataRecordLength
+  };
+  const compressed = encodeLAZChunk(rawPointData, metadata);
+  t.deepEqual(decodeLAZChunk(compressed, metadata), rawPointData, 'PDRF 0 roundtrips');
+  t.deepEqual(encodeLAZChunk(rawPointData, metadata), compressed, 'PDRF 0 output is deterministic');
   t.end();
 });
 

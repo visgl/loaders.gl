@@ -12,7 +12,7 @@ import {
   toInt32
 } from './laz-arithmetic-encoder';
 
-const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {6: 30, 7: 36, 8: 38};
+const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {0: 20, 6: 30, 7: 36, 8: 38};
 const LASZIP_VLR_HEADER_LENGTH = 54;
 const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
 const GPS_TIME_MULTI = 500;
@@ -36,6 +36,28 @@ const NUMBER_RETURN_MAP_6_CONTEXT: number[][] = [
   [5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4],
   [5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5],
   [5, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5]
+];
+
+const NUMBER_RETURN_MAP_10_CONTEXT: number[][] = [
+  [15, 14, 13, 12, 11, 10, 9, 8],
+  [14, 0, 1, 3, 6, 10, 10, 9],
+  [13, 1, 2, 4, 7, 11, 11, 10],
+  [12, 3, 4, 5, 8, 12, 12, 11],
+  [11, 6, 7, 8, 9, 13, 13, 12],
+  [10, 10, 11, 12, 13, 14, 14, 13],
+  [9, 10, 11, 12, 13, 14, 15, 14],
+  [8, 9, 10, 11, 12, 13, 14, 15]
+];
+
+const NUMBER_RETURN_LEVEL_10_CONTEXT: number[][] = [
+  [0, 1, 2, 3, 4, 5, 6, 7],
+  [1, 0, 1, 2, 3, 4, 5, 6],
+  [2, 1, 0, 1, 2, 3, 4, 5],
+  [3, 2, 1, 0, 1, 2, 3, 4],
+  [4, 3, 2, 1, 0, 1, 2, 3],
+  [5, 4, 3, 2, 1, 0, 1, 2],
+  [6, 5, 4, 3, 2, 1, 0, 1],
+  [7, 6, 5, 4, 3, 2, 1, 0]
 ];
 
 const NUMBER_RETURN_LEVEL_8_CONTEXT: number[][] = [
@@ -107,6 +129,10 @@ export function encodeLAZChunk(
   validateMetadata(rawBytes, metadata);
   if (metadata.pointCount === 0) {
     return new Uint8Array(0);
+  }
+
+  if (metadata.pointDataRecordFormat === 0) {
+    return encodeLegacyPointFormat0Chunk(rawBytes, metadata);
   }
 
   const pointRecordLength = metadata.pointDataRecordLength;
@@ -199,9 +225,10 @@ export function encodeLASzipVLR(options: {
   /** Fixed chunk size or `0xffffffff` for variable chunks. */
   chunkSize: number;
   /** LASzip item codec version. */
-  itemVersion?: 3;
+  itemVersion?: 2 | 3;
 }): Uint8Array {
-  const itemVersion = options.itemVersion || 3;
+  const legacy = options.pointDataRecordFormat <= 5;
+  const itemVersion = options.itemVersion || (legacy ? 2 : 3);
   const items = getLASzipItems(options.pointDataRecordFormat, options.pointDataRecordLength);
   const payloadLength = LASZIP_VLR_PAYLOAD_BASE_LENGTH + items.length * 6;
   const bytes = new Uint8Array(LASZIP_VLR_HEADER_LENGTH + payloadLength);
@@ -212,10 +239,10 @@ export function encodeLASzipVLR(options: {
   dataView.setUint16(18, 22204, true);
   dataView.setUint16(20, payloadLength, true);
   writeString(dataView, 22, 'loaders.gl LAZ writer', 32);
-  dataView.setUint16(payloadOffset, 3, true);
+  dataView.setUint16(payloadOffset, legacy ? 2 : 3, true);
   dataView.setUint16(payloadOffset + 2, 0, true);
-  dataView.setUint8(payloadOffset + 4, 3);
-  dataView.setUint8(payloadOffset + 5, 5);
+  dataView.setUint8(payloadOffset + 4, legacy ? 2 : 3);
+  dataView.setUint8(payloadOffset + 5, 0);
   dataView.setUint16(payloadOffset + 6, 1, true);
   dataView.setUint32(payloadOffset + 8, 0, true);
   dataView.setUint32(payloadOffset + 12, options.chunkSize, true);
@@ -255,6 +282,171 @@ type Point14 = {
   /** Raw IEEE-754 GPS timestamp bits. */
   gpsTimeBits: bigint;
 };
+
+type Point10 = {
+  x: number;
+  y: number;
+  z: number;
+  intensity: number;
+  bitByte: number;
+  classification: number;
+  scanAngleRank: number;
+  userData: number;
+  pointSourceId: number;
+};
+
+/** Encode the legacy LAS point-format 0 item and optional Extra Bytes. */
+function encodeLegacyPointFormat0Chunk(
+  rawBytes: Uint8Array,
+  metadata: LAZChunkMetadata
+): Uint8Array {
+  const pointRecordLength = metadata.pointDataRecordLength;
+  const extraByteCount = pointRecordLength - 20;
+  const firstRecord = rawBytes.subarray(0, pointRecordLength);
+  const encoder = new ArithmeticEncoder();
+  const pointEncoder = new Point10LayerEncoder(encoder, readPoint10(firstRecord, 0));
+  const extraBytesEncoder = extraByteCount
+    ? new Byte10LayerEncoder(encoder, firstRecord.subarray(20, pointRecordLength))
+    : null;
+
+  for (let pointIndex = 1; pointIndex < metadata.pointCount; pointIndex++) {
+    const recordOffset = pointIndex * pointRecordLength;
+    const record = rawBytes.subarray(recordOffset, recordOffset + pointRecordLength);
+    pointEncoder.encode(readPoint10(record, 0));
+    extraBytesEncoder?.encode(record.subarray(20, pointRecordLength));
+  }
+
+  return concatenateUint8Arrays([firstRecord, encoder.finish()]);
+}
+
+/** Encode the interleaved arithmetic Point10 LASzip item. */
+class Point10LayerEncoder {
+  private readonly changedValuesModel = new ArithmeticModel(64);
+  private readonly bitByteModels = createModels(256, 256);
+  private readonly classificationModels = createModels(256, 256);
+  private readonly scanAngleRankModels = createModels(2, 256);
+  private readonly userDataModels = createModels(256, 256);
+  private readonly intensityCompressor: IntegerCompressor;
+  private readonly pointSourceIdCompressor: IntegerCompressor;
+  private readonly xDifferenceCompressor: IntegerCompressor;
+  private readonly yDifferenceCompressor: IntegerCompressor;
+  private readonly zCompressor: IntegerCompressor;
+  private readonly lastIntensity = new Array<number>(16).fill(0);
+  private readonly lastHeight = new Array<number>(8).fill(0);
+  private readonly lastXDifferenceMedian = Array.from({length: 16}, () => new StreamingMedian());
+  private readonly lastYDifferenceMedian = Array.from({length: 16}, () => new StreamingMedian());
+  private last: Point10;
+
+  constructor(
+    private readonly encoder: ArithmeticEncoder,
+    firstPoint: Point10
+  ) {
+    this.last = {...firstPoint};
+    this.lastHeight.fill(firstPoint.z);
+    this.intensityCompressor = new IntegerCompressor(encoder, 16, 4);
+    this.pointSourceIdCompressor = new IntegerCompressor(encoder, 16, 1);
+    this.xDifferenceCompressor = new IntegerCompressor(encoder, 32, 2);
+    this.yDifferenceCompressor = new IntegerCompressor(encoder, 32, 22);
+    this.zCompressor = new IntegerCompressor(encoder, 32, 20);
+  }
+
+  /** Encode one Point10 record after the first raw record. */
+  encode(point: Point10): void {
+    const lastPoint = this.last;
+    const changedValues =
+      (point.bitByte !== lastPoint.bitByte ? 1 << 5 : 0) |
+      (point.intensity !== lastPoint.intensity ? 1 << 4 : 0) |
+      (point.classification !== lastPoint.classification ? 1 << 3 : 0) |
+      (point.scanAngleRank !== lastPoint.scanAngleRank ? 1 << 2 : 0) |
+      (point.userData !== lastPoint.userData ? 1 << 1 : 0) |
+      (point.pointSourceId !== lastPoint.pointSourceId ? 1 : 0);
+    this.encoder.encodeSymbol(this.changedValuesModel, changedValues);
+
+    if (changedValues & (1 << 5)) {
+      this.encoder.encodeSymbol(this.bitByteModels[lastPoint.bitByte], point.bitByte);
+    }
+
+    const returnNumber = point.bitByte & 7;
+    const numberOfReturns = (point.bitByte >> 3) & 7;
+    const context = NUMBER_RETURN_MAP_10_CONTEXT[numberOfReturns][returnNumber];
+    const levelContext = NUMBER_RETURN_LEVEL_10_CONTEXT[numberOfReturns][returnNumber];
+
+    if (changedValues & (1 << 4)) {
+      this.intensityCompressor.compress(
+        this.lastIntensity[context],
+        point.intensity,
+        context < 3 ? context : 3
+      );
+      this.lastIntensity[context] = point.intensity;
+    }
+    if (changedValues & (1 << 3)) {
+      this.encoder.encodeSymbol(
+        this.classificationModels[lastPoint.classification],
+        point.classification
+      );
+    }
+    if (changedValues & (1 << 2)) {
+      this.encoder.encodeSymbol(
+        this.scanAngleRankModels[(lastPoint.bitByte >> 6) & 1],
+        foldInt8(point.scanAngleRank - lastPoint.scanAngleRank)
+      );
+    }
+    if (changedValues & (1 << 1)) {
+      this.encoder.encodeSymbol(this.userDataModels[lastPoint.userData], point.userData);
+    }
+    if (changedValues & 1) {
+      this.pointSourceIdCompressor.compress(lastPoint.pointSourceId, point.pointSourceId);
+    }
+
+    const xMedian = this.lastXDifferenceMedian[context].get();
+    const xDifference = toInt32(point.x - lastPoint.x);
+    this.xDifferenceCompressor.compress(xMedian, xDifference, numberOfReturns === 1 ? 1 : 0);
+    this.lastXDifferenceMedian[context].add(xDifference);
+
+    const yMedian = this.lastYDifferenceMedian[context].get();
+    const xKbits = Math.min(this.xDifferenceCompressor.k, 20) & ~1;
+    const yDifference = toInt32(point.y - lastPoint.y);
+    this.yDifferenceCompressor.compress(
+      yMedian,
+      yDifference,
+      (numberOfReturns === 1 ? 1 : 0) + xKbits
+    );
+    this.lastYDifferenceMedian[context].add(yDifference);
+
+    const zKbits =
+      Math.min((this.xDifferenceCompressor.k + this.yDifferenceCompressor.k) >> 1, 18) & ~1;
+    this.zCompressor.compress(
+      this.lastHeight[levelContext],
+      point.z,
+      (numberOfReturns === 1 ? 1 : 0) + zKbits
+    );
+    this.lastHeight[levelContext] = point.z;
+    this.last = {...point};
+  }
+}
+
+/** Encode the legacy Byte item that carries Extra Bytes values. */
+class Byte10LayerEncoder {
+  private readonly models: ArithmeticModel[];
+  private readonly last: Uint8Array;
+
+  constructor(
+    private readonly encoder: ArithmeticEncoder,
+    firstValues: Uint8Array
+  ) {
+    this.models = createModels(firstValues.byteLength, 256);
+    this.last = new Uint8Array(firstValues);
+  }
+
+  /** Encode one Extra Bytes value after the first raw value. */
+  encode(values: Uint8Array): void {
+    for (let index = 0; index < values.byteLength; index++) {
+      const difference = values[index] - this.last[index];
+      this.encoder.encodeSymbol(this.models[index], foldUint8(difference));
+      this.last[index] = values[index];
+    }
+  }
+}
 
 type Rgb14 = {
   /** Red channel. */
@@ -1037,6 +1229,14 @@ function getLASzipItems(
       `Invalid point record length ${pointDataRecordLength} for point format ${pointDataRecordFormat}`
     );
   }
+  if (pointDataRecordFormat === 0) {
+    const legacyItems: LASzipItem[] = [{type: 6, size: 20}];
+    const legacyExtraByteCount = pointDataRecordLength - baseLength;
+    if (legacyExtraByteCount > 0) {
+      legacyItems.push({type: 0, size: legacyExtraByteCount});
+    }
+    return legacyItems;
+  }
   const items: LASzipItem[] = [{type: 10, size: 30}];
   if (pointDataRecordFormat === 7) {
     items.push({type: 11, size: 6});
@@ -1065,6 +1265,22 @@ function readPoint14(bytes: Uint8Array, offset: number): Point14 {
     scanAngle: view.getInt16(18, true),
     pointSourceId: view.getUint16(20, true),
     gpsTimeBits: view.getBigUint64(22, true)
+  };
+}
+
+/** Parse a raw legacy LAS Point10 item. */
+function readPoint10(bytes: Uint8Array, offset: number): Point10 {
+  const view = new DataView(bytes.buffer, bytes.byteOffset + offset, 20);
+  return {
+    x: view.getInt32(0, true),
+    y: view.getInt32(4, true),
+    z: view.getInt32(8, true),
+    intensity: view.getUint16(12, true),
+    bitByte: view.getUint8(14),
+    classification: view.getUint8(15),
+    scanAngleRank: view.getInt8(16),
+    userData: view.getUint8(17),
+    pointSourceId: view.getUint16(18, true)
   };
 }
 
@@ -1114,6 +1330,11 @@ function createModels(count: number, symbols: number): ArithmeticModel[] {
 
 /** Fold an arbitrary signed byte difference into an unsigned byte. */
 function foldUint8(value: number): number {
+  return value & 0xff;
+}
+
+/** Fold a signed byte correction into the arithmetic symbol range. */
+function foldInt8(value: number): number {
   return value & 0xff;
 }
 
