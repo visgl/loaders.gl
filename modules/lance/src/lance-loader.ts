@@ -31,7 +31,8 @@ export const LanceLoaderWithParser = {
     return import('@loaders.gl/lance/lance-arrow').then(({parseLanceFileToArrow}) =>
       parseLanceFileToArrow(_arrayBuffer, {
         columnTypes,
-        columnNames: lanceOptions.columnNames
+        columnNames: lanceOptions.columnNames,
+        limit: lanceOptions.limit
       })
     );
   },

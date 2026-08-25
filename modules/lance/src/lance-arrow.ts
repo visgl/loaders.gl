@@ -9,6 +9,7 @@ import {parseLanceColumnMetadata, parseLanceFileMetadata} from './lance-file';
 import {
   decodeLanceFlatColumn,
   decodeLanceFlatPage,
+  createLanceFlatPrimitiveArray,
   type LanceFlatPrimitiveArray,
   type LanceFlatPrimitiveType
 } from './lance-decoder';
@@ -19,6 +20,8 @@ export type LanceArrowReadOptions = Readonly<{
   columnTypes: LanceFlatPrimitiveType[];
   /** Optional output names for physical columns. */
   columnNames?: string[];
+  /** Optional maximum number of rows to return. */
+  limit?: number;
 }>;
 
 /** A selected physical column for a ranged remote Lance read. */
@@ -46,6 +49,9 @@ export function parseLanceFileToArrow(
   arrayBuffer: ArrayBuffer | ArrayBufferView,
   options: LanceArrowReadOptions
 ): ArrowTable {
+  if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0)) {
+    throw new Error(`Invalid Lance row limit ${options.limit}`);
+  }
   const metadata = parseLanceFileMetadata(arrayBuffer);
   if (options.columnTypes.length !== metadata.numColumns) {
     throw new Error(
@@ -61,17 +67,26 @@ export function parseLanceFileToArrow(
   const columns: Record<string, LanceFlatPrimitiveArray> = {};
   for (let columnIndex = 0; columnIndex < metadata.numColumns; columnIndex++) {
     const columnName = options.columnNames?.[columnIndex] ?? `column${columnIndex}`;
-    columns[columnName] = decodeLanceFlatColumn(
+    const decodedColumn = decodeLanceFlatColumn(
       arrayBuffer,
       metadata.columns[columnIndex],
       options.columnTypes[columnIndex]
     );
+    columns[columnName] =
+      options.limit === undefined ? decodedColumn : decodedColumn.slice(0, options.limit);
   }
   return {shape: 'arrow-table', data: arrow.tableFromArrays(columns)};
 }
 
-async function fetchLanceRange(url: string, start: number, end: number): Promise<Uint8Array> {
-  const response = await fetch(url, {headers: {Range: `bytes=${start}-${end}`}});
+type LanceFetchFunction = (url: string, options?: RequestInit) => Promise<Response>;
+
+async function fetchLanceRange(
+  url: string,
+  start: number,
+  end: number,
+  fetchFunction: LanceFetchFunction
+): Promise<Uint8Array> {
+  const response = await fetchFunction(url, {headers: {Range: `bytes=${start}-${end}`}});
   if (!response.ok)
     throw new Error(`Failed to read Lance byte range ${start}-${end}: ${response.status}`);
   const bytes = new Uint8Array(await response.arrayBuffer());
@@ -89,13 +104,14 @@ export async function readLanceRemoteCoordinatesToArrow(
   fileSizeBytes: number,
   columns: readonly LanceRemoteCoordinateRead[],
   limit?: number,
-  offset = 0
+  offset = 0,
+  fetchFunction: LanceFetchFunction = fetch
 ): Promise<ArrowTable> {
   if (!Number.isSafeInteger(offset) || offset < 0)
     throw new Error(`Invalid Lance coordinate offset ${offset}`);
   if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0))
     throw new Error(`Invalid Lance coordinate limit ${limit}`);
-  const footer = await fetchLanceRange(url, fileSizeBytes - 40, fileSizeBytes - 1);
+  const footer = await fetchLanceRange(url, fileSizeBytes - 40, fileSizeBytes - 1, fetchFunction);
   const footerView = new DataView(footer.buffer, footer.byteOffset, footer.byteLength);
   if (new TextDecoder().decode(footer.slice(36, 40)) !== 'LANC')
     throw new Error('Invalid Lance remote file footer');
@@ -104,7 +120,8 @@ export async function readLanceRemoteCoordinatesToArrow(
   const columnTable = await fetchLanceRange(
     url,
     columnOffsetTable,
-    columnOffsetTable + numColumns * 16 - 1
+    columnOffsetTable + numColumns * 16 - 1,
+    fetchFunction
   );
   const columnTableView = new DataView(
     columnTable.buffer,
@@ -120,7 +137,7 @@ export async function readLanceRemoteCoordinatesToArrow(
     const metadataOffset = Number(columnTableView.getBigUint64(entryOffset, true));
     const metadataSize = Number(columnTableView.getBigUint64(entryOffset + 8, true));
     const descriptor = parseLanceColumnMetadata(
-      await fetchLanceRange(url, metadataOffset, metadataOffset + metadataSize - 1)
+      await fetchLanceRange(url, metadataOffset, metadataOffset + metadataSize - 1, fetchFunction)
     );
     const pages = [...descriptor.pages].sort(
       (firstPage, secondPage) => firstPage.priority - secondPage.priority
@@ -140,7 +157,8 @@ export async function readLanceRemoteCoordinatesToArrow(
       const valueBytes = await fetchLanceRange(
         url,
         page.bufferOffsets[1],
-        page.bufferOffsets[1] + page.bufferSizes[1] - 1
+        page.bufferOffsets[1] + page.bufferSizes[1] - 1,
+        fetchFunction
       );
       const valueByteOffset = 8;
       const valueByteLength = page.length * 2 * 4;
@@ -188,7 +206,8 @@ export async function readLanceRemoteFileToArrow(
   fileSizeBytes: number,
   columns: readonly LanceRemoteColumnRead[],
   limit?: number,
-  offset = 0
+  offset = 0,
+  fetchFunction: LanceFetchFunction = fetch
 ): Promise<ArrowTable> {
   if (!Number.isSafeInteger(offset) || offset < 0) {
     throw new Error(`Invalid Lance remote row offset ${offset}`);
@@ -196,7 +215,7 @@ export async function readLanceRemoteFileToArrow(
   if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0)) {
     throw new Error(`Invalid Lance remote row limit ${limit}`);
   }
-  const footer = await fetchLanceRange(url, fileSizeBytes - 40, fileSizeBytes - 1);
+  const footer = await fetchLanceRange(url, fileSizeBytes - 40, fileSizeBytes - 1, fetchFunction);
   const footerView = new DataView(footer.buffer, footer.byteOffset, footer.byteLength);
   if (new TextDecoder().decode(footer.slice(36, 40)) !== 'LANC') {
     throw new Error('Invalid Lance remote file footer');
@@ -206,7 +225,8 @@ export async function readLanceRemoteFileToArrow(
   const columnTable = await fetchLanceRange(
     url,
     columnOffsetTable,
-    columnOffsetTable + numColumns * 16 - 1
+    columnOffsetTable + numColumns * 16 - 1,
+    fetchFunction
   );
   const columnTableView = new DataView(
     columnTable.buffer,
@@ -223,7 +243,7 @@ export async function readLanceRemoteFileToArrow(
     const metadataOffset = Number(columnTableView.getBigUint64(entryOffset, true));
     const metadataSize = Number(columnTableView.getBigUint64(entryOffset + 8, true));
     const descriptor = parseLanceColumnMetadata(
-      await fetchLanceRange(url, metadataOffset, metadataOffset + metadataSize - 1)
+      await fetchLanceRange(url, metadataOffset, metadataOffset + metadataSize - 1, fetchFunction)
     );
     const pages = [...descriptor.pages].sort(
       (firstPage, secondPage) => firstPage.priority - secondPage.priority
@@ -243,7 +263,8 @@ export async function readLanceRemoteFileToArrow(
       const pageBytes = await fetchLanceRange(
         url,
         page.bufferOffsets[0],
-        page.bufferOffsets[0] + page.bufferSizes[0] - 1
+        page.bufferOffsets[0] + page.bufferSizes[0] - 1,
+        fetchFunction
       );
       const decodedPage = decodeLanceFlatPage(
         pageBytes,
@@ -257,10 +278,7 @@ export async function readLanceRemoteFileToArrow(
       rowsToSkip = 0;
     }
     const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
-    const ArrayConstructor = chunks[0]?.constructor as {
-      new (length: number): LanceFlatPrimitiveArray;
-    };
-    const merged = new ArrayConstructor(totalLength);
+    const merged = createLanceFlatPrimitiveArray(column.type, totalLength);
     let mergedOffset = 0;
     for (const chunk of chunks) {
       if (column.type === 'int64') {

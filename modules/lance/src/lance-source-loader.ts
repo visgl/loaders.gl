@@ -93,7 +93,8 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
           )
         : parseLanceFileToArrow(await this.loadDataFile(), {
             columnTypes: lanceOptions.columnTypes,
-            columnNames: lanceOptions.columnNames
+            columnNames: lanceOptions.columnNames,
+            limit: lanceOptions.limit
           });
     yield {batchType: 'data', shape: 'arrow-table', data: table.data, length: table.data.numRows};
   }
@@ -109,15 +110,29 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     if (!dataFile) throw new Error('Lance dataset manifest does not contain a data file');
     const dataFileURL = `${this.data.toString().replace(/\/$/, '')}/data/${dataFile.path}`;
     const {readLanceRemoteFileToArrow} = await import('./lance-arrow');
+    if (dataFile.fileSizeBytes === undefined) {
+      const response = await this.fetch(dataFileURL);
+      if (!response.ok) {
+        throw new Error(`Failed to read Lance data file ${dataFileURL}: ${response.status}`);
+      }
+      const {parseLanceFileToArrow} = await import('./lance-arrow');
+      return parseLanceFileToArrow(await response.arrayBuffer(), {
+        columnTypes,
+        columnNames,
+        limit
+      });
+    }
     return await readLanceRemoteFileToArrow(
       dataFileURL,
-      dataFile.fileSizeBytes!,
+      dataFile.fileSizeBytes,
       columnTypes.map((type, index) => ({
         index,
         name: columnNames?.[index] ?? `column${index}`,
         type
       })),
-      limit
+      limit,
+      0,
+      this.fetch
     );
   }
 

@@ -52,7 +52,11 @@ const PRIMITIVE_WIDTHS: Record<LanceFlatPrimitiveType, number> = {
   double: 8
 };
 
-function createArray(type: LanceFlatPrimitiveType, length: number): LanceFlatPrimitiveArray {
+/** Creates an empty typed array for a supported Lance primitive type. */
+export function createLanceFlatPrimitiveArray(
+  type: LanceFlatPrimitiveType,
+  length: number
+): LanceFlatPrimitiveArray {
   switch (type) {
     case 'int8':
       return new Int8Array(length);
@@ -110,7 +114,7 @@ export function decodeLanceFlatPage(
     );
   }
 
-  const result = createArray(type, page.length);
+  const result = createLanceFlatPrimitiveArray(type, page.length);
   const view = new DataView(bytes.buffer, bytes.byteOffset + offset, size);
   for (let index = 0; index < page.length; index++) {
     switch (type) {
@@ -175,7 +179,7 @@ export function decodeLanceFlatColumn(
     }
   }
 
-  const result = createArray(type, totalLength);
+  const result = createLanceFlatPrimitiveArray(type, totalLength);
   let targetOffset = 0;
   for (const page of pages) {
     const values = decodeLanceFlatPage(arrayBuffer, page, type);
