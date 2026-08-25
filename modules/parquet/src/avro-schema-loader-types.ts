@@ -11,6 +11,12 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for the standalone Avro schema loader. */
 export type AvroSchemaLoaderOptions = Record<string, never>;
 
+/** Preloads the parser-bearing Avro schema loader implementation. */
+async function preloadAvroSchemaLoader() {
+  const {AvroSchemaLoaderWithParser} = await import('@loaders.gl/parquet/avro-schema-loader');
+  return AvroSchemaLoaderWithParser;
+}
+
 /** Metadata-only loader for standalone Avro JSON schema files. */
 export const AvroSchemaLoader = {
   name: 'Apache Avro Schema',
@@ -24,5 +30,6 @@ export const AvroSchemaLoader = {
   binary: false,
   dataType: null as unknown,
   batchType: null as never,
-  options: {}
+  options: {},
+  preload: preloadAvroSchemaLoader
 } as const satisfies Loader<unknown, never, AvroSchemaLoaderOptions>;

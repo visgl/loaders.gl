@@ -27,6 +27,7 @@ import {parseSync} from './parse-sync';
 import {parseInBatches} from './parse-in-batches';
 import {loadInBatches} from './load-in-batches';
 import {selectLoader} from './select-loader';
+import {getLoaderImplementation} from './load-loader';
 
 /**
  * Parses `data` using a specified loader
@@ -154,6 +155,24 @@ export async function load(
           loadInBatches
         }
       );
+    }
+
+    if (selectedLoader) {
+      const loaderImplementation = await getLoaderImplementation(
+        selectedLoader,
+        resolvedOptions,
+        url
+      );
+      const parseUrl = (
+        loaderImplementation as LoaderWithParser & {
+          parseUrl?: (
+            url: string,
+            options?: LoaderOptions,
+            context?: LoaderContext
+          ) => Promise<unknown>;
+        }
+      ).parseUrl;
+      if (parseUrl) return await parseUrl(url, resolvedOptions, context);
     }
   }
 
