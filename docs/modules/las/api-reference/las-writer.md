@@ -35,7 +35,7 @@ const arrayBuffer = await encode(pointCloud, LASWriter, {
 
 The writer requires a `POSITION` attribute. It writes `COLOR_0`, `intensity`, and `classification` attributes when present. It can select LAS versions 1.0-1.4 and PDRF 0-8 for uncompressed output, but fields without a corresponding input attribute, including GPS time, waveform references, NIR, return flags, and scanner metadata, are zero-filled. Current uncompressed round-trip coverage targets default LAS 1.2 and LAS 1.4/PDRF 7; full conformance for every selectable version/PDRF combination is not claimed.
 
-LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder 0, item version 3, and a fixed-size chunk table. The output is readable by the TypeScript loader and established WASM decoders. COPC output is provided separately by [`COPCWriter`](/docs/modules/copc/api-reference/copc-writer) to keep the LAS and COPC packages acyclic.
+LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder 0, and item version 3. Fixed-size chunk tables are the default; variable-size tables can be enabled when needed. The output is readable by the TypeScript loader and established WASM decoders. COPC output is provided separately by [`COPCWriter`](/docs/modules/copc/api-reference/copc-writer) to keep the LAS and COPC packages acyclic.
 
 ## Options
 
@@ -47,4 +47,5 @@ LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder
 | `las.scale` | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate scale factors used to quantize positions into LAS integer coordinates. |
 | `las.offset` | `[number, number, number]` | Mesh minimum position | Coordinate offsets used to quantize positions into LAS integer coordinates. |
 | `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
-| `las.chunkSize` | `number` | `50000` | Number of points per fixed-size LAZ chunk. |
+| `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
+| `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
