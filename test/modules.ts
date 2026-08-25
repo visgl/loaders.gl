@@ -67,6 +67,7 @@ import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
 import '@loaders.gl/lance/test';
+import '@loaders.gl/orc/test';
 import '@loaders.gl/traces/test';
 
 // unstructured (JSON) formats
