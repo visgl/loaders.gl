@@ -238,6 +238,12 @@ export function encodeLASzipVLR(options: {
 }): Uint8Array {
   const legacy = options.pointDataRecordFormat <= 5;
   const itemVersion = options.itemVersion || (legacy ? 2 : 3);
+  if (legacy && itemVersion !== 2) {
+    throw new Error('Legacy LASzip point formats require item version 2');
+  }
+  if (!legacy && itemVersion !== 3) {
+    throw new Error('Modern LASzip point formats require item version 3');
+  }
   const items = getLASzipItems(options.pointDataRecordFormat, options.pointDataRecordLength);
   const payloadLength = LASZIP_VLR_PAYLOAD_BASE_LENGTH + items.length * 6;
   const bytes = new Uint8Array(LASZIP_VLR_HEADER_LENGTH + payloadLength);
@@ -362,7 +368,6 @@ class Point10LayerEncoder {
     firstPoint: Point10
   ) {
     this.last = {...firstPoint};
-    this.lastHeight.fill(firstPoint.z);
     this.intensityCompressor = new IntegerCompressor(encoder, 16, 4);
     this.pointSourceIdCompressor = new IntegerCompressor(encoder, 16, 1);
     this.xDifferenceCompressor = new IntegerCompressor(encoder, 32, 2);
@@ -373,9 +378,13 @@ class Point10LayerEncoder {
   /** Encode one Point10 record after the first raw record. */
   encode(point: Point10): void {
     const lastPoint = this.last;
+    const returnNumber = point.bitByte & 7;
+    const numberOfReturns = (point.bitByte >> 3) & 7;
+    const context = NUMBER_RETURN_MAP_10_CONTEXT[numberOfReturns][returnNumber];
+    const levelContext = NUMBER_RETURN_LEVEL_10_CONTEXT[numberOfReturns][returnNumber];
     const changedValues =
       (point.bitByte !== lastPoint.bitByte ? 1 << 5 : 0) |
-      (point.intensity !== lastPoint.intensity ? 1 << 4 : 0) |
+      (point.intensity !== this.lastIntensity[context] ? 1 << 4 : 0) |
       (point.classification !== lastPoint.classification ? 1 << 3 : 0) |
       (point.scanAngleRank !== lastPoint.scanAngleRank ? 1 << 2 : 0) |
       (point.userData !== lastPoint.userData ? 1 << 1 : 0) |
@@ -385,11 +394,6 @@ class Point10LayerEncoder {
     if (changedValues & (1 << 5)) {
       this.encoder.encodeSymbol(this.bitByteModels[lastPoint.bitByte], point.bitByte);
     }
-
-    const returnNumber = point.bitByte & 7;
-    const numberOfReturns = (point.bitByte >> 3) & 7;
-    const context = NUMBER_RETURN_MAP_10_CONTEXT[numberOfReturns][returnNumber];
-    const levelContext = NUMBER_RETURN_LEVEL_10_CONTEXT[numberOfReturns][returnNumber];
 
     if (changedValues & (1 << 4)) {
       this.intensityCompressor.compress(
@@ -407,7 +411,7 @@ class Point10LayerEncoder {
     }
     if (changedValues & (1 << 2)) {
       this.encoder.encodeSymbol(
-        this.scanAngleRankModels[(lastPoint.bitByte >> 6) & 1],
+        this.scanAngleRankModels[(point.bitByte >> 6) & 1],
         foldInt8(point.scanAngleRank - lastPoint.scanAngleRank)
       );
     }

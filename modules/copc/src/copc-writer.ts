@@ -223,35 +223,72 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
   const pointCount = readUint64(dataView, 247);
   const pointDataRecordFormat = dataView.getUint8(104) & 0x3f;
   const pointDataRecordLength = dataView.getUint16(105, true);
+  const pointData = new Uint8Array(
+    arrayBuffer,
+    pointDataOffset,
+    pointCount * pointDataRecordLength
+  ).slice();
+  const scale: [number, number, number] = [
+    dataView.getFloat64(131, true),
+    dataView.getFloat64(139, true),
+    dataView.getFloat64(147, true)
+  ];
+  const offset: [number, number, number] = [
+    dataView.getFloat64(155, true),
+    dataView.getFloat64(163, true),
+    dataView.getFloat64(171, true)
+  ];
+  const bounds = calculateQuantizedBounds(
+    pointData,
+    pointCount,
+    pointDataRecordLength,
+    scale,
+    offset
+  );
+  const header = new Uint8Array(arrayBuffer, 0, LAS_1_4_HEADER_LENGTH).slice();
+  writeBounds(new DataView(header.buffer), bounds);
   return {
-    header: new Uint8Array(arrayBuffer, 0, LAS_1_4_HEADER_LENGTH).slice(),
-    pointData: new Uint8Array(
-      arrayBuffer,
-      pointDataOffset,
-      pointCount * pointDataRecordLength
-    ).slice(),
+    header,
+    pointData,
     pointCount,
     pointDataRecordFormat,
     pointDataRecordLength,
-    scale: [
-      dataView.getFloat64(131, true),
-      dataView.getFloat64(139, true),
-      dataView.getFloat64(147, true)
-    ],
-    offset: [
-      dataView.getFloat64(155, true),
-      dataView.getFloat64(163, true),
-      dataView.getFloat64(171, true)
-    ],
-    bounds: [
-      dataView.getFloat64(187, true),
-      dataView.getFloat64(203, true),
-      dataView.getFloat64(219, true),
-      dataView.getFloat64(179, true),
-      dataView.getFloat64(195, true),
-      dataView.getFloat64(211, true)
-    ]
+    scale,
+    offset,
+    bounds
   };
+}
+
+/** Compute bounds from the quantized coordinates stored in raw LAS records. */
+function calculateQuantizedBounds(
+  pointData: Uint8Array,
+  pointCount: number,
+  pointDataRecordLength: number,
+  scale: [number, number, number],
+  offset: [number, number, number]
+): Bounds3D {
+  const view = new DataView(pointData.buffer, pointData.byteOffset, pointData.byteLength);
+  const minimum = [Infinity, Infinity, Infinity];
+  const maximum = [-Infinity, -Infinity, -Infinity];
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const recordOffset = pointIndex * pointDataRecordLength;
+    for (let axis = 0; axis < 3; axis++) {
+      const coordinate = view.getInt32(recordOffset + axis * 4, true) * scale[axis] + offset[axis];
+      minimum[axis] = Math.min(minimum[axis], coordinate);
+      maximum[axis] = Math.max(maximum[axis], coordinate);
+    }
+  }
+  return [minimum[0], minimum[1], minimum[2], maximum[0], maximum[1], maximum[2]];
+}
+
+/** Write quantized bounds into a LAS 1.4 header. */
+function writeBounds(dataView: DataView, bounds: Bounds3D): void {
+  dataView.setFloat64(179, bounds[3], true);
+  dataView.setFloat64(187, bounds[0], true);
+  dataView.setFloat64(195, bounds[4], true);
+  dataView.setFloat64(203, bounds[1], true);
+  dataView.setFloat64(211, bounds[5], true);
+  dataView.setFloat64(219, bounds[2], true);
 }
 
 /** Create a deterministic point-bearing COPC octree. */
