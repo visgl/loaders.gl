@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {waitForCondition} from '@loaders.gl/test-utils/vitest';
 
 import {executeScanTasks} from '../../../src/lib/scan-utils/scan-executor';
 
@@ -11,7 +12,8 @@ test('executeScanTasks overlaps work while preserving task order', async () => {
   const tasks = [0, 1, 2].map(index => ({
     run: async function* (): AsyncIterable<number> {
       started.push(index);
-      await new Promise(resolve => setTimeout(resolve, index === 0 ? 20 : 1));
+      const deadline = Date.now() + (index === 0 ? 20 : 1);
+      await waitForCondition(() => Date.now() >= deadline, {timeoutMs: 100, intervalMs: 1});
       yield index;
     }
   }));
