@@ -68,7 +68,7 @@ test('Parquet compression#provided modules bypass native streams', async t => {
   t.end();
 });
 
-test('Parquet compression#unsupported native gzip lazily falls back to pako', async t => {
+test('Parquet compression#unsupported native gzip lazily falls back to fflate', async t => {
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream(formats, []);
   const compressedGzip = new Uint8Array([
@@ -78,7 +78,7 @@ test('Parquet compression#unsupported native gzip lazily falls back to pako', as
 
   try {
     const output = await decompress('GZIP', compressedGzip, 9);
-    t.deepEqual([...output], [1, 2, 3, 4, 5, 6, 7, 8, 9], 'pako fallback decompresses');
+    t.deepEqual([...output], [1, 2, 3, 4, 5, 6, 7, 8, 9], 'fflate fallback decompresses');
     t.deepEqual(formats, ['gzip'], 'native gzip is probed before lazy fallback');
   } finally {
     restoreDecompressionStream();

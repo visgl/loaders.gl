@@ -16,6 +16,28 @@ initial bundle. It returns `null` when the runtime or exact format is unavailabl
 to load a fallback only when needed.
 <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
+Async compression classes now prefer native runtime streams and lazily load codec fallbacks when
+needed. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+
+## Built-in decompression
+
+The lightweight native entrypoint uses the browser's built-in
+[`DecompressionStream`](https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream)
+when the requested format is supported. This keeps fallback codecs out of the initial bundle.
+Support varies by browser and format; see [Can I use DecompressionStream](https://caniuse.com/mdn-api_decompressionstream)
+for browser coverage.
+
+| Format | Built-in path | Fallback path |
+| --- | --- | --- |
+| GZIP, DEFLATE, raw DEFLATE | `DecompressionStream` | `fflate` |
+| Brotli | `DecompressionStream` when available | lazy Brotli decoder |
+| Zstandard | `DecompressionStream` when available | `fzstd` or injected `zstd-codec` |
+| Snappy, bzip2, XZ | Not currently available through `DecompressionStream` | lazy codec implementation |
+
+See the [live compression benchmarks](/docs/modules/compression/benchmarks) for throughput,
+footprint, and browser-native comparisons. The benchmark includes links to each external library
+and tracks [Chromium's Zstandard support](https://issues.chromium.org/issues/40196713).
+
 ```typescript
 import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
 
@@ -29,22 +51,83 @@ async function decompressGzip(input: ArrayBuffer): Promise<ArrayBuffer> {
 }
 ```
 
-Parquet and SPZ parsing use this lightweight path automatically before lazily loading their
-codec-backed fallbacks. Existing compression classes keep their deterministic codec behavior for
-compression and synchronous decompression.
+Parquet, Avro, and SPZ parsing use this lightweight path automatically before lazily loading their
+codec-backed fallbacks.
 
-## API
+## Selecting a library implementation
 
-| Compression Class                                                                   | Format                | Characteristics                      | Library Size                                         | Notes |
-| ----------------------------------------------------------------------------------- | --------------------- | ------------------------------------ | ---------------------------------------------------- | ----- |
-| [`NoCompression`](/docs/modules/compression/api-reference/no-compression)           | none                  | -                                    | -                                                    |
-| [`GzipCompression`](/docs/modules/compression/api-reference/gzip-compression)       | gzip(`.gz`)           | size                                 | [Small](https://bundlephobia.com/package/pako)       |
-| [`DeflateCompression`](/docs/modules/compression/api-reference/deflate-compression) | DEFLATE(PKZIP)        | size                                 | [Small](https://bundlephobia.com/package/pako)       |
-| [`LZ4Compression`](/docs/modules/compression/api-reference/lz4-compression)         | LZ4                   | speed ("real-time")                  | [Medium](https://bundlephobia.com/package/lz4)       |
-| [`ZstdCompression`](/docs/modules/compression/api-reference/zstd-compression)       | Zstandard             | speed ("real-time")                  | [Large](https://bundlephobia.com/package/zstd-codec) |
-| [`SnappyCompression`](/docs/modules/compression/api-reference/snappy-compression)   | Snappy(Zippy)         | speed ("real-time")                  | [Small](https://bundlephobia.com/package/snappys)    |
-| [`BrotliCompression`](/docs/modules/compression/api-reference/brotli-compression)   | Brotli                | Size, fast decompress, slow compress | [Large](https://bundlephobia.com/package/brotli)     |
-| [`LZOCompression`](/docs/modules/compression/api-reference/lzo-compression)         | Lempel-Ziv-Oberheimer | size                                 | Node.js only                                         |
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+
+The package root exposes library-neutral format metadata. Concrete compressor and decompressor
+classes have independently importable subpaths, mirroring the separation between loaders and
+writers. Selecting one direction prevents an encoder from being retained by a decode-only
+application, or a decoder from being retained by an encode-only application.
+
+### Compressors
+
+| Format | Class | Import subpath | Characteristics |
+| --- | --- | --- | --- |
+| GZIP | `GZipFflateCompressor` | `gzip-fflate-compressor` | Compact, synchronous JavaScript |
+| GZIP | `GZipPakoCompressor` | `gzip-pako-compressor` | Pako, synchronous JavaScript |
+| GZIP | `GZipCompressUtilsCompressor` | `gzip-compress-utils-compressor` | WASM, async and incremental |
+| DEFLATE | `DeflateFflateCompressor` | `deflate-fflate-compressor` | Compact, synchronous JavaScript |
+| DEFLATE | `DeflatePakoCompressor` | `deflate-pako-compressor` | Pako, synchronous JavaScript |
+| DEFLATE | `DeflateCompressUtilsCompressor` | `deflate-compress-utils-compressor` | WASM, async and incremental |
+| Brotli | `BrotliCompressUtilsCompressor` | `brotli-compress-utils-compressor` | WASM, async and incremental |
+| Zstandard | `ZstdCompressUtilsCompressor` | `zstd-compress-utils-compressor` | WASM, async and incremental |
+| Snappy | `SnappyCompressUtilsCompressor` | `snappy-compress-utils-compressor` | WASM, async and incremental |
+| LZ4 frame | `LZ4CompressUtilsCompressor` | `lz4-compress-utils-compressor` | WASM, async and incremental |
+| bzip2 | `BZip2CompressUtilsCompressor` | `bzip2-compress-utils-compressor` | WASM, async and incremental |
+| XZ/LZMA | `XZCompressUtilsCompressor` | `xz-compress-utils-compressor` | WASM, async and incremental |
+
+### Decompressors
+
+| Format | Class | Import subpath | Characteristics |
+| --- | --- | --- | --- |
+| GZIP | `GZipFflateDecompressor` | `gzip-fflate-decompressor` | Compact, synchronous JavaScript |
+| GZIP | `GZipPakoDecompressor` | `gzip-pako-decompressor` | Pako, synchronous JavaScript |
+| GZIP | `GZipCompressUtilsDecompressor` | `gzip-compress-utils-decompressor` | WASM, async and incremental |
+| DEFLATE | `DeflateFflateDecompressor` | `deflate-fflate-decompressor` | Compact, synchronous JavaScript |
+| DEFLATE | `DeflatePakoDecompressor` | `deflate-pako-decompressor` | Pako, synchronous JavaScript |
+| DEFLATE | `DeflateCompressUtilsDecompressor` | `deflate-compress-utils-decompressor` | WASM, async and incremental |
+| Brotli | `BrotliLoadersGLDecompressor` | `brotli-loaders-gl-decompressor` | Compact synchronous JavaScript |
+| Brotli | `BrotliCompressUtilsDecompressor` | `brotli-compress-utils-decompressor` | WASM, async and incremental |
+| Zstandard | `ZstdFzstdDecompressor` | `zstd-fzstd` | Compact synchronous JavaScript |
+| Zstandard | `ZstdCompressUtilsDecompressor` | `zstd-compress-utils-decompressor` | WASM, async and incremental |
+| Snappy | `SnappyCompressUtilsDecompressor` | `snappy-compress-utils-decompressor` | WASM, async and incremental |
+| LZ4 frame | `LZ4CompressUtilsDecompressor` | `lz4-compress-utils-decompressor` | WASM, async and incremental |
+| bzip2 | `BZip2CompressUtilsDecompressor` | `bzip2-compress-utils-decompressor` | WASM, async and incremental |
+| XZ/LZMA | `XZCompressUtilsDecompressor` | `xz-compress-utils-decompressor` | WASM, async and incremental |
+
+For example:
+
+```typescript
+import type {Compressor, Decompressor} from '@loaders.gl/compression';
+import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-fflate-compressor';
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-fflate-decompressor';
+
+const compressors: Compressor[] = [new GZipFflateCompressor()];
+const decompressors: Decompressor[] = [new GZipFflateDecompressor()];
+```
+
+`compress-utils`, Pako, lz4js, and zstd-codec are optional peer dependencies. The
+`compress-utils` adapters use direction-specific imports and expose incremental compression and
+decompression. Applications only pay for the implementation subpaths they import.
+
+The combined classes ending in `Compression` remain available as deprecated v5 compatibility
+facades. Every combined class implements both the `Compressor` and `Decompressor` contracts, so it
+can still be supplied to an API expecting either direction. New code should use the direction-
+specific classes in the tables above.
+
+## Compatibility classes
+
+The former combined API remains documented for migration purposes: [`Compression`](/docs/modules/compression/api-reference/compression),
+[`GZipCompression`](/docs/modules/compression/api-reference/gzip-compression),
+[`DeflateCompression`](/docs/modules/compression/api-reference/deflate-compression),
+[`BrotliCompression`](/docs/modules/compression/api-reference/brotli-compression),
+[`LZ4Compression`](/docs/modules/compression/api-reference/lz4-compression),
+[`SnappyCompression`](/docs/modules/compression/api-reference/snappy-compression), and
+[`ZstdCompression`](/docs/modules/compression/api-reference/zstd-compression).
 
 ## Compression Formats
 
@@ -83,12 +166,6 @@ Used in e.g. Apache Arrow `.feather` files.
 Used in e.g. Apache Arrow `.feather` files.
 
 ### Snappy
-
-`Snappy` (Previously known as `Zippy`) is a real-time compression format that
-targets very high compression (GB/s) speed at the cost of compressed size.
-Used in e.g. Apache Parquet files.
-
-### LZO (Lempel-Ziv-Oberheimer)
 
 `Snappy` (Previously known as `Zippy`) is a real-time compression format that
 targets very high compression (GB/s) speed at the cost of compressed size.

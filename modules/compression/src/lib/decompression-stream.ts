@@ -59,7 +59,7 @@ function createNativeDecompressionStream(
     return null;
   }
   // Node's zlib-backed implementation dereferences the global Buffer internally.
-  if (globalThis.process?.versions?.node && typeof globalThis.Buffer === 'undefined') {
+  if (globalThis.process?.release?.name === 'node' && typeof globalThis.Buffer === 'undefined') {
     return null;
   }
 

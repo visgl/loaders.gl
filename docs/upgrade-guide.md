@@ -37,6 +37,40 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
+**@loaders.gl/compression**
+
+- The compression package root now exports lightweight metadata descriptors such as
+  `gzipCompression` and `zstdCompression` instead of concrete codec classes. Call
+  `await gzipCompression.preload()` to lazily select the built-in or fallback implementation,
+  or import a concrete class from its explicit subpath, for example
+  `@loaders.gl/compression/gzip-compression`. The Parquet integration uses the metadata descriptors
+  automatically.
+- Concrete library bindings now use independently importable, direction-specific subpaths such as
+  `gzip-fflate-compressor`, `gzip-pako-decompressor`, `zstd-fzstd`, and
+  `zstd-compress-utils-decompressor`. Optional Pako, lz4js, zstd-codec, and compress-utils bindings
+  are absent from applications that do not import their subpaths.
+- The `Compressor` and `Decompressor` base classes replace `Compression` for new APIs. Combined
+  classes ending in `Compression` are deprecated, but remain available in v5 as compatibility
+  facades and are assignable to both contracts. This means an existing combined codec can still be
+  supplied to `Compressor[]` or `Decompressor[]`; migrate imports when minimizing bundle size.
+
+  | Deprecated combined import | Preferred imports |
+  | --- | --- |
+  | `gzip-fflate` | `gzip-fflate-compressor`, `gzip-fflate-decompressor` |
+  | `gzip-pako` | `gzip-pako-compressor`, `gzip-pako-decompressor` |
+  | `deflate-fflate` | `deflate-fflate-compressor`, `deflate-fflate-decompressor` |
+  | `deflate-pako` | `deflate-pako-compressor`, `deflate-pako-decompressor` |
+  | `FORMAT-compress-utils` | `FORMAT-compress-utils-compressor`, `FORMAT-compress-utils-decompressor` |
+  | `brotli-loaders-gl` | `brotli-loaders-gl-decompressor` |
+- Full bzip2 and XZ compression and incremental operation are available through the new
+  `bzip2-compress-utils` and `xz-compress-utils` implementations. The generic `BZip2Compression`
+  and `XZCompression` classes remain compact, decoder-only defaults.
+- DEFLATE and GZIP now prefer native runtime streams and use `fflate` as the compact fallback instead of Pako. Compressed bytes are format-compatible, but compression output is not guaranteed to be byte-for-byte identical across runtimes.
+- Async Brotli decompression remains available without application changes: it tries native support first and lazily loads the bundled fallback decoder when needed. Applications that call `BrotliCompression.decompressSync()` must first `await compression.preload()` or inject `modules.brotli`.
+- Snappy synchronous methods no longer initialize the optional `snappyjs` dependency implicitly. Call `await compression.preload()` before `compressSync()` or `decompressSync()`, or inject `modules: {snappyjs}`. Async methods preload it automatically.
+- `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
+- `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
+
 **@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
 
 If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:

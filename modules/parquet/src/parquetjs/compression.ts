@@ -7,6 +7,13 @@
 
 import type {Compression} from '@loaders.gl/compression';
 import {
+  brotliCompression,
+  gzipCompression,
+  lz4Compression,
+  snappyCompression,
+  zstdCompression
+} from '@loaders.gl/compression';
+import {
   decompressWithNativeDecompressionStream,
   type NativeDecompressionFormat
 } from '@loaders.gl/compression/native-decompression';
@@ -133,30 +140,18 @@ async function getParquetCompression(method: ParquetCompression): Promise<Compre
  * @returns Codec-backed compression implementation.
  */
 async function createParquetCompression(method: ParquetCompression): Promise<Compression> {
-  switch (method) {
-    case 'GZIP': {
-      const {GZipCompression} = await import('@loaders.gl/compression/gzip-compression');
-      return new GZipCompression();
-    }
-    case 'SNAPPY': {
-      const {SnappyCompression} = await import('@loaders.gl/compression/snappy-compression');
-      return new SnappyCompression();
-    }
-    case 'BROTLI': {
-      const {BrotliCompression} = await import('@loaders.gl/compression/brotli-compression');
-      return new BrotliCompression();
-    }
-    case 'LZ4':
-    case 'LZ4_RAW': {
-      const {LZ4Compression} = await import('@loaders.gl/compression/lz4-compression');
-      const lz4js = getJSModuleOrNull('lz4js') || (await import('lz4js')).default;
-      return new LZ4Compression({modules: {lz4js}});
-    }
-    case 'ZSTD': {
-      const {ZstdCompression} = await import('@loaders.gl/compression/zstd-compression');
-      return new ZstdCompression();
-    }
-    default:
-      throw new Error(`parquet: invalid compression method: ${method}`);
+  const metadata = {
+    GZIP: gzipCompression,
+    SNAPPY: snappyCompression,
+    BROTLI: brotliCompression,
+    LZ4: lz4Compression,
+    LZ4_RAW: lz4Compression,
+    ZSTD: zstdCompression
+  }[method];
+  if (metadata) {
+    // Parquet probes the built-in stream first. Prevent the fallback instance
+    // from repeating that probe when the format is unsupported.
+    return await metadata.preload({useNative: false});
   }
+  throw new Error(`parquet: invalid compression method: ${method}`);
 }

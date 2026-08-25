@@ -34,6 +34,14 @@
       "types": "./dist/native-decompression.d.ts",
       "import": "./dist/native-decompression.js"
     },
+    "./native-compression": {
+      "types": "./dist/native-compression.d.ts",
+      "import": "./dist/native-compression.js"
+    },
+    "./brotli-decode": {
+      "types": "./dist/brotli-decode.d.ts",
+      "import": "./dist/brotli-decode.js"
+    },
     "./no-compression": {
       "types": "./dist/no-compression.d.ts",
       "import": "./dist/no-compression.js"
@@ -62,6 +70,114 @@
       "types": "./dist/zstd-compression.d.ts",
       "import": "./dist/zstd-compression.js"
     },
+    "./zstd-fallback": {
+      "types": "./dist/zstd-fallback.d.ts",
+      "import": "./dist/zstd-fallback.js"
+    },
+    "./bzip2-compression": {
+      "types": "./dist/bzip2-compression.d.ts",
+      "import": "./dist/bzip2-compression.js"
+    },
+    "./xz-compression": {
+      "types": "./dist/xz-compression.d.ts",
+      "import": "./dist/xz-compression.js"
+    },
+    "./deflate-fflate": {
+      "types": "./dist/deflate-fflate.d.ts",
+      "import": "./dist/deflate-fflate.js"
+    },
+    "./gzip-fflate": {
+      "types": "./dist/gzip-fflate.d.ts",
+      "import": "./dist/gzip-fflate.js"
+    },
+    "./deflate-pako": {
+      "types": "./dist/deflate-pako.d.ts",
+      "import": "./dist/deflate-pako.js"
+    },
+    "./gzip-pako": {
+      "types": "./dist/gzip-pako.d.ts",
+      "import": "./dist/gzip-pako.js"
+    },
+    "./zstd-fzstd": {
+      "types": "./dist/zstd-fzstd.d.ts",
+      "import": "./dist/zstd-fzstd.js"
+    },
+    "./zstd-zstd-codec": {
+      "types": "./dist/zstd-zstd-codec.d.ts",
+      "import": "./dist/zstd-zstd-codec.js"
+    },
+    "./snappy-snappyjs": {
+      "types": "./dist/snappy-snappyjs.d.ts",
+      "import": "./dist/snappy-snappyjs.js"
+    },
+    "./lz4-lz4js": {
+      "types": "./dist/lz4-lz4js.d.ts",
+      "import": "./dist/lz4-lz4js.js"
+    },
+    "./brotli-compress-utils": {
+      "types": "./dist/brotli-compress-utils.d.ts",
+      "import": "./dist/brotli-compress-utils.js"
+    },
+    "./brotli-loaders-gl": {
+      "types": "./dist/brotli-loaders-gl.d.ts",
+      "import": "./dist/brotli-loaders-gl.js"
+    },
+    "./brotli-loaders-gl-decompressor": {
+      "types": "./dist/brotli-loaders-gl-decompressor.d.ts",
+      "import": "./dist/brotli-loaders-gl-decompressor.js"
+    },
+    "./bzip2-compress-utils": {
+      "types": "./dist/bzip2-compress-utils.d.ts",
+      "import": "./dist/bzip2-compress-utils.js"
+    },
+    "./deflate-compress-utils": {
+      "types": "./dist/deflate-compress-utils.d.ts",
+      "import": "./dist/deflate-compress-utils.js"
+    },
+    "./gzip-compress-utils": {
+      "types": "./dist/gzip-compress-utils.d.ts",
+      "import": "./dist/gzip-compress-utils.js"
+    },
+    "./lz4-compress-utils": {
+      "types": "./dist/lz4-compress-utils.d.ts",
+      "import": "./dist/lz4-compress-utils.js"
+    },
+    "./snappy-compress-utils": {
+      "types": "./dist/snappy-compress-utils.d.ts",
+      "import": "./dist/snappy-compress-utils.js"
+    },
+    "./xz-compress-utils": {
+      "types": "./dist/xz-compress-utils.d.ts",
+      "import": "./dist/xz-compress-utils.js"
+    },
+    "./zstd-compress-utils": {
+      "types": "./dist/zstd-compress-utils.d.ts",
+      "import": "./dist/zstd-compress-utils.js"
+    },
+    "./*-compress-utils-compressor": {
+      "types": "./dist/*-compress-utils-compressor.d.ts",
+      "import": "./dist/*-compress-utils-compressor.js"
+    },
+    "./*-compress-utils-decompressor": {
+      "types": "./dist/*-compress-utils-decompressor.d.ts",
+      "import": "./dist/*-compress-utils-decompressor.js"
+    },
+    "./*-fflate-compressor": {
+      "types": "./dist/*-fflate-compressor.d.ts",
+      "import": "./dist/*-fflate-compressor.js"
+    },
+    "./*-fflate-decompressor": {
+      "types": "./dist/*-fflate-decompressor.d.ts",
+      "import": "./dist/*-fflate-decompressor.js"
+    },
+    "./*-pako-compressor": {
+      "types": "./dist/*-pako-compressor.d.ts",
+      "import": "./dist/*-pako-compressor.js"
+    },
+    "./*-pako-decompressor": {
+      "types": "./dist/*-pako-decompressor.d.ts",
+      "import": "./dist/*-pako-decompressor.js"
+    },
     "./compression-worker.js": {
       "import": "./dist/compression-worker.js"
     },
@@ -69,7 +185,10 @@
       "import": "./dist/compression-worker-node.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/workers/compression-worker.ts",
+    "./src/workers/compression-worker-node.ts"
+  ],
   "files": [
     "src",
     "dist",
@@ -90,20 +209,38 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
-    "@types/pako": "^1.0.1",
     "fflate": "0.7.4",
     "fzstd": "0.1.1",
-    "pako": "1.0.11",
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
     "@types/brotli": "^1.3.0",
     "brotli": "^1.3.2",
+    "compress-utils": "^0.8.0",
     "lz4js": "^0.2.0",
+    "pako": "^2.1.0",
     "zstd-codec": "^0.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "compress-utils": "^0.8.0",
+    "lz4js": "^0.2.0",
+    "pako": "^2.1.0",
+    "zstd-codec": "^0.1"
+  },
+  "peerDependenciesMeta": {
+    "compress-utils": {
+      "optional": true
+    },
+    "lz4js": {
+      "optional": true
+    },
+    "pako": {
+      "optional": true
+    },
+    "zstd-codec": {
+      "optional": true
+    }
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

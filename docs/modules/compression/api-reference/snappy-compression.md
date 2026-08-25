@@ -6,6 +6,8 @@
 
 Compresses / decompresses Snappy (Zippy) encoded data.
 
+See the [compression benchmarks](/docs/modules/compression/benchmarks) for fallback decompression comparisons.
+
 ## Interface
 
 Implements the [`Compression](./compression) API.

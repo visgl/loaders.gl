@@ -311,9 +311,15 @@
       {
         "type": "category",
         "label": "@loaders.gl/compression",
+        "link": {
+          "type": "doc",
+          "id": "modules/compression/README"
+        },
         "items": [
           "modules/compression/README",
+          "modules/compression/benchmarks",
           "modules/compression/api-reference/compression",
+          "modules/compression/api-reference/bzip2-compression",
           "modules/compression/api-reference/brotli-compression",
           "modules/compression/api-reference/deflate-compression",
           "modules/compression/api-reference/gzip-compression",
@@ -321,6 +327,7 @@
           "modules/compression/api-reference/lzo-compression",
           "modules/compression/api-reference/no-compression",
           "modules/compression/api-reference/snappy-compression",
+          "modules/compression/api-reference/xz-compression",
           "modules/compression/api-reference/zstd-compression"
         ]
       },

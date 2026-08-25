@@ -6,6 +6,8 @@
 
 Compresses / decompresses Brotli encoded data.
 
+See the [compression benchmarks](/docs/modules/compression/benchmarks) for built-in and fallback decompression comparisons.
+
 ## Interface
 
 Implements the [`Compression](./compression) API.
