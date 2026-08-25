@@ -38,7 +38,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Waveform packet fields | PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Waveform sample payload handling is not implemented. |
 | Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; extra point fields are still preserved through raw records rather than Arrow columns. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
-| `parseInBatches` | Incremental for uncompressed LAS point records after enough header/point bytes are available. |
+| `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ can emit complete rows with bounded replay; layered PDRF 6-10 emits after each complete compressed chunk. |
 
 ### TypeScript LAS Writer
 
