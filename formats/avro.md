@@ -1,6 +1,11 @@
 # Apache Avro
 
-> **Status:** v5.0 experimental / work in progress. The Avro loader, schema loader, and Arrow-based writer are available for evaluation.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
+
+The Avro loader, schema loader, and Arrow-based writer are available for evaluation.
 
 Apache Avro is a schema-based data serialization system. This loader targets Avro Object Container Files and returns an Apache Arrow table.
 
