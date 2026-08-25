@@ -88,6 +88,19 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
   const classificationAttribute = mesh.attributes.classification;
+  const gpsTimeAttribute = mesh.attributes.gpsTime;
+  const scanAngleAttribute = mesh.attributes.scanAngle;
+  const userDataAttribute = mesh.attributes.userData;
+  const pointSourceIdAttribute = mesh.attributes.pointSourceId;
+  const returnNumberAttribute = mesh.attributes.returnNumber;
+  const numberOfReturnsAttribute = mesh.attributes.numberOfReturns;
+  const scannerChannelAttribute = mesh.attributes.scannerChannel;
+  const scanDirectionFlagAttribute = mesh.attributes.scanDirectionFlag;
+  const edgeOfFlightLineAttribute = mesh.attributes.edgeOfFlightLine;
+  const syntheticAttribute = mesh.attributes.synthetic;
+  const keyPointAttribute = mesh.attributes.keyPoint;
+  const withheldAttribute = mesh.attributes.withheld;
+  const overlapAttribute = mesh.attributes.overlap;
   const vertexCount = positionAttribute.value.length / positionAttribute.size;
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
   const scale = getScale(mesh, options);
@@ -127,7 +140,20 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     writePointRecord(pointDataView, pointOffset, vertexIndex, pointDataRecordFormat, {
       intensityAttribute,
       classificationAttribute,
-      colorAttribute
+      colorAttribute,
+      gpsTimeAttribute,
+      scanAngleAttribute,
+      userDataAttribute,
+      pointSourceIdAttribute,
+      returnNumberAttribute,
+      numberOfReturnsAttribute,
+      scannerChannelAttribute,
+      scanDirectionFlagAttribute,
+      edgeOfFlightLineAttribute,
+      syntheticAttribute,
+      keyPointAttribute,
+      withheldAttribute,
+      overlapAttribute
     });
   }
 
@@ -387,6 +413,19 @@ function writePointRecord(
     intensityAttribute?: MeshAttribute;
     classificationAttribute?: MeshAttribute;
     colorAttribute?: MeshAttribute;
+    gpsTimeAttribute?: MeshAttribute;
+    scanAngleAttribute?: MeshAttribute;
+    userDataAttribute?: MeshAttribute;
+    pointSourceIdAttribute?: MeshAttribute;
+    returnNumberAttribute?: MeshAttribute;
+    numberOfReturnsAttribute?: MeshAttribute;
+    scannerChannelAttribute?: MeshAttribute;
+    scanDirectionFlagAttribute?: MeshAttribute;
+    edgeOfFlightLineAttribute?: MeshAttribute;
+    syntheticAttribute?: MeshAttribute;
+    keyPointAttribute?: MeshAttribute;
+    withheldAttribute?: MeshAttribute;
+    overlapAttribute?: MeshAttribute;
   }
 ): void {
   dataView.setUint16(
@@ -402,22 +441,55 @@ function writePointRecord(
       getUInt8Attribute(attributes.classificationAttribute, vertexIndex) & 0x1f
     );
     dataView.setInt8(pointOffset + 16, 0);
-    dataView.setUint8(pointOffset + 17, 0);
+    dataView.setUint8(
+      pointOffset + 17,
+      getUInt8Attribute(attributes.userDataAttribute, vertexIndex)
+    );
     dataView.setUint16(pointOffset + 18, 0, true);
     if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 4) {
       dataView.setFloat64(pointOffset + 20, 0, true);
     }
   } else {
-    dataView.setUint8(pointOffset + 14, 0);
-    dataView.setUint8(pointOffset + 15, 0);
+    const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex) & 0x0f;
+    const numberOfReturns =
+      getUInt8Attribute(attributes.numberOfReturnsAttribute, vertexIndex) & 0x0f;
+    const scannerChannel = getUInt8Attribute(attributes.scannerChannelAttribute, vertexIndex) & 3;
+    const returnFlags =
+      returnNumber |
+      (numberOfReturns << 4) |
+      (getBooleanAttribute(attributes.syntheticAttribute, vertexIndex) ? 1 << 0 : 0) |
+      (getBooleanAttribute(attributes.keyPointAttribute, vertexIndex) ? 1 << 1 : 0) |
+      (getBooleanAttribute(attributes.withheldAttribute, vertexIndex) ? 1 << 2 : 0) |
+      (getBooleanAttribute(attributes.overlapAttribute, vertexIndex) ? 1 << 3 : 0);
+    const classificationFlags =
+      (scannerChannel << 4) |
+      (getBooleanAttribute(attributes.scanDirectionFlagAttribute, vertexIndex) ? 1 << 6 : 0) |
+      (getBooleanAttribute(attributes.edgeOfFlightLineAttribute, vertexIndex) ? 1 << 7 : 0);
+    dataView.setUint8(pointOffset + 14, returnFlags);
+    dataView.setUint8(pointOffset + 15, classificationFlags);
     dataView.setUint8(
       pointOffset + 16,
       getUInt8Attribute(attributes.classificationAttribute, vertexIndex)
     );
-    dataView.setUint8(pointOffset + 17, 0);
-    dataView.setInt16(pointOffset + 18, 0, true);
-    dataView.setUint16(pointOffset + 20, 0, true);
-    dataView.setFloat64(pointOffset + 22, 0, true);
+    dataView.setUint8(
+      pointOffset + 17,
+      getUInt8Attribute(attributes.userDataAttribute, vertexIndex)
+    );
+    dataView.setInt16(
+      pointOffset + 18,
+      getInt16Attribute(attributes.scanAngleAttribute, vertexIndex),
+      true
+    );
+    dataView.setUint16(
+      pointOffset + 20,
+      getUInt16Attribute(attributes.pointSourceIdAttribute, vertexIndex),
+      true
+    );
+    dataView.setFloat64(
+      pointOffset + 22,
+      getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
+      true
+    );
   }
 
   writePointColor(
@@ -518,6 +590,23 @@ function getUInt8Attribute(attribute: MeshAttribute | undefined, vertexIndex: nu
   return attribute
     ? Math.max(0, Math.min(255, Math.round(getComponent(attribute, vertexIndex, 0))))
     : 0;
+}
+
+/** Return a LAS signed 16-bit attribute value. */
+function getInt16Attribute(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+  return attribute
+    ? Math.max(-32768, Math.min(32767, Math.round(getComponent(attribute, vertexIndex, 0))))
+    : 0;
+}
+
+/** Return a numeric point attribute value, using zero when it is absent. */
+function getAttributeValue(attribute: MeshAttribute | undefined, vertexIndex: number): number {
+  return attribute ? getComponent(attribute, vertexIndex, 0) : 0;
+}
+
+/** Return a point flag attribute as a boolean. */
+function getBooleanAttribute(attribute: MeshAttribute | undefined, vertexIndex: number): boolean {
+  return Boolean(getAttributeValue(attribute, vertexIndex));
 }
 
 /** Return one color component as a LAS UInt16 color value. */

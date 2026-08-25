@@ -49,3 +49,5 @@ LAZ output uses LAS 1.4, PDRF 6-8, LASzip layered compressor 3, arithmetic coder
 | `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
 | `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
 | `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
+
+For modern PDRFs, the writer also maps optional point attributes named `gpsTime`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `synthetic`, `keyPoint`, `withheld`, and `overlap`. Missing fields are zero-filled.

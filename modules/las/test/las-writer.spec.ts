@@ -190,6 +190,47 @@ test('LASWriter#encodes variable LAZ chunks', async t => {
   t.end();
 });
 
+test('LASWriter#preserves modern LAS point fields', t => {
+  const modernAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    gpsTime: {value: new Float64Array([123.5]), size: 1},
+    scanAngle: {value: new Int16Array([-12]), size: 1},
+    userData: {value: new Uint8Array([7]), size: 1},
+    pointSourceId: {value: new Uint16Array([99]), size: 1},
+    returnNumber: {value: new Uint8Array([2]), size: 1},
+    numberOfReturns: {value: new Uint8Array([3]), size: 1},
+    scannerChannel: {value: new Uint8Array([2]), size: 1},
+    scanDirectionFlag: {value: new Uint8Array([1]), size: 1},
+    edgeOfFlightLine: {value: new Uint8Array([1]), size: 1},
+    synthetic: {value: new Uint8Array([1]), size: 1},
+    keyPoint: {value: new Uint8Array([1]), size: 1},
+    withheld: {value: new Uint8Array([1]), size: 1},
+    overlap: {value: new Uint8Array([1]), size: 1}
+  };
+  const modernMesh = {
+    attributes: modernAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(modernAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(modernMesh, {
+    las: {version: '1.4', pointDataRecordFormat: 7}
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return an ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  const pointOffset = 375;
+
+  t.equal(dataView.getUint8(pointOffset + 14), 0x3f, 'writes return number, count, and flags');
+  t.equal(dataView.getUint8(pointOffset + 15), 0xe0, 'writes scanner and flight-line flags');
+  t.equal(dataView.getUint8(pointOffset + 17), 7, 'writes user data');
+  t.equal(dataView.getInt16(pointOffset + 18, true), -12, 'writes scan angle');
+  t.equal(dataView.getUint16(pointOffset + 20, true), 99, 'writes point source id');
+  t.equal(dataView.getFloat64(pointOffset + 22, true), 123.5, 'writes GPS time');
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
