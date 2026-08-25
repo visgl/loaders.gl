@@ -115,8 +115,8 @@ The exact physical constraints and sort orders are defined by Apache's
 | `LIST` | Three-level nested structure | List | ✅ | ⚠️ | High-level TypeScript writer support for arbitrary nested Arrow schemas is incomplete |
 | `MAP` | Repeated key/value structure | Map/struct fallback | ✅ | ⚠️ | Keys must be required; high-level writer support is incomplete |
 | `VARIANT` | Variant metadata/value byte columns | Binary plus metadata | ⚠️ | ❌ | Metadata is retained; Variant payload decoding and shredding remain roadmap items |
-| `GEOMETRY` | `BYTE_ARRAY` | Binary plus metadata | ⚠️ | ⚠️ | CRS metadata is retained; see GeoParquet for interoperable geometry tables |
-| `GEOGRAPHY` | `BYTE_ARRAY` | Binary plus metadata | ⚠️ | ⚠️ | CRS and edge interpolation metadata are retained |
+| `GEOMETRY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS plus native bbox/type statistics; TypeScript writer |
+| `GEOGRAPHY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS, all five edge algorithms, antimeridian-aware reads, and native statistics |
 | legacy `INTERVAL` | 12-byte `FIXED_LEN_BYTE_ARRAY` | Binary/object fallback | ✅ | ✅ | Deprecated converted type retained for compatibility |
 
 ## Nested Data and Nulls

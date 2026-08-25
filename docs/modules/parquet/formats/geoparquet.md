@@ -11,25 +11,30 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 - _[`loaders.gl/parquet`](/docs/modules/parquet)_
 - _[geoparquet.org](https://geoparquet.org)_
 
-Geoparquet is a set of conventions for storing geospatial data in Parquet files.
+GeoParquet is a standard for storing geospatial data in Parquet files.
 
 Standardization is happening at [geoparquet.org](https://geoparquet.org).
 
-GeoParquet file is a Parquet file that additionally follows these conventions:
+A GeoParquet file additionally follows these conventions:
 
 - Geospatial metadata describing any geospatial columns is stored in the Parquet file's schema metadata (as stringified JSON).
-- Geometry columns are [WKB](/docs/modules/wkt/formats/wkb) encoded or use GeoParquet single-geometry native encodings based on the GeoArrow specification.
+- GeoParquet 2.0 geometry columns are root, non-repeated `BYTE_ARRAY` columns containing ISO WKB and annotated with Parquet's native `GEOMETRY` or `GEOGRAPHY` logical type.
+- GeoParquet 1.x also permits single-geometry encodings based on the GeoArrow specification.
 
 ## Supported features checklist
 
-| Type                                                                                         | Supported |
-| -------------------------------------------------------------------------------------------- | --------- |
-| Parse file metadata                                                                          | ✅        |
-| Geometry column encoding: WKB                                                                | ✅        |
-| Geometry column encoding: single-geometry type encodings based on the GeoArrow specification | ✅ metadata pass-through and mapping |
-| "crs" column metadata: transformt CRS to WGS84 with longitude, latitude representation.      | ❌        |
-| "orientation" column metadata: reorder vertices if set "counterclockwise"                    | ❌        |
-| GeoParquet 1.1 `covering.bbox`: per-row bounding boxes                                       | ✅ `ParquetSource.read({bbox})` |
+| Feature | Read | TypeScript write |
+| --- | --- | --- |
+| GeoParquet `geo` metadata | ✅ | ✅ |
+| WKB geometry columns | ✅ | ✅ |
+| Parquet `GEOMETRY` and `GEOGRAPHY` logical types | ✅ | ✅ GeoParquet 2.x metadata selects the annotation |
+| `SPHERICAL`, `VINCENTY`, `THOMAS`, `ANDOYER`, and `KARNEY` edges | ✅ | ✅ |
+| XY, XYZ, XYM, and XYZM geometry type codes | ✅ | ✅ |
+| Native row-group bbox and geometry-type statistics | ✅ | ✅ |
+| GeoParquet 1.1 single-geometry encodings | ✅ metadata/layout pass-through | ✅ metadata/layout pass-through |
+| GeoParquet 1.1 `covering.bbox` | ✅ row-group, page, and exact-row filtering | preserved when supplied |
+| CRS coordinate transformation | ❌ | ❌ |
+| Ring rewinding from `orientation` | ❌ | ❌ |
 
 ## Metadata behavior in Arrow output
 
@@ -41,6 +46,8 @@ When a GeoParquet file is loaded as Arrow:
 
 GeoParquet-only metadata such as `primary_column`, `geometry_types`, `bbox`, and `covering`
 remains in the schema-level `geo` metadata rather than being mirrored into field metadata.
+An omitted GeoParquet CRS is mapped to GeoArrow's explicit `OGC:CRS84` authority identifier;
+GeoParquet `crs: null` remains unknown by omitting GeoArrow CRS metadata.
 
 ## Spatial queries
 
@@ -49,10 +56,16 @@ schema paths such as `['bbox', 'xmin']`. `ParquetSourceLoader` validates that no
 uses it for spatial row-group statistics, nested page-index pruning, and exact per-row bounding-box
 intersection. The bbox struct is fetched as a hidden filter column when it is not projected.
 
-GeoParquet 2.0 removes covering metadata in favor of Parquet's native `GEOMETRY` and `GEOGRAPHY`
-logical types and geospatial statistics. GeoParquet 1.1 coverings remain important for current
-datasets; native Parquet geospatial-statistics pruning is tracked separately.
+For GeoParquet 2.0, `ParquetSource.read({bbox})` first intersects the query with native
+column-chunk geospatial statistics and avoids fetching excluded row groups. Native GEOGRAPHY
+statistics and queries may cross the antimeridian. Native statistics are row-group candidate
+filters; unlike a 1.1 per-row covering, they do not claim exact geometry intersection.
+
+The TypeScript writer computes native statistics directly from WKB without materializing GeoJSON.
+It skips non-finite values independently by dimension, omits Z or M bounds when absent, and emits
+the complete unique set of ISO WKB type codes found in each row group.
 
 ## Alternatives
 
-GeoParquet can be compared to GeoArrow, as both are binary columnar formats with a high degree of similarity.
+GeoParquet is the persistent Parquet representation; GeoArrow defines in-memory Arrow extension
+layouts and metadata. loaders.gl preserves both layers and maps between their compatible semantics.

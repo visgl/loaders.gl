@@ -324,15 +324,40 @@ function doBoundingBoxesIntersect(
   left: ParquetDatasetBoundingBox,
   right: ParquetDatasetBoundingBox
 ): boolean {
-  const leftMaximumX = left.length === 6 ? left[3] : left[2];
-  const leftMaximumY = left.length === 6 ? left[4] : left[3];
-  const rightMaximumX = right.length === 6 ? right[3] : right[2];
-  const rightMaximumY = right.length === 6 ? right[4] : right[3];
+  const leftMaximumX = left.length === 8 ? left[4] : left.length === 6 ? left[3] : left[2];
+  const leftMaximumY = left.length === 8 ? left[5] : left.length === 6 ? left[4] : left[3];
+  const rightMaximumX = right.length === 8 ? right[4] : right.length === 6 ? right[3] : right[2];
+  const rightMaximumY = right.length === 8 ? right[5] : right.length === 6 ? right[4] : right[3];
   return (
-    left[0] <= rightMaximumX &&
-    leftMaximumX >= right[0] &&
+    doLongitudeIntervalsIntersect(left[0], leftMaximumX, right[0], rightMaximumX) &&
     left[1] <= rightMaximumY &&
     leftMaximumY >= right[1]
+  );
+}
+
+/** Tests longitude intervals that may use RFC 7946 antimeridian wrapping. */
+function doLongitudeIntervalsIntersect(
+  firstWest: number,
+  firstEast: number,
+  secondWest: number,
+  secondEast: number
+): boolean {
+  const firstIntervals =
+    firstWest <= firstEast
+      ? [[firstWest, firstEast]]
+      : [
+          [firstWest, 180],
+          [-180, firstEast]
+        ];
+  const secondIntervals =
+    secondWest <= secondEast
+      ? [[secondWest, secondEast]]
+      : [
+          [secondWest, 180],
+          [-180, secondEast]
+        ];
+  return firstIntervals.some(first =>
+    secondIntervals.some(second => first[0] <= second[1] && first[1] >= second[0])
   );
 }
 

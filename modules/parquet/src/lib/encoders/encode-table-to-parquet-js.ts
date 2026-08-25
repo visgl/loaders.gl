@@ -3,6 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataType, Field, ObjectRowTable, Schema, Table} from '@loaders.gl/schema';
+import {
+  getGeoMetadata,
+  type GeoArrowEdgeType,
+  type GeoArrowMetadata,
+  type GeoColumnMetadata
+} from '@loaders.gl/gis';
 import {concatUint8Arrays} from '../../parquetjs/utils/binary-utils';
 import {ParquetEncoder} from '../../parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
@@ -63,6 +69,7 @@ function convertSchemaToParquetSchema(
   const columnEncodings = options.parquet?.columnEncodings || {};
   const columnDictionaries = options.parquet?.columnDictionaries || {};
   const fieldNames = new Set(schema.fields.map(field => field.name));
+  const geoMetadata = getGeoMetadata(schema.metadata);
   for (const columnName of Object.keys(columnEncodings)) {
     if (!fieldNames.has(columnName)) {
       throw new Error(`ParquetJSWriter: Unknown column encoding override "${columnName}"`);
@@ -76,7 +83,12 @@ function convertSchemaToParquetSchema(
 
   for (const field of schema.fields) {
     parquetFields[field.name] = {
-      ...convertFieldToParquetFieldDefinition(field, objectRowTable.data),
+      ...convertFieldToParquetFieldDefinition(
+        field,
+        objectRowTable.data,
+        geoMetadata?.version,
+        geoMetadata?.columns?.[field.name]
+      ),
       encoding: columnEncodings[field.name]
     };
   }
@@ -92,7 +104,9 @@ function convertSchemaToParquetSchema(
  */
 function convertFieldToParquetFieldDefinition(
   field: Field,
-  rows: Array<Record<string, unknown>>
+  rows: Array<Record<string, unknown>>,
+  geoParquetVersion?: string,
+  geoColumnMetadata?: GeoColumnMetadata
 ): FieldDefinition {
   const sampleValue = getFirstDefinedValue(rows, field.name);
   const nullable = field.nullable ?? sampleValue === undefined;
@@ -141,6 +155,26 @@ function convertFieldToParquetFieldDefinition(
       return {type: 'UTF8', optional: nullable};
 
     case 'binary':
+      if (
+        geoParquetVersion?.startsWith('2.') &&
+        String(geoColumnMetadata?.encoding).toLowerCase() === 'wkb'
+      ) {
+        return getNativeGeospatialFieldDefinition(
+          nullable,
+          getNativeGeospatialCRS(geoColumnMetadata?.crs),
+          geoColumnMetadata?.edges
+        );
+      }
+      if (!geoParquetVersion) {
+        const geoArrowMetadata = getWKBGeoArrowMetadata(field);
+        if (geoArrowMetadata) {
+          return getNativeGeospatialFieldDefinition(
+            nullable,
+            getGeoArrowNativeCRS(geoArrowMetadata),
+            geoArrowMetadata.edges
+          );
+        }
+      }
       return {type: 'BYTE_ARRAY', optional: nullable};
 
     case 'date-day':
@@ -198,6 +232,70 @@ function convertFieldToParquetFieldDefinition(
         `ParquetJSWriter: Unsupported field "${field.name}" with type ${formatDataType(dataType)}`
       );
   }
+}
+
+/** Serializes GeoParquet CRS metadata into the native Parquet logical-type string. */
+function getNativeGeospatialCRS(crs: object | null | undefined): string | undefined {
+  if (crs === null) return 'srid:0';
+  return crs === undefined ? undefined : JSON.stringify(crs);
+}
+
+/** Creates a native GEOMETRY or GEOGRAPHY field from normalized spatial semantics. */
+function getNativeGeospatialFieldDefinition(
+  nullable: boolean,
+  crs: string | undefined,
+  edges: 'planar' | GeoArrowEdgeType | undefined
+): FieldDefinition {
+  return edges && edges !== 'planar'
+    ? {
+        type: 'GEOGRAPHY',
+        optional: nullable,
+        logicalType: {type: 'GEOGRAPHY', crs, algorithm: edges.toUpperCase()}
+      }
+    : {
+        type: 'GEOMETRY',
+        optional: nullable,
+        logicalType: {type: 'GEOMETRY', crs}
+      };
+}
+
+/** Reads validated GeoArrow WKB extension metadata from a field. */
+function getWKBGeoArrowMetadata(field: Field): GeoArrowMetadata | undefined {
+  if (field.metadata?.['ARROW:extension:name']?.toLowerCase() !== 'geoarrow.wkb') return undefined;
+  const serializedMetadata = field.metadata['ARROW:extension:metadata'];
+  if (!serializedMetadata) return {};
+  let metadata: unknown;
+  try {
+    metadata = JSON.parse(serializedMetadata);
+  } catch (error) {
+    throw new Error(`ParquetJSWriter: Invalid GeoArrow metadata on "${field.name}"`, {
+      cause: error
+    });
+  }
+  if (!metadata || typeof metadata !== 'object') {
+    throw new Error(`ParquetJSWriter: Invalid GeoArrow metadata on "${field.name}"`);
+  }
+  const candidate = metadata as GeoArrowMetadata;
+  if (
+    candidate.crs !== undefined &&
+    typeof candidate.crs !== 'string' &&
+    (typeof candidate.crs !== 'object' || candidate.crs === null)
+  ) {
+    throw new Error(`ParquetJSWriter: Invalid GeoArrow CRS on "${field.name}"`);
+  }
+  if (
+    candidate.edges !== undefined &&
+    !['spherical', 'vincenty', 'thomas', 'andoyer', 'karney'].includes(candidate.edges)
+  ) {
+    throw new Error(`ParquetJSWriter: Invalid GeoArrow edges on "${field.name}"`);
+  }
+  return candidate;
+}
+
+/** Maps GeoArrow CRS semantics onto the native Parquet logical-type property. */
+function getGeoArrowNativeCRS(metadata: GeoArrowMetadata): string {
+  if (metadata.crs === undefined) return 'srid:0';
+  return typeof metadata.crs === 'string' ? metadata.crs : JSON.stringify(metadata.crs);
 }
 
 /** Returns the minimum fixed byte width required by one decimal precision. */

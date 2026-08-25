@@ -37,7 +37,7 @@ The writer currently synthesizes:
 - native GeoArrow single-geometry encodings -> matching GeoParquet encoding names
 - `primary_column` from the first geometry column in schema order
 - one `columns` entry per detected geometry column
-- `crs`, `crs_type`, and `edges` where present on the GeoArrow field metadata
+- inline `crs` and non-planar `edges` where present on the GeoArrow field metadata
 
 The writer infers `geometry_types` conservatively:
 
@@ -46,6 +46,22 @@ The writer infers `geometry_types` conservatively:
 
 The writer does not invent `orientation`, `bbox`, `covering`, or `epoch` values. Those fields are only
 preserved when existing GeoParquet metadata is already valid.
+
+### GeoParquet 2.0 with the TypeScript writer
+
+When valid `geo` metadata declares version 2.x and a binary column with `encoding: "WKB"`,
+`ParquetJSWriter` writes that column as the native Parquet `GEOMETRY` logical type for planar edges
+or `GEOGRAPHY` for spherical, Vincenty, Thomas, Andoyer, or Karney edges. It carries inline
+PROJJSON into the logical type, uses Parquet's default `OGC:CRS84` when CRS is omitted, and writes
+`srid:0` when GeoParquet explicitly declares `crs: null`.
+
+Every row group receives native `GeospatialStatistics`: a bounding box with independent X, Y, Z,
+and M handling plus the unique ISO WKB codes for XY, XYZ, XYM, and XYZM geometry families.
+
+Without GeoParquet `geo` metadata, a `geoarrow.wkb` field is still written using native Parquet
+geospatial types. GeoArrow inline or authority-code CRS values are carried directly; an omitted
+GeoArrow CRS means unknown and is written as `srid:0`, rather than being silently changed to the
+Parquet default CRS84.
 
 ### Read/Write Example
 

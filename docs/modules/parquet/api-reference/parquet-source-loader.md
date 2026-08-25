@@ -221,9 +221,10 @@ change query results.
 ### GeoParquet spatial pruning
 
 Pass `bbox` to a `ParquetSource` or `ParquetDatasetSource` read to use the primary geometry
-column's normative GeoParquet 1.1 bounding-box covering. `geometryColumn` selects another geometry
-column when needed. The covering's `xmin`, `ymin`, `xmax`, and `ymax` paths become a hidden nested
-predicate and are omitted from output unless their top-level bbox struct is explicitly projected.
+column's native Parquet geospatial statistics, a GeoParquet 1.1 bounding-box covering, or both.
+`geometryColumn` selects another geometry column when needed. Native statistics prune whole row
+groups before column fetches. A 1.1 covering's `xmin`, `ymin`, `xmax`, and `ymax` paths additionally
+become a hidden nested predicate and are omitted from output unless explicitly projected.
 The query bbox must use the selected geometry column's coordinate reference system; loaders.gl does
 not transform query coordinates during source pruning.
 
@@ -236,8 +237,8 @@ for await (const batch of source.read({
 }
 ```
 
-Malformed or missing coverings and bounding boxes that cross the antimeridian fall back
-conservatively instead of excluding rows. A covering proves bounding-box intersection, which is an
+Malformed or missing statistics/coverings fall back conservatively instead of excluding rows.
+Native GEOGRAPHY statistics support antimeridian-crossing intervals. A covering proves bounding-box intersection, which is an
 exact filter for points and a conservative candidate filter for lines and polygons; applications
 requiring geometry-level intersection must still run that spatial operation on the candidates.
 
@@ -329,8 +330,8 @@ individual read.
 | `parquet.columns` / `read.columns` | `string[]` | all columns | Top-level columns to fetch and decode. |
 | `parquet.rowGroupFilter` / `read.rowGroupFilter` | `(rowGroup: ParquetRowGroupMetadata) => boolean` | keep all | Retains candidate row groups before their column chunks are fetched. |
 | `parquet.predicate` / `read.predicate` | `ParquetPredicate` | `undefined` | Prunes impossible row groups using statistics, then exactly filters decoded rows. |
-| `parquet.bbox` / `read.bbox` | `ParquetBoundingBox` | `undefined` | Uses a valid GeoParquet 1.1 bbox covering for spatial row-group/page pruning and per-row bbox filtering. |
-| `parquet.geometryColumn` / `read.geometryColumn` | `string` | GeoParquet `primary_column` | Selects the geometry column whose bbox covering serves `bbox`. |
+| `parquet.bbox` / `read.bbox` | `ParquetBoundingBox` | `undefined` | Uses native geospatial statistics and/or a GeoParquet 1.1 covering for conservative spatial pruning. |
+| `parquet.geometryColumn` / `read.geometryColumn` | `string` | GeoParquet `primary_column` | Selects the geometry column whose native statistics or bbox covering serves `bbox`. |
 | `parquet.batchSize` / `read.batchSize` | `number` | one row group | Maximum rows per emitted batch. |
 | `parquet.concurrency` / `read.concurrency` | `number` | `1` | Maximum row groups decoded concurrently. |
 | `read.signal` | `AbortSignal` | `undefined` | Cancels this read and its outstanding ranges. |

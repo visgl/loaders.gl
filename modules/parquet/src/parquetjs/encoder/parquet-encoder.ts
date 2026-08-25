@@ -6,9 +6,10 @@
 
 /* eslint-disable camelcase */
 import {stream} from '@loaders.gl/loader-utils';
+import {getWKBGeometryStatistics, type WKBGeometryBoundingBox} from '@loaders.gl/gis';
 import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
 import * as Compression from '../compression';
-import {
+import type {
   ParquetRowGroup,
   ParquetCodec,
   ParquetColumnChunk,
@@ -21,6 +22,7 @@ import {ParquetSchema} from '../schema/schema';
 import * as Shred from '../schema/shred';
 import {
   BsonType,
+  BoundingBox,
   ColumnChunk,
   ColumnMetaData,
   CompressionCodec,
@@ -37,6 +39,7 @@ import {
   FileMetaData,
   Float16Type,
   GeographyType,
+  GeospatialStatistics,
   GeometryType,
   IntType,
   JsonType,
@@ -574,6 +577,59 @@ async function encodeDictionaryPage(
   };
 }
 
+/** Computes native Parquet geospatial statistics for a GEOMETRY or GEOGRAPHY column chunk. */
+function createGeospatialStatistics(
+  column: ParquetField,
+  values: ParquetColumnChunk['values']
+): GeospatialStatistics | undefined {
+  const logicalType = column.logicalType?.type || column.originalType;
+  if (logicalType !== 'GEOMETRY' && logicalType !== 'GEOGRAPHY') return undefined;
+  const geometryTypes = new Set<number>();
+  let bbox: WKBGeometryBoundingBox | undefined;
+  for (const value of values) {
+    if (!(value instanceof ArrayBuffer) && !ArrayBuffer.isView(value)) {
+      throw new Error(`${logicalType} columns must contain WKB binary values`);
+    }
+    const statistics = getWKBGeometryStatistics(value);
+    geometryTypes.add(statistics.geometryType);
+    bbox = mergeGeometryBoundingBoxes(bbox, statistics.bbox);
+  }
+  return new GeospatialStatistics({
+    bbox: bbox ? new BoundingBox(bbox) : undefined,
+    geospatial_types: [...geometryTypes].sort((left, right) => left - right)
+  });
+}
+
+/** Merges finite per-dimension bounds without inventing absent Z or M dimensions. */
+function mergeGeometryBoundingBoxes(
+  target: WKBGeometryBoundingBox | undefined,
+  source: WKBGeometryBoundingBox | undefined
+): WKBGeometryBoundingBox | undefined {
+  if (!source) return target;
+  if (!target) return {...source};
+  target.xmin = Math.min(target.xmin, source.xmin);
+  target.xmax = Math.max(target.xmax, source.xmax);
+  target.ymin = Math.min(target.ymin, source.ymin);
+  target.ymax = Math.max(target.ymax, source.ymax);
+  mergeOptionalBounds(target, source, 'zmin', Math.min);
+  mergeOptionalBounds(target, source, 'zmax', Math.max);
+  mergeOptionalBounds(target, source, 'mmin', Math.min);
+  mergeOptionalBounds(target, source, 'mmax', Math.max);
+  return target;
+}
+
+/** Merges one optional bound while preserving a dimension absent from every value. */
+function mergeOptionalBounds(
+  target: WKBGeometryBoundingBox,
+  source: WKBGeometryBoundingBox,
+  key: 'zmin' | 'zmax' | 'mmin' | 'mmax',
+  merge: (left: number, right: number) => number
+): void {
+  const sourceValue = source[key];
+  if (sourceValue === undefined) return;
+  target[key] = target[key] === undefined ? sourceValue : merge(target[key]!, sourceValue);
+}
+
 /**
  * Encode an array of values into a parquet column chunk
  */
@@ -672,7 +728,8 @@ async function encodeColumnChunk(
     total_uncompressed_size: int64(total_uncompressed_size), //  : pagesBuf.length,
     total_compressed_size: int64(total_compressed_size),
     type: Type[column.primitiveType!],
-    codec: CompressionCodec[column.compression!]
+    codec: CompressionCodec[column.compression!],
+    geospatial_statistics: createGeospatialStatistics(column, data.values)
   });
 
   /* list encodings */

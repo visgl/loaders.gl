@@ -5,6 +5,11 @@
 // Types from `@loaders.gl/schema`
 export type {Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
 export {GIS_CONVERTERS} from './converters';
+export type {
+  WKBGeometryBoundingBox,
+  WKBGeometryStatistics
+} from './lib/geometry-converters/wkb/get-wkb-geometry-statistics';
+export {getWKBGeometryStatistics} from './lib/geometry-converters/wkb/get-wkb-geometry-statistics';
 
 // Geo Metadata
 // import {default as GEOPARQUET_METADATA_SCHEMA} from './lib/geo/geoparquet-metadata-schema.json';

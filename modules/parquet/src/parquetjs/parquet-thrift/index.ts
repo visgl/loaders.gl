@@ -48,6 +48,8 @@ export * from './PageHeader';
 export * from './KeyValue';
 export * from './SortingColumn';
 export * from './PageEncodingStats';
+export * from './BoundingBox';
+export * from './GeospatialStatistics';
 export * from './ColumnMetaData';
 export * from './ColumnChunk';
 export * from './RowGroup';

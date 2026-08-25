@@ -46,6 +46,34 @@ export type ParquetColumnChunkStatistics = {
   maxIsExact?: boolean;
 };
 
+/** Native Parquet geospatial bounding-box statistics for a geometry column chunk. */
+export type ParquetGeospatialBoundingBox = {
+  /** Minimum x coordinate. For GEOGRAPHY this may exceed `xmax` across the antimeridian. */
+  readonly xmin: number;
+  /** Maximum x coordinate. */
+  readonly xmax: number;
+  /** Minimum y coordinate. */
+  readonly ymin: number;
+  /** Maximum y coordinate. */
+  readonly ymax: number;
+  /** Minimum z coordinate when at least one finite z value is present. */
+  readonly zmin?: number;
+  /** Maximum z coordinate when at least one finite z value is present. */
+  readonly zmax?: number;
+  /** Minimum measure when at least one finite m value is present. */
+  readonly mmin?: number;
+  /** Maximum measure when at least one finite m value is present. */
+  readonly mmax?: number;
+};
+
+/** Native Parquet geospatial statistics for one geometry column chunk. */
+export type ParquetGeospatialStatistics = {
+  /** Coordinate bounds aggregated across non-null geometry values. */
+  readonly bbox?: ParquetGeospatialBoundingBox;
+  /** Distinct ISO WKB geometry type codes present in the column chunk. */
+  readonly geometryTypes?: readonly number[];
+};
+
 /** Normalized metadata for one Parquet column chunk. */
 export type ParquetColumnChunkMetadata = {
   /** Nested column path in the Parquet schema. */
@@ -82,6 +110,8 @@ export type ParquetColumnChunkMetadata = {
   readonly offsetIndexByteLength?: number;
   /** Optional min/max and count statistics decoded from the footer. */
   readonly statistics?: ParquetColumnChunkStatistics;
+  /** Native geospatial statistics decoded from a Parquet 2.11+ footer. */
+  readonly geospatialStatistics?: ParquetGeospatialStatistics;
 };
 
 /** Normalized metadata for one Parquet row group. */
@@ -145,10 +175,11 @@ export type ParquetMetadataRequestOptions = {
 /** Scalar values supported by exact Parquet source predicates. */
 export type ParquetPredicateValue = ColumnarPredicateValue;
 
-/** Four- or six-dimensional extent used for conservative Parquet spatial pruning. */
+/** Four-, six-, or eight-dimensional extent used for conservative Parquet spatial pruning. */
 export type ParquetBoundingBox =
   | readonly [number, number, number, number]
-  | readonly [number, number, number, number, number, number];
+  | readonly [number, number, number, number, number, number]
+  | readonly [number, number, number, number, number, number, number, number];
 
 /** Reference to one Parquet column in a predicate expression. */
 export type ParquetPredicateProperty = ColumnarPredicateProperty;
@@ -205,7 +236,7 @@ export type ParquetSourceReadOptions = {
   rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
   /** Serializable exact row predicate, conservatively pushed into row-group statistics. */
   predicate?: ParquetPredicate;
-  /** Spatial extent applied through a valid GeoParquet 1.1 bounding-box covering when present. */
+  /** Spatial extent pruned with native statistics or a GeoParquet 1.1 bbox covering when present. */
   bbox?: ParquetBoundingBox;
   /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
   geometryColumn?: string;
@@ -357,10 +388,11 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
   rangeRequests?: ParquetRangeRequestOptions;
 };
 
-/** Four- or six-dimensional extent used for conservative Parquet dataset file pruning. */
+/** Four-, six-, or eight-dimensional extent used for conservative Parquet dataset file pruning. */
 export type ParquetDatasetBoundingBox =
   | readonly [number, number, number, number]
-  | readonly [number, number, number, number, number, number];
+  | readonly [number, number, number, number, number, number]
+  | readonly [number, number, number, number, number, number, number, number];
 
 /** Scalar value carried by a partitioned Parquet dataset file descriptor. */
 export type ParquetDatasetPartitionValue = string | number | boolean | null;

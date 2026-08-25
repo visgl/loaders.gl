@@ -25,7 +25,21 @@ export const GeoParquetGeometryTypeSchema = z.enum([
   'MultiPoint Z',
   'MultiLineString Z',
   'MultiPolygon Z',
-  'GeometryCollection Z'
+  'GeometryCollection Z',
+  'Point M',
+  'LineString M',
+  'Polygon M',
+  'MultiPoint M',
+  'MultiLineString M',
+  'MultiPolygon M',
+  'GeometryCollection M',
+  'Point ZM',
+  'LineString ZM',
+  'Polygon ZM',
+  'MultiPoint ZM',
+  'MultiLineString ZM',
+  'MultiPolygon ZM',
+  'GeometryCollection ZM'
 ]) satisfies z.ZodType<GeoParquetGeometryType>;
 
 const GeoParquetGeometryTypesSchema = z
@@ -54,10 +68,20 @@ export const GeoParquetColumnMetadataSchema = z
     bbox: z
       .union([
         z.tuple([z.number(), z.number(), z.number(), z.number()]),
-        z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()])
+        z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()]),
+        z.tuple([
+          z.number(),
+          z.number(),
+          z.number(),
+          z.number(),
+          z.number(),
+          z.number(),
+          z.number(),
+          z.number()
+        ])
       ])
       .optional(),
-    edges: z.enum(['planar', 'spherical']).optional(),
+    edges: z.enum(['planar', 'spherical', 'vincenty', 'thomas', 'andoyer', 'karney']).optional(),
     epoch: z.number().finite().optional()
   })
   .passthrough() satisfies z.ZodType<GeoColumnMetadata>;
@@ -73,6 +97,18 @@ export const GeoParquetMetadataSchema = z
   .refine(metadata => Boolean(metadata.columns[metadata.primary_column]), {
     message: 'GeoParquet primary_column must name an entry in columns',
     path: ['primary_column']
+  })
+  .superRefine((metadata, context) => {
+    if (!metadata.version.startsWith('2.')) return;
+    for (const [columnName, column] of Object.entries(metadata.columns)) {
+      if (column.encoding.toUpperCase() !== 'WKB') {
+        context.addIssue({
+          code: 'custom',
+          message: 'GeoParquet 2.x geometry columns must use WKB encoding',
+          path: ['columns', columnName, 'encoding']
+        });
+      }
+    }
   }) satisfies z.ZodType<GeoMetadata>;
 
 /** Zod schema for metadata stored on one GeoArrow extension field. */
