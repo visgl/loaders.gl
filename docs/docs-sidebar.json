@@ -48,6 +48,7 @@
       "modules/obj/formats/obj",
       "modules/wms/formats/ows-context",
       "modules/parquet/formats/parquet",
+      "modules/traces/formats/perfetto-trace",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
       "modules/pmtiles/formats/pmtiles",
@@ -135,6 +136,7 @@
           "modules/textures/api-reference/npy-loader",
           "modules/obj/api-reference/obj-loader",
           "modules/parquet/api-reference/parquet-loader",
+          "modules/traces/api-reference/perfetto-trace-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/potree/api-reference/potree-loader",
@@ -164,6 +166,7 @@
           "modules/3d-tiles/api-reference/tile-3d-writer",
           "modules/arrow/api-reference/arrow-writer",
           "modules/bson/api-reference/bson-writer",
+          "modules/traces/api-reference/chrome-trace-writer",
           "modules/csv/api-reference/csv-writer",
           "modules/draco/api-reference/draco-writer",
           "modules/gltf/api-reference/gltf-writer",
@@ -175,6 +178,7 @@
           "modules/mvt/api-reference/mvt-writer",
           "modules/obj/api-reference/obj-writer",
           "modules/parquet/api-reference/parquet-writer",
+          "modules/traces/api-reference/perfetto-trace-writer",
           "modules/pcd/api-reference/pcd-writer",
           "modules/ply/api-reference/ply-writer",
           "modules/terrain/api-reference/quantized-mesh-writer",
@@ -575,7 +579,12 @@
         "items": [
           "modules/traces/README",
           "modules/traces/formats/chrome-trace",
-          "modules/traces/api-reference/chrome-trace-loader"
+          "modules/traces/api-reference/chrome-trace-loader",
+          "modules/traces/api-reference/chrome-trace-writer",
+          "modules/traces/api-reference/chrome-trace-streaming",
+          "modules/traces/formats/perfetto-trace",
+          "modules/traces/api-reference/perfetto-trace-loader",
+          "modules/traces/api-reference/perfetto-trace-writer"
         ]
       },
       {

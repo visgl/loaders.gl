@@ -677,6 +677,21 @@
         "branches": 64
       }
     },
+    "@loaders.gl/traces": {
+      "path": "modules/traces",
+      "browser": {
+        "statements": 96,
+        "lines": 96,
+        "functions": 98,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 96,
+        "lines": 96,
+        "functions": 98,
+        "branches": 90
+      }
+    },
     "@loaders.gl/video": {
       "path": "modules/video",
       "browser": {

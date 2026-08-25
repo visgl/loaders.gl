@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" role="img" aria-label="ArcGIS">
+  <rect width="320" height="120" rx="24" fill="#fff"/>
+  <circle cx="62" cy="60" r="36" fill="#007ac2"/>
+  <path d="M36 61c13-12 32-18 52-15M38 76c15-10 32-13 49-8M51 34c5 13 5 34 0 51M70 29c-5 15-5 37 1 62" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <text x="116" y="76" fill="#1f2937" font-family="Arial, sans-serif" font-size="44" font-weight="700">ArcGIS</text>
+</svg>

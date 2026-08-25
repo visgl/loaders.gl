@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+
+# Keep canonical OTLP .proto sources reviewable while collapsing deterministic generated adapters.
+modules/traces/src/otlp-proto/generated/** linguist-generated=true

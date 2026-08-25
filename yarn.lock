@@ -1924,6 +1924,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:^2.14.0":
+  version: 2.14.0
+  resolution: "@bufbuild/protobuf@npm:2.14.0"
+  checksum: 10c0/29f434e45d484012c7b6ecfa1265b2ca430fb88aed3dc222a31f553ab1ee4ac81ddbf79f88a1665353af5703bfd5d0db25a22eb378a641667938e7d8aa4c1c47
+  languageName: node
+  linkType: hard
+
 "@carto/api-client@npm:^0.5.19":
   version: 0.5.26
   resolution: "@carto/api-client@npm:0.5.26"
@@ -5530,7 +5537,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/json@npm:5.0.0-alpha.2, @loaders.gl/json@workspace:*, @loaders.gl/json@workspace:modules/json":
+"@loaders.gl/json@workspace:*, @loaders.gl/json@workspace:modules/json":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/json@workspace:modules/json"
   dependencies:
@@ -5985,7 +5992,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/traces@workspace:modules/traces"
   dependencies:
-    "@loaders.gl/json": "npm:5.0.0-alpha.2"
+    "@bufbuild/protobuf": "npm:^2.14.0"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     apache-arrow: "npm:>= 17.0.0"
     zod: "npm:^4.1.12"

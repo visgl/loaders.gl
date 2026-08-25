@@ -355,6 +355,9 @@
       "@loaders.gl/traces": [
         "modules/traces/src"
       ],
+      "@loaders.gl/traces/*": [
+        "modules/traces/src/*"
+      ],
       "@loaders.gl/traces/test": [
         "modules/traces/test"
       ],
