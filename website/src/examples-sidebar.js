@@ -22,6 +22,11 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Table Formats',
+      items: ['table/avro']
+    },
+    {
+      type: 'category',
       label: 'Trace Formats',
       items: ['traces/chrome-trace']
     },

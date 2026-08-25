@@ -43,6 +43,26 @@
       "types": "./dist/parquet-loader.d.ts",
       "import": "./dist/parquet-loader.js"
     },
+    "./avro-loader": {
+      "types": "./dist/avro-loader.d.ts",
+      "import": "./dist/avro-loader.js"
+    },
+    "./avro-schema-loader": {
+      "types": "./dist/avro-schema-loader.d.ts",
+      "import": "./dist/avro-schema-loader.js"
+    },
+    "./avro-writer": {
+      "types": "./dist/avro-writer.d.ts",
+      "import": "./dist/avro-writer.js"
+    },
+    "./avro-stream": {
+      "types": "./dist/avro-stream.d.ts",
+      "import": "./dist/avro-stream.js"
+    },
+    "./avro-ocf": {
+      "types": "./dist/avro-ocf.d.ts",
+      "import": "./dist/avro-ocf.js"
+    },
     "./parquet-js-loader": {
       "types": "./dist/parquet-js-loader.d.ts",
       "import": "./dist/parquet-js-loader.js"
