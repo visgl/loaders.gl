@@ -192,9 +192,10 @@ that format. Import an explicit implementation subpath when bundle composition m
 predictable.
 
 The combined classes ending in `Compression` remain available as deprecated v5 compatibility
-facades. They implement both [`Compressor` and `Decompressor`](/docs/modules/compression/api-reference/compression),
-so existing instances remain assignable to APIs expecting either direction. New applications
-should use the narrower classes above.
+facades. They implement both
+[`Compressor` and `Decompressor`](/docs/modules/compression/api-reference/compressor-decompressor),
+so existing instances remain assignable to APIs expecting either direction. Their former API
+pages have been retired in favor of the direction-specific format pages above.
 
 See the [v5 upgrade guide](/docs/upgrade-guide) for import migrations and behavior changes.
 

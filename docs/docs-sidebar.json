@@ -318,19 +318,17 @@
         "items": [
           "modules/compression/README",
           "modules/compression/benchmarks",
-          "modules/compression/api-reference/compression",
-          "modules/compression/api-reference/native-compression",
-          "modules/compression/api-reference/native-decompression",
-          "modules/compression/api-reference/bzip2-compression",
-          "modules/compression/api-reference/brotli-compression",
-          "modules/compression/api-reference/deflate-compression",
-          "modules/compression/api-reference/gzip-compression",
-          "modules/compression/api-reference/lz4-compression",
-          "modules/compression/api-reference/lzo-compression",
-          "modules/compression/api-reference/no-compression",
-          "modules/compression/api-reference/snappy-compression",
-          "modules/compression/api-reference/xz-compression",
-          "modules/compression/api-reference/zstd-compression"
+          "modules/compression/api-reference/compressor-decompressor",
+          "modules/compression/api-reference/built-in-codecs",
+          "modules/compression/api-reference/gzip",
+          "modules/compression/api-reference/deflate",
+          "modules/compression/api-reference/brotli",
+          "modules/compression/api-reference/zstandard",
+          "modules/compression/api-reference/snappy",
+          "modules/compression/api-reference/lz4",
+          "modules/compression/api-reference/bzip2",
+          "modules/compression/api-reference/xz",
+          "modules/compression/api-reference/no-compressor-decompressor"
         ]
       },
       {
