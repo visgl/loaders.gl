@@ -101,6 +101,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   validatePositionAttribute(positionAttribute);
   const vertexCount = positionAttribute.value.length / positionAttribute.size;
+  validateOptionalPointAttributes(mesh, vertexCount);
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
   const classificationAttribute = mesh.attributes.classification;
@@ -563,6 +564,57 @@ function validatePositionAttribute(attribute: MeshAttribute): void {
   }
   if (attribute.value.length % attribute.size !== 0) {
     throw new Error(`LASWriter: POSITION attribute length must be divisible by its size`);
+  }
+}
+
+/** Validate lengths and component shapes for mapped optional point attributes. */
+function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void {
+  const scalarAttributeNames = [
+    'intensity',
+    'classification',
+    'gpsTime',
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
+    'nir'
+  ];
+  for (const attributeName of scalarAttributeNames) {
+    const attribute = mesh.attributes[attributeName];
+    if (attribute) {
+      validateOptionalAttribute(attributeName, attribute, vertexCount, 1);
+    }
+  }
+  const colorAttribute = mesh.attributes.COLOR_0;
+  if (colorAttribute) {
+    validateOptionalAttribute('COLOR_0', colorAttribute, vertexCount, 3, false);
+  }
+}
+
+/** Validate one optional mapped attribute against the point count. */
+function validateOptionalAttribute(
+  attributeName: string,
+  attribute: MeshAttribute,
+  vertexCount: number,
+  minimumSize: number,
+  requirePointCount = true
+): void {
+  if (minimumSize === 1 ? attribute.size !== 1 : attribute.size < minimumSize) {
+    throw new Error(`LASWriter: ${attributeName} attribute must have size ${minimumSize}`);
+  }
+  if (requirePointCount && attribute.value.length < vertexCount * attribute.size) {
+    throw new Error(`LASWriter: ${attributeName} attribute is too short`);
+  }
+  if (!requirePointCount && attribute.value.length < attribute.size) {
+    throw new Error(`LASWriter: ${attributeName} attribute is too short`);
   }
 }
 

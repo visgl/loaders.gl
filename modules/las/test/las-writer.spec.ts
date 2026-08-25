@@ -659,6 +659,19 @@ test('LASWriter#validates point attribute shapes', t => {
     /Extra Bytes attribute shortExtra is too short/,
     'rejects Extra Bytes arrays shorter than the point count'
   );
+
+  const shortIntensityMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      intensity: {value: new Uint16Array([1]), size: 1}
+    }
+  };
+  t.throws(
+    () => LASWriter.encodeSync?.(shortIntensityMesh),
+    /intensity attribute is too short/,
+    'rejects mapped point attributes shorter than POSITION'
+  );
   t.end();
 });
 
