@@ -1,7 +1,7 @@
 # @loaders.gl/sql
 
 This module contains SQL-oriented `DataSource` implementations for external and embedded databases.
-It also provides a dependency-free parser for turning a small SQL `WHERE` expression into a
+It also provides a database-runtime-free parser for turning a small SQL `WHERE` expression into a
 portable predicate AST.
 
 ## Included sources
@@ -65,8 +65,12 @@ without adopting Arrow's materialization strategy. This is useful for lightweigh
 it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsing, aggregation,
 or joins.
 
-Backends that only need the portable query contract can import `TableQueryOptions` and
-`planTableQuery()` from `@loaders.gl/sql/table-query` without importing the Arrow executor.
+The generic contract and planner live in `@loaders.gl/loader-utils`; SQL-specialized compatibility
+exports remain available from `@loaders.gl/sql/table-query`:
+
+```ts
+import {planTableQuery, type TableQueryOptions} from '@loaders.gl/loader-utils';
+```
 
 ```ts
 import {parseSQLPredicate} from '@loaders.gl/sql/sql-predicate';
@@ -115,7 +119,7 @@ for await (const batch of parquetSource.read({
 }
 ```
 
-The dependency-free `sql-predicate` subpath does not load or traverse the optional database
+The `sql-predicate` subpath does not load or traverse the optional database
 adapters. The resulting `op`/`args` representation is directionally aligned with CQL2 JSON but does not
 claim CQL2 conformance. `SQL_PREDICATE_JSON_SCHEMA`, `validateSQLPredicate()`, and
 `isSQLPredicate()` support dependency-free payload validation.

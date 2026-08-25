@@ -255,15 +255,23 @@ export type {
 } from './lib/sources/data-source-manager';
 export {DataSourceManager} from './lib/sources/data-source-manager';
 export {
+  bindColumnarPredicateParameters,
   copyColumnarPredicate,
   filterColumnarRowIndices,
   gatherColumnarColumns,
   getColumnarPredicateColumns,
   getColumnarPredicatePath,
   getColumnarPredicatePaths,
+  isColumnarPredicateParameter,
+  isColumnarPredicateValue,
   validateColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
 export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export {
+  planTableQuery,
+  validateTableQueryLimit,
+  validateTableQueryOptions
+} from './lib/scan-utils/table-query';
 export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
 export type {
   ColumnarComparisonPredicate,
@@ -272,9 +280,24 @@ export type {
   ColumnarNotPredicate,
   ColumnarNullPredicate,
   ColumnarPredicate,
+  ColumnarPredicateInputValue,
+  ColumnarPredicateParameter,
+  ColumnarPredicateParameterValues,
   ColumnarPredicateProperty,
-  ColumnarPredicateValue
+  ColumnarPredicateValue,
+  ParameterizedColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
+export type {
+  TableQueryCapabilities,
+  TableQueryFilterStep,
+  TableQueryLimitStep,
+  TableQueryOperatorSupport,
+  TableQueryOptions,
+  TableQueryPlan,
+  TableQueryPlanStep,
+  TableQueryProjectStep,
+  TableQueryScanStep
+} from './lib/scan-utils/table-query';
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
 

@@ -8,11 +8,23 @@ import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 import {
+  ARROW_TABLE_QUERY_CAPABILITIES,
   bindSQLPredicate,
   parseSQLPredicate,
   planTableQuery,
   queryArrowTable
 } from '@loaders.gl/sql';
+
+test('Arrow executor advertises portable query capabilities', () => {
+  expect(ARROW_TABLE_QUERY_CAPABILITIES).toEqual({
+    projection: 'residual',
+    predicate: 'residual',
+    limit: 'residual',
+    streaming: false,
+    cancellation: true
+  });
+  expect(Object.isFrozen(ARROW_TABLE_QUERY_CAPABILITIES)).toBe(true);
+});
 
 test('queryArrowTable filters, projects, and limits Arrow data', () => {
   const table = makeArrowTable({

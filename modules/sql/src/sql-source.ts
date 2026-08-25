@@ -20,6 +20,7 @@ import type {
 import {compileSQLTableQuery, type SQLTableQueryDialect} from './compile-table-query';
 import type {SQLPredicateParameterValues} from './sql-predicate-types';
 import {convertRowsToArrowTable, isNodeRuntime} from './sql-utils';
+import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 const SQL_ADAPTER_FACTORIES = new Map<string, SQLAdapterFactory>();
 
@@ -61,6 +62,8 @@ export const SQL_SOURCE_DEFAULT_OPTIONS: Omit<RequiredOptions<SQLSourceOptions>,
 
 /** Shared SQL-backed data source implementation. */
 export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
+  /** Optimization and execution capabilities of portable table-bound queries. */
+  readonly tableQueryCapabilities = SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES;
   private readonly sourceType: string;
   private readonly adapterFactory?: SQLAdapterFactory;
   private adapterPromise: Promise<SQLAdapter> | null = null;

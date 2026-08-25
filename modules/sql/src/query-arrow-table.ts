@@ -26,6 +26,7 @@ import {
   type TableQueryProjectStep,
   type TableQueryScanStep
 } from './table-query';
+export {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 /** Options for the lightweight in-memory Arrow query executor. */
 export type ArrowQueryOptions = TableQueryOptions &
