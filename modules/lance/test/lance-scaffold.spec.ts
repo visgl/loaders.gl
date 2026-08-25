@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 
 import {LanceFormat} from '../src/lance-format';
 import {LanceLoader} from '../src/lance-loader-types';
@@ -75,16 +75,15 @@ FLAT_FILE_FIXTURE_VIEW.setUint16(120, 2, true);
 FLAT_FILE_FIXTURE_VIEW.setUint16(122, 1, true);
 FLAT_FILE_FIXTURE.set([0x4c, 0x41, 0x4e, 0x43], 124);
 
-test('Lance scaffold#exposes read-only metadata', t => {
-  t.equal(LanceFormat.format, 'lance', 'identifies the Lance format');
-  t.equal(LanceLoader.id, 'lance', 'exposes the table loader id');
-  t.equal(LanceSourceLoader.type, 'lance', 'exposes the source type');
-  t.equal(LanceSourceLoader.fromUrl, true, 'supports URL sources at the API boundary');
-  t.equal(LanceSourceLoader.fromBlob, true, 'supports Blob sources at the API boundary');
-  t.end();
+test('Lance scaffold exposes read-only metadata', () => {
+  expect(LanceFormat.format).toBe('lance');
+  expect(LanceLoader.id).toBe('lance');
+  expect(LanceSourceLoader.type).toBe('lance');
+  expect(LanceSourceLoader.fromUrl).toBe(true);
+  expect(LanceSourceLoader.fromBlob).toBe(true);
 });
 
-test('Lance scaffold#advertises deferred capabilities', t => {
+test('Lance scaffold advertises deferred capabilities', () => {
   const expectedCapabilities: LanceSourceCapabilities = {
     supportsCachedMetadata: true,
     supportsColumnProjection: false,
@@ -95,58 +94,53 @@ test('Lance scaffold#advertises deferred capabilities', t => {
     supportsWrite: false
   };
 
-  t.ok(Object.isFrozen(LANCE_SOURCE_CAPABILITIES), 'freezes the capability descriptor');
-  t.deepEqual(LANCE_SOURCE_CAPABILITIES, expectedCapabilities, 'keeps the scaffold honest');
-  t.end();
+  expect(Object.isFrozen(LANCE_SOURCE_CAPABILITIES)).toBe(true);
+  expect(LANCE_SOURCE_CAPABILITIES).toEqual(expectedCapabilities);
 });
 
-test('Lance MVP#decodes manifest schema and fragments', t => {
+test('Lance MVP decodes manifest schema and fragments', () => {
   const manifest = parseLanceManifest(MANIFEST_FIXTURE);
 
-  t.equal(manifest.version, 7, 'decodes the snapshot version');
-  t.equal(manifest.fields[0].name, 'id', 'decodes field names');
-  t.equal(manifest.fields[0].logicalType, 'int32', 'decodes logical types');
-  t.equal(manifest.fragments[0].physicalRows, 2, 'decodes fragment row counts');
-  t.equal(manifest.fragments[0].files[0].path, 'part.lance', 'decodes data file paths');
-  t.deepEqual(manifest.fragments[0].files[0].fieldIds, [0], 'decodes data file field ids');
-  t.end();
+  expect(manifest.version).toBe(7);
+  expect(manifest.fields[0].name).toBe('id');
+  expect(manifest.fields[0].logicalType).toBe('int32');
+  expect(manifest.fragments[0].physicalRows).toBe(2);
+  expect(manifest.fragments[0].files[0].path).toBe('part.lance');
+  expect(manifest.fragments[0].files[0].fieldIds).toEqual([0]);
 });
 
-test('Lance MVP#decodes length-prefixed manifest sections', t => {
+test('Lance MVP decodes length-prefixed manifest sections', () => {
   const manifest = parseLanceManifest(FRAMED_MANIFEST_FIXTURE);
 
-  t.equal(manifest.version, 7, 'decodes the framed snapshot version');
-  t.equal(manifest.fields[0].name, 'id', 'decodes the framed schema');
-  t.equal(manifest.fragments[0].files[0].path, 'part.lance', 'decodes the framed data file');
-  t.end();
+  expect(manifest.version).toBe(7);
+  expect(manifest.fields[0].name).toBe('id');
+  expect(manifest.fragments[0].files[0].path).toBe('part.lance');
 });
 
-test('Lance MVP#caches Blob manifest metadata', async t => {
+test('Lance MVP caches Blob manifest metadata', async () => {
   const source = LanceSourceLoader.createDataSource(new Blob([MANIFEST_FIXTURE]), {});
   const firstMetadata = await source.getMetadata();
   const secondMetadata = await source.getMetadata();
 
-  t.equal(firstMetadata, secondMetadata, 'caches the manifest promise');
-  t.equal((await source.getSchema())[0].name, 'id', 'exposes manifest fields through getSchema');
-  t.end();
+  expect(firstMetadata).toBe(secondMetadata);
+  expect((await source.getSchema())[0].name).toBe('id');
 });
 
-test('Lance file MVP#decodes footer and metadata tables', t => {
+test('Lance file MVP decodes footer and metadata tables', () => {
   const metadata = parseLanceFileMetadata(FILE_FIXTURE);
 
-  t.equal(metadata.majorVersion, 2, 'decodes the file major version');
-  t.equal(metadata.minorVersion, 1, 'decodes the file minor version');
-  t.equal(metadata.numColumns, 1, 'decodes the column count');
-  t.equal(metadata.numGlobalBuffers, 1, 'decodes the global buffer count');
-  t.equal(metadata.columns[0].pages[0].length, 3, 'decodes page length');
-  t.deepEqual(metadata.columns[0].pages[0].bufferOffsets, [16, 32], 'decodes page offsets');
-  t.deepEqual(metadata.columns[0].pages[0].bufferSizes, [4, 8], 'decodes page sizes');
-  t.deepEqual(metadata.columns[0].bufferOffsets, [100], 'decodes column buffer offsets');
-  t.deepEqual(Array.from(metadata.globalBuffers[0]), [9, 8], 'reads global buffer bytes');
-  t.end();
+  expect(metadata.majorVersion).toBe(2);
+  expect(metadata.minorVersion).toBe(1);
+  expect(metadata.numColumns).toBe(1);
+  expect(metadata.numGlobalBuffers).toBe(1);
+  expect(metadata.columns[0].pages[0].length).toBe(3);
+  expect(metadata.columns[0].pages[0].bufferOffsets).toEqual([16, 32]);
+  expect(metadata.columns[0].pages[0].bufferSizes).toEqual([4, 8]);
+  expect(metadata.columns[0].bufferOffsets).toEqual([100]);
+  expect(Array.from(metadata.globalBuffers[0])).toEqual([9, 8]);
 });
 
-test('Lance decoder#reads flat little-endian primitive pages', t => {
+test('Lance decoder reads flat little-endian primitive pages', () => {
   const bytes = new ArrayBuffer(12);
   const view = new DataView(bytes);
   view.setInt32(0, 1, true);
@@ -158,25 +152,20 @@ test('Lance decoder#reads flat little-endian primitive pages', t => {
     'int32'
   );
 
-  t.deepEqual(Array.from(values), [1, -2, 300], 'decodes fixed-width values');
-  t.end();
+  expect(Array.from(values)).toEqual([1, -2, 300]);
 });
 
-test('Lance decoder#rejects non-flat page shapes', t => {
-  t.throws(
-    () =>
-      decodeLanceFlatPage(
-        new ArrayBuffer(8),
-        {bufferOffsets: [0, 4], bufferSizes: [4, 4], length: 2, priority: 0},
-        'int32'
-      ),
-    LanceFlatPageUnsupportedError,
-    'rejects pages with multiple buffers'
-  );
-  t.end();
+test('Lance decoder rejects non-flat page shapes', () => {
+  expect(() =>
+    decodeLanceFlatPage(
+      new ArrayBuffer(8),
+      {bufferOffsets: [0, 4], bufferSizes: [4, 4], length: 2, priority: 0},
+      'int32'
+    )
+  ).toThrow(LanceFlatPageUnsupportedError);
 });
 
-test('Lance decoder#assembles flat columns from ordered pages', t => {
+test('Lance decoder assembles flat columns from ordered pages', () => {
   const bytes = new ArrayBuffer(16);
   const view = new DataView(bytes);
   view.setInt32(0, 1, true);
@@ -196,41 +185,35 @@ test('Lance decoder#assembles flat columns from ordered pages', t => {
     'int32'
   );
 
-  t.deepEqual(Array.from(values), [1, 2, 3, 4], 'orders pages by row priority');
-  t.end();
+  expect(Array.from(values)).toEqual([1, 2, 3, 4]);
 });
 
-test('Lance loader#returns an Arrow table for a flat Lance file', async t => {
+test('Lance loader returns an Arrow table for a flat Lance file', async () => {
   const result = await LanceLoaderWithParser.parse(FLAT_FILE_FIXTURE.buffer, {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
 
-  t.equal(result.shape, 'arrow-table', 'returns the Arrow table shape');
-  t.equal(result.data.numRows, 3, 'returns the decoded row count');
-  t.deepEqual(Array.from(result.data.getChild('id').toArray()), [10, 20, 30], 'returns values');
-  t.end();
+  expect(result.shape).toBe('arrow-table');
+  expect(result.data.numRows).toBe(3);
+  expect(Array.from(result.data.getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
-test('Lance source#emits an Arrow batch for a flat Lance file', async t => {
+test('Lance source emits an Arrow batch for a flat Lance file', async () => {
   const source = LanceSourceLoader.createDataSource(new Blob([FLAT_FILE_FIXTURE]), {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
   const batches = [];
   for await (const batch of source.readBatches()) batches.push(batch);
 
-  t.equal(batches.length, 1, 'emits one Arrow batch');
-  t.equal(batches[0].shape, 'arrow-table', 'emits the Arrow shape');
-  t.deepEqual(Array.from(batches[0].data.getChild('id').toArray()), [10, 20, 30], 'emits values');
-  t.end();
+  expect(batches).toHaveLength(1);
+  expect(batches[0].shape).toBe('arrow-table');
+  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
-test('Lance scaffold#uses an explicit decoder error', async t => {
+test('Lance scaffold uses an explicit decoder error', async () => {
   const {LanceLoaderWithParser} = await import('../src/lance-loader');
 
-  await t.rejects(
-    LanceLoaderWithParser.parse(new ArrayBuffer(0)),
-    LanceDecoderUnavailableError,
-    'does not silently claim to parse unsupported data'
+  await expect(LanceLoaderWithParser.parse(new ArrayBuffer(0))).rejects.toBeInstanceOf(
+    LanceDecoderUnavailableError
   );
-  t.end();
 });

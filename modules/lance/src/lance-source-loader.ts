@@ -13,6 +13,10 @@ import {parseLanceManifest, type LanceManifest} from './lance-manifest';
 import type {LanceFlatPrimitiveType} from './lance-decoder';
 import {LANCE_SOURCE_CAPABILITIES, type LanceSourceCapabilities} from './lance-source-capabilities';
 
+function isLanceDataFileURL(url: string): boolean {
+  return /\/data\/[^/]+\.lance(?:$|[?#])/i.test(url);
+}
+
 /** Options for a reusable read-only Lance dataset source. */
 export type LanceSourceLoaderOptions = {
   lance?: {
@@ -59,7 +63,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     }
 
     let dataFileURL = data;
-    if (!/\.lance(?:$|[?#])/i.test(dataFileURL)) {
+    if (!isLanceDataFileURL(dataFileURL)) {
       const manifest = await this.getMetadata();
       const path = filePath ?? manifest.fragments[0]?.files[0]?.path;
       if (!path) {
@@ -85,7 +89,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     }
     const {parseLanceFileToArrow} = await import('./lance-arrow');
     const table =
-      typeof this.data === 'string' && !/\.lance(?:$|[?#])/i.test(this.data)
+      typeof this.data === 'string' && !isLanceDataFileURL(this.data)
         ? await this.readRemoteArrow(
             lanceOptions.columnTypes,
             lanceOptions.columnNames,
@@ -110,7 +114,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     if (!dataFile) throw new Error('Lance dataset manifest does not contain a data file');
     const dataFileURL = `${this.data.toString().replace(/\/$/, '')}/data/${dataFile.path}`;
     const {readLanceRemoteFileToArrow} = await import('./lance-arrow');
-    if (dataFile.fileSizeBytes === undefined) {
+    if (dataFile.fileSizeBytes === undefined || typeof dataFile.fileSizeBytes !== 'number') {
       const response = await this.fetch(dataFileURL);
       if (!response.ok) {
         throw new Error(`Failed to read Lance data file ${dataFileURL}: ${response.status}`);
@@ -141,7 +145,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     if (data instanceof Blob) return await data.arrayBuffer();
 
     let dataFileURL = data;
-    if (!/\.lance(?:$|[?#])/i.test(dataFileURL)) {
+    if (!isLanceDataFileURL(dataFileURL)) {
       const manifest = await this.getMetadata();
       const path = manifest.fragments[0]?.files[0]?.path;
       if (!path) throw new Error('Lance dataset manifest does not contain a data file');

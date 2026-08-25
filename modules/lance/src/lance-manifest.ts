@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/** An integer preserved as a number while safe, and as bigint when wider. */
+export type LanceManifestInteger = number | bigint;
+
 /** A field decoded from a Lance table manifest. */
 export type LanceManifestField = Readonly<{
   /** Lance field kind: 0 parent, 1 repeated, 2 leaf. */
@@ -29,7 +32,7 @@ export type LanceManifestDataFile = Readonly<{
   /** Optional Lance file minor version. */
   fileMinorVersion?: number;
   /** Optional known file size. */
-  fileSizeBytes?: number;
+  fileSizeBytes?: LanceManifestInteger;
   /** Optional base-path index. */
   baseId?: number;
 }>;
@@ -39,7 +42,7 @@ export type LanceManifestFragment = Readonly<{
   /** Fragment identifier. */
   id: number;
   /** Physical row count, including deleted rows. */
-  physicalRows: number;
+  physicalRows: LanceManifestInteger;
   /** Data files attached to this fragment. */
   files: LanceManifestDataFile[];
 }>;
@@ -47,9 +50,9 @@ export type LanceManifestFragment = Readonly<{
 /** The read-only subset of a Lance manifest used by the MVP. */
 export type LanceManifest = Readonly<{
   /** Manifest snapshot version. */
-  version: number;
+  version: LanceManifestInteger;
   /** Reader feature flags declared by the writer. */
-  readerFeatureFlags: number;
+  readerFeatureFlags: LanceManifestInteger;
   /** Data storage format name and version. */
   dataFormat?: Readonly<{fileFormat: string; version: string}>;
   /** All schema fields, including nested fields. */
@@ -70,14 +73,15 @@ class ProtobufReader {
     return this.offset >= this.bytes.byteLength;
   }
 
-  readVarint(): number {
+  readVarint(): LanceManifestInteger {
     let value = 0n;
     let shift = 0n;
     while (this.offset < this.bytes.byteLength) {
       const byte = BigInt(this.bytes[this.offset++]);
       value |= (byte & 0x7fn) << shift;
       if ((byte & 0x80n) === 0n) {
-        return Number(value);
+        const numberValue = Number(value);
+        return Number.isSafeInteger(numberValue) ? numberValue : value;
       }
       shift += 7n;
       if (shift > 70n) {
@@ -88,7 +92,7 @@ class ProtobufReader {
   }
 
   readBytes(): Uint8Array {
-    const length = this.readVarint();
+    const length = readSafeVarint(this, 'length');
     const end = this.offset + length;
     if (!Number.isSafeInteger(length) || end > this.bytes.byteLength) {
       throw new Error('Invalid Lance protobuf length-delimited field');
@@ -108,7 +112,7 @@ class ProtobufReader {
     } else if (wireType === 1) {
       this.skipBytes(8);
     } else if (wireType === 2) {
-      this.skipBytes(this.readVarint());
+      this.skipBytes(readSafeVarint(this, 'skip length'));
     } else if (wireType === 5) {
       this.skipBytes(4);
     } else {
@@ -124,13 +128,21 @@ class ProtobufReader {
   }
 }
 
+function readSafeVarint(reader: ProtobufReader, label: string): number {
+  const value = reader.readVarint();
+  if (typeof value === 'bigint') {
+    throw new Error(`Lance manifest ${label} exceeds JavaScript safe integer limits`);
+  }
+  return value;
+}
+
 function readMessage(
   bytes: Uint8Array,
   callback: (field: number, wireType: number, reader: ProtobufReader) => void
 ): void {
   const reader = new ProtobufReader(bytes);
   while (!reader.done) {
-    const tag = reader.readVarint();
+    const tag = readSafeVarint(reader, 'field tag');
     callback(tag >>> 3, tag & 7, reader);
   }
 }
@@ -145,12 +157,14 @@ function readField(bytes: Uint8Array): LanceManifestField {
     nullable: false
   };
   readMessage(bytes, (number, wireType, reader) => {
-    if (number === 1 && wireType === 0) field.type = reader.readVarint();
+    if (number === 1 && wireType === 0) field.type = readSafeVarint(reader, 'field type');
     else if (number === 2 && wireType === 2) field.name = reader.readString();
-    else if (number === 3 && wireType === 0) field.id = reader.readVarint() | 0;
-    else if (number === 4 && wireType === 0) field.parentId = reader.readVarint() | 0;
+    else if (number === 3 && wireType === 0) field.id = readSafeVarint(reader, 'field id') | 0;
+    else if (number === 4 && wireType === 0)
+      field.parentId = readSafeVarint(reader, 'parent id') | 0;
     else if (number === 5 && wireType === 2) field.logicalType = reader.readString();
-    else if (number === 6 && wireType === 0) field.nullable = reader.readVarint() !== 0;
+    else if (number === 6 && wireType === 0)
+      field.nullable = readSafeVarint(reader, 'nullable') !== 0;
     else reader.skip(wireType);
   });
   return field;
@@ -162,28 +176,35 @@ function readDataFile(bytes: Uint8Array): LanceManifestDataFile {
     fieldIds: number[];
     fileMajorVersion?: number;
     fileMinorVersion?: number;
-    fileSizeBytes?: number;
+    fileSizeBytes?: LanceManifestInteger;
     baseId?: number;
   } = {path: '', fieldIds: []};
   readMessage(bytes, (number, wireType, reader) => {
     if (number === 1 && wireType === 2) dataFile.path = reader.readString();
-    else if (number === 2 && wireType === 0) dataFile.fieldIds.push(reader.readVarint() | 0);
+    else if (number === 2 && wireType === 0)
+      dataFile.fieldIds.push(readSafeVarint(reader, 'field id') | 0);
     else if (number === 2 && wireType === 2) {
       const packed = new ProtobufReader(reader.readBytes());
-      while (!packed.done) dataFile.fieldIds.push(packed.readVarint() | 0);
-    } else if (number === 4 && wireType === 0) dataFile.fileMajorVersion = reader.readVarint();
-    else if (number === 5 && wireType === 0) dataFile.fileMinorVersion = reader.readVarint();
+      while (!packed.done) dataFile.fieldIds.push(readSafeVarint(packed, 'field id') | 0);
+    } else if (number === 4 && wireType === 0)
+      dataFile.fileMajorVersion = readSafeVarint(reader, 'file major version');
+    else if (number === 5 && wireType === 0)
+      dataFile.fileMinorVersion = readSafeVarint(reader, 'file minor version');
     else if (number === 6 && wireType === 0) dataFile.fileSizeBytes = reader.readVarint();
-    else if (number === 7 && wireType === 0) dataFile.baseId = reader.readVarint();
+    else if (number === 7 && wireType === 0) dataFile.baseId = readSafeVarint(reader, 'base id');
     else reader.skip(wireType);
   });
   return dataFile;
 }
 
 function readFragment(bytes: Uint8Array): LanceManifestFragment {
-  const fragment = {id: 0, physicalRows: 0, files: [] as LanceManifestDataFile[]};
+  const fragment: {
+    id: number;
+    physicalRows: LanceManifestInteger;
+    files: LanceManifestDataFile[];
+  } = {id: 0, physicalRows: 0, files: []};
   readMessage(bytes, (number, wireType, reader) => {
-    if (number === 1 && wireType === 0) fragment.id = reader.readVarint();
+    if (number === 1 && wireType === 0) fragment.id = readSafeVarint(reader, 'fragment id');
     else if (number === 2 && wireType === 2) fragment.files.push(readDataFile(reader.readBytes()));
     else if (number === 4 && wireType === 0) fragment.physicalRows = reader.readVarint();
     else reader.skip(wireType);
@@ -203,8 +224,8 @@ function readDataFormat(bytes: Uint8Array): {fileFormat: string; version: string
 
 function parseManifestMessage(bytes: Uint8Array): LanceManifest {
   const manifest: {
-    version: number;
-    readerFeatureFlags: number;
+    version: LanceManifestInteger;
+    readerFeatureFlags: LanceManifestInteger;
     dataFormat?: {fileFormat: string; version: string};
     fields: LanceManifestField[];
     fragments: LanceManifestFragment[];

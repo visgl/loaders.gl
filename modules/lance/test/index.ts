@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import './lance-scaffold.node.spec';
+import './lance-scaffold.spec';

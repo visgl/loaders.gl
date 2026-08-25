@@ -3,12 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  ObjectRowTable,
-  ObjectRowTableBatch
-} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 import {LanceFormat} from './lance-format';
 import type {LanceFlatPrimitiveType} from './lance-decoder';
@@ -20,8 +15,6 @@ export type LanceLoaderOptions = {
     columns?: string[];
     /** Maximum number of rows to return. */
     limit?: number;
-    /** Output representation for decoded tables. */
-    shape?: 'arrow-table' | 'object-row-table';
     /** Primitive type for each physical column in the MVP reader. */
     columnTypes?: LanceFlatPrimitiveType[];
     /** Optional output names for physical columns in the MVP reader. */
@@ -34,7 +27,6 @@ export const LANCE_LOADER_OPTIONS = {
   lance: {
     columns: undefined,
     limit: undefined,
-    shape: 'arrow-table',
     columnTypes: undefined,
     columnNames: undefined
   }
@@ -49,15 +41,11 @@ async function preloadLanceLoader() {
 /** Metadata-only read-only Lance table loader. */
 export const LanceLoader = {
   ...LanceFormat,
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
+  dataType: null as unknown as ArrowTable,
+  batchType: null as unknown as ArrowTableBatch,
   id: 'lance',
   module: 'lance',
   version: 'latest',
   options: LANCE_LOADER_OPTIONS,
   preload: preloadLanceLoader
-} as const satisfies Loader<
-  ObjectRowTable | ArrowTable,
-  ObjectRowTableBatch | ArrowTableBatch,
-  LanceLoaderOptions
->;
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, LanceLoaderOptions>;
