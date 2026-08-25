@@ -182,6 +182,9 @@ test('LASWriter#encodes variable LAZ chunks', async t => {
     variable: true
   });
   const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+    core: {worker: false}
+  });
 
   t.equal(dataView.getUint32(100, true), 1, 'writes one LASzip VLR');
   t.deepEqual(
@@ -190,6 +193,16 @@ test('LASWriter#encodes variable LAZ chunks', async t => {
     'variable chunk table preserves point counts'
   );
   t.equal(data.attributes.POSITION.value.length, 9, 'variable LAZ parses through LASLoader');
+  t.deepEqual(
+    Array.from(data.attributes.POSITION.value),
+    Array.from(wasmData.attributes.POSITION.value),
+    'variable LAZ positions match the independent WASM reader'
+  );
+  t.deepEqual(
+    Array.from(data.attributes.intensity.value),
+    Array.from(wasmData.attributes.intensity.value),
+    'variable LAZ intensities match the independent WASM reader'
+  );
   t.end();
 });
 
