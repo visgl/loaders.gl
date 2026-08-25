@@ -37,7 +37,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Return flags, scanner channel, scan angle, point source ID, user data | Incomplete. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are preserved by the raw TypeScript LAZ APIs but are not exposed as Arrow columns. Waveform payload handling is not implemented. |
 | Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; extra point fields are still preserved through raw records rather than Arrow columns. |
-| VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT, GeoTIFF, Extra Bytes, waveform descriptors, and LASzip records are recognized; CRS interpretation remains a follow-up. |
+| VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
 | `parseInBatches` | Incremental for uncompressed LAS point records after enough header/point bytes are available. |
 
 ### TypeScript LAS Writer
@@ -163,6 +163,12 @@ LAS 1.5 does not change the basic LAS idea: the public header identifies the fil
 LAS 1.4 is the version used by COPC and by most modern LAZ delivery workflows. It moved LAS from legacy 32-bit limits toward 64-bit counts and offsets and introduced the modern point data record formats 6 through 10. These formats improve classification, return, scanner channel, overlap, GPS time, color, NIR, and waveform handling.
 
 LAS 1.4 can still carry legacy point formats 0 through 5 for compatibility. For new LAS 1.4 data, PDRFs 6 through 10 are preferred. WKT CRS records are required for PDRFs 6 through 10; GeoTIFF CRS records are retained for legacy PDRFs 0 through 5.
+
+## Geospatial Reference Systems
+
+The TypeScript parser preserves the LAS geospatial reference system metadata without changing coordinates. For WKT CRS VLRs, `loaderData.metadata.wkt` contains the OGC Coordinate System WKT (record ID 2112) and `loaderData.metadata.wktMathTransform` contains the OGC Math Transform WKT (record ID 2111). For legacy GeoTIFF CRS VLRs, `loaderData.metadata.geotiff` contains the raw GeoKey directory, double parameters, and ASCII parameters from record IDs 34735, 34736, and 34737.
+
+This is metadata support, not a reprojection engine: `POSITION` values remain in the LAS file's declared coordinate reference system, with the LAS header scale and offset applied. Applications that need a different CRS should interpret the WKT or GeoTIFF metadata with a CRS library and perform reprojection explicitly. Raw VLR and EVLR records remain available for vendor-specific CRS extensions.
 
 ## LAS 1.3
 
