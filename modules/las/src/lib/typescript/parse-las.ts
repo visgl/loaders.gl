@@ -2156,15 +2156,15 @@ function* appendDecodedLAZChunkToPointDataBatches(
   const extraByteCount = header.pointsStructSize - extraByteOffset;
   const rawChunkData =
     state.extraBytes && !rawPointData ? decodeLAZChunk(compressedChunk, metadata) : rawPointData;
-  const target =
-    state.waveforms || state.extraBytes
-      ? {...state.target, waveforms: null, extraBytes: null}
-      : state.target;
   let decodedChunkPointCount = 0;
 
   while (decoder.remainingPointCount > 0) {
     const batchCapacity = state.batchCapacity;
     const batchRemainingPointCount = batchCapacity - state.batchPointCount;
+    const target =
+      state.waveforms || state.extraBytes
+        ? {...state.target, waveforms: null, extraBytes: null}
+        : state.target;
     target.pointOffset = state.batchPointCount;
     const pointsDecoded = decoder.decodeIntoPointData(target, batchRemainingPointCount);
     if (rawPointData && state.waveforms) {
