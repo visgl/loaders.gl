@@ -517,6 +517,48 @@ test('LASWriter#writes vector Extra Bytes fields', t => {
   t.end();
 });
 
+test('LASWriter#writes multiple Extra Bytes fields contiguously', t => {
+  const extraAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    firstExtra: {value: new Uint8Array([11]), size: 1},
+    secondExtra: {value: new Uint16Array([2233]), size: 1}
+  };
+  const extraMesh = {
+    attributes: extraAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(extraAttributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = LASWriter.encodeSync?.(extraMesh, {
+    las: {
+      format: 'laz',
+      pointDataRecordFormat: 7,
+      chunkSize: 1,
+      extraBytes: [{attribute: 'firstExtra'}, {attribute: 'secondExtra'}]
+    }
+  });
+  if (!arrayBuffer) {
+    throw new Error('LASWriter did not return a LAZ ArrayBuffer');
+  }
+  const dataView = new DataView(arrayBuffer);
+  const pointDataOffset = dataView.getUint32(96, true);
+  const chunkTableOffset = readUint64(dataView, pointDataOffset);
+  const chunk = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 39,
+    pointCount: 1,
+    point14ItemVersion: 3,
+    rgb14ItemVersion: 3,
+    byte14ItemVersion: 3
+  });
+  const pointView = new DataView(chunk.buffer);
+
+  t.equal(dataView.getUint16(105, true), 39, 'includes both Extra Bytes widths');
+  t.equal(pointView.getUint8(36), 11, 'writes the first Extra Bytes field at the base offset');
+  t.equal(pointView.getUint16(37, true), 2233, 'writes the second Extra Bytes field contiguously');
+  t.end();
+});
+
 test('LASWriter#validates Extra Bytes declarations', t => {
   const scalarAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},

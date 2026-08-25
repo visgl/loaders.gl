@@ -713,9 +713,8 @@ function writeExtraBytes(
   basePointDataRecordLength: number,
   fields: readonly LASExtraByteField[]
 ): void {
-  let byteOffset = pointOffset;
+  let byteOffset = pointOffset + basePointDataRecordLength;
   for (const field of fields) {
-    byteOffset += basePointDataRecordLength;
     for (let componentIndex = 0; componentIndex < field.componentCount; componentIndex++) {
       writeExtraBytesValue(dataView, byteOffset, vertexIndex, componentIndex, field);
       byteOffset += field.byteLength / field.componentCount;
