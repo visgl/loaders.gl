@@ -62,15 +62,21 @@ which source order they are selected.
 
 ## The portable logical query
 
-The first portable query surface is deliberately small:
+The foundational types live in `@loaders.gl/loader-utils`, below every storage, SQL, and Arrow
+package. The query is generic over a compatible columnar predicate so a format may narrow property
+paths or values without cloning the logical operators:
 
 ```ts
-type TableQueryOptions = Readonly<{
-  predicate?: SQLPredicate;
+type TableQueryOptions<PredicateT extends ColumnarPredicate = ColumnarPredicate> = Readonly<{
+  predicate?: PredicateT;
   columns?: readonly string[];
   limit?: number;
 }>;
 ```
+
+SQL specializes this with `SQLPredicate`, which permits named parameters and string column names.
+Parquet specializes it with concrete values and string-or-path properties. A bound SQL predicate is
+therefore directly usable by Parquet, Arrow, Iceberg, and future GPU executors.
 
 This represents four logical operators in a fixed order:
 
@@ -87,6 +93,40 @@ The ordering is part of the contract:
 
 Cancellation belongs to an execution request rather than the immutable logical plan. This keeps
 the plan serializable, cacheable, comparable, and suitable for worker or GPU transport.
+
+### Canonical logical planning
+
+`planTableQuery(sourceColumns, query)` validates the query and emits an immutable plan. For example,
+filtering by a hidden `population` column while returning only `name` produces:
+
+```ts
+[
+  {kind: 'scan', columns: ['name', 'population']},
+  {kind: 'filter', predicate},
+  {kind: 'project', columns: ['name']},
+  {kind: 'limit', limit: 10}
+]
+```
+
+This plan is intentionally logical. Parquet may fuse scan, filter, and project into selective byte
+ranges; DuckDB may compile the whole sequence to one prepared statement; Arrow may interpret the
+steps over vectors; luma.gl may lower filter to WGSL and retain indices. Operator fusion is welcome
+as long as the visible result is equivalent.
+
+### Package ownership
+
+| Layer | Owning package | Responsibility |
+| --- | --- | --- |
+| Portable values and predicates | `@loaders.gl/loader-utils` | AST types, paths, traversal, validation, immutable binding |
+| Logical table query | `@loaders.gl/loader-utils` | query options, canonical plan, capability vocabulary |
+| SQL syntax and compilation | `@loaders.gl/sql` | parser, SQL validation, identifier quoting, placeholders and bindings |
+| In-memory execution | `@loaders.gl/sql/arrow-query` | exact Arrow semantics for the portable query |
+| Physical columnar scans | `@loaders.gl/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
+| Table-format planning | `IcebergTableSource` and future peers | snapshots, manifests/logs, deletes, file selection |
+
+Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database
+adapter. SQL retains compatibility exports from `@loaders.gl/sql/table-query` while new generic
+planners can import the lower-level contract directly.
 
 ## Predicates and SQL semantics
 
@@ -259,6 +299,11 @@ Once the limit is satisfied, the executor should cancel queued and active work t
 contribute visible rows. For a remote dataset this can prevent file discovery, HTTP ranges,
 decoding, and Arrow allocation.
 
+`ParquetSource`, `ParquetDatasetSource`, and `IcebergTableSource` implement this as one global
+post-filter limit. It is applied after Iceberg deletes, may truncate the final Arrow batch without
+losing row-position provenance, and ends the underlying ordered task iterator as soon as the count
+is reached. A zero limit performs no file discovery or data reads.
+
 Streaming executors should retain bounded memory. Concurrent file or fragment reads may run ahead,
 but later tasks must not materialize unbounded results while an earlier ordered task is still
 producing output.
@@ -296,18 +341,31 @@ mask or indices and materialize only when a downstream consumer requires it.
 
 ## Capabilities
 
-Sources and executors should advertise capabilities separately from logical correctness:
+Sources and executors advertise optimization and execution capabilities separately from logical
+correctness using the shared contract:
 
 ```ts
-type ScanCapabilities = {
-  projection: boolean;
-  predicate: 'none' | 'residual' | 'pushdown';
-  limit: 'none' | 'post-filter' | 'early-stop';
-  ordering: boolean;
-  snapshots: boolean;
-  deletes: boolean;
+type TableQueryCapabilities = Readonly<{
+  projection: 'unsupported' | 'residual' | 'pushdown';
+  predicate: 'unsupported' | 'residual' | 'pushdown';
+  limit: 'unsupported' | 'residual' | 'pushdown';
+  streaming: boolean;
+  cancellation: boolean;
+}>;
+
+const PARQUET_TABLE_QUERY_CAPABILITIES = {
+  projection: 'pushdown',
+  predicate: 'pushdown',
+  limit: 'pushdown',
+  streaming: true,
+  cancellation: true
 };
 ```
+
+`pushdown` means the backend has a physical opportunity to avoid work; it does not promise that
+every expression can be proven from metadata. Parquet still evaluates a residual predicate exactly
+after conservative statistics and page pruning. `residual` means correct local execution without a
+storage-level optimization. `unsupported` is a correctness gap that must be rejected or delegated.
 
 Capabilities answer two different questions:
 
@@ -401,16 +459,25 @@ semantics?
 
 ## Roadmap
 
-The implementation is expected to evolve in tranches:
+The implementation evolves in reviewable tranches. The foundation now provides the first four
+items; the later work can land independently without changing portable query semantics:
 
-1. stabilize the portable predicate and table-query contract;
-2. compile portable queries to parameterized DuckDB and Snowflake SQL;
-3. demonstrate switchable Arrow and DuckDB execution without Arrow-side ingestion;
-4. adapt Parquet, Iceberg, and Delta scans to the common query;
-5. expose physical plans, pruning explanations, and execution telemetry;
-6. add Lance as a physical scan backend;
-7. lower the same logical plan to luma.gl/WGSL selection masks;
-8. add richer relational operators only as multiple backends require them.
+1. **Foundation:** shared generic predicate, late binding, `TableQueryOptions`, canonical planning,
+   capability descriptors, and common ordered scan-task execution.
+2. **SQL adapters:** parameterized DuckDB and Snowflake compilation while retaining raw SQL for the
+   full language.
+3. **Reference executors:** switchable Arrow and lazy DuckDB execution over the same browser data,
+   without ingesting the Arrow result into DuckDB.
+4. **Physical scans:** common projection, predicate, and global-limit semantics across Parquet and
+   Iceberg, including hidden predicate/delete columns and aligned provenance.
+5. **Explain:** serializable physical plans, pushed-versus-residual diagnostics, and telemetry
+   annotations.
+6. **More table formats:** Delta transaction logs and deletion vectors, then Lance fragments and
+   indices, reusing Parquet or format-native physical tasks as appropriate.
+7. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
+   GPU-specific limit/selection stage.
+8. **Relational growth:** add ordering, expressions, aggregates, or joins only where at least two
+   materially different backends need the same portable meaning.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
