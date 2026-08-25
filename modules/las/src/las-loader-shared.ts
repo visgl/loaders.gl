@@ -26,7 +26,8 @@ export type LASColumnName =
   | 'numberOfReturns'
   | 'scannerChannel'
   | 'scanDirectionFlag'
-  | 'edgeOfFlightLine';
+  | 'edgeOfFlightLine'
+  | 'WAVEFORM';
 
 /** Options accepted by LAS loader implementations. */
 export type LASLoaderOptions = LoaderOptions & {
