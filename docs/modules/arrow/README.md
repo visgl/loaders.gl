@@ -16,15 +16,12 @@ See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical 
 
 ## Loaders and Writers
 
-| Loader                                                                |
-| --------------------------------------------------------------------- |
-| [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader)       |
-| [`ArrowWorkerLoader`](/docs/modules/arrow/api-reference/arrow-loader) |
-| [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader) |
-
-| Writer                                                          |
-| --------------------------------------------------------------- |
-| [`ArrowWriter`](/docs/modules/arrow/api-reference/arrow-writer) |
+| Loader / Writer | Description |
+| --------------- | ----------- |
+| [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Loads Apache Arrow IPC files and streams as loaders.gl tables. |
+| [`ArrowWorkerLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Deprecated alias for `ArrowLoader`. |
+| [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader) | Loads Arrow data and interprets GeoArrow geometry columns. |
+| [`ArrowWriter`](/docs/modules/arrow/api-reference/arrow-writer) | Writes arrays as Apache Arrow IPC data. |
 
 ## Additional APIs
 

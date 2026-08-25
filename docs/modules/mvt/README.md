@@ -13,27 +13,22 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader / Writer                                           |
-| --------------------------------------------------------- |
-| [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) |
-| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) |
-| [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) |
-| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) |
+| Loader / Writer / Source | Description |
+| ----------------------- | ----------- |
+| [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) | Parses MapLibre and Mapbox style JSON. |
+| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Parses Mapbox Vector Tiles. |
+| [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) | Parses TileJSON metadata and tilestats. |
+| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) | Writes Mapbox Vector Tile data. |
+| [`MVTSourceLoader`](/docs/modules/mvt/api-reference/mvt-source-loader) | Dynamically loads tiles from pre-tiled MVT hierarchies. |
+| [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) | Generates vector tiles from geospatial tables on the fly. |
 
 ## Formats
 
-| Format |
-| ------ |
-| [`Map Styles`](/docs/modules/mvt/formats/map-style) |
-| [`MVT`](/docs/modules/mvt/formats/mvt) |
-| [`TileJSON`](/docs/modules/mvt/formats/tilejson) |
-
-## Sources
-
-| Component                                                              |
-| ---------------------------------------------------------------------- |
-| [`MVTSourceLoader`](/docs/modules/mvt/api-reference/mvt-source-loader)              |
-| [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) |
+| Format | Description |
+| ------ | ----------- |
+| [`Map Styles`](/docs/modules/mvt/formats/map-style) | MapLibre and Mapbox style JSON documents. |
+| [`MVT`](/docs/modules/mvt/formats/mvt) | Binary vector tiles containing geospatial geometry. |
+| [`TileJSON`](/docs/modules/mvt/formats/tilejson) | JSON metadata describing tiled map resources. |
 
 ## Attribution
 

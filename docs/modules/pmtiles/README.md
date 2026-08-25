@@ -4,9 +4,9 @@ Support for loading tiled data from [PMTiles](/docs/modules/pmtiles/formats/pmti
 
 ## Loaders and Writers
 
-| Loader                                                                |
-| --------------------------------------------------------------------- |
-| [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) |
+| Source | Description |
+| ------ | ----------- |
+| [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) | Loads tiled data from PMTiles archives. |
 
 ## Attribution
 

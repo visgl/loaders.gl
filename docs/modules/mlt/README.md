@@ -13,17 +13,12 @@ npm install @loaders.gl/mlt
 npm install @loaders.gl/core
 ```
 
-## Loaders
+## Loaders and Sources
 
-| Loader                                                    |
-| --------------------------------------------------------- |
-| [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) |
-
-## Sources
-
-| Source                                                    |
-| --------------------------------------------------------- |
-| [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) |
+| Loader / Source | Description |
+| --------------- | ----------- |
+| [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) | Loads MapLibre Tile vector tiles. |
+| [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) | Loads MapLibre Tile data as a tile source. |
 
 ## Examples
 

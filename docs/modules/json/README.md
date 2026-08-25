@@ -20,15 +20,15 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Exports                                                                     |
-| --------------------------------------------------------------------------- |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)                |
-| [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader)     |
-| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) |
-| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)          |
-| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader)      |
-| [`JSONWriter`](/docs/modules/json/api-reference/json-writer)                |
-| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer)          |
+| Loader / Writer | Description |
+| --------------- | ----------- |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Loads arbitrary JSON documents and can extract arrays as loaders.gl row tables. |
+| [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) | Loads JSON row arrays as loaders.gl row tables or Apache Arrow tables. |
+| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) | Loads newline-delimited JSON records. |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) | Loads GeoJSON features and feature collections. |
+| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader) | Loads newline-delimited GeoJSON records. |
+| [`JSONWriter`](/docs/modules/json/api-reference/json-writer) | Writes loaders.gl tables as JSON arrays or custom wrapped JSON values. |
+| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) | Writes geospatial tables as GeoJSON. |
 
 ## Additional APIs
 

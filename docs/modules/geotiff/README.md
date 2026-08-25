@@ -23,11 +23,11 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 
 ## Loaders and Sources
 
-| Loader                                                                |
-| --------------------------------------------------------------------- |
-| [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) |
-| [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) |
-| [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) |
+| Loader / Source | Description |
+| ---------------- | ----------- |
+| [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) | Loads GeoTIFF and OME-TIFF images. |
+| [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) | Provides viewport-driven access to geospatial raster data. |
+| [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) | Provides typed OME-TIFF planes for viewport requests. |
 
 ## Additional APIs
 

@@ -22,9 +22,9 @@ npm install @loaders.gl/core @loaders.gl/copc
 
 ## APIs
 
-| Loader                                                       |
-| ------------------------------------------------------------ |
-| [`COPCSourceLoader`](/docs/modules/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
+| Source | Description |
+| ------ | ----------- |
+| [`COPCSourceLoader`](/docs/modules/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Loads viewport-selected point data from COPC files. |
 
 ## Attribution
 

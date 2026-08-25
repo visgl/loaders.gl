@@ -12,10 +12,10 @@ npm install @loaders.gl/geopackage
 
 ## Loaders and Writers
 
-| Export                                                                                     |
-| ------------------------------------------------------------------------------------------ |
-| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader)             |
-| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source)            |
+| Loader / Source | Description |
+| --------------- | ----------- |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads GeoPackage files and exposes their tables and layers. |
+| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Provides access to GeoPackage tables as a data source. |
 
 ## Attribution
 

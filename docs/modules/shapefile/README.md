@@ -10,10 +10,10 @@ npm install @loaders.gl/shapefile
 
 ## Loaders and Writers
 
-| Loader                                                          |
-| --------------------------------------------------------------- |
-| [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) |
-| [`SHPLoader`](/docs/modules/shapefile/api-reference/shp-loader) |
+| Loader | Description |
+| ------ | ----------- |
+| [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) | Loads Shapefile archives as geospatial tables. |
+| [`SHPLoader`](/docs/modules/shapefile/api-reference/shp-loader) | Loads individual Shapefile `.shp` geometry files. |
 
 ## Attribution
 
