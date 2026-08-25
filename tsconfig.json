@@ -256,9 +256,6 @@
       "@loaders.gl/lance/test": [
         "modules/lance/test"
       ],
-      ],
-      ],
-      ],
       "@loaders.gl/pcd": [
         "modules/pcd/src"
       ],
