@@ -8,6 +8,37 @@ export type {CompressionMetadata} from './compression-types';
 export {Compression, Compressor, Decompressor} from './lib/compression';
 
 export {
+  NoCompressor,
+  NoDecompressor,
+  DeflateCompressor,
+  DeflateDecompressor,
+  GZipCompressor,
+  GZipDecompressor,
+  BrotliCompressor,
+  BrotliDecompressor,
+  SnappyCompressor,
+  SnappyDecompressor,
+  LZ4Compressor,
+  LZ4Decompressor,
+  ZstdCompressor,
+  ZstdDecompressor,
+  BZip2Compressor,
+  BZip2Decompressor,
+  XZCompressor,
+  XZDecompressor
+} from './default-codecs';
+export type {
+  BrotliCompressorOptions,
+  BrotliDecompressorOptions,
+  DeflateCompressorOptions,
+  DeflateDecompressorOptions,
+  GZipCompressorOptions,
+  GZipDecompressorOptions,
+  ZstdCompressorOptions,
+  ZstdDecompressorOptions
+} from './default-codecs';
+
+export {
   noCompression,
   deflateCompression,
   gzipCompression,

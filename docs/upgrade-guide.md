@@ -39,27 +39,22 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
 **@loaders.gl/compression**
 
-- The compression package root now exports lightweight metadata descriptors such as
-  `gzipCompression` and `zstdCompression` instead of concrete codec classes. Call
-  `await gzipCompression.preload()` to lazily select the built-in or fallback implementation,
-  or import a direction-specific default from its explicit subpath, for example
-  `@loaders.gl/compression/gzip-decompressor`. The Parquet integration uses the metadata
-  descriptors automatically.
-- Migrate to the library-neutral `FORMAT-DIRECTION` defaults, such as `gzip-compressor`,
-  `gzip-decompressor`, and `zstd-decompressor`. The defaults own the balanced built-in and
-  fallback policy. Implementation-specific `FORMAT-DIRECTION-IMPLEMENTATION` subpaths remain
-  available for applications that need to pin a backend.
+- The compression package root now exports lightweight, library-neutral classes such as
+  `GZipCompressor`, `GZipDecompressor`, and `ZstdDecompressor`. Their async methods prefer built-in
+  codecs and dynamically import a fallback only when necessary. `preload()` returns the selected
+  concrete implementation. Import direct `FORMAT-DIRECTION` or implementation-specific
+  `FORMAT-DIRECTION-IMPLEMENTATION` subpaths only to prebundle or pin a backend.
 - The `Compressor` and `Decompressor` base classes replace `Compression` for new APIs. Combined
   classes ending in `Compression` are deprecated, but remain available in v5 as compatibility
   facades and are assignable to both contracts. This means an existing combined codec can still be
   supplied to `Compressor[]` or `Decompressor[]`; migrate imports when minimizing bundle size.
 
-  | Deprecated combined import | Preferred imports |
+  | Deprecated combined import | Preferred root classes |
   | --- | --- |
-  | `no-compression` | `no-compressor`, `no-decompressor` |
-  | `gzip-fflate`, `gzip-pako` | `gzip-compressor`, `gzip-decompressor` |
-  | `deflate-fflate`, `deflate-pako` | `deflate-compressor`, `deflate-decompressor` |
-  | `FORMAT-compress-utils` | `FORMAT-compressor`, `FORMAT-decompressor` |
+  | `no-compression` | `NoCompressor`, `NoDecompressor` |
+  | `gzip-fflate`, `gzip-pako` | `GZipCompressor`, `GZipDecompressor` |
+  | `deflate-fflate`, `deflate-pako` | `DeflateCompressor`, `DeflateDecompressor` |
+  | `FORMAT-compress-utils` | `FormatCompressor`, `FormatDecompressor` |
 - Full bzip2 and XZ compression and incremental operation are available through the new
   direction-specific `bzip2-*-compress-utils` and `xz-*-compress-utils` implementations. The
   deprecated combined classes remain available for compatibility.

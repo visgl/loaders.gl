@@ -9,8 +9,7 @@ prefer built-in streams and fall back to `fflate`. Wrapped zlib DEFLATE and raw 
 remain distinct and interoperable.
 
 ```typescript
-import {DeflateCompressor} from '@loaders.gl/compression/deflate-compressor';
-import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression';
 
 const compressed = await new DeflateCompressor().compress(data);
 const restored = await new DeflateDecompressor().decompress(compressed);

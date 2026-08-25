@@ -19,8 +19,8 @@ Choose an implementation based on what your application values most:
 
 | Need | Recommended path |
 | --- | --- |
-| Normal application use | Import the library-neutral `FormatCompressor` or `FormatDecompressor` |
-| Smallest possible initial bundle | Try `native-compression` or `native-decompression`, then dynamically import a fallback |
+| Normal application use | Import the library-neutral class from the package root |
+| Smallest possible initial bundle | Use the root class; it imports no fallback until built-in support is unavailable |
 | A specific backend or reproducible benchmark | Import an implementation-named class |
 | Existing v4 code | Keep the combined `*Compression` class while migrating; these classes are deprecated, not removed |
 
@@ -33,7 +33,7 @@ Import the default class for the direction you need. The default owns the built-
 policy, so application imports stay stable as runtime support improves:
 
 ```typescript
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipDecompressor} from '@loaders.gl/compression';
 
 const decompressor = new GZipDecompressor();
 const data = await decompressor.decompress(compressedData);
@@ -43,9 +43,12 @@ Compressors and decompressors share stable base types, which makes codec selecti
 through loaders, writers, or application code:
 
 ```typescript
-import type {Compressor, Decompressor} from '@loaders.gl/compression';
-import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {
+  GZipCompressor,
+  GZipDecompressor,
+  type Compressor,
+  type Decompressor
+} from '@loaders.gl/compression';
 
 const compressors: Compressor[] = [new GZipCompressor()];
 const decompressors: Decompressor[] = [new GZipDecompressor()];
@@ -53,11 +56,12 @@ const decompressors: Decompressor[] = [new GZipDecompressor()];
 
 ## Built-in codecs first
 
-The lightweight `native-compression` and `native-decompression` entrypoints use the runtime's
+The root compressor and decompressor classes automatically select these paths. The lightweight
+`native-compression` and `native-decompression` entrypoints expose the runtime's
 [`CompressionStream`](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream) and
 [`DecompressionStream`](https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream)
-implementations. They contain no fallback codec imports. A helper returns `null` when the exact
-format is unavailable, so the application can load its chosen fallback only then.
+implementations directly for applications that need lower-level control. They contain no fallback
+codec imports. A helper returns `null` when the exact format is unavailable.
 
 ```typescript
 import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
@@ -90,8 +94,10 @@ support is still runtime-dependent. See
 
 ## Default compressors
 
-These are the recommended application imports. Defaults are deliberately library-neutral and
-optimized for balanced bundle size and runtime performance.
+These classes are exported from `@loaders.gl/compression`. They are deliberately library-neutral,
+keep fallback codecs behind dynamic imports, and optimize for balanced bundle size and runtime
+performance. The listed subpaths provide direct access to the concrete default when synchronous
+startup or explicit prebundling is required.
 
 | Format | Class | Import subpath | Default policy |
 | --- | --- | --- | --- |
@@ -184,12 +190,16 @@ streams, initialize optional modules, and work with WASM-backed implementations.
 optional package when importing its adapter. `compress-utils` uses direction-specific algorithm
 subpaths so unrelated formats can be tree-shaken.
 
-## Metadata and compatibility
+## Lazy root classes and compatibility
 
-The package root exports lightweight descriptors such as `gzipCompression`, `brotliCompression`,
-and `zstdCompression`. Their `preload()` method dynamically selects the compatibility codec for
-that format. Import an explicit implementation subpath when bundle composition must be
-predictable.
+The package root exports lightweight `FormatCompressor` and `FormatDecompressor` classes. Their
+async methods call `preload()` automatically. `preload()` first selects a built-in implementation
+when the runtime supports the format, otherwise it dynamically imports the concrete balanced
+fallback. It also returns that concrete implementation for applications that want to cache or
+inspect the selection explicitly.
+
+Import a direct default or backend-specific subpath only when bundle composition must be pinned,
+or when synchronous work must begin without an asynchronous preload step.
 
 The combined classes ending in `Compression` remain available as deprecated v5 compatibility
 facades. They implement both

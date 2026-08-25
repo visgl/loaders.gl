@@ -9,8 +9,7 @@ prefer built-in streams and fall back to compact `fflate`; synchronous and fallb
 operations use `fflate` directly.
 
 ```typescript
-import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression';
 
 const compressed = await new GZipCompressor().compress(data);
 const restored = await new GZipDecompressor().decompress(compressed);

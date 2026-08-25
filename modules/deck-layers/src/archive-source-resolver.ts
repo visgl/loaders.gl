@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
-import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
-import {NoCompression} from '@loaders.gl/compression/no-compression';
+import {DeflateDecompressor, GZipDecompressor, NoDecompressor} from '@loaders.gl/compression';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
 import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
@@ -351,9 +349,9 @@ class Tiles3DArchiveAccessor extends IndexedArchive {
 
       switch (localFileHeader.compressionMethod) {
         case 0:
-          return await new NoCompression().decompress(compressedFile);
+          return await new NoDecompressor().decompress(compressedFile);
         case 8:
-          return await new DeflateCompression({raw: true}).decompress(compressedFile);
+          return await new DeflateDecompressor({raw: true}).decompress(compressedFile);
         default:
           throw new Error('Only Deflation compression is supported');
       }
@@ -423,7 +421,7 @@ class SLPKArchiveAccessor extends IndexedArchive {
       return undefined;
     }
     if (/\.gz$/.test(pathInArchive)) {
-      return await new GZipCompression().decompress(data);
+      return await new GZipDecompressor().decompress(data);
     }
     return data;
   }

@@ -59,8 +59,8 @@ test('SPZLoader uses native zstd without a codec module', async t => {
     t.equal(table.data.numRows, 2, 'native zstd path parses SPZ data');
     t.deepEqual(
       formats,
-      ['zstd', 'zstd', 'zstd', 'zstd', 'zstd'],
-      'all SPZ streams use native zstd'
+      ['zstd', 'zstd', 'zstd', 'zstd', 'zstd', 'zstd'],
+      'one capability probe and all SPZ streams use native zstd'
     );
   } finally {
     restoreZstd();

@@ -3,25 +3,29 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import type {Compression, Compressor, Decompressor} from '@loaders.gl/compression';
-import {NoCompressor} from '@loaders.gl/compression/no-compressor';
-import {NoDecompressor} from '@loaders.gl/compression/no-decompressor';
-import {BrotliCompressor} from '@loaders.gl/compression/brotli-compressor';
-import {BrotliDecompressor} from '@loaders.gl/compression/brotli-decompressor';
-import {BZip2Compressor} from '@loaders.gl/compression/bzip2-compressor';
-import {BZip2Decompressor} from '@loaders.gl/compression/bzip2-decompressor';
-import {DeflateCompressor} from '@loaders.gl/compression/deflate-compressor';
-import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
-import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
-import {LZ4Compressor} from '@loaders.gl/compression/lz4-compressor';
-import {LZ4Decompressor} from '@loaders.gl/compression/lz4-decompressor';
-import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
-import {SnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor';
-import {XZCompressor} from '@loaders.gl/compression/xz-compressor';
-import {XZDecompressor} from '@loaders.gl/compression/xz-decompressor';
-import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
-import {ZstdDecompressor} from '@loaders.gl/compression/zstd-decompressor';
+import {
+  BrotliCompressor,
+  BrotliDecompressor,
+  BZip2Compressor,
+  BZip2Decompressor,
+  DeflateCompressor,
+  DeflateDecompressor,
+  GZipCompressor,
+  GZipDecompressor,
+  LZ4Compressor,
+  LZ4Decompressor,
+  NoCompressor,
+  NoDecompressor,
+  SnappyCompressor,
+  SnappyDecompressor,
+  XZCompressor,
+  XZDecompressor,
+  ZstdCompressor,
+  ZstdDecompressor,
+  type Compression,
+  type Compressor,
+  type Decompressor
+} from '@loaders.gl/compression';
 import {DeflateFflateCompression} from '@loaders.gl/compression/deflate-fflate';
 import {GZipFflateCompression} from '@loaders.gl/compression/gzip-fflate';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
@@ -90,6 +94,21 @@ describe('compression library bindings', () => {
     expect(concatenateBatches(outputBatches)).toEqual(TEST_BYTES);
   });
 
+  test('root GZIP class preload returns and shares its concrete fallback', async () => {
+    const lazyDecompressor = new GZipDecompressor({useNative: false});
+    const [implementation, concurrentImplementation] = await Promise.all([
+      lazyDecompressor.preload(),
+      lazyDecompressor.preload()
+    ]);
+    expect(implementation).not.toBe(lazyDecompressor);
+    expect(concurrentImplementation).toBe(implementation);
+
+    const compressed = await new GZipCompressor({useNative: false}).compress(
+      copyArrayBuffer(TEST_BYTES)
+    );
+    expect(new Uint8Array(implementation.decompressSync(compressed))).toEqual(TEST_BYTES);
+  });
+
   test('default GZIP decompressor prefers built-in support', async () => {
     if (!(await supportsNativeDecompressionStream('gzip'))) return;
     const formats: string[] = [];
@@ -100,7 +119,7 @@ describe('compression library bindings', () => {
       );
       const output = await new GZipDecompressor().decompress(compressed);
       expect(new Uint8Array(output)).toEqual(TEST_BYTES);
-      expect(formats).toEqual(['gzip']);
+      expect(formats).toEqual(['gzip', 'gzip']);
     } finally {
       restoreDecompressionStream();
     }

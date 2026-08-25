@@ -19,9 +19,9 @@ abstract class CompressionTransform {
   abstract readonly isSupported: boolean;
 
   /** Preloads any dynamic libraries. May enable sync functions */
-  async preload(modules: Record<string, any> = {}): Promise<void> {
+  async preload(modules: Record<string, any> = {}): Promise<Compressor | Decompressor | void> {
     registerJSModules(modules);
-    return;
+    return undefined;
   }
 
   // HELPERS

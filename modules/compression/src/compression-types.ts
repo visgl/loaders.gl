@@ -4,7 +4,10 @@
 
 import type {Compression, CompressionOptions} from './lib/compression';
 
-/** Lightweight root-level metadata for a compression format. */
+/**
+ * Lightweight root-level metadata for a legacy combined compression format.
+ * @deprecated Use the direction-specific `Compressor` and `Decompressor` classes.
+ */
 export type CompressionMetadata = {
   /** Stable format name. */
   readonly name: string;

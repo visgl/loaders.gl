@@ -6,7 +6,7 @@ import {FileSystem, isBrowser, BlobFile, NodeFile} from '@loaders.gl/loader-util
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
+import {DeflateDecompressor} from '@loaders.gl/compression';
 import {IndexedArchive} from './IndexedArchive';
 import {readRange} from '../parse-zip/readable-file-utils';
 
@@ -17,7 +17,7 @@ export const ZIP_COMPRESSION_HANDLERS: {[key: number]: CompressionHandler} = {
   0: async compressedFile => compressedFile,
   /** Deflation */
   8: async compressedFile => {
-    const compression = new DeflateCompression({raw: true});
+    const compression = new DeflateDecompressor({raw: true});
     const decompressedData = await compression.decompress(compressedFile);
     return decompressedData;
   }

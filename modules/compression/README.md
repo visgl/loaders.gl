@@ -6,7 +6,7 @@ compact JavaScript, and optional codec implementations.
 ## Design
 
 - Async codecs prefer the runtime's `CompressionStream` and `DecompressionStream` support.
-- Library-neutral `FORMAT-DIRECTION` subpaths provide the recommended balanced default.
+- Library-neutral root classes provide the recommended lazy, balanced default.
 - Advanced implementation-specific subpaths use `FORMAT-DIRECTION-IMPLEMENTATION` order.
 - Compact `fflate`, `fzstd`, Snappy, LZ4 block, and Brotli fallbacks cover common read paths.
 - Larger or specialized implementations are selected through explicit, independently importable
@@ -17,7 +17,7 @@ compact JavaScript, and optional codec implementations.
 ## Example
 
 ```typescript
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipDecompressor} from '@loaders.gl/compression';
 
 const decompressor = new GZipDecompressor();
 const data = await decompressor.decompress(compressedData);

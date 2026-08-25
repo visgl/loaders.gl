@@ -8,8 +8,7 @@
 not exposed by the browser stream APIs, so the defaults select the small JavaScript codec directly.
 
 ```typescript
-import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
-import {SnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs and support

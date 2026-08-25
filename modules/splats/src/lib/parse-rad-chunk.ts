@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
+import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {GaussianSplats, SplatsLoaderOptions} from '../types';
 import {
@@ -15,8 +15,8 @@ import {
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {decodeFloat16, normalizeQuaternion, SH_C0} from './splat-utils';
 
-const RAD_PROPERTY_DEFLATE = new DeflateCompression();
-const RAD_PROPERTY_RAW_DEFLATE = new DeflateCompression({raw: true});
+const RAD_PROPERTY_DEFLATE = new DeflateDecompressor({useNative: false});
+const RAD_PROPERTY_RAW_DEFLATE = new DeflateDecompressor({raw: true, useNative: false});
 
 /** Options for decoding one Spark RADC chunk payload. */
 export type RADChunkDecodeOptions = SplatsLoaderOptions & {

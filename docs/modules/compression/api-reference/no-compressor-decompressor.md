@@ -8,8 +8,7 @@
 uncompressed format without a special branch.
 
 ```typescript
-import {NoCompressor} from '@loaders.gl/compression/no-compressor';
-import {NoDecompressor} from '@loaders.gl/compression/no-decompressor';
+import {NoCompressor, NoDecompressor} from '@loaders.gl/compression';
 ```
 
 `compress()`, `compressSync()`, `decompress()`, and `decompressSync()` return the input unchanged.

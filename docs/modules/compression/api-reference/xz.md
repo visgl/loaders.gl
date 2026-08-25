@@ -8,8 +8,7 @@
 `compress-utils` imports. The encoder or decoder is loaded only when that operation runs.
 
 ```typescript
-import {XZCompressor} from '@loaders.gl/compression/xz-compressor';
-import {XZDecompressor} from '@loaders.gl/compression/xz-decompressor';
+import {XZCompressor, XZDecompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs, including

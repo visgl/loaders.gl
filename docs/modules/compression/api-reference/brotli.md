@@ -9,8 +9,7 @@ stream first. Compression then lazily loads `compress-utils`; decompression lazi
 loaders.gl JavaScript decoder. Nothing is loaded for a fallback that is not used.
 
 ```typescript
-import {BrotliCompressor} from '@loaders.gl/compression/brotli-compressor';
-import {BrotliDecompressor} from '@loaders.gl/compression/brotli-decompressor';
+import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs.

@@ -9,8 +9,7 @@ compact hand-written block and Hadoop decoder and loads `lz4js` only when frame 
 it.
 
 ```typescript
-import {LZ4Compressor} from '@loaders.gl/compression/lz4-compressor';
-import {LZ4Decompressor} from '@loaders.gl/compression/lz4-decompressor';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs. Raw block

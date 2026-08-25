@@ -27,6 +27,11 @@ export function compressBatchesWithNativeCompressionStream(
   return compressionStream ? transformBatches(inputBatches, compressionStream) : null;
 }
 
+/** Returns whether the runtime exposes CompressionStream for a specific format. */
+export function isNativeCompressionSupported(format: NativeCompressionFormat): boolean {
+  return Boolean(createNativeCompressionStream(format));
+}
+
 function createNativeCompressionStream(format: NativeCompressionFormat): CompressionStream | null {
   if (typeof globalThis.CompressionStream === 'undefined') {
     return null;

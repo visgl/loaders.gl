@@ -37,10 +37,11 @@ HTTP `Content-Encoding` values associated with the format.
 
 Whether the implementation can be selected in the current environment.
 
-### `preload(modules?): Promise<void>`
+### `preload(modules?): Promise<Compressor | Decompressor | void>`
 
-Initializes injected or dynamically loaded dependencies. Async operations normally do this when
-needed. Call `preload()` before a synchronous method when its backend requires an optional module.
+Root-level lazy classes return the selected concrete built-in or fallback implementation. Concrete
+backend classes may simply initialize their dependency. Async operations normally call this when
+needed. Call `preload()` before a synchronous method on a root-level class.
 
 ## Compressor methods
 

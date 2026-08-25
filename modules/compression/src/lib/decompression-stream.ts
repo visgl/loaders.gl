@@ -46,6 +46,11 @@ export function decompressBatchesWithNativeDecompressionStream(
     : null;
 }
 
+/** Returns whether the runtime exposes DecompressionStream for a specific format. */
+export function isNativeDecompressionSupported(format: NativeDecompressionFormat): boolean {
+  return Boolean(createNativeDecompressionStream(format));
+}
+
 /**
  * Creates a runtime-provided DecompressionStream when the requested format is supported.
  *

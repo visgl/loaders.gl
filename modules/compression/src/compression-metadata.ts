@@ -30,7 +30,7 @@ function createCompressionMetadata(
   };
 }
 
-/** Metadata for no-op data. */
+/** @deprecated Use `NoCompressor` or `NoDecompressor`. */
 export const noCompression = createCompressionMetadata(
   'uncompressed',
   [],
@@ -38,7 +38,7 @@ export const noCompression = createCompressionMetadata(
   async () => (await import('./lib/no-compression')).NoCompression
 );
 
-/** Metadata for DEFLATE data. */
+/** @deprecated Use `DeflateCompressor` or `DeflateDecompressor`. */
 export const deflateCompression = createCompressionMetadata(
   'deflate',
   [],
@@ -46,7 +46,7 @@ export const deflateCompression = createCompressionMetadata(
   async () => (await import('./lib/deflate-compression')).DeflateCompression
 );
 
-/** Metadata for GZIP data. */
+/** @deprecated Use `GZipCompressor` or `GZipDecompressor`. */
 export const gzipCompression = createCompressionMetadata(
   'gzip',
   ['gz'],
@@ -54,7 +54,7 @@ export const gzipCompression = createCompressionMetadata(
   async () => (await import('./lib/gzip-compression')).GZipCompression
 );
 
-/** Metadata for Brotli data. */
+/** @deprecated Use `BrotliCompressor` or `BrotliDecompressor`. */
 export const brotliCompression = createCompressionMetadata(
   'brotli',
   ['br'],
@@ -62,7 +62,7 @@ export const brotliCompression = createCompressionMetadata(
   async () => (await import('./lib/brotli-compression')).BrotliCompression
 );
 
-/** Metadata for Snappy data. */
+/** @deprecated Use `SnappyCompressor` or `SnappyDecompressor`. */
 export const snappyCompression = createCompressionMetadata(
   'snappy',
   [],
@@ -70,7 +70,7 @@ export const snappyCompression = createCompressionMetadata(
   async () => (await import('./lib/snappy-compression')).SnappyCompression
 );
 
-/** Metadata for LZ4 data. */
+/** @deprecated Use `LZ4Compressor` or `LZ4Decompressor`. */
 export const lz4Compression = createCompressionMetadata(
   'lz4',
   [],
@@ -78,7 +78,7 @@ export const lz4Compression = createCompressionMetadata(
   async () => (await import('./lib/lz4-compression')).LZ4Compression
 );
 
-/** Metadata for Zstandard data. */
+/** @deprecated Use `ZstdCompressor` or `ZstdDecompressor`. */
 export const zstdCompression = createCompressionMetadata(
   'zstd',
   [],
@@ -86,7 +86,7 @@ export const zstdCompression = createCompressionMetadata(
   async () => (await import('./lib/zstd-compression')).ZstdCompression
 );
 
-/** Metadata for bzip2 data. */
+/** @deprecated Use `BZip2Compressor` or `BZip2Decompressor`. */
 export const bzip2Compression = createCompressionMetadata(
   'bzip2',
   ['bz2'],
@@ -94,7 +94,7 @@ export const bzip2Compression = createCompressionMetadata(
   async () => (await import('./lib/bzip2-compression')).BZip2Compression
 );
 
-/** Metadata for XZ/LZMA data. */
+/** @deprecated Use `XZCompressor` or `XZDecompressor`. */
 export const xzCompression = createCompressionMetadata(
   'xz',
   ['xz', 'lzma'],

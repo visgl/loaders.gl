@@ -9,8 +9,7 @@ They try built-in streams first. Compression falls back to lazy `compress-utils`
 falls back to compact synchronous `fzstd`.
 
 ```typescript
-import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
-import {ZstdDecompressor} from '@loaders.gl/compression/zstd-decompressor';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs.
