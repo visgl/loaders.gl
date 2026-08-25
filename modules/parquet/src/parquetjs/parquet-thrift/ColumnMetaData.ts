@@ -33,6 +33,8 @@ export interface IColumnMetaDataArgs {
   dictionary_page_offset?: number | Int64;
   statistics?: Statistics.Statistics;
   encoding_stats?: Array<PageEncodingStats.PageEncodingStats>;
+  bloom_filter_offset?: number | Int64;
+  bloom_filter_length?: number;
   geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
 }
 export class ColumnMetaData {
@@ -49,6 +51,8 @@ export class ColumnMetaData {
   public dictionary_page_offset?: Int64;
   public statistics?: Statistics.Statistics;
   public encoding_stats?: Array<PageEncodingStats.PageEncodingStats>;
+  public bloom_filter_offset?: Int64;
+  public bloom_filter_length?: number;
   public geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
   constructor(args: IColumnMetaDataArgs) {
     if (args != null && args.type != null) {
@@ -154,6 +158,15 @@ export class ColumnMetaData {
     if (args != null && args.encoding_stats != null) {
       this.encoding_stats = args.encoding_stats;
     }
+    if (args != null && args.bloom_filter_offset != null) {
+      this.bloom_filter_offset =
+        typeof args.bloom_filter_offset === 'number'
+          ? new Int64(args.bloom_filter_offset)
+          : args.bloom_filter_offset;
+    }
+    if (args != null && args.bloom_filter_length != null) {
+      this.bloom_filter_length = args.bloom_filter_length;
+    }
     if (args != null && args.geospatial_statistics != null) {
       this.geospatial_statistics = args.geospatial_statistics;
     }
@@ -239,6 +252,16 @@ export class ColumnMetaData {
         value_4.write(output);
       });
       output.writeListEnd();
+      output.writeFieldEnd();
+    }
+    if (this.bloom_filter_offset != null) {
+      output.writeFieldBegin('bloom_filter_offset', thrift.Thrift.Type.I64, 14);
+      output.writeI64(this.bloom_filter_offset);
+      output.writeFieldEnd();
+    }
+    if (this.bloom_filter_length != null) {
+      output.writeFieldBegin('bloom_filter_length', thrift.Thrift.Type.I32, 15);
+      output.writeI32(this.bloom_filter_length);
       output.writeFieldEnd();
     }
     if (this.geospatial_statistics != null) {
@@ -391,6 +414,20 @@ export class ColumnMetaData {
             }
             input.readListEnd();
             _args.encoding_stats = value_20;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 14:
+          if (fieldType === thrift.Thrift.Type.I64) {
+            _args.bloom_filter_offset = input.readI64();
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 15:
+          if (fieldType === thrift.Thrift.Type.I32) {
+            _args.bloom_filter_length = input.readI32();
           } else {
             input.skip(fieldType);
           }
