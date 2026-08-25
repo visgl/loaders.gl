@@ -658,6 +658,9 @@ function validateReturnAttributes(
         `LASWriter: numberOfReturns must be between 1 and ${maximumReturnNumber} for point data record format ${pointDataRecordFormat}`
       );
     }
+    if (returnNumber > numberOfReturns) {
+      throw new Error(`LASWriter: returnNumber cannot exceed numberOfReturns`);
+    }
   }
 }
 

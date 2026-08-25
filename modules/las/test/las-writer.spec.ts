@@ -819,6 +819,28 @@ test('LASWriter#rejects non-finite mapped attributes', t => {
   t.end();
 });
 
+test('LASWriter#validates return relationships', t => {
+  const invalidReturnAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    returnNumber: {value: new Uint8Array([3]), size: 1},
+    numberOfReturns: {value: new Uint8Array([2]), size: 1}
+  };
+  const invalidReturnMesh = {
+    attributes: invalidReturnAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(invalidReturnAttributes, {topology: 'point-list', mode: '0'})
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(invalidReturnMesh, {
+        las: {pointDataRecordFormat: 7}
+      }),
+    /returnNumber cannot exceed numberOfReturns/
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
