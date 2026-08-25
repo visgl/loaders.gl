@@ -524,7 +524,7 @@ test('LASWriter#writes vector Extra Bytes fields', t => {
   const pointView = new DataView(chunk.buffer);
 
   t.equal(dataView.getUint16(105, true), 48, 'includes vector Extra Bytes width');
-  t.equal(dataView.getUint8(375 + 54 + 2), 19, 'declares a three-component float type');
+  t.equal(dataView.getUint8(375 + 54 + 2), 29, 'declares a three-component float type');
   t.equal(pointView.getFloat32(36, true), 1.5, 'preserves vector component one');
   t.equal(pointView.getFloat32(40, true), 2.5, 'preserves vector component two');
   t.equal(pointView.getFloat32(44, true), 3.5, 'preserves vector component three');
@@ -680,6 +680,27 @@ test('LASWriter#validates point attribute shapes', t => {
     () => LASWriter.encodeSync?.(shortIntensityMesh),
     /intensity attribute is too short/,
     'rejects mapped point attributes shorter than POSITION'
+  );
+  t.end();
+});
+
+test('LASWriter#rejects four-component Extra Bytes fields', t => {
+  const fourComponentAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    extraVector: {value: new Float32Array([1, 2, 3, 4]), size: 4}
+  };
+  const fourComponentMesh = {
+    attributes: fourComponentAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(fourComponentAttributes, {topology: 'point-list', mode: '0'})
+  };
+  t.throws(
+    () =>
+      LASWriter.encodeSync?.(fourComponentMesh, {
+        las: {extraBytes: [{attribute: 'extraVector'}]}
+      }),
+    /Extra Bytes attribute extraVector must have size 1 or 3/
   );
   t.end();
 });

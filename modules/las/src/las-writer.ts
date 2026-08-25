@@ -66,7 +66,7 @@ export type LASWriterOptions = WriterOptions & {
     chunkSize?: number;
     /** Write a variable-size LAZ chunk table instead of a fixed-size table. */
     variableChunkTable?: boolean;
-    /** Typed mesh attributes with one, three, or four components to append as Extra Bytes fields. */
+    /** Typed mesh attributes with one or three components to append as Extra Bytes fields. */
     extraBytes?: LASExtraBytesWriter[];
   };
 };
@@ -359,10 +359,8 @@ function getExtraByteFields(
     if (!meshAttribute) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is missing`);
     }
-    if (![1, 3, 4].includes(meshAttribute.size)) {
-      throw new Error(
-        `LASWriter: Extra Bytes attribute ${field.attribute} must have size 1, 3, or 4`
-      );
+    if (![1, 3].includes(meshAttribute.size)) {
+      throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} must have size 1 or 3`);
     }
     if (meshAttribute.value.length < vertexCount * meshAttribute.size) {
       throw new Error(`LASWriter: Extra Bytes attribute ${field.attribute} is too short`);
@@ -392,7 +390,7 @@ function getExtraBytesDataType(values: MeshAttribute['value'], componentCount: n
   else if (values instanceof Float32Array) scalarDataType = 9;
   else if (values instanceof Float64Array) scalarDataType = 10;
   if (scalarDataType) {
-    return scalarDataType + (componentCount === 3 ? 10 : componentCount === 4 ? 20 : 0);
+    return scalarDataType + (componentCount === 3 ? 20 : 0);
   }
   throw new Error('LASWriter: Extra Bytes attributes require a supported typed array');
 }
