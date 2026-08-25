@@ -429,6 +429,51 @@ test('LASWriter#preserves LAZ fields through encodeInBatches', async t => {
   t.end();
 });
 
+test('LASWriter#validates batched attribute schemas', async t => {
+  const firstBatch = {
+    attributes: {
+      POSITION: {value: new Float64Array([0, 0, 0]), size: 3},
+      intensity: {value: new Uint16Array([10]), size: 1}
+    },
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(
+      {
+        POSITION: {value: new Float64Array([0, 0, 0]), size: 3},
+        intensity: {value: new Uint16Array([10]), size: 1}
+      },
+      {topology: 'point-list', mode: '0'}
+    )
+  };
+  const secondBatch = {
+    ...firstBatch,
+    attributes: {
+      POSITION: {value: new Float64Array([1, 0, 0]), size: 3}
+    }
+  };
+  const encodedBatches = LASWriter.encodeInBatches?.(
+    (async function* () {
+      yield firstBatch;
+      yield secondBatch;
+    })(),
+    {}
+  );
+  if (!encodedBatches) {
+    throw new Error('LASWriter does not support batch encoding');
+  }
+  const consumeBatches = async () => {
+    for await (const ignored of encodedBatches) {
+      void ignored;
+    }
+  };
+  await t.rejects(
+    consumeBatches(),
+    /consistent attribute names/,
+    'rejects batches with missing attributes'
+  );
+  t.end();
+});
+
 test('LASWriter#writes vector Extra Bytes fields', t => {
   const vectorAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},

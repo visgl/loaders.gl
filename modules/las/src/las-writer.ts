@@ -469,6 +469,8 @@ function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowT
   const firstMesh = meshes[0];
   const mergedAttributes: Mesh['attributes'] = {};
 
+  validateBatchAttributes(meshes);
+
   for (const attributeName of Object.keys(firstMesh.attributes)) {
     const firstAttribute = firstMesh.attributes[attributeName];
     const values = meshes.map(mesh => mesh.attributes[attributeName]?.value);
@@ -498,6 +500,30 @@ function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowT
           .length / 3
     }
   };
+}
+
+/** Ensure batched meshes expose the same attributes and typed layouts. */
+function validateBatchAttributes(meshes: Mesh[]): void {
+  const attributeNames = Object.keys(meshes[0].attributes);
+  for (const mesh of meshes.slice(1)) {
+    const meshAttributeNames = Object.keys(mesh.attributes);
+    if (
+      meshAttributeNames.length !== attributeNames.length ||
+      attributeNames.some(attributeName => !mesh.attributes[attributeName])
+    ) {
+      throw new Error('LASWriter: encodeInBatches requires consistent attribute names');
+    }
+    for (const attributeName of attributeNames) {
+      const firstAttribute = meshes[0].attributes[attributeName];
+      const attribute = mesh.attributes[attributeName];
+      if (
+        attribute.size !== firstAttribute.size ||
+        attribute.value.constructor !== firstAttribute.value.constructor
+      ) {
+        throw new Error(`LASWriter: encodeInBatches requires a consistent ${attributeName} layout`);
+      }
+    }
+  }
 }
 
 /** Return a required mesh attribute or throw a format-specific error. */
