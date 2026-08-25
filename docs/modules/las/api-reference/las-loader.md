@@ -20,7 +20,8 @@ const data = await load(url, LASLoader, options);
 const table = await load(url, LASLoader, {
   las: {
     ...options?.las,
-    shape: 'arrow-table'
+    shape: 'arrow-table',
+    columns: ['POSITION', 'COLOR_0']
   }
 });
 ```
@@ -54,6 +55,7 @@ selective field decoding, direct typed output, memory copies, and module startup
 | `options.las.shape`      | `string`             | `mesh`     | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                                                                       |
 | `options.las.fp64`       | `number`             | `false`    | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                              |
 | `options.las.colorDepth` | `number` or `string` | `8`        | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                   |
+| `options.las.columns`    | `string[]`           | all        | Arrow columns to decode: `POSITION`, `intensity`, `classification`, `COLOR_0`, `GPS_TIME`, and `NIR`. `POSITION` is always returned; an empty array requests positions only. |
 | `options.las.workerUrl`  | `string`             | -          | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                            |
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
 
@@ -67,6 +69,8 @@ Applications that need a compatibility loader in a worker can build one and prov
 
 ## TypeScript LAZ Streaming
 
-`LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. PDRF 6-10 table parsing emits after complete layered LAZ chunks are available and selectively decodes only the field layers represented by the returned Arrow schema. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item version 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy LASzip item version 1 uses a different codec and is rejected. NIR, PDRF 4/5/9/10 waveform packet references, and Extra Bytes remain available only through raw-record decoding because they are not yet represented in the returned Arrow schema. Waveform sample payloads referenced by those records are not loaded. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
+`LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. PDRF 6-10 table parsing emits after complete layered LAZ chunks are available and selectively decodes only the field layers requested by `las.columns`. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item version 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy LASzip item version 1 uses a different codec and is rejected. `GPS_TIME` and `NIR` are available as typed Arrow columns for records that contain them. PDRF 4/5/9/10 waveform packet references and Extra Bytes remain available only through raw-record decoding because they are not yet represented in the returned Arrow schema. Waveform sample payloads referenced by those records are not loaded. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
+
+For layered PDRF 6-10 chunks, omitted intensity, classification, RGB, GPS time, and NIR columns do not allocate output arrays or construct arithmetic decoders for those independent layers. Legacy PDRF 0-5 fields share an interleaved entropy stream, so column selection avoids output allocation and extraction but cannot skip the corresponding entropy decoding.
 
 Legacy point-level progress uses bounded geometric replay: when more compressed bytes arrive, the decoder replays previously emitted points through a record-sized scratch buffer and writes only new points into reusable output batches. This avoids committing partially mutated arithmetic state and bounds retry work to a linear factor of the compressed chunk size, but it retains the compressed chunk until completion. Layered PDRF 6-10 remains chunk-streaming because its independent field ranges must be available before complete rows can be assembled. Variable-size chunk point counts are stored in the LASzip chunk table at EOF, so a forward-only variable-chunk input is buffered until the table is available. See the [LAS/LAZ format implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for supported point formats and remaining limitations.

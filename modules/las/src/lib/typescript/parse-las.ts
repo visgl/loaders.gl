@@ -94,11 +94,14 @@ type RawPointBatchState = {
 };
 
 type PointDataBatchState = {
+  batchCapacity: number;
   positions: Float32Array | Float64Array;
   colors: Uint8Array | null;
   rawColors: Uint16Array | null;
-  intensities: Uint16Array;
-  classifications: Uint8Array;
+  intensities: Uint16Array | null;
+  classifications: Uint8Array | null;
+  gpsTimes: Float64Array | null;
+  nir: Uint16Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -218,7 +221,9 @@ function parseCompleteLAZFileToArrowTable(
     state.positions,
     colors,
     state.intensities,
-    state.classifications
+    state.classifications,
+    state.gpsTimes,
+    state.nir
   );
 }
 
@@ -814,15 +819,26 @@ function parseLASArrowTableBatch(
   const batchSize = lasHeader.pointsCount;
   const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
   const positions = new PositionsType(batchSize * 3);
-  const colors = lasHeader.hasColor ? new Uint8Array(batchSize * 4) : null;
-  const intensities = new Uint16Array(batchSize);
-  const classifications = new Uint8Array(batchSize);
+  const selection = getLASColumnSelection(options);
+  const colors = lasHeader.hasColor && selection.color ? new Uint8Array(batchSize * 4) : null;
+  const intensities = selection.intensity ? new Uint16Array(batchSize) : null;
+  const classifications = selection.classification ? new Uint8Array(batchSize) : null;
+  const gpsTimes =
+    selection.gpsTime && getGpsTimeOffset(lasHeader.pointsFormatId) >= 0
+      ? new Float64Array(batchSize)
+      : null;
+  const nir =
+    selection.nir && getNirOffset(lasHeader.pointsFormatId) >= 0
+      ? new Uint16Array(batchSize)
+      : null;
 
   populateLASAttributesFromDataView(makeDataView(arrayBuffer), lasHeader, options, {
     positions,
     colors,
     intensities,
     classifications,
+    gpsTimes,
+    nir,
     pointOffset: 0,
     sourcePointIndex: 0,
     pointCount: batchSize
@@ -833,7 +849,9 @@ function parseLASArrowTableBatch(
     positions,
     colors,
     intensities,
-    classifications
+    classifications,
+    gpsTimes,
+    nir
   );
 }
 
@@ -841,16 +859,28 @@ function makeLASArrowTableFromAttributes(
   lasHeader: LASHeader,
   positions: Float32Array | Float64Array,
   colors: Uint8Array | null,
-  intensities: Uint16Array,
-  classifications: Uint8Array
+  intensities: Uint16Array | null,
+  classifications: Uint8Array | null,
+  gpsTimes: Float64Array | null,
+  nir: Uint16Array | null
 ): LASArrowTable {
   const attributes: MeshAttributes = {
-    POSITION: {value: positions, size: 3},
-    intensity: {value: intensities, size: 1},
-    classification: {value: classifications, size: 1}
+    POSITION: {value: positions, size: 3}
   };
+  if (intensities) {
+    attributes.intensity = {value: intensities, size: 1};
+  }
+  if (classifications) {
+    attributes.classification = {value: classifications, size: 1};
+  }
   if (colors) {
     attributes.COLOR_0 = {value: colors, size: 4};
+  }
+  if (gpsTimes) {
+    attributes.GPS_TIME = {value: gpsTimes, size: 1};
+  }
+  if (nir) {
+    attributes.NIR = {value: nir, size: 1};
   }
 
   const schema = getLASSchema(lasHeader, attributes);
@@ -882,8 +912,10 @@ function populateLASAttributesFromDataView(
   target: {
     positions: Float32Array | Float64Array;
     colors: Uint8Array | null;
-    intensities: Uint16Array;
-    classifications: Uint8Array;
+    intensities: Uint16Array | null;
+    classifications: Uint8Array | null;
+    gpsTimes: Float64Array | null;
+    nir: Uint16Array | null;
     pointOffset: number;
     sourcePointIndex: number;
     pointCount: number;
@@ -895,14 +927,23 @@ function populateLASAttributesFromDataView(
   } = lasHeader;
   const pointsFormatId = lasHeader.pointsFormatId;
   const pointRecordLength = lasHeader.pointsStructSize;
-  const colorOffset = getColorOffset(pointsFormatId);
-  const twoByteColor = detectTwoByteColors(
-    dataView,
-    lasHeader,
-    target.sourcePointIndex,
-    target.pointCount,
-    options.las?.colorDepth
-  );
+  const colorOffset = target.colors ? getColorOffset(pointsFormatId) : -1;
+  const twoByteColor =
+    colorOffset >= 0
+      ? detectTwoByteColors(
+          dataView,
+          lasHeader,
+          target.sourcePointIndex,
+          target.pointCount,
+          options.las?.colorDepth
+        )
+      : false;
+  const intensities = target.intensities;
+  const classifications = target.classifications;
+  const gpsTimes = target.gpsTimes;
+  const nir = target.nir;
+  const gpsTimeOffset = gpsTimes ? getGpsTimeOffset(pointsFormatId) : -1;
+  const nirOffset = nir ? getNirOffset(pointsFormatId) : -1;
 
   for (let pointIndex = 0; pointIndex < target.pointCount; pointIndex++) {
     const sourcePointIndex = target.sourcePointIndex + pointIndex;
@@ -914,12 +955,18 @@ function populateLASAttributesFromDataView(
       dataView.getInt32(pointOffset + 4, true) * scaleY + offsetY;
     target.positions[targetPointIndex * 3 + 2] =
       dataView.getInt32(pointOffset + 8, true) * scaleZ + offsetZ;
-    target.intensities[targetPointIndex] = dataView.getUint16(pointOffset + 12, true);
-    target.classifications[targetPointIndex] = readClassification(
-      dataView,
-      pointOffset,
-      pointsFormatId
-    );
+    if (intensities) {
+      intensities[targetPointIndex] = dataView.getUint16(pointOffset + 12, true);
+    }
+    if (classifications) {
+      classifications[targetPointIndex] = readClassification(dataView, pointOffset, pointsFormatId);
+    }
+    if (gpsTimes && gpsTimeOffset >= 0) {
+      gpsTimes[targetPointIndex] = dataView.getFloat64(pointOffset + gpsTimeOffset, true);
+    }
+    if (nir && nirOffset >= 0) {
+      nir[targetPointIndex] = dataView.getUint16(pointOffset + nirOffset, true);
+    }
 
     if (colorOffset >= 0 && target.colors) {
       const red = dataView.getUint16(pointOffset + colorOffset, true);
@@ -962,6 +1009,21 @@ function getColorOffset(pointsFormatId: number): number {
     default:
       return -1;
   }
+}
+
+function getGpsTimeOffset(pointsFormatId: number): number {
+  return pointsFormatId === 1 ||
+    pointsFormatId === 3 ||
+    pointsFormatId === 4 ||
+    pointsFormatId === 5
+    ? 20
+    : pointsFormatId >= 6 && pointsFormatId <= 10
+      ? 22
+      : -1;
+}
+
+function getNirOffset(pointsFormatId: number): number {
+  return pointsFormatId === 8 || pointsFormatId === 10 ? 36 : -1;
 }
 
 function detectTwoByteColors(
@@ -1486,22 +1548,37 @@ function createPointDataBatchState(
 ): PointDataBatchState {
   const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
   const positions = new PositionsType(batchSize * 3);
+  const selection = getLASColumnSelection(options);
   const useRawColors =
-    header.hasColor && (options.las?.colorDepth === 16 || options.las?.colorDepth === 'auto');
-  const colors = header.hasColor && !useRawColors ? new Uint8Array(batchSize * 4) : null;
+    header.hasColor &&
+    selection.color &&
+    (options.las?.colorDepth === 16 || options.las?.colorDepth === 'auto');
+  const colors =
+    header.hasColor && selection.color && !useRawColors ? new Uint8Array(batchSize * 4) : null;
   const rawColors = useRawColors ? new Uint16Array(batchSize * 3) : null;
-  const intensities = new Uint16Array(batchSize);
-  const classifications = new Uint8Array(batchSize);
+  const intensities = selection.intensity ? new Uint16Array(batchSize) : null;
+  const classifications = selection.classification ? new Uint8Array(batchSize) : null;
+  const gpsTimes =
+    selection.gpsTime && getGpsTimeOffset(header.pointsFormatId) >= 0
+      ? new Float64Array(batchSize)
+      : null;
+  const nir =
+    selection.nir && getNirOffset(header.pointsFormatId) >= 0 ? new Uint16Array(batchSize) : null;
   return {
+    batchCapacity: batchSize,
     positions,
     colors,
     rawColors,
     intensities,
     classifications,
+    gpsTimes,
+    nir,
     target: {
       positions,
       intensities,
       classifications,
+      gpsTimes,
+      nir,
       colors,
       rawColors,
       pointOffset: 0,
@@ -1580,7 +1657,7 @@ function* appendDecodedLAZChunkToPointDataBatches(
   const decoder = createLAZChunkDecoderCursor(compressedChunk, metadata);
 
   while (decoder.remainingPointCount > 0) {
-    const batchCapacity = state.intensities.length;
+    const batchCapacity = state.batchCapacity;
     const batchRemainingPointCount = batchCapacity - state.batchPointCount;
     state.target.pointOffset = state.batchPointCount;
     const pointsDecoded = decoder.decodeIntoPointData(state.target, batchRemainingPointCount);
@@ -1666,14 +1743,18 @@ function flushPointDataBatch(
     totalRead: state.totalRead
   };
   const batchPointCount = state.batchPointCount;
-  const fullBatch = batchPointCount === state.intensities.length;
+  const fullBatch = batchPointCount === state.batchCapacity;
   const positions = fullBatch ? state.positions : state.positions.subarray(0, batchPointCount * 3);
-  const intensities = fullBatch
-    ? state.intensities
-    : state.intensities.subarray(0, batchPointCount);
-  const classifications = fullBatch
-    ? state.classifications
-    : state.classifications.subarray(0, batchPointCount);
+  const intensities = state.intensities
+    ? fullBatch
+      ? state.intensities
+      : state.intensities.subarray(0, batchPointCount)
+    : null;
+  const classifications = state.classifications
+    ? fullBatch
+      ? state.classifications
+      : state.classifications.subarray(0, batchPointCount)
+    : null;
   const colors = state.colors
     ? fullBatch
       ? state.colors
@@ -1681,12 +1762,20 @@ function flushPointDataBatch(
     : state.rawColors
       ? convertRawColorsToUint8(state.rawColors, batchPointCount, options)
       : null;
+  const gpsTimes = state.gpsTimes
+    ? fullBatch
+      ? state.gpsTimes
+      : state.gpsTimes.subarray(0, batchPointCount)
+    : null;
+  const nir = state.nir ? (fullBatch ? state.nir : state.nir.subarray(0, batchPointCount)) : null;
   const table = makeLASArrowTableFromAttributes(
     batchHeader,
     positions,
     colors,
     intensities,
-    classifications
+    classifications,
+    gpsTimes,
+    nir
   );
 
   state.batchPointCount = 0;
@@ -1695,15 +1784,65 @@ function flushPointDataBatch(
     state.positions = new PositionsType(state.positions.length);
     state.colors = state.colors ? new Uint8Array(state.colors.length) : null;
     state.rawColors = state.rawColors ? new Uint16Array(state.rawColors.length) : null;
-    state.intensities = new Uint16Array(state.intensities.length);
-    state.classifications = new Uint8Array(state.classifications.length);
+    state.intensities = state.intensities ? new Uint16Array(state.intensities.length) : null;
+    state.classifications = state.classifications
+      ? new Uint8Array(state.classifications.length)
+      : null;
+    state.gpsTimes = state.gpsTimes ? new Float64Array(state.gpsTimes.length) : null;
+    state.nir = state.nir ? new Uint16Array(state.nir.length) : null;
     state.target.positions = state.positions;
     state.target.colors = state.colors;
     state.target.rawColors = state.rawColors;
     state.target.intensities = state.intensities;
     state.target.classifications = state.classifications;
+    state.target.gpsTimes = state.gpsTimes;
+    state.target.nir = state.nir;
   }
   return table;
+}
+
+/** Resolve optional Arrow columns once before allocating or decoding a point batch. */
+function getLASColumnSelection(options: LASLoaderOptions): {
+  intensity: boolean;
+  classification: boolean;
+  color: boolean;
+  gpsTime: boolean;
+  nir: boolean;
+} {
+  const columns = options.las?.columns;
+  if (!columns) {
+    return {intensity: true, classification: true, color: true, gpsTime: true, nir: true};
+  }
+
+  let intensity = false;
+  let classification = false;
+  let color = false;
+  let gpsTime = false;
+  let nir = false;
+  for (const column of columns as readonly string[]) {
+    switch (column) {
+      case 'POSITION':
+        break;
+      case 'intensity':
+        intensity = true;
+        break;
+      case 'classification':
+        classification = true;
+        break;
+      case 'COLOR_0':
+        color = true;
+        break;
+      case 'GPS_TIME':
+        gpsTime = true;
+        break;
+      case 'NIR':
+        nir = true;
+        break;
+      default:
+        throw new Error(`LASLoader: unsupported column ${column}`);
+    }
+  }
+  return {intensity, classification, color, gpsTime, nir};
 }
 
 function convertRawColorsToUint8(

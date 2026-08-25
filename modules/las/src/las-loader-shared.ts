@@ -11,6 +11,15 @@ import type {LASMesh} from './lib/las-types';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Arrow column names that can be selected from LAS point records. */
+export type LASColumnName =
+  | 'POSITION'
+  | 'intensity'
+  | 'classification'
+  | 'COLOR_0'
+  | 'GPS_TIME'
+  | 'NIR';
+
 /** Options accepted by LAS loader implementations. */
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
@@ -20,6 +29,8 @@ export type LASLoaderOptions = LoaderOptions & {
     fp64?: boolean;
     /** Output color depth or automatic source-depth detection. */
     colorDepth?: number | string;
+    /** Arrow columns to decode. POSITION is always included. */
+    columns?: readonly LASColumnName[];
     /** Override the URL to the worker bundle. */
     workerUrl?: string;
   };
@@ -40,7 +51,8 @@ export const LAS_LOADER_METADATA = {
     las: {
       shape: 'mesh',
       fp64: false,
-      colorDepth: 8
+      colorDepth: 8,
+      columns: undefined
     }
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

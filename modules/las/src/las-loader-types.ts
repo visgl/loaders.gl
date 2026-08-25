@@ -7,7 +7,7 @@ import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {LASMesh} from './lib/las-types';
 import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 
-export type {LASLoaderOptions} from './las-loader-shared';
+export type {LASColumnName, LASLoaderOptions} from './las-loader-shared';
 
 /** Preloads the parser-bearing primary TypeScript LAS loader implementation. */
 async function preload() {
