@@ -1,11 +1,12 @@
 {
-  "include": ["app.tsx"],
+  "include": ["app.tsx", "vite-env.d.ts"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "noEmit": true,
     "skipLibCheck": true,
     "target": "ES2020"
   }
