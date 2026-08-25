@@ -72,6 +72,17 @@ test('parseRADChunkToGaussianSplats decodes Spark RADC chunk payloads', t => {
   t.end();
 });
 
+test('parseRADChunkToGaussianSplats rejects truncated chunk payloads', t => {
+  const chunk = makeRADChunkFixture();
+
+  t.throws(
+    () => parseRADChunkToGaussianSplats(chunk.slice(0, chunk.byteLength - 1)),
+    /chunk payload is incomplete/,
+    'rejects incomplete RADC payloads'
+  );
+  t.end();
+});
+
 test('parseRADChunkToGaussianSplats expands Spark LoD opacity bytes', t => {
   const splats = parseRADChunkToGaussianSplats(
     makeRADChunkFixture({

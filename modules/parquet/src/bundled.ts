@@ -3,8 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 export type {ParquetLoaderOptions} from './parquet-loader-types';
+export type {AvroLoaderOptions} from './avro-loader-types';
 export type {GeoParquetLoaderOptions} from './geoparquet-loader';
 export {ParquetLoaderWithParser as ParquetLoader} from './parquet-loader';
+export {AvroLoaderWithParser as AvroLoader} from './avro-loader';
+export {AvroWriter} from './avro-writer';
+export {encodeAvroInChunks} from './avro-stream';
+export {parseAvroOCF} from './avro-ocf';
+export {AvroSchemaLoaderWithParser as AvroSchemaLoader} from './avro-schema-loader';
 export {GeoParquetLoaderWithParser as GeoParquetLoader} from './geoparquet-loader-with-parser';
 export {ParquetJSLoaderWithParser as ParquetJSLoader} from './parquet-js-loader';
 export {

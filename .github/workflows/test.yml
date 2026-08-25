@@ -60,10 +60,10 @@ jobs:
             profile-name: node-22
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -75,7 +75,7 @@ jobs:
 
       - name: Cache Yarn 4 artifacts
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -107,7 +107,7 @@ jobs:
 
       - name: Upload coverage blob
         if: matrix.coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-blob-${{ matrix.coverage-flag }}
           path: .vitest-reports/
@@ -116,7 +116,7 @@ jobs:
 
       - name: Upload test profile
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-profile-${{ matrix.profile-name }}
           path: test-results/${{ matrix.profile-name }}.json
@@ -129,10 +129,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -142,7 +142,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload merged coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: merged-coverage
           path: |
@@ -203,12 +203,12 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -218,7 +218,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -247,7 +247,7 @@ jobs:
           --coverage.reporter=json
 
       - name: Upload slow coverage blob
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-blob-slow
           path: .vitest-reports/
@@ -261,10 +261,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -274,7 +274,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -303,10 +303,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -318,7 +318,7 @@ jobs:
 
       - name: Cache Yarn 4 artifacts
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -327,7 +327,7 @@ jobs:
             yarn-berry-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Cache Nx build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .nx/cache
           key: nx-build-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -364,10 +364,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -379,7 +379,7 @@ jobs:
 
       - name: Cache website Yarn artifacts
         id: website-yarn-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.yarn/berry/cache
