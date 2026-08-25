@@ -12,16 +12,9 @@ import type {
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
 import {LanceLoader as LanceLoaderMetadata, type LanceLoaderOptions} from './lance-loader-types';
-import {parseLanceFileToArrow} from './lance-arrow';
+import {LanceDecoderUnavailableError} from './lance-errors';
 
-/** Error raised while the Lance decoder backend is still being implemented. */
-export class LanceDecoderUnavailableError extends Error {
-  /** Creates an error with the stable Lance scaffold message. */
-  constructor() {
-    super('Lance decoding is not implemented yet in @loaders.gl/lance');
-    this.name = 'LanceDecoderUnavailableError';
-  }
-}
+export {LanceDecoderUnavailableError} from './lance-errors';
 
 /** Parser-bearing read-only Lance loader for flat primitive data files. */
 export const LanceLoaderWithParser = {
@@ -34,9 +27,10 @@ export const LanceLoaderWithParser = {
     if (!lanceOptions?.columnTypes) {
       return Promise.reject(new LanceDecoderUnavailableError());
     }
-    return Promise.resolve(
+    const columnTypes = lanceOptions.columnTypes;
+    return import('@loaders.gl/lance/lance-arrow').then(({parseLanceFileToArrow}) =>
       parseLanceFileToArrow(_arrayBuffer, {
-        columnTypes: lanceOptions.columnTypes,
+        columnTypes,
         columnNames: lanceOptions.columnNames
       })
     );

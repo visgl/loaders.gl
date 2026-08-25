@@ -8,9 +8,8 @@ import type {ArrowTableBatch} from '@loaders.gl/schema';
 
 import {LanceFormat} from './lance-format';
 import {parseLanceFileMetadata, type LanceFileMetadata} from './lance-file';
-import {LanceDecoderUnavailableError} from './lance-loader';
+import {LanceDecoderUnavailableError} from './lance-errors';
 import {parseLanceManifest, type LanceManifest} from './lance-manifest';
-import {parseLanceFileToArrow, readLanceRemoteFileToArrow} from './lance-arrow';
 import type {LanceFlatPrimitiveType} from './lance-decoder';
 import {LANCE_SOURCE_CAPABILITIES, type LanceSourceCapabilities} from './lance-source-capabilities';
 
@@ -84,6 +83,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     if (!lanceOptions?.columnTypes) {
       throw new LanceDecoderUnavailableError();
     }
+    const {parseLanceFileToArrow} = await import('./lance-arrow');
     const table =
       typeof this.data === 'string' && !/\.lance(?:$|[?#])/i.test(this.data)
         ? await this.readRemoteArrow(
@@ -108,6 +108,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
     const dataFile = metadata.fragments[0]?.files[0];
     if (!dataFile) throw new Error('Lance dataset manifest does not contain a data file');
     const dataFileURL = `${this.data.toString().replace(/\/$/, '')}/data/${dataFile.path}`;
+    const {readLanceRemoteFileToArrow} = await import('./lance-arrow');
     return await readLanceRemoteFileToArrow(
       dataFileURL,
       dataFile.fileSizeBytes!,

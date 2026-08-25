@@ -23,10 +23,10 @@ encodings, predicate pushdown, and writes are not yet supported.
 
 - [`LanceSourceLoader`](/docs/modules/lance/api-reference/lance-source-loader)
   reads dataset metadata and local or remote Arrow batches.
-- [`readLanceRemoteFileToArrow`](/docs/modules/lance/api-reference/lance-arrow)
-  reads selected primitive columns with HTTP ranges.
-- [`readLanceRemoteCoordinatesToArrow`](/docs/modules/lance/api-reference/lance-arrow)
-  reads two-dimensional coordinate columns.
+- The parser helpers are available from the
+  [`@loaders.gl/lance/lance-arrow`](/docs/modules/lance/api-reference/lance-arrow)
+  subpath. They read selected primitive or two-dimensional coordinate columns
+  with HTTP ranges.
 
 See the [Lance browser example](/examples/lance) for a curated Hugging Face
 picker, LAION scalar table, and PushT deck.gl coordinate view.

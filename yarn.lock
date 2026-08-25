@@ -22813,9 +22813,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lance-examples@workspace:examples/lance":
+"lance-browser-example@workspace:examples/lance/browser":
   version: 0.0.0-use.local
-  resolution: "lance-examples@workspace:examples/lance"
+  resolution: "lance-browser-example@workspace:examples/lance/browser"
   dependencies:
     "@deck.gl/core": "npm:^9.3.0"
     "@deck.gl/layers": "npm:^9.3.0"
