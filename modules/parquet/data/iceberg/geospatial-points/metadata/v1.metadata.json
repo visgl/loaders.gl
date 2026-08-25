@@ -1,0 +1,88 @@
+{
+  "format-version": 2,
+  "table-uuid": "1f5e7a1e-4d44-4b44-a7a6-8fdc8d2b5f5f",
+  "location": "https://raw.githubusercontent.com/visgl/deck.gl-data/master/iceberg/geospatial-points",
+  "last-sequence-number": 1,
+  "last-updated-ms": 1710000000000,
+  "last-column-id": 5,
+  "current-schema-id": 0,
+  "schemas": [
+    {
+      "type": "struct",
+      "schema-id": 0,
+      "fields": [
+        {
+          "id": 1,
+          "name": "id",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "id": 2,
+          "name": "name",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "id": 3,
+          "name": "latitude",
+          "required": true,
+          "type": "double"
+        },
+        {
+          "id": 4,
+          "name": "longitude",
+          "required": true,
+          "type": "double"
+        },
+        {
+          "id": 5,
+          "name": "category",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "default-spec-id": 0,
+  "partition-specs": [
+    {
+      "spec-id": 0,
+      "fields": []
+    }
+  ],
+  "last-partition-id": 999,
+  "default-sort-order-id": 0,
+  "sort-orders": [
+    {
+      "order-id": 0,
+      "fields": []
+    }
+  ],
+  "properties": {
+    "write.format.default": "parquet",
+    "loaders.gl.demo.license": "CC0-1.0"
+  },
+  "current-snapshot-id": 1,
+  "snapshots": [
+    {
+      "snapshot-id": 1,
+      "sequence-number": 1,
+      "timestamp-ms": 1710000000000,
+      "manifest-list": "metadata/snap-1.avro",
+      "summary": {
+        "operation": "append",
+        "added-data-files": "1",
+        "total-records": "16"
+      },
+      "schema-id": 0
+    }
+  ],
+  "refs": {
+    "main": {
+      "snapshot-id": 1,
+      "type": "branch",
+      "max-ref-age-ms": null
+    }
+  }
+}

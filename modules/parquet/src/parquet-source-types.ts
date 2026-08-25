@@ -11,6 +11,15 @@ import type {
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import type {
+  ColumnarComparisonPredicate,
+  ColumnarInPredicate,
+  ColumnarLogicalPredicate,
+  ColumnarNotPredicate,
+  ColumnarNullPredicate,
+  ColumnarPredicateProperty,
+  ColumnarPredicateValue
+} from '@loaders.gl/loader-utils';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
 
 /** Version validators captured from an HTTP Parquet object. */
@@ -134,56 +143,36 @@ export type ParquetMetadataRequestOptions = {
 };
 
 /** Scalar values supported by exact Parquet source predicates. */
-export type ParquetPredicateValue = boolean | number | bigint | string | Date | Uint8Array;
+export type ParquetPredicateValue = ColumnarPredicateValue;
 
-/** Reference to one Parquet column in a predicate expression. */
-export type ParquetPredicateProperty = {
-  /** Top-level column name or explicit nested Parquet schema path. */
-  property: string | readonly string[];
+/** Reference to one top-level Parquet column in a predicate expression. */
+export type ParquetPredicateProperty = ColumnarPredicateProperty & {
+  /** Top-level column name. */
+  property: string;
 };
 
-/** Four- or six-dimensional extent used for conservative Parquet spatial pruning. */
-export type ParquetBoundingBox =
-  | readonly [number, number, number, number]
-  | readonly [number, number, number, number, number, number];
-
 /** Comparison predicate applied to one top-level Parquet column. */
-export type ParquetComparisonPredicate = {
-  /** CQL2-shaped exact comparison operator. */
-  op: '=' | '<>' | '<' | '<=' | '>' | '>=';
-  /** Column reference followed by the scalar value to compare. */
+export type ParquetComparisonPredicate = Omit<ColumnarComparisonPredicate, 'args'> & {
   args: readonly [ParquetPredicateProperty, ParquetPredicateValue];
 };
 
 /** Membership predicate applied to one top-level Parquet column. */
-export type ParquetInPredicate = {
-  /** CQL2-shaped membership operator. */
-  op: 'in';
-  /** Column reference followed by the candidate scalar values. */
+export type ParquetInPredicate = Omit<ColumnarInPredicate, 'args'> & {
   args: readonly [ParquetPredicateProperty, readonly ParquetPredicateValue[]];
 };
 
 /** Null predicate applied to one top-level Parquet column. */
-export type ParquetNullPredicate = {
-  /** CQL2-shaped null test operator. */
-  op: 'isNull';
-  /** Column reference to test. */
+export type ParquetNullPredicate = Omit<ColumnarNullPredicate, 'args'> & {
   args: readonly [ParquetPredicateProperty];
 };
 
 /** Logical composition of serializable Parquet predicates. */
-export type ParquetLogicalPredicate = {
-  /** CQL2-shaped logical operator applied to the child predicates. */
-  op: 'and' | 'or';
-  /** At least two child predicates. */
+export type ParquetLogicalPredicate = Omit<ColumnarLogicalPredicate, 'args'> & {
   args: readonly ParquetPredicate[];
 };
 
 /** Negation of one serializable Parquet predicate. */
-export type ParquetNotPredicate = {
-  /** CQL2-shaped logical negation operator. */
-  op: 'not';
-  /** Single child predicate. */
+export type ParquetNotPredicate = Omit<ColumnarNotPredicate, 'args'> & {
   args: readonly [ParquetPredicate];
 };
 
@@ -214,10 +203,6 @@ export type ParquetSourceReadOptions = {
   rowGroupFilter?: (rowGroup: ParquetRowGroupMetadata) => boolean;
   /** Serializable exact row predicate, conservatively pushed into row-group statistics. */
   predicate?: ParquetPredicate;
-  /** Spatial extent applied through a valid GeoParquet 1.1 bounding-box covering when present. */
-  bbox?: ParquetBoundingBox;
-  /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
-  geometryColumn?: string;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
@@ -367,7 +352,9 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
 };
 
 /** Four- or six-dimensional extent used for conservative Parquet dataset file pruning. */
-export type ParquetDatasetBoundingBox = ParquetBoundingBox;
+export type ParquetDatasetBoundingBox =
+  | readonly [number, number, number, number]
+  | readonly [number, number, number, number, number, number];
 
 /** Scalar value carried by a partitioned Parquet dataset file descriptor. */
 export type ParquetDatasetPartitionValue = string | number | boolean | null;
