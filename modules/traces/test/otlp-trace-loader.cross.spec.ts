@@ -389,5 +389,19 @@ describe('OTLP trace loaders and writers', () => {
       }
     }
     expect(spanNames).toEqual(['first', 'second']);
+
+    const resourceIds: number[] = [];
+    const scopedBatches = await parseInBatches(
+      [combined.subarray(0, 5), combined.subarray(5)],
+      OtlpTraceLoader,
+      {otlpTrace: {batchSize: 1}}
+    );
+    for await (const batch of scopedBatches) {
+      const result = batch as OtlpTraceBatch;
+      if (result.table === 'resources') {
+        resourceIds.push(result.data.getChild('resource_id')?.get(0) as number);
+      }
+    }
+    expect(resourceIds).toEqual([0, 1]);
   });
 });

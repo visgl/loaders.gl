@@ -34,27 +34,33 @@
     },
     "./chrome-trace-loader": {
       "types": "./dist/chrome-trace-loader.d.ts",
-      "import": "./dist/chrome-trace-loader.js"
+      "import": "./dist/chrome-trace-loader.js",
+      "require": "./dist/chrome-trace-loader.cjs"
     },
     "./perfetto-trace-loader": {
       "types": "./dist/perfetto-trace-loader.d.ts",
-      "import": "./dist/perfetto-trace-loader.js"
+      "import": "./dist/perfetto-trace-loader.js",
+      "require": "./dist/perfetto-trace-loader.cjs"
     },
     "./otlp-trace-loader": {
       "types": "./dist/otlp-trace-loader.d.ts",
-      "import": "./dist/otlp-trace-loader.js"
+      "import": "./dist/otlp-trace-loader.js",
+      "require": "./dist/otlp-trace-loader.cjs"
     },
     "./otlp-trace-json-loader": {
       "types": "./dist/otlp-trace-json-loader.d.ts",
-      "import": "./dist/otlp-trace-json-loader.js"
+      "import": "./dist/otlp-trace-json-loader.js",
+      "require": "./dist/otlp-trace-json-loader.cjs"
     },
     "./jaeger-trace-loader": {
       "types": "./dist/jaeger-trace-loader.d.ts",
-      "import": "./dist/jaeger-trace-loader.js"
+      "import": "./dist/jaeger-trace-loader.js",
+      "require": "./dist/jaeger-trace-loader.cjs"
     },
     "./zipkin-trace-loader": {
       "types": "./dist/zipkin-trace-loader.d.ts",
-      "import": "./dist/zipkin-trace-loader.js"
+      "import": "./dist/zipkin-trace-loader.js",
+      "require": "./dist/zipkin-trace-loader.cjs"
     }
   },
   "sideEffects": false,

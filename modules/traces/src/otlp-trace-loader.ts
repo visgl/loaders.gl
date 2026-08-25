@@ -33,8 +33,13 @@ async function* parseOtlpTraceInBatches(
   options?: OtlpTraceLoaderOptions
 ): AsyncIterable<OtlpTraceBatch> {
   const batchSize = normalizeOtlpBatchSize(options?.otlpTrace?.batchSize);
+  let resourceId = 0;
+  let scopeId = 0;
   for await (const bytes of streamProtobufMessages(iterator, 1)) {
     const resourceSpans = fromBinary(ResourceSpansSchema, bytes);
-    yield* emitOtlpTraceBatches(buildOtlpTrace({resourceSpans: [resourceSpans]}), batchSize);
+    const trace = buildOtlpTrace({resourceSpans: [resourceSpans]}, {resourceId, scopeId});
+    resourceId += trace.resources.numRows;
+    scopeId += trace.scopes.numRows;
+    yield* emitOtlpTraceBatches(trace, batchSize);
   }
 }

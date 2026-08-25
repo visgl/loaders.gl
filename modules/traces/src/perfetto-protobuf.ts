@@ -66,20 +66,38 @@ export async function* streamProtobufMessages(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   fieldNumber: number
 ): AsyncIterable<Uint8Array> {
-  let pending: Uint8Array<ArrayBufferLike> = new Uint8Array();
+  const maximumPendingBytes = 256 * 1024 * 1024;
+  let pending = new Uint8Array(0);
+  let pendingLength = 0;
 
   for await (const chunk of iterator) {
     const bytes = toUint8Array(chunk);
-    pending = concatenateUint8Arrays([pending, bytes]);
-    const parsed = readCompleteFields(pending, fieldNumber);
-    pending = pending.subarray(parsed.byteOffset);
+    if (pendingLength + bytes.byteLength > maximumPendingBytes) {
+      throw new Error('Protobuf stream message exceeds the maximum supported size.');
+    }
+    if (pending.length < pendingLength + bytes.byteLength) {
+      const capacity = Math.min(
+        maximumPendingBytes,
+        Math.max(pendingLength + bytes.byteLength, Math.max(1024, pending.length * 2))
+      );
+      const expanded = new Uint8Array(capacity);
+      expanded.set(pending.subarray(0, pendingLength));
+      pending = expanded;
+    }
+    pending.set(bytes, pendingLength);
+    pendingLength += bytes.byteLength;
+    const parsed = readCompleteFields(pending.subarray(0, pendingLength), fieldNumber);
+    if (parsed.byteOffset > 0) {
+      pending.copyWithin(0, parsed.byteOffset, pendingLength);
+      pendingLength -= parsed.byteOffset;
+    }
     yield* parsed.messages;
   }
 
-  if (pending.byteLength > 0) {
-    const parsed = readCompleteFields(pending, fieldNumber);
+  if (pendingLength > 0) {
+    const parsed = readCompleteFields(pending.subarray(0, pendingLength), fieldNumber);
     yield* parsed.messages;
-    if (parsed.byteOffset !== pending.byteLength) {
+    if (parsed.byteOffset !== pendingLength) {
       throw new Error('Truncated protobuf stream.');
     }
   }

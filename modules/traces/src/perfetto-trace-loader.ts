@@ -23,8 +23,10 @@ const {preload: _preload, ...PerfettoTraceLoaderMetadataWithoutPreload} =
 /** Parser-bearing loader for Perfetto protobuf traces. */
 export const PerfettoTraceLoaderWithParser = {
   ...PerfettoTraceLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer) => parsePerfettoTrace(new Uint8Array(arrayBuffer)),
-  parseSync: (arrayBuffer: ArrayBuffer) => parsePerfettoTrace(new Uint8Array(arrayBuffer)),
+  parse: async (arrayBuffer: ArrayBuffer, options?: PerfettoTraceLoaderOptions) =>
+    parsePerfettoTrace(new Uint8Array(arrayBuffer), options?.perfettoTrace),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: PerfettoTraceLoaderOptions) =>
+    parsePerfettoTrace(new Uint8Array(arrayBuffer), options?.perfettoTrace),
   parseInBatches: parsePerfettoTraceInBatches
 } as const satisfies LoaderWithParser<
   PerfettoTrace,
@@ -40,7 +42,7 @@ async function* parsePerfettoTraceInBatches(
   options?: PerfettoTraceLoaderOptions
 ): AsyncIterable<PerfettoTraceBatch> {
   const batchSize = normalizeBatchSize(options?.perfettoTrace?.batchSize);
-  const parser = new PerfettoTraceParser();
+  const parser = new PerfettoTraceParser(options?.perfettoTrace);
   let packetCount = 0;
 
   for await (const packet of streamProtobufMessages(iterator, 1)) {

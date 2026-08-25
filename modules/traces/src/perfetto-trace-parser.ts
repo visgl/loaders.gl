@@ -28,9 +28,21 @@ type ThreadRow = {tid: number; pid: number | null; name: string | null};
 type OpenSlice = {ts: bigint; name: string};
 type SequenceState = {defaultTrackUuid: bigint; eventNames: Map<bigint, string>};
 
+/** Limits retained state while decoding an untrusted streaming trace. */
+export type PerfettoTraceParserOptions = {
+  maxStateEntries?: number;
+  maxOpenSlices?: number;
+};
+
+const DEFAULT_MAX_STATE_ENTRIES = 100_000;
+const DEFAULT_MAX_OPEN_SLICES = 100_000;
+
 /** Decodes a canonical Perfetto protobuf trace into typed Arrow tables. */
-export function parsePerfettoTrace(bytes: Uint8Array): PerfettoTrace {
-  const parser = new PerfettoTraceParser();
+export function parsePerfettoTrace(
+  bytes: Uint8Array,
+  options?: PerfettoTraceParserOptions
+): PerfettoTrace {
+  const parser = new PerfettoTraceParser(options);
 
   for (const traceField of readProtobufFields(bytes)) {
     if (traceField.fieldNumber === 1 && traceField.value instanceof Uint8Array) {
@@ -42,6 +54,10 @@ export function parsePerfettoTrace(bytes: Uint8Array): PerfettoTrace {
 
 /** Stateful decoder for canonical Perfetto TracePacket messages. */
 export class PerfettoTraceParser {
+  private readonly maxStateEntries: number;
+  private readonly maxOpenSlices: number;
+  private openSliceCount = 0;
+  private internedEventNameCount = 0;
   /** Latest descriptor for each globally unique track UUID. */
   private readonly tracks = new Map<bigint, TrackRow>();
   /** Completed slices and instant events waiting to be returned. */
@@ -61,6 +77,12 @@ export class PerfettoTraceParser {
   /** Thread descriptor updates waiting for the next streaming drain. */
   private readonly pendingThreads = new Map<number, ThreadRow>();
 
+  /** Creates a parser with bounded retained incremental state. */
+  constructor(options: PerfettoTraceParserOptions = {}) {
+    this.maxStateEntries = normalizeParserLimit(options.maxStateEntries, DEFAULT_MAX_STATE_ENTRIES);
+    this.maxOpenSlices = normalizeParserLimit(options.maxOpenSlices, DEFAULT_MAX_OPEN_SLICES);
+  }
+
   /** Adds one decoded TracePacket to the accumulated trace. */
   addTracePacket(bytes: Uint8Array): void {
     const fields = readProtobufFields(bytes);
@@ -69,13 +91,21 @@ export class PerfettoTraceParser {
     const incrementalStateCleared = readNumberField(fields, 41) === 1 || (sequenceFlags & 1) !== 0;
     let sequence = this.sequences.get(sequenceId);
     if (!sequence || incrementalStateCleared) {
+      if (!sequence && this.sequences.size >= this.maxStateEntries) {
+        throw new Error('Perfetto trace contains too many incremental-state sequences.');
+      }
       sequence = {defaultTrackUuid: 0n, eventNames: new Map()};
       this.sequences.set(sequenceId, sequence);
     }
 
     const internedData = readBytesField(fields, 12);
     if (internedData) {
-      parseInternedData(internedData, sequence);
+      this.internedEventNameCount = parseInternedData(
+        internedData,
+        sequence,
+        this.maxStateEntries,
+        this.internedEventNameCount
+      );
     }
     const defaults = readBytesField(fields, 59);
     if (defaults) {
@@ -193,11 +223,18 @@ export class PerfettoTraceParser {
       '';
 
     if (type === 1) {
+      if (this.openSliceCount >= this.maxOpenSlices) {
+        throw new Error('Perfetto trace contains too many unmatched begin events.');
+      }
       const stack = this.openSlices.get(trackUuid) ?? [];
       stack.push({ts: timestamp, name});
       this.openSlices.set(trackUuid, stack);
+      this.openSliceCount++;
     } else if (type === 2) {
       const begin = this.openSlices.get(trackUuid)?.pop();
+      if (begin) {
+        this.openSliceCount--;
+      }
       if (begin && timestamp >= begin.ts) {
         this.slices.push({trackUuid, ts: begin.ts, dur: timestamp - begin.ts, name: begin.name});
       }
@@ -253,17 +290,32 @@ function getTrackEventTypeFromLegacyPhase(phase: number | undefined): number | u
 }
 
 /** Adds stable TrackEvent interned names to one packet sequence. */
-function parseInternedData(bytes: Uint8Array, sequence: SequenceState): void {
+function parseInternedData(
+  bytes: Uint8Array,
+  sequence: SequenceState,
+  maxStateEntries: number,
+  internedEventNameCount: number
+): number {
   for (const field of readProtobufFields(bytes)) {
     if (field.fieldNumber === 2 && field.value instanceof Uint8Array) {
       const eventNameFields = readProtobufFields(field.value);
       const iid = readBigIntField(eventNameFields, 1);
       const name = readStringField(eventNameFields, 2);
       if (iid !== undefined && name !== undefined) {
+        if (!sequence.eventNames.has(iid) && sequence.eventNames.size >= maxStateEntries) {
+          throw new Error('Perfetto trace contains too many interned event names.');
+        }
+        if (!sequence.eventNames.has(iid)) {
+          internedEventNameCount++;
+          if (internedEventNameCount > maxStateEntries) {
+            throw new Error('Perfetto trace contains too many interned event names.');
+          }
+        }
         sequence.eventNames.set(iid, name);
       }
     }
   }
+  return internedEventNameCount;
 }
 
 /** Applies TrackEvent defaults for one packet sequence. */
@@ -427,4 +479,9 @@ function buildThreadTable(rows: readonly ThreadRow[]): PerfettoTrace['threads'] 
       new arrow.Utf8()
     )
   });
+}
+
+/** Normalizes a parser resource limit. */
+function normalizeParserLimit(value: number | undefined, defaultValue: number): number {
+  return value && Number.isFinite(value) && value > 0 ? Math.floor(value) : defaultValue;
 }

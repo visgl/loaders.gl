@@ -12,6 +12,10 @@ export type PerfettoTraceLoaderOptions = LoaderOptions & {
   perfettoTrace?: {
     /** Maximum rows emitted in one tagged Arrow record batch. */
     batchSize?: number;
+    /** Maximum number of incremental-state entries retained per parser. */
+    maxStateEntries?: number;
+    /** Maximum number of unmatched begin events retained per parser. */
+    maxOpenSlices?: number;
   };
 };
 
