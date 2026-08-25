@@ -22,6 +22,8 @@ import {
 } from '../src';
 import {ChromeTraceLoaderWithParser} from '../src/chrome-trace-loader';
 import {PerfettoTraceLoaderWithParser} from '../src/perfetto-trace-loader';
+import {PerfettoTraceParser} from '../src/perfetto-trace-parser';
+import {streamProtobufMessages} from '../src/perfetto-protobuf';
 
 import type {
   ChromeTraceEventArrowTable,
@@ -567,6 +569,51 @@ describe('traces public API edge coverage', () => {
     expect(trace.threads.getChild('name')?.get(0)).toBe('thread');
     expect(trace.slices.numRows).toBe(6);
     expect(Array.from(trace.slices.getChild('name') ?? [])).toContain('interned');
+  });
+
+  it('rejects unbounded Perfetto incremental state and open slices', () => {
+    const beginPacket = concatenateBytes(
+      encodeVarintField(8, 1),
+      encodeBytesField(11, encodeVarintField(9, 1))
+    );
+    const openSliceParser = new PerfettoTraceParser({maxOpenSlices: 1});
+    openSliceParser.addTracePacket(beginPacket);
+    expect(() => openSliceParser.addTracePacket(beginPacket)).toThrow(/unmatched begin/i);
+
+    const sequenceParser = new PerfettoTraceParser({maxStateEntries: 1});
+    sequenceParser.addTracePacket(encodeVarintField(10, 1));
+    expect(() => sequenceParser.addTracePacket(encodeVarintField(10, 2))).toThrow(
+      /incremental-state sequences/i
+    );
+
+    const internedEventName = (identifier: number, name: string) =>
+      encodeBytesField(
+        2,
+        concatenateBytes(encodeVarintField(1, identifier), encodeStringField(2, name))
+      );
+    const internedParser = new PerfettoTraceParser({maxStateEntries: 1});
+    internedParser.addTracePacket(
+      concatenateBytes(encodeVarintField(10, 1), encodeBytesField(12, internedEventName(1, 'one')))
+    );
+    expect(() =>
+      internedParser.addTracePacket(
+        concatenateBytes(
+          encodeVarintField(10, 1),
+          encodeBytesField(12, internedEventName(2, 'two'))
+        )
+      )
+    ).toThrow(/interned event names/i);
+  });
+
+  it('rejects oversized streamed protobuf envelopes', async () => {
+    const messages = streamProtobufMessages([Uint8Array.from([0])], 1, {
+      maxPendingBytes: 0
+    });
+    await expect(async () => {
+      for await (const _message of messages) {
+        // The stream must reject before yielding a message.
+      }
+    }).rejects.toThrow(/maximum supported size/i);
   });
 
   it('handles unrelated Perfetto fields and rejects incomplete wire values in streams', async () => {

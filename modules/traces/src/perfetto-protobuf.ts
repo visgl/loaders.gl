@@ -9,6 +9,11 @@ export type ProtobufField = {
   value: bigint | Uint8Array;
 };
 
+/** Optional limits for a streamed protobuf envelope. */
+export type ProtobufStreamOptions = {
+  maxPendingBytes?: number;
+};
+
 /** Reads all fields from one protobuf message without requiring generated code. */
 export function readProtobufFields(bytes: Uint8Array): ProtobufField[] {
   const fields: ProtobufField[] = [];
@@ -64,9 +69,10 @@ export async function* streamProtobufMessages(
   iterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  fieldNumber: number
+  fieldNumber: number,
+  options: ProtobufStreamOptions = {}
 ): AsyncIterable<Uint8Array> {
-  const maximumPendingBytes = 256 * 1024 * 1024;
+  const maximumPendingBytes = options.maxPendingBytes ?? 256 * 1024 * 1024;
   let pending = new Uint8Array(0);
   let pendingLength = 0;
 
