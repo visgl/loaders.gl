@@ -4,7 +4,7 @@
 
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {MD5Hash} from '@loaders.gl/crypto';
-import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
+import {DeflateDecompressor, NoDecompressor} from '@loaders.gl/compression';
 import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
@@ -14,9 +14,9 @@ type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
  */
 const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
   /** No compression */
-  0: data => new NoCompression().decompress(data),
+  0: data => new NoDecompressor().decompress(data),
   /** Deflation */
-  8: data => new DeflateCompression({raw: true}).decompress(data)
+  8: data => new DeflateDecompressor({raw: true}).decompress(data)
 };
 
 /**

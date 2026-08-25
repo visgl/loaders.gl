@@ -5,12 +5,21 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 // Forked from https://github.com/ironSource/parquetjs under MIT license
 
-import type {Compression} from '@loaders.gl/compression';
 import {
-  decompressWithNativeDecompressionStream,
-  type NativeDecompressionFormat
-} from '@loaders.gl/compression/native-decompression';
-import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+  BrotliCompressor,
+  BrotliDecompressor,
+  GZipCompressor,
+  GZipDecompressor,
+  LZ4Compressor,
+  LZ4Decompressor,
+  SnappyCompressor,
+  SnappyDecompressor,
+  ZstdCompressor,
+  ZstdDecompressor,
+  type Compressor,
+  type Decompressor
+} from '@loaders.gl/compression';
+import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
 import {toArrayBuffer, toUint8Array} from './utils/binary-utils';
@@ -28,18 +37,6 @@ export const PARQUET_COMPRESSION_METHODS: Partial<Record<ParquetCompression, tru
   LZ4_RAW: true,
   ZSTD: true
 };
-
-/** Native formats available to asynchronous Parquet page decompression. */
-const PARQUET_NATIVE_DECOMPRESSION_FORMATS: Partial<
-  Record<ParquetCompression, NativeDecompressionFormat>
-> = {
-  GZIP: 'gzip',
-  BROTLI: 'brotli',
-  ZSTD: 'zstd'
-};
-
-/** Lazily constructed codec-backed compression implementations. */
-const compressionPromises: Partial<Record<ParquetCompression, Promise<Compression>>> = {};
 
 /**
  * Registers optional codec modules without eagerly loading codec-backed implementations.
@@ -61,7 +58,7 @@ export async function deflate(method: ParquetCompression, value: Uint8Array): Pr
     return value;
   }
 
-  const compression = await getParquetCompression(method);
+  const compression = await getParquetCompressor(method);
   const inputArrayBuffer = toArrayBuffer(value);
   const compressedArrayBuffer = await compression.compress(inputArrayBuffer);
   return toUint8Array(compressedArrayBuffer);
@@ -83,79 +80,54 @@ export async function decompress(
     return toUint8Array(inputArrayBuffer);
   }
 
-  const nativeFormat = PARQUET_NATIVE_DECOMPRESSION_FORMATS[method];
-  if (nativeFormat && shouldUseNativeDecompressionStream(method)) {
-    const nativeOutput = await decompressWithNativeDecompressionStream(
-      inputArrayBuffer,
-      nativeFormat
-    );
-    if (nativeOutput) {
-      return toUint8Array(nativeOutput);
-    }
-  }
-
-  const compression = await getParquetCompression(method);
+  const compression = await getParquetDecompressor(method);
   const compressedArrayBuffer = await compression.decompress(inputArrayBuffer, size);
   return toUint8Array(compressedArrayBuffer);
 }
 
-/**
- * Returns whether a native stream can take precedence for one Parquet compression method.
- *
- * @param method Parquet compression method.
- * @returns Whether no explicitly registered codec should take precedence.
- */
-function shouldUseNativeDecompressionStream(method: ParquetCompression): boolean {
-  if (method === 'BROTLI') {
-    return !getJSModuleOrNull('brotli');
-  }
-  if (method === 'ZSTD') {
-    return !getJSModuleOrNull('zstd-codec');
-  }
-  return true;
+/** Returns a new lazily selecting compressor for one Parquet method. */
+async function getParquetCompressor(method: ParquetCompression): Promise<Compressor> {
+  return createParquetCompressor(method);
 }
 
-/**
- * Loads one codec-backed implementation only after native decompression is unavailable.
- *
- * @param method Parquet compression method.
- * @returns Codec-backed compression implementation.
- */
-async function getParquetCompression(method: ParquetCompression): Promise<Compression> {
-  compressionPromises[method] ||= createParquetCompression(method);
-  return await compressionPromises[method];
+/** Returns a new lazily selecting decompressor for one Parquet method. */
+async function getParquetDecompressor(method: ParquetCompression): Promise<Decompressor> {
+  return createParquetDecompressor(method);
 }
 
-/**
- * Creates one lazily loaded codec-backed Parquet compression implementation.
- *
- * @param method Parquet compression method.
- * @returns Codec-backed compression implementation.
- */
-async function createParquetCompression(method: ParquetCompression): Promise<Compression> {
+/** Creates the root-level default compressor for one Parquet method. */
+function createParquetCompressor(method: ParquetCompression): Compressor {
   switch (method) {
-    case 'GZIP': {
-      const {GZipCompression} = await import('@loaders.gl/compression/gzip-compression');
-      return new GZipCompression();
-    }
-    case 'SNAPPY': {
-      const {SnappyCompression} = await import('@loaders.gl/compression/snappy-compression');
-      return new SnappyCompression();
-    }
-    case 'BROTLI': {
-      const {BrotliCompression} = await import('@loaders.gl/compression/brotli-compression');
-      return new BrotliCompression();
-    }
+    case 'GZIP':
+      return new GZipCompressor();
+    case 'SNAPPY':
+      return new SnappyCompressor();
+    case 'BROTLI':
+      return new BrotliCompressor();
     case 'LZ4':
-    case 'LZ4_RAW': {
-      const {LZ4Compression} = await import('@loaders.gl/compression/lz4-compression');
-      const lz4js = getJSModuleOrNull('lz4js') || (await import('lz4js')).default;
-      return new LZ4Compression({modules: {lz4js}});
-    }
-    case 'ZSTD': {
-      const {ZstdCompression} = await import('@loaders.gl/compression/zstd-compression');
-      return new ZstdCompression();
-    }
+    case 'LZ4_RAW':
+      return new LZ4Compressor();
+    case 'ZSTD':
+      return new ZstdCompressor();
+    default:
+      throw new Error(`parquet: invalid compression method: ${method}`);
+  }
+}
+
+/** Creates the root-level default decompressor for one Parquet method. */
+function createParquetDecompressor(method: ParquetCompression): Decompressor {
+  switch (method) {
+    case 'GZIP':
+      return new GZipDecompressor();
+    case 'SNAPPY':
+      return new SnappyDecompressor();
+    case 'BROTLI':
+      return new BrotliDecompressor();
+    case 'LZ4':
+    case 'LZ4_RAW':
+      return new LZ4Decompressor();
+    case 'ZSTD':
+      return new ZstdDecompressor();
     default:
       throw new Error(`parquet: invalid compression method: ${method}`);
   }

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
-import {DeflateCompression} from '@loaders.gl/compression';
+import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import {load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';

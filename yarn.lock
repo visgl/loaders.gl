@@ -5252,16 +5252,29 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.2"
     "@types/brotli": "npm:^1.3.0"
-    "@types/pako": "npm:^1.0.1"
     brotli: "npm:^1.3.2"
+    compress-utils: "npm:^0.8.0"
     fflate: "npm:0.7.4"
     fzstd: "npm:0.1.1"
     lz4js: "npm:^0.2.0"
-    pako: "npm:1.0.11"
+    pako: "npm:^2.1.0"
     snappyjs: "npm:^0.6.1"
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    compress-utils: ^0.8.0
+    lz4js: ^0.2.0
+    pako: ^2.1.0
+    zstd-codec: ^0.1
+  peerDependenciesMeta:
+    compress-utils:
+      optional: true
+    lz4js:
+      optional: true
+    pako:
+      optional: true
+    zstd-codec:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -11210,13 +11223,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pako@npm:^1.0.1":
-  version: 1.0.7
-  resolution: "@types/pako@npm:1.0.7"
-  checksum: 10c0/1ba133db0b30a974c3d651c85651fd30135f629727b4b4d7ef2649c8f8b01014d5ef41f75399d939e320a50bfa87c32beccbb513badfeaf85d74ea6d5370fdcc
-  languageName: node
-  linkType: hard
-
 "@types/papaparse@npm:^5":
   version: 5.5.2
   resolution: "@types/papaparse@npm:5.5.2"
@@ -15152,6 +15158,13 @@ __metadata:
     normalize-path: "npm:^3.0.0"
     readable-stream: "npm:^3.6.0"
   checksum: 10c0/e5fa03cb374ed89028e20226c70481e87286240392d5c6856f4e7fef40605c1892748648e20ed56597d390d76513b1b9bb4dbd658a1bbff41c9fa60107c74d3f
+  languageName: node
+  linkType: hard
+
+"compress-utils@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "compress-utils@npm:0.8.0"
+  checksum: 10c0/18697c5b9dafc2f46235f6ce01fd55077938e6e40644af174284961ae589259474a8af10ab0fd34e7673b1576baefee61f1574a031906afe7ac8479d03424a9c
   languageName: node
   linkType: hard
 
@@ -26772,13 +26785,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:1.0.11, pako@npm:~1.0.2, pako@npm:~1.0.5":
-  version: 1.0.11
-  resolution: "pako@npm:1.0.11"
-  checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
-  languageName: node
-  linkType: hard
-
 "pako@npm:^0.2.5":
   version: 0.2.9
   resolution: "pako@npm:0.2.9"
@@ -26790,6 +26796,20 @@ __metadata:
   version: 2.1.0
   resolution: "pako@npm:2.1.0"
   checksum: 10c0/8e8646581410654b50eb22a5dfd71159cae98145bd5086c9a7a816ec0370b5f72b4648d08674624b3870a521e6a3daffd6c2f7bc00fdefc7063c9d8232ff5116
+  languageName: node
+  linkType: hard
+
+"pako@npm:^2.1.0":
+  version: 2.2.0
+  resolution: "pako@npm:2.2.0"
+  checksum: 10c0/e5d31de1940fdd13cc4014296b0026112483d0834bce4856ca29c8af8438d030c6416986a0f6df7d5372cae18d6dd6c57f48b24a49d6c207c0a4cc66af15c07d
+  languageName: node
+  linkType: hard
+
+"pako@npm:~1.0.2, pako@npm:~1.0.5":
+  version: 1.0.11
+  resolution: "pako@npm:1.0.11"
+  checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
   languageName: node
   linkType: hard
 
@@ -28564,6 +28584,7 @@ __metadata:
     maplibre-gl: "npm:^3.6.2"
     marked: "npm:^0.7.0"
     monaco-editor: "npm:^0.52.2"
+    pako: "npm:^2.1.0"
     papaparse: "npm:^5.5.3"
     prism-react-renderer: "npm:^2.3.1"
     react: "npm:^19.2.5"

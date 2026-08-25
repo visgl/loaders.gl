@@ -4,7 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 import {parse} from '@loaders.gl/core';
-import {ZstdCompression} from '@loaders.gl/compression';
+import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
 import {SPZLoader} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
@@ -59,8 +59,8 @@ test('SPZLoader uses native zstd without a codec module', async t => {
     t.equal(table.data.numRows, 2, 'native zstd path parses SPZ data');
     t.deepEqual(
       formats,
-      ['zstd', 'zstd', 'zstd', 'zstd', 'zstd'],
-      'all SPZ streams use native zstd'
+      ['zstd', 'zstd', 'zstd', 'zstd', 'zstd', 'zstd'],
+      'one capability probe and all SPZ streams use native zstd'
     );
   } finally {
     restoreZstd();

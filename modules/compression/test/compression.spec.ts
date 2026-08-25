@@ -4,17 +4,14 @@
 
 /** @typedef {import('@loaders.gl/compression').Compression} Compression */
 import test from 'test/utils/vitest-tape';
-import {
-  NoCompression,
-  GZipCompression,
-  DeflateCompression,
-  LZ4Compression,
-  ZstdCompression,
-  SnappyCompression,
-  BrotliCompression,
-  // LZOCompression,
-  CompressionWorker
-} from '@loaders.gl/compression';
+import {NoCompression} from '@loaders.gl/compression/no-compression';
+import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
+import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
+import {LZ4Compression} from '@loaders.gl/compression/lz4-compression';
+import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
+import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
+import {BrotliCompression} from '@loaders.gl/compression/brotli-compression';
+import {CompressionWorker} from '@loaders.gl/compression';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
@@ -70,7 +67,7 @@ const TEST_CASES = [
         compressedLength: 10903
       },
       gzip: {
-        compressedLength: 10915
+        compressedLength: 10913
       },
       lz4: {
         compressedLength: 10422
@@ -323,7 +320,7 @@ test('gzip#worker', async t => {
     }
   });
 
-  t.equal(compressedData.byteLength, 12825, 'Length correct');
+  t.equal(compressedData.byteLength, 12819, 'Length correct');
 
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'gzip',

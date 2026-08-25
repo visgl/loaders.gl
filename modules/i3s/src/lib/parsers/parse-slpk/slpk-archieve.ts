@@ -5,7 +5,7 @@
 import {MD5Hash} from '@loaders.gl/crypto';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
-import {GZipCompression} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */
 const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
@@ -121,7 +121,7 @@ export class SLPKArchive extends IndexedArchive {
       return undefined;
     }
     if (/\.gz$/.test(path)) {
-      const compression = new GZipCompression();
+      const compression = new GZipDecompressor();
 
       const decompressedData = await compression.decompress(data);
       return decompressedData;

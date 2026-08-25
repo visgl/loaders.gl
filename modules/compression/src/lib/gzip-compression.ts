@@ -6,14 +6,19 @@
 // import {isBrowser} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {DeflateCompression} from './deflate-compression';
-import pako from 'pako'; // https://bundlephobia.com/package/pako
 
 export type GZipCompressionOptions = CompressionOptions & {
-  gzip?: pako.InflateOptions & pako.DeflateOptions;
+  gzip?: {
+    level?: number;
+    useNative?: boolean;
+    [option: string]: any;
+  };
+  useNative?: boolean;
 };
 
 /**
  * GZIP compression / decompression
+ * @deprecated Import a direction-specific GZIP compressor or decompressor.
  */
 export class GZipCompression extends DeflateCompression {
   readonly name: string = 'gzip';
@@ -22,6 +27,13 @@ export class GZipCompression extends DeflateCompression {
   readonly isSupported = true;
 
   constructor(options?: GZipCompressionOptions) {
-    super({...options, deflate: {...options?.gzip, gzip: true}});
+    super({
+      ...options,
+      deflate: {
+        ...options?.gzip,
+        gzip: true,
+        useNative: options?.useNative ?? options?.gzip?.useNative
+      }
+    });
   }
 }

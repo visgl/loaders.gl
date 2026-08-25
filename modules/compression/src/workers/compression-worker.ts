@@ -4,66 +4,28 @@
 
 import {createWorker} from '@loaders.gl/worker-utils';
 
-// Compressors
-import {NoCompression} from '../lib/no-compression';
-import {BrotliCompression} from '../lib/brotli-compression';
-import {DeflateCompression} from '../lib/deflate-compression';
-import {GZipCompression} from '../lib/gzip-compression';
-import {LZ4Compression} from '../lib/lz4-compression';
-// import {LZOCompression} from '../lib/lzo-compression';
-import {SnappyCompression} from '../lib/snappy-compression';
-import {ZstdCompression} from '../lib/zstd-compression';
-
-// Import big dependencies
-
-// import brotli from 'brotli'; - brotli has problems with decompress in browsers
-// import brotliDecompress from 'brotli/decompress';
-import lz4js from 'lz4js';
-// import lzo from 'lzo';
-// import {ZstdCodec} from 'zstd-codec';
-
-// Inject large dependencies through Compression constructor options
-const modules = {
-  // brotli has problems with decompress in browsers
-  // brotli: {
-  //   decompress: brotliDecompress,
-  //   compress: () => {
-  //     throw new Error('brotli compress');
-  //   }
-  // },
-  lz4js
-  // lzo,
-  // 'zstd-codec': ZstdCodec
+type CompressionOperation = 'compress' | 'decompress';
+type CompressionTransform = {
+  compress?(data: ArrayBuffer): Promise<ArrayBuffer>;
+  decompress?(data: ArrayBuffer): Promise<ArrayBuffer>;
 };
-
-/** @type {Compression[]} */
-const COMPRESSIONS = [
-  new NoCompression({modules}),
-  new BrotliCompression({modules}),
-  new DeflateCompression({modules}),
-  new GZipCompression({modules}),
-  // new LZOCompression({modules}),
-  new LZ4Compression({modules}),
-  new SnappyCompression({modules}),
-  new ZstdCompression({modules})
-];
 
 createWorker(async (data, options = {}) => {
   const operation = getOperation(String(options?.operation));
-  const compression = getCompression(String(options?.compression));
-
-  // @ts-ignore
+  const compression = await getCompression(
+    String(options?.compression),
+    operation,
+    options?.modules
+  );
   switch (operation) {
     case 'compress':
-      return await compression.compress(data);
+      return await compression.compress!(data);
     case 'decompress':
-      return await compression.decompress(data);
-    default:
-      throw new Error('invalid option');
+      return await compression.decompress!(data);
   }
 });
 
-function getOperation(operation: string): 'compress' | 'decompress' {
+function getOperation(operation: string): CompressionOperation {
   switch (operation) {
     case 'compress':
     case 'deflate':
@@ -78,10 +40,85 @@ function getOperation(operation: string): 'compress' | 'decompress' {
   }
 }
 
-function getCompression(name: string) {
-  const Compression = COMPRESSIONS.find(compression_ => name === compression_.name);
-  if (!Compression) {
-    throw new Error(`@loaders.gl/compression: Unsupported compression ${name}`);
+async function getCompression(
+  name: string,
+  operation: CompressionOperation,
+  modules?: Record<string, any>
+): Promise<CompressionTransform> {
+  switch (name) {
+    case 'uncompressed': {
+      if (operation === 'compress') {
+        const {NoCompressor} = await import('../no-compressor');
+        return new NoCompressor({modules});
+      }
+      const {NoDecompressor} = await import('../no-decompressor');
+      return new NoDecompressor({modules});
+    }
+    case 'deflate': {
+      if (operation === 'compress') {
+        const {DeflateCompressor} = await import('../deflate-compressor');
+        return new DeflateCompressor({modules});
+      }
+      const {DeflateDecompressor} = await import('../deflate-decompressor');
+      return new DeflateDecompressor({modules});
+    }
+    case 'gzip': {
+      if (operation === 'compress') {
+        const {GZipCompressor} = await import('../gzip-compressor');
+        return new GZipCompressor({modules});
+      }
+      const {GZipDecompressor} = await import('../gzip-decompressor');
+      return new GZipDecompressor({modules});
+    }
+    case 'brotli': {
+      if (operation === 'compress') {
+        const {BrotliCompressor} = await import('../brotli-compressor');
+        return new BrotliCompressor({modules});
+      }
+      const {BrotliDecompressor} = await import('../brotli-decompressor');
+      return new BrotliDecompressor({modules});
+    }
+    case 'lz4': {
+      if (operation === 'compress') {
+        const {LZ4Compressor} = await import('../lz4-compressor');
+        return new LZ4Compressor({modules});
+      }
+      const {LZ4Decompressor} = await import('../lz4-decompressor');
+      return new LZ4Decompressor({modules});
+    }
+    case 'snappy': {
+      if (operation === 'compress') {
+        const {SnappyCompressor} = await import('../snappy-compressor');
+        return new SnappyCompressor({modules});
+      }
+      const {SnappyDecompressor} = await import('../snappy-decompressor');
+      return new SnappyDecompressor({modules});
+    }
+    case 'zstd': {
+      if (operation === 'compress') {
+        const {ZstdCompressor} = await import('../zstd-compressor');
+        return new ZstdCompressor({modules});
+      }
+      const {ZstdDecompressor} = await import('../zstd-decompressor');
+      return new ZstdDecompressor({modules});
+    }
+    case 'bzip2': {
+      if (operation === 'compress') {
+        const {BZip2Compressor} = await import('../bzip2-compressor');
+        return new BZip2Compressor({modules});
+      }
+      const {BZip2Decompressor} = await import('../bzip2-decompressor');
+      return new BZip2Decompressor({modules});
+    }
+    case 'xz': {
+      if (operation === 'compress') {
+        const {XZCompressor} = await import('../xz-compressor');
+        return new XZCompressor({modules});
+      }
+      const {XZDecompressor} = await import('../xz-decompressor');
+      return new XZDecompressor({modules});
+    }
+    default:
+      throw new Error(`@loaders.gl/compression: Unsupported compression ${name}`);
   }
-  return Compression;
 }

@@ -20,7 +20,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 
 ## Upgrading to v5.0
 
-These deprecations.removals are being considered for v5
+These deprecations and removals are being considered for v5.
 
 **@loaders.gl/tiles**
 
@@ -36,6 +36,33 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+
+**@loaders.gl/compression**
+
+- The compression package root now exports lightweight, library-neutral classes such as
+  `GZipCompressor`, `GZipDecompressor`, and `ZstdDecompressor`. Their async methods prefer built-in
+  codecs and dynamically import a fallback only when necessary. `preload()` returns the selected
+  concrete implementation. Import direct `FORMAT-DIRECTION` or implementation-specific
+  `FORMAT-DIRECTION-IMPLEMENTATION` subpaths only to prebundle or pin a backend.
+- The `Compressor` and `Decompressor` base classes replace `Compression` for new APIs. Combined
+  classes ending in `Compression` are deprecated, but remain available in v5 as compatibility
+  facades and are assignable to both contracts. This means an existing combined codec can still be
+  supplied to `Compressor[]` or `Decompressor[]`; migrate imports when minimizing bundle size.
+
+  | Deprecated combined import | Preferred root classes |
+  | --- | --- |
+  | `no-compression` | `NoCompressor`, `NoDecompressor` |
+  | `gzip-fflate`, `gzip-pako` | `GZipCompressor`, `GZipDecompressor` |
+  | `deflate-fflate`, `deflate-pako` | `DeflateCompressor`, `DeflateDecompressor` |
+  | `FORMAT-compress-utils` | `FormatCompressor`, `FormatDecompressor` |
+- Full bzip2 and XZ compression and incremental operation are available through the new
+  direction-specific `bzip2-*-compress-utils` and `xz-*-compress-utils` implementations. The
+  deprecated combined classes remain available for compatibility.
+- DEFLATE and GZIP now prefer native runtime streams and use `fflate` as the compact fallback instead of Pako. Compressed bytes are format-compatible, but compression output is not guaranteed to be byte-for-byte identical across runtimes.
+- Async Brotli decompression remains available without application changes: it tries native support first and lazily loads the bundled fallback decoder when needed. Applications that call `BrotliCompression.decompressSync()` must first `await compression.preload()` or inject `modules.brotli`.
+- Snappy synchronous methods no longer initialize the optional `snappyjs` dependency implicitly. Call `await compression.preload()` before `compressSync()` or `decompressSync()`, or inject `modules: {snappyjs}`. Async methods preload it automatically.
+- `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
+- `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
 
 **@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
 

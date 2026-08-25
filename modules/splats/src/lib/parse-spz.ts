@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
-import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+import {ZstdDecompressor} from '@loaders.gl/compression';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {GaussianSplats, SplatsLoaderOptions} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
@@ -52,68 +51,15 @@ export async function parseSPZToGaussianSplats(
   const compressedStreams = streamInfos.map(streamInfo =>
     data.slice(streamInfo.compressedOffset, streamInfo.compressedOffset + streamInfo.compressedSize)
   );
-  registerJSModules(options?.modules);
-  const useNativeDecompressionStream = !getJSModuleOrNull('zstd-codec');
-  let compressionPromise:
-    | Promise<{
-        decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer>;
-      }>
-    | undefined;
+  const decompressor = new ZstdDecompressor({modules: options?.modules});
   const streams = await Promise.all(
     compressedStreams.map((compressedStream, streamIndex) =>
-      decompressSPZStream(
-        compressedStream,
-        streamInfos[streamIndex].uncompressedSize,
-        useNativeDecompressionStream,
-        () => {
-          compressionPromise ||= createZstdCompression(options?.modules);
-          return compressionPromise;
-        }
-      )
+      decompressor.decompress(compressedStream, streamInfos[streamIndex].uncompressedSize)
     )
   );
 
   validateSPZStreamLengths(streams, streamInfos);
   return decodeSPZStreams(header, streams, data);
-}
-
-/**
- * Decompresses one SPZ stream natively when available, then lazily loads the codec fallback.
- *
- * @param compressedStream Compressed Zstandard stream.
- * @param uncompressedSize Expected uncompressed byte length.
- * @param useNativeDecompressionStream Whether no provided codec should take precedence.
- * @param getCompression Lazily resolves the codec-backed Zstandard implementation.
- * @returns Decompressed stream bytes.
- */
-async function decompressSPZStream(
-  compressedStream: ArrayBuffer,
-  uncompressedSize: number,
-  useNativeDecompressionStream: boolean,
-  getCompression: () => Promise<{
-    decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer>;
-  }>
-): Promise<ArrayBuffer> {
-  if (useNativeDecompressionStream) {
-    const nativeOutput = await decompressWithNativeDecompressionStream(compressedStream, 'zstd');
-    if (nativeOutput) {
-      return nativeOutput;
-    }
-  }
-
-  const compression = await getCompression();
-  return await compression.decompress(compressedStream, uncompressedSize);
-}
-
-/**
- * Dynamically loads the codec-backed Zstandard class for unsupported native runtimes.
- *
- * @param modules Optional registered codec modules.
- * @returns Codec-backed Zstandard implementation.
- */
-async function createZstdCompression(modules?: {[key: string]: any}) {
-  const {ZstdCompression} = await import('@loaders.gl/compression/zstd-compression');
-  return new ZstdCompression({modules});
 }
 
 /** Parses and validates the SPZ v4 plaintext header. */

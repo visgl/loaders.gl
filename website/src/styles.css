@@ -349,13 +349,18 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   cursor: pointer;
   font: inherit;
   font-weight: 600;
-  padding: 0.35rem 0.75rem;
+  line-height: 1.2;
+  padding: 0.15rem 0.6rem;
 }
 
 .benchmark-restart-button:hover,
 .benchmark-restart-button:focus {
   background: var(--ifm-color-primary-dark);
   border-color: var(--ifm-color-primary-dark);
+}
+
+.compression-benchmark-value {
+  white-space: nowrap;
 }
 
 @keyframes benchmark-spin {
@@ -666,4 +671,36 @@ body:has(.benchmark-page) footer.theme-layout-footer {
 .badges img {
   display: inline-block;
   margin: 0;
+}
+
+.compression-benchmark-green,
+.compression-benchmark-yellow,
+.compression-benchmark-red {
+  font-weight: 700;
+}
+
+.compression-benchmark-green {
+  color: #278a3d;
+}
+
+.compression-benchmark-yellow {
+  color: #a66a00;
+}
+
+.compression-benchmark-red {
+  color: #c33b32;
+}
+
+.compression-benchmark-bar {
+  background: var(--ifm-color-emphasis-200);
+  border-radius: 0.25rem;
+  height: 0.7rem;
+  min-width: 12rem;
+  overflow: hidden;
+}
+
+.compression-benchmark-bar > div {
+  background: currentColor;
+  border-radius: inherit;
+  height: 100%;
 }

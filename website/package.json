@@ -87,6 +87,7 @@
     "maplibre-gl": "^3.6.2",
     "marked": "^0.7.0",
     "monaco-editor": "^0.52.2",
+    "pako": "^2.1.0",
     "papaparse": "^5.5.3",
     "prism-react-renderer": "^2.3.1",
     "react": "^19.2.5",

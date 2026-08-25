@@ -5,10 +5,11 @@
 // SNAPPY (aka ZIPPY)
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {compress, uncompress} from 'snappyjs'; // https://bundlephobia.com/package/snappy
+import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
 
 /**
  * Snappy/zippy compression / decompression
+ * @deprecated Import a direction-specific Snappy compressor or decompressor.
  */
 export class SnappyCompression extends Compression {
   readonly name: string = 'snappy';
@@ -20,15 +21,24 @@ export class SnappyCompression extends Compression {
   constructor(options?: CompressionOptions) {
     super(options);
     this.options = options || {};
+    registerJSModules(this.options.modules);
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    // Accepts arrayBuffer - https://github.com/zhipeng-jia/snappyjs#usage
-    return compress(input);
+    const snappy = getJSModule<any>('snappyjs', this.name);
+    return snappy.compress(input);
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
-    // Accepts arrayBuffer - https://github.com/zhipeng-jia/snappyjs#usage
-    return uncompress(input);
+    const snappy = getJSModule<any>('snappyjs', this.name);
+    return snappy.uncompress(input);
+  }
+
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
+    if (!getJSModuleOrNull('snappyjs')) {
+      const snappy = await import('snappyjs');
+      registerJSModules({snappyjs: snappy.default || snappy});
+    }
   }
 }

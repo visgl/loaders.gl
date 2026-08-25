@@ -27,7 +27,12 @@
 /* eslint-disable max-statements */
 
 // LZ4
-import {toArrayBuffer, registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+import {
+  toArrayBuffer,
+  registerJSModules,
+  getJSModule,
+  getJSModuleOrNull
+} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 
@@ -36,6 +41,7 @@ const LZ4_MAGIC_NUMBER = 0x184d2204;
 
 /**
  * LZ4 compression / decompression
+ * @deprecated Import a direction-specific LZ4 compressor or decompressor.
  */
 export class LZ4Compression extends Compression {
   readonly name: string = 'lz4';
@@ -44,7 +50,7 @@ export class LZ4Compression extends Compression {
   readonly isSupported = true;
   readonly options: CompressionOptions;
 
-  constructor(options: CompressionOptions) {
+  constructor(options: CompressionOptions = {}) {
     super(options);
     this.options = options;
 
@@ -53,12 +59,21 @@ export class LZ4Compression extends Compression {
 
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
+    if (!getJSModuleOrNull('lz4js')) {
+      const lz4 = await import('lz4js');
+      registerJSModules({lz4js: lz4.default || lz4});
+    }
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
     const lz4js = getJSModule('lz4js', this.name);
     const inputArray = new Uint8Array(input);
     return lz4js.compress(inputArray).buffer;
+  }
+
+  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
+    await this.preload();
+    return this.compressSync(input);
   }
 
   /**
@@ -68,12 +83,12 @@ export class LZ4Compression extends Compression {
    * If data provided without magic number we will parse it as block
    */
   decompressSync(data: ArrayBuffer, maxSize?: number): ArrayBuffer {
-    const lz4js = getJSModule('lz4js', this.name);
     try {
       const isMagicNumberExists = this.checkMagicNumber(data);
       const inputArray = new Uint8Array(data);
 
       if (isMagicNumberExists) {
+        const lz4js = getJSModule('lz4js', this.name);
         return lz4js.decompress(inputArray, maxSize).buffer;
       }
 
@@ -97,6 +112,15 @@ export class LZ4Compression extends Compression {
     } catch (error) {
       throw this.improveError(error);
     }
+  }
+
+  async decompress(data: ArrayBuffer, maxSize?: number): Promise<ArrayBuffer> {
+    const isMagicNumberExists = this.checkMagicNumber(data);
+    if (!isMagicNumberExists) {
+      return this.decompressSync(data, maxSize);
+    }
+    await this.preload();
+    return this.decompressSync(data, maxSize);
   }
 
   /**
