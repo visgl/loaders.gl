@@ -10,6 +10,8 @@ import {
   Gzip,
   Gunzip,
   Inflate,
+  Unzlib,
+  Zlib,
   deflateSync,
   gzipSync,
   gunzipSync,
@@ -130,9 +132,12 @@ export class DeflateCompression extends Compression {
         return;
       }
     }
+    const options = (this.options.deflate || {}) as DeflateOptions & GzipOptions;
     const processor = this.options.deflate?.gzip
-      ? new Gzip((this.options.deflate || {}) as GzipOptions)
-      : new Deflate((this.options.deflate || {}) as DeflateOptions);
+      ? new Gzip(options)
+      : this.options.raw
+        ? new Deflate(options)
+        : new Zlib(options);
     yield* this.transformBatches(processor, inputBatches);
   }
 
@@ -151,7 +156,11 @@ export class DeflateCompression extends Compression {
         return;
       }
     }
-    const processor = this.options.deflate?.gzip ? new Gunzip() : new Inflate();
+    const processor = this.options.deflate?.gzip
+      ? new Gunzip()
+      : this.options.raw
+        ? new Inflate()
+        : new Unzlib();
     yield* this.transformBatches(processor, inputBatches);
   }
 

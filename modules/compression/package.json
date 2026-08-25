@@ -46,6 +46,14 @@
       "types": "./dist/no-compression.d.ts",
       "import": "./dist/no-compression.js"
     },
+    "./no-compressor": {
+      "types": "./dist/no-compressor.d.ts",
+      "import": "./dist/no-compressor.js"
+    },
+    "./no-decompressor": {
+      "types": "./dist/no-decompressor.d.ts",
+      "import": "./dist/no-decompressor.js"
+    },
     "./gzip-compression": {
       "types": "./dist/gzip-compression.d.ts",
       "import": "./dist/gzip-compression.js"

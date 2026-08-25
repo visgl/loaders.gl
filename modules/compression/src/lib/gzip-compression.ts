@@ -29,7 +29,11 @@ export class GZipCompression extends DeflateCompression {
   constructor(options?: GZipCompressionOptions) {
     super({
       ...options,
-      deflate: {...options?.gzip, gzip: true, useNative: options?.useNative}
+      deflate: {
+        ...options?.gzip,
+        gzip: true,
+        useNative: options?.useNative ?? options?.gzip?.useNative
+      }
     });
   }
 }

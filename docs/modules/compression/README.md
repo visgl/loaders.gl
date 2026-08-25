@@ -67,6 +67,7 @@ application, or a decoder from being retained by an encode-only application.
 
 | Format | Class | Import subpath | Characteristics |
 | --- | --- | --- | --- |
+| Uncompressed | `NoCompressor` | `no-compressor` | Pass-through |
 | GZIP | `GZipFflateCompressor` | `gzip-fflate-compressor` | Compact, synchronous JavaScript |
 | GZIP | `GZipPakoCompressor` | `gzip-pako-compressor` | Pako, synchronous JavaScript |
 | GZIP | `GZipCompressUtilsCompressor` | `gzip-compress-utils-compressor` | WASM, async and incremental |
@@ -84,6 +85,7 @@ application, or a decoder from being retained by an encode-only application.
 
 | Format | Class | Import subpath | Characteristics |
 | --- | --- | --- | --- |
+| Uncompressed | `NoDecompressor` | `no-decompressor` | Pass-through |
 | GZIP | `GZipFflateDecompressor` | `gzip-fflate-decompressor` | Compact, synchronous JavaScript |
 | GZIP | `GZipPakoDecompressor` | `gzip-pako-decompressor` | Pako, synchronous JavaScript |
 | GZIP | `GZipCompressUtilsDecompressor` | `gzip-compress-utils-decompressor` | WASM, async and incremental |

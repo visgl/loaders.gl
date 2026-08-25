@@ -4,6 +4,8 @@
 
 import {describe, expect, test} from 'vitest';
 import type {Compression, Compressor, Decompressor} from '@loaders.gl/compression';
+import {NoCompressor} from '@loaders.gl/compression/no-compressor';
+import {NoDecompressor} from '@loaders.gl/compression/no-decompressor';
 import {DeflateFflateCompression} from '@loaders.gl/compression/deflate-fflate';
 import {GZipFflateCompression} from '@loaders.gl/compression/gzip-fflate';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-fflate-compressor';
@@ -89,6 +91,7 @@ describe('compression library bindings', () => {
   });
 
   test.each([
+    ['uncompressed', new NoCompressor(), new NoDecompressor()],
     ['fflate', new GZipFflateCompressor(), new GZipFflateDecompressor()],
     ['pako', new GZipPakoCompressor(), new GZipPakoDecompressor()]
   ])('%s direction-specific bindings interoperate', async (_name, compressor, decompressor) => {

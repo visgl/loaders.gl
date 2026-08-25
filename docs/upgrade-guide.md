@@ -56,6 +56,7 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
   | Deprecated combined import | Preferred imports |
   | --- | --- |
+  | `no-compression` | `no-compressor`, `no-decompressor` |
   | `gzip-fflate` | `gzip-fflate-compressor`, `gzip-fflate-decompressor` |
   | `gzip-pako` | `gzip-pako-compressor`, `gzip-pako-decompressor` |
   | `deflate-fflate` | `deflate-fflate-compressor`, `deflate-fflate-decompressor` |
@@ -63,8 +64,8 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
   | `FORMAT-compress-utils` | `FORMAT-compress-utils-compressor`, `FORMAT-compress-utils-decompressor` |
   | `brotli-loaders-gl` | `brotli-loaders-gl-decompressor` |
 - Full bzip2 and XZ compression and incremental operation are available through the new
-  `bzip2-compress-utils` and `xz-compress-utils` implementations. The generic `BZip2Compression`
-  and `XZCompression` classes remain compact, decoder-only defaults.
+  direction-specific `bzip2-compress-utils-*` and `xz-compress-utils-*` implementations. The
+  deprecated combined classes remain available for compatibility.
 - DEFLATE and GZIP now prefer native runtime streams and use `fflate` as the compact fallback instead of Pako. Compressed bytes are format-compatible, but compression output is not guaranteed to be byte-for-byte identical across runtimes.
 - Async Brotli decompression remains available without application changes: it tries native support first and lazily loads the bundled fallback decoder when needed. Applications that call `BrotliCompression.decompressSync()` must first `await compression.preload()` or inject `modules.brotli`.
 - Snappy synchronous methods no longer initialize the optional `snappyjs` dependency implicitly. Call `await compression.preload()` before `compressSync()` or `decompressSync()`, or inject `modules: {snappyjs}`. Async methods preload it automatically.

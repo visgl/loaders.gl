@@ -83,12 +83,12 @@ export class LZ4Compression extends Compression {
    * If data provided without magic number we will parse it as block
    */
   decompressSync(data: ArrayBuffer, maxSize?: number): ArrayBuffer {
-    const lz4js = getJSModule('lz4js', this.name);
     try {
       const isMagicNumberExists = this.checkMagicNumber(data);
       const inputArray = new Uint8Array(data);
 
       if (isMagicNumberExists) {
+        const lz4js = getJSModule('lz4js', this.name);
         return lz4js.decompress(inputArray, maxSize).buffer;
       }
 
