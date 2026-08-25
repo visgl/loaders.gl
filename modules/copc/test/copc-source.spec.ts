@@ -3,11 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
-import {createDataSource, encodeSync, fetchFile, isBrowser} from '@loaders.gl/core';
+import {validateWriter} from 'test/common/conformance';
+import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
+import {LASLoader} from '@loaders.gl/las';
+import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
+import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {Copc} from 'copc';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
+
+test('COPCWriter#writer conformance', t => {
+  validateWriter(t, COPCWriter, 'COPCWriter');
+  t.end();
+});
 
 test('COPCSourceLoader#creates a source through createDataSource', async t => {
   const dataSource = createDataSource(await createEllipsoidSourceData(), [COPCSourceLoader], {
@@ -171,12 +181,132 @@ test('COPCSourceLoader#derives cartographic view metadata from the dataset', asy
   t.end();
 });
 
-test('COPCWriter#reports unimplemented TypeScript COPC encoding', t => {
-  t.throws(
-    () => encodeSync({} as any, COPCWriter),
-    /not implemented yet/,
-    'COPCWriter encodeSync reports unimplemented encoding'
+test('COPCWriter#encodes range-readable octree nodes', async t => {
+  const mesh = createCOPCWriterMesh();
+  const arrayBuffer = encodeSync(mesh, COPCWriter, {
+    copc: {nodePointLimit: 4, maximumDepth: 4, pointDataRecordFormat: 7, scale: [0.01, 0.01, 0.01]}
+  });
+  const blob = new Blob([arrayBuffer]);
+  const ranges: Array<[number, number]> = [];
+  const getter = async (begin: number, end: number): Promise<Uint8Array> => {
+    ranges.push([begin, end]);
+    return new Uint8Array(await blob.slice(begin, end).arrayBuffer());
+  };
+  const copc = await Copc.create(getter);
+  const hierarchy = await Copc.loadHierarchyPage(getter, copc.info.rootHierarchyPage);
+  const nodes = Object.values(hierarchy.nodes);
+  const rootNode = hierarchy.nodes['0-0-0-0'];
+
+  t.equal(copc.header.pointDataRecordFormat, 7, 'writes PDRF 7');
+  t.equal(copc.header.pointCount, mesh.attributes.POSITION.value.length / 3, 'writes point count');
+  t.equal(copc.header.globalEncoding & 16, 16, 'sets the WKT global encoding bit');
+  t.ok(rootNode, 'writes a root hierarchy node');
+  t.equal(rootNode.pointCount, 4, 'root node respects the point target');
+  t.ok(nodes.length > 1, 'partitions points into child nodes');
+  t.equal(
+    nodes.reduce((pointCount, node) => pointCount + node.pointCount, 0),
+    copc.header.pointCount,
+    'hierarchy assigns every point exactly once'
   );
+  t.ok(
+    ranges.some(
+      ([begin, end]) =>
+        begin === copc.info.rootHierarchyPage.pageOffset &&
+        end - begin === copc.info.rootHierarchyPage.pageLength
+    ),
+    'hierarchy is loaded through its declared byte range'
+  );
+
+  const pointDataPositions: string[] = [];
+  for (const node of nodes) {
+    const compressed = await Copc.loadCompressedPointDataBuffer(getter, node);
+    const rawPointData = decodeLAZChunk(compressed, {
+      pointCount: node.pointCount,
+      pointDataRecordFormat: copc.header.pointDataRecordFormat,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    });
+    pointDataPositions.push(...readPointPositions(rawPointData, copc.header));
+  }
+  t.deepEqual(
+    pointDataPositions.sort(),
+    readMeshPositions(mesh).sort(),
+    'independent node chunks preserve every source position'
+  );
+  const lasData = await parse(arrayBuffer.slice(0), LASLoader, {core: {worker: false}});
+  t.deepEqual(
+    readFlatPositions(lasData.attributes.POSITION.value).sort(),
+    readMeshPositions(mesh).sort(),
+    'ordinary variable-chunk LAZ parsing preserves every source position'
+  );
+
+  const dataView = new DataView(arrayBuffer);
+  const chunkTableOffset = readUint64(dataView, copc.header.pointDataOffset);
+  const chunkCount = dataView.getUint32(chunkTableOffset + 4, true);
+  const chunkTable = decodeLAZChunkTable(
+    new Uint8Array(
+      arrayBuffer,
+      chunkTableOffset + 8,
+      copc.header.evlrOffset - chunkTableOffset - 8
+    ),
+    {
+      chunkCount,
+      pointCount: copc.header.pointCount,
+      chunkSize: 0xffffffff,
+      variable: true
+    }
+  );
+  t.equal(chunkCount, nodes.length, 'variable chunk table covers every hierarchy node');
+  t.equal(
+    chunkTable.reduce((pointCount, chunk) => pointCount + chunk.pointCount, 0),
+    copc.header.pointCount,
+    'variable chunk table preserves node point counts'
+  );
+
+  const source = COPCSourceLoader.createDataSource(blob, {copc: {decoder: 'typescript-laz'}});
+  await source.initialize();
+  const rootTile = await source.getRootTile();
+  const childTiles = await source.getChildren(rootTile);
+  const content = await source.loadTileContent(childTiles[0] || rootTile);
+  t.ok(childTiles.length > 0, 'range source exposes generated child tiles');
+  t.ok(content?.pointCount, 'range source decodes generated tile content');
+  t.end();
+});
+
+test('COPCWriter#validates organization options', t => {
+  const mesh = createCOPCWriterMesh();
+  t.throws(
+    () => encodeSync(mesh, COPCWriter, {copc: {nodePointLimit: 0}}),
+    /invalid node point limit/,
+    'rejects an empty node target'
+  );
+  t.throws(
+    () => encodeSync(mesh, COPCWriter, {copc: {maximumDepth: 31}}),
+    /invalid maximum depth/,
+    'rejects octree depths outside Int32 key coordinates'
+  );
+  t.end();
+});
+
+test('COPCWriter#defaults to PDRF 6 without colors', async t => {
+  const coloredMesh = createCOPCWriterMesh();
+  const attributes = {POSITION: coloredMesh.attributes.POSITION};
+  const mesh = {
+    ...coloredMesh,
+    attributes,
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = encodeSync(mesh, COPCWriter, {
+    copc: {nodePointLimit: 8, wkt: 'LOCAL_CS["loaders.gl test"]'}
+  });
+  const blob = new Blob([arrayBuffer]);
+  const getter = async (begin: number, end: number): Promise<Uint8Array> =>
+    new Uint8Array(await blob.slice(begin, end).arrayBuffer());
+  const copc = await Copc.create(getter);
+  const hierarchy = await Copc.loadHierarchyPage(getter, copc.info.rootHierarchyPage);
+
+  t.equal(copc.header.pointDataRecordFormat, 6, 'selects PDRF 6');
+  t.equal(copc.wkt, 'LOCAL_CS["loaders.gl test"]', 'writes an optional WKT VLR');
+  t.ok(hierarchy.nodes['0-0-0-0'], 'PDRF 6 hierarchy is readable');
   t.end();
 });
 
@@ -189,4 +319,72 @@ async function createEllipsoidSourceData(): Promise<string | Blob> {
 async function createEllipsoidBlob(): Promise<Blob> {
   const url = isBrowser ? ELLIPSOID_BROWSER_URL : ELLIPSOID_FILE_PATH;
   return new Blob([await (await fetchFile(url)).arrayBuffer()]);
+}
+
+/** Create a colored point cloud spanning all root octants. */
+function createCOPCWriterMesh() {
+  const positions: number[] = [];
+  const colors: number[] = [];
+  for (let z = 0; z < 2; z++) {
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 5; x++) {
+        positions.push(x * 10 - 20, y * 8 - 12, z * 30 - 15);
+        colors.push(x * 10, y * 20, z * 100);
+      }
+    }
+  }
+  const attributes = {
+    POSITION: {value: new Float64Array(positions), size: 3},
+    COLOR_0: {value: new Uint16Array(colors), size: 3}
+  };
+  return {
+    attributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
+  };
+}
+
+/** Read dequantized positions from raw LAS records. */
+function readPointPositions(rawPointData: Uint8Array, header: any): string[] {
+  const dataView = new DataView(
+    rawPointData.buffer,
+    rawPointData.byteOffset,
+    rawPointData.byteLength
+  );
+  const positions: string[] = [];
+  for (
+    let pointIndex = 0;
+    pointIndex < rawPointData.byteLength / header.pointDataRecordLength;
+    pointIndex++
+  ) {
+    const byteOffset = pointIndex * header.pointDataRecordLength;
+    positions.push(
+      [
+        dataView.getInt32(byteOffset, true) * header.scale[0] + header.offset[0],
+        dataView.getInt32(byteOffset + 4, true) * header.scale[1] + header.offset[1],
+        dataView.getInt32(byteOffset + 8, true) * header.scale[2] + header.offset[2]
+      ].join(',')
+    );
+  }
+  return positions;
+}
+
+/** Return source mesh positions as stable string keys. */
+function readMeshPositions(mesh: ReturnType<typeof createCOPCWriterMesh>): string[] {
+  return readFlatPositions(mesh.attributes.POSITION.value);
+}
+
+/** Return flat XYZ values as stable string keys. */
+function readFlatPositions(positions: ArrayLike<number>): string[] {
+  const result: string[] = [];
+  for (let index = 0; index < positions.length; index += 3) {
+    result.push([positions[index], positions[index + 1], positions[index + 2]].join(','));
+  }
+  return result;
+}
+
+/** Read a little-endian UInt64 that fits in JavaScript's safe integer range. */
+function readUint64(dataView: DataView, byteOffset: number): number {
+  return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;
 }

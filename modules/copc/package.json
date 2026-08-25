@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@loaders.gl/images": "5.0.0-alpha.2",
+    "@loaders.gl/las": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/mvt": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",

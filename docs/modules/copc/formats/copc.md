@@ -17,4 +17,6 @@ Key aspects distinguish an organized COPC LAZ file from an LAZ 1.4 that is unorg
 
 - It MUST contain ONLY LAS PDRFs 6, 7, or 8 formatted data
 - It MUST contain a COPC info VLR
-- It MUST contain a COPC hierarchy VLR
+- It MUST contain a COPC hierarchy VLR or EVLR
+
+`COPCWriter` emits LAS 1.4 PDRF 6-8 data with the COPC info VLR, variable-size LASzip chunks, a version 0 variable chunk table, and a single hierarchy EVLR. Points are sampled deterministically into parent levels and remaining points are partitioned spatially into child octants.

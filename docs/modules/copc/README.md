@@ -12,7 +12,7 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 <CopcDocsTabs active="overview" />
 
-The `@loaders.gl/copc` module provides support for the [COPC](/docs/modules/copc/formats/copc) format.
+The `@loaders.gl/copc` module loads and writes the [COPC](/docs/modules/copc/formats/copc) format.
 
 ## Installation
 
@@ -22,9 +22,10 @@ npm install @loaders.gl/core @loaders.gl/copc
 
 ## APIs
 
-| Source | Description |
-| ------ | ----------- |
-| [`COPCSourceLoader`](/docs/modules/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Loads viewport-selected point data from COPC files. |
+| API | Description |
+| --- | --- |
+| [`COPCSourceLoader`](/docs/modules/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Loads viewport-selected point data from COPC files through byte ranges. |
+| [`COPCWriter`](/docs/modules/copc/api-reference/copc-writer) | Writes Mesh or Mesh Arrow table point clouds as COPC 1.0 data. |
 
 ## Attribution
 

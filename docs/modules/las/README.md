@@ -15,7 +15,7 @@ npm install @loaders.gl/core @loaders.gl/las
 | Loader or Writer                                              | Description                                  |
 | ------------------------------------------------------------- | -------------------------------------------- |
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader)      | Loads LAS/LAZ point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`LASWriter`](/docs/modules/las/api-reference/las-writer)      | Writes Mesh or Mesh Arrow table point clouds as uncompressed LAS data. |
+| [`LASWriter`](/docs/modules/las/api-reference/las-writer)      | Writes Mesh or Mesh Arrow table point clouds as LAS or LAZ data. |
 
 ## Attribution
 

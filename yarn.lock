@@ -5270,6 +5270,7 @@ __metadata:
   resolution: "@loaders.gl/copc@workspace:modules/copc"
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-alpha.2"
+    "@loaders.gl/las": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/mvt": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"

@@ -9,6 +9,7 @@
   },
   "references": [
     {"path": "../loader-utils"},
+    {"path": "../las"},
     {"path": "../schema"},
     {"path": "../schema-utils"},
     {"path": "../images"}
