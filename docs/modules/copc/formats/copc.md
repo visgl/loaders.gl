@@ -47,6 +47,10 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 | `NIR` | - | - | Yes | 16-bit near-infrared channel. |
 | `intensity` | Yes | Yes | Yes | 16-bit pulse intensity. |
 | `classification` | Yes | Yes | Yes | LAS 1.4 classification code. |
+| `synthetic` | Yes | Yes | Yes | Synthetic classification flag. |
+| `keyPoint` | Yes | Yes | Yes | Key-point classification flag. |
+| `withheld` | Yes | Yes | Yes | Withheld classification flag. |
+| `overlap` | Yes | Yes | Yes | Overlap classification flag. |
 | `GPS_TIME` | Yes | Yes | Yes | 64-bit GPS time. |
 | `scanAngle` | Yes | Yes | Yes | LAS 1.4 signed scan angle. |
 | `pointSourceId` | Yes | Yes | Yes | 16-bit point source identifier. |
@@ -57,8 +61,6 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 | `scanDirectionFlag` | Yes | Yes | Yes | Scan direction bit. |
 | `edgeOfFlightLine` | Yes | Yes | Yes | End-of-flight-line bit. |
 | `EXTRA_BYTES_*` | Yes | Yes | Yes | Named typed attributes from the Extra Bytes descriptor VLR, requested with `EXTRA_BYTES`. |
-
-Classification flags (`synthetic`, `keyPoint`, `withheld`, and `overlap`) remain available through the low-level point schema but are not yet separate progressive Arrow attributes.
 
 ### Streaming Boundaries
 

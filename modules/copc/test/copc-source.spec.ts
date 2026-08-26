@@ -165,6 +165,10 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
     'COLOR_0',
     'intensity',
     'classification',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
     'GPS_TIME',
     'scanAngle',
     'userData',
@@ -192,6 +196,10 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
   expect(firstBatch?.data.data.getChild('COLOR_0')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('intensity')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('classification')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('synthetic')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('keyPoint')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('withheld')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('overlap')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('GPS_TIME')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('scanAngle')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('userData')).toBeTruthy();

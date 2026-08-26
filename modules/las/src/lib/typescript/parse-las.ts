@@ -116,6 +116,10 @@ type PointDataBatchState = {
   rawColors: Uint16Array | null;
   intensities: Uint16Array | null;
   classifications: Uint8Array | null;
+  syntheticFlags: Uint8Array | null;
+  keyPointFlags: Uint8Array | null;
+  withheldFlags: Uint8Array | null;
+  overlapFlags: Uint8Array | null;
   gpsTimes: Float64Array | null;
   nir: Uint16Array | null;
   scanAngles: Int16Array | null;
@@ -249,6 +253,10 @@ function parseCompleteLAZFileToArrowTable(
     colors,
     state.intensities,
     state.classifications,
+    state.syntheticFlags,
+    state.keyPointFlags,
+    state.withheldFlags,
+    state.overlapFlags,
     state.gpsTimes,
     state.nir,
     state.scanAngles,
@@ -1267,6 +1275,10 @@ function parseLASArrowTableBatch(
   const colors = lasHeader.hasColor && selection.color ? new Uint8Array(batchSize * 4) : null;
   const intensities = selection.intensity ? new Uint16Array(batchSize) : null;
   const classifications = selection.classification ? new Uint8Array(batchSize) : null;
+  const syntheticFlags = selection.synthetic ? new Uint8Array(batchSize) : null;
+  const keyPointFlags = selection.keyPoint ? new Uint8Array(batchSize) : null;
+  const withheldFlags = selection.withheld ? new Uint8Array(batchSize) : null;
+  const overlapFlags = selection.overlap ? new Uint8Array(batchSize) : null;
   const gpsTimes =
     selection.gpsTime && getGpsTimeOffset(lasHeader.pointsFormatId) >= 0
       ? new Float64Array(batchSize)
@@ -1305,6 +1317,10 @@ function parseLASArrowTableBatch(
     colors,
     intensities,
     classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
     gpsTimes,
     nir,
     scanAngles,
@@ -1329,6 +1345,10 @@ function parseLASArrowTableBatch(
     colors,
     intensities,
     classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
     gpsTimes,
     nir,
     scanAngles,
@@ -1351,6 +1371,10 @@ function makeLASArrowTableFromAttributes(
   colors: Uint8Array | null,
   intensities: Uint16Array | null,
   classifications: Uint8Array | null,
+  syntheticFlags: Uint8Array | null,
+  keyPointFlags: Uint8Array | null,
+  withheldFlags: Uint8Array | null,
+  overlapFlags: Uint8Array | null,
   gpsTimes: Float64Array | null,
   nir: Uint16Array | null,
   scanAngles: Int16Array | null,
@@ -1373,6 +1397,18 @@ function makeLASArrowTableFromAttributes(
   }
   if (classifications) {
     attributes.classification = {value: classifications, size: 1};
+  }
+  if (syntheticFlags) {
+    attributes.synthetic = {value: syntheticFlags, size: 1};
+  }
+  if (keyPointFlags) {
+    attributes.keyPoint = {value: keyPointFlags, size: 1};
+  }
+  if (withheldFlags) {
+    attributes.withheld = {value: withheldFlags, size: 1};
+  }
+  if (overlapFlags) {
+    attributes.overlap = {value: overlapFlags, size: 1};
   }
   if (colors) {
     attributes.COLOR_0 = {value: colors, size: 4};
@@ -1453,6 +1489,10 @@ function populateLASAttributesFromDataView(
     colors: Uint8Array | null;
     intensities: Uint16Array | null;
     classifications: Uint8Array | null;
+    syntheticFlags: Uint8Array | null;
+    keyPointFlags: Uint8Array | null;
+    withheldFlags: Uint8Array | null;
+    overlapFlags: Uint8Array | null;
     gpsTimes: Float64Array | null;
     nir: Uint16Array | null;
     scanAngles: Int16Array | null;
@@ -1490,6 +1530,10 @@ function populateLASAttributesFromDataView(
       : false;
   const intensities = target.intensities;
   const classifications = target.classifications;
+  const syntheticFlags = target.syntheticFlags;
+  const keyPointFlags = target.keyPointFlags;
+  const withheldFlags = target.withheldFlags;
+  const overlapFlags = target.overlapFlags;
   const gpsTimes = target.gpsTimes;
   const nir = target.nir;
   const scanAngles = target.scanAngles;
@@ -1545,6 +1589,19 @@ function populateLASAttributesFromDataView(
     }
     const returnFlags = dataView.getUint8(pointOffset + 14);
     const scanFlags = dataView.getUint8(pointOffset + 15);
+    const classificationFlags = pointsFormatId <= 5 ? scanFlags >> 5 : scanFlags;
+    if (syntheticFlags) {
+      syntheticFlags[targetPointIndex] = classificationFlags & 1;
+    }
+    if (keyPointFlags) {
+      keyPointFlags[targetPointIndex] = (classificationFlags >> 1) & 1;
+    }
+    if (withheldFlags) {
+      withheldFlags[targetPointIndex] = (classificationFlags >> 2) & 1;
+    }
+    if (overlapFlags) {
+      overlapFlags[targetPointIndex] = pointsFormatId <= 5 ? 0 : (classificationFlags >> 3) & 1;
+    }
     if (returnNumbers) {
       returnNumbers[targetPointIndex] =
         pointsFormatId <= 5 ? returnFlags & 0x07 : returnFlags & 0x0f;
@@ -2205,6 +2262,10 @@ function createPointDataBatchState(
   const rawColors = useRawColors ? new Uint16Array(batchSize * 3) : null;
   const intensities = selection.intensity ? new Uint16Array(batchSize) : null;
   const classifications = selection.classification ? new Uint8Array(batchSize) : null;
+  const syntheticFlags = selection.synthetic ? new Uint8Array(batchSize) : null;
+  const keyPointFlags = selection.keyPoint ? new Uint8Array(batchSize) : null;
+  const withheldFlags = selection.withheld ? new Uint8Array(batchSize) : null;
+  const overlapFlags = selection.overlap ? new Uint8Array(batchSize) : null;
   const gpsTimes =
     selection.gpsTime && getGpsTimeOffset(header.pointsFormatId) >= 0
       ? new Float64Array(batchSize)
@@ -2242,6 +2303,10 @@ function createPointDataBatchState(
     rawColors,
     intensities,
     classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
     gpsTimes,
     nir,
     scanAngles,
@@ -2259,6 +2324,10 @@ function createPointDataBatchState(
       positions,
       intensities,
       classifications,
+      syntheticFlags,
+      keyPointFlags,
+      withheldFlags,
+      overlapFlags,
       gpsTimes,
       nir,
       scanAngles,
@@ -2605,6 +2674,26 @@ function flushPointDataBatch(
       ? state.classifications
       : state.classifications.subarray(0, batchPointCount)
     : null;
+  const syntheticFlags = state.syntheticFlags
+    ? fullBatch
+      ? state.syntheticFlags
+      : state.syntheticFlags.subarray(0, batchPointCount)
+    : null;
+  const keyPointFlags = state.keyPointFlags
+    ? fullBatch
+      ? state.keyPointFlags
+      : state.keyPointFlags.subarray(0, batchPointCount)
+    : null;
+  const withheldFlags = state.withheldFlags
+    ? fullBatch
+      ? state.withheldFlags
+      : state.withheldFlags.subarray(0, batchPointCount)
+    : null;
+  const overlapFlags = state.overlapFlags
+    ? fullBatch
+      ? state.overlapFlags
+      : state.overlapFlags.subarray(0, batchPointCount)
+    : null;
   const colors = state.colors
     ? fullBatch
       ? state.colors
@@ -2683,6 +2772,10 @@ function flushPointDataBatch(
     colors,
     intensities,
     classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
     gpsTimes,
     nir,
     scanAngles,
@@ -2708,6 +2801,12 @@ function flushPointDataBatch(
     state.classifications = state.classifications
       ? new Uint8Array(state.classifications.length)
       : null;
+    state.syntheticFlags = state.syntheticFlags
+      ? new Uint8Array(state.syntheticFlags.length)
+      : null;
+    state.keyPointFlags = state.keyPointFlags ? new Uint8Array(state.keyPointFlags.length) : null;
+    state.withheldFlags = state.withheldFlags ? new Uint8Array(state.withheldFlags.length) : null;
+    state.overlapFlags = state.overlapFlags ? new Uint8Array(state.overlapFlags.length) : null;
     state.gpsTimes = state.gpsTimes ? new Float64Array(state.gpsTimes.length) : null;
     state.nir = state.nir ? new Uint16Array(state.nir.length) : null;
     state.scanAngles = state.scanAngles ? new Int16Array(state.scanAngles.length) : null;
@@ -2745,6 +2844,10 @@ function flushPointDataBatch(
     state.target.rawColors = state.rawColors;
     state.target.intensities = state.intensities;
     state.target.classifications = state.classifications;
+    state.target.syntheticFlags = state.syntheticFlags;
+    state.target.keyPointFlags = state.keyPointFlags;
+    state.target.withheldFlags = state.withheldFlags;
+    state.target.overlapFlags = state.overlapFlags;
     state.target.gpsTimes = state.gpsTimes;
     state.target.nir = state.nir;
     state.target.scanAngles = state.scanAngles;
@@ -2765,6 +2868,10 @@ function flushPointDataBatch(
 function getLASColumnSelection(options: LASLoaderOptions): {
   intensity: boolean;
   classification: boolean;
+  synthetic: boolean;
+  keyPoint: boolean;
+  withheld: boolean;
+  overlap: boolean;
   color: boolean;
   gpsTime: boolean;
   nir: boolean;
@@ -2784,6 +2891,10 @@ function getLASColumnSelection(options: LASLoaderOptions): {
     return {
       intensity: true,
       classification: true,
+      synthetic: true,
+      keyPoint: true,
+      withheld: true,
+      overlap: true,
       color: true,
       gpsTime: true,
       nir: true,
@@ -2802,6 +2913,10 @@ function getLASColumnSelection(options: LASLoaderOptions): {
 
   let intensity = false;
   let classification = false;
+  let synthetic = false;
+  let keyPoint = false;
+  let withheld = false;
+  let overlap = false;
   let color = false;
   let gpsTime = false;
   let nir = false;
@@ -2824,6 +2939,18 @@ function getLASColumnSelection(options: LASLoaderOptions): {
         break;
       case 'classification':
         classification = true;
+        break;
+      case 'synthetic':
+        synthetic = true;
+        break;
+      case 'keyPoint':
+        keyPoint = true;
+        break;
+      case 'withheld':
+        withheld = true;
+        break;
+      case 'overlap':
+        overlap = true;
         break;
       case 'COLOR_0':
         color = true;
@@ -2871,6 +2998,10 @@ function getLASColumnSelection(options: LASLoaderOptions): {
   return {
     intensity,
     classification,
+    synthetic,
+    keyPoint,
+    withheld,
+    overlap,
     color,
     gpsTime,
     nir,

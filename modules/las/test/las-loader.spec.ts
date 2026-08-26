@@ -82,6 +82,10 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
       shape: 'arrow-table' as const,
       columns: [
         'POSITION',
+        'synthetic',
+        'keyPoint',
+        'withheld',
+        'overlap',
         'scanAngle',
         'userData',
         'pointSourceId',
@@ -97,6 +101,10 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
   const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
   const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
   for (const columnName of [
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
     'scanAngle',
     'userData',
     'pointSourceId',
@@ -115,17 +123,29 @@ test('LASLoader#columns decodes legacy point metadata', async () => {
   const pointDataView = new DataView(lasArrayBuffer);
   const expectedScanDirectionFlags: number[] = [];
   const expectedEdgeOfFlightLines: number[] = [];
+  const expectedSyntheticFlags: number[] = [];
+  const expectedKeyPointFlags: number[] = [];
+  const expectedWithheldFlags: number[] = [];
+  const expectedOverlapFlags: number[] = [];
   for (let pointIndex = 0; pointIndex < header.pointsCount; pointIndex++) {
-    const returnFlags = pointDataView.getUint8(
-      header.pointsOffset + pointIndex * header.pointsStructSize + 14
-    );
+    const pointOffset = header.pointsOffset + pointIndex * header.pointsStructSize;
+    const returnFlags = pointDataView.getUint8(pointOffset + 14);
+    const classificationByte = pointDataView.getUint8(pointOffset + 15);
     expectedScanDirectionFlags.push((returnFlags >> 6) & 1);
     expectedEdgeOfFlightLines.push((returnFlags >> 7) & 1);
+    expectedSyntheticFlags.push((classificationByte >> 5) & 1);
+    expectedKeyPointFlags.push((classificationByte >> 6) & 1);
+    expectedWithheldFlags.push((classificationByte >> 7) & 1);
+    expectedOverlapFlags.push(0);
   }
   expect(getArrowColumnValues(uncompressed, 'scanDirectionFlag')).toEqual(
     expectedScanDirectionFlags
   );
   expect(getArrowColumnValues(uncompressed, 'edgeOfFlightLine')).toEqual(expectedEdgeOfFlightLines);
+  expect(getArrowColumnValues(uncompressed, 'synthetic')).toEqual(expectedSyntheticFlags);
+  expect(getArrowColumnValues(uncompressed, 'keyPoint')).toEqual(expectedKeyPointFlags);
+  expect(getArrowColumnValues(uncompressed, 'withheld')).toEqual(expectedWithheldFlags);
+  expect(getArrowColumnValues(uncompressed, 'overlap')).toEqual(expectedOverlapFlags);
 });
 
 test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () => {
@@ -140,6 +160,10 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
         'POSITION',
         'COLOR_0',
         'GPS_TIME',
+        'synthetic',
+        'keyPoint',
+        'withheld',
+        'overlap',
         'scanAngle',
         'userData',
         'pointSourceId',
@@ -157,6 +181,10 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
 
   expect(getArrowColumnNames(compressed)).toEqual([
     'POSITION',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
     'COLOR_0',
     'GPS_TIME',
     'scanAngle',
@@ -178,6 +206,10 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     getArrowColumnValues(uncompressed, 'GPS_TIME')
   );
   for (const columnName of [
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
     'scanAngle',
     'userData',
     'pointSourceId',
@@ -192,6 +224,21 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     );
   }
 
+  const header = parseLASHeader(lasArrayBuffer);
+  const pointDataView = new DataView(lasArrayBuffer);
+  for (const [columnName, shift] of [
+    ['synthetic', 0],
+    ['keyPoint', 1],
+    ['withheld', 2],
+    ['overlap', 3]
+  ] as const) {
+    const expectedFlags = Array.from({length: header.pointsCount}, (_, pointIndex) => {
+      const pointOffset = header.pointsOffset + pointIndex * header.pointsStructSize;
+      return (pointDataView.getUint8(pointOffset + 15) >> shift) & 1;
+    });
+    expect(getArrowColumnValues(uncompressed, columnName)).toEqual(expectedFlags);
+  }
+
   const positionsOnlyMesh = await parse(lasArrayBuffer, LASLoader, {
     las: {columns: []},
     core: {worker: false}
@@ -202,30 +249,56 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
 test('LASLoader#parseInBatches preserves selected columns across chunked PDRF 7 input', async () => {
   const lazArrayBuffer = await fetchFile(PDRF_7_LAZ_URL).then(response => response.arrayBuffer());
   const expected = (await parse(lazArrayBuffer, LASLoader, {
-    las: {shape: 'arrow-table', columns: ['intensity', 'classification']},
+    las: {
+      shape: 'arrow-table',
+      columns: ['intensity', 'classification', 'synthetic', 'keyPoint', 'withheld', 'overlap']
+    },
     core: {worker: false}
   })) as MeshArrowTable;
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
     batchSize: 127,
-    las: {shape: 'arrow-table', columns: ['intensity', 'classification']},
+    las: {
+      shape: 'arrow-table',
+      columns: ['intensity', 'classification', 'synthetic', 'keyPoint', 'withheld', 'overlap']
+    },
     core: {worker: false}
   });
   const streamedColumns = {
     POSITION: [] as unknown[],
     intensity: [] as unknown[],
-    classification: [] as unknown[]
+    classification: [] as unknown[],
+    synthetic: [] as unknown[],
+    keyPoint: [] as unknown[],
+    withheld: [] as unknown[],
+    overlap: [] as unknown[]
   };
 
   for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
-    expect(getArrowColumnNames(batch)).toEqual(['POSITION', 'intensity', 'classification']);
+    expect(getArrowColumnNames(batch)).toEqual([
+      'POSITION',
+      'intensity',
+      'classification',
+      'synthetic',
+      'keyPoint',
+      'withheld',
+      'overlap'
+    ]);
     streamedColumns.POSITION.push(...getArrowColumnValues(batch, 'POSITION'));
     streamedColumns.intensity.push(...getArrowColumnValues(batch, 'intensity'));
     streamedColumns.classification.push(...getArrowColumnValues(batch, 'classification'));
+    streamedColumns.synthetic.push(...getArrowColumnValues(batch, 'synthetic'));
+    streamedColumns.keyPoint.push(...getArrowColumnValues(batch, 'keyPoint'));
+    streamedColumns.withheld.push(...getArrowColumnValues(batch, 'withheld'));
+    streamedColumns.overlap.push(...getArrowColumnValues(batch, 'overlap'));
   }
 
   expect(streamedColumns.POSITION).toEqual(getArrowColumnValues(expected, 'POSITION'));
   expect(streamedColumns.intensity).toEqual(getArrowColumnValues(expected, 'intensity'));
   expect(streamedColumns.classification).toEqual(getArrowColumnValues(expected, 'classification'));
+  expect(streamedColumns.synthetic).toEqual(getArrowColumnValues(expected, 'synthetic'));
+  expect(streamedColumns.keyPoint).toEqual(getArrowColumnValues(expected, 'keyPoint'));
+  expect(streamedColumns.withheld).toEqual(getArrowColumnValues(expected, 'withheld'));
+  expect(streamedColumns.overlap).toEqual(getArrowColumnValues(expected, 'overlap'));
 });
 
 test('LASLoader#parseInBatches yields PDRF 7 rows before the compressed chunk tail arrives', async () => {

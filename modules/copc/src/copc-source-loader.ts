@@ -79,6 +79,10 @@ type COPCPointSelection = {
   nir: boolean;
   intensity: boolean;
   classification: boolean;
+  synthetic: boolean;
+  keyPoint: boolean;
+  withheld: boolean;
+  overlap: boolean;
   gpsTime: boolean;
   scanAngle: boolean;
   userData: boolean;
@@ -94,6 +98,10 @@ type COPCPointSelection = {
 type COPCPointDataArrays = {
   batchIntensities: Uint16Array | null;
   batchClassifications: Uint8Array | null;
+  batchSyntheticFlags: Uint8Array | null;
+  batchKeyPointFlags: Uint8Array | null;
+  batchWithheldFlags: Uint8Array | null;
+  batchOverlapFlags: Uint8Array | null;
   batchGpsTimes: Float64Array | null;
   batchScanAngles: Int16Array | null;
   batchUserData: Uint8Array | null;
@@ -145,6 +153,10 @@ export type COPCTileContentBatchOptions = {
     | 'NIR'
     | 'intensity'
     | 'classification'
+    | 'synthetic'
+    | 'keyPoint'
+    | 'withheld'
+    | 'overlap'
     | 'GPS_TIME'
     | 'scanAngle'
     | 'userData'
@@ -465,6 +477,10 @@ export class COPCTileSource
       nir: copc.header.pointDataRecordFormat === 8 && Boolean(options.columns?.includes('NIR')),
       intensity: Boolean(options.columns?.includes('intensity')),
       classification: Boolean(options.columns?.includes('classification')),
+      synthetic: Boolean(options.columns?.includes('synthetic')),
+      keyPoint: Boolean(options.columns?.includes('keyPoint')),
+      withheld: Boolean(options.columns?.includes('withheld')),
+      overlap: Boolean(options.columns?.includes('overlap')),
       gpsTime: Boolean(options.columns?.includes('GPS_TIME')),
       scanAngle: Boolean(options.columns?.includes('scanAngle')),
       userData: Boolean(options.columns?.includes('userData')),
@@ -580,6 +596,10 @@ export class COPCTileSource
       const batchNir = selection.nir ? new Uint16Array(pointCount) : null;
       const batchIntensities = selection.intensity ? new Uint16Array(pointCount) : null;
       const batchClassifications = selection.classification ? new Uint8Array(pointCount) : null;
+      const batchSyntheticFlags = selection.synthetic ? new Uint8Array(pointCount) : null;
+      const batchKeyPointFlags = selection.keyPoint ? new Uint8Array(pointCount) : null;
+      const batchWithheldFlags = selection.withheld ? new Uint8Array(pointCount) : null;
+      const batchOverlapFlags = selection.overlap ? new Uint8Array(pointCount) : null;
       const batchGpsTimes = selection.gpsTime ? new Float64Array(pointCount) : null;
       const batchScanAngles = selection.scanAngle ? new Int16Array(pointCount) : null;
       const batchUserData = selection.userData ? new Uint8Array(pointCount) : null;
@@ -602,6 +622,10 @@ export class COPCTileSource
           nir: batchNir,
           intensities: batchIntensities,
           classifications: batchClassifications,
+          syntheticFlags: batchSyntheticFlags,
+          keyPointFlags: batchKeyPointFlags,
+          withheldFlags: batchWithheldFlags,
+          overlapFlags: batchOverlapFlags,
           gpsTimes: batchGpsTimes,
           scanAngles: batchScanAngles,
           userData: batchUserData,
@@ -640,6 +664,10 @@ export class COPCTileSource
         {
           batchIntensities,
           batchClassifications,
+          batchSyntheticFlags,
+          batchKeyPointFlags,
+          batchWithheldFlags,
+          batchOverlapFlags,
           batchGpsTimes,
           batchScanAngles,
           batchUserData,
@@ -897,6 +925,18 @@ export class COPCTileSource
     }
     if (pointData?.batchClassifications) {
       attributes.classification = {value: pointData.batchClassifications, size: 1};
+    }
+    if (pointData?.batchSyntheticFlags) {
+      attributes.synthetic = {value: pointData.batchSyntheticFlags, size: 1};
+    }
+    if (pointData?.batchKeyPointFlags) {
+      attributes.keyPoint = {value: pointData.batchKeyPointFlags, size: 1};
+    }
+    if (pointData?.batchWithheldFlags) {
+      attributes.withheld = {value: pointData.batchWithheldFlags, size: 1};
+    }
+    if (pointData?.batchOverlapFlags) {
+      attributes.overlap = {value: pointData.batchOverlapFlags, size: 1};
     }
     if (pointData?.batchGpsTimes) {
       attributes.GPS_TIME = {value: pointData.batchGpsTimes, size: 1};
