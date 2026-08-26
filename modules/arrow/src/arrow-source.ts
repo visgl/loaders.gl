@@ -46,7 +46,11 @@ export class ArrowTableSource
         remaining -= batch.length;
         yield projectedBatch;
       } else {
-        yield {...projectedBatch, data: projectedData.slice(0, remaining), length: remaining};
+        yield {
+          ...projectedBatch,
+          data: projectedData.slice(0, remaining),
+          length: remaining
+        } as TableBatch;
         return;
       }
     }
