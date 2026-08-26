@@ -2,7 +2,9 @@ import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import type {Table as ArrowTable} from 'apache-arrow';
 import type {ParquetPredicate} from '@loaders.gl/parquet';
+import type {ScanQueryMetadata} from '@loaders.gl/loader-utils';
 import {ExampleUrlInputCard, type UrlOption} from 'examples/website/shared/url-input-card';
+import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type IcebergDemoState = {
   /** Current stage reached by the browser demo. */
@@ -70,6 +72,9 @@ export function IcebergScanLiveExample(): JSX.Element {
   const [astText, setAstText] = useState(DEFAULT_PREDICATE_AST);
   const [sqlText, setSqlText] = useState(DEFAULT_SQL);
   const [submittedAst, setSubmittedAst] = useState(DEFAULT_PREDICATE_AST);
+  const [queryMetadata, setQueryMetadata] = useState<ScanQueryMetadata>();
+  const [queryState, setQueryState] = useState<ScanQueryPanelState>({});
+  const [submittedQueryState, setSubmittedQueryState] = useState<ScanQueryPanelState>({});
   const [state, setState] = useState<IcebergDemoState>({
     stage: 'loading',
     filesSelected: 0,
@@ -86,6 +91,8 @@ export function IcebergScanLiveExample(): JSX.Element {
         const source = new IcebergTableSource(metadataUrl, {
           core: {loadOptions: {core: {fetch: fetchWithExposedContentRange}}, worker: false}
         });
+        const metadata = await source.getQueryMetadata();
+        if (isMounted) setQueryMetadata(metadata);
         const predicate = parsePredicateAst(submittedAst);
         const plan = await source.getScanPlan();
         if (isMounted) {
@@ -95,7 +102,9 @@ export function IcebergScanLiveExample(): JSX.Element {
         let preview: IcebergTablePreview | undefined;
         for await (const batch of source.scan({
           core: {worker: false},
-          predicate
+          predicate,
+          columns: submittedQueryState.columns,
+          limit: submittedQueryState.limit
         })) {
           preview ||= createIcebergTablePreview(batch.data);
           rowsScanned += batch.length;
@@ -126,7 +135,7 @@ export function IcebergScanLiveExample(): JSX.Element {
     return () => {
       isMounted = false;
     };
-  }, [selectedTableUrl, submittedAst]);
+  }, [selectedTableUrl, submittedAst, submittedQueryState]);
 
   return (
     <ExampleFrame aria-label="Live Iceberg scan example">
@@ -216,6 +225,16 @@ export function IcebergScanLiveExample(): JSX.Element {
           WHERE column operator value; Run applies the predicate to Iceberg and Parquet.
         </QueryHint>
       </QueryForm>
+      <ScanQueryPanel
+        metadata={queryMetadata}
+        loading={state.stage === 'loading' && !queryMetadata}
+        value={queryState}
+        onApply={nextQuery => {
+          setQueryState(nextQuery);
+          setSubmittedQueryState(nextQuery);
+        }}
+        title="Iceberg scan parameters"
+      />
       {state.stage === 'failed' ? (
         <ErrorMessage>{state.error}</ErrorMessage>
       ) : (
