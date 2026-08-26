@@ -34,7 +34,7 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `getRootTile()` returns the root octree tile header.
 - `getChildren(tile)` returns available child tile headers.
 - `loadTileContent(tile)` returns normalized point positions, optional colors, point count, and cartographic origin.
-- `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively after the selected node range has been fetched. The TypeScript LAZ variant is required and `options.batchSize` controls the maximum points per table.
+- `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively after the selected node range has been fetched. The TypeScript LAZ variant is required. `options.batchSize` controls the maximum points per table, `options.columns` can request positions only, and `options.signal` cancels the request/decode.
 
 `loadTileContentInBatches` does not yet split the HTTP range request itself. COPC node data is fetched as one complete compressed range because layered LAZ fields need the chunk size metadata and compressed field ranges before decoding can begin. The method avoids building one full decoded Arrow table and is the API boundary for future progressive range delivery.
 

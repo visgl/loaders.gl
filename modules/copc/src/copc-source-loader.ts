@@ -65,6 +65,10 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
 export type COPCTileContentBatchOptions = {
   /** Maximum number of points in each yielded Arrow table. */
   batchSize?: number;
+  /** Optional cancellation signal for the range request and decode loop. */
+  signal?: AbortSignal;
+  /** Arrow attributes to populate. POSITION is always included. */
+  columns?: readonly ('POSITION' | 'COLOR_0')[];
 };
 
 /** Arrow table content returned for one COPC tile batch. */
@@ -329,11 +333,19 @@ export class COPCTileSource
       throw new Error('COPC progressive batches require the TypeScript LAZ decoder for PDRF 6-8');
     }
 
+    if (options.signal?.aborted) {
+      throw new Error('COPC progressive tile decode was aborted');
+    }
+    const batchSize = options.batchSize ?? 65536;
+    if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
+      throw new Error('COPC progressive tile batchSize must be a positive integer');
+    }
     const nativeOrigin = this.getNativeTileCenter(tile.id);
     const cartographicOrigin = this.projectPoint(nativeOrigin);
     const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
-    const batchSize = Math.max(1, Math.floor(options.batchSize || 65536));
-    const colors = pointFormatHasColor(copc.header.pointDataRecordFormat);
+    const colors =
+      pointFormatHasColor(copc.header.pointDataRecordFormat) &&
+      (options.columns ? options.columns.includes('COLOR_0') : true);
     const cursor = createLAZChunkDecoderCursor(compressed, {
       pointCount: node.pointCount,
       pointDataRecordFormat: copc.header.pointDataRecordFormat,
@@ -341,6 +353,9 @@ export class COPCTileSource
     });
 
     while (cursor.remainingPointCount > 0) {
+      if (options.signal?.aborted) {
+        throw new Error('COPC progressive tile decode was aborted');
+      }
       const pointCount = Math.min(batchSize, cursor.remainingPointCount);
       const nativePositions = new Float64Array(pointCount * 3);
       const positions = new Float32Array(pointCount * 3);
