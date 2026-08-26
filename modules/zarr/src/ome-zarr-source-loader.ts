@@ -9,7 +9,8 @@ import type {
   SourceLoader,
   DataSourceOptions,
   RasterData,
-  RasterChannelDataType
+  RasterChannelDataType,
+  RasterQueryCapabilities
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
@@ -167,6 +168,15 @@ export async function loadZarrConsolidatedMetadata(
  * Base runtime source for Zarr-backed sources that resolve groups and consolidated metadata.
  */
 export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOptions> {
+  /** Common raster-query capabilities shared by Zarr-backed sources. */
+  readonly rasterQueryCapabilities: RasterQueryCapabilities = Object.freeze({
+    bounds: 'pushdown',
+    level: 'pushdown',
+    variables: 'pushdown',
+    slices: 'pushdown',
+    streaming: false,
+    cancellation: true
+  });
   /** Zarrita store used for metadata and chunk reads. */
   protected readonly store: zarrita.FetchStore;
   /** Selected group path within the store root. */
@@ -205,6 +215,11 @@ export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOpti
         });
       }
     });
+  }
+
+  /** Returns raster-query capabilities without reading array chunks. */
+  getRasterQueryCapabilities(): RasterQueryCapabilities {
+    return this.rasterQueryCapabilities;
   }
 
   /** Fetches Zarr metadata or chunk data through the injected core API when available. */

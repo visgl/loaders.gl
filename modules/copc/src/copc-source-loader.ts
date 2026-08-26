@@ -19,6 +19,7 @@ import {
   concatenateArrayBuffersFromArray,
   decodeLAZChunkInBatches
 } from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import {Copc, Las, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
@@ -28,6 +29,19 @@ const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',
   LNGLAT_OFFSETS: 'lnglat-offsets'
 } as const;
+
+function inferCOPCColumnRole(
+  name: string
+): 'attribute' | 'x' | 'y' | 'z' | 'intensity' | 'classification' | 'color' {
+  const normalizedName = name.toLowerCase();
+  if (normalizedName === 'x') return 'x';
+  if (normalizedName === 'y') return 'y';
+  if (normalizedName === 'z') return 'z';
+  if (normalizedName.includes('intensity')) return 'intensity';
+  if (normalizedName.includes('classification')) return 'classification';
+  if (normalizedName.includes('color') || normalizedName.includes('red')) return 'color';
+  return 'attribute';
+}
 
 type COPCViewState = {
   boundingVolume: {
@@ -119,6 +133,17 @@ export class COPCTileSource
   extends DataSource<string | Blob, COPCSourceLoaderOptions>
   implements TileSource
 {
+  /** Common point-cloud scan capabilities exposed by COPC. */
+  readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
+    projection: 'pushdown',
+    predicate: 'residual',
+    limit: 'residual',
+    streaming: true,
+    cancellation: true,
+    bounds: 'pushdown',
+    levelOfDetail: 'pushdown',
+    spacing: 'pushdown'
+  });
   mimeType: string | null = null;
   metadata: Promise<COPCMetadata>;
   isReady = false;
@@ -158,6 +183,33 @@ export class COPCTileSource
     }
 
     return {fields, metadata: {}};
+  }
+
+  /** Discovers point attributes and spatial bounds without decoding point rows. */
+  async getQueryMetadata() {
+    const {copc} = await this._initPromise;
+    const schema = await this.getSchema();
+    const roles = Object.fromEntries(
+      schema.fields.map(field => [field.name, inferCOPCColumnRole(field.name)])
+    );
+    return createScanQueryMetadata({
+      sourceType: 'copc',
+      queryType: 'point-cloud',
+      schema,
+      capabilities: {
+        table: this.pointCloudQueryCapabilities,
+        bounds: 'pushdown',
+        levelOfDetail: 'pushdown'
+      },
+      columnRoles: roles,
+      spatial: {
+        bounds: {minimum: copc.header.min, maximum: copc.header.max},
+        coordinateReferenceSystems: this.options.copc?.sourceCoordinateSystem
+          ? [this.options.copc.sourceCoordinateSystem]
+          : undefined
+      },
+      statistics: {rowCount: copc.header.pointCount}
+    });
   }
 
   async getMetadata(): Promise<COPCMetadata> {

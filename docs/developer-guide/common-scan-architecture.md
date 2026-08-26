@@ -12,6 +12,31 @@ they share is the logical meaning of a query and a small set of execution invari
 > The portable query is a contract between planners and executors. It is not intended to become a
 > second implementation of the complete SQL language.
 
+## Format-family support at a glance
+
+This is the end-user view of the architecture. “Supported” means a source can be used through the
+common scan contract today. “Partial” means useful metadata or Arrow reading exists, but some
+operators or pushdown opportunities remain source-specific. “Specialized” means the format has a
+different query model, such as tiles or raster windows, rather than a relational table scan.
+
+| Format family | Status | What is supported |
+| --- | --- | --- |
+| Arrow / GeoArrow | Partial | In-memory projection, predicates, and limits; GeoArrow extension-column conformance is still expanding. |
+| Parquet / Iceberg | Supported | Schema discovery, projection, filtering, global limits, streaming Arrow batches, cancellation, and metadata pruning. |
+| FlatGeobuf | Supported | Arrow feature queries, R-tree bounding-box pruning, residual attribute filtering, projection, and limits. |
+| DuckDB / Snowflake SQL | Supported | Raw SQL plus the portable table query with safe parameter binding. |
+| CSV / JSONL / ORC | Planned | Existing loaders are available; common chunk, stripe, and row-index scans are next. |
+| Delta Lake / Lance | Partial | Read-only metadata and Arrow-batch paths exist; common snapshot/fragment planning and predicate pushdown are incomplete. |
+| COPC / Potree | Partial | Point-cloud metadata, coordinate roles, hierarchy bounds, level-of-detail, spacing, and capability discovery are available; full common point streaming is source-specific. |
+| GeoTIFF / COG / Zarr / GeoZarr / OME-Zarr | Partial | Raster window, band/channel, overview/level, and multidimensional selection APIs are available with shared query validation and capabilities. |
+| NetCDF | Planned | The loader is available; the shared multidimensional raster scan contract is not yet wired in. |
+| MVT / PMTiles / 3D Tiles / I3S | Specialized | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
+| WMS / WFS / STAC and other services | Specialized | Use the service or catalog query APIs; they are not normalized into the table scan contract. |
+
+The matrix describes the public experience, not identical physical performance. A source may accept
+the same logical query while evaluating some operators after decoding; capability metadata and
+explain output identify what was pushed down and what remained residual.
+
 ## Why a common scan architecture?
 
 Columnar storage systems often expose nearly identical user-facing controls under different names:
@@ -606,18 +631,19 @@ work is deliberately ordered by how much useful physical pruning each format can
 10. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
     GPU-specific limit/selection stage. GPU plans should report whether compaction is deferred or
     materialized, so CPU and GPU diagnostics remain comparable.
-11. **Point-cloud scans:** standardize the sibling `PointCloudQueryOptions` contract, implement COPC
-    hierarchy and bounds planning first, then reuse its planner and Arrow batch conventions for
-    Potree. Preserve point budgets, hierarchy levels, target spacing, coordinate roles, and node
-    provenance instead of forcing them into scalar table predicates.
-12. **Raster and multidimensional scans:** standardize the sibling `RasterQuery`/`ScanTask` shape for
-    GeoTIFF/COG, Zarr/GeoZarr, OME-Zarr, and NetCDF. Share scheduling, cancellation, range caching,
-    explain, telemetry, and spatial-envelope pruning with table scans while keeping pixel windows,
-    levels, chunks, and resampling out of `TableQuery`.
-13. **Relational growth:** add ordering, scalar expressions, aggregates, unions, or joins only when
-    at least two materially different backends can implement the same portable meaning. Spatial
-    predicates and nearest-neighbor search should remain extensions until indexed CPU, GPU, and
-    remote-source strategies converge.
+11. **Point-cloud scans — foundation landed:** standardize `PointCloudQueryOptions` validation and
+    capability discovery, with COPC and Potree metadata exposing coordinate roles, bounds, hierarchy
+    levels, spacing, and point statistics. Full common point streaming, residual attribute filtering,
+    and global point limits remain adapter work.
+12. **Raster and multidimensional scans — foundation landed:** standardize `RasterQueryOptions` and
+    capability discovery for GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr. Existing raster sources retain
+    their window, band, overview, chunk, and dimension APIs; NetCDF and shared task-level explain and
+    telemetry remain follow-ups.
+13. **Relational growth — logical planner landed:** add a portable plan vocabulary for ordering,
+    scalar expressions, aggregates, unions, and equi-joins. Physical execution is deliberately
+    backend-specific and should be added only when at least two materially different backends can
+    implement the same portable meaning. Spatial predicates and nearest-neighbor search remain
+    extensions until indexed CPU, GPU, and remote-source strategies converge.
 
 ### Format capability matrix
 
