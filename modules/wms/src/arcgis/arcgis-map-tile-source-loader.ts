@@ -82,6 +82,7 @@ export class ArcGISMapTileSource
     const metadata = await this._getMetadata();
     const extent = metadata.fullExtent;
     const spatialReference = metadata.spatialReference || extent?.spatialReference;
+    const spatialReferenceWkid = (spatialReference as {wkid?: number} | undefined)?.wkid;
     return {
       name: metadata.name || '',
       title: metadata.name || '',
@@ -98,8 +99,8 @@ export class ArcGISMapTileSource
           ]
         : undefined,
       layer: {
-        name: this._metadata.name || '',
-        srs: spatialReference?.wkid ? [`EPSG:${spatialReference.wkid}`] : [],
+        name: metadata.name || '',
+        srs: spatialReferenceWkid ? [`EPSG:${spatialReferenceWkid}`] : [],
         layers: []
       }
     };
