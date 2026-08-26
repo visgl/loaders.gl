@@ -21,7 +21,7 @@ import {
   ZarrSource,
   type ZarrSourceLoaderOptions
 } from './ome-zarr-source-loader';
-import {getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
+import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -225,11 +225,11 @@ export class GeoZarrRasterSource
       }
       return selection[dimensionName];
     });
-    const chunk = await getCachedZarrSelection(array, getZarrSelectionKey(zarritaSelection), () =>
-      zarrita.get(array, zarritaSelection, {signal: parameters.signal}) as Promise<{
-        data: SupportedTypedArray;
-        shape: number[];
-      }>
+    const chunk = await getCachedZarrSelection(
+      array,
+      getZarrSelectionKey(zarritaSelection),
+      () => zarrita.get(array, zarritaSelection) as Promise<{data: SupportedTypedArray; shape: number[]}>,
+      parameters.signal
     );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read GeoZarr raster selection.');
@@ -237,7 +237,7 @@ export class GeoZarrRasterSource
 
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
-    const typedData = chunk.data as SupportedTypedArray;
+    const typedData = cloneZarrSelection(chunk).data as SupportedTypedArray;
     const data = xDimensionIndex < yDimensionIndex
       ? transposeRaster(typedData, width, height)
       : typedData;

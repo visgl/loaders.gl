@@ -16,7 +16,8 @@ const cacheByArray = new WeakMap<object, Map<string, Promise<CachedData>>>();
 export function getCachedZarrSelection<T extends CachedData>(
   array: object,
   key: string,
-  read: () => Promise<T>
+  read: () => Promise<T>,
+  signal?: AbortSignal
 ): Promise<T> {
   let cache = cacheByArray.get(array);
   if (!cache) {
@@ -28,7 +29,7 @@ export function getCachedZarrSelection<T extends CachedData>(
   if (cached) {
     cache.delete(key);
     cache.set(key, cached);
-    return cached as Promise<T>;
+    return awaitWithAbort(cached as Promise<T>, signal);
   }
 
   const request = read().catch(error => {
@@ -43,7 +44,36 @@ export function getCachedZarrSelection<T extends CachedData>(
     if (oldestKey === undefined) break;
     cache.delete(oldestKey);
   }
-  return request;
+  return awaitWithAbort(request, signal);
+}
+
+/** Returns an independent result so callers cannot mutate the cached buffer. */
+export function cloneZarrSelection<T extends CachedData>(selection: T): T {
+  return {...selection, data: selection.data.slice() as TypedArray, shape: [...selection.shape]} as T;
+}
+
+/** Applies cancellation to one cache waiter without aborting the shared read. */
+function awaitWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(signal.reason || new Error('The operation was aborted.'));
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => {
+      cleanup();
+      reject(signal.reason || new Error('The operation was aborted.'));
+    };
+    const cleanup = () => signal.removeEventListener('abort', abort);
+    signal.addEventListener('abort', abort, {once: true});
+    promise.then(
+      value => {
+        cleanup();
+        resolve(value);
+      },
+      error => {
+        cleanup();
+        reject(error);
+      }
+    );
+  });
 }
 
 /** Creates a stable cache key for a Zarrita selection. */

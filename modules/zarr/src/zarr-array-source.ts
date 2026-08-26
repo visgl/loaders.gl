@@ -6,7 +6,7 @@ import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
 import type {CoreAPI, SourceLoader, TypedArray} from '@loaders.gl/loader-utils';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
-import {getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
+import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
 
 /** Metadata describing one directly addressable Zarr array. */
 export type ZarrArraySourceMetadata = {
@@ -141,16 +141,16 @@ export class ZarrArraySource extends ZarrSource {
         ? zarrita.slice(selector.start ?? null, selector.stop ?? null, selector.step ?? null)
         : selector
     );
-    const chunk = await getCachedZarrSelection(array, getZarrSelectionKey(selection), () =>
-      zarrita.get(array, zarritaSelection, {signal: parameters.signal}) as Promise<{
-        data: TypedArray;
-        shape: number[];
-      }>
+    const chunk = await getCachedZarrSelection(
+      array,
+      getZarrSelectionKey(selection),
+      () => zarrita.get(array, zarritaSelection) as Promise<{data: TypedArray; shape: number[]}>,
+      parameters.signal
     );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr array selection.');
     }
-    return {data: chunk.data as TypedArray, shape: [...chunk.shape]};
+    return cloneZarrSelection(chunk);
   }
 
   /** Opens the configured array and resolves its normalized metadata. */
