@@ -2121,6 +2121,52 @@ async function validateStreamedFixedLAZChunkTable(
       );
     }
   }
+  if (chunkTableOffset === -1) {
+    await validateStreamedLAZChunkTableFooter(reader, inputIterator, effectiveChunkTableOffset);
+  }
+}
+
+/** Validate the trailing table pointer emitted by non-seekable LASzip writers. */
+async function validateStreamedLAZChunkTableFooter(
+  reader: BinaryChunkReader,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
+  expectedChunkTableOffset: number
+): Promise<void> {
+  const footer = new Uint8Array(LAZ_CHUNK_TABLE_POINTER_LENGTH);
+  let byteLength = 0;
+  while (true) {
+    const availableByteLength = reader.getAvailableByteLength();
+    if (availableByteLength > 0) {
+      const bytes = reader.readBytes(Math.min(availableByteLength, 64 * 1024));
+      appendTrailingBytes(footer, bytes);
+      byteLength += bytes.byteLength;
+      continue;
+    }
+    const next = await inputIterator.next();
+    if (next.done) {
+      break;
+    }
+    reader.write(next.value);
+  }
+  if (byteLength < LAZ_CHUNK_TABLE_POINTER_LENGTH) {
+    throw new NeedsMoreData('LASLoader: incomplete non-seekable LAZ chunk-table footer');
+  }
+  const footerOffset = readUint64(new DataView(footer.buffer), 0);
+  if (!Number.isSafeInteger(footerOffset) || footerOffset !== expectedChunkTableOffset) {
+    throw new Error(
+      `LASLoader: non-seekable LAZ footer points to ${footerOffset}; expected ${expectedChunkTableOffset}`
+    );
+  }
+}
+
+/** Retain only the final bytes from a forward-only input stream. */
+function appendTrailingBytes(target: Uint8Array, bytes: Uint8Array): void {
+  if (bytes.byteLength >= target.byteLength) {
+    target.set(bytes.subarray(bytes.byteLength - target.byteLength));
+    return;
+  }
+  target.copyWithin(0, bytes.byteLength);
+  target.set(bytes, target.byteLength - bytes.byteLength);
 }
 
 /** Read only as much trailing input as the compressed chunk table requires. */
