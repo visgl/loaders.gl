@@ -143,6 +143,85 @@ export function decodeValues(
   return output;
 }
 
+/** Encodes legacy Parquet BIT_PACKED values, including the optional page length envelope. */
+export function encodeBitPackedValues(
+  type: PrimitiveType,
+  values: any[],
+  options: ParquetCodecOptions
+): Uint8Array {
+  if (!('bitWidth' in options)) {
+    throw new Error('bitWidth is required');
+  }
+  const bitWidth = options.bitWidth!;
+  if (!Number.isInteger(bitWidth) || bitWidth < 0 || bitWidth > 32) {
+    throw new Error(`invalid bit width: ${bitWidth}`);
+  }
+  if (type !== 'BOOLEAN' && type !== 'INT32' && type !== 'INT64') {
+    throw new Error(`unsupported type: ${type}`);
+  }
+  const paddedValueCount = Math.ceil(values.length / 8) * 8;
+  const encoded = new Uint8Array(Math.ceil((paddedValueCount * bitWidth) / 8));
+  for (let valueIndex = 0; valueIndex < values.length; valueIndex++) {
+    let value = Number(values[valueIndex]);
+    for (let bitIndex = 0; bitIndex < bitWidth; bitIndex++) {
+      if (value & (1 << bitIndex)) {
+        const packedBit = valueIndex * bitWidth + bitIndex;
+        encoded[Math.floor(packedBit / 8)] |= 1 << (packedBit % 8);
+      }
+    }
+  }
+  if (options.disableEnvelope) {
+    return encoded;
+  }
+  const envelope = new Uint8Array(encoded.length + 4);
+  writeUInt32LE(envelope, encoded.length, 0);
+  envelope.set(encoded, 4);
+  return envelope;
+}
+
+/** Decodes legacy Parquet BIT_PACKED values, including the optional page length envelope. */
+export function decodeBitPackedValues(
+  type: PrimitiveType,
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  if (!('bitWidth' in options)) {
+    throw new Error('bitWidth is required');
+  }
+  const bitWidth = options.bitWidth!;
+  if (!Number.isInteger(bitWidth) || bitWidth < 0 || bitWidth > 64) {
+    throw new Error(`invalid bit width: ${bitWidth}`);
+  }
+  if (!Number.isInteger(count) || count < 0) {
+    throw new Error(`invalid value count: ${count}`);
+  }
+  const envelopeEnd = options.disableEnvelope
+    ? undefined
+    : (() => {
+        assertReadable(cursor, 4);
+        const length =
+          cursor.buffer[cursor.offset] |
+          (cursor.buffer[cursor.offset + 1] << 8) |
+          (cursor.buffer[cursor.offset + 2] << 16) |
+          (cursor.buffer[cursor.offset + 3] << 24);
+        cursor.offset += 4;
+        if (length < 0) throw new Error('invalid BIT_PACKED length');
+        assertReadable(cursor, length);
+        return cursor.offset + length;
+      })();
+  const paddedValueCount = Math.ceil(count / 8) * 8;
+  const packedByteLength = Math.ceil((paddedValueCount * bitWidth) / 8);
+  assertReadable(cursor, packedByteLength);
+  const {output, outputOffset} = getParquetValueOutput(options, count);
+  decodeBitPackedRun(cursor, paddedValueCount, count, bitWidth, output, outputOffset);
+  if (envelopeEnd !== undefined) {
+    if (cursor.offset > envelopeEnd) throw new Error('invalid BIT_PACKED length');
+    cursor.offset = envelopeEnd;
+  }
+  return output;
+}
+
 /** Decodes one complete bit-packed run directly into the caller's output array. */
 function decodeBitPackedRun(
   cursor: CursorBuffer,
