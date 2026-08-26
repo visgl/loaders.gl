@@ -203,7 +203,7 @@ test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
     if (pointDataRecordFormat === 3) {
       t.deepEqual(
         Array.from(data.attributes.COLOR_0?.value || []),
-        [10, 20, 30, 255, 246, 246, 246, 255, 70, 80, 90, 255],
+        [10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 90, 255],
         'PDRF 3 RGB roundtrips through TypeScript decoder'
       );
     }
@@ -220,13 +220,13 @@ test('LASWriter#validates compressed output options', t => {
     /LAZ output requires LAS 1.4/,
     'LAZ writer rejects legacy LAS versions'
   );
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(mesh, {
-        las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
-      }),
-    /currently supports point data record formats 0-3 and 6-8/,
-    'LAZ writer rejects unsupported waveform point formats'
+  const waveform = LASWriter.encodeSync?.(mesh, {
+    las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
+  });
+  t.equal(
+    new DataView(waveform!).getUint8(104) & 0x7f,
+    5,
+    'LAZ writer supports legacy waveform point formats'
   );
   t.throws(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),
