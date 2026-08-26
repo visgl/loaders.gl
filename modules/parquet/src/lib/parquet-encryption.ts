@@ -60,16 +60,19 @@ export function createParquetModuleAad(
     'bloom-filter-bitset'
   ].indexOf(module);
   if (moduleType < 0) throw new Error(`Unknown Parquet encryption module ${module}`);
-  const suffixLength =
-    fileUnique.length +
-    (module === 'footer' ? 1 : module === 'data-page' || module === 'data-page-header' ? 7 : 5);
+  const isPageModule =
+    module === 'data-page' ||
+    module === 'dictionary-page' ||
+    module === 'data-page-header' ||
+    module === 'dictionary-page-header';
+  const suffixLength = fileUnique.length + (module === 'footer' ? 1 : isPageModule ? 7 : 5);
   const suffix = new Uint8Array(suffixLength);
   suffix.set(fileUnique);
   suffix[fileUnique.length] = moduleType;
   if (module !== 'footer') {
     new DataView(suffix.buffer).setInt16(fileUnique.length + 1, rowGroupOrdinal ?? 0, true);
     new DataView(suffix.buffer).setInt16(fileUnique.length + 3, columnOrdinal ?? 0, true);
-    if (suffixLength === 8)
+    if (isPageModule)
       new DataView(suffix.buffer).setInt16(fileUnique.length + 5, pageOrdinal ?? 0, true);
   }
   const prefix = aadPrefix || new Uint8Array(0);
