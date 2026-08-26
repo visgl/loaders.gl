@@ -243,7 +243,7 @@ can make selective reads much cheaper.
 | [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children and repeated leaves when selected columns share page boundaries |
 | [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected columns use page locations and first-row indexes for selective byte reads; repeated values and continuation pages are decoded only from complete, mutually aligned row ranges |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |
-| Size statistics | ❌ | ❌ | Histogram metadata from newer format work is not yet exposed; see the upstream [`ColumnMetaData`](https://github.com/apache/parquet-format/blob/master/src/main/thrift/parquet.thrift) definition |
+| Size statistics | ✅ | ❌ | Byte-array sizes and repetition/definition histograms are decoded and exposed; writer emission remains future work |
 | Column order and sorting columns | ✅ (metadata) | ❌ | Row-group sort declarations are normalized as `sortingColumns`; semantic pruning is not yet applied |
 
 `ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using
@@ -252,7 +252,8 @@ data pages for primitive leaves, including nested struct children. Filter-only c
 returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller
 thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page boundaries,
 including pages that continue one logical row; files with incompatible boundaries conservatively use full
-column-chunk reads. Size statistics, sorting metadata, and encryption remain future format-completeness work.
+column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting
+pruning and encrypted-column reads remain future format-completeness work.
 
 ## Integrity and Encryption
 
@@ -260,7 +261,7 @@ column-chunk reads. Size statistics, sorting metadata, and encryption remain fut
 | ------- | ------- | -------- | ----- |
 | Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
 | Page CRC verification | ✅ (opt-in) | ✅ (opt-in) | CRC-32 covers the compressed page body; enable verification or emission explicitly to avoid a default throughput cost |
-| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ❌ | ❌ | Encrypted footer and encrypted-column files use the `PARE` magic value |
+| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ❌ | AES-GCM/AES-CTR module primitives, AAD construction, and encrypted-footer metadata plumbing are available; encrypted-column range reads remain in progress |
 | External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
 ## Parquet and Arrow
@@ -285,7 +286,7 @@ corpora run in the slow lane.
 The TypeScript implementation is aiming for complete stable-format read support. The largest known
 gaps are currently:
 
-1. size statistics and semantic sorting-based pruning; and
-2. Parquet modular encryption.
+1. semantic sorting-based pruning and writer-side size-statistics emission; and
+2. encrypted-column range reads, including page/index modules and key-rotation safeguards.
 
 Preview features such as [ALP](https://github.com/apache/parquet-format/pull/557), [PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream [format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) are tracked separately from stable-format completeness.

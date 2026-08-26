@@ -22,11 +22,19 @@ export {
   type ParquetRowGroupMetadata,
   type ParquetSortingColumn,
   type ParquetColumnChunkMetadata,
+  type ParquetColumnChunkSizeStatistics,
   type ParquetGeospatialBoundingBox,
   type ParquetGeospatialStatistics,
   type ParquetBatchMetadata,
   type ParquetSourceBatch
 } from './parquet-source-loader';
+export {
+  createParquetModuleAad,
+  decryptParquetModule,
+  type ParquetDecryptModuleOptions,
+  type ParquetEncryptionAlgorithm,
+  type ParquetKeyRetriever
+} from './lib/parquet-encryption';
 export {
   ParquetDatasetSource,
   type ParquetDatasetBatch,

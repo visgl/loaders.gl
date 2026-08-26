@@ -16,6 +16,7 @@ import * as ColumnOrder from './ColumnOrder';
 import * as KeyValue from './KeyValue';
 import * as RowGroup from './RowGroup';
 import * as SchemaElement from './SchemaElement';
+import * as EncryptionAlgorithm from './EncryptionAlgorithm';
 export interface IFileMetaDataArgs {
   version: number;
   schema: Array<SchemaElement.SchemaElement>;
@@ -24,6 +25,8 @@ export interface IFileMetaDataArgs {
   key_value_metadata?: Array<KeyValue.KeyValue>;
   created_by?: string;
   column_orders?: Array<ColumnOrder.ColumnOrder>;
+  encryption_algorithm?: EncryptionAlgorithm.EncryptionAlgorithm;
+  footer_signing_key_metadata?: Uint8Array;
 }
 export class FileMetaData {
   public version: number;
@@ -33,6 +36,8 @@ export class FileMetaData {
   public key_value_metadata?: Array<KeyValue.KeyValue>;
   public created_by?: string;
   public column_orders?: Array<ColumnOrder.ColumnOrder>;
+  public encryption_algorithm?: EncryptionAlgorithm.EncryptionAlgorithm;
+  public footer_signing_key_metadata?: Uint8Array;
   constructor(args: IFileMetaDataArgs | null = null) {
     if (args != null && args.version != null) {
       this.version = args.version;
@@ -78,6 +83,12 @@ export class FileMetaData {
     }
     if (args != null && args.column_orders != null) {
       this.column_orders = args.column_orders;
+    }
+    if (args != null && args.encryption_algorithm != null) {
+      this.encryption_algorithm = args.encryption_algorithm;
+    }
+    if (args != null && args.footer_signing_key_metadata != null) {
+      this.footer_signing_key_metadata = args.footer_signing_key_metadata;
     }
   }
   public write(output: thrift.TProtocol): void {
@@ -131,6 +142,16 @@ export class FileMetaData {
         value_4.write(output);
       });
       output.writeListEnd();
+      output.writeFieldEnd();
+    }
+    if (this.encryption_algorithm != null) {
+      output.writeFieldBegin('encryption_algorithm', thrift.Thrift.Type.STRUCT, 8);
+      this.encryption_algorithm.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.footer_signing_key_metadata != null) {
+      output.writeFieldBegin('footer_signing_key_metadata', thrift.Thrift.Type.STRING, 9);
+      output.writeBinary(this.footer_signing_key_metadata);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -229,6 +250,20 @@ export class FileMetaData {
             }
             input.readListEnd();
             _args.column_orders = value_14;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 8:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _args.encryption_algorithm = EncryptionAlgorithm.EncryptionAlgorithm.read(input);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 9:
+          if (fieldType === thrift.Thrift.Type.STRING) {
+            _args.footer_signing_key_metadata = input.readBinary();
           } else {
             input.skip(fieldType);
           }
