@@ -31,6 +31,14 @@ export type LAZPointDataTarget = {
   intensities?: Uint16Array | null;
   /** Optional point classification values. Omit to skip the independent Point14 class layer. */
   classifications?: Uint8Array | null;
+  /** Optional synthetic classification flags. */
+  syntheticFlags?: Uint8Array | null;
+  /** Optional key-point classification flags. */
+  keyPointFlags?: Uint8Array | null;
+  /** Optional withheld classification flags. */
+  withheldFlags?: Uint8Array | null;
+  /** Optional overlap classification flags. */
+  overlapFlags?: Uint8Array | null;
   /** Optional GPS time values from the Point14 layer. */
   gpsTimes?: Float64Array | null;
   /** Optional near-infrared channel values from RGBNIR14. */
@@ -384,7 +392,15 @@ function getLAZPointDataSelection(target: LAZPointDataTarget): LAZPointDataSelec
     scanAngle: Boolean(target.scanAngles),
     userData: Boolean(target.userData),
     pointSourceId: Boolean(target.pointSourceIds),
-    flags: Boolean(target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines),
+    flags: Boolean(
+      target.scannerChannels ||
+        target.scanDirectionFlags ||
+        target.edgeOfFlightLines ||
+        target.syntheticFlags ||
+        target.keyPointFlags ||
+        target.withheldFlags ||
+        target.overlapFlags
+    ),
     waveform: Boolean(target.waveforms),
     extraBytes: Boolean(target.extraBytes)
   };
@@ -604,7 +620,15 @@ function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDa
   if (target.classifications) {
     layerCount = 3;
   }
-  if (target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines) {
+  if (
+    target.scannerChannels ||
+    target.scanDirectionFlags ||
+    target.edgeOfFlightLines ||
+    target.syntheticFlags ||
+    target.keyPointFlags ||
+    target.withheldFlags ||
+    target.overlapFlags
+  ) {
     layerCount = 4;
   }
   if (target.intensities) {
@@ -3960,9 +3984,8 @@ function writePoint14ToPointDataTarget(
     target.offset,
     targetPointIndex
   );
-  if (target.gpsTimes) {
-    target.gpsTimes[targetPointIndex] = point.gpsTime;
-  }
+  writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+  writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
 }
 
 function writePoint14ToPointDataArrays(
@@ -4024,6 +4047,18 @@ function writePoint14MetadataToPointDataTarget(
   }
   if (target.edgeOfFlightLines) {
     target.edgeOfFlightLines[targetPointIndex] = (point.flags >> 7) & 1;
+  }
+  if (target.syntheticFlags) {
+    target.syntheticFlags[targetPointIndex] = point.flags & 1;
+  }
+  if (target.keyPointFlags) {
+    target.keyPointFlags[targetPointIndex] = (point.flags >> 1) & 1;
+  }
+  if (target.withheldFlags) {
+    target.withheldFlags[targetPointIndex] = (point.flags >> 2) & 1;
+  }
+  if (target.overlapFlags) {
+    target.overlapFlags[targetPointIndex] = (point.flags >> 3) & 1;
   }
 }
 

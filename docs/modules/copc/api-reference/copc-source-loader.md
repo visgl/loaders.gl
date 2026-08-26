@@ -55,6 +55,7 @@ The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. `loadTi
 | --- | --- |
 | `COLOR_0`, `NIR` | 16-bit RGB and PDRF 8 near-infrared channels. |
 | `intensity`, `classification`, `GPS_TIME`, `scanAngle`, `userData`, `pointSourceId` | Standard LAS 1.4 scalar fields. |
+| `synthetic`, `keyPoint`, `withheld`, `overlap` | LAS 1.4 classification flags as 0/1 byte columns. |
 | `returnNumber`, `numberOfReturns`, `scannerChannel` | Pulse-return and scanner metadata. |
 | `scanDirectionFlag`, `edgeOfFlightLine` | Flight-line flags as 0/1 byte columns. |
 | `EXTRA_BYTES` | One named typed `EXTRA_BYTES_*` Arrow attribute per VLR descriptor, including vector size and scale/offset transforms. |

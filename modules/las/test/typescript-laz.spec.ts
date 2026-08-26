@@ -199,6 +199,22 @@ test('TypeScript LAZ selective Point14 targets decode only requested layers', as
         t.deepEqual(target.classifications, expected.classifications, 'classification matches')
     },
     {
+      label: 'classification flags only',
+      createTarget: () => ({
+        ...createPointDataTarget(metadata.pointCount),
+        syntheticFlags: new Uint8Array(metadata.pointCount),
+        keyPointFlags: new Uint8Array(metadata.pointCount),
+        withheldFlags: new Uint8Array(metadata.pointCount),
+        overlapFlags: new Uint8Array(metadata.pointCount)
+      }),
+      validate: target => {
+        t.deepEqual(target.syntheticFlags, expected.syntheticFlags, 'synthetic flags match');
+        t.deepEqual(target.keyPointFlags, expected.keyPointFlags, 'key-point flags match');
+        t.deepEqual(target.withheldFlags, expected.withheldFlags, 'withheld flags match');
+        t.deepEqual(target.overlapFlags, expected.overlapFlags, 'overlap flags match');
+      }
+    },
+    {
       label: 'RGB only',
       createTarget: () => ({
         ...createPointDataTarget(metadata.pointCount),
@@ -491,6 +507,10 @@ function getExpectedPointData(
   positions: Float64Array;
   intensities: Uint16Array;
   classifications: Uint8Array;
+  syntheticFlags: Uint8Array;
+  keyPointFlags: Uint8Array;
+  withheldFlags: Uint8Array;
+  overlapFlags: Uint8Array;
   rawColors: Uint16Array;
 } {
   const dataView = new DataView(
@@ -501,6 +521,10 @@ function getExpectedPointData(
   const positions = new Float64Array(metadata.pointCount * 3);
   const intensities = new Uint16Array(metadata.pointCount);
   const classifications = new Uint8Array(metadata.pointCount);
+  const syntheticFlags = new Uint8Array(metadata.pointCount);
+  const keyPointFlags = new Uint8Array(metadata.pointCount);
+  const withheldFlags = new Uint8Array(metadata.pointCount);
+  const overlapFlags = new Uint8Array(metadata.pointCount);
   const rawColors = new Uint16Array(metadata.pointCount * 3);
 
   for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
@@ -511,13 +535,27 @@ function getExpectedPointData(
     positions[positionOffset + 2] = dataView.getInt32(recordOffset + 8, true);
     intensities[pointIndex] = dataView.getUint16(recordOffset + 12, true);
     classifications[pointIndex] = dataView.getUint8(recordOffset + 16);
+    const classificationFlags = dataView.getUint8(recordOffset + 15);
+    syntheticFlags[pointIndex] = classificationFlags & 1;
+    keyPointFlags[pointIndex] = (classificationFlags >> 1) & 1;
+    withheldFlags[pointIndex] = (classificationFlags >> 2) & 1;
+    overlapFlags[pointIndex] = (classificationFlags >> 3) & 1;
     if ([7, 8, 10].includes(metadata.pointDataRecordFormat)) {
       rawColors[positionOffset] = dataView.getUint16(recordOffset + 30, true);
       rawColors[positionOffset + 1] = dataView.getUint16(recordOffset + 32, true);
       rawColors[positionOffset + 2] = dataView.getUint16(recordOffset + 34, true);
     }
   }
-  return {positions, intensities, classifications, rawColors};
+  return {
+    positions,
+    intensities,
+    classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
+    rawColors
+  };
 }
 
 /** Collect represented attributes from one Arrow table. */
