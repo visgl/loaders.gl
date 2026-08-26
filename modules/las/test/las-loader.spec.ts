@@ -513,6 +513,16 @@ test('LASLoader#columns decodes typed Extra Bytes vectors', async () => {
   })) as MeshArrowTable;
   expect(getArrowColumnNames(table)).toEqual(['POSITION', 'EXTRA_BYTES_vector']);
   expect(getArrowColumnValues(table, 'EXTRA_BYTES_vector')).toEqual([[13, 12]]);
+  const batches = await parseInBatches(arrayBuffer, LASLoader, {
+    batchSize: 1,
+    las: {shape: 'arrow-table', columns: ['POSITION', 'EXTRA_BYTES'], extraBytes: 'typed'},
+    core: {worker: false}
+  });
+  const streamedValues: unknown[] = [];
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    streamedValues.push(...getArrowColumnValues(batch, 'EXTRA_BYTES_vector'));
+  }
+  expect(streamedValues).toEqual([[13, 12]]);
 });
 
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
