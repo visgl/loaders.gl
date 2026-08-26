@@ -182,7 +182,7 @@ export class FeedableLAZChunkDecoder {
   /**
    * Decode the next position-only point-data batch as soon as Point14 bytes arrive.
    *
-   * This is limited to layered PDRF 6-8 chunks and targets without RGB fields.
+   * This is limited to layered PDRF 6-10 chunks and targets without RGB fields.
    * Later independent layers are represented by a zero-filled skipped tail; no
    * values from those layers are read by the position-only decoder.
    */
@@ -193,16 +193,22 @@ export class FeedableLAZChunkDecoder {
     return this.readPointDataBatch(target, pointCount);
   }
 
-  /** Decode the next selectively requested PDRF 6-8 point-data batch. */
+  /** Decode the next selectively requested layered PDRF 6-10 point-data batch. */
   readPointDataBatch(target: LAZPointDataTarget, pointCount: number): number | null {
-    if (this.metadata.pointDataRecordFormat < 6 || this.metadata.pointDataRecordFormat > 8) {
-      throw new Error('Progressive LAZ point-data batches require point formats 6-8');
+    const pointDataRecordFormat = this.metadata.pointDataRecordFormat;
+    if (pointDataRecordFormat < 6 || pointDataRecordFormat > 10) {
+      throw new Error('Progressive LAZ point-data batches require point formats 6-10');
     }
-    if ((target.colors || target.rawColors) && this.metadata.pointDataRecordFormat === 6) {
-      throw new Error('Point format 6 does not contain RGB data');
+    const hasColor =
+      pointDataRecordFormat === 7 || pointDataRecordFormat === 8 || pointDataRecordFormat === 10;
+    if ((target.colors || target.rawColors) && !hasColor) {
+      throw new Error(`Point format ${pointDataRecordFormat} does not contain RGB data`);
     }
-    if (target.nir && this.metadata.pointDataRecordFormat !== 8) {
-      throw new Error('NIR output requires point format 8');
+    if (target.nir && pointDataRecordFormat !== 8 && pointDataRecordFormat !== 10) {
+      throw new Error('NIR output requires point format 8 or 10');
+    }
+    if (target.waveforms && pointDataRecordFormat !== 9 && pointDataRecordFormat !== 10) {
+      throw new Error('Waveform output requires point format 9 or 10');
     }
     if (!this.cursor) {
       const compressed = this.getProgressivePointData(target);
@@ -651,6 +657,9 @@ function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDa
   }
   if (target.nir) {
     layerCount = 11;
+  }
+  if (target.waveforms) {
+    layerCount = metadata.pointDataRecordFormat === 9 ? 10 : 12;
   }
   return Math.min(
     layerCount,
@@ -3433,7 +3442,7 @@ class PointFormat9Decompressor implements PointDecompressor {
   private point: Point14Decompressor;
   /** Waveform packet reference decoder, omitted for selective Arrow output. */
   private wavePacket: WavePacket14Decompressor | null;
-  /** Extra Bytes decoder, omitted for selective Arrow output. */
+  /** Extra Bytes decoder retained for raw or selected direct output. */
   private bytes: Byte14Decompressor | null;
   /** Extra bytes stored with the first point and in independent later layers. */
   private extraByteCount: number;
@@ -3461,7 +3470,7 @@ class PointFormat9Decompressor implements PointDecompressor {
         ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
         : null;
     this.bytes =
-      outputMode === 'raw' && extraByteCount
+      (outputMode === 'raw' || selection?.extraBytes) && extraByteCount
         ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
@@ -3488,7 +3497,13 @@ class PointFormat9Decompressor implements PointDecompressor {
     } else if (this.first) {
       this.stream.consume(29);
     }
-    if (this.first) {
+    if (this.bytes && target.extraBytes) {
+      this.bytes.decompress(
+        target.extraBytes,
+        targetPointIndex * this.extraByteCount,
+        this.point.itemContextChannel
+      );
+    } else if (this.first) {
       this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
@@ -3514,7 +3529,13 @@ class PointFormat9Decompressor implements PointDecompressor {
       } else if (this.first) {
         this.stream.consume(29);
       }
-      if (this.first) {
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      } else if (this.first) {
         this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
@@ -3575,7 +3596,7 @@ class PointFormat10Decompressor implements PointDecompressor {
   private nir: NIR14Decompressor | null;
   /** Waveform packet reference decoder, omitted for selective Arrow output. */
   private wavePacket: WavePacket14Decompressor | null;
-  /** Extra Bytes decoder, omitted for selective Arrow output. */
+  /** Extra Bytes decoder retained for raw or selected direct output. */
   private bytes: Byte14Decompressor | null;
   /** Extra bytes stored with the first point and in independent later layers. */
   private extraByteCount: number;
@@ -3611,7 +3632,7 @@ class PointFormat10Decompressor implements PointDecompressor {
         ? new WavePacket14Decompressor(stream, metadata.wavePacketItemVersion ?? 3)
         : null;
     this.bytes =
-      outputMode === 'raw' && extraByteCount
+      (outputMode === 'raw' || selection?.extraBytes) && extraByteCount
         ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
@@ -3649,7 +3670,13 @@ class PointFormat10Decompressor implements PointDecompressor {
     } else if (this.first) {
       this.stream.consume(29);
     }
-    if (this.first) {
+    if (this.bytes && target.extraBytes) {
+      this.bytes.decompress(
+        target.extraBytes,
+        targetPointIndex * this.extraByteCount,
+        this.point.itemContextChannel
+      );
+    } else if (this.first) {
       this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
@@ -3696,7 +3723,13 @@ class PointFormat10Decompressor implements PointDecompressor {
       } else if (this.first) {
         this.stream.consume(29);
       }
-      if (this.first) {
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      } else if (this.first) {
         this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();

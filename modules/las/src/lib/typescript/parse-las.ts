@@ -144,6 +144,8 @@ type PointDataBatchState = {
   waveforms: Uint8Array | null;
   extraBytes: Uint8Array | null;
   typedExtraBytes: LASTypedExtraBytesAttribute[] | null;
+  /** Packed raw source used to project selected typed Extra Bytes without raw point records. */
+  typedExtraBytesSource: Uint8Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -340,62 +342,13 @@ function decodeCompleteLAZChunkToPointData(
     createLAZChunkMetadata(header, laszip, pointCount)
   );
   state.target.pointOffset = targetPointOffset;
-  const target = state.waveforms ? {...state.target, waveforms: null} : state.target;
-  const decodedTarget = state.extraBytes ? {...target, extraBytes: null} : target;
-  const decodedPointCount = cursor.decodeIntoPointData(decodedTarget, pointCount);
+  const decodedPointCount = cursor.decodeIntoPointData(state.target, pointCount);
   if (decodedPointCount !== pointCount) {
     throw new Error(
       `LASLoader: decoded ${decodedPointCount} points from a ${pointCount}-point LAZ chunk`
     );
   }
-  if (state.typedExtraBytes) {
-    const rawPointData = decodeLAZChunk(
-      compressed,
-      createLAZChunkMetadata(header, laszip, pointCount)
-    );
-    populateTypedExtraBytesFromRaw(
-      rawPointData,
-      header.pointsStructSize,
-      getLAZPointDataRecordBaseLength(header.pointsFormatId),
-      0,
-      targetPointOffset,
-      pointCount,
-      state.typedExtraBytes
-    );
-  }
-  if (state.waveforms) {
-    const rawPointData = decodeLAZChunk(
-      compressed,
-      createLAZChunkMetadata(header, laszip, pointCount)
-    );
-    const waveformOffset = getWaveformOffset(header.pointsFormatId);
-    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-      state.waveforms.set(
-        rawPointData.subarray(
-          pointIndex * header.pointsStructSize + waveformOffset,
-          pointIndex * header.pointsStructSize + waveformOffset + 29
-        ),
-        (targetPointOffset + pointIndex) * 29
-      );
-    }
-  }
-  if (state.extraBytes) {
-    const rawPointData = decodeLAZChunk(
-      compressed,
-      createLAZChunkMetadata(header, laszip, pointCount)
-    );
-    const extraByteOffset = getLAZPointDataRecordBaseLength(header.pointsFormatId);
-    const extraByteCount = header.pointsStructSize - extraByteOffset;
-    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-      state.extraBytes.set(
-        rawPointData.subarray(
-          pointIndex * header.pointsStructSize + extraByteOffset,
-          pointIndex * header.pointsStructSize + extraByteOffset + extraByteCount
-        ),
-        (targetPointOffset + pointIndex) * extraByteCount
-      );
-    }
-  }
+  populateDecodedTypedExtraBytes(state, targetPointOffset, pointCount);
 }
 
 /** Parse LAS data from an incoming byte iterator into point batches. */
@@ -792,38 +745,15 @@ async function* parsePendingLAZFileInArrowBatches(
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
     const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
-    const supportsProgressivePointData =
-      header.pointsFormatId >= 6 &&
-      header.pointsFormatId <= 8 &&
-      !state.waveforms &&
-      !state.typedExtraBytes;
-
-    if (supportsProgressivePointData) {
-      const chunkByteLength = yield* appendProgressiveLAZChunkToPointDataBatches(
-        reader,
-        inputIterator,
-        metadata,
-        outputHeader,
-        state,
-        options
-      );
-      chunkByteLengths.push(chunkByteLength);
-    } else {
-      const chunkByteLength = await readLAZChunkByteLengthFromReader(
-        reader,
-        inputIterator,
-        metadata
-      );
-      chunkByteLengths.push(chunkByteLength);
-      const compressedChunk = reader.readBytes(chunkByteLength);
-      yield* appendDecodedLAZChunkToPointDataBatches(
-        compressedChunk,
-        metadata,
-        outputHeader,
-        state,
-        options
-      );
-    }
+    const chunkByteLength = yield* appendProgressiveLAZChunkToPointDataBatches(
+      reader,
+      inputIterator,
+      metadata,
+      outputHeader,
+      state,
+      options
+    );
+    chunkByteLengths.push(chunkByteLength);
 
     sourcePointIndex += chunkPointCount;
   }
@@ -903,6 +833,7 @@ function* readAvailableLAZPointDataBatches(
     if (!pointsDecoded) {
       return;
     }
+    populateDecodedTypedExtraBytes(state, state.batchPointCount, pointsDecoded);
     state.batchPointCount += pointsDecoded;
     if (state.batchPointCount === state.batchCapacity) {
       const batch = flushPointDataBatch(header, state, options);
@@ -1794,9 +1725,9 @@ function getWaveformOffset(pointsFormatId: number): number {
     case 5:
       return 35;
     case 9:
-      return 22;
-    case 10:
       return 30;
+    case 10:
+      return 38;
     default:
       return -1;
   }
@@ -2530,6 +2461,8 @@ function createPointDataBatchState(
     selection.extraBytes && options.las?.extraBytes === 'typed'
       ? createTypedExtraBytesAttributes(batchSize, header)
       : null;
+  const typedExtraBytesSource =
+    typedExtraBytes?.length && extraByteCount ? new Uint8Array(batchSize * extraByteCount) : null;
   return {
     batchCapacity: batchSize,
     positions,
@@ -2554,6 +2487,7 @@ function createPointDataBatchState(
     waveforms,
     extraBytes,
     typedExtraBytes,
+    typedExtraBytesSource,
     target: {
       positions,
       intensities,
@@ -2573,7 +2507,7 @@ function createPointDataBatchState(
       scanDirectionFlags,
       edgeOfFlightLines,
       waveforms,
-      extraBytes,
+      extraBytes: extraBytes || typedExtraBytesSource,
       colors,
       rawColors,
       pointOffset: 0,
@@ -2633,33 +2567,30 @@ function populateTypedExtraBytesFromDataView(
   }
 }
 
-/** Decode typed Extra Bytes from a complete raw LAZ point-record chunk. */
-function populateTypedExtraBytesFromRaw(
-  rawPointData: Uint8Array,
-  pointRecordLength: number,
-  extraByteBaseOffset: number,
-  sourcePointOffset: number,
-  targetPointOffset: number,
+/** Project packed direct-decoder Extra Bytes into descriptor-defined typed columns. */
+function populateTypedExtraBytesFromPacked(
+  packedExtraBytes: Uint8Array,
+  extraByteCount: number,
+  pointOffset: number,
   pointCount: number,
   attributes: LASTypedExtraBytesAttribute[]
 ): void {
   const dataView = new DataView(
-    rawPointData.buffer,
-    rawPointData.byteOffset,
-    rawPointData.byteLength
+    packedExtraBytes.buffer,
+    packedExtraBytes.byteOffset,
+    packedExtraBytes.byteLength
   );
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-    const pointOffset = (sourcePointOffset + pointIndex) * pointRecordLength;
-    const targetIndex = targetPointOffset + pointIndex;
+    const targetPointIndex = pointOffset + pointIndex;
+    const sourceOffset = targetPointIndex * extraByteCount;
     for (const attribute of attributes) {
-      const targetOffset = targetIndex * attribute.size;
-      const sourceOffset = pointOffset + extraByteBaseOffset + attribute.byteOffset;
+      const targetOffset = targetPointIndex * attribute.size;
       const scalarByteLength = getExtraBytesScalarByteLength(attribute.scalarDataType);
       for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
         attribute.value[targetOffset + componentIndex] =
           readExtraBytesValue(
             dataView,
-            sourceOffset + componentIndex * scalarByteLength,
+            sourceOffset + attribute.byteOffset + componentIndex * scalarByteLength,
             attribute.scalarDataType
           ) *
             attribute.scales[componentIndex] +
@@ -2667,6 +2598,24 @@ function populateTypedExtraBytesFromRaw(
       }
     }
   }
+}
+
+/** Populate typed Extra Bytes produced by the direct LAZ target for newly decoded points. */
+function populateDecodedTypedExtraBytes(
+  state: PointDataBatchState,
+  pointOffset: number,
+  pointCount: number
+): void {
+  if (!state.typedExtraBytesSource || !state.typedExtraBytes?.length || pointCount === 0) {
+    return;
+  }
+  populateTypedExtraBytesFromPacked(
+    state.typedExtraBytesSource,
+    state.typedExtraBytesSource.length / state.batchCapacity,
+    pointOffset,
+    pointCount,
+    state.typedExtraBytes
+  );
 }
 
 /** Read one little-endian scalar Extra Bytes value without assuming alignment. */
@@ -2745,79 +2694,6 @@ function* appendDecodedLAZChunk(
 
     if (state.batchPointCount === batchCapacity) {
       const batch = flushRawPointBatch(header, state);
-      if (batch) {
-        yield batch;
-      }
-    }
-  }
-}
-
-function* appendDecodedLAZChunkToPointDataBatches(
-  compressedChunk: Uint8Array,
-  metadata: LAZChunkByteLengthMetadata,
-  header: LASHeader,
-  state: PointDataBatchState,
-  options: LASLoaderOptions
-): Iterable<LASArrowTable> {
-  const decoder = createLAZChunkDecoderCursor(compressedChunk, metadata);
-  // Waveform references and Extra Bytes are not independent LAZ layers in the
-  // Arrow decoder. Decode the complete record buffer once when either one is
-  // requested, then share it between both projections.
-  const rawPointData =
-    state.waveforms || state.extraBytes || state.typedExtraBytes
-      ? decodeLAZChunk(compressedChunk, metadata)
-      : null;
-  const waveformOffset = getWaveformOffset(header.pointsFormatId);
-  const extraByteOffset = getLAZPointDataRecordBaseLength(header.pointsFormatId);
-  const extraByteCount = header.pointsStructSize - extraByteOffset;
-  let decodedChunkPointCount = 0;
-
-  while (decoder.remainingPointCount > 0) {
-    const batchCapacity = state.batchCapacity;
-    const batchRemainingPointCount = batchCapacity - state.batchPointCount;
-    const target =
-      state.waveforms || state.extraBytes
-        ? {...state.target, waveforms: null, extraBytes: null}
-        : state.target;
-    target.pointOffset = state.batchPointCount;
-    const pointsDecoded = decoder.decodeIntoPointData(target, batchRemainingPointCount);
-    if (rawPointData && state.waveforms) {
-      for (let pointIndex = 0; pointIndex < pointsDecoded; pointIndex++) {
-        const sourceOffset = (decodedChunkPointCount + pointIndex) * header.pointsStructSize;
-        state.waveforms.set(
-          rawPointData.subarray(sourceOffset + waveformOffset, sourceOffset + waveformOffset + 29),
-          (state.batchPointCount + pointIndex) * 29
-        );
-      }
-    }
-    if (rawPointData && state.extraBytes && extraByteCount > 0) {
-      for (let pointIndex = 0; pointIndex < pointsDecoded; pointIndex++) {
-        const sourceOffset = (decodedChunkPointCount + pointIndex) * header.pointsStructSize;
-        state.extraBytes.set(
-          rawPointData.subarray(
-            sourceOffset + extraByteOffset,
-            sourceOffset + extraByteOffset + extraByteCount
-          ),
-          (state.batchPointCount + pointIndex) * extraByteCount
-        );
-      }
-    }
-    if (rawPointData && state.typedExtraBytes) {
-      populateTypedExtraBytesFromRaw(
-        rawPointData,
-        header.pointsStructSize,
-        extraByteOffset,
-        decodedChunkPointCount,
-        state.batchPointCount,
-        pointsDecoded,
-        state.typedExtraBytes
-      );
-    }
-    decodedChunkPointCount += pointsDecoded;
-    state.batchPointCount += pointsDecoded;
-
-    if (state.batchPointCount === batchCapacity) {
-      const batch = flushPointDataBatch(header, state, options);
       if (batch) {
         yield batch;
       }
@@ -3073,6 +2949,9 @@ function flushPointDataBatch(
           )
         }))
       : null;
+    state.typedExtraBytesSource = state.typedExtraBytesSource
+      ? new Uint8Array(state.typedExtraBytesSource.length)
+      : null;
     state.target.positions = state.positions;
     state.target.colors = state.colors;
     state.target.rawColors = state.rawColors;
@@ -3093,7 +2972,7 @@ function flushPointDataBatch(
     state.target.scanDirectionFlags = state.scanDirectionFlags;
     state.target.edgeOfFlightLines = state.edgeOfFlightLines;
     state.target.waveforms = state.waveforms;
-    state.target.extraBytes = state.extraBytes;
+    state.target.extraBytes = state.extraBytes || state.typedExtraBytesSource;
   }
   return table;
 }
