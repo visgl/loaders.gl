@@ -183,10 +183,26 @@ export function parsePoint(xml: any, options: ParseGMLOptions, context: ParseGML
 
   // TODO AV: Parse other gml:Point options
   const pos = findIn(xml, 'gml:pos');
-  if (!pos) {
-    throw new Error('invalid gml:Point element, expected a gml:pos subelement');
+  if (pos) {
+    return parsePos(pos, options, childContext);
   }
-  return parsePos(pos, options, childContext);
+
+  const coord = findIn(xml, 'gml:coord');
+  if (coord) {
+    const x = textOf(findIn(coord, 'gml:X'));
+    const y = textOf(findIn(coord, 'gml:Y'));
+    const z = findIn(coord, 'gml:Z');
+    return [x, y, ...(z ? [textOf(z)] : [])].map(Number);
+  }
+
+  const coordinates = findIn(xml, 'gml:coordinates');
+  if (coordinates) {
+    const points = parseLegacyCoordinates(textOf(coordinates), options, childContext);
+    if (points.length === 1) {
+      return points[0];
+    }
+  }
+  throw new Error('invalid gml:Point element, expected gml:pos, gml:coord, or gml:coordinates');
 }
 
 /** Parses a GML MultiPoint geometry. */
@@ -275,6 +291,14 @@ export function parseLinearRingOrLineString(
           break;
         case 'gml:pos':
           points.push(parsePos(childXML, options, childContext));
+          break;
+        case 'gml:coord':
+          for (const coord of Array.isArray(childXML) ? childXML : [childXML]) {
+            points.push(parseLegacyCoord(coord, options));
+          }
+          break;
+        case 'gml:coordinates':
+          points.push(...parseLegacyCoordinates(textOf(childXML), options, childContext));
           break;
         default:
           continue;
@@ -398,12 +422,9 @@ export function parsePolygonOrRectangle(
 
   const pointLists: Position[][] = [parseExteriorOrInterior(exterior, options, childContext)];
 
-  for (const [childName, childXML] of Object.entries(xml)) {
-    switch (childName) {
-      case 'gml:interior':
-        pointLists.push(parseExteriorOrInterior(childXML, options, childContext));
-        break;
-    }
+  const interiors = xml['gml:interior'];
+  for (const interior of Array.isArray(interiors) ? interiors : interiors ? [interiors] : []) {
+    pointLists.push(parseExteriorOrInterior(interior, options, childContext));
   }
 
   return pointLists;
@@ -422,7 +443,7 @@ export function parseSurface(
   }
 
   const polygons: Position[][][] = [];
-  for (const [childName, childXML] of Object.entries(xml)) {
+  for (const [childName, childXML] of Object.entries(patches)) {
     switch (childName) {
       case 'gml:PolygonPatch':
       case 'gml:Rectangle':
@@ -477,32 +498,14 @@ export function parseMultiSurface(
   options: ParseGMLOptions,
   context: ParseGMLContext
 ): Position[][][] {
-  let el = xml;
-
-  const surfaceMembers = findIn(xml, 'gml:LinearRing');
-  if (surfaceMembers) {
-    el = surfaceMembers;
-  }
-
   const polygons: Position[][][] = [];
-  for (const [childName, childXML] of Object.entries(el)) {
-    switch (childName) {
-      case 'gml:Surface':
-        const polygons2 = parseSurface(childXML, options, context);
-        polygons.push(...polygons2);
-        break;
-      case 'gml:surfaceMember':
-        const polygons3 = parseSurfaceMember(childXML, options, context);
-        polygons.push(...polygons3);
-        break;
-
-      case 'gml:surfaceMembers':
-        const polygonXML = findIn(childXML, 'gml:Polygon');
-        for (const surfaceMemberXML of polygonXML as []) {
-          const polygons3 = parseSurfaceMember(surfaceMemberXML, options, context);
-          polygons.push(...polygons3);
-        }
-        break;
+  for (const member of getMembers(xml, ['gml:surfaceMember', 'gml:surfaceMembers'])) {
+    const polygon = findIn(member, 'gml:Polygon');
+    const surface = findIn(member, 'gml:Surface');
+    if (polygon) {
+      polygons.push(parsePolygonOrRectangle(polygon, options, context));
+    } else if (surface) {
+      polygons.push(...parseSurface(surface, options, context));
     }
   }
 
@@ -533,6 +536,12 @@ function parseSurfaceMember(
 // Helpers
 
 function textOf(el: any): string {
+  if (typeof el === 'number') {
+    return String(el);
+  }
+  if (el && typeof el === 'object' && 'value' in el) {
+    return textOf(el.value);
+  }
   if (typeof el !== 'string') {
     throw new Error('expected string');
   }
@@ -566,13 +575,54 @@ function getMembers(root: any, names: string[]): any[] {
   const members: any[] = [];
   for (const name of names) {
     const value = root[name];
-    if (Array.isArray(value)) {
+    if (!value) {
+      continue;
+    }
+    if (name.endsWith('Members')) {
+      if (Array.isArray(value)) {
+        members.push(...value);
+        continue;
+      }
+      for (const [memberName, memberValue] of Object.entries(value)) {
+        if (memberName !== 'attributes') {
+          for (const item of Array.isArray(memberValue) ? memberValue : [memberValue]) {
+            members.push({[memberName]: item});
+          }
+        }
+      }
+    } else if (Array.isArray(value)) {
       members.push(...value);
     } else if (value) {
       members.push(value);
     }
   }
   return members;
+}
+
+/** Parses one GML 2 `coord` element. */
+function parseLegacyCoord(xml: any, options: ParseGMLOptions): Position {
+  const x = Number(textOf(findIn(xml, 'gml:X')));
+  const y = Number(textOf(findIn(xml, 'gml:Y')));
+  const z = findIn(xml, 'gml:Z');
+  const point = [x, y, ...(z ? [Number(textOf(z))] : [])];
+  return options.transformCoords?.(...point) || point;
+}
+
+/** Parses a GML 2 `coordinates` element using comma-separated ordinates. */
+function parseLegacyCoordinates(
+  text: string,
+  options: ParseGMLOptions,
+  context: ParseGMLContext
+): Position[] {
+  const coordinatePairs = text.trim().split(/\s+/).filter(Boolean);
+  return coordinatePairs.map(coordinatePair => {
+    const point = coordinatePair.split(',').map(Number);
+    const stride = context.srsDimension || options.stride || 2;
+    if (point.length !== stride || point.some(Number.isNaN)) {
+      throw new Error(`invalid GML 2 coordinates list (stride ${stride})`);
+    }
+    return options.transformCoords?.(...point) || point;
+  });
 }
 
 /** A bit heavyweight for just tracking dimension? */

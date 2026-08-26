@@ -41,6 +41,7 @@ export class WMTSImageTileSource
   /** Creates a WMTS source. */
   constructor(url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url, options, WMTSSourceLoader.defaultOptions, coreApi);
+    this.getTileData = this.getTileData.bind(this);
   }
 
   /** Returns metadata available from source options. */
@@ -54,8 +55,8 @@ export class WMTSImageTileSource
   }
 
   /** Fetches and decodes one WMTS image tile. */
-  async getTile(parameters: GetTileParameters): Promise<ImageType | null> {
-    const response = await this.fetch(this.getTileURL(parameters));
+  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+    const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(`WMTS tile request failed: ${response.status} ${response.statusText}`);
     }
@@ -68,7 +69,7 @@ export class WMTSImageTileSource
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
-    return this.getTile(parameters.index);
+    return this.getTile(parameters.index, parameters.signal);
   }
 
   /** Builds a REST-template or KVP WMTS GetTile URL. */
@@ -80,6 +81,7 @@ export class WMTSImageTileSource
         .replaceAll('{TileRow}', String(parameters.y))
         .replaceAll('{TileCol}', String(parameters.x));
     }
+    const url = new URL(this.url);
     const searchParameters = new URLSearchParams({
       SERVICE: 'WMTS',
       REQUEST: 'GetTile',
@@ -93,7 +95,10 @@ export class WMTSImageTileSource
       FORMAT: parameters.format || wmts.format || 'image/png',
       ...(wmts.parameters || {})
     });
-    return `${this.url}?${searchParameters.toString()}`;
+    for (const [key, value] of searchParameters) {
+      url.searchParams.set(key, value);
+    }
+    return url.toString();
   }
 }
 

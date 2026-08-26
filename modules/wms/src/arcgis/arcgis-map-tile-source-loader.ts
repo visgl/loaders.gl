@@ -30,6 +30,7 @@ export class ArcGISMapTileSource
   /** Creates an ArcGIS MapServer tile source. */
   constructor(url: string, options: ArcGISMapTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, ArcGISMapTileSourceLoader.defaultOptions, coreApi);
+    this.getTileData = this.getTileData.bind(this);
   }
 
   /** Loads and normalizes ArcGIS service metadata. */
@@ -54,8 +55,8 @@ export class ArcGISMapTileSource
   }
 
   /** Fetches and decodes one cached ArcGIS tile. */
-  async getTile(parameters: GetTileParameters): Promise<ImageType | null> {
-    const response = await this.fetch(this.getTileURL(parameters));
+  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+    const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(
         `ArcGIS MapServer tile request failed: ${response.status} ${response.statusText}`
@@ -70,21 +71,29 @@ export class ArcGISMapTileSource
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
-    return this.getTile(parameters.index);
+    return this.getTile(parameters.index, parameters.signal);
   }
 
   /** Builds the standard ArcGIS cached tile URL. */
   getTileURL(parameters: GetTileParameters): string {
-    const template =
-      this.options['arcgis-map-server']?.urlTemplate || `${this.url}/tile/{z}/{y}/{x}`;
-    return template
-      .replaceAll('{z}', String(parameters.z))
-      .replaceAll('{y}', String(parameters.y))
-      .replaceAll('{x}', String(parameters.x));
+    const template = this.options['arcgis-map-server']?.urlTemplate;
+    if (template) {
+      return new URL(
+        template
+          .replaceAll('{z}', String(parameters.z))
+          .replaceAll('{y}', String(parameters.y))
+          .replaceAll('{x}', String(parameters.x))
+      ).toString();
+    }
+    const url = new URL(this.url);
+    url.pathname = `${url.pathname.replace(/\/$/, '')}/tile/${parameters.z}/${parameters.y}/${parameters.x}`;
+    return url.toString();
   }
 
   private async _loadMetadata(): Promise<any> {
-    const response = await this.fetch(`${this.url}?f=pjson`);
+    const url = new URL(this.url);
+    url.searchParams.set('f', 'pjson');
+    const response = await this.fetch(url.toString());
     if (!response.ok) {
       throw new Error(
         `ArcGIS MapServer metadata request failed: ${response.status} ${response.statusText}`
