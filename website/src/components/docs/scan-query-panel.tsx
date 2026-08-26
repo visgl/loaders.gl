@@ -12,6 +12,8 @@ export type ScanQueryPanelState = Readonly<{
   boundingBox?: readonly [number, number, number, number];
   /** Optional raster overview or point-cloud minimum hierarchy level. */
   level?: number;
+  /** Optional point-cloud minimum hierarchy level. */
+  minimumLevel?: number;
   /** Optional point-cloud maximum hierarchy level. */
   maximumLevel?: number;
   /** Optional point-cloud target spacing. */
@@ -47,6 +49,9 @@ export function ScanQueryPanel({
     value?.boundingBox ? value.boundingBox.join(',') : ''
   );
   const [levelText, setLevelText] = useState(value?.level === undefined ? '' : String(value.level));
+  const [minimumLevelText, setMinimumLevelText] = useState(
+    value?.minimumLevel === undefined ? '' : String(value.minimumLevel)
+  );
   const [maximumLevelText, setMaximumLevelText] = useState(
     value?.maximumLevel === undefined ? '' : String(value.maximumLevel)
   );
@@ -59,6 +64,7 @@ export function ScanQueryPanel({
     setLimitText(value?.limit === undefined ? '' : String(value.limit));
     setBoundingBoxText(value?.boundingBox ? value.boundingBox.join(',') : '');
     setLevelText(value?.level === undefined ? '' : String(value.level));
+    setMinimumLevelText(value?.minimumLevel === undefined ? '' : String(value.minimumLevel));
     setMaximumLevelText(value?.maximumLevel === undefined ? '' : String(value.maximumLevel));
     setTargetSpacingText(value?.targetSpacing === undefined ? '' : String(value.targetSpacing));
   }, [value]);
@@ -146,8 +152,10 @@ export function ScanQueryPanel({
                   inputMode="numeric"
                   min="0"
                   placeholder="Native/default"
-                  value={levelText}
-                  onChange={event => setLevelText(event.target.value)}
+                  value={isPointCloud ? minimumLevelText : levelText}
+                  onChange={event =>
+                    isPointCloud ? setMinimumLevelText(event.target.value) : setLevelText(event.target.value)
+                  }
                 />
               </FieldGroup>
             ) : null}
@@ -184,13 +192,15 @@ export function ScanQueryPanel({
               const limit = limitText.trim() ? Number(limitText) : undefined;
               const boundingBox = parseBounds(boundingBoxText);
               const level = parseNonNegativeInteger(levelText);
+              const minimumLevel = parseNonNegativeInteger(minimumLevelText);
               const maximumLevel = parseNonNegativeInteger(maximumLevelText);
               const targetSpacing = parsePositiveNumber(targetSpacingText);
               onApply({
                 columns: selectedColumns.length && selectedColumns.length < columns.length ? selectedColumns : undefined,
                 limit: Number.isSafeInteger(limit) && (limit as number) >= 0 ? limit : undefined,
                 boundingBox,
-                level,
+                level: isPointCloud ? undefined : level,
+                minimumLevel: isPointCloud ? minimumLevel : undefined,
                 maximumLevel,
                 targetSpacing
               });
