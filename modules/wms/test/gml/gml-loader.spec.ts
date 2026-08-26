@@ -68,6 +68,7 @@ vitestTest('GMLLoader parses feature collections', () => {
   expect(collection.features).toHaveLength(2);
   expect(collection.features[0].id).toBe('place.1');
   expect(collection.features[0].properties.name).toBe('One');
+  expect(collection.features[0].properties.shape).toBeUndefined();
   expect(collection.features[1].geometry.coordinates).toEqual([3, 4]);
 });
 
@@ -83,6 +84,23 @@ vitestTest('GMLLoader parses feature members incrementally', async () => {
   const batches = [];
   for await (const batch of GMLParserLoader.parseInBatches!(chunks)) batches.push(batch);
   expect(batches.flatMap(batch => batch.features)).toHaveLength(2);
+});
+
+vitestTest('GMLLoader batches plural featureMembers without retaining the container', async () => {
+  const chunks = [
+    new TextEncoder().encode(
+      '<gml:FeatureCollection><gml:featureMembers><app:place xmlns:app="urn:app"><app:name>One</app:name><app:shape><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:shape></app:place>'
+    ),
+    new TextEncoder().encode(
+      '<app:place xmlns:app="urn:app"><app:name>Two</app:name><app:shape><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:shape></app:place></gml:featureMembers></gml:FeatureCollection>'
+    )
+  ];
+  const batches = [];
+  for await (const batch of GMLParserLoader.parseInBatches!(chunks, {gml: {batchSize: 1}})) {
+    batches.push(batch);
+  }
+  expect(batches.flatMap(batch => batch.features)).toHaveLength(2);
+  expect(batches).toHaveLength(2);
 });
 
 /*

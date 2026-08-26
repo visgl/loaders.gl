@@ -104,7 +104,11 @@ export function parseGMLFeature(inputXML: any, options: ParseGMLOptions = {}): G
   const properties: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(feature || {})) {
-    if (key === 'attributes' || key === geometryElement?.key || key.startsWith('gml:')) {
+    if (
+      key === 'attributes' ||
+      key === geometryElement?.propertyKey ||
+      key.startsWith('gml:')
+    ) {
       continue;
     }
     properties[stripNamespace(key)] = extractXMLValue(value);
@@ -613,14 +617,21 @@ function unwrapFeatureMember(member: any): any {
 }
 
 /** Locates the first GML geometry child of a feature. */
-function findGeometryElement(feature: any): {key: string; value: any} | null {
+function findGeometryElement(
+  feature: any,
+  propertyKey?: string
+): {key: string; value: any; propertyKey: string} | null {
   if (!feature || typeof feature !== 'object') return null;
   for (const [key, value] of Object.entries(feature)) {
     if (key.startsWith('gml:') && GEOMETRY_NAMES.has(stripNamespace(key))) {
-      return {key, value: Array.isArray(value) ? value[0] : value};
+      return {
+        key,
+        value: Array.isArray(value) ? value[0] : value,
+        propertyKey: propertyKey || key
+      };
     }
     if (key !== 'attributes' && value && typeof value === 'object') {
-      const nested = findGeometryElement(Array.isArray(value) ? value[0] : value);
+      const nested = findGeometryElement(Array.isArray(value) ? value[0] : value, propertyKey || key);
       if (nested) return nested;
     }
   }
@@ -662,10 +673,6 @@ function findFeatureId(value: any): string | undefined {
   if (attributes) {
     const id = attributes.id || attributes['gml:id'] || attributes.fid;
     if (id !== undefined) return String(id);
-  }
-  for (const child of Object.values(value)) {
-    const id = findFeatureId(child);
-    if (id) return id;
   }
   return undefined;
 }

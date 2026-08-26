@@ -53,7 +53,7 @@ export function normalizeWMSCapabilities(
     name: capabilities.name,
     title: capabilities.title,
     abstract: capabilities.abstract,
-    crs: unique(capabilities.layers.flatMap(layer => layer.crs || [])),
+    crs: unique(flattenLayers(capabilities.layers).flatMap(layer => layer.crs || [])),
     formats: unique(
       Object.values(capabilities.requests || {}).flatMap(request => request.mimeTypes || [])
     ),
@@ -103,7 +103,7 @@ export function normalizeWFSCapabilities(
     name: capabilities.serviceIdentification?.serviceType || '',
     title: capabilities.serviceIdentification?.title,
     crs: [],
-    formats: [],
+    formats: unique(layers.flatMap(layer => layer.formats || [])),
     layers: layers.map(layer => ({name: layer.identifier, title: layer.title})),
     operations: Object.keys(capabilities.operationsMetadata || {}),
     formatSpecificMetadata: capabilities as unknown as Record<string, unknown>
