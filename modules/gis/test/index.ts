@@ -15,7 +15,7 @@ import './utils/hex-transcoder.spec';
 
 // wkt format family parsers/encoder
 import './geometry-converters/wkb/convert-wkb-to-geometry.spec';
-// import './geometry-converters/wkb/convert-twkb-to-geometry.spec';
+import './geometry-converters/wkb/convert-geometry-to-twkb.spec';
 
 import './geometry-converters/wkb/convert-geometry-to-wkb.spec';
 
