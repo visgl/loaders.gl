@@ -88,6 +88,8 @@ describe('FlatGeobuf reader metadata branches', () => {
       bounds: '1,2,3,4'
     });
     expect(schema.fields[1].metadata?.['ARROW:extension:name']).toBe('geoarrow.linestring');
+    const geoMetadata = JSON.parse(schema.metadata?.geo || '{}');
+    expect(geoMetadata.columns.geometry.geometry_types).toEqual(['LineString Z']);
   });
 
   test('returns no projection unless requested and handles invalid CRS definitions', () => {
