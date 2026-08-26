@@ -8,6 +8,8 @@ export {CSVLoader} from './csv-loader';
 
 export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
+export {CSVSourceLoader, CSVTableSource} from './csv-source';
+export type {CSVSourceOptions} from './csv-source';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use CSVLoader. */

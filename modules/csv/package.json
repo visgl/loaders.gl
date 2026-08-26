@@ -39,6 +39,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./csv-source": {
+      "types": "./dist/csv-source.d.ts",
+      "import": "./dist/csv-source.js"
+    },
     "./csv-worker.js": {
       "import": "./dist/csv-worker.js"
     },
