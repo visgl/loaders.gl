@@ -125,6 +125,26 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('builds logical explanation from effective child defaults', async () => {
+    const source = new ParquetDatasetSource([{data: westernFile}], {
+      core: {worker: false},
+      parquet: {
+        columns: ['value'],
+        predicate: {op: '=', args: [{property: 'id'}, 1]},
+        limit: 1
+      }
+    });
+    const plan = await source.getScanPlan();
+    expect(plan.outputColumns).toEqual(['value']);
+    expect(plan.requiredColumns).toEqual(['id', 'value']);
+    expect(plan.plan).toContainEqual({
+      kind: 'filter',
+      predicate: {op: '=', args: [{property: 'id'}, 1]}
+    });
+    expect(plan.plan).toContainEqual({kind: 'limit', limit: 1});
+    await source.close();
+  });
+
   test('emits the first file while lazy discovery of later files is blocked', async () => {
     let releaseDiscovery: (() => void) | undefined;
     const discoveryBlocked = new Promise<void>(resolve => {

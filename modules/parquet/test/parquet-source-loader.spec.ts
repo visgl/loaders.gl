@@ -207,6 +207,14 @@ test('ParquetSource#getScanPlan shares logical and physical pruning decisions', 
   t.equal(plan.rowGroups.prunedByBloomFilter, 0, 'does not invent Bloom-filter pruning');
   t.equal(plan.plan.at(-1)?.kind, 'limit', 'retains the common logical limit');
   t.ok(Object.isFrozen(plan.rowGroups.indices), 'freezes physical plan selections');
+  t.deepEqual(
+    plan.pages.plans.map(pagePlan => ({phase: pagePlan.phase, columns: pagePlan.columns})),
+    [
+      {phase: 'predicate', columns: [['x']]},
+      {phase: 'projection', columns: [['source_id']]}
+    ],
+    'describes caller-thread late-materialization phases'
+  );
 
   await source.close();
   t.end();

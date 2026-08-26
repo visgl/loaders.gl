@@ -211,7 +211,10 @@ Parquet row-group plan. The physical section reports retained row-group indexes 
 for callback, spatial-statistics, column-statistics, and Bloom-filter pruning. It also reports the
 number and byte size of Bloom-filter payloads inspected while planning. For indexed files it also
 reports candidate row ranges, selected versus total pages, pruned rows, and the absolute data-page
-ranges required by each retained row group. Planning may therefore read footer, Bloom-filter,
+ranges required by each retained row group. A plan includes `predicate` and `projection` phases
+when hidden filter columns require late materialization; the predicate phase contains page-index
+ranges for filter columns and the projection phase contains the complete projected column-chunk
+ranges actually fetched after matches are known. Planning may therefore read footer, Bloom-filter,
 column-index, and offset-index ranges, but it does not decode data pages.
 
 `explain(options)` is an alias for `getScanPlan(options)`. `scan(options)` is an alias for

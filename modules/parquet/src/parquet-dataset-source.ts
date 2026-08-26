@@ -162,9 +162,16 @@ export class ParquetDatasetSource {
       if (!firstFilePlan) {
         throw new Error('ParquetDatasetSource query selected no files');
       }
+      const effectivePredicate = firstFilePlan.parquet.plan.find(step => step.kind === 'filter');
+      const effectiveLimit = options.limit ?? this.options.parquet?.limit;
       const explanation = explainTableQuery(
         firstFilePlan.parquet.sourceColumns,
-        {columns: options.columns, predicate: options.predicate, limit: options.limit},
+        {
+          columns: firstFilePlan.parquet.outputColumns,
+          predicate:
+            effectivePredicate?.kind === 'filter' ? effectivePredicate.predicate : undefined,
+          limit: effectiveLimit
+        },
         PARQUET_TABLE_QUERY_CAPABILITIES
       );
       return Object.freeze({
