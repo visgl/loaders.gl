@@ -93,8 +93,9 @@ type ParquetColumnPageStatistics = {
 /**
  * Builds a conservative selective-page plan from Parquet column and offset indexes.
  *
- * Returns `undefined` when indexes or the current non-repeated-column decoder cannot safely avoid full
- * column-chunk reads. An empty `rowRanges` array means the indexes prove the predicate cannot match.
+ * Returns `undefined` when indexes or the selected decoder cannot safely avoid full column-chunk
+ * reads. Repeated leaves are selected conservatively at complete page boundaries. An empty
+ * `rowRanges` array means the indexes prove the predicate cannot match.
  */
 export async function createParquetPagePruningPlan(
   file: ReadableFile,
@@ -415,7 +416,7 @@ function getSelectedColumnChunks(
   });
 }
 
-/** Restricts selective page reads to independently materializable non-repeated leaf columns. */
+/** Restricts selective page reads to materializable primitive leaf columns. */
 function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
@@ -430,8 +431,7 @@ function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly Colum
       );
       const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
       return (
-        field.repetitionType !== 'REPEATED' &&
-        field.rLevelMax === 0 &&
+        field.primitiveType !== undefined &&
         (!dictionaryEncoded ||
           (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
       );

@@ -371,7 +371,7 @@ export class ParquetReader {
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
-  /** Reads and decodes only the contiguous data pages overlapping one non-repeated row range. */
+  /** Reads and decodes only the contiguous data pages overlapping one logical row range. */
   async readColumnChunkRange(
     schema: ParquetSchema,
     columnChunk: ColumnChunk,
@@ -384,9 +384,6 @@ export class ParquetReader {
     }
     const columnMetadata = columnChunk.meta_data!;
     const field = schema.findField(columnMetadata.path_in_schema);
-    if (field.repetitionType === 'REPEATED' || field.rLevelMax !== 0) {
-      throw new Error('Selective Parquet page reads currently require non-repeated columns');
-    }
     const type: PrimitiveType = getThriftEnum(Type, columnMetadata.type) as any;
     if (type !== field.primitiveType) {
       throw new Error(`chunk type not matching schema: ${type}`);
@@ -409,7 +406,11 @@ export class ParquetReader {
       dLevelMax: field.dLevelMax,
       compression,
       column: field,
-      numValues: new CompactInt64(lastPage.endRowIndex - firstPage.firstRowIndex),
+      numValues: new CompactInt64(
+        field.rLevelMax === 0
+          ? lastPage.endRowIndex - firstPage.firstRowIndex
+          : Number(columnMetadata.num_values)
+      ),
       dictionary: [],
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
@@ -431,6 +432,9 @@ export class ParquetReader {
       await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
     );
     const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
+    if (field.rLevelMax !== 0) {
+      return decoded;
+    }
     const relativeStart = rowRange.start - firstPage.firstRowIndex;
     const relativeEnd = relativeStart + rowRange.end - rowRange.start;
     return sliceNonRepeatedColumnChunk(decoded, field.dLevelMax, relativeStart, relativeEnd);
