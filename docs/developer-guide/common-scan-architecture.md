@@ -85,6 +85,29 @@ The logical query does not prescribe whether a backend materializes rows, return
 retains selection indices. It prescribes which rows and columns are visible to the caller and in
 which source order they are selected.
 
+### Catalog fragments
+
+Catalog-backed sources may additionally implement `ScanFragmentProvider`. Its
+`getScanFragments()` method returns immutable, format-neutral descriptors after cheap catalog
+pruning and before opening Parquet pages:
+
+```ts
+type ScanFragment = {
+  id: string;
+  uri?: string;
+  partitionValues?: Record<string, unknown>;
+  byteLength?: number | bigint;
+  rowCount?: number | bigint;
+  metadata?: Record<string, unknown>;
+};
+```
+
+`ParquetDatasetSource` exposes descriptor-selected files through this contract. `IcebergTableSource`
+uses the same shape for snapshot-selected data files and preserves snapshot, manifest, partition,
+schema, and column-bound metadata. The fragment layer is deliberately separate from Parquet row
+groups: catalog planning chooses files, while the Parquet executor continues to choose row groups,
+pages, and byte ranges.
+
 ## The portable logical query
 
 The foundational types live in `@loaders.gl/loader-utils`, below every storage, SQL, and Arrow

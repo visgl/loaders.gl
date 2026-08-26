@@ -290,6 +290,7 @@ export {
 } from './lib/scan-utils/table-query';
 export {explainTableQuery} from './lib/scan-utils/table-query-explain';
 export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
+export type {ScanFragment, ScanFragmentProvider} from './lib/scan-utils/scan-fragments';
 export type {
   CreateScanQueryMetadataOptions,
   ScanBounds,

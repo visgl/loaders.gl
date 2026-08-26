@@ -404,6 +404,16 @@ describe('ParquetDatasetSource', () => {
     await source.close();
     await expect(source.getSchema()).rejects.toThrow('ParquetDatasetSource is closed');
   });
+
+  test('requires stable IDs when discovering Blob-backed fragments', async () => {
+    const source = new ParquetDatasetSource([{data: westernFile}]);
+    await expect(source.getScanFragments()).rejects.toThrow('explicit stable id');
+
+    const identifiedSource = new ParquetDatasetSource([{data: westernFile, id: 'western'}]);
+    await expect(identifiedSource.getScanFragments()).resolves.toMatchObject([
+      {id: 'western'}
+    ]);
+  });
 });
 
 /** Encodes a small deterministic Parquet file for multi-file source tests. */

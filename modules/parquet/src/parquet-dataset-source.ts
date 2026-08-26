@@ -7,6 +7,8 @@ import {
   explainTableQuery,
   validateTableQueryLimit,
   type CoreAPI,
+  type ScanFragment,
+  type ScanFragmentProvider,
   type ScanTask
 } from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
@@ -77,7 +79,7 @@ type ParquetDatasetDiscoverySummary = {
  * The source accepts static descriptors or a lazy provider, allowing STAC and other catalogs to be
  * injected without coupling `@loaders.gl/parquet` to a catalog protocol.
  */
-export class ParquetDatasetSource {
+export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredicate> {
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
   readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Static descriptors or lazy catalog-backed file provider. */
@@ -138,6 +140,32 @@ export class ParquetDatasetSource {
       ...this.telemetry,
       parquet: Object.freeze({...this.telemetry.parquet})
     });
+  }
+
+  /** Discovers catalog-independent fragments after applying descriptor-level pruning. */
+  async getScanFragments(
+    options: ParquetDatasetReadOptions = {}
+  ): Promise<readonly ScanFragment[]> {
+    this.assertOpen();
+    const fragments: ScanFragment[] = [];
+    const selectedFiles = this.getSelectedFiles(options);
+    for await (const indexedFile of selectedFiles) {
+      const file = indexedFile.file;
+      if (typeof file.data !== 'string' && !file.id) {
+        throw new Error(
+          'Parquet dataset Blob fragments require an explicit stable id for fragment discovery'
+        );
+      }
+      fragments.push(
+        Object.freeze({
+          id: getDatasetFileId(file, indexedFile.index),
+          uri: typeof file.data === 'string' ? file.data : undefined,
+          partitionValues: file.partitions,
+          metadata: file.metadata
+        })
+      );
+    }
+    return Object.freeze(fragments);
   }
 
   /** Plans descriptor discovery and every retained file's Parquet physical scan. */
