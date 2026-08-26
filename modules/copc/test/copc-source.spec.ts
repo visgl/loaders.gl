@@ -464,6 +464,7 @@ vitestTest('COPCWriter writes range-readable hierarchy pages and GPS bounds', as
     return new Uint8Array(await blob.slice(begin, end).arrayBuffer());
   };
   const copc = await openCOPC(getter);
+  const rootHierarchy = await loadCOPCHierarchyPage(getter, copc.info.rootHierarchyPage);
   const hierarchy = await loadCompleteHierarchy(getter, copc.info.rootHierarchyPage);
 
   expect(hierarchy.pageCount).toBeGreaterThan(1);
@@ -476,6 +477,19 @@ vitestTest('COPCWriter writes range-readable hierarchy pages and GPS bounds', as
     copc.info.rootHierarchyPage.pageOffset,
     copc.info.rootHierarchyPage.pageOffset + copc.info.rootHierarchyPage.pageLength
   ]);
+
+  const boundarySource = COPCSourceLoader.createDataSource(blob, {});
+  await boundarySource.initialize();
+  const boundaryPageKey = Object.keys(rootHierarchy.pages)[0];
+  expect(boundaryPageKey).toBeTruthy();
+  const boundaryNodeIndex = boundaryPageKey.split('-').map(Number) as [
+    number,
+    number,
+    number,
+    number
+  ];
+  const boundaryNode = await boundarySource.getNode({nodeIndex: boundaryNodeIndex});
+  expect(boundaryNode?.pointCount).toBeGreaterThan(0);
 
   const source = COPCSourceLoader.createDataSource(blob, {});
   await source.initialize();
