@@ -2445,13 +2445,16 @@ function* appendDecodedLAZChunkToPointDataBatches(
   options: LASLoaderOptions
 ): Iterable<LASArrowTable> {
   const decoder = createLAZChunkDecoderCursor(compressedChunk, metadata);
+  // Waveform references and Extra Bytes are not independent LAZ layers in the
+  // Arrow decoder. Decode the complete record buffer once when either one is
+  // requested, then share it between both projections.
   const rawPointData =
-    state.waveforms || state.typedExtraBytes ? decodeLAZChunk(compressedChunk, metadata) : null;
+    state.waveforms || state.extraBytes || state.typedExtraBytes
+      ? decodeLAZChunk(compressedChunk, metadata)
+      : null;
   const waveformOffset = getWaveformOffset(header.pointsFormatId);
   const extraByteOffset = getLAZPointDataRecordBaseLength(header.pointsFormatId);
   const extraByteCount = header.pointsStructSize - extraByteOffset;
-  const rawChunkData =
-    state.extraBytes && !rawPointData ? decodeLAZChunk(compressedChunk, metadata) : rawPointData;
   let decodedChunkPointCount = 0;
 
   while (decoder.remainingPointCount > 0) {
@@ -2472,11 +2475,11 @@ function* appendDecodedLAZChunkToPointDataBatches(
         );
       }
     }
-    if (rawChunkData && state.extraBytes && extraByteCount > 0) {
+    if (rawPointData && state.extraBytes && extraByteCount > 0) {
       for (let pointIndex = 0; pointIndex < pointsDecoded; pointIndex++) {
         const sourceOffset = (decodedChunkPointCount + pointIndex) * header.pointsStructSize;
         state.extraBytes.set(
-          rawChunkData.subarray(
+          rawPointData.subarray(
             sourceOffset + extraByteOffset,
             sourceOffset + extraByteOffset + extraByteCount
           ),
@@ -2484,9 +2487,9 @@ function* appendDecodedLAZChunkToPointDataBatches(
         );
       }
     }
-    if (rawChunkData && state.typedExtraBytes) {
+    if (rawPointData && state.typedExtraBytes) {
       populateTypedExtraBytesFromRaw(
-        rawChunkData,
+        rawPointData,
         header.pointsStructSize,
         extraByteOffset,
         decodedChunkPointCount,

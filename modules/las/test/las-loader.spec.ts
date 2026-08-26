@@ -323,6 +323,53 @@ test('LASLoader#columns preserves waveform packet references for PDRF 9 and 10',
   }
 });
 
+test('LASLoader#columns shares LAZ decode for waveform and typed Extra Bytes', async () => {
+  for (const [lasUrl, lazUrl] of [
+    [PDRF_9_LAS_URL, PDRF_9_LAZ_URL],
+    [PDRF_10_LAS_URL, PDRF_10_LAZ_URL]
+  ]) {
+    const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+      fetchFile(lasUrl).then(response => response.arrayBuffer()),
+      fetchFile(lazUrl).then(response => response.arrayBuffer())
+    ]);
+    const options = {
+      las: {
+        shape: 'arrow-table' as const,
+        columns: ['POSITION', 'WAVEFORM', 'EXTRA_BYTES'] as const,
+        extraBytes: 'typed' as const
+      },
+      core: {worker: false}
+    };
+    const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    expect(getArrowColumnNames(compressed)).toEqual(getArrowColumnNames(uncompressed));
+    for (const columnName of getArrowColumnNames(uncompressed)) {
+      expect(getArrowColumnValues(compressed, columnName)).toEqual(
+        getArrowColumnValues(uncompressed, columnName)
+      );
+    }
+
+    const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+      batchSize: 127,
+      las: options.las,
+      core: {worker: false}
+    });
+    const streamedColumns = new Map<string, unknown[]>();
+    for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+      for (const columnName of getArrowColumnNames(batch)) {
+        const values = streamedColumns.get(columnName) || [];
+        values.push(...getArrowColumnValues(batch, columnName));
+        streamedColumns.set(columnName, values);
+      }
+    }
+    for (const columnName of getArrowColumnNames(uncompressed)) {
+      expect(streamedColumns.get(columnName)).toEqual(
+        getArrowColumnValues(uncompressed, columnName)
+      );
+    }
+  }
+});
+
 test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () => {
   const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
     fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
