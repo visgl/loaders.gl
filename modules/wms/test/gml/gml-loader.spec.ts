@@ -11,8 +11,10 @@ import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 
 import {_GMLLoader as GMLLoader} from '@loaders.gl/wms';
+import {GMLLoader as GMLParserLoader} from '@loaders.gl/wms/bundled';
 import type {GeoJSON} from '@loaders.gl/schema';
 import {parse} from '@loaders.gl/core';
+import {expect, test as vitestTest} from 'vitest';
 
 const VALID_TEST = {
   'v3/envelope.xml': true,
@@ -57,6 +59,30 @@ test('GMLLoader#parse', async t => {
   }
 
   t.end();
+});
+
+vitestTest('GMLLoader parses feature collections', () => {
+  const xml = `<?xml version="1.0"?><gml:FeatureCollection xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:place gml:id="place.1"><app:name>One</app:name><app:shape><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:shape></app:place></gml:featureMember><gml:featureMember><app:place gml:id="place.2"><app:name>Two</app:name><app:shape><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:shape></app:place></gml:featureMember></gml:FeatureCollection>`;
+  const collection = GMLParserLoader.parseTextSync!(xml) as any;
+  expect(collection.type).toBe('FeatureCollection');
+  expect(collection.features).toHaveLength(2);
+  expect(collection.features[0].id).toBe('place.1');
+  expect(collection.features[0].properties.name).toBe('One');
+  expect(collection.features[1].geometry.coordinates).toEqual([3, 4]);
+});
+
+vitestTest('GMLLoader parses feature members incrementally', async () => {
+  const chunks = [
+    new TextEncoder().encode(
+      '<gml:featureMember xmlns:gml="http://www.opengis.net/gml"><app:place xmlns:app="urn:app"><app:shape><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:shape></app:place></gml:featureMember>'
+    ),
+    new TextEncoder().encode(
+      '<gml:featureMember xmlns:gml="http://www.opengis.net/gml"><app:place xmlns:app="urn:app"><app:shape><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:shape></app:place></gml:featureMember>'
+    )
+  ];
+  const batches = [];
+  for await (const batch of GMLParserLoader.parseInBatches!(chunks)) batches.push(batch);
+  expect(batches.flatMap(batch => batch.features)).toHaveLength(2);
 });
 
 /*

@@ -81,6 +81,15 @@ export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
 export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 
+export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
+export {
+  normalizeWMSCapabilities,
+  normalizeWMTSCapabilities,
+  normalizeWFSCapabilities,
+  normalizeTileServiceCapabilities,
+  normalizeVectorServiceCapabilities
+} from './service-capabilities';
+
 // ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';

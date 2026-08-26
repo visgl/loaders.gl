@@ -27,6 +27,20 @@ import {deepStrictEqual} from './deep-strict-equal';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
 import rewind from '@turf/rewind';
 
+/** A GeoJSON feature decoded from a GML feature member. */
+export type GMLFeature = {
+  type: 'Feature';
+  id?: string;
+  geometry: Geometry | null;
+  properties: Record<string, unknown>;
+};
+
+/** A collection of features decoded from a GML feature collection. */
+export type GMLFeatureCollection = {
+  type: 'FeatureCollection';
+  features: GMLFeature[];
+};
+
 function noTransform(...coords) {
   return coords;
 }
@@ -47,14 +61,57 @@ export type ParseGMLContext = {
  * Parses a typed data structure from raw XML for GML features
  * @note Error handlings is fairly weak
  */
-export function parseGML(text: string, options) {
+export function parseGML(text: string, options): Geometry | GMLFeatureCollection | null {
   // GeoJSON | null {
   const parsedXML = parseXMLTextSync(text, options);
 
   options = {transformCoords: noTransform, stride: 2, ...options};
+  const featureCollection = parseGMLFeatureCollection(parsedXML, options);
+  if (featureCollection) {
+    return featureCollection;
+  }
   const context = createChildContext(parsedXML, options, {});
 
   return parseGMLToGeometry(parsedXML, options, context);
+}
+
+/** Parses a GML feature collection, returning null when the document is a bare geometry. */
+export function parseGMLFeatureCollection(
+  inputXML: any,
+  options: ParseGMLOptions = {}
+): GMLFeatureCollection | null {
+  const featureMembers = findFeatureMembers(inputXML);
+  if (featureMembers.length === 0) {
+    return null;
+  }
+  return {
+    type: 'FeatureCollection',
+    features: featureMembers.map(featureMember => parseGMLFeature(featureMember, options))
+  };
+}
+
+/** Parses one GML feature member into a GeoJSON feature. */
+export function parseGMLFeature(inputXML: any, options: ParseGMLOptions = {}): GMLFeature {
+  const feature = unwrapFeatureMember(inputXML);
+  const geometryElement = findGeometryElement(feature);
+  const geometry = geometryElement
+    ? parseGMLToGeometry(
+        {[geometryElement.key]: geometryElement.value},
+        options,
+        createChildContext(feature, options, {})
+      )
+    : null;
+  const properties: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(feature || {})) {
+    if (key === 'attributes' || key === geometryElement?.key || key.startsWith('gml:')) {
+      continue;
+    }
+    properties[stripNamespace(key)] = extractXMLValue(value);
+  }
+
+  const id = findFeatureId(feature);
+  return {type: 'Feature', id: id ? String(id) : undefined, geometry, properties};
 }
 
 /** Parse a GeoJSON geometry from GML XML */
@@ -517,6 +574,101 @@ export function parseMultiSurface(
 }
 
 // Helpers
+
+/** Finds feature members in either a GML feature collection or a parsed member fragment. */
+function findFeatureMembers(root: any): any[] {
+  if (!root || typeof root !== 'object') return [];
+  for (const [key, value] of Object.entries(root)) {
+    if (stripNamespace(key) === 'featureMember') {
+      return Array.isArray(value) ? value : [value];
+    }
+    if (stripNamespace(key) === 'featureMembers') {
+      const members: any[] = [];
+      for (const member of Array.isArray(value) ? value : [value]) {
+        for (const [featureKey, featureValue] of Object.entries(member || {})) {
+          if (featureKey !== 'attributes') {
+            for (const item of Array.isArray(featureValue) ? featureValue : [featureValue]) {
+              members.push({[featureKey]: item});
+            }
+          }
+        }
+      }
+      return members;
+    }
+    if (key !== 'attributes' && value && typeof value === 'object') {
+      const nested = findFeatureMembers(Array.isArray(value) ? value[0] : value);
+      if (nested.length) return nested;
+    }
+  }
+  return [];
+}
+
+/** Removes the wrapper around a parsed GML feature member. */
+function unwrapFeatureMember(member: any): any {
+  if (!member || typeof member !== 'object') return {};
+  const entries = Object.entries(member).filter(([key]) => key !== 'attributes');
+  return entries.length === 1 && !stripNamespace(entries[0][0]).startsWith('gml:')
+    ? entries[0][1]
+    : member;
+}
+
+/** Locates the first GML geometry child of a feature. */
+function findGeometryElement(feature: any): {key: string; value: any} | null {
+  if (!feature || typeof feature !== 'object') return null;
+  for (const [key, value] of Object.entries(feature)) {
+    if (key.startsWith('gml:') && GEOMETRY_NAMES.has(stripNamespace(key))) {
+      return {key, value: Array.isArray(value) ? value[0] : value};
+    }
+    if (key !== 'attributes' && value && typeof value === 'object') {
+      const nested = findGeometryElement(Array.isArray(value) ? value[0] : value);
+      if (nested) return nested;
+    }
+  }
+  return null;
+}
+
+const GEOMETRY_NAMES = new Set([
+  'Point',
+  'MultiPoint',
+  'LineString',
+  'Curve',
+  'MultiLineString',
+  'MultiCurve',
+  'Polygon',
+  'Rectangle',
+  'Surface',
+  'MultiPolygon',
+  'MultiSurface'
+]);
+
+function stripNamespace(key: string): string {
+  return key.includes(':') ? key.slice(key.indexOf(':') + 1) : key;
+}
+
+function extractXMLValue(value: any): unknown {
+  if (Array.isArray(value)) return value.map(extractXMLValue);
+  if (value && typeof value === 'object') {
+    if ('value' in value) return extractXMLValue(value.value);
+    if ('#text' in value) return value['#text'];
+  }
+  return value;
+}
+
+function findFeatureId(value: any): string | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const directId = value.id || value['gml:id'] || value.fid;
+  if (directId !== undefined && typeof directId !== 'object') return String(directId);
+  const attributes = value.attributes;
+  if (attributes) {
+    const id = attributes.id || attributes['gml:id'] || attributes.fid;
+    if (id !== undefined) return String(id);
+  }
+  for (const child of Object.values(value)) {
+    const id = findFeatureId(child);
+    if (id) return id;
+  }
+  return undefined;
+}
 
 function textOf(el: any): string {
   if (typeof el === 'number') {
