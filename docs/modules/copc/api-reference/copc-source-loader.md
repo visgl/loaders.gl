@@ -37,7 +37,7 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively as the selected node range is fetched. The TypeScript LAZ variant is required. `options.batchSize` controls the maximum points per table, `options.columns` can request `POSITION`, `COLOR_0`, `NIR`, `intensity`, `classification`, `GPS_TIME`, `scanAngle`, and `pointSourceId`, and `options.signal` cancels the request/decode.
 - `loadHierarchyInBatches(options)` yields hierarchy pages and their discovered nodes as they are fetched.
 
-For TypeScript PDRF 6-8 batches, `loadTileContentInBatches` splits the node range into sequential requests and emits rows as soon as the requested independent layers arrive. PDRF 7 RGB waits for Point14 and RGB; PDRF 8 RGB/NIR waits for the layers requested through `options.columns`. `options.rangeChunkSize` controls the request size.
+For TypeScript PDRF 6-8 batches, `loadTileContentInBatches` splits the node range into requests and emits rows as soon as the requested independent layers arrive. PDRF 7 RGB waits for Point14 and RGB; PDRF 8 RGB/NIR waits for the layers requested through `options.columns`. `options.rangeChunkSize` controls request size, while `options.rangeConcurrency` can fetch later ranges ahead of in-order decoding.
 
 ## Options
 
@@ -45,3 +45,4 @@ For TypeScript PDRF 6-8 batches, `loadTileContentInBatches` splits the node rang
 | --- | --- | --- | --- |
 | `copc.sourceCoordinateSystem` | `string` | Auto-detected from COPC WKT | Coordinate system definition used when the source metadata does not include WKT. |
 | `copc.rangeChunkSize` | `number` | `65536` | Default byte size for TypeScript COPC node range requests. |
+| `copc.rangeConcurrency` | `number` | `1` | Maximum number of node ranges fetched ahead of decoding. Results are still decoded and yielded in range order. |

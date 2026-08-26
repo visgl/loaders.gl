@@ -111,7 +111,8 @@ vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', 
 
   for await (const batch of source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
-    rangeChunkSize: 257
+    rangeChunkSize: 257,
+    rangeConcurrency: 3
   })) {
     const positions = batch.data.data.getChild('POSITION');
     const colors = batch.data.data.getChild('COLOR_0');
@@ -155,7 +156,8 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
   const batches = source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
     columns,
-    rangeChunkSize: 257
+    rangeChunkSize: 257,
+    rangeConcurrency: 2
   });
   let firstBatch;
   for await (const batch of batches) {
