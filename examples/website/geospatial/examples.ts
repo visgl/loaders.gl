@@ -122,7 +122,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   GeoParquet: {
     Airports: {
       format: 'geoparquet',
-      data: `${LOADERS_URL}/modules/parquet/test/data/geoparquet/airports.parquet`,
+      data: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/parquet/test/data/geoparquet/airports.parquet',
       viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76}
     },
     'Countries (zstd)': {
