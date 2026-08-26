@@ -95,11 +95,20 @@
   "pre-push": "pre-push",
   "resolutions_notes": [
     "Ensure we use recent typescript",
-    "apache-arrow version should be aligned with parquet-wasm version"
+    "apache-arrow version should be aligned with parquet-wasm version",
+    "Keep math.gl alpha packages aligned across loaders.gl and other vis.gl dependencies"
   ],
   "resolutions": {
     "apache-arrow": "^21.2.0",
     "typescript": "^6.0.3",
+    "@math.gl/core": "4.2.0-alpha.5",
+    "@math.gl/culling": "4.2.0-alpha.5",
+    "@math.gl/geoid": "4.2.0-alpha.5",
+    "@math.gl/geospatial": "4.2.0-alpha.5",
+    "@math.gl/polygon": "4.2.0-alpha.5",
+    "@math.gl/sun": "4.2.0-alpha.5",
+    "@math.gl/types": "4.2.0-alpha.5",
+    "@math.gl/web-mercator": "4.2.0-alpha.5",
     "@loaders.gl/3d-tiles": "^5.0.0-alpha.0",
     "@loaders.gl/compression": "^5.0.0-alpha.0",
     "@loaders.gl/core": "^5.0.0-alpha.0",

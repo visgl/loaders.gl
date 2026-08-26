@@ -94,7 +94,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
-    "@math.gl/types": "^4.1.0",
+    "@math.gl/types": "4.2.0-alpha.5",
     "ktx-parse": "^0.7.0",
     "zod": "^4.1.12"
   },
