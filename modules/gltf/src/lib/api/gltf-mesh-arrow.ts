@@ -375,6 +375,8 @@ function getMeshTypedArrayConstructor(componentType: number): MeshTypedArrayCons
       return Uint32Array;
     case 5126:
       return Float32Array;
+    case 5130:
+      return Float64Array;
     default:
       throw new Error(
         `glTF accessor component type ${componentType} is not supported by Mesh Arrow`
