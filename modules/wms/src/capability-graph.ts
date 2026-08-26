@@ -79,7 +79,7 @@ export async function discoverServiceGraph(
 function discoverJSONEndpoints(url: string, document: any): ServiceEndpoint[] {
   const endpoints: ServiceEndpoint[] = [];
   for (const service of document.services || []) {
-    const endpointURL = service.url || `${url.replace(/\/$/, '')}/${service.name}`;
+    const endpointURL = service.url || `${url.replace(/\/$/, '')}/${service.name}/${service.type}`;
     endpoints.push({
       url: endpointURL,
       type: detectServiceType(service.type, endpointURL),
@@ -100,18 +100,22 @@ function discoverJSONEndpoints(url: string, document: any): ServiceEndpoint[] {
 
 function discoverHTMLEndpoints(url: string, document: string): ServiceEndpoint[] {
   const endpoints: ServiceEndpoint[] = [];
-  const linkPattern = /<link[^>]+href=["']([^"']+)["'][^>]*>/gi;
+  const linkPattern = /<link\b[^>]*>/gi;
   for (const match of document.matchAll(linkPattern)) {
-    const endpointURL = new URL(match[1], url).toString();
+    const href = /\bhref=["']([^"']+)["']/i.exec(match[0])?.[1];
+    if (!href) continue;
+    const relation = /\brel=["']([^"']+)["']/i.exec(match[0])?.[1] || 'related';
+    const endpointURL = new URL(href, url).toString();
     endpoints.push({
       url: endpointURL,
       type: detectServiceType('', endpointURL),
-      relation: 'related'
+      relation
     });
   }
   return endpoints;
 }
 
+/** Infers a supported service family from a type hint and endpoint URL. */
 function detectServiceType(value: string, url: string): GeoServiceType {
   const text = `${value} ${url}`.toLowerCase();
   if (text.includes('imageserver')) return 'arcgis-image-server';
@@ -124,6 +128,7 @@ function detectServiceType(value: string, url: string): GeoServiceType {
   return 'unknown';
 }
 
+/** Computes a preference score for one service endpoint. */
 function scoreEndpoint(endpoint: ServiceEndpoint, preferences: ServiceEndpointPreferences): number {
   const capabilities = endpoint.capabilities;
   let score = endpoint.type === 'unknown' ? 0 : 1;
@@ -134,6 +139,7 @@ function scoreEndpoint(endpoint: ServiceEndpoint, preferences: ServiceEndpointPr
   return score;
 }
 
+/** Counts exact case-insensitive matches between preferred and advertised values. */
 function matches(
   preferred: readonly string[] | undefined,
   advertised: readonly string[] | undefined

@@ -27,6 +27,8 @@ export type ServiceRuntimeOptions = {
   retries?: number;
   /** Delay between retries in milliseconds. */
   retryDelay?: number;
+  /** Allows retries for non-idempotent methods when explicitly enabled. */
+  retryNonIdempotent?: boolean;
   /** Time-to-live for cached sources. */
   cacheTTL?: number;
   /** Receives request lifecycle events. */
@@ -119,7 +121,7 @@ export class ServiceRuntime {
       try {
         const response = await fetch(url, {
           ...requestInit,
-          headers: {...this.options.headers, ...requestInit.headers}
+          headers: mergeHeaders(this.options.headers, requestInit.headers)
         });
         if (!response.ok) throw new ServiceRequestError(url, attempt, response.status);
         this.options.onTelemetry?.({
@@ -130,11 +132,16 @@ export class ServiceRuntime {
         });
         return response;
       } catch (error) {
+        if (isAbortError(error) || requestInit.signal?.aborted) throw error;
         const normalizedError =
           error instanceof ServiceRequestError
             ? error
             : new ServiceRequestError(url, attempt, undefined, error);
-        if (attempt > this.options.retries || !isRetryableError(normalizedError)) {
+        if (
+          attempt > this.options.retries ||
+          !isRetryableError(normalizedError) ||
+          (!this.options.retryNonIdempotent && !isIdempotentMethod(requestInit.method))
+        ) {
           this.options.onTelemetry?.({
             phase: 'error',
             url,
@@ -168,6 +175,26 @@ export class ServiceRuntime {
   }
 }
 
+/** Combines HeadersInit values without losing Headers or tuple-array entries. */
+function mergeHeaders(defaultHeaders?: HeadersInit, requestHeaders?: HeadersInit): Headers {
+  const headers = new Headers(defaultHeaders);
+  new Headers(requestHeaders).forEach((value, key) => headers.set(key, value));
+  return headers;
+}
+
+/** Returns whether a request method is safe to retry by default. */
+function isIdempotentMethod(method = 'GET'): boolean {
+  return ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(method.toUpperCase());
+}
+
+/** Returns whether an exception indicates request cancellation. */
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === 'AbortError'
+    : (error as any)?.name === 'AbortError';
+}
+
+/** Determines whether a failed service request can be retried. */
 function isRetryableError(error: ServiceRequestError): boolean {
   return (
     error.status === undefined ||

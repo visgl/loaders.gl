@@ -41,6 +41,29 @@ describe('ServiceRuntime', () => {
       attempts: 1
     } satisfies Partial<ServiceRequestError>);
   });
+
+  test('merges HeadersInit values and does not retry POST requests', async () => {
+    let attempts = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url, init) => {
+        attempts++;
+        expect(new Headers(init.headers).get('authorization')).toBe('request-token');
+        return new Response('', {status: 503});
+      })
+    );
+    const runtime = new ServiceRuntime({
+      headers: new Headers([['authorization', 'default-token']]),
+      retryDelay: 0
+    });
+    await expect(
+      runtime.request('https://example.com/mutate', {
+        method: 'POST',
+        headers: [['authorization', 'request-token']]
+      })
+    ).rejects.toBeInstanceOf(ServiceRequestError);
+    expect(attempts).toBe(1);
+  });
 });
 
 test('CapabilityGraph ranks preferred endpoints', () => {
@@ -82,9 +105,7 @@ test('discoverServiceGraph follows ArcGIS directory and OGC links', async () => 
       async () =>
         new Response(
           JSON.stringify({
-            services: [
-              {name: 'Imagery', type: 'ImageServer', url: 'https://example.com/ImageServer'}
-            ],
+            services: [{name: 'Imagery', type: 'ImageServer'}],
             links: [{rel: 'service-desc', href: '/api?f=json', type: 'application/json'}]
           }),
           {status: 200, headers: {'content-type': 'application/json'}}
@@ -96,4 +117,20 @@ test('discoverServiceGraph follows ArcGIS directory and OGC links', async () => 
     'arcgis-image-server',
     'unknown'
   ]);
+  expect(graph.endpoints[0].url).toBe('https://example.com/rest/services/Imagery/ImageServer');
+});
+
+test('discoverServiceGraph preserves HTML link relationships', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () =>
+        new Response('<link rel="service-desc" href="/collections?f=json">', {
+          status: 200,
+          headers: {'content-type': 'text/html'}
+        })
+    )
+  );
+  const graph = await discoverServiceGraph('https://example.com/api');
+  expect(graph.endpoints[0].relation).toBe('service-desc');
 });
