@@ -43,6 +43,9 @@ export class ArcGISMapTileSource
   extends DataSource<string, ArcGISMapTileSourceLoaderOptions>
   implements TileSource
 {
+  /** MIME type rendered by the generic deck.gl tile adapter. */
+  readonly mimeType = 'image/png';
+
   private _metadata: any | null = null;
 
   /** Creates an ArcGIS MapServer tile source. */

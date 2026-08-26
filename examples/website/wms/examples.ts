@@ -10,6 +10,23 @@ export const INITIAL_CATEGORY_NAME = 'WMS';
 export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap WMS (Terrestris)';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  WMTS: {
+    'NASA GIBS satellite imagery': {
+      type: 'wmts',
+      url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi',
+      description: 'NASA Global Imagery Browse Services WMTS, configured from its GetCapabilities document.',
+      viewState: {longitude: -98, latitude: 39, zoom: 3},
+      sourceOptions: {
+        wmts: {
+          layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+          tileMatrixSet: 'GoogleMapsCompatible_Level9',
+          format: 'image/jpeg',
+          capabilitiesUrl:
+            'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0'
+        }
+      }
+    }
+  },
   WMS: {
     'OpenStreetMap WMS (Terrestris)': {
       // const imageUrl = 'https://ows.terrestris.de/osm/service?width={width}&height={height}&bbox={bounds[0]},{bounds[1]},{bounds[2]},{bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS';
@@ -87,6 +104,14 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
         opacity: 0.75
       }
     },
+  },
+  'ArcGIS MapServer': {
+    'World Imagery cached tiles': {
+      type: 'arcgis-map-server',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+      description: 'ArcGIS cached MapServer tiles with service metadata loaded automatically.',
+      viewState: {longitude: -98, latitude: 39, zoom: 3}
+    }
   },
   'ArcGIS Feature Server': {
     'Kentucky Bicycle Routes FeatureServer': {

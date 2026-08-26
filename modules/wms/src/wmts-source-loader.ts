@@ -43,6 +43,9 @@ export class WMTSImageTileSource
   extends DataSource<string, WMTSSourceLoaderOptions>
   implements TileSource
 {
+  /** MIME type rendered by the generic deck.gl tile adapter. */
+  readonly mimeType = 'image/png';
+
   private _capabilitiesPromise: Promise<WMTSCapabilities | null> | null = null;
   private _capabilities: WMTSCapabilities | null = null;
 

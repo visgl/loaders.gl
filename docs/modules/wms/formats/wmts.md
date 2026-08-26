@@ -1,4 +1,5 @@
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ClientExample} from '@site/src/components';
 
 # WMTS - Web Map Tiling Service
 
@@ -47,3 +48,12 @@ A WMTS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In
 ## Layers
 
 Unlike WMS, there is no specified way to request a server to combine and return a map tile with information coming from more than one layer in a single retrieval. WMTS clients that want to show a combination of layers must make independent requests for the layer tiles and then combine or overlay the responses. Also, bounding boxes and scales of these WMTS tiles are constrained to a discrete set of values.
+
+## Live example
+
+This example loads NASA GIBS capabilities, selects a WMTS layer, and renders the advertised image
+tiles through deck.gl.
+
+<div style={{height: '520px'}}>
+  <ClientExample kind="wms" format="WMTS" />
+</div>

@@ -75,6 +75,7 @@
       "modules/wms/formats/wmc",
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
+      "modules/wms/services/arcgis-map-server",
       "modules/wms/services/arcgis-image-server",
       "modules/wms/services/arcgis-feature-server"
     ]

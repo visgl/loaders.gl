@@ -76,12 +76,16 @@ const sidebars = {
     {
       type: 'category',
       label: 'OGC Services',
-      items: ['tiles/wms', 'tiles/wfs']
+      items: ['tiles/wms', 'tiles/wfs', 'tiles/wmts']
     },
     {
       type: 'category',
       label: 'ArcGIS Services',
-      items: ['tiles/arcgis-image-server', 'tiles/arcgis-feature-server']
+      items: [
+        'tiles/arcgis-map-server',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
+      ]
     },
     {
       type: 'category',

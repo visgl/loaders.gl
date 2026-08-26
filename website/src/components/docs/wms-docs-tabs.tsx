@@ -14,15 +14,18 @@ type WmsDocsTab = {
 export type WmsDocsTabId =
   | 'wms-example'
   | 'wfs-example'
+  | 'wmts-example'
   | 'arcgis-image-server-example'
   | 'arcgis-feature-server-example'
+  | 'arcgis-map-server-example'
   | 'wcs'
   | 'wfs'
   | 'wmc'
   | 'wms'
   | 'wmts'
   | 'arcgis-image-server'
-  | 'arcgis-feature-server';
+  | 'arcgis-feature-server'
+  | 'arcgis-map-server';
 
 const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
   wms: [
@@ -57,9 +60,24 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
       href: '/docs/modules/wms/services/arcgis-feature-server'
     }
   ],
+  arcgisMapServer: [
+    {
+      id: 'arcgis-map-server-example',
+      label: 'Try ArcGIS Map',
+      href: '/examples/tiles/arcgis-map-server'
+    },
+    {
+      id: 'arcgis-map-server',
+      label: 'ArcGIS MapServer',
+      href: '/docs/modules/wms/services/arcgis-map-server'
+    }
+  ],
   wcs: [{id: 'wcs', label: 'WCS', href: '/docs/modules/wms/formats/wcs'}],
   wmc: [{id: 'wmc', label: 'WMC', href: '/docs/modules/wms/formats/wmc'}],
-  wmts: [{id: 'wmts', label: 'WMTS', href: '/docs/modules/wms/formats/wmts'}]
+  wmts: [
+    {id: 'wmts-example', label: 'Try WMTS', href: '/examples/tiles/wmts'},
+    {id: 'wmts', label: 'WMTS', href: '/docs/modules/wms/formats/wmts'}
+  ]
 };
 
 function getWmsTabs(active: WmsDocsTabId): WmsDocsTab[] {
@@ -74,6 +92,12 @@ function getWmsTabs(active: WmsDocsTabId): WmsDocsTab[] {
   }
   if (active === 'arcgis-feature-server-example' || active === 'arcgis-feature-server') {
     return WMS_TAB_GROUPS.arcgisFeatureServer;
+  }
+  if (active === 'arcgis-map-server-example' || active === 'arcgis-map-server') {
+    return WMS_TAB_GROUPS.arcgisMapServer;
+  }
+  if (active === 'wmts-example' || active === 'wmts') {
+    return WMS_TAB_GROUPS.wmts;
   }
   return WMS_TAB_GROUPS[active];
 }
