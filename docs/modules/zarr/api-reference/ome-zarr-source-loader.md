@@ -7,6 +7,8 @@
 </p>
 
 `OMEZarrSourceLoader` creates a non-geospatial source for OME-Zarr v2 and v3 image pyramids.
+It uses [zarrita.js](https://zarrita.dev/) for Zarr store access and chunk decoding; loaders.gl
+adds the source lifecycle, metadata normalization, cancellation, and raster result contract.
 
 ## Usage
 
