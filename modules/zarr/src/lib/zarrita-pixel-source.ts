@@ -4,8 +4,16 @@
 
 import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
-import type {RasterSelection, PixelData, PixelSourceSelection, TileSelection, Labels} from '../types';
+import type {
+  RasterSelection,
+  PixelData,
+  PixelSourceSelection,
+  TileSelection,
+  Labels,
+  SupportedTypedArray
+} from '../types';
 import {getIndexer} from './utils';
+import {getCachedZarrSelection, getZarrSelectionKey} from './zarr-data-cache';
 
 type ZarritaIndexer<S extends string[]> = (sel: {[K in S[number]]: number} | number[]) => number[];
 
@@ -68,7 +76,9 @@ export default class ZarritaPixelSource<S extends string[]> {
   /** Reads a complete 2D plane from the backing array. */
   async getRaster({selection, signal}: RasterSelection<S> | {selection: number[]; signal?: AbortSignal}) {
     const sel = this.chunkIndex(selection, null, null) as Array<number | null>;
-    const chunk = await zarrita.get(this.data, sel, {signal});
+    const chunk = await getCachedZarrSelection(this.data, getZarrSelectionKey(sel), () =>
+      zarrita.get(this.data, sel, {signal}) as Promise<{data: SupportedTypedArray; shape: number[]}>
+    );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr raster selection.');
     }
@@ -97,7 +107,9 @@ export default class ZarritaPixelSource<S extends string[]> {
       zarrita.slice(xStart, xStop),
       zarrita.slice(yStart, yStop)
     ) as Array<number | zarrita.Slice>;
-    const chunk = await zarrita.get(this.data, sel, {signal});
+    const chunk = await getCachedZarrSelection(this.data, getZarrSelectionKey(sel), () =>
+      zarrita.get(this.data, sel, {signal}) as Promise<{data: SupportedTypedArray; shape: number[]}>
+    );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr tile selection.');
     }
