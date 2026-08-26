@@ -59,7 +59,7 @@ export type RasterSetProps<
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = Partial<RasterSetBaseProps<DataT, ParametersT, MetadataT>> & {
   /** Optional loaders.gl raster source backing this manager. */
-  rasterSource?: RasterSource<DataT, GetRasterParameters, MetadataT> | null;
+  rasterSource?: RasterSource<DataT, ParametersT & GetRasterParameters, MetadataT> | null;
 };
 
 /** Subscription callbacks emitted by {@link RasterSet}. */
@@ -180,7 +180,7 @@ export class RasterSet<
   }
 
   /** Backing raster source when constructed from one. */
-  get rasterSource(): RasterSource<DataT, GetRasterParameters, MetadataT> | null {
+  get rasterSource(): RasterSource<DataT, ParametersT & GetRasterParameters, MetadataT> | null {
     return this._opts.rasterSource;
   }
 
@@ -291,7 +291,7 @@ export class RasterSet<
       const abortController = new AbortController();
       this._abortController = abortController;
       const raster = await this._opts.getRaster(
-        Object.assign({}, parameters, {signal: abortController.signal}) as ParametersT
+        withAbortSignal(parameters, abortController.signal)
       );
       if (
         this._finalized ||
@@ -345,7 +345,7 @@ export class RasterSet<
         opts.getRaster ||
         ((parameters: ParametersT) => {
           if (rasterSource) {
-            return rasterSource.getRaster(parameters as GetRasterParameters);
+            return rasterSource.getRaster(parameters as ParametersT & GetRasterParameters);
           }
           return DEFAULT_RASTERSET_PROPS.getRaster(
             parameters as GetRasterParameters
@@ -408,6 +408,26 @@ export class RasterSet<
     this._abortController?.abort();
     this._abortController = null;
   }
+}
+
+/** Adds cancellation to a request while preserving its array/prototype shape. */
+function withAbortSignal<ParametersT extends object>(
+  parameters: ParametersT,
+  signal: AbortSignal
+): ParametersT {
+  const request = Array.isArray(parameters)
+    ? parameters.slice()
+    : Object.create(
+        Object.getPrototypeOf(parameters),
+        Object.getOwnPropertyDescriptors(parameters)
+      );
+  Object.defineProperty(request, 'signal', {
+    configurable: true,
+    enumerable: true,
+    value: signal,
+    writable: true
+  });
+  return request as ParametersT;
 }
 
 /** Normalizes arbitrary thrown values to `Error` instances for raster-set callbacks. */
