@@ -8,9 +8,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import type {Table} from '@loaders.gl/schema';
-import {getTableLength, getTableNumCols, isTable} from '@loaders.gl/schema-utils';
+import {
+  getTableCell,
+  getTableCellAt,
+  getTableColumnIndex,
+  getTableColumnName,
+  getTableLength,
+  getTableNumCols,
+  getTableRowAsArray,
+  getTableRowAsObject,
+  getTableRowShape,
+  isTable,
+  makeRowIterator
+} from '@loaders.gl/schema-utils';
 
 type TestCase = {
   name: string;
@@ -57,13 +69,56 @@ const TEST_CASES: TestCase[] = [
   }
 ];
 
-test('table accessors', async t => {
+test('table accessors', () => {
   for (const tc of TEST_CASES) {
-    t.equal(isTable(tc.table), tc.isTable, `isTable() correct: ${tc.name}`);
+    expect(isTable(tc.table), `isTable() correct: ${tc.name}`).toBe(tc.isTable);
     if (isTable(tc.table)) {
-      t.equal(getTableLength(tc.table), tc.numRows, `getTableLength() correct: ${tc.name}`);
-      t.equal(getTableNumCols(tc.table), tc.numCols, `isTable() correct: ${tc.name}`);
+      expect(getTableLength(tc.table), `getTableLength() correct: ${tc.name}`).toBe(tc.numRows);
+      expect(getTableNumCols(tc.table), `getTableNumCols() correct: ${tc.name}`).toBe(tc.numCols);
     }
   }
-  t.end();
+});
+
+test('accesses and converts rows across table shapes', () => {
+  const schema = {fields: [{name: 'a'}, {name: 'b'}]};
+  const arrayTable = {
+    shape: 'array-row-table',
+    schema,
+    data: [
+      [1, 2],
+      [3, 4]
+    ]
+  } as Table;
+  const objectTable = {shape: 'object-row-table', schema, data: [{a: 1, b: 2}]} as Table;
+  const columnarTable = {shape: 'columnar-table', data: {a: [1], b: [2]}} as Table;
+  const geojsonTable = {
+    shape: 'geojson-table',
+    schema,
+    features: [{a: 1, b: 2}]
+  } as Table;
+
+  expect(getTableCell(arrayTable, 1, 'b')).toBe(4);
+  expect(getTableCellAt(objectTable, 0, 1)).toBe(2);
+  expect(getTableRowAsObject(arrayTable, 0)).toEqual({a: 1, b: 2});
+  expect(getTableRowAsArray(objectTable, 0)).toEqual([1, 2]);
+  expect(getTableRowAsObject(columnarTable, 0)).toEqual({a: 1, b: 2});
+  expect(getTableRowAsArray(geojsonTable, 0)).toEqual([1, 2]);
+  expect(getTableRowShape(arrayTable)).toBe('array-row-table');
+  expect(getTableColumnIndex(arrayTable, 'b')).toBe(1);
+  expect(getTableColumnName(arrayTable, 0)).toBe('a');
+  expect([...makeRowIterator(arrayTable, 'array-row-table')]).toEqual([
+    [1, 2],
+    [3, 4]
+  ]);
+});
+
+test('reports invalid table shapes and missing columns', () => {
+  const emptyTable = {shape: 'array-row-table', data: []} as Table;
+
+  expect(() => getTableNumCols(emptyTable)).toThrow('empty table');
+  expect(() => getTableColumnIndex(emptyTable, 'missing')).toThrow('missing');
+  expect(() => getTableColumnName(emptyTable, 0)).toThrow('0');
+  expect(() => getTableRowShape({shape: 'columnar-table', data: {}} as Table)).toThrow(
+    'Not a row table'
+  );
 });
