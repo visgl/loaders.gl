@@ -36,6 +36,8 @@ type ParquetJSWriterEncoderOptions = {
   bloomFilter?: boolean | Record<string, boolean>;
   /** Emits Parquet column and offset indexes for selected non-repeated columns. */
   pageIndex?: boolean | Record<string, boolean>;
+  /** Emits CRC-32 checksums for every data and dictionary page. */
+  writePageChecksums?: boolean;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;
