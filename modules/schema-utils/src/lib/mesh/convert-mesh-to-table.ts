@@ -28,7 +28,14 @@ export type MeshArrowTableOptions = {
   /** Schema describing the mesh attributes and metadata. */
   schema?: Schema;
   /** Mesh primitive topology represented by the table rows. */
-  topology?: 'point-list' | 'triangle-list' | 'triangle-strip';
+  topology?:
+    | 'point-list'
+    | 'line-list'
+    | 'line-loop'
+    | 'line-strip'
+    | 'triangle-list'
+    | 'triangle-strip'
+    | 'triangle-fan';
   /** Numeric draw mode associated with the mesh topology. */
   mode?: number;
   /** Optional mesh bounding box metadata. */
