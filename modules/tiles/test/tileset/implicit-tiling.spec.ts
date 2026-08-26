@@ -179,6 +179,57 @@ test('implicit quadtree boxes subdivide horizontal half axes and retain height',
   t.end();
 });
 
+test('implicit region subdivision preserves antimeridian-crossing longitude intervals', t => {
+  const descriptor = createDescriptor({
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    rootBoundingVolume: {region: [3, -0.5, -3, 0.5, 0, 20]}
+  });
+  const child = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 0},
+      childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000001])}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  ).root.children[0];
+
+  t.deepEqual(child.boundingVolume.region, [3, -0.5, 0, 0, 0, 20]);
+  t.end();
+});
+
+test('implicit octree materializes all eight child coordinates from one availability byte', t => {
+  const descriptor = createDescriptor({
+    subdivisionScheme: 'OCTREE',
+    subtreeLevels: 1,
+    maximumLevel: 1
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 0},
+      childSubtreeAvailability: {explicitBitstream: new Uint8Array([0xff])}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 4, y: 2, z: 1})
+  );
+
+  t.equal(result.root.children.length, 8);
+  t.deepEqual(
+    result.root.children.map(child => child.implicitSubtree?.coordinates),
+    [
+      {level: 1, x: 8, y: 4, z: 2},
+      {level: 1, x: 9, y: 4, z: 2},
+      {level: 1, x: 8, y: 5, z: 2},
+      {level: 1, x: 9, y: 5, z: 2},
+      {level: 1, x: 8, y: 4, z: 3},
+      {level: 1, x: 9, y: 4, z: 3},
+      {level: 1, x: 8, y: 5, z: 3},
+      {level: 1, x: 9, y: 5, z: 3}
+    ]
+  );
+  t.end();
+});
+
 test('implicit URL templates replace coordinates case-insensitively', t => {
   t.equal(
     replaceImplicitUrlTemplate('/{LEVEL}/{X}/{y}/{z}', {level: 3, x: 4, y: 5, z: 6}),
