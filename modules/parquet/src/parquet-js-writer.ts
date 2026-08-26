@@ -9,6 +9,9 @@ import {convertTable, deduceTableSchema} from '@loaders.gl/schema-utils';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
 import {ParquetFormat} from './parquet-format';
+import type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
+
+export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -40,6 +43,10 @@ type ParquetJSWriterEncoderOptions = {
   writePageChecksums?: boolean;
   /** Emits optional SizeStatistics metadata for every column chunk. */
   writeSizeStatistics?: boolean;
+  /** Emits min/max/null-count statistics for every column chunk. */
+  writeStatistics?: boolean | Record<string, boolean>;
+  /** Declares row-group sort keys using top-level or dotted nested leaf names. */
+  sortingColumns?: readonly ParquetSortingColumnOption[];
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;
