@@ -17,7 +17,25 @@ import {DataSource} from '@loaders.gl/loader-utils';
 
 /** Options for an ArcGIS cached MapServer tile source. */
 export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions & {
-  'arcgis-map-server'?: {/** Optional custom tile URL template. */ urlTemplate?: string};
+  'arcgis-map-server'?: {
+    /** Optional custom tile URL template. */
+    urlTemplate?: string;
+    /** Additional query parameters sent to the metadata endpoint. */
+    parameters?: Record<string, string>;
+    /** Metadata document supplied by the application. */
+    metadata?: ArcGISMapServerMetadata;
+  };
+};
+
+/** Relevant normalized fields from an ArcGIS MapServer metadata document. */
+export type ArcGISMapServerMetadata = {
+  name?: string;
+  description?: string;
+  serviceDescription?: string;
+  copyrightText?: string;
+  fullExtent?: {xmin: number; ymin: number; xmax: number; ymax: number; spatialReference?: unknown};
+  spatialReference?: unknown;
+  tileInfo?: {lods?: {level: number}[]; rows?: number; cols?: number; format?: string};
 };
 
 /** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */
@@ -37,20 +55,27 @@ export class ArcGISMapTileSource
   async getMetadata(): Promise<TileSourceMetadata> {
     this._metadata ||= await this._loadMetadata();
     const extent = this._metadata.fullExtent;
+    const spatialReference = this._metadata.spatialReference || extent?.spatialReference;
     return {
       name: this._metadata.name || '',
       title: this._metadata.name || '',
       abstract: this._metadata.description || this._metadata.serviceDescription || '',
+      attributions: this._metadata.copyrightText ? [this._metadata.copyrightText] : undefined,
       minZoom: 0,
       maxZoom: this._metadata.tileInfo?.lods?.length
-        ? this._metadata.tileInfo.lods.length - 1
+        ? Math.max(...this._metadata.tileInfo.lods.map(lod => lod.level))
         : undefined,
       boundingBox: extent
         ? [
             [extent.xmin, extent.ymin],
             [extent.xmax, extent.ymax]
           ]
-        : undefined
+        : undefined,
+      layer: {
+        name: this._metadata.name || '',
+        srs: spatialReference?.wkid ? [`EPSG:${spatialReference.wkid}`] : [],
+        layers: []
+      }
     };
   }
 
@@ -78,21 +103,29 @@ export class ArcGISMapTileSource
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['arcgis-map-server']?.urlTemplate;
     if (template) {
-      return new URL(
+      const templateURL = new URL(
         template
           .replaceAll('{z}', String(parameters.z))
           .replaceAll('{y}', String(parameters.y))
           .replaceAll('{x}', String(parameters.x))
-      ).toString();
+      );
+      return templateURL.toString();
     }
     const url = new URL(this.url);
     url.pathname = `${url.pathname.replace(/\/$/, '')}/tile/${parameters.z}/${parameters.y}/${parameters.x}`;
     return url.toString();
   }
 
-  private async _loadMetadata(): Promise<any> {
+  private async _loadMetadata(): Promise<ArcGISMapServerMetadata> {
+    const configuredMetadata = this.options['arcgis-map-server']?.metadata;
+    if (configuredMetadata) return configuredMetadata;
     const url = new URL(this.url);
     url.searchParams.set('f', 'pjson');
+    for (const [key, value] of Object.entries(
+      this.options['arcgis-map-server']?.parameters || {}
+    )) {
+      url.searchParams.set(key, value);
+    }
     const response = await this.fetch(url.toString());
     if (!response.ok) {
       throw new Error(

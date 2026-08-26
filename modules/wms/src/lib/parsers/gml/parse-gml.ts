@@ -516,23 +516,6 @@ export function parseMultiSurface(
   return polygons;
 }
 
-function parseSurfaceMember(
-  xml: any,
-  options: ParseGMLOptions,
-  context: ParseGMLContext
-): Position[][][] {
-  const [childName, childXml] = getFirstKeyValue(xml);
-  switch (childName) {
-    case 'gml:CompositeSurface':
-      return parseCompositeSurface(childXml, options, context);
-    case 'gml:Surface':
-      return parseSurface(childXml, options, context);
-    case 'gml:Polygon':
-      return [parsePolygonOrRectangle(childXml, options, context)];
-  }
-  throw new Error(`${childName} must have polygons`);
-}
-
 // Helpers
 
 function textOf(el: any): string {

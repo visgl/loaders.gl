@@ -14,6 +14,8 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import type {WMTSCapabilities, WMTSLayer} from './lib/parsers/wmts/parse-wmts-capabilities';
+import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions & {
@@ -30,6 +32,9 @@ export type WMTSSourceLoaderOptions = DataSourceOptions & {
     urlTemplate?: string;
     /** Additional KVP parameters. */
     parameters?: Record<string, string>;
+    /** Capabilities document or URL used to derive layer and tile matrix options. */
+    capabilities?: WMTSCapabilities;
+    capabilitiesUrl?: string;
   };
 };
 
@@ -38,6 +43,9 @@ export class WMTSImageTileSource
   extends DataSource<string, WMTSSourceLoaderOptions>
   implements TileSource
 {
+  private _capabilitiesPromise: Promise<WMTSCapabilities | null> | null = null;
+  private _capabilities: WMTSCapabilities | null = null;
+
   /** Creates a WMTS source. */
   constructor(url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url, options, WMTSSourceLoader.defaultOptions, coreApi);
@@ -46,16 +54,27 @@ export class WMTSImageTileSource
 
   /** Returns metadata available from source options. */
   async getMetadata(): Promise<TileSourceMetadata> {
+    const capabilities = await this._loadCapabilities();
+    const layer = this._getLayer(capabilities);
     const wmts = this.options.wmts || {};
     return {
-      format: wmts.format || 'image/png',
-      name: wmts.layer || '',
-      layer: {name: wmts.layer || '', layers: []}
+      format: wmts.format || layer?.formats[0] || 'image/png',
+      name: wmts.layer || layer?.identifier || '',
+      title: layer?.title,
+      abstract: layer?.abstract || capabilities?.serviceIdentification?.abstract,
+      boundingBox: layer?.bounds
+        ? [
+            [layer.bounds[0], layer.bounds[1]],
+            [layer.bounds[2], layer.bounds[3]]
+          ]
+        : undefined,
+      layer: {name: wmts.layer || layer?.identifier || '', layers: []}
     };
   }
 
   /** Fetches and decodes one WMTS image tile. */
   async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+    await this._loadCapabilities();
     const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(`WMTS tile request failed: ${response.status} ${response.statusText}`);
@@ -75,20 +94,26 @@ export class WMTSImageTileSource
   /** Builds a REST-template or KVP WMTS GetTile URL. */
   getTileURL(parameters: GetTileParameters): string {
     const wmts = this.options.wmts || {};
-    if (wmts.urlTemplate) {
-      return wmts.urlTemplate
+    const layer = this._getLayer(this._capabilities);
+    const resourceURL = layer?.resourceURLs.find(resource =>
+      resource.format ? resource.format === (parameters.format || wmts.format) : true
+    );
+    const urlTemplate = wmts.urlTemplate || resourceURL?.template;
+    if (urlTemplate) {
+      return urlTemplate
         .replaceAll('{TileMatrix}', String(parameters.z))
         .replaceAll('{TileRow}', String(parameters.y))
-        .replaceAll('{TileCol}', String(parameters.x));
+        .replaceAll('{TileCol}', String(parameters.x))
+        .replaceAll('{TileMatrixSet}', wmts.tileMatrixSet || '');
     }
     const url = new URL(this.url);
     const searchParameters = new URLSearchParams({
       SERVICE: 'WMTS',
       REQUEST: 'GetTile',
       VERSION: '1.0.0',
-      LAYER: parameters.layers ? String(parameters.layers) : wmts.layer || '',
+      LAYER: parameters.layers ? String(parameters.layers) : wmts.layer || layer?.identifier || '',
       STYLE: wmts.style || 'default',
-      TILEMATRIXSET: wmts.tileMatrixSet || '',
+      TILEMATRIXSET: wmts.tileMatrixSet || layer?.tileMatrixSetLinks[0]?.tileMatrixSet || '',
       TILEMATRIX: String(parameters.z),
       TILEROW: String(parameters.y),
       TILECOL: String(parameters.x),
@@ -99,6 +124,30 @@ export class WMTSImageTileSource
       url.searchParams.set(key, value);
     }
     return url.toString();
+  }
+
+  private async _loadCapabilities(): Promise<WMTSCapabilities | null> {
+    if (this._capabilitiesPromise) return this._capabilitiesPromise;
+    const configuredCapabilities = this.options.wmts?.capabilities;
+    const capabilitiesUrl = this.options.wmts?.capabilitiesUrl;
+    this._capabilitiesPromise = configuredCapabilities
+      ? Promise.resolve(configuredCapabilities)
+      : capabilitiesUrl
+        ? this.fetch(capabilitiesUrl).then(async response => {
+            if (!response.ok)
+              throw new Error(`WMTS capabilities request failed: ${response.status}`);
+            return parseWMTSCapabilities(await response.text());
+          })
+        : Promise.resolve(null);
+    this._capabilities = await this._capabilitiesPromise;
+    return this._capabilities;
+  }
+
+  private _getLayer(capabilities: WMTSCapabilities | null): WMTSLayer | undefined {
+    const layerName = this.options.wmts?.layer;
+    return capabilities?.contents.layers.find(
+      layer => !layerName || layer.identifier === layerName
+    );
   }
 }
 
