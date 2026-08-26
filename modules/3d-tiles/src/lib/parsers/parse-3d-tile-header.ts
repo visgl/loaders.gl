@@ -72,15 +72,18 @@ function normalizeTileContents(
     return {
       ...contentEntry,
       boundingVolume: normalizeS2BoundingVolume(contentEntry.boundingVolume),
-      uri: contentUri ? resourceResolver.resolve(contentUri) : contentEntry.uri,
-      url: undefined
+      uri: contentEntry.uri,
+      url: contentEntry.url
     };
   });
 
   return {
     content: Array.isArray(content) ? normalizedContents : normalizedContents[0],
     contentUrls: normalizedContents
-      .map(contentEntry => contentEntry.uri)
+      .map(contentEntry => {
+        const contentUri = contentEntry.uri || contentEntry.url;
+        return contentUri ? resourceResolver.resolve(contentUri) : undefined;
+      })
       .filter((contentUrl): contentUrl is string => Boolean(contentUrl))
   };
 }

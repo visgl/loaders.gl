@@ -275,9 +275,7 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads binary content or nested tileset JSON for a runtime tile.
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
-    const contentUrls = (tile.contentUrls.length ? tile.contentUrls : [tile.contentUrl]).filter(
-      Boolean
-    );
+    const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
     const tilesetLoaderOptions =
       (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
