@@ -180,6 +180,62 @@ test('LAZChunkEncoder#writes legacy waveform LASzip item descriptors', t => {
   t.end();
 });
 
+test('LAZChunkEncoder#roundtrips modern waveform items', t => {
+  for (const pointDataRecordFormat of [9, 10] as const) {
+    const pointDataRecordLength = pointDataRecordFormat === 9 ? 59 : 67;
+    const rawPointData = new Uint8Array(pointDataRecordLength * 2);
+    const dataView = new DataView(rawPointData.buffer);
+    for (let pointIndex = 0; pointIndex < 2; pointIndex++) {
+      const recordOffset = pointIndex * pointDataRecordLength;
+      dataView.setInt32(recordOffset, 100 + pointIndex, true);
+      dataView.setInt32(recordOffset + 4, 200 + pointIndex, true);
+      dataView.setInt32(recordOffset + 8, 300 + pointIndex, true);
+      dataView.setUint16(recordOffset + 12, 10 + pointIndex, true);
+      dataView.setUint8(recordOffset + 14, 0x11);
+      dataView.setUint8(recordOffset + 15, 0);
+      dataView.setUint8(recordOffset + 16, 2);
+      dataView.setUint8(recordOffset + 17, 3);
+      dataView.setInt16(recordOffset + 18, -4 + pointIndex, true);
+      dataView.setUint16(recordOffset + 20, 7, true);
+      dataView.setFloat64(recordOffset + 22, 123.5 + pointIndex * 0.001, true);
+      if (pointDataRecordFormat === 10) {
+        dataView.setUint16(recordOffset + 30, 1000 + pointIndex, true);
+        dataView.setUint16(recordOffset + 32, 2000 + pointIndex, true);
+        dataView.setUint16(recordOffset + 34, 3000 + pointIndex, true);
+        dataView.setUint16(recordOffset + 36, 4000 + pointIndex, true);
+      }
+      const waveformOffset = pointDataRecordFormat === 9 ? 30 : 38;
+      dataView.setUint8(recordOffset + waveformOffset, 1);
+      dataView.setBigUint64(
+        recordOffset + waveformOffset + 1,
+        BigInt(5000 + pointIndex * 20),
+        true
+      );
+      dataView.setUint32(recordOffset + waveformOffset + 9, 16 + pointIndex, true);
+      dataView.setInt32(recordOffset + waveformOffset + 13, 0x3f000000 + pointIndex, true);
+      dataView.setInt32(recordOffset + waveformOffset + 17, 0x3f800000 + pointIndex, true);
+      dataView.setInt32(recordOffset + waveformOffset + 21, 0x40000000 + pointIndex, true);
+      dataView.setInt32(recordOffset + waveformOffset + 25, 0x40400000 + pointIndex, true);
+    }
+    const metadata = {
+      pointCount: 2,
+      pointDataRecordFormat,
+      pointDataRecordLength,
+      point14ItemVersion: 3 as const,
+      wavePacketItemVersion: 3 as const,
+      rgb14ItemVersion: 3 as const,
+      byte14ItemVersion: 3 as const
+    };
+    const compressed = encodeLAZChunk(rawPointData, metadata);
+    t.deepEqual(
+      decodeLAZChunk(compressed, metadata),
+      rawPointData,
+      `PDRF ${pointDataRecordFormat} waveform item roundtrips`
+    );
+  }
+  t.end();
+});
+
 test('LAZChunkEncoder#encodes LASzip v2 PDRF 0 chunks', t => {
   const pointCount = 32;
   const pointDataRecordLength = 22;

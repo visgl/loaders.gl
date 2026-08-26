@@ -1564,11 +1564,11 @@ test('TypeScriptLAZ#encoder validates input and item versions', t => {
     () =>
       encodeLAZChunk(new Uint8Array(20), {
         pointCount: 1,
-        pointDataRecordFormat: 4,
-        pointDataRecordLength: 57
+        pointDataRecordFormat: 11,
+        pointDataRecordLength: 20
       }),
-    /does not support point format 4/,
-    'waveform legacy point formats remain unsupported'
+    /does not support point format 11/,
+    'unsupported point formats fail clearly'
   );
   t.throws(
     () => encodeLAZChunk(rawPointData.subarray(1), metadata),

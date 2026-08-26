@@ -21,7 +21,9 @@ const POINT_FORMAT_BASE_LENGTHS: Record<number, number> = {
   5: 63,
   6: 30,
   7: 36,
-  8: 38
+  8: 38,
+  9: 59,
+  10: 67
 };
 const LASZIP_VLR_HEADER_LENGTH = 54;
 const LASZIP_VLR_PAYLOAD_BASE_LENGTH = 34;
@@ -153,13 +155,23 @@ export function encodeLAZChunk(
   const firstRecord = rawBytes.subarray(0, pointRecordLength);
   const firstPoint = readPoint14(firstRecord, 0);
   const pointEncoder = new Point14LayerEncoder(firstPoint);
-  const firstRgb = pointFormat >= 7 ? readRgb(firstRecord, 30) : null;
+  const firstRgb =
+    pointFormat === 7 || pointFormat === 8 || pointFormat === 10 ? readRgb(firstRecord, 30) : null;
   const rgbEncoder = firstRgb
     ? new RGB14LayerEncoder(firstRgb, getScannerChannel(firstPoint))
     : null;
   const nirEncoder =
-    pointFormat === 8
+    pointFormat === 8 || pointFormat === 10
       ? new NIR14LayerEncoder(readUint16(firstRecord, 36), getScannerChannel(firstPoint))
+      : null;
+  const wavePacketOffset = pointFormat === 9 ? 30 : pointFormat === 10 ? 38 : -1;
+  const wavePacketEncoder =
+    wavePacketOffset >= 0
+      ? new WavePacket14LayerEncoder(
+          readWavePacket(firstRecord, wavePacketOffset),
+          getScannerChannel(firstPoint),
+          metadata.wavePacketItemVersion ?? 3
+        )
       : null;
   const extraBytesEncoder = extraByteCount
     ? new Byte14LayerEncoder(
@@ -173,18 +185,21 @@ export function encodeLAZChunk(
     const record = rawBytes.subarray(recordOffset, recordOffset + pointRecordLength);
     const itemContext = pointEncoder.encode(readPoint14(record, 0));
     rgbEncoder?.encode(readRgb(record, 30), itemContext);
-    nirEncoder?.encode(readUint16(record, 36), itemContext);
+    nirEncoder?.encode(readUint16(record, pointFormat === 10 ? 36 : 36), itemContext);
+    wavePacketEncoder?.encode(readWavePacket(record, wavePacketOffset), itemContext);
     extraBytesEncoder?.encode(record.subarray(baseRecordLength, pointRecordLength), itemContext);
   }
 
   const pointLayers = pointEncoder.finish();
   const rgbLayer = rgbEncoder?.finish();
   const nirLayer = nirEncoder?.finish();
+  const wavePacketLayer = wavePacketEncoder?.finish();
   const extraByteLayers = extraBytesEncoder?.finish() || [];
   const layers = [
     ...pointLayers,
     ...(rgbLayer ? [rgbLayer] : []),
     ...(nirLayer ? [nirLayer] : []),
+    ...(wavePacketLayer ? [wavePacketLayer] : []),
     ...extraByteLayers
   ];
 
@@ -747,6 +762,126 @@ class WavePacket13LayerEncoder {
     this.vectorCompressor.compress(last.yBits, packet.yBits, 1);
     this.vectorCompressor.compress(last.zBits, packet.zBits, 2);
     this.last = {...packet};
+  }
+}
+
+/** Prediction state for one modern waveform scanner-channel context. */
+class WavePacket14Context {
+  /** Last packet reference. */
+  packet: WavePacket13;
+  /** Descriptor arithmetic model. */
+  readonly descriptorModel = new ArithmeticModel(256);
+  /** Offset selector models. */
+  readonly offsetDifferenceModels = createModels(4, 4);
+  /** Offset difference compressor. */
+  readonly offsetDifferenceCompressor: IntegerCompressor;
+  /** Packet-size compressor. */
+  readonly packetSizeCompressor: IntegerCompressor;
+  /** Return-point compressor. */
+  readonly returnPointCompressor: IntegerCompressor;
+  /** Vector compressor. */
+  readonly vectorCompressor: IntegerCompressor;
+  /** Last signed offset difference. */
+  lastOffsetDifference = 0;
+  /** Last offset selector. */
+  lastOffsetDifferenceSymbol = 0;
+  /** Whether this context has a packet reference. */
+  haveLast = false;
+
+  /** Initialize one modern waveform prediction context. */
+  constructor(encoder: ArithmeticEncoder, packet: WavePacket13) {
+    this.packet = {...packet};
+    this.offsetDifferenceCompressor = new IntegerCompressor(encoder, 32, 1);
+    this.packetSizeCompressor = new IntegerCompressor(encoder, 32, 1);
+    this.returnPointCompressor = new IntegerCompressor(encoder, 32, 1);
+    this.vectorCompressor = new IntegerCompressor(encoder, 32, 3);
+    this.haveLast = true;
+  }
+}
+
+/** Encode the LASzip v3/v4 modern waveform packet reference layer. */
+class WavePacket14LayerEncoder {
+  private readonly encoder = new ArithmeticEncoder();
+  private readonly contexts: Array<WavePacket14Context | null> = new Array(4).fill(null);
+  private readonly itemVersion: 3 | 4;
+  private lastChannel: number;
+
+  /** Initialize modern waveform coding from the first packet reference. */
+  constructor(firstPacket: WavePacket13, firstChannel: number, itemVersion: 3 | 4) {
+    this.itemVersion = itemVersion;
+    this.lastChannel = firstChannel;
+    this.contexts[firstChannel] = new WavePacket14Context(this.encoder, firstPacket);
+  }
+
+  /** Encode one waveform reference using the Point14 scanner-channel context. */
+  encode(packet: WavePacket13, scannerChannel: number): void {
+    const previousContext = this.contexts[this.lastChannel]!;
+    let targetContext = this.contexts[scannerChannel];
+    let codingContext = targetContext;
+    if (scannerChannel !== this.lastChannel) {
+      if (!targetContext) {
+        targetContext = new WavePacket14Context(this.encoder, previousContext.packet);
+        targetContext.lastOffsetDifference = previousContext.lastOffsetDifference;
+        targetContext.lastOffsetDifferenceSymbol = previousContext.lastOffsetDifferenceSymbol;
+        this.contexts[scannerChannel] = targetContext;
+        codingContext = targetContext;
+      } else if (this.itemVersion < 4) {
+        codingContext = targetContext;
+        targetContext = previousContext;
+      }
+      this.lastChannel = scannerChannel;
+    }
+    this.encodePacket(codingContext!, targetContext!, packet);
+  }
+
+  /** Finish the independent waveform arithmetic stream. */
+  finish(): Uint8Array {
+    return this.encoder.finish();
+  }
+
+  private encodePacket(
+    codingContext: WavePacket14Context,
+    targetContext: WavePacket14Context,
+    packet: WavePacket13
+  ): void {
+    const last = targetContext.packet;
+    this.encoder.encodeSymbol(codingContext.descriptorModel, packet.descriptorIndex);
+    let offsetDifferenceSymbol = 0;
+    if (packet.offset === last.offset) {
+      offsetDifferenceSymbol = 0;
+    } else if (packet.offset === last.offset + BigInt(last.packetSize)) {
+      offsetDifferenceSymbol = 1;
+    } else if (
+      BigInt.asIntN(64, packet.offset - last.offset) ===
+      BigInt.asIntN(32, packet.offset - last.offset)
+    ) {
+      offsetDifferenceSymbol = 2;
+    } else {
+      offsetDifferenceSymbol = 3;
+    }
+    this.encoder.encodeSymbol(
+      codingContext.offsetDifferenceModels[codingContext.lastOffsetDifferenceSymbol],
+      offsetDifferenceSymbol
+    );
+    codingContext.lastOffsetDifferenceSymbol = offsetDifferenceSymbol;
+    if (offsetDifferenceSymbol === 2) {
+      const difference = Number(BigInt.asIntN(32, packet.offset - last.offset));
+      codingContext.offsetDifferenceCompressor.compress(
+        codingContext.lastOffsetDifference,
+        difference,
+        0
+      );
+      codingContext.lastOffsetDifference = difference;
+    } else if (offsetDifferenceSymbol === 3) {
+      this.encoder.writeInt(Number(packet.offset & 0xffffffffn));
+      this.encoder.writeInt(Number(packet.offset >> 32n));
+    }
+    codingContext.packetSizeCompressor.compress(last.packetSize, packet.packetSize, 0);
+    codingContext.returnPointCompressor.compress(last.returnPointBits, packet.returnPointBits, 0);
+    codingContext.vectorCompressor.compress(last.xBits, packet.xBits, 0);
+    codingContext.vectorCompressor.compress(last.yBits, packet.yBits, 1);
+    codingContext.vectorCompressor.compress(last.zBits, packet.zBits, 2);
+    targetContext.packet = {...packet};
   }
 }
 
@@ -1513,6 +1648,13 @@ function validateMetadata(rawBytes: Uint8Array, metadata: LAZChunkMetadata): voi
     throw new Error(`TypeScript LAZ encoder only supports RGB14 item version 3`);
   }
   if (
+    (metadata.pointDataRecordFormat === 9 || metadata.pointDataRecordFormat === 10) &&
+    metadata.wavePacketItemVersion !== undefined &&
+    metadata.wavePacketItemVersion !== 3
+  ) {
+    throw new Error(`TypeScript LAZ encoder only supports WavePacket14 item version 3`);
+  }
+  if (
     metadata.pointDataRecordLength > baseLength &&
     metadata.byte14ItemVersion !== undefined &&
     metadata.byte14ItemVersion !== 3
@@ -1583,6 +1725,11 @@ function getLASzipItems(
     items.push({type: 11, size: 6});
   } else if (pointDataRecordFormat === 8) {
     items.push({type: 12, size: 8});
+  } else if (pointDataRecordFormat === 10) {
+    items.push({type: 12, size: 8});
+  }
+  if (pointDataRecordFormat === 9 || pointDataRecordFormat === 10) {
+    items.push({type: 13, size: 29});
   }
   const extraByteCount = pointDataRecordLength - baseLength;
   if (extraByteCount > 0) {
