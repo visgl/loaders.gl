@@ -134,6 +134,8 @@ type TypedExtraBytesAttribute = {
   byteLength: number;
   scales: number[];
   offsets: number[];
+  /** Whether transformed integer values require a floating-point output buffer. */
+  outputFloat64: boolean;
 };
 
 type TypedExtraBytesValue =
@@ -2207,11 +2209,16 @@ function createTypedExtraBytesAttributes(
     usedNames.add(name);
     attributes.push({
       name,
-      value: createExtraBytesTypedArray(scalarDataType, batchSize * size),
+      value: createExtraBytesTypedArray(
+        scalarDataType,
+        batchSize * size,
+        Boolean(descriptor.options & 0x18) && scalarDataType !== 10
+      ),
       size,
       scalarDataType,
       byteOffset,
       byteLength,
+      outputFloat64: Boolean(descriptor.options & 0x18) && scalarDataType !== 10,
       scales:
         descriptor.options & 0x08 ? descriptor.scales.slice(0, size) : new Array(size).fill(1),
       offsets:
@@ -2254,7 +2261,14 @@ function getExtraBytesScalarByteLength(dataType: number): number {
 }
 
 /** Allocate the typed array corresponding to a supported LAS scalar type. */
-function createExtraBytesTypedArray(scalarDataType: number, length: number): TypedExtraBytesValue {
+function createExtraBytesTypedArray(
+  scalarDataType: number,
+  length: number,
+  outputFloat64 = false
+): TypedExtraBytesValue {
+  if (outputFloat64 && scalarDataType !== 10) {
+    return new Float64Array(length);
+  }
   switch (scalarDataType) {
     case 1:
       return new Uint8Array(length);
@@ -2704,7 +2718,11 @@ function flushPointDataBatch(
     state.typedExtraBytes = state.typedExtraBytes
       ? state.typedExtraBytes.map(attribute => ({
           ...attribute,
-          value: createExtraBytesTypedArray(attribute.scalarDataType, attribute.value.length)
+          value: createExtraBytesTypedArray(
+            attribute.scalarDataType,
+            attribute.value.length,
+            attribute.outputFloat64
+          )
         }))
       : null;
     state.target.positions = state.positions;
@@ -2763,7 +2781,7 @@ function getLASColumnSelection(options: LASLoaderOptions): {
       scanDirectionFlag: true,
       edgeOfFlightLine: true,
       waveform: true,
-      extraBytes: false
+      extraBytes: options.las?.extraBytes === 'typed'
     };
   }
 
