@@ -128,6 +128,7 @@ export class BinaryWriter {
         const tempArray = new Uint8Array(newArrayBuffer);
         tempArray.set(new Uint8Array(this.arrayBuffer));
         this.arrayBuffer = newArrayBuffer;
+        this.dataView = new DataView(this.arrayBuffer);
       } else {
         throw new Error('BinaryWriter overflow');
       }

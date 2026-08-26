@@ -72,7 +72,9 @@ function encodeGeometry(writer: BinaryWriter, geometry: Geometry, context: TWKBE
 
 function encodePoint(writer: BinaryWriter, context: TWKBEncoderContext, point: Point): void {
   const isEmpty =
-    point.coordinates.length === 0 || point[0] === 'undefined' || point[1] === 'undefined';
+    point.coordinates.length === 0 ||
+    point.coordinates[0] === undefined ||
+    point.coordinates[1] === undefined;
 
   writeTwkbHeader(writer, context, WKBGeometryType.Point, isEmpty);
 
@@ -88,7 +90,7 @@ function encodeLineString(
   lineString: LineString
 ): ArrayBuffer {
   const points = lineString.coordinates;
-  const isEmpty = points.length === 0;
+  const isEmpty = !hasCoordinateValues(points);
 
   writeTwkbHeader(writer, context, WKBGeometryType.LineString, isEmpty);
 
@@ -110,7 +112,7 @@ function encodePolygon(
 ): ArrayBuffer {
   const polygonRings = polygon.coordinates;
 
-  const isEmpty = polygonRings.length === 0;
+  const isEmpty = !hasCoordinateValues(polygonRings);
 
   writeTwkbHeader(writer, context, WKBGeometryType.Polygon, isEmpty);
 
@@ -121,7 +123,7 @@ function encodePolygon(
     for (const ring of polygonRings) {
       writer.writeVarInt(ring.length);
       for (const point of ring) {
-        writeTwkbPoint(writer, context, previousPoint, point);
+        writeTwkbPoint(writer, context, point, previousPoint);
       }
     }
   }
@@ -135,7 +137,7 @@ function encodeMultiPoint(
   multiPoint: MultiPoint
 ): void {
   const points = multiPoint.coordinates;
-  const isEmpty = points.length === 0;
+  const isEmpty = !hasCoordinateValues(points);
 
   writeTwkbHeader(writer, context, WKBGeometryType.MultiPoint, isEmpty);
 
@@ -144,7 +146,7 @@ function encodeMultiPoint(
 
     const previousPoint = [0, 0, 0, 0];
     for (let i = 0; i < points.length; i++) {
-      writeTwkbPoint(writer, context, previousPoint, points[i]);
+      writeTwkbPoint(writer, context, points[i], previousPoint);
     }
   }
 }
@@ -155,7 +157,7 @@ function encodeMultiLineString(
   multiLineStrings: MultiLineString
 ): ArrayBuffer {
   const lineStrings = multiLineStrings.coordinates;
-  const isEmpty = lineStrings.length === 0;
+  const isEmpty = !hasCoordinateValues(lineStrings);
 
   writeTwkbHeader(writer, context, WKBGeometryType.MultiLineString, isEmpty);
 
@@ -167,7 +169,7 @@ function encodeMultiLineString(
       writer.writeVarInt(lineString.length);
 
       for (const point of lineString) {
-        writeTwkbPoint(writer, context, previousPoint, point);
+        writeTwkbPoint(writer, context, point, previousPoint);
       }
     }
   }
@@ -181,7 +183,7 @@ function encodeMultiPolygon(
   multiPolygon: MultiPolygon
 ): void {
   const {coordinates} = multiPolygon;
-  const isEmpty = coordinates.length === 0;
+  const isEmpty = !hasCoordinateValues(coordinates);
 
   writeTwkbHeader(writer, context, WKBGeometryType.MultiPolygon, isEmpty);
 
@@ -196,7 +198,7 @@ function encodeMultiPolygon(
       for (const ring of polygonRings) {
         writer.writeVarInt(ring.length);
         for (const point of ring) {
-          writeTwkbPoint(writer, context, previousPoint, point);
+          writeTwkbPoint(writer, context, point, previousPoint);
         }
       }
     }
@@ -290,6 +292,14 @@ function writeTwkbPoint(
 
 function zigZagEncode(value: number): number {
   return (value << 1) ^ (value >> 31);
+}
+
+/** Returns whether a nested coordinate array contains at least one numeric ordinate. */
+function hasCoordinateValues(coordinates: unknown): boolean {
+  if (typeof coordinates === 'number') {
+    return true;
+  }
+  return Array.isArray(coordinates) && coordinates.some(hasCoordinateValues);
 }
 
 function getTwkbPrecision(

@@ -17,7 +17,7 @@ export function isTable(table: any): table is Table {
       return Array.isArray(table.features);
 
     case 'columnar-table':
-      return table.data && typeof table.data === 'object';
+      return Boolean(table.data && typeof table.data === 'object');
 
     case 'arrow-table':
       return Boolean(table?.data?.numRows !== undefined);
@@ -204,7 +204,8 @@ export function getTableRowAsObject(
         const objectRow: {[columnName: string]: unknown} = target || {};
         // TODO - should lift properties to top level
         for (let i = 0; i < table.schema.fields.length; i++) {
-          objectRow[table.schema.fields[i].name] = table.features[rowIndex][i];
+          objectRow[table.schema.fields[i].name] =
+            table.features[rowIndex][table.schema.fields[i].name];
         }
         return objectRow;
       }

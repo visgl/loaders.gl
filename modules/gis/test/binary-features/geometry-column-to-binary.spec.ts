@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   convertGeometryColumnToBinaryFeatureCollection,
   convertGeometryToWKB,
@@ -12,7 +12,7 @@ import {
   type GeometryColumnBinaryFeatureCollectionScratch
 } from '@loaders.gl/gis';
 
-test('gis#geometry-column-to-binary converts WKB geometry columns', t => {
+test('gis#geometry-column-to-binary converts WKB geometry columns', () => {
   const table = {
     shape: 'object-row-table' as const,
     data: [
@@ -55,38 +55,112 @@ test('gis#geometry-column-to-binary converts WKB geometry columns', t => {
     geometryEncoding: 'wkb'
   });
 
-  t.equal(binaryFeatures.points?.properties[0]?.id, 1, 'preserves point row properties');
-  t.equal(binaryFeatures.lines?.properties[0]?.id, 2, 'preserves line row properties');
-  t.equal(binaryFeatures.polygons?.properties[0]?.id, 3, 'preserves polygon row properties');
-  t.deepEqual(
-    Array.from(binaryFeatures.lines?.pathIndices.value || []),
-    [0, 2],
-    'builds line path indices'
-  );
-  t.ok((binaryFeatures.polygons?.triangles?.value.length || 0) > 0, 'triangulates polygon output');
-  t.end();
+  expect(binaryFeatures.points?.properties[0]?.id).toBe(1);
+  expect(binaryFeatures.lines?.properties[0]?.id).toBe(2);
+  expect(binaryFeatures.polygons?.properties[0]?.id).toBe(3);
+  expect(Array.from(binaryFeatures.lines?.pathIndices.value || [])).toEqual([0, 2]);
+  expect(binaryFeatures.polygons?.triangles?.value.length || 0).toBeGreaterThan(0);
 });
 
-test('gis#geometry-column-to-binary converts WKT geometry collections into multiple bins', t => {
+test('gis#geometry-column-to-binary converts WKT geometry collections into multiple bins', () => {
   const binaryFeatures = convertGeometryValuesToBinaryFeatureCollection(
     ['GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1), POLYGON ((0 0, 1 0, 1 1, 0 0)))'],
-    {geometryEncoding: 'wkt'}
+    {geometryEncoding: 'wkt', properties: [{name: 'collection'}]}
   );
 
-  t.equal(binaryFeatures.points?.properties.length, 1, 'creates one point feature');
-  t.equal(binaryFeatures.lines?.properties.length, 1, 'creates one line feature');
-  t.equal(binaryFeatures.polygons?.properties.length, 1, 'creates one polygon feature');
-  t.equal(binaryFeatures.points?.globalFeatureIds.value[0], 0, 'shares point global feature id');
-  t.equal(binaryFeatures.lines?.globalFeatureIds.value[0], 0, 'shares line global feature id');
-  t.equal(
-    binaryFeatures.polygons?.globalFeatureIds.value[0],
-    0,
-    'shares polygon global feature id'
-  );
-  t.end();
+  expect(binaryFeatures.points?.properties).toHaveLength(1);
+  expect(binaryFeatures.lines?.properties).toHaveLength(1);
+  expect(binaryFeatures.polygons?.properties).toHaveLength(1);
+  expect(binaryFeatures.points?.globalFeatureIds.value[0]).toBe(0);
+  expect(binaryFeatures.lines?.globalFeatureIds.value[0]).toBe(0);
+  expect(binaryFeatures.polygons?.globalFeatureIds.value[0]).toBe(0);
+  expect(binaryFeatures.points?.properties[0]).toEqual({name: 'collection'});
 });
 
-test('gis#geometry-column-to-binary reuses scratch arrays when capacity is sufficient', t => {
+test('gis#geometry-column-to-binary converts multipart WKB with Z values', () => {
+  const binaryFeatures = convertGeometryValuesToBinaryFeatureCollection(
+    [
+      new Uint8Array(
+        convertGeometryToWKB(
+          {
+            type: 'MultiPoint',
+            coordinates: [
+              [1, 2, 3],
+              [4, 5, 6]
+            ]
+          },
+          {hasZ: true}
+        )
+      ),
+      new Uint8Array(
+        convertGeometryToWKB(
+          {
+            type: 'MultiLineString',
+            coordinates: [
+              [
+                [0, 0, 1],
+                [1, 1, 1]
+              ],
+              [
+                [2, 2, 1],
+                [3, 3, 1]
+              ]
+            ]
+          },
+          {hasZ: true}
+        )
+      ),
+      new Uint8Array(
+        convertGeometryToWKB(
+          {
+            type: 'MultiPolygon',
+            coordinates: [
+              [
+                [
+                  [0, 0, 1],
+                  [2, 0, 1],
+                  [0, 2, 1],
+                  [0, 0, 1]
+                ]
+              ],
+              [
+                [
+                  [3, 3, 1],
+                  [5, 3, 1],
+                  [3, 5, 1],
+                  [3, 3, 1]
+                ]
+              ]
+            ]
+          },
+          {hasZ: true}
+        )
+      ),
+      null
+    ],
+    {
+      getProperties: rowIndex => ({rowIndex}),
+      globalFeatureIdOffset: 100,
+      triangulate: false
+    }
+  );
+
+  expect(binaryFeatures.points?.positions.size).toBe(3);
+  expect(Array.from(binaryFeatures.points?.featureIds.value || [])).toEqual([0, 0]);
+  expect(Array.from(binaryFeatures.points?.globalFeatureIds.value || [])).toEqual([100, 100]);
+  expect(binaryFeatures.points?.properties).toEqual([{rowIndex: 0}]);
+  expect(Array.from(binaryFeatures.lines?.pathIndices.value || [])).toEqual([0, 2, 4]);
+  expect(Array.from(binaryFeatures.lines?.globalFeatureIds.value || [])).toEqual([
+    101, 101, 101, 101
+  ]);
+  expect(Array.from(binaryFeatures.polygons?.polygonIndices.value || [])).toEqual([0, 4, 8]);
+  expect(Array.from(binaryFeatures.polygons?.globalFeatureIds.value || [])).toEqual([
+    102, 102, 102, 102, 102, 102, 102, 102
+  ]);
+  expect(binaryFeatures.polygons?.triangles).toBeUndefined();
+});
+
+test('gis#geometry-column-to-binary reuses scratch arrays when capacity is sufficient', () => {
   const scratch: GeometryColumnBinaryFeatureCollectionScratch = {};
   const first = convertGeometryValuesToBinaryFeatureCollection(
     [
@@ -103,22 +177,13 @@ test('gis#geometry-column-to-binary reuses scratch arrays when capacity is suffi
     {geometryEncoding: 'wkb', scratch}
   );
 
-  t.equal(scratch.points?.positions, originalPositions, 'reuses point positions scratch');
-  t.equal(scratch.points?.featureIds, originalFeatureIds, 'reuses point feature id scratch');
-  t.equal(
-    first.points?.positions.value.buffer,
-    originalPositions?.buffer,
-    'first output is backed by scratch'
-  );
-  t.equal(
-    second.points?.positions.value.buffer,
-    originalPositions?.buffer,
-    'second output is backed by reused scratch'
-  );
-  t.end();
+  expect(scratch.points?.positions).toBe(originalPositions);
+  expect(scratch.points?.featureIds).toBe(originalFeatureIds);
+  expect(first.points?.positions.value.buffer).toBe(originalPositions?.buffer);
+  expect(second.points?.positions.value.buffer).toBe(originalPositions?.buffer);
 });
 
-test('gis#geometry-column-to-binary grows scratch arrays when capacity is insufficient', t => {
+test('gis#geometry-column-to-binary grows scratch arrays when capacity is insufficient', () => {
   const scratch: GeometryColumnBinaryFeatureCollectionScratch = {
     points: {
       positions: new Float64Array(2),
@@ -135,16 +200,12 @@ test('gis#geometry-column-to-binary grows scratch arrays when capacity is insuff
     {geometryEncoding: 'wkb', scratch}
   );
 
-  t.ok((scratch.points?.positions?.length || 0) >= 4, 'grows point positions scratch');
-  t.ok((scratch.points?.featureIds?.length || 0) >= 2, 'grows point feature ids scratch');
-  t.ok(
-    (scratch.points?.globalFeatureIds?.length || 0) >= 2,
-    'grows point global feature ids scratch'
-  );
-  t.end();
+  expect(scratch.points?.positions?.length || 0).toBeGreaterThanOrEqual(4);
+  expect(scratch.points?.featureIds?.length || 0).toBeGreaterThanOrEqual(2);
+  expect(scratch.points?.globalFeatureIds?.length || 0).toBeGreaterThanOrEqual(2);
 });
 
-test('gis#geometry-column-to-binary reads Arrow string columns', t => {
+test('gis#geometry-column-to-binary reads Arrow string columns', () => {
   const arrowTable = arrow.tableFromArrays({
     id: [1],
     geometry: ['LINESTRING (0 0, 1 1)']
@@ -154,20 +215,182 @@ test('gis#geometry-column-to-binary reads Arrow string columns', t => {
     geometryEncoding: 'wkt'
   });
 
-  t.equal(
-    binaryFeatures.lines?.properties[0]?.id,
-    1,
-    'reads non-geometry Arrow columns as properties'
-  );
-  t.deepEqual(
-    Array.from(binaryFeatures.lines?.positions.value || []),
-    [0, 0, 1, 1],
-    'converts Arrow WKT values to binary line positions'
-  );
-  t.end();
+  expect(binaryFeatures.lines?.properties[0]?.id).toBe(1);
+  expect(Array.from(binaryFeatures.lines?.positions.value || [])).toEqual([0, 0, 1, 1]);
 });
 
-test('gis#geometry-column-to-binary reuses typed GeoArrow coordinate buffers', t => {
+test('gis#geometry-column-to-binary compacts null typed GeoArrow points', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginPoint();
+        builder.writeCoordinate(1, 2, 3);
+      },
+      null,
+      builder => {
+        builder.beginPoint();
+        builder.writeCoordinate(4, 5, 6);
+      }
+    ],
+    {encoding: 'geoarrow.point', hasZ: true}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.point',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10, 20, 30]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry',
+    globalFeatureIdOffset: 7
+  });
+
+  expect(Array.from(binaryFeatures.points?.positions.value || [])).toEqual([1, 2, 3, 4, 5, 6]);
+  expect(binaryFeatures.points?.positions.size).toBe(3);
+  expect(Array.from(binaryFeatures.points?.featureIds.value || [])).toEqual([0, 1]);
+  expect(Array.from(binaryFeatures.points?.globalFeatureIds.value || [])).toEqual([7, 9]);
+  expect(binaryFeatures.points?.properties).toEqual([{id: 10}, {id: 30}]);
+});
+
+test('gis#geometry-column-to-binary converts typed GeoArrow multipoints', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginMultiPoint(2);
+        builder.writeCoordinate(0, 0);
+        builder.writeCoordinate(1, 1);
+      },
+      builder => {
+        builder.beginMultiPoint(1);
+        builder.writeCoordinate(2, 2);
+      }
+    ],
+    {encoding: 'geoarrow.multipoint'}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.multipoint',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10, 20]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry'
+  });
+
+  expect(binaryFeatures.points?.positions.value.buffer).toBe(geometryArray.coordinates.buffer);
+  expect(Array.from(binaryFeatures.points?.featureIds.value || [])).toEqual([0, 0, 1]);
+  expect(Array.from(binaryFeatures.points?.globalFeatureIds.value || [])).toEqual([0, 0, 1]);
+  expect(binaryFeatures.points?.properties).toEqual([{id: 10}, {id: 20}]);
+});
+
+test('gis#geometry-column-to-binary converts typed GeoArrow line strings', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginLineString(2);
+        builder.writeCoordinate(0, 0);
+        builder.writeCoordinate(1, 1);
+      },
+      builder => {
+        builder.beginLineString(3);
+        builder.writeCoordinate(2, 2);
+        builder.writeCoordinate(3, 3);
+        builder.writeCoordinate(4, 4);
+      }
+    ],
+    {encoding: 'geoarrow.linestring'}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.linestring',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10, 20]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry'
+  });
+
+  expect(binaryFeatures.lines?.positions.value.buffer).toBe(geometryArray.coordinates.buffer);
+  expect(Array.from(binaryFeatures.lines?.pathIndices.value || [])).toEqual([0, 2, 5]);
+  expect(Array.from(binaryFeatures.lines?.featureIds.value || [])).toEqual([0, 0, 1, 1, 1]);
+  expect(binaryFeatures.lines?.properties).toEqual([{id: 10}, {id: 20}]);
+});
+
+test('gis#geometry-column-to-binary converts typed GeoArrow polygons', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginPolygon(1);
+        builder.beginLinearRing(4);
+        builder.writeCoordinate(0, 0);
+        builder.writeCoordinate(2, 0);
+        builder.writeCoordinate(0, 2);
+        builder.writeCoordinate(0, 0);
+      }
+    ],
+    {encoding: 'geoarrow.polygon'}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.polygon',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry',
+    triangulate: false
+  });
+
+  expect(binaryFeatures.polygons?.positions.value.buffer).toBe(geometryArray.coordinates.buffer);
+  expect(Array.from(binaryFeatures.polygons?.polygonIndices.value || [])).toEqual([0, 4]);
+  expect(Array.from(binaryFeatures.polygons?.primitivePolygonIndices.value || [])).toEqual([0, 4]);
+  expect(Array.from(binaryFeatures.polygons?.featureIds.value || [])).toEqual([0, 0, 0, 0]);
+  expect(binaryFeatures.polygons?.triangles).toBeUndefined();
+});
+
+test('gis#geometry-column-to-binary converts typed GeoArrow multipolygons', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginMultiPolygon(2);
+        builder.beginPolygon(1);
+        builder.beginLinearRing(4);
+        builder.writeCoordinate(0, 0);
+        builder.writeCoordinate(2, 0);
+        builder.writeCoordinate(0, 2);
+        builder.writeCoordinate(0, 0);
+        builder.beginPolygon(1);
+        builder.beginLinearRing(4);
+        builder.writeCoordinate(3, 3);
+        builder.writeCoordinate(5, 3);
+        builder.writeCoordinate(3, 5);
+        builder.writeCoordinate(3, 3);
+      }
+    ],
+    {encoding: 'geoarrow.multipolygon'}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.multipolygon',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry'
+  });
+
+  expect(binaryFeatures.polygons?.positions.value.buffer).toBe(geometryArray.coordinates.buffer);
+  expect(Array.from(binaryFeatures.polygons?.polygonIndices.value || [])).toEqual([0, 4, 8]);
+  expect(Array.from(binaryFeatures.polygons?.primitivePolygonIndices.value || [])).toEqual([
+    0, 4, 8
+  ]);
+  expect(Array.from(binaryFeatures.polygons?.featureIds.value || [])).toEqual([
+    0, 0, 0, 0, 0, 0, 0, 0
+  ]);
+  expect(binaryFeatures.polygons?.triangles?.value.length || 0).toBeGreaterThan(0);
+});
+
+test('gis#geometry-column-to-binary reuses typed GeoArrow coordinate buffers', () => {
   const geometryArray = GeoArrowBuilder.buildGeometryArray(
     [
       builder => {
@@ -198,24 +421,11 @@ test('gis#geometry-column-to-binary reuses typed GeoArrow coordinate buffers', t
     geometryColumn: 'geometry'
   });
 
-  t.equal(
-    binaryFeatures.lines?.positions.value.buffer,
-    geometryArray.coordinates.buffer,
-    'line positions reuse GeoArrow coordinate buffer'
-  );
-  t.deepEqual(
-    Array.from(binaryFeatures.lines?.pathIndices.value || []),
-    [0, 2, 4, 6],
-    'line path indices reuse GeoArrow part offsets'
-  );
-  t.deepEqual(
-    Array.from(binaryFeatures.lines?.featureIds.value || []),
-    [0, 0, 0, 0, 1, 1],
-    'feature ids map vertices to source rows'
-  );
-  t.equal(binaryFeatures.lines?.properties[0]?.id, 10, 'preserves first row properties');
-  t.equal(binaryFeatures.lines?.properties[1]?.id, 20, 'preserves second row properties');
-  t.end();
+  expect(binaryFeatures.lines?.positions.value.buffer).toBe(geometryArray.coordinates.buffer);
+  expect(Array.from(binaryFeatures.lines?.pathIndices.value || [])).toEqual([0, 2, 4, 6]);
+  expect(Array.from(binaryFeatures.lines?.featureIds.value || [])).toEqual([0, 0, 0, 0, 1, 1]);
+  expect(binaryFeatures.lines?.properties[0]?.id).toBe(10);
+  expect(binaryFeatures.lines?.properties[1]?.id).toBe(20);
 });
 
 function makeGeoArrowTestTable(

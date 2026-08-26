@@ -200,16 +200,16 @@
     "@loaders.gl/gis": {
       "path": "modules/gis",
       "browser": {
-        "statements": 68,
-        "lines": 68,
-        "functions": 75,
-        "branches": 53
+        "statements": 81,
+        "lines": 81,
+        "functions": 84,
+        "branches": 65
       },
       "merged": {
-        "statements": 67,
-        "lines": 68,
-        "functions": 75,
-        "branches": 53
+        "statements": 80,
+        "lines": 81,
+        "functions": 84,
+        "branches": 65
       }
     },
     "@loaders.gl/gltf": {
@@ -440,16 +440,16 @@
     "@loaders.gl/parquet": {
       "path": "modules/parquet",
       "browser": {
-        "statements": 66,
-        "lines": 65,
-        "functions": 74,
-        "branches": 60
+        "statements": 78,
+        "lines": 79,
+        "functions": 83,
+        "branches": 68
       },
       "merged": {
-        "statements": 65,
-        "lines": 65,
-        "functions": 74,
-        "branches": 59
+        "statements": 77,
+        "lines": 79,
+        "functions": 82,
+        "branches": 68
       }
     },
     "@loaders.gl/pcd": {
@@ -515,16 +515,16 @@
     "@loaders.gl/potree": {
       "path": "modules/potree",
       "browser": {
-        "statements": 63,
-        "lines": 63,
-        "functions": 65,
-        "branches": 54
+        "statements": 82,
+        "lines": 83,
+        "functions": 82,
+        "branches": 66
       },
       "merged": {
-        "statements": 62,
-        "lines": 63,
-        "functions": 62,
-        "branches": 54
+        "statements": 81,
+        "lines": 83,
+        "functions": 78,
+        "branches": 66
       }
     },
     "@loaders.gl/scene": {
@@ -560,16 +560,16 @@
     "@loaders.gl/schema-utils": {
       "path": "modules/schema-utils",
       "browser": {
-        "statements": 71,
-        "lines": 71,
-        "functions": 84,
-        "branches": 62
+        "statements": 81,
+        "lines": 81,
+        "functions": 87,
+        "branches": 76
       },
       "merged": {
-        "statements": 71,
-        "lines": 71,
-        "functions": 84,
-        "branches": 62
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 76
       }
     },
     "@loaders.gl/shapefile": {
