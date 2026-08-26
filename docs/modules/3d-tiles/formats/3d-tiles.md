@@ -36,6 +36,7 @@ provides a visual implementation for that feature.
 | --- | :---: | --- |
 | `b3dm` batched 3D model | [x] | Batch tables and glTF payloads are exposed. |
 | `i3dm` instanced 3D model | [x] | Instancing metadata is parsed. |
+| i3dm oct-encoded orientation | [x] | `NORMAL_UP_OCT32P` and `NORMAL_RIGHT_OCT32P` are decoded into instance transforms. |
 | `pnts` point cloud | [x] | Draco-compressed point attributes are supported. |
 | `cmpt` composite | [x] | Child payloads are parsed through the composite loader. |
 | `glb` / glTF tile content | [x] | Structure-first content detection supports extensionless resources. |
