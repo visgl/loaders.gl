@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 8
+  version: 10
   cacheKey: 10c0
 
 "@algolia/autocomplete-core@npm:1.17.6":
@@ -5418,10 +5418,10 @@ __metadata:
     "@deck.gl/core": "npm:^9.0.33"
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.2"
     "@loaders.gl/math": "npm:4.4.0-alpha.2"
-    "@math.gl/core": "npm:^4.1.0"
-    "@math.gl/culling": "npm:^4.1.0"
-    "@math.gl/geospatial": "npm:^4.1.0"
-    "@math.gl/web-mercator": "npm:^4.1.0"
+    "@math.gl/core": "npm:4.2.0-alpha.5"
+    "@math.gl/culling": "npm:4.2.0-alpha.5"
+    "@math.gl/geospatial": "npm:4.2.0-alpha.5"
+    "@math.gl/web-mercator": "npm:4.2.0-alpha.5"
     "@probe.gl/stats": "npm:^4.0.2"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -5848,6 +5848,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@math.gl/core@npm:4.2.0-alpha.5":
+  version: 4.2.0-alpha.5
+  resolution: "@math.gl/core@npm:4.2.0-alpha.5"
+  dependencies:
+    "@math.gl/types": "npm:4.2.0-alpha.5"
+  checksum: 10c0/92bf0056bf05872c90d5c213ca11665689144987a19bf2444beb7bedbabf20e2eef44ac8c13505e32a377a50254ff85ea472e2771858e5c8b438ba9c7db768c0
+  languageName: node
+  linkType: hard
+
+"@math.gl/culling@npm:4.2.0-alpha.5":
+  version: 4.2.0-alpha.5
+  resolution: "@math.gl/culling@npm:4.2.0-alpha.5"
+  dependencies:
+    "@math.gl/core": "npm:4.2.0-alpha.5"
+    "@math.gl/types": "npm:4.2.0-alpha.5"
+  checksum: 10c0/208c8f4128e44fb1828c3ba05c9b1b1ceb2da6207c088a51c0ca2a010e1de690e2548fbd423f5bb61663e3dcbbd4653d2e5bc6bbfe8325e6860a7d6334fa1af4
+  languageName: node
+  linkType: hard
+
 "@math.gl/culling@npm:^4.0.0, @math.gl/culling@npm:^4.1.0":
   version: 4.1.0
   resolution: "@math.gl/culling@npm:4.1.0"
@@ -5864,6 +5883,17 @@ __metadata:
   dependencies:
     "@math.gl/core": "npm:4.1.0"
   checksum: 10c0/06b664112e10bcb78853d4887721abebe1113d39d9a3f3fabb49d2ce7c2bf48a582f0427a5ab842fc89a67c0c9cb39f75fba97cb69c7d2fe81177b216dec39a2
+  languageName: node
+  linkType: hard
+
+"@math.gl/geospatial@npm:4.2.0-alpha.5":
+  version: 4.2.0-alpha.5
+  resolution: "@math.gl/geospatial@npm:4.2.0-alpha.5"
+  dependencies:
+    "@math.gl/core": "npm:4.2.0-alpha.5"
+    "@math.gl/culling": "npm:4.2.0-alpha.5"
+    "@math.gl/types": "npm:4.2.0-alpha.5"
+  checksum: 10c0/09db9a0ab10943481d5ec692a8ac742249c9723421004433fc14efe6657cc3c50282a8a08c09bdfce11a9d209fcf81cbd010206fd673fdc991eaa84031312b51
   languageName: node
   linkType: hard
 
@@ -5908,6 +5938,22 @@ __metadata:
   version: 4.1.0
   resolution: "@math.gl/types@npm:4.1.0"
   checksum: 10c0/3c4dfa5ac5c9e2cef24d31f56b89c1dde785a5d70fd1a7030386346cb7dd4fa2cce5ba983b89842c1971492e30870dd22a078d64893f9c66887e38367bf992fa
+  languageName: node
+  linkType: hard
+
+"@math.gl/types@npm:4.2.0-alpha.5":
+  version: 4.2.0-alpha.5
+  resolution: "@math.gl/types@npm:4.2.0-alpha.5"
+  checksum: 10c0/bc11f168e3dc4b6738a4bc0b0369332bfd04923639da53d9212f0c8432dc82a489870bdfe1dc806ff4a8ed6d9bfed4dbc29c416b7e0778f794d7c69fdc5900a0
+  languageName: node
+  linkType: hard
+
+"@math.gl/web-mercator@npm:4.2.0-alpha.5":
+  version: 4.2.0-alpha.5
+  resolution: "@math.gl/web-mercator@npm:4.2.0-alpha.5"
+  dependencies:
+    "@math.gl/core": "npm:4.2.0-alpha.5"
+  checksum: 10c0/b16ec2627ac3449626396afcd6a8adc57e8cbbe72f37b4cbd4da5e97a58f16670bd20759c05aaac021f3018dfb14c75eee581b48cd8bdcda3af391911dafc448
   languageName: node
   linkType: hard
 
@@ -24016,27 +24062,27 @@ __metadata:
 
 "resolve@patch:resolve@npm%3A^1.1.6#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.10.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.14.2#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.2#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A~1.22.6#optional!builtin<compat/resolve>":
   version: 1.22.8
-  resolution: "resolve@patch:resolve@npm%3A1.22.8#optional!builtin<compat/resolve>::version=1.22.8&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A1.22.8#optional!builtin<compat/resolve>::version=1.22.8&hash=9bd1a5"
   dependencies:
     is-core-module: "npm:^2.13.0"
     path-parse: "npm:^1.0.7"
     supports-preserve-symlinks-flag: "npm:^1.0.0"
   bin:
     resolve: bin/resolve
-  checksum: 10c0/0446f024439cd2e50c6c8fa8ba77eaa8370b4180f401a96abf3d1ebc770ac51c1955e12764cde449fde3fff480a61f84388e3505ecdbab778f4bef5f8212c729
+  checksum: 10c0/4bc6de64a713422234e0e773bff296767d77d6e545b98042ff90a796d356f2b131853f4fa1d54e2c415aa6efa6dc2eed5b3f501f63164f834619fda900e33b8e
   languageName: node
   linkType: hard
 
 "resolve@patch:resolve@npm%3A^2.0.0-next.5#optional!builtin<compat/resolve>":
   version: 2.0.0-next.5
-  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.5#optional!builtin<compat/resolve>::version=2.0.0-next.5&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.5#optional!builtin<compat/resolve>::version=2.0.0-next.5&hash=9bd1a5"
   dependencies:
     is-core-module: "npm:^2.13.0"
     path-parse: "npm:^1.0.7"
     supports-preserve-symlinks-flag: "npm:^1.0.0"
   bin:
     resolve: bin/resolve
-  checksum: 10c0/78ad6edb8309a2bfb720c2c1898f7907a37f858866ce11a5974643af1203a6a6e05b2fa9c53d8064a673a447b83d42569260c306d43628bff5bb101969708355
+  checksum: 10c0/9f2cb75a47ee17edca53b3a4e96883e82fe92dadc323a19868621b897da5136f7dd3189b7bac4d4e7715bb3b2fd5c1e8c5145ebccc7e0368b1546206f9644c12
   languageName: node
   linkType: hard
 

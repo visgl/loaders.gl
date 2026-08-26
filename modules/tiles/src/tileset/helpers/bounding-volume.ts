@@ -4,7 +4,7 @@
 /* eslint-disable */
 import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/loader-utils';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
@@ -42,10 +42,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    const obb = new OrientedBoundingBox();
-    obb.fromRegion(boundingVolumeHeader.region);
-
-    return obb;
+    return makeOBBFromRegion(boundingVolumeHeader.region);
   }
 
   if (boundingVolumeHeader.sphere) {
