@@ -113,6 +113,8 @@ export type LASMetadata = {
   fileSourceId: number;
   /** Global encoding bit field from the public header. */
   globalEncoding: number;
+  /** Start of the internal waveform data packet record, preserved as an exact uint64. */
+  waveformDataOffset?: bigint;
   /** Project identifier as a UUID string. */
   projectId: string;
   /** System identifier string. */

@@ -744,6 +744,7 @@ test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   dataView.setUint16(94, headerSize, true);
   dataView.setUint32(96, pointsOffset, true);
   dataView.setUint32(100, records.length, true);
+  dataView.setBigUint64(227, 0x123456789abcdef0n, true);
   bytes[104] = 0;
   dataView.setUint16(105, 20, true);
   bytes.set(Uint8Array.from([0x78, 0x56, 0x34, 0x12, 0x34, 0x12, 0x78, 0x56]), 8);
@@ -756,6 +757,7 @@ test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
 
   const metadata = parseLASHeader(arrayBuffer).metadata!;
   expect(metadata.projectId).toBe('12345678-1234-5678-9abcdef012345678');
+  expect(metadata.waveformDataOffset).toBe(0x123456789abcdef0n);
   expect(metadata.wkt).toBe('GEOGCS["coordinate-system"]');
   expect(metadata.wktMathTransform).toBe('PARAM_MT["transform"]');
   expect(metadata.geotiff?.keys).toEqual(

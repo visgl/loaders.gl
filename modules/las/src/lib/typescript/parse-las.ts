@@ -994,6 +994,10 @@ function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASM
   const metadata: LASMetadata = {
     fileSourceId: dataView.getUint16(4, true),
     globalEncoding: dataView.getUint16(6, true),
+    waveformDataOffset:
+      versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 3)
+        ? dataView.getBigUint64(227, true)
+        : undefined,
     projectId: formatLASProjectId(new Uint8Array(arrayBuffer, 8, 16)),
     systemIdentifier: readLASString(new Uint8Array(arrayBuffer), 26, 32),
     generatingSoftware: readLASString(new Uint8Array(arrayBuffer), 58, 32),
@@ -1093,7 +1097,7 @@ function parseTypedLASMetadataRecord(
   }
   if (record.userId === 'LASF_Spec' && record.recordId === 4) {
     metadata.extraBytes.push(...parseLASExtraBytes(data));
-  } else if (record.userId === 'LASF_Spec' && record.recordId >= 100 && record.recordId <= 355) {
+  } else if (record.userId === 'LASF_Spec' && record.recordId >= 100 && record.recordId <= 354) {
     metadata.waveformPacketDescriptors.push(parseLASWaveformDescriptor(record.recordId, data));
   } else if (record.userId === 'LASF_Projection' && record.recordId === 2111) {
     metadata.wktMathTransform = decodeLASString(data);
@@ -1689,9 +1693,9 @@ function getColorOffset(pointsFormatId: number): number {
 function getWaveformOffset(pointsFormatId: number): number {
   switch (pointsFormatId) {
     case 4:
-      return 29;
+      return 28;
     case 5:
-      return 35;
+      return 34;
     case 9:
       return 30;
     case 10:

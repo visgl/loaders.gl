@@ -70,9 +70,31 @@ Applications that need a compatibility loader in a worker can build one and prov
 
 ## TypeScript LAZ Streaming
 
-`LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. Layered PDRF 6-10 table parsing emits after the compressed field ranges required by `las.columns` arrive. PDRF 9/10 waveform-reference rows can precede trailing Extra Bytes; raw or typed Extra Bytes are projected directly once their Byte14 layers arrive. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item version 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy LASzip item version 1 uses a different codec and is rejected. `GPS_TIME`, `NIR`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, and `edgeOfFlightLine` are available as typed Arrow columns for records that contain them. Legacy PDRF 0-5 records report `overlap` as zero because that flag was introduced with PDRF 6. `WAVEFORM` exposes PDRF 4/5/9/10 packet references as fixed-width 29-byte rows. `EXTRA_BYTES` exposes raw bytes by default, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Waveform sample payloads are not loaded. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
+`LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. Layered PDRF 6-10 table parsing emits after the compressed field ranges required by `las.columns` arrive. PDRF 9/10 waveform-reference rows can precede trailing Extra Bytes; raw or typed Extra Bytes are projected directly once their Byte14 layers arrive. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item version 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy LASzip item version 1 uses a different codec and is rejected. `GPS_TIME`, `NIR`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, and `edgeOfFlightLine` are available as typed Arrow columns for records that contain them. Legacy PDRF 0-5 records report `overlap` as zero because that flag was introduced with PDRF 6. `WAVEFORM` exposes PDRF 4/5/9/10 packet references as fixed-width 29-byte rows. `EXTRA_BYTES` exposes raw bytes by default, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Waveform sample payloads are loaded separately through the range APIs below. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
 
 Atomic TypeScript parses attach typed file metadata to `loaderData.metadata`. This includes the public header identity and creation fields, raw VLR and EVLR records, Extra Bytes descriptors, waveform packet descriptors, WKT projection records, and GeoTIFF payloads. EVLR payloads are retained when they are present in the supplied complete buffer; streaming batches expose the header before later EVLR data is available.
+
+## Waveform Sample Access
+
+PDRF 4, 5, 9, and 10 store a fixed-width packet reference with each point, while the variable-length sample packet lives in an internal LAS waveform data record or a companion WDP file. The loader keeps the exact uint64 packet offset in the `WAVEFORM` Arrow column. Waveform helpers parse that reference and issue a byte-range read only when samples are requested:
+
+```typescript
+import {
+  parseLASWaveformPacketReference,
+  readLASWaveformPacket
+} from '@loaders.gl/las';
+import {HttpFile} from '@loaders.gl/loader-utils';
+
+const metadata = table.loaderData.metadata;
+const waveformRow = table.data.getChild('WAVEFORM').get(pointIndex);
+const reference = parseLASWaveformPacketReference(Uint8Array.from(waveformRow));
+
+// Use the LAS URL for internal data or the companion WDP URL for external data.
+const waveformSource = new HttpFile(waveformUrl);
+const packet = await readLASWaveformPacket(waveformSource, reference, metadata);
+```
+
+`packet.samples` contains unsigned integer samples and `packet.amplitudes` applies the descriptor's digitizer gain and offset. `readLASWaveformPackets` performs bounded concurrent range reads while preserving reference order. The standard LAS waveform compression type 0 and sample widths from 2 through 32 bits are supported; nonzero waveform compression types are rejected. Packet offsets remain `bigint` throughout.
 
 For layered PDRF 6-10 chunks, omitted intensity, classification, RGB, GPS time, and NIR columns do not allocate output arrays or construct arithmetic decoders for those independent layers. Legacy PDRF 0-5 fields share an interleaved entropy stream, so column selection avoids output allocation and extraction but cannot skip the corresponding entropy decoding.
 
