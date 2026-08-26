@@ -885,6 +885,7 @@ function createColumnPageIndexes(
   if (
     !column.primitiveType ||
     !isPageIndexPhysicalType(column.primitiveType) ||
+    !supportsStatisticsSortOrder(column) ||
     plannedPages.length !== pageLocations.length ||
     plannedPages.length === 0
   ) {
