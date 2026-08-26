@@ -9,6 +9,7 @@ import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
+  ArrowTableSource,
   bindSQLPredicate,
   parseSQLPredicate,
   planTableQuery,
@@ -24,6 +25,26 @@ test('Arrow executor advertises portable query capabilities', () => {
     cancellation: true
   });
   expect(Object.isFrozen(ARROW_TABLE_QUERY_CAPABILITIES)).toBe(true);
+});
+
+test('ArrowTableSource exposes shared metadata and bounded scan batches', async () => {
+  const source = new ArrowTableSource(makeArrowTable({x: [1, 2], value: [10, 20]}));
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.queryType).toBe('table');
+  expect(metadata.columns.map(column => [column.name, column.role])).toEqual([
+    ['x', 'x'],
+    ['value', 'attribute']
+  ]);
+  expect(metadata.statistics?.rowCount).toBe(2);
+
+  const batches = [];
+  for await (const batch of source.read({columns: ['value'], limit: 1})) {
+    batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  expect(batches[0].length).toBe(1);
+  expect(batches[0].data.schema.fields.map(field => field.name)).toEqual(['value']);
 });
 
 test('queryArrowTable filters, projects, and limits Arrow data', () => {
