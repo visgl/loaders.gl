@@ -34,7 +34,7 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `getRootTile()` returns the root octree tile header.
 - `getChildren(tile)` returns available child tile headers.
 - `loadTileContent(tile)` returns normalized point positions, optional colors, point count, and cartographic origin.
-- `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively as the selected node range is fetched. The TypeScript LAZ variant is required. `options.batchSize` controls the maximum points per table, `options.columns` can request `POSITION`, `COLOR_0`, and `NIR`, and `options.signal` cancels the request/decode.
+- `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively as the selected node range is fetched. The TypeScript LAZ variant is required. `options.batchSize` controls the maximum points per table, `options.columns` can request `POSITION`, `COLOR_0`, `NIR`, `intensity`, `classification`, `GPS_TIME`, `scanAngle`, and `pointSourceId`, and `options.signal` cancels the request/decode.
 - `loadHierarchyInBatches(options)` yields hierarchy pages and their discovered nodes as they are fetched.
 
 For TypeScript PDRF 6-8 batches, `loadTileContentInBatches` splits the node range into sequential requests and emits rows as soon as the requested independent layers arrive. PDRF 7 RGB waits for Point14 and RGB; PDRF 8 RGB/NIR waits for the layers requested through `options.columns`. `options.rangeChunkSize` controls the request size.

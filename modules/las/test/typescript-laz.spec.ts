@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import {
@@ -258,7 +259,7 @@ test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', asyn
   t.end();
 }, 60000);
 
-test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async t => {
+vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 8)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
@@ -317,15 +318,60 @@ test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async t => {
     }
   }
 
-  t.equal(decodedPointCount, metadata.pointCount, 'all PDRF 8 points decode');
-  t.ok(
-    firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength,
-    'RGB and NIR decode before the complete compressed chunk arrives'
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength).toBe(true);
+  expect(positions).toEqual(expectedPositions);
+  expect(colors).toEqual(expectedColors);
+  expect(nir).toEqual(expectedNir);
+});
+
+vitestTest('TypeScript LAZ does not wait for unrequested Point14 layers', async () => {
+  const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
+  const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedClassifications = new Uint8Array(metadata.pointCount);
+  const expectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  expectedCursor.decodeIntoPointData(
+    {
+      positions: expectedPositions,
+      classifications: expectedClassifications,
+      pointOffset: 0,
+      scale: [1, 1, 1],
+      offset: [0, 0, 0]
+    },
+    metadata.pointCount
   );
-  t.deepEqual(positions, expectedPositions, 'progressive PDRF 8 positions match');
-  t.deepEqual(colors, expectedColors, 'progressive PDRF 8 RGB matches');
-  t.deepEqual(nir, expectedNir, 'progressive PDRF 8 NIR matches');
-  t.end();
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const positions = new Float64Array(metadata.pointCount * 3);
+  const classifications = new Uint8Array(metadata.pointCount);
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+  for (let offset = 0; offset < compressed.byteLength; offset += TEST_INPUT_CHUNK_SIZE) {
+    const end = Math.min(offset + TEST_INPUT_CHUNK_SIZE, compressed.byteLength);
+    decoder.feed(compressed.subarray(offset, end));
+    const decoded = decoder.readPointDataBatch(
+      {
+        positions,
+        classifications,
+        pointOffset: decodedPointCount,
+        scale: [1, 1, 1],
+        offset: [0, 0, 0]
+      },
+      metadata.pointCount - decodedPointCount
+    );
+    if (decoded) {
+      firstDecodedByteLength = end;
+      decodedPointCount += decoded;
+      break;
+    }
+  }
+
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength).toBe(true);
+  expect(positions).toEqual(expectedPositions);
+  expect(classifications).toEqual(expectedClassifications);
 });
 
 test('TypeScript LAZ validates VLR codecs and truncated input', async t => {

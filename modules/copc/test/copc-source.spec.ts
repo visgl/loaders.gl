@@ -97,7 +97,7 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
   t.end();
 });
 
-test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async t => {
+vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
     copc: {decoder: 'typescript-laz'}
   });
@@ -131,10 +131,46 @@ test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async 
     expectedColors.push(...(atomicColors?.get(index)?.toArray() || []));
   }
 
-  t.equal(streamedPointCount, rootTile.pointCount, 'all points are yielded');
-  t.deepEqual(streamedPositions, expectedPositions, 'batched positions match atomic output');
-  t.deepEqual(streamedColors, expectedColors, 'batched colors match atomic output');
-  t.end();
+  expect(streamedPointCount).toBe(rootTile.pointCount);
+  expect(streamedPositions).toEqual(expectedPositions);
+  expect(streamedColors).toEqual(expectedColors);
+});
+
+vitestTest('COPCSourceLoader#selects progressive point-data columns', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    copc: {decoder: 'typescript-laz'}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const columns = [
+    'POSITION',
+    'COLOR_0',
+    'intensity',
+    'classification',
+    'GPS_TIME',
+    'scanAngle',
+    'pointSourceId'
+  ] as const;
+  const batches = source.loadTileContentInBatches(rootTile, {
+    batchSize: 127,
+    columns,
+    rangeChunkSize: 257
+  });
+  let firstBatch;
+  for await (const batch of batches) {
+    firstBatch = batch;
+    break;
+  }
+
+  expect(firstBatch).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('POSITION')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('COLOR_0')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('intensity')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('classification')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('GPS_TIME')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('scanAngle')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('pointSourceId')).toBeTruthy();
 });
 
 test('COPCSourceLoader#streams position-only TypeScript tile batches', async t => {

@@ -556,8 +556,33 @@ function getLayeredChunkLayout(
   };
 }
 
+/** Return the layered-stream prefix needed to satisfy a direct-output selection. */
 function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDataTarget): number {
-  let layerCount = 9;
+  // The first two streams contain XY and Z. Optional Point14 streams follow
+  // in codec order: classification, flags, intensity, scan angle, user data,
+  // point source ID, and GPS time.
+  let layerCount = 2;
+  if (target.classifications) {
+    layerCount = 3;
+  }
+  if (target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines) {
+    layerCount = 4;
+  }
+  if (target.intensities) {
+    layerCount = 5;
+  }
+  if (target.scanAngles) {
+    layerCount = 6;
+  }
+  if (target.userData) {
+    layerCount = 7;
+  }
+  if (target.pointSourceIds) {
+    layerCount = 8;
+  }
+  if (target.gpsTimes) {
+    layerCount = 9;
+  }
   if (target.colors || target.rawColors) {
     layerCount = 10;
   }
