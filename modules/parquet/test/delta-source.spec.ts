@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {DeltaSourceLoader, DeltaTableSource} from '../src/delta-source';
+import {DeltaSourceLoaderWithParser, DeltaTableSource} from '../src/delta-source';
 
 test('DeltaTableSource selects active files from commit actions', async () => {
   const log = [
@@ -33,9 +33,9 @@ test('DeltaTableSource resolves commit URLs relative to the table root', async (
 
 test('DeltaSourceLoader identifies commit-log URLs', () => {
   expect(
-    DeltaSourceLoader.testURL(
+    DeltaSourceLoaderWithParser.testURL(
       'https://example.com/table/_delta_log/00000000000000000001.json'
     )
   ).toBe(true);
-  expect(DeltaSourceLoader.testURL('https://example.com/data.json')).toBe(false);
+  expect(DeltaSourceLoaderWithParser.testURL('https://example.com/data.json')).toBe(false);
 });
