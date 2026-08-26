@@ -10,6 +10,15 @@ export {
   loadZarrConsolidatedMetadata
 } from './ome-zarr-source-loader';
 export {GeoZarrSourceLoader, GeoZarrRasterSource} from './geo-zarr-source-loader';
+export {ZarrArraySourceLoader, ZarrArraySource} from './zarr-array-source';
+export type {
+  GetZarrArrayParameters,
+  ZarrArrayData,
+  ZarrArraySelection,
+  ZarrArraySlice,
+  ZarrArraySourceLoaderOptions,
+  ZarrArraySourceMetadata
+} from './zarr-array-source';
 export type {
   GetOMEZarrParameters,
   LoadConsolidatedMetadataOptions,
