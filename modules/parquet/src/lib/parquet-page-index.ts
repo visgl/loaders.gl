@@ -266,10 +266,27 @@ export function decodeOffsetIndex(bytes: Uint8Array, rowCount: number): ParquetD
   ) {
     throw new Error('Invalid Parquet offset index page locations');
   }
+  let previousFirstRowIndex = -1;
+  for (const location of offsetIndex.page_locations) {
+    const firstRowIndex = Number(location.first_row_index);
+    if (!Number.isSafeInteger(firstRowIndex) || firstRowIndex < previousFirstRowIndex) {
+      throw new Error('Invalid Parquet offset index page locations');
+    }
+    previousFirstRowIndex = firstRowIndex;
+  }
   return offsetIndex.page_locations.map((location, index, locations) => {
     const firstRowIndex = Number(location.first_row_index);
-    const endRowIndex =
-      index + 1 < locations.length ? Number(locations[index + 1].first_row_index) : rowCount;
+    // A repeated row may continue on one or more pages. In that case the offset index
+    // legitimately repeats first_row_index. Extend each continuation page to the next
+    // strictly larger row start so selecting the row includes the complete continuation.
+    let endRowIndex = rowCount;
+    for (let nextIndex = index + 1; nextIndex < locations.length; nextIndex++) {
+      const nextFirstRowIndex = Number(locations[nextIndex].first_row_index);
+      if (nextFirstRowIndex > firstRowIndex) {
+        endRowIndex = nextFirstRowIndex;
+        break;
+      }
+    }
     const offset = Number(location.offset);
     const compressedByteLength = location.compressed_page_size;
     if (
