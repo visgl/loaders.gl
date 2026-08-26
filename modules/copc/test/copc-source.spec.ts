@@ -109,7 +109,10 @@ test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async 
   const streamedColors: number[] = [];
   let streamedPointCount = 0;
 
-  for await (const batch of source.loadTileContentInBatches(rootTile, {batchSize: 127})) {
+  for await (const batch of source.loadTileContentInBatches(rootTile, {
+    batchSize: 127,
+    rangeChunkSize: 257
+  })) {
     const positions = batch.data.data.getChild('POSITION');
     const colors = batch.data.data.getChild('COLOR_0');
     streamedPointCount += batch.pointCount;

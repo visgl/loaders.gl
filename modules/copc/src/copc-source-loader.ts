@@ -71,7 +71,7 @@ export type COPCTileContentBatchOptions = {
   /** Optional cancellation signal for the range request and decode loop. */
   signal?: AbortSignal;
   /** Arrow attributes to populate. POSITION is always included. */
-  columns?: readonly ('POSITION' | 'COLOR_0')[];
+  columns?: readonly ('POSITION' | 'COLOR_0' | 'NIR')[];
   /** Byte size for progressive node range requests. */
   rangeChunkSize?: number;
 };
@@ -366,69 +366,41 @@ export class COPCTileSource
     const colors =
       pointFormatHasColor(copc.header.pointDataRecordFormat) &&
       (options.columns ? options.columns.includes('COLOR_0') : true);
+    const nir =
+      copc.header.pointDataRecordFormat === 8 && Boolean(options.columns?.includes('NIR'));
     const rangeChunkSize = options.rangeChunkSize ?? this.options.copc?.rangeChunkSize ?? 65536;
     if (!Number.isSafeInteger(rangeChunkSize) || rangeChunkSize < 1) {
       throw new Error('COPC progressive rangeChunkSize must be a positive integer');
     }
 
-    if (!colors) {
-      yield* this.loadPositionOnlyTileContentInBatches(
-        copc,
-        node,
-        nativeOrigin,
-        cartographicOrigin,
-        batchSize,
-        rangeChunkSize,
-        options.signal
-      );
-      return;
+    if (options.columns?.includes('NIR') && copc.header.pointDataRecordFormat !== 8) {
+      throw new Error('COPC NIR output requires PDRF 8');
     }
 
-    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
-    const cursor = createLAZChunkDecoderCursor(compressed, {
-      pointCount: node.pointCount,
-      pointDataRecordFormat: copc.header.pointDataRecordFormat,
-      pointDataRecordLength: copc.header.pointDataRecordLength
-    });
-
-    while (cursor.remainingPointCount > 0) {
-      if (options.signal?.aborted) {
-        throw new Error('COPC progressive tile decode was aborted');
-      }
-      const pointCount = Math.min(batchSize, cursor.remainingPointCount);
-      const nativePositions = new Float64Array(pointCount * 3);
-      const positions = new Float32Array(pointCount * 3);
-      const batchColors = colors ? new Uint16Array(pointCount * 3) : null;
-      const decodedPointCount = cursor.decodeIntoPointData(
-        {
-          positions: nativePositions,
-          rawColors: batchColors,
-          pointOffset: 0,
-          scale: copc.header.scale,
-          offset: copc.header.offset
-        },
-        pointCount
-      );
-      if (decodedPointCount !== pointCount) {
-        throw new Error(
-          `COPC TypeScript LAZ decoder produced ${decodedPointCount} points; expected ${pointCount}`
-        );
-      }
-
-      this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
-      yield this.createTileContentResult(pointCount, positions, batchColors, cartographicOrigin);
-    }
+    yield* this.loadProgressiveTileContentInBatches(
+      copc,
+      node,
+      nativeOrigin,
+      cartographicOrigin,
+      batchSize,
+      rangeChunkSize,
+      options.signal,
+      colors,
+      nir
+    );
   }
 
-  /** Yield position-only batches while the node range is still arriving. */
-  protected async *loadPositionOnlyTileContentInBatches(
+  /** Yield selectively requested batches while the node range is still arriving. */
+  protected async *loadProgressiveTileContentInBatches(
     copc: Copc,
     node: Hierarchy.Node,
     nativeOrigin: number[],
     cartographicOrigin: number[],
     batchSize: number,
     rangeChunkSize: number,
-    signal?: AbortSignal
+    signal: AbortSignal | undefined,
+    colors: boolean,
+    nir: boolean
   ): AsyncIterable<COPCTileContent> {
     const decoder = createLAZChunkDecoder({
       pointCount: node.pointCount,
@@ -443,55 +415,65 @@ export class COPCTileSource
       signal
     )) {
       decoder.feed(compressedChunk);
-      yield* this.readPositionOnlyBatches(
+      yield* this.readProgressiveBatches(
         decoder,
         copc,
         node.pointCount,
         nativeOrigin,
         cartographicOrigin,
         batchSize,
-        decodedPointCount
+        decodedPointCount,
+        colors,
+        nir
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
     }
 
     decoder.close();
     if (decodedPointCount < node.pointCount) {
-      yield* this.readPositionOnlyBatches(
+      yield* this.readProgressiveBatches(
         decoder,
         copc,
         node.pointCount,
         nativeOrigin,
         cartographicOrigin,
         batchSize,
-        decodedPointCount
+        decodedPointCount,
+        colors,
+        nir
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
     }
     if (decodedPointCount !== node.pointCount) {
       throw new Error(
-        `COPC TypeScript LAZ position decoder produced ${decodedPointCount} points; expected ${node.pointCount}`
+        `COPC TypeScript LAZ point-data decoder produced ${decodedPointCount} points; expected ${node.pointCount}`
       );
     }
   }
 
-  /** Read all currently available position-only batches from a feedable decoder. */
-  protected *readPositionOnlyBatches(
+  /** Read all currently available selectively requested batches from a feedable decoder. */
+  protected *readProgressiveBatches(
     decoder: ReturnType<typeof createLAZChunkDecoder>,
     copc: Copc,
     nodePointCount: number,
     nativeOrigin: number[],
     cartographicOrigin: number[],
     batchSize: number,
-    decodedPointCount: number
+    decodedPointCount: number,
+    includeColors: boolean,
+    includeNir: boolean
   ): Iterable<COPCTileContent> {
     while (decodedPointCount < nodePointCount) {
       const pointCount = Math.min(batchSize, nodePointCount - decodedPointCount);
       const nativePositions = new Float64Array(pointCount * 3);
       const positions = new Float32Array(pointCount * 3);
-      const decoded = decoder.readPositionDataBatch(
+      const batchColors = includeColors ? new Uint16Array(pointCount * 3) : null;
+      const batchNir = includeNir ? new Uint16Array(pointCount) : null;
+      const decoded = decoder.readPointDataBatch(
         {
           positions: nativePositions,
+          rawColors: batchColors,
+          nir: batchNir,
           pointOffset: 0,
           scale: copc.header.scale,
           offset: copc.header.offset
@@ -505,7 +487,13 @@ export class COPCTileSource
         return;
       }
       this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
-      yield this.createTileContentResult(pointCount, positions, null, cartographicOrigin);
+      yield this.createTileContentResult(
+        pointCount,
+        positions,
+        batchColors,
+        cartographicOrigin,
+        batchNir
+      );
       decodedPointCount += decoded;
     }
   }
@@ -778,11 +766,17 @@ export class COPCTileSource
     pointCount: number,
     positions: Float32Array,
     colors: Uint16Array | null,
-    origin: number[]
+    origin: number[],
+    nir: Uint16Array | null = null
   ): COPCTileContent {
     const positionsAttribute = {value: positions, size: 3};
     const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
-    const data = this.createTileContentTable(pointCount, positionsAttribute, colorsAttribute);
+    const data = this.createTileContentTable(
+      pointCount,
+      positionsAttribute,
+      colorsAttribute,
+      nir ? {value: nir, size: 1} : undefined
+    );
 
     return {
       data,
@@ -797,13 +791,17 @@ export class COPCTileSource
   protected createTileContentTable(
     pointCount: number,
     positions: {value: Float32Array; size: number},
-    colors?: {value: Uint16Array; size: number; normalized: boolean}
+    colors?: {value: Uint16Array; size: number; normalized: boolean},
+    nir?: {value: Uint16Array; size: number}
   ): MeshArrowTable {
     const attributes: Mesh['attributes'] = {
       POSITION: positions
     };
     if (colors) {
       attributes.COLOR_0 = colors;
+    }
+    if (nir) {
+      attributes.NIR = nir;
     }
 
     return convertMeshToTable(

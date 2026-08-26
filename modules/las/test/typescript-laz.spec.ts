@@ -6,6 +6,7 @@ import test from 'test/utils/vitest-tape';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import {
+  createLAZChunkDecoder,
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
   getLAZChunkByteLength
@@ -256,6 +257,76 @@ test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', asyn
   }
   t.end();
 }, 60000);
+
+test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async t => {
+  const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 8)!;
+  const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedColors = new Uint16Array(metadata.pointCount * 3);
+  const expectedNir = new Uint16Array(metadata.pointCount);
+  const expectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+
+  expectedCursor.decodeIntoPointData(
+    {
+      positions: expectedPositions,
+      rawColors: expectedColors,
+      nir: expectedNir,
+      pointOffset: 0,
+      scale: [1, 1, 1],
+      offset: [0, 0, 0]
+    },
+    metadata.pointCount
+  );
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const positions = new Float64Array(metadata.pointCount * 3);
+  const colors = new Uint16Array(metadata.pointCount * 3);
+  const nir = new Uint16Array(metadata.pointCount);
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+
+  for (let offset = 0; offset < compressed.byteLength; offset += TEST_INPUT_CHUNK_SIZE) {
+    const end = Math.min(offset + TEST_INPUT_CHUNK_SIZE, compressed.byteLength);
+    decoder.feed(compressed.subarray(offset, end));
+    let batchPointCount = decoder.readPointDataBatch(
+      {
+        positions,
+        rawColors: colors,
+        nir,
+        pointOffset: decodedPointCount,
+        scale: [1, 1, 1],
+        offset: [0, 0, 0]
+      },
+      metadata.pointCount - decodedPointCount
+    );
+    while (batchPointCount && batchPointCount > 0) {
+      firstDecodedByteLength = firstDecodedByteLength < 0 ? end : firstDecodedByteLength;
+      decodedPointCount += batchPointCount;
+      batchPointCount = decoder.readPointDataBatch(
+        {
+          positions,
+          rawColors: colors,
+          nir,
+          pointOffset: decodedPointCount,
+          scale: [1, 1, 1],
+          offset: [0, 0, 0]
+        },
+        metadata.pointCount - decodedPointCount
+      );
+    }
+  }
+
+  t.equal(decodedPointCount, metadata.pointCount, 'all PDRF 8 points decode');
+  t.ok(
+    firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength,
+    'RGB and NIR decode before the complete compressed chunk arrives'
+  );
+  t.deepEqual(positions, expectedPositions, 'progressive PDRF 8 positions match');
+  t.deepEqual(colors, expectedColors, 'progressive PDRF 8 RGB matches');
+  t.deepEqual(nir, expectedNir, 'progressive PDRF 8 NIR matches');
+  t.end();
+});
 
 test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;

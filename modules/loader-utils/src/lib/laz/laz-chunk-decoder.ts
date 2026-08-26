@@ -176,14 +176,25 @@ export class FeedableLAZChunkDecoder {
    * values from those layers are read by the position-only decoder.
    */
   readPositionDataBatch(target: LAZPointDataTarget, pointCount: number): number | null {
-    if (target.colors || target.rawColors) {
-      throw new Error('Position-only LAZ batches cannot request color output');
+    if (target.colors || target.rawColors || target.nir) {
+      throw new Error('Position-only LAZ batches cannot request color or NIR output');
     }
+    return this.readPointDataBatch(target, pointCount);
+  }
+
+  /** Decode the next selectively requested PDRF 6-8 point-data batch. */
+  readPointDataBatch(target: LAZPointDataTarget, pointCount: number): number | null {
     if (this.metadata.pointDataRecordFormat < 6 || this.metadata.pointDataRecordFormat > 8) {
-      throw new Error('Position-only LAZ batches require point formats 6-8');
+      throw new Error('Progressive LAZ point-data batches require point formats 6-8');
+    }
+    if ((target.colors || target.rawColors) && this.metadata.pointDataRecordFormat === 6) {
+      throw new Error('Point format 6 does not contain RGB data');
+    }
+    if (target.nir && this.metadata.pointDataRecordFormat !== 8) {
+      throw new Error('NIR output requires point format 8');
     }
     if (!this.cursor) {
-      const compressed = this.getProgressivePositionData();
+      const compressed = this.getProgressivePointData(target);
       if (!compressed) {
         return null;
       }
@@ -230,10 +241,15 @@ export class FeedableLAZChunkDecoder {
     return this.compressed;
   }
 
-  private getProgressivePositionData(): Uint8Array | null {
+  private getProgressivePointData(target: LAZPointDataTarget): Uint8Array | null {
     const available = this.getCompressedAvailable();
     const layout = getLayeredChunkLayout(available, this.metadata);
-    if (!layout || available.byteLength < layout.pointDataByteLength) {
+    if (!layout) {
+      return null;
+    }
+    const requiredLayerCount = getProgressiveLayerCount(this.metadata, target);
+    const requiredByteLength = layout.getByteLength(requiredLayerCount);
+    if (available.byteLength < requiredByteLength) {
       return null;
     }
 
@@ -507,7 +523,8 @@ function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
 
 type LAZLayeredChunkLayout = {
   byteLength: number;
-  pointDataByteLength: number;
+  layerByteLengths: number[];
+  getByteLength: (layerCount: number) => number;
 };
 
 function getLayeredChunkLayout(
@@ -524,15 +541,33 @@ function getLayeredChunkLayout(
 
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let byteLength = sizeHeaderOffset + sizeHeaderByteLength;
-  let pointDataByteLength = byteLength;
+  const layerByteLengths: number[] = [];
   for (let index = 0; index < sizeHeaderCount; index++) {
     const layerByteLength = dataView.getUint32(sizeHeaderOffset + index * 4, true);
     byteLength += layerByteLength;
-    if (index < 9) {
-      pointDataByteLength += layerByteLength;
-    }
+    layerByteLengths.push(layerByteLength);
   }
-  return {byteLength, pointDataByteLength};
+  const dataOffset = sizeHeaderOffset + sizeHeaderByteLength;
+  return {
+    byteLength,
+    layerByteLengths,
+    getByteLength: layerCount =>
+      dataOffset + layerByteLengths.slice(0, layerCount).reduce((sum, value) => sum + value, 0)
+  };
+}
+
+function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDataTarget): number {
+  let layerCount = 9;
+  if (target.colors || target.rawColors) {
+    layerCount = 10;
+  }
+  if (target.nir) {
+    layerCount = 11;
+  }
+  return Math.min(
+    layerCount,
+    getChunkSizeHeaderCount(metadata.pointDataRecordFormat, getExtraByteCount(metadata))
+  );
 }
 
 const AC_MIN_LENGTH = 0x01000000;
