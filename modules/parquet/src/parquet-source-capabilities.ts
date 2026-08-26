@@ -7,7 +7,7 @@ import type {TableQueryCapabilities} from '@loaders.gl/loader-utils';
 /** Portable table-query capabilities of Parquet-backed scans. */
 export const PARQUET_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object.freeze({
   projection: 'pushdown',
-  predicate: 'pushdown',
+  predicate: 'pushdown+residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true

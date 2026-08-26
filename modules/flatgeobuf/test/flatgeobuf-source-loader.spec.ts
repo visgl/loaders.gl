@@ -56,6 +56,23 @@ test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', 
   t.end();
 });
 
+test('FlatGeobufVectorSource#getQueryMetadata discovers panel controls from the header', async t => {
+  const source = await createSource();
+  const queryMetadata = await source.getQueryMetadata();
+
+  t.equal(queryMetadata.sourceType, 'flatgeobuf', 'identifies the source adapter');
+  t.deepEqual(
+    queryMetadata.columns.map(column => column.name),
+    ['id', 'name', 'geometry'],
+    'includes every query-visible column'
+  );
+  t.equal(queryMetadata.columns[2]?.role, 'geometry', 'identifies the geometry control');
+  t.equal(queryMetadata.capabilities.bounds, 'pushdown', 'advertises packed R-tree pruning');
+  t.ok(queryMetadata.spatial?.bounds, 'discovers dataset bounds');
+  t.equal(queryMetadata.statistics?.rowCount, 179, 'discovers feature count');
+  t.end();
+});
+
 test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across formats', async t => {
   const source = await createSource();
   const defaultTable = await source.getFeatures({
@@ -157,6 +174,41 @@ test('FlatGeobufSourceLoader#getFeatures returns empty valid tables for no-match
     'empty binary response is valid'
   );
   t.equal(arrow.data.numRows, 0, 'empty Arrow response preserves schema');
+  t.end();
+});
+
+test('FlatGeobufVectorSource#query combines bbox pruning with portable projection and limit', async t => {
+  const source = await createSource();
+  const table = await source.query({
+    boundingBox: NARROW_BOUNDING_BOX,
+    columns: ['name'],
+    predicate: {op: '<>', args: [{property: 'id'}, '']},
+    limit: 2
+  });
+
+  t.deepEqual(
+    table.schema.fields.map(field => field.name),
+    ['name'],
+    'projects requested fields'
+  );
+  t.equal(table.data.numRows, 2, 'applies a global limit after the residual predicate');
+  t.equal(source.tableQueryCapabilities.predicate, 'residual', 'reports conservative capability');
+  t.end();
+});
+
+test('FlatGeobufVectorSource#explain reports relational and spatial planning', async t => {
+  const source = await createSource();
+  const explanation = await source.explain({
+    boundingBox: NARROW_BOUNDING_BOX,
+    columns: ['name'],
+    predicate: {op: '<>', args: [{property: 'id'}, '']},
+    limit: 2
+  });
+
+  t.deepEqual(explanation.outputColumns, ['name'], 'reports visible output columns');
+  t.deepEqual(explanation.requiredColumns, ['id', 'name'], 'retains hidden predicate columns');
+  t.equal(explanation.spatial.enabled, true, 'reports requested bounds');
+  t.equal(explanation.spatial.support, 'pushdown', 'reports packed R-tree pushdown');
   t.end();
 });
 

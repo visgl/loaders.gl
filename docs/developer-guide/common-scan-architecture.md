@@ -346,26 +346,28 @@ correctness using the shared contract:
 
 ```ts
 type TableQueryCapabilities = Readonly<{
-  projection: 'unsupported' | 'residual' | 'pushdown';
-  predicate: 'unsupported' | 'residual' | 'pushdown';
-  limit: 'unsupported' | 'residual' | 'pushdown';
+  projection: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
+  predicate: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
+  limit: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
   streaming: boolean;
   cancellation: boolean;
 }>;
 
 const PARQUET_TABLE_QUERY_CAPABILITIES = {
   projection: 'pushdown',
-  predicate: 'pushdown',
+  predicate: 'pushdown+residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true
 };
 ```
 
-`pushdown` means the backend has a physical opportunity to avoid work; it does not promise that
-every expression can be proven from metadata. Parquet still evaluates a residual predicate exactly
-after conservative statistics and page pruning. `residual` means correct local execution without a
-storage-level optimization. `unsupported` is a correctness gap that must be rejected or delegated.
+`pushdown` means the backend has a physical opportunity to avoid work and can execute the requested
+operator as part of physical planning. `pushdown+residual` means it can prune physical work before
+decoding and still must evaluate the surviving rows exactly. Parquet uses this level for statistics
+and page pruning followed by exact predicate evaluation. `residual` means correct local execution
+without a storage-level optimization. `unsupported` is a correctness gap that must be rejected or
+delegated.
 
 Capabilities answer two different questions:
 
@@ -374,6 +376,70 @@ Capabilities answer two different questions:
 
 The planner may reject a query only for a correctness gap. An optimization gap should produce a
 residual operator or a diagnostic.
+
+## Query discovery and reusable controls
+
+A reusable query editor needs more than an execution function. It needs to discover columns,
+types, semantic roles, source bounds, and physical capabilities before it can construct a valid
+query. Sources expose that information through `getQueryMetadata()` without materializing result
+rows:
+
+```ts
+type ScanQueryMetadata = Readonly<{
+  sourceType: string;
+  queryType: 'table' | 'point-cloud' | 'raster';
+  name?: string;
+  description?: string;
+  schema: Schema;
+  columns: readonly ScanColumnMetadata[];
+  capabilities: ScanQueryCapabilities;
+  spatial?: ScanSpatialMetadata;
+  statistics?: {rowCount?: number | bigint; byteLength?: number | bigint};
+}>;
+```
+
+`schema` is the authoritative execution schema. `columns` is a panel-ready view of those fields
+that adds semantic roles such as `identifier`, `geometry`, `x`, `y`, `z`, `time`, `intensity`, or
+`classification`. The common `createScanQueryMetadata()` helper derives names, types, nullability,
+titles, and descriptions from a loaders.gl schema; adapters only annotate roles that cannot be
+inferred from physical Arrow types.
+
+The discovery call is intentionally separate from `getMetadata()` and `getSchema()`:
+
+- `getMetadata()` describes the dataset in its native domain, for example vector layers or an
+  Iceberg snapshot.
+- `getSchema()` returns the source's conventional schema, which may omit synthetic query columns
+  such as GeoArrow geometry.
+- `getQueryMetadata()` returns exactly the columns and controls visible to the portable query.
+- `explain()` accepts a proposed query and reports its logical and physical plan without reading
+  result rows.
+
+This distinction lets a FlatGeobuf vector source preserve its established property-only
+`getSchema()` contract while exposing the generated `geometry` column to a query panel. Parquet can
+obtain the same shape from its footer, Iceberg from table and manifest metadata, Arrow directly
+from its schema, and a SQL source from catalog schema discovery.
+
+A framework-specific panel can remain outside the scan core. Its data flow is small and reusable:
+
+```text
+source.getQueryMetadata()
+    -> column projection picker
+    -> typed predicate builder
+    -> named parameter inputs
+    -> optional bounds / level-of-detail controls
+    -> capability badges
+    -> source.explain(query)
+    -> source.read(query) or source.query(query)
+```
+
+Named values are discovered from the AST with `getColumnarPredicateParameterNames()`. The panel
+does not need to parse SQL text, and parameter values remain separate from the immutable predicate.
+This is important for prepared SQL, GPU uniforms, saved queries, and URL state.
+
+Discovery should normally require only headers, footers, manifests, catalog calls, or already
+available in-memory schemas. It must accept cancellation and must not silently begin a full data
+scan. Column statistics and enumerated value hints can be added later, but should identify whether
+they are exact or sampled before a panel uses them to constrain input.
 
 ## Explainability and telemetry
 
@@ -418,7 +484,7 @@ const explanation = await parquetSource.explain({
   limit: 100
 });
 
-explanation.operators.predicate.support; // 'pushdown' | 'residual' | 'unsupported'
+explanation.operators.predicate.support; // 'pushdown' | 'pushdown+residual' | 'residual' | 'unsupported'
 explanation.rowGroups?.prunedByStatistics;
 ```
 
@@ -481,28 +547,126 @@ semantics?
 
 ## Roadmap
 
-The implementation evolves in reviewable tranches. The foundation now provides the first four
-items; the later work can land independently without changing portable query semantics:
+The implementation evolves in reviewable tranches. The first five are now landed; the remaining
+work is deliberately ordered by how much useful physical pruning each format can provide:
 
-1. **Foundation:** shared generic predicate, late binding, `TableQueryOptions`, canonical planning,
-   capability descriptors, and common ordered scan-task execution.
-2. **SQL adapters:** parameterized DuckDB and Snowflake compilation while retaining raw SQL for the
-   full language.
-3. **Reference executors:** switchable Arrow and lazy DuckDB execution over the same browser data,
-   without ingesting the Arrow result into DuckDB.
-4. **Physical scans:** common projection, predicate, and global-limit semantics across Parquet and
-   Iceberg, including hidden predicate/delete columns and aligned provenance.
-5. **Explain:** serializable physical plans, pushed-versus-residual diagnostics, and telemetry
-   annotations.
-6. **More table formats:** Delta transaction logs and deletion vectors, then Lance fragments and
-   indices, reusing Parquet or format-native physical tasks as appropriate.
-7. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
-   GPU-specific limit/selection stage.
-8. **Relational growth:** add ordering, expressions, aggregates, or joins only where at least two
-   materially different backends need the same portable meaning.
+1. **Foundation — landed:** shared generic predicate, late binding, `TableQueryOptions`, canonical
+   planning, capability descriptors, and common ordered scan-task execution.
+2. **SQL adapters — landed:** parameterized DuckDB and Snowflake compilation while retaining raw SQL
+   for the full language.
+3. **Reference executors — landed:** switchable Arrow and lazy DuckDB execution over the same
+   browser data, without ingesting the Arrow result into DuckDB.
+4. **Columnar physical scans — landed:** common projection, predicate, global-limit semantics,
+   hidden predicate/delete columns, and aligned provenance across Parquet and Iceberg.
+5. **Explain and diagnostics — landed:** serializable logical/physical plans, pushed-versus-residual
+   annotations, footer-only Parquet row-group explanations, and telemetry alignment.
+6. **FlatGeobuf spatial scan — landed:** add a `FlatGeobufSource` scan adapter over the existing packed R-tree
+   and feature header. Spatial bounding boxes should prune feature ranges before decoding; scalar
+   attributes can initially be residual Arrow filtering. Preserve the existing vector-source API and
+   expose Arrow batches through the scan path rather than forcing GeoJSON materialization.
+7. **GeoArrow and Arrow IPC:** make GeoArrow/Arrow batches first-class scan inputs and outputs.
+   Projection and residual predicates are cheap in-memory operations; geometry columns, extension
+   metadata, and zero-copy slicing must survive the plan. This becomes the conformance reference for
+   vector formats that do not yet have physical indexes.
+8. **Stripe and block formats:** add ORC stripe/row-index planning, then CSV/JSONL chunk scans with
+   conservative byte-range tasking. ORC can advertise statistics pushdown; CSV/JSONL should advertise
+   residual filtering and projection pushdown only when the parser can avoid decoding unused fields.
+9. **Transactional and fragment formats:** Delta Lake logs/deletion vectors, Lance fragments and
+   indices, and future Iceberg table features. Reuse the snapshot, delete, provenance, and explain
+   contracts; each format should contribute a native file/fragment planner rather than another
+   query AST.
+10. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
+    GPU-specific limit/selection stage. GPU plans should report whether compaction is deferred or
+    materialized, so CPU and GPU diagnostics remain comparable.
+11. **Point-cloud scans:** standardize the sibling `PointCloudQueryOptions` contract, implement COPC
+    hierarchy and bounds planning first, then reuse its planner and Arrow batch conventions for
+    Potree. Preserve point budgets, hierarchy levels, target spacing, coordinate roles, and node
+    provenance instead of forcing them into scalar table predicates.
+12. **Raster and multidimensional scans:** standardize the sibling `RasterQuery`/`ScanTask` shape for
+    GeoTIFF/COG, Zarr/GeoZarr, OME-Zarr, and NetCDF. Share scheduling, cancellation, range caching,
+    explain, telemetry, and spatial-envelope pruning with table scans while keeping pixel windows,
+    levels, chunks, and resampling out of `TableQuery`.
+13. **Relational growth:** add ordering, scalar expressions, aggregates, unions, or joins only when
+    at least two materially different backends can implement the same portable meaning. Spatial
+    predicates and nearest-neighbor search should remain extensions until indexed CPU, GPU, and
+    remote-source strategies converge.
+
+### Format capability matrix
+
+The roadmap is capability-driven rather than format-driven. A new adapter can land incrementally by
+advertising the strongest correct level for each operator:
+
+| Format/source | Natural physical unit | Projection | Predicate | Limit | First useful tranche |
+| --- | --- | --- | --- | --- | --- |
+| Arrow / GeoArrow | record batch | residual/zero-copy | residual | residual | 7 |
+| Parquet / Iceberg | row group, page, file | pushdown | pushdown + residual | global/pushdown | 4 |
+| FlatGeobuf | R-tree feature range | residual | bbox pushdown, scalar residual | residual | 6 |
+| ORC | stripe, row index | pushdown | pushdown + residual | global/pushdown | 8 |
+| CSV / JSONL | byte-range chunk | parser-dependent | residual | global | 8 |
+| Delta / Lance | file, fragment, delete vector | format-native | format-native + residual | global | 9 |
+| COPC / Potree | hierarchy node | attribute decode | bounds + attribute residual | global | 11 |
+| GeoTIFF / Zarr | tile, chunk, overview | band/variable pushdown | spatial/window pushdown | task-local | 12 |
+
+“Pushdown” in this table is a promise about avoiding physical work, not merely accepting the
+operator. An adapter must report `residual` when it must decode rows or features before evaluating
+the predicate, and conformance tests must verify that hidden filter columns never leak into output.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
+
+## Point-cloud participation
+
+COPC and Potree participate through a sibling point-cloud query. They share relational attribute
+semantics while retaining hierarchy and resolution controls that do not belong in `TableQuery`:
+
+```ts
+type PointCloudQueryOptions<PredicateT extends ColumnarPredicate = ColumnarPredicate> =
+  TableQueryOptions<PredicateT> &
+    Readonly<{
+      bounds?: {
+        minimum: readonly [number, number, number];
+        maximum: readonly [number, number, number];
+      };
+      minimumLevel?: number;
+      maximumLevel?: number;
+      targetSpacing?: number;
+    }>;
+```
+
+Projection chooses decoded point attributes. The predicate filters attributes with the same null
+and comparison semantics as a table scan. Bounds select points in the source coordinate system,
+and hierarchy levels or target spacing determine which physical nodes may contribute. The global
+`limit` still counts points that survive bounds and predicates; it is not a license for each node
+to emit its own limit.
+
+`validatePointCloudQueryOptions()` applies ordinary table-query validation and additionally rejects
+non-finite or inverted bounds, invalid hierarchy levels, and non-positive spacing. A point-cloud
+adapter advertises table capabilities plus `bounds`, `levelOfDetail`, and `spacing` support.
+
+COPC is the first physical target because its hierarchy pages, node bounds, point counts, and LAZ
+chunks create a clean pruning ladder:
+
+```text
+PointCloudQueryOptions
+    -> COPC header and schema discovery
+    -> hierarchy page traversal
+    -> bounds / level / spacing node selection
+    -> ordered node ScanTasks
+    -> requested-attribute LAZ decoding
+    -> exact residual bounds and attribute filtering
+    -> global limit
+    -> Arrow or GeoArrow point batches
+```
+
+Potree can reuse the logical query, metadata roles, hierarchy selection interface, scan executor,
+and result batches. Its physical adapter remains separate because Potree versions differ in
+metadata, hierarchy storage, point encoding, and URL layout. Initial Potree support can conservatively
+advertise bounds and level selection as pushdown while keeping scalar attribute predicates residual.
+
+Both adapters should expose `x`, `y`, and `z` roles even when their native attribute names use LAS
+conventions such as `X`, `Y`, and `Z`. Intensity, classification, color, GPS time, and point-source
+identifier roles allow the same query panel to render useful typed controls without embedding COPC
+or Potree naming rules in UI code.
 
 ## Raster participation
 

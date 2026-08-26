@@ -65,13 +65,17 @@ export type TableQueryPlan<PredicateT = ColumnarPredicate> =
   readonly TableQueryPlanStep<PredicateT>[];
 
 /** Capability levels for an individual portable table-query operator. */
-export type TableQueryOperatorSupport = 'unsupported' | 'residual' | 'pushdown';
+export type TableQueryOperatorSupport =
+  | 'unsupported'
+  | 'residual'
+  | 'pushdown'
+  | 'pushdown+residual';
 
 /** Optimization and correctness capabilities advertised by a table-query backend. */
 export type TableQueryCapabilities = Readonly<{
   /** Whether output projection can avoid reading unrequested columns. */
   projection: TableQueryOperatorSupport;
-  /** Whether predicates are unsupported, evaluated residually, or pushed into physical planning. */
+  /** Whether predicates are unsupported, residual, pushed down, or both pushed and residual. */
   predicate: TableQueryOperatorSupport;
   /** Whether limits are unsupported, applied after execution, or stop physical work early. */
   limit: TableQueryOperatorSupport;
