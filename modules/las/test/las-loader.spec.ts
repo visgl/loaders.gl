@@ -349,6 +349,49 @@ test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () =
   expect(streamedExtraBytes).toEqual(getArrowColumnValues(uncompressed, 'EXTRA_BYTES'));
 });
 
+test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const options = {
+    las: {
+      shape: 'arrow-table' as const,
+      columns: ['POSITION', 'EXTRA_BYTES'] as const,
+      extraBytes: 'typed' as const
+    },
+    core: {worker: false}
+  };
+  const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const typedColumnNames = getArrowColumnNames(uncompressed).filter(name =>
+    name.startsWith('EXTRA_BYTES_')
+  );
+  expect(typedColumnNames.length).toBeGreaterThan(0);
+  expect(getArrowColumnNames(compressed)).toEqual(['POSITION', ...typedColumnNames]);
+  for (const columnName of typedColumnNames) {
+    expect(getArrowColumnValues(compressed, columnName)).toEqual(
+      getArrowColumnValues(uncompressed, columnName)
+    );
+  }
+  const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+    batchSize: 127,
+    las: options.las,
+    core: {worker: false}
+  });
+  const streamedValues = new Map<string, unknown[]>();
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    for (const columnName of typedColumnNames) {
+      const values = streamedValues.get(columnName) || [];
+      values.push(...getArrowColumnValues(batch, columnName));
+      streamedValues.set(columnName, values);
+    }
+  }
+  for (const columnName of typedColumnNames) {
+    expect(streamedValues.get(columnName)).toEqual(getArrowColumnValues(uncompressed, columnName));
+  }
+});
+
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
   const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');
