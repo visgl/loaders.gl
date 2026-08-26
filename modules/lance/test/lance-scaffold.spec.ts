@@ -210,6 +210,34 @@ test('Lance source emits an Arrow batch for a flat Lance file', async () => {
   expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
+test('Lance loader emits Arrow batches from an input iterator', async () => {
+  const batches = [];
+  for await (const batch of LanceLoaderWithParser.parseInBatches([FLAT_FILE_FIXTURE], {
+    lance: {columnTypes: ['int32'], columnNames: ['id']}
+  })) {
+    batches.push(batch);
+  }
+
+  expect(batches).toHaveLength(1);
+  expect(batches[0].length).toBe(3);
+  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
+});
+
+test('Lance source reads file metadata directly from a Blob', async () => {
+  const source = LanceSourceLoader.createDataSource(new Blob([FILE_FIXTURE]), {});
+  const metadata = await source.getFileMetadata();
+
+  expect(metadata.majorVersion).toBe(2);
+  expect(metadata.columns[0].pages[0].length).toBe(3);
+});
+
+test('Lance source loader identifies dataset and data-file URLs', async () => {
+  expect(LanceSourceLoader.testURL('https://example.com/table.lance')).toBe(true);
+  expect(LanceSourceLoader.testURL('https://example.com/table.lance/data/part.lance')).toBe(true);
+  expect(LanceSourceLoader.testURL('https://example.com/table.parquet')).toBe(false);
+  await expect(LanceSourceLoader.preload()).resolves.toBe(LanceSourceLoader);
+});
+
 test('Lance scaffold uses an explicit decoder error', async () => {
   const {LanceLoaderWithParser} = await import('../src/lance-loader');
 
