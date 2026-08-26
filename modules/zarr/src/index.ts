@@ -14,6 +14,8 @@ export {ZarrArraySourceLoader, ZarrArraySource} from './zarr-array-source';
 export type {
   GetZarrArrayParameters,
   ZarrArrayData,
+  ZarrArraySelection,
+  ZarrArraySlice,
   ZarrArraySourceLoaderOptions,
   ZarrArraySourceMetadata
 } from './zarr-array-source';

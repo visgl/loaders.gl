@@ -23,11 +23,24 @@ export type ZarrArraySourceMetadata = {
 
 /** Parameters for reading a Zarr array selection. */
 export type GetZarrArrayParameters = {
-  /** Integer index for each selected dimension; null retains that dimension. */
-  selection?: Array<number | null>;
+  /** Integer or slice selector for each dimension; null retains that dimension. */
+  selection?: ZarrArraySelection;
   /** Abort signal forwarded to metadata and chunk requests. */
   signal?: AbortSignal;
 };
+
+/** Slice selector accepted by {@link ZarrArraySource#getArray}. */
+export type ZarrArraySlice = {
+  /** Inclusive starting index, defaulting to the dimension boundary. */
+  start?: number;
+  /** Exclusive stopping index, defaulting to the dimension boundary. */
+  stop?: number;
+  /** Stride between selected indices, defaulting to one. */
+  step?: number;
+};
+
+/** Positional selectors for a Zarr array read. */
+export type ZarrArraySelection = Array<number | null | ZarrArraySlice>;
 
 /** Result of a Zarr array read. */
 export type ZarrArrayData = {
@@ -113,7 +126,12 @@ export class ZarrArraySource extends ZarrSource {
     if (selection.length !== metadata.shape.length) {
       throw new Error(`Zarr array selection must have ${metadata.shape.length} dimensions.`);
     }
-    const chunk = await zarrita.get(array, selection, {signal: parameters.signal});
+    const zarritaSelection = selection.map(selector =>
+      isZarrArraySlice(selector)
+        ? zarrita.slice(selector.start ?? null, selector.stop ?? null, selector.step ?? null)
+        : selector
+    );
+    const chunk = await zarrita.get(array, zarritaSelection, {signal: parameters.signal});
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr array selection.');
     }
@@ -151,4 +169,9 @@ export class ZarrArraySource extends ZarrSource {
       }
     };
   }
+}
+
+/** Tests whether a selector is a slice descriptor rather than an index. */
+function isZarrArraySlice(selector: number | null | ZarrArraySlice): selector is ZarrArraySlice {
+  return typeof selector === 'object' && selector !== null;
 }
