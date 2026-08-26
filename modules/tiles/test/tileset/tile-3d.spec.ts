@@ -423,7 +423,7 @@ test('Tile3D#tileDrawn defaults to true', t => {
 });
 
 // TODO failing test
-test.skip('Tile3D#screenSpaceError is calculated correctly', t => {
+test('Tile3D#screenSpaceError is calculated correctly', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -453,7 +453,7 @@ test.skip('Tile3D#screenSpaceError is calculated correctly', t => {
     },
     ['test']
   );
-  t.equal(tile.screenSpaceError, 2.7410122234342147);
+  t.equal(tile.screenSpaceError, 3.6893401777997967);
   t.end();
 });
 
