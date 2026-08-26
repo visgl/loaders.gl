@@ -47,6 +47,45 @@ test('ArrowTableSource exposes shared metadata and bounded scan batches', async 
   expect(batches[0].data.schema.fields.map(field => field.name)).toEqual(['value']);
 });
 
+test('ArrowTableSource assigns coordinate, time, and attribute roles', async () => {
+  const source = new ArrowTableSource(
+    makeArrowTable({
+      longitude: [1],
+      lat: [2],
+      elevation: [3],
+      event_time: [4],
+      label: ['x'],
+      y: [5],
+      z: [6],
+      altitude: [7],
+      time: [8],
+      updatedTimestamp: [9]
+    })
+  );
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => [column.name, column.role])).toEqual([
+    ['longitude', 'longitude'],
+    ['lat', 'latitude'],
+    ['elevation', 'attribute'],
+    ['event_time', 'time'],
+    ['label', 'attribute'],
+    ['y', 'y'],
+    ['z', 'z'],
+    ['altitude', 'attribute'],
+    ['time', 'time'],
+    ['updatedTimestamp', 'time']
+  ]);
+});
+
+test('ArrowTableSource rejects already-aborted metadata requests', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const source = new ArrowTableSource(makeArrowTable({value: [1]}));
+
+  await expect(source.getQueryMetadata({signal: controller.signal})).rejects.toThrow(/aborted/);
+});
+
 test('queryArrowTable filters, projects, and limits Arrow data', () => {
   const table = makeArrowTable({
     year: [2023, 2024, 2025, 2026],

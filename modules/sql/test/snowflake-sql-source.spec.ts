@@ -2,20 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
 import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql';
-
-test('SnowflakeSQLSource#createDataSource selects Snowflake source from URL', t => {
+test('SnowflakeSQLSource#createDataSource selects Snowflake source from URL', () => {
   const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'}
   });
-
-  t.ok(dataSource instanceof SnowflakeSQLDataSource, 'returns SnowflakeSQLDataSource');
-  t.end();
+  expect(
+    dataSource instanceof SnowflakeSQLDataSource,
+    'returns SnowflakeSQLDataSource'
+  ).toBeTruthy();
 });
-
-test('SnowflakeSQLSource executes SQL API queries through fetch', async t => {
+test('SnowflakeSQLSource executes SQL API queries through fetch', async () => {
   const fetchResponse = async (_url: string, requestInit?: RequestInit) => {
     if (requestInit?.method === 'POST') {
       return new Response(
@@ -33,7 +32,6 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async t => {
         }
       );
     }
-
     return new Response(
       JSON.stringify({
         data: [['extra', 4]]
@@ -44,7 +42,6 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async t => {
       }
     );
   };
-
   const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
     core: {
       loadOptions: {
@@ -55,25 +52,15 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async t => {
     },
     snowflake: {token: 'token'}
   }) as SnowflakeSQLDataSource;
-
   const rows = await dataSource.queryRows('SELECT * FROM demo');
-  t.deepEqual(
-    rows,
-    [
-      {name: 'demo', count: 2},
-      {name: 'extra', count: 4}
-    ],
-    'returns SQL API rows across partitions'
-  );
-
+  expect(rows, 'returns SQL API rows across partitions').toEqual([
+    {name: 'demo', count: 2},
+    {name: 'extra', count: 4}
+  ]);
   const arrowTable = await dataSource.queryArrow('SELECT * FROM demo');
-  t.equal(arrowTable.data.numRows, 2, 'returns Arrow table fallback across partitions');
-  t.equal(arrowTable.data.get(0)?.toJSON()?.name, 'demo', 'maps response rows to Arrow output');
-  t.equal(
-    arrowTable.data.get(1)?.toJSON()?.name,
-    'extra',
-    'includes partition rows in Arrow output'
+  expect(arrowTable.data.numRows, 'returns Arrow table fallback across partitions').toBe(2);
+  expect(arrowTable.data.get(0)?.toJSON()?.name, 'maps response rows to Arrow output').toBe('demo');
+  expect(arrowTable.data.get(1)?.toJSON()?.name, 'includes partition rows in Arrow output').toBe(
+    'extra'
   );
-
-  t.end();
 });

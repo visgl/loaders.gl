@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {
   convertRowsToArrowTable,
   convertSQLColumnsToSchema,
@@ -11,35 +10,35 @@ import {
   getQualifiedTableName,
   quoteSqlIdentifier
 } from '../src/sql-utils';
-
-test('sql-utils escapes SQL strings and identifiers', t => {
-  t.equal(escapeSqlString("O'Reilly"), "O''Reilly", 'escapes single quotes');
-  t.equal(quoteSqlIdentifier('has"quote'), '"has""quote"', 'escapes double quotes');
-  t.equal(
+test('sql-utils escapes SQL strings and identifiers', () => {
+  expect(escapeSqlString("O'Reilly"), 'escapes single quotes').toBe("O''Reilly");
+  expect(quoteSqlIdentifier('has"quote'), 'escapes double quotes').toBe('"has""quote"');
+  expect(
     getQualifiedTableName({
       catalogName: 'analytics',
       schemaName: 'public',
       tableName: 'events'
     }),
-    '"analytics"."public"."events"',
     'quotes qualified table names'
+  ).toBe('"analytics"."public"."events"');
+  expect(getQualifiedTableName({tableName: 'events'})).toBe('"events"');
+  expect(getQualifiedTableName({schemaName: 'public', tableName: 'events'})).toBe(
+    '"public"."events"'
   );
-  t.end();
 });
-
-test('sql-utils converts rows to Arrow tables and infers nullable primitive types', t => {
+test('sql-utils converts rows to Arrow tables and infers nullable primitive types', () => {
   const table = convertRowsToArrowTable([{value: null}, {value: 7}]);
-  t.equal(table.data.numRows, 2, 'creates arrow rows');
-  t.equal(table.schema.fields[0]?.name, 'value', 'retains field name');
-  t.equal(table.data.get(1)?.toJSON()?.value, 7, 'preserves later primitive values');
-
+  expect(table.data.numRows, 'creates arrow rows').toBe(2);
+  expect(table.schema.fields[0]?.name, 'retains field name').toBe('value');
+  expect(table.data.get(1)?.toJSON()?.value, 'preserves later primitive values').toBe(7);
   const emptyTable = convertRowsToArrowTable([]);
-  t.equal(emptyTable.data.numRows, 0, 'handles empty row sets');
-  t.equal(emptyTable.schema.fields.length, 0, 'returns empty schema for empty row sets');
-  t.end();
-});
+  expect(emptyTable.data.numRows, 'handles empty row sets').toBe(0);
+  expect(emptyTable.schema.fields.length, 'returns empty schema for empty row sets').toBe(0);
 
-test('sql-utils maps SQL column metadata to ordered schema fields', t => {
+  const populatedTable = convertRowsToArrowTable([{active: true, label: 'ready'}]);
+  expect(populatedTable.schema.fields.map(field => field.type)).toEqual(['bool', 'utf8']);
+});
+test('sql-utils maps SQL column metadata to ordered schema fields', () => {
   const schema = convertSQLColumnsToSchema([
     {
       columnName: 'created_at',
@@ -60,14 +59,39 @@ test('sql-utils maps SQL column metadata to ordered schema fields', t => {
       ordinalPosition: 3
     }
   ]);
-
-  t.deepEqual(
+  expect(
     schema.fields.map(field => field.name),
-    ['id', 'created_at', 'payload'],
     'sorts columns by ordinal position'
-  );
-  t.equal(schema.fields[0]?.type, 'int64', 'maps bigint columns');
-  t.equal(schema.fields[1]?.type, 'timestamp-millisecond', 'maps timestamp columns');
-  t.equal(schema.fields[2]?.type, 'binary', 'maps blob columns');
-  t.end();
+  ).toEqual(['id', 'created_at', 'payload']);
+  expect(schema.fields[0]?.type, 'maps bigint columns').toBe('int64');
+  expect(schema.fields[1]?.type, 'maps timestamp columns').toBe('timestamp-millisecond');
+  expect(schema.fields[2]?.type, 'maps blob columns').toBe('binary');
+});
+
+test.each([
+  ['BIGINT', 'int64'],
+  ['HUGEINT', 'int64'],
+  ['LONG', 'int64'],
+  ['INTEGER', 'int32'],
+  ['SMALLINT', 'int32'],
+  ['TINYINT', 'int32'],
+  ['DOUBLE PRECISION', 'float64'],
+  ['FLOAT8', 'float64'],
+  ['REAL', 'float64'],
+  ['FLOAT', 'float64'],
+  ['DECIMAL(10, 2)', 'float64'],
+  ['NUMERIC', 'float64'],
+  ['BOOLEAN', 'bool'],
+  ['DATE', 'date-day'],
+  ['TIME WITH TIME ZONE', 'timestamp-millisecond'],
+  ['TIMESTAMP', 'timestamp-millisecond'],
+  ['BLOB', 'binary'],
+  ['VARBINARY', 'binary'],
+  ['VARCHAR', 'utf8']
+])('sql-utils maps %s SQL types to %s', (sqlType, expectedType) => {
+  const schema = convertSQLColumnsToSchema([
+    {columnName: 'value', sqlType, nullable: true, ordinalPosition: 1}
+  ]);
+
+  expect(schema.fields[0]?.type).toBe(expectedType);
 });
