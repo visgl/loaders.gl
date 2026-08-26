@@ -29,6 +29,16 @@ test('NDJSONTableSource handles zero limits, empty projections and invalid limit
   }).rejects.toThrow('non-negative safe integer');
 });
 
+test('NDJSONTableSource truncates a multi-row batch at the global limit', async () => {
+  const source = new NDJSONTableSource(new Blob(['{"name":"a"}\n{"name":"b"}\n']), {
+    batchSize: 2
+  });
+  const batches = [];
+  for await (const batch of source.read({limit: 1})) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.length).toBe(1);
+});
+
 test('NDJSONTableSource forwards cancellation and reports empty input', async () => {
   const controller = new AbortController();
   controller.abort();

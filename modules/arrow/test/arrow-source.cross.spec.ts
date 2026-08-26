@@ -29,6 +29,14 @@ test('ArrowTableSource handles zero limits and empty projections', async () => {
   }).rejects.toThrow('non-negative safe integer');
 });
 
+test('ArrowTableSource reads the complete table without projection', async () => {
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a'], value: [1]}));
+  const source = new ArrowTableSource(new Blob([bytes]));
+  const batches = [];
+  for await (const batch of source.read()) batches.push(batch);
+  expect(batches[0]?.length).toBe(1);
+});
+
 test('ArrowTableSource forwards cancellation and reports empty input', async () => {
   const controller = new AbortController();
   controller.abort();
