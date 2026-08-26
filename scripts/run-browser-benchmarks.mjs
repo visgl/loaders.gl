@@ -20,7 +20,8 @@ export async function runBrowserBenchmarks(options = {}) {
     configFile: 'vitest.config.ts',
     root: process.cwd(),
     optimizeDeps: {
-      entries: ['test/bench/index.html']
+      entries: ['test/bench/index.html'],
+      include: ['papaparse']
     },
     server: {
       host: options.host || DEFAULT_HOST,
@@ -48,6 +49,9 @@ export async function runBrowserBenchmarks(options = {}) {
 
   const page = await browser.newPage();
   forwardBrowserConsole(page);
+  await page.route('https://unpkg.com/@loaders.gl/csv@*/dist/csv-worker.js', route =>
+    route.fulfill({path: 'modules/csv/dist/csv-worker.js'})
+  );
 
   try {
     return await new Promise((resolve, reject) => {

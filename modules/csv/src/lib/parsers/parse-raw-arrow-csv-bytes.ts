@@ -191,21 +191,6 @@ function findSimpleHeaderRowEnd(
   return {end: bytes.length, nextStart: bytes.length};
 }
 
-/**
- * Selects the earliest found structural byte index.
- *
- * The raw parser only searches for ASCII CSV syntax bytes such as comma, tab,
- * quote, CR and LF. In valid UTF-8, non-ASCII characters use leading bytes
- * 0xc2-0xf4 and continuation bytes 0x80-0xbf, so these ASCII syntax bytes
- * cannot be mistaken for part of a multi-byte character.
- */
-function selectEarlierIndex(currentIndex: number, nextIndex: number): number {
-  if (nextIndex < 0) {
-    return currentIndex;
-  }
-  return currentIndex < 0 || nextIndex < currentIndex ? nextIndex : currentIndex;
-}
-
 /** Stateful single-buffer byte CSV parser that appends cell bytes into Arrow Utf8 columns. */
 class RawArrowCSVByteParser {
   private readonly bytes: Uint8Array;
@@ -586,6 +571,10 @@ class RawArrowQuotedDirectCSVByteParser {
   private appendDataRows(start: number): void {
     const columnCount = this.columnBuilders.length;
     const bytes = this.bytes;
+    if (start >= bytes.length) {
+      return;
+    }
+
     const delimiter = this.options.delimiter;
     const quote = this.options.quote;
     let fieldStart = start;
@@ -684,16 +673,16 @@ class RawArrowQuotedDirectCSVByteParser {
 
   private findNextTokenIndex(start: number): number {
     const bytes = this.bytes;
-    const byte = bytes[start];
-    if (byte === this.options.delimiter || byte === LINE_FEED || byte === CARRIAGE_RETURN) {
-      return start;
+    const delimiter = this.options.delimiter;
+
+    for (let byteIndex = start; byteIndex < bytes.length; byteIndex++) {
+      const byte = bytes[byteIndex];
+      if (byte === delimiter || byte === LINE_FEED || byte === CARRIAGE_RETURN) {
+        return byteIndex;
+      }
     }
 
-    const scanStart = start + 1;
-    let tokenIndex = bytes.indexOf(this.options.delimiter, scanStart);
-    tokenIndex = selectEarlierIndex(tokenIndex, bytes.indexOf(LINE_FEED, scanStart));
-    tokenIndex = selectEarlierIndex(tokenIndex, bytes.indexOf(CARRIAGE_RETURN, scanStart));
-    return tokenIndex;
+    return -1;
   }
 
   private appendField(
@@ -787,27 +776,40 @@ class RawArrowUnquotedCSVByteParser {
 
   private appendDataRows(start: number): void {
     const columnCount = this.columnBuilders.length;
-    let rowStart = start;
+    const bytes = this.bytes;
+    const delimiter = this.options.delimiter;
+    let fieldStart = start;
+    let columnIndex = 0;
 
-    while (rowStart < this.bytes.length) {
-      const rowEnd = this.findRowEnd(rowStart);
-      let fieldStart = rowStart;
-      let columnIndex = 0;
-
-      while (fieldStart <= rowEnd.end) {
-        const delimiterIndex = this.bytes.indexOf(this.options.delimiter, fieldStart);
-        if (delimiterIndex >= 0 && delimiterIndex < rowEnd.end) {
-          this.appendField(columnIndex, fieldStart, delimiterIndex);
-          columnIndex++;
-          fieldStart = delimiterIndex + 1;
-        } else {
-          this.appendField(columnIndex, fieldStart, rowEnd.end);
-          this.appendMissingFields(columnIndex + 1, columnCount);
-          break;
-        }
+    for (let byteIndex = start; byteIndex <= bytes.length; byteIndex++) {
+      const byte = bytes[byteIndex];
+      if (
+        byte !== delimiter &&
+        byte !== LINE_FEED &&
+        byte !== CARRIAGE_RETURN &&
+        byteIndex !== bytes.length
+      ) {
+        continue;
       }
 
-      rowStart = rowEnd.nextStart;
+      this.appendField(columnIndex, fieldStart, byteIndex);
+      columnIndex++;
+
+      if (byte === delimiter) {
+        fieldStart = byteIndex + 1;
+        continue;
+      }
+
+      this.appendMissingFields(columnIndex, columnCount);
+      columnIndex = 0;
+
+      if (byte === CARRIAGE_RETURN && bytes[byteIndex + 1] === LINE_FEED) {
+        byteIndex++;
+      }
+      fieldStart = byteIndex + 1;
+      if (fieldStart >= bytes.length) {
+        break;
+      }
     }
   }
 
@@ -1095,11 +1097,11 @@ function copyByteRange(
   target: Uint8Array,
   targetStart: number
 ): number {
-  for (let byteIndex = start; byteIndex < end; byteIndex++) {
-    target[targetStart] = source[byteIndex];
-    targetStart++;
+  const byteLength = end - start;
+  if (byteLength > 0) {
+    target.set(source.subarray(start, end), targetStart);
   }
-  return targetStart;
+  return targetStart + byteLength;
 }
 
 /** Counts fields in a byte range that contains unquoted delimiter bytes. */

@@ -84,7 +84,9 @@ function parseCSVTextSync(
   // Apps can call the parse method directly, so we apply default options here
   const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
-  const firstRow = readFirstRow(csvText);
+  const firstRowResult = readFirstRow(csvText);
+  const firstRow = firstRowResult.data[0] || [];
+  const configuredDelimiter = (csvOptions as typeof csvOptions & {delimiter?: string}).delimiter;
   const header: boolean =
     csvOptions.header === 'auto' ? isHeaderRow(firstRow) : Boolean(csvOptions.header);
 
@@ -93,6 +95,7 @@ function parseCSVTextSync(
   const papaparseConfig = {
     // dynamicTyping: true,
     ...csvOptions,
+    delimiter: configuredDelimiter || firstRowResult.meta.delimiter,
     header: parseWithHeader,
     download: false, // We handle loading, no need for papaparse to do it for us
     transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
@@ -385,14 +388,13 @@ function isHeaderRow(row: string[]): boolean {
 /**
  * Reads, parses, and returns the first row of a CSV text
  * @param csvText the csv text to parse
- * @returns the first row
+ * @returns a one-row parse result with Papa's delimiter guess
  */
-function readFirstRow(csvText: string): any[] {
-  const result = Papa.parse(csvText, {
+function readFirstRow(csvText: string): {data: any[]; meta: {delimiter?: string}} {
+  return Papa.parse(csvText, {
     dynamicTyping: true,
     preview: 1
   });
-  return result.data[0];
 }
 
 /**
