@@ -10,8 +10,10 @@ This module contains loaders for the Zarr format.
 
 ## Implementation
 
-The source-loader APIs in this module use [zarrita.js](https://zarrita.dev/) to open Zarr v2 and
-v3 stores, discover metadata, and decode array chunks. loaders.gl provides the `DataSource`,
+The source-loader APIs in this module use the independent
+[zarrita.js project](https://github.com/manzt/zarrita.js) (see its
+[documentation](https://zarrita.dev/)) to open Zarr v2 and v3 stores, discover metadata, and
+decode array chunks. loaders.gl provides the `DataSource`,
 `RasterSource`, selection, cancellation, and metadata contracts around Zarrita. The legacy
 `loadZarr()` pixel-pyramid API continues to use its existing `zarr.js` implementation.
 

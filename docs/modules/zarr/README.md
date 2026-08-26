@@ -52,5 +52,8 @@ store directly from S3 and renders monthly solar irradiance on an interactive ma
 
 ## Attributions
 
-The OME-Zarr source uses [zarrita.js](https://zarrita.dev/) under the MIT license. The legacy Zarr
-v2 API wraps [zarr.js](https://github.com/gzuidhof/zarr.js/) under the MIT license.
+The OME-Zarr and GeoZarr source loaders use the independent
+[zarrita.js project](https://github.com/manzt/zarrita.js), documented at
+[zarrita.dev](https://zarrita.dev/), under the MIT license. It is the Zarr engine used by these
+loaders, not a loaders.gl development fork or seed project. The legacy Zarr v2 API wraps
+[zarr.js](https://github.com/gzuidhof/zarr.js/) under the MIT license.
