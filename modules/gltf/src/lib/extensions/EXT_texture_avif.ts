@@ -6,11 +6,12 @@
 // https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif
 /* eslint-disable camelcase */
 
-import type {GLTF, GLTF_EXT_texture_avif} from '../types/gltf-json-schema';
+import type {GLTF_EXT_texture_avif} from '../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {getSupportedImageFormats} from '@loaders.gl/images';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {GLTFIterator} from '../api/gltf-iterator';
 
 const EXT_TEXTURE_AVIF = 'EXT_texture_avif';
 
@@ -27,31 +28,27 @@ export const name = EXT_TEXTURE_AVIF;
  * @param options glTF loader options. The extension currently has no custom options.
  */
 export async function preprocess(
-  gltfData: {json: GLTF},
+  gltfData: GLTFWithBuffers,
   options: GLTFLoaderOptions
 ): Promise<void> {
   void options;
-  const scenegraph = new GLTFScenegraph(gltfData);
+  const iterator = new GLTFIterator(gltfData);
 
   const supportedImageFormats = await getSupportedImageFormats();
   if (!supportedImageFormats.has('image/avif')) {
-    if (scenegraph.getRequiredExtensions().includes(EXT_TEXTURE_AVIF)) {
+    if (iterator.isExtensionRequired(EXT_TEXTURE_AVIF)) {
       throw new Error(`gltf: Required extension ${EXT_TEXTURE_AVIF} not supported by browser`);
     }
     return;
   }
 
-  const {json} = scenegraph;
-  for (const texture of json.textures || []) {
-    const extension = scenegraph.getObjectExtension<GLTF_EXT_texture_avif>(
-      texture,
-      EXT_TEXTURE_AVIF
-    );
+  for (const texture of iterator.textures) {
+    const extension = texture.getExtension<GLTF_EXT_texture_avif>(EXT_TEXTURE_AVIF);
     if (extension) {
-      texture.source = extension.source;
+      texture.data.source = extension.source;
     }
-    scenegraph.removeObjectExtension(texture, EXT_TEXTURE_AVIF);
+    texture.removeExtension(EXT_TEXTURE_AVIF);
   }
 
-  scenegraph.removeExtension(EXT_TEXTURE_AVIF);
+  iterator.removeExtension(EXT_TEXTURE_AVIF);
 }

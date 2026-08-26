@@ -7,7 +7,7 @@ import {GLTFIterator} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '../../../src/lib/types/gltf-types';
 
 describe('GLTFIterator', () => {
-  test('iterates raw collections with stable Proxy metadata without mutation', () => {
+  test('iterates raw collections with stable metadata without mutation', () => {
     const gltf = makeGLTF();
     const jsonBeforeIteration = JSON.stringify(gltf.json);
     const iterator = new GLTFIterator(gltf);
@@ -15,33 +15,27 @@ describe('GLTFIterator', () => {
     const [mesh] = Array.from(iterator.meshes);
     const [primitive] = Array.from(mesh.primitives);
 
-    expect(mesh._proxy.gltf).toBe(gltf);
-    expect(mesh._proxy.type).toBe('mesh');
-    expect(mesh._proxy.index).toBe(0);
-    expect(mesh._proxy.raw).toBe(gltf.json.meshes?.[0]);
-    expect(mesh._proxy.path).toBe('meshes[0]');
-    expect(primitive._proxy.type).toBe('primitive');
-    expect(primitive._proxy.index).toBe(0);
-    expect(primitive._proxy.parent).toBe(mesh);
-    expect(primitive._proxy.raw).toBe(gltf.json.meshes?.[0].primitives[0]);
-    expect(mesh.name).toBe('triangle');
-    expect(Object.keys(mesh)).toEqual(Object.keys(gltf.json.meshes![0]));
-    expect(JSON.stringify(mesh)).toBe(JSON.stringify(gltf.json.meshes![0]));
+    expect(mesh.gltf).toBe(gltf);
+    expect(mesh.type).toBe('mesh');
+    expect(mesh.index).toBe(0);
+    expect(mesh.data).toBe(gltf.json.meshes?.[0]);
+    expect(mesh.path).toBe('meshes[0]');
+    expect(primitive.type).toBe('primitive');
+    expect(primitive.index).toBe(0);
+    expect(primitive.parent).toBe(mesh);
+    expect(primitive.data).toBe(gltf.json.meshes?.[0].primitives[0]);
     expect(JSON.stringify(gltf.json)).toBe(jsonBeforeIteration);
   });
 
-  test('forwards ordinary raw properties and keeps reference assignment explicit', () => {
+  test('keeps raw fields and reference navigation separate', () => {
     const gltf = makeGLTF();
     const iterator = new GLTFIterator(gltf);
     const [mesh] = Array.from(iterator.meshes);
     const [node] = Array.from(iterator.nodes);
 
-    mesh.name = 'renamed';
-    expect(gltf.json.meshes![0].name).toBe('renamed');
-    expect(Reflect.set(node, 'mesh', 1)).toBe(false);
-    expect(gltf.json.nodes![0].mesh).toBe(0);
-    node._proxy.raw.mesh = 1;
-    expect(gltf.json.nodes![0].mesh).toBe(1);
+    expect(node.data.mesh).toBe(0);
+    expect(iterator.getReferences(node).mesh).toBe(mesh);
+    expect(iterator.getReferences(node)).toBe(iterator.getReferences(node));
   });
 
   test('resolves and caches standard references lazily', () => {
@@ -56,32 +50,38 @@ describe('GLTFIterator', () => {
     const [material] = Array.from(iterator.materials);
     const [textureInfo] = Array.from(material.textures);
 
-    expect(node.mesh).toBe(mesh);
+    expect(iterator.getReferences(node).mesh).toBe(mesh);
     expect(Array.from(iterator.meshes)[0]).toBe(mesh);
-    expect(Array.from(iterator.scene!.nodes)[0]).toBe(node);
-    expect(Array.from(node.children)).toEqual([]);
-    expect(node.camera).toBe(Array.from(iterator.cameras)[0]);
-    expect(node.skin).toBe(Array.from(iterator.skins)[0]);
-    expect(node.externalAsset).toBe(Array.from(iterator.externalAssets)[0]);
-    expect(primitive.attributes.get('POSITION')).toBe(Array.from(iterator.accessors)[0]);
-    expect(primitive.indices).toBe(Array.from(iterator.accessors)[1]);
-    expect(primitive.material).toBe(material);
-    expect(channel.sampler).toBe(animationSampler);
-    expect(channel.target.node).toBe(node);
-    expect(animationSampler.input).toBe(Array.from(iterator.accessors)[0]);
-    expect(animationSampler.output).toBe(Array.from(iterator.accessors)[1]);
-    expect(material.baseColorTexture).toBe(textureInfo);
-    expect(Array.from(iterator.accessors)[0].type).toBe('VEC3');
-    expect(Array.from(iterator.cameras)[0].type).toBe('perspective');
-    expect(textureInfo.index).toBe(0);
-    expect(textureInfo.texture).toBe(Array.from(iterator.textures)[0]);
-    expect(Array.from(iterator.textures)[0].source).toBe(Array.from(iterator.images)[0]);
-    expect(Array.from(iterator.textures)[0].sampler).toBe(Array.from(iterator.samplers)[0]);
-    expect(Array.from(iterator.skins)[0].inverseBindMatrices).toBe(
+    expect(iterator.getReferences(iterator.scene!).nodes.next().value).toBe(node);
+    expect(Array.from(iterator.getReferences(node).children)).toEqual([]);
+    expect(iterator.getReferences(node).camera).toBe(Array.from(iterator.cameras)[0]);
+    expect(iterator.getReferences(node).skin).toBe(Array.from(iterator.skins)[0]);
+    expect(iterator.getReferences(node).externalAsset).toBe(Array.from(iterator.externalAssets)[0]);
+    expect(iterator.getReferences(primitive).attributes.get('POSITION')).toBe(
+      Array.from(iterator.accessors)[0]
+    );
+    expect(iterator.getReferences(primitive).indices).toBe(Array.from(iterator.accessors)[1]);
+    expect(iterator.getReferences(primitive).material).toBe(material);
+    expect(iterator.getReferences(channel).sampler).toBe(animationSampler);
+    expect(iterator.getReferences(iterator.getReferences(channel).target).node).toBe(node);
+    expect(iterator.getReferences(animationSampler).input).toBe(Array.from(iterator.accessors)[0]);
+    expect(iterator.getReferences(animationSampler).output).toBe(Array.from(iterator.accessors)[1]);
+    expect(iterator.getReferences(material).baseColorTexture).toBe(textureInfo);
+    expect(Array.from(iterator.accessors)[0].data.type).toBe('VEC3');
+    expect(Array.from(iterator.cameras)[0].data.type).toBe('perspective');
+    expect(textureInfo.data.index).toBe(0);
+    expect(iterator.getReferences(textureInfo).texture).toBe(Array.from(iterator.textures)[0]);
+    expect(iterator.getReferences(Array.from(iterator.textures)[0]).source).toBe(
+      Array.from(iterator.images)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.textures)[0]).sampler).toBe(
+      Array.from(iterator.samplers)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.skins)[0]).inverseBindMatrices).toBe(
       Array.from(iterator.accessors)[1]
     );
-    expect(Array.from(iterator.skins)[0].skeleton).toBe(node);
-    expect(Array.from(iterator.skins)[0].joints.next().value).toBe(node);
+    expect(iterator.getReferences(Array.from(iterator.skins)[0]).skeleton).toBe(node);
+    expect(iterator.getReferences(Array.from(iterator.skins)[0]).joints.next().value).toBe(node);
     expect(iterator.thumbnail).toBe(Array.from(iterator.images)[0]);
   });
 
@@ -108,8 +108,8 @@ describe('GLTFIterator', () => {
     const iterator = new GLTFIterator(gltf);
     const [node] = Array.from(iterator.nodes);
 
-    expect(node.camera).toBeUndefined();
-    expect(() => node.mesh).toThrow(
+    expect(iterator.getReferences(node).camera).toBeUndefined();
+    expect(() => iterator.getReferences(node).mesh).toThrow(
       'Invalid glTF reference at nodes[0].mesh: mesh index 99 is out of range'
     );
   });

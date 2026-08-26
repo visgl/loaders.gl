@@ -144,7 +144,6 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {
   GLTFIterator,
-  GLTFProxyContext,
   GLTFObjectIterator,
   GLTFNestedObjectIterator,
   GLTFAccessorIterator,
@@ -167,7 +166,24 @@ export {
   GLTFSkinIterator,
   GLTFTextureIterator,
   GLTFTextureInfoIterator,
-  type GLTFIteratorType
+  type GLTFIteratorType,
+  type GLTFIteratorReferences,
+  type GLTFAccessorReferences,
+  type GLTFAnimationReferences,
+  type GLTFAnimationChannelReferences,
+  type GLTFAnimationChannelTargetReferences,
+  type GLTFAnimationSamplerReferences,
+  type GLTFBufferViewReferences,
+  type GLTFBufferViewOwnerReferences,
+  type GLTFExternalAssetReferences,
+  type GLTFMaterialReferences,
+  type GLTFTextureInfoReferences,
+  type GLTFMeshReferences,
+  type GLTFMeshPrimitiveReferences,
+  type GLTFNodeReferences,
+  type GLTFSceneReferences,
+  type GLTFSkinReferences,
+  type GLTFTextureReferences
 } from './lib/api/gltf-iterator';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
