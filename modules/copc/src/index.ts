@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {COPCSourceLoaderOptions} from './copc-source-loader';
+export type {
+  COPCSourceLoaderOptions,
+  COPCTileContent,
+  COPCTileContentBatchOptions
+} from './copc-source-loader';
 export type {COPCWriterOptions} from './copc-writer';
 export {COPCFormat} from './copc-format';
 export {COPCSourceLoader} from './copc-source-loader';

@@ -96,6 +96,72 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
   t.end();
 });
 
+test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    copc: {decoder: 'typescript-laz'}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const atomicContent = await source.loadTileContent(rootTile);
+  const streamedPositions: number[] = [];
+  const streamedColors: number[] = [];
+  let streamedPointCount = 0;
+
+  for await (const batch of source.loadTileContentInBatches(rootTile, {batchSize: 127})) {
+    const positions = batch.data.data.getChild('POSITION');
+    const colors = batch.data.data.getChild('COLOR_0');
+    streamedPointCount += batch.pointCount;
+    for (let index = 0; index < batch.pointCount; index++) {
+      streamedPositions.push(...(positions?.get(index)?.toArray() || []));
+      streamedColors.push(...(colors?.get(index)?.toArray() || []));
+    }
+  }
+
+  const atomicPositions = atomicContent?.data.data.getChild('POSITION');
+  const atomicColors = atomicContent?.data.data.getChild('COLOR_0');
+  const expectedPositions: number[] = [];
+  const expectedColors: number[] = [];
+  for (let index = 0; index < rootTile.pointCount; index++) {
+    expectedPositions.push(...(atomicPositions?.get(index)?.toArray() || []));
+    expectedColors.push(...(atomicColors?.get(index)?.toArray() || []));
+  }
+
+  t.equal(streamedPointCount, rootTile.pointCount, 'all points are yielded');
+  t.deepEqual(streamedPositions, expectedPositions, 'batched positions match atomic output');
+  t.deepEqual(streamedColors, expectedColors, 'batched colors match atomic output');
+  t.end();
+});
+
+test('COPCSourceLoader#streams position-only TypeScript tile batches', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    copc: {decoder: 'typescript-laz'}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const atomicContent = await source.loadTileContent(rootTile);
+  const atomicPositions = atomicContent?.data.data.getChild('POSITION');
+  const streamedPositions: number[] = [];
+  for await (const batch of source.loadTileContentInBatches(rootTile, {
+    batchSize: 127,
+    columns: ['POSITION']
+  })) {
+    t.notOk(batch.data.data.getChild('COLOR_0'), 'color output is omitted');
+    const positions = batch.data.data.getChild('POSITION');
+    for (let index = 0; index < batch.pointCount; index++) {
+      streamedPositions.push(...(positions?.get(index)?.toArray() || []));
+    }
+  }
+
+  const expectedPositions: number[] = [];
+  for (let index = 0; index < rootTile.pointCount; index++) {
+    expectedPositions.push(...(atomicPositions?.get(index)?.toArray() || []));
+  }
+  t.deepEqual(streamedPositions, expectedPositions, 'position-only batches match atomic output');
+  t.end();
+});
+
 test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {
   if (isBrowser) {
     t.comment('Skipping browser parity until laz-perf wasm is served as an asset');
