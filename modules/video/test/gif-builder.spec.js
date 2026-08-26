@@ -2,57 +2,56 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {afterEach, expect, test, vi} from 'vitest';
 
-import {load, isBrowser} from '@loaders.gl/core';
-import {ImageBitmapLoader} from '@loaders.gl/images';
-import {GIFBuilder} from '@loaders.gl/video';
+import GIFBuilder from '../src/gif-builder';
 
-const IMAGE_URLS = [
-  'http://i.imgur.com/2OO33vX.jpg',
-  'http://i.imgur.com/qOwVaSN.png',
-  'http://i.imgur.com/Vo5mFZJ.gif'
-];
-
-test('GIFBuilder#imports', t => {
-  t.ok(GIFBuilder, 'GIFBuilder defined');
-  t.end();
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
-test('GIFBuilder#load(URL)', async t => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
+test('GIFBuilder exposes metadata and accepts image files', async () => {
+  expect(GIFBuilder.properties).toMatchObject({id: 'gif', extensions: ['gif']});
+  const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 300});
+  const createGIF = vi
+    .spyOn(gifBuilder.gifshot, 'createGIF')
+    .mockImplementation((options, callback) => {
+      expect(options).toMatchObject({images: ['first-image'], gifWidth: 400, gifHeight: 300});
+      callback({error: false, image: 'data:image/gif;base64,AAAA'});
+    });
 
-  const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
-
-  for (const image of IMAGE_URLS) {
-    await gifBuilder.add(image);
-  }
-
-  const gifDataUrl = await gifBuilder.build();
-  t.ok(gifDataUrl.startsWith('data:image/gif;'), 'build() returns GIF image encoded as data URL');
-
-  t.end();
+  await gifBuilder.add('first-image');
+  await expect(gifBuilder.build()).resolves.toBe('data:image/gif;base64,AAAA');
+  expect(createGIF).toHaveBeenCalledTimes(1);
 });
 
-test('GIFBuilder#load(Image)', async t => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
+test('GIFBuilder supports video and webcam sources', async () => {
+  const videoBuilder = new GIFBuilder({source: 'video', width: 10, height: 20});
+  vi.spyOn(videoBuilder.gifshot, 'createGIF').mockImplementation((options, callback) => {
+    expect(options).toMatchObject({video: ['video-file'], gifWidth: 10, gifHeight: 20});
+    callback({error: false, image: 'video-gif'});
+  });
+  await videoBuilder.add('video-file');
+  await expect(videoBuilder.build()).resolves.toBe('video-gif');
 
-  const IMAGES = await Promise.all(IMAGE_URLS.map(url => load(url, ImageBitmapLoader)));
+  const webcamBuilder = new GIFBuilder({source: 'webcam'});
+  vi.spyOn(webcamBuilder.gifshot, 'createGIF').mockImplementation((_options, callback) => {
+    callback({error: false, image: 'webcam-gif'});
+  });
+  await expect(webcamBuilder.build()).resolves.toBe('webcam-gif');
+});
 
-  const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
+test('GIFBuilder rejects invalid sources, files, and gifshot errors', async () => {
+  const invalidBuilder = new GIFBuilder({source: 'invalid'});
+  await expect(invalidBuilder.build()).rejects.toThrow('GIFBuilder: invalid source');
 
-  for (const image of IMAGES) {
-    await gifBuilder.add(image);
-  }
+  const webcamBuilder = new GIFBuilder({source: 'webcam'});
+  await webcamBuilder.add('unexpected-file');
+  await expect(webcamBuilder.build()).rejects.toThrow();
 
-  const gifDataUrl = await gifBuilder.build();
-  t.ok(gifDataUrl.startsWith('data:image/gif;'), 'build() returns GIF image encoded as data URL');
-
-  t.end();
+  const errorBuilder = new GIFBuilder({source: 'images'});
+  vi.spyOn(errorBuilder.gifshot, 'createGIF').mockImplementation((_options, callback) => {
+    callback({error: true, errorMsg: 'gifshot failed'});
+  });
+  await expect(errorBuilder.build()).rejects.toBe('gifshot failed');
 });
