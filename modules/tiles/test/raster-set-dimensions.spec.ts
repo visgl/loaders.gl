@@ -112,7 +112,7 @@ test('RasterSet accepts non-viewport array requests', async () => {
     bandCount: 1,
     dtype: 'uint8'
   };
-  const rasterSet = new RasterSet<RasterData, ArrayRequest, ArrayMetadata>({
+  const rasterSet = RasterSet.fromCallbacks<RasterData, ArrayRequest, ArrayMetadata>({
     getMetadata: async () => metadata,
     getRaster: async parameters => {
       expect(parameters.level).toBe(2);

@@ -153,6 +153,17 @@ export class RasterSet<
     return new RasterSet<DataT, ParametersT, MetadataT>({...opts, rasterSource});
   }
 
+  /** Convenience factory for sources whose requests are not viewport-shaped. */
+  static fromCallbacks<
+    DataT extends RasterData = RasterData,
+    ParametersT extends object = GetRasterParameters,
+    MetadataT extends RasterSourceMetadata = RasterSourceMetadata
+  >(
+    opts: RasterSetBaseProps<DataT, ParametersT, MetadataT>
+  ): RasterSet<DataT, ParametersT, MetadataT> {
+    return new RasterSet<DataT, ParametersT, MetadataT>(opts);
+  }
+
   /** Whether the manager has no requests in flight and a current raster. */
   get isLoaded(): boolean {
     return this._loadCounter === 0 && Boolean(this._currentRequest);
