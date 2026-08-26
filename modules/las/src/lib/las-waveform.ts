@@ -276,6 +276,7 @@ export async function readLASWaveformPackets(
   return packets;
 }
 
+/** Return the exact internal waveform packet-record base offset from the LAS public header. */
 function getInternalWaveformSourceOffset(metadata: LASMetadata): bigint {
   if (metadata.waveformDataOffset === undefined) {
     throw new Error('LAS internal waveform data offset is missing from the public header');
@@ -283,6 +284,7 @@ function getInternalWaveformSourceOffset(metadata: LASMetadata): bigint {
   return metadata.waveformDataOffset;
 }
 
+/** Create a byte view that preserves an input view's byte offset and byte length. */
 function getUint8Array(data: ArrayBuffer | ArrayBufferView): Uint8Array {
   return data instanceof ArrayBuffer
     ? new Uint8Array(data)
