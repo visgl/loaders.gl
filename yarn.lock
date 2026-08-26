@@ -5510,7 +5510,7 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
-    lerc: "npm:^4.0.4"
+    lerc: "npm:^4.2.0"
   languageName: unknown
   linkType: soft
 
@@ -22472,10 +22472,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerc@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "lerc@npm:4.0.4"
-  checksum: 10c0/71a153605ece2bac0c0da71bfae8ac70f0393e8ff7c7e27da20148a7c07f4a1cb421a263bf967dbf4b9a5bcadf8c7f819ab10ee6b8aa6ab59d233cf85cceafa4
+"lerc@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "lerc@npm:4.2.0"
+  checksum: 10c0/d8ec6705f25c1b66e41f0bdecc33c5e20f7eb74d40aa6cfe5bee331f13268277c0e2bf9f75770ed1d133f7f8685ef99f49bced5f4704069eade7c8e63d5554ba
   languageName: node
   linkType: hard
 
