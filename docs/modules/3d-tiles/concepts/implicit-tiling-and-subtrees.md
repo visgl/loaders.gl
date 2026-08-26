@@ -6,6 +6,15 @@ import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 
 Implicit tiling describes a regular quadtree or octree with coordinate templates instead of listing every tile header in the root tileset JSON. Availability files called **subtrees** say which tiles, content resources, and deeper subtrees exist. loaders.gl loads these availability files lazily so a large implicit tileset can become traversable without downloading its complete hierarchy.
 
+### Multiple content streams
+
+An implicit tile may declare several content templates. The subtree's `contentAvailability` array is
+aligned with those templates in source order: each available stream is expanded independently and
+emitted in the tile header's `content` array and `contentUrls` list. A tile with one available
+stream keeps the legacy single-object `content` shape, and a tile with no available streams remains
+a contentless connector. Content headers stay associated with their stream, even when an earlier
+stream is unavailable.
+
 ## Explicit and Implicit Hierarchies
 
 An explicit tile stores its child headers directly in `children`. An implicit root stores:
@@ -162,7 +171,8 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 
 ## Current Limitations
 
-- Only the first `contentAvailability` stream is used; `3DTILES_multiple_contents` is not implemented.
+- Implicit multiple-content availability is materialized in source order. Applications still decide
+  how to compose or render heterogeneous content types returned by the streams.
 - Subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
   `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`. The runtime does not
   yet decode property-table classes, enums, or values.
