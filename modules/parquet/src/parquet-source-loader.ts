@@ -70,6 +70,7 @@ import type {
   ParquetBatch,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
@@ -123,6 +124,7 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialBoundingBox,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
@@ -1106,6 +1108,8 @@ export class ParquetSource
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
         verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
+        keyRetriever: this.options.parquet?.keyRetriever,
+        aadPrefix: this.options.parquet?.aadPrefix,
         signal
       });
       const fileMetadata = await reader.getFileMetadata();
@@ -1260,6 +1264,7 @@ function createColumnChunkMetadata(
     parquetSchema.findField(columnMetadata.path_in_schema)
   );
   const geospatialStatistics = createGeospatialStatistics(columnMetadata.geospatial_statistics);
+  const sizeStatistics = createSizeStatistics(columnMetadata.size_statistics);
   const compressedByteLength = Number(columnMetadata.total_compressed_size);
   const uncompressedByteLength = Number(columnMetadata.total_uncompressed_size);
   return Object.freeze({
@@ -1296,8 +1301,62 @@ function createColumnChunkMetadata(
         : Number(columnMetadata.bloom_filter_offset),
     bloomFilterByteLength: columnMetadata.bloom_filter_length,
     statistics,
+    sizeStatistics,
     geospatialStatistics
   });
+}
+
+/** Normalizes optional Parquet size statistics without inventing missing counts. */
+function createSizeStatistics(
+  statistics:
+    | {
+        unencoded_byte_array_data_bytes?: {toNumber?: () => number} | number;
+        repetition_level_histogram?: Array<{toNumber?: () => number} | number>;
+        definition_level_histogram?: Array<{toNumber?: () => number} | number>;
+      }
+    | undefined
+): ParquetColumnChunkSizeStatistics | undefined {
+  if (!statistics) return undefined;
+  const result: ParquetColumnChunkSizeStatistics = {
+    unencodedByteArrayDataBytes:
+      statistics.unencoded_byte_array_data_bytes === undefined
+        ? undefined
+        : toSafeNumber(statistics.unencoded_byte_array_data_bytes),
+    repetitionLevelHistogram: normalizeSizeStatisticsList(statistics.repetition_level_histogram),
+    definitionLevelHistogram: normalizeSizeStatisticsList(statistics.definition_level_histogram)
+  };
+  if (
+    result.unencodedByteArrayDataBytes === undefined &&
+    result.repetitionLevelHistogram === undefined &&
+    result.definitionLevelHistogram === undefined
+  ) {
+    return undefined;
+  }
+  return Object.freeze({
+    ...result,
+    repetitionLevelHistogram: result.repetitionLevelHistogram
+      ? Object.freeze(result.repetitionLevelHistogram)
+      : undefined,
+    definitionLevelHistogram: result.definitionLevelHistogram
+      ? Object.freeze(result.definitionLevelHistogram)
+      : undefined
+  });
+}
+
+function toSafeNumber(value: {toNumber?: () => number} | number): number | undefined {
+  const numberValue = typeof value === 'number' ? value : value.toNumber?.();
+  return numberValue !== undefined && Number.isSafeInteger(numberValue) && numberValue >= 0
+    ? numberValue
+    : undefined;
+}
+
+/** Converts a Thrift int64 histogram only when every entry is a safe non-negative integer. */
+function normalizeSizeStatisticsList(
+  values: Array<{toNumber?: () => number} | number> | undefined
+): readonly number[] | undefined {
+  if (!values) return undefined;
+  const normalized = values.map(toSafeNumber);
+  return normalized.every((value): value is number => value !== undefined) ? normalized : undefined;
 }
 
 /** Normalizes native Parquet geospatial statistics from the decoded footer. */

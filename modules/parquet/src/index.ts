@@ -53,6 +53,7 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialBoundingBox,
   ParquetGeospatialStatistics,
   ParquetDatasetBatch,
@@ -108,6 +109,12 @@ export {
   canUseParquetPageIndexForColumn,
   type ParquetPageStatistics
 } from './lib/parquet-page-index';
+export {
+  decryptParquetModule,
+  type ParquetDecryptModuleOptions,
+  type ParquetEncryptionAlgorithm,
+  type ParquetKeyRetriever
+} from './lib/parquet-encryption';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 

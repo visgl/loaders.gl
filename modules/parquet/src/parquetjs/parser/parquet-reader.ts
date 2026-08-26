@@ -20,7 +20,12 @@ import {
   ParquetReaderContext,
   type ParquetLevelBuffer
 } from '../schema/declare';
-import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
+import {
+  decodeFileCryptoMetadata,
+  decodeFileMetadata,
+  getThriftEnum,
+  fieldIndexOf
+} from '../utils/read-utils';
 import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 import type {
@@ -28,9 +33,25 @@ import type {
   ParquetPageLocations,
   ParquetRowRange
 } from '../../lib/parquet-page-index';
+import {
+  createParquetModuleAad,
+  decryptParquetModule,
+  type ParquetEncryptionAlgorithm,
+  type ParquetKeyRetriever
+} from '../../lib/parquet-encryption';
 
 /** Bounds concurrent range requests when a row group contains unusually many selected columns. */
 const MAXIMUM_CONCURRENT_COLUMN_READS = 16;
+
+/** Returns the algorithm name represented by the Thrift encryption union. */
+function getEncryptionAlgorithm(value: {
+  AES_GCM_V1?: unknown;
+  AES_GCM_CTR_V1?: unknown;
+}): ParquetEncryptionAlgorithm {
+  if (value.AES_GCM_V1) return 'AES_GCM_V1';
+  if (value.AES_GCM_CTR_V1) return 'AES_GCM_CTR_V1';
+  throw new Error('Unsupported Parquet encryption algorithm');
+}
 
 export type ParquetReaderProps = {
   /** Maximum dictionary-page read size. */
@@ -47,6 +68,10 @@ export type ParquetReaderProps = {
   verifyPageChecksums?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
+  /** Resolves modular-encryption keys from the file's key metadata. */
+  keyRetriever?: ParquetKeyRetriever;
+  /** AAD prefix for files that intentionally omit it from FileCryptoMetaData. */
+  aadPrefix?: Uint8Array;
 };
 
 /** Properties for initializing a ParquetRowGroupReader */
@@ -59,6 +84,11 @@ export type ParquetIterationProps = {
   signal?: AbortSignal;
 };
 
+type NormalizedParquetReaderProps = Required<
+  Omit<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix'>
+> &
+  Pick<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix'>;
+
 /**
  * The parquet envelope reader allows direct, unbuffered access to the individual
  * sections of the parquet file, namely the header, footer and the row groups.
@@ -66,7 +96,7 @@ export type ParquetIterationProps = {
  * rows from a parquet file use the ParquetReader instead
  */
 export class ParquetReader {
-  static defaultProps: Required<Omit<ParquetReaderProps, 'signal'>> & {signal?: AbortSignal} = {
+  static defaultProps: NormalizedParquetReaderProps = {
     // max ArrayBuffer size in js is 2Gb
     defaultDictionarySize: 2147483648,
     preserveBinary: false,
@@ -74,10 +104,12 @@ export class ParquetReader {
     useTypedValueBuffers: false,
     useTypedLevelBuffers: false,
     verifyPageChecksums: false,
-    signal: undefined
+    signal: undefined,
+    keyRetriever: undefined,
+    aadPrefix: undefined
   };
 
-  props: Required<Omit<ParquetReaderProps, 'signal'>> & {signal?: AbortSignal};
+  props: NormalizedParquetReaderProps;
   file: ReadableFile;
   metadata: Promise<FileMetaData> | null = null;
   /** Parsed Parquet schema shared by metadata, iteration, and materialization paths. */
@@ -184,7 +216,7 @@ export class ParquetReader {
       case PARQUET_MAGIC:
         break;
       case PARQUET_MAGIC_ENCRYPTED:
-        throw new Error('Encrypted parquet file not supported');
+        break;
       default:
         throw new Error(`Invalid parquet file (magic=${magic})`);
     }
@@ -201,12 +233,15 @@ export class ParquetReader {
     const trailer = toUint8Array(arrayBuffer);
 
     const magic = decodeString(trailer, 4);
+    const metadataSize = readUInt32LE(trailer, 0);
+    const metadataOffset = this.file.size - metadataSize - trailerLen;
+    if (magic === PARQUET_MAGIC_ENCRYPTED) {
+      return await this.readEncryptedFooter(metadataSize, metadataOffset, signal);
+    }
     if (magic !== PARQUET_MAGIC) {
       throw new Error(`Not a valid parquet file (magic="${magic})`);
     }
 
-    const metadataSize = readUInt32LE(trailer, 0);
-    const metadataOffset = this.file.size - metadataSize - trailerLen;
     if (metadataOffset < PARQUET_MAGIC.length) {
       throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
@@ -222,6 +257,37 @@ export class ParquetReader {
 
     const {metadata} = decodeFileMetadata(metadataBuf);
     return metadata;
+  }
+
+  /** Reads and decrypts an encrypted footer after the standard trailer. */
+  private async readEncryptedFooter(
+    metadataSize: number,
+    metadataOffset: number,
+    signal?: AbortSignal
+  ): Promise<FileMetaData> {
+    if (!this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet footer requires parquet.keyRetriever');
+    }
+    const encryptedFooter = toUint8Array(
+      await this.file.read(metadataOffset, metadataSize, signal ?? this.props.signal)
+    );
+    const cryptoMetadata = decodeFileCryptoMetadata(encryptedFooter);
+    const algorithm = getEncryptionAlgorithm(cryptoMetadata.metadata.encryption_algorithm);
+    const algorithmMetadata =
+      cryptoMetadata.metadata.encryption_algorithm.AES_GCM_V1 ||
+      cryptoMetadata.metadata.encryption_algorithm.AES_GCM_CTR_V1;
+    const aadPrefix = algorithmMetadata?.aad_prefix || this.props.aadPrefix;
+    if (!algorithmMetadata?.aad_file_unique) {
+      throw new Error('Encrypted Parquet footer is missing aad_file_unique');
+    }
+    const aad = createParquetModuleAad(aadPrefix, algorithmMetadata.aad_file_unique, 'footer');
+    const plaintext = await decryptParquetModule(encryptedFooter.subarray(cryptoMetadata.length), {
+      algorithm,
+      aad,
+      keyMetadata: cryptoMetadata.metadata.key_metadata,
+      keyRetriever: this.props.keyRetriever
+    });
+    return decodeFileMetadata(plaintext).metadata;
   }
 
   /** Data is stored in row groups (similar to Apache Arrow record batches) */

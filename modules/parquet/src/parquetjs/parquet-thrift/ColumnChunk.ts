@@ -13,6 +13,7 @@
 import {CompactInt64 as Int64} from '../utils/uint8-array-compact-protocol';
 import * as thrift from '../utils/thrift-runtime';
 import * as ColumnMetaData from './ColumnMetaData';
+import * as ColumnCryptoMetaData from './ColumnCryptoMetaData';
 export interface IColumnChunkArgs {
   file_path?: string;
   file_offset: number | Int64;
@@ -21,6 +22,8 @@ export interface IColumnChunkArgs {
   offset_index_length?: number;
   column_index_offset?: number | Int64;
   column_index_length?: number;
+  crypto_metadata?: ColumnCryptoMetaData.ColumnCryptoMetaData;
+  encrypted_column_metadata?: Uint8Array;
 }
 export class ColumnChunk {
   public file_path?: string;
@@ -30,6 +33,8 @@ export class ColumnChunk {
   public offset_index_length?: number;
   public column_index_offset?: Int64;
   public column_index_length?: number;
+  public crypto_metadata?: ColumnCryptoMetaData.ColumnCryptoMetaData;
+  public encrypted_column_metadata?: Uint8Array;
   constructor(args: IColumnChunkArgs) {
     if (args != null && args.file_path != null) {
       this.file_path = args.file_path;
@@ -69,6 +74,12 @@ export class ColumnChunk {
     if (args != null && args.column_index_length != null) {
       this.column_index_length = args.column_index_length;
     }
+    if (args != null && args.crypto_metadata != null) {
+      this.crypto_metadata = args.crypto_metadata;
+    }
+    if (args != null && args.encrypted_column_metadata != null) {
+      this.encrypted_column_metadata = args.encrypted_column_metadata;
+    }
   }
   public write(output: thrift.TProtocol): void {
     output.writeStructBegin('ColumnChunk');
@@ -105,6 +116,16 @@ export class ColumnChunk {
     if (this.column_index_length != null) {
       output.writeFieldBegin('column_index_length', thrift.Thrift.Type.I32, 7);
       output.writeI32(this.column_index_length);
+      output.writeFieldEnd();
+    }
+    if (this.crypto_metadata != null) {
+      output.writeFieldBegin('crypto_metadata', thrift.Thrift.Type.STRUCT, 8);
+      this.crypto_metadata.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.encrypted_column_metadata != null) {
+      output.writeFieldBegin('encrypted_column_metadata', thrift.Thrift.Type.STRING, 9);
+      output.writeBinary(this.encrypted_column_metadata);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -175,6 +196,20 @@ export class ColumnChunk {
           if (fieldType === thrift.Thrift.Type.I32) {
             const value_7: number = input.readI32();
             _args.column_index_length = value_7;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 8:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _args.crypto_metadata = ColumnCryptoMetaData.ColumnCryptoMetaData.read(input);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 9:
+          if (fieldType === thrift.Thrift.Type.STRING) {
+            _args.encrypted_column_metadata = input.readBinary();
           } else {
             input.skip(fieldType);
           }
