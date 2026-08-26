@@ -119,6 +119,20 @@ Subtree completion does not masquerade as tile-content completion or enter the G
 For payload-level compatibility, the [3D Tiles format matrix](../formats/3d-tiles#tile-payloads)
 records i3dm orientation support, including octahedrally encoded instance directions.
 
+## Metadata topology
+
+The loader preserves metadata declarations at every currently representable level of the 3D Tiles
+hierarchy: inline schema and schema URI, tileset groups and metadata, explicit tile and content
+metadata, and the raw property-table references carried by implicit subtrees. Generated implicit
+headers expose subtree references through `implicitMetadata`; explicit and generated tile headers
+retain `metadata`, while content entries retain `metadata` and `group`.
+
+These fields are deliberately lossless rather than decoded. Applications can use the class and
+property references together with their own schema/property-table implementation, but loaders.gl
+does not yet resolve binary values, inheritance, or metadata-derived bounding volumes. See the
+[3D Tiles compatibility matrix](../formats/3d-tiles#extensions-and-metadata) for the current
+boundary.
+
 ## URLs, Authentication, and Archives
 
 Content and subtree templates are resolved against the tileset base URI during normalization. At request time the source applies the same inherited root, session, and tileset-version query parameters used for tile content; parameters already present on the subtree URI win.

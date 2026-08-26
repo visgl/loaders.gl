@@ -57,7 +57,8 @@ provides a visual implementation for that feature.
 | `3DTILES_batch_table_hierarchy` | [ ] | Parser scaffolding exists; complete hierarchy semantics remain planned. |
 | `EXT_mesh_features` | [x] | Feature identifiers are preserved for supported glTF payloads. |
 | `EXT_structural_metadata` | [x] | Schema and property-table metadata are exposed where present. |
-| Subtree metadata materialization | [ ] | Availability is implemented; metadata inheritance is planned. |
+| Metadata topology preservation | [x] | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
+| Metadata-derived bounding volumes | [ ] | `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantics are planned. |
 | Styling expressions | [ ] | Rendering-side style evaluation is not provided by this module. |
 
 ## How to read the matrix

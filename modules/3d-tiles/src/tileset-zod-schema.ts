@@ -9,9 +9,39 @@ import type {
   Tiles3DTileJSON,
   Tiles3DTilesetAsset,
   Tiles3DTilesetJSON,
+  Tiles3DMetadataEntity,
+  Tiles3DMetadataGroup,
+  Tiles3DMetadataSchema,
   ImplicitTilingData,
   TilesetProperty
 } from './types';
+
+/** Zod schema for a losslessly preserved 3D Tiles metadata entity. */
+export const Tiles3DMetadataEntitySchema: z.ZodType<Tiles3DMetadataEntity> = z
+  .object({
+    id: z.string().optional(),
+    class: z.string().optional(),
+    properties: z.record(z.string(), z.unknown()).optional(),
+    group: z.number().int().nonnegative().optional(),
+    name: z.string().optional(),
+    extensions: z.record(z.string(), z.unknown()).optional(),
+    extras: z.unknown().optional()
+  })
+  .passthrough();
+
+/** Zod schema for an inline 3D Tiles metadata schema declaration. */
+export const Tiles3DMetadataSchemaDefinition: z.ZodType<Tiles3DMetadataSchema> = z
+  .object({
+    classes: z.record(z.string(), z.unknown()).optional(),
+    enums: z.record(z.string(), z.unknown()).optional(),
+    extensions: z.record(z.string(), z.unknown()).optional(),
+    extras: z.unknown().optional()
+  })
+  .passthrough();
+
+/** Zod schema for a metadata group declared by a tileset. */
+export const Tiles3DMetadataGroupSchema =
+  Tiles3DMetadataEntitySchema satisfies z.ZodType<Tiles3DMetadataGroup>;
 
 /** Zod schema for 3D Tiles asset metadata. */
 export const Tiles3DTilesetAssetSchema = z
@@ -61,6 +91,8 @@ export const Tiles3DTileContentSchema = z
     uri: z.string().optional(),
     url: z.string().optional(),
     boundingVolume: Tile3DBoundingVolumeSchema.optional(),
+    metadata: Tiles3DMetadataEntitySchema.optional(),
+    group: z.number().int().nonnegative().optional(),
     extensions: z.record(z.string(), z.unknown()).optional(),
     extras: z.unknown().optional()
   })
@@ -97,6 +129,7 @@ export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
       children: z.array(Tiles3DTileSchema).default([]),
       extensions: z.record(z.string(), z.unknown()).optional(),
       extras: z.unknown().optional(),
+      metadata: Tiles3DMetadataEntitySchema.optional(),
       implicitTiling: ImplicitTilingSchema.optional()
     })
     .passthrough()
@@ -108,8 +141,8 @@ const Tiles3DTilesetBaseSchema = z
     asset: Tiles3DTilesetAssetSchema,
     properties: z.record(z.string(), TilesetPropertySchema).optional(),
     statistics: z.unknown().optional(),
-    groups: z.array(z.unknown()).optional(),
-    metadata: z.unknown().optional(),
+    groups: z.array(Tiles3DMetadataGroupSchema).optional(),
+    metadata: Tiles3DMetadataEntitySchema.optional(),
     geometricError: z.number().nonnegative(),
     root: Tiles3DTileSchema,
     extensionsUsed: z.array(z.string()).optional(),
@@ -123,7 +156,7 @@ const Tiles3DTilesetBaseSchema = z
 const Tiles3DMetadataSchemaSource = z.union([
   z
     .object({
-      schema: z.record(z.string(), z.unknown()),
+      schema: Tiles3DMetadataSchemaDefinition,
       schemaUri: z.never().optional()
     })
     .passthrough(),
