@@ -201,14 +201,14 @@ function decodeObjectValue(
   }
   const valuesStart = offset;
   const valuesEnd = checkedEnd(valuesStart + offsets[offsets.length - 1], endOffset);
-  const object: Record<string, unknown> = {};
+  const object: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
   for (let index = 0; index < count; index++) {
     const fieldId = fieldIds[index];
     const fieldName = metadata.dictionary[fieldId];
     if (fieldName === undefined) {
       throw new Error(`parquet: invalid VARIANT object field id ${fieldId}`);
     }
-    if (fieldName in object) {
+    if (Object.prototype.hasOwnProperty.call(object, fieldName)) {
       throw new Error(`parquet: duplicate VARIANT object field ${fieldName}`);
     }
     const valueOffset = checkedEnd(valuesStart + offsets[index], valuesEnd);
@@ -288,6 +288,9 @@ function readFloat64(bytes: Uint8Array, offset: number): number {
 
 /** Formats a Variant decimal without losing precision when JavaScript numbers are unsafe. */
 function formatVariantDecimal(unscaled: bigint, scale: number): number | string {
+  if (scale < 0) {
+    return `${unscaled.toString()}${'0'.repeat(-scale)}`;
+  }
   if (
     scale === 0 &&
     unscaled >= BigInt(Number.MIN_SAFE_INTEGER) &&

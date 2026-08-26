@@ -230,7 +230,9 @@ function decodeVariantFields(fields: Record<string, ParquetField>, records: unkn
       for (const record of records) {
         if (record && typeof record === 'object') {
           const row = record as Record<string, unknown>;
-          row[field.name] = decodeVariantRecord(row[field.name]);
+          if (Object.prototype.hasOwnProperty.call(row, field.name)) {
+            row[field.name] = decodeVariantRecord(row[field.name]);
+          }
         }
       }
     } else if (field.fields) {

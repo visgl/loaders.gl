@@ -67,6 +67,23 @@ describe('Parquet VARIANT binary encoding', () => {
     );
   });
 
+  test('handles negative decimal scales and prototype-shaped field names', () => {
+    const metadata = createMetadata(['__proto__']);
+    // decimal4: primitive type 8, scale -2, unscaled value 123.
+    expect(
+      decodeVariant(metadata, new Uint8Array([8 << 2, 0xfe, 123, 0, 0, 0]))
+    ).toBe('12300');
+
+    // Object header with one-byte field IDs and offsets; the key is __proto__.
+    const decoded = decodeVariant(
+      metadata,
+      new Uint8Array([2, 1, 0, 0, 2, 5, 120])
+    ) as Record<string, unknown>;
+    expect(Object.getPrototypeOf(decoded)).toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(decoded, '__proto__')).toBe(true);
+    expect(decoded['__proto__']).toBe('x');
+  });
+
   test('rejects unsupported metadata versions', () => {
     expect(() => decodeVariant(new Uint8Array([2, 0, 0]), new Uint8Array([0]))).toThrow(
       'unsupported VARIANT metadata version'
@@ -94,5 +111,21 @@ describe('Parquet VARIANT binary encoding', () => {
       }
     });
     expect(rows).toEqual([{event: 'hi'}]);
+  });
+
+  test('does not add absent optional Variant fields to object rows', () => {
+    const schema = new ParquetSchema({
+      event: {
+        optional: true,
+        logicalType: {type: 'VARIANT', specificationVersion: 1},
+        fields: {
+          metadata: {type: 'BYTE_ARRAY'},
+          value: {type: 'BYTE_ARRAY'}
+        }
+      }
+    });
+    const rows = materializeRows(schema, {rowCount: 1, columnData: {}});
+    expect(rows).toEqual([{}]);
+    expect(Object.prototype.hasOwnProperty.call(rows[0], 'event')).toBe(false);
   });
 });

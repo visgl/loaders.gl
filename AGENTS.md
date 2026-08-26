@@ -21,7 +21,7 @@
 - Prefer high-signal behavior and boundary coverage over test count. Test an implementation exhaustively in its owning module, then keep only focused public-entrypoint or integration conformance in wrapper modules; do not duplicate the same fixture, call, and assertions across packages.
 - Use the smallest deterministic fixture that exercises the behavior. Fixtures over 1 MiB require an audited exception in the fast suite. Keep one representative large end-to-end parse in the slow lane when scale itself is meaningful.
 - Parse immutable fixture data once with `beforeAll` when multiple assertions inspect the same result. Tests that mutate a result must clone it or parse independently so state cannot leak between cases.
-- Write new and substantially revised tests with native Vitest `test`, `describe`, `test.each`, lifecycle hooks, mocks, and `expect`. Do not add Tape imports; the Tape allowlist may only shrink.
+- Write every new test case, and every substantially revised test, with native Vitest syntax (`test`, `describe`, `test.each`, lifecycle hooks, mocks, and `expect`). Do not use Tape for new coverage or add Tape imports; the Tape allowlist may only shrink.
 - Coverage is enforced per non-private published `modules/*` package across statements, lines, functions, and branches. Never lower a committed threshold or add an exclusion merely to make coverage pass; generated, vendored, declaration, or unreachable platform-specific exclusions require an adjacent reason.
 - Run `yarn test-audit` after changing test structure or fixtures. Use `yarn test-profile <mode>` when adding costly coverage, and move any fast test file that remains above the documented performance budget into smaller fast cases plus an explicit slow case.
 
