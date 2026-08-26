@@ -30,9 +30,10 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 | PDRF 8 | **Full** | PDRF 7 plus progressive NIR decoding. |
 | LAZ codec | **Full for COPC** | Layered LASzip compressor 3, arithmetic coder 0, Point14/RGB14/RGBNIR14/Byte14 item versions 2-4. |
 | Arrow table output | **Full** | Atomic and batched APIs return Arrow tables directly without an intermediate object-per-point representation. |
+| Parallel atomic node decoding | **Full** | Atomic node loads created through `@loaders.gl/core` share the single prebuilt TypeScript LAS worker pool. Fetch plus decode concurrency is bounded per source. |
 | Selective field decoding | **Full** | Unrequested LAZ field layers are skipped, avoiding arithmetic decoder state, output arrays, and point traversal for those fields. |
 | Progressive node decoding | **Full at layer boundaries** | Node byte ranges are fed incrementally. Rows are emitted when all compressed layers required by the requested columns are available. |
-| Cancellation | **Full** | Abort signals are checked during hierarchy traversal, range loading, and progressive point decoding. |
+| Cancellation | **Full** | Abort signals cancel queued atomic loads, active range requests and worker jobs, hierarchy traversal, and progressive point decoding. |
 | COPC writing | **Full for represented attributes** | Writes LAS 1.4 PDRF 6-8, variable LAZ chunks, a version 0 chunk table, COPC info VLR, and a range-pageable hierarchy EVLR. |
 | Waveform PDRF 9/10 | **Not part of COPC 1.0** | COPC 1.0 permits only PDRF 6, 7, and 8. |
 

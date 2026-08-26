@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
-import {expect, test as vitestTest} from 'vitest';
+import {expect, test as vitestTest, vi} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {
@@ -12,7 +12,8 @@ import {
   COPCWriter,
   loadCOPCHierarchyPage,
   loadCOPCNodeData,
-  openCOPC
+  openCOPC,
+  type COPCRangeReader
 } from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
@@ -24,7 +25,7 @@ const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.u
 /** Test surface for the protected progressive range iterator. */
 class TestCOPCTileSource extends COPCTileSource {
   /** Replace the byte-range getter after normal source initialization. */
-  setRangeGetter(getter: (begin: number, end: number) => Promise<Uint8Array>): void {
+  setRangeGetter(getter: COPCRangeReader): void {
     this._readRange = getter;
   }
 
@@ -116,6 +117,171 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
   );
   t.end();
 });
+
+vitestTest('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
+  const blob = await createEllipsoidBlob();
+  const workerSource = createDataSource(blob, [COPCSourceLoader], {
+    core: {
+      type: 'copc',
+      loadOptions: {
+        core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+      }
+    },
+    copc: {decodeConcurrency: 2}
+  });
+  const mainThreadSource = COPCSourceLoader.createDataSource(blob, {
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
+  const rootTile = await workerSource.getRootTile();
+  const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
+
+  const [workerContent, mainThreadContent] = await Promise.all([
+    workerSource.loadTileContent(rootTile),
+    mainThreadSource.loadTileContent(rootTile)
+  ]);
+
+  expect(decodeNodeOnWorker).toHaveBeenCalledOnce();
+  expect(await decodeNodeOnWorker.mock.results[0].value).not.toBeNull();
+  expect(readCOPCContentColumn(workerContent, 'POSITION')).toEqual(
+    readCOPCContentColumn(mainThreadContent, 'POSITION')
+  );
+  expect(readCOPCContentColumn(workerContent, 'COLOR_0')).toEqual(
+    readCOPCContentColumn(mainThreadContent, 'COLOR_0')
+  );
+
+  const repeatedContent = await workerSource.loadTileContent(rootTile);
+  expect(readCOPCContentColumn(repeatedContent, 'POSITION')).toEqual(
+    readCOPCContentColumn(workerContent, 'POSITION')
+  );
+  expect((await workerSource.getChildren(rootTile)).length).toBeGreaterThan(0);
+});
+
+vitestTest.each([6, 7, 8] as const)(
+  'COPCSourceLoader#worker matches main-thread PDRF %i node decoding',
+  async pointDataRecordFormat => {
+    const blob = createWorkerCOPCBlob(pointDataRecordFormat);
+    const workerSource = createDataSource(blob, [COPCSourceLoader], {
+      core: {
+        type: 'copc',
+        loadOptions: {core: {worker: true, _workerType: 'test'}}
+      },
+      copc: {decodeConcurrency: 2}
+    });
+    const mainThreadSource = COPCSourceLoader.createDataSource(blob, {
+      core: {loadOptions: {core: {worker: false}}}
+    });
+    await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
+    const rootTile = await workerSource.getRootTile();
+    const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
+    const [workerContent, mainThreadContent] = await Promise.all([
+      workerSource.loadTileContent(rootTile),
+      mainThreadSource.loadTileContent(rootTile)
+    ]);
+
+    expect(await decodeNodeOnWorker.mock.results[0].value).not.toBeNull();
+    expect(readCOPCContentColumn(workerContent, 'POSITION')).toEqual(
+      readCOPCContentColumn(mainThreadContent, 'POSITION')
+    );
+    expect(readCOPCContentColumn(workerContent, 'COLOR_0')).toEqual(
+      readCOPCContentColumn(mainThreadContent, 'COLOR_0')
+    );
+    const repeatedContent = await workerSource.loadTileContent(rootTile);
+    expect(readCOPCContentColumn(repeatedContent, 'POSITION')).toEqual(
+      readCOPCContentColumn(workerContent, 'POSITION')
+    );
+  }
+);
+
+vitestTest('COPCSourceLoader#bounds complete node fetch and decode concurrency', async () => {
+  const sourceBytes = new Uint8Array(await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer());
+  const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
+    copc: {decodeConcurrency: 2},
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  await source.initialize();
+  const rootTile = await source.getRootTile();
+  let activeRequestCount = 0;
+  let maximumActiveRequestCount = 0;
+  source.setRangeGetter(async (begin, end) => {
+    activeRequestCount++;
+    maximumActiveRequestCount = Math.max(maximumActiveRequestCount, activeRequestCount);
+    await new Promise(resolve => setTimeout(resolve, 10));
+    activeRequestCount--;
+    return sourceBytes.slice(begin, end);
+  });
+
+  const contents = await Promise.all(
+    Array.from({length: 5}, () => source.loadTileContent(rootTile))
+  );
+  expect(maximumActiveRequestCount).toBe(2);
+  expect(contents.every(content => content?.pointCount === rootTile.pointCount)).toBe(true);
+});
+
+vitestTest(
+  'COPCSourceLoader#cancels an atomic node queued behind the concurrency bound',
+  async () => {
+    const sourceBytes = new Uint8Array(
+      await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer()
+    );
+    const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
+      copc: {decodeConcurrency: 1},
+      core: {loadOptions: {core: {worker: false}}}
+    });
+    await source.initialize();
+    const rootTile = await source.getRootTile();
+    let releaseRange!: () => void;
+    let markRangeStarted!: () => void;
+    const rangeStarted = new Promise<void>(resolve => {
+      markRangeStarted = resolve;
+    });
+    const rangeReleased = new Promise<void>(resolve => {
+      releaseRange = resolve;
+    });
+    let requestCount = 0;
+    source.setRangeGetter(async (begin, end) => {
+      requestCount++;
+      markRangeStarted();
+      await rangeReleased;
+      return sourceBytes.slice(begin, end);
+    });
+
+    const activeLoad = source.loadTileContent(rootTile);
+    await rangeStarted;
+    const abortController = new AbortController();
+    const queuedLoad = source.loadTileContent(rootTile, {signal: abortController.signal});
+    abortController.abort();
+
+    await expect(queuedLoad).rejects.toMatchObject({name: 'AbortError'});
+    expect(requestCount).toBe(1);
+    releaseRange();
+    await expect(activeLoad).resolves.toMatchObject({pointCount: rootTile.pointCount});
+  }
+);
+
+vitestTest('COPCSourceLoader#reports native range cancellation as AbortError', async () => {
+  const abortController = new AbortController();
+  abortController.abort();
+  await expect(
+    loadCOPCNodeData(
+      async () => new Uint8Array(1),
+      {pointCount: 1, pointDataOffset: 0, pointDataLength: 1},
+      abortController.signal
+    )
+  ).rejects.toMatchObject({name: 'AbortError'});
+});
+
+vitestTest.each([0, 1.5])(
+  'COPCSourceLoader#rejects invalid decode concurrency %s',
+  decodeConcurrency => {
+    expect(
+      () =>
+        new TestCOPCTileSource(new Blob(), {
+          copc: {decodeConcurrency}
+        })
+    ).toThrow('COPC decodeConcurrency must be a positive integer');
+  }
+);
 
 vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
@@ -634,6 +800,43 @@ function createCOPCWriterMesh() {
   };
 }
 
+/** Create one small single-node COPC fixture for a modern point format. */
+function createWorkerCOPCBlob(pointDataRecordFormat: 6 | 7 | 8): Blob {
+  const baseMesh = createCOPCWriterMesh();
+  const attributes =
+    pointDataRecordFormat === 6
+      ? {
+          POSITION: baseMesh.attributes.POSITION,
+          gpsTime: baseMesh.attributes.gpsTime
+        }
+      : pointDataRecordFormat === 8
+        ? {
+            ...baseMesh.attributes,
+            nir: {
+              value: Uint16Array.from(
+                {length: baseMesh.attributes.POSITION.value.length / 3},
+                (_, index) => index * 101
+              ),
+              size: 1
+            }
+          }
+        : baseMesh.attributes;
+  const mesh = {
+    ...baseMesh,
+    attributes,
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
+  };
+  return new Blob([
+    encodeSync(mesh, COPCWriter, {
+      copc: {
+        nodePointLimit: 64,
+        pointDataRecordFormat,
+        scale: [0.01, 0.01, 0.01]
+      }
+    })
+  ]);
+}
+
 /** Recursively load every hierarchy page through its declared byte range. */
 async function loadCompleteHierarchy(
   getter: (begin: number, end: number) => Promise<Uint8Array>,
@@ -695,6 +898,19 @@ function readFlatPositions(positions: ArrayLike<number>): string[] {
     result.push([positions[index], positions[index + 1], positions[index + 2]].join(','));
   }
   return result;
+}
+
+/** Flatten one fixed-size-list Arrow column from COPC tile content. */
+function readCOPCContentColumn(
+  content: Awaited<ReturnType<COPCTileSource['loadTileContent']>>,
+  columnName: 'POSITION' | 'COLOR_0'
+): number[] {
+  const column = content?.data.data.getChild(columnName);
+  const values: number[] = [];
+  for (let index = 0; index < (column?.length || 0); index++) {
+    values.push(...(column?.get(index)?.toArray() || []));
+  }
+  return values;
 }
 
 /** Read a little-endian UInt64 that fits in JavaScript's safe integer range. */

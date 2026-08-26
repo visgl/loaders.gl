@@ -33,11 +33,13 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `getMetadata()` returns COPC metadata, inferred bounds, and an initial view state.
 - `getRootTile()` returns the root octree tile header.
 - `getChildren(tile)` returns available child tile headers.
-- `loadTileContent(tile)` returns normalized point positions, optional colors, point count, and cartographic origin.
+- `loadTileContent(tile, options)` returns normalized point positions, optional colors, point count, and cartographic origin. `options.signal` cancels queued work, the active range request, or worker decode.
 - `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively as the selected node range is fetched. `options.batchSize` controls the maximum points per table, `options.columns` selects the attributes listed below, and `options.signal` cancels the request/decode.
 - `loadHierarchyInBatches(options)` yields hierarchy pages and their discovered nodes as they are fetched.
 
-The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. `loadTileContentInBatches` splits the node range into requests and emits rows as soon as the requested independent layers arrive. PDRF 7 RGB waits for Point14 and RGB; PDRF 8 RGB/NIR waits for the layers requested through `options.columns`. `options.rangeChunkSize` controls request size, while `options.rangeConcurrency` can fetch later ranges ahead of in-order decoding.
+The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. Atomic `loadTileContent` calls created through `@loaders.gl/core` use the package's single prebuilt TypeScript LAS worker pool when workers are enabled; direct source construction and unavailable workers fall back to main-thread decoding. `copc.decodeConcurrency` bounds each source's combined node fetch and decode work to control peak compressed and decoded memory.
+
+`loadTileContentInBatches` remains on the calling thread because its async iterator is the streaming boundary. It splits the node range into requests and emits rows as soon as the requested independent layers arrive. PDRF 7 RGB waits for Point14 and RGB; PDRF 8 RGB/NIR waits for the layers requested through `options.columns`. `options.rangeChunkSize` controls request size, while `options.rangeConcurrency` can fetch later ranges ahead of in-order decoding.
 
 ## Options
 
@@ -46,6 +48,7 @@ The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. `loadTi
 | `copc.sourceCoordinateSystem` | `string` | Auto-detected from COPC WKT | Coordinate system definition used when the source metadata does not include WKT. |
 | `copc.rangeChunkSize` | `number` | `65536` | Default byte size for TypeScript COPC node range requests. |
 | `copc.rangeConcurrency` | `number` | `1` | Maximum number of node ranges fetched ahead of decoding. Results are still decoded and yielded in range order. |
+| `copc.decodeConcurrency` | `number` | `core.maxConcurrency` or `3` | Maximum number of complete atomic node fetches and worker decodes active for one source. |
 
 ### Progressive Columns
 

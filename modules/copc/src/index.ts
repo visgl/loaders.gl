@@ -7,7 +7,8 @@ export type {
   COPCHierarchyBatch,
   COPCHierarchyBatchOptions,
   COPCTileContent,
-  COPCTileContentBatchOptions
+  COPCTileContentBatchOptions,
+  COPCTileContentLoadOptions
 } from './copc-source-loader';
 export type {COPCWriterOptions} from './copc-writer';
 export {COPCFormat} from './copc-format';

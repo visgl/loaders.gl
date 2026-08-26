@@ -583,11 +583,11 @@ async function readExactRange(
     throw new Error(`Invalid COPC byte range ${begin}-${end}`);
   }
   if (signal?.aborted) {
-    throw new Error('COPC range request was aborted');
+    throw createCOPCAbortError();
   }
   const bytes = await readRange(begin, end, signal);
   if (signal?.aborted) {
-    throw new Error('COPC range request was aborted');
+    throw createCOPCAbortError();
   }
   if (bytes.byteLength !== end - begin) {
     throw new Error(
@@ -595,6 +595,13 @@ async function readExactRange(
     );
   }
   return bytes;
+}
+
+/** Create the consistent cancellation error used by native COPC range helpers. */
+function createCOPCAbortError(): Error {
+  const error = new Error('COPC range request was aborted');
+  error.name = 'AbortError';
+  return error;
 }
 
 /** Validate one non-empty hierarchy page range. */
