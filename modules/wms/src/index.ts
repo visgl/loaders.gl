@@ -91,6 +91,11 @@ export {
   ArcGISMapTileSourceLoader,
   ArcGISMapTileSource
 } from './arcgis/arcgis-map-tile-source-loader';
+export type {ArcGISImageTileSourceLoaderOptions} from './arcgis/arcgis-image-tile-source-loader';
+export {
+  ArcGISImageTileSourceLoader,
+  ArcGISImageTileSource
+} from './arcgis/arcgis-image-tile-source-loader';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';

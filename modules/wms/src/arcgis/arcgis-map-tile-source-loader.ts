@@ -18,12 +18,20 @@ import {DataSource} from '@loaders.gl/loader-utils';
 /** Options for an ArcGIS cached MapServer tile source. */
 export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions & {
   'arcgis-map-server'?: {
+    /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
+    mode?: 'cached' | 'dynamic' | 'auto';
+    /** Tile size used for dynamic export requests. */
+    tileSize?: number;
     /** Optional custom tile URL template. */
     urlTemplate?: string;
+    /** Optional service URL pool for simple request distribution. */
+    urls?: string[];
     /** Additional query parameters sent to the metadata endpoint. */
     parameters?: Record<string, string>;
     /** Metadata document supplied by the application. */
     metadata?: ArcGISMapServerMetadata;
+    /** Default parameters forwarded to MapServer `export` requests. */
+    exportParameters?: Record<string, string | number | boolean>;
   };
 };
 
@@ -35,8 +43,17 @@ export type ArcGISMapServerMetadata = {
   copyrightText?: string;
   fullExtent?: {xmin: number; ymin: number; xmax: number; ymax: number; spatialReference?: unknown};
   spatialReference?: unknown;
-  tileInfo?: {lods?: {level: number}[]; rows?: number; cols?: number; format?: string};
+  tileInfo?: {
+    lods?: {level: number}[];
+    rows?: number;
+    cols?: number;
+    format?: string;
+    spatialReference?: unknown;
+  };
 };
+
+/** Parameters that can be changed between ArcGIS map tile requests. */
+export type ArcGISMapTileParameters = Record<string, string | number | boolean>;
 
 /** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */
 export class ArcGISMapTileSource
@@ -47,6 +64,7 @@ export class ArcGISMapTileSource
   readonly mimeType = 'image/png';
 
   private _metadata: any | null = null;
+  private _runtimeParameters: ArcGISMapTileParameters = {};
 
   /** Creates an ArcGIS MapServer tile source. */
   constructor(url: string, options: ArcGISMapTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
@@ -84,7 +102,17 @@ export class ArcGISMapTileSource
 
   /** Fetches and decodes one cached ArcGIS tile. */
   async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
-    const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
+    const options = this.options['arcgis-map-server'] || {};
+    const mode = options.mode || 'auto';
+    if (mode === 'auto' && !this._metadata) {
+      this._metadata = await this._loadMetadata();
+    }
+    const metadata = this._metadata;
+    const useCachedTiles = mode === 'cached' || (mode === 'auto' && Boolean(metadata?.tileInfo));
+    const tileURL = useCachedTiles
+      ? this.getTileURL(parameters)
+      : this.getExportTileURL(parameters, options.tileSize || 256);
+    const response = await this.fetch(tileURL, signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(
         `ArcGIS MapServer tile request failed: ${response.status} ${response.statusText}`
@@ -114,8 +142,37 @@ export class ArcGISMapTileSource
       );
       return templateURL.toString();
     }
-    const url = new URL(this.url);
+    const url = new URL(this.getServiceURL(parameters));
     url.pathname = `${url.pathname.replace(/\/$/, '')}/tile/${parameters.z}/${parameters.y}/${parameters.x}`;
+    return url.toString();
+  }
+
+  /** Updates parameters applied to subsequent dynamic MapServer export requests. */
+  updateParameters(parameters: ArcGISMapTileParameters): void {
+    this._runtimeParameters = {...this._runtimeParameters, ...parameters};
+  }
+
+  /** Builds a dynamic MapServer `export` request for one web-mercator tile. */
+  getExportTileURL(parameters: GetTileParameters, tileSize?: number): string {
+    const options = this.options['arcgis-map-server'] || {};
+    const resolvedTileSize = tileSize || options.tileSize || 256;
+    const [west, south, east, north] = getWebMercatorTileBounds(parameters);
+    const url = new URL(this.getServiceURL(parameters));
+    url.pathname = `${url.pathname.replace(/\/$/, '')}/export`;
+    const searchParameters: ArcGISMapTileParameters = {
+      f: 'image',
+      bbox: `${west},${south},${east},${north}`,
+      bboxSR: 3857,
+      imageSR: 3857,
+      size: `${resolvedTileSize},${resolvedTileSize}`,
+      format: 'png32',
+      transparent: true,
+      ...options.exportParameters,
+      ...this._runtimeParameters
+    };
+    for (const [key, value] of Object.entries(searchParameters)) {
+      url.searchParams.set(key, String(value));
+    }
     return url.toString();
   }
 
@@ -137,6 +194,22 @@ export class ArcGISMapTileSource
     }
     return response.json();
   }
+
+  private getServiceURL(parameters: GetTileParameters): string {
+    const urls = this.options['arcgis-map-server']?.urls;
+    return urls?.length ? urls[(parameters.x + parameters.y) % urls.length] : this.url;
+  }
+}
+
+function getWebMercatorTileBounds(parameters: GetTileParameters): [number, number, number, number] {
+  const worldSize = 20037508.342789244;
+  const tileCount = 2 ** parameters.z;
+  const tileSize = (worldSize * 2) / tileCount;
+  const west = -worldSize + parameters.x * tileSize;
+  const east = west + tileSize;
+  const north = worldSize - parameters.y * tileSize;
+  const south = north - tileSize;
+  return [west, south, east, north];
 }
 
 /** Source loader for ArcGIS cached MapServer tiles. */

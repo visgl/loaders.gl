@@ -7,6 +7,7 @@ import test from 'test/utils/vitest-tape';
 import {
   _ArcGISFeatureServerSourceLoader as ArcGISFeatureServerSourceLoader,
   _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader,
+  ArcGISImageTileSource,
   ArcGISMapTileSource
 } from '@loaders.gl/wms';
 
@@ -27,6 +28,57 @@ test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', t => {
   const url = new URL(source.getTileURL({x: 3, y: 4, z: 5}));
   t.equal(url.pathname, '/MapServer/tile/5/4/3');
   t.equal(url.searchParams.get('token'), 'abc');
+  t.end();
+});
+
+test('ArcGISMapTileSource builds dynamic export tiles and updates parameters', t => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {mode: 'dynamic', tileSize: 512}
+  });
+  source.updateParameters({layers: 'show:0', format: 'jpgpng'});
+  const url = new URL(source.getExportTileURL({x: 1, y: 2, z: 3}));
+  t.equal(url.pathname, '/MapServer/export');
+  t.equal(url.searchParams.get('size'), '512,512');
+  t.equal(url.searchParams.get('layers'), 'show:0');
+  t.equal(url.searchParams.get('format'), 'jpgpng');
+  t.end();
+});
+
+test('ArcGISMapTileSource distributes requests across configured service URLs', t => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {
+      urls: ['https://tiles-a.example.com/MapServer', 'https://tiles-b.example.com/MapServer']
+    }
+  });
+  const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
+  t.equal(url.origin, 'https://tiles-b.example.com');
+  t.end();
+});
+
+test('ArcGISImageTileSource builds exportImage tile requests', t => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {tileSize: 512, parameters: {time: '2020-01-01'}}
+  });
+  source.updateParameters({renderingRule: '{"rasterFunction":"Hillshade"}'});
+  const url = new URL(source.getTileURL({x: 0, y: 0, z: 0}));
+  t.equal(url.pathname, '/ImageServer/exportImage');
+  t.equal(url.searchParams.get('size'), '512,512');
+  t.equal(url.searchParams.get('time'), '2020-01-01');
+  t.equal(url.searchParams.get('renderingRule'), '{"rasterFunction":"Hillshade"}');
+  t.end();
+});
+
+test('ArcGISImageTileSource distributes requests across configured service URLs', t => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {
+      urls: [
+        'https://imagery-a.example.com/ImageServer',
+        'https://imagery-b.example.com/ImageServer'
+      ]
+    }
+  });
+  const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
+  t.equal(url.origin, 'https://imagery-b.example.com');
   t.end();
 });
 
