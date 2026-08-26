@@ -243,7 +243,7 @@ can make selective reads much cheaper.
 | [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children and repeated leaves when selected columns share page boundaries |
 | [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected columns use page locations and first-row indexes for selective byte reads; repeated values and continuation pages are decoded only from complete, mutually aligned row ranges |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |
-| Size statistics | ✅ | ❌ | Byte-array sizes and repetition/definition histograms are decoded and exposed; writer emission remains future work |
+| Size statistics | ✅ | ✅ (opt-in) | Byte-array sizes and repetition/definition histograms are decoded and exposed; `ParquetJSWriter` emits them with `writeSizeStatistics` |
 | Column order and sorting columns | ✅ (metadata) | ❌ | Row-group sort declarations are normalized as `sortingColumns`; semantic pruning is not yet applied |
 
 `ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using

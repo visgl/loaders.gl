@@ -38,6 +38,8 @@ type ParquetJSWriterEncoderOptions = {
   pageIndex?: boolean | Record<string, boolean>;
   /** Emits CRC-32 checksums for every data and dictionary page. */
   writePageChecksums?: boolean;
+  /** Emits optional SizeStatistics metadata for every column chunk. */
+  writeSizeStatistics?: boolean;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;
