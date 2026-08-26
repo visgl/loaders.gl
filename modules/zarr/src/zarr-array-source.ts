@@ -152,7 +152,15 @@ export class ZarrArraySource extends ZarrSource {
     if (!this.initializationPromise) {
       this.initializationPromise = this.initialize(signal);
     }
-    return await this.initializationPromise;
+    const initializationPromise = this.initializationPromise;
+    try {
+      return await initializationPromise;
+    } catch (error) {
+      if (this.initializationPromise === initializationPromise) {
+        this.initializationPromise = null;
+      }
+      throw error;
+    }
   }
 
   /** Opens the array selected by the source options. */
