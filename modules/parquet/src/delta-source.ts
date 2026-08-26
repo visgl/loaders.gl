@@ -19,19 +19,11 @@ import type {
   ParquetDatasetExplain,
   ParquetPredicate
 } from './parquet-source-types';
+import {DeltaFormat} from './delta-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-const DeltaFormat = {
-  name: 'Delta Lake',
-  id: 'delta',
-  module: 'parquet',
-  version: VERSION,
-  extensions: ['json', 'checkpoint.parquet'],
-  mimeTypes: ['application/json']
-};
 
 /** Lightweight Delta Lake snapshot source backed by a newline-delimited commit log. */
 export class DeltaTableSource
@@ -58,6 +50,7 @@ export class DeltaTableSource
           uri: this.resolveDataFile(file.path),
           partitionValues: file.partitionValues,
           byteLength: file.size,
+          rowCount: getDeltaRecordCount(file.stats),
           metadata: {stats: file.stats}
         })
       )
@@ -155,13 +148,16 @@ export class DeltaTableSource
 
   private resolveDataFile(path: string): string {
     if (this.options.delta?.baseUrl) return new URL(path, this.options.delta.baseUrl).toString();
-    if (typeof this.data === 'string') return new URL(path, this.data).toString();
+    if (typeof this.data === 'string') {
+      const tableRoot = this.data.replace(/\/_delta_log\/[^/]*$/i, '/');
+      return new URL(path, tableRoot).toString();
+    }
     return path;
   }
 }
 
-/** Metadata loader for a Delta commit-log-backed table source. */
-export const DeltaSourceLoader = {
+/** Parser-bearing Delta source loader exposed through the explicit source subpath. */
+export const DeltaSourceLoaderWithParser = {
   ...DeltaFormat,
   dataType: null as unknown as DeltaTableSource,
   batchType: null as never,
@@ -172,10 +168,31 @@ export const DeltaSourceLoader = {
   fromBlob: true,
   options: {},
   defaultOptions: {},
-  testURL: (url: string): boolean => /(?:_delta_log|\.jsonl?)(?:$|[?#])/i.test(url),
+  testURL: (url: string): boolean =>
+    /\/_delta_log\/(?:\d{20}\.json|_last_checkpoint)(?:$|[?#])/i.test(url),
   createDataSource: (data: string | Blob, options: DeltaSourceOptions = {}): DeltaTableSource =>
     new DeltaTableSource(data, options)
 } as const satisfies SourceLoader<DeltaTableSource>;
+
+/** Extracts Delta's optional `numRecords` statistic from an add action. */
+function getDeltaRecordCount(
+  stats: string | Readonly<Record<string, unknown>> | undefined
+): number | undefined {
+  const parsed = typeof stats === 'string' ? parseDeltaStats(stats) : stats;
+  const value = parsed?.numRecords;
+  return typeof value === 'number' && Number.isSafeInteger(value) ? value : undefined;
+}
+
+function parseDeltaStats(stats: string): Readonly<Record<string, unknown>> | undefined {
+  try {
+    const value: unknown = JSON.parse(stats);
+    return value && typeof value === 'object'
+      ? (value as Readonly<Record<string, unknown>>)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function selectActiveDeltaFiles(
   actions: readonly DeltaAction[]
