@@ -61,6 +61,20 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
   };
 };
 
+/** Options for progressive COPC point batches. */
+export type COPCTileContentBatchOptions = {
+  /** Maximum number of points in each yielded Arrow table. */
+  batchSize?: number;
+};
+
+/** Arrow table content returned for one COPC tile batch. */
+export type COPCTileContent = {
+  data: MeshArrowTable;
+  pointCount: number;
+  cartographicOrigin: number[];
+  coordinateSystem: (typeof COORDINATE_SYSTEM)[keyof typeof COORDINATE_SYSTEM];
+};
+
 /**
  * Creates point cloud tile source for COPC urls or blobs
  */
@@ -291,6 +305,67 @@ export class COPCTileSource
     return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
   }
 
+  /**
+   * Yield TypeScript-decoded COPC tile content as Arrow batches.
+   *
+   * The compressed node range is currently fetched as one range request. Once
+   * it is available, point batches are decoded and yielded without building a
+   * full decoded node table first. The existing `loadTileContent` method
+   * remains the compatibility API for callers that need one table.
+   */
+  async *loadTileContentInBatches(
+    tile: {id: string},
+    options: COPCTileContentBatchOptions = {}
+  ): AsyncIterable<COPCTileContent> {
+    const {copc} = await this._initPromise;
+    const node = await this.getNodeById(tile.id);
+    if (!node) {
+      return;
+    }
+    if (
+      this.options.copc?.decoder !== 'typescript-laz' ||
+      !supportsDirectCOPCPointDataOutput(copc.header.pointDataRecordFormat)
+    ) {
+      throw new Error('COPC progressive batches require the TypeScript LAZ decoder for PDRF 6-8');
+    }
+
+    const nativeOrigin = this.getNativeTileCenter(tile.id);
+    const cartographicOrigin = this.projectPoint(nativeOrigin);
+    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
+    const batchSize = Math.max(1, Math.floor(options.batchSize || 65536));
+    const colors = pointFormatHasColor(copc.header.pointDataRecordFormat);
+    const cursor = createLAZChunkDecoderCursor(compressed, {
+      pointCount: node.pointCount,
+      pointDataRecordFormat: copc.header.pointDataRecordFormat,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    });
+
+    while (cursor.remainingPointCount > 0) {
+      const pointCount = Math.min(batchSize, cursor.remainingPointCount);
+      const nativePositions = new Float64Array(pointCount * 3);
+      const positions = new Float32Array(pointCount * 3);
+      const batchColors = colors ? new Uint16Array(pointCount * 3) : null;
+      const decodedPointCount = cursor.decodeIntoPointData(
+        {
+          positions: nativePositions,
+          rawColors: batchColors,
+          pointOffset: 0,
+          scale: copc.header.scale,
+          offset: copc.header.offset
+        },
+        pointCount
+      );
+      if (decodedPointCount !== pointCount) {
+        throw new Error(
+          `COPC TypeScript LAZ decoder produced ${decodedPointCount} points; expected ${pointCount}`
+        );
+      }
+
+      this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
+      yield this.createTileContentResult(pointCount, positions, batchColors, cartographicOrigin);
+    }
+  }
+
   /** Decode a COPC node directly into the typed attributes used for rendering. */
   protected async loadTypeScriptTileContent(
     copc: Copc,
@@ -495,7 +570,7 @@ export class COPCTileSource
     positions: Float32Array,
     colors: Uint16Array | null,
     origin: number[]
-  ) {
+  ): COPCTileContent {
     const positionsAttribute = {value: positions, size: 3};
     const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
     const data = this.createTileContentTable(pointCount, positionsAttribute, colorsAttribute);
