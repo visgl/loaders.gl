@@ -31,7 +31,7 @@ const DeltaFormat = {
   version: VERSION,
   extensions: ['json', 'checkpoint.parquet'],
   mimeTypes: ['application/json']
-} as const;
+};
 
 /** Lightweight Delta Lake snapshot source backed by a newline-delimited commit log. */
 export class DeltaTableSource
