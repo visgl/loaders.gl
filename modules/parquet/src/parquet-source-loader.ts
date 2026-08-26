@@ -51,6 +51,8 @@ import {
 } from './lib/parquet-source-worker-types';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
+import {toPrimitive} from './parquetjs/schema/types';
+import type {ParquetType} from './parquetjs/schema/declare';
 import {
   PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
@@ -1546,8 +1548,9 @@ async function filterParquetRowGroupsWithBloomFilters(
       const mayContainValue = probe.values.some(value => {
         try {
           if (value instanceof Date) return true;
+          const physicalValue = getParquetBloomFilterPhysicalValue(value, field);
           const encoded = encodeParquetBloomFilterValue(
-            value,
+            physicalValue,
             field.primitiveType as Parameters<typeof encodeParquetBloomFilterValue>[1],
             field.typeLength
           );
@@ -1568,6 +1571,20 @@ async function filterParquetRowGroupsWithBloomFilters(
     if (keepRowGroup) rowGroups.push(rowGroupIndex);
   }
   return {rowGroupIndices: rowGroups, filtersRead, bytesRead};
+}
+
+/** Converts logical predicate values into the physical values stored in Bloom filters. */
+function getParquetBloomFilterPhysicalValue(
+  value: unknown,
+  field: ParquetField
+): boolean | number | bigint | string | Uint8Array {
+  if (field.originalType?.startsWith('DECIMAL_')) {
+    return toPrimitive(field.originalType as ParquetType, value, field) as
+      | number
+      | bigint
+      | Uint8Array;
+  }
+  return value as boolean | number | bigint | string | Uint8Array;
 }
 
 /** Returns true when at least one HTTP object validator was captured. */

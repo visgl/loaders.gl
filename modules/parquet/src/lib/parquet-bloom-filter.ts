@@ -81,10 +81,7 @@ export function encodeParquetBloomFilterValue(
     }
     case 'BYTE_ARRAY': {
       const payload = typeof value === 'string' ? new TextEncoder().encode(value) : value;
-      const bytes = new Uint8Array(4 + payload.byteLength);
-      new DataView(bytes.buffer).setInt32(0, payload.byteLength, true);
-      bytes.set(payload, 4);
-      return bytes;
+      return payload.slice();
     }
     case 'FIXED_LEN_BYTE_ARRAY': {
       if (
@@ -232,7 +229,7 @@ export function hashParquetBloomFilterValue(value: Uint8Array): bigint {
   hash = (hash + BigInt(value.byteLength)) & UINT64_MASK;
   while (offset + 8 <= value.byteLength) {
     const lane = (readUint64LE(value, offset) * PRIME2) & UINT64_MASK;
-    hash ^= rotateLeft(lane, 31) * PRIME1;
+    hash ^= (rotateLeft(lane, 31) * PRIME1) & UINT64_MASK;
     hash = (rotateLeft(hash, 27) * PRIME1 + PRIME4) & UINT64_MASK;
     offset += 8;
   }
