@@ -237,8 +237,8 @@ can make selective reads much cheaper.
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
 | Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Drive conservative `ParquetSource` predicate pushdown and remain exposed in metadata |
 | Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
-| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ❌ | Flat-column predicates use page min/max/null statistics to derive candidate row ranges |
-| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ❌ | Flat selected columns use page locations and first-row indexes for selective byte reads |
+| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Flat-column predicates use page min/max/null statistics to derive candidate row ranges; `ParquetJSWriter` emits indexes for supported non-repeated scalar columns |
+| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Flat selected columns use page locations and first-row indexes for selective byte reads; `ParquetJSWriter` emits indexes alongside column indexes |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |
 | Size statistics | ❌ | ❌ | Histogram metadata from newer format work is not yet exposed; see the upstream [`ColumnMetaData`](https://github.com/apache/parquet-format/blob/master/src/main/thrift/parquet.thrift) definition |
 | Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |

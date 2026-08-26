@@ -207,6 +207,14 @@ test('ParquetSource#getScanPlan shares logical and physical pruning decisions', 
   t.equal(plan.rowGroups.prunedByBloomFilter, 0, 'does not invent Bloom-filter pruning');
   t.equal(plan.plan.at(-1)?.kind, 'limit', 'retains the common logical limit');
   t.ok(Object.isFrozen(plan.rowGroups.indices), 'freezes physical plan selections');
+  t.deepEqual(
+    plan.pages.plans.map(pagePlan => ({phase: pagePlan.phase, columns: pagePlan.columns})),
+    [
+      {phase: 'predicate', columns: [['x']]},
+      {phase: 'projection', columns: [['source_id']]}
+    ],
+    'describes caller-thread late-materialization phases'
+  );
 
   await source.close();
   t.end();
@@ -238,6 +246,62 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
   const plan = await source.getScanPlan({predicate: {op: '=', args: [{property: 'id'}, 'm']}});
   t.equal(plan.bloomFilters.read, 2, 'reads one Bloom filter per row group');
   t.equal(plan.rowGroups.prunedByBloomFilter, 2, 'prunes absent values before decoding');
+  await source.close();
+  t.end();
+});
+
+test('ParquetJSWriter emits page indexes consumed by selective page planning', async t => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {
+        fields: [
+          {name: 'x', type: 'int32', nullable: false},
+          {name: 'payload', type: 'utf8', nullable: false}
+        ],
+        metadata: {}
+      },
+      data: [
+        {x: 0, payload: 'zero'},
+        {x: 1, payload: 'one'},
+        {x: 100, payload: 'hundred'},
+        {x: 101, payload: 'hundred-one'}
+      ]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {pageSize: 2, pageIndex: {x: true}}}
+  );
+  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    core: {type: 'parquet'}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata();
+  const xColumn = metadata.rowGroups[0].columns.find(column => column.path.join('.') === 'x');
+  t.ok(xColumn?.columnIndexOffset !== undefined, 'writes column-index offset');
+  t.ok(xColumn?.offsetIndexOffset !== undefined, 'writes offset-index offset');
+  const plan = await source.getScanPlan({
+    columns: ['payload'],
+    predicate: {op: '>=', args: [{property: 'x'}, 100]}
+  });
+  t.equal(plan.pages.indexesRead, 2, 'reads both page indexes for the predicate column');
+  t.equal(plan.pages.plans[0]?.selectedPages, 1, 'selects only the matching predicate page');
+  t.equal(plan.pages.plans[0]?.totalPages, 2, 'reports all predicate pages');
+  const emptyPlan = await source.getScanPlan({
+    columns: ['payload'],
+    predicate: {op: '>=', args: [{property: 'x'}, 1000]}
+  });
+  t.deepEqual(
+    emptyPlan.pages.plans.map(pagePlan => pagePlan.phase),
+    ['predicate'],
+    'does not advertise a projection phase after page indexes prove no rows match'
+  );
+  const batches = await collectParquetBatches(
+    source.read({columns: ['payload'], predicate: {op: '>=', args: [{property: 'x'}, 100]}})
+  );
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || [])),
+    ['hundred', 'hundred-one'],
+    'decodes rows selected by the page index'
+  );
   await source.close();
   t.end();
 });

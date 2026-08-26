@@ -290,6 +290,10 @@ export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
 export type ParquetPageScanPlan = Readonly<{
   /** Zero-based row-group index. */
   rowGroupIndex: number;
+  /** Physical phase represented by this plan. */
+  phase: 'combined' | 'predicate' | 'projection';
+  /** Nested column paths fetched during this physical phase. */
+  columns: readonly (readonly string[])[];
   /** Candidate half-open row ranges retained by page statistics. */
   rowRanges: readonly Readonly<{start: number; end: number}>[];
   /** Column-index and offset-index payloads decoded. */

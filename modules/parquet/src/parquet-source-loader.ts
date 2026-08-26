@@ -89,6 +89,7 @@ import {
   type ColumnChunk,
   type FileMetaData,
   type GeospatialStatistics as ParquetThriftGeospatialStatistics,
+  type RowGroup,
   type Statistics as ParquetThriftStatistics
 } from './parquetjs/parquet-thrift/index';
 import {ParquetReader} from './parquetjs/parser/parquet-reader';
@@ -301,7 +302,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         bytesRead: physicalPlan.bloomFilterBytesRead
       }),
       pages: Object.freeze({
-        rowGroupsPlanned: pagePlans.length,
+        rowGroupsPlanned: new Set(pagePlans.map(plan => plan.rowGroupIndex)).size,
         indexesRead: pagePlans.reduce((sum, plan) => sum + plan.indexesRead, 0),
         total: pagePlans.reduce((sum, plan) => sum + plan.totalPages, 0),
         selected: pagePlans.reduce((sum, plan) => sum + plan.selectedPages, 0),
@@ -630,37 +631,72 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     const predicateColumns = getParquetPredicateColumns(rowGroupPlan.predicate);
     const decodedColumns =
       columns.length === 0 ? [] : [...new Set([...columns, ...predicateColumns])];
-    const columnList = decodedColumns.map(column => [column]);
+    const hasHiddenPredicateColumns =
+      columns.length > 0 && predicateColumns.some(column => !columns.includes(column));
+    const phases = hasHiddenPredicateColumns
+      ? [
+          {
+            phase: 'predicate' as const,
+            columns: predicateColumns.map(column => [column]),
+            predicate: rowGroupPlan.predicate
+          },
+          {
+            phase: 'projection' as const,
+            columns: columns.map(column => [column]),
+            predicate: undefined
+          }
+        ]
+      : [
+          {
+            phase: 'combined' as const,
+            columns: decodedColumns.map(column => [column]),
+            predicate: rowGroupPlan.predicate
+          }
+        ];
     const plans: ParquetPageScanPlan[] = [];
     for (const rowGroupIndex of rowGroupPlan.rowGroupIndices) {
-      throwIfAborted(signal);
       const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
-      const pagePlan = await createParquetPagePruningPlan(
-        initialization.file,
-        rowGroup,
-        initialization.parquetSchema,
-        columnList,
-        rowGroupPlan.predicate,
-        signal
-      );
-      if (!pagePlan) continue;
-      plans.push(
-        Object.freeze({
-          rowGroupIndex,
-          rowRanges: Object.freeze(
-            pagePlan.rowRanges.map(rowRange => Object.freeze({...rowRange}))
-          ),
-          indexesRead: pagePlan.indexCount,
-          totalPages: pagePlan.totalPageCount,
-          selectedPages: pagePlan.selectedPageCount,
-          rowsPruned: pagePlan.prunedRowCount,
-          ranges: Object.freeze(
-            getParquetPageReadRanges(rowGroup, columnList, pagePlan).map(range =>
-              Object.freeze({...range})
+      let predicateProvedEmpty = false;
+      for (const phase of phases) {
+        throwIfAborted(signal);
+        if (phase.phase === 'projection' && predicateProvedEmpty) {
+          continue;
+        }
+        const pagePlan = phase.predicate
+          ? await createParquetPagePruningPlan(
+              initialization.file,
+              rowGroup,
+              initialization.parquetSchema,
+              phase.columns,
+              phase.predicate,
+              signal
             )
-          )
-        })
-      );
+          : undefined;
+        plans.push(
+          pagePlan
+            ? Object.freeze({
+                rowGroupIndex,
+                phase: phase.phase,
+                columns: Object.freeze(phase.columns.map(column => Object.freeze([...column]))),
+                rowRanges: Object.freeze(
+                  pagePlan.rowRanges.map(rowRange => Object.freeze({...rowRange}))
+                ),
+                indexesRead: pagePlan.indexCount,
+                totalPages: pagePlan.totalPageCount,
+                selectedPages: pagePlan.selectedPageCount,
+                rowsPruned: pagePlan.prunedRowCount,
+                ranges: Object.freeze(
+                  getParquetPageReadRanges(rowGroup, phase.columns, pagePlan).map(range =>
+                    Object.freeze({...range})
+                  )
+                )
+              })
+            : createFullColumnScanPlan(rowGroup, rowGroupIndex, phase.phase, phase.columns)
+        );
+        if (phase.phase === 'predicate' && pagePlan?.rowRanges.length === 0) {
+          predicateProvedEmpty = true;
+        }
+      }
     }
     return plans;
   }
@@ -1325,6 +1361,40 @@ function createRowGroupMetadata(
     compressedSize: compressedByteLength,
     columns: Object.freeze(columns)
   });
+}
+
+/** Describes a phase that reads complete column chunks because no page index is available. */
+function createFullColumnScanPlan(
+  rowGroup: RowGroup,
+  rowGroupIndex: number,
+  phase: ParquetPageScanPlan['phase'],
+  columns: readonly string[][]
+): ParquetPageScanPlan {
+  const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
+    const path = columnChunk.meta_data?.path_in_schema;
+    return Boolean(
+      path && (columns.length === 0 || columns.some(column => pathMatchesSelection(column, path)))
+    );
+  });
+  const rowCount = Number(rowGroup.num_rows);
+  return Object.freeze({
+    rowGroupIndex,
+    phase,
+    columns: Object.freeze(columns.map(column => Object.freeze([...column]))),
+    rowRanges: Object.freeze([Object.freeze({start: 0, end: rowCount})]),
+    indexesRead: 0,
+    totalPages: 0,
+    selectedPages: 0,
+    rowsPruned: 0,
+    ranges: Object.freeze(
+      selectedColumnChunks.map(columnChunk => Object.freeze(getColumnChunkRange(columnChunk)))
+    )
+  });
+}
+
+/** Returns whether a requested path selects a footer leaf or one of its nested children. */
+function pathMatchesSelection(selection: readonly string[], path: readonly string[]): boolean {
+  return selection.length <= path.length && selection.every((part, index) => part === path[index]);
 }
 
 /** Returns the complete contiguous byte range occupied by one Parquet column chunk. */
