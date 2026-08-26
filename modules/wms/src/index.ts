@@ -97,6 +97,15 @@ export {
   normalizeVectorServiceCapabilities
 } from './service-capabilities';
 
+export type {
+  ServiceRuntimeOptions,
+  ServiceTelemetryEvent,
+  ServiceSourceLoader
+} from './service-runtime';
+export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './service-runtime';
+export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
+export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
+
 // ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
