@@ -2,6 +2,9 @@
 
 This module contains helper classes for the GIS category of loaders.
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for shared
+CRS types, the cross-format support matrix, and the reprojection roadmap.
+
 ## Installation
 
 ```bash

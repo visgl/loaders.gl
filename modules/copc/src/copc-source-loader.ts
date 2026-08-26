@@ -24,7 +24,7 @@ import {
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {
   createLASTypedExtraBytesAttributes,
   populateLASTypedExtraBytes,
@@ -132,7 +132,7 @@ import {
 
 export type COPCSourceLoaderOptions = DataSourceOptions & {
   copc?: {
-    sourceCoordinateSystem?: string;
+    sourceCoordinateSystem?: Proj4CRSDefinition;
     /** Default byte size for progressive COPC node range requests. */
     rangeChunkSize?: number;
     /** Maximum number of COPC node ranges fetched ahead of decode. */
@@ -310,7 +310,7 @@ export class COPCTileSource
         bounds: {minimum: copc.header.min, maximum: copc.header.max},
         coordinateReferenceSystems: copc.wkt
           ? [copc.wkt]
-          : this.options.copc?.sourceCoordinateSystem
+          : typeof this.options.copc?.sourceCoordinateSystem === 'string'
             ? [this.options.copc.sourceCoordinateSystem]
             : undefined
       },
@@ -1359,7 +1359,7 @@ function getCOPCLAZChunkMetadata(copc: COPCFile, pointCount: number) {
   };
 }
 
-function createProjection(projectionData?: string): Proj4Projection | null {
+function createProjection(projectionData?: Proj4CRSDefinition): Proj4Projection | null {
   if (!projectionData) {
     return null;
   }
@@ -1374,7 +1374,10 @@ function createProjection(projectionData?: string): Proj4Projection | null {
   }
 }
 
-function normalizeProjectionDefinition(projectionData: string): string {
+function normalizeProjectionDefinition(projectionData: Proj4CRSDefinition): Proj4CRSDefinition {
+  if (typeof projectionData !== 'string') {
+    return projectionData;
+  }
   const horizontalWktMatch =
     projectionData.match(/(PROJCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/) ||
     projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);

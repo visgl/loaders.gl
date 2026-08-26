@@ -19,6 +19,7 @@ import type {
   RangeRequestTransportResult,
   RasterQueryCapabilities
 } from '@loaders.gl/loader-utils';
+import type {CRSIdentifier} from '@math.gl/crs';
 import {
   DataSource,
   getRasterViewportBoundingBox,
@@ -479,7 +480,7 @@ function getImageResolution(
 }
 
 /** Returns a normalized CRS string for the GeoTIFF image when one is available. */
-function getImageCRS(image: GeoTIFFImage): string | undefined {
+function getImageCRS(image: GeoTIFFImage): CRSIdentifier | undefined {
   const geoKeys = image.getGeoKeys?.();
   const projectedCrs = geoKeys?.ProjectedCSTypeGeoKey;
   if (projectedCrs) {

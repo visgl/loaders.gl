@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Mesh} from '@loaders.gl/schema';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 
 /** LAS Variable Length Record metadata and payload. */
 export type LASVariableLengthRecord = {
@@ -143,7 +144,7 @@ export type LASMetadata = {
   /** Parsed EVLR records when available. */
   evlrs: LASExtendedVariableLengthRecord[];
   /** WKT coordinate reference system text when present. */
-  wkt?: string;
+  wkt?: WKTCRSDefinition;
   /** WKT math transform text when present. */
   wktMathTransform?: string;
   /** GeoTIFF VLRs retained for legacy LAS versions. */

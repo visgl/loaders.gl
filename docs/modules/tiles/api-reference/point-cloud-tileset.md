@@ -2,6 +2,9 @@
 
 `PointCloudTileset` is a small point-cloud-specific tileset manager in `@loaders.gl/tiles`.
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for current
+LAS, COPC, and Potree CRS discovery, preservation, and reprojection limitations.
+
 It is intended for source-backed octree formats such as Potree and COPC and exposes a deliberately small subset of the `Tileset3D` interaction model:
 
 - construct from a `DataSource`

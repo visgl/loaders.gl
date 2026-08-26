@@ -1,5 +1,8 @@
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for GeoZarr
+CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   &nbsp;

@@ -22,6 +22,23 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 
 These deprecations and removals are being considered for v5.
 
+**CRS and @loaders.gl/wkt**
+
+- Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
+  `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
+  PROJ, and PROJJSON types directly from `@math.gl/crs`.
+- `WKTCRSLoader` now returns the discriminated, value-preserving `WKTCRSAst`. Code that indexed
+  the v4 hybrid nested array/object must traverse `ast.root.values` and discriminate each value by
+  its `type` field.
+- `WKTCRSWriter` accepts `WKTCRSAst`. The legacy `raw:` value convention and `raw`, `sort`,
+  `keywords`, and `debug` options have been removed. Numeric source lexemes and value order are
+  always retained by the AST.
+- GeoParquet `crs` is typed as PROJJSON or explicit `null`; omission still means the GeoParquet
+  default `OGC:CRS84`. `crs_type` is not a GeoParquet member. Coordinate `epoch` remains separate.
+- CRS metadata preservation does not reproject coordinates. See
+  [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for current
+  format support and the staged reprojection roadmap.
+
 **@loaders.gl/tiles**
 
 - `Tileset3D.maximumMemoryUsage` and the `maximumMemoryUsage` constructor option are deprecated. Use byte-native `cacheBytes`; convert MiB with `maximumMemoryUsage * 1024 * 1024`.

@@ -2,6 +2,9 @@ import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 
 # GeoArrow
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for
+GeoArrow CRS representations, column-specific metadata, and current preservation gaps.
+
 <ArrowDocsTabs active="geoarrow" />
 
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation

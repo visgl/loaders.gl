@@ -8,6 +8,9 @@
 
 Well-known text representation of coordinate reference systems (WKT or WKT-CRS) is a text markup language for representing spatial reference systems and transformations between spatial reference systems. The formats were originally defined by the Open Geospatial Consortium (OGC) and described in their Simple Feature Access and Well-known text representation of coordinate reference systems specifications. The current standard definition is ISO 19162:2019.
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+loaders.gl type model, format support matrix, and reprojection roadmap.
+
 ## Version History
 
 | Name                  | Year   | Description                                                  | ISO              |

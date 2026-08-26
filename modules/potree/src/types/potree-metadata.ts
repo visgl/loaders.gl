@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {PROJStringDefinition} from '@math.gl/crs';
 import {z} from 'zod';
 
 /** Potree axis-aligned bounding box metadata. */
@@ -65,7 +66,7 @@ export interface PotreeMetadata {
   /** Number of points contained in the complete point cloud. */
   points?: number;
   /** Proj.4-compatible definition of the point cloud's projection. */
-  projection?: string;
+  projection?: PROJStringDefinition;
   /** World bounding box used to limit the initial point of view. */
   boundingBox: PotreeBoundingBox;
   /** Tight bounding box around the actual points. */

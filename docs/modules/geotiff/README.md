@@ -2,6 +2,9 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for raster
+CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
+
 <GeoTiffDocsTabs active="overview" />
 
 <p class="badges">

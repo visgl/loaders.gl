@@ -104,7 +104,7 @@ function getGeometryMetadataForField(
   const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_EXTENSION_METADATA_KEY);
   if (columnMetadata) {
     try {
-      const parsedMetadata = GeoArrowMetadataSchema.parse(JSON.parse(columnMetadata));
+      const parsedMetadata = parseGeoArrowMetadata(JSON.parse(columnMetadata));
       metadata = {
         ...(metadata || {}),
         ...parsedMetadata
@@ -115,6 +115,22 @@ function getGeometryMetadataForField(
   }
 
   return metadata;
+}
+
+/** Validates GeoArrow metadata, treating a mislabeled string CRS as opaque metadata. */
+function parseGeoArrowMetadata(value: unknown): GeoArrowMetadata {
+  const result = GeoArrowMetadataSchema.safeParse(value);
+  if (result.success) {
+    return result.data;
+  }
+  if (value && typeof value === 'object' && typeof (value as {crs?: unknown}).crs === 'string') {
+    const {crs_type: _untrustedCRSType, ...opaqueMetadata} = value as Record<string, unknown>;
+    const opaqueResult = GeoArrowMetadataSchema.safeParse(opaqueMetadata);
+    if (opaqueResult.success) {
+      return opaqueResult.data;
+    }
+  }
+  throw result.error;
 }
 
 /**
@@ -332,7 +348,7 @@ function getGeoArrowMetadataFromGeoParquetField(
     extensionMetadata.crs_type = 'authority_code';
   } else if (columnMetadata.crs !== null) {
     extensionMetadata.crs = columnMetadata.crs;
-    extensionMetadata.crs_type = columnMetadata.crs_type || 'projjson';
+    extensionMetadata.crs_type = 'projjson';
   }
   if (columnMetadata.edges && columnMetadata.edges !== 'planar') {
     extensionMetadata.edges = columnMetadata.edges;
@@ -371,9 +387,12 @@ function synthesizeGeoParquetColumnMetadata(
 
   if (geometryMetadata.crs === undefined) {
     columnMetadata.crs = null;
-  } else if (typeof geometryMetadata.crs !== 'string') {
+  } else if (typeof geometryMetadata.crs === 'object') {
     columnMetadata.crs = geometryMetadata.crs;
-  } else if (!isDefaultCRS84Identifier(geometryMetadata.crs)) {
+  } else if (
+    typeof geometryMetadata.crs !== 'string' ||
+    !isDefaultCRS84Identifier(geometryMetadata.crs)
+  ) {
     return null;
   }
   if (geometryMetadata.edges) {

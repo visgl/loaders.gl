@@ -35,6 +35,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./wkt-crs-loader": {
+      "types": "./dist/wkt-crs-loader-with-parser.d.ts",
+      "import": "./dist/wkt-crs-loader-with-parser.js"
+    },
     "./wkt-worker.js": {
       "import": "./dist/wkt-worker.js"
     }
@@ -57,7 +61,8 @@
   "dependencies": {
     "@loaders.gl/gis": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2"
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@math.gl/crs": "^4.2.0-alpha.5"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

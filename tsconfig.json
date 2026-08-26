@@ -370,6 +370,12 @@
       "@loaders.gl/wkt": [
         "modules/wkt/src"
       ],
+      "@loaders.gl/wkt/wkt-crs-loader": [
+        "modules/wkt/src/wkt-crs-loader-with-parser"
+      ],
+      "@loaders.gl/wkt/*": [
+        "modules/wkt/src/*"
+      ],
       "@loaders.gl/wkt/test": [
         "modules/wkt/test"
       ],

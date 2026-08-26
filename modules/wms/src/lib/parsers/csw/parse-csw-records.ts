@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import type {CRSIdentifier} from '@math.gl/crs';
 import {convertXMLFieldToArrayInPlace} from '@loaders.gl/xml';
 import {parseExceptionReport} from './parse-exception-report';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
@@ -23,7 +24,7 @@ export type CSWRecords = {
     abstract: string;
     subject: string[];
     boundingBoxes: {
-      crs: string;
+      crs: CRSIdentifier;
       value: [number, number, number, number];
     }[];
     references: {

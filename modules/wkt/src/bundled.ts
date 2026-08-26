@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {WKTCRSLoaderWithParser as WKTCRSLoader} from './wkt-crs-loader-with-parser';
+export type {WKTCRSLoaderOptions} from './wkt-crs-loader-with-parser';
 export {
   WKTLoaderWithParser as WKTLoader,
   WKTWorkerLoaderWithParser as WKTWorkerLoader

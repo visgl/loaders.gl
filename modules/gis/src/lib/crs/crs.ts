@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {PROJStringDefinition} from '@math.gl/crs';
+
 /**
- * Coordinate reference system encoded as a PROJ.4 definition string.
+ * Coordinate reference system encoded as a PROJ definition string.
  *
- * @example
- * `+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs`
+ * @deprecated Use `PROJStringDefinition` from `@math.gl/crs`.
  */
-export type PROJ4CRS = string;
+export type PROJ4CRS = PROJStringDefinition;

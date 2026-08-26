@@ -8,6 +8,7 @@ import type {SHPLoaderOptions} from './shp-loader';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
+import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -26,7 +27,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     };
     gis?: {
       reproject?: boolean;
-      _targetCrs?: string;
+      _targetCrs?: Proj4CRSDefinition;
     };
   };
 

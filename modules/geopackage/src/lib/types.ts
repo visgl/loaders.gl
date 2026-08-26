@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {WKTCRSDefinition} from '@math.gl/crs';
+
 /* eslint-disable camelcase */
 export interface GeometryBitFlags {
   littleEndian: boolean;
@@ -10,7 +12,7 @@ export interface GeometryBitFlags {
   extendedGeometryType: boolean;
 }
 
-export type ProjectionMapping = {[srsId: number]: string};
+export type ProjectionMapping = {[srsId: number]: WKTCRSDefinition};
 export type DataColumnsMapping = {[columnName: string]: string | null};
 export type SQLiteTypes =
   | 'BOOLEAN'
@@ -70,7 +72,7 @@ export interface SpatialRefSysRow {
   /**
    * Well-known Text [A32] Representation of the Spatial Reference System
    */
-  definition: string;
+  definition: WKTCRSDefinition;
 
   /**
    * Human readable description of this SRS

@@ -25,6 +25,7 @@ import {WMSLayerDescriptionLoaderWithParser} from './wip/wms-layer-description-l
 
 import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
+import type {CRSIdentifier} from '@math.gl/crs';
 
 /** Properties for creating a enw WMS service */
 export type WMSSourceLoaderOptions = DataSourceOptions & {
@@ -84,7 +85,7 @@ export type WMSParameters = {
   query_layers?: string[];
 
   /** Coordinate Reference System (CRS) for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Requested format for the return image (GetMap, GetLegendGraphic) */
   format?: 'image/png';
   /** Requested MIME type of returned feature info (GetFeatureInfo) */
@@ -122,7 +123,7 @@ export type WMSGetMapParameters = {
   /** Layers to render - can be provided in service constructor */
   layers?: string | string[];
   /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Styling. can be provided in service constructor */
   styles?: unknown;
   /** Don't render background when no data. can be provided in service constructor */
@@ -171,7 +172,7 @@ export type WMSGetFeatureInfoParameters = {
   /** pixels */
   height: number;
   /** srs for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
 };
 
 /** GetMap parameters that are specific to the current view */
@@ -187,7 +188,7 @@ export type WMSGetFeatureInfoViewParameters = {
   /** bounding box of the requested map image */
   bbox: [number, number, number, number];
   /** srs for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
 };
 
 /** Parameters for DescribeLayer */
@@ -218,7 +219,7 @@ export class WMSImageSource
   /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
   /** In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
-  flipCRS: string[];
+  flipCRS: CRSIdentifier[];
 
   /** Default static WMS parameters */
   wmsParameters: Required<WMSParameters>;
@@ -513,7 +514,7 @@ export class WMSImageSource
     return encodeURI(url);
   }
 
-  _getWMS130Parameters<ParametersT extends {crs?: string; srs?: string}>(
+  _getWMS130Parameters<ParametersT extends {crs?: CRSIdentifier; srs?: CRSIdentifier}>(
     wmsParameters: ParametersT
   ): ParametersT {
     const newParameters = {...wmsParameters};

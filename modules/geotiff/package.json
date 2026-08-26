@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@math.gl/crs": "^4.2.0-alpha.5",
     "fast-xml-parser": "^5.3.6",
     "geotiff": "^2.1.0"
   },

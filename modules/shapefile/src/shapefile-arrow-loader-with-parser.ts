@@ -17,6 +17,7 @@ import {
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 import {SHPLoaderWithParser} from './shp-loader-with-parser';
 import {DBFLoaderWithParser} from './dbf-loader-with-parser';
 import type {ShapefileLoaderOptions} from './shapefile-loader';
@@ -314,7 +315,7 @@ function appendGeometryColumnToArrowTable(
 }
 
 function getReprojectionTransform(
-  sourceCrs: string | undefined,
+  sourceCrs: WKTCRSDefinition | undefined,
   options?: ShapefileLoaderOptions
 ): ((coordinate: number[]) => number[]) | undefined {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
