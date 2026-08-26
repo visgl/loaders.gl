@@ -7,6 +7,11 @@ export type {CompressionMetadata} from './compression-types';
 
 export {Compression, Compressor, Decompressor} from './lib/compression';
 
+// Deprecated compatibility exports retained for archive and ZIP consumers.
+export {DeflateCompression} from './lib/deflate-compression';
+export {GZipCompression} from './lib/gzip-compression';
+export {NoCompression} from './lib/no-compression';
+
 export {
   NoCompressor,
   NoDecompressor,

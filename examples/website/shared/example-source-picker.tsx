@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createRoot, type Root} from 'react-dom/client';
 import {CustomPanel} from '@deck.gl-community/widgets';
 import {getCuratedExamples, type CuratedExample, type ExampleSurface} from './example-catalog';
 
@@ -34,25 +33,35 @@ export type ExampleSourcePickerProps = {
 export function createExampleSourcePanel(
   props: ExampleSourcePickerProps
 ): CustomPanel {
-  let root: Root | null = null;
   return new CustomPanel({
     id: `example-source-${props.surface}`,
     title: 'Choose data',
     keepMounted: false,
     onRenderHTML: rootElement => {
-      root = createRoot(rootElement);
-      root.render(<ExampleSourcePicker {...props} />);
-      return () => {
-        root?.unmount();
-        root = null;
-      };
+      renderExampleSourcePicker(rootElement, props);
     }
   });
 }
 
-function ExampleSourcePicker({surface, selectedLabel, selectedUrl, onSourceChange}: ExampleSourcePickerProps) {
+function renderExampleSourcePicker(rootElement: HTMLElement, props: ExampleSourcePickerProps): void {
+  const {surface, selectedLabel, selectedUrl, onSourceChange} = props;
   const curatedExamples = getCuratedExamples(surface);
-  const handleFile = (file: File | undefined) => {
+  rootElement.replaceChildren();
+  rootElement.style.fontSize = '11px';
+  const detailsElement = document.createElement('details');
+  const summaryElement = document.createElement('summary');
+  summaryElement.textContent = 'Source options';
+  summaryElement.style.cursor = 'pointer';
+  summaryElement.style.fontWeight = '600';
+  detailsElement.appendChild(summaryElement);
+  const contentElement = document.createElement('div');
+  contentElement.style.display = 'grid';
+  contentElement.style.gap = '6px';
+  contentElement.style.padding = '6px 0 0';
+  detailsElement.appendChild(contentElement);
+  rootElement.appendChild(detailsElement);
+
+  const handleFile = (file: File | undefined): void => {
     if (!file) {
       return;
     }
@@ -64,63 +73,76 @@ function ExampleSourcePicker({surface, selectedLabel, selectedUrl, onSourceChang
     onSourceChange(source);
   };
 
-  return (
-    <div
-      onDragOver={event => event.preventDefault()}
-      onDrop={event => {
-        event.preventDefault();
-        handleFile(event.dataTransfer.files[0]);
-      }}
-      style={styles.container}
-    >
-      <label style={styles.label}>
-        Curated dataset
-        <select
-          value=""
-          onChange={event => {
-            const curatedExample = curatedExamples.find(example => example.id === event.target.value);
-            if (curatedExample) {
-              const source = toSource(curatedExample);
-              updateShareableSourceState(source);
-              onSourceChange(source);
-            }
-          }}
-          style={styles.control}
-        >
-          <option value="">{selectedLabel || 'Select a dataset'}</option>
-          {curatedExamples.map(example => (
-            <option key={example.id} value={example.id}>
-              {example.label}{example.mobileSafe ? ' · mobile' : ''}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label style={styles.label}>
-        URL
-        <input
-          type="url"
-          defaultValue={selectedUrl || ''}
-          placeholder="https://…"
-          style={styles.control}
-          onKeyDown={event => {
-            if (event.key === 'Enter') {
-              const url = event.currentTarget.value.trim();
-              if (url) {
-                const source = {value: url, label: getFileName(url), format: inferFormat(url)};
-                updateShareableSourceState(source);
-                onSourceChange(source);
-              }
-            }
-          }}
-        />
-      </label>
-      <label style={styles.dropZone}>
-        <span>Drop a file here or choose one</span>
-        <input type="file" onChange={event => handleFile(event.target.files?.[0])} style={styles.fileInput} />
-      </label>
-      <small style={styles.hint}>Format: URL extension is used when available; the renderer may apply a format override.</small>
-    </div>
-  );
+  const curatedLabel = document.createElement('label');
+  applyStyles(curatedLabel, styles.label);
+  curatedLabel.append('Curated dataset');
+  const curatedSelect = document.createElement('select');
+  curatedSelect.setAttribute('aria-label', 'Curated dataset');
+  applyStyles(curatedSelect, styles.control);
+  const currentOption = document.createElement('option');
+  currentOption.textContent = selectedLabel || 'Select a dataset';
+  curatedSelect.appendChild(currentOption);
+  for (const example of curatedExamples) {
+    const option = document.createElement('option');
+    option.value = example.id;
+    option.textContent = `${example.label}${example.mobileSafe ? ' · mobile' : ''}`;
+    curatedSelect.appendChild(option);
+  }
+  curatedSelect.addEventListener('change', () => {
+    const curatedExample = curatedExamples.find(example => example.id === curatedSelect.value);
+    if (curatedExample) {
+      const source = toSource(curatedExample);
+      updateShareableSourceState(source);
+      onSourceChange(source);
+    }
+  });
+  curatedLabel.appendChild(curatedSelect);
+  contentElement.appendChild(curatedLabel);
+
+  const urlLabel = document.createElement('label');
+  applyStyles(urlLabel, styles.label);
+  urlLabel.append('URL');
+  const urlInput = document.createElement('input');
+  urlInput.type = 'url';
+  urlInput.value = selectedUrl || '';
+  urlInput.placeholder = 'https://…';
+  urlInput.setAttribute('aria-label', 'URL');
+  applyStyles(urlInput, styles.control);
+  urlInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && urlInput.value.trim()) {
+      const url = urlInput.value.trim();
+      const source = {value: url, label: getFileName(url), format: inferFormat(url)};
+      updateShareableSourceState(source);
+      onSourceChange(source);
+    }
+  });
+  urlLabel.appendChild(urlInput);
+  contentElement.appendChild(urlLabel);
+
+  const dropZone = document.createElement('label');
+  applyStyles(dropZone, styles.dropZone);
+  dropZone.append('Drop a file here or choose one');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.setAttribute('aria-label', 'Choose a file');
+  applyStyles(fileInput, styles.fileInput);
+  fileInput.addEventListener('change', () => handleFile(fileInput.files?.[0]));
+  dropZone.appendChild(fileInput);
+  dropZone.addEventListener('dragover', event => event.preventDefault());
+  dropZone.addEventListener('drop', event => {
+    event.preventDefault();
+    handleFile(event.dataTransfer?.files[0]);
+  });
+  contentElement.appendChild(dropZone);
+
+  const hint = document.createElement('small');
+  hint.textContent = 'Format: URL extension is used when available; the renderer may apply a format override.';
+  applyStyles(hint, styles.hint);
+  contentElement.appendChild(hint);
+}
+
+function applyStyles(element: HTMLElement, style: Record<string, string>): void {
+  Object.assign(element.style, style);
 }
 
 function toSource(example: CuratedExample): ExampleSource {
@@ -162,11 +184,10 @@ function updateShareableSourceState(source: ExampleSource): void {
   window.history.replaceState({}, '', url);
 }
 
-const styles = {
-  container: {display: 'grid', gap: 10, padding: '4px 0'},
-  label: {display: 'grid', gap: 4, fontSize: 12},
-  control: {boxSizing: 'border-box' as const, width: '100%', minHeight: 38, padding: '8px 10px', border: '1px solid rgba(148, 163, 184, 0.55)', borderRadius: 8, font: 'inherit'},
-  dropZone: {display: 'grid', gap: 6, placeItems: 'center', padding: 14, border: '1px dashed rgba(59, 130, 246, 0.65)', borderRadius: 8, background: 'rgba(239, 246, 255, 0.7)', textAlign: 'center' as const, fontSize: 12},
-  fileInput: {maxWidth: '100%', fontSize: 12},
+const styles: Record<string, Record<string, string>> = {
+  label: {display: 'grid', gap: '3px', fontSize: '11px'},
+  control: {boxSizing: 'border-box', width: '100%', minHeight: '30px', padding: '4px 6px', border: '1px solid rgba(148, 163, 184, 0.55)', borderRadius: '6px', font: 'inherit'},
+  dropZone: {display: 'grid', gap: '4px', placeItems: 'center', padding: '8px', border: '1px dashed rgba(59, 130, 246, 0.65)', borderRadius: '6px', background: 'rgba(239, 246, 255, 0.7)', textAlign: 'center', fontSize: '11px'},
+  fileInput: {maxWidth: '100%', fontSize: '11px'},
   hint: {color: '#64748b', lineHeight: 1.4}
 };

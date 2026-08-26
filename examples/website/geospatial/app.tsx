@@ -31,7 +31,7 @@ import {
   type GeoArrowEncoding,
   type GeoArrowMetadata
 } from '@loaders.gl/geoarrow';
-import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
+import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
@@ -91,6 +91,7 @@ const LOADER_OPTIONS = {
 } as const;
 
 type TableFormat = 'geojson' | 'geoarrow';
+type ParquetLoaderName = 'parquet' | 'geoparquet';
 type LoadedDataName = 'geojson' | 'geoarrow';
 type LoadedGeometryType = GeoArrowEncoding | string | null;
 
@@ -145,6 +146,7 @@ type AppState = {
  */
 export default function App(props: AppProps = {}) {
   const [tableFormat, setTableFormat] = useState<TableFormat>('geoarrow');
+  const [parquetLoaderName, setParquetLoaderName] = useState<ParquetLoaderName>('parquet');
   const previousTableFormat = useRef(tableFormat);
   const loadRequestIdRef = useRef(0);
   const availableExamples = useMemo(
@@ -183,9 +185,10 @@ export default function App(props: AppProps = {}) {
       initialCategoryName,
       initialExampleName,
       initialExample,
-      previousTableFormat.current
+      previousTableFormat.current,
+      parquetLoaderName
     );
-  }, [availableExamples, props.format]);
+  }, [availableExamples, parquetLoaderName, props.format]);
 
   useEffect(() => {
     const formatChanged = previousTableFormat.current !== tableFormat;
@@ -205,7 +208,8 @@ export default function App(props: AppProps = {}) {
     state.selectedCategoryName,
     state.selectedExample,
     state.selectedExampleName,
-    tableFormat
+    tableFormat,
+    parquetLoaderName
   ]);
 
   const widgets = useMemo(() => {
@@ -223,7 +227,7 @@ export default function App(props: AppProps = {}) {
         widthPx: 420,
         panel: new ColumnPanel({
           id: 'geospatial-example-panel',
-          title: getLoaderDisplayName(state.selectedCategoryName, tableFormat),
+            title: getLoaderDisplayName(state.selectedCategoryName, tableFormat, parquetLoaderName),
           panels: {
             source: createExampleSourcePanel({
               surface: 'geospatial',
@@ -242,13 +246,14 @@ export default function App(props: AppProps = {}) {
                   selectedCategoryName: state.selectedCategoryName,
                   selectedExampleName: state.selectedExampleName,
                   tableFormat,
+                  parquetLoaderName,
                   activeLayerName: getActiveLayerName(state.table),
                   sourceName: getExampleSourceName(state.selectedExample, state.selectedExampleName),
                   loadedDataName: state.loadedDataName,
                   loadedGeometryType: state.loadedGeometryType,
-                  rowCount: state.table ? getTableLength(state.table) : null,
+                  rowCount: getTableRowCount(state.table),
                   loadDurationSeconds: state.loadDurationSeconds,
-                  loading: state.loading,
+                  loading: Boolean(state.loading),
                   error: state.error,
                   schema: state.table?.schema ? JSON.stringify(state.table.schema, null, 2) : null,
                   viewState: state.viewState,
@@ -259,11 +264,13 @@ export default function App(props: AppProps = {}) {
                         categoryName,
                         exampleName,
                         example,
-                        tableFormat
+                        tableFormat,
+                        parquetLoaderName
                       );
                     }
                   },
-                  onTableFormatChange: setTableFormat
+                  onTableFormatChange: setTableFormat,
+                  onParquetLoaderChange: setParquetLoaderName
                 })
             })
           }
@@ -284,7 +291,8 @@ export default function App(props: AppProps = {}) {
     state.table?.shape,
     state.table?.schema,
     state.viewState,
-    tableFormat
+    tableFormat,
+    parquetLoaderName
   ]);
 
   return (
@@ -306,11 +314,12 @@ export default function App(props: AppProps = {}) {
     categoryName: string,
     exampleName: string,
     example: Example,
-    nextTableFormat: TableFormat
+    nextTableFormat: TableFormat,
+    nextParquetLoaderName: ParquetLoaderName
   ) {
     const url = example.data;
     const loaderOptions = getLoaderOptions(example, nextTableFormat);
-    const loaders = getLoaders(example, nextTableFormat);
+    const loaders = getLoaders(example, nextTableFormat, nextParquetLoaderName);
     const requestId = ++loadRequestIdRef.current;
     const loadStartTime = performance.now();
 
@@ -383,11 +392,15 @@ export default function App(props: AppProps = {}) {
       format: source.format.toLowerCase() as Example['format'],
       data: source.value
     };
-    await loadExample(categoryName, source.label, example, tableFormat);
+    await loadExample(categoryName, source.label, example, tableFormat, parquetLoaderName);
   }
 }
 
-function getLoaders(example: Example, tableFormat: TableFormat) {
+function getLoaders(
+  example: Example,
+  tableFormat: TableFormat,
+  parquetLoaderName: ParquetLoaderName
+) {
   if (tableFormat === 'geojson') {
     switch (example.format) {
       case 'geopackage':
@@ -407,7 +420,7 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
       case 'flatgeobuf':
         return [FlatGeobufLoader];
       case 'geoparquet':
-        return [GeoParquetLoader];
+        return [parquetLoaderName === 'parquet' ? ParquetLoader : GeoParquetLoader];
       case 'geoarrow':
         return [GeoArrowLoader];
       default:
@@ -433,7 +446,7 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
     case 'flatgeobuf':
       return [FlatGeobufLoader];
     case 'geoparquet':
-      return [GeoParquetLoader];
+      return [parquetLoaderName === 'parquet' ? ParquetLoader : GeoParquetLoader];
     case 'geoarrow':
       return [GeoArrowLoader];
     default:
@@ -523,13 +536,14 @@ function convertWKBArrowTableToGeoJSON(table: Table): Table {
 
 function getLoaderDisplayName(
   selectedCategoryName?: string | null,
-  tableFormat: TableFormat = 'geojson'
+  tableFormat: TableFormat = 'geojson',
+  parquetLoaderName: ParquetLoaderName = 'parquet'
 ): string {
   switch (selectedCategoryName) {
     case 'GeoArrow':
       return 'GeoArrowLoader';
     case 'GeoParquet':
-      return 'GeoParquetLoader';
+      return parquetLoaderName === 'parquet' ? 'ParquetLoader' : 'GeoParquetLoader';
     case 'GeoJSON':
       return 'GeoJSONLoader';
     case 'CSV':
@@ -831,6 +845,17 @@ function getExamplesForFormat(
   return {...examples};
 }
 
+function getTableRowCount(table: Table | null): number | null {
+  if (!table) {
+    return null;
+  }
+  try {
+    return getTableLength(table);
+  } catch {
+    return null;
+  }
+}
+
 function renderGeospatialSidebar(
   rootElement: HTMLElement,
   options: {
@@ -838,6 +863,7 @@ function renderGeospatialSidebar(
     selectedCategoryName?: string | null;
     selectedExampleName?: string | null;
     tableFormat: TableFormat;
+    parquetLoaderName: ParquetLoaderName;
     activeLayerName: string;
     sourceName: string;
     loadedDataName: LoadedDataName;
@@ -850,6 +876,7 @@ function renderGeospatialSidebar(
     viewState: Record<string, unknown>;
     onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
     onTableFormatChange: (tableFormat: TableFormat) => void;
+    onParquetLoaderChange: (loaderName: ParquetLoaderName) => void;
   }
 ): void {
   rootElement.replaceChildren();
@@ -868,8 +895,10 @@ function renderGeospatialSidebar(
       selectedCategoryName: options.selectedCategoryName,
       selectedExampleName: options.selectedExampleName,
       tableFormat: options.tableFormat,
+      parquetLoaderName: options.parquetLoaderName,
       onExampleChange: options.onExampleChange,
-      onTableFormatChange: options.onTableFormatChange
+      onTableFormatChange: options.onTableFormatChange,
+      onParquetLoaderChange: options.onParquetLoaderChange
     })
   );
 
@@ -908,8 +937,10 @@ function createSelectSection(options: {
   selectedCategoryName?: string | null;
   selectedExampleName?: string | null;
   tableFormat: TableFormat;
+  parquetLoaderName: ParquetLoaderName;
   onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
   onTableFormatChange: (tableFormat: TableFormat) => void;
+  onParquetLoaderChange: (loaderName: ParquetLoaderName) => void;
 }): HTMLElement {
   const section = createSection();
   section.appendChild(createLabel('Dataset'));
@@ -972,6 +1003,35 @@ function createSelectSection(options: {
 
   formatSelectElement.value = options.tableFormat;
   section.appendChild(formatSelectElement);
+
+  if (options.selectedCategoryName === 'GeoParquet') {
+    const loaderDetailsElement = document.createElement('details');
+    const loaderSummaryElement = document.createElement('summary');
+    loaderSummaryElement.textContent = 'Loader options';
+    loaderSummaryElement.style.cursor = 'pointer';
+    loaderSummaryElement.style.fontSize = '11px';
+    loaderDetailsElement.appendChild(loaderSummaryElement);
+    const loaderSelectElement = document.createElement('select');
+    loaderSelectElement.style.width = '100%';
+    loaderSelectElement.style.marginTop = '6px';
+    loaderSelectElement.style.padding = '4px 6px';
+    loaderSelectElement.style.fontSize = '11px';
+    loaderSelectElement.addEventListener('change', event => {
+      options.onParquetLoaderChange((event.target as HTMLSelectElement).value as ParquetLoaderName);
+    });
+    for (const [value, label] of [
+      ['parquet', 'ParquetLoader (TypeScript)'],
+      ['geoparquet', 'GeoParquetLoader']
+    ] as const) {
+      const optionElement = document.createElement('option');
+      optionElement.value = value;
+      optionElement.textContent = label;
+      loaderSelectElement.appendChild(optionElement);
+    }
+    loaderSelectElement.value = options.parquetLoaderName;
+    loaderDetailsElement.appendChild(loaderSelectElement);
+    section.appendChild(loaderDetailsElement);
+  }
   return section;
 }
 
@@ -1133,6 +1193,10 @@ function getExampleSourceName(
 
   if (typeof File !== 'undefined' && sourceUrl instanceof File) {
     return sourceUrl.name;
+  }
+
+  if (typeof sourceUrl !== 'string') {
+    return selectedExampleName || 'dataset';
   }
 
   if (sourceUrl.startsWith('data:')) {

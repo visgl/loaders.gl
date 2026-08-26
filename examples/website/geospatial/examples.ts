@@ -26,10 +26,8 @@ export type Example = {
   }) => null | {title: string; properties: Record<string, unknown>};
 };
 
-export const INITIAL_LOADER_NAME = 'GeoParquet';
-export const INITIAL_EXAMPLE_NAME = 'Airports';
-// export const INITIAL_LOADER_NAME = 'GeoJSON';
-// export const INITIAL_EXAMPLE_NAME = 'Vancouver';
+export const INITIAL_LOADER_NAME = 'GeoJSON';
+export const INITIAL_EXAMPLE_NAME = 'Countries';
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
@@ -233,7 +231,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     Countries: {
       format: 'geojson',
-      data: `${LOADERS_URL}/modules/geojson/test/data/countries.json`,
+      data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson',
       viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   },
