@@ -657,13 +657,14 @@ exposed yet. A residual predicate is still correct; it simply cannot avoid decod
 
 | Family and representative sources | Status | Discovery | Projection / selection | Filter / spatial controls | Limit / stream | Priority |
 | --- | --- | --- | --- | --- | --- | --- |
-| Arrow / GeoArrow | Ready | schema | zero-copy/residual | residual, null-safe | yes / batches | conformance reference |
+| Arrow / GeoArrow | Foundation | schema for Arrow tables | zero-copy/residual | residual, null-safe | yes / batches | P1: add common source and panel adapter |
 | Parquet / Iceberg | Ready | footer/catalog | pushdown | statistics + residual | global / batches | maintain and extend |
 | FlatGeobuf | Ready | header/index | Arrow properties | bbox pushdown, scalar residual | bounded / batches | maintain and panel |
-| ORC | Foundation | stripe schema | planned stripe projection | planned row-index/statistics | planned | P2 |
+| ORC | Planned | loader metadata only | planned | planned row-index/statistics | planned | P2 |
 | CSV / JSONL | Planned | header/sample | parser-dependent | residual | planned chunks | P2 |
 | GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
-| Delta Lake / Lance | Foundation | log/manifest | format-native | fragments + residual | global / batches | P1 |
+| Delta Lake | Planned | loader not yet present | planned | planned log/deletion-vector pruning | planned | P1 |
+| Lance | Foundation | manifest/fragments | format-native | fragments + residual | global / batches | P1 |
 | COPC / Potree | Foundation | header/hierarchy | point attributes | bounds pushdown, attribute residual | planned global / batches | P1 |
 | LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |
 | GeoTIFF / COG | Foundation | TIFF/overview metadata | bands/windows | window pushdown | tile-local / typed arrays | P1 |
