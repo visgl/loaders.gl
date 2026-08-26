@@ -93,3 +93,44 @@ test('RasterSet preserves source-specific request and metadata types', async () 
 
   rasterSet.finalize();
 });
+
+test('RasterSet accepts non-viewport array requests', async () => {
+  type ArrayRequest = {level: number; channels: number[]};
+  type ArrayMetadata = RasterSourceMetadata & {levels: number};
+
+  const metadata: ArrayMetadata = {
+    width: 4,
+    height: 2,
+    bandCount: 3,
+    dtype: 'uint8',
+    levels: 3
+  };
+  const raster: RasterData = {
+    data: new Uint8Array([1]),
+    width: 1,
+    height: 1,
+    bandCount: 1,
+    dtype: 'uint8'
+  };
+  const rasterSet = new RasterSet<RasterData, ArrayRequest, ArrayMetadata>({
+    getMetadata: async () => metadata,
+    getRaster: async parameters => {
+      expect(parameters.level).toBe(2);
+      expect(parameters.channels).toEqual([1, 2]);
+      expect((parameters as ArrayRequest & {signal?: AbortSignal}).signal).toBeInstanceOf(
+        AbortSignal
+      );
+      return raster;
+    }
+  });
+
+  expectTypeOf(rasterSet.currentRequest?.parameters).toEqualTypeOf<ArrayRequest | undefined>();
+  await rasterSet.loadMetadata();
+  const loadedRequest = new Promise<ArrayRequest>(resolve =>
+    rasterSet.subscribe({onRasterLoad: request => resolve(request.parameters)})
+  );
+  rasterSet.requestRaster({level: 2, channels: [1, 2]});
+
+  await expect(loadedRequest).resolves.toEqual({level: 2, channels: [1, 2]});
+  rasterSet.finalize();
+});

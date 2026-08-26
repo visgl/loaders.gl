@@ -12,7 +12,7 @@ import type {
 /** Accepted raster request currently retained by {@link RasterSet}. */
 export type RasterSetRequest<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters
+  ParametersT extends object = GetRasterParameters
 > = {
   /** Unique request id assigned by the manager. */
   requestId: number;
@@ -25,7 +25,7 @@ export type RasterSetRequest<
 /** Arguments supplied to {@link RasterSetBaseProps.shouldRefetch}. */
 export type RasterSetShouldRefetchArgs<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters,
+  ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
   /** Current accepted request retained by the raster manager, if any. */
@@ -39,7 +39,7 @@ export type RasterSetShouldRefetchArgs<
 /** Configuration shared by all {@link RasterSet} instances. */
 export type RasterSetBaseProps<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters,
+  ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
   /** Callback used to load source metadata. */
@@ -55,17 +55,17 @@ export type RasterSetBaseProps<
 /** Options for creating a {@link RasterSet}. */
 export type RasterSetProps<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters,
+  ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = Partial<RasterSetBaseProps<DataT, ParametersT, MetadataT>> & {
   /** Optional loaders.gl raster source backing this manager. */
-  rasterSource?: RasterSource<DataT, ParametersT, MetadataT> | null;
+  rasterSource?: RasterSource<DataT, GetRasterParameters, MetadataT> | null;
 };
 
 /** Subscription callbacks emitted by {@link RasterSet}. */
 export type RasterSetListener<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters,
+  ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
   /** Fired when metadata/raster loading starts or stops. */
@@ -112,7 +112,7 @@ const DEFAULT_RASTERSET_PROPS: Required<Omit<RasterSetProps, 'rasterSource'>> = 
  */
 export class RasterSet<
   DataT extends RasterData = RasterData,
-  ParametersT extends GetRasterParameters = GetRasterParameters,
+  ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > {
   /** Cached metadata returned by the backing source, if any. */
@@ -169,7 +169,7 @@ export class RasterSet<
   }
 
   /** Backing raster source when constructed from one. */
-  get rasterSource(): RasterSource<DataT, ParametersT, MetadataT> | null {
+  get rasterSource(): RasterSource<DataT, GetRasterParameters, MetadataT> | null {
     return this._opts.rasterSource;
   }
 
@@ -279,7 +279,9 @@ export class RasterSet<
     try {
       const abortController = new AbortController();
       this._abortController = abortController;
-      const raster = await this._opts.getRaster({...parameters, signal: abortController.signal});
+      const raster = await this._opts.getRaster(
+        Object.assign({}, parameters, {signal: abortController.signal}) as ParametersT
+      );
       if (
         this._finalized ||
         abortController.signal.aborted ||
@@ -332,9 +334,11 @@ export class RasterSet<
         opts.getRaster ||
         ((parameters: ParametersT) => {
           if (rasterSource) {
-            return rasterSource.getRaster(parameters);
+            return rasterSource.getRaster(parameters as GetRasterParameters);
           }
-          return DEFAULT_RASTERSET_PROPS.getRaster(parameters) as Promise<DataT>;
+          return DEFAULT_RASTERSET_PROPS.getRaster(
+            parameters as GetRasterParameters
+          ) as Promise<DataT>;
         }),
       debounceTime: opts.debounceTime ?? DEFAULT_RASTERSET_PROPS.debounceTime,
       shouldRefetch:
