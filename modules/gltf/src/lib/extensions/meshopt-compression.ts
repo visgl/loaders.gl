@@ -6,12 +6,11 @@
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {
   GLTF,
-  GLTFBufferView,
   GLTF_EXT_meshopt_compression,
   GLTF_KHR_meshopt_compression
 } from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {GLTFIterator, GLTFBufferViewIterator} from '../api/gltf-iterator';
 import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
 /**
@@ -58,22 +57,21 @@ export async function decodeMeshoptCompression(
 
   validateMeshoptCompressionExclusivity(gltfData.json);
 
-  const scenegraph = new GLTFScenegraph(gltfData);
-  const bufferViews = gltfData.json.bufferViews || [];
-  const promises = bufferViews.map(bufferView =>
-    decodeMeshoptBufferView(scenegraph, bufferView, extensionName)
+  const iterator = new GLTFIterator(gltfData);
+  const promises = Array.from(iterator.bufferViews, bufferView =>
+    decodeMeshoptBufferView(iterator, bufferView, extensionName)
   );
 
   await Promise.all(promises);
 
   // Preserve compressed source buffers, but remove capability markers after successful decoding.
-  for (const bufferView of bufferViews) {
-    scenegraph.removeObjectExtension(bufferView, extensionName);
+  for (const bufferView of iterator.bufferViews) {
+    bufferView.removeExtension(extensionName);
   }
-  for (const buffer of gltfData.json.buffers || []) {
-    scenegraph.removeObjectExtension(buffer, extensionName);
+  for (const buffer of iterator.buffers) {
+    buffer.removeExtension(extensionName);
   }
-  scenegraph.removeExtension(extensionName);
+  iterator.removeExtension(extensionName);
 }
 
 /**
@@ -119,7 +117,7 @@ export function validateMeshoptCompressionExclusivity(gltf: GLTF): void {
  * This helper deliberately leaves the extension object in place. The caller removes all processed
  * declarations together only after every parallel decode succeeds.
  *
- * @param scenegraph Mutable scenegraph containing parsed JSON and resolved buffers.
+ * @param iterator Iterator containing parsed JSON and resolved buffers.
  * @param bufferView Parent buffer view that describes the decompressed destination range.
  * @param extensionName Exact meshopt extension identifier to process.
  * @returns A promise that resolves when the buffer view has been decoded, or immediately when the
@@ -128,13 +126,13 @@ export function validateMeshoptCompressionExclusivity(gltf: GLTF): void {
  * filter, count, or byte stride.
  */
 async function decodeMeshoptBufferView(
-  scenegraph: GLTFScenegraph,
-  bufferView: GLTFBufferView,
+  iterator: GLTFIterator,
+  bufferView: GLTFBufferViewIterator,
   extensionName: MeshoptCompressionExtensionName
 ): Promise<void> {
-  const meshoptExtension = scenegraph.getObjectExtension<
+  const meshoptExtension = bufferView.getExtension<
     GLTF_KHR_meshopt_compression | GLTF_EXT_meshopt_compression
-  >(bufferView, extensionName);
+  >(extensionName);
 
   if (!meshoptExtension) {
     return;
@@ -149,8 +147,8 @@ async function decodeMeshoptBufferView(
     filter = 'NONE',
     buffer: sourceBufferIndex
   } = meshoptExtension;
-  const sourceBuffer = scenegraph.gltf.buffers[sourceBufferIndex];
-  const targetBuffer = scenegraph.gltf.buffers[bufferView.buffer];
+  const sourceBuffer = iterator.gltf.buffers[sourceBufferIndex];
+  const targetBuffer = iterator.gltf.buffers[bufferView.data.buffer];
   const source = new Uint8Array(
     sourceBuffer.arrayBuffer,
     sourceBuffer.byteOffset + byteOffset,
@@ -158,8 +156,8 @@ async function decodeMeshoptBufferView(
   );
   const target = new Uint8Array(
     targetBuffer.arrayBuffer,
-    targetBuffer.byteOffset + (bufferView.byteOffset || 0),
-    bufferView.byteLength
+    targetBuffer.byteOffset + (bufferView.data.byteOffset || 0),
+    bufferView.data.byteLength
   );
 
   await meshoptDecodeGltfBuffer(target, count, byteStride, source, mode, filter);
