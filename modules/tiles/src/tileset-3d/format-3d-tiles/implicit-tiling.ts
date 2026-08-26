@@ -73,11 +73,11 @@ export type ParsedImplicitSubtree = {
   /** Availability of subtree roots immediately below this subtree. */
   childSubtreeAvailability: ImplicitAvailability;
   /** Property-table payloads referenced by subtree metadata declarations. */
-  propertyTables?: unknown[];
-  /** Property-table index for metadata attached to each available tile. */
-  tileMetadata?: number;
-  /** Property-table indexes for metadata attached to each content stream. */
-  contentMetadata?: number[];
+  propertyTables?: unknown;
+  /** Property-table reference for metadata attached to each available tile. */
+  tileMetadata?: unknown;
+  /** Property-table references for metadata attached to each content stream. */
+  contentMetadata?: unknown;
   /** Metadata entity attached to the subtree itself. */
   subtreeMetadata?: unknown;
 };
@@ -97,11 +97,11 @@ export type ImplicitTileHeader = Record<string, any> & {
 /** Metadata references inherited by generated implicit tile headers. */
 export type ImplicitSubtreeMetadata = {
   /** Property tables declared by the subtree. */
-  propertyTables?: unknown[];
-  /** Tile-level metadata property-table index. */
-  tileMetadata?: number;
-  /** Content-level metadata property-table indexes in content order. */
-  contentMetadata?: number[];
+  propertyTables?: unknown;
+  /** Tile-level metadata property-table reference. */
+  tileMetadata?: unknown;
+  /** Content-level metadata property-table references in content order. */
+  contentMetadata?: unknown;
   /** Subtree-level metadata entity. */
   subtreeMetadata?: unknown;
 };
