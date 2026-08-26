@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
@@ -163,17 +164,16 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async t =
   t.end();
 });
 
-test('COPCSourceLoader#streams hierarchy pages', async t => {
+vitestTest('COPCSourceLoader#streams hierarchy pages', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   const batches = [];
   for await (const batch of source.loadHierarchyInBatches({maxPages: 1})) {
     batches.push(batch);
   }
 
-  t.equal(batches.length, 1, 'maxPages limits hierarchy loading');
-  t.equal(batches[0]?.pageId, 'root', 'first hierarchy batch is the root page');
-  t.ok(batches[0]?.nodes['0-0-0-0'], 'root page exposes the root node');
-  t.end();
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.pageId).toBe('root');
+  expect(batches[0]?.nodes['0-0-0-0']).toBeTruthy();
 });
 
 test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {

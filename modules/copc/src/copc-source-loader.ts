@@ -540,6 +540,9 @@ export class COPCTileSource
       if (this._hierarchy) {
         this._hierarchy.nodes = {...this._hierarchy.nodes, ...subtree.nodes};
         this._hierarchy.pages = {...this._hierarchy.pages, ...subtree.pages};
+        if (pageId !== 'root') {
+          delete this._hierarchy.pages[pageId];
+        }
       }
       loadedPageCount++;
       yield {pageId, page, nodes: subtree.nodes, pages: subtree.pages};
@@ -564,7 +567,11 @@ export class COPCTileSource
         throw new Error('COPC progressive tile range request was aborted');
       }
       const end = Math.min(begin + rangeChunkSize, rangeEnd);
-      yield await get(begin, end);
+      const chunk = await get(begin, end);
+      if (signal?.aborted) {
+        throw new Error('COPC progressive tile range request was aborted');
+      }
+      yield chunk;
     }
   }
 
