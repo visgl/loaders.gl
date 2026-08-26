@@ -50,6 +50,10 @@ export type LASExtraBytesDescriptor = {
   name: string;
   /** Extra Bytes field description. */
   description: string;
+  /** Descriptor scale value, used when option bit 3 is set. */
+  scale: number;
+  /** Descriptor offset value, used when option bit 4 is set. */
+  offset: number;
   /** Raw 192-byte descriptor payload. */
   data: Uint8Array;
 };

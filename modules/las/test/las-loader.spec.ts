@@ -414,6 +414,62 @@ test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async 
   }
 });
 
+test('LASLoader#columns applies typed Extra Bytes descriptor offset', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const applyDescriptorOffset = (arrayBuffer: ArrayBuffer): ArrayBuffer => {
+    const copy = arrayBuffer.slice(0);
+    const metadata = parseLASHeader(copy).metadata!;
+    const extraBytesRecord = metadata.vlrs.find(
+      record => record.userId === 'LASF_Spec' && record.recordId === 4
+    );
+    if (!extraBytesRecord) {
+      throw new Error('Missing Extra Bytes VLR');
+    }
+    const dataView = new DataView(copy);
+    const descriptorOffset = extraBytesRecord.offset + 54;
+    dataView.setUint8(descriptorOffset + 3, 0x10);
+    dataView.setFloat64(descriptorOffset + 152, 7, true);
+    return copy;
+  };
+  const options = {
+    las: {
+      shape: 'arrow-table' as const,
+      columns: ['POSITION', 'EXTRA_BYTES'] as const,
+      extraBytes: 'typed' as const
+    },
+    core: {worker: false}
+  };
+  const baseline = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const lasTable = (await parse(
+    applyDescriptorOffset(lasArrayBuffer),
+    LASLoader,
+    options
+  )) as MeshArrowTable;
+  const lazTable = (await parse(
+    applyDescriptorOffset(lazArrayBuffer),
+    LASLoader,
+    options
+  )) as MeshArrowTable;
+  const typedColumnNames = getArrowColumnNames(lasTable).filter(name =>
+    name.startsWith('EXTRA_BYTES_')
+  );
+  expect(typedColumnNames.length).toBeGreaterThan(0);
+  for (const columnName of typedColumnNames) {
+    const baselineValues = getArrowColumnValues(baseline, columnName) as number[];
+    const expectedValues =
+      columnName === typedColumnNames[0]
+        ? baselineValues.map(value => (value + 7) & 0xff)
+        : baselineValues;
+    expect(getArrowColumnValues(lasTable, columnName)).toEqual(expectedValues);
+    expect(getArrowColumnValues(lazTable, columnName)).toEqual(
+      getArrowColumnValues(lasTable, columnName)
+    );
+  }
+});
+
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
   const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');

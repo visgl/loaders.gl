@@ -36,7 +36,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | NIR | Exposed as `NIR` for PDRF 8 and 10. |
 | Return flags and scanner channel | Exposed as typed Arrow columns for supported point formats. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Waveform sample payload handling is not implemented. |
-| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Unsigned/signed integers through 32 bits and float32/float64 scalar, 2-vector, and 3-vector descriptors are supported. 64-bit integer descriptors remain raw-only. |
+| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Scalar data types 1-6 and 9-10 are supported with descriptor scale/offset. 64-bit integer types 7-8 and deprecated vector codes 11-30 remain raw-only. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
 | `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ can emit complete rows with bounded replay; layered PDRF 6-10 emits after each complete compressed chunk. |
 

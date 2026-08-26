@@ -132,6 +132,8 @@ type TypedExtraBytesAttribute = {
   scalarDataType: number;
   byteOffset: number;
   byteLength: number;
+  scale: number;
+  offset: number;
 };
 
 type TypedExtraBytesValue =
@@ -1038,12 +1040,15 @@ function parseTypedLASMetadataRecord(
 
 function parseLASExtraBytes(data: Uint8Array): LASExtraBytesDescriptor[] {
   const descriptors: LASExtraBytesDescriptor[] = [];
+  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
   for (let offset = 0; offset + 192 <= data.byteLength; offset += 192) {
     descriptors.push({
       dataType: data[offset + 2],
       options: data[offset + 3],
       name: readLASString(data, offset + 4, 32),
       description: readLASString(data, offset + 160, 32),
+      scale: dataView.getFloat64(offset + 112, true),
+      offset: dataView.getFloat64(offset + 152, true),
       data: data.slice(offset, offset + 192)
     });
   }
@@ -2155,6 +2160,7 @@ function createPointDataBatchState(
   };
 }
 
+/** Create typed Extra Bytes output buffers from the descriptors in a LAS header. */
 function createTypedExtraBytesAttributes(
   batchSize: number,
   header: LASHeader
@@ -2166,10 +2172,10 @@ function createTypedExtraBytesAttributes(
   for (let descriptorIndex = 0; descriptorIndex < descriptors.length; descriptorIndex++) {
     const descriptor = descriptors[descriptorIndex];
     const scalarDataType = getExtraBytesScalarDataType(descriptor.dataType);
-    const size = getExtraBytesComponentCount(descriptor.dataType);
+    const size = 1;
     const scalarByteLength = getExtraBytesScalarByteLength(scalarDataType);
     const byteLength = scalarByteLength * size;
-    if (!scalarDataType || !byteLength) {
+    if (descriptor.dataType < 1 || descriptor.dataType > 10 || !byteLength) {
       throw new Error(`LASLoader: unsupported typed Extra Bytes data type ${descriptor.dataType}`);
     }
     if (scalarDataType === 7 || scalarDataType === 8) {
@@ -2193,7 +2199,9 @@ function createTypedExtraBytesAttributes(
       size,
       scalarDataType,
       byteOffset,
-      byteLength
+      byteLength,
+      scale: descriptor.options & 0x08 ? descriptor.scale : 1,
+      offset: descriptor.options & 0x10 ? descriptor.offset : 0
     });
     byteOffset += byteLength;
   }
@@ -2207,18 +2215,17 @@ function createTypedExtraBytesAttributes(
   return attributes;
 }
 
+/** Convert a descriptor name into a stable Arrow attribute-name component. */
 function sanitizeExtraBytesName(name: string): string {
   return name.trim().replace(/[^A-Za-z0-9_]+/g, '_');
 }
 
+/** Resolve the scalar type code for a descriptor, including legacy vector codes. */
 function getExtraBytesScalarDataType(dataType: number): number {
   return dataType > 20 ? dataType - 20 : dataType > 10 ? dataType - 10 : dataType;
 }
 
-function getExtraBytesComponentCount(dataType: number): number {
-  return dataType > 20 ? 3 : dataType > 10 ? 2 : 1;
-}
-
+/** Return the byte width of one scalar Extra Bytes value. */
 function getExtraBytesScalarByteLength(dataType: number): number {
   if (dataType <= 2) return 1;
   if (dataType <= 4) return 2;
@@ -2227,6 +2234,7 @@ function getExtraBytesScalarByteLength(dataType: number): number {
   return 0;
 }
 
+/** Allocate the typed array corresponding to a supported LAS scalar type. */
 function createExtraBytesTypedArray(scalarDataType: number, length: number): TypedExtraBytesValue {
   switch (scalarDataType) {
     case 1:
@@ -2252,6 +2260,7 @@ function createExtraBytesTypedArray(scalarDataType: number, length: number): Typ
   }
 }
 
+/** Decode typed Extra Bytes directly from uncompressed LAS point records. */
 function populateTypedExtraBytesFromDataView(
   dataView: DataView,
   pointOffset: number,
@@ -2264,15 +2273,19 @@ function populateTypedExtraBytesFromDataView(
     const targetOffset = targetPointIndex * attribute.size;
     const sourceOffset = extraByteBaseOffset + attribute.byteOffset;
     for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
-      attribute.value[targetOffset + componentIndex] = readExtraBytesValue(
-        dataView,
-        sourceOffset + componentIndex * getExtraBytesScalarByteLength(attribute.scalarDataType),
-        attribute.scalarDataType
-      );
+      attribute.value[targetOffset + componentIndex] =
+        readExtraBytesValue(
+          dataView,
+          sourceOffset + componentIndex * getExtraBytesScalarByteLength(attribute.scalarDataType),
+          attribute.scalarDataType
+        ) *
+          attribute.scale +
+        attribute.offset;
     }
   }
 }
 
+/** Decode typed Extra Bytes from a complete raw LAZ point-record chunk. */
 function populateTypedExtraBytesFromRaw(
   rawPointData: Uint8Array,
   pointRecordLength: number,
@@ -2295,16 +2308,20 @@ function populateTypedExtraBytesFromRaw(
       const sourceOffset = pointOffset + extraByteBaseOffset + attribute.byteOffset;
       const scalarByteLength = getExtraBytesScalarByteLength(attribute.scalarDataType);
       for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
-        attribute.value[targetOffset + componentIndex] = readExtraBytesValue(
-          dataView,
-          sourceOffset + componentIndex * scalarByteLength,
-          attribute.scalarDataType
-        );
+        attribute.value[targetOffset + componentIndex] =
+          readExtraBytesValue(
+            dataView,
+            sourceOffset + componentIndex * scalarByteLength,
+            attribute.scalarDataType
+          ) *
+            attribute.scale +
+          attribute.offset;
       }
     }
   }
 }
 
+/** Read one little-endian scalar Extra Bytes value without assuming alignment. */
 function readExtraBytesValue(dataView: DataView, offset: number, scalarDataType: number): number {
   switch (scalarDataType) {
     case 1:
