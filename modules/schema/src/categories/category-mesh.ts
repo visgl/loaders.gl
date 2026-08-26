@@ -10,7 +10,7 @@ import * as arrow from 'apache-arrow';
 /** Mesh as columnar table */
 export interface MeshTable extends ColumnarTable {
   // shape: 'mesh-table';
-  topology: 'point-list' | 'triangle-list' | 'triangle-strip';
+  topology: MeshTopology;
   indices?: MeshAttribute;
 }
 
@@ -18,7 +18,7 @@ export interface MeshTable extends ColumnarTable {
 export interface MeshArrowTable extends ArrowTable {
   // shape: 'mesh-arrow-table';
   /** Mesh topology represented by the Arrow table rows and indices. */
-  topology: 'point-list' | 'triangle-list' | 'triangle-strip';
+  topology: MeshTopology;
   /** Optional top-level primitive indices accessor for indexed meshes. */
   indices?: MeshAttribute;
   /** Raw Apache Arrow table data for Mesh or IndexedMesh columns. */
@@ -32,6 +32,16 @@ export type MeshArrowColumns = {
   /** Loader-specific vertex attribute columns appended after predefined fields. */
   [attributeName: string]: arrow.DataType;
 };
+
+/** Primitive topology names shared by columnar and Arrow mesh representations. */
+export type MeshTopology =
+  | 'point-list'
+  | 'line-list'
+  | 'line-loop'
+  | 'line-strip'
+  | 'triangle-list'
+  | 'triangle-strip'
+  | 'triangle-fan';
 
 /** Apache Arrow columns for an indexed mesh vertex table. */
 export type IndexedMeshArrowColumns = MeshArrowColumns & {
@@ -68,7 +78,7 @@ export const indexedMeshArrowSchema = new arrow.Schema<IndexedMeshArrowColumns>(
 export type MeshGeometry = {
   attributes: {[attributeName: string]: MeshAttribute};
   indices?: MeshAttribute;
-  topology: 'point-list' | 'triangle-list' | 'triangle-strip';
+  topology: MeshTopology;
   mode: number;
 };
 

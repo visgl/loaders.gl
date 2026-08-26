@@ -133,6 +133,33 @@ describe('convertGLTFToMeshArrow', () => {
     expect(geometries[0].table.topology).toBe('point-list');
     expect(geometries[0].table.schema.metadata.mode).toBe('0');
   });
+
+  test.each([
+    [1, 'line-list'],
+    [2, 'line-loop'],
+    [3, 'line-strip'],
+    [4, 'triangle-list'],
+    [5, 'triangle-strip'],
+    [6, 'triangle-fan']
+  ] as const)('maps glTF primitive mode %s to %s', (mode, topology) => {
+    const {gltf} = makeGLTF();
+    gltf.json.meshes![0].primitives[0].mode = mode;
+
+    const {geometries} = convertGLTFToMeshArrow(gltf);
+
+    expect(geometries[0].table.topology).toBe(topology);
+  });
+
+  test('projects non-position vertex attributes into Arrow columns', () => {
+    const {gltf} = makeGLTF();
+    gltf.json.meshes![0].primitives[0].attributes.NORMAL = 2;
+    gltf.json.accessors!.push({bufferView: 0, componentType: 5126, count: 2, type: 'VEC3'});
+
+    const {geometries} = convertGLTFToMeshArrow(gltf);
+
+    expect(geometries[0].attributes.NORMAL.size).toBe(3);
+    expect(geometries[0].table.data.getChild('NORMAL')).toBeDefined();
+  });
 });
 
 /** Create a small indexed glTF scene with a translated root and scaled mesh node. */

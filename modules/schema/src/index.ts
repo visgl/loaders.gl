@@ -49,7 +49,8 @@ export type {
   Mesh,
   MeshGeometry,
   MeshAttribute,
-  MeshAttributes
+  MeshAttributes,
+  MeshTopology
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
 
