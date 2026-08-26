@@ -4,7 +4,13 @@
 
 import {hydrateArrowTable} from '@loaders.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
-import {BlobFile, DataSource, isBrowser, validateTableQueryLimit} from '@loaders.gl/loader-utils';
+import {
+  BlobFile,
+  DataSource,
+  explainTableQuery,
+  isBrowser,
+  validateTableQueryLimit
+} from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 
@@ -57,6 +63,7 @@ import type {
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
   ParquetSourceReadOptions,
+  ParquetSourceExplain,
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
@@ -116,6 +123,7 @@ export type {
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
   ParquetSourceReadOptions,
+  ParquetSourceExplain,
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
@@ -225,6 +233,44 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       ...initialization.metadata,
       formatSpecificMetadata: initialization.fileMetadata
     };
+  }
+
+  /** Explains a portable query using the Parquet footer without decoding data pages. */
+  async explain(options: ParquetSourceReadOptions = {}): Promise<ParquetSourceExplain> {
+    const readOptions = this.getReadOptions(options);
+    const initialization = await this.getInitialization(readOptions.signal);
+    const sourceColumnNames = initialization.schema.fields.map(field => field.name);
+    const predicate = readOptions.predicate;
+    if (predicate) {
+      validateParquetPredicate(predicate, new Set(sourceColumnNames));
+    }
+    const candidateRowGroupIndices = normalizeRowGroupIndices(
+      readOptions.rowGroups,
+      initialization.fileMetadata.row_groups.length
+    );
+    const selectedRowGroupIndices = predicate
+      ? candidateRowGroupIndices.filter(rowGroupIndex =>
+          canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
+        )
+      : candidateRowGroupIndices;
+    const explanation = explainTableQuery(
+      sourceColumnNames,
+      {
+        columns: readOptions.columns,
+        predicate,
+        limit: readOptions.limit
+      },
+      PARQUET_TABLE_QUERY_CAPABILITIES
+    );
+    return Object.freeze({
+      ...explanation,
+      source: 'parquet' as const,
+      rowGroups: Object.freeze({
+        requested: candidateRowGroupIndices.length,
+        selected: selectedRowGroupIndices.length,
+        prunedByStatistics: candidateRowGroupIndices.length - selectedRowGroupIndices.length
+      })
+    });
   }
 
   /** Returns a copy of cumulative transport, decode, conversion, and pruning telemetry. */

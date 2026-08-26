@@ -402,7 +402,29 @@ Useful counters include:
 - work cancelled after early completion;
 - time spent in planning, network, decode, filtering, and conversion.
 
-An eventual `explain(query)` API should expose the planned stages without executing data reads.
+The shared `explainTableQuery(sourceColumns, options, capabilities)` helper now exposes this
+contract without executing a data scan. Its serializable result contains the normalized logical
+plan, source/output/required columns, and per-operator `pushdown`, `residual`, or `unsupported`
+annotations. Arrow and SQL expose lightweight wrappers, while `ParquetSource.explain()` adds
+footer-only row-group counts (`requested`, `selected`, and `prunedByStatistics`). Format-specific
+executors can add physical details without changing the portable query shape.
+
+Explain output is intentionally diagnostic rather than a second execution API:
+
+```ts
+const explanation = await parquetSource.explain({
+  columns: ['name'],
+  predicate: {op: '>', args: [{property: 'value'}, 10]},
+  limit: 100
+});
+
+explanation.operators.predicate.support; // 'pushdown' | 'residual' | 'unsupported'
+explanation.rowGroups?.prunedByStatistics;
+```
+
+Plans must not contain bound secrets or backend handles. Values may be represented by named
+parameters, and telemetry remains the source of truth for what actually happened at execution
+time.
 Execution telemetry can then annotate the plan with actual counts and durations.
 
 ## Adding a new source

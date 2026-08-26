@@ -6,6 +6,7 @@ import {describe, expect, test} from 'vitest';
 
 import {
   bindColumnarPredicateParameters,
+  explainTableQuery,
   planTableQuery,
   validateTableQueryLimit,
   type ParameterizedColumnarPredicate
@@ -63,6 +64,28 @@ describe('portable table queries', () => {
         status: 'active'
       })
     ).toThrow(/unsupported value/);
+  });
+
+  test('explains pushed and residual operators without reading rows', () => {
+    const explanation = explainTableQuery(
+      ['name', 'value'],
+      {predicate: {op: '>', args: [{property: 'value'}, 10]}, columns: ['name'], limit: 3},
+      {
+        projection: 'pushdown',
+        predicate: 'residual',
+        limit: 'unsupported',
+        streaming: true,
+        cancellation: true
+      }
+    );
+
+    expect(explanation.requiredColumns).toEqual(['name', 'value']);
+    expect(explanation.operators).toEqual({
+      projection: {enabled: true, support: 'pushdown'},
+      predicate: {enabled: true, support: 'residual'},
+      limit: {enabled: true, support: 'unsupported'}
+    });
+    expect(explanation.plan[0]).toEqual({kind: 'scan', columns: ['name', 'value']});
   });
 
   test.each([

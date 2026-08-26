@@ -4,6 +4,7 @@
 
 import {
   getColumnarPredicateColumns,
+  explainTableQuery as explainColumnarTableQuery,
   planTableQuery as planColumnarTableQuery,
   type TableQueryFilterStep as ColumnarTableQueryFilterStep,
   type TableQueryLimitStep as ColumnarTableQueryLimitStep,
@@ -37,6 +38,8 @@ export type TableQueryPlanStep = ColumnarTableQueryPlanStep<SQLPredicate>;
 
 /** Immutable logical query plan shared by Arrow and GPU dataframe backends. */
 export type TableQueryPlan = ColumnarTableQueryPlan<SQLPredicate>;
+export type TableQueryExplain = import('@loaders.gl/loader-utils').TableQueryExplain<SQLPredicate>;
+import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 /**
  * Produces the canonical scan, filter, project, and limit sequence for a table query.
@@ -52,6 +55,21 @@ export function planTableQuery(
     validateSQLPredicate(options.predicate);
   }
   return planColumnarTableQuery(sourceColumnNames, options);
+}
+
+/** Explains a portable SQL table query without executing it. */
+export function explainTableQuery(
+  sourceColumnNames: readonly string[],
+  options: TableQueryOptions = {}
+): TableQueryExplain {
+  if (options.predicate) {
+    validateSQLPredicate(options.predicate);
+  }
+  return explainColumnarTableQuery(
+    sourceColumnNames,
+    options,
+    SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES
+  );
 }
 
 /** Returns every source column referenced by one portable predicate, in first-use order. */

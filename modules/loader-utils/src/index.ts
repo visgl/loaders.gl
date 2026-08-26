@@ -272,6 +272,7 @@ export {
   validateTableQueryLimit,
   validateTableQueryOptions
 } from './lib/scan-utils/table-query';
+export {explainTableQuery} from './lib/scan-utils/table-query-explain';
 export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
 export type {
   ColumnarComparisonPredicate,
@@ -298,6 +299,10 @@ export type {
   TableQueryProjectStep,
   TableQueryScanStep
 } from './lib/scan-utils/table-query';
+export type {
+  TableQueryExplain,
+  TableQueryExplainOperator
+} from './lib/scan-utils/table-query-explain';
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
 

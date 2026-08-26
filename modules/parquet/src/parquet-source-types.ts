@@ -20,6 +20,7 @@ import type {
   ColumnarPredicateProperty,
   ColumnarPredicateValue
 } from '@loaders.gl/loader-utils';
+import type {TableQueryExplain} from '@loaders.gl/loader-utils';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
 
 /** Version validators captured from an HTTP Parquet object. */
@@ -243,6 +244,19 @@ export type ParquetSourceReadOptions = {
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
+
+/** Explain result for a Parquet table query, including footer-level row-group pruning. */
+export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
+  Readonly<{
+    /** Physical source kind. */
+    source: 'parquet';
+    /** Row groups selected by the request and conservative footer statistics. */
+    rowGroups: Readonly<{
+      requested: number;
+      selected: number;
+      prunedByStatistics: number;
+    }>;
+  }>;
 
 /** Compatibility alias for selective source read options. */
 export type ParquetReadOptions = ParquetSourceReadOptions;

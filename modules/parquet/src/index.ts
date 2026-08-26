@@ -81,6 +81,7 @@ export type {
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
   ParquetSourceReadOptions,
+  ParquetSourceExplain,
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
