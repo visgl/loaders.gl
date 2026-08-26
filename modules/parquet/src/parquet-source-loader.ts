@@ -316,6 +316,27 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     return await this.getScanPlan(options);
   }
 
+  /** Executes a previously computed physical plan while preserving its row-group decisions. */
+  async *executeScanPlan(
+    plan: ParquetSourceExplain,
+    options: ParquetSourceReadOptions = {}
+  ): AsyncIterable<ParquetSourceBatch> {
+    if (plan.source !== 'parquet') {
+      throw new Error('ParquetSource can only execute Parquet scan plans');
+    }
+    const predicateStep = plan.plan.find(step => step.kind === 'filter');
+    const limitStep = plan.plan.find(step => step.kind === 'limit');
+    yield* this.read({
+      ...options,
+      columns: options.columns ?? plan.outputColumns,
+      predicate:
+        options.predicate ??
+        (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
+      limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined),
+      rowGroups: plan.rowGroups.indices
+    });
+  }
+
   /** Common scan-architecture alias for selective Parquet reads. */
   scan(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
     return this.read(options);

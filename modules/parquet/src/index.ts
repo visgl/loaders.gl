@@ -115,6 +115,7 @@ export {
   checkParquetSplitBlockBloomFilter,
   decodeParquetSplitBlockBloomFilter,
   encodeParquetBloomFilterValue,
+  encodeParquetSplitBlockBloomFilter,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter,
   type ParquetBloomFilterPhysicalType,

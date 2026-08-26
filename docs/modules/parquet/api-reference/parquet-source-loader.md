@@ -218,6 +218,13 @@ column-index, and offset-index ranges, but it does not decode data pages.
 `read(options)`, allowing `ParquetSource` and `ParquetDatasetSource` to use the same vocabulary as
 other common-scan backends.
 
+### `executeScanPlan(plan, options?): AsyncIterable<ParquetSourceBatch>`
+
+Executes a plan returned by `getScanPlan()` while retaining its selected row-group indexes. This is
+useful when an application wants to inspect or cache a plan before starting data transfer. Optional
+projection, predicate, and limit values override the corresponding logical plan values; the physical
+row-group selection remains fixed by the supplied plan.
+
 ### Predicate filtering and page pruning
 
 Use the serializable `predicate` option for exact row filtering. Its experimental `op`/`args`
@@ -382,4 +389,5 @@ serve the package's WASM loader and writer paths.
 - Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
 - Page-index range planning supports non-repeated primitive leaves, including struct children;
   repeated selections conservatively use complete selected column chunks.
-- Bloom-filter range planning remains future work.
+- Bloom-filter range planning supports uncompressed split-block filters for safe equality and `IN`
+  predicates; unsupported or malformed filters are ignored conservatively.

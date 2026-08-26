@@ -103,6 +103,28 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('executes a cached dataset plan with its child row-group selections', async () => {
+    const source = new ParquetDatasetSource(
+      [
+        {data: westernFile, id: 'west', partitions: {theme: 'buildings'}},
+        {data: easternFile, id: 'east', partitions: {theme: 'places'}}
+      ],
+      {core: {worker: false}, parquetDataset: {fileConcurrency: 2}}
+    );
+    const plan = await source.getScanPlan({
+      columns: ['value'],
+      predicate: {op: '>=', args: [{property: 'id'}, 3]},
+      partitions: {theme: 'places'},
+      limit: 1
+    });
+    const batches = await collectBatches(source.executeScanPlan(plan));
+    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+      'east-one'
+    ]);
+    expect(batches[0].datasetFileId).toBe('east');
+    await source.close();
+  });
+
   test('emits the first file while lazy discovery of later files is blocked', async () => {
     let releaseDiscovery: (() => void) | undefined;
     const discoveryBlocked = new Promise<void>(resolve => {

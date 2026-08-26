@@ -212,6 +212,36 @@ test('ParquetSource#getScanPlan shares logical and physical pruning decisions', 
   t.end();
 });
 
+test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', async t => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {
+        fields: [{name: 'id', type: 'utf8', nullable: false}],
+        metadata: {}
+      },
+      data: [{id: 'a'}, {id: 'z'}, {id: 'a'}, {id: 'z'}]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {rowGroupSize: 2, bloomFilter: {id: true}}}
+  );
+  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    core: {type: 'parquet'}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata();
+  const idColumns = metadata.rowGroups.map(rowGroup => rowGroup.columns[0]);
+  t.ok(idColumns.every(column => column.bloomFilterOffset !== undefined), 'writes Bloom offsets');
+  t.ok(
+    idColumns.every(column => (column.bloomFilterByteLength || 0) > 0),
+    'writes Bloom payload lengths'
+  );
+  const plan = await source.getScanPlan({predicate: {op: '=', args: [{property: 'id'}, 'm']}});
+  t.equal(plan.bloomFilters.read, 2, 'reads one Bloom filter per row group');
+  t.equal(plan.rowGroups.prunedByBloomFilter, 2, 'prunes absent values before decoding');
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
@@ -279,6 +309,24 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     ),
     'every post-metadata request stays inside a selected column chunk'
   );
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#executeScanPlan reuses selected row groups', async t => {
+  const fixture = await createSelectiveFixture();
+  const source = createRemoteSource(createRangeFetch(fixture));
+  const plan = await source.getScanPlan({
+    columns: ['source_id'],
+    predicate: {op: '=', args: [{property: 'x'}, 2]}
+  });
+  const batches = await collectParquetBatches(source.executeScanPlan(plan));
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'executes the planned predicate and projection'
+  );
+  t.ok(batches.every(batch => batch.rowGroupIndex === 1), 'retains planned row-group selection');
   await source.close();
   t.end();
 });

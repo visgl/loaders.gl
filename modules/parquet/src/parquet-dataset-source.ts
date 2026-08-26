@@ -29,6 +29,7 @@ import type {
   ParquetDatasetSourceOptions,
   ParquetDatasetTelemetry,
   ParquetSourceBatch,
+  ParquetSourceExplain,
   ParquetTelemetry
 } from './parquet-source-types';
 
@@ -184,6 +185,56 @@ export class ParquetDatasetSource {
     return await this.getScanPlan(options);
   }
 
+  /** Executes a previously computed dataset plan while retaining each file's row-group choices. */
+  async *executeScanPlan(
+    plan: ParquetDatasetExplain,
+    options: ParquetDatasetReadOptions = {}
+  ): AsyncIterable<ParquetDatasetBatch> {
+    if (plan.source !== 'parquet-dataset') {
+      throw new Error('ParquetDatasetSource can only execute dataset scan plans');
+    }
+    validateTableQueryLimit(options.limit);
+    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    if (remainingRows === 0) return;
+    const predicateStep = plan.plan.find(step => step.kind === 'filter');
+    const limitStep = plan.plan.find(step => step.kind === 'limit');
+    const readOptions: ParquetDatasetReadOptions = {
+      ...options,
+      columns: options.columns ?? plan.outputColumns,
+      predicate:
+        options.predicate ??
+        (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
+      limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined)
+    };
+    remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
+    const readContext = createDatasetAbortContext(readOptions.signal);
+    this.activeReadControllers.add(readContext.abortController);
+    const filePlans = new Map(
+      plan.filePlans.map(filePlan => [filePlan.fileIndex, filePlan.parquet])
+    );
+    const tasks = this.getReadTasks(readOptions, readContext.abortController.signal, filePlans);
+    const fileConcurrency = normalizeFileConcurrency(
+      readOptions.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
+    );
+    try {
+      for await (const batch of executeScanTasks(tasks, {
+        concurrency: fileConcurrency,
+        signal: readContext.abortController.signal
+      })) {
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        this.telemetry.batchesEmitted++;
+        this.telemetry.rowsEmitted += outputBatch.length;
+        yield outputBatch;
+        remainingRows -= outputBatch.length;
+        if (remainingRows === 0) return;
+      }
+    } finally {
+      readContext.abortController.abort();
+      readContext.removeSignalListener();
+      this.activeReadControllers.delete(readContext.abortController);
+    }
+  }
+
   /** Common scan-architecture alias for ordered multi-file reads. */
   scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     return this.read(options);
@@ -240,11 +291,15 @@ export class ParquetDatasetSource {
   /** Reads one child source into its bounded file-order queue. */
   private async *getReadTasks(
     options: ParquetDatasetReadOptions,
-    signal: AbortSignal
+    signal: AbortSignal,
+    filePlans?: ReadonlyMap<number, ParquetSourceExplain>
   ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
     const selectedFiles = this.getSelectedFiles({...options, signal});
     for await (const indexedFile of selectedFiles) {
-      yield {run: taskSignal => this.readFile(indexedFile, options, taskSignal)};
+      yield {
+        run: taskSignal =>
+          this.readFile(indexedFile, options, taskSignal, filePlans?.get(indexedFile.index))
+      };
     }
   }
 
@@ -297,7 +352,8 @@ export class ParquetDatasetSource {
   private async *readFile(
     indexedFile: IndexedParquetDatasetFile,
     options: ParquetDatasetReadOptions,
-    signal: AbortSignal
+    signal: AbortSignal,
+    scanPlan?: ParquetSourceExplain
   ): AsyncIterable<ParquetDatasetBatch> {
     const source = this.createSource(indexedFile.file);
     this.telemetry.filesOpened++;
@@ -309,6 +365,7 @@ export class ParquetDatasetSource {
         columns: options.columns,
         batchSize: options.batchSize,
         concurrency: options.concurrency,
+        rowGroups: scanPlan?.rowGroups.indices,
         rowGroupFilter: options.rowGroupFilter,
         predicate: options.predicate,
         bbox: options.bbox,
