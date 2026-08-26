@@ -12,6 +12,8 @@ import type {
   GetImageParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
+import type {LERCData} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/lerc';
 
 /** Options for the ArcGIS ImageServer source. */
 export type ArcGISImageSourceLoaderProps = DataSourceOptions & {
@@ -34,7 +36,7 @@ export type ArcGISExportImageParameters = {
   /** Spatial reference of the returned image. */
   imageSR?: string | number;
   /** Requested image format. */
-  format?: 'jpgpng' | 'png' | 'png8' | 'png24' | 'jpg' | 'bmp' | 'gif' | 'tiff' | 'png32';
+  format?: 'jpgpng' | 'png' | 'png8' | 'png24' | 'jpg' | 'bmp' | 'gif' | 'tiff' | 'png32' | 'lerc';
   /** Requested pixel type. */
   pixelType?: 'U1' | 'U2' | 'U4' | 'U8' | 'S8' | 'U16' | 'S16' | 'U32' | 'S32' | 'F32' | 'F64';
   /** NoData pixel value. */
@@ -139,6 +141,23 @@ export class ArcGISImageSource
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
+  }
+
+  /** Requests an analytical LERC raster from the ArcGIS ImageServer endpoint. */
+  async exportRaster(
+    options: ArcGISExportImageParameters,
+    signal?: AbortSignal
+  ): Promise<LERCData> {
+    const response = await this.fetch(
+      this.exportImageURL({...options, format: 'lerc'}),
+      signal ? {signal} : undefined
+    );
+    await this.checkResponse(response);
+    return (await this.coreApi.parse(
+      await response.arrayBuffer(),
+      LERCLoader,
+      this.loadOptions
+    )) as LERCData;
   }
 
   /** Builds a metadata URL for the ArcGIS ImageServer endpoint. */

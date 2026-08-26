@@ -13,5 +13,6 @@
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"}
+    ,{"path": "../lerc"}
   ]
 }

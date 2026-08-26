@@ -79,6 +79,13 @@ export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
 export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
 export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
+export type {ServiceCRS} from './crs-utils';
+export {
+  normalizeServiceCRS,
+  areServiceCRSEquivalent,
+  selectServiceCRS,
+  getServiceCRSAxisOrder
+} from './crs-utils';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 
 export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';

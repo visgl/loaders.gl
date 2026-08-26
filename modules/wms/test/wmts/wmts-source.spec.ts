@@ -87,3 +87,41 @@ test('WMTSImageTileSource derives URL options from capabilities', async t => {
   t.equal(source.getTileURL({x: 1, y: 2, z: 3}), 'https://tiles.example/3/2/1.png');
   t.end();
 });
+
+test('WMTSImageTileSource selects CRS-compatible matrix identifiers', async t => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      crs: 'EPSG:3857',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [
+                {tileMatrixSet: 'Geographic'},
+                {tileMatrixSet: 'WebMercatorQuad'}
+              ],
+              resourceURLs: [
+                {template: 'https://tiles.example/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}'}
+              ]
+            }
+          ],
+          tileMatrixSets: [
+            {identifier: 'Geographic', supportedCRS: 'EPSG:4326', matrices: [{identifier: '4'}]},
+            {
+              identifier: 'WebMercatorQuad',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'L04'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+  await source.getMetadata();
+  t.equal(source.getTileURL({x: 1, y: 2, z: 0}), 'https://tiles.example/WebMercatorQuad/L04/2/1');
+  t.end();
+});

@@ -5512,7 +5512,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/lerc@workspace:modules/lerc":
+"@loaders.gl/lerc@npm:5.0.0-alpha.2, @loaders.gl/lerc@workspace:modules/lerc":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/lerc@workspace:modules/lerc"
   dependencies:
@@ -5953,6 +5953,7 @@ __metadata:
   dependencies:
     "@loaders.gl/gis": "npm:5.0.0-alpha.2"
     "@loaders.gl/images": "npm:5.0.0-alpha.2"
+    "@loaders.gl/lerc": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/xml": "npm:5.0.0-alpha.2"

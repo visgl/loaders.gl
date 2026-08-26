@@ -112,6 +112,22 @@ test('ArcGISImageSource#exportImageURL', t => {
   t.end();
 });
 
+test('ArcGISImageSource#exportImageURL supports LERC analytical rasters', t => {
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const exportRasterUrl = new URL(
+    source.exportImageURL({
+      bbox: [1, 2, 3, 4],
+      width: 128,
+      height: 128,
+      format: 'lerc',
+      pixelType: 'F32'
+    })
+  );
+  t.equal(exportRasterUrl.searchParams.get('format'), 'lerc');
+  t.equal(exportRasterUrl.searchParams.get('pixelType'), 'F32');
+  t.end();
+});
+
 test('ArcGISImageSource#getMetadata', async t => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   source.fetch = async () =>

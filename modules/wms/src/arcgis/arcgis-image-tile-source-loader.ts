@@ -14,6 +14,8 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import type {LERCData} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/lerc';
 
 /** Options for the ArcGIS ImageServer tile source. */
 export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions & {
@@ -24,6 +26,8 @@ export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions & {
     urls?: string[];
     /** Additional exportImage parameters. */
     parameters?: Record<string, string | number | boolean>;
+    /** Response format, using LERC for analytical raster tiles. */
+    format?: 'png32' | 'lerc';
   };
 };
 
@@ -73,22 +77,27 @@ export class ArcGISImageTileSource
   }
 
   /** Fetches one ImageServer export tile. */
-  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+  async getTile(
+    parameters: GetTileParameters,
+    signal?: AbortSignal
+  ): Promise<ImageType | LERCData | null> {
     const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(
         `ArcGIS ImageServer tile request failed: ${response.status} ${response.statusText}`
       );
     }
+    const loader =
+      this.options['arcgis-image-server-tiles']?.format === 'lerc' ? LERCLoader : ImageLoader;
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      ImageLoader,
+      loader,
       this.loadOptions
     )) as ImageType;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | LERCData | null> {
     return this.getTile(parameters.index, parameters.signal);
   }
 
@@ -110,7 +119,7 @@ export class ArcGISImageTileSource
       bboxSR: 3857,
       imageSR: 3857,
       size: `${resolvedTileSize},${resolvedTileSize}`,
-      format: 'png32',
+      format: options.format || 'png32',
       transparent: true,
       ...options.parameters,
       ...this._runtimeParameters
