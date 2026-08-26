@@ -29,13 +29,13 @@ const COMPETITIVE_ARROW_FIELDS = [
   ['COLOR_0', 'FixedSizeList[4]<Uint8>']
 ] as const;
 const LAZ_1_2_LOADER_VARIANTS = [
-  {name: 'loaders.gl-typescript', loader: LASLoader},
-  {name: 'laz-perf-0.0.7-emscripten-js', loader: LAZPerfLoader},
-  {name: 'laz-rs-wasm-0.1.0', loader: LAZRsLoader}
+  {name: 'loaders.gl (TypeScript)', loader: LASLoader},
+  {name: 'laz-perf (C++ to JS) 0.0.7', loader: LAZPerfLoader},
+  {name: 'laz-rs (Rust to WASM) 0.1.0', loader: LAZRsLoader}
 ] as const;
 const LAZ_1_4_LOADER_VARIANTS = [
-  {name: 'loaders.gl-typescript', loader: LASLoader},
-  {name: 'laz-rs-wasm-0.1.0', loader: LAZRsLoader}
+  {name: 'loaders.gl (TypeScript)', loader: LASLoader},
+  {name: 'laz-rs (Rust to WASM) 0.1.0', loader: LAZRsLoader}
 ] as const;
 
 /**
@@ -71,7 +71,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader parse LAZ 1.2 PDRF 3 common columns');
 
   for (const {name, loader} of LAZ_1_2_LOADER_VARIANTS) {
-    bench.addAsync(`parse LAZ 1.2 PDRF 3 variant=${name}`, benchmarkOptions, async () => {
+    bench.addAsync(`parse LAZ 1.2 PDRF 3 backend=${name}`, benchmarkOptions, async () => {
       await parse(lazArrayBuffer, loader, {
         core: {worker: false},
         las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
@@ -82,7 +82,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader TypeScript path LAZ 1.2 PDRF 3 comprehensive output');
 
   bench.addAsync(
-    'parse complete LAZ 1.2 PDRF 3 columns=all variant=loaders.gl-typescript',
+    'parse complete LAZ 1.2 PDRF 3 columns=all backend=loaders.gl (TypeScript)',
     benchmarkOptions,
     async () => {
       await parse(lazArrayBuffer, LASLoader, {
@@ -93,7 +93,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.addAsync(
-    `parseInBatches streaming LAZ 1.2 PDRF 3 variant=loaders.gl-typescript ${formatStreamingStats(lazStreamingStats)}`,
+    `parseInBatches streaming LAZ 1.2 PDRF 3 backend=loaders.gl (TypeScript) ${formatStreamingStats(lazStreamingStats)}`,
     benchmarkOptions,
     async () => {
       const batches = await parseInBatches(lazChunks, LASLoader, {
@@ -110,7 +110,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader parse LAZ 1.4 PDRF 7 common columns');
 
   for (const {name, loader} of LAZ_1_4_LOADER_VARIANTS) {
-    bench.addAsync(`parse LAZ 1.4 PDRF 7 variant=${name}`, laz14BenchmarkOptions, async () => {
+    bench.addAsync(`parse LAZ 1.4 PDRF 7 backend=${name}`, laz14BenchmarkOptions, async () => {
       await parse(laz14ArrayBuffer, loader, {
         core: {worker: false},
         las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
@@ -121,7 +121,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 common columns');
 
   bench.addAsync(
-    'parse complete LAZ 1.4 PDRF 7 columns=common variant=loaders.gl-typescript',
+    'parse complete LAZ 1.4 PDRF 7 columns=common backend=loaders.gl (TypeScript)',
     laz14BenchmarkOptions,
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
@@ -132,7 +132,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.addAsync(
-    'parseInBatches streaming LAZ 1.4 PDRF 7 columns=common variant=loaders.gl-typescript',
+    'parseInBatches streaming LAZ 1.4 PDRF 7 columns=common backend=loaders.gl (TypeScript)',
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
@@ -149,7 +149,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 comprehensive output');
 
   bench.addAsync(
-    'parse complete LAZ 1.4 PDRF 7 columns=all variant=loaders.gl-typescript',
+    'parse complete LAZ 1.4 PDRF 7 columns=all backend=loaders.gl (TypeScript)',
     laz14BenchmarkOptions,
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
@@ -160,7 +160,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.addAsync(
-    `parseInBatches streaming LAZ 1.4 PDRF 7 variant=loaders.gl-typescript ${formatStreamingStats(laz14StreamingStats)}`,
+    `parseInBatches streaming LAZ 1.4 PDRF 7 backend=loaders.gl (TypeScript) ${formatStreamingStats(laz14StreamingStats)}`,
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
@@ -177,7 +177,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 render columns');
 
   bench.addAsync(
-    'parse LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=loaders.gl-typescript',
+    'parse LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 backend=loaders.gl (TypeScript)',
     laz14BenchmarkOptions,
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
@@ -188,7 +188,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.addAsync(
-    'parseInBatches streaming LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=loaders.gl-typescript',
+    'parseInBatches streaming LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 backend=loaders.gl (TypeScript)',
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
@@ -205,7 +205,7 @@ export default async function lasLoaderBench(bench) {
   bench.groupSorted('TypeScript LAZ raw chunk decode');
 
   bench.add(
-    'decodeLAZChunk LAZ 1.4 PDRF 7 variant=loaders.gl-typescript',
+    'decodeLAZChunk LAZ 1.4 PDRF 7 backend=loaders.gl (TypeScript)',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -217,7 +217,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor batches LAZ 1.4 PDRF 7 variant=loaders.gl-typescript',
+    'decodeLAZChunk cursor batches LAZ 1.4 PDRF 7 backend=loaders.gl (TypeScript)',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -237,7 +237,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor point-data LAZ 1.4 PDRF 7 variant=loaders.gl-typescript',
+    'decodeLAZChunk cursor point-data LAZ 1.4 PDRF 7 backend=loaders.gl (TypeScript)',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -261,7 +261,7 @@ export default async function lasLoaderBench(bench) {
   );
 
   bench.add(
-    'decodeLAZChunk cursor render-data LAZ 1.4 PDRF 7 variant=loaders.gl-typescript',
+    'decodeLAZChunk cursor render-data LAZ 1.4 PDRF 7 backend=loaders.gl (TypeScript)',
     {
       multiplier: laz14FirstChunk.metadata.pointCount,
       unit: 'output points',
@@ -286,10 +286,10 @@ export default async function lasLoaderBench(bench) {
 
   bench.groupSorted('LASWriter');
 
-  bench.add('LASWriter LAS 1.2 variant=loaders.gl-typescript', benchmarkOptions, () => {
+  bench.add('LASWriter LAS 1.2 backend=loaders.gl (TypeScript)', benchmarkOptions, () => {
     encodeBenchmarkLASArrayBuffer(table, '1.2');
   });
-  bench.add('LASWriter LAS 1.4 variant=loaders.gl-typescript', benchmarkOptions, () => {
+  bench.add('LASWriter LAS 1.4 backend=loaders.gl (TypeScript)', benchmarkOptions, () => {
     encodeBenchmarkLASArrayBuffer(table, '1.4');
   });
 
