@@ -107,6 +107,9 @@ The lazy subtree root remains the traversal boundary until its availability requ
 
 Subtree completion does not masquerade as tile-content completion or enter the GPU cache. It updates hierarchy metadata, then the next traversal selects and requests render content normally.
 
+For payload-level compatibility, the [3D Tiles format matrix](../formats/3d-tiles#tile-payloads)
+records i3dm orientation support, including octahedrally encoded instance directions.
+
 ## URLs, Authentication, and Archives
 
 Content and subtree templates are resolved against the tileset base URI during normalization. At request time the source applies the same inherited root, session, and tileset-version query parameters used for tile content; parameters already present on the subtree URI win.
