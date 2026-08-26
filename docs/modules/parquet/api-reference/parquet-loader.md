@@ -144,6 +144,13 @@ Unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` columns are returned
 for example `UTF8` values are returned as JavaScript strings and `JSON` values are
 returned as parsed JavaScript values.
 
+Unshredded Parquet `VARIANT` groups are decoded into JavaScript primitives, arrays, and
+objects for object-row results from the TypeScript `ParquetJSLoader` variant. Arrow results
+and the default WASM `ParquetLoader` retain the canonical `metadata` and `value` binary child
+fields so applications can choose when to decode or project them. Shredded Variant values
+are currently exposed as their typed child columns and are not yet reconstructed into one
+JavaScript value.
+
 `ParquetJSLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
 `ConvertedType` fallback. Arrow output preserves exact signed and unsigned integer widths,
 date/time/timestamp units through nanoseconds, Decimal128/256 precision and scale, UUID fixed-size

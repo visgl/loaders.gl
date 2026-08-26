@@ -115,7 +115,7 @@ The exact physical constraints and sort orders are defined by Apache's
 | `UNKNOWN` | Any physical type | Null | ✅ | ⚠️ | Values must be treated as null; writing is low-level only |
 | `LIST` | Three-level nested structure | List | ✅ | ✅ | High-level writer emits the standard `list`/`element` layout, including nested element types |
 | `MAP` | Repeated key/value structure | Map | ✅ | ✅ | High-level writer accepts `Map`, entry arrays, and plain objects; keys must be non-nullable |
-| [`VARIANT`](https://github.com/apache/parquet-format/blob/master/VariantEncoding.md) | Variant metadata/value byte columns | Binary plus metadata | ⚠️ | ❌ | Metadata is retained; Variant payload decoding and shredding remain roadmap items |
+| [`VARIANT`](https://github.com/apache/parquet-format/blob/master/VariantEncoding.md) | Variant metadata/value byte columns | Struct of binary metadata/value fields | ⚠️ | ❌ | Unshredded values are decoded for TypeScript object-row reads; Arrow and WASM retain the canonical binary fields, and shredded-value reconstruction remains a roadmap item |
 | [`VECTOR`](https://github.com/apache/parquet-format/pull/592) | Vector logical type (proposed) | Not yet mapped | ❌ | ❌ | Active upstream proposal; intentionally not advertised as supported |
 | `GEOMETRY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS plus native bbox/type statistics; TypeScript writer |
 | `GEOGRAPHY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS, all five edge algorithms, antimeridian-aware reads, and native statistics |
@@ -285,7 +285,7 @@ The TypeScript implementation is aiming for complete stable-format read support.
 gaps are currently:
 
 1. repeated-leaf page-index continuation and pruning;
-2. Variant value decoding and shredding;
+2. Variant shredding and Arrow-native Variant extension output (unshredded object-row decoding is supported);
 3. page CRC verification and emission;
 4. size statistics and semantic sorting metadata; and
 5. Parquet modular encryption.
