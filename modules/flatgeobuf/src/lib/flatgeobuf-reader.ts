@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/crs';
+
 /** The FlatGeobuf file signature has a stable prefix and a version byte. */
 const MAGIC_PREFIX = [0x66, 0x67, 0x62];
 const MAGIC_SIZE = 8;
@@ -60,7 +62,7 @@ export type FlatGeobufHeader = {
   columns: FlatGeobufColumn[];
   featuresCount: number;
   indexNodeSize: number;
-  crs?: {code?: number; codeString?: string; wkt?: string};
+  crs?: {code?: number; codeString?: CRSIdentifier; wkt?: WKTCRSDefinition};
   title?: string;
   description?: string;
   metadata?: string;

@@ -37,7 +37,7 @@ describe('geospatial metadata schemas', () => {
             encoding: 'WKB',
             geometry_types: ['Point Z'],
             crs: null,
-            crs_type: 'projjson',
+            vendor_crs_type: 'projjson',
             orientation: 'counterclockwise',
             bbox: [-180, -90, 0, 180, 90, 100],
             edges: 'planar',
@@ -112,15 +112,50 @@ describe('geospatial metadata schemas', () => {
   });
 
   it('validates GeoArrow field metadata', () => {
+    const representations = [
+      {crs: {type: 'GeographicCRS'}, crs_type: 'projjson'},
+      {crs: 'GEOGCRS["WGS 84"]', crs_type: 'wkt2:2019'},
+      {crs: 'EPSG:4326', crs_type: 'authority_code'},
+      {crs: 'database:4326', crs_type: 'srid'},
+      {crs: 'vendor-defined-crs'}
+    ];
+    for (const representation of representations) {
+      expect(
+        GeoArrowMetadataSchema.safeParse({
+          encoding: 'geoarrow.box',
+          edges: 'karney',
+          ...representation
+        }).success
+      ).toBe(true);
+    }
     expect(
-      GeoArrowMetadataSchema.safeParse({
-        encoding: 'geoarrow.box',
-        crs: 'EPSG:4326',
-        crs_type: 'authority_code',
-        edges: 'karney'
-      }).success
-    ).toBe(true);
+      GeoArrowMetadataSchema.safeParse({crs: {type: 'GeographicCRS'}, crs_type: 'wkt2:2019'})
+        .success
+    ).toBe(false);
+    expect(GeoArrowMetadataSchema.safeParse({crs: 4326, crs_type: 'srid'}).success).toBe(false);
     expect(GeoArrowMetadataSchema.safeParse({edges: 'planar'}).success).toBe(false);
+  });
+
+  it('distinguishes omitted, null, and explicit GeoParquet CRS metadata', () => {
+    const makeMetadata = (column: Record<string, unknown>) => ({
+      version: '1.1.0',
+      primary_column: 'geometry',
+      columns: {geometry: {encoding: 'WKB', geometry_types: ['Point'], ...column}}
+    });
+
+    const omitted = GeoParquetMetadataSchema.parse(makeMetadata({}));
+    const unknown = GeoParquetMetadataSchema.parse(makeMetadata({crs: null, epoch: 2024.25}));
+    const explicit = GeoParquetMetadataSchema.parse(
+      makeMetadata({crs: {type: 'GeographicCRS', name: 'WGS 84'}})
+    );
+
+    expect('crs' in omitted.columns.geometry).toBe(false);
+    expect(unknown.columns.geometry.crs).toBeNull();
+    expect(unknown.columns.geometry.epoch).toBe(2024.25);
+    expect(explicit.columns.geometry.crs).toMatchObject({type: 'GeographicCRS'});
+    expect(GeoParquetMetadataSchema.safeParse(makeMetadata({crs: 'EPSG:4326'})).success).toBe(
+      false
+    );
   });
 
   it('exports both schemas as JSON Schema', () => {

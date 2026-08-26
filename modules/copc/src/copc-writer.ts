@@ -12,6 +12,7 @@ import {
 } from '@loaders.gl/loader-utils';
 import {LASWriter} from '@loaders.gl/las';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 import {COPCFormat} from './copc-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -47,7 +48,7 @@ export type COPCWriterOptions = WriterOptions & {
     /** Root-node point spacing stored in the COPC info VLR. */
     spacing?: number;
     /** Optional coordinate reference system encoded as an OGC WKT VLR. */
-    wkt?: string;
+    wkt?: WKTCRSDefinition;
   };
 };
 

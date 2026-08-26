@@ -14,6 +14,7 @@ import type {
   RasterSourceMetadata,
   SourceLoader
 } from '@loaders.gl/loader-utils';
+import type {CRSDefinition} from '@math.gl/crs';
 import {getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
 
 import type {SupportedTypedArray} from './types';
@@ -73,8 +74,8 @@ export type GeoZarrSourceLoaderOptions = ZarrSourceLoaderOptions & {
     spatialDimensions?: [y: string, x: string];
     /** Explicit affine transform when the store does not provide one. */
     transform?: GeoZarrAffineTransform;
-    /** Explicit coordinate reference system identifier or WKT. */
-    coordinateReferenceSystem?: string;
+    /** Explicit coordinate reference system definition or identifier. */
+    coordinateReferenceSystem?: CRSDefinition;
     /** Default indices for non-spatial dimensions such as `time` or `level`. */
     defaultSelection?: Record<string, number>;
   };

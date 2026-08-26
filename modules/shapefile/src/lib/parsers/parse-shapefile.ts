@@ -18,7 +18,8 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch
 } from '@loaders.gl/schema';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 
 import type {SHXOutput} from './parse-shx';
 import type {SHPResult} from './parse-shp';
@@ -31,7 +32,7 @@ import {DBFLoaderWithParser} from '../../dbf-loader-with-parser';
 
 export interface ShapefileOutput {
   encoding?: string;
-  prj?: string;
+  prj?: WKTCRSDefinition;
   shx?: SHXOutput;
   header: SHPHeader;
   data: Feature[];
@@ -279,7 +280,11 @@ function joinProperties(geometries: Geometry[], properties: GeoJsonProperties[])
  * @param targetCrs †arget coordinate reference system
  * @return Reprojected Features
  */
-function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: string): Feature[] {
+function reprojectFeatures(
+  features: Feature[],
+  sourceCrs?: WKTCRSDefinition,
+  targetCrs?: Proj4CRSDefinition
+): Feature[] {
   if (!sourceCrs && !targetCrs) {
     return features;
   }
@@ -301,7 +306,7 @@ export async function loadShapefileSidecarFiles(
 ): Promise<{
   shx?: SHXOutput;
   cpg?: string;
-  prj?: string;
+  prj?: WKTCRSDefinition;
 }> {
   if (!context?.url || !context.fetch) {
     return {};
@@ -316,7 +321,7 @@ export async function loadShapefileSidecarFiles(
 
   let shx: SHXOutput | undefined;
   let cpg: string | undefined;
-  let prj: string | undefined;
+  let prj: WKTCRSDefinition | undefined;
 
   const shxResponse = await shxPromise;
   if (shxResponse?.ok && !isHtmlFallbackResponse(shxResponse)) {

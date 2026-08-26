@@ -74,11 +74,11 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_METADATA);
   if (columnMetadata) {
     try {
-      const parsedMetadata = GeoArrowMetadataSchema.parse(JSON.parse(columnMetadata));
+      const parsedMetadata = parseGeoArrowMetadata(JSON.parse(columnMetadata));
       metadata = {
         ...(metadata || {}),
         ...parsedMetadata
-      };
+      } as GeoArrowMetadata;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Failed to parse GeoArrow metadata', error);
@@ -86,4 +86,20 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   }
 
   return metadata || null;
+}
+
+/** Validates GeoArrow metadata, treating a mislabeled string CRS as opaque metadata. */
+function parseGeoArrowMetadata(value: unknown): GeoArrowMetadata {
+  const result = GeoArrowMetadataSchema.safeParse(value);
+  if (result.success) {
+    return result.data;
+  }
+  if (value && typeof value === 'object' && typeof (value as {crs?: unknown}).crs === 'string') {
+    const {crs_type: _untrustedCRSType, ...opaqueMetadata} = value as Record<string, unknown>;
+    const opaqueResult = GeoArrowMetadataSchema.safeParse(opaqueMetadata);
+    if (opaqueResult.success) {
+      return opaqueResult.data;
+    }
+  }
+  throw result.error;
 }

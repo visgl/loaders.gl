@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSIdentifier} from '@math.gl/crs';
 import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -11,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 // Return type definition for GeoTIFF loader
 type GeoTIFFData = {
-  crs?: string;
+  crs?: CRSIdentifier;
   bounds: number[];
   metadata: Record<string, unknown>;
 

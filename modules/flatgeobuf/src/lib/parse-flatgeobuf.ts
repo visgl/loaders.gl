@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
   filterColumnarRowIndices,
@@ -37,7 +37,7 @@ const GEOMETRY_COLUMN_NAME = 'geometry';
 export type ParseFlatGeobufOptions = {
   shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   boundingBox?: [[number, number], [number, number]];
-  crs?: string;
+  crs?: Proj4CRSDefinition;
   reproject?: boolean;
 };
 
@@ -89,6 +89,7 @@ export function parseFlatGeobufToArrowTable(
 ): ArrowTable {
   const header = readFlatGeobufHeader(arrayBuffer);
   const schema = makeArrowSchema(header);
+  const projection = getProjection(header, options.reproject, options.crs || 'WGS84');
   const geometryOptions = {encoding: getGeometryEncoding(header.geometryType), hasZ: header.hasZ};
   const measuredGeometry = new GeoArrowBuilder({mode: 'measure', ...geometryOptions});
   for (const feature of readFlatGeobufFeatures(arrayBuffer, header)) {
@@ -99,6 +100,7 @@ export function parseFlatGeobufToArrowTable(
   const geometryBuilder = new GeoArrowBuilder({
     mode: 'write',
     target: geometryArray,
+    transform: projection?.project,
     ...geometryOptions
   });
   const arrowSchema = convertSchemaToArrow(schema);
@@ -366,7 +368,7 @@ function getArrowType(type: FlatGeobufColumnType): Field['type'] {
 export function getProjection(
   header: FlatGeobufHeader | any,
   reproject = false,
-  crs = 'WGS84'
+  crs: Proj4CRSDefinition = 'WGS84'
 ): Proj4Projection | undefined {
   if (!reproject || !header.crs?.wkt) return undefined;
   try {

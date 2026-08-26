@@ -1,5 +1,8 @@
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for WKT
+syntax handling, shared CRS types, and cross-format CRS support.
+
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 
 ## Formats
@@ -27,4 +30,5 @@ The `@loaders.gl/wkt` module handles the following formats:
 
 The `WKTLoader` is based on a fork of the Mapbox [`wellknown`](https://github.com/mapbox/wellknown) module under the ISC license (MIT/BSD 2-clause equivalent).
 The `WKBLoader` and `WKBWriter` are forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz.
-The `WKTCRSLoader` and `WKTCRSWriter` are based on a fork of https://github.com/DanielJDufour/wkt-crs under Creative Commons CC0 1.0 license.
+The `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free syntax codecs in
+`@math.gl/crs`.

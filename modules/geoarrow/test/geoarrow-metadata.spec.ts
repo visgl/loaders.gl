@@ -41,3 +41,29 @@ test('geoarrow#getGeometryColumnsFromSchema preserves encoding when extension me
   t.deepEqual(columns, {geometry: {encoding: 'geoarrow.wkb'}});
   t.end();
 });
+
+test('geoarrow#getGeometryColumnsFromSchema preserves a mislabeled string CRS as opaque', t => {
+  const wkt = 'GEOGCRS["WGS 84",ID["EPSG",4326]]';
+  const schema = {
+    fields: [
+      {
+        name: 'geometry',
+        type: 'binary',
+        metadata: {
+          'ARROW:extension:name': 'geoarrow.wkb',
+          'ARROW:extension:metadata': JSON.stringify({crs: wkt, crs_type: 'projjson'})
+        }
+      }
+    ]
+  } as any;
+
+  t.deepEqual(getGeometryColumnsFromSchema(schema), {
+    geometry: {encoding: 'geoarrow.wkb', crs: wkt}
+  });
+  t.equal(
+    JSON.parse(schema.fields[0].metadata['ARROW:extension:metadata']).crs_type,
+    'projjson',
+    'raw extension metadata is unchanged'
+  );
+  t.end();
+});

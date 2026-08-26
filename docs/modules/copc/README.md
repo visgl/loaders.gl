@@ -2,6 +2,9 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+current COPC/LAS projection-record support and vertical/compound CRS roadmap.
+
 ![copc-logo](../../images/logos/copc-logo-80.png)
 
 <p class="badges">

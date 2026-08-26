@@ -17,6 +17,7 @@ import {
   parseShapefileToArrowInBatches
 } from './shapefile-arrow-loader-with-parser';
 import {ShapefileLoader as ShapefileLoaderMetadata} from './shapefile-loader';
+import type {Proj4CRSDefinition} from '@math.gl/proj4';
 
 const {preload: _ShapefileLoaderPreload, ...ShapefileLoaderMetadataWithoutPreload} =
   ShapefileLoaderMetadata;
@@ -33,7 +34,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     };
     gis?: {
       reproject?: boolean;
-      _targetCrs?: string;
+      _targetCrs?: Proj4CRSDefinition;
     };
   };
 

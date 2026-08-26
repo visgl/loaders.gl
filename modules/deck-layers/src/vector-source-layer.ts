@@ -14,7 +14,7 @@ import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/gis';
 import type {GeoJSONTable} from '@loaders.gl/schema';
-import type {VectorSource, VectorSourceData} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters, VectorSource, VectorSourceData} from '@loaders.gl/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
@@ -26,7 +26,7 @@ export type VectorSourceLayerProps = CompositeLayerProps & {
   /** Named source layers forwarded to `VectorSource#getFeatures`. */
   layers: string | string[];
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
-  crs?: string;
+  crs?: GetFeaturesParameters['crs'];
   /** Output format forwarded to `VectorSource#getFeatures`. */
   format?: 'geojson' | 'binary' | 'arrow';
   /** Debounce interval applied before viewport requests are issued. */

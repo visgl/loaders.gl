@@ -20,7 +20,7 @@ export type VectorSetOptions = {
   /** Named source layers included in each request. */
   layers: string | string[];
   /** Output CRS forwarded to the vector source. */
-  crs?: string;
+  crs?: GetFeaturesParameters['crs'];
   /** Output format forwarded to the vector source. */
   format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */
@@ -70,7 +70,7 @@ export class VectorSet {
   /** Layers forwarded to `VectorSource#getFeatures`. */
   layers: string | string[];
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
-  crs?: string;
+  crs?: GetFeaturesParameters['crs'];
   /** Output format forwarded to `VectorSource#getFeatures`. */
   format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */

@@ -21,6 +21,19 @@ Release Date: 2026
 
 **Features**
 
+**Coordinate reference systems**
+
+- Adopts the shared `@math.gl/crs` identifier, definition, PROJJSON, WKT, and PROJ types across
+  loader metadata and service source APIs.
+- `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free math.gl WKT codec
+  and use its value-preserving `WKTCRSAst` result.
+- GeoParquet metadata distinguishes omitted default CRS, explicit `null`, PROJJSON, and coordinate
+  epoch; GeoArrow field metadata types discriminate PROJJSON, WKT2:2019, authority codes, SRIDs,
+  and opaque strings.
+- Adds a cross-format [CRS support guide](/docs/developer-guide/coordinate-reference-systems) that
+  separates metadata preservation from coordinate transformation and records the reprojection
+  roadmap.
+
 **@loaders.gl/arrow**
 
 - `convertArrowVariableWidthVector` and `convertArrowTableVariableWidthTypes` convert `Utf8`,
