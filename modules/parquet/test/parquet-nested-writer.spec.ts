@@ -23,6 +23,23 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
           nullable: true
         },
         {
+          name: 'nestedTags',
+          type: {
+            type: 'list',
+            children: [
+              {
+                name: 'element',
+                type: {
+                  type: 'list',
+                  children: [{name: 'element', type: 'utf8', nullable: false}]
+                },
+                nullable: false
+              }
+            ]
+          },
+          nullable: true
+        },
+        {
           name: 'attributes',
           type: {
             type: 'map',
@@ -58,10 +75,11 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
       {
         id: 1,
         tags: ['one', 'two'],
+        nestedTags: [['a', 'b'], ['c']],
         attributes: new Map([['count', 2]]),
         properties: {label: 'first'}
       },
-      {id: 2, tags: [], attributes: {score: 7}, properties: {label: null}}
+      {id: 2, tags: [], nestedTags: [], attributes: {score: 7}, properties: {label: null}}
     ]
   };
 
@@ -87,10 +105,20 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
     core: {worker: false},
     parquet: {shape: 'arrow-table'}
   });
+  const objectOutput = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  expect(objectOutput.shape).toBe('object-row-table');
+  if (objectOutput.shape === 'object-row-table') {
+    expect(objectOutput.data[0]).toMatchObject({id: 1});
+    expect(objectOutput.data[0].tags).toEqual({list: [{element: 'one'}, {element: 'two'}]});
+  }
 
   expect(output.shape).toBe('arrow-table');
   if (output.shape !== 'arrow-table') return;
   expect(output.data.getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
+  expect(output.data.getChild('tags')?.get(0)?.toArray()).toEqual(['one', 'two']);
+  expect(output.data.getChild('tags')?.get(1)?.toArray()).toEqual([]);
+  expect(output.data.getChild('nestedTags')?.type).toBeInstanceOf(arrow.List);
+  expect(output.data.getChild('attributes')?.get(0)?.toJSON?.()).toEqual({count: 2});
   expect(output.data.getChild('tags')?.type).toBeInstanceOf(arrow.List);
   expect(output.data.getChild('attributes')?.type).toBeInstanceOf(arrow.Map_);
   expect(output.data.getChild('properties')?.type).toBeInstanceOf(arrow.Struct);

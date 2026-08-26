@@ -112,7 +112,12 @@ function getFieldValueType(field: FieldDefinition): DataType {
       // repetition levels are still available to the row-materialization path.
       return {type: 'struct', children: getFields(field.fields)};
     }
-    if (element.logicalType?.type === 'LIST' || element.logicalType?.type === 'MAP') {
+    if (
+      (element.logicalType?.type === 'LIST' &&
+        (!isStandardListDefinition(element) || element.optional !== false)) ||
+      (element.logicalType?.type === 'MAP' &&
+        (!isStandardMapDefinition(element) || element.optional !== false))
+    ) {
       // Preserve nested legacy wrappers. Arrow's high-level List/Map type
       // cannot describe the historical wrapper shape without changing the
       // object-row contract used by existing callers.
@@ -159,6 +164,16 @@ function getFieldValueType(field: FieldDefinition): DataType {
   }
 
   return {type: 'struct', children: getFields(field.fields)};
+}
+
+/** Returns whether a nested LIST follows the standard list/list/element wrapper. */
+function isStandardListDefinition(field: FieldDefinition): boolean {
+  return Boolean(field.fields?.list?.fields?.element);
+}
+
+/** Returns whether a nested MAP follows the standard map/key_value/key/value wrapper. */
+function isStandardMapDefinition(field: FieldDefinition): boolean {
+  return Boolean(field.fields?.key_value?.fields?.key && field.fields.key_value.fields.value);
 }
 
 /** Returns the exact serialized Arrow type for one decoded Parquet field. */

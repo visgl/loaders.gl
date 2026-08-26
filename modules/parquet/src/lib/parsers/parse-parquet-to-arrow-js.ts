@@ -298,6 +298,14 @@ function convertRowGroupSliceToArrow(
     }
 
     let fullColumn = materializeColumn(parquetSchema, rowGroup, field.name);
+    if (parquetField.fields && hasStandardNestedCollection(parquetField)) {
+      materializedRows ||= materializeRows(parquetSchema, rowGroup);
+      const normalizedValues = materializedRows
+        .slice(start, end)
+        .map(row => normalizeNestedParquetValue(row[field.name], parquetField));
+      vectors[field.name] = arrow.vectorFromArray(normalizedValues, field.type);
+      continue;
+    }
     if (!fullColumn && parquetField.fields) {
       materializedRows ||= materializeRows(parquetSchema, rowGroup);
       const fallbackTable: ObjectRowTable = {
@@ -329,6 +337,76 @@ function convertRowGroupSliceToArrow(
     schema,
     data: createArrowTable(arrowSchema, vectors, end - start)
   };
+}
+
+/** Detects standard collection wrappers that need normalization before Arrow conversion. */
+function hasStandardNestedCollection(field: ParquetField): boolean {
+  if (field.logicalType?.type === 'LIST') {
+    const element = field.fields?.list?.fields?.element;
+    if (!element) return false;
+    // Nested repeated continuation is still handled by the legacy materializer;
+    // only normalize one-level collections here until that path is fully aligned.
+    if (element.logicalType?.type === 'LIST' || element.logicalType?.type === 'MAP') return false;
+    return true;
+  }
+  if (field.logicalType?.type === 'MAP') {
+    return Boolean(field.fields?.key_value?.fields?.key && field.fields.key_value.fields.value);
+  }
+  return Object.values(field.fields || {}).some(hasStandardNestedCollection);
+}
+
+/** Normalizes standard Parquet LIST/MAP wrapper groups before Arrow conversion. */
+function normalizeNestedParquetValue(value: unknown, field: ParquetField): unknown {
+  if (value === undefined || value === null || !field.fields) {
+    return value;
+  }
+
+  if (field.logicalType?.type === 'LIST') {
+    const listField = field.fields.list;
+    const elementField = listField?.fields?.element;
+    if (!listField || !elementField) {
+      return value;
+    }
+    const listValue = value && typeof value === 'object' ? Reflect.get(value, 'list') : undefined;
+    if (!Array.isArray(listValue)) {
+      return [];
+    }
+    return listValue.map(element =>
+      normalizeNestedParquetValue(
+        element && typeof element === 'object' ? Reflect.get(element, 'element') : element,
+        elementField
+      )
+    );
+  }
+
+  if (field.logicalType?.type === 'MAP') {
+    const entryField = field.fields.key_value;
+    const keyField = entryField?.fields?.key;
+    const valueField = entryField?.fields?.value;
+    if (!entryField || !keyField || !valueField) {
+      return value;
+    }
+    const entries =
+      value && typeof value === 'object' ? Reflect.get(value, 'key_value') : undefined;
+    if (!Array.isArray(entries)) {
+      return new Map();
+    }
+    return new Map(
+      entries.map(entry => [
+        Reflect.get(entry, 'key'),
+        normalizeNestedParquetValue(Reflect.get(entry, 'value'), valueField)
+      ])
+    );
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value) || ArrayBuffer.isView(value)) {
+    return value;
+  }
+  const normalized: Record<string, unknown> = {};
+  for (const [name, childField] of Object.entries(field.fields)) {
+    normalized[name] = normalizeNestedParquetValue(Reflect.get(value, name), childField);
+  }
+  return normalized;
 }
 
 /** Creates an exact Arrow Decimal128/256 vector from unscaled Parquet decimal values. */

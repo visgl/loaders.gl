@@ -416,7 +416,7 @@ function getSelectedColumnChunks(
   });
 }
 
-/** Restricts selective page reads to materializable primitive leaf columns. */
+/** Restricts selective page reads to independently materializable primitive leaf columns. */
 function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
@@ -432,6 +432,8 @@ function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly Colum
       const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
       return (
         field.primitiveType !== undefined &&
+        field.repetitionType !== 'REPEATED' &&
+        field.rLevelMax === 0 &&
         (!dictionaryEncoded ||
           (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
       );
