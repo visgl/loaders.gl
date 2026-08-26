@@ -59,7 +59,8 @@ export function compileSQLTableQuery(
     namedParameters: options.parameters,
     parameters: []
   };
-  const projection = query.columns?.length ? query.columns.map(quoteSQLIdentifier).join(', ') : '*';
+  const projection =
+    query.columns === undefined ? '*' : query.columns.map(quoteSQLIdentifier).join(', ');
   const table = [query.catalogName, query.schemaName, query.tableName]
     .filter((identifier): identifier is string => identifier !== undefined)
     .map(quoteSQLIdentifier)
@@ -85,13 +86,13 @@ function compileSQLPredicate(predicate: SQLPredicate, context: SQLCompilationCon
     case 'not':
       return `(NOT ${compileSQLPredicate(predicate.args[0], context)})`;
     case 'isNull':
-      return `(${quoteSQLProperty(predicate.args[0].property)} IS NULL)`;
+      return `(${quoteSQLProperty(predicate.args[0])} IS NULL)`;
     case 'in':
-      return `(${quoteSQLProperty(predicate.args[0].property)} IN (${predicate.args[1]
+      return `(${quoteSQLProperty(predicate.args[0])} IN (${predicate.args[1]
         .map(value => compileSQLPredicateValue(value, context))
         .join(', ')}))`;
     default:
-      return `(${quoteSQLProperty(predicate.args[0].property)} ${predicate.op} ${compileSQLPredicateValue(
+      return `(${quoteSQLProperty(predicate.args[0])} ${predicate.op} ${compileSQLPredicateValue(
         predicate.args[1],
         context
       )})`;
@@ -129,8 +130,10 @@ function getSQLPlaceholder(_dialect: SQLTableQueryDialect, _position: number): s
 }
 
 /** Quotes a possibly qualified predicate property one identifier component at a time. */
-function quoteSQLProperty(property: string): string {
-  return property.split('.').map(quoteSQLIdentifier).join('.');
+function quoteSQLProperty(property: {property: string; quoted?: boolean}): string {
+  return property.quoted
+    ? quoteSQLIdentifier(property.property)
+    : property.property.split('.').map(quoteSQLIdentifier).join('.');
 }
 
 /** Quotes one SQL identifier using standard double-quote escaping. */
@@ -145,6 +148,9 @@ function validateSQLTableQuery(query: SQLTableQuery): void {
   if (query.schemaName !== undefined) validateSQLIdentifier(query.schemaName);
   if (query.catalogName !== undefined) validateSQLIdentifier(query.catalogName);
   const seenColumns = new Set<string>();
+  if (query.columns?.length === 0) {
+    throw new Error('SQL table-query projections must select at least one column.');
+  }
   for (const column of query.columns ?? []) {
     validateSQLIdentifier(column);
     if (seenColumns.has(column)) {

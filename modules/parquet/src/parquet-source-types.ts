@@ -229,6 +229,8 @@ export type ParquetSourceReadOptions = {
   rowGroups?: readonly number[];
   /** Top-level columns to fetch and decode. Defaults to all columns. */
   columns?: readonly string[];
+  /** Maximum number of rows retained after filtering across all emitted batches. */
+  limit?: number;
   /** Maximum number of rows in each emitted Arrow batch. Defaults to one row group per batch. */
   batchSize?: number;
   /** Maximum number of row groups decoded concurrently. */

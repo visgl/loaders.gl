@@ -281,6 +281,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
   /** Selectively fetches row groups and columns as ordered Arrow batches with source provenance. */
   async *read(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
     const readOptions = this.getReadOptions(options);
+    if (readOptions.limit === 0) {
+      return;
+    }
     const readContext = createReadAbortContext(readOptions.signal);
     const inFlightReads = new Set<Promise<SettledParquetRowGroupRead>>();
     let completed = false;
@@ -353,11 +356,6 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
       let remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
-
-      if (remainingRows === 0) {
-        completed = true;
-        return;
-      }
 
       const scheduleReads = (): void => {
         while (

@@ -41,7 +41,7 @@ test('parseSQLPredicate normalizes null, inequality, negation, identifiers, and 
   ).toEqual({
     op: 'and',
     args: [
-      {op: 'not', args: [{op: 'isNull', args: [{property: 'source id'}]}]},
+      {op: 'not', args: [{op: 'isNull', args: [{property: 'source id', quoted: true}]}]},
       {
         op: 'not',
         args: [
@@ -55,6 +55,13 @@ test('parseSQLPredicate normalizes null, inequality, negation, identifiers, and 
         ]
       }
     ]
+  });
+});
+
+test('parseSQLPredicate preserves dots inside quoted identifiers', () => {
+  expect(parseSQLPredicate('"metric.value" = 1')).toEqual({
+    op: '=',
+    args: [{property: 'metric.value', quoted: true}, 1]
   });
 });
 

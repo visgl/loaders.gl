@@ -32,6 +32,8 @@ export type SQLPredicateParameterValues = ColumnarPredicateParameterValues;
 export type SQLPredicateProperty = Readonly<{
   /** Column or qualified column name. */
   property: string;
+  /** Whether the complete property was a quoted SQL identifier. */
+  quoted?: boolean;
 }>;
 
 /** Binary comparison between a column and a scalar value. */

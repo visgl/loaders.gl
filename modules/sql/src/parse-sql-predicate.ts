@@ -19,6 +19,7 @@ const MAXIMUM_EXPRESSION_DEPTH = 64;
 type SQLPredicateToken = Readonly<{
   kind: 'identifier' | 'number' | 'parameter' | 'string' | 'symbol';
   value: string;
+  quoted?: boolean;
 }>;
 
 /**
@@ -152,7 +153,7 @@ class SQLPredicateParser {
     if (token?.kind !== 'identifier') {
       throw new Error('SQL predicate expected a column identifier');
     }
-    return {property: token.value};
+    return token.quoted ? {property: token.value, quoted: true} : {property: token.value};
   }
 
   /** Parses one scalar literal or named parameter. */
@@ -315,7 +316,7 @@ function tokenizeSQLPredicate(source: string): SQLPredicateToken[] {
       position = result.position;
     } else if (character === '"') {
       const result = readQuotedToken(source, position, '"', '"');
-      tokens.push({kind: 'identifier', value: result.value});
+      tokens.push({kind: 'identifier', value: result.value, quoted: true});
       position = result.position;
     } else if (character === ':') {
       const match = /^[A-Za-z_][A-Za-z0-9_]*/.exec(source.slice(position + 1));

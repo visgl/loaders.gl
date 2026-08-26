@@ -32,7 +32,10 @@ export const SQL_PREDICATE_JSON_SCHEMA = {
     property: {
       type: 'object',
       required: ['property'],
-      properties: {property: {type: 'string', minLength: 1}},
+      properties: {
+        property: {type: 'string', minLength: 1},
+        quoted: {type: 'boolean'}
+      },
       additionalProperties: false
     },
     value: {
@@ -201,9 +204,10 @@ function validatePredicateNode(
 function validatePredicateProperty(value: unknown, path: string): void {
   if (
     !isRecord(value) ||
-    !hasExactKeys(value, ['property']) ||
+    !hasAllowedKeys(value, ['property', 'quoted']) ||
     typeof value.property !== 'string' ||
-    value.property.length === 0
+    value.property.length === 0 ||
+    (value.quoted !== undefined && typeof value.quoted !== 'boolean')
   ) {
     throw new Error(`SQL predicate ${path} requires a non-empty property reference`);
   }
@@ -240,4 +244,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function hasExactKeys(value: Record<string, unknown>, expectedKeys: readonly string[]): boolean {
   const keys = Object.keys(value);
   return keys.length === expectedKeys.length && expectedKeys.every(key => keys.includes(key));
+}
+
+function hasAllowedKeys(value: Record<string, unknown>, allowedKeys: readonly string[]): boolean {
+  return Object.keys(value).every(key => allowedKeys.includes(key));
 }

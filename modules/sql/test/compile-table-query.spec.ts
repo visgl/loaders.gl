@@ -60,6 +60,17 @@ describe('compileSQLTableQuery', () => {
     expect(compiled.parameters).toEqual([250]);
   });
 
+  test('distinguishes empty projections and quoted dotted identifiers', () => {
+    expect(() =>
+      compileSQLTableQuery({tableName: 'flights', columns: []}, {dialect: 'duckdb'})
+    ).toThrow(/at least one column/);
+    const compiled = compileSQLTableQuery(
+      {tableName: 'flights', predicate: parseSQLPredicate('"metric.value" = 1')},
+      {dialect: 'duckdb'}
+    );
+    expect(compiled.sql).toContain('"metric.value" = ?');
+  });
+
   test('rejects missing parameters and invalid limits', () => {
     const predicate = parseSQLPredicate('fare >= :minimumFare', {preserveParameters: true});
     expect(() =>

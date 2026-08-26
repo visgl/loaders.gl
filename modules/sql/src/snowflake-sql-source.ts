@@ -274,8 +274,8 @@ function normalizeSnowflakeBindings(
     : Object.entries(parameters);
   for (const [key, value] of entries) {
     bindings[key] = {
-      type: typeof value === 'number' ? 'FIXED' : 'TEXT',
-      value
+      type: typeof value === 'number' || typeof value === 'bigint' ? 'FIXED' : 'TEXT',
+      value: typeof value === 'bigint' ? value.toString() : value
     };
   }
   return bindings;
