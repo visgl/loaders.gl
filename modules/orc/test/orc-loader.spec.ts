@@ -7,8 +7,27 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
 import {ORCLoaderWithParser} from '../src/orc-loader';
+import {ORCSource} from '../src/orc-source-loader';
 import {ORCWriter} from '../src/orc-writer';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
+
+test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  const source = new ORCSource(new Blob([encoded]));
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.sourceType).toBe('orc');
+  expect(metadata.columns.map(column => column.name)).toEqual(['name']);
+  expect(metadata.statistics?.rowCount).toBe(4);
+
+  const result = await source.query({columns: ['name'], limit: 1});
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
+  expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
+});
 
 test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   const indexes = Uint8Array.from([0xfd, 0x00, 0x01, 0x00]);
