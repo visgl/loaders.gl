@@ -6,13 +6,14 @@
 // under Apache 2 license
 // (only used for test cases)
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
+import {readFile} from 'fs/promises';
 // import {validateLoader} from 'test/common/conformance';
 
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
 import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../src/lerc-loader';
-import {load, isBrowser} from '@loaders.gl/core';
+import {load, resolvePath} from '@loaders.gl/core';
 
 const LERC_FILES = [
   '@loaders.gl/lerc/test/data/lerc/bluemarble_256_256_3_byte.lerc2',
@@ -20,13 +21,14 @@ const LERC_FILES = [
   '@loaders.gl/lerc/test/data/lerc/world.lerc1'
 ];
 
-test('LERCLoader#level2', async t => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
+test('LERCLoader#level2', async () => {
   for (const lercFileName of LERC_FILES) {
-    const result = await load(lercFileName, LERCLoader);
+    const fileBytes = await readFile(resolvePath(lercFileName));
+    const arrayBuffer = fileBytes.buffer.slice(
+      fileBytes.byteOffset,
+      fileBytes.byteOffset + fileBytes.byteLength
+    ) as ArrayBuffer;
+    const result = await load(arrayBuffer, LERCLoader);
 
     const actual = formatPixelBlock(result);
 
@@ -40,9 +42,8 @@ test('LERCLoader#level2', async t => {
     //   }
     // });
 
-    t.ok(actual, lercFileName);
+    expect(actual).toBeDefined();
   }
-  t.end();
 });
 
 /** Helper function */
