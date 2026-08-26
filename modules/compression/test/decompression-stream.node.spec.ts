@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
@@ -21,12 +21,12 @@ type MutableGlobalThis = typeof globalThis & {
   Buffer?: typeof Buffer;
 };
 
-test('native decompression#real DecompressionStream formats in Node.js', async t => {
+test('native decompression#real DecompressionStream formats in Node.js', async () => {
   for (const format of Object.keys(
     NATIVE_DECOMPRESSION_FIXTURES
   ) as NativeDecompressionTestFormat[]) {
     if (!(await supportsNativeDecompressionStream(format))) {
-      t.comment(`${format} DecompressionStream is not available in this runtime`);
+      console.log(`${format} DecompressionStream is not available in this runtime`);
       continue;
     }
 
@@ -40,10 +40,9 @@ test('native decompression#real DecompressionStream formats in Node.js', async t
         compressedData,
         format
       );
-      t.ok(
-        decompressedData && compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
-        `native atomic ${format} decompression works in Node.js`
-      );
+      expect(
+        decompressedData && compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData)
+      ).toBeTruthy();
 
       const splitIndex = Math.max(1, Math.floor(compressedData.byteLength / 2));
       const compressedBatches = [
@@ -54,26 +53,17 @@ test('native decompression#real DecompressionStream formats in Node.js', async t
         compressedBatches,
         format
       );
-      t.ok(decompressedBatches, `native batched ${format} stream is created in Node.js`);
+      expect(decompressedBatches).toBeTruthy();
       const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
-      t.ok(
-        compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData),
-        `native batched ${format} decompression works in Node.js`
-      );
-      t.deepEqual(
-        nativeFormats,
-        [format, format],
-        `${format} uses the native stream for atomic and batched Node.js decompression`
-      );
+      expect(compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData)).toBe(true);
+      expect(nativeFormats).toEqual([format, format]);
     } finally {
       restoreDecompressionStream();
     }
   }
-
-  t.end();
 });
 
-test('native decompression#returns null without global Buffer in Node.js', async t => {
+test('native decompression#returns null without global Buffer in Node.js', async () => {
   const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES.gzip).buffer;
   const mutableGlobalThis = globalThis as MutableGlobalThis;
   const originalBuffer = mutableGlobalThis.Buffer;
@@ -81,10 +71,8 @@ test('native decompression#returns null without global Buffer in Node.js', async
 
   try {
     const decompressedData = await decompressWithNativeDecompressionStream(compressedData, 'gzip');
-    t.equal(decompressedData, null, 'native helper lets callers choose a fallback without Buffer');
+    expect(decompressedData).toBe(null);
   } finally {
     mutableGlobalThis.Buffer = originalBuffer;
   }
-
-  t.end();
 });
