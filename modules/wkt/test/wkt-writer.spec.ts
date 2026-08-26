@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 
 import {encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';
 
-test('WKTWriter', t => {
-  t.throws(
-    () => encodeTextSync({type: 'FeatureCollection'}, WKTWriter),
-    'does not accept featurecollections'
-  );
+test('WKTWriter', () => {
+  expect(() => encodeTextSync({type: 'FeatureCollection'}, WKTWriter)).toThrow();
 
   // const fixtures = [
   //   'LINESTRING (30 10, 10 30, 40 40)',
@@ -37,8 +34,36 @@ test('WKTWriter', t => {
     }
   };
 
-  const wkt = encodeTextSync(geojsonFeature.geometry, WKTWriter);
-  t.equal(wkt, 'POINT (42 20)', 'point equal');
-
-  t.end();
+  expect(encodeTextSync(geojsonFeature.geometry, WKTWriter)).toBe('POINT (42 20)');
+  expect(
+    encodeTextSync(
+      {
+        type: 'LineString',
+        coordinates: [
+          [0, 1],
+          [2, 3]
+        ]
+      },
+      WKTWriter
+    )
+  ).toBe('LINESTRING (0 1, 2 3)');
+  expect(
+    encodeTextSync(
+      {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [1, 0],
+            [0, 1],
+            [0, 0]
+          ]
+        ]
+      },
+      WKTWriter
+    )
+  ).toBe('POLYGON ((0 0, 1 0, 0 1, 0 0))');
+  expect(
+    encodeTextSync({type: 'GeometryCollection', geometries: [geojsonFeature.geometry]}, WKTWriter)
+  ).toBe('GEOMETRYCOLLECTION (POINT (42 20))');
 });
