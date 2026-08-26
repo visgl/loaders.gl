@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {CSVTableSource} from '../src/csv-source';
+import {CSVSourceLoader, CSVTableSource} from '../src/csv-source';
 
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
   const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\n']));
@@ -31,4 +31,10 @@ test('CSVTableSource handles zero limits and empty projections', async () => {
   const projectedBatches = [];
   for await (const batch of source.read({columns: []})) projectedBatches.push(batch);
   expect(projectedBatches[0]?.data).toEqual([{}, {}]);
+});
+
+test('CSVSourceLoader exposes URL matching and construction', () => {
+  expect(CSVSourceLoader.testURL('data.csv')).toBe(true);
+  expect(CSVSourceLoader.testURL('data.txt')).toBe(false);
+  expect(CSVSourceLoader.createDataSource(new Blob(['a\n1\n']), {})).toBeInstanceOf(CSVTableSource);
 });

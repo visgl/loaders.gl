@@ -1,6 +1,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {ArrowTableSource} from '../src/arrow-source';
+import {ArrowSourceLoader, ArrowTableSource} from '../src/arrow-source';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a', 'b'], value: [1, 2]}));
@@ -37,4 +37,10 @@ test('ArrowTableSource forwards cancellation and reports empty input', async () 
       signal: controller.signal
     })
   ).rejects.toThrow();
+});
+
+test('ArrowSourceLoader exposes URL matching and construction', () => {
+  expect(ArrowSourceLoader.testURL('data.arrow')).toBe(true);
+  expect(ArrowSourceLoader.testURL('data.csv')).toBe(false);
+  expect(ArrowSourceLoader.createDataSource(new Blob([]), {})).toBeInstanceOf(ArrowTableSource);
 });

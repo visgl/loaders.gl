@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {NDJSONTableSource} from '../src/ndjson-source';
+import {NDJSONSourceLoader, NDJSONTableSource} from '../src/ndjson-source';
 
 test('NDJSONTableSource discovers schema and applies projection and limit', async () => {
   const source = new NDJSONTableSource(
@@ -37,4 +37,12 @@ test('NDJSONTableSource forwards cancellation and reports empty input', async ()
       signal: controller.signal
     })
   ).rejects.toThrow();
+});
+
+test('NDJSONSourceLoader exposes URL matching and construction', () => {
+  expect(NDJSONSourceLoader.testURL('data.jsonl')).toBe(true);
+  expect(NDJSONSourceLoader.testURL('data.csv')).toBe(false);
+  expect(NDJSONSourceLoader.createDataSource(new Blob(['{"a":1}\n']), {})).toBeInstanceOf(
+    NDJSONTableSource
+  );
 });
