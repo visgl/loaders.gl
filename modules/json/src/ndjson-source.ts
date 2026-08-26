@@ -1,24 +1,25 @@
+import {createScanQueryMetadata, validateTableQueryLimit} from '@loaders.gl/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
+  ScanQueryMetadata,
   SourceLoader,
-  TableQueryMetadata,
-  TableQueryOptions,
+  TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {TableBatch} from '@loaders.gl/schema';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {NDJSONFormat} from './json-format';
-import {NDJSONLoaderWithParser, type NDJSONLoaderOptions} from './ndjson-loader-with-parser';
+import type {NDJSONLoaderOptions} from './ndjson-loader-with-parser';
 
 /** Streams newline-delimited JSON through the common table scan contract. */
 export type NDJSONSourceOptions = NDJSONLoaderOptions & DataSourceOptions;
 
 export class NDJSONTableSource
   extends DataSource<string | Blob, NDJSONSourceOptions>
-  implements TableScanSource
+  implements TableScanSource<TableBatch>
 {
-  private metadataPromise: Promise<TableQueryMetadata> | null = null;
+  private metadataPromise: Promise<ScanQueryMetadata> | null = null;
 
   /** Creates an NDJSON source from a URL or Blob. */
   constructor(data: string | Blob, options: NDJSONSourceOptions = {}, coreApi?: CoreAPI) {
@@ -26,13 +27,14 @@ export class NDJSONTableSource
   }
 
   /** Discovers the schema from the first decoded batch. */
-  async getQueryMetadata(): Promise<TableQueryMetadata> {
-    this.metadataPromise ||= this.discoverMetadata();
+  async getQueryMetadata(options: TableScanReadOptions = {}): Promise<ScanQueryMetadata> {
+    this.metadataPromise ||= this.discoverMetadata(options.signal);
     return await this.metadataPromise;
   }
 
   /** Streams NDJSON batches in source order with an optional global limit. */
-  async *scan(options: TableQueryOptions = {}): AsyncIterable<TableBatch> {
+  async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
+    validateTableQueryLimit(options.limit);
     let remaining =
       options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
     for await (const batch of this.parseBatches(options.signal)) {
@@ -48,25 +50,66 @@ export class NDJSONTableSource
     }
   }
 
-  private async discoverMetadata(): Promise<TableQueryMetadata> {
-    for await (const batch of this.parseBatches())
-      return {
-        schema: batch.schema,
-        capabilities: {predicate: false, projection: true, limit: true}
-      };
-    return {capabilities: {predicate: false, projection: true, limit: true}};
+  private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
+    for await (const batch of this.parseBatches(signal))
+      if (batch.schema)
+        return createScanQueryMetadata({
+          sourceType: 'ndjson',
+          queryType: 'table',
+          schema: batch.schema,
+          capabilities: {
+            table: {
+              predicate: 'unsupported',
+              projection: 'pushdown',
+              limit: 'pushdown',
+              streaming: true,
+              cancellation: true
+            }
+          }
+        });
+    throw new Error('NDJSON source is empty and has no discoverable schema');
   }
 
   private async *parseBatches(signal?: AbortSignal): AsyncIterable<TableBatch> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
-    const arrayBuffer =
+    const chunks =
       this.data instanceof Blob
-        ? await this.data.arrayBuffer()
-        : await (await this.fetch(this.url, {signal})).arrayBuffer();
-    yield* NDJSONLoaderWithParser.parseInBatches([arrayBuffer], {
+        ? readStreamChunks(this.data.stream(), signal)
+        : readResponseChunks(await this.fetch(this.url, {signal}), signal);
+    const {NDJSONLoaderWithParser} = await import('./ndjson-loader-with-parser');
+    yield* NDJSONLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
       ndjson: {...this.options.ndjson, shape: 'object-row-table'}
     });
+  }
+}
+
+async function* readResponseChunks(
+  response: Response,
+  signal?: AbortSignal
+): AsyncIterable<Uint8Array> {
+  if (!response.ok) throw new Error(`NDJSON source request failed with status ${response.status}`);
+  if (!response.body) {
+    yield new Uint8Array(await response.arrayBuffer());
+    return;
+  }
+  yield* readStreamChunks(response.body, signal);
+}
+
+async function* readStreamChunks(
+  stream: ReadableStream<Uint8Array>,
+  signal?: AbortSignal
+): AsyncIterable<Uint8Array> {
+  const reader = stream.getReader();
+  try {
+    while (true) {
+      if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+      const result = await reader.read();
+      if (result.done) return;
+      yield result.value;
+    }
+  } finally {
+    await reader.cancel();
   }
 }
 
@@ -106,7 +149,7 @@ function truncateBatch(batch: TableBatch, length: number): TableBatch {
 }
 
 function projectBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
-  if (!columns?.length) return batch;
+  if (columns === undefined) return batch;
   if (batch.shape === 'object-row-table')
     return {
       ...batch,

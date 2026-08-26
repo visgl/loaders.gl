@@ -1,16 +1,16 @@
+import {createScanQueryMetadata, validateTableQueryLimit} from '@loaders.gl/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
+  ScanQueryMetadata,
   SourceLoader,
-  TableQueryMetadata,
-  TableQueryOptions,
+  TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {TableBatch} from '@loaders.gl/schema';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {CSVLoaderOptions} from './csv-loader-options';
 import {CSVFormat} from './csv-format';
-import {CSVLoaderWithParser} from './csv-loader-with-parser';
 
 /** Options for the forward-only CSV table source. */
 export type CSVSourceOptions = CSVLoaderOptions & DataSourceOptions;
@@ -18,9 +18,9 @@ export type CSVSourceOptions = CSVLoaderOptions & DataSourceOptions;
 /** Streams CSV rows through the shared table-scan contract. */
 export class CSVTableSource
   extends DataSource<string | Blob, CSVSourceOptions>
-  implements TableScanSource
+  implements TableScanSource<TableBatch>
 {
-  private metadataPromise: Promise<TableQueryMetadata> | null = null;
+  private metadataPromise: Promise<ScanQueryMetadata> | null = null;
 
   /** Creates a CSV table source from a URL or Blob. */
   constructor(data: string | Blob, options: CSVSourceOptions = {}, coreApi?: CoreAPI) {
@@ -28,13 +28,14 @@ export class CSVTableSource
   }
 
   /** Discovers the schema by parsing the first batch. */
-  async getQueryMetadata(): Promise<TableQueryMetadata> {
-    this.metadataPromise ||= this.discoverMetadata();
+  async getQueryMetadata(options: TableScanReadOptions = {}): Promise<ScanQueryMetadata> {
+    this.metadataPromise ||= this.discoverMetadata(options.signal);
     return await this.metadataPromise;
   }
 
   /** Streams CSV batches, enforcing a global limit when requested. */
-  async *scan(options: TableQueryOptions = {}): AsyncIterable<TableBatch> {
+  async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
+    validateTableQueryLimit(options.limit);
     let remaining =
       options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
     for await (const batch of this.parseBatches(options.signal)) {
@@ -50,26 +51,67 @@ export class CSVTableSource
     }
   }
 
-  private async discoverMetadata(): Promise<TableQueryMetadata> {
-    for await (const batch of this.parseBatches()) {
-      return {
+  private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
+    for await (const batch of this.parseBatches(signal)) {
+      if (!batch.schema) throw new Error('CSV source did not provide a schema');
+      return createScanQueryMetadata({
+        sourceType: 'csv',
+        queryType: 'table',
         schema: batch.schema,
-        capabilities: {predicate: false, projection: true, limit: true}
-      };
+        capabilities: {
+          table: {
+            predicate: 'unsupported',
+            projection: 'pushdown',
+            limit: 'pushdown',
+            streaming: true,
+            cancellation: true
+          }
+        }
+      });
     }
-    return {capabilities: {predicate: false, projection: true, limit: true}};
+    throw new Error('CSV source is empty and has no discoverable schema');
   }
 
   private async *parseBatches(signal?: AbortSignal): AsyncIterable<TableBatch> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
-    const arrayBuffer =
+    const chunks =
       this.data instanceof Blob
-        ? await this.data.arrayBuffer()
-        : await (await this.fetch(this.url, {signal})).arrayBuffer();
-    yield* CSVLoaderWithParser.parseInBatches([arrayBuffer], {
+        ? readStreamChunks(this.data.stream(), signal)
+        : readResponseChunks(await this.fetch(this.url, {signal}), signal);
+    const {CSVLoaderWithParser} = await import('./csv-loader-with-parser');
+    yield* CSVLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
       csv: {...this.options.csv, shape: 'object-row-table'}
     });
+  }
+}
+
+async function* readResponseChunks(
+  response: Response,
+  signal?: AbortSignal
+): AsyncIterable<Uint8Array> {
+  if (!response.ok) throw new Error(`CSV source request failed with status ${response.status}`);
+  if (!response.body) {
+    yield new Uint8Array(await response.arrayBuffer());
+    return;
+  }
+  yield* readStreamChunks(response.body, signal);
+}
+
+async function* readStreamChunks(
+  stream: ReadableStream<Uint8Array>,
+  signal?: AbortSignal
+): AsyncIterable<Uint8Array> {
+  const reader = stream.getReader();
+  try {
+    while (true) {
+      if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+      const result = await reader.read();
+      if (result.done) return;
+      yield result.value;
+    }
+  } finally {
+    await reader.cancel();
   }
 }
 
@@ -111,7 +153,7 @@ function truncateBatch(batch: TableBatch, length: number): TableBatch {
 }
 
 function projectBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
-  if (!columns?.length) return batch;
+  if (columns === undefined) return batch;
   if (batch.shape === 'object-row-table')
     return {
       ...batch,
