@@ -259,6 +259,25 @@ function decodeVariantRecord(value: unknown): unknown {
   if (isByteArray(metadata) && isByteArray(variantValue)) {
     return decodeVariant(metadata, variantValue);
   }
+  // Shredded Variant encodings may materialize the typed_value child directly while
+  // omitting the unshredded metadata/value pair. Preserve that typed representation as
+  // the logical value instead of leaking the physical wrapper into object rows.
+  if (Object.prototype.hasOwnProperty.call(record, 'typed_value')) {
+    return decodeShreddedVariantValue(record.typed_value);
+  }
+  return value;
+}
+
+/** Collapses the one-field typed-value union used by shredded Variant layouts. */
+function decodeShreddedVariantValue(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).filter(key => record[key] !== undefined);
+  if (keys.length === 1 && keys[0].endsWith('_value')) {
+    return decodeShreddedVariantValue(record[keys[0]]);
+  }
   return value;
 }
 

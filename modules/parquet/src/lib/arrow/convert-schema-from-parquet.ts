@@ -199,6 +199,15 @@ function getFieldType(field: FieldDefinition): DataType {
 function getFieldMetadata(field: FieldDefinition): Record<string, string> | undefined {
   let metadata: Record<string, string> | undefined;
 
+  if (
+    field.logicalType?.type === 'VARIANT' &&
+    field.logicalType.specificationVersion !== undefined
+  ) {
+    metadata = {
+      'parquet.variant.specification_version': String(field.logicalType.specificationVersion)
+    };
+  }
+
   for (const key in field) {
     const fieldValue = field[key];
     if (
