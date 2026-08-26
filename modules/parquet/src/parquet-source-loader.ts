@@ -715,9 +715,12 @@ export class ParquetSource
                 selectedPages: pagePlan.selectedPageCount,
                 rowsPruned: pagePlan.prunedRowCount,
                 ranges: Object.freeze(
-                  getParquetPageReadRanges(rowGroup, phase.columns, pagePlan).map(range =>
-                    Object.freeze({...range})
-                  )
+                  getParquetPageReadRanges(
+                    rowGroup,
+                    phase.columns,
+                    pagePlan,
+                    initialization.parquetSchema
+                  ).map(range => Object.freeze({...range}))
                 )
               })
             : createFullColumnScanPlan(rowGroup, rowGroupIndex, phase.phase, phase.columns)
@@ -958,7 +961,7 @@ export class ParquetSource
       return Boolean(path && (columnList.length === 0 || fieldIndexOf(columnList, path) >= 0));
     });
     const rangeDescriptors = pagePlan
-      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan)
+      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan, initialization.parquetSchema)
       : selectedColumnChunks.map(getColumnChunkRange);
     const ranges = await Promise.all(
       rangeDescriptors.map(async ({offset, length}) => {

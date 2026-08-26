@@ -434,20 +434,29 @@ export class ParquetReader {
       dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
     }
 
-    let decoded: ParquetColumnChunk;
-    while (true) {
-      const dataLength = lastPage.offset + lastPage.compressedByteLength - firstPage.offset;
-      const dataBuffer = toUint8Array(
-        await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
-      );
-      decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
-      if (field.rLevelMax === 0 || decoded.rlevels[0] === 0 || firstPageIndex === 0) {
-        break;
+    if (field.rLevelMax !== 0) {
+      // Probe predecessor pages independently, then decode the final range once. This avoids
+      // quadratic re-decoding when a large repeated row spans many pages.
+      while (firstPageIndex > 0) {
+        const probeBuffer = toUint8Array(
+          await this.file.read(
+            firstPage.offset,
+            firstPage.compressedByteLength,
+            signal ?? this.props.signal
+          )
+        );
+        const probe = await decodeDataPages(probeBuffer, {...context, dictionary});
+        if (probe.rlevels[0] === 0) {
+          break;
+        }
+        firstPage = pages[--firstPageIndex];
       }
-      // An offset-index page can begin with continuation levels for a row that started on the
-      // preceding page. Include earlier pages until the selected byte range starts at a row.
-      firstPage = pages[--firstPageIndex];
     }
+    const dataLength = lastPage.offset + lastPage.compressedByteLength - firstPage.offset;
+    const dataBuffer = toUint8Array(
+      await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
+    );
+    const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
     if (field.rLevelMax !== 0) {
       const rowStart = rowRange.start - firstPage.firstRowIndex;
       return sliceRepeatedColumnChunk(
