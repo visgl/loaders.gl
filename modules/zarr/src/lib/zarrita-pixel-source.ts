@@ -4,8 +4,16 @@
 
 import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
-import type {RasterSelection, PixelData, PixelSourceSelection, TileSelection, Labels} from '../types';
+import type {
+  RasterSelection,
+  PixelData,
+  PixelSourceSelection,
+  TileSelection,
+  Labels,
+  SupportedTypedArray
+} from '../types';
 import {getIndexer} from './utils';
+import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './zarr-data-cache';
 
 type ZarritaIndexer<S extends string[]> = (sel: {[K in S[number]]: number} | number[]) => number[];
 
@@ -68,7 +76,12 @@ export default class ZarritaPixelSource<S extends string[]> {
   /** Reads a complete 2D plane from the backing array. */
   async getRaster({selection, signal}: RasterSelection<S> | {selection: number[]; signal?: AbortSignal}) {
     const sel = this.chunkIndex(selection, null, null) as Array<number | null>;
-    const chunk = await zarrita.get(this.data, sel, {signal});
+    const chunk = await getCachedZarrSelection(
+      this.data,
+      getZarrSelectionKey(sel),
+      () => zarrita.get(this.data, sel) as Promise<{data: SupportedTypedArray; shape: number[]}>,
+      signal
+    );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr raster selection.');
     }
@@ -76,7 +89,7 @@ export default class ZarritaPixelSource<S extends string[]> {
     const shape = chunk.shape as number[];
     const interleaved = this.labels[this.labels.length - 1] === '_c';
     const [height, width] = shape.slice(interleaved ? -3 : -2);
-    return {data: chunk.data, width, height} as PixelData;
+    return {data: cloneZarrSelection(chunk).data, width, height} as PixelData;
   }
 
   /** Reads one square tile from the backing array. */
@@ -97,13 +110,18 @@ export default class ZarritaPixelSource<S extends string[]> {
       zarrita.slice(xStart, xStop),
       zarrita.slice(yStart, yStop)
     ) as Array<number | zarrita.Slice>;
-    const chunk = await zarrita.get(this.data, sel, {signal});
+    const chunk = await getCachedZarrSelection(
+      this.data,
+      getZarrSelectionKey(sel),
+      () => zarrita.get(this.data, sel) as Promise<{data: SupportedTypedArray; shape: number[]}>,
+      signal
+    );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr tile selection.');
     }
 
     const shape = chunk.shape as number[];
     const [tileHeight, tileWidth] = shape.slice(interleaved ? -3 : -2);
-    return {data: chunk.data, width: tileWidth, height: tileHeight} as PixelData;
+    return {data: cloneZarrSelection(chunk).data, width: tileWidth, height: tileHeight} as PixelData;
   }
 }
