@@ -43,6 +43,7 @@ import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
 import type {BigTypedArray, BigTypedArrayConstructor} from '@loaders.gl/loader-utils';
+import {GLTFIterator} from './gltf-iterator';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -123,6 +124,8 @@ function getSizeFromAccessorType(type) {
 }
 
 class GLTFPostProcessor {
+  /** Iterator facade over the source GLTFWithBuffers document. */
+  iterator!: GLTFIterator;
   baseUri: string = '';
   // @ts-expect-error
   jsonUnprocessed: GLTF;
@@ -144,6 +147,7 @@ class GLTFPostProcessor {
     this.baseUri = baseUri;
     this.buffers = buffers;
     this.images = images;
+    this.iterator = new GLTFIterator(gltf);
     this.jsonUnprocessed = json;
 
     this.json = this._resolveTree(gltf.json, options);
@@ -160,36 +164,56 @@ class GLTFPostProcessor {
     this.json = json;
 
     if (gltf.bufferViews) {
-      json.bufferViews = gltf.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
+      json.bufferViews = Array.from(this.iterator.bufferViews, object =>
+        this._resolveBufferView(object.data, object.index)
+      );
     }
     if (gltf.images) {
-      json.images = gltf.images.map((image, i) => this._resolveImage(image, i));
+      json.images = Array.from(this.iterator.images, object =>
+        this._resolveImage(object.data, object.index)
+      );
     }
     json.asset = this._resolveAsset(gltf.asset);
     if (gltf.samplers) {
-      json.samplers = gltf.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
+      json.samplers = Array.from(this.iterator.samplers, object =>
+        this._resolveSampler(object.data, object.index)
+      );
     }
     if (gltf.textures) {
-      json.textures = gltf.textures.map((texture, i) => this._resolveTexture(texture, i));
+      json.textures = Array.from(this.iterator.textures, object =>
+        this._resolveTexture(object.data, object.index)
+      );
     }
     if (gltf.accessors) {
-      json.accessors = gltf.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
+      json.accessors = Array.from(this.iterator.accessors, object =>
+        this._resolveAccessor(object.data, object.index)
+      );
     }
     if (gltf.materials) {
-      json.materials = gltf.materials.map((material, i) => this._resolveMaterial(material, i));
+      json.materials = Array.from(this.iterator.materials, object =>
+        this._resolveMaterial(object.data, object.index)
+      );
     }
     if (gltf.meshes) {
-      json.meshes = gltf.meshes.map((mesh, i) => this._resolveMesh(mesh, i));
+      json.meshes = Array.from(this.iterator.meshes, object =>
+        this._resolveMesh(object.data, object.index)
+      );
     }
     if (gltf.nodes) {
-      json.nodes = gltf.nodes.map((node, i) => this._resolveNode(node, i));
+      json.nodes = Array.from(this.iterator.nodes, object =>
+        this._resolveNode(object.data, object.index)
+      );
       json.nodes = json.nodes.map((node, i) => this._resolveNodeChildren(node));
     }
     if (gltf.skins) {
-      json.skins = gltf.skins.map((skin, i) => this._resolveSkin(skin, i));
+      json.skins = Array.from(this.iterator.skins, object =>
+        this._resolveSkin(object.data, object.index)
+      );
     }
     if (gltf.scenes) {
-      json.scenes = gltf.scenes.map((scene, i) => this._resolveScene(scene, i));
+      json.scenes = Array.from(this.iterator.scenes, object =>
+        this._resolveScene(object.data, object.index)
+      );
     }
     if (typeof this.json.scene === 'number' && json.scenes) {
       json.scene = json.scenes[this.json.scene];
