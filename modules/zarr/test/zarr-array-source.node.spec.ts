@@ -64,5 +64,9 @@ test('ZarrArraySource rejects unknown named dimensions', async t => {
   });
 
   await t.rejects(source.getArray({selectionByDimension: {unknown: 0}}), /Unknown Zarr array dimension/);
+  await t.rejects(
+    source.getArray({selection: [null, null, null, null, null], selectionByDimension: {t: 0}}),
+    /cannot combine positional and named selections/
+  );
   t.end();
 });

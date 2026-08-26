@@ -128,6 +128,9 @@ export class ZarrArraySource extends ZarrSource {
   /** Reads the selected array values. */
   async getArray(parameters: GetZarrArrayParameters = {}): Promise<ZarrArrayData> {
     const {array, metadata} = await this.getInitializationPromise(parameters.signal);
+    if (parameters.selection && parameters.selectionByDimension) {
+      throw new Error('Zarr array requests cannot combine positional and named selections.');
+    }
     const selection = parameters.selection || createNamedSelection(parameters.selectionByDimension, metadata);
     if (selection.length !== metadata.shape.length) {
       throw new Error(`Zarr array selection must have ${metadata.shape.length} dimensions.`);
