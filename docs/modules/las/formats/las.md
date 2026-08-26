@@ -242,15 +242,13 @@ A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads t
 
 ## Remaining Roadmap
 
-Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-8 delivery, LAZ writing, typed Extra Bytes, and native COPC hierarchy and range parsing. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
+Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-8 delivery, classification flags, LAZ writing, typed Extra Bytes, native COPC hierarchy and range parsing, and independently validated paged COPC writing. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
 
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
-| 1 | Production-harden `COPCWriter` | High | High | Split large hierarchies into valid pages, exercise deep and sparse octrees, validate output with independent COPC readers, and remove the experimental status. |
-| 2 | Expose classification flags as Arrow columns | Medium | Low | Return `synthetic`, `keyPoint`, `withheld`, and `overlap` consistently from LAS and progressive COPC APIs without decoding unrequested layers. |
-| 3 | Add parallel node and chunk decoding | High for large datasets | High | Decode independent COPC nodes or LAZ chunks across a bounded worker pool while preserving batch order, cancellation, memory limits, and the single prebuilt TypeScript worker policy. |
-| 4 | Complete progressive delivery outside PDRF 6-8 | Medium | Medium | Deliver PDRF 9/10 waveform-reference and typed Extra Bytes rows when their required layered ranges arrive instead of waiting for a complete chunk. |
-| 5 | Replace legacy LAZ bounded replay | Low for COPC, medium for older LAZ | High | Preserve resumable arithmetic and item state for PDRF 0-5 so one-byte and arbitrary input splits make forward progress without replaying compressed input. |
-| 6 | Add waveform sample payload access | Low for COPC, specialized elsewhere | High | Range-read internal waveform EVLRs and external WDP data, apply waveform descriptors, and expose samples without losing exact packet-reference offsets. |
-| 7 | Complete LAS 1.5 conformance and writing | Medium | Medium | Enforce LAS 1.5 header, WKT, and PDRF rules; add broader fixtures; and emit LAS 1.5 only after independent-reader interoperability is demonstrated. |
-| 8 | Expand conformance, fuzz, coverage, and performance gates | High for release confidence | Medium | Add small permissively licensed edge-case fixtures, malformed-input and randomized split coverage, independent decoder/writer parity, and non-regression thresholds for memory and PDRF 7 throughput. |
+| 1 | Expand conformance, fuzz, coverage, and performance gates | High for release confidence | Medium | Add small permissively licensed edge-case fixtures, malformed-input and randomized split coverage, independent decoder/writer parity, and non-regression thresholds for memory and PDRF 7 throughput. |
+| 2 | Add parallel node and chunk decoding | High for large datasets | High | Decode independent COPC nodes or LAZ chunks across a bounded worker pool while preserving batch order, cancellation, memory limits, and the single prebuilt TypeScript worker policy. |
+| 3 | Complete progressive delivery outside PDRF 6-8 | Medium | Medium | Deliver PDRF 9/10 waveform-reference and typed Extra Bytes rows when their required layered ranges arrive instead of waiting for a complete chunk. |
+| 4 | Replace legacy LAZ bounded replay | Low for COPC, medium for older LAZ | High | Preserve resumable arithmetic and item state for PDRF 0-5 so one-byte and arbitrary input splits make forward progress without replaying compressed input. |
+| 5 | Add waveform sample payload access | Low for COPC, specialized elsewhere | High | Range-read internal waveform EVLRs and external WDP data, apply waveform descriptors, and expose samples without losing exact packet-reference offsets. |
+| 6 | Complete LAS 1.5 conformance and writing | Medium | Medium | Enforce LAS 1.5 header, WKT, and PDRF rules; add broader fixtures; and emit LAS 1.5 only after independent-reader interoperability is demonstrated. |
