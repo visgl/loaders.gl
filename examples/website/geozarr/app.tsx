@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
@@ -14,9 +14,12 @@ import {createDataSource} from '@loaders.gl/core';
 import type {RasterBoundingBox, RasterData, RasterViewport} from '@loaders.gl/loader-utils';
 import {
   GeoZarrSourceLoader,
+  type GetGeoZarrParameters,
   type GeoZarrRasterSource,
   type GeoZarrSourceMetadata
 } from '@loaders.gl/zarr';
+import type {RasterSetRequest} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -95,6 +98,12 @@ export default function App(props: AppProps = {}) {
       }) as GeoZarrRasterSource,
     []
   );
+  const rasterSetRef = useRef<
+    RasterSet<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata> | null
+  >(null);
+  if (!rasterSetRef.current) {
+    rasterSetRef.current = RasterSet.fromRasterSource(source);
+  }
   const [timeIndex, setTimeIndex] = useState(INITIAL_TIME_INDEX);
   const [opacity, setOpacity] = useState(INITIAL_OPACITY);
   const [playing, setPlaying] = useState(false);
@@ -104,67 +113,37 @@ export default function App(props: AppProps = {}) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    const abortController = new AbortController();
+    const rasterSet = rasterSetRef.current!;
+    const unsubscribe = rasterSet.subscribe({
+      onLoadingStateChange: isLoading => setLoading(isLoading),
+      onMetadataLoad: nextMetadata => {
+        setMetadata(nextMetadata);
+        setError(null);
+      },
+      onMetadataLoadError: nextError => setError(getErrorMessage(nextError)),
+      onRasterLoad: ({raster}: RasterSetRequest<RasterData, GetGeoZarrParameters>) => {
+        setRasterState(renderRaster(raster, rasterSet.metadata!));
+        setError(null);
+      },
+      onRasterLoadError: (_requestId, nextError) => setError(getErrorMessage(nextError))
+    });
 
-    void source
-      .getMetadata()
-      .then(nextMetadata => {
-        if (!cancelled) {
-          setMetadata(nextMetadata);
-          setError(null);
-        }
-      })
-      .catch(nextError => {
-        if (!cancelled && !abortController.signal.aborted) {
-          setError(getErrorMessage(nextError));
-          setLoading(false);
-        }
-      });
+    void rasterSet.loadMetadata().catch(() => {});
 
     return () => {
-      cancelled = true;
-      abortController.abort();
+      unsubscribe();
+      rasterSet.finalize();
     };
-  }, [source]);
+  }, []);
 
   useEffect(() => {
     if (!metadata) {
       return;
     }
 
-    let cancelled = false;
-    const abortController = new AbortController();
-
-    const loadRaster = async () => {
-      setLoading(true);
-      try {
-        const raster = await source.getRaster({
-          viewport: createGlobalRasterViewport(metadata),
-          selection: {time: timeIndex},
-          signal: abortController.signal
-        });
-        if (!cancelled) {
-          setRasterState(renderRaster(raster, metadata));
-          setError(null);
-        }
-      } catch (nextError) {
-        if (!cancelled && !abortController.signal.aborted) {
-          setError(getErrorMessage(nextError));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadRaster();
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [metadata, source, timeIndex]);
+    const viewport = createGlobalRasterViewport(metadata);
+    rasterSetRef.current?.requestRaster({viewport, selection: {time: timeIndex}});
+  }, [metadata, timeIndex]);
 
   useEffect(() => {
     if (!playing || loading) {
