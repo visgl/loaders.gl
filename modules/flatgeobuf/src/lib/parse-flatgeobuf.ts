@@ -6,6 +6,12 @@ import * as arrow from 'apache-arrow';
 import {Proj4Projection} from '@math.gl/proj4';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
+  filterColumnarRowIndices,
+  planTableQuery,
+  type ColumnarPredicate,
+  type TableQueryOptions
+} from '@loaders.gl/loader-utils';
+import {
   convertGeojsonToBinaryFeatureCollection,
   encodeWKBGeometryValue,
   GeoArrowBuilder,
@@ -34,6 +40,16 @@ export type ParseFlatGeobufOptions = {
   crs?: string;
   reproject?: boolean;
 };
+
+/** Portable FlatGeobuf query options, with an indexed spatial envelope. */
+export type FlatGeobufQueryOptions<PredicateT extends ColumnarPredicate = ColumnarPredicate> =
+  TableQueryOptions<PredicateT> &
+    Readonly<{
+      /** Bounding box used to prune features before property decoding. */
+      boundingBox?: [[number, number], [number, number]];
+      /** Cancels parsing before or during feature materialization. */
+      signal?: AbortSignal;
+    }>;
 
 /** Parses a FlatGeobuf buffer through the Arrow-native decode pipeline. */
 export function parseFlatGeobuf(
@@ -114,6 +130,60 @@ export function parseFlatGeobufToArrowTable(
     shape: 'arrow-table',
     schema,
     data: new arrow.Table(arrowSchema, [new arrow.RecordBatch(arrowSchema, structData)])
+  };
+}
+
+/** Executes a portable projection, residual predicate, and limit over FlatGeobuf features. */
+export function queryFlatGeobufArrowTable(
+  arrayBuffer: ArrayBuffer,
+  options: FlatGeobufQueryOptions = {}
+): ArrowTable {
+  throwIfAborted(options.signal);
+  const sourceTable = parseFlatGeobufToArrowTable(arrayBuffer, {
+    boundingBox: options.boundingBox
+  });
+  const sourceColumnNames = sourceTable.data.schema.fields.map(field => field.name);
+  const plan = planTableQuery(sourceColumnNames, options);
+  const scanStep = plan.find(step => step.kind === 'scan');
+  const projectStep = plan.find(step => step.kind === 'project');
+  if (!scanStep || scanStep.kind !== 'scan' || !projectStep || projectStep.kind !== 'project') {
+    throw new Error('FlatGeobuf query planner produced an invalid plan.');
+  }
+  const scannedColumns: Record<string, any[]> = {};
+  for (const columnName of scanStep.columns) {
+    const column = sourceTable.data.getChild(columnName);
+    if (!column) throw new Error(`FlatGeobuf query could not read column "${columnName}".`);
+    scannedColumns[columnName] = column.toArray();
+  }
+  const predicateStep = plan.find(step => step.kind === 'filter');
+  const limitStep = plan.find(step => step.kind === 'limit');
+  const matchingRowIndices =
+    predicateStep?.kind === 'filter'
+      ? filterColumnarRowIndices(predicateStep.predicate, scannedColumns, sourceTable.data.numRows)
+      : Array.from({length: sourceTable.data.numRows}, (_, index) => index);
+  const limit = limitStep?.kind === 'limit' ? limitStep.limit : matchingRowIndices.length;
+  const rowIndices = matchingRowIndices.slice(0, limit);
+  const projectedSchema = sourceTable.data.select([...projectStep.columns]).schema;
+  const sourceSchema = sourceTable.schema;
+  if (!sourceSchema) throw new Error('FlatGeobuf query source is missing a schema.');
+  const outputColumns: Record<string, arrow.Vector> = {};
+  for (const field of projectedSchema.fields) {
+    const column = sourceTable.data.getChild(field.name);
+    if (!column) throw new Error(`FlatGeobuf query could not project column "${field.name}".`);
+    outputColumns[field.name] = arrow.vectorFromArray(
+      rowIndices.map(rowIndex => column.get(rowIndex)),
+      column.type
+    );
+  }
+  return {
+    shape: 'arrow-table',
+    schema: {
+      ...sourceSchema,
+      fields: projectStep.columns
+        .map(columnName => sourceSchema.fields.find(field => field.name === columnName))
+        .filter((field): field is Field => Boolean(field))
+    },
+    data: new arrow.Table(projectedSchema, outputColumns)
   };
 }
 
@@ -217,6 +287,14 @@ function writeGeometry(
   header: FlatGeobufHeader
 ): void {
   writeFlatGeobufGeometry(builder, arrayBuffer, geometryOffset, header);
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    const error = new Error('Aborted');
+    error.name = 'AbortError';
+    throw error;
+  }
 }
 
 function getGeometryEncoding(type: FlatGeobufGeometryType): GeoArrowBuilderEncoding {

@@ -160,6 +160,25 @@ test('FlatGeobufSourceLoader#getFeatures returns empty valid tables for no-match
   t.end();
 });
 
+test('FlatGeobufVectorSource#query combines bbox pruning with portable projection and limit', async t => {
+  const source = await createSource();
+  const table = await source.query({
+    boundingBox: NARROW_BOUNDING_BOX,
+    columns: ['name'],
+    predicate: {op: '<>', args: [{property: 'id'}, '']},
+    limit: 2
+  });
+
+  t.deepEqual(
+    table.schema.fields.map(field => field.name),
+    ['name'],
+    'projects requested fields'
+  );
+  t.equal(table.data.numRows, 2, 'applies a global limit after the residual predicate');
+  t.equal(source.tableQueryCapabilities.predicate, 'residual', 'reports conservative capability');
+  t.end();
+});
+
 test('FlatGeobufSourceLoader#getFeatures respects abort signals', async t => {
   const abortController = new AbortController();
   const delayedSource = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {

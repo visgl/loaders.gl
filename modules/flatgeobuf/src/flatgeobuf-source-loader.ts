@@ -2,12 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import type {CoreAPI, DataSourceOptions, GetFeaturesParameters, SourceLoader, VectorSource, VectorSourceData, VectorSourceLayer, VectorSourceMetadata} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {FlatGeobufFormat} from './flatgeobuf-format';
-import {makeArrowSchema, parseFlatGeobuf} from './lib/parse-flatgeobuf';
+import {
+  makeArrowSchema,
+  parseFlatGeobuf,
+  queryFlatGeobufArrowTable,
+  type FlatGeobufQueryOptions
+} from './lib/parse-flatgeobuf';
 import {readFlatGeobufHeader, type FlatGeobufHeader} from './lib/flatgeobuf-reader';
+import {FLATGEOBUF_TABLE_QUERY_CAPABILITIES} from './flatgeobuf-table-query-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -17,6 +23,9 @@ type FlatGeobufResponseFormat = 'geojson' | 'binary' | 'arrow';
 
 /** Options for `FlatGeobufSourceLoader`. */
 export type FlatGeobufSourceLoaderOptions = DataSourceOptions & {flatgeobuf?: {format?: FlatGeobufResponseFormat}};
+
+/** Portable query options accepted by `FlatGeobufVectorSource.query()`. */
+export type FlatGeobufReadOptions = FlatGeobufQueryOptions;
 
 type HeaderInfo = {arrayBuffer: ArrayBuffer; header: FlatGeobufHeader; schema: Schema; metadata: VectorSourceMetadata; layerName: string};
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
@@ -38,6 +47,8 @@ export const FlatGeobufSourceLoader = {
 
 /** Runtime vector source backed by FlatGeobuf HTTP data. */
 export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceLoaderOptions> implements VectorSource {
+  /** Conservative table-query capabilities; bounding-box pruning is format-specific. */
+  readonly tableQueryCapabilities = FLATGEOBUF_TABLE_QUERY_CAPABILITIES;
   /** Shared header and dataset promise for this URL. */
   protected headerInfoPromise: Promise<HeaderInfo> | null = null;
 
@@ -60,6 +71,26 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     assertNotAborted(parameters.signal);
     const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
     return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs && parameters.crs !== info.header.crs?.wkt)}) as VectorSourceData;
+  }
+
+  /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */
+  async query(options: FlatGeobufReadOptions = {}): Promise<ArrowTable> {
+    assertNotAborted(options.signal);
+    const info = await this.getHeaderInfo();
+    assertNotAborted(options.signal);
+    return queryFlatGeobufArrowTable(info.arrayBuffer, options);
+  }
+
+  /** Streams one stable-schema Arrow batch for a portable FlatGeobuf query. */
+  async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<ArrowTableBatch> {
+    const table = await this.query(options);
+    yield {
+      shape: 'arrow-table',
+      batchType: 'data',
+      length: table.data.numRows,
+      schema: table.schema,
+      data: table.data
+    };
   }
 
   protected getHeaderInfo(): Promise<HeaderInfo> { this.headerInfoPromise ||= loadHeaderInfo(this.url, this.fetch); return this.headerInfoPromise; }
