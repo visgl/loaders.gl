@@ -165,54 +165,54 @@ class GLTFPostProcessor {
 
     if (gltf.bufferViews) {
       json.bufferViews = Array.from(this.iterator.bufferViews, object =>
-        this._resolveBufferView(object.data, object.index)
+        this._resolveBufferView(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.images) {
       json.images = Array.from(this.iterator.images, object =>
-        this._resolveImage(object.data, object.index)
+        this._resolveImage(object, this.iterator.getMetadata(object).index)
       );
     }
     json.asset = this._resolveAsset(gltf.asset);
     if (gltf.samplers) {
       json.samplers = Array.from(this.iterator.samplers, object =>
-        this._resolveSampler(object.data, object.index)
+        this._resolveSampler(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.textures) {
       json.textures = Array.from(this.iterator.textures, object =>
-        this._resolveTexture(object.data, object.index)
+        this._resolveTexture(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.accessors) {
       json.accessors = Array.from(this.iterator.accessors, object =>
-        this._resolveAccessor(object.data, object.index)
+        this._resolveAccessor(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.materials) {
       json.materials = Array.from(this.iterator.materials, object =>
-        this._resolveMaterial(object.data, object.index)
+        this._resolveMaterial(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.meshes) {
       json.meshes = Array.from(this.iterator.meshes, object =>
-        this._resolveMesh(object.data, object.index)
+        this._resolveMesh(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.nodes) {
       json.nodes = Array.from(this.iterator.nodes, object =>
-        this._resolveNode(object.data, object.index)
+        this._resolveNode(object, this.iterator.getMetadata(object).index)
       );
       json.nodes = json.nodes.map((node, i) => this._resolveNodeChildren(node));
     }
     if (gltf.skins) {
       json.skins = Array.from(this.iterator.skins, object =>
-        this._resolveSkin(object.data, object.index)
+        this._resolveSkin(object, this.iterator.getMetadata(object).index)
       );
     }
     if (gltf.scenes) {
       json.scenes = Array.from(this.iterator.scenes, object =>
-        this._resolveScene(object.data, object.index)
+        this._resolveScene(object, this.iterator.getMetadata(object).index)
       );
     }
     if (typeof this.json.scene === 'number' && json.scenes) {

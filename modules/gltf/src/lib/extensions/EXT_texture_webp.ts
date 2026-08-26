@@ -33,12 +33,12 @@ export function preprocess(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions
   }
 
   for (const texture of iterator.textures) {
-    const extension = texture.getExtension<GLTF_EXT_texture_webp>(EXT_TEXTURE_WEBP);
+    const extension = iterator.getExtension<GLTF_EXT_texture_webp>(texture, EXT_TEXTURE_WEBP);
     if (extension) {
       // TODO - if multiple texture extensions are present which one wins?
-      texture.data.source = extension.source;
+      texture.source = extension.source;
     }
-    texture.removeExtension(EXT_TEXTURE_WEBP);
+    iterator.removeExtension(texture, EXT_TEXTURE_WEBP);
   }
 
   // Remove the top-level extension

@@ -35,7 +35,7 @@ import {
 } from '../gltf-utils/get-typed-array';
 import {getAccessorTypeFromSize} from '../gltf-utils/gltf-utils';
 
-/** String tag identifying a glTF iterator wrapper. */
+/** String tag identifying a raw glTF object registered with an iterator. */
 export type GLTFIteratorType =
   | 'accessor'
   | 'animation'
@@ -70,10 +70,7 @@ type GLTFIteratorData = {
 };
 
 /** Base class for a lightweight view of one raw glTF object. */
-export abstract class GLTFObjectIterator<
-  DataT extends GLTFIteratorData,
-  TypeT extends GLTFIteratorType
-> {
+abstract class GLTFObjectIterator<DataT extends GLTFIteratorData, TypeT extends GLTFIteratorType> {
   /** Original glTF container. */
   readonly gltf: GLTFWithBuffers;
 
@@ -101,30 +98,10 @@ export abstract class GLTFObjectIterator<
     this.data = data;
     this.path = path;
   }
-
-  /** Return an extension payload without modifying the raw object. */
-  getExtension<ExtensionT = unknown>(extensionName: string): ExtensionT | undefined {
-    return this.data.extensions?.[extensionName] as ExtensionT | undefined;
-  }
-
-  /** Set an extension payload and register the extension as used. */
-  setExtension<ExtensionT>(extensionName: string, extension: ExtensionT): void {
-    this.data.extensions ||= {};
-    this.data.extensions[extensionName] = extension;
-    this.iterator.registerUsedExtension(extensionName);
-  }
-
-  /** Remove an extension payload while preserving glTF extension bookkeeping. */
-  removeExtension(extensionName: string): void {
-    if (this.data.extensions?.[extensionName] !== undefined) {
-      this.iterator.recordRemovedExtension(extensionName);
-      delete this.data.extensions[extensionName];
-    }
-  }
 }
 
 /** Base class for an object stored in a parent-local array or property. */
-export abstract class GLTFNestedObjectIterator<
+abstract class GLTFNestedObjectIterator<
   DataT extends GLTFIteratorData,
   TypeT extends GLTFIteratorType,
   ParentT extends GLTFObjectIterator<GLTFIteratorData, GLTFIteratorType>
@@ -146,109 +123,120 @@ export abstract class GLTFNestedObjectIterator<
   }
 }
 
-/** Lazily resolved standard relationships for one iterator wrapper. */
+/** Metadata privately associated with a raw glTF object by an iterator. */
+export interface GLTFIteratorMetadata {
+  readonly gltf: GLTFWithBuffers;
+  readonly type: GLTFIteratorType;
+  readonly index: number;
+  readonly parent?: GLTFIteratorData;
+  readonly path: string;
+}
+
+/** Lazily resolved standard relationships for one raw glTF object. */
 export type GLTFIteratorReferences = object;
 
 /** References reachable from a texture wrapper. */
 export interface GLTFTextureReferences {
-  readonly sampler: GLTFSamplerIterator | undefined;
-  readonly source: GLTFImageIterator | undefined;
+  readonly sampler: GLTFSampler | undefined;
+  readonly source: GLTFImage | undefined;
 }
 
 /** References reachable from a node wrapper. */
 export interface GLTFNodeReferences {
-  readonly camera: GLTFCameraIterator | undefined;
-  readonly children: IterableIterator<GLTFNodeIterator>;
-  readonly skin: GLTFSkinIterator | undefined;
-  readonly mesh: GLTFMeshIterator | undefined;
-  readonly externalAsset: GLTFExternalAssetIterator | undefined;
+  readonly camera: GLTFCamera | undefined;
+  readonly children: IterableIterator<GLTFNode>;
+  readonly skin: GLTFSkin | undefined;
+  readonly mesh: GLTFMesh | undefined;
+  readonly externalAsset: GLTFExternalAsset | undefined;
 }
 
 /** References reachable from a mesh wrapper. */
 export interface GLTFMeshReferences {
-  readonly primitives: IterableIterator<GLTFMeshPrimitiveIterator>;
+  readonly primitives: IterableIterator<GLTFMeshPrimitive>;
 }
 
 /** References reachable from a scene wrapper. */
 export interface GLTFSceneReferences {
-  readonly nodes: IterableIterator<GLTFNodeIterator>;
+  readonly nodes: IterableIterator<GLTFNode>;
 }
 
 /** References reachable from a mesh primitive wrapper. */
 export interface GLTFMeshPrimitiveReferences {
-  readonly attributes: ReadonlyMap<string, GLTFAccessorIterator>;
-  readonly indices: GLTFAccessorIterator | undefined;
-  readonly material: GLTFMaterialIterator | undefined;
-  readonly targets: ReadonlyArray<ReadonlyMap<string, GLTFAccessorIterator>>;
+  readonly attributes: ReadonlyMap<string, GLTFAccessor>;
+  readonly indices: GLTFAccessor | undefined;
+  readonly material: GLTFMaterial | undefined;
+  readonly targets: ReadonlyArray<ReadonlyMap<string, GLTFAccessor>>;
 }
 
 /** References reachable from a texture-info wrapper. */
 export interface GLTFTextureInfoReferences {
-  readonly texture: GLTFTextureIterator;
+  readonly texture: GLTFTexture;
 }
 
 /** References reachable from a material wrapper. */
 export interface GLTFMaterialReferences {
-  readonly baseColorTexture: GLTFTextureInfoIterator | undefined;
-  readonly metallicRoughnessTexture: GLTFTextureInfoIterator | undefined;
-  readonly normalTexture: GLTFTextureInfoIterator | undefined;
-  readonly occlusionTexture: GLTFTextureInfoIterator | undefined;
-  readonly emissiveTexture: GLTFTextureInfoIterator | undefined;
-  readonly textures: IterableIterator<GLTFTextureInfoIterator>;
+  readonly baseColorTexture: GLTFTextureInfo | undefined;
+  readonly metallicRoughnessTexture: GLTFTextureInfo | undefined;
+  readonly normalTexture: GLTFMaterialNormalTextureInfo | undefined;
+  readonly occlusionTexture: GLTFMaterialOcclusionTextureInfo | undefined;
+  readonly emissiveTexture: GLTFTextureInfo | undefined;
+  readonly textures: IterableIterator<
+    GLTFTextureInfo | GLTFMaterialNormalTextureInfo | GLTFMaterialOcclusionTextureInfo
+  >;
 }
 
 /** References reachable from an accessor wrapper. */
 export interface GLTFAccessorReferences {
-  readonly bufferView: GLTFBufferViewIterator | undefined;
+  readonly bufferView: GLTFBufferView | undefined;
 }
 
 /** References reachable from a buffer-view wrapper. */
 export interface GLTFBufferViewReferences {
-  readonly buffer: GLTFBufferIterator;
+  readonly buffer: GLTFBuffer;
 }
 
 /** References reachable from a file or image wrapper. */
 export interface GLTFBufferViewOwnerReferences {
-  readonly bufferView: GLTFBufferViewIterator | undefined;
+  readonly bufferView: GLTFBufferView | undefined;
 }
 
 /** References reachable from an external asset wrapper. */
 export interface GLTFExternalAssetReferences {
-  readonly file: GLTFFileIterator;
+  readonly file: GLTFFile;
 }
 
 /** References reachable from an animation wrapper. */
 export interface GLTFAnimationReferences {
-  readonly channels: IterableIterator<GLTFAnimationChannelIterator>;
-  readonly samplers: IterableIterator<GLTFAnimationSamplerIterator>;
+  readonly channels: IterableIterator<GLTFAnimationChannel>;
+  readonly samplers: IterableIterator<GLTFAnimationSampler>;
 }
 
 /** References reachable from an animation channel wrapper. */
 export interface GLTFAnimationChannelReferences {
-  readonly sampler: GLTFAnimationSamplerIterator;
-  readonly target: GLTFAnimationChannelTargetIterator;
+  readonly sampler: GLTFAnimationSampler;
+  readonly target: GLTFAnimationChannelTarget;
 }
 
 /** References reachable from an animation target wrapper. */
 export interface GLTFAnimationChannelTargetReferences {
-  readonly node: GLTFNodeIterator | undefined;
+  readonly node: GLTFNode | undefined;
 }
 
 /** References reachable from an animation sampler wrapper. */
 export interface GLTFAnimationSamplerReferences {
-  readonly input: GLTFAccessorIterator;
-  readonly output: GLTFAccessorIterator;
+  readonly input: GLTFAccessor;
+  readonly output: GLTFAccessor;
 }
 
 /** References reachable from a skin wrapper. */
 export interface GLTFSkinReferences {
-  readonly inverseBindMatrices: GLTFAccessorIterator | undefined;
-  readonly skeleton: GLTFNodeIterator | undefined;
-  readonly joints: IterableIterator<GLTFNodeIterator>;
+  readonly inverseBindMatrices: GLTFAccessor | undefined;
+  readonly skeleton: GLTFNode | undefined;
+  readonly joints: IterableIterator<GLTFNode>;
 }
 
 /** Lightweight accessor wrapper. */
-export class GLTFAccessorIterator extends GLTFObjectIterator<GLTFAccessor, 'accessor'> {
+class GLTFAccessorIterator extends GLTFObjectIterator<GLTFAccessor, 'accessor'> {
   /** Resolve the accessor's buffer view. */
   get bufferView(): GLTFBufferViewIterator | undefined {
     return this.data.bufferView === undefined
@@ -258,7 +246,7 @@ export class GLTFAccessorIterator extends GLTFObjectIterator<GLTFAccessor, 'acce
 }
 
 /** Lightweight animation wrapper. */
-export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'animation'> {
+class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'animation'> {
   /** Iterate animation channels in source order. */
   get channels(): IterableIterator<GLTFAnimationChannelIterator> {
     return iterateValues(this.data.channels, (channel, channelIndex) =>
@@ -297,7 +285,7 @@ export class GLTFAnimationIterator extends GLTFObjectIterator<GLTFAnimation, 'an
 }
 
 /** Lightweight animation channel wrapper. */
-export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
+class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
   GLTFAnimationChannel,
   'animationChannel',
   GLTFAnimationIterator
@@ -343,7 +331,7 @@ export class GLTFAnimationChannelIterator extends GLTFNestedObjectIterator<
 }
 
 /** Lightweight animation channel target wrapper. */
-export class GLTFAnimationChannelTargetIterator extends GLTFNestedObjectIterator<
+class GLTFAnimationChannelTargetIterator extends GLTFNestedObjectIterator<
   GLTFAnimationChannelTarget,
   'animationChannelTarget',
   GLTFAnimationChannelIterator
@@ -357,7 +345,7 @@ export class GLTFAnimationChannelTargetIterator extends GLTFNestedObjectIterator
 }
 
 /** Lightweight animation sampler wrapper. */
-export class GLTFAnimationSamplerIterator extends GLTFNestedObjectIterator<
+class GLTFAnimationSamplerIterator extends GLTFNestedObjectIterator<
   GLTFAnimationSampler,
   'animationSampler',
   GLTFAnimationIterator
@@ -374,7 +362,7 @@ export class GLTFAnimationSamplerIterator extends GLTFNestedObjectIterator<
 }
 
 /** Lightweight buffer wrapper. */
-export class GLTFBufferIterator extends GLTFObjectIterator<GLTFBuffer, 'buffer'> {
+class GLTFBufferIterator extends GLTFObjectIterator<GLTFBuffer, 'buffer'> {
   /** Return the loaded byte range parallel to this JSON buffer, when available. */
   get loadedBuffer(): GLTFWithBuffers['buffers'][number] | undefined {
     return this.gltf.buffers[this.index];
@@ -382,7 +370,7 @@ export class GLTFBufferIterator extends GLTFObjectIterator<GLTFBuffer, 'buffer'>
 }
 
 /** Lightweight buffer-view wrapper. */
-export class GLTFBufferViewIterator extends GLTFObjectIterator<GLTFBufferView, 'bufferView'> {
+class GLTFBufferViewIterator extends GLTFObjectIterator<GLTFBufferView, 'bufferView'> {
   /** Resolve the backing JSON buffer. */
   get buffer(): GLTFBufferIterator {
     return this.iterator.resolveBuffer(this.data.buffer, `${this.path}.buffer`);
@@ -400,13 +388,10 @@ export class GLTFBufferViewIterator extends GLTFObjectIterator<GLTFBufferView, '
 }
 
 /** Lightweight camera wrapper. */
-export class GLTFCameraIterator extends GLTFObjectIterator<GLTFCamera, 'camera'> {}
+class GLTFCameraIterator extends GLTFObjectIterator<GLTFCamera, 'camera'> {}
 
 /** Lightweight external-asset wrapper for draft glTF 2.1. */
-export class GLTFExternalAssetIterator extends GLTFObjectIterator<
-  GLTFExternalAsset,
-  'externalAsset'
-> {
+class GLTFExternalAssetIterator extends GLTFObjectIterator<GLTFExternalAsset, 'externalAsset'> {
   /** Resolve the file containing the external glTF asset. */
   get file(): GLTFFileIterator {
     return this.iterator.resolveFile(this.data.file, `${this.path}.file`);
@@ -419,7 +404,7 @@ export class GLTFExternalAssetIterator extends GLTFObjectIterator<
 }
 
 /** Lightweight file wrapper for draft glTF 2.1. */
-export class GLTFFileIterator extends GLTFObjectIterator<GLTFFile, 'file'> {
+class GLTFFileIterator extends GLTFObjectIterator<GLTFFile, 'file'> {
   /** Resolve the optional buffer view containing this file. */
   get bufferView(): GLTFBufferViewIterator | undefined {
     return this.data.bufferView === undefined
@@ -434,7 +419,7 @@ export class GLTFFileIterator extends GLTFObjectIterator<GLTFFile, 'file'> {
 }
 
 /** Lightweight image wrapper. */
-export class GLTFImageIterator extends GLTFObjectIterator<GLTFImage, 'image'> {
+class GLTFImageIterator extends GLTFObjectIterator<GLTFImage, 'image'> {
   /** Resolve the optional buffer view containing this image. */
   get bufferView(): GLTFBufferViewIterator | undefined {
     return this.data.bufferView === undefined
@@ -449,7 +434,7 @@ export class GLTFImageIterator extends GLTFObjectIterator<GLTFImage, 'image'> {
 }
 
 /** Lightweight material wrapper. */
-export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'material'> {
+class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'material'> {
   /** Resolve the base-color texture info. */
   get baseColorTexture(): GLTFTextureInfoIterator | undefined {
     return this.getTextureInfo(
@@ -523,7 +508,7 @@ export class GLTFMaterialIterator extends GLTFObjectIterator<GLTFMaterial, 'mate
 }
 
 /** Lightweight texture-info wrapper nested in a material. */
-export class GLTFTextureInfoIterator extends GLTFNestedObjectIterator<
+class GLTFTextureInfoIterator extends GLTFNestedObjectIterator<
   GLTFTextureInfo | GLTFMaterialNormalTextureInfo | GLTFMaterialOcclusionTextureInfo,
   'textureInfo',
   GLTFMaterialIterator
@@ -535,7 +520,7 @@ export class GLTFTextureInfoIterator extends GLTFNestedObjectIterator<
 }
 
 /** Lightweight mesh wrapper. */
-export class GLTFMeshIterator extends GLTFObjectIterator<GLTFMesh, 'mesh'> {
+class GLTFMeshIterator extends GLTFObjectIterator<GLTFMesh, 'mesh'> {
   /** Iterate mesh primitives in source order. */
   get primitives(): IterableIterator<GLTFMeshPrimitiveIterator> {
     return iterateValues(this.data.primitives, (primitive, primitiveIndex) =>
@@ -556,7 +541,7 @@ export class GLTFMeshIterator extends GLTFObjectIterator<GLTFMesh, 'mesh'> {
 }
 
 /** Lightweight mesh primitive wrapper. */
-export class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
+class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
   GLTFMeshPrimitive,
   'primitive',
   GLTFMeshIterator
@@ -603,7 +588,7 @@ export class GLTFMeshPrimitiveIterator extends GLTFNestedObjectIterator<
 }
 
 /** Lightweight node wrapper. */
-export class GLTFNodeIterator extends GLTFObjectIterator<GLTFNode, 'node'> {
+class GLTFNodeIterator extends GLTFObjectIterator<GLTFNode, 'node'> {
   /** Resolve the optional camera. */
   get camera(): GLTFCameraIterator | undefined {
     return this.data.camera === undefined
@@ -641,10 +626,10 @@ export class GLTFNodeIterator extends GLTFObjectIterator<GLTFNode, 'node'> {
 }
 
 /** Lightweight texture sampler wrapper. */
-export class GLTFSamplerIterator extends GLTFObjectIterator<GLTFSampler, 'sampler'> {}
+class GLTFSamplerIterator extends GLTFObjectIterator<GLTFSampler, 'sampler'> {}
 
 /** Lightweight scene wrapper. */
-export class GLTFSceneIterator extends GLTFObjectIterator<GLTFScene, 'scene'> {
+class GLTFSceneIterator extends GLTFObjectIterator<GLTFScene, 'scene'> {
   /** Iterate resolved scene root nodes in source order. */
   get nodes(): IterableIterator<GLTFNodeIterator> {
     return iterateValues(this.data.nodes || [], (nodeIndex, sceneNodeIndex) =>
@@ -654,7 +639,7 @@ export class GLTFSceneIterator extends GLTFObjectIterator<GLTFScene, 'scene'> {
 }
 
 /** Lightweight skin wrapper. */
-export class GLTFSkinIterator extends GLTFObjectIterator<GLTFSkin, 'skin'> {
+class GLTFSkinIterator extends GLTFObjectIterator<GLTFSkin, 'skin'> {
   /** Resolve the optional inverse-bind-matrix accessor. */
   get inverseBindMatrices(): GLTFAccessorIterator | undefined {
     return this.data.inverseBindMatrices === undefined
@@ -681,7 +666,7 @@ export class GLTFSkinIterator extends GLTFObjectIterator<GLTFSkin, 'skin'> {
 }
 
 /** Lightweight texture wrapper. */
-export class GLTFTextureIterator extends GLTFObjectIterator<GLTFTexture, 'texture'> {
+class GLTFTextureIterator extends GLTFObjectIterator<GLTFTexture, 'texture'> {
   /** Resolve the optional sampler. */
   get sampler(): GLTFSamplerIterator | undefined {
     return this.data.sampler === undefined
@@ -739,6 +724,38 @@ export class GLTFIterator {
     return getImageTypedArray(this.data, this.gltf.buffers, imageIndex);
   }
 
+  /** Return the loaded buffer companion for a raw buffer definition. */
+  getLoadedBuffer(buffer: GLTFBuffer): GLTFWithBuffers['buffers'][number] | undefined {
+    const metadata = this.getMetadata(buffer);
+    return this.gltf.buffers[metadata.index];
+  }
+
+  /** Return the loaded byte range for a raw buffer-view definition. */
+  getLoadedBufferView(bufferView: GLTFBufferView): Uint8Array | undefined {
+    const buffer = this.getReferences(bufferView).buffer;
+    const loadedBuffer = this.getLoadedBuffer(buffer);
+    if (!loadedBuffer) {
+      return undefined;
+    }
+    const byteOffset = loadedBuffer.byteOffset + (bufferView.byteOffset || 0);
+    return new Uint8Array(loadedBuffer.arrayBuffer, byteOffset, bufferView.byteLength);
+  }
+
+  /** Return the loaded image companion for a raw image definition. */
+  getLoadedImage(image: GLTFImage): NonNullable<GLTFWithBuffers['images']>[number] | undefined {
+    return this.gltf.images?.[this.getMetadata(image).index];
+  }
+
+  /** Return the loaded file companion for a raw file definition. */
+  getLoadedFile(file: GLTFFile): NonNullable<GLTFWithBuffers['files']>[number] | undefined {
+    return this.gltf.files?.[this.getMetadata(file).index];
+  }
+
+  /** Return the loaded asset companion for a raw external-asset definition. */
+  getLoadedExternalAsset(externalAsset: GLTFExternalAsset): GLTFWithBuffers | null | undefined {
+    return this.gltf.externalAssets?.[this.getMetadata(externalAsset).index];
+  }
+
   /** Append loaded bytes and a raw buffer definition, returning the new buffer index. */
   addBuffer(array: ArrayBufferView): number {
     const arrayBuffer = array.buffer.slice(
@@ -781,119 +798,136 @@ export class GLTFIterator {
     return this.data.accessors.length - 1;
   }
 
-  /** Return lazily resolved standard relationships for an iterator wrapper. */
-  getReferences(object: GLTFAccessorIterator): GLTFAccessorReferences;
-  getReferences(object: GLTFAnimationIterator): GLTFAnimationReferences;
-  getReferences(object: GLTFAnimationChannelIterator): GLTFAnimationChannelReferences;
-  getReferences(object: GLTFAnimationChannelTargetIterator): GLTFAnimationChannelTargetReferences;
-  getReferences(object: GLTFAnimationSamplerIterator): GLTFAnimationSamplerReferences;
-  getReferences(object: GLTFBufferViewIterator): GLTFBufferViewReferences;
-  getReferences(object: GLTFExternalAssetIterator): GLTFExternalAssetReferences;
-  getReferences(object: GLTFFileIterator): GLTFBufferViewOwnerReferences;
-  getReferences(object: GLTFImageIterator): GLTFBufferViewOwnerReferences;
-  getReferences(object: GLTFMaterialIterator): GLTFMaterialReferences;
-  getReferences(object: GLTFTextureInfoIterator): GLTFTextureInfoReferences;
-  getReferences(object: GLTFMeshIterator): GLTFMeshReferences;
-  getReferences(object: GLTFMeshPrimitiveIterator): GLTFMeshPrimitiveReferences;
-  getReferences(object: GLTFNodeIterator): GLTFNodeReferences;
-  getReferences(object: GLTFSceneIterator): GLTFSceneReferences;
-  getReferences(object: GLTFSkinIterator): GLTFSkinReferences;
-  getReferences(object: GLTFTextureIterator): GLTFTextureReferences;
-  getReferences(object: GLTFObjectIterator<any, any>): GLTFIteratorReferences {
+  /** Return lazily resolved standard relationships for a raw glTF object. */
+  getReferences(object: GLTFAccessor): GLTFAccessorReferences;
+  getReferences(object: GLTFAnimation): GLTFAnimationReferences;
+  getReferences(object: GLTFAnimationChannel): GLTFAnimationChannelReferences;
+  getReferences(object: GLTFAnimationChannelTarget): GLTFAnimationChannelTargetReferences;
+  getReferences(object: GLTFAnimationSampler): GLTFAnimationSamplerReferences;
+  getReferences(object: GLTFBufferView): GLTFBufferViewReferences;
+  getReferences(object: GLTFExternalAsset): GLTFExternalAssetReferences;
+  getReferences(object: GLTFFile): GLTFBufferViewOwnerReferences;
+  getReferences(object: GLTFImage): GLTFBufferViewOwnerReferences;
+  getReferences(object: GLTFMaterial): GLTFMaterialReferences;
+  getReferences(object: GLTFTextureInfo): GLTFTextureInfoReferences;
+  getReferences(object: GLTFMesh): GLTFMeshReferences;
+  getReferences(object: GLTFMeshPrimitive): GLTFMeshPrimitiveReferences;
+  getReferences(object: GLTFNode): GLTFNodeReferences;
+  getReferences(object: GLTFScene): GLTFSceneReferences;
+  getReferences(object: GLTFSkin): GLTFSkinReferences;
+  getReferences(object: GLTFTexture): GLTFTextureReferences;
+  getReferences(object: GLTFIteratorData): GLTFIteratorReferences {
     const cachedReferences = this.referencesCache.get(object);
     if (cachedReferences) {
       return cachedReferences;
     }
-    const references = createReferences(object);
+    const objectIterator = this.getObjectIterator(object);
+    const references = createReferences(objectIterator);
     this.referencesCache.set(object, references);
     return references;
   }
 
+  /** Return iterator-owned metadata for a raw glTF object. */
+  getMetadata(object: GLTFIteratorData): GLTFIteratorMetadata {
+    const objectIterator = this.getObjectIterator(object);
+    const parent =
+      objectIterator instanceof GLTFNestedObjectIterator ? objectIterator.parent.data : undefined;
+    return {
+      gltf: this.gltf,
+      type: objectIterator.type,
+      index: objectIterator.index,
+      parent,
+      path: objectIterator.path
+    };
+  }
+
   /** Resolve the default scene. */
-  get scene(): GLTFSceneIterator | undefined {
-    return this.data.scene === undefined ? undefined : this.resolveScene(this.data.scene, 'scene');
+  get scene(): GLTFScene | undefined {
+    return this.data.scene === undefined
+      ? undefined
+      : this.resolveScene(this.data.scene, 'scene').data;
   }
 
   /** Resolve the optional draft glTF 2.1 thumbnail image. */
-  get thumbnail(): GLTFImageIterator | undefined {
+  get thumbnail(): GLTFImage | undefined {
     return this.data.asset.thumbnail === undefined
       ? undefined
-      : this.resolveImage(this.data.asset.thumbnail, 'asset.thumbnail');
+      : this.resolveImage(this.data.asset.thumbnail, 'asset.thumbnail').data;
   }
 
   /** Iterate raw accessors in source order. */
-  get accessors(): IterableIterator<GLTFAccessorIterator> {
-    return this.iterateCollection('accessor') as IterableIterator<GLTFAccessorIterator>;
+  get accessors(): IterableIterator<GLTFAccessor> {
+    return this.iterateCollectionData('accessor') as IterableIterator<GLTFAccessor>;
   }
 
   /** Iterate raw animations in source order. */
-  get animations(): IterableIterator<GLTFAnimationIterator> {
-    return this.iterateCollection('animation') as IterableIterator<GLTFAnimationIterator>;
+  get animations(): IterableIterator<GLTFAnimation> {
+    return this.iterateCollectionData('animation') as IterableIterator<GLTFAnimation>;
   }
 
   /** Iterate raw buffers in source order. */
-  get buffers(): IterableIterator<GLTFBufferIterator> {
-    return this.iterateCollection('buffer') as IterableIterator<GLTFBufferIterator>;
+  get buffers(): IterableIterator<GLTFBuffer> {
+    return this.iterateCollectionData('buffer') as IterableIterator<GLTFBuffer>;
   }
 
   /** Iterate raw buffer views in source order. */
-  get bufferViews(): IterableIterator<GLTFBufferViewIterator> {
-    return this.iterateCollection('bufferView') as IterableIterator<GLTFBufferViewIterator>;
+  get bufferViews(): IterableIterator<GLTFBufferView> {
+    return this.iterateCollectionData('bufferView') as IterableIterator<GLTFBufferView>;
   }
 
   /** Iterate raw cameras in source order. */
-  get cameras(): IterableIterator<GLTFCameraIterator> {
-    return this.iterateCollection('camera') as IterableIterator<GLTFCameraIterator>;
+  get cameras(): IterableIterator<GLTFCamera> {
+    return this.iterateCollectionData('camera') as IterableIterator<GLTFCamera>;
   }
 
   /** Iterate raw draft glTF 2.1 external assets in source order. */
-  get externalAssets(): IterableIterator<GLTFExternalAssetIterator> {
-    return this.iterateCollection('externalAsset') as IterableIterator<GLTFExternalAssetIterator>;
+  get externalAssets(): IterableIterator<GLTFExternalAsset> {
+    return this.iterateCollectionData('externalAsset') as IterableIterator<GLTFExternalAsset>;
   }
 
   /** Iterate raw draft glTF 2.1 files in source order. */
-  get files(): IterableIterator<GLTFFileIterator> {
-    return this.iterateCollection('file') as IterableIterator<GLTFFileIterator>;
+  get files(): IterableIterator<GLTFFile> {
+    return this.iterateCollectionData('file') as IterableIterator<GLTFFile>;
   }
 
   /** Iterate raw images in source order. */
-  get images(): IterableIterator<GLTFImageIterator> {
-    return this.iterateCollection('image') as IterableIterator<GLTFImageIterator>;
+  get images(): IterableIterator<GLTFImage> {
+    return this.iterateCollectionData('image') as IterableIterator<GLTFImage>;
   }
 
   /** Iterate raw materials in source order. */
-  get materials(): IterableIterator<GLTFMaterialIterator> {
-    return this.iterateCollection('material') as IterableIterator<GLTFMaterialIterator>;
+  get materials(): IterableIterator<GLTFMaterial> {
+    return this.iterateCollectionData('material') as IterableIterator<GLTFMaterial>;
   }
 
   /** Iterate raw mesh definitions in source order. */
-  get meshes(): IterableIterator<GLTFMeshIterator> {
-    return this.iterateCollection('mesh') as IterableIterator<GLTFMeshIterator>;
+  get meshes(): IterableIterator<GLTFMesh> {
+    return this.iterateCollectionData('mesh') as IterableIterator<GLTFMesh>;
   }
 
   /** Iterate raw nodes in source order. */
-  get nodes(): IterableIterator<GLTFNodeIterator> {
-    return this.iterateCollection('node') as IterableIterator<GLTFNodeIterator>;
+  get nodes(): IterableIterator<GLTFNode> {
+    return this.iterateCollectionData('node') as IterableIterator<GLTFNode>;
   }
 
   /** Iterate raw texture samplers in source order. */
-  get samplers(): IterableIterator<GLTFSamplerIterator> {
-    return this.iterateCollection('sampler') as IterableIterator<GLTFSamplerIterator>;
+  get samplers(): IterableIterator<GLTFSampler> {
+    return this.iterateCollectionData('sampler') as IterableIterator<GLTFSampler>;
   }
 
   /** Iterate raw scenes in source order. */
-  get scenes(): IterableIterator<GLTFSceneIterator> {
-    return this.iterateCollection('scene') as IterableIterator<GLTFSceneIterator>;
+  get scenes(): IterableIterator<GLTFScene> {
+    return this.iterateCollectionData('scene') as IterableIterator<GLTFScene>;
   }
 
   /** Iterate raw skins in source order. */
-  get skins(): IterableIterator<GLTFSkinIterator> {
-    return this.iterateCollection('skin') as IterableIterator<GLTFSkinIterator>;
+  get skins(): IterableIterator<GLTFSkin> {
+    return this.iterateCollectionData('skin') as IterableIterator<GLTFSkin>;
   }
 
   /** Iterate raw textures in source order. */
-  get textures(): IterableIterator<GLTFTextureIterator> {
-    return this.iterateCollection('texture') as IterableIterator<GLTFTextureIterator>;
+  get textures(): IterableIterator<GLTFTexture> {
+    return this.iterateCollectionData('texture') as IterableIterator<GLTFTexture>;
   }
 
   /** Return whether an extension is declared used or required. */
@@ -909,15 +943,45 @@ export class GLTFIterator {
     return Boolean(this.data.extensionsRequired?.includes(extensionName));
   }
 
-  /** Return a top-level extension payload without modifying the glTF. */
-  getExtension<ExtensionT = unknown>(extensionName: string): ExtensionT | undefined {
-    return this.data.extensions?.[extensionName] as ExtensionT | undefined;
+  /** Return an extension payload from the root or a wrapped raw object without modifying it. */
+  getExtension<ExtensionT = unknown>(extensionName: string): ExtensionT | undefined;
+  getExtension<ExtensionT = unknown>(
+    object: GLTFIteratorData,
+    extensionName: string
+  ): ExtensionT | undefined;
+  getExtension<ExtensionT = unknown>(
+    objectOrExtensionName: GLTFIteratorData | string,
+    objectExtensionName?: string
+  ): ExtensionT | undefined {
+    const data = typeof objectOrExtensionName === 'string' ? this.data : objectOrExtensionName;
+    const extensionName =
+      typeof objectOrExtensionName === 'string' ? objectOrExtensionName : objectExtensionName!;
+    return data.extensions?.[extensionName] as ExtensionT | undefined;
   }
 
-  /** Set a top-level extension payload and register it as used. */
-  setExtension<ExtensionT>(extensionName: string, extension: ExtensionT, required = false): void {
-    this.data.extensions ||= {};
-    this.data.extensions[extensionName] = extension;
+  /** Set an extension payload on the root or a wrapped raw object and register it as used. */
+  setExtension<ExtensionT>(extensionName: string, extension: ExtensionT, required?: boolean): void;
+  setExtension<ExtensionT>(
+    object: GLTFIteratorData,
+    extensionName: string,
+    extension: ExtensionT
+  ): void;
+  setExtension<ExtensionT>(
+    objectOrExtensionName: GLTFIteratorData | string,
+    extensionNameOrExtension: string | ExtensionT,
+    extensionOrRequired?: ExtensionT | boolean
+  ): void {
+    const isRootExtension = typeof objectOrExtensionName === 'string';
+    const data = isRootExtension ? this.data : objectOrExtensionName;
+    const extensionName = isRootExtension
+      ? objectOrExtensionName
+      : (extensionNameOrExtension as string);
+    const extension = isRootExtension
+      ? (extensionNameOrExtension as ExtensionT)
+      : (extensionOrRequired as ExtensionT);
+    const required = isRootExtension ? Boolean(extensionOrRequired) : false;
+    data.extensions ||= {};
+    data.extensions[extensionName] = extension;
     this.registerUsedExtension(extensionName);
     if (required) {
       this.registerRequiredExtension(extensionName);
@@ -941,14 +1005,24 @@ export class GLTFIterator {
     }
   }
 
-  /** Remove top-level extension data and declarations. */
-  removeExtension(extensionName: string): void {
-    if (this.data.extensions?.[extensionName] !== undefined) {
+  /** Remove extension data from the root or a wrapped raw object. */
+  removeExtension(extensionName: string): void;
+  removeExtension(object: GLTFIteratorData, extensionName: string): void;
+  removeExtension(
+    objectOrExtensionName: GLTFIteratorData | string,
+    objectExtensionName?: string
+  ): void {
+    const isRootExtension = typeof objectOrExtensionName === 'string';
+    const data = isRootExtension ? this.data : objectOrExtensionName;
+    const extensionName = isRootExtension ? objectOrExtensionName : objectExtensionName!;
+    if (data.extensions?.[extensionName] !== undefined) {
       this.recordRemovedExtension(extensionName);
-      delete this.data.extensions[extensionName];
+      delete data.extensions[extensionName];
     }
-    removeString(this.data.extensionsUsed, extensionName);
-    removeString(this.data.extensionsRequired, extensionName);
+    if (isRootExtension) {
+      removeString(this.data.extensionsUsed, extensionName);
+      removeString(this.data.extensionsRequired, extensionName);
+    }
   }
 
   /** Record that an extension payload was consumed by a transformation. */
@@ -1048,6 +1122,26 @@ export class GLTFIterator {
   ): IterableIterator<GLTFObjectIterator<any, any>> {
     const values = this.getCollection(type);
     return iterateValues(values, (_, index) => this.resolveCollectionObject(type, index, type));
+  }
+
+  /** Iterate exact raw objects from one top-level glTF collection. */
+  private iterateCollectionData(type: GLTFCollectionType): IterableIterator<GLTFIteratorData> {
+    return (function* iterateRawObjects(
+      iterator: GLTFIterator
+    ): IterableIterator<GLTFIteratorData> {
+      for (const objectIterator of iterator.iterateCollection(type)) {
+        yield objectIterator.data;
+      }
+    })(this);
+  }
+
+  /** Return the registered internal context for a raw glTF object. */
+  private getObjectIterator(object: GLTFIteratorData): GLTFObjectIterator<any, any> {
+    const objectIterator = this.objectCache.get(object);
+    if (!objectIterator) {
+      throw new Error('glTF object is not registered with this iterator');
+    }
+    return objectIterator;
   }
 
   /** Resolve and cache one top-level collection object. */
@@ -1164,152 +1258,152 @@ function createReferences(object: GLTFObjectIterator<any, any>): GLTFIteratorRef
     case 'accessor':
       return {
         get bufferView() {
-          return (object as GLTFAccessorIterator).bufferView;
+          return (object as GLTFAccessorIterator).bufferView?.data;
         }
       };
     case 'animation':
       return {
         get channels() {
-          return (object as GLTFAnimationIterator).channels;
+          return iterateObjectData((object as GLTFAnimationIterator).channels);
         },
         get samplers() {
-          return (object as GLTFAnimationIterator).samplers;
+          return iterateObjectData((object as GLTFAnimationIterator).samplers);
         }
       };
     case 'animationChannel':
       return {
         get sampler() {
-          return (object as GLTFAnimationChannelIterator).sampler;
+          return (object as GLTFAnimationChannelIterator).sampler.data;
         },
         get target() {
-          return (object as GLTFAnimationChannelIterator).target;
+          return (object as GLTFAnimationChannelIterator).target.data;
         }
       };
     case 'animationChannelTarget':
       return {
         get node() {
-          return (object as GLTFAnimationChannelTargetIterator).node;
+          return (object as GLTFAnimationChannelTargetIterator).node?.data;
         }
       };
     case 'animationSampler':
       return {
         get input() {
-          return (object as GLTFAnimationSamplerIterator).input;
+          return (object as GLTFAnimationSamplerIterator).input.data;
         },
         get output() {
-          return (object as GLTFAnimationSamplerIterator).output;
+          return (object as GLTFAnimationSamplerIterator).output.data;
         }
       };
     case 'bufferView':
       return {
         get buffer() {
-          return (object as GLTFBufferViewIterator).buffer;
+          return (object as GLTFBufferViewIterator).buffer.data;
         }
       };
     case 'externalAsset':
       return {
         get file() {
-          return (object as GLTFExternalAssetIterator).file;
+          return (object as GLTFExternalAssetIterator).file.data;
         }
       };
     case 'file':
     case 'image':
       return {
         get bufferView() {
-          return (object as GLTFFileIterator | GLTFImageIterator).bufferView;
+          return (object as GLTFFileIterator | GLTFImageIterator).bufferView?.data;
         }
       };
     case 'material':
       return {
         get baseColorTexture() {
-          return (object as GLTFMaterialIterator).baseColorTexture;
+          return (object as GLTFMaterialIterator).baseColorTexture?.data;
         },
         get metallicRoughnessTexture() {
-          return (object as GLTFMaterialIterator).metallicRoughnessTexture;
+          return (object as GLTFMaterialIterator).metallicRoughnessTexture?.data;
         },
         get normalTexture() {
-          return (object as GLTFMaterialIterator).normalTexture;
+          return (object as GLTFMaterialIterator).normalTexture?.data;
         },
         get occlusionTexture() {
-          return (object as GLTFMaterialIterator).occlusionTexture;
+          return (object as GLTFMaterialIterator).occlusionTexture?.data;
         },
         get emissiveTexture() {
-          return (object as GLTFMaterialIterator).emissiveTexture;
+          return (object as GLTFMaterialIterator).emissiveTexture?.data;
         },
         get textures() {
-          return (object as GLTFMaterialIterator).textures;
+          return iterateObjectData((object as GLTFMaterialIterator).textures);
         }
       };
     case 'textureInfo':
       return {
         get texture() {
-          return (object as GLTFTextureInfoIterator).texture;
+          return (object as GLTFTextureInfoIterator).texture.data;
         }
       };
     case 'mesh':
       return {
         get primitives() {
-          return (object as GLTFMeshIterator).primitives;
+          return iterateObjectData((object as GLTFMeshIterator).primitives);
         }
       };
     case 'primitive':
       return {
         get attributes() {
-          return (object as GLTFMeshPrimitiveIterator).attributes;
+          return mapObjectData((object as GLTFMeshPrimitiveIterator).attributes);
         },
         get indices() {
-          return (object as GLTFMeshPrimitiveIterator).indices;
+          return (object as GLTFMeshPrimitiveIterator).indices?.data;
         },
         get material() {
-          return (object as GLTFMeshPrimitiveIterator).material;
+          return (object as GLTFMeshPrimitiveIterator).material?.data;
         },
         get targets() {
-          return (object as GLTFMeshPrimitiveIterator).targets;
+          return (object as GLTFMeshPrimitiveIterator).targets.map(mapObjectData);
         }
       };
     case 'node':
       return {
         get camera() {
-          return (object as GLTFNodeIterator).camera;
+          return (object as GLTFNodeIterator).camera?.data;
         },
         get children() {
-          return (object as GLTFNodeIterator).children;
+          return iterateObjectData((object as GLTFNodeIterator).children);
         },
         get skin() {
-          return (object as GLTFNodeIterator).skin;
+          return (object as GLTFNodeIterator).skin?.data;
         },
         get mesh() {
-          return (object as GLTFNodeIterator).mesh;
+          return (object as GLTFNodeIterator).mesh?.data;
         },
         get externalAsset() {
-          return (object as GLTFNodeIterator).externalAsset;
+          return (object as GLTFNodeIterator).externalAsset?.data;
         }
       };
     case 'scene':
       return {
         get nodes() {
-          return (object as GLTFSceneIterator).nodes;
+          return iterateObjectData((object as GLTFSceneIterator).nodes);
         }
       };
     case 'skin':
       return {
         get inverseBindMatrices() {
-          return (object as GLTFSkinIterator).inverseBindMatrices;
+          return (object as GLTFSkinIterator).inverseBindMatrices?.data;
         },
         get skeleton() {
-          return (object as GLTFSkinIterator).skeleton;
+          return (object as GLTFSkinIterator).skeleton?.data;
         },
         get joints() {
-          return (object as GLTFSkinIterator).joints;
+          return iterateObjectData((object as GLTFSkinIterator).joints);
         }
       };
     case 'texture':
       return {
         get sampler() {
-          return (object as GLTFTextureIterator).sampler;
+          return (object as GLTFTextureIterator).sampler?.data;
         },
         get source() {
-          return (object as GLTFTextureIterator).source;
+          return (object as GLTFTextureIterator).source?.data;
         }
       };
     default:
@@ -1327,6 +1421,24 @@ function iterateValues<ValueT, IteratorT>(
       yield getIterator(values[index], index);
     }
   })();
+}
+
+/** Yield the exact raw object carried by each internal iterator context. */
+function iterateObjectData<DataT extends GLTFIteratorData>(
+  objects: Iterable<GLTFObjectIterator<DataT, any>>
+): IterableIterator<DataT> {
+  return (function* iterateRawData(): IterableIterator<DataT> {
+    for (const object of objects) {
+      yield object.data;
+    }
+  })();
+}
+
+/** Replace internal iterator contexts in a reference map with their exact raw objects. */
+function mapObjectData<DataT extends GLTFIteratorData>(
+  objects: ReadonlyMap<string, GLTFObjectIterator<DataT, any>>
+): ReadonlyMap<string, DataT> {
+  return new Map(Array.from(objects, ([name, object]) => [name, object.data]));
 }
 
 /** Return the JSON collection name for a wrapper type. */

@@ -13,17 +13,24 @@ describe('GLTFIterator', () => {
     const iterator = new GLTFIterator(gltf);
 
     const [mesh] = Array.from(iterator.meshes);
-    const [primitive] = Array.from(mesh.primitives);
+    const [primitive] = Array.from(iterator.getReferences(mesh).primitives);
 
-    expect(mesh.gltf).toBe(gltf);
-    expect(mesh.type).toBe('mesh');
-    expect(mesh.index).toBe(0);
-    expect(mesh.data).toBe(gltf.json.meshes?.[0]);
-    expect(mesh.path).toBe('meshes[0]');
-    expect(primitive.type).toBe('primitive');
-    expect(primitive.index).toBe(0);
-    expect(primitive.parent).toBe(mesh);
-    expect(primitive.data).toBe(gltf.json.meshes?.[0].primitives[0]);
+    expect(mesh).toBe(gltf.json.meshes?.[0]);
+    expect(iterator.getMetadata(mesh)).toEqual({
+      gltf,
+      type: 'mesh',
+      index: 0,
+      parent: undefined,
+      path: 'meshes[0]'
+    });
+    expect(iterator.getMetadata(primitive)).toEqual({
+      gltf,
+      type: 'primitive',
+      index: 0,
+      parent: mesh,
+      path: 'meshes[0].primitives[0]'
+    });
+    expect(primitive).toBe(gltf.json.meshes?.[0].primitives[0]);
     expect(JSON.stringify(gltf.json)).toBe(jsonBeforeIteration);
   });
 
@@ -33,7 +40,7 @@ describe('GLTFIterator', () => {
     const [mesh] = Array.from(iterator.meshes);
     const [node] = Array.from(iterator.nodes);
 
-    expect(node.data.mesh).toBe(0);
+    expect(node.mesh).toBe(0);
     expect(iterator.getReferences(node).mesh).toBe(mesh);
     expect(iterator.getReferences(node)).toBe(iterator.getReferences(node));
   });
@@ -44,10 +51,10 @@ describe('GLTFIterator', () => {
     const [bufferView] = Array.from(iterator.bufferViews);
     const [image] = Array.from(iterator.images);
 
-    expect(bufferView.loadedBufferView).toBeInstanceOf(Uint8Array);
+    expect(iterator.getLoadedBufferView(bufferView)).toBeInstanceOf(Uint8Array);
     expect(iterator.getTypedArrayForBufferView(0)).toBeInstanceOf(Uint8Array);
     expect(iterator.getTypedArrayForAccessor(0)).toBeInstanceOf(Float32Array);
-    expect(image.loadedImage).toBe(gltf.images?.[0]);
+    expect(iterator.getLoadedImage(image)).toBe(gltf.images?.[0]);
   });
 
   test('resolves and caches standard references lazily', () => {
@@ -55,12 +62,12 @@ describe('GLTFIterator', () => {
     const iterator = new GLTFIterator(gltf);
     const [node] = Array.from(iterator.nodes);
     const [mesh] = Array.from(iterator.meshes);
-    const [primitive] = Array.from(mesh.primitives);
+    const [primitive] = Array.from(iterator.getReferences(mesh).primitives);
     const [animation] = Array.from(iterator.animations);
-    const [channel] = Array.from(animation.channels);
-    const [animationSampler] = Array.from(animation.samplers);
+    const [channel] = Array.from(iterator.getReferences(animation).channels);
+    const [animationSampler] = Array.from(iterator.getReferences(animation).samplers);
     const [material] = Array.from(iterator.materials);
-    const [textureInfo] = Array.from(material.textures);
+    const [textureInfo] = Array.from(iterator.getReferences(material).textures);
 
     expect(iterator.getReferences(node).mesh).toBe(mesh);
     expect(Array.from(iterator.meshes)[0]).toBe(mesh);
@@ -79,9 +86,9 @@ describe('GLTFIterator', () => {
     expect(iterator.getReferences(animationSampler).input).toBe(Array.from(iterator.accessors)[0]);
     expect(iterator.getReferences(animationSampler).output).toBe(Array.from(iterator.accessors)[1]);
     expect(iterator.getReferences(material).baseColorTexture).toBe(textureInfo);
-    expect(Array.from(iterator.accessors)[0].data.type).toBe('VEC3');
-    expect(Array.from(iterator.cameras)[0].data.type).toBe('perspective');
-    expect(textureInfo.data.index).toBe(0);
+    expect(Array.from(iterator.accessors)[0].type).toBe('VEC3');
+    expect(Array.from(iterator.cameras)[0].type).toBe('perspective');
+    expect(textureInfo.index).toBe(0);
     expect(iterator.getReferences(textureInfo).texture).toBe(Array.from(iterator.textures)[0]);
     expect(iterator.getReferences(Array.from(iterator.textures)[0]).source).toBe(
       Array.from(iterator.images)[0]
@@ -101,16 +108,175 @@ describe('GLTFIterator', () => {
     const gltf = makeGLTF();
     const iterator = new GLTFIterator(gltf);
 
-    expect(Array.from(iterator.buffers)[0].loadedBuffer).toBe(gltf.buffers[0]);
-    expect(Array.from(iterator.bufferViews)[0].buffer).toBe(Array.from(iterator.buffers)[0]);
-    expect(Array.from(iterator.bufferViews)[0].loadedBufferView).toEqual(
+    expect(iterator.getLoadedBuffer(Array.from(iterator.buffers)[0])).toBe(gltf.buffers[0]);
+    expect(iterator.getReferences(Array.from(iterator.bufferViews)[0]).buffer).toBe(
+      Array.from(iterator.buffers)[0]
+    );
+    expect(iterator.getLoadedBufferView(Array.from(iterator.bufferViews)[0])).toEqual(
       new Uint8Array(gltf.buffers[0].arrayBuffer)
     );
-    expect(Array.from(iterator.images)[0].loadedImage).toBe(gltf.images?.[0]);
-    expect(Array.from(iterator.files)[0].loadedFile).toBe(gltf.files?.[0]);
-    expect(Array.from(iterator.files)[0].bufferView).toBe(Array.from(iterator.bufferViews)[0]);
-    expect(Array.from(iterator.externalAssets)[0].file).toBe(Array.from(iterator.files)[0]);
-    expect(Array.from(iterator.externalAssets)[0].loadedAsset).toBeNull();
+    expect(iterator.getLoadedImage(Array.from(iterator.images)[0])).toBe(gltf.images?.[0]);
+    expect(iterator.getLoadedFile(Array.from(iterator.files)[0])).toBe(gltf.files?.[0]);
+    expect(iterator.getReferences(Array.from(iterator.files)[0]).bufferView).toBe(
+      Array.from(iterator.bufferViews)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.externalAssets)[0]).file).toBe(
+      Array.from(iterator.files)[0]
+    );
+    expect(iterator.getLoadedExternalAsset(Array.from(iterator.externalAssets)[0])).toBeNull();
+  });
+
+  test('manages object and root extension declarations in place', () => {
+    const gltf = makeGLTF();
+    const iterator = new GLTFIterator(gltf);
+    const [mesh] = Array.from(iterator.meshes);
+
+    expect(iterator.getExtension(mesh, 'EXT_mesh_test')).toBeUndefined();
+    iterator.setExtension(mesh, 'EXT_mesh_test', {enabled: true});
+    iterator.setExtension(mesh, 'EXT_mesh_test', {enabled: false});
+    expect(iterator.getExtension(mesh, 'EXT_mesh_test')).toEqual({enabled: false});
+    expect(gltf.json.extensionsUsed).toEqual(['EXT_mesh_test']);
+
+    iterator.removeExtension(mesh, 'EXT_mesh_test');
+    iterator.removeExtension(mesh, 'EXT_mesh_test');
+    expect(iterator.getExtension(mesh, 'EXT_mesh_test')).toBeUndefined();
+    expect(
+      (gltf.json as typeof gltf.json & {extensionsRemoved?: string[]}).extensionsRemoved
+    ).toEqual(['EXT_mesh_test']);
+
+    iterator.setExtension('EXT_root_test', {version: 1}, true);
+    iterator.setExtension('EXT_optional_test', {version: 2});
+    iterator.registerRequiredExtension('EXT_root_test');
+    expect(iterator.hasExtension('EXT_root_test')).toBe(true);
+    expect(iterator.hasExtension('EXT_optional_test')).toBe(true);
+    expect(iterator.hasExtension('EXT_missing')).toBe(false);
+    expect(iterator.isExtensionRequired('EXT_root_test')).toBe(true);
+    expect(iterator.isExtensionRequired('EXT_optional_test')).toBe(false);
+    expect(iterator.getExtension('EXT_root_test')).toEqual({version: 1});
+
+    iterator.removeExtension('EXT_root_test');
+    iterator.removeExtension('EXT_missing');
+    expect(iterator.getExtension('EXT_root_test')).toBeUndefined();
+    expect(gltf.json.extensionsUsed).toEqual(['EXT_mesh_test', 'EXT_optional_test']);
+    expect(gltf.json.extensionsRequired).toEqual([]);
+  });
+
+  test('adds binary resources and exposes their typed views', () => {
+    const gltf = makeGLTF();
+    const iterator = new GLTFIterator(gltf);
+    const source = new Uint8Array([99, 10, 20, 30, 99]).subarray(1, 4);
+
+    const bufferIndex = iterator.addBuffer(source);
+    const bufferViewIndex = iterator.addBufferView(bufferIndex, source.byteLength, 0);
+    const accessorIndex = iterator.addAccessor(bufferViewIndex, {
+      size: 3,
+      componentType: 5121,
+      count: 1,
+      min: [10, 20, 30],
+      max: [10, 20, 30]
+    });
+
+    expect(
+      iterator.getLoadedBuffer(Array.from(iterator.buffers)[bufferIndex])?.arrayBuffer
+    ).toEqual(new Uint8Array([10, 20, 30]).buffer);
+    expect(iterator.getTypedArrayForBufferView(bufferViewIndex)).toEqual(
+      new Uint8Array([10, 20, 30])
+    );
+    expect(iterator.getTypedArrayForAccessor(accessorIndex)).toEqual(new Uint8Array([10, 20, 30]));
+    expect(gltf.json.accessors?.[accessorIndex]).toMatchObject({
+      bufferView: bufferViewIndex,
+      type: 'VEC3',
+      componentType: 5121,
+      count: 1,
+      min: [10, 20, 30],
+      max: [10, 20, 30]
+    });
+    expect(iterator.getTypedArrayForImageData(0)).toEqual(
+      new Uint8Array(gltf.buffers[0].arrayBuffer)
+    );
+  });
+
+  test('covers all standard relationship facades and optional variants', () => {
+    const gltf = makeGLTF();
+    gltf.json.accessors?.push({componentType: 5126, count: 1, type: 'SCALAR'});
+    gltf.json.materials![0] = {
+      pbrMetallicRoughness: {
+        baseColorTexture: {index: 0},
+        metallicRoughnessTexture: {index: 0}
+      },
+      normalTexture: {index: 0},
+      occlusionTexture: {index: 0},
+      emissiveTexture: {index: 0}
+    };
+    gltf.json.meshes![0].primitives[0].targets = [{NORMAL: 0}];
+    gltf.json.nodes![0].children = [0];
+    const iterator = new GLTFIterator(gltf);
+    const [accessorWithoutBufferView] = Array.from(iterator.accessors).slice(-1);
+    const [animation] = Array.from(iterator.animations);
+    const [mesh] = Array.from(iterator.meshes);
+    const [primitive] = Array.from(iterator.getReferences(mesh).primitives);
+    const [material] = Array.from(iterator.materials);
+    const materialReferences = iterator.getReferences(material);
+
+    expect(iterator.getReferences(accessorWithoutBufferView).bufferView).toBeUndefined();
+    expect(Array.from(iterator.getReferences(animation).channels)).toHaveLength(1);
+    expect(Array.from(iterator.getReferences(animation).samplers)).toHaveLength(1);
+    expect(iterator.getReferences(Array.from(iterator.bufferViews)[0]).buffer).toBe(
+      Array.from(iterator.buffers)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.files)[0]).bufferView).toBe(
+      Array.from(iterator.bufferViews)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.images)[0]).bufferView).toBe(
+      Array.from(iterator.bufferViews)[0]
+    );
+    expect(iterator.getReferences(Array.from(iterator.externalAssets)[0]).file).toBe(
+      Array.from(iterator.files)[0]
+    );
+    expect(iterator.getMetadata(materialReferences.metallicRoughnessTexture!).index).toBe(1);
+    expect(iterator.getMetadata(materialReferences.normalTexture!).index).toBe(2);
+    expect(iterator.getMetadata(materialReferences.occlusionTexture!).index).toBe(3);
+    expect(iterator.getMetadata(materialReferences.emissiveTexture!).index).toBe(4);
+    expect(Array.from(materialReferences.textures)).toHaveLength(5);
+    expect(iterator.getReferences(primitive).targets[0].get('NORMAL')).toBe(
+      Array.from(iterator.accessors)[0]
+    );
+    expect(Array.from(iterator.getReferences(Array.from(iterator.nodes)[0]).children)).toEqual([
+      Array.from(iterator.nodes)[0]
+    ]);
+  });
+
+  test('reports invalid animation-local references when resolved', () => {
+    const gltf = makeGLTF();
+    gltf.json.animations![0].channels[0].sampler = 9;
+    const iterator = new GLTFIterator(gltf);
+    const [animation] = Array.from(iterator.animations);
+    const [channel] = Array.from(iterator.getReferences(animation).channels);
+
+    expect(() => iterator.getReferences(channel).sampler).toThrow(
+      'Invalid glTF reference at animations[0].channels[0].sampler: animation sampler index 9 is out of range'
+    );
+  });
+
+  test('handles unresolved loaded data and initially absent bookkeeping arrays', () => {
+    const gltf = makeGLTF();
+    gltf.buffers = [];
+    const iterator = new GLTFIterator(gltf);
+    const [animation] = Array.from(iterator.animations);
+    const [channel] = Array.from(iterator.getReferences(animation).channels);
+    const samplerResolvedFromChannel = iterator.getReferences(channel).sampler;
+
+    expect(samplerResolvedFromChannel).toBe(
+      Array.from(iterator.getReferences(animation).samplers)[0]
+    );
+    expect(iterator.getLoadedBufferView(Array.from(iterator.bufferViews)[0])).toBeUndefined();
+    expect(Array.from(iterator.scenes)).toHaveLength(1);
+
+    delete gltf.json.extensionsUsed;
+    delete gltf.json.extensionsRequired;
+    iterator.removeExtension('EXT_absent');
+    expect(gltf.json.extensionsUsed).toBeUndefined();
+    expect(gltf.json.extensionsRequired).toBeUndefined();
   });
 
   test('distinguishes absent optional links from invalid present references', () => {

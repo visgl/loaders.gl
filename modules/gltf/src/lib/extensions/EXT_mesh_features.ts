@@ -16,7 +16,7 @@ import type {
 } from '../types/gltf-ext-mesh-features-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {GLTFIterator, GLTFMeshPrimitiveIterator} from '../api/gltf-iterator';
+import {GLTFIterator} from '../api/gltf-iterator';
 import {getPrimitiveTextureData} from './utils/3d-tiles-utils';
 import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 
@@ -57,7 +57,7 @@ function decodeExtMeshFeatures(iterator: GLTFIterator, options: GLTFLoaderOption
  */
 function processMeshPrimitiveFeatures(
   iterator: GLTFIterator,
-  primitive: GLTFMeshPrimitiveIterator,
+  primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions
 ): void {
   // Processing of mesh primitive features requires buffers to be loaded.
@@ -65,7 +65,10 @@ function processMeshPrimitiveFeatures(
     return;
   }
 
-  const extension = primitive.getExtension<GLTF_EXT_mesh_features>(EXT_MESH_FEATURES_NAME);
+  const extension = iterator.getExtension<GLTF_EXT_mesh_features>(
+    primitive,
+    EXT_MESH_FEATURES_NAME
+  );
   const featureIds: GLTF_EXT_mesh_features_featureId[] = extension?.featureIds || [];
 
   if (!featureIds) {
@@ -83,7 +86,7 @@ function processMeshPrimitiveFeatures(
 
     // Process "Feature ID by Texture Coordinates"
     else if (typeof featureId.texture !== 'undefined' && options?.gltf?.loadImages) {
-      featureIdData = getPrimitiveTextureData(iterator, featureId.texture, primitive.data);
+      featureIdData = getPrimitiveTextureData(iterator, featureId.texture, primitive);
     }
 
     // Process "Feature ID by Index"

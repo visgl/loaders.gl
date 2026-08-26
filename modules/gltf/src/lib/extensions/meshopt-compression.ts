@@ -6,11 +6,12 @@
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {
   GLTF,
+  GLTFBufferView,
   GLTF_EXT_meshopt_compression,
   GLTF_KHR_meshopt_compression
 } from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
-import {GLTFIterator, GLTFBufferViewIterator} from '../api/gltf-iterator';
+import {GLTFIterator} from '../api/gltf-iterator';
 import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
 /**
@@ -66,10 +67,10 @@ export async function decodeMeshoptCompression(
 
   // Preserve compressed source buffers, but remove capability markers after successful decoding.
   for (const bufferView of iterator.bufferViews) {
-    bufferView.removeExtension(extensionName);
+    iterator.removeExtension(bufferView, extensionName);
   }
   for (const buffer of iterator.buffers) {
-    buffer.removeExtension(extensionName);
+    iterator.removeExtension(buffer, extensionName);
   }
   iterator.removeExtension(extensionName);
 }
@@ -127,12 +128,12 @@ export function validateMeshoptCompressionExclusivity(gltf: GLTF): void {
  */
 async function decodeMeshoptBufferView(
   iterator: GLTFIterator,
-  bufferView: GLTFBufferViewIterator,
+  bufferView: GLTFBufferView,
   extensionName: MeshoptCompressionExtensionName
 ): Promise<void> {
-  const meshoptExtension = bufferView.getExtension<
+  const meshoptExtension = iterator.getExtension<
     GLTF_KHR_meshopt_compression | GLTF_EXT_meshopt_compression
-  >(extensionName);
+  >(bufferView, extensionName);
 
   if (!meshoptExtension) {
     return;
@@ -148,7 +149,7 @@ async function decodeMeshoptBufferView(
     buffer: sourceBufferIndex
   } = meshoptExtension;
   const sourceBuffer = iterator.gltf.buffers[sourceBufferIndex];
-  const targetBuffer = iterator.gltf.buffers[bufferView.data.buffer];
+  const targetBuffer = iterator.gltf.buffers[bufferView.buffer];
   const source = new Uint8Array(
     sourceBuffer.arrayBuffer,
     sourceBuffer.byteOffset + byteOffset,
@@ -156,8 +157,8 @@ async function decodeMeshoptBufferView(
   );
   const target = new Uint8Array(
     targetBuffer.arrayBuffer,
-    targetBuffer.byteOffset + (bufferView.data.byteOffset || 0),
-    bufferView.data.byteLength
+    targetBuffer.byteOffset + (bufferView.byteOffset || 0),
+    bufferView.byteLength
   );
 
   await meshoptDecodeGltfBuffer(target, count, byteStride, source, mode, filter);

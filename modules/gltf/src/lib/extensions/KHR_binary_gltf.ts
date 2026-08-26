@@ -25,12 +25,12 @@ export function preprocess(gltfData: GLTFWithBuffers): void {
   // Image and shader nodes can have the extension
   // https://github.com/KhronosGroup/glTF/blob/master/extensions/1.0/Khronos/KHR_binary_glTF/schema/image.KHR_binary_glTF.schema.json
   for (const image of iterator.images) {
-    const extension = image.getExtension<GLTF_KHR_binary_glTF>(KHR_BINARY_GLTF);
+    const extension = iterator.getExtension<GLTF_KHR_binary_glTF>(image, KHR_BINARY_GLTF);
     // The data in the extension is valid as glTF 2.0 data inside the object, so just copy it in
     if (extension) {
-      Object.assign(image.data, extension);
+      Object.assign(image, extension);
     }
-    image.removeExtension(KHR_BINARY_GLTF);
+    iterator.removeExtension(image, KHR_BINARY_GLTF);
   }
 
   // TODO shaders - At least traverse and throw error if used?

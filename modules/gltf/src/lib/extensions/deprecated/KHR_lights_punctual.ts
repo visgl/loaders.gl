@@ -28,11 +28,11 @@ export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
   // Any nodes that have the extension, add lights field pointing to light object
   // and remove the extension
   for (const node of iterator.nodes) {
-    const nodeExtension = node.getExtension<{light: number}>(KHR_LIGHTS_PUNCTUAL);
+    const nodeExtension = iterator.getExtension<{light: number}>(node, KHR_LIGHTS_PUNCTUAL);
     if (nodeExtension) {
-      (node.data as typeof node.data & {light?: number}).light = nodeExtension.light;
+      (node as typeof node & {light?: number}).light = nodeExtension.light;
     }
-    node.removeExtension(KHR_LIGHTS_PUNCTUAL);
+    iterator.removeExtension(node, KHR_LIGHTS_PUNCTUAL);
   }
 }
 

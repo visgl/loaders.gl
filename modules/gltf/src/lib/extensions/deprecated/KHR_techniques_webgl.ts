@@ -22,22 +22,19 @@ export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
     const techniques = resolveTechniques(extension, iterator);
 
     for (const material of iterator.materials) {
-      const materialExtension = material.getExtension<any>(KHR_TECHNIQUES_WEBGL);
+      const materialExtension = iterator.getExtension<any>(material, KHR_TECHNIQUES_WEBGL);
       if (materialExtension) {
         // @ts-ignore TODO
-        (material.data as any).technique = Object.assign(
+        (material as any).technique = Object.assign(
           {},
           materialExtension,
           // @ts-ignore
           techniques[materialExtension.technique]
         );
         // @ts-ignore TODO
-        (material.data as any).technique.values = resolveValues(
-          (material.data as any).technique,
-          iterator
-        );
+        (material as any).technique.values = resolveValues((material as any).technique, iterator);
       }
-      material.removeExtension(KHR_TECHNIQUES_WEBGL);
+      iterator.removeExtension(material, KHR_TECHNIQUES_WEBGL);
     }
 
     // Remove the top-level extension

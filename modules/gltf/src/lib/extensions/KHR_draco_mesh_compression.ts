@@ -19,7 +19,7 @@ import type {
 } from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import {GLTFIterator, GLTFMeshPrimitiveIterator} from '../api/gltf-iterator';
+import {GLTFIterator} from '../api/gltf-iterator';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
@@ -37,7 +37,7 @@ export function preprocess(
   const iterator = new GLTFIterator(gltfData);
   for (const mesh of iterator.meshes) {
     for (const primitive of iterator.getReferences(mesh).primitives) {
-      if (primitive.getExtension(KHR_DRACO_MESH_COMPRESSION)) {
+      if (iterator.getExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
         // TODO - Remove fallback accessors to make sure we don't load unnecessary buffers
       }
     }
@@ -57,7 +57,7 @@ export async function decode(
   const promises: Promise<void>[] = [];
   for (const mesh of iterator.meshes) {
     for (const primitive of iterator.getReferences(mesh).primitives) {
-      if (primitive.getExtension(KHR_DRACO_MESH_COMPRESSION)) {
+      if (iterator.getExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
         promises.push(decompressPrimitive(iterator, primitive, options, context));
       }
     }
@@ -92,11 +92,12 @@ export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
 
 async function decompressPrimitive(
   iterator: GLTFIterator,
-  primitive: GLTFMeshPrimitiveIterator,
+  primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions,
   context: LoaderContext
 ): Promise<void> {
-  const dracoExtension = primitive.getExtension<GLTF_KHR_draco_mesh_compression>(
+  const dracoExtension = iterator.getExtension<GLTF_KHR_draco_mesh_compression>(
+    primitive,
     KHR_DRACO_MESH_COMPRESSION
   );
   if (!dracoExtension) {
@@ -138,16 +139,16 @@ async function decompressPrimitive(
   }
 
   // @ts-ignore
-  primitive.data.attributes = decodedAttributes;
+  primitive.attributes = decodedAttributes;
   if (decodedData.indices) {
     // @ts-ignore
-    primitive.data.indices = getGLTFAccessor(decodedData.indices);
+    primitive.indices = getGLTFAccessor(decodedData.indices);
   }
 
   // Extension has been processed, delete it
-  primitive.removeExtension(KHR_DRACO_MESH_COMPRESSION);
+  iterator.removeExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
-  checkPrimitive(primitive.data);
+  checkPrimitive(primitive);
 }
 
 // ENCODE

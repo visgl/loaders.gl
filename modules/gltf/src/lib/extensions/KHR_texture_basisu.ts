@@ -26,11 +26,11 @@ export function preprocess(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions
   const iterator = new GLTFIterator(gltfData);
 
   for (const texture of iterator.textures) {
-    const extension = texture.getExtension<GLTF_KHR_texture_basisu>(KHR_TEXTURE_BASISU);
+    const extension = iterator.getExtension<GLTF_KHR_texture_basisu>(texture, KHR_TEXTURE_BASISU);
     if (extension) {
       // TODO - if multiple texture extensions are present which one wins?
-      texture.data.source = extension.source;
-      texture.removeExtension(KHR_TEXTURE_BASISU);
+      texture.source = extension.source;
+      iterator.removeExtension(texture, KHR_TEXTURE_BASISU);
     }
   }
 

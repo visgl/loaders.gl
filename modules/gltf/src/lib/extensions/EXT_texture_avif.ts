@@ -43,11 +43,11 @@ export async function preprocess(
   }
 
   for (const texture of iterator.textures) {
-    const extension = texture.getExtension<GLTF_EXT_texture_avif>(EXT_TEXTURE_AVIF);
+    const extension = iterator.getExtension<GLTF_EXT_texture_avif>(texture, EXT_TEXTURE_AVIF);
     if (extension) {
-      texture.data.source = extension.source;
+      texture.source = extension.source;
     }
-    texture.removeExtension(EXT_TEXTURE_AVIF);
+    iterator.removeExtension(texture, EXT_TEXTURE_AVIF);
   }
 
   iterator.removeExtension(EXT_TEXTURE_AVIF);

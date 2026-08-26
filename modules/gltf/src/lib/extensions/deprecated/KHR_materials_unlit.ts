@@ -20,12 +20,12 @@ export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
   // Any nodes that have the extension, add lights field pointing to light object
   // and remove the extension
   for (const material of iterator.materials) {
-    const extension = material.getExtension(KHR_MATERIALS_UNLIT);
+    const extension = iterator.getExtension(material, KHR_MATERIALS_UNLIT);
     if (extension) {
       // @ts-ignore TODO
-      (material.data as typeof material.data & {unlit?: boolean}).unlit = true;
+      (material as typeof material & {unlit?: boolean}).unlit = true;
     }
-    material.removeExtension(KHR_MATERIALS_UNLIT);
+    iterator.removeExtension(material, KHR_MATERIALS_UNLIT);
   }
 
   // Remove the top-level extension
