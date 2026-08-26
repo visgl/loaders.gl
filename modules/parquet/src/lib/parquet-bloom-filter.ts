@@ -62,6 +62,9 @@ export function encodeParquetBloomFilterValue(
       return bytes;
     }
     case 'INT64': {
+      if (typeof value !== 'number' && typeof value !== 'bigint' && typeof value !== 'string') {
+        throw new Error('Parquet INT64 Bloom value must be an integer number, bigint, or string');
+      }
       const integerValue = typeof value === 'bigint' ? value : BigInt(value);
       const bytes = new Uint8Array(8);
       new DataView(bytes.buffer).setBigInt64(0, integerValue, true);
@@ -80,6 +83,9 @@ export function encodeParquetBloomFilterValue(
       return bytes;
     }
     case 'BYTE_ARRAY': {
+      if (typeof value !== 'string' && !(value instanceof Uint8Array)) {
+        throw new Error('Parquet BYTE_ARRAY Bloom value must be a string or Uint8Array');
+      }
       const payload = typeof value === 'string' ? new TextEncoder().encode(value) : value;
       return payload.slice();
     }

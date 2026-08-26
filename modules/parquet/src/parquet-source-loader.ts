@@ -1518,7 +1518,7 @@ async function filterParquetRowGroupsWithBloomFilters(
       }
       let field: ParquetField;
       try {
-        field = initialization.parquetSchema.findField(probe.column.path);
+        field = initialization.parquetSchema.findField([...probe.column.path]);
       } catch {
         throwIfAborted(signal);
         continue;
@@ -1531,7 +1531,7 @@ async function filterParquetRowGroupsWithBloomFilters(
           probe.column.bloomFilterByteLength,
           signal
         );
-        filter = decodeParquetSplitBlockBloomFilter(data);
+        filter = decodeParquetSplitBlockBloomFilter(toUint8Array(data));
         filtersRead++;
         bytesRead += data.byteLength;
       } catch {
