@@ -33,6 +33,11 @@ export function FlatGeobufScanLiveExample(): JSX.Element {
           columns: submittedQuery.columns,
           limit: submittedQuery.limit,
           boundingBox: submittedQuery.boundingBox
+            ? [
+                [submittedQuery.boundingBox[0], submittedQuery.boundingBox[1]],
+                [submittedQuery.boundingBox[2], submittedQuery.boundingBox[3]]
+              ]
+            : undefined
         };
         const table = await source.query(options);
         if (mounted) setState({metadata, table, loading: false});

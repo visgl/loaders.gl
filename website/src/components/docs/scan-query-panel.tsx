@@ -49,7 +49,11 @@ export function ScanQueryPanel({
   const sourceBounds = metadata?.spatial?.bounds;
   const toggleColumn = (name: string): void => {
     setSelectedColumns(current =>
-      current.includes(name) ? current.filter(column => column !== name) : [...current, name]
+      current.length === 0
+        ? columns.map(column => column.name).filter(column => column !== name)
+        : current.includes(name)
+          ? current.filter(column => column !== name)
+          : [...current, name]
     );
   };
 

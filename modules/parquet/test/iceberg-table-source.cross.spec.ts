@@ -55,6 +55,28 @@ test('IcebergTableSource supports tables without a current snapshot', async () =
   await expect(source.getCurrentSnapshot()).resolves.toBeUndefined();
 });
 
+test('IcebergTableSource exposes the declared schema for an empty snapshot', async () => {
+  const source = new IcebergTableSource(
+    createMetadataUrl({
+      'format-version': 2,
+      location: 'table',
+      'current-snapshot-id': -1,
+      'current-schema-id': 7,
+      schemas: [{
+        'schema-id': 7,
+        fields: [
+          {name: 'id', type: 'long', required: true},
+          {name: 'label', type: 'string', required: false}
+        ]
+      }]
+    })
+  );
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => column.name)).toEqual(['id', 'label']);
+  expect(metadata.columns[0].type).toBe('int64');
+  await source.close();
+});
+
 test('IcebergTableSource scans an empty current snapshot through the dataset source', async () => {
   const source = new IcebergTableSource(
     createMetadataUrl({
