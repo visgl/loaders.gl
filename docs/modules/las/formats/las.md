@@ -242,7 +242,7 @@ A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads t
 
 ## Remaining Roadmap
 
-The TypeScript implementation now covers complete LAS/LAZ file parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-8 delivery, LAZ writing, typed Extra Bytes, and native COPC hierarchy and range parsing. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
+Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-8 delivery, LAZ writing, typed Extra Bytes, and native COPC hierarchy and range parsing. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
 
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
