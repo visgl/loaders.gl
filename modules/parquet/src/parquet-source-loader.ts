@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {hydrateArrowTable} from '@loaders.gl/arrow';
+import {dehydrateArrowTable, hydrateArrowTable, IndexedArrowTable} from '@loaders.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
 import {
   BlobFile,
@@ -20,6 +20,13 @@ import {
   combineParquetPredicates,
   createGeoParquetBoundingBoxPredicate
 } from './lib/geo/geoparquet-covering';
+import {
+  decodeParquetSplitBlockBloomFilter,
+  encodeParquetBloomFilterValue,
+  hashParquetBloomFilterValue,
+  checkParquetSplitBlockBloomFilter
+} from './lib/parquet-bloom-filter';
+import {getParquetBloomFilterProbes} from './lib/parquet-bloom-filter-planner';
 import {
   canParquetRowGroupMatch,
   copyParquetPredicate,
@@ -44,6 +51,8 @@ import {
 } from './lib/parquet-source-worker-types';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {ParquetRangeFile} from './lib/sources/parquet-range-file';
+import {toPrimitive} from './parquetjs/schema/types';
+import type {ParquetType} from './parquetjs/schema/declare';
 import {
   PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
@@ -57,6 +66,7 @@ import type {
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetPageScanPlan,
   ParquetPredicate,
   ParquetRowGroupMetadata,
   ParquetSourceBatch,
@@ -108,6 +118,7 @@ export type {
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetPageScanPlan,
   ParquetComparisonPredicate,
   ParquetInPredicate,
   ParquetLogicalPredicate,
@@ -169,6 +180,27 @@ type SettledParquetRowGroupRead =
       /** No result was decoded. */
       result?: never;
     };
+
+type ParquetPhysicalRowGroupPlan = {
+  /** Predicate including any GeoParquet covering predicate derived from a bounding box. */
+  predicate?: ParquetPredicate;
+  /** Row groups retained by all physical pruning stages. */
+  rowGroupIndices: number[];
+  /** Candidate row groups explicitly requested by the caller. */
+  requested: number;
+  /** Row groups rejected by the caller metadata callback. */
+  prunedByCallback: number;
+  /** Row groups rejected by native geospatial statistics. */
+  prunedBySpatial: number;
+  /** Row groups rejected by column or covering statistics. */
+  prunedByStatistics: number;
+  /** Row groups rejected by split-block Bloom filters. */
+  prunedByBloomFilter: number;
+  /** Bloom-filter payloads read while planning. */
+  bloomFiltersRead: number;
+  /** Bloom-filter bytes read while planning. */
+  bloomFilterBytesRead: number;
+};
 
 const {
   preload: _preloadParquetSourceLoader,
@@ -235,29 +267,19 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     };
   }
 
-  /** Explains a portable query using the Parquet footer without decoding data pages. */
-  async explain(options: ParquetSourceReadOptions = {}): Promise<ParquetSourceExplain> {
+  /** Plans a portable query using Parquet metadata without decoding data pages. */
+  async getScanPlan(options: ParquetSourceReadOptions = {}): Promise<ParquetSourceExplain> {
     const readOptions = this.getReadOptions(options);
     const initialization = await this.getInitialization(readOptions.signal);
     const sourceColumnNames = initialization.schema.fields.map(field => field.name);
-    const predicate = readOptions.predicate;
-    if (predicate) {
-      validateParquetPredicate(predicate, new Set(sourceColumnNames));
-    }
-    const candidateRowGroupIndices = normalizeRowGroupIndices(
-      readOptions.rowGroups,
-      initialization.fileMetadata.row_groups.length
-    );
-    const selectedRowGroupIndices = predicate
-      ? candidateRowGroupIndices.filter(rowGroupIndex =>
-          canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
-        )
-      : candidateRowGroupIndices;
+    const signal = readOptions.signal ?? new AbortController().signal;
+    const physicalPlan = await this.planRowGroups(initialization, readOptions, signal);
+    const pagePlans = await this.planPages(initialization, readOptions, physicalPlan, signal);
     const explanation = explainTableQuery(
       sourceColumnNames,
       {
         columns: readOptions.columns,
-        predicate,
+        predicate: physicalPlan.predicate,
         limit: readOptions.limit
       },
       PARQUET_TABLE_QUERY_CAPABILITIES
@@ -266,11 +288,58 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       ...explanation,
       source: 'parquet' as const,
       rowGroups: Object.freeze({
-        requested: candidateRowGroupIndices.length,
-        selected: selectedRowGroupIndices.length,
-        prunedByStatistics: candidateRowGroupIndices.length - selectedRowGroupIndices.length
+        indices: Object.freeze([...physicalPlan.rowGroupIndices]),
+        requested: physicalPlan.requested,
+        selected: physicalPlan.rowGroupIndices.length,
+        prunedByCallback: physicalPlan.prunedByCallback,
+        prunedBySpatial: physicalPlan.prunedBySpatial,
+        prunedByStatistics: physicalPlan.prunedByStatistics,
+        prunedByBloomFilter: physicalPlan.prunedByBloomFilter
+      }),
+      bloomFilters: Object.freeze({
+        read: physicalPlan.bloomFiltersRead,
+        bytesRead: physicalPlan.bloomFilterBytesRead
+      }),
+      pages: Object.freeze({
+        rowGroupsPlanned: pagePlans.length,
+        indexesRead: pagePlans.reduce((sum, plan) => sum + plan.indexesRead, 0),
+        total: pagePlans.reduce((sum, plan) => sum + plan.totalPages, 0),
+        selected: pagePlans.reduce((sum, plan) => sum + plan.selectedPages, 0),
+        rowsPruned: pagePlans.reduce((sum, plan) => sum + plan.rowsPruned, 0),
+        plans: Object.freeze(pagePlans)
       })
     });
+  }
+
+  /** Explains the common logical query and Parquet-specific physical scan plan. */
+  async explain(options: ParquetSourceReadOptions = {}): Promise<ParquetSourceExplain> {
+    return await this.getScanPlan(options);
+  }
+
+  /** Executes a previously computed physical plan while preserving its row-group decisions. */
+  async *executeScanPlan(
+    plan: ParquetSourceExplain,
+    options: ParquetSourceReadOptions = {}
+  ): AsyncIterable<ParquetSourceBatch> {
+    if (plan.source !== 'parquet') {
+      throw new Error('ParquetSource can only execute Parquet scan plans');
+    }
+    const predicateStep = plan.plan.find(step => step.kind === 'filter');
+    const limitStep = plan.plan.find(step => step.kind === 'limit');
+    yield* this.read({
+      ...options,
+      columns: options.columns ?? plan.outputColumns,
+      predicate:
+        options.predicate ??
+        (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
+      limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined),
+      rowGroups: plan.rowGroups.indices
+    });
+  }
+
+  /** Common scan-architecture alias for selective Parquet reads. */
+  scan(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
+    return this.read(options);
   }
 
   /** Returns a copy of cumulative transport, decode, conversion, and pruning telemetry. */
@@ -295,50 +364,21 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       await this.getCompressionInitialization();
       throwIfAborted(readContext.abortController.signal);
 
-      const candidateRowGroupIndices = normalizeRowGroupIndices(
-        readOptions.rowGroups,
-        initialization.fileMetadata.row_groups.length
+      const physicalPlan = await this.planRowGroups(
+        initialization,
+        readOptions,
+        readContext.abortController.signal
       );
-      const callbackFilteredRowGroupIndices = readOptions.rowGroupFilter
-        ? candidateRowGroupIndices.filter(rowGroupIndex =>
-            readOptions.rowGroupFilter!(initialization.metadata.rowGroups[rowGroupIndex])
-          )
-        : candidateRowGroupIndices;
-      const spatiallyFilteredRowGroupIndices = readOptions.bbox
-        ? callbackFilteredRowGroupIndices.filter(rowGroupIndex =>
-            canGeoParquetRowGroupMatch(
-              initialization.metadata,
-              initialization.metadata.rowGroups[rowGroupIndex],
-              readOptions.bbox!,
-              readOptions.geometryColumn
-            )
-          )
-        : callbackFilteredRowGroupIndices;
-      const spatialPredicate = readOptions.bbox
-        ? createGeoParquetBoundingBoxPredicate(
-            initialization.metadata,
-            readOptions.bbox,
-            readOptions.geometryColumn
-          )
-        : undefined;
-      const predicate = combineParquetPredicates(readOptions.predicate, spatialPredicate);
-      const availableColumns = new Set(initialization.schema.fields.map(field => field.name));
-      if (predicate) {
-        validateParquetPredicate(predicate, availableColumns);
-      }
-      const rowGroupIndices = predicate
-        ? spatiallyFilteredRowGroupIndices.filter(rowGroupIndex =>
-            canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
-          )
-        : spatiallyFilteredRowGroupIndices;
-      const rowGroupsPrunedByStatistics =
-        callbackFilteredRowGroupIndices.length - rowGroupIndices.length;
+      const {predicate, rowGroupIndices} = physicalPlan;
       this.recordTelemetry(
         'row-group-prune',
         {
-          rowGroupsRequested: candidateRowGroupIndices.length,
-          rowGroupsPruned: candidateRowGroupIndices.length - rowGroupIndices.length,
-          rowGroupsPrunedByStatistics
+          rowGroupsRequested: physicalPlan.requested,
+          rowGroupsPruned: physicalPlan.requested - rowGroupIndices.length,
+          rowGroupsPrunedByStatistics: physicalPlan.prunedByStatistics,
+          rowGroupsPrunedByBloomFilter: physicalPlan.prunedByBloomFilter,
+          bloomFiltersRead: physicalPlan.bloomFiltersRead,
+          bloomFilterBytesRead: physicalPlan.bloomFilterBytesRead
         },
         {}
       );
@@ -509,6 +549,122 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     }
   }
 
+  /** Produces the physical row-group plan shared by explain and execution. */
+  private async planRowGroups(
+    initialization: ParquetSourceInitialization,
+    readOptions: ParquetSourceReadOptions,
+    signal: AbortSignal
+  ): Promise<ParquetPhysicalRowGroupPlan> {
+    throwIfAborted(signal);
+    const candidateRowGroupIndices = normalizeRowGroupIndices(
+      readOptions.rowGroups,
+      initialization.fileMetadata.row_groups.length
+    );
+    const callbackFilteredRowGroupIndices = readOptions.rowGroupFilter
+      ? candidateRowGroupIndices.filter(rowGroupIndex =>
+          readOptions.rowGroupFilter!(initialization.metadata.rowGroups[rowGroupIndex])
+        )
+      : candidateRowGroupIndices;
+    const spatiallyFilteredRowGroupIndices = readOptions.bbox
+      ? callbackFilteredRowGroupIndices.filter(rowGroupIndex =>
+          canGeoParquetRowGroupMatch(
+            initialization.metadata,
+            initialization.metadata.rowGroups[rowGroupIndex],
+            readOptions.bbox!,
+            readOptions.geometryColumn
+          )
+        )
+      : callbackFilteredRowGroupIndices;
+    const spatialPredicate = readOptions.bbox
+      ? createGeoParquetBoundingBoxPredicate(
+          initialization.metadata,
+          readOptions.bbox,
+          readOptions.geometryColumn
+        )
+      : undefined;
+    const predicate = combineParquetPredicates(readOptions.predicate, spatialPredicate);
+    if (predicate) {
+      validateParquetPredicate(
+        predicate,
+        new Set(initialization.schema.fields.map(field => field.name))
+      );
+    }
+    const statisticsRowGroupIndices = predicate
+      ? spatiallyFilteredRowGroupIndices.filter(rowGroupIndex =>
+          canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
+        )
+      : spatiallyFilteredRowGroupIndices;
+    const bloomFilterResult = predicate
+      ? await filterParquetRowGroupsWithBloomFilters(
+          initialization,
+          statisticsRowGroupIndices,
+          predicate,
+          signal
+        )
+      : {rowGroupIndices: statisticsRowGroupIndices, filtersRead: 0, bytesRead: 0};
+    return {
+      predicate,
+      rowGroupIndices: bloomFilterResult.rowGroupIndices,
+      requested: candidateRowGroupIndices.length,
+      prunedByCallback: candidateRowGroupIndices.length - callbackFilteredRowGroupIndices.length,
+      prunedBySpatial:
+        callbackFilteredRowGroupIndices.length - spatiallyFilteredRowGroupIndices.length,
+      prunedByStatistics:
+        spatiallyFilteredRowGroupIndices.length - statisticsRowGroupIndices.length,
+      prunedByBloomFilter:
+        statisticsRowGroupIndices.length - bloomFilterResult.rowGroupIndices.length,
+      bloomFiltersRead: bloomFilterResult.filtersRead,
+      bloomFilterBytesRead: bloomFilterResult.bytesRead
+    };
+  }
+
+  /** Produces explainable page-index and byte-range plans for retained row groups. */
+  private async planPages(
+    initialization: ParquetSourceInitialization,
+    readOptions: ParquetSourceReadOptions,
+    rowGroupPlan: ParquetPhysicalRowGroupPlan,
+    signal: AbortSignal
+  ): Promise<ParquetPageScanPlan[]> {
+    if (!rowGroupPlan.predicate) return [];
+    const columns = normalizeColumns(readOptions.columns, initialization.schema);
+    const predicateColumns = getParquetPredicateColumns(rowGroupPlan.predicate);
+    const decodedColumns =
+      columns.length === 0 ? [] : [...new Set([...columns, ...predicateColumns])];
+    const columnList = decodedColumns.map(column => [column]);
+    const plans: ParquetPageScanPlan[] = [];
+    for (const rowGroupIndex of rowGroupPlan.rowGroupIndices) {
+      throwIfAborted(signal);
+      const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+      const pagePlan = await createParquetPagePruningPlan(
+        initialization.file,
+        rowGroup,
+        initialization.parquetSchema,
+        columnList,
+        rowGroupPlan.predicate,
+        signal
+      );
+      if (!pagePlan) continue;
+      plans.push(
+        Object.freeze({
+          rowGroupIndex,
+          rowRanges: Object.freeze(
+            pagePlan.rowRanges.map(rowRange => Object.freeze({...rowRange}))
+          ),
+          indexesRead: pagePlan.indexCount,
+          totalPages: pagePlan.totalPageCount,
+          selectedPages: pagePlan.selectedPageCount,
+          rowsPruned: pagePlan.prunedRowCount,
+          ranges: Object.freeze(
+            getParquetPageReadRanges(rowGroup, columnList, pagePlan).map(range =>
+              Object.freeze({...range})
+            )
+          )
+        })
+      );
+    }
+    return plans;
+  }
+
   /** Closes the underlying readable file and aborts active remote requests. */
   async close(): Promise<void> {
     if (this.closed) {
@@ -605,6 +761,23 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     workerOptions: ParquetSourceWorkerOptions | undefined,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
+    if (
+      predicate &&
+      projectedColumnNames &&
+      getParquetPredicateColumns(predicate).some(column => !projectedColumnNames.has(column))
+    ) {
+      return await this.readRowGroupWithLateMaterialization(
+        initialization,
+        rowGroupIndex,
+        columnList,
+        projectedSchema,
+        batchSize,
+        predicate,
+        projectedColumnNames,
+        workerOptions,
+        signal
+      );
+    }
     const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
     const pagePlan = predicate
       ? await createParquetPagePruningPlan(
@@ -773,6 +946,72 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       );
     }
     return {rowGroupIndex, rowCount: workerResult.rowCount, workerResult};
+  }
+
+  /** Decodes predicate columns first, avoiding projected-column decoding for empty matches. */
+  private async readRowGroupWithLateMaterialization(
+    initialization: ParquetSourceInitialization,
+    rowGroupIndex: number,
+    columnList: string[][],
+    projectedSchema: Schema,
+    batchSize: number | undefined,
+    predicate: ParquetPredicate,
+    projectedColumnNames: ReadonlySet<string>,
+    workerOptions: ParquetSourceWorkerOptions | undefined,
+    signal: AbortSignal
+  ): Promise<ParquetRowGroupReadResult> {
+    const predicateColumns = getParquetPredicateColumns(predicate);
+    const predicateColumnList = predicateColumns.map(column => [column]);
+    const filterResult = await this.readRowGroup(
+      initialization,
+      rowGroupIndex,
+      predicateColumnList,
+      projectSchema(initialization.schema, predicateColumns),
+      batchSize,
+      predicate,
+      new Set(predicateColumns),
+      workerOptions,
+      signal
+    );
+    const rowIndices = filterResult.rowIndices;
+    const selectedRowIndices = rowIndices || getWorkerRowIndices(filterResult.workerResult);
+    if (!selectedRowIndices || selectedRowIndices.length === 0) {
+      return {rowGroupIndex, rowCount: 0, columns: {}, rowIndices: []};
+    }
+    const projectedColumnList = columnList.filter(columnPath =>
+      projectedColumnNames.has(columnPath[0])
+    );
+    const projectedResult = await this.readRowGroup(
+      initialization,
+      rowGroupIndex,
+      projectedColumnList,
+      projectedSchema,
+      batchSize,
+      undefined,
+      projectedColumnNames,
+      workerOptions,
+      signal
+    );
+    if (workerOptions && projectedResult.workerResult) {
+      return {
+        rowGroupIndex,
+        rowCount: selectedRowIndices.length,
+        rowIndices: selectedRowIndices,
+        workerResult: gatherWorkerProjectedRows(
+          projectedResult.workerResult,
+          selectedRowIndices,
+          batchSize
+        )
+      };
+    }
+    return {
+      rowGroupIndex,
+      rowCount: selectedRowIndices.length,
+      rowIndices: selectedRowIndices,
+      columns: projectedResult.columns
+        ? gatherParquetColumns(projectedResult.columns, selectedRowIndices, projectedColumnNames)
+        : {}
+    };
   }
 
   /** Records the rows and pages avoided by one conservative page-index plan. */
@@ -1310,6 +1549,9 @@ function createParquetTelemetry(): ParquetTelemetry {
     rowGroupsRequested: 0,
     rowGroupsPruned: 0,
     rowGroupsPrunedByStatistics: 0,
+    rowGroupsPrunedByBloomFilter: 0,
+    bloomFiltersRead: 0,
+    bloomFilterBytesRead: 0,
     rowGroupsPrunedByPageIndex: 0,
     pageIndexesRead: 0,
     pagesRead: 0,
@@ -1394,6 +1636,148 @@ function getSourceName(data: string | Blob, url: string): string {
         ? url.split(/[?#]/)[0].split('/').pop() || 'parquet'
         : 'parquet';
   return sourceName.replace(/\.parquet$/i, '') || 'parquet';
+}
+
+type ParquetBloomFilterReadResult = {
+  rowGroupIndices: number[];
+  filtersRead: number;
+  bytesRead: number;
+};
+
+/** Reconstructs exact row-group indexes from worker predicate batches. */
+function getWorkerRowIndices(workerResult?: ParquetSourceWorkerResult): number[] {
+  if (!workerResult) return [];
+  return workerResult.batches.flatMap(batch =>
+    batch.rowGroupRowIndices
+      ? [...batch.rowGroupRowIndices]
+      : Array.from({length: batch.rowCount}, (_, index) => batch.rowGroupRowOffset + index)
+  );
+}
+
+/** Gathers projected worker Arrow batches through the shared indexed Arrow table utility. */
+function gatherWorkerProjectedRows(
+  workerResult: ParquetSourceWorkerResult,
+  rowIndices: readonly number[],
+  batchSize: number | undefined
+): ParquetSourceWorkerResult {
+  const tables = workerResult.batches.map(batch => hydrateArrowTable(batch.arrowTable));
+  if (tables.length === 0) {
+    return {...workerResult, rowCount: 0, batches: []};
+  }
+  const table = tables.length === 1 ? tables[0] : tables[0].concat(...tables.slice(1));
+  const indexedTable = new IndexedArrowTable(table, rowIndices);
+  const outputBatchSize = batchSize || Math.max(rowIndices.length, 1);
+  const batches: ParquetSourceWorkerResult['batches'] = [];
+  for (let offset = 0; offset < rowIndices.length; offset += outputBatchSize) {
+    const end = Math.min(offset + outputBatchSize, rowIndices.length);
+    const batchIndexes = rowIndices.slice(offset, end);
+    const batchTable = indexedTable.slice(offset, end).materializeArrowTable();
+    batches.push({
+      rowGroupRowOffset: batchIndexes[0],
+      rowCount: batchIndexes.length,
+      rowGroupRowIndices: [...batchIndexes],
+      arrowTable: dehydrateArrowTable(batchTable)
+    });
+  }
+  return {
+    sourceRowCount: workerResult.sourceRowCount,
+    rowCount: rowIndices.length,
+    batches,
+    decodeDurationMs: workerResult.decodeDurationMs,
+    arrowConversionDurationMs: workerResult.arrowConversionDurationMs
+  };
+}
+
+/** Applies only proven-negative Bloom-filter checks to candidate row groups. */
+async function filterParquetRowGroupsWithBloomFilters(
+  initialization: ParquetSourceInitialization,
+  rowGroupIndices: readonly number[],
+  predicate: ParquetPredicate,
+  signal: AbortSignal
+): Promise<ParquetBloomFilterReadResult> {
+  const rowGroups: number[] = [];
+  let filtersRead = 0;
+  let bytesRead = 0;
+  for (const rowGroupIndex of rowGroupIndices) {
+    const rowGroup = initialization.metadata.rowGroups[rowGroupIndex];
+    const probes = getParquetBloomFilterProbes(predicate, rowGroup);
+    let keepRowGroup = true;
+    for (const probe of probes) {
+      if (
+        probe.column.bloomFilterOffset === undefined ||
+        probe.column.bloomFilterByteLength === undefined
+      ) {
+        continue;
+      }
+      let field: ParquetField;
+      try {
+        field = initialization.parquetSchema.findField([...probe.column.path]);
+      } catch {
+        throwIfAborted(signal);
+        continue;
+      }
+      if (!field.primitiveType) continue;
+      let filter: ReturnType<typeof decodeParquetSplitBlockBloomFilter>;
+      try {
+        const data = await initialization.file.read(
+          probe.column.bloomFilterOffset,
+          probe.column.bloomFilterByteLength,
+          signal
+        );
+        filter = decodeParquetSplitBlockBloomFilter(toUint8Array(data));
+        filtersRead++;
+        bytesRead += data.byteLength;
+      } catch {
+        throwIfAborted(signal);
+        continue;
+      }
+      if (
+        filter.algorithm !== 'BLOCK' ||
+        filter.hash !== 'XXHASH' ||
+        filter.compression !== 'UNCOMPRESSED'
+      ) {
+        continue;
+      }
+      const mayContainValue = probe.values.some(value => {
+        try {
+          if (value instanceof Date) return true;
+          const physicalValue = getParquetBloomFilterPhysicalValue(value, field);
+          const encoded = encodeParquetBloomFilterValue(
+            physicalValue,
+            field.primitiveType as Parameters<typeof encodeParquetBloomFilterValue>[1],
+            field.typeLength
+          );
+          return checkParquetSplitBlockBloomFilter(
+            filter.bitset,
+            hashParquetBloomFilterValue(encoded)
+          );
+        } catch {
+          throwIfAborted(signal);
+          return true;
+        }
+      });
+      if (!mayContainValue) {
+        keepRowGroup = false;
+        break;
+      }
+    }
+    if (keepRowGroup) rowGroups.push(rowGroupIndex);
+  }
+  return {rowGroupIndices: rowGroups, filtersRead, bytesRead};
+}
+
+/** Converts logical predicate values into the physical values stored in Bloom filters. */
+function getParquetBloomFilterPhysicalValue(
+  value: unknown,
+  field: ParquetField
+): boolean | number | bigint | string | Uint8Array {
+  if (field.originalType?.startsWith('DECIMAL_')) {
+    return toPrimitive(field.originalType as ParquetType, value, field) as
+      | number
+      | bigint
+      | Uint8Array;
+  }
+  return value as boolean | number | bigint | string | Uint8Array;
 }
 
 /** Returns true when at least one HTTP object validator was captured. */

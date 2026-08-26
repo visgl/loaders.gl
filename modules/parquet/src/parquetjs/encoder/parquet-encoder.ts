@@ -70,6 +70,7 @@ import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-util
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 import {planColumnPages} from './page-planner';
 import {planDictionary, type ParquetDictionaryPolicy} from './dictionary-planner';
+import {encodeParquetSplitBlockBloomFilter} from '../../lib/parquet-bloom-filter';
 
 /**
  * Parquet File Magic String
@@ -102,6 +103,7 @@ export interface ParquetEncoderOptions {
   dictionary?: ParquetDictionaryPolicy;
   columnDictionaries?: Record<string, ParquetDictionaryPolicy>;
   dictionaryPageSizeLimit?: number;
+  bloomFilter?: boolean | Record<string, boolean>;
 
   // Write Stream Options
   flags?: string;
@@ -281,6 +283,7 @@ export class ParquetEnvelopeWriter {
   public dictionary: ParquetDictionaryPolicy;
   public columnDictionaries: Record<string, ParquetDictionaryPolicy>;
   public dictionaryPageSizeLimit: number;
+  public bloomFilter?: boolean | Record<string, boolean>;
 
   constructor(
     schema: ParquetSchema,
@@ -300,6 +303,7 @@ export class ParquetEnvelopeWriter {
     this.dictionary = opts.dictionary ?? 'auto';
     this.columnDictionaries = opts.columnDictionaries || {};
     this.dictionaryPageSizeLimit = opts.dictionaryPageSizeLimit ?? 1024 * 1024;
+    this.bloomFilter = opts.bloomFilter;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -325,7 +329,8 @@ export class ParquetEnvelopeWriter {
       useDataPageV2: this.useDataPageV2,
       dictionary: this.dictionary,
       columnDictionaries: this.columnDictionaries,
-      dictionaryPageSizeLimit: this.dictionaryPageSizeLimit
+      dictionaryPageSizeLimit: this.dictionaryPageSizeLimit,
+      bloomFilter: this.bloomFilter
     });
 
     this.rowCount += records.rowCount;
@@ -707,6 +712,9 @@ async function encodeColumnChunk(
 
   const pagesBuf = concatUint8Arrays(pages);
   // const compression = column.compression === 'UNCOMPRESSED' ? (opts.compression || 'UNCOMPRESSED') : column.compression;
+  const bloomFilterEnabled =
+    opts.bloomFilter === true || opts.bloomFilter?.[column.path[0]] === true;
+  const bloomFilter = bloomFilterEnabled ? createColumnBloomFilter(column, data.values) : undefined;
 
   /* prepare metadata header */
   const metadata = new ColumnMetaData({
@@ -735,6 +743,8 @@ async function encodeColumnChunk(
     total_compressed_size: int64(total_compressed_size),
     type: Type[column.primitiveType!],
     codec: CompressionCodec[column.compression!],
+    bloom_filter_offset: bloomFilter ? int64(baseOffset + pagesBuf.length) : undefined,
+    bloom_filter_length: bloomFilter?.length,
     geospatial_statistics: createGeospatialStatistics(column, data.values)
   });
 
@@ -744,9 +754,44 @@ async function encodeColumnChunk(
   metadata.encodings.push(Encoding[valueEncoding]);
 
   /* concat metadata header and data pages */
-  const metadataOffset = baseOffset + pagesBuf.length;
-  const body = concatUint8Arrays([pagesBuf, serializeThrift(metadata)]);
+  const metadataOffset = baseOffset + pagesBuf.length + (bloomFilter?.length || 0);
+  const body = concatUint8Arrays([
+    pagesBuf,
+    ...(bloomFilter ? [bloomFilter] : []),
+    serializeThrift(metadata)
+  ]);
   return {body, metadata, metadataOffset};
+}
+
+/** Builds a Bloom filter for writer-supported physical scalar columns. */
+function createColumnBloomFilter(
+  column: ParquetField,
+  values: ParquetColumnChunk['values']
+): Uint8Array | undefined {
+  const physicalType = column.primitiveType;
+  if (
+    physicalType !== 'BOOLEAN' &&
+    physicalType !== 'INT32' &&
+    physicalType !== 'INT64' &&
+    physicalType !== 'FLOAT' &&
+    physicalType !== 'DOUBLE' &&
+    physicalType !== 'BYTE_ARRAY' &&
+    physicalType !== 'FIXED_LEN_BYTE_ARRAY'
+  ) {
+    return undefined;
+  }
+  const bloomValues = values.map(value => {
+    if (value instanceof ArrayBuffer) return new Uint8Array(value);
+    if (ArrayBuffer.isView(value)) {
+      return new Uint8Array(value.buffer, value.byteOffset, value.byteLength).slice();
+    }
+    return value;
+  });
+  return encodeParquetSplitBlockBloomFilter(
+    bloomValues as Parameters<typeof encodeParquetSplitBlockBloomFilter>[0],
+    physicalType,
+    column.typeLength
+  );
 }
 
 /**

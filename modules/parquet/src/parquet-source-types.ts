@@ -258,11 +258,51 @@ export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
     source: 'parquet';
     /** Row groups selected by the request and conservative footer statistics. */
     rowGroups: Readonly<{
+      /** Zero-based row-group indexes retained by every physical pruning stage. */
+      indices: readonly number[];
       requested: number;
       selected: number;
+      /** Row groups rejected by the caller-supplied metadata callback. */
+      prunedByCallback: number;
+      /** Row groups rejected by file-native geospatial statistics. */
+      prunedBySpatial: number;
       prunedByStatistics: number;
+      /** Row groups proven absent by split-block Bloom filters. */
+      prunedByBloomFilter: number;
+    }>;
+    /** Bloom-filter ranges inspected while producing the physical plan. */
+    bloomFilters: Readonly<{
+      read: number;
+      bytesRead: number;
+    }>;
+    /** Selective page-index plans available for retained row groups. */
+    pages: Readonly<{
+      rowGroupsPlanned: number;
+      indexesRead: number;
+      total: number;
+      selected: number;
+      rowsPruned: number;
+      plans: readonly ParquetPageScanPlan[];
     }>;
   }>;
+
+/** Explainable page-index and data-range plan for one Parquet row group. */
+export type ParquetPageScanPlan = Readonly<{
+  /** Zero-based row-group index. */
+  rowGroupIndex: number;
+  /** Candidate half-open row ranges retained by page statistics. */
+  rowRanges: readonly Readonly<{start: number; end: number}>[];
+  /** Column-index and offset-index payloads decoded. */
+  indexesRead: number;
+  /** Data pages represented by the selected columns. */
+  totalPages: number;
+  /** Data pages intersecting retained row ranges. */
+  selectedPages: number;
+  /** Logical rows excluded before data-page decoding. */
+  rowsPruned: number;
+  /** Absolute file ranges required for the retained data pages. */
+  ranges: readonly Readonly<{offset: number; length: number}>[];
+}>;
 
 /** Compatibility alias for selective source read options. */
 export type ParquetReadOptions = ParquetSourceReadOptions;
@@ -295,6 +335,12 @@ export type ParquetTelemetry = {
   rowGroupsPruned: number;
   /** Candidate row groups proven impossible using footer statistics. */
   rowGroupsPrunedByStatistics: number;
+  /** Candidate row groups proven impossible using split-block Bloom filters. */
+  rowGroupsPrunedByBloomFilter: number;
+  /** Bloom-filter payloads fetched for selective reads. */
+  bloomFiltersRead: number;
+  /** Bytes fetched for Bloom-filter payloads. */
+  bloomFilterBytesRead: number;
   /** Row groups proven impossible using page-level column indexes. */
   rowGroupsPrunedByPageIndex: number;
   /** Column-index and offset-index blobs decoded for selective reads. */
@@ -328,6 +374,7 @@ export type ParquetTelemetryEvent = {
     | 'range-request'
     | 'cache-hit'
     | 'row-group-prune'
+    | 'bloom-filter'
     | 'page-index-prune'
     | 'predicate-filter'
     | 'decode'
@@ -472,6 +519,34 @@ export type ParquetDatasetReadOptions = Omit<ParquetSourceReadOptions, 'rowGroup
     /** Maximum files read concurrently for this operation. */
     fileConcurrency?: number;
   };
+
+/** One retained file and its child Parquet physical scan plan. */
+export type ParquetDatasetFileScanPlan = Readonly<{
+  /** Position in provider output before descriptor pruning. */
+  fileIndex: number;
+  /** Stable descriptor or source identifier. */
+  fileId: string;
+  /** Descriptor partition values used during file pruning. */
+  partitions?: Readonly<Record<string, ParquetDatasetPartitionValue>>;
+  /** Physical row-group and Bloom-filter plan for this file. */
+  parquet: ParquetSourceExplain;
+}>;
+
+/** Common logical query explanation plus physical multi-file Parquet planning. */
+export type ParquetDatasetExplain = TableQueryExplain<ParquetPredicate> &
+  Readonly<{
+    /** Physical source kind. */
+    source: 'parquet-dataset';
+    /** Descriptor discovery and file-pruning summary. */
+    files: Readonly<{
+      discovered: number;
+      selected: number;
+      prunedByBoundingBox: number;
+      prunedByPartitions: number;
+    }>;
+    /** Ordered physical plans for retained files. */
+    filePlans: readonly ParquetDatasetFileScanPlan[];
+  }>;
 
 /** Dataset and file provenance attached to an emitted Arrow batch. */
 export type ParquetDatasetBatchProvenance = ParquetBatchProvenance & {

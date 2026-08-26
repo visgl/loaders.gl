@@ -187,6 +187,61 @@ test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) =
   t.end();
 });
 
+test('ParquetSource#getScanPlan shares logical and physical pruning decisions', async t => {
+  const fixture = await createSelectiveFixture();
+  const source = createRemoteSource(createRangeFetch(fixture));
+  const plan = await source.getScanPlan({
+    columns: ['source_id'],
+    predicate: {op: '=', args: [{property: 'x'}, 2]},
+    rowGroupFilter: rowGroup => rowGroup.index === 1,
+    limit: 1
+  });
+
+  t.deepEqual(plan.outputColumns, ['source_id'], 'retains the visible projection');
+  t.deepEqual(plan.requiredColumns, ['x', 'source_id'], 'retains the hidden predicate column');
+  t.deepEqual(plan.rowGroups.indices, [1], 'selects the matching physical row group');
+  t.equal(plan.rowGroups.requested, 3, 'reports every candidate row group');
+  t.equal(plan.rowGroups.selected, 1, 'reports the retained row group');
+  t.equal(plan.rowGroups.prunedByCallback, 2, 'attributes metadata callback pruning');
+  t.equal(plan.rowGroups.prunedByStatistics, 0, 'does not invent statistics pruning');
+  t.equal(plan.rowGroups.prunedByBloomFilter, 0, 'does not invent Bloom-filter pruning');
+  t.equal(plan.plan.at(-1)?.kind, 'limit', 'retains the common logical limit');
+  t.ok(Object.isFrozen(plan.rowGroups.indices), 'freezes physical plan selections');
+
+  await source.close();
+  t.end();
+});
+
+test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', async t => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {
+        fields: [{name: 'id', type: 'utf8', nullable: false}],
+        metadata: {}
+      },
+      data: [{id: 'a'}, {id: 'z'}, {id: 'a'}, {id: 'z'}]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {rowGroupSize: 2, bloomFilter: {id: true}}}
+  );
+  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    core: {type: 'parquet'}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata();
+  const idColumns = metadata.rowGroups.map(rowGroup => rowGroup.columns[0]);
+  t.ok(idColumns.every(column => column.bloomFilterOffset !== undefined), 'writes Bloom offsets');
+  t.ok(
+    idColumns.every(column => (column.bloomFilterByteLength || 0) > 0),
+    'writes Bloom payload lengths'
+  );
+  const plan = await source.getScanPlan({predicate: {op: '=', args: [{property: 'id'}, 'm']}});
+  t.equal(plan.bloomFilters.read, 2, 'reads one Bloom filter per row group');
+  t.equal(plan.rowGroups.prunedByBloomFilter, 2, 'prunes absent values before decoding');
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
@@ -258,6 +313,70 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
   t.end();
 });
 
+test('ParquetSource#executeScanPlan reuses selected row groups', async t => {
+  const fixture = await createSelectiveFixture();
+  const source = createRemoteSource(createRangeFetch(fixture));
+  const plan = await source.getScanPlan({
+    columns: ['source_id'],
+    predicate: {op: '=', args: [{property: 'x'}, 2]}
+  });
+  const batches = await collectParquetBatches(source.executeScanPlan(plan));
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'executes the planned predicate and projection'
+  );
+  t.ok(batches.every(batch => batch.rowGroupIndex === 1), 'retains planned row-group selection');
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#read late-materializes projected columns after predicate matches', async t => {
+  const fixture = await createSelectiveFixture();
+  const requests: RangeRequestRecord[] = [];
+  const source = createRemoteSource(createRangeFetch(fixture, {requests}));
+  const metadata = await source.getMetadata();
+  const metadataRequestCount = requests.length;
+  const batches = await collectParquetBatches(
+    source.read({
+      columns: ['source_id'],
+      predicate: {op: '=', args: [{property: 'x'}, 2]}
+    })
+  );
+  const dataRequests = requests.slice(metadataRequestCount);
+  const predicateRanges = getColumnRanges(metadata, 1, ['x']);
+  const projectedRanges = getColumnRanges(metadata, 1, ['source_id']);
+  const ignoredRanges = getColumnRanges(metadata, 1, ['ignored_payload']);
+
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'filters with a non-projected column and returns only the projected values'
+  );
+  t.deepEqual(
+    batches[0]?.schema?.fields.map(field => field.name),
+    ['source_id'],
+    'does not expose the predicate-only column in the output schema'
+  );
+  t.ok(
+    dataRequests.some(request =>
+      predicateRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ) &&
+      dataRequests.some(request =>
+        projectedRanges.some(range => request.start >= range.start && request.end <= range.end)
+      ),
+    'reads predicate and projected column chunks after a match'
+  );
+  t.notOk(
+    dataRequests.some(request =>
+      ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ),
+    'does not read unrequested columns'
+  );
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async t => {
   if (!isBrowser) {
     t.end();
@@ -290,6 +409,50 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
     batches.map(batch => batch.rowOffset),
     [2, 3],
     'retains exact source provenance across the worker boundary'
+  );
+  await source.close();
+  t.end();
+});
+
+test('ParquetSource#worker late-materializes projected columns after filtering', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const fixture = await createSelectiveFixture();
+  const requests: RangeRequestRecord[] = [];
+  const source = createRemoteSource(createRangeFetch(fixture, {requests}), {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  });
+  const metadata = await source.getMetadata();
+  const metadataRequestCount = requests.length;
+  const batches = await collectParquetBatches(
+    source.read({
+      columns: ['source_id'],
+      predicate: {op: '=', args: [{property: 'x'}, 2]}
+    })
+  );
+  const dataRequests = requests.slice(metadataRequestCount);
+  const ignoredRanges = metadata.rowGroups.flatMap(rowGroup =>
+    getColumnRanges(metadata, rowGroup.index, ['ignored_payload'])
+  );
+
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'filters predicate-only columns in the worker and gathers projected values'
+  );
+  t.deepEqual(
+    batches[0]?.schema?.fields.map(field => field.name),
+    ['source_id'],
+    'keeps predicate-only columns out of the transferred output'
+  );
+  t.notOk(
+    dataRequests.some(request =>
+      ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ),
+    'does not fetch the large projected payload for non-matching row groups'
   );
   await source.close();
   t.end();

@@ -55,8 +55,10 @@ export type {
   ParquetDatasetBatch,
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,
+  ParquetDatasetExplain,
   ParquetDatasetFile,
   ParquetDatasetFileCollection,
+  ParquetDatasetFileScanPlan,
   ParquetDatasetFileProvider,
   ParquetDatasetFileQuery,
   ParquetDatasetFiles,
@@ -66,6 +68,7 @@ export type {
   ParquetDatasetTelemetry,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
+  ParquetPageScanPlan,
   ParquetComparisonPredicate,
   ParquetInPredicate,
   ParquetLogicalPredicate,
@@ -111,8 +114,11 @@ export {
 export {
   checkParquetSplitBlockBloomFilter,
   decodeParquetSplitBlockBloomFilter,
+  encodeParquetBloomFilterValue,
+  encodeParquetSplitBlockBloomFilter,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter,
+  type ParquetBloomFilterPhysicalType,
   type ParquetSplitBlockBloomFilter
 } from './lib/parquet-bloom-filter';
 export {

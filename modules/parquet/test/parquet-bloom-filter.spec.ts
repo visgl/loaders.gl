@@ -6,6 +6,7 @@ import {describe, expect, test} from 'vitest';
 import {
   checkParquetSplitBlockBloomFilter,
   decodeParquetSplitBlockBloomFilter,
+  encodeParquetBloomFilterValue,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter
 } from '../src/lib/parquet-bloom-filter';
@@ -17,6 +18,9 @@ describe('Parquet split-block Bloom filters', () => {
   test('matches the Parquet XXH64 empty-input vector', () => {
     expect(hashParquetBloomFilterValue(new Uint8Array())).toBe(0xef46db3751d8e999n);
     expect(hashParquetBloomFilterValue(new TextEncoder().encode('a'))).toBe(0xd24ec4f1a98c6e5bn);
+    expect(hashParquetBloomFilterValue(new TextEncoder().encode('12345678'))).toBe(
+      0xd2d02f08cf7cfd4an
+    );
   });
 
   test('inserts and checks values without false negatives', () => {
@@ -57,6 +61,15 @@ describe('Parquet split-block Bloom filters', () => {
     expect(decoded.bitsetByteLength).toBe(32);
     expect(decoded.headerByteLength).toBe(writer.getBytes().byteLength);
     expect(decoded.bitset.every(byte => byte === 0x5a)).toBe(true);
+  });
+
+  test('encodes scalar values using Parquet PLAIN bytes', () => {
+    expect(Array.from(encodeParquetBloomFilterValue(42, 'INT32'))).toEqual([42, 0, 0, 0]);
+    expect(Array.from(encodeParquetBloomFilterValue(42n, 'INT64'))).toEqual([
+      42, 0, 0, 0, 0, 0, 0, 0
+    ]);
+    expect(Array.from(encodeParquetBloomFilterValue('id', 'BYTE_ARRAY'))).toEqual([105, 100]);
+    expect(() => encodeParquetBloomFilterValue(new Uint8Array(2), 'FIXED_LEN_BYTE_ARRAY', 3)).toThrow();
   });
 
   test('plans only safe equality and IN probes', () => {

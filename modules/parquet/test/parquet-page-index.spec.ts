@@ -118,6 +118,33 @@ describe('Parquet page-index pruning', () => {
     await source.close();
   });
 
+  test('exposes page-index and byte-range decisions in the physical scan plan', async () => {
+    const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
+    const plan = await source.getScanPlan({
+      columns: ['id', 'payload'],
+      predicate: {
+        op: 'and',
+        args: [
+          {op: '>=', args: [{property: 'id'}, SELECTED_ROW_START]},
+          {op: '<', args: [{property: 'id'}, SELECTED_ROW_END]}
+        ]
+      }
+    });
+
+    expect(plan.pages.rowGroupsPlanned).toBe(1);
+    expect(plan.pages.indexesRead).toBeGreaterThanOrEqual(3);
+    expect(plan.pages.selected).toBeLessThan(plan.pages.total);
+    expect(plan.pages.rowsPruned).toBeGreaterThan(0);
+    expect(plan.pages.plans[0]).toMatchObject({
+      rowGroupIndex: 0,
+      rowsPruned: expect.any(Number),
+      ranges: expect.any(Array)
+    });
+    expect(plan.pages.plans[0].ranges.length).toBeGreaterThan(0);
+    expect(Object.isFrozen(plan.pages.plans[0].ranges)).toBe(true);
+    await source.close();
+  });
+
   test('merges discontiguous candidate pages without duplicating source rows', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
     const batches = await collectBatches(

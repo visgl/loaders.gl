@@ -4,6 +4,7 @@
 
 import {
   executeScanTasks,
+  explainTableQuery,
   validateTableQueryLimit,
   type CoreAPI,
   type ScanTask
@@ -18,14 +19,17 @@ import type {
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,
   ParquetDatasetFile,
+  ParquetDatasetFileScanPlan,
   ParquetDatasetFileCollection,
   ParquetDatasetFileQuery,
   ParquetDatasetFiles,
   ParquetDatasetPartitionValue,
   ParquetDatasetReadOptions,
+  ParquetDatasetExplain,
   ParquetDatasetSourceOptions,
   ParquetDatasetTelemetry,
   ParquetSourceBatch,
+  ParquetSourceExplain,
   ParquetTelemetry
 } from './parquet-source-types';
 
@@ -33,8 +37,10 @@ export type {
   ParquetDatasetBatch,
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,
+  ParquetDatasetExplain,
   ParquetDatasetFile,
   ParquetDatasetFileCollection,
+  ParquetDatasetFileScanPlan,
   ParquetDatasetFileProvider,
   ParquetDatasetFileQuery,
   ParquetDatasetFiles,
@@ -51,6 +57,17 @@ type IndexedParquetDatasetFile = {
   file: ParquetDatasetFile;
   /** Position in provider output before local pruning. */
   index: number;
+};
+
+type ParquetDatasetDiscoverySummary = {
+  /** Descriptors returned by the provider. */
+  discovered: number;
+  /** Descriptors retained after local pruning. */
+  selected: number;
+  /** Descriptors rejected by bounding-box intersection. */
+  prunedByBoundingBox: number;
+  /** Descriptors rejected by partition constraints. */
+  prunedByPartitions: number;
 };
 
 /**
@@ -122,6 +139,107 @@ export class ParquetDatasetSource {
     });
   }
 
+  /** Plans descriptor discovery and every retained file's Parquet physical scan. */
+  async getScanPlan(options: ParquetDatasetReadOptions = {}): Promise<ParquetDatasetExplain> {
+    this.assertOpen();
+    validateTableQueryLimit(options.limit);
+    const readContext = createDatasetAbortContext(options.signal);
+    this.activeReadControllers.add(readContext.abortController);
+    const discovery = createParquetDatasetDiscoverySummary();
+    const filePlans: ParquetDatasetFileScanPlan[] = [];
+    const tasks = this.getPlanTasks(options, readContext.abortController.signal, discovery);
+    const fileConcurrency = normalizeFileConcurrency(
+      options.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
+    );
+    try {
+      for await (const filePlan of executeScanTasks(tasks, {
+        concurrency: fileConcurrency,
+        signal: readContext.abortController.signal
+      })) {
+        filePlans.push(filePlan);
+      }
+      const firstFilePlan = filePlans[0];
+      if (!firstFilePlan) {
+        throw new Error('ParquetDatasetSource query selected no files');
+      }
+      const explanation = explainTableQuery(
+        firstFilePlan.parquet.sourceColumns,
+        {columns: options.columns, predicate: options.predicate, limit: options.limit},
+        PARQUET_TABLE_QUERY_CAPABILITIES
+      );
+      return Object.freeze({
+        ...explanation,
+        source: 'parquet-dataset' as const,
+        files: Object.freeze({...discovery}),
+        filePlans: Object.freeze(filePlans)
+      });
+    } finally {
+      readContext.abortController.abort();
+      readContext.removeSignalListener();
+      this.activeReadControllers.delete(readContext.abortController);
+    }
+  }
+
+  /** Explains the common logical query and physical multi-file Parquet plan. */
+  async explain(options: ParquetDatasetReadOptions = {}): Promise<ParquetDatasetExplain> {
+    return await this.getScanPlan(options);
+  }
+
+  /** Executes a previously computed dataset plan while retaining each file's row-group choices. */
+  async *executeScanPlan(
+    plan: ParquetDatasetExplain,
+    options: ParquetDatasetReadOptions = {}
+  ): AsyncIterable<ParquetDatasetBatch> {
+    if (plan.source !== 'parquet-dataset') {
+      throw new Error('ParquetDatasetSource can only execute dataset scan plans');
+    }
+    validateTableQueryLimit(options.limit);
+    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    if (remainingRows === 0) return;
+    const predicateStep = plan.plan.find(step => step.kind === 'filter');
+    const limitStep = plan.plan.find(step => step.kind === 'limit');
+    const readOptions: ParquetDatasetReadOptions = {
+      ...options,
+      columns: options.columns ?? plan.outputColumns,
+      predicate:
+        options.predicate ??
+        (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
+      limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined)
+    };
+    remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
+    const readContext = createDatasetAbortContext(readOptions.signal);
+    this.activeReadControllers.add(readContext.abortController);
+    const filePlans = new Map(
+      plan.filePlans.map(filePlan => [filePlan.fileIndex, filePlan.parquet])
+    );
+    const tasks = this.getReadTasks(readOptions, readContext.abortController.signal, filePlans);
+    const fileConcurrency = normalizeFileConcurrency(
+      readOptions.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
+    );
+    try {
+      for await (const batch of executeScanTasks(tasks, {
+        concurrency: fileConcurrency,
+        signal: readContext.abortController.signal
+      })) {
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        this.telemetry.batchesEmitted++;
+        this.telemetry.rowsEmitted += outputBatch.length;
+        yield outputBatch;
+        remainingRows -= outputBatch.length;
+        if (remainingRows === 0) return;
+      }
+    } finally {
+      readContext.abortController.abort();
+      readContext.removeSignalListener();
+      this.activeReadControllers.delete(readContext.abortController);
+    }
+  }
+
+  /** Common scan-architecture alias for ordered multi-file reads. */
+  scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+    return this.read(options);
+  }
+
   /**
    * Reads selected files as deterministic, file-ordered Arrow batches.
    *
@@ -173,11 +291,60 @@ export class ParquetDatasetSource {
   /** Reads one child source into its bounded file-order queue. */
   private async *getReadTasks(
     options: ParquetDatasetReadOptions,
-    signal: AbortSignal
+    signal: AbortSignal,
+    filePlans?: ReadonlyMap<number, ParquetSourceExplain>
   ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
     const selectedFiles = this.getSelectedFiles({...options, signal});
     for await (const indexedFile of selectedFiles) {
-      yield {run: taskSignal => this.readFile(indexedFile, options, taskSignal)};
+      yield {
+        run: taskSignal =>
+          this.readFile(indexedFile, options, taskSignal, filePlans?.get(indexedFile.index))
+      };
+    }
+  }
+
+  /** Plans retained files through bounded, ordered common scan tasks. */
+  private async *getPlanTasks(
+    options: ParquetDatasetReadOptions,
+    signal: AbortSignal,
+    discovery: ParquetDatasetDiscoverySummary
+  ): AsyncIterable<ScanTask<ParquetDatasetFileScanPlan>> {
+    const selectedFiles = this.getSelectedFiles({...options, signal}, discovery);
+    for await (const indexedFile of selectedFiles) {
+      yield {run: taskSignal => this.planFile(indexedFile, options, taskSignal)};
+    }
+  }
+
+  /** Produces one child physical plan and closes its temporary source. */
+  private async *planFile(
+    indexedFile: IndexedParquetDatasetFile,
+    options: ParquetDatasetReadOptions,
+    signal: AbortSignal
+  ): AsyncIterable<ParquetDatasetFileScanPlan> {
+    const source = this.createSource(indexedFile.file);
+    this.telemetry.filesOpened++;
+    try {
+      if (this.options.parquetDataset?.validateSchema !== false) {
+        await this.validateFileSchema(source, indexedFile, signal);
+      }
+      const parquet = await source.getScanPlan({
+        columns: options.columns,
+        predicate: options.predicate,
+        bbox: options.bbox,
+        geometryColumn: options.geometryColumn,
+        rowGroupFilter: options.rowGroupFilter,
+        limit: undefined,
+        signal
+      });
+      yield Object.freeze({
+        fileIndex: indexedFile.index,
+        fileId: getDatasetFileId(indexedFile.file, indexedFile.index),
+        partitions: indexedFile.file.partitions,
+        parquet
+      });
+    } finally {
+      await source.close();
+      this.addParquetTelemetry(source.getTelemetry());
     }
   }
 
@@ -185,7 +352,8 @@ export class ParquetDatasetSource {
   private async *readFile(
     indexedFile: IndexedParquetDatasetFile,
     options: ParquetDatasetReadOptions,
-    signal: AbortSignal
+    signal: AbortSignal,
+    scanPlan?: ParquetSourceExplain
   ): AsyncIterable<ParquetDatasetBatch> {
     const source = this.createSource(indexedFile.file);
     this.telemetry.filesOpened++;
@@ -197,8 +365,11 @@ export class ParquetDatasetSource {
         columns: options.columns,
         batchSize: options.batchSize,
         concurrency: options.concurrency,
+        rowGroups: scanPlan?.rowGroups.indices,
         rowGroupFilter: options.rowGroupFilter,
         predicate: options.predicate,
+        bbox: options.bbox,
+        geometryColumn: options.geometryColumn,
         limit: undefined,
         signal
       })) {
@@ -242,7 +413,8 @@ export class ParquetDatasetSource {
 
   /** Lazily discovers descriptors and applies conservative local pruning. */
   private async *getSelectedFiles(
-    query: ParquetDatasetFileQuery
+    query: ParquetDatasetFileQuery,
+    discovery?: ParquetDatasetDiscoverySummary
   ): AsyncIterable<IndexedParquetDatasetFile> {
     throwIfAborted(query.signal);
     const collection = await getFileCollection(this.files, query);
@@ -251,17 +423,21 @@ export class ParquetDatasetSource {
       throwIfAborted(query.signal);
       validateDatasetFile(file, index);
       this.telemetry.filesDiscovered++;
+      if (discovery) discovery.discovered++;
       if (query.bbox && file.bbox && !doBoundingBoxesIntersect(query.bbox, file.bbox)) {
         this.telemetry.filesPrunedByBoundingBox++;
+        if (discovery) discovery.prunedByBoundingBox++;
         index++;
         continue;
       }
       if (query.partitions && !matchesPartitions(file.partitions, query.partitions)) {
         this.telemetry.filesPrunedByPartitions++;
+        if (discovery) discovery.prunedByPartitions++;
         index++;
         continue;
       }
       this.telemetry.filesSelected++;
+      if (discovery) discovery.selected++;
       yield {file, index: index++};
     }
   }
@@ -279,6 +455,11 @@ export class ParquetDatasetSource {
       throw new Error('ParquetDatasetSource is closed');
     }
   }
+}
+
+/** Creates operation-local descriptor discovery counters. */
+function createParquetDatasetDiscoverySummary(): ParquetDatasetDiscoverySummary {
+  return {discovered: 0, selected: 0, prunedByBoundingBox: 0, prunedByPartitions: 0};
 }
 
 /** Normalizes static descriptors and lazy providers into one file collection. */
@@ -458,6 +639,9 @@ function createParquetDatasetTelemetry(): ParquetDatasetTelemetry {
       rowGroupsRequested: 0,
       rowGroupsPruned: 0,
       rowGroupsPrunedByStatistics: 0,
+      rowGroupsPrunedByBloomFilter: 0,
+      bloomFiltersRead: 0,
+      bloomFilterBytesRead: 0,
       rowGroupsPrunedByPageIndex: 0,
       pageIndexesRead: 0,
       pagesRead: 0,
