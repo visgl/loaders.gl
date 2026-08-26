@@ -4,9 +4,14 @@
 
 import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
 import type {CoreAPI, Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  resolvePath,
+  type PointCloudQueryCapabilities
+} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {DataType, Field, Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
@@ -47,6 +52,17 @@ export interface PotreeNodeMesh extends LASMesh {
  * @note Point cloud nodes tile source
  */
 export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOptions> {
+  /** Common point-cloud scan capabilities exposed by Potree metadata and hierarchy nodes. */
+  readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
+    projection: 'pushdown',
+    predicate: 'residual',
+    limit: 'residual',
+    streaming: true,
+    cancellation: true,
+    bounds: 'pushdown',
+    levelOfDetail: 'pushdown',
+    spacing: 'pushdown'
+  });
   /** Dataset base URL */
   baseUrl: string = '';
   /** Metadata URL, preserving direct `cloud.js` inputs. */
@@ -121,6 +137,39 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       formatSpecificMetadata: this.metadata,
       viewState: this.getViewState()
     };
+  }
+
+  /** Discovers point attributes and hierarchy bounds without loading node content. */
+  async getQueryMetadata() {
+    await this.initPromise;
+    const fields = getPotreeSchemaFields(this.metadata?.pointAttributes || []);
+    const schema = {fields, metadata: {}};
+    const bounds = this.nativeHierarchyBoundingBox || this.boundingBox;
+    return createScanQueryMetadata({
+      sourceType: 'potree',
+      queryType: 'point-cloud',
+      schema,
+      capabilities: {
+        table: this.pointCloudQueryCapabilities,
+        bounds: 'pushdown',
+        levelOfDetail: 'pushdown'
+      },
+      columnRoles: Object.fromEntries(
+        fields.map(field => [field.name, inferPotreeColumnRole(field.name)])
+      ),
+      spatial: bounds
+        ? {
+            bounds: {
+              minimum: [bounds.lx, bounds.ly, bounds.lz],
+              maximum: [bounds.ux, bounds.uy, bounds.uz]
+            },
+            coordinateReferenceSystems: this.metadata?.projection
+              ? [this.metadata.projection]
+              : undefined
+          }
+        : undefined,
+      statistics: this.metadata?.points === undefined ? undefined : {rowCount: this.metadata.points}
+    });
   }
 
   /** Is data set supported */
@@ -844,4 +893,53 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       uy: Math.max(...latitudes)
     };
   }
+}
+
+/** Builds query-visible fields from Potree point-attribute metadata. */
+function getPotreeSchemaFields(pointAttributes: PotreeMetadata['pointAttributes']): Field[] {
+  if (!Array.isArray(pointAttributes)) {
+    return [
+      {name: 'X', type: 'float64', nullable: false},
+      {name: 'Y', type: 'float64', nullable: false},
+      {name: 'Z', type: 'float64', nullable: false}
+    ];
+  }
+  const fields: Field[] = [];
+  for (const attribute of pointAttributes) {
+    const field = getPotreeField(attribute);
+    if (field) fields.push(field);
+  }
+  return fields;
+}
+
+/** Maps one Potree attribute identifier to a loaders.gl field. */
+function getPotreeField(attribute: string): Field | undefined {
+  const fieldTypes: Record<string, {name: string; type: DataType}> = {
+    POSITION_CARTESIAN: {name: 'POSITION_CARTESIAN', type: 'float32'},
+    RGBA_PACKED: {name: 'RGBA_PACKED', type: 'uint8'},
+    COLOR_PACKED: {name: 'COLOR_PACKED', type: 'uint8'},
+    RGB_PACKED: {name: 'RGB_PACKED', type: 'uint8'},
+    NORMAL_FLOATS: {name: 'NORMAL_FLOATS', type: 'float32'},
+    INTENSITY: {name: 'INTENSITY', type: 'uint16'},
+    CLASSIFICATION: {name: 'CLASSIFICATION', type: 'uint8'},
+    NORMAL_SPHEREMAPPED: {name: 'NORMAL_SPHEREMAPPED', type: 'uint8'},
+    NORMAL_OCT16: {name: 'NORMAL_OCT16', type: 'uint16'},
+    NORMAL: {name: 'NORMAL', type: 'float32'}
+  };
+  const fieldType = fieldTypes[attribute];
+  return fieldType ? {...fieldType, nullable: false} : undefined;
+}
+
+/** Infers a query-panel semantic role from a Potree attribute name. */
+function inferPotreeColumnRole(
+  name: string
+): 'attribute' | 'x' | 'y' | 'z' | 'intensity' | 'classification' | 'color' {
+  const normalizedName = name.toLowerCase();
+  if (normalizedName === 'x' || normalizedName.includes('position_cartesian')) return 'x';
+  if (normalizedName === 'y') return 'y';
+  if (normalizedName === 'z') return 'z';
+  if (normalizedName.includes('intensity')) return 'intensity';
+  if (normalizedName.includes('classification')) return 'classification';
+  if (normalizedName.includes('color') || normalizedName.includes('rgb')) return 'color';
+  return 'attribute';
 }

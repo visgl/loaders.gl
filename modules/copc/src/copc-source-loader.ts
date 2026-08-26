@@ -20,6 +20,7 @@ import {
   concatenateArrayBuffersFromArray,
   decodeLAZChunkInBatches
 } from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import {Copc, Las, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
@@ -29,6 +30,20 @@ const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',
   LNGLAT_OFFSETS: 'lnglat-offsets'
 } as const;
+
+/** Infers a query-panel semantic role from a COPC dimension name. */
+function inferCOPCColumnRole(
+  name: string
+): 'attribute' | 'x' | 'y' | 'z' | 'intensity' | 'classification' | 'color' {
+  const normalizedName = name.toLowerCase();
+  if (normalizedName === 'x') return 'x';
+  if (normalizedName === 'y') return 'y';
+  if (normalizedName === 'z') return 'z';
+  if (normalizedName.includes('intensity')) return 'intensity';
+  if (normalizedName.includes('classification')) return 'classification';
+  if (normalizedName.includes('color') || normalizedName.includes('red')) return 'color';
+  return 'attribute';
+}
 
 type COPCViewState = {
   boundingVolume: {
@@ -140,6 +155,17 @@ export class COPCTileSource
   extends DataSource<string | Blob, COPCSourceLoaderOptions>
   implements TileSource
 {
+  /** Common point-cloud scan capabilities exposed by COPC. */
+  readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
+    projection: 'pushdown',
+    predicate: 'residual',
+    limit: 'residual',
+    streaming: true,
+    cancellation: true,
+    bounds: 'pushdown',
+    levelOfDetail: 'pushdown',
+    spacing: 'pushdown'
+  });
   mimeType: string | null = null;
   metadata: Promise<COPCMetadata>;
   isReady = false;
@@ -179,6 +205,33 @@ export class COPCTileSource
     }
 
     return {fields, metadata: {}};
+  }
+
+  /** Discovers point attributes and spatial bounds without decoding point rows. */
+  async getQueryMetadata() {
+    const {copc} = await this._initPromise;
+    const schema = getCOPCHeaderSchema(copc.header.pointDataRecordFormat);
+    const roles = Object.fromEntries(
+      schema.fields.map(field => [field.name, inferCOPCColumnRole(field.name)])
+    );
+    return createScanQueryMetadata({
+      sourceType: 'copc',
+      queryType: 'point-cloud',
+      schema,
+      capabilities: {
+        table: this.pointCloudQueryCapabilities,
+        bounds: 'pushdown',
+        levelOfDetail: 'pushdown'
+      },
+      columnRoles: roles,
+      spatial: {
+        bounds: {minimum: copc.header.min, maximum: copc.header.max},
+        coordinateReferenceSystems: this.options.copc?.sourceCoordinateSystem
+          ? [this.options.copc.sourceCoordinateSystem]
+          : undefined
+      },
+      statistics: {rowCount: copc.header.pointCount}
+    });
   }
 
   async getMetadata(): Promise<COPCMetadata> {
@@ -1120,6 +1173,34 @@ function getDataTypeFromDimension(dimension: Dimension): DataType {
     default:
       return 'null';
   }
+}
+
+/** Builds the standard query schema from a COPC point-data record format. */
+function getCOPCHeaderSchema(pointDataRecordFormat: number): Schema {
+  const fields: Field[] = [
+    {name: 'X', type: 'float64', nullable: false},
+    {name: 'Y', type: 'float64', nullable: false},
+    {name: 'Z', type: 'float64', nullable: false}
+  ];
+  if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 6) {
+    fields.push({name: 'Intensity', type: 'uint16', nullable: false});
+  }
+  if (
+    pointDataRecordFormat === 2 ||
+    pointDataRecordFormat === 3 ||
+    pointDataRecordFormat === 7 ||
+    pointDataRecordFormat === 8 ||
+    pointDataRecordFormat === 10
+  ) {
+    fields.push(
+      {name: 'Red', type: 'uint16', nullable: false},
+      {name: 'Green', type: 'uint16', nullable: false},
+      {name: 'Blue', type: 'uint16', nullable: false}
+    );
+  }
+  if (pointDataRecordFormat >= 6)
+    fields.push({name: 'Classification', type: 'uint8', nullable: false});
+  return {fields, metadata: {}};
 }
 
 function createProjection(projectionData?: string): Proj4Projection | null {

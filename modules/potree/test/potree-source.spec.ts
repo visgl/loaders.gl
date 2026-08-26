@@ -71,3 +71,15 @@ test('PotreeSourceLoader#exposes normalized tile headers and bounds', async t =>
 
   t.end();
 });
+
+test('PotreeSourceLoader#exposes point-cloud query metadata', async t => {
+  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  await source.initialize();
+
+  const metadata = await source.getQueryMetadata();
+  t.equal(metadata.queryType, 'point-cloud');
+  t.ok(metadata.columns.some(column => column.role === 'color'));
+  t.equal(metadata.capabilities.bounds, 'pushdown');
+  t.equal(metadata.spatial?.bounds?.minimum.length, 3);
+  t.end();
+});

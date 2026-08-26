@@ -16,7 +16,8 @@ import type {
   RasterChannelDataType,
   RasterBoundingBox,
   RangeRequestSchedulerProps,
-  RangeRequestTransportResult
+  RangeRequestTransportResult,
+  RasterQueryCapabilities
 } from '@loaders.gl/loader-utils';
 import {
   DataSource,
@@ -46,6 +47,16 @@ export type GeoTIFFSourceLoaderOptions = DataSourceOptions & {
     rangeSchedulerProps?: RangeRequestSchedulerProps;
   };
 };
+
+/** Common raster-query capabilities of GeoTIFF and COG sources. */
+export const GEOTIFF_RASTER_QUERY_CAPABILITIES: RasterQueryCapabilities = Object.freeze({
+  bounds: 'pushdown',
+  level: 'pushdown',
+  variables: 'pushdown',
+  slices: 'unsupported',
+  streaming: false,
+  cancellation: false
+});
 
 /**
  * Source factory for viewport-driven GeoTIFF datasets.
@@ -106,6 +117,8 @@ export class GeoTIFFRasterSource
   extends DataSource<string | Blob, GeoTIFFSourceLoaderOptions>
   implements RasterSource
 {
+  /** Capabilities advertised by this viewport-driven raster source. */
+  readonly rasterQueryCapabilities = GEOTIFF_RASTER_QUERY_CAPABILITIES;
   private _initPromise: Promise<GeoTIFFInit> | null = null;
   private _rangeScheduler: RangeRequestScheduler | null = null;
 
@@ -130,6 +143,11 @@ export class GeoTIFFRasterSource
   async getMetadata(): Promise<RasterSourceMetadata> {
     const {metadata} = await this._getInitPromise();
     return metadata;
+  }
+
+  /** Returns raster-query capabilities without opening raster samples. */
+  getRasterQueryCapabilities(): RasterQueryCapabilities {
+    return this.rasterQueryCapabilities;
   }
 
   /**

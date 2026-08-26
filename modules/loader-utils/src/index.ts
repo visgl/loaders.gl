@@ -268,6 +268,17 @@ export {
   validateColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
 export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export {validateRasterQueryOptions} from './lib/scan-utils/raster-query';
+export type {RasterQueryOptions, RasterQueryCapabilities} from './lib/scan-utils/raster-query';
+export {planRelationalQuery} from './lib/scan-utils/relational-query';
+export type {
+  RelationalAggregate,
+  RelationalChildQuery,
+  RelationalExpression,
+  RelationalOrderKey,
+  RelationalPlanStep,
+  RelationalQueryOptions
+} from './lib/scan-utils/relational-query';
 export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
 export {validatePointCloudQueryOptions} from './lib/scan-utils/point-cloud-query';
 export {
