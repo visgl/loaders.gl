@@ -13,6 +13,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {
   _ArcGISFeatureServerSourceLoader,
   _ArcGISImageServerSourceLoader,
+  ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
   WFSSourceLoader,
   WMSSourceLoader,
@@ -58,6 +59,7 @@ type AppProps = {
 const SOURCE_FACTORIES = [
   WMSSourceLoader,
   _ArcGISImageServerSourceLoader,
+  ArcGISImageTileSourceLoader,
   _ArcGISFeatureServerSourceLoader,
   WFSSourceLoader,
   WMTSSourceLoader,
@@ -196,7 +198,11 @@ export default function App(props: AppProps = {}) {
       return null;
     }
 
-    if (example.type === 'wmts' || example.type === 'arcgis-map-server') {
+    if (
+      example.type === 'wmts' ||
+      example.type === 'arcgis-map-server' ||
+      example.type === 'arcgis-image-server-tiles'
+    ) {
       return [
         new TileSourceLayer({
           id: `${example.type}-${example.url}`,
