@@ -240,16 +240,17 @@ Hierarchy pages contain fixed-size entries for octree nodes. Each entry is keyed
 
 A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads the root hierarchy page. To load a tile or spatial subset, it traverses the hierarchy, issues a range request for `pointDataOffset..pointDataOffset + pointDataLength`, and passes that complete compressed LAZ chunk to a LAZ 1.4 chunk decoder. This is why COPC can avoid downloading unrelated point data while still being a valid LAZ file for sequential readers.
 
-## Next Steps
+## Remaining Roadmap
 
-The TypeScript implementation should be completed in stages, with parity tests against established decoders at each stage.
+The TypeScript implementation now covers complete LAS/LAZ file parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-8 delivery, LAZ writing, typed Extra Bytes, and native COPC hierarchy and range parsing. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
 
-| Priority | Work item | Acceptance target |
-| --- | --- | --- |
-| 1 | Add small permissively licensed fixtures for LAS/LAZ/COPC versions and feature cases. | Fixture set covers LAS 1.0-1.5 headers, PDRF 0-10, RGB, GPS time, NIR, Extra Bytes, EVLRs, waveform references, LAZ chunking, and COPC hierarchy pages. |
-| 2 | Complete LAS metadata parsing. | Public header, VLRs, EVLRs, WKT, GeoTIFF CRS records, Extra Bytes VLRs, and waveform metadata are parsed and exposed consistently. |
-| 3 | Complete raw LAS point readers and writers. | PDRF 0-10 fields round-trip where loaders.gl has an attribute representation, and unsupported fields are explicitly preserved or documented. |
-| 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
-| 5 | Expose waveform payload access and typed Extra Bytes. | `WAVEFORM` packet-reference rows and raw `EXTRA_BYTES` payloads are typed Arrow output; internal EVLR or external WDP sample payloads and descriptor-level Extra Bytes conversion remain follow-up work. |
-| 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size chunk tables that established decoders can read. |
-| 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
+| Order | Work item | Impact | Cost | Acceptance target |
+| --- | --- | --- | --- | --- |
+| 1 | Production-harden `COPCWriter` | High | High | Split large hierarchies into valid pages, exercise deep and sparse octrees, validate output with independent COPC readers, and remove the experimental status. |
+| 2 | Expose classification flags as Arrow columns | Medium | Low | Return `synthetic`, `keyPoint`, `withheld`, and `overlap` consistently from LAS and progressive COPC APIs without decoding unrequested layers. |
+| 3 | Add parallel node and chunk decoding | High for large datasets | High | Decode independent COPC nodes or LAZ chunks across a bounded worker pool while preserving batch order, cancellation, memory limits, and the single prebuilt TypeScript worker policy. |
+| 4 | Complete progressive delivery outside PDRF 6-8 | Medium | Medium | Deliver PDRF 9/10 waveform-reference and typed Extra Bytes rows when their required layered ranges arrive instead of waiting for a complete chunk. |
+| 5 | Replace legacy LAZ bounded replay | Low for COPC, medium for older LAZ | High | Preserve resumable arithmetic and item state for PDRF 0-5 so one-byte and arbitrary input splits make forward progress without replaying compressed input. |
+| 6 | Add waveform sample payload access | Low for COPC, specialized elsewhere | High | Range-read internal waveform EVLRs and external WDP data, apply waveform descriptors, and expose samples without losing exact packet-reference offsets. |
+| 7 | Complete LAS 1.5 conformance and writing | Medium | Medium | Enforce LAS 1.5 header, WKT, and PDRF rules; add broader fixtures; and emit LAS 1.5 only after independent-reader interoperability is demonstrated. |
+| 8 | Expand conformance, fuzz, coverage, and performance gates | High for release confidence | Medium | Add small permissively licensed edge-case fixtures, malformed-input and randomized split coverage, independent decoder/writer parity, and non-regression thresholds for memory and PDRF 7 throughput. |
