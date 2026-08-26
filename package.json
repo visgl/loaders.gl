@@ -61,6 +61,7 @@
     "test-audit": "node ./scripts/audit-tests.mjs",
     "test-profile": "node ./scripts/run-test-profile.mjs",
     "test-coverage-check": "node ./scripts/check-coverage-thresholds.mjs",
+    "test-coverage-summary": "node ./scripts/write-coverage-summary.mjs",
     "test-coverage-ratchet": "node ./scripts/check-coverage-thresholds.mjs --update",
     "test-vitest-async-guardrails": "node ./scripts/check-vitest-async-guardrails.mjs",
     "playwright:install": "playwright install chromium",

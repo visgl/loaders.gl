@@ -26,6 +26,9 @@ const publishedPackages = findPublishedPackages();
 const results = [];
 const violations = [];
 
+checkCoverageSummaryFreshness('browser', browserSummary, violations);
+checkCoverageSummaryFreshness('merged', mergedSummary, violations);
+
 for (const publishedPackage of publishedPackages) {
   const browserCoverage = aggregatePackageCoverage(browserSummary, publishedPackage.path);
   const mergedCoverage = aggregatePackageCoverage(mergedSummary, publishedPackage.path);
@@ -140,6 +143,22 @@ function readJsonFile(filePath) {
     throw new Error(`Required coverage file does not exist: ${path.relative(repositoryRoot, filePath)}`);
   }
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+/** Rejects a coverage summary that contains source records but no executed code. */
+function checkCoverageSummaryFreshness(coverageKind, coverageSummary, violations_) {
+  const total = coverageSummary.total;
+  if (!total || total.statements?.total === 0) {
+    return;
+  }
+
+  const coveredStatements = total.statements?.covered || 0;
+  if (coveredStatements === 0) {
+    violations_.push(
+      `${coverageKind} coverage summary contains ${total.statements.total} statements but ` +
+        'zero covered statements; regenerate the report before checking thresholds'
+    );
+  }
 }
 
 /** Discovers non-private published packages under modules. */

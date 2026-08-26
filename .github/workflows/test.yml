@@ -176,6 +176,10 @@ jobs:
       - name: Enforce per-package coverage ratchets
         run: yarn test-coverage-check
 
+      - name: Publish package coverage summary
+        if: always()
+        run: yarn test-coverage-summary
+
       - name: Sanitize lcov for Coveralls
         run: node ./scripts/sanitize-lcov.mjs coverage/lcov.info
 
@@ -195,6 +199,7 @@ jobs:
           path: |
             coverage/
             test-results/coverage-check.json
+            test-results/coverage-summary.md
           if-no-files-found: warn
 
   slow-tests:
