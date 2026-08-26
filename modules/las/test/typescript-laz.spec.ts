@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import {
@@ -258,7 +259,7 @@ test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', asyn
   t.end();
 }, 60000);
 
-test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async t => {
+vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 8)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
@@ -317,15 +318,11 @@ test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async t => {
     }
   }
 
-  t.equal(decodedPointCount, metadata.pointCount, 'all PDRF 8 points decode');
-  t.ok(
-    firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength,
-    'RGB and NIR decode before the complete compressed chunk arrives'
-  );
-  t.deepEqual(positions, expectedPositions, 'progressive PDRF 8 positions match');
-  t.deepEqual(colors, expectedColors, 'progressive PDRF 8 RGB matches');
-  t.deepEqual(nir, expectedNir, 'progressive PDRF 8 NIR matches');
-  t.end();
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength).toBe(true);
+  expect(positions).toEqual(expectedPositions);
+  expect(colors).toEqual(expectedColors);
+  expect(nir).toEqual(expectedNir);
 });
 
 test('TypeScript LAZ validates VLR codecs and truncated input', async t => {

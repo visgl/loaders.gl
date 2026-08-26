@@ -556,6 +556,7 @@ function getLayeredChunkLayout(
   };
 }
 
+/** Return the layered-stream prefix needed to satisfy a direct-output selection. */
 function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDataTarget): number {
   let layerCount = 9;
   if (target.colors || target.rawColors) {

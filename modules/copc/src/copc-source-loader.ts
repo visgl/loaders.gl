@@ -71,7 +71,16 @@ export type COPCTileContentBatchOptions = {
   /** Optional cancellation signal for the range request and decode loop. */
   signal?: AbortSignal;
   /** Arrow attributes to populate. POSITION is always included. */
-  columns?: readonly ('POSITION' | 'COLOR_0' | 'NIR')[];
+  columns?: readonly (
+    | 'POSITION'
+    | 'COLOR_0'
+    | 'NIR'
+    | 'intensity'
+    | 'classification'
+    | 'GPS_TIME'
+    | 'scanAngle'
+    | 'pointSourceId'
+  )[];
   /** Byte size for progressive node range requests. */
   rangeChunkSize?: number;
 };
@@ -368,6 +377,11 @@ export class COPCTileSource
       (options.columns ? options.columns.includes('COLOR_0') : true);
     const nir =
       copc.header.pointDataRecordFormat === 8 && Boolean(options.columns?.includes('NIR'));
+    const intensity = Boolean(options.columns?.includes('intensity'));
+    const classification = Boolean(options.columns?.includes('classification'));
+    const gpsTime = Boolean(options.columns?.includes('GPS_TIME'));
+    const scanAngle = Boolean(options.columns?.includes('scanAngle'));
+    const pointSourceId = Boolean(options.columns?.includes('pointSourceId'));
     const rangeChunkSize = options.rangeChunkSize ?? this.options.copc?.rangeChunkSize ?? 65536;
     if (!Number.isSafeInteger(rangeChunkSize) || rangeChunkSize < 1) {
       throw new Error('COPC progressive rangeChunkSize must be a positive integer');
@@ -386,7 +400,12 @@ export class COPCTileSource
       rangeChunkSize,
       options.signal,
       colors,
-      nir
+      nir,
+      intensity,
+      classification,
+      gpsTime,
+      scanAngle,
+      pointSourceId
     );
   }
 
@@ -400,7 +419,12 @@ export class COPCTileSource
     rangeChunkSize: number,
     signal: AbortSignal | undefined,
     colors: boolean,
-    nir: boolean
+    nir: boolean,
+    intensity: boolean,
+    classification: boolean,
+    gpsTime: boolean,
+    scanAngle: boolean,
+    pointSourceId: boolean
   ): AsyncIterable<COPCTileContent> {
     const decoder = createLAZChunkDecoder({
       pointCount: node.pointCount,
@@ -424,7 +448,12 @@ export class COPCTileSource
         batchSize,
         decodedPointCount,
         colors,
-        nir
+        nir,
+        intensity,
+        classification,
+        gpsTime,
+        scanAngle,
+        pointSourceId
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
     }
@@ -440,7 +469,12 @@ export class COPCTileSource
         batchSize,
         decodedPointCount,
         colors,
-        nir
+        nir,
+        intensity,
+        classification,
+        gpsTime,
+        scanAngle,
+        pointSourceId
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
     }
@@ -461,7 +495,12 @@ export class COPCTileSource
     batchSize: number,
     decodedPointCount: number,
     includeColors: boolean,
-    includeNir: boolean
+    includeNir: boolean,
+    includeIntensity: boolean,
+    includeClassification: boolean,
+    includeGpsTime: boolean,
+    includeScanAngle: boolean,
+    includePointSourceId: boolean
   ): Iterable<COPCTileContent> {
     while (decodedPointCount < nodePointCount) {
       const pointCount = Math.min(batchSize, nodePointCount - decodedPointCount);
@@ -469,11 +508,21 @@ export class COPCTileSource
       const positions = new Float32Array(pointCount * 3);
       const batchColors = includeColors ? new Uint16Array(pointCount * 3) : null;
       const batchNir = includeNir ? new Uint16Array(pointCount) : null;
+      const batchIntensities = includeIntensity ? new Uint16Array(pointCount) : null;
+      const batchClassifications = includeClassification ? new Uint8Array(pointCount) : null;
+      const batchGpsTimes = includeGpsTime ? new Float64Array(pointCount) : null;
+      const batchScanAngles = includeScanAngle ? new Int16Array(pointCount) : null;
+      const batchPointSourceIds = includePointSourceId ? new Uint16Array(pointCount) : null;
       const decoded = decoder.readPointDataBatch(
         {
           positions: nativePositions,
           rawColors: batchColors,
           nir: batchNir,
+          intensities: batchIntensities,
+          classifications: batchClassifications,
+          gpsTimes: batchGpsTimes,
+          scanAngles: batchScanAngles,
+          pointSourceIds: batchPointSourceIds,
           pointOffset: 0,
           scale: copc.header.scale,
           offset: copc.header.offset
@@ -492,7 +541,14 @@ export class COPCTileSource
         positions,
         batchColors,
         cartographicOrigin,
-        batchNir
+        batchNir,
+        {
+          batchIntensities,
+          batchClassifications,
+          batchGpsTimes,
+          batchScanAngles,
+          batchPointSourceIds
+        }
       );
       decodedPointCount += decoded;
     }
@@ -528,9 +584,7 @@ export class COPCTileSource
       if (this._hierarchy) {
         this._hierarchy.nodes = {...this._hierarchy.nodes, ...subtree.nodes};
         this._hierarchy.pages = {...this._hierarchy.pages, ...subtree.pages};
-        if (pageId !== 'root') {
-          delete this._hierarchy.pages[pageId];
-        }
+        delete this._hierarchy.pages[pageId];
       }
       loadedPageCount++;
       yield {pageId, page, nodes: subtree.nodes, pages: subtree.pages};
@@ -767,7 +821,14 @@ export class COPCTileSource
     positions: Float32Array,
     colors: Uint16Array | null,
     origin: number[],
-    nir: Uint16Array | null = null
+    nir: Uint16Array | null = null,
+    pointData: {
+      batchIntensities: Uint16Array | null;
+      batchClassifications: Uint8Array | null;
+      batchGpsTimes: Float64Array | null;
+      batchScanAngles: Int16Array | null;
+      batchPointSourceIds: Uint16Array | null;
+    } | null = null
   ): COPCTileContent {
     const positionsAttribute = {value: positions, size: 3};
     const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
@@ -775,7 +836,8 @@ export class COPCTileSource
       pointCount,
       positionsAttribute,
       colorsAttribute,
-      nir ? {value: nir, size: 1} : undefined
+      nir ? {value: nir, size: 1} : undefined,
+      pointData
     );
 
     return {
@@ -792,7 +854,14 @@ export class COPCTileSource
     pointCount: number,
     positions: {value: Float32Array; size: number},
     colors?: {value: Uint16Array; size: number; normalized: boolean},
-    nir?: {value: Uint16Array; size: number}
+    nir?: {value: Uint16Array; size: number},
+    pointData?: {
+      batchIntensities: Uint16Array | null;
+      batchClassifications: Uint8Array | null;
+      batchGpsTimes: Float64Array | null;
+      batchScanAngles: Int16Array | null;
+      batchPointSourceIds: Uint16Array | null;
+    } | null
   ): MeshArrowTable {
     const attributes: Mesh['attributes'] = {
       POSITION: positions
@@ -802,6 +871,21 @@ export class COPCTileSource
     }
     if (nir) {
       attributes.NIR = nir;
+    }
+    if (pointData?.batchIntensities) {
+      attributes.intensity = {value: pointData.batchIntensities, size: 1};
+    }
+    if (pointData?.batchClassifications) {
+      attributes.classification = {value: pointData.batchClassifications, size: 1};
+    }
+    if (pointData?.batchGpsTimes) {
+      attributes.GPS_TIME = {value: pointData.batchGpsTimes, size: 1};
+    }
+    if (pointData?.batchScanAngles) {
+      attributes.scanAngle = {value: pointData.batchScanAngles, size: 1};
+    }
+    if (pointData?.batchPointSourceIds) {
+      attributes.pointSourceId = {value: pointData.batchPointSourceIds, size: 1};
     }
 
     return convertMeshToTable(
