@@ -76,6 +76,8 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
     sourceCoordinateSystem?: string;
     /** Default byte size for progressive COPC node range requests. */
     rangeChunkSize?: number;
+    /** Maximum number of COPC node ranges fetched ahead of decode. */
+    rangeConcurrency?: number;
   };
 };
 
@@ -98,6 +100,8 @@ export type COPCTileContentBatchOptions = {
   )[];
   /** Byte size for progressive node range requests. */
   rangeChunkSize?: number;
+  /** Maximum number of node ranges fetched ahead of decode. Defaults to 1. */
+  rangeConcurrency?: number;
 };
 
 /** Options for progressive COPC hierarchy page loading. */
@@ -395,10 +399,11 @@ export class COPCTileSource
   /**
    * Yield TypeScript-decoded COPC tile content as Arrow batches.
    *
-   * The compressed node range is currently fetched as one range request. Once
-   * it is available, point batches are decoded and yielded without building a
-   * full decoded node table first. The existing `loadTileContent` method
-   * remains the compatibility API for callers that need one table.
+   * The compressed node range is fetched in bounded chunks. Chunks may be
+   * prefetched, but point batches are decoded and yielded in range order
+   * without building a full decoded node table first. The existing
+   * `loadTileContent` method remains the compatibility API for callers that
+   * need one table.
    */
   async *loadTileContentInBatches(
     tile: {id: string},
@@ -439,6 +444,10 @@ export class COPCTileSource
     if (!Number.isSafeInteger(rangeChunkSize) || rangeChunkSize < 1) {
       throw new Error('COPC progressive rangeChunkSize must be a positive integer');
     }
+    const rangeConcurrency = options.rangeConcurrency ?? this.options.copc?.rangeConcurrency ?? 1;
+    if (!Number.isSafeInteger(rangeConcurrency) || rangeConcurrency < 1) {
+      throw new Error('COPC progressive rangeConcurrency must be a positive integer');
+    }
 
     if (options.columns?.includes('NIR') && copc.header.pointDataRecordFormat !== 8) {
       throw new Error('COPC NIR output requires PDRF 8');
@@ -451,6 +460,7 @@ export class COPCTileSource
       cartographicOrigin,
       batchSize,
       rangeChunkSize,
+      rangeConcurrency,
       options.signal,
       colors,
       nir,
@@ -470,6 +480,7 @@ export class COPCTileSource
     cartographicOrigin: number[],
     batchSize: number,
     rangeChunkSize: number,
+    rangeConcurrency: number,
     signal: AbortSignal | undefined,
     colors: boolean,
     nir: boolean,
@@ -489,6 +500,7 @@ export class COPCTileSource
     for await (const compressedChunk of this.loadCOPCNodeRangeChunks(
       node,
       rangeChunkSize,
+      rangeConcurrency,
       signal
     )) {
       decoder.feed(compressedChunk);
@@ -649,24 +661,49 @@ export class COPCTileSource
     }
   }
 
-  /** Fetch a COPC node range in sequential chunks. */
+  /** Fetch a COPC node range in bounded parallel chunks while preserving order. */
   protected async *loadCOPCNodeRangeChunks(
     node: Hierarchy.Node,
     rangeChunkSize: number,
+    rangeConcurrency: number,
     signal?: AbortSignal
   ): AsyncIterable<Uint8Array> {
     const get = Getter.create(this._urlOrGetter);
     const rangeEnd = node.pointDataOffset + node.pointDataLength;
-    for (let begin = node.pointDataOffset; begin < rangeEnd; begin += rangeChunkSize) {
-      if (signal?.aborted) {
-        throw new Error('COPC progressive tile range request was aborted');
+    const rangeCount = Math.ceil(node.pointDataLength / rangeChunkSize);
+    type RangeResult = {chunk: Uint8Array; error?: never} | {chunk?: never; error: unknown};
+    const pending = new Map<number, Promise<RangeResult>>();
+    let nextToSchedule = 0;
+    try {
+      for (let nextToYield = 0; nextToYield < rangeCount; nextToYield++) {
+        if (signal?.aborted) {
+          throw new Error('COPC progressive tile range request was aborted');
+        }
+        while (nextToSchedule < rangeCount && pending.size < rangeConcurrency) {
+          const begin = node.pointDataOffset + nextToSchedule * rangeChunkSize;
+          const end = Math.min(begin + rangeChunkSize, rangeEnd);
+          pending.set(
+            nextToSchedule,
+            get(begin, end).then(
+              chunk => ({chunk}),
+              error => ({error})
+            )
+          );
+          nextToSchedule++;
+        }
+        const result = await pending.get(nextToYield)!;
+        pending.delete(nextToYield);
+        if ('error' in result) {
+          throw result.error;
+        }
+        if (signal?.aborted) {
+          throw new Error('COPC progressive tile range request was aborted');
+        }
+        yield result.chunk;
       }
-      const end = Math.min(begin + rangeChunkSize, rangeEnd);
-      const chunk = await get(begin, end);
-      if (signal?.aborted) {
-        throw new Error('COPC progressive tile range request was aborted');
-      }
-      yield chunk;
+    } finally {
+      // Promises are handled at creation, so abandoned prefetches cannot reject globally.
+      pending.clear();
     }
   }
 

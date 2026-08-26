@@ -15,6 +15,23 @@ import {Copc} from 'copc';
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
 
+/** Test surface for the protected progressive range iterator. */
+class TestCOPCTileSource extends COPCTileSource {
+  /** Replace the byte-range getter after normal source initialization. */
+  setRangeGetter(getter: (begin: number, end: number) => Promise<Uint8Array>): void {
+    this._urlOrGetter = getter;
+  }
+
+  /** Expose ordered range prefetching for focused scheduling tests. */
+  readNodeRanges(
+    node: {pointCount: number; pointDataOffset: number; pointDataLength: number},
+    rangeChunkSize: number,
+    rangeConcurrency: number
+  ): AsyncIterable<Uint8Array> {
+    return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency);
+  }
+}
+
 test('COPCWriter#writer conformance', t => {
   validateWriter(t, COPCWriter, 'COPCWriter');
   t.end();
@@ -111,7 +128,8 @@ vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', 
 
   for await (const batch of source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
-    rangeChunkSize: 257
+    rangeChunkSize: 257,
+    rangeConcurrency: 3
   })) {
     const positions = batch.data.data.getChild('POSITION');
     const colors = batch.data.data.getChild('COLOR_0');
@@ -155,7 +173,8 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
   const batches = source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
     columns,
-    rangeChunkSize: 257
+    rangeChunkSize: 257,
+    rangeConcurrency: 2
   });
   let firstBatch;
   for await (const batch of batches) {
@@ -213,6 +232,38 @@ vitestTest('COPCSourceLoader#streams hierarchy pages', async () => {
   expect(batches).toHaveLength(1);
   expect(batches[0]?.pageId).toBe('root');
   expect(batches[0]?.nodes['0-0-0-0']).toBeTruthy();
+});
+
+vitestTest('COPCSourceLoader#handles abandoned prefetched range failures', async () => {
+  const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+  let requestCount = 0;
+  const unhandledRejections: unknown[] = [];
+  const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    event.preventDefault();
+    unhandledRejections.push(event.reason);
+  };
+  globalThis.addEventListener('unhandledrejection', handleUnhandledRejection);
+  source.setRangeGetter(async () => {
+    const requestIndex = requestCount++;
+    if (requestIndex === 1) {
+      throw new Error('prefetched range failed');
+    }
+    return new Uint8Array([requestIndex]);
+  });
+
+  try {
+    const iterator = source
+      .readNodeRanges({pointCount: 1, pointDataOffset: 0, pointDataLength: 1_000_000_000}, 1, 3)
+      [Symbol.asyncIterator]();
+    expect(await iterator.next()).toEqual({done: false, value: new Uint8Array([0])});
+    expect(requestCount).toBe(3);
+    await iterator.return?.();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(unhandledRejections).toEqual([]);
+  } finally {
+    globalThis.removeEventListener('unhandledrejection', handleUnhandledRejection);
+  }
 });
 
 test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {
