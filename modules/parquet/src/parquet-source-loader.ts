@@ -1518,6 +1518,7 @@ async function filterParquetRowGroupsWithBloomFilters(
       try {
         field = initialization.parquetSchema.findField(probe.column.path);
       } catch {
+        throwIfAborted(signal);
         continue;
       }
       if (!field.primitiveType) continue;
@@ -1532,6 +1533,7 @@ async function filterParquetRowGroupsWithBloomFilters(
         filtersRead++;
         bytesRead += data.byteLength;
       } catch {
+        throwIfAborted(signal);
         continue;
       }
       if (
@@ -1554,6 +1556,7 @@ async function filterParquetRowGroupsWithBloomFilters(
             hashParquetBloomFilterValue(encoded)
           );
         } catch {
+          throwIfAborted(signal);
           return true;
         }
       });

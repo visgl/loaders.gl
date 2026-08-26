@@ -258,6 +258,52 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
   t.end();
 });
 
+test('ParquetSource#read late-materializes projected columns after predicate matches', async t => {
+  const fixture = await createSelectiveFixture();
+  const requests: RangeRequestRecord[] = [];
+  const source = createRemoteSource(createRangeFetch(fixture, {requests}));
+  const metadata = await source.getMetadata();
+  const metadataRequestCount = requests.length;
+  const batches = await collectParquetBatches(
+    source.read({
+      columns: ['source_id'],
+      predicate: {op: '=', args: [{property: 'x'}, 2]}
+    })
+  );
+  const dataRequests = requests.slice(metadataRequestCount);
+  const predicateRanges = getColumnRanges(metadata, 1, ['x']);
+  const projectedRanges = getColumnRanges(metadata, 1, ['source_id']);
+  const ignoredRanges = getColumnRanges(metadata, 1, ['ignored_payload']);
+
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'filters with a non-projected column and returns only the projected values'
+  );
+  t.deepEqual(
+    batches[0]?.schema?.fields.map(field => field.name),
+    ['source_id'],
+    'does not expose the predicate-only column in the output schema'
+  );
+  t.ok(
+    dataRequests.some(request =>
+      predicateRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ) &&
+      dataRequests.some(request =>
+        projectedRanges.some(range => request.start >= range.start && request.end <= range.end)
+      ),
+    'reads predicate and projected column chunks after a match'
+  );
+  t.notOk(
+    dataRequests.some(request =>
+      ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ),
+    'does not read unrequested columns'
+  );
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async t => {
   if (!isBrowser) {
     t.end();
