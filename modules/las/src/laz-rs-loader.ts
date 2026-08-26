@@ -15,6 +15,9 @@ import initLazRsWasm from './libs/laz-rs-wasm/laz_rs_wasm';
  */
 export const LAZRsLoader = {
   ...LASWorkerLoader,
+  // The bundled LAS worker imports the laz-perf implementation. Keep the
+  // laz-rs variant on the main thread until it has a dedicated worker bundle.
+  worker: false,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
     await initLazRsWasm();
     return parseLAS(arrayBuffer, {...options});

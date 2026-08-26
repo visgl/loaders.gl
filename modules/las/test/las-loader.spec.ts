@@ -10,7 +10,7 @@ import {
   validateTableCategoryData
 } from 'test/common/conformance';
 
-import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
+import {LASLoader, LASWorkerLoader, LAZRsLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
@@ -62,6 +62,17 @@ test('LASLoader#options', async (t) => {
     'POSITION attribute is Float64Array'
   );
 
+  t.end();
+});
+
+test('LAZRsLoader#defaults skip and stays on the main thread', async (t) => {
+  t.notOk(LAZRsLoader.worker, 'laz-rs does not use the laz-perf worker bundle');
+
+  const data = await parse(fetchFile(LAS_BINARY_URL), LAZRsLoader, {
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, data);
+  t.equal(data.attributes.POSITION.value.length, 808042 * 3, 'all points are decoded by default');
   t.end();
 });
 
