@@ -14,6 +14,7 @@ import {CompactInt64 as Int64} from '../utils/uint8-array-compact-protocol';
 import * as thrift from '../utils/thrift-runtime';
 import * as CompressionCodec from './CompressionCodec';
 import * as Encoding from './Encoding';
+import * as GeospatialStatistics from './GeospatialStatistics';
 import * as KeyValue from './KeyValue';
 import * as PageEncodingStats from './PageEncodingStats';
 import * as Statistics from './Statistics';
@@ -32,6 +33,7 @@ export interface IColumnMetaDataArgs {
   dictionary_page_offset?: number | Int64;
   statistics?: Statistics.Statistics;
   encoding_stats?: Array<PageEncodingStats.PageEncodingStats>;
+  geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
 }
 export class ColumnMetaData {
   public type: Type.Type;
@@ -47,6 +49,7 @@ export class ColumnMetaData {
   public dictionary_page_offset?: Int64;
   public statistics?: Statistics.Statistics;
   public encoding_stats?: Array<PageEncodingStats.PageEncodingStats>;
+  public geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
   constructor(args: IColumnMetaDataArgs) {
     if (args != null && args.type != null) {
       this.type = args.type;
@@ -151,6 +154,9 @@ export class ColumnMetaData {
     if (args != null && args.encoding_stats != null) {
       this.encoding_stats = args.encoding_stats;
     }
+    if (args != null && args.geospatial_statistics != null) {
+      this.geospatial_statistics = args.geospatial_statistics;
+    }
   }
   public write(output: thrift.TProtocol): void {
     output.writeStructBegin('ColumnMetaData');
@@ -233,6 +239,11 @@ export class ColumnMetaData {
         value_4.write(output);
       });
       output.writeListEnd();
+      output.writeFieldEnd();
+    }
+    if (this.geospatial_statistics != null) {
+      output.writeFieldBegin('geospatial_statistics', thrift.Thrift.Type.STRUCT, 17);
+      this.geospatial_statistics.write(output);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -380,6 +391,13 @@ export class ColumnMetaData {
             }
             input.readListEnd();
             _args.encoding_stats = value_20;
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 17:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _args.geospatial_statistics = GeospatialStatistics.GeospatialStatistics.read(input);
           } else {
             input.skip(fieldType);
           }

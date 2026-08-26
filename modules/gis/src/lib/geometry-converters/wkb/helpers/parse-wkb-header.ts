@@ -158,34 +158,37 @@ export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeade
 
   wkbHeader.geometryType = (geometryCode & 0x7) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-  // Check if iso-wkb variant: iso-wkb adds 1000, 2000 or 3000 to the geometry code
-  const isoType = (geometryCode - wkbHeader.geometryType) / 1000;
-  switch (isoType) {
-    case 0:
-      break;
-    case 1:
-      wkbHeader.variant = 'iso-wkb';
-      wkbHeader.dimensions = 3;
-      wkbHeader.coordinates = 'xyz';
-      break;
-    case 2:
-      wkbHeader.variant = 'iso-wkb';
-      wkbHeader.dimensions = 3;
-      wkbHeader.coordinates = 'xym';
-      break;
-    case 3:
-      wkbHeader.variant = 'iso-wkb';
-      wkbHeader.dimensions = 4;
-      wkbHeader.coordinates = 'xyzm';
-      break;
-    default:
-      throw new Error(`WKB: Unsupported iso-wkb type: ${isoType}`);
-  }
-
   // Check if EWKB variant. Uses bitmasks for Z&M dimensions as well as optional SRID field
   const ewkbZ = geometryCode & EWKB_FLAG_Z;
   const ewkbM = geometryCode & EWKB_FLAG_M;
   const ewkbSRID = geometryCode & EWKB_FLAG_SRID;
+
+  // EWKB flag values are large integers that do not form a valid ISO dimensional offset. Detect
+  // them before interpreting the unflagged representation as ISO WKB.
+  if (!ewkbZ && !ewkbM && !ewkbSRID) {
+    const isoType = (geometryCode - wkbHeader.geometryType) / 1000;
+    switch (isoType) {
+      case 0:
+        break;
+      case 1:
+        wkbHeader.variant = 'iso-wkb';
+        wkbHeader.dimensions = 3;
+        wkbHeader.coordinates = 'xyz';
+        break;
+      case 2:
+        wkbHeader.variant = 'iso-wkb';
+        wkbHeader.dimensions = 3;
+        wkbHeader.coordinates = 'xym';
+        break;
+      case 3:
+        wkbHeader.variant = 'iso-wkb';
+        wkbHeader.dimensions = 4;
+        wkbHeader.coordinates = 'xyzm';
+        break;
+      default:
+        throw new Error(`WKB: Unsupported iso-wkb type: ${isoType}`);
+    }
+  }
 
   if (ewkbZ && ewkbM) {
     wkbHeader.variant = 'ewkb';

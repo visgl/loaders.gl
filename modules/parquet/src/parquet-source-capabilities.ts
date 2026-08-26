@@ -22,7 +22,7 @@ export type ParquetSourceCapabilities = Readonly<{
   supportsPredicatePushdown: boolean;
   /** Column and offset indexes can avoid irrelevant data-page reads for non-repeated columns. */
   supportsPageIndexPruning: boolean;
-  /** GeoParquet 1.1 bbox coverings drive spatial row-group, page, and exact-row filtering. */
+  /** Native geospatial statistics and GeoParquet 1.1 coverings drive spatial pruning. */
   supportsGeoParquetSpatialPruning: boolean;
   /** Surviving decoded rows are filtered exactly on the caller thread or worker. */
   supportsExactPredicateFiltering: boolean;

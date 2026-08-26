@@ -46,6 +46,21 @@ describe('geospatial metadata schemas', () => {
         }
       }).success
     ).toBe(true);
+
+    expect(
+      GeoParquetMetadataSchema.safeParse({
+        version: '2.0.0',
+        primary_column: 'geometry',
+        columns: {
+          geometry: {
+            encoding: 'WKB',
+            geometry_types: ['Point M', 'LineString ZM'],
+            bbox: [-180, -90, -10, 0, 180, 90, 10, 100],
+            edges: 'karney'
+          }
+        }
+      }).success
+    ).toBe(true);
   });
 
   it('rejects missing primary columns and malformed column metadata', () => {
@@ -55,6 +70,15 @@ describe('geospatial metadata schemas', () => {
         primary_column: 'missing',
         columns: {
           geometry: {encoding: 'wkb', geometry_types: ['Point']}
+        }
+      }).success
+    ).toBe(false);
+    expect(
+      GeoParquetMetadataSchema.safeParse({
+        version: '2.0.0',
+        primary_column: 'geometry',
+        columns: {
+          geometry: {encoding: 'point', geometry_types: ['Point']}
         }
       }).success
     ).toBe(false);

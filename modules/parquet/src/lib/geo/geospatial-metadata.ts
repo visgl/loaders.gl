@@ -327,14 +327,15 @@ function getGeoArrowMetadataFromGeoParquetField(
   }
 
   const extensionMetadata: Record<string, unknown> = {};
-  if (columnMetadata.crs !== undefined) {
+  if (columnMetadata.crs === undefined) {
+    extensionMetadata.crs = 'OGC:CRS84';
+    extensionMetadata.crs_type = 'authority_code';
+  } else if (columnMetadata.crs !== null) {
     extensionMetadata.crs = columnMetadata.crs;
+    extensionMetadata.crs_type = columnMetadata.crs_type || 'projjson';
   }
-  if (columnMetadata.crs_type !== undefined) {
-    extensionMetadata.crs_type = columnMetadata.crs_type;
-  }
-  if (columnMetadata.edges === 'spherical') {
-    extensionMetadata.edges = 'spherical';
+  if (columnMetadata.edges && columnMetadata.edges !== 'planar') {
+    extensionMetadata.edges = columnMetadata.edges;
   }
 
   return Object.keys(extensionMetadata).length > 0
@@ -368,17 +369,24 @@ function synthesizeGeoParquetColumnMetadata(
     geometry_types: geometryTypes
   };
 
-  if (geometryMetadata.crs !== undefined && typeof geometryMetadata.crs !== 'string') {
+  if (geometryMetadata.crs === undefined) {
+    columnMetadata.crs = null;
+  } else if (typeof geometryMetadata.crs !== 'string') {
     columnMetadata.crs = geometryMetadata.crs;
+  } else if (!isDefaultCRS84Identifier(geometryMetadata.crs)) {
+    return null;
   }
-  if (geometryMetadata.crs_type === 'projjson' || geometryMetadata.crs_type === 'wkt2:2019') {
-    columnMetadata.crs_type = geometryMetadata.crs_type;
-  }
-  if (geometryMetadata.edges === 'spherical') {
-    columnMetadata.edges = 'spherical';
+  if (geometryMetadata.edges) {
+    columnMetadata.edges = geometryMetadata.edges;
   }
 
   return columnMetadata;
+}
+
+/** Returns whether a compact GeoArrow CRS identifier has GeoParquet's default CRS semantics. */
+function isDefaultCRS84Identifier(crs: string): boolean {
+  const normalizedCRS = crs.toUpperCase();
+  return normalizedCRS === 'OGC:CRS84' || normalizedCRS === 'EPSG:4326';
 }
 
 function inferGeometryTypesFromGeoArrowEncoding(
@@ -420,8 +428,8 @@ function pickValidOptionalGeoParquetColumnMetadata(
 
 function isValidBBox(
   bbox: GeoColumnMetadata['bbox']
-): bbox is [number, number, number, number] | [number, number, number, number, number, number] {
-  if (!Array.isArray(bbox) || (bbox.length !== 4 && bbox.length !== 6)) {
+): bbox is NonNullable<GeoColumnMetadata['bbox']> {
+  if (!Array.isArray(bbox) || ![4, 6, 8].includes(bbox.length)) {
     return false;
   }
 

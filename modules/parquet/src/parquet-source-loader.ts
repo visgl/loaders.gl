@@ -10,6 +10,7 @@ import {convertTable} from '@loaders.gl/schema-utils';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {
+  canGeoParquetRowGroupMatch,
   combineParquetPredicates,
   createGeoParquetBoundingBoxPredicate
 } from './lib/geo/geoparquet-covering';
@@ -45,6 +46,7 @@ import type {
   ParquetBatch,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
   ParquetPredicate,
@@ -66,6 +68,7 @@ import {
   Encoding,
   type ColumnChunk,
   type FileMetaData,
+  type GeospatialStatistics as ParquetThriftGeospatialStatistics,
   type Statistics as ParquetThriftStatistics
 } from './parquetjs/parquet-thrift/index';
 import {ParquetReader} from './parquetjs/parser/parquet-reader';
@@ -91,6 +94,8 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetGeospatialBoundingBox,
+  ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
   ParquetComparisonPredicate,
@@ -245,6 +250,16 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             readOptions.rowGroupFilter!(initialization.metadata.rowGroups[rowGroupIndex])
           )
         : candidateRowGroupIndices;
+      const spatiallyFilteredRowGroupIndices = readOptions.bbox
+        ? callbackFilteredRowGroupIndices.filter(rowGroupIndex =>
+            canGeoParquetRowGroupMatch(
+              initialization.metadata,
+              initialization.metadata.rowGroups[rowGroupIndex],
+              readOptions.bbox!,
+              readOptions.geometryColumn
+            )
+          )
+        : callbackFilteredRowGroupIndices;
       const spatialPredicate = readOptions.bbox
         ? createGeoParquetBoundingBoxPredicate(
             initialization.metadata,
@@ -258,10 +273,10 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         validateParquetPredicate(predicate, availableColumns);
       }
       const rowGroupIndices = predicate
-        ? callbackFilteredRowGroupIndices.filter(rowGroupIndex =>
+        ? spatiallyFilteredRowGroupIndices.filter(rowGroupIndex =>
             canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
           )
-        : callbackFilteredRowGroupIndices;
+        : spatiallyFilteredRowGroupIndices;
       const rowGroupsPrunedByStatistics =
         callbackFilteredRowGroupIndices.length - rowGroupIndices.length;
       this.recordTelemetry(
@@ -836,6 +851,7 @@ function createColumnChunkMetadata(
     columnMetadata.statistics,
     parquetSchema.findField(columnMetadata.path_in_schema)
   );
+  const geospatialStatistics = createGeospatialStatistics(columnMetadata.geospatial_statistics);
   const compressedByteLength = Number(columnMetadata.total_compressed_size);
   const uncompressedByteLength = Number(columnMetadata.total_uncompressed_size);
   return Object.freeze({
@@ -866,7 +882,33 @@ function createColumnChunkMetadata(
         ? undefined
         : Number(columnChunk.offset_index_offset),
     offsetIndexByteLength: columnChunk.offset_index_length,
-    statistics
+    statistics,
+    geospatialStatistics
+  });
+}
+
+/** Normalizes native Parquet geospatial statistics from the decoded footer. */
+function createGeospatialStatistics(
+  statistics: ParquetThriftGeospatialStatistics | undefined
+): ParquetGeospatialStatistics | undefined {
+  if (!statistics) return undefined;
+  const bbox = statistics.bbox
+    ? Object.freeze({
+        xmin: statistics.bbox.xmin,
+        xmax: statistics.bbox.xmax,
+        ymin: statistics.bbox.ymin,
+        ymax: statistics.bbox.ymax,
+        zmin: statistics.bbox.zmin,
+        zmax: statistics.bbox.zmax,
+        mmin: statistics.bbox.mmin,
+        mmax: statistics.bbox.mmax
+      })
+    : undefined;
+  return Object.freeze({
+    bbox,
+    geometryTypes: statistics.geospatial_types
+      ? Object.freeze([...statistics.geospatial_types])
+      : undefined
   });
 }
 

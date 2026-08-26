@@ -7,8 +7,42 @@ import {getGeoMetadata} from '@loaders.gl/gis';
 import type {
   ParquetBoundingBox,
   ParquetPredicate,
+  ParquetRowGroupMetadata,
   ParquetSourceMetadata
 } from '../../parquet-source-types';
+
+/**
+ * Conservatively tests a row group using native Parquet geospatial statistics.
+ *
+ * Missing or malformed statistics retain the row group. Longitude intervals support the
+ * Parquet GEOGRAPHY antimeridian representation where `xmin` is greater than `xmax`.
+ */
+export function canGeoParquetRowGroupMatch(
+  metadata: ParquetSourceMetadata,
+  rowGroup: ParquetRowGroupMetadata,
+  bbox: ParquetBoundingBox,
+  geometryColumn?: string
+): boolean {
+  const bounds = getBoundingBoxCoordinates(bbox, true);
+  if (!bounds) return true;
+  const geoMetadata = getGeoMetadata(metadata.schema.metadata);
+  const selectedGeometryColumn = geometryColumn || geoMetadata?.primary_column;
+  if (!selectedGeometryColumn) return true;
+  const statistics = rowGroup.columns.find(
+    column => column.path.length === 1 && column.path[0] === selectedGeometryColumn
+  )?.geospatialStatistics?.bbox;
+  if (!statistics) return true;
+  if (
+    ![statistics.xmin, statistics.xmax, statistics.ymin, statistics.ymax].every(Number.isFinite)
+  ) {
+    return true;
+  }
+  return (
+    statistics.ymin <= bounds.north &&
+    statistics.ymax >= bounds.south &&
+    doLongitudeIntervalsIntersect(statistics.xmin, statistics.xmax, bounds.west, bounds.east)
+  );
+}
 
 type GeoParquetBoundingBoxCovering = {
   /** Parquet schema path containing the per-row minimum x coordinate. */
@@ -33,7 +67,7 @@ export function createGeoParquetBoundingBoxPredicate(
   bbox: ParquetBoundingBox,
   geometryColumn?: string
 ): ParquetPredicate | undefined {
-  const bounds = getBoundingBoxCoordinates(bbox);
+  const bounds = getBoundingBoxCoordinates(bbox, false);
   if (!bounds) {
     return undefined;
   }
@@ -123,14 +157,45 @@ function hasCoveringColumns(
 
 /** Validates and normalizes the two horizontal dimensions of a query bounding box. */
 function getBoundingBoxCoordinates(
-  bbox: ParquetBoundingBox
+  bbox: ParquetBoundingBox,
+  allowAntimeridian: boolean
 ): {west: number; south: number; east: number; north: number} | undefined {
   const west = bbox[0];
   const south = bbox[1];
-  const east = bbox.length === 6 ? bbox[3] : bbox[2];
-  const north = bbox.length === 6 ? bbox[4] : bbox[3];
-  if (![west, south, east, north].every(Number.isFinite) || west > east || south > north) {
+  const east = bbox.length === 8 ? bbox[4] : bbox.length === 6 ? bbox[3] : bbox[2];
+  const north = bbox.length === 8 ? bbox[5] : bbox.length === 6 ? bbox[4] : bbox[3];
+  if (
+    ![west, south, east, north].every(Number.isFinite) ||
+    (!allowAntimeridian && west > east) ||
+    south > north
+  ) {
     return undefined;
   }
   return {west, south, east, north};
+}
+
+/** Tests two longitude intervals, each of which may wrap across the antimeridian. */
+function doLongitudeIntervalsIntersect(
+  firstWest: number,
+  firstEast: number,
+  secondWest: number,
+  secondEast: number
+): boolean {
+  const firstIntervals =
+    firstWest <= firstEast
+      ? [[firstWest, firstEast]]
+      : [
+          [firstWest, 180],
+          [-180, firstEast]
+        ];
+  const secondIntervals =
+    secondWest <= secondEast
+      ? [[secondWest, secondEast]]
+      : [
+          [secondWest, 180],
+          [-180, secondEast]
+        ];
+  return firstIntervals.some(first =>
+    secondIntervals.some(second => first[0] <= second[1] && first[1] >= second[0])
+  );
 }

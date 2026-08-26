@@ -34,8 +34,11 @@ export type GeoColumnMetadata = {
   crs?: object | null;
   crs_type?: 'projjson' | 'wkt2:2019';
   orientation?: 'counterclockwise';
-  bbox?: [number, number, number, number] | [number, number, number, number, number, number];
-  edges?: 'planar' | 'spherical';
+  bbox?:
+    | [number, number, number, number]
+    | [number, number, number, number, number, number]
+    | [number, number, number, number, number, number, number, number];
+  edges?: 'planar' | GeoArrowEdgeType;
   epoch?: number;
   [key: string]: unknown;
 };
@@ -57,7 +60,21 @@ export type GeoParquetGeometryType =
   | 'MultiPoint Z'
   | 'MultiLineString Z'
   | 'MultiPolygon Z'
-  | 'GeometryCollection Z';
+  | 'GeometryCollection Z'
+  | 'Point M'
+  | 'LineString M'
+  | 'Polygon M'
+  | 'MultiPoint M'
+  | 'MultiLineString M'
+  | 'MultiPolygon M'
+  | 'GeometryCollection M'
+  | 'Point ZM'
+  | 'LineString ZM'
+  | 'Polygon ZM'
+  | 'MultiPoint ZM'
+  | 'MultiLineString ZM'
+  | 'MultiPolygon ZM'
+  | 'GeometryCollection ZM';
 
 /** GeoArrow extension names used to describe geometry column encodings. */
 export type GeoArrowEncoding =

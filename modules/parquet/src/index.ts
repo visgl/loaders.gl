@@ -50,6 +50,8 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetGeospatialBoundingBox,
+  ParquetGeospatialStatistics,
   ParquetDatasetBatch,
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,

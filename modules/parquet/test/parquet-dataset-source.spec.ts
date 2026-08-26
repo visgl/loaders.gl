@@ -144,6 +144,32 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('prunes eight-dimensional descriptors across the antimeridian', async () => {
+    const source = new ParquetDatasetSource(
+      [
+        {
+          data: westernFile,
+          id: 'antimeridian',
+          bbox: [170, -20, -10, 0, -170, 20, 10, 100]
+        },
+        {
+          data: easternFile,
+          id: 'prime-meridian',
+          bbox: [-10, -20, -10, 0, 10, 20, 10, 100]
+        }
+      ],
+      {core: {worker: false}}
+    );
+
+    const batches = await collectBatches(
+      source.read({bbox: [175, -5, -1, 0, -175, 5, 1, 10]})
+    );
+
+    expect(batches.map(batch => batch.datasetFileId)).toEqual(['antimeridian']);
+    expect(source.getTelemetry().filesPrunedByBoundingBox).toBe(1);
+    await source.close();
+  });
+
   test('forwards Parquet projection and exact predicates to every selected file', async () => {
     const source = new ParquetDatasetSource(
       [{data: westernFile}, {data: easternFile}],

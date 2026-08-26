@@ -6,6 +6,7 @@ import type {ArrayType, Schema} from '@loaders.gl/schema';
 import {describe, expect, test} from 'vitest';
 
 import {
+  canGeoParquetRowGroupMatch,
   combineParquetPredicates,
   createGeoParquetBoundingBoxPredicate
 } from '../src/lib/geo/geoparquet-covering';
@@ -96,6 +97,34 @@ describe('GeoParquet bbox covering', () => {
     expect(
       createGeoParquetBoundingBoxPredicate(createMetadata(COVERING), [-71.1, 42.4, -71, 42.3])
     ).toBeUndefined();
+  });
+
+  test('prunes native GeoParquet 2.0 statistics including antimeridian intervals', () => {
+    const metadata = createMetadata(undefined);
+    const rowGroup = {
+      ...metadata.rowGroups[0],
+      columns: [
+        ...metadata.rowGroups[0].columns,
+        {
+          ...metadata.rowGroups[0].columns[0],
+          path: ['geometry'],
+          geospatialStatistics: {
+            bbox: {xmin: 170, xmax: -170, ymin: -20, ymax: 20},
+            geometryTypes: [1, 1002]
+          }
+        }
+      ]
+    };
+
+    expect(canGeoParquetRowGroupMatch(metadata, rowGroup, [175, -5, 179, 5])).toBe(true);
+    expect(canGeoParquetRowGroupMatch(metadata, rowGroup, [-179, -5, -175, 5])).toBe(true);
+    expect(canGeoParquetRowGroupMatch(metadata, rowGroup, [-100, -5, -90, 5])).toBe(false);
+    expect(canGeoParquetRowGroupMatch(metadata, rowGroup, [175, -5, 1, 2, -175, 5, 3, 4])).toBe(
+      true
+    );
+    expect(canGeoParquetRowGroupMatch(metadata, metadata.rowGroups[0], [-100, -5, -90, 5])).toBe(
+      true
+    );
   });
 });
 
