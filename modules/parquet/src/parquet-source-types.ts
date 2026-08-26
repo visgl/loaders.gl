@@ -108,6 +108,10 @@ export type ParquetColumnChunkMetadata = {
   readonly offsetIndexOffset?: number;
   /** Serialized byte length of the optional data-page location index. */
   readonly offsetIndexByteLength?: number;
+  /** Absolute file offset of the optional split-block Bloom filter. */
+  readonly bloomFilterOffset?: number;
+  /** Serialized byte length of the optional split-block Bloom filter. */
+  readonly bloomFilterByteLength?: number;
   /** Optional min/max and count statistics decoded from the footer. */
   readonly statistics?: ParquetColumnChunkStatistics;
   /** Native geospatial statistics decoded from a Parquet 2.11+ footer. */

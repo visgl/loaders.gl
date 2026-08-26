@@ -105,3 +105,15 @@ export {
   convertParquetSchema,
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
+
+export {
+  checkParquetSplitBlockBloomFilter,
+  decodeParquetSplitBlockBloomFilter,
+  hashParquetBloomFilterValue,
+  insertParquetSplitBlockBloomFilter,
+  type ParquetSplitBlockBloomFilter
+} from './lib/parquet-bloom-filter';
+export {
+  getParquetBloomFilterProbes,
+  type ParquetBloomFilterProbe
+} from './lib/parquet-bloom-filter-planner';

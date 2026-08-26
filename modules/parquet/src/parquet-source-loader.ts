@@ -882,6 +882,11 @@ function createColumnChunkMetadata(
         ? undefined
         : Number(columnChunk.offset_index_offset),
     offsetIndexByteLength: columnChunk.offset_index_length,
+    bloomFilterOffset:
+      columnMetadata.bloom_filter_offset === undefined
+        ? undefined
+        : Number(columnMetadata.bloom_filter_offset),
+    bloomFilterByteLength: columnMetadata.bloom_filter_length,
     statistics,
     geospatialStatistics
   });
