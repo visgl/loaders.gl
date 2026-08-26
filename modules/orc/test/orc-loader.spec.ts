@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
 import {ORCLoaderWithParser} from '../src/orc-loader';
-import {ORCSource} from '../src/orc-source-loader';
+import {ORCSource, ORCSourceLoaderWithParser} from '../src/orc-source-loader';
 import {ORCWriter} from '../src/orc-writer';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
 
@@ -27,6 +27,18 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
   const result = await source.query({columns: ['name'], limit: 1});
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
   expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
+
+  const defaultQuery = await source.query({limit: 2});
+  expect(defaultQuery.data.numRows).toBe(2);
+  const batches = source.read({limit: 1});
+  const batch = await batches[Symbol.asyncIterator]().next();
+  expect(batch.value?.length).toBe(1);
+});
+
+test('ORC source loader exposes explicit parser entry points', () => {
+  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
+  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
+  expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
 });
 
 test('ORCSource rejects unsupported predicates before reading the source', async () => {
