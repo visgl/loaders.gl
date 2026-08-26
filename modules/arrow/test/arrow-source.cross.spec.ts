@@ -44,3 +44,17 @@ test('ArrowSourceLoader exposes URL matching and construction', () => {
   expect(ArrowSourceLoader.testURL('data.csv')).toBe(false);
   expect(ArrowSourceLoader.createDataSource(new Blob([]), {})).toBeInstanceOf(ArrowTableSource);
 });
+
+test('ArrowTableSource rejects a source with no discoverable batch', async () => {
+  const source = new ArrowTableSource(new Blob([]));
+  (source as unknown as {parseBatches: () => AsyncIterable<unknown>}).parseBatches =
+    async function* () {};
+  await expect(source.getQueryMetadata()).rejects.toThrow('source is empty');
+});
+
+test('ArrowTableSource reports failed URL responses', async () => {
+  const source = new ArrowTableSource('data.arrow');
+  source.fetch = async () => new Response(null, {status: 503});
+  const batches = source.getQueryMetadata();
+  await expect(batches).rejects.toThrow('status 503');
+});

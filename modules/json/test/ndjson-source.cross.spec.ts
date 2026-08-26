@@ -46,3 +46,16 @@ test('NDJSONSourceLoader exposes URL matching and construction', () => {
     NDJSONTableSource
   );
 });
+
+test('NDJSONTableSource rejects a source with no discoverable batch', async () => {
+  const source = new NDJSONTableSource(new Blob([]));
+  (source as unknown as {parseBatches: () => AsyncIterable<unknown>}).parseBatches =
+    async function* () {};
+  await expect(source.getQueryMetadata()).rejects.toThrow('source is empty');
+});
+
+test('NDJSONTableSource reports failed URL responses', async () => {
+  const source = new NDJSONTableSource('data.jsonl');
+  source.fetch = async () => new Response(null, {status: 503});
+  await expect(source.getQueryMetadata()).rejects.toThrow('status 503');
+});
