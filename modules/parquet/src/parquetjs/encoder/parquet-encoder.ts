@@ -26,6 +26,7 @@ import {
   ColumnChunk,
   ColumnIndex,
   ColumnMetaData,
+  SizeStatistics,
   CompressionCodec,
   ConvertedType,
   DataPageHeader,
@@ -115,6 +116,8 @@ export interface ParquetEncoderOptions {
   pageIndex?: boolean | Record<string, boolean>;
   /** Emit CRC-32 checksums for page bodies. */
   writePageChecksums?: boolean;
+  /** Emit optional SizeStatistics metadata for each column chunk. */
+  writeSizeStatistics?: boolean;
 
   // Write Stream Options
   flags?: string;
@@ -297,6 +300,7 @@ export class ParquetEnvelopeWriter {
   public bloomFilter?: boolean | Record<string, boolean>;
   public pageIndex?: boolean | Record<string, boolean>;
   public writePageChecksums: boolean;
+  public writeSizeStatistics: boolean;
 
   constructor(
     schema: ParquetSchema,
@@ -319,6 +323,7 @@ export class ParquetEnvelopeWriter {
     this.bloomFilter = opts.bloomFilter;
     this.pageIndex = opts.pageIndex;
     this.writePageChecksums = Boolean(opts.writePageChecksums);
+    this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -347,7 +352,8 @@ export class ParquetEnvelopeWriter {
       dictionaryPageSizeLimit: this.dictionaryPageSizeLimit,
       bloomFilter: this.bloomFilter,
       pageIndex: this.pageIndex,
-      writePageChecksums: this.writePageChecksums
+      writePageChecksums: this.writePageChecksums,
+      writeSizeStatistics: this.writeSizeStatistics
     });
 
     this.rowCount += records.rowCount;
@@ -802,7 +808,8 @@ async function encodeColumnChunk(
     codec: CompressionCodec[column.compression!],
     bloom_filter_offset: bloomFilter ? int64(baseOffset + pagesBuf.length) : undefined,
     bloom_filter_length: bloomFilter?.length,
-    geospatial_statistics: createGeospatialStatistics(column, data.values)
+    geospatial_statistics: createGeospatialStatistics(column, data.values),
+    size_statistics: opts.writeSizeStatistics ? createSizeStatistics(column, data) : undefined
   });
 
   /* list encodings */
@@ -1024,6 +1031,40 @@ function createColumnBloomFilter(
     physicalType,
     column.typeLength
   );
+}
+
+/** Builds optional size statistics from one shredded column chunk. */
+function createSizeStatistics(column: ParquetField, data: ParquetColumnChunk): SizeStatistics {
+  const repetitionLevelHistogram = createLevelHistogram(data.rlevels, column.rLevelMax);
+  const definitionLevelHistogram = createLevelHistogram(data.dlevels, column.dLevelMax);
+  let unencodedByteArrayDataBytes = 0;
+  if (column.primitiveType === 'BYTE_ARRAY') {
+    for (const value of data.values) {
+      if (typeof value === 'string') {
+        unencodedByteArrayDataBytes += encodeUtf8(value).byteLength;
+      } else if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+        unencodedByteArrayDataBytes += value.byteLength;
+      }
+    }
+  }
+  return new SizeStatistics({
+    unencoded_byte_array_data_bytes:
+      unencodedByteArrayDataBytes > 0 ? unencodedByteArrayDataBytes : undefined,
+    repetition_level_histogram: repetitionLevelHistogram,
+    definition_level_histogram: definitionLevelHistogram
+  });
+}
+
+/** Counts the occurrences of each definition or repetition level. */
+function createLevelHistogram(
+  levels: ParquetColumnChunk['rlevels'],
+  maximumLevel: number
+): number[] {
+  const histogram = new Array<number>(maximumLevel + 1).fill(0);
+  for (const level of levels) {
+    if (level >= 0 && level <= maximumLevel) histogram[level]++;
+  }
+  return histogram;
 }
 
 /**
