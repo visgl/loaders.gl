@@ -8,15 +8,6 @@
 
 This module contains loaders for the Zarr format.
 
-## Implementation
-
-The source-loader APIs in this module use the independent
-[zarrita.js project](https://github.com/manzt/zarrita.js) (see its
-[documentation](https://zarrita.dev/)) to open Zarr v2 and v3 stores, discover metadata, and
-decode array chunks. loaders.gl provides the `DataSource`,
-`RasterSource`, selection, cancellation, and metadata contracts around Zarrita. The legacy
-`loadZarr()` pixel-pyramid API continues to use its existing `zarr.js` implementation.
-
 ## Exports
 
 - `loadZarr()` and `ZarrPixelSource` for the existing pixel-pyramid API
@@ -103,3 +94,11 @@ const imageMetadata = await imageSource.getMetadata();
 
 See the [`OMEZarrSourceLoader` API reference](https://loaders.gl/docs/modules/zarr/api-reference/ome-zarr-source-loader)
 for source options, raster output layout, and current scope.
+
+# Attributions
+
+The source-loader APIs use the independent [zarrita.js project](https://github.com/manzt/zarrita.js),
+with [documentation at zarrita.dev](https://zarrita.dev/), to open Zarr v2 and v3 stores, discover
+metadata, and decode array chunks. loaders.gl provides the `DataSource`, `RasterSource`, selection,
+cancellation, and metadata contracts around Zarrita. The legacy `loadZarr()` pixel-pyramid API
+continues to use its existing [zarr.js implementation](https://github.com/gzuidhof/zarr.js/).

@@ -50,7 +50,7 @@ well as the regular one-dimensional coordinate arrays commonly written by xarray
 The [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) reads a public NASA POWER climatology
 store directly from S3 and renders monthly solar irradiance on an interactive map.
 
-## Attributions
+# Attributions
 
 The OME-Zarr and GeoZarr source loaders use the independent
 [zarrita.js project](https://github.com/manzt/zarrita.js), documented at

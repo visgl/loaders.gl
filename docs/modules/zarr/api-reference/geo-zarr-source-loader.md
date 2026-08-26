@@ -8,8 +8,7 @@
 
 `GeoZarrSourceLoader` opens a numeric Zarr data variable as a viewport-driven geospatial raster
 source. It supports Zarr v2 and v3 stores through Zarrita.
-The independent [zarrita.js project](https://github.com/manzt/zarrita.js) provides store access
-and array chunk decoding, while loaders.gl supplies the
+The source uses Zarrita for store access and array chunk decoding, while loaders.gl supplies the
 viewport-driven `RasterSource` API and normalized GeoZarr metadata.
 
 The source recognizes two interoperable metadata patterns:
@@ -106,3 +105,9 @@ GeoZarr layouts.
 
 The GeoZarr conventions are still pre-stable. The source therefore retains original group and array
 attributes in `metadata` and treats unknown optional fields as ignorable.
+
+# Attributions
+
+This source uses the independent [zarrita.js project](https://github.com/manzt/zarrita.js),
+documented at [zarrita.dev](https://zarrita.dev/), for Zarr store access and chunk decoding.
+loaders.gl supplies the viewport-driven raster API and normalized GeoZarr metadata.
