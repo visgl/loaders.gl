@@ -239,7 +239,7 @@ function extractExceptions(xmlException: any): WMSExceptions | undefined {
   const xmlExceptionFormats = getXMLArray(xmlException?.Format);
   if (xmlExceptionFormats.length > 0) {
     return {
-      mimeTypes: getXMLStringArray(xmlException)
+      mimeTypes: getXMLStringArray(xmlExceptionFormats)
     };
   }
   return undefined;
