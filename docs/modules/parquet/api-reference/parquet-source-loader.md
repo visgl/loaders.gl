@@ -51,7 +51,7 @@ try {
 
 Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `load()` imports its
 runtime implementation from the package's `parquet-source-loader` subpath. File access begins when
-`getSchema()`, `getMetadata()`, or `read()` is first called.
+`getSchema()`, `getMetadata()`, `getScanPlan()`, or `read()` is first called.
 
 Applications that need synchronous `createDataSource()` can import the runtime loader explicitly:
 
@@ -112,6 +112,10 @@ for await (const batch of dataset.read({
   console.log(batch.datasetFileId, batch.datasetPartitions, batch.data);
 }
 ```
+
+Call `dataset.getScanPlan(options)` to inspect the common logical query, descriptor pruning, and
+each retained file's physical Parquet plan before decoding data pages. `dataset.explain(options)`
+is an alias, and `dataset.scan(options)` is the common scan-architecture alias for `read(options)`.
 
 The dataset source forwards `bbox`, `partitions`, and `signal` to the provider, then conservatively
 rechecks descriptor bounding boxes and known partition values before opening files. Missing
@@ -191,8 +195,35 @@ constructing an intermediate object for every row. Keeping authenticated range r
 caller thread preserves custom fetch implementations, cancellation, range scheduling, and object
 version validation.
 
+When a predicate references columns omitted from the output projection, the worker path performs
+the same filter-first late materialization as the caller-thread path: predicate columns are decoded
+and evaluated first, and projected column ranges are fetched and gathered only for row groups with
+matches. The final Arrow table is transferred through the Arrow table utilities and retains exact
+row-group indexes and provenance.
+
 Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
 retain their composite values while primitive and logical columns flow through the columnar path.
+
+### `getScanPlan(options?): Promise<ParquetSourceExplain>`
+
+Returns the common logical `scan → filter → project → limit` plan together with the physical
+Parquet row-group plan. The physical section reports retained row-group indexes and separate counts
+for callback, spatial-statistics, column-statistics, and Bloom-filter pruning. It also reports the
+number and byte size of Bloom-filter payloads inspected while planning. For indexed files it also
+reports candidate row ranges, selected versus total pages, pruned rows, and the absolute data-page
+ranges required by each retained row group. Planning may therefore read footer, Bloom-filter,
+column-index, and offset-index ranges, but it does not decode data pages.
+
+`explain(options)` is an alias for `getScanPlan(options)`. `scan(options)` is an alias for
+`read(options)`, allowing `ParquetSource` and `ParquetDatasetSource` to use the same vocabulary as
+other common-scan backends.
+
+### `executeScanPlan(plan, options?): AsyncIterable<ParquetSourceBatch>`
+
+Executes a plan returned by `getScanPlan()` while retaining its selected row-group indexes. This is
+useful when an application wants to inspect or cache a plan before starting data transfer. Optional
+projection, predicate, and limit values override the corresponding logical plan values; the physical
+row-group selection remains fixed by the supplied plan.
 
 ### Predicate filtering and page pruning
 
@@ -358,4 +389,5 @@ serve the package's WASM loader and writer paths.
 - Node.js decodes on the caller thread; the package only prebuilds the browser source worker.
 - Page-index range planning supports non-repeated primitive leaves, including struct children;
   repeated selections conservatively use complete selected column chunks.
-- Bloom-filter range planning remains future work.
+- Bloom-filter range planning supports uncompressed split-block filters for safe equality and `IN`
+  predicates; unsupported or malformed filters are ignored conservatively.

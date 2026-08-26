@@ -4,7 +4,9 @@
 
 import {Uint8ArrayCompactProtocol} from '../parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../parquetjs/utils/uint8-array-transport';
+import {Uint8ArrayCompactProtocolWriter} from '../parquetjs/utils/uint8-array-compact-protocol-writer';
 import {Thrift} from '../parquetjs/utils/thrift-runtime';
+import {concatUint8Arrays} from '../parquetjs/utils/binary-utils';
 
 const UINT64_MASK = 0xffffffffffffffffn;
 const PRIME1 = 0x9e3779b185ebca87n;
@@ -41,6 +43,37 @@ export type ParquetBloomFilterPhysicalType =
   | 'DOUBLE'
   | 'BYTE_ARRAY'
   | 'FIXED_LEN_BYTE_ARRAY';
+
+/** Builds an uncompressed Parquet split-block Bloom filter for one column chunk. */
+export function encodeParquetSplitBlockBloomFilter(
+  values: readonly (boolean | number | bigint | string | Uint8Array)[],
+  physicalType: ParquetBloomFilterPhysicalType,
+  typeLength?: number
+): Uint8Array | undefined {
+  if (values.length === 0) return undefined;
+
+  // Ten bits per value is the Parquet recommendation. Split-block filters are composed of
+  // 256-bit blocks, so round up to the next whole block and keep a useful minimum for tiny groups.
+  const targetBitCount = Math.max(256, values.length * 10);
+  const blockCount = Math.max(1, Math.ceil(targetBitCount / 256));
+  const bitset = new Uint8Array(blockCount * 32);
+  for (const value of values) {
+    const encoded = encodeParquetBloomFilterValue(value, physicalType, typeLength);
+    insertParquetSplitBlockBloomFilter(bitset, hashParquetBloomFilterValue(encoded));
+  }
+
+  const headerWriter = new Uint8ArrayCompactProtocolWriter();
+  headerWriter.writeStructBegin('BloomFilterHeader');
+  headerWriter.writeFieldBegin('numBytes', Thrift.Type.I32, 1);
+  headerWriter.writeI32(bitset.byteLength);
+  headerWriter.writeFieldEnd();
+  writeBloomFilterUnion(headerWriter, 'algorithm', 2, 'BLOCK');
+  writeBloomFilterUnion(headerWriter, 'hash', 3, 'XXHASH');
+  writeBloomFilterUnion(headerWriter, 'compression', 4, 'UNCOMPRESSED');
+  headerWriter.writeFieldStop();
+  headerWriter.writeStructEnd();
+  return concatUint8Arrays([headerWriter.getBytes(), bitset]);
+}
 
 /** Encodes one scalar using the Parquet PLAIN representation used by Bloom filters. */
 export function encodeParquetBloomFilterValue(
@@ -164,6 +197,25 @@ function readBloomFilterUnion(
   }
   protocol.readStructEnd();
   return matches;
+}
+
+/** Writes one Bloom-filter Thrift union using the compact protocol. */
+function writeBloomFilterUnion(
+  writer: Uint8ArrayCompactProtocolWriter,
+  fieldName: string,
+  fieldId: number,
+  variantName: string
+): void {
+  writer.writeFieldBegin(fieldName, Thrift.Type.STRUCT, fieldId);
+  writer.writeStructBegin(variantName);
+  writer.writeFieldBegin(variantName, Thrift.Type.STRUCT, 1);
+  writer.writeStructBegin(variantName);
+  writer.writeFieldStop();
+  writer.writeStructEnd();
+  writer.writeFieldEnd();
+  writer.writeFieldStop();
+  writer.writeStructEnd();
+  writer.writeFieldEnd();
 }
 
 /** Returns whether a serialized Parquet split-block Bloom filter may contain a hash. */

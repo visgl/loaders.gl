@@ -99,7 +99,8 @@ const parquet = await encode(table, ParquetJSWriter, {
       temperature: 'BYTE_STREAM_SPLIT',
       timestamp: 'DELTA_BINARY_PACKED',
       identifier: 'DELTA_BYTE_ARRAY'
-    }
+    },
+    bloomFilter: {identifier: true}
   }
 });
 ```
@@ -131,6 +132,7 @@ read/write encoding matrix.
 | `parquet.dictionary` | `boolean \| 'auto'` | `'auto'` | Enables, disables, or adaptively selects a chunk-wide dictionary. |
 | `parquet.columnDictionaries` | `Record<string, boolean \| 'auto'>` | `{}` | Overrides the dictionary policy by top-level column name. |
 | `parquet.dictionaryPageSizeLimit` | `number` | `1048576` | Maximum uncompressed PLAIN dictionary payload in bytes; oversized dictionaries fall back for the complete chunk. |
+| `parquet.bloomFilter` | `boolean \| Record<string, boolean>` | `false` | Emits uncompressed split-block Bloom filters for supported scalar columns, globally or by top-level column name. |
 | `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |
 | `parquet.pageSize` | `number` | `8192` | Sets the target shredded level-entry count per page. Boundaries remain aligned to top-level rows. |
 | `parquet.useDataPageV2` | `boolean` | `false` | Emits Data Page V2 from `ParquetJSWriter`. |

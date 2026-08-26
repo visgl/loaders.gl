@@ -32,6 +32,8 @@ type ParquetJSWriterEncoderOptions = {
   columnDictionaries?: Record<string, boolean | 'auto'>;
   /** Maximum uncompressed PLAIN dictionary payload per column chunk. */
   dictionaryPageSizeLimit?: number;
+  /** Emits Parquet split-block Bloom filters for selected columns. */
+  bloomFilter?: boolean | Record<string, boolean>;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;

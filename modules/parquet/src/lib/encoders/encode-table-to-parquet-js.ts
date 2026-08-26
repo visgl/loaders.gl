@@ -68,6 +68,10 @@ function convertSchemaToParquetSchema(
   const parquetFields: SchemaDefinition = {};
   const columnEncodings = options.parquet?.columnEncodings || {};
   const columnDictionaries = options.parquet?.columnDictionaries || {};
+  const bloomFilterColumns =
+    options.parquet?.bloomFilter && typeof options.parquet.bloomFilter === 'object'
+      ? options.parquet.bloomFilter
+      : {};
   const fieldNames = new Set(schema.fields.map(field => field.name));
   const geoMetadata = getGeoMetadata(schema.metadata);
   for (const columnName of Object.keys(columnEncodings)) {
@@ -78,6 +82,11 @@ function convertSchemaToParquetSchema(
   for (const columnName of Object.keys(columnDictionaries)) {
     if (!fieldNames.has(columnName)) {
       throw new Error(`ParquetJSWriter: Unknown column dictionary override "${columnName}"`);
+    }
+  }
+  for (const columnName of Object.keys(bloomFilterColumns)) {
+    if (!fieldNames.has(columnName)) {
+      throw new Error(`ParquetJSWriter: Unknown Bloom-filter column "${columnName}"`);
     }
   }
 
