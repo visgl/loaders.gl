@@ -382,8 +382,7 @@ function _toGeoJSONFeature(
   };
 
   if (vtFeature.id !== null) {
-    result.properties ||= {};
-    result.properties.id = vtFeature.id;
+    result.id = vtFeature.id;
   }
 
   return result;

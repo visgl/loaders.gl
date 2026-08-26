@@ -298,7 +298,15 @@ test('Features with top-level id', async (t) => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
+  const geojsonFeatures = await parse(mvtArrayBuffer, MVTLoader);
+  for (const feature of geojsonFeatures) {
+    t.ok(feature.id, 'feature.id is preserved');
+    t.notOk(feature.properties.id, 'feature.id is not copied to properties');
+  }
+
+  const binaryResponse = await fetchFile(WITH_FEATURE_ID);
+  const binaryArrayBuffer = await binaryResponse.arrayBuffer();
+  const binary = await parse(binaryArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
   t.ok(binary.points.fields.length, 'feature.id fields are preserved');
   t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
   t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
