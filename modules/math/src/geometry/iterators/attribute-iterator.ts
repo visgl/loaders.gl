@@ -12,7 +12,7 @@ export function* makeAttributeIterator(values: any, size: number): Iterable<any>
   const element = new ArrayType(size);
   for (let i = 0; i < values.length; i += size) {
     for (let j = 0; j < size; j++) {
-      element[j] = element[i + j];
+      element[j] = values[i + j];
     }
     yield element;
   }
