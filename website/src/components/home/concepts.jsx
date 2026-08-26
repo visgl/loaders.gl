@@ -780,6 +780,7 @@ export default function Concepts() {
           <GuideLink to="/docs/developer-guide/using-loaders">Using loaders</GuideLink>
           <GuideLink to="/docs/developer-guide/using-writers">Using writers</GuideLink>
           <GuideLink to="/docs/developer-guide/using-sources">Using sources</GuideLink>
+          <GuideLink to="/docs/developer-guide/common-scan-architecture">Using scans</GuideLink>
           <GuideLink to="/docs/developer-guide/composite-loaders">Composite loaders</GuideLink>
         </LinkBar>
 
