@@ -80,6 +80,27 @@ test('ParquetJSWriter records declared row-group sorting columns', async () => {
   ]);
 });
 
+test('ParquetJSWriter rejects ambiguous bare nested sorting names', async () => {
+  const nestedTable: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'left', type: {type: 'struct', children: [{name: 'id', type: 'int32'}]}},
+        {name: 'right', type: {type: 'struct', children: [{name: 'id', type: 'int32'}]}}
+      ],
+      metadata: {}
+    },
+    data: [{left: {id: 1}, right: {id: 2}}]
+  };
+
+  await expect(
+    encode(nestedTable, ParquetJSWriter, {
+      worker: false,
+      parquet: {sortingColumns: [{column: 'id'}]}
+    })
+  ).rejects.toThrow('Unknown Parquet sorting column id');
+});
+
 test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () => {
   for (const useDataPageV2 of [false, true]) {
     const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
