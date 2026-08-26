@@ -50,6 +50,17 @@ The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/
 
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
+For applications that need static geometry in the Mesh Arrow layout, use `convertGLTFToMeshArrow()` after loading. It converts each source primitive once and returns node placements separately, preserving mesh reuse. Dense, packed accessors retain views of source buffers; interleaved, sparse, and implicit-zero accessors are materialized without changing their logical component values. Conversion does not modify the glTF or bake node transforms, skinning, morph targets, or GPU instancing.
+
+```ts
+import {load} from '@loaders.gl/core';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import {convertGLTFToMeshArrow} from '@loaders.gl/gltf/mesh-arrow';
+
+const gltf = await load(url, GLTFLoader);
+const meshArrow = convertGLTFToMeshArrow(gltf);
+```
+
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
 In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
