@@ -79,6 +79,16 @@ vitestTest('ArcGISImageTileSource distributes requests across configured service
   expect(url.origin).toBe('https://imagery-b.example.com');
 });
 
+vitestTest('ArcGISImageTileSource parses the effective response format', () => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {format: 'lerc', parameters: {format: 'png32'}}
+  });
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
+  expect(source.mimeType).toBe('image/png');
+  source.updateParameters({format: 'png32'});
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
+});
+
 test('ArcGISImageSource#metadataURL', t => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
 
@@ -110,6 +120,21 @@ test('ArcGISImageSource#exportImageURL', t => {
   t.equal(exportImageUrl.searchParams.get('format'), 'png');
   t.equal(exportImageUrl.searchParams.get('f'), 'image');
   t.end();
+});
+
+vitestTest('ArcGISImageSource#exportImageURL supports LERC analytical rasters', () => {
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const exportRasterUrl = new URL(
+    source.exportImageURL({
+      bbox: [1, 2, 3, 4],
+      width: 128,
+      height: 128,
+      format: 'lerc',
+      pixelType: 'F32'
+    })
+  );
+  expect(exportRasterUrl.searchParams.get('format')).toBe('lerc');
+  expect(exportRasterUrl.searchParams.get('pixelType')).toBe('F32');
 });
 
 test('ArcGISImageSource#getMetadata', async t => {

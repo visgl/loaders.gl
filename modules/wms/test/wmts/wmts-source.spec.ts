@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 
@@ -86,4 +87,43 @@ test('WMTSImageTileSource derives URL options from capabilities', async t => {
   await source.getMetadata();
   t.equal(source.getTileURL({x: 1, y: 2, z: 3}), 'https://tiles.example/3/2/1.png');
   t.end();
+});
+
+vitestTest('WMTSImageTileSource selects CRS-compatible matrix identifiers', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      crs: 'EPSG:3857',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [
+                {tileMatrixSet: 'Geographic'},
+                {tileMatrixSet: 'WebMercatorQuad'}
+              ],
+              resourceURLs: [
+                {template: 'https://tiles.example/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}'}
+              ]
+            }
+          ],
+          tileMatrixSets: [
+            {identifier: 'Geographic', supportedCRS: 'EPSG:4326', matrices: [{identifier: '4'}]},
+            {
+              identifier: 'WebMercatorQuad',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'L04'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+  await source.getMetadata();
+  expect(source.getTileURL({x: 1, y: 2, z: 0})).toBe(
+    'https://tiles.example/WebMercatorQuad/L04/2/1'
+  );
 });

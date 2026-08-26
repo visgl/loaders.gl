@@ -14,6 +14,8 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import type {LERCData} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/lerc';
 
 /** Options for the ArcGIS ImageServer tile source. */
 export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions & {
@@ -24,6 +26,8 @@ export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions & {
     urls?: string[];
     /** Additional exportImage parameters. */
     parameters?: Record<string, string | number | boolean>;
+    /** Response format, using LERC for analytical raster tiles. */
+    format?: 'png32' | 'lerc';
   };
 };
 
@@ -32,8 +36,8 @@ export class ArcGISImageTileSource
   extends DataSource<string, ArcGISImageTileSourceLoaderOptions>
   implements TileSource
 {
-  /** MIME type rendered by the generic deck.gl tile adapter. */
-  readonly mimeType = 'image/png';
+  /** MIME type represented by the tile response. */
+  readonly mimeType: string;
 
   /** Cached ImageServer metadata. */
   private _metadata: any | null = null;
@@ -45,6 +49,7 @@ export class ArcGISImageTileSource
   /** Creates an ArcGIS ImageServer tile source. */
   constructor(url: string, options: ArcGISImageTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, ArcGISImageTileSourceLoader.defaultOptions, coreApi);
+    this.mimeType = this._getResponseFormat() === 'lerc' ? 'application/octet-stream' : 'image/png';
     this.getTileData = this.getTileData.bind(this);
   }
 
@@ -73,22 +78,26 @@ export class ArcGISImageTileSource
   }
 
   /** Fetches one ImageServer export tile. */
-  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+  async getTile(
+    parameters: GetTileParameters,
+    signal?: AbortSignal
+  ): Promise<ImageType | LERCData | null> {
     const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(
         `ArcGIS ImageServer tile request failed: ${response.status} ${response.statusText}`
       );
     }
+    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : ImageLoader;
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      ImageLoader,
+      loader,
       this.loadOptions
     )) as ImageType;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | LERCData | null> {
     return this.getTile(parameters.index, parameters.signal);
   }
 
@@ -110,7 +119,7 @@ export class ArcGISImageTileSource
       bboxSR: 3857,
       imageSR: 3857,
       size: `${resolvedTileSize},${resolvedTileSize}`,
-      format: 'png32',
+      format: this._getResponseFormat(),
       transparent: true,
       ...options.parameters,
       ...this._runtimeParameters
@@ -151,6 +160,13 @@ export class ArcGISImageTileSource
   private getServiceURL(parameters: GetTileParameters): string {
     const urls = this.options['arcgis-image-server-tiles']?.urls;
     return urls?.length ? urls[(parameters.x + parameters.y) % urls.length] : this.url;
+  }
+
+  /** Returns the response format after applying configured and runtime overrides. */
+  private _getResponseFormat(): 'png32' | 'lerc' {
+    const options = this.options['arcgis-image-server-tiles'] || {};
+    const format = this._runtimeParameters.format || options.parameters?.format || options.format;
+    return format === 'lerc' ? 'lerc' : 'png32';
   }
 }
 

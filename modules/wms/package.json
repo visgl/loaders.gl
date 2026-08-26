@@ -60,6 +60,7 @@
   "dependencies": {
     "@loaders.gl/gis": "5.0.0-alpha.2",
     "@loaders.gl/images": "5.0.0-alpha.2",
+    "@loaders.gl/lerc": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/xml": "5.0.0-alpha.2",

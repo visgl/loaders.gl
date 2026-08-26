@@ -1,0 +1,35 @@
+---
+title: "ArcGIS ImageServer Analytical LERC"
+---
+
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
+# ArcGIS ImageServer Analytical LERC
+
+<WmsDocsTabs active="arcgis-image-server-example" />
+
+ArcGIS ImageServer can return analysis-ready LERC rasters instead of display images:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {_ArcGISImageServerSourceLoader} from '@loaders.gl/wms';
+
+const source = createDataSource(url, [_ArcGISImageServerSourceLoader], {
+  core: {type: 'arcgis-image-server'}
+});
+
+const raster = await source.exportRaster({
+  bbox: [-122.5, 37.7, -122.3, 37.85],
+  bboxSR: 'EPSG:4326',
+  imageSR: 'EPSG:4326',
+  width: 512,
+  height: 512,
+  format: 'lerc',
+  pixelType: 'F32'
+});
+
+console.log(raster.width, raster.height, raster.pixels[0]);
+```
+
+The returned typed arrays and mask are suitable for classification, statistics, and raster
+processing without converting through an image format.
