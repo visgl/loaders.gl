@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
@@ -145,7 +146,8 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async t =
   const streamedPositions: number[] = [];
   for await (const batch of source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
-    columns: ['POSITION']
+    columns: ['POSITION'],
+    rangeChunkSize: 257
   })) {
     t.notOk(batch.data.data.getChild('COLOR_0'), 'color output is omitted');
     const positions = batch.data.data.getChild('POSITION');
@@ -160,6 +162,18 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async t =
   }
   t.deepEqual(streamedPositions, expectedPositions, 'position-only batches match atomic output');
   t.end();
+});
+
+vitestTest('COPCSourceLoader#streams hierarchy pages', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const batches = [];
+  for await (const batch of source.loadHierarchyInBatches({maxPages: 1})) {
+    batches.push(batch);
+  }
+
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.pageId).toBe('root');
+  expect(batches[0]?.nodes['0-0-0-0']).toBeTruthy();
 });
 
 test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {
