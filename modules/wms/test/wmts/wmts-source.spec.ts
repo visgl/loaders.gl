@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 
@@ -88,7 +89,7 @@ test('WMTSImageTileSource derives URL options from capabilities', async t => {
   t.end();
 });
 
-test('WMTSImageTileSource selects CRS-compatible matrix identifiers', async t => {
+vitestTest('WMTSImageTileSource selects CRS-compatible matrix identifiers', async () => {
   const source = new WMTSImageTileSource('https://example.com/wmts', {
     wmts: {
       layer: 'imagery',
@@ -122,6 +123,7 @@ test('WMTSImageTileSource selects CRS-compatible matrix identifiers', async t =>
     }
   });
   await source.getMetadata();
-  t.equal(source.getTileURL({x: 1, y: 2, z: 0}), 'https://tiles.example/WebMercatorQuad/L04/2/1');
-  t.end();
+  expect(source.getTileURL({x: 1, y: 2, z: 0})).toBe(
+    'https://tiles.example/WebMercatorQuad/L04/2/1'
+  );
 });

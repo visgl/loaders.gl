@@ -36,8 +36,8 @@ export class ArcGISImageTileSource
   extends DataSource<string, ArcGISImageTileSourceLoaderOptions>
   implements TileSource
 {
-  /** MIME type rendered by the generic deck.gl tile adapter. */
-  readonly mimeType = 'image/png';
+  /** MIME type represented by the tile response. */
+  readonly mimeType: string;
 
   /** Cached ImageServer metadata. */
   private _metadata: any | null = null;
@@ -49,6 +49,7 @@ export class ArcGISImageTileSource
   /** Creates an ArcGIS ImageServer tile source. */
   constructor(url: string, options: ArcGISImageTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, ArcGISImageTileSourceLoader.defaultOptions, coreApi);
+    this.mimeType = this._getResponseFormat() === 'lerc' ? 'application/octet-stream' : 'image/png';
     this.getTileData = this.getTileData.bind(this);
   }
 
@@ -87,8 +88,7 @@ export class ArcGISImageTileSource
         `ArcGIS ImageServer tile request failed: ${response.status} ${response.statusText}`
       );
     }
-    const loader =
-      this.options['arcgis-image-server-tiles']?.format === 'lerc' ? LERCLoader : ImageLoader;
+    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : ImageLoader;
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
       loader,
@@ -119,7 +119,7 @@ export class ArcGISImageTileSource
       bboxSR: 3857,
       imageSR: 3857,
       size: `${resolvedTileSize},${resolvedTileSize}`,
-      format: options.format || 'png32',
+      format: this._getResponseFormat(),
       transparent: true,
       ...options.parameters,
       ...this._runtimeParameters
@@ -160,6 +160,13 @@ export class ArcGISImageTileSource
   private getServiceURL(parameters: GetTileParameters): string {
     const urls = this.options['arcgis-image-server-tiles']?.urls;
     return urls?.length ? urls[(parameters.x + parameters.y) % urls.length] : this.url;
+  }
+
+  /** Returns the response format after applying configured and runtime overrides. */
+  private _getResponseFormat(): 'png32' | 'lerc' {
+    const options = this.options['arcgis-image-server-tiles'] || {};
+    const format = this._runtimeParameters.format || options.parameters?.format || options.format;
+    return format === 'lerc' ? 'lerc' : 'png32';
   }
 }
 

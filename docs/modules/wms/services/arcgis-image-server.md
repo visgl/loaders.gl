@@ -77,6 +77,7 @@ returns decoded `LERCData` values without an image round trip.
 ## Example
 
 - [ArcGIS Image Server example](/examples/tiles/arcgis-image-server)
+- [ArcGIS ImageServer analytical LERC example](/examples/tiles/arcgis-image-server-lerc)
 - [ArcGIS ImageServer tiles example](/examples/tiles/arcgis-image-server-tiles)
 
 ## References

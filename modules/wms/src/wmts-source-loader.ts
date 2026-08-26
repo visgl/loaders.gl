@@ -161,6 +161,7 @@ export class WMTSImageTileSource
     );
   }
 
+  /** Selects a linked tile matrix set using an explicit identifier or compatible CRS. */
   private _getTileMatrixSet(layer: WMTSLayer | undefined) {
     const capabilities = this._capabilities;
     const wmts = this.options.wmts || {};

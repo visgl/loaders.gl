@@ -13,7 +13,7 @@ export function normalizeServiceCRS(crs: ServiceCRS | undefined): string | undef
   if (!value) return undefined;
   const upperValue = value.toUpperCase();
   if (upperValue === 'CRS:84' || upperValue.endsWith('/CRS84')) return 'CRS:84';
-  const epsgMatch = /(?:EPSG[:/]|::)(\d+)$/i.exec(value);
+  const epsgMatch = /(?:EPSG[:/]|::)(?:\d+\/)?(\d+)$/i.exec(value);
   return epsgMatch ? `EPSG:${epsgMatch[1]}` : upperValue;
 }
 
