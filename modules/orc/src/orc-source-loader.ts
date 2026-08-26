@@ -151,7 +151,7 @@ export const ORCSourceLoaderWithParser = {
 } as const satisfies SourceLoader<ORCSource>;
 
 /** Converts an ORC struct footer type into a loaders.gl schema without reading stripes. */
-function createORCSchema(
+export function createORCSchema(
   rootType: ORCTypeDescription | undefined,
   types: readonly ORCTypeDescription[]
 ): Schema {
@@ -170,7 +170,7 @@ function createORCSchema(
 }
 
 /** Maps supported ORC primitive kinds to portable schema data types. */
-function getORCDataType(
+export function getORCDataType(
   typeId: number | undefined,
   typeDescription?: ORCTypeDescription,
   types: readonly ORCTypeDescription[] = []

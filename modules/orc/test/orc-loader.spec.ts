@@ -7,7 +7,13 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
 import {ORCLoaderWithParser} from '../src/orc-loader';
-import {ORCSource, ORCSourceLoaderWithParser} from '../src/orc-source-loader';
+import {
+  createORCSchema,
+  getORCDataType,
+  ORCSource,
+  ORCSourceLoaderWithParser
+} from '../src/orc-source-loader';
+import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
 import {ORCWriter} from '../src/orc-writer';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
 
@@ -39,6 +45,23 @@ test('ORC source loader exposes explicit parser entry points', () => {
   expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
   expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
   expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
+});
+
+test('ORC metadata preserves nested map and struct types', () => {
+  const types = [
+    {kind: ORCTypeKind.STRUCT, fieldNames: ['properties', 'attributes'], subtypes: [1, 2]},
+    {kind: ORCTypeKind.MAP, fieldNames: [], subtypes: [3, 4]},
+    {kind: ORCTypeKind.STRUCT, fieldNames: ['x'], subtypes: [5]},
+    {kind: ORCTypeKind.STRING, fieldNames: [], subtypes: []},
+    {kind: ORCTypeKind.INT, fieldNames: [], subtypes: []},
+    {kind: ORCTypeKind.DOUBLE, fieldNames: [], subtypes: []}
+  ];
+  const schema = createORCSchema(types[0], types);
+  expect(schema.fields[0].type).toMatchObject({type: 'map'});
+  expect(schema.fields[1].type).toMatchObject({type: 'struct'});
+  expect(
+    getORCDataType(ORCTypeKind.LIST, {kind: ORCTypeKind.LIST, fieldNames: [], subtypes: [5]}, types)
+  ).toMatchObject({type: 'list'});
 });
 
 test('ORCSource rejects unsupported predicates before reading the source', async () => {
