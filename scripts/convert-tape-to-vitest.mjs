@@ -58,19 +58,11 @@ function transformTapeToVitest(sourceText, filePath) {
       }
 
       if (ts.isImportDeclaration(node) && isTapeImport(node)) {
-        return createVitestImport();
+        return createVitestImports(node);
       }
 
       if (ts.isExpressionStatement(node) && isEndCall(node.expression)) {
         return undefined;
-      }
-
-      if (
-        ts.isArrowFunction(node) ||
-        ts.isFunctionExpression(node) ||
-        ts.isFunctionDeclaration(node)
-      ) {
-        return visitTestCallback(node, context, visitNode);
       }
 
       if (ts.isCallExpression(node)) {
@@ -89,7 +81,10 @@ function transformTapeToVitest(sourceText, filePath) {
       const nextStatements = [];
 
       for (const statement of statements) {
-        const visitedStatement = ts.visitNode(statement, visitNode);
+        const visitedStatement =
+          ts.isImportDeclaration(statement) && isTapeImport(statement)
+            ? createVitestImports(statement)
+            : ts.visitNode(statement, visitNode);
         if (!visitedStatement) {
           continue;
         }
@@ -152,11 +147,13 @@ function isTapeImport(node) {
 }
 
 /**
- * Creates the standard Vitest import used by migrated test files.
- * @returns {ts.ImportDeclaration}
+ * Creates the standard Vitest import used by migrated test files and retains
+ * named imports from the local compatibility shim.
+ * @param {ts.ImportDeclaration} node
+ * @returns {ts.ImportDeclaration | ts.ImportDeclaration[]}
  */
-function createVitestImport() {
-  return ts.factory.createImportDeclaration(
+function createVitestImports(node) {
+  const vitestImport = ts.factory.createImportDeclaration(
     undefined,
     ts.factory.createImportClause(
       false,
@@ -169,20 +166,39 @@ function createVitestImport() {
     ts.factory.createStringLiteral('vitest'),
     undefined
   );
+
+  if (node.moduleSpecifier.text !== 'test/utils/vitest-tape') {
+    return vitestImport;
+  }
+
+  const namedBindings = node.importClause?.namedBindings;
+  if (!namedBindings) {
+    return vitestImport;
+  }
+
+  const shimImportClause = ts.factory.createImportClause(false, undefined, namedBindings);
+  const shimImport = ts.factory.updateImportDeclaration(
+    node,
+    node.modifiers,
+    shimImportClause,
+    node.moduleSpecifier,
+    node.attributes
+  );
+
+  return [vitestImport, shimImport];
 }
 
 /**
- * Rewrites tape callback signatures to plain Vitest callback signatures.
+ * Removes a tape test context parameter from a registered test callback.
  * @param {ts.ArrowFunction | ts.FunctionExpression | ts.FunctionDeclaration} node
- * @param {ts.TransformationContext} context
- * @param {(node: ts.Node) => ts.VisitResult<ts.Node>} visitNode
  * @returns {ts.Node}
  */
-function visitTestCallback(node, context, visitNode) {
-  const parameters =
-    node.parameters.length === 1 && TEST_CONTEXT_NAMES.has(node.parameters[0].name.getText())
-      ? []
-      : node.parameters.map(parameter => ts.visitEachChild(parameter, visitNode, context));
+function removeTestContextParameter(node) {
+  if (node.parameters.length !== 1 || !TEST_CONTEXT_NAMES.has(node.parameters[0].name.getText())) {
+    return node;
+  }
+
+  const parameters = [];
 
   if (ts.isArrowFunction(node)) {
     return ts.factory.updateArrowFunction(
@@ -192,7 +208,7 @@ function visitTestCallback(node, context, visitNode) {
       parameters,
       node.type,
       node.equalsGreaterThanToken,
-      ts.visitNode(node.body, visitNode)
+      node.body
     );
   }
 
@@ -205,7 +221,7 @@ function visitTestCallback(node, context, visitNode) {
       node.typeParameters,
       parameters,
       node.type,
-      ts.visitNode(node.body, visitNode)
+      node.body
     );
   }
 
@@ -217,8 +233,18 @@ function visitTestCallback(node, context, visitNode) {
     node.typeParameters,
     parameters,
     node.type,
-    ts.visitNode(node.body, visitNode)
+    node.body
   );
+}
+
+/**
+ * Returns true when a call registers a test callback with the tape shim.
+ * @param {ts.CallExpression} node
+ * @returns {boolean}
+ */
+function isTestRegistrationCall(node) {
+  const functionName = getIdentifierText(node.expression);
+  return Boolean(functionName && (functionName === 'test' || functionName.startsWith('testIf')));
 }
 
 /**
@@ -229,10 +255,28 @@ function visitTestCallback(node, context, visitNode) {
  * @returns {ts.Node}
  */
 function visitTapeCallExpression(node, context, visitNode) {
-  const visitedNode = ts.visitEachChild(node, visitNode, context);
+  let visitedNode = ts.visitEachChild(node, visitNode, context);
 
   if (!ts.isCallExpression(visitedNode)) {
     return visitedNode;
+  }
+
+  if (isTestRegistrationCall(visitedNode)) {
+    const callbackIndex = visitedNode.arguments.length - 1;
+    const callback = visitedNode.arguments[callbackIndex];
+    if (callback && (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))) {
+      const updatedCallback = removeTestContextParameter(callback);
+      if (updatedCallback !== callback) {
+        const argumentsArray = [...visitedNode.arguments];
+        argumentsArray[callbackIndex] = updatedCallback;
+        visitedNode = ts.factory.updateCallExpression(
+          visitedNode,
+          visitedNode.expression,
+          visitedNode.typeArguments,
+          argumentsArray
+        );
+      }
+    }
   }
 
   if (!ts.isPropertyAccessExpression(visitedNode.expression)) {
