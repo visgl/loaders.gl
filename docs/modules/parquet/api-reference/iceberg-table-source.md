@@ -18,6 +18,7 @@ const source = new IcebergTableSource('https://data.example.com/events/metadata/
 for await (const batch of source.scan({
   columns: ['timestamp', 'event_type'],
   predicate: {op: '=', args: [{property: 'event_type'}, 'click']},
+  limit: 1000,
   batchSize: 10000
 })) {
   consume(batch);
@@ -57,6 +58,7 @@ catalog pointer, commit snapshots, or write Iceberg metadata.
 | Data manifests | Supported | Active Parquet entries are returned in manifest order. |
 | Delete manifests | Supported | Delete files are discovered in `getScanPlan()`; position and equality deletes can be applied opt-in. |
 | Parquet projection and predicates | Supported | Delegated to the existing Parquet source. |
+| Global post-delete limit | Supported | Counts visible rows across files after exact predicates and opted-in deletes. |
 | File partition pruning | Supported | Scalar manifest partition values use the shared dataset pruning path. |
 | File statistics pruning | Supported | Conservative lower/upper-bound pruning; unknown encodings are retained. |
 | Spatial envelope pruning | Supported | Opt-in conservative bounding-box pruning when Iceberg bounds expose a recognized geometry envelope. |
@@ -209,6 +211,7 @@ projection, workers, and range access; GPU representation remains an application
 | `snapshotRef` | Per-scan branch or tag name from metadata `refs`. |
 | `columns` | Projected Parquet columns. |
 | `predicate` | Serializable columnar predicate used for file, row-group, and row pruning. |
+| `limit` | Global maximum rows emitted after exact predicates and opted-in deletes. |
 | `fileConcurrency` | Per-scan maximum number of Parquet files read concurrently. |
 | `parquetDataset.fileConcurrency` | Default file concurrency for all scans from this source. |
 | `signal` | Cancels metadata, manifest, and data-file work. |

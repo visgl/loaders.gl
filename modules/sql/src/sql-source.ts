@@ -11,12 +11,16 @@ import type {
   SQLAdapterFactory,
   SQLCatalogInfo,
   SQLMetadata,
+  SQLQuery,
   SQLQueryOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
   SQLTableInfo
 } from './sql-types';
+import {compileSQLTableQuery, type SQLTableQueryDialect} from './compile-table-query';
+import type {SQLPredicateParameterValues} from './sql-predicate-types';
 import {convertRowsToArrowTable, isNodeRuntime} from './sql-utils';
+import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 const SQL_ADAPTER_FACTORIES = new Map<string, SQLAdapterFactory>();
 
@@ -58,6 +62,8 @@ export const SQL_SOURCE_DEFAULT_OPTIONS: Omit<RequiredOptions<SQLSourceOptions>,
 
 /** Shared SQL-backed data source implementation. */
 export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
+  /** Optimization and execution capabilities of portable table-bound queries. */
+  readonly tableQueryCapabilities = SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES;
   private readonly sourceType: string;
   private readonly adapterFactory?: SQLAdapterFactory;
   private adapterPromise: Promise<SQLAdapter> | null = null;
@@ -114,20 +120,22 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
 
   /** Executes a SQL query and returns object rows. */
   async queryRows(
-    sqlText: string,
+    query: SQLQuery,
     options: SQLQueryOptions = {}
   ): Promise<Record<string, unknown>[]> {
     const adapter = await this.getAdapter();
-    return await adapter.executeRows(sqlText, options);
+    const compiledQuery = this.compileQuery(query, options);
+    return await adapter.executeRows(compiledQuery.sql, compiledQuery.options);
   }
 
   /** Executes a SQL query and returns a loaders.gl Arrow table. */
-  async queryArrow(sqlText: string, options: SQLQueryOptions = {}): Promise<ArrowTable> {
+  async queryArrow(query: SQLQuery, options: SQLQueryOptions = {}): Promise<ArrowTable> {
     const adapter = await this.getAdapter();
+    const compiledQuery = this.compileQuery(query, options);
     if (adapter.executeArrow) {
-      return await adapter.executeArrow(sqlText, options);
+      return await adapter.executeArrow(compiledQuery.sql, compiledQuery.options);
     }
-    const rows = await adapter.executeRows(sqlText, options);
+    const rows = await adapter.executeRows(compiledQuery.sql, compiledQuery.options);
     return convertRowsToArrowTable(rows);
   }
 
@@ -147,6 +155,26 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
       this.adapterPromise = this.loadAdapter();
     }
     return await this.adapterPromise;
+  }
+
+  /** Converts a portable query object to SQL while leaving raw SQL text unchanged. */
+  private compileQuery(
+    query: SQLQuery,
+    options: SQLQueryOptions
+  ): {sql: string; options: SQLQueryOptions} {
+    if (typeof query === 'string') {
+      return {sql: query, options};
+    }
+    const namedParameters =
+      options.parameters && !Array.isArray(options.parameters) ? options.parameters : undefined;
+    const compiledQuery = compileSQLTableQuery(query, {
+      dialect: getSQLTableQueryDialect(this.sourceType),
+      parameters: namedParameters as SQLPredicateParameterValues | undefined
+    });
+    return {
+      sql: compiledQuery.sql,
+      options: {signal: options.signal, parameters: compiledQuery.parameters}
+    };
   }
 
   private async loadAdapter(): Promise<SQLAdapter> {
@@ -190,4 +218,11 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
       tables
     };
   }
+}
+
+/** Maps a SQL source adapter to the dialect used by the portable query compiler. */
+function getSQLTableQueryDialect(sourceType: string): SQLTableQueryDialect {
+  if (sourceType === 'duckdb-sql') return 'duckdb';
+  if (sourceType === 'snowflake-sql') return 'snowflake';
+  throw new Error(`Portable table queries are not supported for SQL source type "${sourceType}".`);
 }

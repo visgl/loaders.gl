@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {executeScanTasks, type CoreAPI, type ScanTask} from '@loaders.gl/loader-utils';
+import {
+  executeScanTasks,
+  validateTableQueryLimit,
+  type CoreAPI,
+  type ScanTask
+} from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
 import {ParquetSource} from './parquet-source-loader';
+import {sliceParquetBatch} from './lib/slice-parquet-batch';
+import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
   ParquetDatasetBatch,
   ParquetDatasetBatchProvenance,
@@ -53,6 +60,8 @@ type IndexedParquetDatasetFile = {
  * injected without coupling `@loaders.gl/parquet` to a catalog protocol.
  */
 export class ParquetDatasetSource {
+  /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
+  readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Static descriptors or lazy catalog-backed file provider. */
   readonly files: ParquetDatasetFiles;
   /** Child-source and dataset orchestration options. */
@@ -121,6 +130,9 @@ export class ParquetDatasetSource {
    */
   async *read(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
+    validateTableQueryLimit(options.limit);
+    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    if (remainingRows === 0) return;
     const readContext = createDatasetAbortContext(options.signal);
     this.activeReadControllers.add(readContext.abortController);
     const tasks = this.getReadTasks(options, readContext.abortController.signal);
@@ -133,9 +145,12 @@ export class ParquetDatasetSource {
         concurrency: fileConcurrency,
         signal: readContext.abortController.signal
       })) {
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
         this.telemetry.batchesEmitted++;
-        this.telemetry.rowsEmitted += batch.length;
-        yield batch;
+        this.telemetry.rowsEmitted += outputBatch.length;
+        yield outputBatch;
+        remainingRows -= outputBatch.length;
+        if (remainingRows === 0) return;
       }
     } finally {
       readContext.abortController.abort();
@@ -184,6 +199,7 @@ export class ParquetDatasetSource {
         concurrency: options.concurrency,
         rowGroupFilter: options.rowGroupFilter,
         predicate: options.predicate,
+        limit: undefined,
         signal
       })) {
         yield createDatasetBatch(batch, indexedFile);

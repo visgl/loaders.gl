@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI} from '@loaders.gl/loader-utils';
-import {DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
+import {DataSource as BaseDataSource, validateTableQueryLimit} from '@loaders.gl/loader-utils';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -19,7 +19,9 @@ import type {
   IcebergTableSourceOptions
 } from './iceberg-types';
 import {parseAvro} from './lib/parsers/parse-avro';
+import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {ParquetDatasetSource} from './parquet-dataset-source';
+import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
   ParquetDatasetBatch,
   ParquetComparisonPredicate,
@@ -70,6 +72,8 @@ export type IcebergScanOptions = ParquetDatasetReadOptions & {
  * `ParquetDatasetSource` for projection, filtering, range access, workers, and Arrow materialization.
  */
 export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOptions> {
+  /** Common query capabilities after Iceberg snapshot and delete processing. */
+  readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   private metadataPromise: Promise<IcebergTableMetadata> | null = null;
   private readonly closeController = new AbortController();
   private closed = false;
@@ -192,6 +196,9 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
   /** Reads the current snapshot as Arrow batches through the existing Parquet dataset source. */
   async *scan(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
+    validateTableQueryLimit(options.limit);
+    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    if (remainingRows === 0) return;
     const metadata = await this.getMetadata(options.signal);
     const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
     const positionDeletes = options.applyDeletes
@@ -201,7 +208,7 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
       ? await this.loadEqualityDeletes(plan.deleteFiles, metadata, options.signal)
       : [];
     const equalityColumns = getEqualityDeleteColumns(equalityDeletes);
-    const readOptions = addEqualityColumns(options, equalityColumns);
+    const readOptions = addEqualityColumns({...options, limit: undefined}, equalityColumns);
     const parquetSource = new ParquetDatasetSource(
       plan.dataFiles
         .filter(
@@ -237,7 +244,15 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
         const filteredBatch = options.applyDeletes
           ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
           : batch;
-        if (filteredBatch.length > 0) yield filteredBatch;
+        if (filteredBatch.length > 0) {
+          const outputBatch = sliceParquetBatch(
+            filteredBatch,
+            Math.min(filteredBatch.length, remainingRows)
+          );
+          yield outputBatch;
+          remainingRows -= outputBatch.length;
+          if (remainingRows === 0) return;
+        }
       }
     } finally {
       await parquetSource.close();

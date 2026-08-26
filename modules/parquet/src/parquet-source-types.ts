@@ -20,6 +20,7 @@ import type {
   ColumnarPredicateProperty,
   ColumnarPredicateValue
 } from '@loaders.gl/loader-utils';
+import type {TableQueryExplain} from '@loaders.gl/loader-utils';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
 
 /** Version validators captured from an HTTP Parquet object. */
@@ -232,6 +233,8 @@ export type ParquetSourceReadOptions = {
   rowGroups?: readonly number[];
   /** Top-level columns to fetch and decode. Defaults to all columns. */
   columns?: readonly string[];
+  /** Maximum number of rows retained after filtering across all emitted batches. */
+  limit?: number;
   /** Maximum number of rows in each emitted Arrow batch. Defaults to one row group per batch. */
   batchSize?: number;
   /** Maximum number of row groups decoded concurrently. */
@@ -247,6 +250,19 @@ export type ParquetSourceReadOptions = {
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
 };
+
+/** Explain result for a Parquet table query, including footer-level row-group pruning. */
+export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
+  Readonly<{
+    /** Physical source kind. */
+    source: 'parquet';
+    /** Row groups selected by the request and conservative footer statistics. */
+    rowGroups: Readonly<{
+      requested: number;
+      selected: number;
+      prunedByStatistics: number;
+    }>;
+  }>;
 
 /** Compatibility alias for selective source read options. */
 export type ParquetReadOptions = ParquetSourceReadOptions;

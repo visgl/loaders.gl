@@ -248,8 +248,11 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
   await database.instantiate(bundles.mainModule, bundles.pthreadWorker);
   const connection = await database.connect();
 
-  const executeRows = async (sqlText: string): Promise<Record<string, unknown>[]> => {
-    const result = await connection.query(sqlText);
+  const executeRows = async (
+    sqlText: string,
+    options: SQLQueryOptions = {}
+  ): Promise<Record<string, unknown>[]> => {
+    const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
     return convertArrowToTable(result, 'object-row-table').data;
   };
 
@@ -344,14 +347,35 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
       );
       return convertSQLColumnsToSchema(columns);
     },
-    async executeRows(sqlText: string): Promise<Record<string, unknown>[]> {
-      return await executeRows(sqlText);
+    async executeRows(
+      sqlText: string,
+      options: SQLQueryOptions = {}
+    ): Promise<Record<string, unknown>[]> {
+      return await executeRows(sqlText, options);
     },
-    async executeArrow(sqlText: string) {
-      const result = await connection.query(sqlText);
+    async executeArrow(sqlText: string, options: SQLQueryOptions = {}) {
+      const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
       return convertArrowToTable(result, 'arrow-table');
     }
   };
+}
+
+/** Executes a DuckDB-Wasm query directly or through a prepared statement when values are bound. */
+async function executeDuckDBBrowserQuery(
+  connection: any,
+  sqlText: string,
+  parameters?: SQLQueryOptions['parameters']
+): Promise<any> {
+  if (!parameters) {
+    return await connection.query(sqlText);
+  }
+  const values = Array.isArray(parameters) ? parameters : Object.values(parameters);
+  const statement = await connection.prepare(sqlText);
+  try {
+    return await statement.query(...values);
+  } finally {
+    await statement.close();
+  }
 }
 
 function getDuckDBDatabasePath(url: string, options: SQLSourceOptions): string {

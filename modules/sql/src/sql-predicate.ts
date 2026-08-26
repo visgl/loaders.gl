@@ -12,6 +12,7 @@ export {bindSQLPredicate} from './bind-sql-predicate';
 export {isSQLPredicateParameter} from './sql-predicate-types';
 
 export type {
+  BoundSQLPredicate,
   SQLComparisonPredicate,
   SQLInPredicate,
   SQLLogicalPredicate,

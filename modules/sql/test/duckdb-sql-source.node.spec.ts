@@ -27,6 +27,14 @@ test('DuckDBSQLSource executes queries and exposes metadata', async t => {
   const rows = await dataSource.queryRows('SELECT * FROM numbers ORDER BY value');
   t.deepEqual(rows, [{value: 1}, {value: 2}], 'returns object rows');
 
+  const plannedRows = await dataSource.queryRows({
+    tableName: 'numbers',
+    columns: ['value'],
+    predicate: {op: '>=', args: [{property: 'value'}, 2]},
+    limit: 1
+  });
+  t.deepEqual(plannedRows, [{value: 2}], 'compiles and executes a portable table query');
+
   const arrowTable = await dataSource.queryArrow('SELECT * FROM numbers ORDER BY value');
   t.equal(arrowTable.data.numRows, 2, 'returns Arrow table rows');
   t.equal(arrowTable.data.get(0)?.toJSON()?.value, 1, 'returns Arrow table data');

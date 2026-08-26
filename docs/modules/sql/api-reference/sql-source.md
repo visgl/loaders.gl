@@ -24,13 +24,28 @@ Returns normalized table metadata, optionally scoped to a catalog or schema.
 
 Returns a loaders.gl schema for a single table.
 
-### `queryRows(sqlText, options?)`
+### `queryRows(query, options?)`
 
-Executes SQL and returns object rows.
+Executes raw SQL or a portable table query and returns object rows.
 
-### `queryArrow(sqlText, options?)`
+```ts
+const rows = await source.queryRows(
+  {
+    tableName: 'flights',
+    columns: ['carrier', 'fare'],
+    predicate: parseSQLPredicate('year >= :minimumYear', {preserveParameters: true}),
+    limit: 100
+  },
+  {parameters: {minimumYear: 2024}}
+);
+```
 
-Executes SQL and returns a loaders.gl Arrow table.
+Portable table queries are compiled to quoted, parameterized SQL inside the data source. Raw SQL
+remains available for operations outside the portable scan subset.
+
+### `queryArrow(query, options?)`
+
+Executes raw SQL or a portable table query and returns a loaders.gl Arrow table.
 
 ### `close()`
 

@@ -4,8 +4,12 @@
 
 import type {ArrowTable, Schema} from '@loaders.gl/schema';
 import type {CoreAPI, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {SQLTableQuery} from './compile-table-query';
 
 export type SQLParameterValues = unknown[] | Record<string, unknown>;
+
+/** Raw SQL text or a portable query bound to one database table. */
+export type SQLQuery = string | SQLTableQuery;
 
 /** Query-level options for SQL data sources. */
 export type SQLQueryOptions = {

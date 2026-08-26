@@ -5,10 +5,16 @@
 export {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from './sql-source';
 export {DuckDBSQLSource, DuckDBSQLDataSource} from './duckdb-sql-source';
 export {SnowflakeSQLSource, SnowflakeSQLDataSource} from './snowflake-sql-source';
-export {queryArrowTable} from './query-arrow-table';
+export {
+  ARROW_TABLE_QUERY_CAPABILITIES,
+  explainArrowTableQuery,
+  queryArrowTable
+} from './query-arrow-table';
 export {parseSQLPredicate} from './parse-sql-predicate';
 export {bindSQLPredicate} from './bind-sql-predicate';
-export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
+export {compileSQLTableQuery} from './compile-table-query';
+export {explainTableQuery, getSQLPredicateColumnNames, planTableQuery} from './table-query';
+export {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 export {isSQLPredicateParameter} from './sql-predicate-types';
 export {
   isSQLPredicate,
@@ -17,6 +23,7 @@ export {
 } from './sql-predicate-schema';
 
 export type {
+  BoundSQLPredicate,
   SQLComparisonPredicate,
   SQLInPredicate,
   SQLLogicalPredicate,
@@ -40,6 +47,7 @@ export type {
   SQLColumnInfo,
   SQLMetadata,
   SQLParameterValues,
+  SQLQuery,
   SQLQueryOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
@@ -47,6 +55,12 @@ export type {
 } from './sql-types';
 
 export type {ArrowQueryOptions} from './query-arrow-table';
+export type {
+  CompiledSQLTableQuery,
+  SQLTableQuery,
+  SQLTableQueryCompilerOptions,
+  SQLTableQueryDialect
+} from './compile-table-query';
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,

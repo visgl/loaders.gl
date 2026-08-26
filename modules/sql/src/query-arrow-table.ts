@@ -18,6 +18,7 @@ import {
 } from './sql-predicate-types';
 import {
   getSQLPredicateColumnNames,
+  explainTableQuery,
   planTableQuery,
   type TableQueryFilterStep,
   type TableQueryLimitStep,
@@ -26,6 +27,7 @@ import {
   type TableQueryProjectStep,
   type TableQueryScanStep
 } from './table-query';
+export {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 /** Options for the lightweight in-memory Arrow query executor. */
 export type ArrowQueryOptions = TableQueryOptions &
@@ -33,6 +35,14 @@ export type ArrowQueryOptions = TableQueryOptions &
     /** Cancels the query before or during predicate evaluation. */
     signal?: AbortSignal;
   }>;
+
+/** Explains an Arrow table query without materializing or scanning table rows. */
+export function explainArrowTableQuery(sourceTable: ArrowTable, options: ArrowQueryOptions = {}) {
+  return explainTableQuery(
+    sourceTable.data.schema.fields.map(field => field.name),
+    options
+  );
+}
 
 type SQLTruthValue = boolean | null;
 

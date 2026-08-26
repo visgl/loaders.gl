@@ -2,66 +2,60 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  isColumnarPredicateParameter,
+  type ColumnarComparisonPredicate,
+  type ColumnarInPredicate,
+  type ColumnarLogicalPredicate,
+  type ColumnarNotPredicate,
+  type ColumnarNullPredicate,
+  type ColumnarPredicate,
+  type ColumnarPredicateInputValue,
+  type ColumnarPredicateParameter,
+  type ColumnarPredicateParameterValues,
+  type ColumnarPredicateValue
+} from '@loaders.gl/loader-utils';
+
 /** Scalar values supported by portable SQL predicate expressions. */
-export type SQLPredicateScalar = boolean | number | bigint | string | Date | Uint8Array;
+export type SQLPredicateScalar = ColumnarPredicateValue;
 
 /** Named parameter reference retained in a portable SQL predicate until execution time. */
-export type SQLPredicateParameter = Readonly<{
-  /** Parameter name without the leading SQL colon. */
-  parameter: string;
-}>;
+export type SQLPredicateParameter = ColumnarPredicateParameter;
 
 /** Scalar value or unresolved named parameter accepted by a portable predicate expression. */
-export type SQLPredicateValue = SQLPredicateScalar | SQLPredicateParameter;
+export type SQLPredicateValue = ColumnarPredicateInputValue;
 
 /** Runtime values used to bind named predicate parameters before a backend executes them. */
-export type SQLPredicateParameterValues = Readonly<Record<string, SQLPredicateScalar>>;
+export type SQLPredicateParameterValues = ColumnarPredicateParameterValues;
 
 /** Reference to one column in a portable SQL predicate expression. */
 export type SQLPredicateProperty = Readonly<{
   /** Column or qualified column name. */
   property: string;
+  /** Whether the complete property was a quoted SQL identifier. */
+  quoted?: boolean;
 }>;
 
 /** Binary comparison between a column and a scalar value. */
-export type SQLComparisonPredicate = Readonly<{
-  /** CQL2-shaped comparison operator. */
-  op: '=' | '<>' | '<' | '<=' | '>' | '>=';
-  /** Column reference followed by the scalar value to compare. */
-  args: readonly [SQLPredicateProperty, SQLPredicateValue];
-}>;
+export type SQLComparisonPredicate = Readonly<
+  ColumnarComparisonPredicate<SQLPredicateValue, SQLPredicateProperty>
+>;
 
 /** Membership test between a column and scalar values. */
-export type SQLInPredicate = Readonly<{
-  /** CQL2-shaped membership operator. */
-  op: 'in';
-  /** Column reference followed by a non-empty list of candidate values. */
-  args: readonly [SQLPredicateProperty, readonly SQLPredicateValue[]];
-}>;
+export type SQLInPredicate = Readonly<ColumnarInPredicate<SQLPredicateValue, SQLPredicateProperty>>;
 
 /** Null test for one column. */
-export type SQLNullPredicate = Readonly<{
-  /** CQL2-shaped null-test operator. */
-  op: 'isNull';
-  /** Column reference to test. */
-  args: readonly [SQLPredicateProperty];
-}>;
+export type SQLNullPredicate = Readonly<ColumnarNullPredicate<SQLPredicateProperty>>;
 
 /** Conjunction or disjunction of two or more predicates. */
-export type SQLLogicalPredicate = Readonly<{
-  /** CQL2-shaped logical operator. */
-  op: 'and' | 'or';
-  /** Two or more child predicates. */
-  args: readonly SQLPredicate[];
-}>;
+export type SQLLogicalPredicate = Readonly<
+  ColumnarLogicalPredicate<SQLPredicateValue, SQLPredicateProperty>
+>;
 
 /** Negation of one predicate. */
-export type SQLNotPredicate = Readonly<{
-  /** CQL2-shaped negation operator. */
-  op: 'not';
-  /** Single child predicate. */
-  args: readonly [SQLPredicate];
-}>;
+export type SQLNotPredicate = Readonly<
+  ColumnarNotPredicate<SQLPredicateValue, SQLPredicateProperty>
+>;
 
 /**
  * Portable predicate AST emitted by the loaders.gl SQL expression parser.
@@ -76,6 +70,9 @@ export type SQLPredicate =
   | SQLLogicalPredicate
   | SQLNotPredicate;
 
+/** Portable SQL predicate whose named parameters have all been replaced by concrete scalars. */
+export type BoundSQLPredicate = ColumnarPredicate<SQLPredicateScalar, SQLPredicateProperty>;
+
 /** Options for parsing one SQL predicate expression. */
 export type SQLPredicateParserOptions = Readonly<{
   /** Named values referenced using SQL parameters such as `:minimumFare`. */
@@ -86,14 +83,5 @@ export type SQLPredicateParserOptions = Readonly<{
 
 /** Returns whether a value is a named parameter reference. */
 export function isSQLPredicateParameter(value: unknown): value is SQLPredicateParameter {
-  const parameterValue = value as {parameter?: unknown};
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    Object.keys(value).length === 1 &&
-    Object.hasOwn(value, 'parameter') &&
-    typeof parameterValue.parameter === 'string' &&
-    parameterValue.parameter.length > 0
-  );
+  return isColumnarPredicateParameter(value);
 }

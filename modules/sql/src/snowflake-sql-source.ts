@@ -265,14 +265,17 @@ async function fetchSnowflakeJson(
 function normalizeSnowflakeBindings(
   parameters: SQLQueryOptions['parameters']
 ): Record<string, {type: string; value: unknown}> | undefined {
-  if (!parameters || Array.isArray(parameters)) {
+  if (!parameters) {
     return undefined;
   }
   const bindings: Record<string, {type: string; value: unknown}> = {};
-  for (const [key, value] of Object.entries(parameters)) {
+  const entries = Array.isArray(parameters)
+    ? parameters.map((value, index) => [String(index + 1), value] as const)
+    : Object.entries(parameters);
+  for (const [key, value] of entries) {
     bindings[key] = {
-      type: typeof value === 'number' ? 'FIXED' : 'TEXT',
-      value
+      type: typeof value === 'number' || typeof value === 'bigint' ? 'FIXED' : 'TEXT',
+      value: typeof value === 'bigint' ? value.toString() : value
     };
   }
   return bindings;
