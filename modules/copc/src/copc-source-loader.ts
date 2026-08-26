@@ -15,6 +15,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {
   createLAZChunkDecoderCursor,
+  createLAZChunkDecoder,
   DataSource,
   concatenateArrayBuffersFromArray,
   decodeLAZChunkInBatches
@@ -58,6 +59,8 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
     /** Decoder backend for compressed COPC LAZ node chunks. */
     decoder?: 'laz-perf' | 'typescript-laz';
     sourceCoordinateSystem?: string;
+    /** Default byte size for progressive COPC node range requests. */
+    rangeChunkSize?: number;
   };
 };
 
@@ -69,6 +72,24 @@ export type COPCTileContentBatchOptions = {
   signal?: AbortSignal;
   /** Arrow attributes to populate. POSITION is always included. */
   columns?: readonly ('POSITION' | 'COLOR_0')[];
+  /** Byte size for progressive node range requests. */
+  rangeChunkSize?: number;
+};
+
+/** Options for progressive COPC hierarchy page loading. */
+export type COPCHierarchyBatchOptions = {
+  /** Cancel hierarchy page requests and traversal. */
+  signal?: AbortSignal;
+  /** Stop after loading this many hierarchy pages. */
+  maxPages?: number;
+};
+
+/** One hierarchy page and the nodes/pages discovered in it. */
+export type COPCHierarchyBatch = {
+  pageId: string;
+  page: Hierarchy.Page;
+  nodes: Hierarchy.Node.Map;
+  pages: Hierarchy.Page.Map;
 };
 
 /** Arrow table content returned for one COPC tile batch. */
@@ -342,10 +363,28 @@ export class COPCTileSource
     }
     const nativeOrigin = this.getNativeTileCenter(tile.id);
     const cartographicOrigin = this.projectPoint(nativeOrigin);
-    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
     const colors =
       pointFormatHasColor(copc.header.pointDataRecordFormat) &&
       (options.columns ? options.columns.includes('COLOR_0') : true);
+    const rangeChunkSize = options.rangeChunkSize ?? this.options.copc?.rangeChunkSize ?? 65536;
+    if (!Number.isSafeInteger(rangeChunkSize) || rangeChunkSize < 1) {
+      throw new Error('COPC progressive rangeChunkSize must be a positive integer');
+    }
+
+    if (!colors) {
+      yield* this.loadPositionOnlyTileContentInBatches(
+        copc,
+        node,
+        nativeOrigin,
+        cartographicOrigin,
+        batchSize,
+        rangeChunkSize,
+        options.signal
+      );
+      return;
+    }
+
+    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
     const cursor = createLAZChunkDecoderCursor(compressed, {
       pointCount: node.pointCount,
       pointDataRecordFormat: copc.header.pointDataRecordFormat,
@@ -378,6 +417,154 @@ export class COPCTileSource
 
       this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
       yield this.createTileContentResult(pointCount, positions, batchColors, cartographicOrigin);
+    }
+  }
+
+  /** Yield position-only batches while the node range is still arriving. */
+  protected async *loadPositionOnlyTileContentInBatches(
+    copc: Copc,
+    node: Hierarchy.Node,
+    nativeOrigin: number[],
+    cartographicOrigin: number[],
+    batchSize: number,
+    rangeChunkSize: number,
+    signal?: AbortSignal
+  ): AsyncIterable<COPCTileContent> {
+    const decoder = createLAZChunkDecoder({
+      pointCount: node.pointCount,
+      pointDataRecordFormat: copc.header.pointDataRecordFormat,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    });
+    let decodedPointCount = 0;
+
+    for await (const compressedChunk of this.loadCOPCNodeRangeChunks(
+      node,
+      rangeChunkSize,
+      signal
+    )) {
+      decoder.feed(compressedChunk);
+      yield* this.readPositionOnlyBatches(
+        decoder,
+        copc,
+        node.pointCount,
+        nativeOrigin,
+        cartographicOrigin,
+        batchSize,
+        decodedPointCount
+      );
+      decodedPointCount = node.pointCount - decoder.remainingPointCount;
+    }
+
+    decoder.close();
+    if (decodedPointCount < node.pointCount) {
+      yield* this.readPositionOnlyBatches(
+        decoder,
+        copc,
+        node.pointCount,
+        nativeOrigin,
+        cartographicOrigin,
+        batchSize,
+        decodedPointCount
+      );
+      decodedPointCount = node.pointCount - decoder.remainingPointCount;
+    }
+    if (decodedPointCount !== node.pointCount) {
+      throw new Error(
+        `COPC TypeScript LAZ position decoder produced ${decodedPointCount} points; expected ${node.pointCount}`
+      );
+    }
+  }
+
+  /** Read all currently available position-only batches from a feedable decoder. */
+  protected *readPositionOnlyBatches(
+    decoder: ReturnType<typeof createLAZChunkDecoder>,
+    copc: Copc,
+    nodePointCount: number,
+    nativeOrigin: number[],
+    cartographicOrigin: number[],
+    batchSize: number,
+    decodedPointCount: number
+  ): Iterable<COPCTileContent> {
+    while (decodedPointCount < nodePointCount) {
+      const pointCount = Math.min(batchSize, nodePointCount - decodedPointCount);
+      const nativePositions = new Float64Array(pointCount * 3);
+      const positions = new Float32Array(pointCount * 3);
+      const decoded = decoder.readPositionDataBatch(
+        {
+          positions: nativePositions,
+          pointOffset: 0,
+          scale: copc.header.scale,
+          offset: copc.header.offset
+        },
+        pointCount
+      );
+      if (decoded === null) {
+        return;
+      }
+      if (decoded === 0) {
+        return;
+      }
+      this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
+      yield this.createTileContentResult(pointCount, positions, null, cartographicOrigin);
+      decodedPointCount += decoded;
+    }
+  }
+
+  /** Yield hierarchy pages as they are fetched, merging them into the cache. */
+  async *loadHierarchyInBatches(
+    options: COPCHierarchyBatchOptions = {}
+  ): AsyncIterable<COPCHierarchyBatch> {
+    const {copc} = await this._initPromise;
+    const rootPage = copc.info.rootHierarchyPage;
+    const pending: Array<[string, Hierarchy.Page]> = [['root', rootPage]];
+    const visited = new Set<string>();
+    let loadedPageCount = 0;
+
+    while (pending.length > 0) {
+      if (options.signal?.aborted) {
+        throw new Error('COPC hierarchy loading was aborted');
+      }
+      if (options.maxPages !== undefined && loadedPageCount >= options.maxPages) {
+        return;
+      }
+      const [pageId, page] = pending.shift()!;
+      const pageKey = `${page.pageOffset}:${page.pageLength}`;
+      if (visited.has(pageKey)) {
+        continue;
+      }
+      visited.add(pageKey);
+      const subtree =
+        pageId === 'root' && this._hierarchy
+          ? this._hierarchy
+          : await Copc.loadHierarchyPage(this._urlOrGetter, page);
+      if (this._hierarchy) {
+        this._hierarchy.nodes = {...this._hierarchy.nodes, ...subtree.nodes};
+        this._hierarchy.pages = {...this._hierarchy.pages, ...subtree.pages};
+      }
+      loadedPageCount++;
+      yield {pageId, page, nodes: subtree.nodes, pages: subtree.pages};
+      for (const [childPageId, childPage] of Object.entries(subtree.pages)) {
+        if (childPage) {
+          pending.push([childPageId, childPage]);
+        }
+      }
+    }
+  }
+
+  /** Fetch a COPC node range in sequential chunks. */
+  protected async *loadCOPCNodeRangeChunks(
+    node: Hierarchy.Node,
+    rangeChunkSize: number,
+    signal?: AbortSignal
+  ): AsyncIterable<Uint8Array> {
+    const get = Getter.create(this._urlOrGetter);
+    const rangeEnd = node.pointDataOffset + node.pointDataLength;
+    for (let begin = node.pointDataOffset; begin < rangeEnd; begin += rangeChunkSize) {
+      if (signal?.aborted) {
+        throw new Error('COPC progressive tile range request was aborted');
+      }
+      const end = Math.min(begin + rangeChunkSize, rangeEnd);
+      yield await get(begin, end);
     }
   }
 

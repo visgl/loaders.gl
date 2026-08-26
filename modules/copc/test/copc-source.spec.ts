@@ -145,7 +145,8 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async t =
   const streamedPositions: number[] = [];
   for await (const batch of source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
-    columns: ['POSITION']
+    columns: ['POSITION'],
+    rangeChunkSize: 257
   })) {
     t.notOk(batch.data.data.getChild('COLOR_0'), 'color output is omitted');
     const positions = batch.data.data.getChild('POSITION');
@@ -159,6 +160,19 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async t =
     expectedPositions.push(...(atomicPositions?.get(index)?.toArray() || []));
   }
   t.deepEqual(streamedPositions, expectedPositions, 'position-only batches match atomic output');
+  t.end();
+});
+
+test('COPCSourceLoader#streams hierarchy pages', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const batches = [];
+  for await (const batch of source.loadHierarchyInBatches({maxPages: 1})) {
+    batches.push(batch);
+  }
+
+  t.equal(batches.length, 1, 'maxPages limits hierarchy loading');
+  t.equal(batches[0]?.pageId, 'root', 'first hierarchy batch is the root page');
+  t.ok(batches[0]?.nodes['0-0-0-0'], 'root page exposes the root node');
   t.end();
 });
 

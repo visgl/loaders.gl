@@ -35,11 +35,13 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `getChildren(tile)` returns available child tile headers.
 - `loadTileContent(tile)` returns normalized point positions, optional colors, point count, and cartographic origin.
 - `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively after the selected node range has been fetched. The TypeScript LAZ variant is required. `options.batchSize` controls the maximum points per table, `options.columns` can request positions only, and `options.signal` cancels the request/decode.
+- `loadHierarchyInBatches(options)` yields hierarchy pages and their discovered nodes as they are fetched.
 
-`loadTileContentInBatches` does not yet split the HTTP range request itself. COPC node data is fetched as one complete compressed range because layered LAZ fields need the chunk size metadata and compressed field ranges before decoding can begin. The method avoids building one full decoded Arrow table and is the API boundary for future progressive range delivery.
+For TypeScript position-only batches, `loadTileContentInBatches` splits the node range into sequential requests and can emit positions as soon as the Point14 layer arrives. RGB requests still use one complete node range until progressive RGB decoding is implemented. `options.rangeChunkSize` controls the position-only request size.
 
 ## Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `copc.sourceCoordinateSystem` | `string` | Auto-detected from COPC WKT | Coordinate system definition used when the source metadata does not include WKT. |
+| `copc.rangeChunkSize` | `number` | `65536` | Default byte size for position-only TypeScript COPC node range requests. |

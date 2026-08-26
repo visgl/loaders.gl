@@ -135,6 +135,11 @@ export class FeedableLAZChunkDecoder {
     this.closed = true;
   }
 
+  /** Number of points that remain available after progressive decoding starts. */
+  get remainingPointCount(): number {
+    return this.cursor?.remainingPointCount ?? this.metadata.pointCount;
+  }
+
   /** Decode all fed point data into raw LAS point records. */
   decode(): Uint8Array {
     if (!this.closed) {

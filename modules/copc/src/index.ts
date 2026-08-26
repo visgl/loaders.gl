@@ -4,6 +4,8 @@
 
 export type {
   COPCSourceLoaderOptions,
+  COPCHierarchyBatch,
+  COPCHierarchyBatchOptions,
   COPCTileContent,
   COPCTileContentBatchOptions
 } from './copc-source-loader';
