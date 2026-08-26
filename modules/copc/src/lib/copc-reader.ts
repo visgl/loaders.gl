@@ -103,6 +103,22 @@ export type COPCInfo = {
   gpsTimeRange: [number, number];
 };
 
+/** LASzip codec metadata required to decode COPC node chunks. */
+export type COPCLAZMetadata = {
+  /** LASzip compressor identifier. COPC uses layered compressor 3. */
+  compressor: number;
+  /** LASzip entropy coder identifier. The TypeScript decoder supports arithmetic coder 0. */
+  coder: number;
+  /** Declared LASzip chunk size. COPC normally uses variable-size chunks. */
+  chunkSize: number;
+  /** Point14 item version. */
+  point14ItemVersion: 2 | 3 | 4;
+  /** RGB14 or RGBNIR14 item version, when present. */
+  rgb14ItemVersion?: 2 | 3 | 4;
+  /** Byte14 item version, when Extra Bytes are present. */
+  byte14ItemVersion?: 2 | 3 | 4;
+};
+
 /** Native metadata required to read a COPC file. */
 export type COPCFile = {
   /** LAS 1.4 public header. */
@@ -111,6 +127,8 @@ export type COPCFile = {
   vlrs: COPCVariableLengthRecord[];
   /** COPC info VLR. */
   info: COPCInfo;
+  /** Parsed and validated LASzip codec metadata. */
+  laz: COPCLAZMetadata;
   /** OGC WKT coordinate reference system, when present. */
   wkt?: string;
   /** Raw Extra Bytes VLR payload, when present. */
@@ -130,6 +148,8 @@ const WKT_USER_ID = 'LASF_Projection';
 const WKT_RECORD_ID = 2112;
 const EXTRA_BYTES_USER_ID = 'LASF_Spec';
 const EXTRA_BYTES_RECORD_ID = 4;
+const LASZIP_USER_ID = 'laszip encoded';
+const LASZIP_RECORD_ID = 22204;
 
 /** Open and validate a COPC 1.0 file using only exact byte-range reads. */
 export async function openCOPC(
@@ -164,6 +184,14 @@ export async function openCOPC(
     throw new Error('COPC info VLR must be the first VLR');
   }
   const info = parseCOPCInfo(await readRecordPayload(readRange, infoRecord, signal));
+  const laszipRecord = findRecord(regularVlrs, LASZIP_USER_ID, LASZIP_RECORD_ID);
+  if (!laszipRecord) {
+    throw new Error('COPC LASzip VLR is required');
+  }
+  const laz = parseCOPCLAZMetadata(
+    await readRecordPayload(readRange, laszipRecord, signal),
+    header
+  );
   const wktRecord = findRecord(vlrs, WKT_USER_ID, WKT_RECORD_ID);
   const wkt = wktRecord?.contentLength
     ? decodeCString(await readRecordPayload(readRange, wktRecord, signal)) || undefined
@@ -177,9 +205,81 @@ export async function openCOPC(
     header,
     vlrs,
     info,
+    laz,
     wkt,
     extraBytes,
     extraBytesDescriptors: extraBytes ? parseLASExtraBytes(extraBytes) : []
+  };
+}
+
+/** Parse and validate the LASzip item table used by COPC node chunks. */
+export function parseCOPCLAZMetadata(bytes: Uint8Array, header: COPCHeader): COPCLAZMetadata {
+  if (bytes.byteLength < 34) {
+    throw new Error('Malformed COPC LASzip VLR');
+  }
+  const dataView = createDataView(bytes);
+  const compressor = dataView.getUint16(0, true);
+  const coder = dataView.getUint16(2, true);
+  if (compressor !== 3) {
+    throw new Error(`COPC requires LASzip layered compressor 3; received ${compressor}`);
+  }
+  if (coder !== 0) {
+    throw new Error(
+      `COPC TypeScript decoding requires LASzip arithmetic coder 0; received ${coder}`
+    );
+  }
+
+  const extraByteCount =
+    header.pointDataRecordLength - [0, 0, 0, 0, 0, 0, 30, 36, 38][header.pointDataRecordFormat];
+  const expectedItems: Array<{type: number; size: number}> = [{type: 10, size: 30}];
+  if (header.pointDataRecordFormat === 7) {
+    expectedItems.push({type: 11, size: 6});
+  } else if (header.pointDataRecordFormat === 8) {
+    expectedItems.push({type: 12, size: 8});
+  }
+  if (extraByteCount > 0) {
+    expectedItems.push({type: 14, size: extraByteCount});
+  }
+
+  const itemCount = dataView.getUint16(32, true);
+  if (bytes.byteLength < 34 + itemCount * 6) {
+    throw new Error('Malformed COPC LASzip VLR item table');
+  }
+  if (itemCount !== expectedItems.length) {
+    throw new Error(
+      `COPC PDRF ${header.pointDataRecordFormat} has ${itemCount} LASzip items; expected ${expectedItems.length}`
+    );
+  }
+
+  let point14ItemVersion: 2 | 3 | 4 | undefined;
+  let rgb14ItemVersion: 2 | 3 | 4 | undefined;
+  let byte14ItemVersion: 2 | 3 | 4 | undefined;
+  for (let itemIndex = 0; itemIndex < expectedItems.length; itemIndex++) {
+    const itemOffset = 34 + itemIndex * 6;
+    const itemType = dataView.getUint16(itemOffset, true);
+    const itemSize = dataView.getUint16(itemOffset + 2, true);
+    const itemVersion = dataView.getUint16(itemOffset + 4, true);
+    const expectedItem = expectedItems[itemIndex];
+    if (itemType !== expectedItem.type || itemSize !== expectedItem.size) {
+      throw new Error(
+        `COPC LASzip item ${itemIndex} is type ${itemType}, size ${itemSize}; expected type ${expectedItem.type}, size ${expectedItem.size}`
+      );
+    }
+    if (itemVersion !== 2 && itemVersion !== 3 && itemVersion !== 4) {
+      throw new Error(`Unsupported COPC LASzip item type ${itemType} version ${itemVersion}`);
+    }
+    if (itemType === 10) point14ItemVersion = itemVersion;
+    else if (itemType === 11 || itemType === 12) rgb14ItemVersion = itemVersion;
+    else if (itemType === 14) byte14ItemVersion = itemVersion;
+  }
+
+  return {
+    compressor,
+    coder,
+    chunkSize: dataView.getUint32(12, true),
+    point14ItemVersion: point14ItemVersion!,
+    rgb14ItemVersion,
+    byte14ItemVersion
   };
 }
 
@@ -544,7 +644,7 @@ function isValidCOPCKey(key: readonly number[]): boolean {
   if (
     key.length !== 4 ||
     key.some(value => !Number.isSafeInteger(value) || value < 0) ||
-    key[0] > 30
+    key[0] > 31
   ) {
     return false;
   }

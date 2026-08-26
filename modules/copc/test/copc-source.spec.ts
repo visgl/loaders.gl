@@ -36,6 +36,11 @@ class TestCOPCTileSource extends COPCTileSource {
   ): AsyncIterable<Uint8Array> {
     return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency);
   }
+
+  /** Expose child-key generation for maximum-depth coverage. */
+  readChildKeys(tileId: string): string[] {
+    return this.getChildKeys(tileId);
+  }
 }
 
 test('COPCWriter#writer conformance', t => {
@@ -268,6 +273,39 @@ vitestTest('COPCSourceLoader#handles abandoned prefetched range failures', async
   } finally {
     globalThis.removeEventListener('unhandledrejection', handleUnhandledRejection);
   }
+});
+
+vitestTest('COPCSourceLoader#does not create children beyond depth 31', async () => {
+  const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+  expect(source.readChildKeys('31-2147483647-2147483647-2147483647')).toEqual([]);
+});
+
+vitestTest('COPCSourceLoader#includes typed Extra Bytes dimensions in its schema', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getMetadata();
+  const copc = metadata.formatSpecificMetadata;
+  copc.header.pointDataRecordLength += 1;
+  copc.extraBytesDescriptors = [
+    {
+      dataType: 1,
+      options: 0,
+      name: 'quality',
+      description: '',
+      scale: 0,
+      offset: 0,
+      scales: [0, 0, 0],
+      offsets: [0, 0, 0],
+      data: new Uint8Array(192)
+    }
+  ];
+
+  const schema = await source.getSchema();
+  expect(schema.fields).toContainEqual({
+    name: 'EXTRA_BYTES_quality',
+    type: 'uint8',
+    nullable: false
+  });
 });
 test('COPCSourceLoader#loads tile content from a Blob', async t => {
   const blob = await createEllipsoidBlob();

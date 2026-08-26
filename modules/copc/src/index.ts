@@ -17,6 +17,7 @@ export {
   loadCOPCHierarchyPage,
   loadCOPCNodeData,
   openCOPC,
+  parseCOPCLAZMetadata,
   parseCOPCHeader,
   parseCOPCHierarchy,
   parseCOPCInfo,
@@ -29,6 +30,7 @@ export type {
   COPCHierarchyNode,
   COPCHierarchyPage,
   COPCInfo,
+  COPCLAZMetadata,
   COPCRangeReader,
   COPCVariableLengthRecord
 } from './lib/copc-reader';

@@ -252,6 +252,7 @@ export class COPCTileSource
   protected _projection: Proj4Projection | null = null;
   protected _hierarchy: COPCHierarchy | null = null;
   protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
+  protected _closePromise: Promise<void> | null = null;
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, COPCSourceLoader.defaultOptions, coreApi);
@@ -265,15 +266,21 @@ export class COPCTileSource
     await this._initPromise;
   }
 
+  /** Release the underlying random-access file handle. */
+  close(): Promise<void> {
+    this._closePromise ||= this._readableFile.close();
+    return this._closePromise;
+  }
+
   async getSchema(): Promise<Schema> {
     const {copc} = await this._initPromise;
-    return getCOPCHeaderSchema(copc.header.pointDataRecordFormat);
+    return getCOPCHeaderSchema(copc);
   }
 
   /** Discovers point attributes and spatial bounds without decoding point rows. */
   async getQueryMetadata() {
     const {copc} = await this._initPromise;
-    const schema = getCOPCHeaderSchema(copc.header.pointDataRecordFormat);
+    const schema = getCOPCHeaderSchema(copc);
     const roles = Object.fromEntries(
       schema.fields.map(field => [field.name, inferCOPCColumnRole(field.name)])
     );
@@ -399,11 +406,10 @@ export class COPCTileSource
     }
     const compressed = await loadCOPCNodeData(this._readRange, node);
     const pointData = new Uint8Array(copc.header.pointDataRecordLength);
-    const cursor = createLAZChunkDecoderCursor(compressed, {
-      pointCount: node.pointCount,
-      pointDataRecordFormat: copc.header.pointDataRecordFormat,
-      pointDataRecordLength: copc.header.pointDataRecordLength
-    });
+    const cursor = createLAZChunkDecoderCursor(
+      compressed,
+      getCOPCLAZChunkMetadata(copc, node.pointCount)
+    );
     cursor.decodeInto(pointData, 0, 1);
     return readCOPCPointValues(pointData, copc.header);
   }
@@ -511,11 +517,7 @@ export class COPCTileSource
     signal: AbortSignal | undefined,
     selection: COPCPointSelection
   ): AsyncIterable<COPCTileContent> {
-    const decoder = createLAZChunkDecoder({
-      pointCount: node.pointCount,
-      pointDataRecordFormat: copc.header.pointDataRecordFormat,
-      pointDataRecordLength: copc.header.pointDataRecordLength
-    });
+    const decoder = createLAZChunkDecoder(getCOPCLAZChunkMetadata(copc, node.pointCount));
     let decodedPointCount = 0;
 
     for await (const compressedChunk of this.loadCOPCNodeRangeChunks(
@@ -755,11 +757,10 @@ export class COPCTileSource
     const colors = pointFormatHasColor(copc.header.pointDataRecordFormat)
       ? new Uint16Array(pointCount * 3)
       : null;
-    const cursor = createLAZChunkDecoderCursor(compressed, {
-      pointCount,
-      pointDataRecordFormat: copc.header.pointDataRecordFormat,
-      pointDataRecordLength: copc.header.pointDataRecordLength
-    });
+    const cursor = createLAZChunkDecoderCursor(
+      compressed,
+      getCOPCLAZChunkMetadata(copc, pointCount)
+    );
 
     const decodedPointCount = cursor.decodeIntoPointData(
       {
@@ -1152,6 +1153,9 @@ export class COPCTileSource
 
   protected getChildKeys(tileId: string): string[] {
     const key = parseCOPCKey(tileId);
+    if (key[0] === 31) {
+      return [];
+    }
     const result: string[] = [];
 
     for (let childX = 0; childX < 2; childX++) {
@@ -1180,9 +1184,9 @@ export class COPCTileSource
       result.push(
         formatCOPCKey([
           depth,
-          key[1] >> (key[0] - depth),
-          key[2] >> (key[0] - depth),
-          key[3] >> (key[0] - depth)
+          Math.floor(key[1] / 2 ** (key[0] - depth)),
+          Math.floor(key[2] / 2 ** (key[0] - depth)),
+          Math.floor(key[3] / 2 ** (key[0] - depth))
         ])
       );
     }
@@ -1232,8 +1236,9 @@ export class COPCTileSource
   */
 }
 
-/** Builds the standard query schema from a COPC point-data record format. */
-function getCOPCHeaderSchema(pointDataRecordFormat: number): Schema {
+/** Builds the query schema from COPC point-data and Extra Bytes metadata. */
+function getCOPCHeaderSchema(copc: COPCFile): Schema {
+  const pointDataRecordFormat = copc.header.pointDataRecordFormat;
   const fields: Field[] = [
     {name: 'X', type: 'float64', nullable: false},
     {name: 'Y', type: 'float64', nullable: false},
@@ -1264,7 +1269,54 @@ function getCOPCHeaderSchema(pointDataRecordFormat: number): Schema {
   if (pointDataRecordFormat === 8) {
     fields.push({name: 'Infrared', type: 'uint16', nullable: false});
   }
+  const extraByteCount = getCOPCExtraByteCount(copc.header);
+  if (extraByteCount > 0 && copc.extraBytesDescriptors.length > 0) {
+    const attributes = createLASTypedExtraBytesAttributes(
+      0,
+      copc.extraBytesDescriptors,
+      extraByteCount
+    );
+    for (const attribute of attributes) {
+      const scalarType = getTypedArraySchemaType(attribute.value);
+      fields.push({
+        name: attribute.name,
+        type:
+          attribute.size === 1
+            ? scalarType
+            : {
+                type: 'fixed-size-list',
+                listSize: attribute.size,
+                children: [{name: 'value', type: scalarType}]
+              },
+        nullable: false
+      });
+    }
+  }
   return {fields, metadata: {}};
+}
+
+/** Map a typed Extra Bytes array to its serializable Arrow scalar type. */
+function getTypedArraySchemaType(value: LASTypedExtraBytesAttribute['value']): Field['type'] {
+  if (value instanceof Uint8Array) return 'uint8';
+  if (value instanceof Int8Array) return 'int8';
+  if (value instanceof Uint16Array) return 'uint16';
+  if (value instanceof Int16Array) return 'int16';
+  if (value instanceof Uint32Array) return 'uint32';
+  if (value instanceof Int32Array) return 'int32';
+  if (value instanceof Float32Array) return 'float32';
+  return 'float64';
+}
+
+/** Build decoder metadata from the validated COPC LASzip VLR. */
+function getCOPCLAZChunkMetadata(copc: COPCFile, pointCount: number) {
+  return {
+    pointCount,
+    pointDataRecordFormat: copc.header.pointDataRecordFormat,
+    pointDataRecordLength: copc.header.pointDataRecordLength,
+    point14ItemVersion: copc.laz.point14ItemVersion,
+    rgb14ItemVersion: copc.laz.rgb14ItemVersion,
+    byte14ItemVersion: copc.laz.byte14ItemVersion
+  };
 }
 
 function createProjection(projectionData?: string): Proj4Projection | null {
