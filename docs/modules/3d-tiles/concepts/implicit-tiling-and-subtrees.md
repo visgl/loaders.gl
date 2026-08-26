@@ -160,7 +160,9 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 ## Current Limitations
 
 - Only the first `contentAvailability` stream is used; `3DTILES_multiple_contents` is not implemented.
-- Subtree and tile metadata semantics beyond availability are not materialized yet.
+- Subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
+  `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`. The runtime does not
+  yet decode property-table classes, enums, or values.
 - S2-derived implicit descendants use a conservative root oriented box rather than recomputing a tight S2 box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
