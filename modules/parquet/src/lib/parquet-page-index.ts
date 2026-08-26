@@ -94,8 +94,9 @@ type ParquetColumnPageStatistics = {
  * Builds a conservative selective-page plan from Parquet column and offset indexes.
  *
  * Returns `undefined` when indexes or the selected decoder cannot safely avoid full column-chunk
- * reads. Repeated leaves are selected conservatively at complete page boundaries. An empty
- * `rowRanges` array means the indexes prove the predicate cannot match.
+ * reads. Repeated leaves are retained on the conservative full-column path until page starts can
+ * be proven to begin at repetition level zero. An empty `rowRanges` array means the indexes prove
+ * the predicate cannot match.
  */
 export async function createParquetPagePruningPlan(
   file: ReadableFile,
