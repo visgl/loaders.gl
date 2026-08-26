@@ -146,7 +146,7 @@ combines metadata discovery with an ordered batch reader:
 ```ts
 type TableScanSource<BatchT, PredicateT extends ColumnarPredicate = ColumnarPredicate> =
   ScanQueryMetadataProvider & {
-    read(options?: TableQueryOptions<PredicateT>): AsyncIterable<BatchT>;
+    read(options?: TableQueryOptions<PredicateT> & {signal?: AbortSignal}): AsyncIterable<BatchT>;
   };
 ```
 

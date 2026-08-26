@@ -297,6 +297,7 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  TableScanReadOptions,
   TableScanSource,
   ScanRasterLevel,
   ScanSourceStatistics,

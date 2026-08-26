@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataType, FieldMetadata, Schema} from '@loaders.gl/schema';
-import type {ColumnarPredicate} from './columnar-predicate';
+import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {
   TableQueryCapabilities,
   TableQueryOperatorSupport,
@@ -125,6 +125,14 @@ export type ScanQueryMetadataProvider = {
   getQueryMetadata(options?: ScanQueryMetadataOptions): Promise<ScanQueryMetadata>;
 };
 
+/** Query options supplied to a table-scan executor, including cooperative cancellation. */
+export type TableScanReadOptions<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+> = TableQueryOptions<PredicateT> & Readonly<{signal?: AbortSignal}>;
+
 /**
  * Shared table-scan contract implemented by format-specific executors.
  *
@@ -134,10 +142,13 @@ export type ScanQueryMetadataProvider = {
  */
 export type TableScanSource<
   BatchT = unknown,
-  PredicateT extends ColumnarPredicate = ColumnarPredicate
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
 > = ScanQueryMetadataProvider & {
   /** Reads the query result as ordered batches without changing the logical query semantics. */
-  read(options?: TableQueryOptions<PredicateT>): AsyncIterable<BatchT>;
+  read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
 };
 
 /** Inputs used to derive normalized query metadata from a loaders.gl schema. */
