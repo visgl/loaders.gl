@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {RangeRequestSource} from '../src/lib/range-request-source';
 
 const BYTES = Uint8Array.from({length: 64}, (_, index) => index);
 const URL = 'https://example.com/archive.pmtiles';
 
-test('RangeRequestSource coalesces sibling reads from one source', async t => {
+test('RangeRequestSource coalesces sibling reads from one source', async () => {
   const requestedRanges: string[] = [];
   const source = new RangeRequestSource(URL, {
     batchDelayMs: 0,
@@ -22,13 +22,12 @@ test('RangeRequestSource coalesces sibling reads from one source', async t => {
 
   const [first, second] = await Promise.all([source.getBytes(10, 4), source.getBytes(16, 4)]);
 
-  t.deepEqual(requestedRanges, ['bytes=10-19'], 'uses one merged HTTP request');
-  t.deepEqual(Array.from(new Uint8Array(first.data)), [10, 11, 12, 13], 'returns first slice');
-  t.deepEqual(Array.from(new Uint8Array(second.data)), [16, 17, 18, 19], 'returns second slice');
-  t.end();
+  expect(requestedRanges).toEqual(['bytes=10-19']);
+  expect(Array.from(new Uint8Array(first.data))).toEqual([10, 11, 12, 13]);
+  expect(Array.from(new Uint8Array(second.data))).toEqual([16, 17, 18, 19]);
 });
 
-test('RangeRequestSource keeps distinct source contexts isolated', async t => {
+test('RangeRequestSource keeps distinct source contexts isolated', async () => {
   const firstRanges: string[] = [];
   const secondRanges: string[] = [];
   const firstSource = new RangeRequestSource(URL, {
@@ -45,11 +44,16 @@ test('RangeRequestSource keeps distinct source contexts isolated', async t => {
     secondSource.getBytes(6, 2)
   ]);
 
-  t.deepEqual(firstRanges, ['bytes=2-3'], 'uses the first source transport');
-  t.deepEqual(secondRanges, ['bytes=6-7'], 'uses the second source transport');
-  t.deepEqual(Array.from(new Uint8Array(first.data)), [2, 3], 'returns first source bytes');
-  t.deepEqual(Array.from(new Uint8Array(second.data)), [6, 7], 'returns second source bytes');
-  t.end();
+  expect(firstRanges).toEqual(['bytes=2-3']);
+  expect(secondRanges).toEqual(['bytes=6-7']);
+  expect(Array.from(new Uint8Array(first.data))).toEqual([2, 3]);
+  expect(Array.from(new Uint8Array(second.data))).toEqual([6, 7]);
+});
+
+test('RangeRequestSource exposes its archive URL as the source key', () => {
+  const source = new RangeRequestSource(URL);
+
+  expect(source.getKey()).toBe(URL);
 });
 
 function makeFetch(requestedRanges: string[]) {
