@@ -45,6 +45,7 @@
     "@loaders.gl/i3s": "workspace:*",
     "@loaders.gl/json": "workspace:*",
     "@loaders.gl/las": "workspace:*",
+    "@loaders.gl/lerc": "workspace:*",
     "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
     "@loaders.gl/orc": "workspace:*",
