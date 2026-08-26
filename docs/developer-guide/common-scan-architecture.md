@@ -481,25 +481,64 @@ semantics?
 
 ## Roadmap
 
-The implementation evolves in reviewable tranches. The foundation now provides the first four
-items; the later work can land independently without changing portable query semantics:
+The implementation evolves in reviewable tranches. The first five are now landed; the remaining
+work is deliberately ordered by how much useful physical pruning each format can provide:
 
-1. **Foundation:** shared generic predicate, late binding, `TableQueryOptions`, canonical planning,
-   capability descriptors, and common ordered scan-task execution.
-2. **SQL adapters:** parameterized DuckDB and Snowflake compilation while retaining raw SQL for the
-   full language.
-3. **Reference executors:** switchable Arrow and lazy DuckDB execution over the same browser data,
-   without ingesting the Arrow result into DuckDB.
-4. **Physical scans:** common projection, predicate, and global-limit semantics across Parquet and
-   Iceberg, including hidden predicate/delete columns and aligned provenance.
-5. **Explain:** serializable physical plans, pushed-versus-residual diagnostics, and telemetry
-   annotations.
-6. **More table formats:** Delta transaction logs and deletion vectors, then Lance fragments and
-   indices, reusing Parquet or format-native physical tasks as appropriate.
-7. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
-   GPU-specific limit/selection stage.
-8. **Relational growth:** add ordering, expressions, aggregates, or joins only where at least two
-   materially different backends need the same portable meaning.
+1. **Foundation — landed:** shared generic predicate, late binding, `TableQueryOptions`, canonical
+   planning, capability descriptors, and common ordered scan-task execution.
+2. **SQL adapters — landed:** parameterized DuckDB and Snowflake compilation while retaining raw SQL
+   for the full language.
+3. **Reference executors — landed:** switchable Arrow and lazy DuckDB execution over the same
+   browser data, without ingesting the Arrow result into DuckDB.
+4. **Columnar physical scans — landed:** common projection, predicate, global-limit semantics,
+   hidden predicate/delete columns, and aligned provenance across Parquet and Iceberg.
+5. **Explain and diagnostics — landed:** serializable logical/physical plans, pushed-versus-residual
+   annotations, footer-only Parquet row-group explanations, and telemetry alignment.
+6. **FlatGeobuf spatial scan:** add a `FlatGeobufSource` scan adapter over the existing packed R-tree
+   and feature header. Spatial bounding boxes should prune feature ranges before decoding; scalar
+   attributes can initially be residual Arrow filtering. Preserve the existing vector-source API and
+   expose Arrow batches through the scan path rather than forcing GeoJSON materialization.
+7. **GeoArrow and Arrow IPC:** make GeoArrow/Arrow batches first-class scan inputs and outputs.
+   Projection and residual predicates are cheap in-memory operations; geometry columns, extension
+   metadata, and zero-copy slicing must survive the plan. This becomes the conformance reference for
+   vector formats that do not yet have physical indexes.
+8. **Stripe and block formats:** add ORC stripe/row-index planning, then CSV/JSONL chunk scans with
+   conservative byte-range tasking. ORC can advertise statistics pushdown; CSV/JSONL should advertise
+   residual filtering and projection pushdown only when the parser can avoid decoding unused fields.
+9. **Transactional and fragment formats:** Delta Lake logs/deletion vectors, Lance fragments and
+   indices, and future Iceberg table features. Reuse the snapshot, delete, provenance, and explain
+   contracts; each format should contribute a native file/fragment planner rather than another
+   query AST.
+10. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
+    GPU-specific limit/selection stage. GPU plans should report whether compaction is deferred or
+    materialized, so CPU and GPU diagnostics remain comparable.
+11. **Raster and multidimensional scans:** standardize the sibling `RasterQuery`/`ScanTask` shape for
+    GeoTIFF/COG, Zarr/GeoZarr, OME-Zarr, and NetCDF. Share scheduling, cancellation, range caching,
+    explain, telemetry, and spatial-envelope pruning with table scans while keeping pixel windows,
+    levels, chunks, and resampling out of `TableQuery`.
+12. **Relational growth:** add ordering, scalar expressions, aggregates, unions, or joins only when
+    at least two materially different backends can implement the same portable meaning. Spatial
+    predicates and nearest-neighbor search should remain extensions until indexed CPU, GPU, and
+    remote-source strategies converge.
+
+### Format capability matrix
+
+The roadmap is capability-driven rather than format-driven. A new adapter can land incrementally by
+advertising the strongest correct level for each operator:
+
+| Format/source | Natural physical unit | Projection | Predicate | Limit | First useful tranche |
+| --- | --- | --- | --- | --- | --- |
+| Arrow / GeoArrow | record batch | residual/zero-copy | residual | residual | 7 |
+| Parquet / Iceberg | row group, page, file | pushdown | statistics + residual | global/pushdown | 4 |
+| FlatGeobuf | R-tree feature range | residual | bbox pushdown, scalar residual | residual | 6 |
+| ORC | stripe, row index | pushdown | statistics + residual | global/pushdown | 8 |
+| CSV / JSONL | byte-range chunk | parser-dependent | residual | global | 8 |
+| Delta / Lance | file, fragment, delete vector | format-native | format-native + residual | global | 9 |
+| GeoTIFF / Zarr | tile, chunk, overview | band/variable pushdown | spatial/window pushdown | task-local | 11 |
+
+“Pushdown” in this table is a promise about avoiding physical work, not merely accepting the
+operator. An adapter must report `residual` when it must decode rows or features before evaluating
+the predicate, and conformance tests must verify that hidden filter columns never leak into output.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
