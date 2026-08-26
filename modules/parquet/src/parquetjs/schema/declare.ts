@@ -201,6 +201,8 @@ export interface ParquetReaderContext {
   useTypedValueBuffers?: boolean;
   /** Decode repetition and definition levels into compact unsigned typed arrays. */
   useTypedLevelBuffers?: boolean;
+  /** Verify a page-header CRC when one is present. */
+  verifyPageChecksums?: boolean;
 }
 
 /** Mutable storage for decoded Parquet repetition and definition levels. */

@@ -598,9 +598,9 @@ The architecture favors small, composable contracts over a speculative universal
 test for every addition is: can two materially different backends execute it with the same visible
 semantics?
 
-## Scan supremacy roadmap
+## SOTA scan roadmap
 
-“Scan supremacy” means that a user can open a supported loaders.gl format, discover its queryable
+“SOTA scan support” means that a user can open a supported loaders.gl format, discover its queryable
 fields and capabilities, use the same query panel, and receive bounded Arrow/typed results without
 learning a format-specific API. It does not mean that every format gets the same physical plan. The
 winning strategy is to make more formats *scan-compatible* before making the portable language

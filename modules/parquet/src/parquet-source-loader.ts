@@ -75,6 +75,7 @@ import type {
   ParquetPageScanPlan,
   ParquetPredicate,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -137,6 +138,7 @@ export type {
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -975,7 +977,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
           predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           pagePlan,
-          preserveBinary: Boolean(this.options.parquet?.preserveBinary)
+          preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+          verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },
         workerOptions
       );
@@ -1095,6 +1098,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     try {
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
+        verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
         signal
       });
       const fileMetadata = await reader.getFileMetadata();
@@ -1210,7 +1214,8 @@ function createParquetSourceMetadata(
       rowOffset,
       Number(rowGroup.num_rows),
       Number(rowGroup.total_byte_size),
-      columns
+      columns,
+      rowGroup.sorting_columns
     );
     rowOffset += normalizedRowGroup.rowCount;
     return normalizedRowGroup;
@@ -1391,7 +1396,8 @@ function createRowGroupMetadata(
   rowOffset: number,
   rowCount: number,
   uncompressedByteLength: number,
-  columns: ParquetColumnChunkMetadata[]
+  columns: ParquetColumnChunkMetadata[],
+  sortingColumns: RowGroup['sorting_columns']
 ): ParquetRowGroupMetadata {
   const compressedByteLength = columns.reduce(
     (sum, column) => sum + column.compressedByteLength,
@@ -1405,7 +1411,17 @@ function createRowGroupMetadata(
     uncompressedSize: uncompressedByteLength,
     compressedByteLength,
     compressedSize: compressedByteLength,
-    columns: Object.freeze(columns)
+    columns: Object.freeze(columns),
+    sortingColumns: Object.freeze(
+      (sortingColumns || []).map(
+        sortingColumn =>
+          Object.freeze({
+            columnIndex: sortingColumn.column_idx,
+            descending: sortingColumn.descending,
+            nullsFirst: sortingColumn.nulls_first
+          }) satisfies ParquetSortingColumn
+      )
+    )
   });
 }
 

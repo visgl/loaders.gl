@@ -77,7 +77,8 @@ export type ParquetPagePruningPlan = {
   prunedRowCount: number;
 };
 
-type ParquetPageStatistics = {
+/** Logical statistics attached to one data page. */
+export type ParquetPageStatistics = {
   min?: unknown;
   max?: unknown;
   nullCount?: number;
@@ -165,7 +166,7 @@ export async function createParquetPagePruningPlan(
       try {
         pageStatistics[pathKey] = {
           pages,
-          statistics: decodeColumnIndex(toUint8Array(columnIndexBytes), pages, field)
+          statistics: decodeParquetColumnIndex(toUint8Array(columnIndexBytes), pages, field)
         };
       } catch {
         return;
@@ -336,8 +337,8 @@ function getPredicateRowRanges(
   return mergeRowRanges(ranges);
 }
 
-/** Decodes column-index values into the logical representation used by exact predicates. */
-function decodeColumnIndex(
+/** Decodes column-index values into logical per-page statistics. */
+export function decodeParquetColumnIndex(
   bytes: Uint8Array,
   pages: readonly ParquetDataPageLocation[],
   field: ParquetField
@@ -421,24 +422,34 @@ function getSelectedColumnChunks(
 function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
-    columnChunks.every(columnChunk => {
-      const path = columnChunk.meta_data?.path_in_schema;
-      if (!path) {
-        return false;
-      }
-      const field = schema.findField(path);
-      const dictionaryEncoded = columnChunk.meta_data!.encodings.some(
-        encoding => encoding === Encoding.PLAIN_DICTIONARY || encoding === Encoding.RLE_DICTIONARY
-      );
-      const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
-      return (
-        field.primitiveType !== undefined &&
-        field.repetitionType !== 'REPEATED' &&
-        field.rLevelMax === 0 &&
-        (!dictionaryEncoded ||
-          (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
-      );
-    })
+    columnChunks.every(columnChunk => canUseParquetPageIndexForColumn(schema, columnChunk))
+  );
+}
+
+/**
+ * Returns whether a column can be decoded from selected page ranges without changing row shape.
+ *
+ * Repeated leaves deliberately return false: offset indexes describe logical row starts, while
+ * the current materializer still needs the complete repetition-level stream for those columns.
+ */
+export function canUseParquetPageIndexForColumn(
+  schema: ParquetSchema,
+  columnChunk: ColumnChunk
+): boolean {
+  const path = columnChunk.meta_data?.path_in_schema;
+  if (!path) {
+    return false;
+  }
+  const field = schema.findField(path);
+  const dictionaryEncoded = columnChunk.meta_data!.encodings.some(
+    encoding => encoding === Encoding.PLAIN_DICTIONARY || encoding === Encoding.RLE_DICTIONARY
+  );
+  const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
+  return (
+    field.primitiveType !== undefined &&
+    field.repetitionType !== 'REPEATED' &&
+    field.rLevelMax === 0 &&
+    (!dictionaryEncoded || (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
   );
 }
 

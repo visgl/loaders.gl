@@ -70,6 +70,7 @@ import {
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-utils';
+import {crc32} from '../utils/crc32';
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 import {planColumnPages} from './page-planner';
 import {planDictionary, type ParquetDictionaryPolicy} from './dictionary-planner';
@@ -112,6 +113,8 @@ export interface ParquetEncoderOptions {
   dictionaryPageSizeLimit?: number;
   bloomFilter?: boolean | Record<string, boolean>;
   pageIndex?: boolean | Record<string, boolean>;
+  /** Emit CRC-32 checksums for page bodies. */
+  writePageChecksums?: boolean;
 
   // Write Stream Options
   flags?: string;
@@ -293,6 +296,7 @@ export class ParquetEnvelopeWriter {
   public dictionaryPageSizeLimit: number;
   public bloomFilter?: boolean | Record<string, boolean>;
   public pageIndex?: boolean | Record<string, boolean>;
+  public writePageChecksums: boolean;
 
   constructor(
     schema: ParquetSchema,
@@ -314,6 +318,7 @@ export class ParquetEnvelopeWriter {
     this.dictionaryPageSizeLimit = opts.dictionaryPageSizeLimit ?? 1024 * 1024;
     this.bloomFilter = opts.bloomFilter;
     this.pageIndex = opts.pageIndex;
+    this.writePageChecksums = Boolean(opts.writePageChecksums);
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -341,7 +346,8 @@ export class ParquetEnvelopeWriter {
       columnDictionaries: this.columnDictionaries,
       dictionaryPageSizeLimit: this.dictionaryPageSizeLimit,
       bloomFilter: this.bloomFilter,
-      pageIndex: this.pageIndex
+      pageIndex: this.pageIndex,
+      writePageChecksums: this.writePageChecksums
     });
 
     this.rowCount += records.rowCount;
@@ -431,7 +437,8 @@ async function encodeDataPage(
   column: ParquetField,
   data: ParquetColumnChunk,
   valueEncoding: ParquetCodec = column.encoding!,
-  valueBitWidth?: number
+  valueBitWidth?: number,
+  writePageChecksums = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -485,7 +492,8 @@ async function encodeDataPage(
       repetition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING] // [PARQUET_RDLVL_ENCODING]
     }),
     uncompressed_page_size: dataBuf.length,
-    compressed_page_size: compressedBuf.length
+    compressed_page_size: compressedBuf.length,
+    crc: writePageChecksums ? crc32(compressedBuf) : undefined
   });
 
   /* concat page header, repetition and definition levels and values */
@@ -503,7 +511,8 @@ async function encodeDataPageV2(
   data: ParquetColumnChunk,
   rowCount: number,
   valueEncoding: ParquetCodec = column.encoding!,
-  valueBitWidth?: number
+  valueBitWidth?: number,
+  writePageChecksums = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -558,7 +567,10 @@ async function encodeDataPageV2(
       is_compressed: column.compression !== 'UNCOMPRESSED'
     }),
     uncompressed_page_size: rLevelsBuf.length + dLevelsBuf.length + valuesBuf.length,
-    compressed_page_size: rLevelsBuf.length + dLevelsBuf.length + compressedBuf.length
+    compressed_page_size: rLevelsBuf.length + dLevelsBuf.length + compressedBuf.length,
+    crc: writePageChecksums
+      ? crc32(concatUint8Arrays([rLevelsBuf, dLevelsBuf, compressedBuf]))
+      : undefined
   });
 
   /* concat page header, repetition and definition levels and values */
@@ -570,7 +582,8 @@ async function encodeDataPageV2(
 /** Encodes one chunk-wide PLAIN dictionary page. */
 async function encodeDictionaryPage(
   column: ParquetField,
-  dictionaryValues: unknown[]
+  dictionaryValues: unknown[],
+  writePageChecksums = false
 ): Promise<{header: PageHeader; headerSize: number; page: Uint8Array}> {
   const valuesBuffer = encodeValues(column.primitiveType!, 'PLAIN', dictionaryValues as any[], {
     typeLength: column.typeLength
@@ -583,7 +596,8 @@ async function encodeDictionaryPage(
       encoding: Encoding.PLAIN
     }),
     uncompressed_page_size: valuesBuffer.length,
-    compressed_page_size: compressedBuffer.length
+    compressed_page_size: compressedBuffer.length,
+    crc: writePageChecksums ? crc32(compressedBuffer) : undefined
   });
   const headerBuffer = serializeThrift(header);
   return {
@@ -695,7 +709,11 @@ async function encodeColumnChunk(
     opts.dictionaryPageSizeLimit ?? 1024 * 1024
   );
   if (dictionaryPlan) {
-    const result = await encodeDictionaryPage(column, dictionaryPlan.values);
+    const result = await encodeDictionaryPage(
+      column,
+      dictionaryPlan.values,
+      opts.writePageChecksums
+    );
     pages.push(result.page);
     pageOffset += result.page.length;
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
@@ -721,9 +739,16 @@ async function encodeColumnChunk(
           pageData,
           plannedPage.rowCount,
           valueEncoding,
-          dictionaryPlan?.bitWidth
+          dictionaryPlan?.bitWidth,
+          opts.writePageChecksums
         )
-      : await encodeDataPage(column, pageData, valueEncoding, dictionaryPlan?.bitWidth);
+      : await encodeDataPage(
+          column,
+          pageData,
+          valueEncoding,
+          dictionaryPlan?.bitWidth,
+          opts.writePageChecksums
+        );
     pageLocations.push(
       new PageLocation({
         offset: baseOffset + pageOffset,

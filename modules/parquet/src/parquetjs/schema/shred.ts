@@ -231,7 +231,7 @@ function decodeVariantFields(fields: Record<string, ParquetField>, records: unkn
         if (record && typeof record === 'object') {
           const row = record as Record<string, unknown>;
           if (Object.prototype.hasOwnProperty.call(row, field.name)) {
-            row[field.name] = decodeVariantRecord(row[field.name]);
+            row[field.name] = decodeVariantRecord(row[field.name], field);
           }
         }
       }
@@ -246,9 +246,9 @@ function decodeVariantFields(fields: Record<string, ParquetField>, records: unkn
 }
 
 /** Recursively decodes one materialized Variant group, preserving shredded values as records. */
-function decodeVariantRecord(value: unknown): unknown {
+function decodeVariantRecord(value: unknown, field?: ParquetField): unknown {
   if (Array.isArray(value)) {
-    return value.map(decodeVariantRecord);
+    return value.map(item => decodeVariantRecord(item, field));
   }
   if (!value || typeof value !== 'object') {
     return value;
@@ -259,8 +259,59 @@ function decodeVariantRecord(value: unknown): unknown {
   if (isByteArray(metadata) && isByteArray(variantValue)) {
     return decodeVariant(metadata, variantValue);
   }
+  // Shredded Variant encodings may materialize the typed_value child directly while
+  // omitting the unshredded metadata/value pair. Preserve that typed representation as
+  // the logical value instead of leaking the physical wrapper into object rows.
+  if (Object.prototype.hasOwnProperty.call(record, 'typed_value')) {
+    return decodeShreddedVariantValue(record.typed_value, field?.fields?.typed_value);
+  }
   return value;
 }
+
+/** Collapses a declared one-field typed-value union used by shredded Variant layouts. */
+function decodeShreddedVariantValue(value: unknown, field?: ParquetField): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).filter(key => record[key] !== undefined);
+  if (keys.length === 1 && isVariantTypedValueField(field?.fields?.[keys[0]])) {
+    return decodeShreddedVariantValue(record[keys[0]], field?.fields?.[keys[0]]);
+  }
+  return value;
+}
+
+/** Identifies the declared members of the Parquet Variant typed-value union. */
+function isVariantTypedValueField(field: ParquetField | undefined): boolean {
+  return Boolean(field && VARIANT_TYPED_VALUE_FIELD_NAMES.has(field.name));
+}
+
+const VARIANT_TYPED_VALUE_FIELD_NAMES = new Set([
+  'null_value',
+  'boolean_value',
+  'int8_value',
+  'int16_value',
+  'int32_value',
+  'int64_value',
+  'uint8_value',
+  'uint16_value',
+  'uint32_value',
+  'uint64_value',
+  'float16_value',
+  'float32_value',
+  'float64_value',
+  'decimal4_value',
+  'decimal8_value',
+  'decimal16_value',
+  'string_value',
+  'blob_value',
+  'date_value',
+  'timestamp_millis_value',
+  'timestamp_micros_value',
+  'timestamp_nanos_value',
+  'object_value',
+  'array_value'
+]);
 
 /** Finds nested records while preserving repeated group values. */
 function getNestedRecords(record: object, fieldName: string): unknown[] {

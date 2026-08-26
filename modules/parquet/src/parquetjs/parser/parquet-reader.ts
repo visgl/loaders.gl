@@ -43,6 +43,8 @@ export type ParquetReaderProps = {
   useTypedValueBuffers?: boolean;
   /** Decode repetition and definition levels into compact unsigned typed arrays. */
   useTypedLevelBuffers?: boolean;
+  /** Verify page-header CRC values when present. Disabled by default for throughput. */
+  verifyPageChecksums?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
 };
@@ -71,6 +73,7 @@ export class ParquetReader {
     retainByteArrayViews: false,
     useTypedValueBuffers: false,
     useTypedLevelBuffers: false,
+    verifyPageChecksums: false,
     signal: undefined
   };
 
@@ -347,7 +350,8 @@ export class ParquetReader {
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
       useTypedValueBuffers: this.props.useTypedValueBuffers,
-      useTypedLevelBuffers: this.props.useTypedLevelBuffers
+      useTypedLevelBuffers: this.props.useTypedLevelBuffers,
+      verifyPageChecksums: this.props.verifyPageChecksums
     };
 
     let dictionary: any[] | undefined;
@@ -413,7 +417,8 @@ export class ParquetReader {
       dictionary: [],
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
-      useTypedValueBuffers: this.props.useTypedValueBuffers
+      useTypedValueBuffers: this.props.useTypedValueBuffers,
+      verifyPageChecksums: this.props.verifyPageChecksums
     };
 
     let dictionary: any[] | undefined;

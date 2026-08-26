@@ -80,6 +80,7 @@ export type {
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -97,6 +98,13 @@ export {
 export {ParquetWriter} from './parquet-writer';
 export type {ParquetJSWriterEncoding, ParquetJSWriterOptions} from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
+
+export {
+  decodeParquetColumnIndex,
+  decodeParquetPageStatisticsValue,
+  canUseParquetPageIndexForColumn,
+  type ParquetPageStatistics
+} from './lib/parquet-page-index';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
