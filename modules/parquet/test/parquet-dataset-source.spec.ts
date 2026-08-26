@@ -40,7 +40,7 @@ describe('ParquetDatasetSource', () => {
       {core: {worker: false}, parquetDataset: {fileConcurrency: 2}}
     );
 
-    const batches = await collectBatches(source.read({batchSize: 1}));
+    const batches = await collectBatches(source.scan({batchSize: 1}));
 
     expect(batches.map(batch => batch.datasetFileId)).toEqual(['west', 'west', 'east', 'east']);
     expect(batches.map(batch => batch.datasetFileIndex)).toEqual([0, 0, 1, 1]);
@@ -63,6 +63,43 @@ describe('ParquetDatasetSource', () => {
     expect(source.getTelemetry().parquet.rowsEmitted).toBe(4);
     expect(Object.isFrozen(source.getTelemetry())).toBe(true);
     expect(Object.isFrozen(source.getTelemetry().parquet)).toBe(true);
+    await source.close();
+  });
+
+  test('aggregates descriptor and child Parquet physical scan plans', async () => {
+    const source = new ParquetDatasetSource(
+      [
+        {data: westernFile, id: 'west', partitions: {theme: 'buildings'}},
+        {data: easternFile, id: 'east', partitions: {theme: 'places'}}
+      ],
+      {core: {worker: false}, parquetDataset: {fileConcurrency: 2}}
+    );
+
+    const plan = await source.getScanPlan({
+      columns: ['value'],
+      predicate: {op: '>=', args: [{property: 'id'}, 3]},
+      partitions: {theme: 'places'},
+      limit: 1
+    });
+
+    expect(plan.source).toBe('parquet-dataset');
+    expect(plan.outputColumns).toEqual(['value']);
+    expect(plan.requiredColumns).toEqual(['id', 'value']);
+    expect(plan.files).toEqual({
+      discovered: 2,
+      selected: 1,
+      prunedByBoundingBox: 0,
+      prunedByPartitions: 1
+    });
+    expect(plan.filePlans).toHaveLength(1);
+    expect(plan.filePlans[0]).toMatchObject({fileIndex: 1, fileId: 'east'});
+    expect(plan.filePlans[0].parquet.rowGroups).toMatchObject({
+      requested: 1,
+      selected: 1,
+      prunedByStatistics: 0
+    });
+    expect(plan.plan.at(-1)).toEqual({kind: 'limit', limit: 1});
+    expect(Object.isFrozen(plan.filePlans)).toBe(true);
     await source.close();
   });
 

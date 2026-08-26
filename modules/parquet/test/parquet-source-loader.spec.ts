@@ -187,6 +187,31 @@ test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) =
   t.end();
 });
 
+test('ParquetSource#getScanPlan shares logical and physical pruning decisions', async t => {
+  const fixture = await createSelectiveFixture();
+  const source = createRemoteSource(createRangeFetch(fixture));
+  const plan = await source.getScanPlan({
+    columns: ['source_id'],
+    predicate: {op: '=', args: [{property: 'x'}, 2]},
+    rowGroupFilter: rowGroup => rowGroup.index === 1,
+    limit: 1
+  });
+
+  t.deepEqual(plan.outputColumns, ['source_id'], 'retains the visible projection');
+  t.deepEqual(plan.requiredColumns, ['x', 'source_id'], 'retains the hidden predicate column');
+  t.deepEqual(plan.rowGroups.indices, [1], 'selects the matching physical row group');
+  t.equal(plan.rowGroups.requested, 3, 'reports every candidate row group');
+  t.equal(plan.rowGroups.selected, 1, 'reports the retained row group');
+  t.equal(plan.rowGroups.prunedByCallback, 2, 'attributes metadata callback pruning');
+  t.equal(plan.rowGroups.prunedByStatistics, 0, 'does not invent statistics pruning');
+  t.equal(plan.rowGroups.prunedByBloomFilter, 0, 'does not invent Bloom-filter pruning');
+  t.equal(plan.plan.at(-1)?.kind, 'limit', 'retains the common logical limit');
+  t.ok(Object.isFrozen(plan.rowGroups.indices), 'freezes physical plan selections');
+
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
