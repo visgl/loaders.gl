@@ -8,13 +8,15 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 
-import {ImageSourceLayer, VectorSourceLayer} from '@loaders.gl/deck-layers';
+import {ImageSourceLayer, TileSourceLayer, VectorSourceLayer} from '@loaders.gl/deck-layers';
 import {createDataSource} from '@loaders.gl/core';
 import {
   _ArcGISFeatureServerSourceLoader,
   _ArcGISImageServerSourceLoader,
+  ArcGISMapTileSourceLoader,
   WFSSourceLoader,
-  WMSSourceLoader
+  WMSSourceLoader,
+  WMTSSourceLoader
 } from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
@@ -57,7 +59,9 @@ const SOURCE_FACTORIES = [
   WMSSourceLoader,
   _ArcGISImageServerSourceLoader,
   _ArcGISFeatureServerSourceLoader,
-  WFSSourceLoader
+  WFSSourceLoader,
+  WMTSSourceLoader,
+  ArcGISMapTileSourceLoader
 ];
 
 type SourceData = any;
@@ -70,6 +74,8 @@ type AppState = {
   source: SourceData | null;
   /** Metadata loaded from the active source. */
   metadata: string;
+  /** Structured metadata forwarded to tile rendering. */
+  metadataObject: any | null;
   /** Current view state. */
   viewState: Record<string, number>;
   loading: boolean;
@@ -81,6 +87,7 @@ export default function App(props: AppProps = {}) {
     example: null,
     source: null,
     metadata: '',
+    metadataObject: null,
     viewState: INITIAL_VIEW_STATE,
     loading: true,
     error: null,
@@ -151,7 +158,8 @@ export default function App(props: AppProps = {}) {
     const {viewState} = example;
     const newViewState = {...state.viewState, ...viewState};
     const source = createDataSource(example.url, SOURCE_FACTORIES, {
-      type: example.type
+      type: example.type,
+      ...example.sourceOptions
     });
 
     setState((state) => ({
@@ -160,6 +168,7 @@ export default function App(props: AppProps = {}) {
       source,
       viewState: newViewState,
       metadata: 'Loading metadata...',
+      metadataObject: null,
       loading: true,
       error: null
     }));
@@ -170,7 +179,8 @@ export default function App(props: AppProps = {}) {
       globalThis.document.title = String(title);
       setState((state) => ({
         ...state,
-        metadata: JSON.stringify(metadata, null, 2)
+        metadata: JSON.stringify(metadata, null, 2),
+        metadataObject: metadata
       }));
     } catch (error) {
       setState((state) => ({
@@ -184,6 +194,21 @@ export default function App(props: AppProps = {}) {
   function renderLayer(example: Example | null, source: SourceData | null) {
     if (!example || !source) {
       return null;
+    }
+
+    if (example.type === 'wmts' || example.type === 'arcgis-map-server') {
+      return [
+        new TileSourceLayer({
+          id: `${example.type}-${example.url}`,
+          data: source,
+          metadata: state.metadataObject,
+          showTileBorders: false,
+          onTileError: (error: Error) =>
+            setState((currentState) => ({...currentState, loading: false, error: error.message})),
+          onTilesLoad: () => setState((currentState) => ({...currentState, loading: false})),
+          ...example.layerProps
+        } as any)
+      ];
     }
 
     if (example.type === 'arcgis-feature-server' || example.type === 'wfs') {

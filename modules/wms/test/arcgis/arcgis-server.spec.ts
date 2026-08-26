@@ -6,7 +6,8 @@ import test from 'test/utils/vitest-tape';
 
 import {
   _ArcGISFeatureServerSourceLoader as ArcGISFeatureServerSourceLoader,
-  _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader
+  _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader,
+  ArcGISMapTileSource
 } from '@loaders.gl/wms';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
@@ -18,6 +19,14 @@ test('ArcGISImageServerSourceLoader#testURL', t => {
     ArcGISImageServerSourceLoader.testURL(IMAGE_SERVER_URL),
     'identifies ArcGIS ImageServer URLs'
   );
+  t.end();
+});
+
+test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', t => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer?token=abc');
+  const url = new URL(source.getTileURL({x: 3, y: 4, z: 5}));
+  t.equal(url.pathname, '/MapServer/tile/5/4/3');
+  t.equal(url.searchParams.get('token'), 'abc');
   t.end();
 });
 

@@ -50,8 +50,9 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // WMTS - Web Map Tile Service
 
-// export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
-// export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
+export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
+export type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 
 // WFS - Web Feature Service
 
@@ -76,6 +77,8 @@ export type {
 } from './csw-source-loader';
 export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
+export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
+export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 
 // ArcGIS SourceLoaders
@@ -83,6 +86,11 @@ export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
 export {ArcGISFeatureServerSourceLoader as _ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
 export {ArcGISImageServerSourceLoader as _ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
+export type {ArcGISMapTileSourceLoaderOptions} from './arcgis/arcgis-map-tile-source-loader';
+export {
+  ArcGISMapTileSourceLoader,
+  ArcGISMapTileSource
+} from './arcgis/arcgis-map-tile-source-loader';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';
