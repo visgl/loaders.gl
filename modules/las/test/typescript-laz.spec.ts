@@ -426,7 +426,7 @@ test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
 
   t.throws(
     () => parseLAS(source.slice(0, source.byteLength - 32)),
-    /needs more|truncated|beyond input/i,
+    /needs more|truncated|beyond input|incomplete LAZ chunk table/i,
     'rejects truncated compressed point data'
   );
   t.end();
