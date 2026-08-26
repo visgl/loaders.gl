@@ -4,6 +4,7 @@ hide_title: true
 ---
 
 import {ClientExample} from '../../components';
+import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
 
 # Overture GeoParquet query in the browser
 
@@ -14,3 +15,11 @@ import {ClientExample} from '../../components';
     Overture's ZSTD pages decode in the Parquet source worker using native `DecompressionStream` support when available and a lightweight JavaScript fallback otherwise.
   </ClientExample>
 </div>
+
+## Query a standalone Parquet file
+
+The same metadata-driven panel also works for a plain range-readable Parquet object. It discovers
+the footer schema and statistics first, then applies projection and limits before Arrow batches are
+returned.
+
+<ParquetScanLiveExample />

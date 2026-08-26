@@ -7,9 +7,15 @@ import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils
 import {
   BlobFile,
   DataSource,
+  createScanQueryMetadata,
   explainTableQuery,
   isBrowser,
   validateTableQueryLimit
+} from '@loaders.gl/loader-utils';
+import type {
+  ScanColumnRole,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -265,6 +271,23 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       ...initialization.metadata,
       formatSpecificMetadata: initialization.fileMetadata
     };
+  }
+
+  /** Discovers schema, capabilities, and footer statistics without decoding Parquet data pages. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    const [schema, metadata] = await Promise.all([
+      this.getSchema({signal: options.signal}),
+      this.getMetadata({signal: options.signal})
+    ]);
+    return createScanQueryMetadata({
+      sourceType: 'parquet',
+      queryType: 'table',
+      name: metadata.name,
+      schema,
+      capabilities: {table: this.tableQueryCapabilities},
+      columnRoles: getParquetColumnRoles(schema.fields.map(field => field.name)),
+      statistics: {rowCount: metadata.rowCount, byteLength: metadata.fileByteLength}
+    });
   }
 
   /** Plans a portable query using Parquet metadata without decoding data pages. */
@@ -1106,6 +1129,29 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       // Telemetry must never change source read behavior.
     }
   }
+}
+
+function getParquetColumnRoles(columnNames: readonly string[]): Record<string, ScanColumnRole> {
+  const roles: Record<string, ScanColumnRole> = {};
+  for (const columnName of columnNames) {
+    const normalizedName = columnName.toLowerCase();
+    if (normalizedName === 'geometry' || normalizedName === 'geom' || normalizedName === 'shape') {
+      roles[columnName] = 'geometry';
+    } else if (
+      normalizedName === 'longitude' ||
+      normalizedName === 'lon' ||
+      normalizedName === 'x'
+    ) {
+      roles[columnName] = 'longitude';
+    } else if (
+      normalizedName === 'latitude' ||
+      normalizedName === 'lat' ||
+      normalizedName === 'y'
+    ) {
+      roles[columnName] = 'latitude';
+    }
+  }
+  return roles;
 }
 
 /** Normalizes a decoded Parquet footer into source metadata. */

@@ -103,6 +103,19 @@ test('ParquetSourceLoader#Blob metadata and schema are cached', async (t) => {
   t.end();
 });
 
+test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics', async t => {
+  const fixture = await loadFixture();
+  const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
+  const metadata = await source.getQueryMetadata();
+
+  t.equal(metadata.sourceType, 'parquet', 'identifies the source adapter');
+  t.equal(metadata.queryType, 'table', 'identifies the query family');
+  t.ok(metadata.columns.length > 0, 'discovers selectable columns');
+  t.equal(metadata.capabilities.table?.projection, 'pushdown', 'reports projection pushdown');
+  t.ok(Number(metadata.statistics?.rowCount) > 0, 'reports footer row count');
+  await source.close();
+});
+
 test('ParquetSource#preserves opaque WASM inputs by identity', async (t) => {
   const wasmUrl = Promise.resolve(new URL('https://example.com/parquet_wasm_bg.wasm'));
   const source = new ParquetSource(new Blob(), {parquet: {wasmUrl}});
