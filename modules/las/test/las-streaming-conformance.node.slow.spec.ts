@@ -151,6 +151,20 @@ describe('TypeScript LAZ streaming conformance', () => {
       splitArrayBufferRandomly(streamed.buffer, 0x4c415a14, 509)
     );
     expect(actual).toEqual(expected);
+
+    await expect(
+      collectRawPointData(splitArrayBufferRandomly(streamed.buffer.slice(0, -8), 0x4c415a14, 509))
+    ).rejects.toThrow(/footer/i);
+
+    const invalidFooter = streamed.slice();
+    new DataView(invalidFooter.buffer).setBigUint64(
+      invalidFooter.byteLength - 8,
+      chunkTableOffset + 1n,
+      true
+    );
+    await expect(
+      collectRawPointData(splitArrayBufferRandomly(invalidFooter.buffer, 0x4c415a14, 509))
+    ).rejects.toThrow(/footer points/i);
   });
 
   test('PDRF 7 Arrow streaming stays within the allocation and copy budget', async () => {
