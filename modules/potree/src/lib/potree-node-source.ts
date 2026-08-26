@@ -144,7 +144,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
     await this.initPromise;
     const fields = getPotreeSchemaFields(this.metadata?.pointAttributes || []);
     const schema = {fields, metadata: {}};
-    const bounds = this.boundingBox || this.nativeHierarchyBoundingBox;
+    const bounds = this.nativeHierarchyBoundingBox || this.boundingBox;
     return createScanQueryMetadata({
       sourceType: 'potree',
       queryType: 'point-cloud',
@@ -895,6 +895,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   }
 }
 
+/** Builds query-visible fields from Potree point-attribute metadata. */
 function getPotreeSchemaFields(pointAttributes: PotreeMetadata['pointAttributes']): Field[] {
   if (!Array.isArray(pointAttributes)) {
     return [
@@ -911,6 +912,7 @@ function getPotreeSchemaFields(pointAttributes: PotreeMetadata['pointAttributes'
   return fields;
 }
 
+/** Maps one Potree attribute identifier to a loaders.gl field. */
 function getPotreeField(attribute: string): Field | undefined {
   const fieldTypes: Record<string, {name: string; type: DataType}> = {
     POSITION_CARTESIAN: {name: 'POSITION_CARTESIAN', type: 'float32'},
@@ -928,6 +930,7 @@ function getPotreeField(attribute: string): Field | undefined {
   return fieldType ? {...fieldType, nullable: false} : undefined;
 }
 
+/** Infers a query-panel semantic role from a Potree attribute name. */
 function inferPotreeColumnRole(
   name: string
 ): 'attribute' | 'x' | 'y' | 'z' | 'intensity' | 'classification' | 'color' {

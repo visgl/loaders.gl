@@ -67,12 +67,14 @@ export function validateRasterQueryOptions(options: RasterQueryOptions): void {
   }
 }
 
+/** Validates a positive raster dimension. */
 function validatePositiveInteger(value: number, name: string): void {
   if (!Number.isSafeInteger(value) || value < 1) {
     throw new Error(`Raster query ${name} must be a positive safe integer.`);
   }
 }
 
+/** Validates a non-negative raster index. */
 function validateNonNegativeInteger(value: number, name: string): void {
   if (!Number.isSafeInteger(value) || value < 0) {
     throw new Error(`Raster query ${name} must be a non-negative safe integer.`);

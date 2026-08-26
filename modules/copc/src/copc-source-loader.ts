@@ -30,6 +30,7 @@ const COORDINATE_SYSTEM = {
   LNGLAT_OFFSETS: 'lnglat-offsets'
 } as const;
 
+/** Infers a query-panel semantic role from a COPC dimension name. */
 function inferCOPCColumnRole(
   name: string
 ): 'attribute' | 'x' | 'y' | 'z' | 'intensity' | 'classification' | 'color' {
@@ -188,7 +189,7 @@ export class COPCTileSource
   /** Discovers point attributes and spatial bounds without decoding point rows. */
   async getQueryMetadata() {
     const {copc} = await this._initPromise;
-    const schema = await this.getSchema();
+    const schema = getCOPCHeaderSchema(copc.header.pointDataRecordFormat);
     const roles = Object.fromEntries(
       schema.fields.map(field => [field.name, inferCOPCColumnRole(field.name)])
     );
@@ -980,6 +981,34 @@ function getDataTypeFromDimension(dimension: Dimension): DataType {
     default:
       return 'null';
   }
+}
+
+/** Builds the standard query schema from a COPC point-data record format. */
+function getCOPCHeaderSchema(pointDataRecordFormat: number): Schema {
+  const fields: Field[] = [
+    {name: 'X', type: 'float64', nullable: false},
+    {name: 'Y', type: 'float64', nullable: false},
+    {name: 'Z', type: 'float64', nullable: false}
+  ];
+  if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 6) {
+    fields.push({name: 'Intensity', type: 'uint16', nullable: false});
+  }
+  if (
+    pointDataRecordFormat === 2 ||
+    pointDataRecordFormat === 3 ||
+    pointDataRecordFormat === 7 ||
+    pointDataRecordFormat === 8 ||
+    pointDataRecordFormat === 10
+  ) {
+    fields.push(
+      {name: 'Red', type: 'uint16', nullable: false},
+      {name: 'Green', type: 'uint16', nullable: false},
+      {name: 'Blue', type: 'uint16', nullable: false}
+    );
+  }
+  if (pointDataRecordFormat >= 6)
+    fields.push({name: 'Classification', type: 'uint8', nullable: false});
+  return {fields, metadata: {}};
 }
 
 function createProjection(projectionData?: string): Proj4Projection | null {

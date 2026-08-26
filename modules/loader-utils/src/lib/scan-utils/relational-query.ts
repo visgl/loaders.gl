@@ -82,15 +82,45 @@ export function planRelationalQuery<PredicateT extends ColumnarPredicate = Colum
   readonly tablePlan: ReturnType<typeof planTableQuery>;
   readonly relationalSteps: readonly RelationalPlanStep[];
 } {
-  const tablePlan = planTableQuery(sourceColumnNames, options);
   const available = new Set(sourceColumnNames);
+  const expressionNames = new Set<string>();
   for (const expression of options.expressions || []) {
     if (!expression.name) throw new Error('Relational expression names must be non-empty.');
-    if (available.has(expression.name)) {
+    if (available.has(expression.name) || expressionNames.has(expression.name)) {
       throw new Error(`Relational expression duplicates column: ${expression.name}`);
     }
-    available.add(expression.name);
+    expressionNames.add(expression.name);
   }
+  const requiredColumns = new Set<string>();
+  for (const expression of options.expressions || []) {
+    if (expression.expression.op === 'column') requiredColumns.add(expression.expression.column);
+    if ('left' in expression.expression) {
+      requiredColumns.add(expression.expression.left);
+      requiredColumns.add(expression.expression.right);
+    }
+  }
+  for (const key of options.orderBy || []) requiredColumns.add(key.column);
+  for (const key of options.groupBy || []) requiredColumns.add(key);
+  for (const aggregate of options.aggregates || []) {
+    if (aggregate.column) requiredColumns.add(aggregate.column);
+  }
+  const outputColumns = options.columns?.filter(column => !expressionNames.has(column));
+  const tablePlan = [
+    ...planTableQuery(sourceColumnNames, {
+      ...options,
+      columns: outputColumns,
+      predicate: options.predicate
+    })
+  ];
+  const scanStep = tablePlan[0];
+  if (scanStep?.kind === 'scan') {
+    const scanColumns = new Set(scanStep.columns);
+    for (const column of requiredColumns) {
+      if (available.has(column)) scanColumns.add(column);
+    }
+    tablePlan[0] = Object.freeze({kind: 'scan', columns: Object.freeze([...scanColumns])});
+  }
+  for (const expression of expressionNames) available.add(expression);
   for (const key of options.orderBy || []) {
     if (!available.has(key.column))
       throw new Error(`Relational order column not found: ${key.column}`);

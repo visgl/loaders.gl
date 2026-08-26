@@ -55,7 +55,7 @@ export const GEOTIFF_RASTER_QUERY_CAPABILITIES: RasterQueryCapabilities = Object
   variables: 'pushdown',
   slices: 'unsupported',
   streaming: false,
-  cancellation: true
+  cancellation: false
 });
 
 /**

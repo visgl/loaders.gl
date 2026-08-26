@@ -48,6 +48,7 @@ describe('relational query planning', () => {
       aggregates: [{name: 'total', function: 'sum', column: 'value'}],
       limit: 5
     });
+    expect(plan.tablePlan[0]).toMatchObject({kind: 'scan', columns: ['id', 'value']});
     expect(plan.tablePlan.map(step => step.kind)).toEqual(['scan', 'project', 'limit']);
     expect(plan.relationalSteps.map(step => step.kind)).toEqual([
       'expression',
