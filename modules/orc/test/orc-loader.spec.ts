@@ -29,6 +29,49 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
   expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
 });
 
+test('ORCSource rejects unsupported predicates before reading the source', async () => {
+  const source = new ORCSource(new Blob([new Uint8Array([0])]));
+  await expect(source.query({predicate: {type: 'literal', value: true} as never})).rejects.toThrow(
+    'ORC predicates are not implemented yet'
+  );
+});
+
+test('ORCSource validates query limits before decoding rows', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a', 'b']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  const source = new ORCSource(new Blob([encoded]));
+  await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
+});
+
+test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  let attempts = 0;
+  const source = new ORCSource('https://example.com/data.orc', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: async () => {
+            attempts++;
+            if (attempts === 1) throw new Error('temporary failure');
+            return new Response(encoded);
+          }
+        }
+      }
+    }
+  });
+  await expect(source.getQueryMetadata()).rejects.toThrow('temporary failure');
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.rowCount).toBe(1);
+  expect(attempts).toBe(2);
+});
+
 test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   const indexes = Uint8Array.from([0xfd, 0x00, 0x01, 0x00]);
   const lengths = Uint8Array.from([0xfe, 0x01, 0x02]);

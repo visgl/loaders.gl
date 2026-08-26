@@ -7,16 +7,18 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader
+  SourceLoader,
+  TableQueryOptions
 } from '@loaders.gl/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
-  type TableQueryOptions
+  validateTableQueryOptions
 } from '@loaders.gl/loader-utils';
-import {ORCFormat} from './orc-format';
 import {parseORC, ORCTypeKind, type ORCTypeDescription} from './lib/parsers/parse-orc';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
+import {preloadORCCompression} from './lib/parsers/orc-compression';
+import {ORCFormat} from './orc-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -27,23 +29,6 @@ export type ORCSourceOptions = DataSourceOptions;
 
 /** Query options accepted by the current ORC source implementation. */
 export type ORCQueryOptions = TableQueryOptions & Readonly<{signal?: AbortSignal}>;
-
-/** Source loader metadata for range-ready ORC query discovery. */
-export const ORCSourceLoader = {
-  dataType: null as unknown as ORCSource,
-  batchType: null as never,
-  ...ORCFormat,
-  name: 'ORCSourceLoader',
-  version: VERSION,
-  type: 'orc-source',
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: ORCSourceOptions): ORCSource =>
-    new ORCSource(data, options)
-} as const satisfies SourceLoader<ORCSource>;
 
 /**
  * Lightweight ORC scan source.
@@ -63,6 +48,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   /** Discovers ORC footer schema and stripe statistics without decoding data streams. */
   async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
     const arrayBuffer = await this.getArrayBuffer(options.signal);
+    await preloadORCCompression();
     const file = parseORC(arrayBuffer);
     const schema = createORCSchema(file.footer.types[0], file.footer.types);
     return createScanQueryMetadata({
@@ -88,10 +74,19 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   /** Executes a portable query after decoding the ORC file into an Arrow table. */
   async query(options: ORCQueryOptions = {}): Promise<ArrowTable> {
     throwIfAborted(options.signal);
-    const table = parseORCToArrow(await this.getArrayBuffer(options.signal));
     if (options.predicate) {
-      throw new Error('ORC residual predicates are not implemented yet.');
+      throw new Error('ORC predicates are not implemented yet.');
     }
+    const arrayBuffer = await this.getArrayBuffer(options.signal);
+    await preloadORCCompression();
+    const file = parseORC(arrayBuffer);
+    validateTableQueryOptions(
+      file.footer.fieldNames.length
+        ? file.footer.fieldNames
+        : file.footer.types[0]?.fieldNames || [],
+      options
+    );
+    const table = parseORCToArrow(arrayBuffer);
     const projectedData = table.data.select(
       options.columns ? [...options.columns] : table.data.schema.fields.map(field => field.name)
     );
@@ -127,11 +122,33 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
             })
           : this.data.arrayBuffer();
     }
-    const arrayBuffer = await this.arrayBufferPromise;
-    throwIfAborted(signal);
-    return arrayBuffer;
+    try {
+      const arrayBuffer = await this.arrayBufferPromise;
+      throwIfAborted(signal);
+      return arrayBuffer;
+    } catch (error) {
+      this.arrayBufferPromise = null;
+      throw error;
+    }
   }
 }
+
+/** Parser-bearing ORC source loader exposed through the explicit source subpath. */
+export const ORCSourceLoaderWithParser = {
+  dataType: null as unknown as ORCSource,
+  batchType: null as never,
+  ...ORCFormat,
+  name: 'ORCSourceLoader',
+  version: VERSION,
+  type: 'orc-source',
+  fromUrl: true,
+  fromBlob: true,
+  options: {},
+  defaultOptions: {},
+  testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
+  createDataSource: (data: string | Blob, options: ORCSourceOptions): ORCSource =>
+    new ORCSource(data, options)
+} as const satisfies SourceLoader<ORCSource>;
 
 /** Converts an ORC struct footer type into a loaders.gl schema without reading stripes. */
 function createORCSchema(
@@ -141,7 +158,11 @@ function createORCSchema(
   const fields: Field[] =
     rootType?.fieldNames.map((name, index) => ({
       name,
-      type: getORCDataType(types[rootType.subtypes[index]]?.kind),
+      type: getORCDataType(
+        types[rootType.subtypes[index]]?.kind,
+        types[rootType.subtypes[index]],
+        types
+      ),
       nullable: true,
       metadata: {}
     })) || [];
@@ -149,7 +170,11 @@ function createORCSchema(
 }
 
 /** Maps supported ORC primitive kinds to portable schema data types. */
-function getORCDataType(typeId: number): DataType {
+function getORCDataType(
+  typeId: number | undefined,
+  typeDescription?: ORCTypeDescription,
+  types: readonly ORCTypeDescription[] = []
+): DataType {
   switch (typeId) {
     case ORCTypeKind.BOOLEAN:
       return 'bool';
@@ -170,6 +195,43 @@ function getORCDataType(typeId: number): DataType {
       return 'binary';
     case ORCTypeKind.TIMESTAMP:
       return 'timestamp-millisecond';
+    case ORCTypeKind.LIST: {
+      const childTypeId = typeDescription?.subtypes[0];
+      return {
+        type: 'list',
+        children: [
+          {
+            name: 'item',
+            type: getORCDataType(types[childTypeId ?? 0]?.kind, types[childTypeId ?? 0], types),
+            nullable: true,
+            metadata: {}
+          }
+        ]
+      };
+    }
+    case ORCTypeKind.MAP:
+      return {
+        type: 'map',
+        keysSorted: false,
+        children:
+          typeDescription?.subtypes.map((childTypeId, index) => ({
+            name: index === 0 ? 'key' : 'value',
+            type: getORCDataType(types[childTypeId]?.kind, types[childTypeId], types),
+            nullable: true,
+            metadata: {}
+          })) || []
+      };
+    case ORCTypeKind.STRUCT:
+      return {
+        type: 'struct',
+        children:
+          typeDescription?.subtypes.map((childTypeId, index) => ({
+            name: typeDescription.fieldNames[index] || `field_${index}`,
+            type: getORCDataType(types[childTypeId]?.kind, types[childTypeId], types),
+            nullable: true,
+            metadata: {}
+          })) || []
+      };
     default:
       return 'utf8';
   }
