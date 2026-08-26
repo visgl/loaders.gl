@@ -218,6 +218,7 @@ function parsePoly(
   }
 
   polygonIndices.push(nPoints);
+  reversePolygonRingCoordinates(positions, ringIndices, dim);
 
   return {
     type,
@@ -229,6 +230,37 @@ function parsePoly(
     // when nPoints > 65535.
     polygonIndices: {value: new Uint32Array(polygonIndices), size: 1}
   };
+}
+
+/**
+ * Reverses Shapefile polygon rings to follow the GeoJSON right-hand rule.
+ * Shapefile exterior and interior rings use the opposite winding order.
+ *
+ * @param positions Interleaved polygon coordinates to reverse in place.
+ * @param ringIndices Start indices for each polygon ring.
+ * @param coordinateSize Number of values in each coordinate.
+ */
+function reversePolygonRingCoordinates(
+  positions: Float64Array,
+  ringIndices: Int32Array,
+  coordinateSize: number
+): void {
+  for (let ringIndex = 1; ringIndex < ringIndices.length; ringIndex++) {
+    let startPositionIndex = ringIndices[ringIndex - 1];
+    let endPositionIndex = ringIndices[ringIndex] - 1;
+
+    while (startPositionIndex < endPositionIndex) {
+      const startOffset = startPositionIndex * coordinateSize;
+      const endOffset = endPositionIndex * coordinateSize;
+      for (let coordinateIndex = 0; coordinateIndex < coordinateSize; coordinateIndex++) {
+        const coordinate = positions[startOffset + coordinateIndex];
+        positions[startOffset + coordinateIndex] = positions[endOffset + coordinateIndex];
+        positions[endOffset + coordinateIndex] = coordinate;
+      }
+      startPositionIndex++;
+      endPositionIndex--;
+    }
+  }
 }
 
 /**
