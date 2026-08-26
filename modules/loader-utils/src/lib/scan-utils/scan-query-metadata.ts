@@ -54,6 +54,18 @@ export type ScanSpatialMetadata = Readonly<{
   coordinateReferenceSystems?: readonly string[];
 }>;
 
+/** One raster resolution level exposed to a scan query editor. */
+export type ScanRasterLevel = Readonly<{
+  /** Zero-based level index in the source pyramid. */
+  index: number;
+  /** Pixel width at this level. */
+  width: number;
+  /** Pixel height at this level. */
+  height: number;
+  /** Optional scale relative to the full-resolution level. */
+  scale?: readonly [number, number];
+}>;
+
 /** Capabilities that a common scan-query panel can expose across source families. */
 export type ScanQueryCapabilities = Readonly<{
   /** Relational projection, predicate, limit, streaming, and cancellation support. */
@@ -92,6 +104,8 @@ export type ScanQueryMetadata = Readonly<{
   spatial?: ScanSpatialMetadata;
   /** Optional statistics obtained from source metadata. */
   statistics?: ScanSourceStatistics;
+  /** Optional multiscale raster levels. */
+  levels?: readonly ScanRasterLevel[];
 }>;
 
 /** Options accepted by query metadata discovery methods. */
@@ -126,6 +140,8 @@ export type CreateScanQueryMetadataOptions = Readonly<{
   spatial?: ScanSpatialMetadata;
   /** Optional source statistics. */
   statistics?: ScanSourceStatistics;
+  /** Optional multiscale raster levels. */
+  levels?: readonly ScanRasterLevel[];
 }>;
 
 /**
@@ -178,7 +194,19 @@ export function createScanQueryMetadata(
             : undefined
         })
       : undefined,
-    statistics: options.statistics ? Object.freeze({...options.statistics}) : undefined
+    statistics: options.statistics ? Object.freeze({...options.statistics}) : undefined,
+    levels: options.levels
+      ? Object.freeze(
+          options.levels.map(level =>
+            Object.freeze({
+              ...level,
+              scale: level.scale
+                ? (Object.freeze([...level.scale]) as readonly [number, number])
+                : undefined
+            })
+          )
+        )
+      : undefined
   });
 }
 

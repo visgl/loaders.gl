@@ -50,6 +50,28 @@ well as the regular one-dimensional coordinate arrays commonly written by xarray
 The [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) reads a public NASA POWER climatology
 store directly from S3 and renders monthly solar irradiance on an interactive map.
 
+## Feature matrix
+
+| Capability | Zarr v2 | Zarr v3 | OME-Zarr | GeoZarr / CF | Status |
+| --- | --- | --- | --- | --- | --- |
+| Browser and Node.js reads | Yes | Yes | Yes | Yes | Available |
+| HTTP range/chunked access | Yes | Yes | Yes | Yes | Available |
+| Consolidated metadata discovery | `.zmetadata`, `zmetadata` | `zarr.json` | Yes | Yes | Available |
+| Multidimensional arrays and named dimensions | Yes | Yes | Yes | Yes | Available |
+| Chunk-aware raster reads | Yes | Yes | Yes | Yes | Available |
+| OME image channels, time, and z planes | — | — | Yes | — | Available |
+| OME multiscale pyramids | — | — | Yes | — | Available |
+| Automatic display-level selection | — | — | Yes | — | Available |
+| Scan metadata and level-of-detail discovery | — | — | Yes | Planned for GeoZarr | Available for OME-Zarr |
+| GeoZarr `proj:` and `spatial:` metadata | — | — | — | Yes | Available |
+| CF/xarray coordinates, time, vertical, and band selection | — | — | — | Yes | Available |
+| Viewport-driven geospatial windows | — | — | — | Yes | Available |
+| Typed planar or interleaved channel output | Yes | Yes | Yes | Yes | Available |
+| Zarrita-backed v2/v3 implementation | Yes | Yes | Yes | Yes | Available |
+| SpatialData tables, points, and shapes | — | — | Planned | — | Planned |
+| Codec expansion and broader multiscale layouts | Partial | Partial | Planned | Planned | Planned |
+| Scan pushdown for richer raster predicates | — | — | Planned | Planned | Planned |
+
 ## Attributions
 
 The OME-Zarr source uses [zarrita.js](https://zarrita.dev/) under the MIT license. The legacy Zarr

@@ -297,6 +297,7 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  ScanRasterLevel,
   ScanSourceStatistics,
   ScanSpatialMetadata
 } from './lib/scan-utils/scan-query-metadata';

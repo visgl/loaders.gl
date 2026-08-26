@@ -68,4 +68,18 @@ describe('createScanQueryMetadata', () => {
     expect(Object.isFrozen(metadata.columns)).toBe(true);
     expect(Object.isFrozen(metadata.schema.fields)).toBe(true);
   });
+
+  test('normalizes multiscale raster levels', () => {
+    const metadata = createScanQueryMetadata({
+      sourceType: 'omezarr',
+      queryType: 'raster',
+      schema: {fields: [], metadata: {}},
+      capabilities: {levelOfDetail: 'pushdown'},
+      levels: [{index: 0, width: 1024, height: 512, scale: [1, 1]}]
+    });
+
+    expect(metadata.levels).toEqual([{index: 0, width: 1024, height: 512, scale: [1, 1]}]);
+    expect(Object.isFrozen(metadata.levels)).toBe(true);
+    expect(Object.isFrozen(metadata.levels?.[0])).toBe(true);
+  });
 });
