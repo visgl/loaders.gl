@@ -84,7 +84,7 @@ function parseCSVTextSync(
   // Apps can call the parse method directly, so we apply default options here
   const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
-  const firstRowResult = readFirstRow(csvText);
+  const firstRowResult = readFirstRow(csvText, csvOptions.delimitersToGuess);
   const firstRow = firstRowResult.data[0] || [];
   const configuredDelimiter = (csvOptions as typeof csvOptions & {delimiter?: string}).delimiter;
   const header: boolean =
@@ -390,10 +390,15 @@ function isHeaderRow(row: string[]): boolean {
  * @param csvText the csv text to parse
  * @returns a one-row parse result with Papa's delimiter guess
  */
-function readFirstRow(csvText: string): {data: any[]; meta: {delimiter?: string}} {
+function readFirstRow(
+  csvText: string,
+  delimitersToGuess?: string[]
+): {data: any[]; meta: {delimiter?: string}} {
   return Papa.parse(csvText, {
     dynamicTyping: true,
-    preview: 1
+    delimiter: delimitersToGuess?.length === 1 ? delimitersToGuess[0] : undefined,
+    preview: 1,
+    delimitersToGuess
   });
 }
 

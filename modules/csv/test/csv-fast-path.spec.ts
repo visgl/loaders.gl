@@ -89,6 +89,27 @@ describe('CSV optimized parsing paths', () => {
     expect(getArrowColumnValues(table, 'enabled')).toEqual([true, false]);
   });
 
+  test('preserves custom delimiter inference for row output', async () => {
+    const table = await CSVLoader.parseText('city^count\nParis^42\n', {
+      csv: {
+        header: true,
+        shape: 'array-row-table',
+        dynamicTyping: false,
+        delimitersToGuess: ['^']
+      }
+    });
+
+    expect(table.data).toEqual([['Paris', '42']]);
+  });
+
+  test('does not create a data row for a header-only unquoted Arrow table', async () => {
+    const table = await CSVLoader.parseText('name\n', {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: false}
+    });
+
+    expect(table.data.numRows).toBe(0);
+  });
+
   test.each([
     false,
     true

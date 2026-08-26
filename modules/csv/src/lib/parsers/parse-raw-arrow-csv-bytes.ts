@@ -569,12 +569,12 @@ class RawArrowQuotedDirectCSVByteParser {
   }
 
   private appendDataRows(start: number): void {
-    const columnCount = this.columnBuilders.length;
-    const bytes = this.bytes;
-    if (start >= bytes.length) {
+    if (start >= this.bytes.length) {
       return;
     }
 
+    const columnCount = this.columnBuilders.length;
+    const bytes = this.bytes;
     const delimiter = this.options.delimiter;
     const quote = this.options.quote;
     let fieldStart = start;
@@ -775,6 +775,10 @@ class RawArrowUnquotedCSVByteParser {
   }
 
   private appendDataRows(start: number): void {
+    if (start >= this.bytes.length) {
+      return;
+    }
+
     const columnCount = this.columnBuilders.length;
     const bytes = this.bytes;
     const delimiter = this.options.delimiter;
