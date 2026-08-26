@@ -14,6 +14,8 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createExampleSourcePanel, type ExampleSource} from '../shared/example-source-picker';
+import {getExampleDevicePixelRatio, getExampleRowLimit} from '../shared/example-performance';
 
 // import {FileUploader} from './components/file-uploader';
 
@@ -49,7 +51,7 @@ export const INITIAL_MAP_STYLE =
 const LOADER_OPTIONS = {
   core: {
     worker: false,
-    limit: 1800000
+    limit: getExampleRowLimit()
   },
   modules: {
     'zstd-codec': ZstdCodec
@@ -223,6 +225,14 @@ export default function App(props: AppProps = {}) {
           id: 'geospatial-example-panel',
           title: getLoaderDisplayName(state.selectedCategoryName, tableFormat),
           panels: {
+            source: createExampleSourcePanel({
+              surface: 'geospatial',
+              selectedLabel: getExampleSourceName(state.selectedExample, state.selectedExampleName),
+              selectedUrl: typeof state.selectedExample?.data === 'string' ? state.selectedExample.data : undefined,
+              onSourceChange: (source) => {
+                void loadExampleSource(source);
+              }
+            }),
             controls: new CustomPanel({
               id: 'geospatial-example-controls',
               title: '',
@@ -280,6 +290,7 @@ export default function App(props: AppProps = {}) {
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
+        useDevicePixels={getExampleDevicePixelRatio()}
         layers={renderLayer(state)}
         viewState={state.viewState}
         onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
@@ -352,6 +363,27 @@ export default function App(props: AppProps = {}) {
         loadDurationSeconds: null
       }));
     }
+  }
+
+  async function loadExampleSource(source: ExampleSource): Promise<void> {
+    const formatToCategory: Record<string, string> = {
+      CSV: 'CSV',
+      GeoArrow: 'GeoArrow',
+      GeoJSON: 'GeoJSON',
+      GeoPackage: 'GeoPackage',
+      GeoParquet: 'GeoParquet',
+      FlatGeobuf: 'FlatGeobuf',
+      KML: 'KML',
+      GPX: 'GPX',
+      TCX: 'TCX',
+      Auto: 'GeoJSON'
+    };
+    const categoryName = formatToCategory[source.format] || 'GeoJSON';
+    const example: Example = {
+      format: source.format.toLowerCase() as Example['format'],
+      data: source.value
+    };
+    await loadExample(categoryName, source.label, example, tableFormat);
   }
 }
 
@@ -1097,6 +1129,10 @@ function getExampleSourceName(
   const sourceUrl = selectedExample?.data;
   if (!sourceUrl) {
     return selectedExampleName || 'dataset';
+  }
+
+  if (typeof File !== 'undefined' && sourceUrl instanceof File) {
+    return sourceUrl.name;
   }
 
   if (sourceUrl.startsWith('data:')) {

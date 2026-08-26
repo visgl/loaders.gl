@@ -14,7 +14,7 @@ export type Example = {
     | 'tcx'
     | 'gpx'
     | 'csv';
-  data: string;
+  data: string | File;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];

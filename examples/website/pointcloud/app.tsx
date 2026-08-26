@@ -30,6 +30,8 @@ import {PLYLoader} from '@loaders.gl/ply';
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createExampleSourcePanel, type ExampleSource} from '../shared/example-source-picker';
+import {getExampleDevicePixelRatio} from '../shared/example-performance';
 import '@deck.gl/widgets/stylesheet.css';
 
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
@@ -160,6 +162,16 @@ export default function App(props: AppProps = {}) {
           id: 'pointcloud-example-panel',
           title: '',
           panels: {
+            source: createExampleSourcePanel({
+              surface: 'pointcloud',
+              selectedLabel: state.selectedExampleName || undefined,
+              selectedUrl: typeof getSelectedUrl(availableExamples, state.selectedCategoryName, state.selectedExampleName) === 'string'
+                ? getSelectedUrl(availableExamples, state.selectedCategoryName, state.selectedExampleName) as string
+                : undefined,
+              onSourceChange: (source) => {
+                void loadExampleSource(source);
+              }
+            }),
             controls: new CustomPanel({
               id: 'pointcloud-example-controls',
               title: '',
@@ -221,6 +233,7 @@ export default function App(props: AppProps = {}) {
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
+        useDevicePixels={getExampleDevicePixelRatio()}
         key={state.controllerMode}
         layers={layers}
         views={getViewForControllerMode(state.controllerMode)}
@@ -255,6 +268,24 @@ export default function App(props: AppProps = {}) {
             } as OrbitViewState)
           : currentState.viewState
     }));
+  }
+
+  async function loadExampleSource(source: ExampleSource): Promise<void> {
+    const formatToType: Record<string, Example['type']> = {
+      PLY: 'ply',
+      LAS: 'las',
+      LAZ: 'las',
+      Draco: 'draco',
+      PCD: 'pcd',
+      OBJ: 'obj',
+      Auto: 'ply'
+    };
+    const type = formatToType[source.format] || 'ply';
+    await onExampleChange({
+      categoryName: source.format,
+      exampleName: source.label,
+      example: {type, url: source.value}
+    });
   }
 
   async function onExampleChange({
@@ -884,7 +915,8 @@ function getSelectedUrl(
   if (!selectedCategoryName || !selectedExampleName) {
     return '';
   }
-  return examples[selectedCategoryName]?.[selectedExampleName]?.url || '';
+  const selectedUrl = examples[selectedCategoryName]?.[selectedExampleName]?.url;
+  return typeof selectedUrl === 'string' ? selectedUrl : '';
 }
 
 function getFileNameFromUrl(url: string): string {
