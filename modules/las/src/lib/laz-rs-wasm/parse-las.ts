@@ -63,75 +63,79 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
 
   /* eslint-disable max-statements */
   // @ts-ignore Possibly undefined
-  parseLASChunked(arrayBuffer, options.las?.skip, (decoder: any = {}, lasHeader: LASHeader) => {
-    if (!originalHeader) {
-      originalHeader = lasHeader;
-      const total = lasHeader.totalToRead;
+  parseLASChunked(
+    arrayBuffer,
+    options.las?.skip ?? 1,
+    (decoder: any = {}, lasHeader: LASHeader) => {
+      if (!originalHeader) {
+        originalHeader = lasHeader;
+        const total = lasHeader.totalToRead;
 
-      const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
-      positions = new PositionsType(total * 3);
-      // laslaz-decoder.js `pointFormatReaders`
-      colors = lasHeader.hasColor ? new Uint8Array(total * 4) : null;
-      intensities = new Uint16Array(total);
-      classifications = new Uint8Array(total);
+        const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
+        positions = new PositionsType(total * 3);
+        // laslaz-decoder.js `pointFormatReaders`
+        colors = lasHeader.hasColor ? new Uint8Array(total * 4) : null;
+        intensities = new Uint16Array(total);
+        classifications = new Uint8Array(total);
 
-      lasMesh.loaderData = lasHeader;
-      lasMesh.attributes = {
-        POSITION: {value: positions, size: 3},
-        // non-gltf attributes, use non-capitalized names for now
-        intensity: {value: intensities, size: 1},
-        classification: {value: classifications, size: 1}
+        lasMesh.loaderData = lasHeader;
+        lasMesh.attributes = {
+          POSITION: {value: positions, size: 3},
+          // non-gltf attributes, use non-capitalized names for now
+          intensity: {value: intensities, size: 1},
+          classification: {value: classifications, size: 1}
+        };
+
+        if (colors) {
+          lasMesh.attributes.COLOR_0 = {value: colors, size: 4};
+        }
+      }
+
+      const batchSize = decoder.pointsCount;
+      const {
+        scale: [scaleX, scaleY, scaleZ],
+        offset: [offsetX, offsetY, offsetZ]
+      } = lasHeader;
+
+      const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
+
+      for (let i = 0; i < batchSize; i++) {
+        const {position, color, intensity, classification} = decoder.getPoint(i);
+
+        positions[pointIndex * 3] = position[0] * scaleX + offsetX;
+        positions[pointIndex * 3 + 1] = position[1] * scaleY + offsetY;
+        positions[pointIndex * 3 + 2] = position[2] * scaleZ + offsetZ;
+
+        if (color && colors) {
+          if (twoByteColor) {
+            colors[pointIndex * 4] = color[0] / 256;
+            colors[pointIndex * 4 + 1] = color[1] / 256;
+            colors[pointIndex * 4 + 2] = color[2] / 256;
+          } else {
+            colors[pointIndex * 4] = color[0];
+            colors[pointIndex * 4 + 1] = color[1];
+            colors[pointIndex * 4 + 2] = color[2];
+          }
+          colors[pointIndex * 4 + 3] = 255;
+        }
+
+        intensities[pointIndex] = intensity;
+        classifications[pointIndex] = classification;
+
+        pointIndex++;
+      }
+
+      const meshBatch = {
+        ...lasMesh,
+        header: {
+          vertexCount: lasHeader.totalRead
+        },
+        progress: lasHeader.totalRead / lasHeader.totalToRead
       };
 
-      if (colors) {
-        lasMesh.attributes.COLOR_0 = {value: colors, size: 4};
-      }
+      options?.onProgress?.(meshBatch);
     }
-
-    const batchSize = decoder.pointsCount;
-    const {
-      scale: [scaleX, scaleY, scaleZ],
-      offset: [offsetX, offsetY, offsetZ]
-    } = lasHeader;
-
-    const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
-
-    for (let i = 0; i < batchSize; i++) {
-      const {position, color, intensity, classification} = decoder.getPoint(i);
-
-      positions[pointIndex * 3] = position[0] * scaleX + offsetX;
-      positions[pointIndex * 3 + 1] = position[1] * scaleY + offsetY;
-      positions[pointIndex * 3 + 2] = position[2] * scaleZ + offsetZ;
-
-      if (color && colors) {
-        if (twoByteColor) {
-          colors[pointIndex * 4] = color[0] / 256;
-          colors[pointIndex * 4 + 1] = color[1] / 256;
-          colors[pointIndex * 4 + 2] = color[2] / 256;
-        } else {
-          colors[pointIndex * 4] = color[0];
-          colors[pointIndex * 4 + 1] = color[1];
-          colors[pointIndex * 4 + 2] = color[2];
-        }
-        colors[pointIndex * 4 + 3] = 255;
-      }
-
-      intensities[pointIndex] = intensity;
-      classifications[pointIndex] = classification;
-
-      pointIndex++;
-    }
-
-    const meshBatch = {
-      ...lasMesh,
-      header: {
-        vertexCount: lasHeader.totalRead
-      },
-      progress: lasHeader.totalRead / lasHeader.totalToRead
-    };
-
-    options?.onProgress?.(meshBatch);
-  });
+  );
   /* eslint-enable max-statements */
 
   lasMesh.header = {
@@ -153,7 +157,11 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
  * @return parsed point cloud
  */
 /* eslint-enable max-statements */
-export function parseLASChunked(rawData: ArrayBuffer, skip: number, onParseData: any = {}): void {
+export function parseLASChunked(
+  rawData: ArrayBuffer,
+  skip: number = 1,
+  onParseData: any = {}
+): void {
   const dataHandler = new LASFile(rawData);
 
   try {
