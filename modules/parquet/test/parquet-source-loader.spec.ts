@@ -366,6 +366,50 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   t.end();
 });
 
+test('ParquetSource#worker late-materializes projected columns after filtering', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  const fixture = await createSelectiveFixture();
+  const requests: RangeRequestRecord[] = [];
+  const source = createRemoteSource(createRangeFetch(fixture, {requests}), {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  });
+  const metadata = await source.getMetadata();
+  const metadataRequestCount = requests.length;
+  const batches = await collectParquetBatches(
+    source.read({
+      columns: ['source_id'],
+      predicate: {op: '=', args: [{property: 'x'}, 2]}
+    })
+  );
+  const dataRequests = requests.slice(metadataRequestCount);
+  const ignoredRanges = metadata.rowGroups.flatMap(rowGroup =>
+    getColumnRanges(metadata, rowGroup.index, ['ignored_payload'])
+  );
+
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
+    ['source-2'],
+    'filters predicate-only columns in the worker and gathers projected values'
+  );
+  t.deepEqual(
+    batches[0]?.schema?.fields.map(field => field.name),
+    ['source_id'],
+    'keeps predicate-only columns out of the transferred output'
+  );
+  t.notOk(
+    dataRequests.some(request =>
+      ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
+    ),
+    'does not fetch the large projected payload for non-matching row groups'
+  );
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async t => {
   const fixture = await createSelectiveFixture();
   const input = await createParquetSourceWorkerInput(fixture, 1, ['x', 'source_id']);

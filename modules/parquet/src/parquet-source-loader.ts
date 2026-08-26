@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {hydrateArrowTable} from '@loaders.gl/arrow';
+import {dehydrateArrowTable, hydrateArrowTable, IndexedArrowTable} from '@loaders.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/loader-utils';
 import {
   BlobFile,
@@ -741,7 +741,6 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
     if (
-      !workerOptions &&
       predicate &&
       projectedColumnNames &&
       getParquetPredicateColumns(predicate).some(column => !projectedColumnNames.has(column))
@@ -754,6 +753,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         batchSize,
         predicate,
         projectedColumnNames,
+        workerOptions,
         signal
       );
     }
@@ -936,6 +936,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     batchSize: number | undefined,
     predicate: ParquetPredicate,
     projectedColumnNames: ReadonlySet<string>,
+    workerOptions: ParquetSourceWorkerOptions | undefined,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
     const predicateColumns = getParquetPredicateColumns(predicate);
@@ -948,11 +949,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       batchSize,
       predicate,
       new Set(predicateColumns),
-      undefined,
+      workerOptions,
       signal
     );
     const rowIndices = filterResult.rowIndices;
-    if (!rowIndices || rowIndices.length === 0) {
+    const selectedRowIndices = rowIndices || getWorkerRowIndices(filterResult.workerResult);
+    if (!selectedRowIndices || selectedRowIndices.length === 0) {
       return {rowGroupIndex, rowCount: 0, columns: {}, rowIndices: []};
     }
     const projectedColumnList = columnList.filter(columnPath =>
@@ -966,15 +968,27 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       batchSize,
       undefined,
       projectedColumnNames,
-      undefined,
+      workerOptions,
       signal
     );
+    if (workerOptions && projectedResult.workerResult) {
+      return {
+        rowGroupIndex,
+        rowCount: selectedRowIndices.length,
+        rowIndices: selectedRowIndices,
+        workerResult: gatherWorkerProjectedRows(
+          projectedResult.workerResult,
+          selectedRowIndices,
+          batchSize
+        )
+      };
+    }
     return {
       rowGroupIndex,
-      rowCount: rowIndices.length,
-      rowIndices,
+      rowCount: selectedRowIndices.length,
+      rowIndices: selectedRowIndices,
       columns: projectedResult.columns
-        ? gatherParquetColumns(projectedResult.columns, rowIndices, projectedColumnNames)
+        ? gatherParquetColumns(projectedResult.columns, selectedRowIndices, projectedColumnNames)
         : {}
     };
   }
@@ -1608,6 +1622,50 @@ type ParquetBloomFilterReadResult = {
   filtersRead: number;
   bytesRead: number;
 };
+
+/** Reconstructs exact row-group indexes from worker predicate batches. */
+function getWorkerRowIndices(workerResult?: ParquetSourceWorkerResult): number[] {
+  if (!workerResult) return [];
+  return workerResult.batches.flatMap(batch =>
+    batch.rowGroupRowIndices
+      ? [...batch.rowGroupRowIndices]
+      : Array.from({length: batch.rowCount}, (_, index) => batch.rowGroupRowOffset + index)
+  );
+}
+
+/** Gathers projected worker Arrow batches through the shared indexed Arrow table utility. */
+function gatherWorkerProjectedRows(
+  workerResult: ParquetSourceWorkerResult,
+  rowIndices: readonly number[],
+  batchSize: number | undefined
+): ParquetSourceWorkerResult {
+  const tables = workerResult.batches.map(batch => hydrateArrowTable(batch.arrowTable));
+  if (tables.length === 0) {
+    return {...workerResult, rowCount: 0, batches: []};
+  }
+  const table = tables.length === 1 ? tables[0] : tables[0].concat(...tables.slice(1));
+  const indexedTable = new IndexedArrowTable(table, rowIndices);
+  const outputBatchSize = batchSize || Math.max(rowIndices.length, 1);
+  const batches: ParquetSourceWorkerResult['batches'] = [];
+  for (let offset = 0; offset < rowIndices.length; offset += outputBatchSize) {
+    const end = Math.min(offset + outputBatchSize, rowIndices.length);
+    const batchIndexes = rowIndices.slice(offset, end);
+    const batchTable = indexedTable.slice(offset, end).materializeArrowTable();
+    batches.push({
+      rowGroupRowOffset: batchIndexes[0],
+      rowCount: batchIndexes.length,
+      rowGroupRowIndices: [...batchIndexes],
+      arrowTable: dehydrateArrowTable(batchTable)
+    });
+  }
+  return {
+    sourceRowCount: workerResult.sourceRowCount,
+    rowCount: rowIndices.length,
+    batches,
+    decodeDurationMs: workerResult.decodeDurationMs,
+    arrowConversionDurationMs: workerResult.arrowConversionDurationMs
+  };
+}
 
 /** Applies only proven-negative Bloom-filter checks to candidate row groups. */
 async function filterParquetRowGroupsWithBloomFilters(
