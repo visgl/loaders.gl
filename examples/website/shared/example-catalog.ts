@@ -25,6 +25,8 @@ export type CuratedExample = {
   sizeBytes?: number;
   /** Whether this dataset is suitable for constrained mobile devices. */
   mobileSafe?: boolean;
+  /** Preview image path relative to the website static directory. */
+  thumbnail: string;
 };
 
 /** Small, reliable datasets selected for the public examples site. */
@@ -36,6 +38,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     url: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson',
     surface: 'geospatial',
     description: 'A compact world map with country boundaries.',
+    thumbnail: 'images/examples/geospatial/geojson.jpg',
     mobileSafe: true
   },
   {
@@ -45,6 +48,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     url: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/parquet/test/data/geoparquet/airports.parquet',
     surface: 'geospatial',
     description: 'A columnar point dataset that demonstrates GeoParquet.',
+    thumbnail: 'images/examples/geospatial/geoparquet.jpg',
     mobileSafe: true
   },
   {
@@ -54,6 +58,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     url: 'https://r2-public.protomaps.com/protomaps-sample-datasets/nz-buildings-v3.pmtiles',
     surface: 'tiles',
     description: 'A cloud-hosted vector tile archive loaded with range requests.',
+    thumbnail: 'images/examples/tiles/pmtiles.jpg',
     attribution: '© Land Information New Zealand',
     mobileSafe: true
   },
@@ -64,6 +69,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/ply/test/data/bunny.ply',
     surface: 'pointcloud',
     description: 'A small point cloud for a fast first render.',
+    thumbnail: 'images/examples/pointclouds/ply.jpg',
     mobileSafe: true
   },
   {
@@ -73,6 +79,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     url: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/point-cloud-ply/lucy100k.ply',
     surface: 'pointcloud',
     description: 'A richer point cloud for desktop-capable devices.',
+    thumbnail: 'images/examples/pointclouds/ply.jpg',
     mobileSafe: false
   }
 ];

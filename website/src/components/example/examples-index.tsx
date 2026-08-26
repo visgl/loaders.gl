@@ -63,7 +63,7 @@ export default function ExamplesIndex({
 }) {
   const mainSidebar = useDocsSidebar();
   const sidebarItems = mainSidebar?.items?.[0]?.items || mainSidebar?.items || [];
-  const featuredImageUrl = useBaseUrl('/images/maps.jpg');
+  const featuredImageRoot = useBaseUrl('/');
 
   return (
     <MainExamples>
@@ -71,7 +71,7 @@ export default function ExamplesIndex({
       <ExamplesGroup>
         {CURATED_EXAMPLES.map(example => (
           <ExampleCard key={example.id} href={getExampleHref(example.surface, example.format)}>
-            <img width="100%" src={featuredImageUrl} alt="" />
+            <img width="100%" src={`${featuredImageRoot}${example.thumbnail}`} alt={example.label} />
             <ExampleTitle>
               <span>{example.label}</span>
               <small>{example.description}</small>

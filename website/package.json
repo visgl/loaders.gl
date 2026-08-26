@@ -6,7 +6,7 @@
   "packageManager": "yarn@4.17.1",
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
+    "start": "./scripts/start.sh",
     "build": "./scripts/build.sh prod",
     "build-staging": "./scripts/build.sh staging",
     "swizzle": "docusaurus swizzle",
