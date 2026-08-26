@@ -124,11 +124,108 @@ function convertFieldToParquetFieldDefinition(
   field: Field,
   rows: Array<Record<string, unknown>>,
   geoParquetVersion?: string,
-  geoColumnMetadata?: GeoColumnMetadata
+  geoColumnMetadata?: GeoColumnMetadata,
+  fieldValues?: readonly unknown[]
 ): FieldDefinition {
-  const sampleValue = getFirstDefinedValue(rows, field.name);
+  const values = fieldValues || rows.map(row => row[field.name]);
+  const sampleValue = getFirstDefinedValue(values);
   const nullable = field.nullable ?? sampleValue === undefined;
   const dataType = field.type === 'null' ? getDataTypeFromValue(sampleValue) : field.type;
+
+  if (typeof dataType === 'object') {
+    switch (dataType.type) {
+      case 'struct':
+        return {
+          optional: nullable,
+          fields: Object.fromEntries(
+            dataType.children.map(child => [
+              child.name,
+              convertFieldToParquetFieldDefinition(
+                child,
+                [],
+                undefined,
+                undefined,
+                getStructChildValues(values, child.name)
+              )
+            ])
+          )
+        };
+      case 'list': {
+        const child = dataType.children[0];
+        if (!child) {
+          throw new Error(`ParquetJSWriter: List field "${field.name}" has no value child`);
+        }
+        return {
+          optional: nullable,
+          logicalType: {type: 'LIST'},
+          fields: {
+            list: {
+              repeated: true,
+              fields: {
+                element: convertFieldToParquetFieldDefinition(
+                  child,
+                  [],
+                  undefined,
+                  undefined,
+                  flattenListValues(values)
+                )
+              }
+            }
+          }
+        };
+      }
+      case 'map': {
+        const mapEntryField = dataType.children.length === 1 ? dataType.children[0] : undefined;
+        const mapEntryChildren =
+          mapEntryField &&
+          typeof mapEntryField.type === 'object' &&
+          mapEntryField.type.type === 'struct'
+            ? mapEntryField.type.children
+            : dataType.children;
+        const [keyField, valueField] = mapEntryChildren;
+        if (!keyField || !valueField) {
+          throw new Error(
+            `ParquetJSWriter: Map field "${field.name}" needs key and value children`
+          );
+        }
+        if (keyField.nullable) {
+          throw new Error(`ParquetJSWriter: Map keys must be non-nullable ("${field.name}")`);
+        }
+        return {
+          optional: nullable,
+          logicalType: {type: 'MAP'},
+          fields: {
+            key_value: {
+              repeated: true,
+              fields: {
+                key: {
+                  ...convertFieldToParquetFieldDefinition(
+                    {...keyField, name: 'key', nullable: false},
+                    [],
+                    undefined,
+                    undefined,
+                    getMapChildValues(values, 'key')
+                  ),
+                  optional: false
+                },
+                value: {
+                  ...convertFieldToParquetFieldDefinition(
+                    {...valueField, name: 'value'},
+                    [],
+                    undefined,
+                    undefined,
+                    getMapChildValues(values, 'value')
+                  )
+                }
+              }
+            }
+          }
+        };
+      }
+      default:
+        break;
+    }
+  }
 
   switch (dataType) {
     case 'bool':
@@ -331,15 +428,47 @@ function getDecimalByteWidth(precision: number): number {
  * @param columnName column name
  * @returns first defined value, if any
  */
-function getFirstDefinedValue(rows: Array<Record<string, unknown>>, columnName: string): unknown {
-  for (const row of rows) {
-    const value = row[columnName];
+function getFirstDefinedValue(values: readonly unknown[]): unknown {
+  for (const value of values) {
     if (value !== null && value !== undefined) {
       return value;
     }
   }
 
   return undefined;
+}
+
+/** Extracts one named child from struct-like values for recursive schema conversion. */
+function getStructChildValues(values: readonly unknown[], childName: string): unknown[] {
+  return values.flatMap(value => {
+    if (!value || typeof value !== 'object' || ArrayBuffer.isView(value)) return [];
+    return [Reflect.get(value, childName)];
+  });
+}
+
+/** Flattens list values while retaining nested arrays as child values. */
+function flattenListValues(values: readonly unknown[]): unknown[] {
+  return values.flatMap(value => (Array.isArray(value) ? value : []));
+}
+
+/** Extracts key/value members from Map, object, tuple, or Arrow object-row map values. */
+function getMapChildValues(values: readonly unknown[], member: 'key' | 'value'): unknown[] {
+  const output: unknown[] = [];
+  for (const value of values) {
+    if (value instanceof Map) {
+      for (const [key, mapValue] of value) output.push(member === 'key' ? key : mapValue);
+    } else if (Array.isArray(value)) {
+      for (const entry of value) {
+        if (Array.isArray(entry) && entry.length >= 2) output.push(entry[member === 'key' ? 0 : 1]);
+        else if (entry && typeof entry === 'object') output.push(Reflect.get(entry, member));
+      }
+    } else if (value && typeof value === 'object') {
+      for (const [key, mapValue] of Object.entries(value)) {
+        output.push(member === 'key' ? key : mapValue);
+      }
+    }
+  }
+  return output;
 }
 
 /**

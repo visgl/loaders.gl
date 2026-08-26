@@ -100,10 +100,33 @@ function shredRecordFields(
       record[field.name] !== undefined &&
       record[field.name] !== null
     ) {
-      if (record[field.name].constructor === Array) {
-        values = record[field.name];
+      const fieldValue = record[field.name];
+      if (field.logicalType?.type === 'LIST') {
+        // Normalize the high-level Arrow/list value to Parquet's standard
+        // three-level LIST representation before descending into the wrapper.
+        const listValues = Array.isArray(fieldValue) ? fieldValue : [];
+        if (field.fields?.list) {
+          values.push({list: listValues.map(element => ({element}))});
+        } else {
+          // Accept the legacy two-level LIST layout where the repeated field
+          // itself owns the element leaf.
+          values = listValues;
+        }
+      } else if (field.logicalType?.type === 'MAP') {
+        // Normalize Map/object/entry-array values to the standard MAP_KEY_VALUE
+        // wrapper expected by the shredding algorithm.
+        const mapEntries = normalizeMapEntries(fieldValue);
+        if (field.fields?.key_value) {
+          values.push({key_value: mapEntries});
+        } else {
+          // Accept legacy map layouts whose key/value group is the repeated
+          // field itself.
+          values = mapEntries;
+        }
+      } else if (fieldValue.constructor === Array) {
+        values = fieldValue;
       } else {
-        values.push(record[field.name]);
+        values.push(fieldValue);
       }
     }
     // check values
@@ -141,6 +164,28 @@ function shredRecordFields(
       }
     }
   }
+}
+
+/** Converts supported JavaScript map representations to Parquet map entries. */
+function normalizeMapEntries(value: unknown): Array<{key: unknown; value: unknown}> {
+  if (value instanceof Map) {
+    return Array.from(value, ([key, mapValue]) => ({key, value: mapValue}));
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(entry => {
+      if (Array.isArray(entry) && entry.length >= 2) {
+        return [{key: entry[0], value: entry[1]}];
+      }
+      if (entry && typeof entry === 'object') {
+        return [{key: Reflect.get(entry, 'key'), value: Reflect.get(entry, 'value')}];
+      }
+      return [];
+    });
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).map(([key, mapValue]) => ({key, value: mapValue}));
+  }
+  return [];
 }
 
 /**

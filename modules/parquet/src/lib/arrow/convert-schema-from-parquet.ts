@@ -77,19 +77,12 @@ function getFields(schema: SchemaDefinition): Field[] {
 
 /** Converts one Parquet field, preserving repeated values as Arrow lists. */
 function getField(name: string, field: FieldDefinition): Field {
-  const elementField: Field = field.fields
-    ? {
-        name,
-        type: {type: 'struct', children: getFields(field.fields)},
-        nullable: Boolean(field.optional),
-        metadata: getFieldMetadata(field)
-      }
-    : {
-        name,
-        type: getFieldType(field),
-        nullable: Boolean(field.optional),
-        metadata: getFieldMetadata(field)
-      };
+  const elementField: Field = {
+    name,
+    type: getFieldValueType(field),
+    nullable: Boolean(field.optional),
+    metadata: getFieldMetadata(field)
+  };
 
   if (!field.repeated) {
     return elementField;
@@ -104,6 +97,83 @@ function getField(name: string, field: FieldDefinition): Field {
     nullable: Boolean(field.optional),
     metadata: elementField.metadata
   };
+}
+
+/** Converts a nested Parquet definition into its corresponding Arrow data type. */
+function getFieldValueType(field: FieldDefinition): DataType {
+  if (!field.fields) {
+    return getFieldType(field);
+  }
+
+  if (field.logicalType?.type === 'LIST') {
+    const element = field.fields.list?.fields?.element || field.fields.element;
+    if (!element) {
+      // Preserve unusual legacy LIST layouts as structs. Their group names and
+      // repetition levels are still available to the row-materialization path.
+      return {type: 'struct', children: getFields(field.fields)};
+    }
+    if (
+      (element.logicalType?.type === 'LIST' &&
+        (!isStandardListDefinition(element) || element.optional !== false)) ||
+      (element.logicalType?.type === 'MAP' &&
+        (!isStandardMapDefinition(element) || element.optional !== false))
+    ) {
+      // Preserve nested legacy wrappers. Arrow's high-level List/Map type
+      // cannot describe the historical wrapper shape without changing the
+      // object-row contract used by existing callers.
+      return {type: 'struct', children: getFields(field.fields)};
+    }
+    return {
+      type: 'list',
+      children: [
+        {
+          name: 'element',
+          type: getFieldValueType(element),
+          nullable: Boolean(element.optional)
+        }
+      ]
+    };
+  }
+
+  if (field.logicalType?.type === 'MAP') {
+    const entry = field.fields.key_value?.fields || field.fields;
+    const key = entry?.key;
+    const value = entry?.value;
+    if (!key || !value) {
+      // Preserve unusual legacy MAP layouts as structs rather than rejecting a
+      // file whose converted annotation does not follow the standard wrapper.
+      return {type: 'struct', children: getFields(field.fields)};
+    }
+    return {
+      type: 'map',
+      keysSorted: false,
+      children: [
+        {
+          name: 'entries',
+          type: {
+            type: 'struct',
+            children: [
+              {name: 'key', type: getFieldValueType(key), nullable: false},
+              {name: 'value', type: getFieldValueType(value), nullable: Boolean(value.optional)}
+            ]
+          },
+          nullable: false
+        }
+      ]
+    };
+  }
+
+  return {type: 'struct', children: getFields(field.fields)};
+}
+
+/** Returns whether a nested LIST follows the standard list/list/element wrapper. */
+function isStandardListDefinition(field: FieldDefinition): boolean {
+  return Boolean(field.fields?.list?.fields?.element);
+}
+
+/** Returns whether a nested MAP follows the standard map/key_value/key/value wrapper. */
+function isStandardMapDefinition(field: FieldDefinition): boolean {
+  return Boolean(field.fields?.key_value?.fields?.key && field.fields.key_value.fields.value);
 }
 
 /** Returns the exact serialized Arrow type for one decoded Parquet field. */

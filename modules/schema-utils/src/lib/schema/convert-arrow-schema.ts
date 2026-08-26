@@ -304,7 +304,10 @@ export function deserializeArrowType(
         const children = dataType.children.map(arrowField =>
           deserializeArrowField(arrowField, options)
         );
-        return new arrow.Map_(children as any, dataType.keysSorted);
+        // Apache Arrow's Map_ constructor takes one entries struct field, not
+        // an array of fields (the serialized schema stores that field in the
+        // one-element children array).
+        return new arrow.Map_(children[0] as any, dataType.keysSorted);
       }
       case 'list': {
         const field = deserializeArrowField(dataType.children[0], options);

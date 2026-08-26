@@ -809,15 +809,14 @@ async function encodeColumnChunk(
   };
 }
 
-/** Builds page indexes for simple non-repeated scalar columns. */
+/** Builds page indexes for primitive leaves, including nested and repeated leaves. */
 function createColumnPageIndexes(
   column: ParquetField,
   plannedPages: ReturnType<typeof planColumnPages>,
   pageLocations: PageLocation[]
 ): {offsetIndex: Uint8Array; columnIndex: Uint8Array} | undefined {
   if (
-    column.rLevelMax > 0 ||
-    column.repetitionType === 'REPEATED' ||
+    !column.primitiveType ||
     !isPageIndexPhysicalType(column.primitiveType) ||
     plannedPages.length !== pageLocations.length ||
     plannedPages.length === 0
@@ -828,11 +827,14 @@ function createColumnPageIndexes(
   const nullPages: boolean[] = [];
   const minValues: Uint8Array[] = [];
   const maxValues: Uint8Array[] = [];
-  const nullCounts: number[] = [];
+  // A repeated leaf's definition-level count is not a row-level null count.
+  // Omit null_counts for those leaves so readers do not interpret entry counts
+  // as null counts while still benefiting from min/max page pruning.
+  const nullCounts: number[] | undefined = column.rLevelMax === 0 ? [] : undefined;
   for (const plannedPage of plannedPages) {
     const values = plannedPage.data.values;
     const nullCount = plannedPage.data.count - values.length;
-    nullCounts.push(nullCount);
+    nullCounts?.push(nullCount);
     if (values.length === 0) {
       nullPages.push(true);
       minValues.push(new Uint8Array(0));
