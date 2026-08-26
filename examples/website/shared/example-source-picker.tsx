@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {CustomPanel} from '@deck.gl-community/widgets';
-import {getCuratedExamples, type CuratedExample, type ExampleSurface} from './example-catalog';
+import {
+  getCuratedExample,
+  getCuratedExamples,
+  type CuratedExample,
+  type ExampleSurface
+} from './example-catalog';
 
 /** A source selected by the shared example picker. */
 export type ExampleSource = {
@@ -28,6 +33,29 @@ export type ExampleSourcePickerProps = {
   /** Called when the user chooses a source. */
   onSourceChange: (source: ExampleSource) => void;
 };
+
+/** Reads a remote source previously written to the current page URL. */
+export function getExampleSourceFromUrl(surface: ExampleSurface): ExampleSource | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const url = new URL(window.location.href);
+  const sourceUrl = url.searchParams.get('source');
+  const curatedExample = getCuratedExample(url.searchParams.get('dataset'));
+  if (curatedExample && curatedExample.surface === surface) {
+    return toSource(curatedExample);
+  }
+  if (!sourceUrl) {
+    return null;
+  }
+
+  return {
+    value: sourceUrl,
+    label: getFileName(sourceUrl),
+    format: url.searchParams.get('format') || inferFormat(sourceUrl)
+  };
+}
 
 /** Creates a panel-system panel containing the shared source picker. */
 export function createExampleSourcePanel(
@@ -157,6 +185,12 @@ function inferFormat(value: string): string {
   if (pathname.endsWith('.las') || pathname.endsWith('.laz')) return 'LAS';
   if (pathname.endsWith('.geojson') || pathname.endsWith('.json')) return 'GeoJSON';
   if (pathname.endsWith('.csv')) return 'CSV';
+  if (pathname.endsWith('.gpkg')) return 'GeoPackage';
+  if (pathname.endsWith('.fgb')) return 'FlatGeobuf';
+  if (pathname.endsWith('.shp')) return 'Shapefile';
+  if (pathname.endsWith('.kml')) return 'KML';
+  if (pathname.endsWith('.gpx')) return 'GPX';
+  if (pathname.endsWith('.tcx')) return 'TCX';
   return 'Auto';
 }
 

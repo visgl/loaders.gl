@@ -23,7 +23,11 @@ import {MapView} from '@deck.gl/core';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {Tile2DSourceLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
-import {createExampleSourcePanel, type ExampleSource} from '../shared/example-source-picker';
+import {
+  createExampleSourcePanel,
+  getExampleSourceFromUrl,
+  type ExampleSource
+} from '../shared/example-source-picker';
 import {getExampleDevicePixelRatio} from '../shared/example-performance';
 
 import {Map} from 'react-map-gl';
@@ -80,6 +84,12 @@ export default function App(props: AppProps = {}) {
   });
 
   useEffect(() => {
+    const shareableSource = getExampleSourceFromUrl('tiles');
+    if (shareableSource) {
+      void loadExampleSource(shareableSource);
+      return;
+    }
+
     const initialCategoryName = props.format || INITIAL_CATEGORY_NAME;
     const initialExamples = availableExamples[initialCategoryName];
     if (!initialExamples) {

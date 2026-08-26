@@ -14,7 +14,11 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
-import {createExampleSourcePanel, type ExampleSource} from '../shared/example-source-picker';
+import {
+  createExampleSourcePanel,
+  getExampleSourceFromUrl,
+  type ExampleSource
+} from '../shared/example-source-picker';
 import {getExampleDevicePixelRatio, getExampleRowLimit} from '../shared/example-performance';
 
 // import {FileUploader} from './components/file-uploader';
@@ -167,6 +171,12 @@ export default function App(props: AppProps = {}) {
   });
 
   useEffect(() => {
+    const shareableSource = getExampleSourceFromUrl('geospatial');
+    if (shareableSource) {
+      void loadExampleSource(shareableSource);
+      return;
+    }
+
     const initialCategoryName = props.format || INITIAL_LOADER_NAME;
     const initialExamples = availableExamples[initialCategoryName];
     if (!initialExamples) {
@@ -385,6 +395,7 @@ export default function App(props: AppProps = {}) {
       KML: 'KML',
       GPX: 'GPX',
       TCX: 'TCX',
+      Shapefile: 'Shapefile',
       Auto: 'GeoJSON'
     };
     const categoryName = formatToCategory[source.format] || 'GeoJSON';

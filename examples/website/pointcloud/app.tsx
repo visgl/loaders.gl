@@ -30,7 +30,11 @@ import {PLYLoader} from '@loaders.gl/ply';
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
-import {createExampleSourcePanel, type ExampleSource} from '../shared/example-source-picker';
+import {
+  createExampleSourcePanel,
+  getExampleSourceFromUrl,
+  type ExampleSource
+} from '../shared/example-source-picker';
 import {getExampleDevicePixelRatio} from '../shared/example-performance';
 import '@deck.gl/widgets/stylesheet.css';
 
@@ -109,6 +113,12 @@ export default function App(props: AppProps = {}) {
   const loadRequestId = useRef(0);
 
   useEffect(() => {
+    const shareableSource = getExampleSourceFromUrl('pointcloud');
+    if (shareableSource) {
+      void loadExampleSource(shareableSource);
+      return;
+    }
+
     if (props.example) {
       void onExampleChange({
         categoryName: props.categoryName || props.format || 'URL',
