@@ -285,6 +285,15 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
   t.equal(plan.pages.indexesRead, 2, 'reads both page indexes for the predicate column');
   t.equal(plan.pages.plans[0]?.selectedPages, 1, 'selects only the matching predicate page');
   t.equal(plan.pages.plans[0]?.totalPages, 2, 'reports all predicate pages');
+  const emptyPlan = await source.getScanPlan({
+    columns: ['payload'],
+    predicate: {op: '>=', args: [{property: 'x'}, 1000]}
+  });
+  t.deepEqual(
+    emptyPlan.pages.plans.map(pagePlan => pagePlan.phase),
+    ['predicate'],
+    'does not advertise a projection phase after page indexes prove no rows match'
+  );
   const batches = await collectParquetBatches(
     source.read({columns: ['payload'], predicate: {op: '>=', args: [{property: 'x'}, 100]}})
   );

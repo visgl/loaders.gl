@@ -656,8 +656,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     const plans: ParquetPageScanPlan[] = [];
     for (const rowGroupIndex of rowGroupPlan.rowGroupIndices) {
       const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+      let predicateProvedEmpty = false;
       for (const phase of phases) {
         throwIfAborted(signal);
+        if (phase.phase === 'projection' && predicateProvedEmpty) {
+          continue;
+        }
         const pagePlan = phase.predicate
           ? await createParquetPagePruningPlan(
               initialization.file,
@@ -689,6 +693,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
               })
             : createFullColumnScanPlan(rowGroup, rowGroupIndex, phase.phase, phase.columns)
         );
+        if (phase.phase === 'predicate' && pagePlan?.rowRanges.length === 0) {
+          predicateProvedEmpty = true;
+        }
       }
     }
     return plans;

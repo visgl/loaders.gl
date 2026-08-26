@@ -145,6 +145,25 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('applies a constructor Parquet limit once across the dataset', async () => {
+    const source = new ParquetDatasetSource(
+      [{data: westernFile}, {data: easternFile}],
+      {core: {worker: false}, parquet: {limit: 1}}
+    );
+
+    const plan = await source.getScanPlan({columns: ['value']});
+    expect(plan.plan).toContainEqual({kind: 'limit', limit: 1});
+    const batches = await collectBatches(source.read({columns: ['value']}));
+    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+      'west-one'
+    ]);
+    const plannedBatches = await collectBatches(source.executeScanPlan(plan));
+    expect(plannedBatches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+      'west-one'
+    ]);
+    await source.close();
+  });
+
   test('emits the first file while lazy discovery of later files is blocked', async () => {
     let releaseDiscovery: (() => void) | undefined;
     const discoveryBlocked = new Promise<void>(resolve => {

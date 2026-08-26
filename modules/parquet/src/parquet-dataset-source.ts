@@ -29,6 +29,7 @@ import type {
   ParquetDatasetSourceOptions,
   ParquetDatasetTelemetry,
   ParquetSourceBatch,
+  ParquetPredicate,
   ParquetSourceExplain,
   ParquetTelemetry
 } from './parquet-source-types';
@@ -201,16 +202,13 @@ export class ParquetDatasetSource {
       throw new Error('ParquetDatasetSource can only execute dataset scan plans');
     }
     validateTableQueryLimit(options.limit);
-    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
     if (remainingRows === 0) return;
-    const predicateStep = plan.plan.find(step => step.kind === 'filter');
     const limitStep = plan.plan.find(step => step.kind === 'limit');
     const readOptions: ParquetDatasetReadOptions = {
       ...options,
       columns: options.columns ?? plan.outputColumns,
-      predicate:
-        options.predicate ??
-        (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
+      predicate: options.predicate,
       limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined)
     };
     remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
@@ -256,7 +254,7 @@ export class ParquetDatasetSource {
   async *read(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
     validateTableQueryLimit(options.limit);
-    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
+    let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
     if (remainingRows === 0) return;
     const readContext = createDatasetAbortContext(options.signal);
     this.activeReadControllers.add(readContext.abortController);
@@ -303,6 +301,9 @@ export class ParquetDatasetSource {
   ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
     const selectedFiles = this.getSelectedFiles({...options, signal});
     for await (const indexedFile of selectedFiles) {
+      if (filePlans && !filePlans.has(indexedFile.index)) {
+        continue;
+      }
       yield {
         run: taskSignal =>
           this.readFile(indexedFile, options, taskSignal, filePlans?.get(indexedFile.index))
@@ -374,7 +375,7 @@ export class ParquetDatasetSource {
         concurrency: options.concurrency,
         rowGroups: scanPlan?.rowGroups.indices,
         rowGroupFilter: options.rowGroupFilter,
-        predicate: options.predicate,
+        predicate: options.predicate ?? (!options.bbox ? getPlanPredicate(scanPlan) : undefined),
         bbox: options.bbox,
         geometryColumn: options.geometryColumn,
         limit: undefined,
@@ -415,7 +416,10 @@ export class ParquetDatasetSource {
 
   /** Creates a child source while preserving caller fetch, worker, range, and decode options. */
   private createSource(file: ParquetDatasetFile): ParquetSource {
-    return new ParquetSource(file.data, this.options, this.coreApi);
+    const parquetOptions = this.options.parquet
+      ? {...this.options.parquet, limit: undefined}
+      : undefined;
+    return new ParquetSource(file.data, {...this.options, parquet: parquetOptions}, this.coreApi);
   }
 
   /** Lazily discovers descriptors and applies conservative local pruning. */
@@ -501,6 +505,12 @@ function createDatasetBatch(
     ...datasetProvenance
   });
   return {...batch, metadata: provenance, ...datasetProvenance};
+}
+
+/** Returns the filter predicate recorded in one child source plan. */
+function getPlanPredicate(plan: ParquetSourceExplain | undefined): ParquetPredicate | undefined {
+  const filter = plan?.plan.find(step => step.kind === 'filter');
+  return filter?.kind === 'filter' ? filter.predicate : undefined;
 }
 
 /** Returns a stable descriptor identity for batch provenance and diagnostics. */
