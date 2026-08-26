@@ -293,9 +293,18 @@ export async function normalizeImplicitTileHeaders(
   const contentUriTemplate = contentEntries[0]?.uri || contentEntries[0]?.url || '';
   const descriptor: ImplicitTilingDescriptor = {
     contentUrlTemplate: contentUriTemplate ? resourceResolver.resolve(contentUriTemplate) : '',
+    contentUrlTemplates: contentEntries.map(contentEntry => {
+      const contentUri = contentEntry?.uri || contentEntry?.url || '';
+      return contentUri ? resourceResolver.resolve(contentUri) : '';
+    }),
     contentHeader: contentEntries[0]
       ? {...contentEntries[0], uri: undefined, url: undefined}
       : undefined,
+    contentHeaders: contentEntries.map(contentEntry => ({
+      ...contentEntry,
+      uri: undefined,
+      url: undefined
+    })),
     subtreesUrlTemplate: resourceResolver.resolve(implicitTilingExtension.subtrees.uri),
     subdivisionScheme: implicitTilingExtension.subdivisionScheme,
     subtreeLevels: implicitTilingExtension.subtreeLevels,

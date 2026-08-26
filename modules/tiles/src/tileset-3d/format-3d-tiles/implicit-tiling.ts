@@ -23,8 +23,12 @@ export type ImplicitTileCoordinates = {
 export type ImplicitTilingDescriptor = {
   /** Absolute template URL for render content, or an empty string for a contentless hierarchy. */
   contentUrlTemplate: string;
+  /** Absolute templates for every implicit content stream, in source order. */
+  contentUrlTemplates?: string[];
   /** Non-URI content metadata inherited by each available implicit content resource. */
   contentHeader?: Record<string, any>;
+  /** Metadata inherited by every implicit content stream, in source order. */
+  contentHeaders?: Array<Record<string, any>>;
   /** Absolute template URL for subtree availability files. */
   subtreesUrlTemplate: string;
   /** Spatial subdivision used by the hierarchy. */
@@ -66,7 +70,7 @@ export type ParsedImplicitSubtree = {
   /** Availability of tiles inside this subtree. */
   tileAvailability: ImplicitAvailability;
   /**
-   * Availability of tile content; only the first multiple-content stream is currently used.
+   * Availability of tile content. Array entries correspond to content templates in source order.
    * Omitted availability denotes a metadata-only subtree with no render content.
    */
   contentAvailability?: ImplicitAvailability | ImplicitAvailability[];
@@ -220,8 +224,8 @@ function materializeAvailableTile(
   }
 
   counters.tileCount++;
-  const contentAvailable = getAvailabilityValue(
-    getPrimaryContentAvailability(subtree.contentAvailability),
+  const contentAvailability = getContentAvailability(
+    subtree.contentAvailability,
     availabilityIndex
   );
   const children: ImplicitTileHeader[] = [];
@@ -269,7 +273,7 @@ function materializeAvailableTile(
     descriptor,
     reference,
     globalCoordinates,
-    contentAvailable,
+    contentAvailability,
     children
   );
 }
@@ -311,7 +315,7 @@ function createLazyImplicitTileHeader(
  * @param descriptor - Shared implicit hierarchy description.
  * @param reference - Current subtree reference used to build stable IDs.
  * @param coordinates - Global tile coordinates.
- * @param contentAvailable - Whether the subtree declares render content for this tile.
+ * @param contentAvailability - Availability for each content stream in source order.
  * @param children - Materialized or lazy child headers.
  * @returns Runtime tile header.
  */
@@ -320,20 +324,39 @@ function formatImplicitTileHeader(
   descriptor: ImplicitTilingDescriptor,
   reference: ImplicitSubtreeReference,
   coordinates: ImplicitTileCoordinates,
-  contentAvailable: boolean,
+  contentAvailability: boolean[],
   children: ImplicitTileHeader[]
 ): ImplicitTileHeader {
-  const contentUrl =
-    contentAvailable && descriptor.contentUrlTemplate
-      ? replaceImplicitUrlTemplate(descriptor.contentUrlTemplate, coordinates)
-      : undefined;
+  const contentUrlTemplates = descriptor.contentUrlTemplates?.length
+    ? descriptor.contentUrlTemplates
+    : [descriptor.contentUrlTemplate];
+  const contentEntries = contentUrlTemplates
+    .map((templateUrl, contentIndex) => {
+      if (!contentAvailability[contentIndex] || !templateUrl) {
+        return null;
+      }
+      return {
+        contentIndex,
+        contentUrl: replaceImplicitUrlTemplate(templateUrl, coordinates)
+      };
+    })
+    .filter((entry): entry is {contentIndex: number; contentUrl: string} => Boolean(entry));
+  const availableContentUrls = contentEntries.map(entry => entry.contentUrl);
+  const content = contentEntries.map(({contentIndex, contentUrl}) => ({
+    ...(descriptor.contentHeaders?.[contentIndex] ||
+      (contentIndex === 0 ? descriptor.contentHeader : {}) ||
+      {}),
+    uri: contentUrl
+  }));
+  const contentUrl = availableContentUrls[0];
   const lodMetricValue = descriptor.rootLodMetricValue / 2 ** coordinates.level;
 
   return {
     id: getImplicitTileId(reference, coordinates),
     children,
     contentUrl,
-    content: contentUrl ? {...descriptor.contentHeader, uri: contentUrl} : undefined,
+    content: content.length > 1 ? content : content[0],
+    contentUrls: availableContentUrls,
     refine: descriptor.refine,
     type: getImplicitTileType(contentUrl),
     lodMetricType: descriptor.lodMetricType,
@@ -411,17 +434,17 @@ function getAvailabilityValue(availability: ImplicitAvailability, index: number)
 }
 
 /**
- * Selects the first content availability stream until multiple contents are supported.
+ * Reads every content availability stream for one tile in descriptor/source order.
  *
  * @param availability - Single or multiple-content availability declaration.
- * @returns Primary content availability declaration.
+ * @returns Availability flags aligned with the content URL templates.
  */
-function getPrimaryContentAvailability(
-  availability: ImplicitAvailability | ImplicitAvailability[] | undefined
-): ImplicitAvailability {
-  return Array.isArray(availability)
-    ? availability[0] || {constant: 0}
-    : availability || {constant: 0};
+function getContentAvailability(
+  availability: ImplicitAvailability | ImplicitAvailability[] | undefined,
+  index: number
+): boolean[] {
+  const streams = Array.isArray(availability) ? availability : [availability];
+  return streams.map(stream => getAvailabilityValue(stream || {constant: 0}, index));
 }
 
 /**

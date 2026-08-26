@@ -23,6 +23,7 @@ provides a visual implementation for that feature.
 | 3D Tiles 1.1 tileset JSON | [x] | Includes implicit-tiling and metadata declarations. |
 | Explicit child hierarchies | [x] | Traversed by [`Tileset3D`](../../tiles/api-reference/tileset-3d). |
 | Lazy implicit subtrees | [x] | Availability resources are requested after visibility and LOD checks. |
+| Implicit multiple contents | [x] | All declared content-availability streams produce ordered `content` and `contentUrls` entries. |
 | `REPLACE` refinement | [x] | Ancestors are replaced as children become renderable. |
 | `ADD` refinement | [x] | Ancestors and descendants may render together. |
 | Geometric-error transform scaling | [x] | Uses the conservative maximum scale component. |

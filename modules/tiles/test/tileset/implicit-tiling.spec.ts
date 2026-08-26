@@ -59,6 +59,57 @@ test('implicit tiling materializes one sparse subtree and leaves lazy boundaries
   t.end();
 });
 
+test('implicit tiling materializes multiple content streams in source order', t => {
+  const descriptor = createDescriptor({
+    contentUrlTemplates: [
+      'https://example.com/geometry/{level}/{x}/{y}/{z}.b3dm',
+      'https://example.com/metadata/{level}/{x}/{y}/{z}.json'
+    ],
+    contentHeaders: [{group: 'geometry'}, {group: 'metadata'}]
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: [{constant: 1}, {constant: 1}],
+      childSubtreeAvailability: {constant: 0}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  t.equal(result.root.contentUrl, 'https://example.com/geometry/0/0/0/0.b3dm');
+  t.deepEqual(result.root.contentUrls, [
+    'https://example.com/geometry/0/0/0/0.b3dm',
+    'https://example.com/metadata/0/0/0/0.json'
+  ]);
+  t.deepEqual(result.root.content, [
+    {group: 'geometry', uri: 'https://example.com/geometry/0/0/0/0.b3dm'},
+    {group: 'metadata', uri: 'https://example.com/metadata/0/0/0/0.json'}
+  ]);
+  t.end();
+});
+
+test('implicit tiling preserves content-header indexes for sparse streams', t => {
+  const descriptor = createDescriptor({
+    contentUrlTemplates: [
+      'https://example.com/a/{level}.b3dm',
+      'https://example.com/b/{level}.json'
+    ],
+    contentHeaders: [{group: 'a'}, {group: 'b'}]
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: [{constant: 0}, {constant: 1}],
+      childSubtreeAvailability: {constant: 0}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  t.equal(result.root.contentUrl, 'https://example.com/b/0.json');
+  t.deepEqual(result.root.content, {group: 'b', uri: 'https://example.com/b/0.json'});
+  t.end();
+});
+
 test('implicit tiling treats maximumLevel as the last zero-based available level', t => {
   const descriptor = createDescriptor({maximumLevel: 1});
   const subtree: ParsedImplicitSubtree = {
