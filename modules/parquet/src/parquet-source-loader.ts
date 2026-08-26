@@ -21,6 +21,13 @@ import {
   createGeoParquetBoundingBoxPredicate
 } from './lib/geo/geoparquet-covering';
 import {
+  decodeParquetSplitBlockBloomFilter,
+  encodeParquetBloomFilterValue,
+  hashParquetBloomFilterValue,
+  checkParquetSplitBlockBloomFilter
+} from './lib/parquet-bloom-filter';
+import {getParquetBloomFilterProbes} from './lib/parquet-bloom-filter-planner';
+import {
   canParquetRowGroupMatch,
   copyParquetPredicate,
   filterParquetRowIndices,
@@ -326,19 +333,31 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       if (predicate) {
         validateParquetPredicate(predicate, availableColumns);
       }
-      const rowGroupIndices = predicate
+      const statisticsRowGroupIndices = predicate
         ? spatiallyFilteredRowGroupIndices.filter(rowGroupIndex =>
             canParquetRowGroupMatch(predicate, initialization.metadata.rowGroups[rowGroupIndex])
           )
         : spatiallyFilteredRowGroupIndices;
+      const bloomFilterResult = predicate
+        ? await filterParquetRowGroupsWithBloomFilters(
+            initialization,
+            statisticsRowGroupIndices,
+            predicate,
+            readContext.abortController.signal
+          )
+        : {rowGroupIndices: statisticsRowGroupIndices, filtersRead: 0, bytesRead: 0};
+      const rowGroupIndices = bloomFilterResult.rowGroupIndices;
       const rowGroupsPrunedByStatistics =
-        callbackFilteredRowGroupIndices.length - rowGroupIndices.length;
+        callbackFilteredRowGroupIndices.length - statisticsRowGroupIndices.length;
       this.recordTelemetry(
         'row-group-prune',
         {
           rowGroupsRequested: candidateRowGroupIndices.length,
           rowGroupsPruned: candidateRowGroupIndices.length - rowGroupIndices.length,
-          rowGroupsPrunedByStatistics
+          rowGroupsPrunedByStatistics,
+          rowGroupsPrunedByBloomFilter: statisticsRowGroupIndices.length - rowGroupIndices.length,
+          bloomFiltersRead: bloomFilterResult.filtersRead,
+          bloomFilterBytesRead: bloomFilterResult.bytesRead
         },
         {}
       );
@@ -1310,6 +1329,9 @@ function createParquetTelemetry(): ParquetTelemetry {
     rowGroupsRequested: 0,
     rowGroupsPruned: 0,
     rowGroupsPrunedByStatistics: 0,
+    rowGroupsPrunedByBloomFilter: 0,
+    bloomFiltersRead: 0,
+    bloomFilterBytesRead: 0,
     rowGroupsPrunedByPageIndex: 0,
     pageIndexesRead: 0,
     pagesRead: 0,
@@ -1394,6 +1416,86 @@ function getSourceName(data: string | Blob, url: string): string {
         ? url.split(/[?#]/)[0].split('/').pop() || 'parquet'
         : 'parquet';
   return sourceName.replace(/\.parquet$/i, '') || 'parquet';
+}
+
+type ParquetBloomFilterReadResult = {
+  rowGroupIndices: number[];
+  filtersRead: number;
+  bytesRead: number;
+};
+
+/** Applies only proven-negative Bloom-filter checks to candidate row groups. */
+async function filterParquetRowGroupsWithBloomFilters(
+  initialization: ParquetSourceInitialization,
+  rowGroupIndices: readonly number[],
+  predicate: ParquetPredicate,
+  signal: AbortSignal
+): Promise<ParquetBloomFilterReadResult> {
+  const rowGroups: number[] = [];
+  let filtersRead = 0;
+  let bytesRead = 0;
+  for (const rowGroupIndex of rowGroupIndices) {
+    const rowGroup = initialization.metadata.rowGroups[rowGroupIndex];
+    const probes = getParquetBloomFilterProbes(predicate, rowGroup);
+    let keepRowGroup = true;
+    for (const probe of probes) {
+      if (
+        probe.column.bloomFilterOffset === undefined ||
+        probe.column.bloomFilterByteLength === undefined
+      ) {
+        continue;
+      }
+      let field: ParquetField;
+      try {
+        field = initialization.parquetSchema.findField(probe.column.path);
+      } catch {
+        continue;
+      }
+      if (!field.primitiveType) continue;
+      let filter: ReturnType<typeof decodeParquetSplitBlockBloomFilter>;
+      try {
+        const data = await initialization.file.read(
+          probe.column.bloomFilterOffset,
+          probe.column.bloomFilterByteLength,
+          signal
+        );
+        filter = decodeParquetSplitBlockBloomFilter(data);
+        filtersRead++;
+        bytesRead += data.byteLength;
+      } catch {
+        continue;
+      }
+      if (
+        filter.algorithm !== 'BLOCK' ||
+        filter.hash !== 'XXHASH' ||
+        filter.compression !== 'UNCOMPRESSED'
+      ) {
+        continue;
+      }
+      const mayContainValue = probe.values.some(value => {
+        try {
+          if (value instanceof Date) return true;
+          const encoded = encodeParquetBloomFilterValue(
+            value,
+            field.primitiveType as Parameters<typeof encodeParquetBloomFilterValue>[1],
+            field.typeLength
+          );
+          return checkParquetSplitBlockBloomFilter(
+            filter.bitset,
+            hashParquetBloomFilterValue(encoded)
+          );
+        } catch {
+          return true;
+        }
+      });
+      if (!mayContainValue) {
+        keepRowGroup = false;
+        break;
+      }
+    }
+    if (keepRowGroup) rowGroups.push(rowGroupIndex);
+  }
+  return {rowGroupIndices: rowGroups, filtersRead, bytesRead};
 }
 
 /** Returns true when at least one HTTP object validator was captured. */

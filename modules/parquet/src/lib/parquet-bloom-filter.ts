@@ -24,6 +24,12 @@ export type ParquetSplitBlockBloomFilter = {
   readonly headerByteLength: number;
   /** Bloom-filter bitset, excluding its Thrift header. */
   readonly bitset: Uint8Array;
+  /** Bloom algorithm declared by the serialized header. */
+  readonly algorithm?: 'BLOCK';
+  /** Hash strategy declared by the serialized header. */
+  readonly hash?: 'XXHASH';
+  /** Compression declared by the serialized header. */
+  readonly compression?: 'UNCOMPRESSED';
 };
 
 /** Physical Parquet types supported by Bloom-filter plain-value encoding. */
@@ -101,6 +107,9 @@ export function decodeParquetSplitBlockBloomFilter(data: Uint8Array): ParquetSpl
   const protocol = new Uint8ArrayCompactProtocol(transport);
   protocol.readStructBegin();
   let bitsetByteLength: number | undefined;
+  let algorithm: 'BLOCK' | undefined;
+  let hash: 'XXHASH' | undefined;
+  let compression: 'UNCOMPRESSED' | undefined;
   while (true) {
     const field = protocol.readFieldBegin();
     if (field.ftype === Thrift.Type.STOP) {
@@ -108,6 +117,12 @@ export function decodeParquetSplitBlockBloomFilter(data: Uint8Array): ParquetSpl
     }
     if (field.fid === 1 && field.ftype === Thrift.Type.I32) {
       bitsetByteLength = protocol.readI32();
+    } else if (field.fid === 2 && field.ftype === Thrift.Type.STRUCT) {
+      algorithm = readBloomFilterUnion(protocol, 1) ? 'BLOCK' : undefined;
+    } else if (field.fid === 3 && field.ftype === Thrift.Type.STRUCT) {
+      hash = readBloomFilterUnion(protocol, 1) ? 'XXHASH' : undefined;
+    } else if (field.fid === 4 && field.ftype === Thrift.Type.STRUCT) {
+      compression = readBloomFilterUnion(protocol, 1) ? 'UNCOMPRESSED' : undefined;
     } else {
       protocol.skip(field.ftype);
     }
@@ -124,8 +139,28 @@ export function decodeParquetSplitBlockBloomFilter(data: Uint8Array): ParquetSpl
   return {
     bitsetByteLength,
     headerByteLength: bitsetOffset,
-    bitset: data.subarray(bitsetOffset, bitsetOffset + bitsetByteLength)
+    bitset: data.subarray(bitsetOffset, bitsetOffset + bitsetByteLength),
+    algorithm,
+    hash,
+    compression
   };
+}
+
+function readBloomFilterUnion(
+  protocol: Uint8ArrayCompactProtocol,
+  expectedFieldId: number
+): boolean {
+  protocol.readStructBegin();
+  let matches = false;
+  while (true) {
+    const field = protocol.readFieldBegin();
+    if (field.ftype === Thrift.Type.STOP) break;
+    matches = field.fid === expectedFieldId && field.ftype === Thrift.Type.STRUCT;
+    protocol.skip(field.ftype);
+    protocol.readFieldEnd();
+  }
+  protocol.readStructEnd();
+  return matches;
 }
 
 /** Returns whether a serialized Parquet split-block Bloom filter may contain a hash. */

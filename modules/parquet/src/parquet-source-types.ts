@@ -295,6 +295,12 @@ export type ParquetTelemetry = {
   rowGroupsPruned: number;
   /** Candidate row groups proven impossible using footer statistics. */
   rowGroupsPrunedByStatistics: number;
+  /** Candidate row groups proven impossible using split-block Bloom filters. */
+  rowGroupsPrunedByBloomFilter: number;
+  /** Bloom-filter payloads fetched for selective reads. */
+  bloomFiltersRead: number;
+  /** Bytes fetched for Bloom-filter payloads. */
+  bloomFilterBytesRead: number;
   /** Row groups proven impossible using page-level column indexes. */
   rowGroupsPrunedByPageIndex: number;
   /** Column-index and offset-index blobs decoded for selective reads. */
@@ -328,6 +334,7 @@ export type ParquetTelemetryEvent = {
     | 'range-request'
     | 'cache-hit'
     | 'row-group-prune'
+    | 'bloom-filter'
     | 'page-index-prune'
     | 'predicate-filter'
     | 'decode'
