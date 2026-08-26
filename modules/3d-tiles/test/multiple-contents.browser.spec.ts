@@ -1,6 +1,8 @@
 import {describe, expect, test} from 'vitest';
 import {Tiles3DTilesetSchema} from '../src/tileset-zod-schema';
 import {normalizeTileData} from '../src/lib/parsers/parse-3d-tile-header';
+import {Tiles3DLoader} from '../src/tiles-3d-loader';
+import {Tiles3DSource} from '@loaders.gl/tiles';
 
 describe('3D Tiles multiple contents', () => {
   test('accepts and preserves an array of content references', () => {
@@ -41,5 +43,33 @@ describe('3D Tiles multiple contents', () => {
     expect(Array.isArray(normalizedTile?.content)).toBe(false);
     expect(normalizedTile?.contentUrl).toBe('https://example.com/tile.b3dm');
     expect(normalizedTile?.contentUrls).toEqual(['https://example.com/tile.b3dm']);
+  });
+
+  test('loads multiple explicit contents in source order', async () => {
+    const requestedUrls: string[] = [];
+    const source = new Tiles3DSource({
+      url: 'https://example.com/tileset.json',
+      loader: Tiles3DLoader,
+      resolver: {
+        loadRoot: async () => ({}) as never,
+        loadResource: async url => {
+          requestedUrls.push(url);
+          return {shape: url.endsWith('.json') ? 'tileset3d' : 'tile3d', url};
+        }
+      }
+    });
+    const tile = {
+      contentUrl: 'https://example.com/geometry.b3dm',
+      contentUrls: ['https://example.com/geometry.b3dm', 'https://example.com/metadata.json'],
+      content: null,
+      contents: []
+    } as never;
+
+    const result = await source.loadTileContent(tile);
+
+    expect(requestedUrls).toEqual(tile.contentUrls);
+    expect(result.contents).toHaveLength(2);
+    expect(result.nestedTilesets).toHaveLength(1);
+    expect(tile.content).toEqual(result.contents?.[0]);
   });
 });

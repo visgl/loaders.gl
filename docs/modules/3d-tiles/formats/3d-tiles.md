@@ -40,7 +40,7 @@ provides a visual implementation for that feature.
 | `cmpt` composite | [x] | Child payloads are parsed through the composite loader. |
 | `glb` / glTF tile content | [x] | Structure-first content detection supports extensionless resources. |
 | External tileset content | [x] | Nested tilesets are installed below the owning tile. |
-| Multiple contents per tile | [ ] | Metadata arrays are accepted and preserved; independent runtime loading/rendering is the next tranche. |
+| Multiple contents per tile | [x] | Explicit content arrays are normalized and loaded in source order; `Tile3D.content` remains the primary payload and `Tile3D.contents` exposes all payloads. |
 | `3tz` archive resources | [x] | Archive-backed sources use the same URL/content pipeline. |
 
 ### Extensions and metadata

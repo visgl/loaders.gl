@@ -69,6 +69,8 @@ export class Tile3D {
   refine: TILE_REFINEMENT;
   type: string;
   contentUrl: string;
+  /** Resolved render-content URLs in source order; empty for contentless tiles. */
+  contentUrls: string[] = [];
   /** Different refinement algorithms used by I3S and 3D tiles */
   lodMetricType = 'geometricError';
   /**
@@ -91,6 +93,8 @@ export class Tile3D {
    * not the content's metadata in the tileset JSON file.
    */
   content: any = null;
+  /** Loaded payloads in the same order as {@link contentUrls}; `content` remains the primary payload. */
+  contents: any[] = [];
   contentState: number = TILE_CONTENT_STATE.UNLOADED;
   gpuMemoryUsageInBytes: number = 0;
 
@@ -199,6 +203,7 @@ export class Tile3D {
     this.refine = this._getRefine(header.refine);
     this.type = header.type;
     this.contentUrl = header.contentUrl;
+    this.contentUrls = header.contentUrls || (header.contentUrl ? [header.contentUrl] : []);
     this.childrenState = header.implicitSubtree ? 'unloaded' : 'ready';
 
     this._initializeLodMetric(header);
@@ -368,7 +373,11 @@ export class Tile3D {
    * Memory usage of tile on GPU
    */
   _getGpuMemoryUsageInBytes(): number {
-    return this.content.gpuMemoryUsageInBytes || this.content.byteLength || 0;
+    const contents = this.contents.length ? this.contents : [this.content];
+    return contents.reduce(
+      (total, content) => total + (content?.gpuMemoryUsageInBytes || content?.byteLength || 0),
+      0
+    );
   }
 
   /**
@@ -487,6 +496,11 @@ export class Tile3D {
     try {
       const loadResult = await this.tileset.source.loadTileContent(this);
 
+      if (loadResult.contents) {
+        this.contents = loadResult.contents;
+        this.content = this.contents[0] || null;
+      }
+
       if (this.tileset.options.contentLoader) {
         await this.tileset.options.contentLoader(this);
       }
@@ -585,6 +599,9 @@ export class Tile3D {
     this.refine = this._getRefine(materializedHeader.refine);
     this.type = materializedHeader.type;
     this.contentUrl = materializedHeader.contentUrl;
+    this.contentUrls =
+      materializedHeader.contentUrls ||
+      (materializedHeader.contentUrl ? [materializedHeader.contentUrl] : []);
     this._initializeLodMetric(materializedHeader);
     this._updateLodMetricScale();
     this._initializeBoundingVolumes(this.header);
@@ -595,9 +612,12 @@ export class Tile3D {
 
   // Unloads the tile's content.
   unloadContent() {
-    if (this.content && this.content.destroy) {
-      this.content.destroy();
+    for (const content of this.contents.length ? this.contents : [this.content]) {
+      if (content && content.destroy) {
+        content.destroy();
+      }
     }
+    this.contents = [];
     this.content = null;
     if (this.header.content && this.header.content.destroy) {
       this.header.content.destroy();
@@ -906,6 +926,7 @@ export class Tile3D {
   _initializeContent(tileHeader) {
     // Empty tile by default
     this.content = {_tileset: this.tileset, _tile: this};
+    this.contents = [];
     this.hasEmptyContent = true;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
 
@@ -913,7 +934,7 @@ export class Tile3D {
     // This is `false` until the tile's content is loaded.
     this.hasTilesetContent = false;
 
-    if (tileHeader.contentUrl) {
+    if (tileHeader.contentUrl || tileHeader.contentUrls?.length) {
       this.content = null;
       this.hasEmptyContent = false;
     }
@@ -961,18 +982,23 @@ export class Tile3D {
    * `content`.
    */
   _isTileset(): boolean {
-    return this.content?.shape === 'tileset3d';
+    return (this.contents.length ? this.contents : [this.content]).some(
+      content => content?.shape === 'tileset3d'
+    );
   }
 
   _onContentLoaded() {
     // Vector and Geometry tile rendering do not support the skip LOD optimization.
-    switch (this.content && this.content.type) {
-      case 'vctr':
-      case 'geom':
-        // @ts-ignore
-        this.tileset._traverser.disableSkipLevelOfDetail = true;
-        break;
-      default:
+    const contents = this.contents.length ? this.contents : [this.content];
+    for (const content of contents) {
+      switch (content && content.type) {
+        case 'vctr':
+        case 'geom':
+          // @ts-ignore
+          this.tileset._traverser.disableSkipLevelOfDetail = true;
+          break;
+        default:
+      }
     }
 
     // The content may be tileset json

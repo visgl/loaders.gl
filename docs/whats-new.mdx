@@ -277,7 +277,7 @@ A minor release that includes:
 
 - **3D Tiles 1.1 Writing** [`Tile3DWriter`](/docs/modules/3d-tiles/api-reference/tile-3d-writer) now supports writing 3DTiles 1.1
 - **3D Tiles 1.1 Extensions** `EXT_mesh_features` and `EXT_structural_metadata` are now supported.
-- **3D Tiles format compatibility** - Added a checked compatibility matrix covering tileset traversal, tile payloads, extensions, metadata, and known renderer limitations. Multiple-content metadata arrays are now accepted and preserved for the next independent-content loading tranche.
+- **3D Tiles format compatibility** - Added a checked compatibility matrix covering tileset traversal, tile payloads, extensions, metadata, and known renderer limitations. Multiple explicit contents are normalized, loaded in source order, and exposed through `Tile3D.contents` while preserving the legacy primary `Tile3D.content` field.
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.

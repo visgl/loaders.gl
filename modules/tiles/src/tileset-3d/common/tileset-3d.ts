@@ -812,10 +812,13 @@ export class Tileset3D {
     for (const tile of this.selectedTiles) {
       if (tile.contentAvailable && tile.content) {
         tilesRenderable++;
-        if (tile.content.pointCount) {
-          pointsRenderable += tile.content.pointCount;
-        } else {
-          pointsRenderable += tile.content.vertexCount;
+        const contents = tile.contents.length ? tile.contents : [tile.content];
+        for (const content of contents) {
+          if (content.pointCount) {
+            pointsRenderable += content.pointCount;
+          } else {
+            pointsRenderable += content.vertexCount || 0;
+          }
         }
       }
     }

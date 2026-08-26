@@ -69,8 +69,12 @@ export type TilesetSourceInput = TilesetJSON | TilesetSourceRequest;
 export type TileContentLoadResult = {
   /** Whether the tile content request produced usable content. */
   loaded: boolean;
+  /** All payloads loaded for a tile, in source order. */
+  contents?: any[];
   /** Nested tileset metadata to install below the loaded tile, if any. */
   nestedTileset?: TilesetJSON;
+  /** Nested tilesets found among multiple content payloads. */
+  nestedTilesets?: TilesetJSON[];
 };
 
 /** Result of a source-managed lazy child-header request. */
