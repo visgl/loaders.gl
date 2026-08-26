@@ -75,7 +75,8 @@ For cache and request behavior, see [caching and memory](../concepts/caching-and
 
 ## Supported coordinate and volume forms
 
-The runtime accepts oriented boxes, spheres, and geographic regions. S2 extension volumes are
+The runtime accepts oriented boxes, spheres, and geographic regions, including regions that cross
+the antimeridian and degenerate-height regions. S2 extension volumes are
 normalized to oriented boxes while retaining their source token and height range for implicit
 subdivision. Tile transforms are composed with ancestor and tileset transforms before culling and
 geometric-error scaling.
