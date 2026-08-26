@@ -20,6 +20,7 @@ export {
   type ParquetSourceReadOptions,
   type ParquetSourceMetadata,
   type ParquetRowGroupMetadata,
+  type ParquetSortingColumn,
   type ParquetColumnChunkMetadata,
   type ParquetGeospatialBoundingBox,
   type ParquetGeospatialStatistics,

@@ -119,6 +119,16 @@ export type ParquetColumnChunkMetadata = {
   readonly geospatialStatistics?: ParquetGeospatialStatistics;
 };
 
+/** Sort-order declaration attached to one Parquet row group. */
+export type ParquetSortingColumn = {
+  /** Leaf-column index in the file schema. */
+  readonly columnIndex: number;
+  /** Whether values are sorted in descending order. */
+  readonly descending: boolean;
+  /** Whether nulls sort before non-null values. */
+  readonly nullsFirst: boolean;
+};
+
 /** Normalized metadata for one Parquet row group. */
 export type ParquetRowGroupMetadata = {
   /** Zero-based row-group index. */
@@ -137,6 +147,8 @@ export type ParquetRowGroupMetadata = {
   readonly compressedSize: number;
   /** Column chunks contained in the row group. */
   readonly columns: readonly ParquetColumnChunkMetadata[];
+  /** Optional sort order declared by the writer. */
+  readonly sortingColumns?: readonly ParquetSortingColumn[];
 };
 
 /** Dataset-level metadata returned by `ParquetSource.getMetadata()`. */
@@ -448,6 +460,8 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */
     preserveBinary?: boolean;
+    /** Verify page-header CRC values in TypeScript reads. */
+    verifyPageChecksums?: boolean;
     /** Receives cumulative transport, pruning, decode, and batch telemetry events. */
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Overrides the package-local worker used for selective source decoding. */
