@@ -1,20 +1,13 @@
-# copc.js fork notes
+# COPC implementation notes
 
-copc.js was forked after some consideration:
+The primary COPC reader is implemented in this module and has no runtime dependency on `copc.js`. It provides:
 
-- Split out LAZ functionality (use `@loaders.gl/las` module).
-- Adapt to loaders.gl dynamic source system (replace `Getter`).
-- Avoid bundling issues (e.g. dynamic import of fs) as loaders.gl already handles these.
-- Modernize / simplify code (see below)
+- Native LAS 1.4, VLR/EVLR, COPC info, and hierarchy parsing.
+- Browser, HTTP, Blob, and Node random-access reads through loaders.gl file abstractions.
+- TypeScript LAZ decoding directly into Arrow attributes.
+- Selective and progressive PDRF 6-8 field delivery.
 
-If some of the loaders.gl changes could be upstreamed we might consider unforking.
-
-## Code "simplifications"
-
-- Remove dated typescript constructs (e.g. ES2015 module syntax is preferred over namespaces)
-- Multiple exports of same name (Hierarchy etc)
-- Avoid importing Node.js dependencies
-- Consolidate large number of small source code files.
+The original module and test fixtures were based on Connor Manning's `copc.js` project. The attribution and license are retained below.
 
 ## Original License
 

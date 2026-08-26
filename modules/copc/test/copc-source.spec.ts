@@ -6,11 +6,17 @@ import test from 'test/utils/vitest-tape';
 import {expect, test as vitestTest} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
-import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
+import {
+  COPCSourceLoader,
+  COPCTileSource,
+  COPCWriter,
+  loadCOPCHierarchyPage,
+  loadCOPCNodeData,
+  openCOPC
+} from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {deduceMeshSchema} from '@loaders.gl/schema-utils';
-import {Copc} from 'copc';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
@@ -19,7 +25,7 @@ const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.u
 class TestCOPCTileSource extends COPCTileSource {
   /** Replace the byte-range getter after normal source initialization. */
   setRangeGetter(getter: (begin: number, end: number) => Promise<Uint8Array>): void {
-    this._urlOrGetter = getter;
+    this._readRange = getter;
   }
 
   /** Expose ordered range prefetching for focused scheduling tests. */
@@ -71,13 +77,7 @@ test('COPCSourceLoader#loads normalized root and child tiles', async t => {
 });
 
 test('COPCSourceLoader#loads full point content for a tile', async t => {
-  if (isBrowser) {
-    t.comment('Skipping browser content decode until laz-perf wasm is served as an asset');
-    t.end();
-    return;
-  }
-
-  const source = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {});
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -97,9 +97,7 @@ test('COPCSourceLoader#loads full point content for a tile', async t => {
 });
 
 test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t => {
-  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    copc: {decoder: 'typescript-laz'}
-  });
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -115,9 +113,7 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
 });
 
 vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async () => {
-  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    copc: {decoder: 'typescript-laz'}
-  });
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -155,9 +151,7 @@ vitestTest('COPCSourceLoader#streams TypeScript tile content as Arrow batches', 
 });
 
 vitestTest('COPCSourceLoader#selects progressive point-data columns', async () => {
-  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    copc: {decoder: 'typescript-laz'}
-  });
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -168,7 +162,13 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
     'classification',
     'GPS_TIME',
     'scanAngle',
-    'pointSourceId'
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
   ] as const;
   const batches = source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
@@ -189,13 +189,17 @@ vitestTest('COPCSourceLoader#selects progressive point-data columns', async () =
   expect(firstBatch?.data.data.getChild('classification')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('GPS_TIME')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('scanAngle')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('userData')).toBeTruthy();
   expect(firstBatch?.data.data.getChild('pointSourceId')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('returnNumber')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('numberOfReturns')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('scannerChannel')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('scanDirectionFlag')).toBeTruthy();
+  expect(firstBatch?.data.data.getChild('edgeOfFlightLine')).toBeTruthy();
 });
 
 test('COPCSourceLoader#streams position-only TypeScript tile batches', async t => {
-  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    copc: {decoder: 'typescript-laz'}
-  });
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -265,57 +269,7 @@ vitestTest('COPCSourceLoader#handles abandoned prefetched range failures', async
     globalThis.removeEventListener('unhandledrejection', handleUnhandledRejection);
   }
 });
-
-test('COPCSourceLoader#TypeScript tile attributes match laz-perf', async t => {
-  if (isBrowser) {
-    t.comment('Skipping browser parity until laz-perf wasm is served as an asset');
-    t.end();
-    return;
-  }
-
-  const lazPerfSource = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {});
-  const typescriptSource = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {
-    copc: {decoder: 'typescript-laz'}
-  });
-  await Promise.all([lazPerfSource.initialize(), typescriptSource.initialize()]);
-
-  const rootTile = await typescriptSource.getRootTile();
-  const [lazPerfContent, typescriptContent] = await Promise.all([
-    lazPerfSource.loadTileContent(rootTile),
-    typescriptSource.loadTileContent(rootTile)
-  ]);
-  const lazPerfPositions = lazPerfContent?.data.data.getChild('POSITION');
-  const typescriptPositions = typescriptContent?.data.data.getChild('POSITION');
-  const lazPerfColors = lazPerfContent?.data.data.getChild('COLOR_0');
-  const typescriptColors = typescriptContent?.data.data.getChild('COLOR_0');
-
-  t.equal(typescriptContent?.pointCount, lazPerfContent?.pointCount, 'point counts match');
-  t.deepEqual(
-    Array.from({length: rootTile.pointCount}, (_, index) =>
-      typescriptPositions?.get(index)?.toArray()
-    ),
-    Array.from({length: rootTile.pointCount}, (_, index) =>
-      lazPerfPositions?.get(index)?.toArray()
-    ),
-    'tile-relative positions match laz-perf'
-  );
-  t.deepEqual(
-    Array.from({length: rootTile.pointCount}, (_, index) =>
-      typescriptColors?.get(index)?.toArray()
-    ),
-    Array.from({length: rootTile.pointCount}, (_, index) => lazPerfColors?.get(index)?.toArray()),
-    'raw colors match laz-perf'
-  );
-  t.end();
-});
-
 test('COPCSourceLoader#loads tile content from a Blob', async t => {
-  if (isBrowser) {
-    t.comment('Skipping browser content decode until laz-perf wasm is served as an asset');
-    t.end();
-    return;
-  }
-
   const blob = await createEllipsoidBlob();
   const source = COPCSourceLoader.createDataSource(blob, {});
   await source.initialize();
@@ -336,6 +290,8 @@ test('COPCSourceLoader#derives cartographic view metadata from the dataset', asy
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
 
   const metadata = await source.getMetadata();
+  const schema = await source.getSchema();
+  const firstPoint = await source.getPoints({nodeIndex: [0, 0, 0, 0]});
   const viewState = source.getViewState();
 
   t.ok(
@@ -348,6 +304,16 @@ test('COPCSourceLoader#derives cartographic view metadata from the dataset', asy
     viewState.cartographicCenter,
     'metadata view state matches the source view state'
   );
+  t.equal(
+    metadata.formatSpecificMetadata.header.pointDataRecordFormat,
+    7,
+    'native metadata exposes the COPC point format'
+  );
+  t.ok(
+    schema.fields.some(field => field.name === 'ScannerChannel'),
+    'native schema exposes modern LAS fields without decoding the root node'
+  );
+  t.equal(firstPoint?.length, schema.fields.length, 'native point values match the source schema');
   t.end();
 });
 
@@ -362,8 +328,8 @@ test('COPCWriter#encodes range-readable octree nodes', async t => {
     ranges.push([begin, end]);
     return new Uint8Array(await blob.slice(begin, end).arrayBuffer());
   };
-  const copc = await Copc.create(getter);
-  const hierarchy = await Copc.loadHierarchyPage(getter, copc.info.rootHierarchyPage);
+  const copc = await openCOPC(getter);
+  const hierarchy = await loadCOPCHierarchyPage(getter, copc.info.rootHierarchyPage);
   const nodes = Object.values(hierarchy.nodes);
   const rootNode = hierarchy.nodes['0-0-0-0'];
 
@@ -389,7 +355,7 @@ test('COPCWriter#encodes range-readable octree nodes', async t => {
 
   const pointDataPositions: string[] = [];
   for (const node of nodes) {
-    const compressed = await Copc.loadCompressedPointDataBuffer(getter, node);
+    const compressed = await loadCOPCNodeData(getter, node);
     const rawPointData = decodeLAZChunk(compressed, {
       pointCount: node.pointCount,
       pointDataRecordFormat: copc.header.pointDataRecordFormat,
@@ -432,7 +398,7 @@ test('COPCWriter#encodes range-readable octree nodes', async t => {
     'variable chunk table preserves node point counts'
   );
 
-  const source = COPCSourceLoader.createDataSource(blob, {copc: {decoder: 'typescript-laz'}});
+  const source = COPCSourceLoader.createDataSource(blob, {});
   await source.initialize();
   const rootTile = await source.getRootTile();
   const childTiles = await source.getChildren(rootTile);
@@ -471,8 +437,8 @@ test('COPCWriter#defaults to PDRF 6 without colors', async t => {
   const blob = new Blob([arrayBuffer]);
   const getter = async (begin: number, end: number): Promise<Uint8Array> =>
     new Uint8Array(await blob.slice(begin, end).arrayBuffer());
-  const copc = await Copc.create(getter);
-  const hierarchy = await Copc.loadHierarchyPage(getter, copc.info.rootHierarchyPage);
+  const copc = await openCOPC(getter);
+  const hierarchy = await loadCOPCHierarchyPage(getter, copc.info.rootHierarchyPage);
 
   t.equal(copc.header.pointDataRecordFormat, 6, 'selects PDRF 6');
   t.equal(copc.wkt, 'LOCAL_CS["loaders.gl test"]', 'writes an optional WKT VLR');

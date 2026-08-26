@@ -15,9 +15,14 @@ import {
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
+import {
+  createLASTypedExtraBytesAttributes,
+  createLASTypedExtraBytesValue,
+  parseLASExtraBytes,
+  type LASTypedExtraBytesAttribute
+} from '../las-extra-bytes';
 import type {
   LASExtendedVariableLengthRecord,
-  LASExtraBytesDescriptor,
   LASHeader,
   LASMetadata,
   LASVariableLengthRecord,
@@ -119,34 +124,11 @@ type PointDataBatchState = {
   edgeOfFlightLines: Uint8Array | null;
   waveforms: Uint8Array | null;
   extraBytes: Uint8Array | null;
-  typedExtraBytes: TypedExtraBytesAttribute[] | null;
+  typedExtraBytes: LASTypedExtraBytesAttribute[] | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
 };
-
-type TypedExtraBytesAttribute = {
-  name: string;
-  value: TypedExtraBytesValue;
-  size: number;
-  scalarDataType: number;
-  byteOffset: number;
-  byteLength: number;
-  scales: number[];
-  offsets: number[];
-  /** Whether transformed integer values require a floating-point output buffer. */
-  outputFloat64: boolean;
-};
-
-type TypedExtraBytesValue =
-  | Uint8Array
-  | Int8Array
-  | Uint16Array
-  | Int16Array
-  | Uint32Array
-  | Int32Array
-  | Float32Array
-  | Float64Array;
 
 type LAZStreamingDecodeStats = {
   copiedBytes: number;
@@ -1040,35 +1022,6 @@ function parseTypedLASMetadataRecord(
   }
 }
 
-function parseLASExtraBytes(data: Uint8Array): LASExtraBytesDescriptor[] {
-  const descriptors: LASExtraBytesDescriptor[] = [];
-  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  for (let offset = 0; offset + 192 <= data.byteLength; offset += 192) {
-    const scales: [number, number, number] = [
-      dataView.getFloat64(offset + 112, true),
-      dataView.getFloat64(offset + 120, true),
-      dataView.getFloat64(offset + 128, true)
-    ];
-    const offsets: [number, number, number] = [
-      dataView.getFloat64(offset + 136, true),
-      dataView.getFloat64(offset + 144, true),
-      dataView.getFloat64(offset + 152, true)
-    ];
-    descriptors.push({
-      dataType: data[offset + 2],
-      options: data[offset + 3],
-      name: readLASString(data, offset + 4, 32),
-      description: readLASString(data, offset + 160, 32),
-      scale: scales[0],
-      offset: offsets[0],
-      scales,
-      offsets,
-      data: data.slice(offset, offset + 192)
-    });
-  }
-  return descriptors;
-}
-
 function parseLASWaveformDescriptor(
   recordId: number,
   data: Uint8Array
@@ -1255,7 +1208,7 @@ function makeLASArrowTableFromAttributes(
   edgeOfFlightLines: Uint8Array | null,
   waveforms: Uint8Array | null,
   extraBytes: Uint8Array | null,
-  typedExtraBytes: TypedExtraBytesAttribute[] | null
+  typedExtraBytes: LASTypedExtraBytesAttribute[] | null
 ): LASArrowTable {
   const attributes: MeshAttributes = {
     POSITION: {value: positions, size: 3}
@@ -1357,7 +1310,7 @@ function populateLASAttributesFromDataView(
     edgeOfFlightLines: Uint8Array | null;
     waveforms: Uint8Array | null;
     extraBytes: Uint8Array | null;
-    typedExtraBytes: TypedExtraBytesAttribute[] | null;
+    typedExtraBytes: LASTypedExtraBytesAttribute[] | null;
     pointOffset: number;
     sourcePointIndex: number;
     pointCount: number;
@@ -2178,77 +2131,14 @@ function createPointDataBatchState(
 function createTypedExtraBytesAttributes(
   batchSize: number,
   header: LASHeader
-): TypedExtraBytesAttribute[] {
-  const descriptors = header.metadata?.extraBytes || [];
-  let byteOffset = 0;
-  const usedNames = new Set<string>();
-  const attributes: TypedExtraBytesAttribute[] = [];
-  for (let descriptorIndex = 0; descriptorIndex < descriptors.length; descriptorIndex++) {
-    const descriptor = descriptors[descriptorIndex];
-    const scalarDataType = getExtraBytesScalarDataType(descriptor.dataType);
-    const size = getExtraBytesComponentCount(descriptor.dataType);
-    const scalarByteLength = getExtraBytesScalarByteLength(scalarDataType);
-    const byteLength = scalarByteLength * size;
-    if (descriptor.dataType < 1 || descriptor.dataType > 30 || !byteLength) {
-      throw new Error(`LASLoader: unsupported typed Extra Bytes data type ${descriptor.dataType}`);
-    }
-    if (scalarDataType === 7 || scalarDataType === 8) {
-      throw new Error(
-        `LASLoader: typed Extra Bytes data type ${descriptor.dataType} requires BigInt output; use extraBytes: 'raw'`
-      );
-    }
-    let name = `EXTRA_BYTES_${sanitizeExtraBytesName(descriptor.name)}`;
-    if (name === 'EXTRA_BYTES_') {
-      name = `EXTRA_BYTES_${descriptorIndex}`;
-    }
-    const baseName = name;
-    let suffix = 1;
-    while (usedNames.has(name)) {
-      name = `${baseName}_${suffix++}`;
-    }
-    usedNames.add(name);
-    attributes.push({
-      name,
-      value: createExtraBytesTypedArray(
-        scalarDataType,
-        batchSize * size,
-        Boolean(descriptor.options & 0x18) && scalarDataType !== 10
-      ),
-      size,
-      scalarDataType,
-      byteOffset,
-      byteLength,
-      outputFloat64: Boolean(descriptor.options & 0x18) && scalarDataType !== 10,
-      scales:
-        descriptor.options & 0x08 ? descriptor.scales.slice(0, size) : new Array(size).fill(1),
-      offsets:
-        descriptor.options & 0x10 ? descriptor.offsets.slice(0, size) : new Array(size).fill(0)
-    });
-    byteOffset += byteLength;
-  }
-  const expectedByteLength =
+): LASTypedExtraBytesAttribute[] {
+  const extraByteCount =
     header.pointsStructSize - getLAZPointDataRecordBaseLength(header.pointsFormatId);
-  if (byteOffset !== expectedByteLength) {
-    throw new Error(
-      `LASLoader: Extra Bytes descriptors use ${byteOffset} bytes; point records provide ${expectedByteLength}`
-    );
-  }
-  return attributes;
-}
-
-/** Convert a descriptor name into a stable Arrow attribute-name component. */
-function sanitizeExtraBytesName(name: string): string {
-  return name.trim().replace(/[^A-Za-z0-9_]+/g, '_');
-}
-
-/** Resolve the scalar type code for a descriptor, including legacy vector codes. */
-function getExtraBytesScalarDataType(dataType: number): number {
-  return dataType > 20 ? dataType - 20 : dataType > 10 ? dataType - 10 : dataType;
-}
-
-/** Return the number of scalar components represented by an Extra Bytes type. */
-function getExtraBytesComponentCount(dataType: number): number {
-  return dataType > 20 ? 3 : dataType > 10 ? 2 : 1;
+  return createLASTypedExtraBytesAttributes(
+    batchSize,
+    header.metadata?.extraBytes || [],
+    extraByteCount
+  );
 }
 
 /** Return the byte width of one scalar Extra Bytes value. */
@@ -2260,46 +2150,13 @@ function getExtraBytesScalarByteLength(dataType: number): number {
   return 0;
 }
 
-/** Allocate the typed array corresponding to a supported LAS scalar type. */
-function createExtraBytesTypedArray(
-  scalarDataType: number,
-  length: number,
-  outputFloat64 = false
-): TypedExtraBytesValue {
-  if (outputFloat64 && scalarDataType !== 10) {
-    return new Float64Array(length);
-  }
-  switch (scalarDataType) {
-    case 1:
-      return new Uint8Array(length);
-    case 2:
-      return new Int8Array(length);
-    case 3:
-      return new Uint16Array(length);
-    case 4:
-      return new Int16Array(length);
-    case 5:
-      return new Uint32Array(length);
-    case 6:
-      return new Int32Array(length);
-    case 9:
-      return new Float32Array(length);
-    case 10:
-      return new Float64Array(length);
-    default:
-      throw new Error(
-        `LASLoader: unsupported typed Extra Bytes scalar data type ${scalarDataType}`
-      );
-  }
-}
-
 /** Decode typed Extra Bytes directly from uncompressed LAS point records. */
 function populateTypedExtraBytesFromDataView(
   dataView: DataView,
   pointOffset: number,
   pointDataRecordFormat: number,
   targetPointIndex: number,
-  attributes: TypedExtraBytesAttribute[]
+  attributes: LASTypedExtraBytesAttribute[]
 ): void {
   const extraByteBaseOffset = pointOffset + getLAZPointDataRecordBaseLength(pointDataRecordFormat);
   for (const attribute of attributes) {
@@ -2326,7 +2183,7 @@ function populateTypedExtraBytesFromRaw(
   sourcePointOffset: number,
   targetPointOffset: number,
   pointCount: number,
-  attributes: TypedExtraBytesAttribute[]
+  attributes: LASTypedExtraBytesAttribute[]
 ): void {
   const dataView = new DataView(
     rawPointData.buffer,
@@ -2721,7 +2578,7 @@ function flushPointDataBatch(
     state.typedExtraBytes = state.typedExtraBytes
       ? state.typedExtraBytes.map(attribute => ({
           ...attribute,
-          value: createExtraBytesTypedArray(
+          value: createLASTypedExtraBytesValue(
             attribute.scalarDataType,
             attribute.value.length,
             attribute.outputFloat64

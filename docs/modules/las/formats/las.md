@@ -126,12 +126,13 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 
 | Capability | TypeScript status |
 | --- | --- |
-| COPC hierarchy and range selection | Uses the existing COPC path; not a standalone TypeScript COPC parser yet. |
-| Node range fetching | Supported. Each selected node's compressed byte range is fetched as a complete chunk. |
+| COPC header and metadata | Native TypeScript parsing for the LAS 1.4 header, VLR/EVLR descriptors, COPC info, WKT, and raw Extra Bytes metadata. |
+| COPC hierarchy and range selection | Native TypeScript hierarchy-page parsing, lazy child-page traversal, octree bounds, and node range selection. |
+| Node range fetching | Selected node ranges are fetched incrementally without downloading unrelated nodes or the complete file. |
 | Point decoding | Supported for COPC nodes using LAZ 1.4 PDRF 6, 7, or 8. |
-| Render attribute output | The TypeScript path decodes positions and RGB directly into typed Arrow attributes, skipping intensity/classification layers and avoiding their arrays, an intermediate raw-record buffer, and a second point traversal. |
-| Progressive point output while range data arrives | Not implemented. |
-| COPC writer | Implemented in `@loaders.gl/copc` as `COPCWriter`; it emits range-readable COPC 1.0-compatible output. |
+| Render attribute output | Positions, RGB, NIR, intensity, classification, GPS time, scan angle, and point source ID decode directly into Arrow buffers. Unrequested layers are skipped. |
+| Progressive point output while range data arrives | Implemented at layered LAZ readiness boundaries. Position-only rows can arrive before RGB and NIR layers. |
+| COPC writer | Experimental `COPCWriter` output includes range-readable LAZ node chunks, a variable chunk table, COPC info, and a hierarchy EVLR. |
 
 ## Version History
 
@@ -250,5 +251,3 @@ The TypeScript implementation should be completed in stages, with parity tests a
 | 5 | Expose waveform payload access and typed Extra Bytes. | `WAVEFORM` packet-reference rows and raw `EXTRA_BYTES` payloads are typed Arrow output; internal EVLR or external WDP sample payloads and descriptor-level Extra Bytes conversion remain follow-up work. |
 | 6 | Implement LAZ file writing. | `LASWriter` emits LASzip VLRs, layered chunks, and fixed-size chunk tables that established decoders can read. |
 | 7 | Complete stateful feedable LAZ streaming. | Replace bounded replay for legacy chunks with resumable arithmetic/item state, and stream layered chunks as soon as the field ranges needed for complete rows are available. |
-| 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |
-| 9 | Implement COPC writing. | `COPCWriter` emits valid COPC 1.0 with hierarchy pages, range-readable LAZ node chunks, and required VLRs. |

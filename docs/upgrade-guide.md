@@ -137,6 +137,8 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 
 `LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Import `LAZPerfLoader`, `LASCOPCLoader`, or `LAZRsLoader` explicitly when a compatibility loader is required.
 
+`COPCSourceLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
+
 ### SourceLoader migration examples
 
 Before, in 4.4:
