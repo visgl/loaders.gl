@@ -4,7 +4,6 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 <CopcDocsTabs active="writer" />
@@ -28,9 +27,11 @@ const arrayBuffer = await encode(pointCloud, COPCWriter, {
 
 ## Data Organization
 
-The writer first converts supported mesh attributes to LAS 1.4 point records, then assigns every point to exactly one octree level. Parent nodes retain a deterministic level-of-detail sample and remaining points are partitioned into child octants. Each point-bearing node is encoded as an independent LAZ chunk and listed in a single hierarchy EVLR.
+The writer first converts supported mesh attributes to LAS 1.4 point records, then assigns every point to exactly one octree level. Parent nodes retain a deterministic level-of-detail sample and remaining points are partitioned into child octants. Each point-bearing node is encoded as an independent LAZ chunk. The hierarchy EVLR is divided into range-readable pages, with absolute child-page references from each parent page.
 
-The writer emits PDRF 6, 7, or 8 with LASzip layered compressor 3, arithmetic coder 0, and item version 3. `POSITION` is required. `COLOR_0`, `intensity`, and `classification` are written when present; other LAS fields are zero-filled. A coordinate reference system is emitted only when `copc.wkt` is supplied.
+The writer emits PDRF 6, 7, or 8 with LASzip layered compressor 3, arithmetic coder 0, and item version 3. `POSITION` is required. Represented LAS attributes such as RGB, NIR, GPS time, intensity, classification, return fields, scanner metadata, and classification flags are written when present; missing fields are zero-filled. A coordinate reference system is emitted only when `copc.wkt` is supplied.
+
+Generated files are exercised through both the native TypeScript reader and the independent `copc` implementation. PDRF 6, 7, and 8 node chunks are covered, including NIR, GPS bounds, deep sparse octrees, and recursively range-loaded hierarchy pages.
 
 ## Options
 
@@ -38,9 +39,12 @@ The writer emits PDRF 6, 7, or 8 with LASzip layered compressor 3, arithmetic co
 | --- | --- | --- | --- |
 | `copc.nodePointLimit` | `number` | `50000` | Target maximum number of points retained at each octree node. A node at `maximumDepth` may exceed the target. |
 | `copc.maximumDepth` | `number` | `16` | Maximum octree depth, from 0 through 30. |
+| `copc.hierarchyPageDepth` | `number` | `3` | Number of octree levels represented in each hierarchy page. Smaller values produce more, smaller range requests. |
 | `copc.pointDataRecordFormat` | `6 \| 7 \| 8` | Derived | LAS 1.4 point layout. The default is 7 when `COLOR_0` is present and 6 otherwise. |
 | `copc.scale` | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate quantization scale factors. |
 | `copc.offset` | `[number, number, number]` | Data minimum | Coordinate quantization offsets. |
 | `copc.spacing` | `number` | Cube width divided by 128 | Root point spacing stored in the COPC info VLR. |
 | `copc.wkt` | `string` | - | Optional OGC WKT coordinate reference system. |
 | `copc.colorDepth` | `number \| string` | - | Declares the source color component depth. |
+
+The COPC info VLR records the finite minimum and maximum GPS times written to the point records. Inputs without finite GPS times use `[0, 0]`.

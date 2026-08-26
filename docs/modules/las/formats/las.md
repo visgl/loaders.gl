@@ -134,7 +134,7 @@ Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represente
 | Point decoding | Supported for COPC nodes using LAZ 1.4 PDRF 6, 7, or 8. |
 | Render attribute output | Positions, RGB, NIR, intensity, classification, GPS time, scan angle, and point source ID decode directly into Arrow buffers. Unrequested layers are skipped. |
 | Progressive point output while range data arrives | Implemented at layered LAZ readiness boundaries. Position-only rows can arrive before RGB and NIR layers. |
-| COPC writer | Experimental `COPCWriter` output includes range-readable LAZ node chunks, a variable chunk table, COPC info, and a hierarchy EVLR. |
+| COPC writer | `COPCWriter` output includes range-readable LAZ node chunks, a variable chunk table, COPC info, and a paged hierarchy EVLR. |
 
 ## Version History
 

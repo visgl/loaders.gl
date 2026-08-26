@@ -446,6 +446,60 @@ test('COPCWriter#encodes range-readable octree nodes', async t => {
   t.end();
 });
 
+vitestTest('COPCWriter writes range-readable hierarchy pages and GPS bounds', async () => {
+  const mesh = createCOPCWriterMesh();
+  const arrayBuffer = encodeSync(mesh, COPCWriter, {
+    copc: {
+      nodePointLimit: 2,
+      maximumDepth: 6,
+      hierarchyPageDepth: 1,
+      pointDataRecordFormat: 7,
+      scale: [0.01, 0.01, 0.01]
+    }
+  });
+  const blob = new Blob([arrayBuffer]);
+  const ranges: Array<[number, number]> = [];
+  const getter = async (begin: number, end: number): Promise<Uint8Array> => {
+    ranges.push([begin, end]);
+    return new Uint8Array(await blob.slice(begin, end).arrayBuffer());
+  };
+  const copc = await openCOPC(getter);
+  const rootHierarchy = await loadCOPCHierarchyPage(getter, copc.info.rootHierarchyPage);
+  const hierarchy = await loadCompleteHierarchy(getter, copc.info.rootHierarchyPage);
+
+  expect(hierarchy.pageCount).toBeGreaterThan(1);
+  expect(Object.keys(hierarchy.nodes).length).toBeGreaterThan(1);
+  expect(Object.values(hierarchy.nodes).reduce((sum, node) => sum + node.pointCount, 0)).toBe(
+    mesh.attributes.POSITION.value.length / 3
+  );
+  expect(copc.info.gpsTimeRange).toEqual([1_000, 1_039]);
+  expect(ranges).toContainEqual([
+    copc.info.rootHierarchyPage.pageOffset,
+    copc.info.rootHierarchyPage.pageOffset + copc.info.rootHierarchyPage.pageLength
+  ]);
+
+  const boundarySource = COPCSourceLoader.createDataSource(blob, {});
+  await boundarySource.initialize();
+  const boundaryPageKey = Object.keys(rootHierarchy.pages)[0];
+  expect(boundaryPageKey).toBeTruthy();
+  const boundaryNodeIndex = boundaryPageKey.split('-').map(Number) as [
+    number,
+    number,
+    number,
+    number
+  ];
+  const boundaryNode = await boundarySource.getNode({nodeIndex: boundaryNodeIndex});
+  expect(boundaryNode?.pointCount).toBeGreaterThan(0);
+
+  const source = COPCSourceLoader.createDataSource(blob, {});
+  await source.initialize();
+  const pages = [];
+  for await (const page of source.loadHierarchyInBatches()) {
+    pages.push(page);
+  }
+  expect(pages).toHaveLength(hierarchy.pageCount);
+});
+
 test('COPCWriter#validates organization options', t => {
   const mesh = createCOPCWriterMesh();
   t.throws(
@@ -457,6 +511,11 @@ test('COPCWriter#validates organization options', t => {
     () => encodeSync(mesh, COPCWriter, {copc: {maximumDepth: 31}}),
     /invalid maximum depth/,
     'rejects octree depths outside Int32 key coordinates'
+  );
+  t.throws(
+    () => encodeSync(mesh, COPCWriter, {copc: {hierarchyPageDepth: 0}}),
+    /invalid hierarchy page depth/,
+    'rejects empty hierarchy pages'
   );
   t.end();
 });
@@ -484,6 +543,51 @@ test('COPCWriter#defaults to PDRF 6 without colors', async t => {
   t.end();
 });
 
+vitestTest('COPCWriter preserves PDRF 8 NIR values across paged nodes', async () => {
+  const baseMesh = createCOPCWriterMesh();
+  const pointCount = baseMesh.attributes.POSITION.value.length / 3;
+  const nir = Uint16Array.from({length: pointCount}, (_, index) => index * 101);
+  const attributes = {...baseMesh.attributes, nir: {value: nir, size: 1}};
+  const mesh = {
+    ...baseMesh,
+    attributes,
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
+  };
+  const arrayBuffer = encodeSync(mesh, COPCWriter, {
+    copc: {
+      nodePointLimit: 2,
+      hierarchyPageDepth: 1,
+      pointDataRecordFormat: 8,
+      scale: [0.01, 0.01, 0.01]
+    }
+  });
+  const getter = async (begin: number, end: number): Promise<Uint8Array> =>
+    new Uint8Array(arrayBuffer.slice(begin, end));
+  const copc = await openCOPC(getter);
+  const hierarchy = await loadCompleteHierarchy(getter, copc.info.rootHierarchyPage);
+  const decodedNir: number[] = [];
+
+  for (const node of Object.values(hierarchy.nodes)) {
+    const compressed = await loadCOPCNodeData(getter, node);
+    const pointData = decodeLAZChunk(compressed, {
+      pointCount: node.pointCount,
+      pointDataRecordFormat: 8,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    });
+    const dataView = new DataView(pointData.buffer, pointData.byteOffset, pointData.byteLength);
+    for (let pointIndex = 0; pointIndex < node.pointCount; pointIndex++) {
+      decodedNir.push(
+        dataView.getUint16(pointIndex * copc.header.pointDataRecordLength + 36, true)
+      );
+    }
+  }
+
+  expect(copc.header.pointDataRecordFormat).toBe(8);
+  expect(decodedNir.sort((left, right) => left - right)).toEqual(
+    Array.from(nir).sort((left, right) => left - right)
+  );
+});
+
 /** Returns the COPC fixture input for the active test runner. */
 async function createEllipsoidSourceData(): Promise<string | Blob> {
   return isBrowser ? await createEllipsoidBlob() : ELLIPSOID_FILE_PATH;
@@ -499,17 +603,20 @@ async function createEllipsoidBlob(): Promise<Blob> {
 function createCOPCWriterMesh() {
   const positions: number[] = [];
   const colors: number[] = [];
+  const gpsTimes: number[] = [];
   for (let z = 0; z < 2; z++) {
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 5; x++) {
         positions.push(x * 10 - 20, y * 8 - 12, z * 30 - 15);
         colors.push(x * 10, y * 20, z * 100);
+        gpsTimes.push(1_000 + gpsTimes.length);
       }
     }
   }
   const attributes = {
     POSITION: {value: new Float64Array(positions), size: 3},
-    COLOR_0: {value: new Uint16Array(colors), size: 3}
+    COLOR_0: {value: new Uint16Array(colors), size: 3},
+    gpsTime: {value: new Float64Array(gpsTimes), size: 1}
   };
   return {
     attributes,
@@ -517,6 +624,30 @@ function createCOPCWriterMesh() {
     mode: 0,
     schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
   };
+}
+
+/** Recursively load every hierarchy page through its declared byte range. */
+async function loadCompleteHierarchy(
+  getter: (begin: number, end: number) => Promise<Uint8Array>,
+  rootPage: {pageOffset: number; pageLength: number}
+): Promise<{
+  nodes: Record<string, {pointCount: number; pointDataOffset: number; pointDataLength: number}>;
+  pageCount: number;
+}> {
+  const nodes: Record<
+    string,
+    {pointCount: number; pointDataOffset: number; pointDataLength: number}
+  > = {};
+  const pending = [rootPage];
+  let pageCount = 0;
+  while (pending.length > 0) {
+    const page = pending.shift()!;
+    const hierarchy = await loadCOPCHierarchyPage(getter, page);
+    Object.assign(nodes, hierarchy.nodes);
+    pending.push(...Object.values(hierarchy.pages));
+    pageCount++;
+  }
+  return {nodes, pageCount};
 }
 
 /** Read dequantized positions from raw LAS records. */

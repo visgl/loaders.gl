@@ -25,6 +25,7 @@ const HIERARCHY_ENTRY_LENGTH = 32;
 const VARIABLE_LAZ_CHUNK_SIZE = 0xffffffff;
 const DEFAULT_NODE_POINT_LIMIT = 50_000;
 const DEFAULT_MAXIMUM_DEPTH = 16;
+const DEFAULT_HIERARCHY_PAGE_DEPTH = 3;
 
 /** Options for `COPCWriter`. */
 export type COPCWriterOptions = WriterOptions & {
@@ -33,6 +34,8 @@ export type COPCWriterOptions = WriterOptions & {
     nodePointLimit?: number;
     /** Maximum octree depth used when points remain spatially coincident. */
     maximumDepth?: number;
+    /** Number of octree levels represented by each hierarchy page. */
+    hierarchyPageDepth?: number;
     /** LAS point data record format. */
     pointDataRecordFormat?: 6 | 7 | 8;
     /** Coordinate scale factors used to quantize positions. */
@@ -66,7 +69,8 @@ export const COPCWriter = {
 function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions = {}): ArrayBuffer {
   const nodePointLimit = options.copc?.nodePointLimit ?? DEFAULT_NODE_POINT_LIMIT;
   const maximumDepth = options.copc?.maximumDepth ?? DEFAULT_MAXIMUM_DEPTH;
-  validateOptions(nodePointLimit, maximumDepth, options.copc?.spacing);
+  const hierarchyPageDepth = options.copc?.hierarchyPageDepth ?? DEFAULT_HIERARCHY_PAGE_DEPTH;
+  validateOptions(nodePointLimit, maximumDepth, hierarchyPageDepth, options.copc?.spacing);
 
   const rawLAS = encodeRawLAS(data, options);
   if (rawLAS.pointCount === 0) {
@@ -111,8 +115,8 @@ function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions 
   const chunkTableOffset = pointDataByteOffset;
   const evlrOffset = chunkTableOffset + 8 + chunkTablePayload.byteLength;
   const hierarchyOffset = evlrOffset + EVLR_HEADER_LENGTH;
-  const hierarchyPayload = encodeHierarchy(nodes);
-  const hierarchyEVLR = encodeEVLR('copc', 1000, 'COPC hierarchy', hierarchyPayload);
+  const hierarchy = encodeHierarchyPages(nodes, hierarchyOffset, hierarchyPageDepth);
+  const hierarchyEVLR = encodeEVLR('copc', 1000, 'COPC hierarchy', hierarchy.payload);
   const spacing =
     options.copc?.spacing ||
     Math.max((cube[3] - cube[0]) / 128, rawLAS.scale[0], rawLAS.scale[1], rawLAS.scale[2]);
@@ -120,7 +124,13 @@ function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions 
     'copc',
     1,
     'COPC info VLR',
-    encodeCOPCInfo(cube, spacing, hierarchyOffset, hierarchyPayload.byteLength)
+    encodeCOPCInfo(
+      cube,
+      spacing,
+      hierarchyOffset,
+      hierarchy.rootPageByteLength,
+      rawLAS.gpsTimeRange
+    )
   );
   const vlrs = [infoVLR, laszipVLR, ...(wktVLR ? [wktVLR] : [])];
   const arrayBuffer = new ArrayBuffer(evlrOffset + hierarchyEVLR.byteLength);
@@ -171,6 +181,8 @@ type RawLASData = {
   offset: [number, number, number];
   /** Data bounds as minimum and maximum coordinates. */
   bounds: Bounds3D;
+  /** Minimum and maximum GPS time stored in the point records. */
+  gpsTimeRange: [number, number];
 };
 
 /** Six-value axis-aligned 3D bounds. */
@@ -191,6 +203,20 @@ type COPCNode = {
   compressed: Uint8Array;
   /** Absolute file offset of the compressed chunk. */
   pointDataOffset: number;
+};
+
+/** One independently range-readable COPC hierarchy page. */
+type COPCHierarchyOutputPage = {
+  /** Key of the page's root node. */
+  key: COPCKey;
+  /** Point nodes encoded directly in this page. */
+  nodes: COPCNode[];
+  /** Descendant pages referenced by this page. */
+  children: COPCHierarchyOutputPage[];
+  /** Absolute file byte offset assigned during layout. */
+  byteOffset: number;
+  /** Encoded page byte length. */
+  byteLength: number;
 };
 
 /** State shared while recursively partitioning point indices. */
@@ -247,6 +273,7 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
   );
   const header = new Uint8Array(arrayBuffer, 0, LAS_1_4_HEADER_LENGTH).slice();
   writeBounds(new DataView(header.buffer), bounds);
+  const gpsTimeRange = calculateGpsTimeRange(pointData, pointCount, pointDataRecordLength);
   return {
     header,
     pointData,
@@ -255,8 +282,28 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
     pointDataRecordLength,
     scale,
     offset,
-    bounds
+    bounds,
+    gpsTimeRange
   };
+}
+
+/** Calculate the finite GPS time range stored by modern LAS point records. */
+function calculateGpsTimeRange(
+  pointData: Uint8Array,
+  pointCount: number,
+  pointDataRecordLength: number
+): [number, number] {
+  const dataView = new DataView(pointData.buffer, pointData.byteOffset, pointData.byteLength);
+  let minimum = Infinity;
+  let maximum = -Infinity;
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const gpsTime = dataView.getFloat64(pointIndex * pointDataRecordLength + 22, true);
+    if (Number.isFinite(gpsTime)) {
+      minimum = Math.min(minimum, gpsTime);
+      maximum = Math.max(maximum, gpsTime);
+    }
+  }
+  return minimum === Infinity ? [0, 0] : [minimum, maximum];
 }
 
 /** Compute bounds from the quantized coordinates stored in raw LAS records. */
@@ -448,21 +495,120 @@ function compressNodes(nodes: COPCNode[], rawLAS: RawLASData): void {
   }
 }
 
-/** Encode a single-page COPC hierarchy. */
-function encodeHierarchy(nodes: COPCNode[]): Uint8Array {
-  const sortedNodes = [...nodes].sort((left, right) => compareKeys(left.key, right.key));
-  const bytes = new Uint8Array(sortedNodes.length * HIERARCHY_ENTRY_LENGTH);
+/** Encode a hierarchy as a tree of independently range-readable pages. */
+function encodeHierarchyPages(
+  nodes: COPCNode[],
+  hierarchyOffset: number,
+  hierarchyPageDepth: number
+): {payload: Uint8Array; rootPageByteLength: number} {
+  const rootPage = createHierarchyPage(nodes, 0, hierarchyPageDepth);
+  const pages: COPCHierarchyOutputPage[] = [];
+  appendHierarchyPages(rootPage, pages);
+
+  let byteOffset = hierarchyOffset;
+  for (const page of pages) {
+    page.byteOffset = byteOffset;
+    page.byteLength = (page.nodes.length + page.children.length) * HIERARCHY_ENTRY_LENGTH;
+    byteOffset += page.byteLength;
+  }
+
+  const payload = new Uint8Array(byteOffset - hierarchyOffset);
+  for (const page of pages) {
+    payload.set(encodeHierarchyPage(page), page.byteOffset - hierarchyOffset);
+  }
+  return {payload, rootPageByteLength: rootPage.byteLength};
+}
+
+/** Partition one hierarchy subtree into a page and descendant pages. */
+function createHierarchyPage(
+  nodes: COPCNode[],
+  rootDepth: number,
+  hierarchyPageDepth: number
+): COPCHierarchyOutputPage {
+  const boundaryDepth = rootDepth + hierarchyPageDepth;
+  const pageNodes: COPCNode[] = [];
+  const childNodeGroups = new Map<string, {key: COPCKey; nodes: COPCNode[]}>();
+
+  for (const node of nodes) {
+    if (node.key[0] < boundaryDepth) {
+      pageNodes.push(node);
+      continue;
+    }
+    const childPageKey = getAncestorKey(node.key, boundaryDepth);
+    const childPageId = childPageKey.join('-');
+    let group = childNodeGroups.get(childPageId);
+    if (!group) {
+      group = {key: childPageKey, nodes: []};
+      childNodeGroups.set(childPageId, group);
+    }
+    group.nodes.push(node);
+  }
+
+  const childGroups = [...childNodeGroups.values()].sort((left, right) =>
+    compareKeys(left.key, right.key)
+  );
+  return {
+    key: getAncestorKey(nodes[0].key, rootDepth),
+    nodes: pageNodes.sort((left, right) => compareKeys(left.key, right.key)),
+    children: childGroups.map(group =>
+      createHierarchyPage(group.nodes, boundaryDepth, hierarchyPageDepth)
+    ),
+    byteOffset: 0,
+    byteLength: 0
+  };
+}
+
+/** Return the ancestor of an octree key at the requested depth. */
+function getAncestorKey(key: COPCKey, depth: number): COPCKey {
+  const shift = key[0] - depth;
+  const divisor = 2 ** shift;
+  return [
+    depth,
+    Math.floor(key[1] / divisor),
+    Math.floor(key[2] / divisor),
+    Math.floor(key[3] / divisor)
+  ];
+}
+
+/** Flatten hierarchy pages in deterministic root-first order. */
+function appendHierarchyPages(
+  page: COPCHierarchyOutputPage,
+  pages: COPCHierarchyOutputPage[]
+): void {
+  pages.push(page);
+  for (const child of page.children) {
+    appendHierarchyPages(child, pages);
+  }
+}
+
+/** Encode one hierarchy page, including references to descendant pages. */
+function encodeHierarchyPage(page: COPCHierarchyOutputPage): Uint8Array {
+  const entries: Array<
+    | {key: COPCKey; node: COPCNode; child?: never}
+    | {key: COPCKey; node?: never; child: COPCHierarchyOutputPage}
+  > = [
+    ...page.nodes.map(node => ({key: node.key, node})),
+    ...page.children.map(child => ({key: child.key, child}))
+  ];
+  entries.sort((left, right) => compareKeys(left.key, right.key));
+  const bytes = new Uint8Array(entries.length * HIERARCHY_ENTRY_LENGTH);
   const dataView = new DataView(bytes.buffer);
-  for (let nodeIndex = 0; nodeIndex < sortedNodes.length; nodeIndex++) {
-    const node = sortedNodes[nodeIndex];
-    const byteOffset = nodeIndex * HIERARCHY_ENTRY_LENGTH;
-    dataView.setInt32(byteOffset, node.key[0], true);
-    dataView.setInt32(byteOffset + 4, node.key[1], true);
-    dataView.setInt32(byteOffset + 8, node.key[2], true);
-    dataView.setInt32(byteOffset + 12, node.key[3], true);
-    writeUint64(dataView, byteOffset + 16, node.pointDataOffset);
-    dataView.setInt32(byteOffset + 24, node.compressed.byteLength, true);
-    dataView.setInt32(byteOffset + 28, node.pointIndices.length, true);
+  for (let entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+    const entry = entries[entryIndex];
+    const byteOffset = entryIndex * HIERARCHY_ENTRY_LENGTH;
+    dataView.setInt32(byteOffset, entry.key[0], true);
+    dataView.setInt32(byteOffset + 4, entry.key[1], true);
+    dataView.setInt32(byteOffset + 8, entry.key[2], true);
+    dataView.setInt32(byteOffset + 12, entry.key[3], true);
+    if (entry.node) {
+      writeUint64(dataView, byteOffset + 16, entry.node.pointDataOffset);
+      dataView.setInt32(byteOffset + 24, entry.node.compressed.byteLength, true);
+      dataView.setInt32(byteOffset + 28, entry.node.pointIndices.length, true);
+    } else {
+      writeUint64(dataView, byteOffset + 16, entry.child.byteOffset);
+      dataView.setInt32(byteOffset + 24, entry.child.byteLength, true);
+      dataView.setInt32(byteOffset + 28, -1, true);
+    }
   }
   return bytes;
 }
@@ -482,7 +628,8 @@ function encodeCOPCInfo(
   cube: Bounds3D,
   spacing: number,
   hierarchyOffset: number,
-  hierarchyByteLength: number
+  hierarchyByteLength: number,
+  gpsTimeRange: [number, number]
 ): Uint8Array {
   const bytes = new Uint8Array(COPC_INFO_PAYLOAD_LENGTH);
   const dataView = new DataView(bytes.buffer);
@@ -493,8 +640,8 @@ function encodeCOPCInfo(
   dataView.setFloat64(32, spacing, true);
   writeUint64(dataView, 40, hierarchyOffset);
   writeUint64(dataView, 48, hierarchyByteLength);
-  dataView.setFloat64(56, 0, true);
-  dataView.setFloat64(64, 0, true);
+  dataView.setFloat64(56, gpsTimeRange[0], true);
+  dataView.setFloat64(64, gpsTimeRange[1], true);
   return bytes;
 }
 
@@ -555,12 +702,20 @@ function createCube(bounds: Bounds3D, minimumWidth: number): Bounds3D {
 }
 
 /** Validate COPC organization options. */
-function validateOptions(nodePointLimit: number, maximumDepth: number, spacing?: number): void {
+function validateOptions(
+  nodePointLimit: number,
+  maximumDepth: number,
+  hierarchyPageDepth: number,
+  spacing?: number
+): void {
   if (!Number.isInteger(nodePointLimit) || nodePointLimit <= 0 || nodePointLimit > 0x7fffffff) {
     throw new Error(`COPCWriter: invalid node point limit ${nodePointLimit}`);
   }
   if (!Number.isInteger(maximumDepth) || maximumDepth < 0 || maximumDepth > 30) {
     throw new Error(`COPCWriter: invalid maximum depth ${maximumDepth}`);
+  }
+  if (!Number.isInteger(hierarchyPageDepth) || hierarchyPageDepth < 1 || hierarchyPageDepth > 30) {
+    throw new Error(`COPCWriter: invalid hierarchy page depth ${hierarchyPageDepth}`);
   }
   if (spacing !== undefined && (!Number.isFinite(spacing) || spacing <= 0)) {
     throw new Error(`COPCWriter: invalid spacing ${spacing}`);

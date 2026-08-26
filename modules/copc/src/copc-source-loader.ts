@@ -837,9 +837,9 @@ export class COPCTileSource
       return this._hierarchy.nodes[tileId];
     }
 
-    const parentKeys = this.getAncestorKeys(tileId);
-    for (const parentKey of parentKeys) {
-      await this.ensureHierarchyLoaded(parentKey);
+    const hierarchyKeys = [...this.getAncestorKeys(tileId).reverse(), tileId];
+    for (const hierarchyKey of hierarchyKeys) {
+      await this.ensureHierarchyLoaded(hierarchyKey);
       if (this._hierarchy.nodes[tileId]) {
         return this._hierarchy.nodes[tileId];
       }
