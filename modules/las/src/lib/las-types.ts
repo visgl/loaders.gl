@@ -80,6 +80,32 @@ export type LASWaveformPacketDescriptor = {
   digitizerOffset: number;
 };
 
+/** One resolved GeoTIFF GeoKey directory entry from LAS CRS metadata. */
+export type LASGeoTIFFKey = {
+  /** GeoTIFF key identifier. */
+  keyId: number;
+  /** TIFF tag containing the value, or zero when the value is inline. */
+  tiffTagLocation: number;
+  /** Number of values referenced by this key. */
+  count: number;
+  /** Inline value or offset into the referenced GeoTIFF parameter tag. */
+  valueOffset: number;
+  /** Resolved scalar, numeric array, or ASCII value when its source tag is available. */
+  value?: number | number[] | string;
+};
+
+/** Parsed GeoTIFF GeoKey directory header and entries. */
+export type LASGeoTIFFKeyDirectory = {
+  /** GeoKey directory format version. */
+  version: number;
+  /** GeoKey revision. */
+  keyRevision: number;
+  /** GeoKey minor revision. */
+  minorRevision: number;
+  /** Resolved GeoKey entries. */
+  entries: LASGeoTIFFKey[];
+};
+
 /** Typed metadata parsed from a LAS file. */
 export type LASMetadata = {
   /** File source id from the public header. */
@@ -128,6 +154,8 @@ export type LASMetadata = {
     doubles?: Float64Array;
     /** GeoAsciiParamsTag payload. */
     ascii?: string;
+    /** Parsed and resolved GeoKey directory entries. */
+    keyDirectory?: LASGeoTIFFKeyDirectory;
   };
   /** Extra Bytes descriptors parsed from the Extra Bytes VLR. */
   extraBytes: LASExtraBytesDescriptor[];

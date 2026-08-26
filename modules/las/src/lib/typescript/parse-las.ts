@@ -6,10 +6,13 @@ import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/schema';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import {
   BinaryChunkReader,
+  createLAZChunkDecoder,
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
   decodeLAZChunkTable,
   getLAZChunkByteLength,
+  getLAZChunkDeclaredByteLength,
+  getLAZChunkHeaderByteLength,
   NeedsMoreData
 } from '@loaders.gl/loader-utils';
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
@@ -23,6 +26,7 @@ import {
 } from '../las-extra-bytes';
 import type {
   LASExtendedVariableLengthRecord,
+  LASGeoTIFFKey,
   LASHeader,
   LASMetadata,
   LASVariableLengthRecord,
@@ -701,17 +705,35 @@ async function* parsePendingLAZFileInArrowBatches(
   while (sourcePointIndex < header.pointsCount) {
     const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
     const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
-    const chunkByteLength = await readLAZChunkByteLengthFromReader(reader, inputIterator, metadata);
-    const compressedChunk = reader.readBytes(chunkByteLength);
+    const supportsProgressivePointData =
+      header.pointsFormatId >= 6 &&
+      header.pointsFormatId <= 8 &&
+      !state.waveforms &&
+      !state.typedExtraBytes;
 
-    for (const batch of appendDecodedLAZChunkToPointDataBatches(
-      compressedChunk,
-      metadata,
-      outputHeader,
-      state,
-      options
-    )) {
-      yield batch;
+    if (supportsProgressivePointData) {
+      yield* appendProgressiveLAZChunkToPointDataBatches(
+        reader,
+        inputIterator,
+        metadata,
+        outputHeader,
+        state,
+        options
+      );
+    } else {
+      const chunkByteLength = await readLAZChunkByteLengthFromReader(
+        reader,
+        inputIterator,
+        metadata
+      );
+      const compressedChunk = reader.readBytes(chunkByteLength);
+      yield* appendDecodedLAZChunkToPointDataBatches(
+        compressedChunk,
+        metadata,
+        outputHeader,
+        state,
+        options
+      );
     }
 
     sourcePointIndex += chunkPointCount;
@@ -720,6 +742,75 @@ async function* parsePendingLAZFileInArrowBatches(
   const finalBatch = flushPointDataBatch(outputHeader, state, options);
   if (finalBatch) {
     yield finalBatch;
+  }
+}
+
+/** Feed one layered LAZ chunk and yield requested Arrow rows before its trailing layers arrive. */
+async function* appendProgressiveLAZChunkToPointDataBatches(
+  reader: BinaryChunkReader,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
+  metadata: LAZChunkMetadata,
+  header: LASHeader,
+  state: PointDataBatchState,
+  options: LASLoaderOptions
+): AsyncIterable<LASArrowTable> {
+  const headerByteLength = getLAZChunkHeaderByteLength(metadata);
+  await readUntilAvailable(
+    reader,
+    inputIterator,
+    headerByteLength,
+    'LASLoader: incomplete layered LAZ chunk header'
+  );
+  const compressedHeader = reader.readBytes(headerByteLength);
+  const chunkByteLength = getLAZChunkDeclaredByteLength(compressedHeader, metadata);
+  const decoder = createLAZChunkDecoder(metadata);
+  decoder.feed(compressedHeader);
+  let fedByteLength = headerByteLength;
+
+  while (fedByteLength < chunkByteLength) {
+    yield* readAvailableLAZPointDataBatches(decoder, header, state, options);
+    if (reader.getAvailableByteLength() === 0) {
+      const next = await inputIterator.next();
+      if (next.done) {
+        throw new NeedsMoreData('LASLoader: incomplete layered LAZ chunk payload');
+      }
+      reader.write(next.value);
+    }
+    const byteLength = Math.min(reader.getAvailableByteLength(), chunkByteLength - fedByteLength);
+    decoder.feed(reader.readBytes(byteLength));
+    fedByteLength += byteLength;
+  }
+
+  decoder.close();
+  yield* readAvailableLAZPointDataBatches(decoder, header, state, options);
+  if (decoder.remainingPointCount !== 0) {
+    throw new NeedsMoreData(
+      `LASLoader: layered LAZ chunk produced ${metadata.pointCount - decoder.remainingPointCount} of ${metadata.pointCount} points`
+    );
+  }
+}
+
+/** Drain all currently decodable rows from one feedable layered LAZ chunk. */
+function* readAvailableLAZPointDataBatches(
+  decoder: ReturnType<typeof createLAZChunkDecoder>,
+  header: LASHeader,
+  state: PointDataBatchState,
+  options: LASLoaderOptions
+): Iterable<LASArrowTable> {
+  while (decoder.remainingPointCount > 0) {
+    const batchRemainingPointCount = state.batchCapacity - state.batchPointCount;
+    state.target.pointOffset = state.batchPointCount;
+    const pointsDecoded = decoder.readPointDataBatch(state.target, batchRemainingPointCount);
+    if (!pointsDecoded) {
+      return;
+    }
+    state.batchPointCount += pointsDecoded;
+    if (state.batchPointCount === state.batchCapacity) {
+      const batch = flushPointDataBatch(header, state, options);
+      if (batch) {
+        yield batch;
+      }
+    }
   }
 }
 
@@ -930,6 +1021,7 @@ function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASM
   )) {
     parseTypedLASMetadataRecord(record, metadata);
   }
+  resolveLASGeoTIFFKeyDirectory(metadata);
   return metadata;
 }
 
@@ -1020,6 +1112,69 @@ function parseTypedLASMetadataRecord(
   } else if (record.userId === 'LASF_Projection' && record.recordId === 34737) {
     metadata.geotiff = {...metadata.geotiff, ascii: decodeLASString(data)};
   }
+}
+
+/** Resolve GeoKey directory entries against their companion LAS GeoTIFF records. */
+function resolveLASGeoTIFFKeyDirectory(metadata: LASMetadata): void {
+  const geotiff = metadata.geotiff;
+  const keys = geotiff?.keys;
+  if (!geotiff || !keys || keys.length < 4) {
+    return;
+  }
+  const declaredEntryCount = keys[3];
+  if (keys.length < 4 + declaredEntryCount * 4) {
+    return;
+  }
+  const entries: LASGeoTIFFKey[] = [];
+  for (let entryIndex = 0; entryIndex < declaredEntryCount; entryIndex++) {
+    const entryOffset = 4 + entryIndex * 4;
+    const entry: LASGeoTIFFKey = {
+      keyId: keys[entryOffset],
+      tiffTagLocation: keys[entryOffset + 1],
+      count: keys[entryOffset + 2],
+      valueOffset: keys[entryOffset + 3]
+    };
+    entry.value = resolveLASGeoTIFFKeyValue(entry, geotiff);
+    if (entry.value === undefined) {
+      delete entry.value;
+    }
+    entries.push(entry);
+  }
+  geotiff.keyDirectory = {
+    version: keys[0],
+    keyRevision: keys[1],
+    minorRevision: keys[2],
+    entries
+  };
+}
+
+/** Resolve one GeoKey value from its TIFF-tag location. */
+function resolveLASGeoTIFFKeyValue(
+  entry: LASGeoTIFFKey,
+  geotiff: NonNullable<LASMetadata['geotiff']>
+): number | number[] | string | undefined {
+  if (entry.tiffTagLocation === 0) {
+    return entry.valueOffset;
+  }
+  if (entry.tiffTagLocation === 34735 && geotiff.keys) {
+    const values = geotiff.keys.slice(entry.valueOffset, entry.valueOffset + entry.count);
+    return values.length === entry.count ? Array.from(values) : undefined;
+  }
+  if (entry.tiffTagLocation === 34736 && geotiff.doubles) {
+    const values = geotiff.doubles.slice(entry.valueOffset, entry.valueOffset + entry.count);
+    if (values.length !== entry.count) {
+      return undefined;
+    }
+    return entry.count === 1 ? values[0] : Array.from(values);
+  }
+  if (entry.tiffTagLocation === 34737 && geotiff.ascii !== undefined) {
+    const end = entry.valueOffset + entry.count;
+    if (end > geotiff.ascii.length) {
+      return undefined;
+    }
+    return geotiff.ascii.slice(entry.valueOffset, end).replace(/\|$/, '');
+  }
+  return undefined;
 }
 
 function parseLASWaveformDescriptor(

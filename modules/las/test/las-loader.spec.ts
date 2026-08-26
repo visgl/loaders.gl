@@ -228,6 +228,31 @@ test('LASLoader#parseInBatches preserves selected columns across chunked PDRF 7 
   expect(streamedColumns.classification).toEqual(getArrowColumnValues(expected, 'classification'));
 });
 
+test('LASLoader#parseInBatches yields PDRF 7 rows before the compressed chunk tail arrives', async () => {
+  const lazArrayBuffer = await fetchFile(PDRF_7_LAZ_URL).then(response => response.arrayBuffer());
+  const chunks = splitArrayBuffer(lazArrayBuffer, 257);
+  let consumedChunkCount = 0;
+  async function* trackConsumedChunks(): AsyncIterable<ArrayBuffer> {
+    for (const chunk of chunks) {
+      consumedChunkCount++;
+      yield chunk;
+    }
+  }
+
+  const batches = await parseInBatches(trackConsumedChunks(), LASLoader, {
+    batchSize: 127,
+    las: {shape: 'arrow-table', columns: ['POSITION', 'classification']},
+    core: {worker: false}
+  });
+  const iterator = (batches as AsyncIterable<MeshArrowTable>)[Symbol.asyncIterator]();
+  const firstBatch = await iterator.next();
+
+  expect(firstBatch.done).toBe(false);
+  expect(firstBatch.value?.data.numRows).toBe(127);
+  expect(consumedChunkCount).toBeLessThan(chunks.length);
+  await iterator.return?.();
+});
+
 test('LASLoader#columns decodes GPS time and NIR for PDRF 8', async () => {
   const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
     fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
@@ -608,9 +633,13 @@ test('LASLoader#columns enables typed Extra Bytes when columns are omitted', asy
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   const wktMathTransform = new TextEncoder().encode('PARAM_MT["transform"]');
   const wktCoordinateSystem = new TextEncoder().encode('GEOGCS["coordinate-system"]');
-  const geoKeyDirectory = new Uint8Array(8);
-  new DataView(geoKeyDirectory.buffer).setUint16(0, 1, true);
-  new DataView(geoKeyDirectory.buffer).setUint16(2, 1, true);
+  const geoKeyDirectory = new Uint8Array(32);
+  const geoKeyView = new DataView(geoKeyDirectory.buffer);
+  for (const [index, value] of [
+    1, 1, 0, 3, 1024, 0, 1, 1, 2057, 34736, 1, 0, 1026, 34737, 7, 0
+  ].entries()) {
+    geoKeyView.setUint16(index * 2, value, true);
+  }
   const geoDoubleParameters = new ArrayBuffer(8);
   new DataView(geoDoubleParameters).setFloat64(0, 4326, true);
   const geoAsciiParameters = new TextEncoder().encode('WGS 84|');
@@ -656,9 +685,21 @@ test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
   expect(metadata.projectId).toBe('12345678-1234-5678-9abcdef012345678');
   expect(metadata.wkt).toBe('GEOGCS["coordinate-system"]');
   expect(metadata.wktMathTransform).toBe('PARAM_MT["transform"]');
-  expect(metadata.geotiff?.keys).toEqual(new Uint16Array([1, 1, 0, 0]));
+  expect(metadata.geotiff?.keys).toEqual(
+    new Uint16Array([1, 1, 0, 3, 1024, 0, 1, 1, 2057, 34736, 1, 0, 1026, 34737, 7, 0])
+  );
   expect(metadata.geotiff?.doubles).toEqual(new Float64Array([4326]));
   expect(metadata.geotiff?.ascii).toBe('WGS 84|');
+  expect(metadata.geotiff?.keyDirectory).toEqual({
+    version: 1,
+    keyRevision: 1,
+    minorRevision: 0,
+    entries: [
+      {keyId: 1024, tiffTagLocation: 0, count: 1, valueOffset: 1, value: 1},
+      {keyId: 2057, tiffTagLocation: 34736, count: 1, valueOffset: 0, value: 4326},
+      {keyId: 1026, tiffTagLocation: 34737, count: 7, valueOffset: 0, value: 'WGS 84'}
+    ]
+  });
   expect(metadata.waveformPacketDescriptors[0]).toMatchObject({
     bitsPerSample: 16,
     numberOfSamples: 128,

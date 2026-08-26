@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {decodeLAZChunkTable, NeedsMoreData} from '@loaders.gl/loader-utils';
+import {
+  decodeLAZChunkTable,
+  encodeLAZChunk,
+  getLAZChunkDeclaredByteLength,
+  getLAZChunkHeaderByteLength,
+  NeedsMoreData
+} from '@loaders.gl/loader-utils';
 
 const FIXED_CHUNK_TABLE = new Uint8Array([107, 237, 189, 84, 131, 215, 0, 0, 0]);
 const VARIABLE_CHUNK_TABLE = new Uint8Array([
@@ -56,4 +62,40 @@ test('decodeLAZChunkTable rejects truncated arithmetic input', () => {
       variable: true
     })
   ).toThrowError(NeedsMoreData);
+});
+
+test('layered LAZ chunk framing is available before layer payloads', () => {
+  const metadata = {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 36,
+    pointCount: 2,
+    point14ItemVersion: 3 as const,
+    rgb14ItemVersion: 3 as const,
+    byte14ItemVersion: 3 as const
+  };
+  const rawPointData = new Uint8Array(metadata.pointDataRecordLength * metadata.pointCount);
+  const dataView = new DataView(rawPointData.buffer);
+  for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+    const pointOffset = pointIndex * metadata.pointDataRecordLength;
+    dataView.setInt32(pointOffset, pointIndex, true);
+    dataView.setInt32(pointOffset + 4, pointIndex * 2, true);
+    dataView.setInt32(pointOffset + 8, pointIndex * 3, true);
+    dataView.setUint8(pointOffset + 14, 0x11);
+    dataView.setFloat64(pointOffset + 22, pointIndex, true);
+  }
+  const compressed = encodeLAZChunk(rawPointData, metadata);
+  const headerByteLength = getLAZChunkHeaderByteLength(metadata);
+  const padded = new Uint8Array(headerByteLength + 8);
+  padded.set(compressed.subarray(0, headerByteLength), 4);
+
+  expect(getLAZChunkDeclaredByteLength(padded.subarray(4, 4 + headerByteLength), metadata)).toBe(
+    compressed.byteLength
+  );
+  expect(() => getLAZChunkDeclaredByteLength(compressed.subarray(0, 8), metadata)).toThrowError(
+    NeedsMoreData
+  );
+  expect(getLAZChunkHeaderByteLength({...metadata, pointDataRecordFormat: 3})).toBe(40);
+  expect(() =>
+    getLAZChunkDeclaredByteLength(compressed, {...metadata, pointDataRecordFormat: 3})
+  ).toThrowError(/Legacy LAZ chunk byte length is not self-describing/);
 });

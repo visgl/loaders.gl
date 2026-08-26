@@ -34,7 +34,9 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
   5: 63,
   6: 30,
   7: 36,
-  8: 38
+  8: 38,
+  9: 59,
+  10: 67
 };
 
 /** Description of a typed mesh attribute stored in LAS Extra Bytes. */
@@ -56,7 +58,7 @@ export type LASWriterOptions = WriterOptions & {
     /** LAS file version to write. LAS 1.5 writing is intentionally not supported. */
     version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
     /** LAS point data record format to write. */
-    pointDataRecordFormat?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+    pointDataRecordFormat?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     /** Coordinate scale factors used to quantize positions into LAS integer coordinates. */
     scale?: [number, number, number];
     /** Coordinate offsets used to quantize positions into LAS integer coordinates. */
@@ -489,9 +491,9 @@ function validateLAZOptions(
   if (pointDataRecordFormat >= 6 && version !== '1.4') {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![0, 1, 2, 3, 4, 5, 6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output currently supports point data record formats 0-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0-10; received ${pointDataRecordFormat}`
     );
   }
   if (
@@ -659,8 +661,7 @@ function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void 
     'wavePacketDescriptorIndex',
     'wavePacketOffset',
     'wavePacketSize',
-    'wavePacketReturnPoint',
-    'wavePacketVector'
+    'wavePacketReturnPoint'
   ];
   for (const attributeName of scalarAttributeNames) {
     const attribute = mesh.attributes[attributeName];
@@ -858,32 +859,7 @@ function writePointRecord(
     }
     if (pointDataRecordFormat === 4 || pointDataRecordFormat === 5) {
       const waveformOffset = pointDataRecordFormat === 4 ? 28 : 34;
-      dataView.setUint8(
-        pointOffset + waveformOffset,
-        getUInt8Attribute(attributes.waveformDescriptorAttribute, vertexIndex)
-      );
-      dataView.setBigUint64(
-        pointOffset + waveformOffset + 1,
-        getBigUint64Attribute(attributes.waveformOffsetAttribute, vertexIndex),
-        true
-      );
-      dataView.setUint32(
-        pointOffset + waveformOffset + 9,
-        getUInt32Attribute(attributes.waveformSizeAttribute, vertexIndex),
-        true
-      );
-      dataView.setFloat32(
-        pointOffset + waveformOffset + 13,
-        getAttributeValue(attributes.waveformReturnPointAttribute, vertexIndex),
-        true
-      );
-      for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
-        dataView.setFloat32(
-          pointOffset + waveformOffset + 17 + componentIndex * 4,
-          getComponent(attributes.waveformVectorAttribute, vertexIndex, componentIndex),
-          true
-        );
-      }
+      writeWaveformPacket(dataView, pointOffset + waveformOffset, vertexIndex, attributes);
     }
   } else {
     const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 0x0f;
@@ -924,6 +900,10 @@ function writePointRecord(
       getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
       true
     );
+    if (pointDataRecordFormat === 9 || pointDataRecordFormat === 10) {
+      const waveformOffset = pointDataRecordFormat === 9 ? 30 : 38;
+      writeWaveformPacket(dataView, pointOffset + waveformOffset, vertexIndex, attributes);
+    }
   }
 
   writePointColor(
@@ -933,7 +913,7 @@ function writePointRecord(
     pointDataRecordFormat,
     attributes.colorAttribute
   );
-  if (pointDataRecordFormat === 8) {
+  if (pointDataRecordFormat === 8 || pointDataRecordFormat === 10) {
     dataView.setUint16(
       pointOffset + 36,
       getUInt16Attribute(attributes.nirAttribute, vertexIndex),
@@ -947,6 +927,47 @@ function writePointRecord(
     basePointDataRecordLength,
     attributes.extraByteFields
   );
+}
+
+/** Write one 29-byte LAS waveform packet reference. */
+function writeWaveformPacket(
+  dataView: DataView,
+  byteOffset: number,
+  vertexIndex: number,
+  attributes: {
+    waveformDescriptorAttribute?: MeshAttribute;
+    waveformOffsetAttribute?: MeshAttribute;
+    waveformSizeAttribute?: MeshAttribute;
+    waveformReturnPointAttribute?: MeshAttribute;
+    waveformVectorAttribute?: MeshAttribute;
+  }
+): void {
+  dataView.setUint8(
+    byteOffset,
+    getUInt8Attribute(attributes.waveformDescriptorAttribute, vertexIndex)
+  );
+  dataView.setBigUint64(
+    byteOffset + 1,
+    getBigUint64Attribute(attributes.waveformOffsetAttribute, vertexIndex),
+    true
+  );
+  dataView.setUint32(
+    byteOffset + 9,
+    getUInt32Attribute(attributes.waveformSizeAttribute, vertexIndex),
+    true
+  );
+  dataView.setFloat32(
+    byteOffset + 13,
+    getAttributeValue(attributes.waveformReturnPointAttribute, vertexIndex),
+    true
+  );
+  for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+    dataView.setFloat32(
+      byteOffset + 17 + componentIndex * 4,
+      getComponent(attributes.waveformVectorAttribute, vertexIndex, componentIndex),
+      true
+    );
+  }
 }
 
 /** Write configured Extra Bytes values into one raw LAS point record. */
@@ -1052,6 +1073,7 @@ function getColorOffset(pointDataRecordFormat: number): number {
       return 57;
     case 7:
     case 8:
+    case 10:
       return 30;
     default:
       return -1;

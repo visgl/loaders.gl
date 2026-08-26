@@ -13,6 +13,8 @@ export {LASWriter} from './las-writer';
 export type {
   LASExtendedVariableLengthRecord,
   LASExtraBytesDescriptor,
+  LASGeoTIFFKey,
+  LASGeoTIFFKeyDirectory,
   LASHeader,
   LASMetadata,
   LASVariableLengthRecord,

@@ -445,6 +445,90 @@ test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
   t.end();
 });
 
+test('LASWriter#encodes waveform PDRF 9 and 10 LAZ containers', async t => {
+  const waveformAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3},
+    nir: {value: new Uint16Array([1234]), size: 1},
+    wavePacketDescriptorIndex: {value: new Uint8Array([7]), size: 1},
+    wavePacketOffset: {value: new Float64Array([123456]), size: 1},
+    wavePacketSize: {value: new Uint32Array([4096]), size: 1},
+    wavePacketReturnPoint: {value: new Float32Array([0.25]), size: 1},
+    wavePacketVector: {value: new Float32Array([1.5, -2.5, 3.5]), size: 3}
+  };
+  const waveformMesh = {
+    attributes: waveformAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(waveformAttributes, {topology: 'point-list', mode: '0'})
+  };
+
+  for (const pointDataRecordFormat of [9, 10] as const) {
+    const arrayBuffer = await encode(waveformMesh, LASWriter, {
+      las: {format: 'laz', pointDataRecordFormat, chunkSize: 1}
+    });
+    const dataView = new DataView(arrayBuffer);
+    const pointDataOffset = dataView.getUint32(96, true);
+    const chunkTableOffset = readUint64(dataView, pointDataOffset);
+    const pointDataRecordLength = pointDataRecordFormat === 9 ? 59 : 67;
+    const decoded = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+      pointDataRecordFormat,
+      pointDataRecordLength,
+      pointCount: 1,
+      point14ItemVersion: 3,
+      rgb14ItemVersion: 3,
+      wavePacketItemVersion: 3,
+      byte14ItemVersion: 3
+    });
+    const decodedView = new DataView(decoded.buffer, decoded.byteOffset, decoded.byteLength);
+    const waveformOffset = pointDataRecordFormat === 9 ? 30 : 38;
+    const uncompressed = await encode(waveformMesh, LASWriter, {
+      las: {format: 'las', pointDataRecordFormat}
+    });
+    const uncompressedDataView = new DataView(uncompressed);
+    const uncompressedPointOffset = uncompressedDataView.getUint32(96, true);
+
+    t.equal(
+      dataView.getUint8(104),
+      0x80 | pointDataRecordFormat,
+      `writes PDRF ${pointDataRecordFormat}`
+    );
+    t.equal(
+      dataView.getUint16(105, true),
+      pointDataRecordLength,
+      'writes the waveform record length'
+    );
+    t.equal(decodedView.getUint8(waveformOffset), 7, 'preserves the waveform descriptor index');
+    t.equal(
+      decodedView.getBigUint64(waveformOffset + 1, true),
+      123456n,
+      'preserves the waveform offset'
+    );
+    t.equal(decodedView.getUint32(waveformOffset + 9, true), 4096, 'preserves the waveform size');
+    t.equal(
+      decodedView.getFloat32(waveformOffset + 13, true),
+      0.25,
+      'preserves the return location'
+    );
+    t.deepEqual(
+      [0, 1, 2].map(componentIndex =>
+        decodedView.getFloat32(waveformOffset + 17 + componentIndex * 4, true)
+      ),
+      [1.5, -2.5, 3.5],
+      'preserves the waveform vector'
+    );
+    t.deepEqual(
+      decoded,
+      new Uint8Array(uncompressed, uncompressedPointOffset, pointDataRecordLength),
+      `PDRF ${pointDataRecordFormat} compressed point bytes match uncompressed LAS`
+    );
+    if (pointDataRecordFormat === 10) {
+      t.equal(decodedView.getUint16(36, true), 1234, 'PDRF 10 preserves NIR');
+    }
+  }
+  t.end();
+});
+
 test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
   const extraAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
