@@ -8,6 +8,7 @@ import {ArrayType} from '@loaders.gl/schema';
 import {ParquetRowGroup, ParquetColumnChunk, ParquetField, ParquetRow} from './declare';
 import {ParquetSchema} from './schema';
 import * as Types from './types';
+import {decodeVariant} from './variant';
 
 export {ParquetRowGroup};
 
@@ -218,7 +219,56 @@ export function materializeRows(schema: ParquetSchema, rowGroup: ParquetRowGroup
       materializeColumnAsRows(schema, columnData, key, rows);
     }
   }
+  decodeVariantFields(schema.fields, rows);
   return rows;
+}
+
+/** Decodes complete unshredded VARIANT groups after their binary child columns are materialized. */
+function decodeVariantFields(fields: Record<string, ParquetField>, records: unknown[]): void {
+  for (const field of Object.values(fields)) {
+    if (field.logicalType?.type === 'VARIANT') {
+      for (const record of records) {
+        if (record && typeof record === 'object') {
+          const row = record as Record<string, unknown>;
+          row[field.name] = decodeVariantRecord(row[field.name]);
+        }
+      }
+    } else if (field.fields) {
+      for (const record of records) {
+        if (record && typeof record === 'object') {
+          decodeVariantFields(field.fields, getNestedRecords(record, field.name));
+        }
+      }
+    }
+  }
+}
+
+/** Recursively decodes one materialized Variant group, preserving shredded values as records. */
+function decodeVariantRecord(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(decodeVariantRecord);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  const metadata = record.metadata;
+  const variantValue = record.value;
+  if (isByteArray(metadata) && isByteArray(variantValue)) {
+    return decodeVariant(metadata, variantValue);
+  }
+  return value;
+}
+
+/** Finds nested records while preserving repeated group values. */
+function getNestedRecords(record: object, fieldName: string): unknown[] {
+  const value = Reflect.get(record, fieldName);
+  return Array.isArray(value) ? value : value && typeof value === 'object' ? [value] : [];
+}
+
+/** Identifies binary values emitted by Parquet primitive materialization. */
+function isByteArray(value: unknown): value is ArrayBuffer | ArrayBufferView {
+  return value instanceof ArrayBuffer || ArrayBuffer.isView(value);
 }
 
 /** Populate record fields for one column */
