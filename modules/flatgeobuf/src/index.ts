@@ -10,6 +10,7 @@ export {FlatGeobufLoader} from './flatgeobuf-loader';
 
 export type {
   FlatGeobufReadOptions,
+  FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
 } from './flatgeobuf-source-loader';
 export {

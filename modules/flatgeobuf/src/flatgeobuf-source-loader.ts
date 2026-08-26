@@ -3,8 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
-import type {CoreAPI, DataSourceOptions, GetFeaturesParameters, SourceLoader, VectorSource, VectorSourceData, VectorSourceLayer, VectorSourceMetadata} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  DataSourceOptions,
+  GetFeaturesParameters,
+  ScanColumnRole,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  SourceLoader,
+  TableQueryExplain,
+  VectorSource,
+  VectorSourceData,
+  VectorSourceLayer,
+  VectorSourceMetadata
+} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, DataSource, explainTableQuery} from '@loaders.gl/loader-utils';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,
@@ -27,7 +40,33 @@ export type FlatGeobufSourceLoaderOptions = DataSourceOptions & {flatgeobuf?: {f
 /** Portable query options accepted by `FlatGeobufVectorSource.query()`. */
 export type FlatGeobufReadOptions = FlatGeobufQueryOptions;
 
-type HeaderInfo = {arrayBuffer: ArrayBuffer; header: FlatGeobufHeader; schema: Schema; metadata: VectorSourceMetadata; layerName: string};
+/** Footer-free explanation of a FlatGeobuf portable query. */
+export type FlatGeobufSourceExplain = TableQueryExplain &
+  Readonly<{
+    /** Source discriminator for format-specific explain consumers. */
+    source: 'flatgeobuf';
+    /** Packed R-tree bounds planning performed before feature decoding. */
+    spatial: Readonly<{
+      /** Whether the query requests a bounding box. */
+      enabled: boolean;
+      /** FlatGeobuf packed R-tree support for bounding boxes. */
+      support: 'pushdown';
+      /** Requested bounds in the source coordinate reference system. */
+      bounds?: Readonly<{
+        minimum: readonly [number, number];
+        maximum: readonly [number, number];
+      }>;
+    }>;
+  }>;
+
+type HeaderInfo = {
+  arrayBuffer: ArrayBuffer;
+  header: FlatGeobufHeader;
+  schema: Schema;
+  querySchema: Schema;
+  metadata: VectorSourceMetadata;
+  layerName: string;
+};
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 /** Incrementally loads indexed FlatGeobuf data sources. */
@@ -62,6 +101,55 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
   async getMetadata(options: {formatSpecificMetadata?: boolean} = {}): Promise<VectorSourceMetadata> {
     const info = await this.getHeaderInfo();
     return options.formatSpecificMetadata ? {...info.metadata, formatSpecificMetadata: serializeHeader(info.header)} : info.metadata;
+  }
+
+  /** Discovers query-visible columns, spatial bounds, and capabilities without decoding features. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    assertNotAborted(options.signal);
+    const info = await this.getHeaderInfo();
+    assertNotAborted(options.signal);
+    return createScanQueryMetadata({
+      sourceType: 'flatgeobuf',
+      queryType: 'table',
+      name: info.layerName,
+      description: info.header.description,
+      schema: info.querySchema,
+      columnRoles: getColumnRoles(info.header),
+      capabilities: {table: this.tableQueryCapabilities, bounds: 'pushdown'},
+      spatial: {
+        bounds: getScanBoundsFromHeader(info.header),
+        coordinateReferenceSystems: getLayerCrs(info.header)
+      },
+      statistics: {rowCount: info.header.featuresCount}
+    });
+  }
+
+  /** Explains relational and packed R-tree work without decoding feature rows. */
+  async explain(options: FlatGeobufReadOptions = {}): Promise<FlatGeobufSourceExplain> {
+    assertNotAborted(options.signal);
+    const info = await this.getHeaderInfo();
+    assertNotAborted(options.signal);
+    const sourceColumnNames = info.querySchema.fields.map(field => field.name);
+    const explanation = explainTableQuery(
+      sourceColumnNames,
+      {columns: options.columns, predicate: options.predicate, limit: options.limit},
+      this.tableQueryCapabilities
+    );
+    const bounds = options.boundingBox
+      ? Object.freeze({
+          minimum: Object.freeze([...options.boundingBox[0]]) as readonly [number, number],
+          maximum: Object.freeze([...options.boundingBox[1]]) as readonly [number, number]
+        })
+      : undefined;
+    return Object.freeze({
+      ...explanation,
+      source: 'flatgeobuf' as const,
+      spatial: Object.freeze({
+        enabled: Boolean(bounds),
+        support: 'pushdown' as const,
+        bounds
+      })
+    });
   }
 
   /** Returns features in the requested format for one bounding box. */
@@ -102,8 +190,8 @@ async function loadHeaderInfo(url: string, fetch: FetchLike): Promise<HeaderInfo
   const arrayBuffer = await response.arrayBuffer();
   const header = readFlatGeobufHeader(arrayBuffer);
   const layerName = inferLayerName(url, header);
-  const arrowSchema = makeArrowSchema(header);
-  return {arrayBuffer, header, schema: {...arrowSchema, fields: arrowSchema.fields.slice(0, -1)}, layerName, metadata: buildMetadata(layerName, header)};
+  const querySchema = makeArrowSchema(header);
+  return {arrayBuffer, header, schema: {...querySchema, fields: querySchema.fields.slice(0, -1)}, querySchema, layerName, metadata: buildMetadata(layerName, header)};
 }
 
 function buildMetadata(layerName: string, header: FlatGeobufHeader): VectorSourceMetadata {
@@ -114,5 +202,7 @@ function buildMetadata(layerName: string, header: FlatGeobufHeader): VectorSourc
 function inferLayerName(url: string, header: FlatGeobufHeader): string { if (header.title) return header.title; const fileName = url.split(/[?#]/)[0].split('/').pop() || 'flatgeobuf'; return fileName.replace(/\.fgb$/i, '') || 'flatgeobuf'; }
 function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [header.crs?.codeString, header.crs?.wkt, Number.isFinite(header.crs?.code) ? `EPSG:${header.crs?.code}` : undefined].filter(Boolean).map(String); return values.length ? values : undefined; }
 function getBoundingBoxFromHeader(header: FlatGeobufHeader): [[number, number], [number, number]] | undefined { const envelope = header.envelope; return envelope && envelope.length >= 4 ? [[envelope[0], envelope[1]], [envelope[2], envelope[3]]] : undefined; }
+function getScanBoundsFromHeader(header: FlatGeobufHeader): {minimum: [number, number]; maximum: [number, number]} | undefined { const boundingBox = getBoundingBoxFromHeader(header); return boundingBox ? {minimum: boundingBox[0], maximum: boundingBox[1]} : undefined; }
+function getColumnRoles(header: FlatGeobufHeader): Record<string, ScanColumnRole> { const roles: Record<string, ScanColumnRole> = {geometry: 'geometry'}; for (const column of header.columns) if (column.primaryKey) roles[column.name] = 'identifier'; return roles; }
 function serializeHeader(header: FlatGeobufHeader): Record<string, unknown> { return {...header, envelope: header.envelope ? Array.from(header.envelope) : undefined}; }
 function assertNotAborted(signal?: AbortSignal): void { if (signal?.aborted) { const error = new Error('Aborted'); error.name = 'AbortError'; throw error; } }

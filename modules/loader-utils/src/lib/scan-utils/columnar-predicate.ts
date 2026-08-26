@@ -102,6 +102,25 @@ export function getColumnarPredicatePaths<ValueT, PropertyT extends ColumnarPred
   return [...paths.values()];
 }
 
+/** Returns unresolved named parameter names in their first-occurrence order. */
+export function getColumnarPredicateParameterNames<PropertyT extends ColumnarPredicateProperty>(
+  predicate: ParameterizedColumnarPredicate<PropertyT>
+): string[] {
+  const parameterNames = new Set<string>();
+  visitColumnarPredicate(predicate, child => {
+    if (child.op === 'and' || child.op === 'or' || child.op === 'not' || child.op === 'isNull') {
+      return;
+    }
+    const values = child.op === 'in' ? child.args[1] : [child.args[1]];
+    for (const value of values) {
+      if (isColumnarPredicateParameter(value)) {
+        parameterNames.add(value.parameter);
+      }
+    }
+  });
+  return [...parameterNames];
+}
+
 export function copyColumnarPredicate(predicate: ColumnarPredicate): ColumnarPredicate {
   if (predicate.op === 'and' || predicate.op === 'or') {
     return {op: predicate.op, args: predicate.args.map(copyColumnarPredicate)};

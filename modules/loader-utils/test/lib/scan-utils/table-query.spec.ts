@@ -7,6 +7,7 @@ import {describe, expect, test} from 'vitest';
 import {
   bindColumnarPredicateParameters,
   explainTableQuery,
+  getColumnarPredicateParameterNames,
   planTableQuery,
   validateTableQueryLimit,
   type ParameterizedColumnarPredicate
@@ -64,6 +65,30 @@ describe('portable table queries', () => {
         status: 'active'
       })
     ).toThrow(/unsupported value/);
+  });
+
+  test('discovers unique named parameters in AST order', () => {
+    const predicate: ParameterizedColumnarPredicate = {
+      op: 'and',
+      args: [
+        {op: '>=', args: [{property: 'fare'}, {parameter: 'minimum'}]},
+        {
+          op: 'in',
+          args: [
+            {property: 'carrier'},
+            [{parameter: 'carrier'}, {parameter: 'backupCarrier'}, {parameter: 'carrier'}]
+          ]
+        },
+        {op: '<=', args: [{property: 'fare'}, {parameter: 'maximum'}]}
+      ]
+    };
+
+    expect(getColumnarPredicateParameterNames(predicate)).toEqual([
+      'minimum',
+      'carrier',
+      'backupCarrier',
+      'maximum'
+    ]);
   });
 
   test('explains pushed and residual operators without reading rows', () => {

@@ -260,6 +260,7 @@ export {
   filterColumnarRowIndices,
   gatherColumnarColumns,
   getColumnarPredicateColumns,
+  getColumnarPredicateParameterNames,
   getColumnarPredicatePath,
   getColumnarPredicatePaths,
   isColumnarPredicateParameter,
@@ -267,6 +268,8 @@ export {
   validateColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
 export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
+export {validatePointCloudQueryOptions} from './lib/scan-utils/point-cloud-query';
 export {
   planTableQuery,
   validateTableQueryLimit,
@@ -274,6 +277,23 @@ export {
 } from './lib/scan-utils/table-query';
 export {explainTableQuery} from './lib/scan-utils/table-query-explain';
 export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
+export type {
+  CreateScanQueryMetadataOptions,
+  ScanBounds,
+  ScanColumnMetadata,
+  ScanColumnRole,
+  ScanQueryCapabilities,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider,
+  ScanSourceStatistics,
+  ScanSpatialMetadata
+} from './lib/scan-utils/scan-query-metadata';
+export type {
+  PointCloudQueryBounds,
+  PointCloudQueryCapabilities,
+  PointCloudQueryOptions
+} from './lib/scan-utils/point-cloud-query';
 export type {
   ColumnarComparisonPredicate,
   ColumnarInPredicate,
