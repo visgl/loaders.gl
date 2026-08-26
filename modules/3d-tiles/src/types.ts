@@ -41,6 +41,49 @@ export type GLTFHeader = {
 };
 
 /**
+ * A 3D Tiles metadata entity reference.
+ *
+ * The loader preserves the entity exactly as authored. `properties` may contain scalar,
+ * array, or property-table references; decoding those values requires the schema and binary
+ * property-table tranche and is intentionally outside this type.
+ */
+export type Tiles3DMetadataEntity = {
+  /** Application-defined metadata entity identifier. */
+  id?: string;
+  /** Identifier of the class declared in the tileset schema. */
+  class?: string;
+  /** Raw metadata properties, retained without value or enum decoding. */
+  properties?: Record<string, unknown>;
+  /** Index of the metadata group associated with this entity. */
+  group?: number;
+  /** Optional human-readable metadata name. */
+  name?: string;
+  /** Extension objects attached to this metadata entity. */
+  extensions?: Record<string, unknown>;
+  /** Application-specific metadata. */
+  extras?: unknown;
+  /** Forward-compatible fields from newer 3D Tiles revisions. */
+  [key: string]: unknown;
+};
+
+/** Inline 3D Tiles metadata schema, preserved for application-level interpretation. */
+export type Tiles3DMetadataSchema = {
+  /** Class definitions keyed by class identifier. */
+  classes?: Record<string, unknown>;
+  /** Enum definitions keyed by enum identifier. */
+  enums?: Record<string, unknown>;
+  /** Extension objects attached to the schema. */
+  extensions?: Record<string, unknown>;
+  /** Application-specific schema data. */
+  extras?: unknown;
+  /** Forward-compatible schema fields. */
+  [key: string]: unknown;
+};
+
+/** Metadata group declared by a tileset. */
+export type Tiles3DMetadataGroup = Tiles3DMetadataEntity;
+
+/**
  * A 3D Tiles tileset JSON
  * https://github.com/CesiumGS/3d-tiles/tree/main/specification#property-reference
  */
@@ -50,15 +93,15 @@ export type Tiles3DTilesetJSON = {
   /** A dictionary object of metadata about per-feature properties. */
   properties?: Record<string, TilesetProperty>;
   /** Inline definition of metadata classes and enums. */
-  schema?: Record<string, unknown>;
+  schema?: Tiles3DMetadataSchema;
   /** URI of an external metadata schema. */
   schemaUri?: string;
   /** Statistics about metadata entities in the tileset. */
   statistics?: unknown;
   /** Metadata groups referenced by tile contents. */
-  groups?: unknown[];
+  groups?: Tiles3DMetadataGroup[];
   /** Metadata entity associated with the complete tileset. */
-  metadata?: unknown;
+  metadata?: Tiles3DMetadataEntity;
   /** The error, in meters, introduced if this tileset is not rendered. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels. */
   geometricError: number;
   /** A tile in a 3D Tiles tileset. */
@@ -140,6 +183,9 @@ export type Tiles3DTileJSON = {
   /** Application-specific data. */
   extras?: any;
 
+  /** Metadata entity associated with this tile, preserved without value decoding. */
+  metadata?: Tiles3DMetadataEntity;
+
   /** 3DTiles v1.1 properties
    * https://github.com/CesiumGS/3d-tiles/blob/draft-1.1/specification/schema/tile.schema.json
    */
@@ -185,6 +231,10 @@ export type Tiles3DTileContentJSON = {
   extensions?: Record<string, unknown>;
   /** Application-specific data. */
   extras?: unknown;
+  /** Metadata entity associated with this content, preserved without value decoding. */
+  metadata?: Tiles3DMetadataEntity;
+  /** Index of the tileset metadata group associated with this content. */
+  group?: number;
 };
 
 /** A bounding volume that encloses a tile or its content.

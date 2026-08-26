@@ -95,6 +95,15 @@ export class Tile3D {
   content: any = null;
   /** Loaded payloads in the same order as {@link contentUrls}; `content` remains the primary payload. */
   contents: any[] = [];
+  /**
+   * Metadata entity attached to this tile in the source tileset, if present.
+   *
+   * This is the raw 3D Tiles metadata reference. The generic tiles runtime preserves it without
+   * decoding schema classes or binary property tables.
+   */
+  metadata: Record<string, any> | null = null;
+  /** Raw metadata entities attached to tile contents, in content source order. */
+  contentMetadata: Array<Record<string, any> | null> = [];
   contentState: number = TILE_CONTENT_STATE.UNLOADED;
   gpuMemoryUsageInBytes: number = 0;
 
@@ -204,6 +213,11 @@ export class Tile3D {
     this.type = header.type;
     this.contentUrl = header.contentUrl;
     this.contentUrls = header.contentUrls || (header.contentUrl ? [header.contentUrl] : []);
+    this.metadata = header.metadata || null;
+    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
+    this.contentMetadata = contentHeaders
+      .filter(Boolean)
+      .map(contentHeader => contentHeader.metadata || null);
     this.childrenState = header.implicitSubtree ? 'unloaded' : 'ready';
 
     this._initializeLodMetric(header);
