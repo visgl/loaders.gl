@@ -22,3 +22,13 @@ test('CSVTableSource rejects invalid limits and forwards aborts', async () => {
   controller.abort();
   await expect(source.getQueryMetadata({signal: controller.signal})).rejects.toThrow();
 });
+
+test('CSVTableSource handles zero limits and empty projections', async () => {
+  const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\n']));
+  const zeroLimitBatches = [];
+  for await (const batch of source.read({limit: 0})) zeroLimitBatches.push(batch);
+  expect(zeroLimitBatches).toHaveLength(0);
+  const projectedBatches = [];
+  for await (const batch of source.read({columns: []})) projectedBatches.push(batch);
+  expect(projectedBatches[0]?.data).toEqual([{}, {}]);
+});
