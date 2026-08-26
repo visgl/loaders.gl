@@ -163,6 +163,34 @@ export class FeedableLAZChunkDecoder {
     return batch;
   }
 
+  /**
+   * Decode the next position-only point-data batch as soon as Point14 bytes arrive.
+   *
+   * This is limited to layered PDRF 6-8 chunks and targets without RGB fields.
+   * Later independent layers are represented by a zero-filled skipped tail; no
+   * values from those layers are read by the position-only decoder.
+   */
+  readPositionDataBatch(target: LAZPointDataTarget, pointCount: number): number | null {
+    if (target.colors || target.rawColors) {
+      throw new Error('Position-only LAZ batches cannot request color output');
+    }
+    if (this.metadata.pointDataRecordFormat < 6 || this.metadata.pointDataRecordFormat > 8) {
+      throw new Error('Position-only LAZ batches require point formats 6-8');
+    }
+    if (!this.cursor) {
+      const compressed = this.getProgressivePositionData();
+      if (!compressed) {
+        return null;
+      }
+      this.cursor = createLAZChunkDecoderCursor(compressed, this.metadata);
+    }
+    if (this.cursor.remainingPointCount <= 0) {
+      return 0;
+    }
+    const batchPointCount = Math.min(pointCount, this.cursor.remainingPointCount);
+    return this.cursor.decodeIntoPointData(target, batchPointCount);
+  }
+
   private hasCompleteChunk(): boolean {
     if (!hasLayeredChunkSizeHeaders(this.metadata.pointDataRecordFormat)) {
       return this.closed;
@@ -195,6 +223,18 @@ export class FeedableLAZChunkDecoder {
   private getCompressedAvailable(): Uint8Array {
     this.compressed ||= concatenateUint8Arrays(this.chunks);
     return this.compressed;
+  }
+
+  private getProgressivePositionData(): Uint8Array | null {
+    const available = this.getCompressedAvailable();
+    const layout = getLayeredChunkLayout(available, this.metadata);
+    if (!layout || available.byteLength < layout.pointDataByteLength) {
+      return null;
+    }
+
+    const compressed = new Uint8Array(layout.byteLength);
+    compressed.set(available.subarray(0, Math.min(available.byteLength, layout.byteLength)));
+    return compressed;
   }
 }
 
@@ -458,6 +498,36 @@ function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
     4 +
     getChunkSizeHeaderCount(metadata.pointDataRecordFormat, extraByteCount) * 4
   );
+}
+
+type LAZLayeredChunkLayout = {
+  byteLength: number;
+  pointDataByteLength: number;
+};
+
+function getLayeredChunkLayout(
+  bytes: Uint8Array,
+  metadata: LAZChunkMetadata
+): LAZLayeredChunkLayout | null {
+  const extraByteCount = getExtraByteCount(metadata);
+  const sizeHeaderOffset = metadata.pointDataRecordLength + 4;
+  const sizeHeaderCount = getChunkSizeHeaderCount(metadata.pointDataRecordFormat, extraByteCount);
+  const sizeHeaderByteLength = sizeHeaderCount * 4;
+  if (bytes.byteLength < sizeHeaderOffset + sizeHeaderByteLength) {
+    return null;
+  }
+
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let byteLength = sizeHeaderOffset + sizeHeaderByteLength;
+  let pointDataByteLength = byteLength;
+  for (let index = 0; index < sizeHeaderCount; index++) {
+    const layerByteLength = dataView.getUint32(sizeHeaderOffset + index * 4, true);
+    byteLength += layerByteLength;
+    if (index < 9) {
+      pointDataByteLength += layerByteLength;
+    }
+  }
+  return {byteLength, pointDataByteLength};
 }
 
 const AC_MIN_LENGTH = 0x01000000;

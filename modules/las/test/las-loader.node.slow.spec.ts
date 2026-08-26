@@ -1127,6 +1127,64 @@ test('TypeScriptLAZ#feedable decoder accepts split chunks', async t => {
   t.end();
 });
 
+test('TypeScriptLAZ#position batches start before later layers arrive', async t => {
+  const {compressed, metadata} = await getCOPCRootChunk();
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  expectedCursor.decodeIntoPointData(
+    {
+      positions: expectedPositions,
+      pointOffset: 0,
+      scale: [1, 1, 1],
+      offset: [0, 0, 0]
+    },
+    metadata.pointCount
+  );
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const positions = new Float64Array(metadata.pointCount * 3);
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+  for (let offset = 0; offset < compressed.byteLength; offset += 257) {
+    decoder.feed(compressed.subarray(offset, Math.min(offset + 257, compressed.byteLength)));
+    let batchPointCount = decoder.readPositionDataBatch(
+      {
+        positions,
+        pointOffset: decodedPointCount,
+        scale: [1, 1, 1],
+        offset: [0, 0, 0]
+      },
+      metadata.pointCount - decodedPointCount
+    );
+    while (batchPointCount && batchPointCount > 0) {
+      if (firstDecodedByteLength < 0) {
+        firstDecodedByteLength = Math.min(offset + 257, compressed.byteLength);
+      }
+      decodedPointCount += batchPointCount;
+      batchPointCount = decoder.readPositionDataBatch(
+        {
+          positions,
+          pointOffset: decodedPointCount,
+          scale: [1, 1, 1],
+          offset: [0, 0, 0]
+        },
+        metadata.pointCount - decodedPointCount
+      );
+    }
+    if (decodedPointCount === metadata.pointCount) {
+      break;
+    }
+  }
+
+  t.equal(decodedPointCount, metadata.pointCount, 'all positions decode from the first layer');
+  t.ok(
+    firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength,
+    'positions decode before the complete compressed chunk arrives'
+  );
+  t.deepEqual(positions, expectedPositions, 'progressive positions match complete decoding');
+  t.end();
+});
+
 test('TypeScriptLAZ#decodeLAZChunkInBatches accepts split chunks', async t => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = decodeLAZChunk(compressed, metadata);
