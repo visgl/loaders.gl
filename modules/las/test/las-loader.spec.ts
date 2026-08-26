@@ -431,7 +431,7 @@ test('LASLoader#columns applies typed Extra Bytes descriptor offset', async () =
     const dataView = new DataView(copy);
     const descriptorOffset = extraBytesRecord.offset + 54;
     dataView.setUint8(descriptorOffset + 3, 0x10);
-    dataView.setFloat64(descriptorOffset + 152, 7, true);
+    dataView.setFloat64(descriptorOffset + 136, 7, true);
     return copy;
   };
   const options = {
@@ -468,6 +468,51 @@ test('LASLoader#columns applies typed Extra Bytes descriptor offset', async () =
       getArrowColumnValues(lasTable, columnName)
     );
   }
+});
+
+test('LASLoader#columns decodes typed Extra Bytes vectors', async () => {
+  const headerSize = 227;
+  const descriptor = new Uint8Array(192);
+  const descriptorView = new DataView(descriptor.buffer);
+  descriptorView.setUint8(2, 11);
+  descriptorView.setUint8(3, 0x18);
+  descriptor.set(new TextEncoder().encode('vector'), 4);
+  descriptorView.setFloat64(112, 0.5, true);
+  descriptorView.setFloat64(120, 2, true);
+  descriptorView.setFloat64(136, 10, true);
+  descriptorView.setFloat64(144, -4, true);
+  const vlr = makeLASVLR('LASF_Spec', 4, descriptor);
+  const pointsOffset = headerSize + vlr.byteLength;
+  const pointDataRecordLength = 22;
+  const arrayBuffer = new ArrayBuffer(pointsOffset + pointDataRecordLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+  dataView.setUint32(0, 0x4653414c, true);
+  bytes[24] = 1;
+  bytes[25] = 2;
+  dataView.setUint16(94, headerSize, true);
+  dataView.setUint32(96, pointsOffset, true);
+  dataView.setUint32(100, 1, true);
+  bytes[104] = 0;
+  dataView.setUint16(105, pointDataRecordLength, true);
+  dataView.setUint32(107, 1, true);
+  dataView.setFloat64(131, 1, true);
+  dataView.setFloat64(139, 1, true);
+  dataView.setFloat64(147, 1, true);
+  bytes.set(vlr, headerSize);
+  dataView.setInt32(pointsOffset, 1, true);
+  dataView.setInt32(pointsOffset + 4, 2, true);
+  dataView.setInt32(pointsOffset + 8, 3, true);
+  dataView.setUint16(pointsOffset + 12, 4, true);
+  bytes[pointsOffset + 20] = 6;
+  bytes[pointsOffset + 21] = 8;
+
+  const table = (await parse(arrayBuffer, LASLoader, {
+    las: {shape: 'arrow-table', columns: ['POSITION', 'EXTRA_BYTES'], extraBytes: 'typed'},
+    core: {worker: false}
+  })) as MeshArrowTable;
+  expect(getArrowColumnNames(table)).toEqual(['POSITION', 'EXTRA_BYTES_vector']);
+  expect(getArrowColumnValues(table, 'EXTRA_BYTES_vector')).toEqual([[13, 12]]);
 });
 
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
