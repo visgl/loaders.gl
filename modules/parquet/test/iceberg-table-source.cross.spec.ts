@@ -61,19 +61,58 @@ test('IcebergTableSource exposes the declared schema for an empty snapshot', asy
       'format-version': 2,
       location: 'table',
       'current-snapshot-id': -1,
-      'current-schema-id': 7,
-      schemas: [{
-        'schema-id': 7,
-        fields: [
+        'current-schema-id': 7,
+        schemas: [{
+          'schema-id': 7,
+          fields: [
+          {name: 'flag', type: 'boolean', required: true},
+          {name: 'count', type: 'int', required: true},
           {name: 'id', type: 'long', required: true},
-          {name: 'label', type: 'string', required: false}
+          {name: 'ratio', type: 'float', required: false},
+          {name: 'score', type: 'double', required: false},
+          {name: 'day', type: 'date', required: false},
+          {name: 'clock', type: 'time', required: false},
+          {name: 'created', type: 'timestamp', required: false},
+          {name: 'updated', type: 'timestamptz', required: false},
+          {name: 'payload', type: 'binary', required: false},
+          {name: 'fixed', type: 'fixed', required: false},
+          {name: 'label', type: 'string', required: false},
+          {name: 'other', type: {type: 'list'}, required: false}
         ]
       }]
     })
   );
   const metadata = await source.getQueryMetadata();
-  expect(metadata.columns.map(column => column.name)).toEqual(['id', 'label']);
-  expect(metadata.columns[0].type).toBe('int64');
+  expect(metadata.columns.map(column => column.name)).toEqual([
+    'flag',
+    'count',
+    'id',
+    'ratio',
+    'score',
+    'day',
+    'clock',
+    'created',
+    'updated',
+    'payload',
+    'fixed',
+    'label',
+    'other'
+  ]);
+  expect(metadata.columns.map(column => column.type)).toEqual([
+    'bool',
+    'int32',
+    'int64',
+    'float32',
+    'float64',
+    'date-day',
+    'time-microsecond',
+    'timestamp-microsecond',
+    'timestamp-microsecond',
+    'binary',
+    'binary',
+    'utf8',
+    'utf8'
+  ]);
   await source.close();
 });
 
