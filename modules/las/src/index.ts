@@ -18,6 +18,16 @@ export type {
   LASVariableLengthRecord,
   LASWaveformPacketDescriptor
 } from './lib/las-types';
+export {
+  createLASTypedExtraBytesAttributes,
+  createLASTypedExtraBytesValue,
+  parseLASExtraBytes,
+  populateLASTypedExtraBytes
+} from './lib/las-extra-bytes';
+export type {
+  LASTypedExtraBytesAttribute,
+  LASTypedExtraBytesValue
+} from './lib/las-extra-bytes';
 
 export {LASLoader} from './las-loader-types';
 export {LASCOPCLoader} from './las-copc-loader-types';

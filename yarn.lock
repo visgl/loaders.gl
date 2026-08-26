@@ -5212,7 +5212,6 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
     "@math.gl/proj4": "npm:^4.1.0"
-    copc: "npm:0.0.8"
   languageName: unknown
   linkType: soft
 
