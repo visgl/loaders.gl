@@ -103,7 +103,7 @@ export default function App(props: AppProps = {}) {
     }
 
     const imageSource = source as OMEZarrImageSource;
-    const rasterSet = new RasterSet<RasterData, OMEZarrRasterRequest>({
+    const rasterSet = RasterSet.fromCallbacks<RasterData, OMEZarrRasterRequest>({
       getMetadata: () => imageSource.getMetadata(),
       getRaster: ({viewport: _viewport, ...parameters}) => imageSource.getRaster(parameters)
     });
