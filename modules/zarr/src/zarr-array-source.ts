@@ -23,26 +23,11 @@ export type ZarrArraySourceMetadata = {
 
 /** Parameters for reading a Zarr array selection. */
 export type GetZarrArrayParameters = {
-  /** Integer or slice selector for each dimension; null retains that dimension. */
-  selection?: ZarrArraySelection;
-  /** Named selectors resolved against the metadata dimension labels. */
-  selectionByDimension?: Readonly<Record<string, number | null | ZarrArraySlice>>;
+  /** Integer index for each selected dimension; null retains that dimension. */
+  selection?: Array<number | null>;
   /** Abort signal forwarded to metadata and chunk requests. */
   signal?: AbortSignal;
 };
-
-/** Slice selector accepted by {@link ZarrArraySource#getArray}. */
-export type ZarrArraySlice = {
-  /** Inclusive starting index, defaulting to the dimension boundary. */
-  start?: number;
-  /** Exclusive stopping index, defaulting to the dimension boundary. */
-  stop?: number;
-  /** Stride between selected indices, defaulting to one. */
-  step?: number;
-};
-
-/** Positional selectors for a Zarr array read. */
-export type ZarrArraySelection = Array<number | null | ZarrArraySlice>;
 
 /** Result of a Zarr array read. */
 export type ZarrArrayData = {
@@ -124,16 +109,11 @@ export class ZarrArraySource extends ZarrSource {
   /** Reads the selected array values. */
   async getArray(parameters: GetZarrArrayParameters = {}): Promise<ZarrArrayData> {
     const {array, metadata} = await this.getInitializationPromise(parameters.signal);
-    const selection = parameters.selection || createNamedSelection(parameters.selectionByDimension, metadata);
+    const selection = parameters.selection || metadata.shape.map(() => null);
     if (selection.length !== metadata.shape.length) {
       throw new Error(`Zarr array selection must have ${metadata.shape.length} dimensions.`);
     }
-    const zarritaSelection = selection.map(selector =>
-      isZarrArraySlice(selector)
-        ? zarrita.slice(selector.start ?? null, selector.stop ?? null, selector.step ?? null)
-        : selector
-    );
-    const chunk = await zarrita.get(array, zarritaSelection, {signal: parameters.signal});
+    const chunk = await zarrita.get(array, selection, {signal: parameters.signal});
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read Zarr array selection.');
     }
@@ -171,25 +151,4 @@ export class ZarrArraySource extends ZarrSource {
       }
     };
   }
-}
-
-/** Converts named dimension selectors into the positional form accepted by Zarrita. */
-function createNamedSelection(
-  selectionByDimension: GetZarrArrayParameters['selectionByDimension'],
-  metadata: ZarrArraySourceMetadata
-): ZarrArraySelection {
-  const selection = metadata.shape.map(() => null) as ZarrArraySelection;
-  for (const [dimension, selector] of Object.entries(selectionByDimension || {})) {
-    const dimensionIndex = metadata.dimensions.indexOf(dimension);
-    if (dimensionIndex < 0) {
-      throw new Error(`Unknown Zarr array dimension ${dimension}.`);
-    }
-    selection[dimensionIndex] = selector;
-  }
-  return selection;
-}
-
-/** Tests whether a selector is a slice descriptor rather than an index. */
-function isZarrArraySlice(selector: number | null | ZarrArraySlice): selector is ZarrArraySlice {
-  return typeof selector === 'object' && selector !== null;
 }
