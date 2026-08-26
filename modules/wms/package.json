@@ -63,8 +63,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/xml": "5.0.0-alpha.2",
-    "@turf/rewind": "^5.1.5",
-    "deep-strict-equal": "^0.2.0"
+    "@turf/rewind": "^5.1.5"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
