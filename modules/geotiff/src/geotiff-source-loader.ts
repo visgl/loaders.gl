@@ -176,13 +176,20 @@ export class GeoTIFFRasterSource
         levelOfDetail: this.rasterQueryCapabilities.level
       },
       spatial: metadata.boundingBox
-        ? {bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]}}
+        ? {
+            bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+            coordinateReferenceSystems:
+              typeof metadata.crs === 'string' ? [metadata.crs] : undefined
+          }
         : undefined,
       levels: metadata.overviews?.map(overview => ({
         index: overview.index,
         width: overview.width,
         height: overview.height,
-        scale: overview.resolution
+        scale: [metadata.width / overview.width, metadata.height / overview.height] as [
+          number,
+          number
+        ]
       }))
     });
   }

@@ -12,10 +12,13 @@ import type {
   RasterData,
   RasterSource,
   RasterSourceMetadata,
-  SourceLoader
+  SourceLoader,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider
 } from '@loaders.gl/loader-utils';
 import type {CRSDefinition} from '@math.gl/crs';
-import {getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
 
 import type {SupportedTypedArray} from './types';
 import {
@@ -167,7 +170,9 @@ export const GeoZarrSourceLoader = {
 /** Viewport-driven raster source for GeoZarr and regular CF/xarray Zarr data variables. */
 export class GeoZarrRasterSource
   extends ZarrSource
-  implements RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>
+  implements
+    RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>,
+    ScanQueryMetadataProvider
 {
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
@@ -181,6 +186,31 @@ export class GeoZarrRasterSource
   async getMetadata(): Promise<GeoZarrSourceMetadata> {
     const {metadata} = await this.getInitializationPromise();
     return metadata;
+  }
+
+  /** Discovers GeoZarr variables, spatial bounds, and selectable dimensions. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const metadata = await this.getMetadata();
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const fields = [{name: metadata.array, type: metadata.dtype, nullable: true, metadata: {}}];
+    return createScanQueryMetadata({
+      sourceType: 'geozarr',
+      queryType: 'raster',
+      name: metadata.name,
+      schema: {fields, metadata: {}},
+      capabilities: {
+        bounds: 'pushdown',
+        levelOfDetail: 'unsupported',
+        variables: 'pushdown',
+        slices: metadata.selectionDimensions.length ? 'pushdown' : 'unsupported'
+      },
+      spatial: {
+        bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+        coordinateReferenceSystems:
+          typeof metadata.crs === 'string' ? [metadata.crs] : undefined
+      }
+    });
   }
 
   /** Loads a clipped native-resolution 2D window for the requested viewport and named selection. */

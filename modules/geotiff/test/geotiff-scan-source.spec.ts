@@ -10,6 +10,7 @@ test('GeoTIFFRasterSource exposes normalized scan metadata', async () => {
     bandCount: 2,
     dtype: 'float32',
     noData: -9999,
+    crs: 'EPSG:32633',
     boundingBox: [
       [-10, 20],
       [30, 60]
@@ -26,6 +27,7 @@ test('GeoTIFFRasterSource exposes normalized scan metadata', async () => {
   expect(metadata.columns.map(column => column.name)).toEqual(['band_1', 'band_2']);
   expect(metadata.columns[0]?.type).toBe('float32');
   expect(metadata.spatial?.bounds).toEqual({minimum: [-10, 20], maximum: [30, 60]});
+  expect(metadata.spatial?.coordinateReferenceSystems).toEqual(['EPSG:32633']);
   expect(metadata.levels?.map(level => level.width)).toEqual([1024, 512]);
   expect(metadata.capabilities.levelOfDetail).toBe('pushdown');
 });
