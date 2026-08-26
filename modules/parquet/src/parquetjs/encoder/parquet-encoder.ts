@@ -24,6 +24,7 @@ import {
   BsonType,
   BoundingBox,
   ColumnChunk,
+  ColumnIndex,
   ColumnMetaData,
   CompressionCodec,
   ConvertedType,
@@ -54,6 +55,7 @@ import {
   PageHeader,
   PageEncodingStats,
   PageType,
+  PageLocation,
   RowGroup,
   SchemaElement,
   StringType,
@@ -62,7 +64,8 @@ import {
   TimestampType,
   Type,
   UUIDType,
-  VariantType
+  VariantType,
+  OffsetIndex
 } from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
@@ -70,7 +73,11 @@ import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-util
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 import {planColumnPages} from './page-planner';
 import {planDictionary, type ParquetDictionaryPolicy} from './dictionary-planner';
-import {encodeParquetSplitBlockBloomFilter} from '../../lib/parquet-bloom-filter';
+import {
+  encodeParquetBloomFilterValue,
+  encodeParquetSplitBlockBloomFilter
+} from '../../lib/parquet-bloom-filter';
+import {BoundaryOrder} from '../parquet-thrift/BoundaryOrder';
 
 /**
  * Parquet File Magic String
@@ -104,6 +111,7 @@ export interface ParquetEncoderOptions {
   columnDictionaries?: Record<string, ParquetDictionaryPolicy>;
   dictionaryPageSizeLimit?: number;
   bloomFilter?: boolean | Record<string, boolean>;
+  pageIndex?: boolean | Record<string, boolean>;
 
   // Write Stream Options
   flags?: string;
@@ -284,6 +292,7 @@ export class ParquetEnvelopeWriter {
   public columnDictionaries: Record<string, ParquetDictionaryPolicy>;
   public dictionaryPageSizeLimit: number;
   public bloomFilter?: boolean | Record<string, boolean>;
+  public pageIndex?: boolean | Record<string, boolean>;
 
   constructor(
     schema: ParquetSchema,
@@ -304,6 +313,7 @@ export class ParquetEnvelopeWriter {
     this.columnDictionaries = opts.columnDictionaries || {};
     this.dictionaryPageSizeLimit = opts.dictionaryPageSizeLimit ?? 1024 * 1024;
     this.bloomFilter = opts.bloomFilter;
+    this.pageIndex = opts.pageIndex;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -330,7 +340,8 @@ export class ParquetEnvelopeWriter {
       dictionary: this.dictionary,
       columnDictionaries: this.columnDictionaries,
       dictionaryPageSizeLimit: this.dictionaryPageSizeLimit,
-      bloomFilter: this.bloomFilter
+      bloomFilter: this.bloomFilter,
+      pageIndex: this.pageIndex
     });
 
     this.rowCount += records.rowCount;
@@ -653,11 +664,18 @@ async function encodeColumnChunk(
   body: Uint8Array;
   metadata: ColumnMetaData;
   metadataOffset: number;
+  offsetIndexOffset?: number;
+  offsetIndexLength?: number;
+  columnIndexOffset?: number;
+  columnIndexLength?: number;
 }> {
   const data = buffer.columnData[column.path.join()];
   const baseOffset = (opts.baseOffset || 0) + offset;
   /* encode data page(s) */
   const pages: Uint8Array[] = [];
+  const pageLocations: PageLocation[] = [];
+  let pageOffset = 0;
+  let firstRowIndex = 0;
   // tslint:disable-next-line:variable-name
   let total_uncompressed_size = 0;
   // tslint:disable-next-line:variable-name
@@ -679,6 +697,7 @@ async function encodeColumnChunk(
   if (dictionaryPlan) {
     const result = await encodeDictionaryPage(column, dictionaryPlan.values);
     pages.push(result.page);
+    pageOffset += result.page.length;
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
@@ -705,7 +724,16 @@ async function encodeColumnChunk(
           dictionaryPlan?.bitWidth
         )
       : await encodeDataPage(column, pageData, valueEncoding, dictionaryPlan?.bitWidth);
+    pageLocations.push(
+      new PageLocation({
+        offset: baseOffset + pageOffset,
+        compressed_page_size: result.page.length,
+        first_row_index: firstRowIndex
+      })
+    );
+    firstRowIndex += plannedPage.rowCount;
     pages.push(result.page);
+    pageOffset += result.page.length;
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
@@ -715,6 +743,10 @@ async function encodeColumnChunk(
   const bloomFilterEnabled =
     opts.bloomFilter === true || opts.bloomFilter?.[column.path[0]] === true;
   const bloomFilter = bloomFilterEnabled ? createColumnBloomFilter(column, data.values) : undefined;
+  const pageIndexEnabled = opts.pageIndex === true || opts.pageIndex?.[column.path[0]] === true;
+  const pageIndexes = pageIndexEnabled
+    ? createColumnPageIndexes(column, plannedPages, pageLocations)
+    : undefined;
 
   /* prepare metadata header */
   const metadata = new ColumnMetaData({
@@ -755,12 +787,185 @@ async function encodeColumnChunk(
 
   /* concat metadata header and data pages */
   const metadataOffset = baseOffset + pagesBuf.length + (bloomFilter?.length || 0);
+  const metadataEncoded = serializeThrift(metadata);
+  const offsetIndexOffset = pageIndexes ? metadataOffset + metadataEncoded.length : undefined;
+  const columnIndexOffset = pageIndexes
+    ? metadataOffset + metadataEncoded.length + pageIndexes.offsetIndex.length
+    : undefined;
   const body = concatUint8Arrays([
     pagesBuf,
     ...(bloomFilter ? [bloomFilter] : []),
-    serializeThrift(metadata)
+    metadataEncoded,
+    ...(pageIndexes ? [pageIndexes.offsetIndex, pageIndexes.columnIndex] : [])
   ]);
-  return {body, metadata, metadataOffset};
+  return {
+    body,
+    metadata,
+    metadataOffset,
+    offsetIndexOffset,
+    offsetIndexLength: pageIndexes?.offsetIndex.length,
+    columnIndexOffset,
+    columnIndexLength: pageIndexes?.columnIndex.length
+  };
+}
+
+/** Builds page indexes for simple non-repeated scalar columns. */
+function createColumnPageIndexes(
+  column: ParquetField,
+  plannedPages: ReturnType<typeof planColumnPages>,
+  pageLocations: PageLocation[]
+): {offsetIndex: Uint8Array; columnIndex: Uint8Array} | undefined {
+  if (
+    column.rLevelMax > 0 ||
+    column.repetitionType === 'REPEATED' ||
+    !isPageIndexPhysicalType(column.primitiveType) ||
+    plannedPages.length !== pageLocations.length ||
+    plannedPages.length === 0
+  ) {
+    return undefined;
+  }
+
+  const nullPages: boolean[] = [];
+  const minValues: Uint8Array[] = [];
+  const maxValues: Uint8Array[] = [];
+  const nullCounts: number[] = [];
+  for (const plannedPage of plannedPages) {
+    const values = plannedPage.data.values;
+    const nullCount = plannedPage.data.count - values.length;
+    nullCounts.push(nullCount);
+    if (values.length === 0) {
+      nullPages.push(true);
+      minValues.push(new Uint8Array(0));
+      maxValues.push(new Uint8Array(0));
+      continue;
+    }
+    const bounds = getPageBounds(values, column.primitiveType!, column.typeLength);
+    if (!bounds) return undefined;
+    nullPages.push(false);
+    minValues.push(bounds.min);
+    maxValues.push(bounds.max);
+  }
+
+  return {
+    offsetIndex: serializeThrift(new OffsetIndex({page_locations: pageLocations})),
+    columnIndex: serializeThrift(
+      new ColumnIndex({
+        null_pages: nullPages,
+        min_values: minValues,
+        max_values: maxValues,
+        boundary_order: BoundaryOrder.UNORDERED,
+        null_counts: nullCounts
+      })
+    )
+  };
+}
+
+function isPageIndexPhysicalType(
+  physicalType: ParquetField['primitiveType']
+): physicalType is PageIndexPhysicalType {
+  return (
+    physicalType === 'BOOLEAN' ||
+    physicalType === 'INT32' ||
+    physicalType === 'INT64' ||
+    physicalType === 'FLOAT' ||
+    physicalType === 'DOUBLE' ||
+    physicalType === 'BYTE_ARRAY' ||
+    physicalType === 'FIXED_LEN_BYTE_ARRAY'
+  );
+}
+
+type PageIndexPhysicalType =
+  | 'BOOLEAN'
+  | 'INT32'
+  | 'INT64'
+  | 'FLOAT'
+  | 'DOUBLE'
+  | 'BYTE_ARRAY'
+  | 'FIXED_LEN_BYTE_ARRAY';
+
+function getPageBounds(
+  values: ParquetColumnChunk['values'],
+  physicalType: PageIndexPhysicalType,
+  typeLength?: number
+): {min: Uint8Array; max: Uint8Array} | undefined {
+  const normalizedValues = Array.from(values as Iterable<unknown>, value =>
+    normalizePageIndexValue(value, physicalType)
+  );
+  if (normalizedValues.some(value => value === undefined)) return undefined;
+  const comparableValues = normalizedValues as Array<
+    boolean | number | bigint | string | Uint8Array
+  >;
+  let min = comparableValues[0];
+  let max = comparableValues[0];
+  for (const value of comparableValues.slice(1)) {
+    if (comparePageIndexValues(value, min, physicalType) < 0) min = value;
+    if (comparePageIndexValues(value, max, physicalType) > 0) max = value;
+  }
+  try {
+    return {
+      min: encodeParquetBloomFilterValue(min, physicalType, typeLength),
+      max: encodeParquetBloomFilterValue(max, physicalType, typeLength)
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizePageIndexValue(
+  value: unknown,
+  physicalType: PageIndexPhysicalType
+): boolean | number | bigint | string | Uint8Array | undefined {
+  if (physicalType === 'BYTE_ARRAY' || physicalType === 'FIXED_LEN_BYTE_ARRAY') {
+    if (typeof value === 'string') return new TextEncoder().encode(value);
+    if (value instanceof ArrayBuffer) return new Uint8Array(value);
+    if (ArrayBuffer.isView(value)) {
+      return new Uint8Array(value.buffer, value.byteOffset, value.byteLength).slice();
+    }
+    return undefined;
+  }
+  if (
+    typeof value === 'boolean' ||
+    typeof value === 'number' ||
+    typeof value === 'bigint' ||
+    typeof value === 'string'
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
+function comparePageIndexValues(
+  left: boolean | number | bigint | string | Uint8Array,
+  right: boolean | number | bigint | string | Uint8Array,
+  physicalType: PageIndexPhysicalType
+): number {
+  if (physicalType === 'BYTE_ARRAY' || physicalType === 'FIXED_LEN_BYTE_ARRAY') {
+    const leftBytes = typeof left === 'string' ? new TextEncoder().encode(left) : left;
+    const rightBytes = typeof right === 'string' ? new TextEncoder().encode(right) : right;
+    if (!(leftBytes instanceof Uint8Array) || !(rightBytes instanceof Uint8Array)) return 0;
+    const length = Math.min(leftBytes.length, rightBytes.length);
+    for (let index = 0; index < length; index++) {
+      if (leftBytes[index] !== rightBytes[index]) {
+        return leftBytes[index] < rightBytes[index] ? -1 : 1;
+      }
+    }
+    return leftBytes.length - rightBytes.length;
+  }
+  if (typeof left === 'boolean' && typeof right === 'boolean') return Number(left) - Number(right);
+  if (physicalType !== 'INT64') {
+    const leftNumber = Number(left);
+    const rightNumber = Number(right);
+    return leftNumber < rightNumber ? -1 : leftNumber > rightNumber ? 1 : 0;
+  }
+  try {
+    const leftNumber = BigInt(left as number | bigint | string);
+    const rightNumber = BigInt(right as number | bigint | string);
+    return leftNumber < rightNumber ? -1 : leftNumber > rightNumber ? 1 : 0;
+  } catch {
+    const leftNumber = Number(left);
+    const rightNumber = Number(right);
+    return leftNumber < rightNumber ? -1 : leftNumber > rightNumber ? 1 : 0;
+  }
 }
 
 /** Builds a Bloom filter for writer-supported physical scalar columns. */
@@ -821,7 +1026,17 @@ async function encodeRowGroup(
 
     const cchunk = new ColumnChunk({
       file_offset: int64(cchunkData.metadataOffset),
-      meta_data: cchunkData.metadata
+      meta_data: cchunkData.metadata,
+      offset_index_offset:
+        cchunkData.offsetIndexOffset === undefined
+          ? undefined
+          : int64(cchunkData.offsetIndexOffset),
+      offset_index_length: cchunkData.offsetIndexLength,
+      column_index_offset:
+        cchunkData.columnIndexOffset === undefined
+          ? undefined
+          : int64(cchunkData.columnIndexOffset),
+      column_index_length: cchunkData.columnIndexLength
     });
 
     metadata.columns.push(cchunk);

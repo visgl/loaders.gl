@@ -72,6 +72,10 @@ function convertSchemaToParquetSchema(
     options.parquet?.bloomFilter && typeof options.parquet.bloomFilter === 'object'
       ? options.parquet.bloomFilter
       : {};
+  const pageIndexColumns =
+    options.parquet?.pageIndex && typeof options.parquet.pageIndex === 'object'
+      ? options.parquet.pageIndex
+      : {};
   const fieldNames = new Set(schema.fields.map(field => field.name));
   const geoMetadata = getGeoMetadata(schema.metadata);
   for (const columnName of Object.keys(columnEncodings)) {
@@ -87,6 +91,11 @@ function convertSchemaToParquetSchema(
   for (const columnName of Object.keys(bloomFilterColumns)) {
     if (!fieldNames.has(columnName)) {
       throw new Error(`ParquetJSWriter: Unknown Bloom-filter column "${columnName}"`);
+    }
+  }
+  for (const columnName of Object.keys(pageIndexColumns)) {
+    if (!fieldNames.has(columnName)) {
+      throw new Error(`ParquetJSWriter: Unknown page-index column "${columnName}"`);
     }
   }
 

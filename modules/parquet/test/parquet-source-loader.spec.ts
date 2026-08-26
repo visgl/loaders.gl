@@ -250,6 +250,53 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
   t.end();
 });
 
+test('ParquetJSWriter emits page indexes consumed by selective page planning', async t => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {
+        fields: [
+          {name: 'x', type: 'int32', nullable: false},
+          {name: 'payload', type: 'utf8', nullable: false}
+        ],
+        metadata: {}
+      },
+      data: [
+        {x: 0, payload: 'zero'},
+        {x: 1, payload: 'one'},
+        {x: 100, payload: 'hundred'},
+        {x: 101, payload: 'hundred-one'}
+      ]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {pageSize: 2, pageIndex: {x: true}}}
+  );
+  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    core: {type: 'parquet'}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata();
+  const xColumn = metadata.rowGroups[0].columns.find(column => column.path.join('.') === 'x');
+  t.ok(xColumn?.columnIndexOffset !== undefined, 'writes column-index offset');
+  t.ok(xColumn?.offsetIndexOffset !== undefined, 'writes offset-index offset');
+  const plan = await source.getScanPlan({
+    columns: ['payload'],
+    predicate: {op: '>=', args: [{property: 'x'}, 100]}
+  });
+  t.equal(plan.pages.indexesRead, 2, 'reads both page indexes for the predicate column');
+  t.equal(plan.pages.plans[0]?.selectedPages, 1, 'selects only the matching predicate page');
+  t.equal(plan.pages.plans[0]?.totalPages, 2, 'reports all predicate pages');
+  const batches = await collectParquetBatches(
+    source.read({columns: ['payload'], predicate: {op: '>=', args: [{property: 'x'}, 100]}})
+  );
+  t.deepEqual(
+    batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || [])),
+    ['hundred', 'hundred-one'],
+    'decodes rows selected by the page index'
+  );
+  await source.close();
+  t.end();
+});
+
 test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];

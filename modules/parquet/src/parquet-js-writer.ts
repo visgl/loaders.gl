@@ -34,6 +34,8 @@ type ParquetJSWriterEncoderOptions = {
   dictionaryPageSizeLimit?: number;
   /** Emits Parquet split-block Bloom filters for selected columns. */
   bloomFilter?: boolean | Record<string, boolean>;
+  /** Emits Parquet column and offset indexes for selected non-repeated columns. */
+  pageIndex?: boolean | Record<string, boolean>;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;
