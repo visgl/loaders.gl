@@ -325,6 +325,55 @@ vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () 
   expect(nir).toEqual(expectedNir);
 });
 
+vitestTest('TypeScript LAZ does not wait for unrequested Point14 layers', async () => {
+  const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
+  const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const expectedPositions = new Float64Array(metadata.pointCount * 3);
+  const expectedClassifications = new Uint8Array(metadata.pointCount);
+  const expectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  expectedCursor.decodeIntoPointData(
+    {
+      positions: expectedPositions,
+      classifications: expectedClassifications,
+      pointOffset: 0,
+      scale: [1, 1, 1],
+      offset: [0, 0, 0]
+    },
+    metadata.pointCount
+  );
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const positions = new Float64Array(metadata.pointCount * 3);
+  const classifications = new Uint8Array(metadata.pointCount);
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+  for (let offset = 0; offset < compressed.byteLength; offset += TEST_INPUT_CHUNK_SIZE) {
+    const end = Math.min(offset + TEST_INPUT_CHUNK_SIZE, compressed.byteLength);
+    decoder.feed(compressed.subarray(offset, end));
+    const decoded = decoder.readPointDataBatch(
+      {
+        positions,
+        classifications,
+        pointOffset: decodedPointCount,
+        scale: [1, 1, 1],
+        offset: [0, 0, 0]
+      },
+      metadata.pointCount - decodedPointCount
+    );
+    if (decoded) {
+      firstDecodedByteLength = end;
+      decodedPointCount += decoded;
+      break;
+    }
+  }
+
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength).toBe(true);
+  expect(positions).toEqual(expectedPositions);
+  expect(classifications).toEqual(expectedClassifications);
+});
+
 test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const source = await loadArrayBuffer(fixture.lazUrl);
