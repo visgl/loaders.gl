@@ -239,7 +239,7 @@ can make selective reads much cheaper.
 | File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetSourceLoader` |
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
 | Column-chunk min/max/null/distinct statistics | ✅ | ✅ (opt-in) | Drive conservative `ParquetSource` predicate pushdown; `ParquetJSWriter` emits min/max/null-count statistics with `writeStatistics` |
-| Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
+| Page statistics in page headers | ⚠️ | ✅ (opt-in) | Thrift fields are decoded; `ParquetJSWriter` emits min/max/null-count page statistics with `writeStatistics` |
 | [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children and repeated leaves when selected columns share page boundaries |
 | [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected columns use page locations and first-row indexes for selective byte reads; repeated values and continuation pages are decoded only from complete, mutually aligned row ranges |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |

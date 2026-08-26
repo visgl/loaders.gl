@@ -466,7 +466,8 @@ async function encodeDataPage(
   data: ParquetColumnChunk,
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
-  writePageChecksums = false
+  writePageChecksums = false,
+  statistics?: Statistics
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -517,7 +518,8 @@ async function encodeDataPage(
       num_values: data.count,
       encoding: Encoding[valueEncoding] as any,
       definition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING], // [PARQUET_RDLVL_ENCODING],
-      repetition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING] // [PARQUET_RDLVL_ENCODING]
+      repetition_level_encoding: Encoding[PARQUET_RDLVL_ENCODING], // [PARQUET_RDLVL_ENCODING]
+      statistics
     }),
     uncompressed_page_size: dataBuf.length,
     compressed_page_size: compressedBuf.length,
@@ -540,7 +542,8 @@ async function encodeDataPageV2(
   rowCount: number,
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
-  writePageChecksums = false
+  writePageChecksums = false,
+  statistics?: Statistics
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -592,7 +595,8 @@ async function encodeDataPageV2(
       encoding: Encoding[valueEncoding] as any,
       definition_levels_byte_length: dLevelsBuf.length,
       repetition_levels_byte_length: rLevelsBuf.length,
-      is_compressed: column.compression !== 'UNCOMPRESSED'
+      is_compressed: column.compression !== 'UNCOMPRESSED',
+      statistics
     }),
     uncompressed_page_size: rLevelsBuf.length + dLevelsBuf.length + valuesBuf.length,
     compressed_page_size: rLevelsBuf.length + dLevelsBuf.length + compressedBuf.length,
@@ -768,14 +772,20 @@ async function encodeColumnChunk(
           plannedPage.rowCount,
           valueEncoding,
           dictionaryPlan?.bitWidth,
-          opts.writePageChecksums
+          opts.writePageChecksums,
+          isStatisticsEnabled(opts.writeStatistics, column)
+            ? createColumnStatistics(column, plannedPage.data)
+            : undefined
         )
       : await encodeDataPage(
           column,
           pageData,
           valueEncoding,
           dictionaryPlan?.bitWidth,
-          opts.writePageChecksums
+          opts.writePageChecksums,
+          isStatisticsEnabled(opts.writeStatistics, column)
+            ? createColumnStatistics(column, plannedPage.data)
+            : undefined
         );
     pageLocations.push(
       new PageLocation({

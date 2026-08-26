@@ -80,6 +80,25 @@ test('ParquetJSWriter records declared row-group sorting columns', async () => {
   ]);
 });
 
+test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () => {
+  for (const useDataPageV2 of [false, true]) {
+    const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
+      worker: false,
+      parquet: {pageSize: 1, writeStatistics: true, useDataPageV2}
+    });
+    const reader = new ParquetReader(new BlobFile(parquetBuffer));
+    const metadata = await reader.getFileMetadata();
+    const rowGroup = await reader.readRowGroup(await reader.getSchema(), metadata.row_groups[0], []);
+    const pageHeaders = rowGroup.columnData.label.pageHeaders;
+
+    expect(pageHeaders).toHaveLength(3);
+    expect(pageHeaders[0].data_page_header?.statistics?.min_value?.length ??
+      pageHeaders[0].data_page_header_v2?.statistics?.min_value?.length).toBeGreaterThan(0);
+    expect(pageHeaders[1].data_page_header?.statistics?.null_count?.toNumber() ??
+      pageHeaders[1].data_page_header_v2?.statistics?.null_count?.toNumber()).toBe(1);
+  }
+});
+
 test('ParquetJSWriter omits SizeStatistics by default', async () => {
   const parquetBuffer = await encode(TABLE, ParquetJSWriter, {worker: false});
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
