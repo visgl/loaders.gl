@@ -390,6 +390,28 @@ test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async 
   for (const columnName of typedColumnNames) {
     expect(streamedValues.get(columnName)).toEqual(getArrowColumnValues(uncompressed, columnName));
   }
+  const uncompressedBatches = await parseInBatches(
+    splitArrayBuffer(lasArrayBuffer, 257),
+    LASLoader,
+    {
+      batchSize: 127,
+      las: options.las,
+      core: {worker: false}
+    }
+  );
+  const uncompressedStreamedValues = new Map<string, unknown[]>();
+  for await (const batch of uncompressedBatches as AsyncIterable<MeshArrowTable>) {
+    for (const columnName of typedColumnNames) {
+      const values = uncompressedStreamedValues.get(columnName) || [];
+      values.push(...getArrowColumnValues(batch, columnName));
+      uncompressedStreamedValues.set(columnName, values);
+    }
+  }
+  for (const columnName of typedColumnNames) {
+    expect(uncompressedStreamedValues.get(columnName)).toEqual(
+      getArrowColumnValues(uncompressed, columnName)
+    );
+  }
 });
 
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
