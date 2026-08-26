@@ -5131,7 +5131,6 @@ __metadata:
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
-    "@probe.gl/log": "npm:^4.1.1"
     long: "npm:^5.2.1"
     zod: "npm:^4.1.12"
   peerDependencies:
@@ -5446,7 +5445,6 @@ __metadata:
   resolution: "@loaders.gl/images@workspace:modules/images"
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
-    "@types/get-pixels": "npm:^3.3.2"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5920,7 +5918,6 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.2"
-    gifshot: "npm:^0.4.5"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -10809,16 +10806,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/get-pixels@npm:^3.3.2":
-  version: 3.3.4
-  resolution: "@types/get-pixels@npm:3.3.4"
-  dependencies:
-    "@types/ndarray": "npm:*"
-    "@types/node": "npm:*"
-  checksum: 10c0/9f62a416ddebaaf8691e1cb39bb1ca93b311dc186bf003884dceb5ad96c0cd174f2e14dd292963b95e4532211519414f31d860458fc9ab25a80286b3cff367bd
-  languageName: node
-  linkType: hard
-
 "@types/glob@npm:^7.1.1":
   version: 7.2.0
   resolution: "@types/glob@npm:7.2.0"
@@ -11010,13 +10997,6 @@ __metadata:
   version: 2.1.0
   resolution: "@types/ms@npm:2.1.0"
   checksum: 10c0/5ce692ffe1549e1b827d99ef8ff71187457e0eb44adbae38fdf7b9a74bae8d20642ee963c14516db1d35fa2652e65f47680fdf679dcbde52bbfadd021f497225
-  languageName: node
-  linkType: hard
-
-"@types/ndarray@npm:*":
-  version: 1.0.14
-  resolution: "@types/ndarray@npm:1.0.14"
-  checksum: 10c0/c79c2b37773b7efa8c02141022c0165747b6a124f3b9bb9ea12bcb60fe1abc789fb580ff619c2415cf087e656b5380a2fcffbe0beae6f0aa1f6648227c5dd93e
   languageName: node
   linkType: hard
 
@@ -19473,13 +19453,6 @@ __metadata:
   dependencies:
     readable-stream: "npm:~1.1.9"
   checksum: 10c0/e83ede0e104a332637efa5714858db8bac7b8156e0f723cabb1569a0e40b63b250ced498f123c5b1593f12a548dfeee77d286e765b5c658fd58982b08306c39f
-  languageName: node
-  linkType: hard
-
-"gifshot@npm:^0.4.5":
-  version: 0.4.5
-  resolution: "gifshot@npm:0.4.5"
-  checksum: 10c0/d26a44cf733cff16927392234b7620b0893ed3eae286231a1dab3067fce3757c232178399398f5c2aaf642c16c126efe3eb9f65a91109abc32b1fa2c7bdd5bb2
   languageName: node
   linkType: hard
 
