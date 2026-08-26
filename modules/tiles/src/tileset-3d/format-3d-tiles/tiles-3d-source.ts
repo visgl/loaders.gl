@@ -275,7 +275,7 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads binary content or nested tileset JSON for a runtime tile.
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
-    const contentUrl = this.getTileUrl(tile.contentUrl);
+    const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
     const tilesetLoaderOptions =
       (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
@@ -289,12 +289,18 @@ export class Tiles3DSource implements Tileset3DSource {
       }
     };
 
-    const content = await this.loadResourceData(contentUrl, options);
-    tile.content = content;
+    const contents = await Promise.all(
+      contentUrls.map(contentUrl => this.loadResourceData(this.getTileUrl(contentUrl), options))
+    );
+    tile.contents = contents;
+    tile.content = contents[0] || null;
+    const nestedTilesets = contents.filter(content => content?.shape === 'tileset3d');
 
     return {
       loaded: true,
-      nestedTileset: content?.shape === 'tileset3d' ? content : undefined
+      contents,
+      nestedTileset: nestedTilesets[0],
+      nestedTilesets
     };
   }
 
@@ -458,7 +464,8 @@ export class Tiles3DSource implements Tileset3DSource {
    * Updates content-format flags and installs nested tileset subtrees.
    */
   onTileLoaded(tileset: Tileset3D, tile: Tile3D, loadResult: TileContentLoadResult): void {
-    const {extensionsRemoved = []} = tile.content?.gltf || {};
+    const contents = tile.contents.length ? tile.contents : [tile.content];
+    const extensionsRemoved = contents.flatMap(content => content?.gltf?.extensionsRemoved || []);
     if (extensionsRemoved.includes('KHR_draco_mesh_compression')) {
       this.contentFormats.draco = true;
     }
@@ -469,8 +476,10 @@ export class Tiles3DSource implements Tileset3DSource {
       this.contentFormats.ktx2 = true;
     }
 
-    if (loadResult.nestedTileset) {
-      tileset._initializeTileHeaders(loadResult.nestedTileset, tile);
+    const nestedTilesets =
+      loadResult.nestedTilesets || (loadResult.nestedTileset ? [loadResult.nestedTileset] : []);
+    for (const nestedTileset of nestedTilesets) {
+      tileset._initializeTileHeaders(nestedTileset, tile);
     }
   }
 

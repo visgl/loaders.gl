@@ -92,7 +92,8 @@ export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
       geometricError: z.number().nonnegative(),
       refine: z.string().optional(),
       transform: z.array(z.number()).length(16).optional(),
-      content: Tiles3DTileContentSchema.optional(),
+      // 3D Tiles 1.1 allows a tile to reference one or more independent contents.
+      content: z.union([Tiles3DTileContentSchema, z.array(Tiles3DTileContentSchema)]).optional(),
       children: z.array(Tiles3DTileSchema).default([]),
       extensions: z.record(z.string(), z.unknown()).optional(),
       extras: z.unknown().optional(),

@@ -20,6 +20,7 @@
       "modules/traces/formats/chrome-trace",
       "modules/textures/formats/compressed-textures",
       "modules/copc/formats/copc",
+      "modules/3d-tiles/formats/3d-tiles",
       "modules/textures/formats/crunch",
       "modules/csv/formats/csv",
       "modules/wms/formats/csw",
