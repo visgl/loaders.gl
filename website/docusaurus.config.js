@@ -138,6 +138,7 @@ const config = {
             '@loaders.gl/json': resolve('../modules/json/src'),
             '@loaders.gl/kml': resolve('../modules/kml/src'),
             '@loaders.gl/las': resolve('../modules/las/src'),
+            '@loaders.gl/lerc': resolve('../modules/lerc/src'),
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/math': resolve('../modules/math/src'),
             '@loaders.gl/mlt': resolve('../modules/mlt/src'),
