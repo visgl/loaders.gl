@@ -15,7 +15,8 @@ import {
 import type {
   ScanColumnRole,
   ScanQueryMetadata,
-  ScanQueryMetadataOptions
+  ScanQueryMetadataOptions,
+  TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -231,7 +232,10 @@ export const ParquetSourceLoaderWithParser = {
 export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
-export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
+export class ParquetSource
+  extends DataSource<string | Blob, ParquetSourceLoaderOptions>
+  implements TableScanSource<ParquetSourceBatch, ParquetPredicate>
+{
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
   readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Immutable feature support for the current range-backed source implementation. */

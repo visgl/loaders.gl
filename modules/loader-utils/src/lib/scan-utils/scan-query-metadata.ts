@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataType, FieldMetadata, Schema} from '@loaders.gl/schema';
-import type {TableQueryCapabilities, TableQueryOperatorSupport} from './table-query';
+import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
+import type {
+  TableQueryCapabilities,
+  TableQueryOperatorSupport,
+  TableQueryOptions
+} from './table-query';
 
 /** Semantic role used by query editors to choose appropriate controls for a column. */
 export type ScanColumnRole =
@@ -118,6 +123,32 @@ export type ScanQueryMetadataOptions = Readonly<{
 export type ScanQueryMetadataProvider = {
   /** Discovers query-visible columns and capabilities without materializing result rows. */
   getQueryMetadata(options?: ScanQueryMetadataOptions): Promise<ScanQueryMetadata>;
+};
+
+/** Query options supplied to a table-scan executor, including cooperative cancellation. */
+export type TableScanReadOptions<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+> = TableQueryOptions<PredicateT> & Readonly<{signal?: AbortSignal}>;
+
+/**
+ * Shared table-scan contract implemented by format-specific executors.
+ *
+ * The metadata method powers source-neutral query controls, while `read()` consumes the same
+ * immutable table-query options and emits ordered batches. Format adapters may extend the options
+ * and batch metadata with source-specific planning details.
+ */
+export type TableScanSource<
+  BatchT = unknown,
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+> = ScanQueryMetadataProvider & {
+  /** Reads the query result as ordered batches without changing the logical query semantics. */
+  read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
 };
 
 /** Inputs used to derive normalized query metadata from a loaders.gl schema. */

@@ -138,6 +138,24 @@ ranges; DuckDB may compile the whole sequence to one prepared statement; Arrow m
 steps over vectors; luma.gl may lower filter to WGSL and retain indices. Operator fusion is welcome
 as long as the visible result is equivalent.
 
+### The source contract
+
+Format adapters that participate in the table scan architecture implement `TableScanSource`. It
+combines metadata discovery with an ordered batch reader:
+
+```ts
+type TableScanSource<BatchT, PredicateT extends ColumnarPredicate = ColumnarPredicate> =
+  ScanQueryMetadataProvider & {
+    read(options?: TableQueryOptions<PredicateT> & {signal?: AbortSignal}): AsyncIterable<BatchT>;
+  };
+```
+
+`getQueryMetadata()` is intentionally cheap and drives the query panel. `read()` is the execution
+boundary: it may prune manifests, row groups, pages, or ranges, but it must preserve the logical
+plan's projection, three-valued predicate semantics, source ordering, and global limit. Parquet is
+the reference implementation: its `ParquetSource` exposes the shared capabilities and explainable
+logical plan while adding row-group, page-index, Bloom-filter, range, and worker details.
+
 ### Package ownership
 
 | Layer | Owning package | Responsibility |
