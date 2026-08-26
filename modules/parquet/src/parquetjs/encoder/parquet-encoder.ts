@@ -856,14 +856,16 @@ async function encodeColumnChunk(
   const metadataOffset = baseOffset + pagesBuf.length + (bloomFilter?.length || 0);
   const metadataEncoded = serializeThrift(metadata);
   const offsetIndexOffset = pageIndexes ? metadataOffset + metadataEncoded.length : undefined;
-  const columnIndexOffset = pageIndexes
+  const columnIndexOffset = pageIndexes?.columnIndex
     ? metadataOffset + metadataEncoded.length + pageIndexes.offsetIndex.length
     : undefined;
   const body = concatUint8Arrays([
     pagesBuf,
     ...(bloomFilter ? [bloomFilter] : []),
     metadataEncoded,
-    ...(pageIndexes ? [pageIndexes.offsetIndex, pageIndexes.columnIndex] : [])
+    ...(pageIndexes
+      ? [pageIndexes.offsetIndex, ...(pageIndexes.columnIndex ? [pageIndexes.columnIndex] : [])]
+      : [])
   ]);
   return {
     body,
@@ -872,7 +874,7 @@ async function encodeColumnChunk(
     offsetIndexOffset,
     offsetIndexLength: pageIndexes?.offsetIndex.length,
     columnIndexOffset,
-    columnIndexLength: pageIndexes?.columnIndex.length
+    columnIndexLength: pageIndexes?.columnIndex?.length
   };
 }
 
@@ -881,15 +883,19 @@ function createColumnPageIndexes(
   column: ParquetField,
   plannedPages: ReturnType<typeof planColumnPages>,
   pageLocations: PageLocation[]
-): {offsetIndex: Uint8Array; columnIndex: Uint8Array} | undefined {
+): {offsetIndex: Uint8Array; columnIndex?: Uint8Array} | undefined {
   if (
     !column.primitiveType ||
     !isPageIndexPhysicalType(column.primitiveType) ||
-    !supportsStatisticsSortOrder(column) ||
     plannedPages.length !== pageLocations.length ||
     plannedPages.length === 0
   ) {
     return undefined;
+  }
+
+  const offsetIndex = serializeThrift(new OffsetIndex({page_locations: pageLocations}));
+  if (!supportsStatisticsSortOrder(column)) {
+    return {offsetIndex};
   }
 
   const nullPages: boolean[] = [];
@@ -917,7 +923,7 @@ function createColumnPageIndexes(
   }
 
   return {
-    offsetIndex: serializeThrift(new OffsetIndex({page_locations: pageLocations})),
+    offsetIndex,
     columnIndex: serializeThrift(
       new ColumnIndex({
         null_pages: nullPages,

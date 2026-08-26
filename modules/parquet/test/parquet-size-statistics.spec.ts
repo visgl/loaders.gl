@@ -152,7 +152,7 @@ test('ParquetJSWriter omits unsafe page indexes for unsigned logical values', as
   const column = metadata.row_groups[0].columns[0];
 
   expect(column.column_index_offset).toBeUndefined();
-  expect(column.offset_index_offset).toBeUndefined();
+  expect(column.offset_index_offset).toBeDefined();
 });
 
 test('ParquetJSWriter omits SizeStatistics by default', async () => {
