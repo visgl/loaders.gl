@@ -73,7 +73,18 @@ export default async function lasLoaderBench(bench) {
     });
   }
 
-  bench.groupSorted('LASLoader comprehensive parseInBatches streaming LAZ 1.2 PDRF 3');
+  bench.groupSorted('LASLoader TypeScript path LAZ 1.2 PDRF 3 comprehensive output');
+
+  bench.addAsync(
+    'parse complete LAZ 1.2 PDRF 3 columns=all variant=typescript',
+    benchmarkOptions,
+    async () => {
+      await parse(lazArrayBuffer, LASLoader, {
+        core: {worker: false},
+        las: {shape: 'arrow-table'}
+      });
+    }
+  );
 
   bench.addAsync(
     `parseInBatches streaming LAZ 1.2 PDRF 3 variant=typescript ${formatStreamingStats(lazStreamingStats)}`,
@@ -101,20 +112,18 @@ export default async function lasLoaderBench(bench) {
     });
   }
 
-  bench.groupSorted('LASLoader comprehensive parse LAZ 1.4 PDRF 7');
+  bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 common columns');
 
   bench.addAsync(
-    'parse comprehensive LAZ 1.4 PDRF 7 variant=typescript',
+    'parse complete LAZ 1.4 PDRF 7 columns=common variant=typescript',
     laz14BenchmarkOptions,
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table'}
+        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
       });
     }
   );
-
-  bench.groupSorted('LASLoader common-column parseInBatches streaming LAZ 1.4 PDRF 7');
 
   bench.addAsync(
     'parseInBatches streaming LAZ 1.4 PDRF 7 columns=common variant=typescript',
@@ -131,7 +140,18 @@ export default async function lasLoaderBench(bench) {
     }
   );
 
-  bench.groupSorted('LASLoader comprehensive parseInBatches streaming LAZ 1.4 PDRF 7');
+  bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 comprehensive output');
+
+  bench.addAsync(
+    'parse complete LAZ 1.4 PDRF 7 columns=all variant=typescript',
+    laz14BenchmarkOptions,
+    async () => {
+      await parse(laz14ArrayBuffer, LASLoader, {
+        core: {worker: false},
+        las: {shape: 'arrow-table'}
+      });
+    }
+  );
 
   bench.addAsync(
     `parseInBatches streaming LAZ 1.4 PDRF 7 variant=typescript ${formatStreamingStats(laz14StreamingStats)}`,
@@ -148,7 +168,7 @@ export default async function lasLoaderBench(bench) {
     }
   );
 
-  bench.groupSorted('LASLoader selective parse LAZ 1.4 PDRF 7');
+  bench.groupSorted('LASLoader TypeScript path LAZ 1.4 PDRF 7 render columns');
 
   bench.addAsync(
     'parse LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=typescript',
@@ -160,8 +180,6 @@ export default async function lasLoaderBench(bench) {
       });
     }
   );
-
-  bench.groupSorted('LASLoader selective parseInBatches streaming LAZ 1.4 PDRF 7');
 
   bench.addAsync(
     'parseInBatches streaming LAZ 1.4 PDRF 7 columns=POSITION,COLOR_0 variant=typescript',

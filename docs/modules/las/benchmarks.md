@@ -5,9 +5,11 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
 
 <LasDocsTabs active="benchmarks" />
 
-These live browser benchmarks use compressed LAZ and Arrow-table output. The LAZ 1.2/PDRF 3 group compares TypeScript, laz-perf, the COPC package decoder, and laz-rs. The LAZ 1.4/PDRF 7 group compares the three compatible variants. Every competitive group parses identical bytes and requests the common point-cloud columns `POSITION`, `COLOR_0`, `intensity`, and `classification`.
+These live browser benchmarks use compressed LAZ and Arrow-table output. Groups labeled **Backend head-to-head** compare TypeScript with every compatible loader variant: LAZ 1.2/PDRF 3 compares TypeScript, laz-perf, the COPC package decoder, and laz-rs; LAZ 1.4/PDRF 7 compares TypeScript, the COPC package decoder, and laz-rs. Every backend comparison parses identical bytes and materializes the common point-cloud columns `POSITION`, `COLOR_0`, `intensity`, and `classification`.
 
-The final group measures TypeScript-only streaming and selective-column capabilities. Streaming cases pass pre-split binary LAZ chunks to `parseInBatches`; they do not substitute an atomic parse. Comprehensive cases materialize every represented LAS field, while selective cases request either the common point-cloud columns or only `POSITION` and `COLOR_0`. These workloads are intentionally separated because they perform different amounts of decoding and Arrow allocation.
+Groups labeled **TypeScript path** compare complete parsing with true streaming for the same output schema. Streaming cases pass pre-split binary LAZ chunks to `parseInBatches`; they do not substitute an atomic parse. The render workload requests `POSITION` and `COLOR_0`, the common workload adds intensity and classification, and the comprehensive workload materializes every represented LAS field.
+
+Compare numbers only within a group. Comprehensive output is intentionally slower because it now includes GPS time, return metadata, scan flags, and other represented LAS fields. A comprehensive result around 1.4 million points/second is therefore not a regression from a common- or render-column result above 2 million points/second.
 
 Fixture download, loader-variant initialization, WASM compilation, and input copying happen before timing starts. Keep this page focused while a run is active.
 

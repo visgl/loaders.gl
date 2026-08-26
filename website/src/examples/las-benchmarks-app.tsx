@@ -139,7 +139,7 @@ class SortedBench extends Bench {
   }
 }
 
-/** Renders live compressed LAS 1.4/PDRF 7 parser benchmarks in the visitor's browser. */
+/** Renders live compressed LAZ parser benchmarks in the visitor's browser. */
 export default function LASBenchmarksApp(): JSX.Element {
   const [rows, setRows] = useState<BenchmarkResultRow[]>([]);
   const [status, setStatus] = useState<BenchmarkStatus>('loading');
@@ -218,8 +218,10 @@ export default function LASBenchmarksApp(): JSX.Element {
   return (
     <div className="benchmark-page">
       <p>
-        Live compressed LAZ Arrow-table throughput in this browser. Competitive groups run every
-        compatible loader variant on identical input and output columns. Keep this tab focused
+        Live compressed LAZ Arrow-table throughput in this browser. Groups prefixed with
+        <strong> Backend head-to-head</strong> run every compatible loader variant on the same
+        input and four-column output. Groups prefixed with <strong>TypeScript path</strong> compare
+        complete and true-streaming parsing for the same requested columns. Keep this tab focused
         while the run completes.
       </p>
       <div className="benchmark-status-row" aria-live="polite">
@@ -256,12 +258,14 @@ function addLASBenchmarks(
       unit: 'output points',
       minIterations: 3
     };
-    bench.groupSorted(`${fixture.label} - complete parse, common point-cloud columns`);
+    bench.groupSorted(
+      `Backend head-to-head - ${fixture.label} - POSITION, COLOR_0, intensity, classification`
+    );
     for (const {name, loader, pointDataRecordFormats} of LOADER_VARIANTS) {
       if (!pointDataRecordFormats.includes(fixture.pointDataRecordFormat)) {
         continue;
       }
-      bench.addAsync(`${name} - PDRF ${fixture.pointDataRecordFormat}`, benchmarkOptions, async () => {
+      bench.addAsync(`${name} [${fixture.label}]`, benchmarkOptions, async () => {
         await parse(fixture.arrayBuffer, loader, {
           core: {worker: false},
           las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
@@ -278,20 +282,24 @@ function addLASBenchmarks(
     unit: 'output points',
     minIterations: 3
   };
-  bench.groupSorted('TypeScript LAZ 1.4 / PDRF 7 - streaming and column selection');
-  bench.addAsync('Complete - all columns', benchmarkOptions, async () => {
+  bench.groupSorted('TypeScript path - LAZ 1.4 / PDRF 7 - POSITION + COLOR_0');
+  bench.addAsync('Complete parse [pdrf7-render]', benchmarkOptions, async () => {
     await parse(laz14Fixture.arrayBuffer, LASLoader, {
       core: {worker: false},
-      las: {shape: 'arrow-table'}
+      las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
     });
   });
   bench.addAsync(
-    'Streaming - all columns',
+    'Streaming parseInBatches [pdrf7-render]',
     benchmarkOptions,
-    async () => consumeStreamingParse(laz14Chunks, undefined)
+    async () => consumeStreamingParse(laz14Chunks, RENDER_COLUMNS)
+  );
+
+  bench.groupSorted(
+    'TypeScript path - LAZ 1.4 / PDRF 7 - POSITION, COLOR_0, intensity, classification'
   );
   bench.addAsync(
-    'Complete - common point-cloud columns',
+    'Complete parse [pdrf7-common]',
     benchmarkOptions,
     async () => {
       await parse(laz14Fixture.arrayBuffer, LASLoader, {
@@ -301,24 +309,22 @@ function addLASBenchmarks(
     }
   );
   bench.addAsync(
-    'Streaming - common point-cloud columns',
+    'Streaming parseInBatches [pdrf7-common]',
     benchmarkOptions,
     async () => consumeStreamingParse(laz14Chunks, COMPETITIVE_COLUMNS)
   );
+
+  bench.groupSorted('TypeScript path - LAZ 1.4 / PDRF 7 - comprehensive output');
+  bench.addAsync('Complete parse [pdrf7-comprehensive]', benchmarkOptions, async () => {
+    await parse(laz14Fixture.arrayBuffer, LASLoader, {
+      core: {worker: false},
+      las: {shape: 'arrow-table'}
+    });
+  });
   bench.addAsync(
-    'Complete - POSITION + COLOR_0 only',
+    'Streaming parseInBatches [pdrf7-comprehensive]',
     benchmarkOptions,
-    async () => {
-      await parse(laz14Fixture.arrayBuffer, LASLoader, {
-        core: {worker: false},
-        las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
-      });
-    }
-  );
-  bench.addAsync(
-    'Streaming - POSITION + COLOR_0 only',
-    benchmarkOptions,
-    async () => consumeStreamingParse(laz14Chunks, RENDER_COLUMNS)
+    async () => consumeStreamingParse(laz14Chunks, undefined)
   );
 }
 
@@ -487,7 +493,7 @@ function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
       return {id: entry.id};
     case 'test':
       return {
-        id: entry.id,
+        id: getBenchmarkDisplayName(entry.id),
         value: getLogEntryThroughput(entry),
         formattedValue: entry.itersPerSecond,
         formattedError: `${(entry.error * 100).toFixed(2)}%`
@@ -495,6 +501,11 @@ function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
     default:
       return null;
   }
+}
+
+/** Removes the uniqueness suffix from a benchmark row before rendering it. */
+function getBenchmarkDisplayName(benchmarkId: string): string {
+  return benchmarkId.replace(/ \[[^\]]+\]$/, '');
 }
 
 /** Returns numeric points per second from one SI-formatted benchmark result. */
