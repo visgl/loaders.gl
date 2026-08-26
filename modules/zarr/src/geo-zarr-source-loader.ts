@@ -201,15 +201,15 @@ export class GeoZarrRasterSource
       schema: {fields, metadata: {}},
       capabilities: {
         bounds: 'pushdown',
-        levelOfDetail: 'unsupported',
-        variables: 'pushdown',
-        slices: metadata.selectionDimensions.length ? 'pushdown' : 'unsupported'
+        levelOfDetail: 'unsupported'
       },
-      spatial: {
-        bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
-        coordinateReferenceSystems:
-          typeof metadata.crs === 'string' ? [metadata.crs] : undefined
-      }
+      spatial: metadata.boundingBox
+        ? {
+            bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+            coordinateReferenceSystems:
+              typeof metadata.crs === 'string' ? [metadata.crs] : undefined
+          }
+        : undefined
     });
   }
 

@@ -20,7 +20,7 @@ test('GeoZarrRasterSource exposes scan metadata for variables and slices', async
   const metadata = await source.getQueryMetadata();
   expect(metadata.sourceType).toBe('geozarr');
   expect(metadata.columns.map(column => column.name)).toEqual(['temperature']);
-  expect(metadata.capabilities.slices).toBe('pushdown');
+  expect(metadata.capabilities.levelOfDetail).toBe('unsupported');
   expect(metadata.spatial?.coordinateReferenceSystems).toEqual(['EPSG:4326']);
 });
 

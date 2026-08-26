@@ -185,7 +185,7 @@ export class OMETiffImageSource
       name: channel.name || `channel_${channel.index + 1}`,
       type: metadata.dtype,
       nullable: false,
-      metadata: channel.color ? {color: channel.color.join(',')} : {}
+      metadata: channel.color ? {color: channel.color.join(',')} : undefined
     }));
     return createScanQueryMetadata({
       sourceType: 'ometiff',
@@ -193,9 +193,7 @@ export class OMETiffImageSource
       name: metadata.name,
       schema: {fields, metadata: {}},
       capabilities: {
-        levelOfDetail: metadata.levels.length > 1 ? 'pushdown' : 'unsupported',
-        slices: metadata.sizeT > 1 || metadata.sizeZ > 1 ? 'pushdown' : 'unsupported',
-        variables: 'pushdown'
+        levelOfDetail: metadata.levels.length > 1 ? 'pushdown' : 'unsupported'
       },
       levels: metadata.levels.map(level => ({
         index: level.level,
