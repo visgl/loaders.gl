@@ -27,6 +27,8 @@ import {
   ColumnIndex,
   ColumnMetaData,
   SizeStatistics,
+  Statistics,
+  SortingColumn,
   CompressionCodec,
   ConvertedType,
   DataPageHeader,
@@ -118,6 +120,10 @@ export interface ParquetEncoderOptions {
   writePageChecksums?: boolean;
   /** Emit optional SizeStatistics metadata for each column chunk. */
   writeSizeStatistics?: boolean;
+  /** Emit optional min/max/null-count statistics for each column chunk. */
+  writeStatistics?: boolean | Record<string, boolean>;
+  /** Declare the row-group sort order using top-level or dotted leaf column names. */
+  sortingColumns?: readonly ParquetSortingColumnOption[];
 
   // Write Stream Options
   flags?: string;
@@ -127,6 +133,16 @@ export interface ParquetEncoderOptions {
   autoClose?: boolean;
   start?: number;
 }
+
+/** Writer-facing declaration for one row-group sort key. */
+export type ParquetSortingColumnOption = {
+  /** Top-level field name or dotted nested leaf path. */
+  column: string;
+  /** Sort direction; defaults to ascending. */
+  descending?: boolean;
+  /** Whether null values sort before non-null values; defaults to false. */
+  nullsFirst?: boolean;
+};
 
 /**
  * Write a parquet file to an output stream. The ParquetEncoder will perform
@@ -301,6 +317,8 @@ export class ParquetEnvelopeWriter {
   public pageIndex?: boolean | Record<string, boolean>;
   public writePageChecksums: boolean;
   public writeSizeStatistics: boolean;
+  public writeStatistics?: boolean | Record<string, boolean>;
+  public sortingColumns?: readonly ParquetSortingColumnOption[];
 
   constructor(
     schema: ParquetSchema,
@@ -324,6 +342,8 @@ export class ParquetEnvelopeWriter {
     this.pageIndex = opts.pageIndex;
     this.writePageChecksums = Boolean(opts.writePageChecksums);
     this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
+    this.writeStatistics = opts.writeStatistics;
+    this.sortingColumns = opts.sortingColumns;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -353,7 +373,9 @@ export class ParquetEnvelopeWriter {
       bloomFilter: this.bloomFilter,
       pageIndex: this.pageIndex,
       writePageChecksums: this.writePageChecksums,
-      writeSizeStatistics: this.writeSizeStatistics
+      writeSizeStatistics: this.writeSizeStatistics,
+      writeStatistics: this.writeStatistics,
+      sortingColumns: this.sortingColumns
     });
 
     this.rowCount += records.rowCount;
@@ -809,7 +831,10 @@ async function encodeColumnChunk(
     bloom_filter_offset: bloomFilter ? int64(baseOffset + pagesBuf.length) : undefined,
     bloom_filter_length: bloomFilter?.length,
     geospatial_statistics: createGeospatialStatistics(column, data.values),
-    size_statistics: opts.writeSizeStatistics ? createSizeStatistics(column, data) : undefined
+    size_statistics: opts.writeSizeStatistics ? createSizeStatistics(column, data) : undefined,
+    statistics: isStatisticsEnabled(opts.writeStatistics, column)
+      ? createColumnStatistics(column, data)
+      : undefined
   });
 
   /* list encodings */
@@ -1055,6 +1080,35 @@ function createSizeStatistics(column: ParquetField, data: ParquetColumnChunk): S
   });
 }
 
+/** Returns whether standard column statistics are enabled for one top-level field. */
+function isStatisticsEnabled(
+  option: boolean | Record<string, boolean> | undefined,
+  column: ParquetField
+): boolean {
+  return option === true || option?.[column.path[0]] === true;
+}
+
+/** Builds conservative standard min/max/null-count statistics for one column chunk. */
+function createColumnStatistics(
+  column: ParquetField,
+  data: ParquetColumnChunk
+): Statistics | undefined {
+  if (!column.primitiveType || !isPageIndexPhysicalType(column.primitiveType)) {
+    return undefined;
+  }
+  const statistics = new Statistics({
+    null_count: column.rLevelMax === 0 ? data.count - data.values.length : undefined,
+    is_min_value_exact: true,
+    is_max_value_exact: true
+  });
+  if (data.values.length === 0) return statistics;
+  const bounds = getPageBounds(data.values, column.primitiveType, column.typeLength);
+  if (!bounds) return undefined;
+  statistics.min_value = bounds.min;
+  statistics.max_value = bounds.max;
+  return statistics;
+}
+
 /** Counts the occurrences of each definition or repetition level. */
 function createLevelHistogram(
   levels: ParquetColumnChunk['rlevels'],
@@ -1065,6 +1119,33 @@ function createLevelHistogram(
     if (level >= 0 && level <= maximumLevel) histogram[level]++;
   }
   return histogram;
+}
+
+/** Converts writer-facing sort keys into Parquet leaf-column indexes. */
+function createSortingColumns(
+  schema: ParquetSchema,
+  sortingColumns: readonly ParquetSortingColumnOption[] | undefined
+): SortingColumn[] | undefined {
+  if (!sortingColumns?.length) return undefined;
+  const leafFields = schema.fieldList.filter(field => !field.isNested);
+  const usedColumnIndexes = new Set<number>();
+  return sortingColumns.map(sortKey => {
+    const columnIndex = leafFields.findIndex(
+      field => field.name === sortKey.column || field.path.join('.') === sortKey.column
+    );
+    if (columnIndex < 0) {
+      throw new Error(`Unknown Parquet sorting column ${sortKey.column}`);
+    }
+    if (usedColumnIndexes.has(columnIndex)) {
+      throw new Error(`Duplicate Parquet sorting column ${sortKey.column}`);
+    }
+    usedColumnIndexes.add(columnIndex);
+    return new SortingColumn({
+      column_idx: columnIndex,
+      descending: Boolean(sortKey.descending),
+      nulls_first: Boolean(sortKey.nullsFirst)
+    });
+  });
 }
 
 /**
@@ -1081,7 +1162,8 @@ async function encodeRowGroup(
   const metadata = new RowGroup({
     num_rows: int64(data.rowCount),
     columns: [],
-    total_byte_size: int64(0)
+    total_byte_size: int64(0),
+    sorting_columns: createSortingColumns(schema, opts.sortingColumns)
   });
 
   let body: Uint8Array = new Uint8Array(0);

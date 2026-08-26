@@ -135,6 +135,8 @@ read/write encoding matrix.
 | `parquet.dictionaryPageSizeLimit` | `number` | `1048576` | Maximum uncompressed PLAIN dictionary payload in bytes; oversized dictionaries fall back for the complete chunk. |
 | `parquet.bloomFilter` | `boolean \| Record<string, boolean>` | `false` | Emits uncompressed split-block Bloom filters for supported scalar columns, globally or by top-level column name. |
 | `parquet.pageIndex` | `boolean \| Record<string, boolean>` | `false` | Emits column and offset indexes for supported non-repeated scalar columns, globally or by top-level column name. |
+| `parquet.writeStatistics` | `boolean \| Record<string, boolean>` | `false` | Emits standard min/max/null-count statistics for supported scalar column chunks, globally or by top-level column name. |
+| `parquet.sortingColumns` | `readonly {column: string; descending?: boolean; nullsFirst?: boolean}[]` | `undefined` | Declares the row-group sort order using top-level or dotted nested leaf names. The writer does not sort rows. |
 | `parquet.writePageChecksums` | `boolean` | `false` | Emits CRC-32 checksums for TypeScript writer data and dictionary pages. |
 | `parquet.writeSizeStatistics` | `boolean` | `false` | Emits byte-array size totals and repetition/definition-level histograms for TypeScript writer column chunks. |
 | `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |

@@ -100,7 +100,11 @@ export {
 } from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
-export type {ParquetJSWriterEncoding, ParquetJSWriterOptions} from './parquet-js-writer';
+export type {
+  ParquetJSWriterEncoding,
+  ParquetJSWriterOptions,
+  ParquetSortingColumnOption
+} from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
 
 export {
