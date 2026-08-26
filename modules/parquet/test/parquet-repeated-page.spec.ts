@@ -60,3 +60,41 @@ test('ParquetReader selectively reads repeated columns when page boundaries alig
   ).toEqual(['hundred', 'hundred-one']);
   await file.close();
 });
+
+test('Parquet page pruning falls back when a repeated row crosses a page boundary', async () => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {
+        fields: [
+          {name: 'id', type: {type: 'list', children: [{name: 'element', type: 'int32'}]}},
+          {name: 'tags', type: {type: 'list', children: [{name: 'element', type: 'utf8'}]}}
+        ],
+        metadata: {}
+      },
+      data: [
+        {id: [0, 1, 2], tags: ['zero', 'one', 'two']},
+        {id: [100, 101, 102], tags: ['hundred', 'hundred-one', 'hundred-two']}
+      ]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {pageSize: 2, pageIndex: {id: true, tags: true}}}
+  );
+  const file = new BlobFile(new Blob([parquetBuffer]));
+  const reader = new ParquetReader(file);
+  const metadata = await reader.getFileMetadata();
+  const schema = await reader.getSchema();
+  const rowGroup = metadata.row_groups[0];
+  const selectedColumnPaths = rowGroup.columns.map(column => column.meta_data!.path_in_schema);
+
+  const plan = await createParquetPagePruningPlan(
+    file,
+    rowGroup,
+    schema,
+    selectedColumnPaths,
+    {op: '>=', args: [{property: 'id'}, 100]}
+  );
+
+  expect(plan).toBeUndefined();
+  await file.close();
+});

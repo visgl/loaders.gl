@@ -1084,7 +1084,7 @@ function createSizeStatistics(column: ParquetField, data: ParquetColumnChunk): S
   }
   return new SizeStatistics({
     unencoded_byte_array_data_bytes:
-      unencodedByteArrayDataBytes > 0 ? unencodedByteArrayDataBytes : undefined,
+      column.primitiveType === 'BYTE_ARRAY' ? unencodedByteArrayDataBytes : undefined,
     repetition_level_histogram: repetitionLevelHistogram,
     definition_level_histogram: definitionLevelHistogram
   });
@@ -1103,7 +1103,11 @@ function createColumnStatistics(
   column: ParquetField,
   data: ParquetColumnChunk
 ): Statistics | undefined {
-  if (!column.primitiveType || !isPageIndexPhysicalType(column.primitiveType)) {
+  if (
+    !column.primitiveType ||
+    !isPageIndexPhysicalType(column.primitiveType) ||
+    !supportsStatisticsSortOrder(column)
+  ) {
     return undefined;
   }
   const statistics = new Statistics({
@@ -1117,6 +1121,19 @@ function createColumnStatistics(
   statistics.min_value = bounds.min;
   statistics.max_value = bounds.max;
   return statistics;
+}
+
+/** Returns whether the physical representation preserves the logical sort order. */
+function supportsStatisticsSortOrder(column: ParquetField): boolean {
+  const logicalType = column.logicalType?.type || column.originalType;
+  if (logicalType === 'FLOAT16') return false;
+  if (logicalType === 'DECIMAL' || logicalType?.startsWith('DECIMAL_')) {
+    return column.primitiveType !== 'BYTE_ARRAY' && column.primitiveType !== 'FIXED_LEN_BYTE_ARRAY';
+  }
+  if (logicalType === 'INTEGER' || logicalType?.startsWith('UINT_')) {
+    return column.logicalType?.isSigned !== false && !logicalType.startsWith('UINT_');
+  }
+  return true;
 }
 
 /** Counts the occurrences of each definition or repetition level. */
@@ -1141,7 +1158,9 @@ function createSortingColumns(
   const usedColumnIndexes = new Set<number>();
   return sortingColumns.map(sortKey => {
     const columnIndex = leafFields.findIndex(
-      field => field.name === sortKey.column || field.path.join('.') === sortKey.column
+      field =>
+        (field.path.length === 1 && field.name === sortKey.column) ||
+        (field.path.length > 1 && field.path.join('.') === sortKey.column)
     );
     if (columnIndex < 0) {
       throw new Error(`Unknown Parquet sorting column ${sortKey.column}`);

@@ -64,6 +64,24 @@ test('ParquetJSWriter supports per-column standard statistics', async () => {
   expect(value.statistics).toBeUndefined();
 });
 
+test('ParquetJSWriter records zero byte-array totals for empty values', async () => {
+  const emptyLabelTable: ObjectRowTable = {
+    ...TABLE,
+    data: [
+      {label: '', value: 1},
+      {label: null, value: 2}
+    ]
+  };
+  const parquetBuffer = await encode(emptyLabelTable, ParquetJSWriter, {
+    worker: false,
+    parquet: {writeSizeStatistics: true}
+  });
+  const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
+  const [label] = metadata.row_groups[0].columns.map(column => column.meta_data!);
+
+  expect(label.size_statistics?.unencoded_byte_array_data_bytes?.toNumber()).toBe(0);
+});
+
 test('ParquetJSWriter records declared row-group sorting columns', async () => {
   const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
     worker: false,
@@ -78,6 +96,27 @@ test('ParquetJSWriter records declared row-group sorting columns', async () => {
     {columnIndex: 0, descending: false, nullsFirst: false},
     {columnIndex: 1, descending: true, nullsFirst: true}
   ]);
+});
+
+test('ParquetJSWriter rejects ambiguous bare nested sorting names', async () => {
+  const nestedTable: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [
+        {name: 'left', type: {type: 'struct', children: [{name: 'id', type: 'int32'}]}},
+        {name: 'right', type: {type: 'struct', children: [{name: 'id', type: 'int32'}]}}
+      ],
+      metadata: {}
+    },
+    data: [{left: {id: 1}, right: {id: 2}}]
+  };
+
+  await expect(
+    encode(nestedTable, ParquetJSWriter, {
+      worker: false,
+      parquet: {sortingColumns: [{column: 'id'}]}
+    })
+  ).rejects.toThrow('Unknown Parquet sorting column id');
 });
 
 test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () => {

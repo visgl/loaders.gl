@@ -10,9 +10,22 @@ import {OffsetIndex, PageLocation, SizeStatistics} from '../src/parquetjs/parque
 import {serializeThrift} from '../src/parquetjs/utils/read-utils';
 import {Uint8ArrayCompactProtocol} from '../src/parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
+import {PARQUET_CODECS} from '../src/parquetjs/codecs';
 import {createParquetModuleAad, decryptParquetModule} from '../src/lib/parquet-encryption';
 
 describe('Parquet page-index public helpers', () => {
+  test('decodes legacy BIT_PACKED level values', () => {
+    const encoded = PARQUET_CODECS.BIT_PACKED.encodeValues('INT32', [0, 1, 2, 3, 4], {
+      bitWidth: 3
+    });
+    const decoded = PARQUET_CODECS.BIT_PACKED.decodeValues(
+      'INT32',
+      {buffer: encoded, offset: 0, size: encoded.length},
+      5,
+      {bitWidth: 3}
+    );
+    expect(decoded).toEqual([0, 1, 2, 3, 4]);
+  });
   test('decodes physical page statistics using logical field types', () => {
     const schema = new ParquetSchema({value: {type: 'INT32'}});
     expect(

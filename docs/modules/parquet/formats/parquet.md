@@ -173,7 +173,7 @@ uses, while each page identifies its actual value encoding.
 | `PLAIN` | All physical types | ✅ | ✅ | Required baseline encoding |
 | `PLAIN_DICTIONARY` | All physical types | ✅ | ❌ | Deprecated dictionary identifier |
 | `RLE` | Boolean, levels, dictionary indexes | ✅ | ✅ | Writer uses it for definition/repetition levels |
-| `BIT_PACKED` | Legacy levels | ❌ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid |
+| `BIT_PACKED` | Legacy levels | ✅ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid; supported for legacy page-level compatibility |
 | `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ✅ | Effective for ordered integer sequences |
 | `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | ✅ | ✅ | Delta-encodes lengths followed by concatenated bytes |
 | `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ✅ | Prefix/suffix encoding for related byte strings |
@@ -283,10 +283,21 @@ The compatibility suite uses checked-in files from
 maintained browser-capable implementations. Required tests are hermetic; large and exhaustive
 corpora run in the slow lane.
 
-The TypeScript implementation is aiming for complete stable-format read support. The largest known
-gaps are currently:
+The current implementation status is tracked in the following broad work tranches. A check mark
+means the capability is usable in the TypeScript reader; it does not imply that every producer
+variant has been exhaustively certified.
 
-1. semantic sorting-based pruning and writer-side statistics/page-statistics completeness; and
-2. encrypted-column range reads, including page/index modules and key-rotation safeguards.
+| Tranche | Status | Remaining work |
+| ------- | ------ | -------------- |
+| Statistics-driven pruning | ✅ foundation | Use declared sort order for semantic page/row-group pruning and keep selective-range cost estimates aligned with late materialization |
+| Modular encryption | ⚠️ footer foundation | Decrypt column metadata and page/index modules for range reads; add key rotation and cross-implementation fixtures |
+| Logical and legacy parity | ⚠️ expanding | Broaden INT96 and legacy encoding coverage; preserve Arrow fidelity for every logical annotation |
+| Conformance and scale gate | ⚠️ ongoing | Run the Apache corpus, nested/repeated matrices, all stable codecs, differential checks, and large-file benchmarks in the slow lane |
+| Emerging-format lab | 🧪 experimental | Track ALP, PFOR, VECTOR, and format-versioning proposals behind explicit experimental flags; do not advertise them as stable support |
 
-Preview features such as [ALP](https://github.com/apache/parquet-format/pull/557), [PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream [format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) are tracked separately from stable-format completeness.
+The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
+zero-valued size statistics, and legacy `BIT_PACKED` level decoding. Preview features such as
+[ALP](https://github.com/apache/parquet-format/pull/557),
+[PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream
+[format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) remain
+separate from stable-format completeness.

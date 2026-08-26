@@ -11,6 +11,7 @@ import type {ParquetValueBuffer} from '../codecs/declare';
 export type ParquetCodec =
   | 'PLAIN'
   | 'RLE'
+  | 'BIT_PACKED'
   | 'PLAIN_DICTIONARY'
   | 'RLE_DICTIONARY'
   | 'DELTA_BINARY_PACKED'
