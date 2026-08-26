@@ -5,31 +5,31 @@
 // GLTF EXTENSION: KHR_materials_unlit
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit
 
-import type {GLTF} from '../../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../../types/gltf-types';
 
+import {GLTFIterator} from '../../api/gltf-iterator';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 
 const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
 
 export const name = KHR_MATERIALS_UNLIT;
 
-export async function decode(gltfData: {json: GLTF}): Promise<void> {
-  const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const {json} = gltfScenegraph;
+export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
+  const iterator = new GLTFIterator(gltfData);
 
   // Any nodes that have the extension, add lights field pointing to light object
   // and remove the extension
-  for (const material of json.materials || []) {
-    const extension = material.extensions && material.extensions.KHR_materials_unlit;
+  for (const material of iterator.materials) {
+    const extension = iterator.getExtension(material, KHR_MATERIALS_UNLIT);
     if (extension) {
       // @ts-ignore TODO
-      material.unlit = true;
+      (material as typeof material & {unlit?: boolean}).unlit = true;
     }
-    gltfScenegraph.removeObjectExtension(material, KHR_MATERIALS_UNLIT);
+    iterator.removeExtension(material, KHR_MATERIALS_UNLIT);
   }
 
   // Remove the top-level extension
-  gltfScenegraph.removeExtension(KHR_MATERIALS_UNLIT);
+  iterator.removeExtension(KHR_MATERIALS_UNLIT);
 }
 
 export function encode(gltfData) {

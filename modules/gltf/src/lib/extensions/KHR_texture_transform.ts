@@ -19,7 +19,7 @@ import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {GLTFIterator} from '../api/gltf-iterator';
 import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 /** Extension name */
@@ -62,17 +62,17 @@ type TransformParameters = {
  * @param options GLTFLoader options
  */
 export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions) {
-  const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const hasExtension = gltfScenegraph.hasExtension(KHR_TEXTURE_TRANSFORM);
+  const iterator = new GLTFIterator(gltfData);
+  const hasExtension = iterator.hasExtension(KHR_TEXTURE_TRANSFORM);
   if (!hasExtension || !options.gltf?.loadBuffers) {
     return;
   }
   const materials = gltfData.json.materials || [];
   for (let i = 0; i < materials.length; i++) {
-    transformTexCoords(i, gltfData, gltfScenegraph);
+    transformTexCoords(i, gltfData, iterator);
   }
   if (!materials.some(material => findTextureInfos(material).length > 0)) {
-    gltfScenegraph.removeExtension(KHR_TEXTURE_TRANSFORM);
+    iterator.removeExtension(KHR_TEXTURE_TRANSFORM);
   }
 }
 
@@ -85,7 +85,7 @@ export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptio
 function transformTexCoords(
   materialIndex: number,
   gltfData: GLTFWithBuffers,
-  gltfScenegraph: GLTFScenegraph
+  iterator: GLTFIterator
 ): void {
   const material = gltfData.json.materials?.[materialIndex];
   const materialTextures = findTextureInfos(material);
@@ -111,11 +111,23 @@ function transformTexCoords(
         processedTransforms.set(transformKey, transformParameters);
       }
       textureInfo.texCoord = transformParameters.texCoord;
-      gltfScenegraph.removeObjectExtension(textureInfo, KHR_TEXTURE_TRANSFORM);
+      removeObjectExtension(iterator, textureInfo, KHR_TEXTURE_TRANSFORM);
       if (textureInfo.extensions && Object.keys(textureInfo.extensions).length === 0) {
         delete textureInfo.extensions;
       }
     }
+  }
+}
+
+/** Remove an object extension while preserving top-level extension bookkeeping. */
+function removeObjectExtension(
+  iterator: GLTFIterator,
+  object: {extensions?: Record<string, unknown>},
+  extensionName: string
+): void {
+  if (object.extensions?.[extensionName] !== undefined) {
+    iterator.recordRemovedExtension(extensionName);
+    delete object.extensions[extensionName];
   }
 }
 

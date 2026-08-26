@@ -5,36 +5,34 @@
 // GLTF EXTENSION: KHR_lights_punctual
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
 
-import type {GLTF} from '../../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../../types/gltf-types';
 
 import {assert} from '../../utils/assert';
+import {GLTFIterator} from '../../api/gltf-iterator';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 
 const KHR_LIGHTS_PUNCTUAL = 'KHR_lights_punctual';
 
 export const name = KHR_LIGHTS_PUNCTUAL;
 
-export async function decode(gltfData: {json: GLTF}): Promise<void> {
-  const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const {json} = gltfScenegraph;
+export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
+  const iterator = new GLTFIterator(gltfData);
 
   // Move the light array out of the extension and remove the extension
-  const extension = gltfScenegraph.getExtension(KHR_LIGHTS_PUNCTUAL);
+  const extension = iterator.getExtension<{lights: unknown[]}>(KHR_LIGHTS_PUNCTUAL);
   if (extension) {
-    // @ts-ignore
-    gltfScenegraph.json.lights = extension.lights;
-    gltfScenegraph.removeExtension(KHR_LIGHTS_PUNCTUAL);
+    (iterator.data as typeof iterator.data & {lights?: unknown[]}).lights = extension.lights;
+    iterator.removeExtension(KHR_LIGHTS_PUNCTUAL);
   }
 
   // Any nodes that have the extension, add lights field pointing to light object
   // and remove the extension
-  for (const node of json.nodes || []) {
-    const nodeExtension = gltfScenegraph.getObjectExtension(node, KHR_LIGHTS_PUNCTUAL);
+  for (const node of iterator.nodes) {
+    const nodeExtension = iterator.getExtension<{light: number}>(node, KHR_LIGHTS_PUNCTUAL);
     if (nodeExtension) {
-      // @ts-ignore
-      node.light = nodeExtension.light;
+      (node as typeof node & {light?: number}).light = nodeExtension.light;
     }
-    gltfScenegraph.removeObjectExtension(node, KHR_LIGHTS_PUNCTUAL);
+    iterator.removeExtension(node, KHR_LIGHTS_PUNCTUAL);
   }
 }
 

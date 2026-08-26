@@ -5,40 +5,40 @@
 // GLTF EXTENSION: KHR_techniques_webgl
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
 
-import type {GLTF} from '../../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../../types/gltf-types';
 
-import {GLTFScenegraph} from '../../api/gltf-scenegraph';
+import {GLTFIterator} from '../../api/gltf-iterator';
+import {getTypedArrayForBufferView} from '../../gltf-utils/get-typed-array';
 
 const KHR_TECHNIQUES_WEBGL = 'KHR_techniques_webgl';
 
 export const name = KHR_TECHNIQUES_WEBGL;
 
-export async function decode(gltfData: {json: GLTF}): Promise<void> {
-  const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const {json} = gltfScenegraph;
+export async function decode(gltfData: GLTFWithBuffers): Promise<void> {
+  const iterator = new GLTFIterator(gltfData);
 
-  const extension = gltfScenegraph.getExtension(KHR_TECHNIQUES_WEBGL);
+  const extension = iterator.getExtension(KHR_TECHNIQUES_WEBGL);
   if (extension) {
-    const techniques = resolveTechniques(extension, gltfScenegraph);
+    const techniques = resolveTechniques(extension, iterator);
 
-    for (const material of json.materials || []) {
-      const materialExtension = gltfScenegraph.getObjectExtension(material, KHR_TECHNIQUES_WEBGL);
+    for (const material of iterator.materials) {
+      const materialExtension = iterator.getExtension<any>(material, KHR_TECHNIQUES_WEBGL);
       if (materialExtension) {
         // @ts-ignore TODO
-        material.technique = Object.assign(
+        (material as any).technique = Object.assign(
           {},
           materialExtension,
           // @ts-ignore
           techniques[materialExtension.technique]
         );
         // @ts-ignore TODO
-        material.technique.values = resolveValues(material.technique, gltfScenegraph);
+        (material as any).technique.values = resolveValues((material as any).technique, iterator);
       }
-      gltfScenegraph.removeObjectExtension(material, KHR_TECHNIQUES_WEBGL);
+      iterator.removeExtension(material, KHR_TECHNIQUES_WEBGL);
     }
 
     // Remove the top-level extension
-    gltfScenegraph.removeExtension(KHR_TECHNIQUES_WEBGL);
+    iterator.removeExtension(KHR_TECHNIQUES_WEBGL);
   }
 }
 // eslint-disable-next-line
@@ -51,7 +51,7 @@ function resolveTechniques(
   // programs: {[key: string]: any}[],
   // shaders: {[key: string]: any}[],
   // techniques: {[key: string]: any}[]
-  gltfScenegraph
+  iterator: GLTFIterator
 ) {
   const {programs = [], shaders = [], techniques = []} = techniquesExtension;
   const textDecoder = new TextDecoder();
@@ -59,7 +59,7 @@ function resolveTechniques(
   shaders.forEach(shader => {
     if (Number.isFinite(shader.bufferView)) {
       shader.code = textDecoder.decode(
-        gltfScenegraph.getTypedArrayForBufferView(shader.bufferView)
+        getTypedArrayForBufferView(iterator.data, iterator.gltf.buffers, shader.bufferView)
       );
     } else {
       // TODO: handle URI shader
@@ -79,7 +79,7 @@ function resolveTechniques(
   return techniques;
 }
 
-function resolveValues(technique, gltfScenegraph) {
+function resolveValues(technique, iterator: GLTFIterator) {
   const values = Object.assign({}, technique.values);
 
   // merge values from uniforms
@@ -94,7 +94,10 @@ function resolveValues(technique, gltfScenegraph) {
     if (typeof values[uniform] === 'object' && values[uniform].index !== undefined) {
       // Assume this is a texture
       // TODO: find if there are any other types that can be referenced
-      values[uniform].texture = gltfScenegraph.getTexture(values[uniform].index);
+      values[uniform].texture = iterator.resolveTexture(
+        values[uniform].index,
+        `technique.values.${uniform}.index`
+      );
     }
   });
 

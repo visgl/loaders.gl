@@ -16,6 +16,7 @@ import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
+import {GLTFIterator} from '../../api/gltf-iterator';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
@@ -91,7 +92,7 @@ export function getArrayElementByteSize(attributeType, componentType): number {
  * @returns Array of values offsets. The number of offsets in the array is equal to `numberOfElements` plus one.
  */
 export function getOffsetsForProperty(
-  scenegraph: GLTFScenegraph,
+  scenegraph: GLTFScenegraph | GLTFIterator,
   bufferViewIndex: number,
   offsetType: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string,
   numberOfElements: number
@@ -156,7 +157,7 @@ export function convertRawBufferToMetadataArray(
  * @returns Array of data taken. Null if data can't be taken from the texture.
  */
 export function getPrimitiveTextureData(
-  scenegraph: GLTFScenegraph,
+  scenegraph: GLTFScenegraph | GLTFIterator,
   textureInfo: GLTFTextureInfoMetadata,
   primitive: GLTFMeshPrimitive
 ): number[] {
@@ -217,7 +218,7 @@ export function getPrimitiveTextureData(
  * @param primitive - Primitive object.
  */
 export function primitivePropertyDataToAttributes(
-  scenegraph: GLTFScenegraph,
+  scenegraph: GLTFScenegraph | GLTFIterator,
   attributeName: string,
   propertyData: number[],
   featureTable: number[],
@@ -244,12 +245,17 @@ export function primitivePropertyDataToAttributes(
   }
   const typedArray = new Uint32Array(featureIndices);
   const bufferIndex =
-    scenegraph.gltf.buffers.push({
-      arrayBuffer: typedArray.buffer,
-      byteOffset: typedArray.byteOffset,
-      byteLength: typedArray.byteLength
-    }) - 1;
-  const bufferViewIndex = scenegraph.addBufferView(typedArray, bufferIndex, 0);
+    scenegraph instanceof GLTFIterator
+      ? scenegraph.addBuffer(typedArray)
+      : scenegraph.gltf.buffers.push({
+          arrayBuffer: typedArray.buffer,
+          byteOffset: typedArray.byteOffset,
+          byteLength: typedArray.byteLength
+        }) - 1;
+  const bufferViewIndex =
+    scenegraph instanceof GLTFIterator
+      ? scenegraph.addBufferView(bufferIndex, typedArray.byteLength)
+      : scenegraph.addBufferView(typedArray, bufferIndex, 0);
   const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
     size: 1,
     componentType: getComponentTypeFromArray(typedArray),

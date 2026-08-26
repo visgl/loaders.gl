@@ -7,6 +7,7 @@
 /* eslint-disable camelcase */
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {GLTF, GLTFMeshPrimitive} from '../types/gltf-json-schema';
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import {GLTFLoaderOptions} from '../../gltf-loader';
 import {GLTFWriterOptions} from '../../gltf-writer';
 import type {
@@ -15,15 +16,16 @@ import type {
 } from '../types/gltf-ext-mesh-features-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {GLTFIterator} from '../api/gltf-iterator';
 import {getPrimitiveTextureData} from './utils/3d-tiles-utils';
 import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 
 const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';
 export const name = EXT_MESH_FEATURES_NAME;
 
-export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
-  const scenegraph = new GLTFScenegraph(gltfData);
-  decodeExtMeshFeatures(scenegraph, options);
+export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
+  const iterator = new GLTFIterator(gltfData);
+  decodeExtMeshFeatures(iterator, options);
 }
 
 export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
@@ -38,16 +40,10 @@ export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {jso
  * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
  * @param {GLTFLoaderOptions} options - GLTFLoader options.
  */
-function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
-  const json = scenegraph.gltf.json;
-  if (!json.meshes) {
-    return;
-  }
-
-  // Iterate through all meshes/primitives.
-  for (const mesh of json.meshes) {
-    for (const primitive of mesh.primitives) {
-      processMeshPrimitiveFeatures(scenegraph, primitive, options);
+function decodeExtMeshFeatures(iterator: GLTFIterator, options: GLTFLoaderOptions): void {
+  for (const mesh of iterator.meshes) {
+    for (const primitive of iterator.getReferences(mesh).primitives) {
+      processMeshPrimitiveFeatures(iterator, primitive, options);
     }
   }
 }
@@ -60,7 +56,7 @@ function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOp
  * @param {GLTFLoaderOptions} options - GLTFLoader options.
  */
 function processMeshPrimitiveFeatures(
-  scenegraph: GLTFScenegraph,
+  iterator: GLTFIterator,
   primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions
 ): void {
@@ -69,8 +65,11 @@ function processMeshPrimitiveFeatures(
     return;
   }
 
-  const extension = primitive.extensions?.[EXT_MESH_FEATURES_NAME] as GLTF_EXT_mesh_features;
-  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension?.featureIds;
+  const extension = iterator.getExtension<GLTF_EXT_mesh_features>(
+    primitive,
+    EXT_MESH_FEATURES_NAME
+  );
+  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension?.featureIds || [];
 
   if (!featureIds) {
     return;
@@ -82,12 +81,12 @@ function processMeshPrimitiveFeatures(
     if (typeof featureId.attribute !== 'undefined') {
       const accessorKey = `_FEATURE_ID_${featureId.attribute}`;
       const accessorIndex = primitive.attributes[accessorKey];
-      featureIdData = scenegraph.getTypedArrayForAccessor(accessorIndex);
+      featureIdData = iterator.getTypedArrayForAccessor(accessorIndex) as NumericArray;
     }
 
     // Process "Feature ID by Texture Coordinates"
     else if (typeof featureId.texture !== 'undefined' && options?.gltf?.loadImages) {
-      featureIdData = getPrimitiveTextureData(scenegraph, featureId.texture, primitive);
+      featureIdData = getPrimitiveTextureData(iterator, featureId.texture, primitive);
     }
 
     // Process "Feature ID by Index"

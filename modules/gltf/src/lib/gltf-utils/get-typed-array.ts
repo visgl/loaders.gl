@@ -27,8 +27,7 @@ export function getTypedArrayForBufferView(json, buffers, bufferViewIndex) {
 // returns a `Uint8Array`
 export function getTypedArrayForImageData(json, buffers, imageIndex) {
   const image = json.images[imageIndex];
-  const bufferViewIndex = json.bufferViews[image.bufferView];
-  return getTypedArrayForBufferView(json, buffers, bufferViewIndex);
+  return getTypedArrayForBufferView(json, buffers, image.bufferView);
 }
 
 /**
