@@ -172,7 +172,21 @@ function getAttributeArrowField(
   column: arrow.Vector
 ): arrow.Field {
   if (attributeName === 'POSITION' && isMeshPositionColumn(column)) {
-    return meshArrowSchema.fields[0];
+    const canonicalField = meshArrowSchema.fields[0];
+    const suppliedField = schema?.fields.find(schemaField => schemaField.name === attributeName);
+    if (!suppliedField?.metadata) {
+      return canonicalField;
+    }
+    const metadata = new Map(canonicalField.metadata);
+    for (const [key, value] of Object.entries(suppliedField.metadata)) {
+      metadata.set(key, value);
+    }
+    return new arrow.Field(
+      canonicalField.name,
+      canonicalField.type,
+      canonicalField.nullable,
+      metadata
+    );
   }
 
   const field = schema?.fields.find(schemaField => schemaField.name === attributeName);

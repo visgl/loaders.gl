@@ -71,7 +71,35 @@ describe('convertGLTFToMeshArrow', () => {
     expect(positionValues).toBeInstanceOf(Uint16Array);
     expect(positionValues.buffer).toBe(source.buffer);
     expect(geometries[0].attributes.POSITION.normalized).toBe(true);
+    expect(
+      geometries[0].table.schema.fields.find(field => field.name === 'POSITION')?.metadata
+    ).toEqual({normalized: 'true'});
     expect(geometries[0].materialized).toBe(false);
+  });
+
+  test('preserves metadata on canonical Float32 POSITION fields', () => {
+    const {gltf} = makeGLTF();
+    gltf.json.accessors![0].byteOffset = 0;
+    gltf.json.bufferViews![0].byteStride = 12;
+
+    const {geometries} = convertGLTFToMeshArrow(gltf);
+
+    expect(
+      geometries[0].table.schema.fields.find(field => field.name === 'POSITION')?.metadata
+    ).toEqual({byteOffset: '0', byteStride: '12'});
+  });
+
+  test('accepts supported Float64 accessors', () => {
+    const source = new Float64Array([0, 0, 0, 1, 2, 3]);
+    const gltf = makeSinglePrimitiveGLTF(source.buffer, {
+      accessors: [{bufferView: 0, componentType: 5130, count: 2, type: 'VEC3'}],
+      bufferViews: [{buffer: 0, byteLength: source.byteLength}]
+    });
+
+    const {geometries} = convertGLTFToMeshArrow(gltf);
+
+    expect(geometries[0].attributes.POSITION.value).toBeInstanceOf(Float64Array);
+    expect(geometries[0].attributes.POSITION.value.buffer).toBe(source.buffer);
   });
 
   test('supports an explicit zero-copy-only policy', () => {
