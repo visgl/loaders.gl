@@ -204,7 +204,7 @@ function extractCapabilities(xml: any): WMSCapabilities {
     maxHeight: getXMLInteger(xml.Service?.maxHeight),
     layers: [],
     requests: extractRequests(xml.Capability?.Request),
-    exceptions: extractExceptions(xml.Exception)
+    exceptions: extractExceptions(xml.Capability?.Exception || xml.Exception)
     // contact field is a mess of largely irrelevant information, put it last
     // contact: xml.Service?.Contact ? JSON.stringify(xml.Service?.Contact) : undefined,
   };

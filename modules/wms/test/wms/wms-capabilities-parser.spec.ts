@@ -25,8 +25,8 @@ const CAPABILITIES_XML = `<?xml version="1.0"?>
       <Dimension name="time" units="ISO8601" unitSymbol="t" default="2020" multipleValues="1" nearestValue="0" current="1">2020/2021</Dimension>
       <Layer><Name>child</Name><Title>Child</Title></Layer>
     </Layer>
+    <Exception><Format>XML</Format><Format>INIMAGE</Format></Exception>
   </Capability>
-  <Exception><Format>XML</Format><Format>INIMAGE</Format></Exception>
 </WMS_Capabilities>`;
 
 test('parseWMSCapabilities extracts service, request, layer, and dimension metadata', () => {
