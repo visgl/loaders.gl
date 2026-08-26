@@ -8,12 +8,14 @@ import type {
   CoreAPI,
   SourceLoader,
   DataSourceOptions,
+  StrictLoaderOptions,
   TileSource,
   TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import {
+  canParseWithWorker,
   createLAZChunkDecoderCursor,
   createLAZChunkDecoder,
   BlobFile,
@@ -21,12 +23,14 @@ import {
   HttpFile,
   isBrowser,
   NodeFile,
+  parseWithWorker,
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
 import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {
   createLASTypedExtraBytesAttributes,
+  LASLoader,
   populateLASTypedExtraBytes,
   type LASTypedExtraBytesAttribute
 } from '@loaders.gl/las';
@@ -137,7 +141,15 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
     rangeChunkSize?: number;
     /** Maximum number of COPC node ranges fetched ahead of decode. */
     rangeConcurrency?: number;
+    /** Maximum number of complete COPC nodes fetched and decoded concurrently. */
+    decodeConcurrency?: number;
   };
+};
+
+/** Options for one complete COPC tile-content load. */
+export type COPCTileContentLoadOptions = {
+  /** Cancel a queued range request or active worker decode. */
+  signal?: AbortSignal;
 };
 
 /** Options for progressive COPC point batches. */
@@ -265,11 +277,19 @@ export class COPCTileSource
   protected _hierarchy: COPCHierarchy | null = null;
   protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
   protected _closePromise: Promise<void> | null = null;
+  /** Bounds complete node fetches and worker decodes to control peak memory. */
+  protected readonly _nodeDecodeSemaphore: AsyncSemaphore;
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, COPCSourceLoader.defaultOptions, coreApi);
     this._readableFile = createCOPCReadableFile(data, this.url, this.fetch);
     this._readRange = createCachedCOPCRangeReader(this._readableFile);
+    const decodeConcurrency =
+      this.options.copc?.decodeConcurrency ?? this.loadOptions.core?.maxConcurrency ?? 3;
+    if (!Number.isSafeInteger(decodeConcurrency) || decodeConcurrency < 1) {
+      throw new Error('COPC decodeConcurrency must be a positive integer');
+    }
+    this._nodeDecodeSemaphore = new AsyncSemaphore(decodeConcurrency);
     this._initPromise = this._initCopc(this.url || 'Blob');
     this.metadata = this.getMetadata();
   }
@@ -430,17 +450,30 @@ export class COPCTileSource
     return await this.getNodeById(formatCOPCKey(parameters.nodeIndex));
   }
 
-  async loadTileContent(tile: {id: string}) {
-    const {copc} = await this._initPromise;
-    const node = await this.getNodeById(tile.id);
-    if (!node) {
-      return null;
+  /** Load one complete COPC node, using the shared LAS worker pool when available. */
+  async loadTileContent(tile: {id: string}, options: COPCTileContentLoadOptions = {}) {
+    const release = await this._nodeDecodeSemaphore.acquire(options.signal);
+    try {
+      throwIfCOPCLoadAborted(options.signal);
+      const {copc} = await this._initPromise;
+      const node = await this.getNodeById(tile.id);
+      if (!node) {
+        return null;
+      }
+
+      const nativeOrigin = this.getNativeTileCenter(tile.id);
+      const cartographicOrigin = this.projectPoint(nativeOrigin);
+
+      return await this.loadTypeScriptTileContent(
+        copc,
+        node,
+        nativeOrigin,
+        cartographicOrigin,
+        options.signal
+      );
+    } finally {
+      release();
     }
-
-    const nativeOrigin = this.getNativeTileCenter(tile.id);
-    const cartographicOrigin = this.projectPoint(nativeOrigin);
-
-    return await this.loadTypeScriptTileContent(copc, node, nativeOrigin, cartographicOrigin);
   }
 
   /**
@@ -776,10 +809,27 @@ export class COPCTileSource
     copc: COPCFile,
     node: COPCHierarchyNode,
     nativeOrigin: number[],
-    cartographicOrigin: number[]
+    cartographicOrigin: number[],
+    signal?: AbortSignal
   ) {
     const pointCount = node.pointCount;
-    const compressed = await loadCOPCNodeData(this._readRange, node);
+    const compressed = await loadCOPCNodeData(this._readRange, node, signal);
+    const workerPointData = await this.decodeNodeOnWorker(copc, node, compressed, signal);
+    if (workerPointData) {
+      this.transformTilePositions(
+        workerPointData.nativePositions,
+        workerPointData.positions,
+        nativeOrigin,
+        cartographicOrigin
+      );
+      return this.createTileContentResult(
+        pointCount,
+        workerPointData.positions,
+        workerPointData.colors,
+        cartographicOrigin
+      );
+    }
+
     const nativePositions = new Float64Array(pointCount * 3);
     const positions = new Float32Array(pointCount * 3);
     const colors = pointFormatHasColor(copc.header.pointDataRecordFormat)
@@ -808,6 +858,81 @@ export class COPCTileSource
 
     this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
     return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
+  }
+
+  /** Decode one complete node in the shared LAS worker pool when workers are available. */
+  protected async decodeNodeOnWorker(
+    copc: COPCFile,
+    node: COPCHierarchyNode,
+    compressed: Uint8Array,
+    signal?: AbortSignal
+  ): Promise<{
+    nativePositions: Float64Array;
+    positions: Float32Array;
+    colors: Uint16Array | null;
+  } | null> {
+    const workerOptions = this.getNodeWorkerOptions(copc, node);
+    if (!this.hasCoreApi || !canParseWithWorker(LASLoader, workerOptions)) {
+      return null;
+    }
+    const input = getStandaloneArrayBuffer(compressed);
+    const mesh = (await parseWithWorker(
+      LASLoader,
+      input,
+      workerOptions,
+      undefined,
+      undefined,
+      signal
+    )) as Mesh;
+    const nativePositions = mesh.attributes.POSITION?.value;
+    const colors = mesh.attributes.COLOR_0?.value || null;
+    if (
+      !(nativePositions instanceof Float64Array) ||
+      nativePositions.length !== node.pointCount * 3
+    ) {
+      throw new Error('COPC LAS worker returned invalid positions');
+    }
+    if (
+      colors !== null &&
+      (!(colors instanceof Uint16Array) || colors.length !== node.pointCount * 3)
+    ) {
+      throw new Error('COPC LAS worker returned invalid colors');
+    }
+    return {
+      nativePositions,
+      positions: new Float32Array(node.pointCount * 3),
+      colors
+    };
+  }
+
+  /** Build the serializable standalone-chunk request consumed by the LAS worker. */
+  protected getNodeWorkerOptions(copc: COPCFile, node: COPCHierarchyNode): StrictLoaderOptions {
+    const columns = pointFormatHasColor(copc.header.pointDataRecordFormat)
+      ? ['POSITION', 'COLOR_0']
+      : ['POSITION'];
+    return {
+      ...this.loadOptions,
+      core: {
+        ...this.loadOptions.core,
+        worker: this.loadOptions.core?.worker ?? true,
+        maxConcurrency:
+          this.options.copc?.decodeConcurrency ?? this.loadOptions.core?.maxConcurrency ?? 3
+      },
+      las: {
+        ...this.loadOptions.las,
+        shape: 'mesh',
+        fp64: true,
+        colorDepth: 16,
+        columns,
+        _chunk: {
+          metadata: {
+            ...getCOPCLAZChunkMetadata(copc, node.pointCount),
+            scale: copc.header.scale,
+            offset: copc.header.offset
+          }
+        }
+      }
+    };
   }
 
   /** Transform decoded native positions into tile-relative render coordinates. */
@@ -1450,6 +1575,99 @@ function createCOPCReadableFile(
   return new NodeFile(url, 'r');
 }
 
+/** Return a transferable buffer without detaching a shared range-cache allocation. */
+function getStandaloneArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  if (
+    bytes.buffer instanceof ArrayBuffer &&
+    bytes.byteOffset === 0 &&
+    bytes.byteLength === bytes.buffer.byteLength
+  ) {
+    return bytes.buffer;
+  }
+  return bytes.slice().buffer;
+}
+
+/** Throw an AbortError when a complete COPC node load has been cancelled. */
+function throwIfCOPCLoadAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) {
+    return;
+  }
+  throw createCOPCAbortError();
+}
+
+/** Create the consistent cancellation error used by queued node loads. */
+function createCOPCAbortError(): Error {
+  const error = new Error('COPC tile content load was aborted');
+  error.name = 'AbortError';
+  return error;
+}
+
+type AsyncSemaphoreWaiter = {
+  resolve: (release: () => void) => void;
+  reject: (error: Error) => void;
+  signal?: AbortSignal;
+  abort?: () => void;
+};
+
+/** Small FIFO semaphore that bounds fetched and decoded COPC nodes together. */
+class AsyncSemaphore {
+  private activeCount = 0;
+  private readonly waiters: AsyncSemaphoreWaiter[] = [];
+
+  constructor(private readonly capacity: number) {}
+
+  /** Acquire one slot, waiting in request order when the source is saturated. */
+  acquire(signal?: AbortSignal): Promise<() => void> {
+    throwIfCOPCLoadAborted(signal);
+    if (this.activeCount < this.capacity) {
+      this.activeCount++;
+      return Promise.resolve(this.createRelease());
+    }
+
+    return new Promise((resolve, reject) => {
+      const waiter: AsyncSemaphoreWaiter = {resolve, reject, signal};
+      if (signal) {
+        waiter.abort = () => {
+          const waiterIndex = this.waiters.indexOf(waiter);
+          if (waiterIndex >= 0) {
+            this.waiters.splice(waiterIndex, 1);
+            reject(createCOPCAbortError());
+          }
+        };
+        signal.addEventListener('abort', waiter.abort, {once: true});
+      }
+      this.waiters.push(waiter);
+      if (signal?.aborted) {
+        waiter.abort?.();
+      }
+    });
+  }
+
+  /** Create an idempotent release closure for one active slot. */
+  private createRelease(): () => void {
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+        this.release();
+      }
+    };
+  }
+
+  /** Hand the current slot to the next waiter or return it to capacity. */
+  private release(): void {
+    const waiter = this.waiters.shift();
+    if (!waiter) {
+      this.activeCount--;
+      return;
+    }
+    if (waiter.signal && waiter.abort) {
+      waiter.signal.removeEventListener('abort', waiter.abort);
+    }
+    waiter.resolve(this.createRelease());
+  }
+}
+
 /** Cache the metadata prefix while retaining exact reads for hierarchy and node ranges. */
 function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReader {
   const prefixPromise = Promise.resolve(readableFile.stat?.()).then(async stat => {
@@ -1458,11 +1676,11 @@ function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReade
   });
   return async (begin, end, signal) => {
     if (signal?.aborted) {
-      throw new Error('COPC range request was aborted');
+      throw createCOPCAbortError();
     }
     const prefix = await prefixPromise;
     if (signal?.aborted) {
-      throw new Error('COPC range request was aborted');
+      throw createCOPCAbortError();
     }
     if (begin >= 0 && end <= prefix.byteLength) {
       return prefix.subarray(begin, end);

@@ -51,6 +51,14 @@ type LASDecodedChunk = {
   header: LASHeader;
 };
 
+/** Metadata needed to decode one standalone LAZ chunk into LAS Arrow columns. */
+export type LAZChunkArrowTableMetadata = LAZChunkMetadata & {
+  /** LAS coordinate scales applied to encoded XYZ integers. */
+  scale: [number, number, number];
+  /** LAS coordinate offsets applied to encoded XYZ integers. */
+  offset: [number, number, number];
+};
+
 const DEFAULT_BATCH_SIZE = 1000 * 100;
 const LASF_SIGNATURE = 0x4653414c;
 const LAS_14_HEADER_LENGTH = 375;
@@ -187,6 +195,49 @@ export function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {
   );
 }
 
+/** Decode one complete modern LAZ chunk directly into selected Arrow columns. */
+export function decodeLAZChunkToArrowTable(
+  compressed: ArrayBuffer | ArrayBufferView,
+  metadata: LAZChunkArrowTableMetadata,
+  options: LASLoaderOptions
+): LASArrowTable {
+  if (metadata.pointDataRecordFormat < 6 || metadata.pointDataRecordFormat > 8) {
+    throw new Error(
+      `LASLoader: standalone Arrow chunk decode supports PDRF 6-8; received ${metadata.pointDataRecordFormat}`
+    );
+  }
+  const pointCount = metadata.pointCount;
+  const header: LASHeader = {
+    pointsOffset: 0,
+    pointsFormatId: metadata.pointDataRecordFormat,
+    pointsStructSize: metadata.pointDataRecordLength,
+    pointsCount: pointCount,
+    scale: metadata.scale,
+    offset: metadata.offset,
+    maxs: [0, 0, 0],
+    mins: [0, 0, 0],
+    totalToRead: pointCount,
+    totalRead: pointCount,
+    hasColor: hasPointColor(metadata.pointDataRecordFormat),
+    versionAsString: '1.4',
+    isCompressed: true,
+    headerSize: LAS_14_HEADER_LENGTH,
+    vlrCount: 0
+  };
+  const state = createPointDataBatchState(pointCount, header, options);
+  if (state.waveforms || state.extraBytes || state.typedExtraBytes) {
+    throw new Error('LASLoader: standalone Arrow chunk decode only supports direct LAZ columns');
+  }
+  const cursor = createLAZChunkDecoderCursor(compressed, metadata);
+  const decodedPointCount = cursor.decodeIntoPointData(state.target, pointCount);
+  if (decodedPointCount !== pointCount) {
+    throw new Error(
+      `LASLoader: standalone LAZ chunk produced ${decodedPointCount} points; expected ${pointCount}`
+    );
+  }
+  return makePointDataStateArrowTable(header, state, pointCount, options, true);
+}
+
 /** Decode one complete modern LAZ file directly into its represented Arrow columns. */
 function parseCompleteLAZFileToArrowTable(
   bytes: Uint8Array,
@@ -224,13 +275,27 @@ function parseCompleteLAZFileToArrowTable(
       `LASLoader: decoded ${decodedPointCount} modern LAZ points; expected ${pointCount}`
     );
   }
-  const colors = state.colors
-    ? state.colors
-    : state.rawColors
-      ? convertRawColorsToUint8(state.rawColors, pointCount, options)
-      : null;
+  return makePointDataStateArrowTable(header, state, pointCount, options);
+}
+
+/** Convert one fully populated point-data state into its Arrow table. */
+function makePointDataStateArrowTable(
+  header: LASHeader,
+  state: PointDataBatchState,
+  pointCount: number,
+  options: LASLoaderOptions,
+  preserveRawColors: boolean = false
+): LASArrowTable {
+  const colors =
+    preserveRawColors && state.rawColors
+      ? state.rawColors
+      : state.colors
+        ? state.colors
+        : state.rawColors
+          ? convertRawColorsToUint8(state.rawColors, pointCount, options)
+          : null;
   return makeLASArrowTableFromAttributes(
-    {...header, pointsOffset: 0, totalRead: pointCount},
+    {...header, pointsOffset: 0, pointsCount: pointCount, totalRead: pointCount},
     state.positions,
     colors,
     state.intensities,
@@ -1390,7 +1455,7 @@ function parseLASArrowTableBatch(
 function makeLASArrowTableFromAttributes(
   lasHeader: LASHeader,
   positions: Float32Array | Float64Array,
-  colors: Uint8Array | null,
+  colors: Uint8Array | Uint16Array | null,
   intensities: Uint16Array | null,
   classifications: Uint8Array | null,
   syntheticFlags: Uint8Array | null,
@@ -1433,7 +1498,7 @@ function makeLASArrowTableFromAttributes(
     attributes.overlap = {value: overlapFlags, size: 1};
   }
   if (colors) {
-    attributes.COLOR_0 = {value: colors, size: 4};
+    attributes.COLOR_0 = {value: colors, size: colors instanceof Uint16Array ? 3 : 4};
   }
   if (gpsTimes) {
     attributes.GPS_TIME = {value: gpsTimes, size: 1};
