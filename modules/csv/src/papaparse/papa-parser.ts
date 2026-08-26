@@ -406,6 +406,9 @@ export class ParserHandle {
 
   processRow(rowSource, i): any[] | Record<string, any> {
     const row = this._config.header ? {} : [];
+    const shouldApplyDynamicTyping = Boolean(
+      this._config.dynamicTyping || this._config.dynamicTypingFunction
+    );
 
     let j;
     for (j = 0; j < rowSource.length; j++) {
@@ -417,7 +420,7 @@ export class ParserHandle {
 
       if (this._config.transform) value = this._config.transform(value, field);
 
-      value = this.parseDynamic(field, value);
+      if (shouldApplyDynamicTyping) value = this.parseDynamic(field, value);
 
       if (field === '__parsed_extra') {
         row[field] = row[field] || [];
