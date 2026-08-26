@@ -6,8 +6,14 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {createDataSource} from '@loaders.gl/core';
-import type {RasterData} from '@loaders.gl/loader-utils';
-import type {OMEZarrSourceLoaderMetadata, ZarrConsolidatedMetadata} from '@loaders.gl/zarr';
+import type {RasterData, RasterViewport} from '@loaders.gl/loader-utils';
+import {RasterSet} from '@loaders.gl/tiles';
+import type {
+  GetOMEZarrParameters,
+  OMEZarrImageSource,
+  OMEZarrSourceLoaderMetadata,
+  ZarrConsolidatedMetadata
+} from '@loaders.gl/zarr';
 import {OMEZarrSourceLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/zarr';
 
 type AppProps = {
@@ -17,6 +23,8 @@ type AppProps = {
 };
 
 type DisplayMode = 'composite' | `channel-${number}`;
+
+type OMEZarrRasterRequest = GetOMEZarrParameters & {viewport: RasterViewport};
 
 type DatasetPreset = {
   /** Stable identifier used by the preset selector. */
@@ -85,6 +93,50 @@ export default function App(props: AppProps = {}) {
         : null,
     [requireConsolidatedMetadata, rootUrl, selectedPath]
   );
+  const rasterSetRef = useRef<RasterSet<RasterData, OMEZarrRasterRequest> | null>(null);
+
+  useEffect(() => {
+    if (!source) {
+      rasterSetRef.current?.finalize();
+      rasterSetRef.current = null;
+      return;
+    }
+
+    const imageSource = source as OMEZarrImageSource;
+    const rasterSet = new RasterSet<RasterData, OMEZarrRasterRequest>({
+      getMetadata: () => imageSource.getMetadata(),
+      getRaster: ({viewport: _viewport, ...parameters}) => imageSource.getRaster(parameters)
+    });
+    rasterSetRef.current = rasterSet;
+    const unsubscribe = rasterSet.subscribe({
+      onLoadingStateChange: isLoading => setLoading(isLoading),
+      onMetadataLoad: nextMetadata => {
+        setMetadata(nextMetadata);
+        setDisplayMode(nextMetadata.bandCount >= 2 ? 'composite' : 'channel-0');
+        setSelectedLevel(getInitialDisplayLevel(nextMetadata));
+        setError(null);
+      },
+      onMetadataLoadError: nextError => setError(getErrorMessage(nextError)),
+      onRasterLoad: ({raster, parameters}) => {
+        const requestedChannels = parameters.channels || [0];
+        const channelColors = requestedChannels.map(
+          (channel, index) => rasterSet.metadata!.channels[channel]?.color || COMPOSITE_COLORS[index]
+        );
+        setRasterCanvas(renderRasterToCanvas(raster, channelColors));
+        setError(null);
+      },
+      onRasterLoadError: (_requestId, nextError) => setError(getErrorMessage(nextError))
+    });
+    void rasterSet.loadMetadata().catch(() => {});
+
+    return () => {
+      unsubscribe();
+      rasterSet.finalize();
+      if (rasterSetRef.current === rasterSet) {
+        rasterSetRef.current = null;
+      }
+    };
+  }, [source]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,85 +186,17 @@ export default function App(props: AppProps = {}) {
   }, [rootUrl]);
 
   useEffect(() => {
-    if (!source) {
+    if (!metadata || !rasterSetRef.current) {
       return;
     }
 
-    let cancelled = false;
-
-    const loadImage = async () => {
-      setLoading(true);
-      try {
-        const nextMetadata = await source.getMetadata();
-        if (cancelled) {
-          return;
-        }
-
-        setMetadata(nextMetadata);
-        setDisplayMode(nextMetadata.bandCount >= 2 ? 'composite' : 'channel-0');
-        setSelectedLevel(getInitialDisplayLevel(nextMetadata));
-        setError(null);
-      } catch (nextError) {
-        if (!cancelled) {
-          setError(getErrorMessage(nextError));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadImage();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [source]);
-
-  useEffect(() => {
-    if (!metadata || !source) {
-      return;
-    }
-
-    let cancelled = false;
-    const abortController = new AbortController();
-
-    const loadRaster = async () => {
-      setLoading(true);
-      try {
-        const requestedChannels = getRequestedChannels(metadata, displayMode);
-        const raster = await source.getRaster({
-          level: selectedLevel,
-          channels: requestedChannels,
-          signal: abortController.signal
-        });
-        if (cancelled) {
-          return;
-        }
-        const channelColors = requestedChannels.map(
-          (channel, index) => metadata.channels[channel]?.color || COMPOSITE_COLORS[index]
-        );
-        setRasterCanvas(renderRasterToCanvas(raster, channelColors));
-        setError(null);
-      } catch (nextError) {
-        if (!cancelled) {
-          setError(getErrorMessage(nextError));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadRaster();
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [displayMode, metadata, selectedLevel, source]);
+    const requestedChannels = getRequestedChannels(metadata, displayMode);
+    rasterSetRef.current.requestRaster({
+      viewport: createOMEZarrViewport(metadata),
+      level: selectedLevel,
+      channels: requestedChannels
+    });
+  }, [displayMode, metadata, selectedLevel]);
 
   const imagePaths = useMemo(() => {
     if (consolidated) {
@@ -753,6 +737,19 @@ function scaleToByte(value: number, minimum: number, maximum: number): number {
 /** Converts an unknown thrown value into display text. */
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/** Supplies the request-manager viewport required by the shared RasterSet API. */
+function createOMEZarrViewport(metadata: OMEZarrSourceLoaderMetadata): RasterViewport {
+  return {
+    id: 'omezarr-image-plane',
+    width: metadata.width,
+    height: metadata.height,
+    zoom: 0,
+    center: [0, 0],
+    project: coordinates => coordinates,
+    unprojectPosition: position => [position[0], position[1], position[2] || 0]
+  };
 }
 
 /** Mounts the standalone example into a DOM container. */
