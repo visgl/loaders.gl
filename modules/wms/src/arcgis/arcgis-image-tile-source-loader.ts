@@ -35,7 +35,11 @@ export class ArcGISImageTileSource
   /** MIME type rendered by the generic deck.gl tile adapter. */
   readonly mimeType = 'image/png';
 
+  /** Cached ImageServer metadata. */
   private _metadata: any | null = null;
+  /** In-flight metadata request shared by concurrent callers. */
+  private _metadataPromise: Promise<any> | null = null;
+  /** Parameters applied to subsequent export requests. */
   private _runtimeParameters: Record<string, string | number | boolean> = {};
 
   /** Creates an ArcGIS ImageServer tile source. */
@@ -46,10 +50,7 @@ export class ArcGISImageTileSource
 
   /** Returns normalized ImageServer metadata. */
   async getMetadata(): Promise<TileSourceMetadata> {
-    if (!this._metadata) {
-      this._metadata = await this._loadMetadata();
-    }
-    const metadata = this._metadata;
+    const metadata = await this._getMetadata();
     const extent = metadata.fullExtent || metadata.extent;
     const spatialReference = metadata.spatialReference || extent?.spatialReference;
     return {
@@ -120,6 +121,7 @@ export class ArcGISImageTileSource
     return url.toString();
   }
 
+  /** Fetches the ImageServer metadata document. */
   private async _loadMetadata(): Promise<any> {
     const url = new URL(this.url);
     url.searchParams.set('f', 'pjson');
@@ -130,6 +132,22 @@ export class ArcGISImageTileSource
     return response.json();
   }
 
+  /** Returns cached metadata and shares a single request among concurrent callers. */
+  private async _getMetadata(): Promise<any> {
+    if (this._metadata) return this._metadata;
+    if (!this._metadataPromise) {
+      this._metadataPromise = this._loadMetadata();
+    }
+    try {
+      const metadata = await this._metadataPromise;
+      this._metadata = metadata;
+      return metadata;
+    } finally {
+      this._metadataPromise = null;
+    }
+  }
+
+  /** Selects a service endpoint for a tile using a stable URL-pool mapping. */
   private getServiceURL(parameters: GetTileParameters): string {
     const urls = this.options['arcgis-image-server-tiles']?.urls;
     return urls?.length ? urls[(parameters.x + parameters.y) % urls.length] : this.url;
@@ -159,6 +177,7 @@ export const ArcGISImageTileSourceLoader = {
   ) => new ArcGISImageTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<ArcGISImageTileSource>;
 
+/** Calculates the Web Mercator extent represented by an XYZ tile. */
 function getWebMercatorTileBounds(parameters: GetTileParameters): [number, number, number, number] {
   const worldSize = 20037508.342789244;
   const tileCount = 2 ** parameters.z;
