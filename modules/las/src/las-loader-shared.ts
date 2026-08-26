@@ -41,6 +41,8 @@ export type LASLoaderOptions = LoaderOptions & {
     colorDepth?: number | string;
     /** Arrow columns to decode. POSITION is always included. */
     columns?: readonly LASColumnName[];
+    /** Decode Extra Bytes descriptors into typed attributes instead of raw bytes. */
+    extraBytes?: 'raw' | 'typed';
     /** Override the URL to the worker bundle. */
     workerUrl?: string;
   };
@@ -62,7 +64,8 @@ export const LAS_LOADER_METADATA = {
       shape: 'mesh',
       fp64: false,
       colorDepth: 8,
-      columns: undefined
+      columns: undefined,
+      extraBytes: 'raw'
     }
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

@@ -323,6 +323,53 @@ test('LASLoader#columns preserves waveform packet references for PDRF 9 and 10',
   }
 });
 
+test('LASLoader#columns shares LAZ decode for waveform and typed Extra Bytes', async () => {
+  for (const [lasUrl, lazUrl] of [
+    [PDRF_9_LAS_URL, PDRF_9_LAZ_URL],
+    [PDRF_10_LAS_URL, PDRF_10_LAZ_URL]
+  ]) {
+    const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+      fetchFile(lasUrl).then(response => response.arrayBuffer()),
+      fetchFile(lazUrl).then(response => response.arrayBuffer())
+    ]);
+    const options = {
+      las: {
+        shape: 'arrow-table' as const,
+        columns: ['POSITION', 'WAVEFORM', 'EXTRA_BYTES'] as const,
+        extraBytes: 'typed' as const
+      },
+      core: {worker: false}
+    };
+    const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+    expect(getArrowColumnNames(compressed)).toEqual(getArrowColumnNames(uncompressed));
+    for (const columnName of getArrowColumnNames(uncompressed)) {
+      expect(getArrowColumnValues(compressed, columnName)).toEqual(
+        getArrowColumnValues(uncompressed, columnName)
+      );
+    }
+
+    const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+      batchSize: 127,
+      las: options.las,
+      core: {worker: false}
+    });
+    const streamedColumns = new Map<string, unknown[]>();
+    for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+      for (const columnName of getArrowColumnNames(batch)) {
+        const values = streamedColumns.get(columnName) || [];
+        values.push(...getArrowColumnValues(batch, columnName));
+        streamedColumns.set(columnName, values);
+      }
+    }
+    for (const columnName of getArrowColumnNames(uncompressed)) {
+      expect(streamedColumns.get(columnName)).toEqual(
+        getArrowColumnValues(uncompressed, columnName)
+      );
+    }
+  }
+});
+
 test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () => {
   const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
     fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
@@ -347,6 +394,215 @@ test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () =
     streamedExtraBytes.push(...getArrowColumnValues(batch, 'EXTRA_BYTES'));
   }
   expect(streamedExtraBytes).toEqual(getArrowColumnValues(uncompressed, 'EXTRA_BYTES'));
+});
+
+test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const options = {
+    las: {
+      shape: 'arrow-table' as const,
+      columns: ['POSITION', 'EXTRA_BYTES'] as const,
+      extraBytes: 'typed' as const
+    },
+    core: {worker: false}
+  };
+  const uncompressed = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const compressed = (await parse(lazArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const typedColumnNames = getArrowColumnNames(uncompressed).filter(name =>
+    name.startsWith('EXTRA_BYTES_')
+  );
+  expect(typedColumnNames.length).toBeGreaterThan(0);
+  expect(getArrowColumnNames(compressed)).toEqual(['POSITION', ...typedColumnNames]);
+  for (const columnName of typedColumnNames) {
+    expect(getArrowColumnValues(compressed, columnName)).toEqual(
+      getArrowColumnValues(uncompressed, columnName)
+    );
+  }
+  const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
+    batchSize: 127,
+    las: options.las,
+    core: {worker: false}
+  });
+  const streamedValues = new Map<string, unknown[]>();
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    for (const columnName of typedColumnNames) {
+      const values = streamedValues.get(columnName) || [];
+      values.push(...getArrowColumnValues(batch, columnName));
+      streamedValues.set(columnName, values);
+    }
+  }
+  for (const columnName of typedColumnNames) {
+    expect(streamedValues.get(columnName)).toEqual(getArrowColumnValues(uncompressed, columnName));
+  }
+  const uncompressedBatches = await parseInBatches(
+    splitArrayBuffer(lasArrayBuffer, 257),
+    LASLoader,
+    {
+      batchSize: 127,
+      las: options.las,
+      core: {worker: false}
+    }
+  );
+  const uncompressedStreamedValues = new Map<string, unknown[]>();
+  for await (const batch of uncompressedBatches as AsyncIterable<MeshArrowTable>) {
+    for (const columnName of typedColumnNames) {
+      const values = uncompressedStreamedValues.get(columnName) || [];
+      values.push(...getArrowColumnValues(batch, columnName));
+      uncompressedStreamedValues.set(columnName, values);
+    }
+  }
+  for (const columnName of typedColumnNames) {
+    expect(uncompressedStreamedValues.get(columnName)).toEqual(
+      getArrowColumnValues(uncompressed, columnName)
+    );
+  }
+});
+
+test('LASLoader#columns applies typed Extra Bytes descriptor offset', async () => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    fetchFile(PDRF_8_LAS_URL).then(response => response.arrayBuffer()),
+    fetchFile(PDRF_8_LAZ_URL).then(response => response.arrayBuffer())
+  ]);
+  const applyDescriptorOffset = (arrayBuffer: ArrayBuffer): ArrayBuffer => {
+    const copy = arrayBuffer.slice(0);
+    const metadata = parseLASHeader(copy).metadata!;
+    const extraBytesRecord = metadata.vlrs.find(
+      record => record.userId === 'LASF_Spec' && record.recordId === 4
+    );
+    if (!extraBytesRecord) {
+      throw new Error('Missing Extra Bytes VLR');
+    }
+    const dataView = new DataView(copy);
+    const descriptorOffset = extraBytesRecord.offset + 54;
+    dataView.setUint8(descriptorOffset + 3, 0x10);
+    dataView.setFloat64(descriptorOffset + 136, 7, true);
+    return copy;
+  };
+  const options = {
+    las: {
+      shape: 'arrow-table' as const,
+      columns: ['POSITION', 'EXTRA_BYTES'] as const,
+      extraBytes: 'typed' as const
+    },
+    core: {worker: false}
+  };
+  const baseline = (await parse(lasArrayBuffer, LASLoader, options)) as MeshArrowTable;
+  const lasTable = (await parse(
+    applyDescriptorOffset(lasArrayBuffer),
+    LASLoader,
+    options
+  )) as MeshArrowTable;
+  const lazTable = (await parse(
+    applyDescriptorOffset(lazArrayBuffer),
+    LASLoader,
+    options
+  )) as MeshArrowTable;
+  const typedColumnNames = getArrowColumnNames(lasTable).filter(name =>
+    name.startsWith('EXTRA_BYTES_')
+  );
+  expect(typedColumnNames.length).toBeGreaterThan(0);
+  for (const columnName of typedColumnNames) {
+    const baselineValues = getArrowColumnValues(baseline, columnName) as number[];
+    const expectedValues =
+      columnName === typedColumnNames[0] ? baselineValues.map(value => value + 7) : baselineValues;
+    expect(getArrowColumnValues(lasTable, columnName)).toEqual(expectedValues);
+    expect(getArrowColumnValues(lazTable, columnName)).toEqual(
+      getArrowColumnValues(lasTable, columnName)
+    );
+  }
+});
+
+test('LASLoader#columns decodes typed Extra Bytes vectors', async () => {
+  const headerSize = 227;
+  const descriptor = new Uint8Array(192);
+  const descriptorView = new DataView(descriptor.buffer);
+  descriptorView.setUint8(2, 11);
+  descriptorView.setUint8(3, 0x18);
+  descriptor.set(new TextEncoder().encode('vector'), 4);
+  descriptorView.setFloat64(112, 0.5, true);
+  descriptorView.setFloat64(120, 2, true);
+  descriptorView.setFloat64(136, 10, true);
+  descriptorView.setFloat64(144, -4, true);
+  const vlr = makeLASVLR('LASF_Spec', 4, descriptor);
+  const pointsOffset = headerSize + vlr.byteLength;
+  const pointDataRecordLength = 22;
+  const arrayBuffer = new ArrayBuffer(pointsOffset + pointDataRecordLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+  dataView.setUint32(0, 0x4653414c, true);
+  bytes[24] = 1;
+  bytes[25] = 2;
+  dataView.setUint16(94, headerSize, true);
+  dataView.setUint32(96, pointsOffset, true);
+  dataView.setUint32(100, 1, true);
+  bytes[104] = 0;
+  dataView.setUint16(105, pointDataRecordLength, true);
+  dataView.setUint32(107, 1, true);
+  dataView.setFloat64(131, 1, true);
+  dataView.setFloat64(139, 1, true);
+  dataView.setFloat64(147, 1, true);
+  bytes.set(vlr, headerSize);
+  dataView.setInt32(pointsOffset, 1, true);
+  dataView.setInt32(pointsOffset + 4, 2, true);
+  dataView.setInt32(pointsOffset + 8, 3, true);
+  dataView.setUint16(pointsOffset + 12, 4, true);
+  bytes[pointsOffset + 20] = 7;
+  bytes[pointsOffset + 21] = 8;
+
+  const table = (await parse(arrayBuffer, LASLoader, {
+    las: {shape: 'arrow-table', columns: ['POSITION', 'EXTRA_BYTES'], extraBytes: 'typed'},
+    core: {worker: false}
+  })) as MeshArrowTable;
+  expect(getArrowColumnNames(table)).toEqual(['POSITION', 'EXTRA_BYTES_vector']);
+  expect(getArrowColumnValues(table, 'EXTRA_BYTES_vector')).toEqual([[13.5, 12]]);
+  const batches = await parseInBatches(arrayBuffer, LASLoader, {
+    batchSize: 1,
+    las: {shape: 'arrow-table', columns: ['POSITION', 'EXTRA_BYTES'], extraBytes: 'typed'},
+    core: {worker: false}
+  });
+  const streamedValues: unknown[] = [];
+  for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
+    streamedValues.push(...getArrowColumnValues(batch, 'EXTRA_BYTES_vector'));
+  }
+  expect(streamedValues).toEqual([[13.5, 12]]);
+});
+
+test('LASLoader#columns enables typed Extra Bytes when columns are omitted', async () => {
+  const headerSize = 227;
+  const descriptor = new Uint8Array(192);
+  const descriptorView = new DataView(descriptor.buffer);
+  descriptorView.setUint8(2, 1);
+  descriptor.set(new TextEncoder().encode('value'), 4);
+  const vlr = makeLASVLR('LASF_Spec', 4, descriptor);
+  const pointsOffset = headerSize + vlr.byteLength;
+  const pointDataRecordLength = 21;
+  const arrayBuffer = new ArrayBuffer(pointsOffset + pointDataRecordLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const dataView = new DataView(arrayBuffer);
+  dataView.setUint32(0, 0x4653414c, true);
+  bytes[24] = 1;
+  bytes[25] = 2;
+  dataView.setUint16(94, headerSize, true);
+  dataView.setUint32(96, pointsOffset, true);
+  dataView.setUint32(100, 1, true);
+  bytes[104] = 0;
+  dataView.setUint16(105, pointDataRecordLength, true);
+  dataView.setUint32(107, 1, true);
+  dataView.setFloat64(131, 1, true);
+  dataView.setFloat64(139, 1, true);
+  dataView.setFloat64(147, 1, true);
+  bytes.set(vlr, headerSize);
+  bytes[pointsOffset + 20] = 9;
+
+  const table = (await parse(arrayBuffer, LASLoader, {
+    las: {shape: 'arrow-table', extraBytes: 'typed'},
+    core: {worker: false}
+  })) as MeshArrowTable;
+  expect(getArrowColumnNames(table)).toContain('EXTRA_BYTES_value');
+  expect(getArrowColumnValues(table, 'EXTRA_BYTES_value')).toEqual([9]);
 });
 
 test('LASLoader#metadata parses LAS 1.4 CRS and waveform records', () => {
