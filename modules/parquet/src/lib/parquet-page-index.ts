@@ -94,9 +94,9 @@ type ParquetColumnPageStatistics = {
  * Builds a conservative selective-page plan from Parquet column and offset indexes.
  *
  * Returns `undefined` when indexes or the selected decoder cannot safely avoid full column-chunk
- * reads. Repeated leaves are selected only when every decoded column uses the same page row
- * boundaries, so ranges begin and end on complete logical rows. An empty `rowRanges` array means
- * the indexes prove the predicate cannot match.
+ * reads. Repeated leaves are retained on the conservative full-column path until page starts can
+ * be proven to begin at repetition level zero. An empty `rowRanges` array means the indexes prove
+ * the predicate cannot match.
  */
 export async function createParquetPagePruningPlan(
   file: ReadableFile,
@@ -179,10 +179,6 @@ export async function createParquetPagePruningPlan(
       columnChunk => !pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)]
     )
   ) {
-    return undefined;
-  }
-
-  if (!hasCompatiblePageBoundaries(schema, selectedColumnChunks, pageLocations)) {
     return undefined;
   }
 
@@ -421,7 +417,7 @@ function getSelectedColumnChunks(
   });
 }
 
-/** Restricts selective page reads to primitive leaves with safe page boundaries. */
+/** Restricts selective page reads to independently materializable primitive leaf columns. */
 function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
@@ -437,31 +433,13 @@ function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly Colum
       const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
       return (
         field.primitiveType !== undefined &&
+        field.repetitionType !== 'REPEATED' &&
+        field.rLevelMax === 0 &&
         (!dictionaryEncoded ||
           (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
       );
     })
   );
-}
-
-/** Ensures repeated selective reads keep every selected column on identical row boundaries. */
-function hasCompatiblePageBoundaries(
-  schema: ParquetSchema,
-  columnChunks: readonly ColumnChunk[],
-  pageLocations: ParquetPageLocations
-): boolean {
-  const hasRepeatedLeaf = columnChunks.some(columnChunk => {
-    const field = schema.findField(columnChunk.meta_data!.path_in_schema);
-    return field.rLevelMax > 0 || field.repetitionType === 'REPEATED';
-  });
-  if (!hasRepeatedLeaf) {
-    return true;
-  }
-  const signatures = columnChunks.map(columnChunk => {
-    const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
-    return pages.map(page => `${page.firstRowIndex}:${page.endRowIndex}`).join('|');
-  });
-  return signatures.every(signature => signature === signatures[0]);
 }
 
 /** Validates one optional footer index byte range against the containing file. */

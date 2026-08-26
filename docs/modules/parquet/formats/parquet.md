@@ -240,8 +240,8 @@ can make selective reads much cheaper.
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
 | Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Drive conservative `ParquetSource` predicate pushdown and remain exposed in metadata |
 | Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
-| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children and repeated leaves when selected columns share page boundaries |
-| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected columns use page locations and first-row indexes for selective byte reads; repeated values are decoded only from complete, mutually aligned page ranges |
+| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children; repeated-leaf indexes remain conservative until continuation starts can be proven safe |
+| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected non-repeated columns use page locations and first-row indexes for selective byte reads; repeated indexes are retained for future continuation-safe pruning |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |
 | Size statistics | ❌ | ❌ | Histogram metadata from newer format work is not yet exposed; see the upstream [`ColumnMetaData`](https://github.com/apache/parquet-format/blob/master/src/main/thrift/parquet.thrift) definition |
 | Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |
@@ -250,9 +250,8 @@ can make selective reads much cheaper.
 footer statistics and split-block Bloom filters, and uses column/offset indexes to avoid irrelevant
 data pages for primitive leaves, including nested struct children. Filter-only columns are not
 returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller
-thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page
-boundaries; files with incompatible boundaries conservatively use full column-chunk reads. Size
-statistics, sorting metadata, and encryption remain future format-completeness work.
+thread or worker. Repeated-leaf continuation, size statistics, sorting metadata, and encryption
+remain future format-completeness work.
 
 ## Integrity and Encryption
 
@@ -285,7 +284,8 @@ corpora run in the slow lane.
 The TypeScript implementation is aiming for complete stable-format read support. The largest known
 gaps are currently:
 
-1. Variant value decoding and shredding;
+1. repeated-leaf page-index continuation and pruning;
+2. Variant value decoding and shredding;
 3. page CRC verification and emission;
 4. size statistics and semantic sorting metadata; and
 5. Parquet modular encryption.
