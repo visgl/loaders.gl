@@ -4,6 +4,7 @@ import {describe, expect, test, vi} from 'vitest';
 
 import {num2bytes, num2str, readType, str2num, TYPES} from '../../src/netcdfjs/read-type';
 
+/** Creates the mocked NetCDF buffer used by these tests. */
 function createBuffer() {
   return {
     readBytes: vi.fn(size => new Uint8Array(size)),

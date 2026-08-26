@@ -19,26 +19,26 @@ const PIXELS = {
 
 describe('OME-TIFF helpers', () => {
   test.each([
-    ['XYZCT', 11],
-    ['XYZTC', 11],
-    ['XYCTZ', 11],
-    ['XYCZT', 11],
-    ['XYTCZ', 11],
-    ['XYTZC', 11]
+    ['XYZCT', 6],
+    ['XYZTC', 2],
+    ['XYCTZ', 3],
+    ['XYCZT', 6],
+    ['XYTCZ', 1],
+    ['XYTZC', 1]
   ])('indexes %s dimension order', async (dimensionOrder, expectedIndex) => {
     const images = Array.from({length: 12}, (_, index) => ({index}));
     const tiff = {getImage: vi.fn(index => images[index])} as any;
-    const rootMeta = [{Pixels: {...PIXELS, DimensionOrder: dimensionOrder}}] as any;
-    const indexer = getOmeLegacyIndexer(tiff, rootMeta);
+    const rootMetadata = [{Pixels: {...PIXELS, DimensionOrder: dimensionOrder}}] as any;
+    const indexer = getOmeLegacyIndexer(tiff, rootMetadata);
 
-    expect(indexer({t: 1, c: 2, z: 1}, 0)).toBe(images[expectedIndex]);
+    expect(indexer({t: 1, c: 0, z: 0}, 0)).toBe(images[expectedIndex]);
     expect(tiff.getImage).toHaveBeenCalledWith(expectedIndex);
   });
 
   test('rejects an invalid dimension order', () => {
     const tiff = {getImage: vi.fn()} as any;
-    const rootMeta = [{Pixels: {...PIXELS, DimensionOrder: 'invalid'}}] as any;
-    expect(() => getOmeLegacyIndexer(tiff, rootMeta)).toThrow('Invalid OME-XML DimensionOrder');
+    const rootMetadata = [{Pixels: {...PIXELS, DimensionOrder: 'invalid'}}] as any;
+    expect(() => getOmeLegacyIndexer(tiff, rootMetadata)).toThrow('Invalid OME-XML DimensionOrder');
   });
 
   test('uses a base image for the highest-resolution sub-IFD level', async () => {
