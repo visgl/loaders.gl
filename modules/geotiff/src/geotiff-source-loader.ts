@@ -17,13 +17,17 @@ import type {
   RasterBoundingBox,
   RangeRequestSchedulerProps,
   RangeRequestTransportResult,
-  RasterQueryCapabilities
+  RasterQueryCapabilities,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider
 } from '@loaders.gl/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {
   DataSource,
   getRasterViewportBoundingBox,
-  RangeRequestScheduler
+  RangeRequestScheduler,
+  createScanQueryMetadata
 } from '@loaders.gl/loader-utils';
 import {GeoTIFFFormat} from './geotiff-format';
 
@@ -116,7 +120,7 @@ type GeoTIFFReadRasterResult = {width: number; height: number} & (
  */
 export class GeoTIFFRasterSource
   extends DataSource<string | Blob, GeoTIFFSourceLoaderOptions>
-  implements RasterSource
+  implements RasterSource, ScanQueryMetadataProvider
 {
   /** Capabilities advertised by this viewport-driven raster source. */
   readonly rasterQueryCapabilities = GEOTIFF_RASTER_QUERY_CAPABILITIES;
@@ -149,6 +153,38 @@ export class GeoTIFFRasterSource
   /** Returns raster-query capabilities without opening raster samples. */
   getRasterQueryCapabilities(): RasterQueryCapabilities {
     return this.rasterQueryCapabilities;
+  }
+
+  /** Discovers raster bands, bounds, and overview levels for the shared scan query panel. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const metadata = await this.getMetadata();
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const fields = Array.from({length: metadata.bandCount}, (_, index) => ({
+      name: `band_${index + 1}`,
+      type: metadata.dtype,
+      nullable: metadata.noData !== null,
+      metadata: {}
+    }));
+    return createScanQueryMetadata({
+      sourceType: 'geotiff',
+      queryType: 'raster',
+      name: metadata.name,
+      schema: {fields, metadata: {}},
+      capabilities: {
+        bounds: this.rasterQueryCapabilities.bounds,
+        levelOfDetail: this.rasterQueryCapabilities.level
+      },
+      spatial: metadata.boundingBox
+        ? {bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]}}
+        : undefined,
+      levels: metadata.overviews?.map(overview => ({
+        index: overview.index,
+        width: overview.width,
+        height: overview.height,
+        scale: overview.resolution
+      }))
+    });
   }
 
   /**
