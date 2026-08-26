@@ -857,7 +857,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       }
     }
 
-    if (workerOptions) {
+    // Worker decoding currently does not expose page CRC verification. Keep checksum-enabled
+    // reads on the TypeScript path so the requested integrity policy is honored.
+    if (workerOptions && !this.options.parquet?.verifyPageChecksums) {
       return await this.readRowGroupOnWorker(
         initialization,
         rowGroupIndex,

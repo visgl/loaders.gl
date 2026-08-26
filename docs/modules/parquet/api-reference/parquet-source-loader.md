@@ -358,7 +358,7 @@ individual read.
 | `core.reuseWorkers` | `boolean` | `true` in browsers | Reuses selective source workers between row-group jobs. |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
 | `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
-| `parquet.verifyPageChecksums` | `boolean` | `false` | Verifies CRC-32 page bodies when the file provides page checksums. |
+| `parquet.verifyPageChecksums` | `boolean` | `false` | Verifies CRC-32 page bodies when the file provides page checksums; checksum-enabled reads use the TypeScript path. |
 | `parquet.onTelemetry` | `(event: ParquetTelemetryEvent) => void` | `undefined` | Receives cumulative transport, pruning, decode, and batch telemetry events. |
 | `parquet.workerUrl` | `string` | package-local worker | Overrides the selective source worker URL for explicit asset hosting. |
 | `parquet.rowGroups` / `read.rowGroups` | `number[]` | all row groups | Row-group indexes to fetch, in output order. |
