@@ -9,7 +9,6 @@ import {BenchResults} from '@probe.gl/react-bench';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoaderWithParser as LASLoader} from '@loaders.gl/las/las-loader';
 import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/las/lazperf-loader';
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/las/las-copc-loader';
 import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/las/laz-rs-loader';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 
@@ -26,6 +25,12 @@ const STREAM_CHUNK_BYTE_LENGTH = 64 * 1024;
 const BATCH_SIZE = 25_000;
 const RENDER_COLUMNS = ['POSITION', 'COLOR_0'] as const;
 const COMPETITIVE_COLUMNS = ['POSITION', 'COLOR_0', 'intensity', 'classification'] as const;
+const COMPETITIVE_ARROW_FIELDS = [
+  ['POSITION', 'FixedSizeList[3]<Float32>'],
+  ['intensity', 'Uint16'],
+  ['classification', 'Uint8'],
+  ['COLOR_0', 'FixedSizeList[4]<Uint8>']
+] as const;
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
 
@@ -44,7 +49,7 @@ type LoaderVariant = {
   /** Variant label shown in benchmark output. */
   name: string;
   /** Parser-bearing LAS loader. */
-  loader: typeof LASLoader | typeof LAZPerfLoader | typeof LASCOPCLoader | typeof LAZRsLoader;
+  loader: typeof LASLoader | typeof LAZPerfLoader | typeof LAZRsLoader;
   /** Point data record formats accepted by this variant. */
   pointDataRecordFormats: readonly number[];
 };
@@ -71,22 +76,17 @@ type SortedBenchState = {
 
 const LOADER_VARIANTS: LoaderVariant[] = [
   {
-    name: 'TypeScript (JavaScript)',
+    name: 'loaders.gl (TypeScript)',
     loader: LASLoader,
     pointDataRecordFormats: [LAZ_1_2_PDRF_3, LAZ_1_4_PDRF_7]
   },
   {
-    name: 'laz-perf (WASM)',
+    name: 'laz-perf (C++ to JS) · 0.0.7',
     loader: LAZPerfLoader,
     pointDataRecordFormats: [LAZ_1_2_PDRF_3]
   },
   {
-    name: 'COPC package (laz-perf)',
-    loader: LASCOPCLoader,
-    pointDataRecordFormats: [LAZ_1_2_PDRF_3, LAZ_1_4_PDRF_7]
-  },
-  {
-    name: 'laz-rs (WASM)',
+    name: 'laz-rs (Rust to WASM) · 0.1.0',
     loader: LAZRsLoader,
     pointDataRecordFormats: [LAZ_1_2_PDRF_3, LAZ_1_4_PDRF_7]
   }
@@ -218,11 +218,10 @@ export default function LASBenchmarksApp(): JSX.Element {
   return (
     <div className="benchmark-page">
       <p>
-        Live compressed LAZ Arrow-table throughput in this browser. Groups prefixed with
-        <strong> Backend head-to-head</strong> run every compatible loader variant on the same
-        input and four-column output. Groups prefixed with <strong>TypeScript path</strong> compare
-        complete and true-streaming parsing for the same requested columns. Keep this tab focused
-        while the run completes.
+        Live compressed LAZ Arrow-table throughput in this browser. Each section names one feature
+        workload, and each result row identifies the implementation that ran it. Competitive
+        sections use the same input and four-column output. Complete-versus-streaming sections use
+        loaders.gl (TypeScript) for both paths. Keep this tab focused while the run completes.
       </p>
       <div className="benchmark-status-row" aria-live="polite">
         {isRunning ? <span className="benchmark-spinner" aria-hidden="true" /> : null}
@@ -259,17 +258,14 @@ function addLASBenchmarks(
       minIterations: 3
     };
     bench.groupSorted(
-      `Backend head-to-head - ${fixture.label} - POSITION, COLOR_0, intensity, classification`
+      `${fixture.label} - complete parse - POSITION, COLOR_0, intensity, classification`
     );
     for (const {name, loader, pointDataRecordFormats} of LOADER_VARIANTS) {
       if (!pointDataRecordFormats.includes(fixture.pointDataRecordFormat)) {
         continue;
       }
       bench.addAsync(`${name} [${fixture.label}]`, benchmarkOptions, async () => {
-        await parse(fixture.arrayBuffer, loader, {
-          core: {worker: false},
-          las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
-        });
+        await parseCompetitiveTable(fixture.arrayBuffer, loader);
       });
     }
   }
@@ -282,24 +278,24 @@ function addLASBenchmarks(
     unit: 'output points',
     minIterations: 3
   };
-  bench.groupSorted('TypeScript path - LAZ 1.4 / PDRF 7 - POSITION + COLOR_0');
-  bench.addAsync('Complete parse [pdrf7-render]', benchmarkOptions, async () => {
+  bench.groupSorted('LAZ 1.4 / PDRF 7 - complete vs streaming - POSITION + COLOR_0');
+  bench.addAsync('loaders.gl (TypeScript) - complete parse [pdrf7-render]', benchmarkOptions, async () => {
     await parse(laz14Fixture.arrayBuffer, LASLoader, {
       core: {worker: false},
       las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
     });
   });
   bench.addAsync(
-    'Streaming parseInBatches [pdrf7-render]',
+    'loaders.gl (TypeScript) - streaming parseInBatches [pdrf7-render]',
     benchmarkOptions,
     async () => consumeStreamingParse(laz14Chunks, RENDER_COLUMNS)
   );
 
   bench.groupSorted(
-    'TypeScript path - LAZ 1.4 / PDRF 7 - POSITION, COLOR_0, intensity, classification'
+    'LAZ 1.4 / PDRF 7 - complete vs streaming - POSITION, COLOR_0, intensity, classification'
   );
   bench.addAsync(
-    'Complete parse [pdrf7-common]',
+    'loaders.gl (TypeScript) - complete parse [pdrf7-common]',
     benchmarkOptions,
     async () => {
       await parse(laz14Fixture.arrayBuffer, LASLoader, {
@@ -309,20 +305,20 @@ function addLASBenchmarks(
     }
   );
   bench.addAsync(
-    'Streaming parseInBatches [pdrf7-common]',
+    'loaders.gl (TypeScript) - streaming parseInBatches [pdrf7-common]',
     benchmarkOptions,
     async () => consumeStreamingParse(laz14Chunks, COMPETITIVE_COLUMNS)
   );
 
-  bench.groupSorted('TypeScript path - LAZ 1.4 / PDRF 7 - comprehensive output');
-  bench.addAsync('Complete parse [pdrf7-comprehensive]', benchmarkOptions, async () => {
+  bench.groupSorted('LAZ 1.4 / PDRF 7 - complete vs streaming - comprehensive output');
+  bench.addAsync('loaders.gl (TypeScript) - complete parse [pdrf7-comprehensive]', benchmarkOptions, async () => {
     await parse(laz14Fixture.arrayBuffer, LASLoader, {
       core: {worker: false},
       las: {shape: 'arrow-table'}
     });
   });
   bench.addAsync(
-    'Streaming parseInBatches [pdrf7-comprehensive]',
+    'loaders.gl (TypeScript) - streaming parseInBatches [pdrf7-comprehensive]',
     benchmarkOptions,
     async () => consumeStreamingParse(laz14Chunks, undefined)
   );
@@ -364,10 +360,8 @@ async function warmLoaderVariants(
     if (!pointDataRecordFormats.includes(pointDataRecordFormat)) {
       continue;
     }
-    const table = (await parse(lazArrayBuffer, loader, {
-      core: {worker: false},
-      las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
-    })) as MeshArrowTable;
+    const table = await parseCompetitiveTable(lazArrayBuffer, loader);
+    assertCompetitiveArrowLayout(table, name);
     if (pointCount < 0) {
       pointCount = table.data.numRows;
     } else if (table.data.numRows !== pointCount) {
@@ -377,6 +371,31 @@ async function warmLoaderVariants(
     }
   }
   return pointCount;
+}
+
+/** Parse one competitive fixture with the exact shared output projection. */
+async function parseCompetitiveTable(
+  lazArrayBuffer: ArrayBuffer,
+  loader: LoaderVariant['loader']
+): Promise<MeshArrowTable> {
+  return (await parse(lazArrayBuffer, loader, {
+    core: {worker: false},
+    las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+  })) as MeshArrowTable;
+}
+
+/** Fail benchmark initialization when a loader materializes a different Arrow layout. */
+function assertCompetitiveArrowLayout(table: MeshArrowTable, variantName: string): void {
+  const actualFields = table.data.schema.fields.map(
+    field => [field.name, field.type.toString()] as const
+  );
+  const expectedLayout = JSON.stringify(COMPETITIVE_ARROW_FIELDS);
+  const actualLayout = JSON.stringify(actualFields);
+  if (actualLayout !== expectedLayout) {
+    throw new Error(
+      `LAS benchmark variant ${variantName} returned ${actualLayout}; expected ${expectedLayout}`
+    );
+  }
 }
 
 /**
