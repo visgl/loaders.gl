@@ -27,6 +27,7 @@ describe('base64 utilities', () => {
 
   test('supports string coercion and all encoder alphabet ranges', () => {
     expect(asciiToBase64(123 as any)).toBe('MTIz');
+    expect(asciiToBase64('\xfb\xff')).toBe('+/8=');
     expect(base64ToAscii(['Zg=='] as any)).toBe('f');
     expect(base64ToAscii('+/8=')).toBe('\xfb\xff');
   });
