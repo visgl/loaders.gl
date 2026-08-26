@@ -7,8 +7,105 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
 import {ORCLoaderWithParser} from '../src/orc-loader';
+import {
+  createORCSchema,
+  getORCDataType,
+  ORCSource,
+  ORCSourceLoaderWithParser
+} from '../src/orc-source-loader';
+import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
 import {ORCWriter} from '../src/orc-writer';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
+
+test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  const source = new ORCSource(new Blob([encoded]));
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.sourceType).toBe('orc');
+  expect(metadata.columns.map(column => column.name)).toEqual(['name']);
+  expect(metadata.statistics?.rowCount).toBe(4);
+
+  const result = await source.query({columns: ['name'], limit: 1});
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
+  expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
+
+  const defaultQuery = await source.query({limit: 2});
+  expect(defaultQuery.data.numRows).toBe(2);
+  const batches = source.read({limit: 1});
+  const batch = await batches[Symbol.asyncIterator]().next();
+  expect(batch.value?.length).toBe(1);
+});
+
+test('ORC source loader exposes explicit parser entry points', () => {
+  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
+  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
+  expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
+});
+
+test('ORC metadata preserves nested map and struct types', () => {
+  const types = [
+    {kind: ORCTypeKind.STRUCT, fieldNames: ['properties', 'attributes'], subtypes: [1, 2]},
+    {kind: ORCTypeKind.MAP, fieldNames: [], subtypes: [3, 4]},
+    {kind: ORCTypeKind.STRUCT, fieldNames: ['x'], subtypes: [5]},
+    {kind: ORCTypeKind.STRING, fieldNames: [], subtypes: []},
+    {kind: ORCTypeKind.INT, fieldNames: [], subtypes: []},
+    {kind: ORCTypeKind.DOUBLE, fieldNames: [], subtypes: []}
+  ];
+  const schema = createORCSchema(types[0], types);
+  expect(schema.fields[0].type).toMatchObject({type: 'map'});
+  expect(schema.fields[1].type).toMatchObject({type: 'struct'});
+  expect(
+    getORCDataType(ORCTypeKind.LIST, {kind: ORCTypeKind.LIST, fieldNames: [], subtypes: [5]}, types)
+  ).toMatchObject({type: 'list'});
+});
+
+test('ORCSource rejects unsupported predicates before reading the source', async () => {
+  const source = new ORCSource(new Blob([new Uint8Array([0])]));
+  await expect(source.query({predicate: {type: 'literal', value: true} as never})).rejects.toThrow(
+    'ORC predicates are not implemented yet'
+  );
+});
+
+test('ORCSource validates query limits before decoding rows', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a', 'b']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  const source = new ORCSource(new Blob([encoded]));
+  await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
+});
+
+test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  let attempts = 0;
+  const source = new ORCSource('https://example.com/data.orc', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: async () => {
+            attempts++;
+            if (attempts === 1) throw new Error('temporary failure');
+            return new Response(encoded);
+          }
+        }
+      }
+    }
+  });
+  await expect(source.getQueryMetadata()).rejects.toThrow('temporary failure');
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.rowCount).toBe(1);
+  expect(attempts).toBe(2);
+});
 
 test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   const indexes = Uint8Array.from([0xfd, 0x00, 0x01, 0x00]);

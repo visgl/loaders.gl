@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 export {ORCFormat} from './orc-format';
+export {ORCSourceLoader} from './orc-source-loader-types';
+export type {ORCSourceLoaderOptions} from './orc-source-loader-types';
 export type {ORCLoaderOptions} from './orc-loader-types';
 export {ORCLoader} from './orc-loader-types';
 export {ORCWriter} from './orc-writer';

@@ -38,6 +38,10 @@
     "./orc-loader": {
       "types": "./dist/orc-loader.d.ts",
       "import": "./dist/orc-loader.js"
+    },
+    "./orc-source-loader": {
+      "types": "./dist/orc-source-loader.d.ts",
+      "import": "./dist/orc-source-loader.js"
     }
   },
   "sideEffects": false,
