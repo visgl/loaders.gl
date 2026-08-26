@@ -71,6 +71,9 @@ describe('convertGLTFToMeshArrow', () => {
     expect(positionValues).toBeInstanceOf(Uint16Array);
     expect(positionValues.buffer).toBe(source.buffer);
     expect(geometries[0].attributes.POSITION.normalized).toBe(true);
+    expect(
+      geometries[0].table.schema.fields.find(field => field.name === 'POSITION')?.metadata
+    ).toEqual({normalized: 'true'});
     expect(geometries[0].materialized).toBe(false);
   });
 

@@ -4,7 +4,7 @@
 
 import {Matrix4} from '@math.gl/core';
 import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {deduceMeshSchema, makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {GLTFAccessor, GLTFMeshPrimitive, GLTFNode} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
@@ -214,6 +214,7 @@ function convertGLTFPrimitiveToMeshArrowGeometry(
 
   return {
     table: makeMeshArrowTable(attributes, {
+      schema: deduceMeshSchema(attributes),
       topology: getMeshTopology(mode),
       mode,
       indices: indexResult?.attribute
@@ -270,14 +271,21 @@ function getMeshAttribute(
     value = materializedValue;
   }
 
+  const attribute: MeshAttribute = {value, size};
+  if (!requiresMaterialization) {
+    if (accessor.byteOffset !== undefined) {
+      attribute.byteOffset = accessor.byteOffset;
+    }
+    if (bufferView?.byteStride !== undefined) {
+      attribute.byteStride = bufferView.byteStride;
+    }
+  }
+  if (accessor.normalized !== undefined) {
+    attribute.normalized = accessor.normalized;
+  }
+
   return {
-    attribute: {
-      value,
-      size,
-      byteOffset: requiresMaterialization ? 0 : accessor.byteOffset,
-      byteStride: requiresMaterialization ? undefined : bufferView?.byteStride,
-      normalized: accessor.normalized
-    },
+    attribute,
     materialized: requiresMaterialization
   };
 }
