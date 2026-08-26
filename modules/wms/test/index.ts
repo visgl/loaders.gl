@@ -32,3 +32,4 @@ import './gml/gml-loader.spec';
 
 import './wms/wms-source.spec';
 import './arcgis/arcgis-server.spec';
+import './service-capabilities.spec';
