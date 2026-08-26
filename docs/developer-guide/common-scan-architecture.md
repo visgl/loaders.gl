@@ -598,72 +598,86 @@ The architecture favors small, composable contracts over a speculative universal
 test for every addition is: can two materially different backends execute it with the same visible
 semantics?
 
-## Roadmap
+## Scan supremacy roadmap
 
-The implementation evolves in reviewable tranches. The first five are now landed; the remaining
-work is deliberately ordered by how much useful physical pruning each format can provide:
+“Scan supremacy” means that a user can open a supported loaders.gl format, discover its queryable
+fields and capabilities, use the same query panel, and receive bounded Arrow/typed results without
+learning a format-specific API. It does not mean that every format gets the same physical plan. The
+winning strategy is to make more formats *scan-compatible* before making the portable language
+larger.
 
-1. **Foundation — landed:** shared generic predicate, late binding, `TableQueryOptions`, canonical
-   planning, capability descriptors, and common ordered scan-task execution.
-2. **SQL adapters — landed:** parameterized DuckDB and Snowflake compilation while retaining raw SQL
-   for the full language.
-3. **Reference executors — landed:** switchable Arrow and lazy DuckDB execution over the same
-   browser data, without ingesting the Arrow result into DuckDB.
-4. **Columnar physical scans — landed:** common projection, predicate, global-limit semantics,
-   hidden predicate/delete columns, and aligned provenance across Parquet and Iceberg.
-5. **Explain and diagnostics — landed:** serializable logical/physical plans, pushed-versus-residual
-   annotations, footer-only Parquet row-group explanations, and telemetry alignment.
-6. **FlatGeobuf spatial scan — landed:** add a `FlatGeobufSource` scan adapter over the existing packed R-tree
-   and feature header. Spatial bounding boxes should prune feature ranges before decoding; scalar
-   attributes can initially be residual Arrow filtering. Preserve the existing vector-source API and
-   expose Arrow batches through the scan path rather than forcing GeoJSON materialization.
-7. **GeoArrow and Arrow IPC:** make GeoArrow/Arrow batches first-class scan inputs and outputs.
-   Projection and residual predicates are cheap in-memory operations; geometry columns, extension
-   metadata, and zero-copy slicing must survive the plan. This becomes the conformance reference for
-   vector formats that do not yet have physical indexes.
-8. **Stripe and block formats:** add ORC stripe/row-index planning, then CSV/JSONL chunk scans with
-   conservative byte-range tasking. ORC can advertise statistics pushdown; CSV/JSONL should advertise
-   residual filtering and projection pushdown only when the parser can avoid decoding unused fields.
-9. **Transactional and fragment formats:** Delta Lake logs/deletion vectors, Lance fragments and
-   indices, and future Iceberg table features. Reuse the snapshot, delete, provenance, and explain
-   contracts; each format should contribute a native file/fragment planner rather than another
-   query AST.
-10. **GPU execution:** lower the shared predicate to luma.gl/WGSL masks or indices and add a
-    GPU-specific limit/selection stage. GPU plans should report whether compaction is deferred or
-    materialized, so CPU and GPU diagnostics remain comparable.
-11. **Point-cloud scans — foundation landed:** standardize `PointCloudQueryOptions` validation and
-    capability discovery, with COPC and Potree metadata exposing coordinate roles, bounds, hierarchy
-    levels, spacing, and point statistics. Full common point streaming, residual attribute filtering,
-    and global point limits remain adapter work.
-12. **Raster and multidimensional scans — foundation landed:** standardize `RasterQueryOptions` and
-    capability discovery for GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr. Existing raster sources retain
-    their window, band, overview, chunk, and dimension APIs; NetCDF and shared task-level explain and
-    telemetry remain follow-ups.
-13. **Relational growth — logical planner landed:** add a portable plan vocabulary for ordering,
-    scalar expressions, aggregates, unions, and equi-joins. Physical execution is deliberately
-    backend-specific and should be added only when at least two materially different backends can
-    implement the same portable meaning. Spatial predicates and nearest-neighbor search remain
-    extensions until indexed CPU, GPU, and remote-source strategies converge.
+The roadmap is therefore format-support-first. Each tranche must ship three things together:
 
-### Format capability matrix
+1. metadata-only discovery (`getQueryMetadata()` and the shared panel);
+2. a correct scan adapter, even when initial filtering is residual; and
+3. capability, explain, and conformance coverage that makes the remaining gaps visible.
 
-The roadmap is capability-driven rather than format-driven. A new adapter can land incrementally by
-advertising the strongest correct level for each operator:
+### Tranche sequence
 
-| Format/source | Natural physical unit | Projection | Predicate | Limit | First useful tranche |
-| --- | --- | --- | --- | --- | --- |
-| Arrow / GeoArrow | record batch | residual/zero-copy | residual | residual | 7 |
-| Parquet / Iceberg | row group, page, file | pushdown | pushdown + residual | global/pushdown | 4 |
-| FlatGeobuf | R-tree feature range | residual | bbox pushdown, scalar residual | residual | 6 |
-| ORC | stripe, row index | pushdown | pushdown + residual | global/pushdown | 8 |
-| CSV / JSONL | byte-range chunk | parser-dependent | residual | global | 8 |
-| Delta / Lance | file, fragment, delete vector | format-native | format-native + residual | global | 9 |
-| COPC / Potree | hierarchy node | attribute decode | bounds + attribute residual | global | 11 |
-| GeoTIFF / Zarr | tile, chunk, overview | band/variable pushdown | spatial/window pushdown | task-local | 12 |
+0. **Contract and reference implementation — landed.** Keep the generic predicates, immutable
+   `TableQueryOptions`, point-cloud and raster siblings, canonical planning, late-bound parameters,
+   capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
+1. **Panel everywhere — next priority.** Add a small adapter shim for every existing source that can
+   expose a schema or header. Populate projection, limit, bounds, level, band, variable, and time
+   controls from metadata rather than hard-coded examples. Add a support badge and an explain preview
+   to each compatible example. This tranche is successful when users can try the same panel against
+   the sources marked “Ready” or “Foundation” in the matrix below.
+2. **Tabular and vector coverage.** Finish Arrow/GeoArrow as the conformance executor, then bring
+   ORC, CSV, JSONL, GeoPackage, Shapefile, MLT, and existing FlatGeobuf paths to scan parity. Start
+   with schema/projection/limit and residual predicates; add stripe, row-index, packed-index, or
+   byte-range pruning only where the format can prove it safely.
+3. **Cloud and versioned tables.** Complete Parquet/Iceberg parity, then add Delta Lake and Lance
+   snapshot/fragment planners. Reuse delete semantics, hidden required columns, task ordering,
+   global limits, and explain output. Do not create format-specific predicate ASTs.
+4. **Point-cloud coverage.** Turn COPC and Potree foundations into bounded Arrow point batches with
+   bounds pushdown, ordered hierarchy tasks, residual attribute predicates, and global point limits.
+   Add LAS/LAZ as a sequential fallback and PLY/PCD/splats as metadata-first adapters where their
+   native formats cannot prune remotely.
+5. **Raster and multidimensional coverage.** Complete GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr scan
+   requests, then wire NetCDF. Add terrain/heightmap and LERC-backed sources through the same raster
+   panel. Standardize window, resolution/overview, band/channel, variable, dimension slice, typed
+   output, and chunk telemetry without pretending pixels are table rows.
+6. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
+   but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
+   Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
+   keep tile addressing and rendering controls outside `TableQuery`.
+7. **Portable relational growth.** Promote ordering, scalar expressions, aggregates, unions, and
+   equi-joins from logical planning to execution only after at least two real backends pass identical
+   conformance tests. Arrow and DuckDB are the first pair; Parquet/Iceberg and GPU are follow-ons.
+8. **GPU and acceleration.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
+   materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest
+   neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
 
-“Pushdown” in this table is a promise about avoiding physical work, not merely accepting the
-operator. An adapter must report `residual` when it must decode rows or features before evaluating
-the predicate, and conformance tests must verify that hidden filter columns never leak into output.
+### Format-support scorecard
+
+This is the end-user support view. “Ready” means the source can populate the shared panel and execute
+the listed controls correctly today. “Foundation” means metadata/capabilities exist but the scan
+adapter is incomplete. “Planned” means the normal loader exists, but no common scan contract is
+exposed yet. A residual predicate is still correct; it simply cannot avoid decoding work.
+
+| Family and representative sources | Status | Discovery | Projection / selection | Filter / spatial controls | Limit / stream | Priority |
+| --- | --- | --- | --- | --- | --- | --- |
+| Arrow / GeoArrow | Ready | schema | zero-copy/residual | residual, null-safe | yes / batches | conformance reference |
+| Parquet / Iceberg | Ready | footer/catalog | pushdown | statistics + residual | global / batches | maintain and extend |
+| FlatGeobuf | Ready | header/index | Arrow properties | bbox pushdown, scalar residual | bounded / batches | maintain and panel |
+| ORC | Foundation | stripe schema | planned stripe projection | planned row-index/statistics | planned | P2 |
+| CSV / JSONL | Planned | header/sample | parser-dependent | residual | planned chunks | P2 |
+| GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
+| Delta Lake / Lance | Foundation | log/manifest | format-native | fragments + residual | global / batches | P1 |
+| COPC / Potree | Foundation | header/hierarchy | point attributes | bounds pushdown, attribute residual | planned global / batches | P1 |
+| LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |
+| GeoTIFF / COG | Foundation | TIFF/overview metadata | bands/windows | window pushdown | tile-local / typed arrays | P1 |
+| Zarr / GeoZarr / OME-Zarr | Foundation | group/array metadata | variables/channels | chunk/window pushdown | chunked / typed arrays | P1 |
+| NetCDF | Planned | file dimensions/variables | variables/slices | window/slice pushdown | chunked / typed arrays | P1 |
+| Terrain / LERC | Planned | tile/codec metadata | bands/tiles | tile bounds | tile streams | P2 |
+| MVT / PMTiles | Specialized | tile/catalog metadata | feature-layer selection | tile bounds, optional residual table view | tile streams | P2 |
+| 3D Tiles / I3S | Specialized | tileset metadata | tile content | volume/LOD pushdown | tile streams | P2 |
+| WMS / WFS / STAC | Specialized | service/catalog metadata | layer/asset selection | server-specific bounds/time | response streams | P3 |
+
+“Pushdown” is a promise about avoiding physical work, not merely accepting an option. Every adapter
+must report `residual` when it decodes rows, features, points, or chunks before evaluating a filter.
+The scorecard should be updated whenever a source gains a panel, adapter, or conformance slice; it is
+the primary progress report for the roadmap.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
