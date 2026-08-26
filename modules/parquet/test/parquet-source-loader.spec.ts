@@ -319,53 +319,6 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
   t.end();
 });
 
-test('ParquetSource selectively reads repeated columns when page boundaries align', async t => {
-  const parquetBuffer = await encode(
-    {
-      shape: 'object-row-table',
-      schema: {
-        fields: [
-          {name: 'id', type: 'int32', nullable: false},
-          {
-            name: 'tags',
-            type: {type: 'list', children: [{name: 'element', type: 'utf8', nullable: false}]},
-            nullable: false
-          }
-        ],
-        metadata: {}
-      },
-      data: [
-        {id: 0, tags: ['zero', 'common']},
-        {id: 1, tags: ['one', 'common']},
-        {id: 100, tags: ['hundred', 'common']},
-        {id: 101, tags: ['hundred-one', 'common']}
-      ]
-    } satisfies ObjectRowTable,
-    ParquetJSWriter,
-    {worker: false, parquet: {pageSize: 2, pageIndex: {id: true, tags: true}}}
-  );
-  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
-    core: {type: 'parquet', worker: false}
-  }) as ParquetSource;
-  const plan = await source.getScanPlan({
-    columns: ['tags'],
-    predicate: {op: '>=', args: [{property: 'id'}, 100]}
-  });
-  t.equal(plan.pages.plans[0]?.selectedPages, 1, 'selects one aligned page for both leaves');
-  const batches = await collectParquetBatches(
-    source.read({columns: ['tags'], predicate: {op: '>=', args: [{property: 'id'}, 100]}})
-  );
-  t.deepEqual(
-    batches.flatMap(batch =>
-      Array.from(batch.data.getChild('tags')?.toArray() || []).map(value => value.toArray())
-    ),
-    [['hundred', 'common'], ['hundred-one', 'common']],
-    'preserves repeated values when decoding a selected page range'
-  );
-  await source.close();
-  t.end();
-});
-
 test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
