@@ -5,11 +5,20 @@ hide_title: true
 
 import {ClientExample} from '../../components';
 import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {FlatGeobufScanLiveExample} from '@site/src/components/docs/flatgeobuf-scan-live-example';
 
 <FlatGeobufDocsTabs active="try-it" />
 
 <div style={{height: 'calc(100vh - 76px)'}}> 
-  <ClientExample kind="geospatial" format="FlatGeobuf" >
+<ClientExample kind="geospatial" format="FlatGeobuf" >
     [**`FlatGeobufLoader`**](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) loads FlatGeobuf files, optionally into GeoJSON.
-  </ClientExample>
+</ClientExample>
+
+## Query the source
+
+The source adapter can discover its Arrow schema and packed R-tree capabilities before decoding
+features. The shared scan panel uses that metadata to populate projection and spatial controls,
+then returns a bounded Arrow result without materializing GeoJSON.
+
+<FlatGeobufScanLiveExample />
 </div>

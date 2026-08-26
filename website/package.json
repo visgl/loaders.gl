@@ -40,6 +40,7 @@
     "@loaders.gl/csv": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/excel": "workspace:*",
+    "@loaders.gl/flatgeobuf": "workspace:*",
     "@loaders.gl/geopackage": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
     "@loaders.gl/json": "workspace:*",

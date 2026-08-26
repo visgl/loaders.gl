@@ -531,6 +531,34 @@ Every executor of the portable query should share behavioral tests for:
 Format-owning modules should add exhaustive pruning and correctness tests. Wrapper modules should
 retain only focused public-entrypoint conformance tests.
 
+## Reusing the scan query panel
+
+Examples and applications should let the source describe its controls instead of maintaining a
+format-specific list of column names. A compatible source exposes `getQueryMetadata()` before the
+first data request:
+
+```ts
+const metadata = await source.getQueryMetadata();
+```
+
+The returned schema and capability descriptors drive the shared `ScanQueryPanel` used by the
+documentation examples. The panel currently exposes three source-neutral controls:
+
+- output-column projection, populated from `metadata.columns`;
+- a global row limit, enabled only when the source advertises limit support;
+- a source-coordinate bounding box when `metadata.spatial` and bounds pushdown are available.
+
+The panel emits the same immutable query shape consumed by a source's `query()` or `scan()` method.
+This keeps Iceberg, FlatGeobuf, Arrow, and future COPC/Potree or raster examples visually
+consistent while preserving their physical executors. A source may add a format-specific editor
+alongside the panel—for example, the Iceberg example retains its SQL/predicate editor—without
+duplicating schema discovery or projection/limit controls.
+
+When adding an example, load metadata first, render a loading state, and keep metadata failures
+separate from scan failures. The preview should show bounded Arrow output and explain which work was
+performed (for example, FlatGeobuf packed-R-tree pruning or Iceberg manifest planning), rather than
+silently converting the result to an unrelated object format.
+
 ## Evolution rules
 
 New logical operators should be added only when there is a real execution strategy and a clear

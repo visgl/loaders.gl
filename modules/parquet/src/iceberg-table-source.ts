@@ -3,7 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI} from '@loaders.gl/loader-utils';
-import {DataSource as BaseDataSource, validateTableQueryLimit} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource as BaseDataSource,
+  validateTableQueryLimit,
+  type ScanColumnRole,
+  type ScanQueryMetadata,
+  type ScanQueryMetadataOptions
+} from '@loaders.gl/loader-utils';
+import type {DataType, Schema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -89,6 +97,43 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
       this.metadataPromise = this.loadMetadata(signal);
     }
     return this.metadataPromise;
+  }
+
+  /** Discovers the current snapshot schema and scan capabilities without decoding table rows. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    this.assertOpen();
+    const tableMetadata = await this.getMetadata(options.signal);
+    const plan = await this.getScanPlan(options.signal);
+    let schema: Schema;
+    if (plan.dataFiles.length > 0) {
+      const parquetSource = new ParquetDatasetSource(
+        [{data: plan.dataFiles[0].data, id: plan.dataFiles[0].data}],
+        this.options,
+        this.coreApi
+      );
+      try {
+        schema = await parquetSource.getSchema({signal: options.signal});
+      } finally {
+        await parquetSource.close();
+      }
+    } else {
+      const snapshot = await this.getCurrentSnapshot(options.signal);
+      const schemaId = snapshot?.['schema-id'] ?? tableMetadata['current-schema-id'];
+      const icebergSchema = tableMetadata.schemas?.find(
+        candidate => candidate['schema-id'] === schemaId
+      );
+      schema = createSchemaFromIcebergMetadata(icebergSchema);
+    }
+    const rowCount = plan.dataFiles.reduce((total, file) => total + (file.recordCount || 0), 0);
+    return createScanQueryMetadata({
+      sourceType: 'iceberg',
+      queryType: 'table',
+      name: this.data,
+      schema,
+      capabilities: {table: this.tableQueryCapabilities},
+      columnRoles: getIcebergColumnRoles(schema),
+      statistics: {rowCount}
+    });
   }
 
   /** Returns the snapshot selected by the table metadata, if one exists. */
@@ -966,4 +1011,75 @@ function combineAbortSignals(
     signal: controller.signal,
     dispose: () => signals.forEach(candidate => candidate.removeEventListener('abort', abort))
   };
+}
+
+function getIcebergColumnRoles(schema: Schema): Record<string, ScanColumnRole> {
+  const roles: Record<string, ScanColumnRole> = {};
+  for (const field of schema.fields) {
+    const normalizedName = field.name.toLowerCase();
+    if (normalizedName === 'geometry' || normalizedName === 'geom' || normalizedName === 'shape') {
+      roles[field.name] = 'geometry';
+    } else if (
+      normalizedName === 'longitude' ||
+      normalizedName === 'lon' ||
+      normalizedName === 'x'
+    ) {
+      roles[field.name] = 'longitude';
+    } else if (
+      normalizedName === 'latitude' ||
+      normalizedName === 'lat' ||
+      normalizedName === 'y'
+    ) {
+      roles[field.name] = 'latitude';
+    }
+  }
+  return roles;
+}
+
+function createSchemaFromIcebergMetadata(
+  icebergSchema: NonNullable<IcebergTableMetadata['schemas']>[number] | undefined
+): Schema {
+  return {
+    fields: (icebergSchema?.fields || []).flatMap(field => {
+      const name = typeof field.name === 'string' ? field.name : undefined;
+      if (!name) return [];
+      return [
+        {
+          name,
+          type: getIcebergDataType(field.type),
+          nullable: field.required !== true,
+          metadata: {}
+        }
+      ];
+    }),
+    metadata: {}
+  };
+}
+
+function getIcebergDataType(type: unknown): DataType {
+  switch (typeof type === 'string' ? type.toLowerCase() : '') {
+    case 'boolean':
+      return 'bool';
+    case 'int':
+      return 'int32';
+    case 'long':
+      return 'int64';
+    case 'float':
+      return 'float32';
+    case 'double':
+      return 'float64';
+    case 'date':
+      return 'date-day';
+    case 'time':
+      return 'time-microsecond';
+    case 'timestamp':
+    case 'timestamptz':
+      return 'timestamp-microsecond';
+    case 'binary':
+    case 'fixed':
+      return 'binary';
+    case 'string':
+    default:
+      return 'utf8';
+  }
 }
