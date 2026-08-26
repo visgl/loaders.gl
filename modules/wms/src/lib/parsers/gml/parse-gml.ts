@@ -70,12 +70,13 @@ export function parseGMLToGeometry(
   const [name, xml] = getFirstKeyValue(inputXML);
 
   switch (name) {
-    // case 'gml:MultiPoint':
-    //   geometry = {
-    //     type: 'MultiPoint',
-    //     coordinates: parseMultiPoint(xml, options, childContext)
-    //   };
-    //   break;
+    case 'gml:Point':
+      geometry = {type: 'Point', coordinates: parsePoint(xml, options, childContext)};
+      break;
+
+    case 'gml:MultiPoint':
+      geometry = {type: 'MultiPoint', coordinates: parseMultiPoint(xml, options, childContext)};
+      break;
 
     case 'gml:LineString':
       geometry = {
@@ -84,12 +85,24 @@ export function parseGMLToGeometry(
       };
       break;
 
-      // case 'gml:MultiLineString':
-      //   geometry = {
-      //     type: 'MultiLineString',
-      //     coordinates: parseMultiLineString(xml, options, childContext)
-      //   };
-      //   break;
+    case 'gml:Curve':
+      geometry = {type: 'LineString', coordinates: parseCurve(xml, options, childContext)};
+      break;
+
+    case 'gml:MultiLineString':
+    case 'gml:MultiCurve':
+      geometry = {
+        type: 'MultiLineString',
+        coordinates: parseMultiLineString(xml, options, childContext)
+      };
+      break;
+
+    case 'gml:MultiPolygon':
+      geometry = {
+        type: 'MultiPolygon',
+        coordinates: parseMultiPolygon(xml, options, childContext)
+      };
+      break;
 
     case 'gml:Polygon':
     case 'gml:Rectangle':
@@ -116,7 +129,7 @@ export function parseGMLToGeometry(
   }
 
   // todo
-  return rewind(geometry, {mutate: true});
+  return rewind(geometry as any, {mutate: true}) as Geometry;
 }
 
 /** Parse a list of coordinates from a string */
@@ -174,6 +187,71 @@ export function parsePoint(xml: any, options: ParseGMLOptions, context: ParseGML
     throw new Error('invalid gml:Point element, expected a gml:pos subelement');
   }
   return parsePos(pos, options, childContext);
+}
+
+/** Parses a GML MultiPoint geometry. */
+export function parseMultiPoint(xml: any, options: ParseGMLOptions, context: ParseGMLContext): number[][] {
+  const points: number[][] = [];
+  for (const member of getMembers(xml, ['gml:pointMember', 'gml:pointMembers'])) {
+    const point = findIn(member, 'gml:Point');
+    if (point) {
+      points.push(parsePoint(point, options, context));
+    }
+  }
+  if (points.length === 0) {
+    throw new Error(`${xml.name} must have > 0 points`);
+  }
+  return points;
+}
+
+/** Parses a GML Curve geometry as a line string. */
+export function parseCurve(xml: any, options: ParseGMLOptions, context: ParseGMLContext): Position[] {
+  const segments = findIn(xml, 'gml:segments');
+  if (!segments) {
+    throw new Error('gml:Curve must contain gml:segments');
+  }
+  return parseCurveSegments(segments, options, context);
+}
+
+/** Parses GML line-string and curve members. */
+export function parseMultiLineString(
+  xml: any,
+  options: ParseGMLOptions,
+  context: ParseGMLContext
+): Position[][] {
+  const lines: Position[][] = [];
+  for (const member of getMembers(xml, ['gml:lineStringMember', 'gml:lineStringMembers', 'gml:curveMember', 'gml:curveMembers'])) {
+    const lineString = findIn(member, 'gml:LineString');
+    const curve = findIn(member, 'gml:Curve');
+    if (lineString) {
+      lines.push(parseLinearRingOrLineString(lineString, options, context));
+    } else if (curve) {
+      lines.push(parseCurve(curve, options, context));
+    }
+  }
+  if (lines.length === 0) {
+    throw new Error(`${xml.name} must have > 0 line strings`);
+  }
+  return lines;
+}
+
+/** Parses GML polygon members. */
+export function parseMultiPolygon(
+  xml: any,
+  options: ParseGMLOptions,
+  context: ParseGMLContext
+): Position[][][] {
+  const polygons: Position[][][] = [];
+  for (const member of getMembers(xml, ['gml:polygonMember', 'gml:polygonMembers'])) {
+    const polygon = findIn(member, 'gml:Polygon');
+    if (polygon) {
+      polygons.push(parsePolygonOrRectangle(polygon, options, context));
+    }
+  }
+  if (polygons.length === 0) {
+    throw new Error(`${xml.name} must have > 0 polygons`);
+  }
+  return polygons;
 }
 
 export function parseLinearRingOrLineString(
@@ -481,6 +559,20 @@ function getFirstKeyValue(object: any): [string, any] {
     }
   }
   return ['', null];
+}
+
+/** Normalizes singular and plural XML member containers into an iterable list. */
+function getMembers(root: any, names: string[]): any[] {
+  const members: any[] = [];
+  for (const name of names) {
+    const value = root[name];
+    if (Array.isArray(value)) {
+      members.push(...value);
+    } else if (value) {
+      members.push(value);
+    }
+  }
+  return members;
 }
 
 /** A bit heavyweight for just tracking dimension? */

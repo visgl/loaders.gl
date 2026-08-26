@@ -1,0 +1,119 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
+import type {
+  CoreAPI,
+  DataSourceOptions,
+  GetTileDataParameters,
+  GetTileParameters,
+  SourceLoader,
+  TileSource,
+  TileSourceMetadata
+} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
+
+/** Options for an ArcGIS cached MapServer tile source. */
+export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions & {
+  'arcgis-map-server'?: {/** Optional custom tile URL template. */ urlTemplate?: string};
+};
+
+/** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */
+export class ArcGISMapTileSource
+  extends DataSource<string, ArcGISMapTileSourceLoaderOptions>
+  implements TileSource
+{
+  private _metadata: any | null = null;
+
+  /** Creates an ArcGIS MapServer tile source. */
+  constructor(url: string, options: ArcGISMapTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
+    super(url.replace(/\/$/, ''), options, ArcGISMapTileSourceLoader.defaultOptions, coreApi);
+  }
+
+  /** Loads and normalizes ArcGIS service metadata. */
+  async getMetadata(): Promise<TileSourceMetadata> {
+    this._metadata ||= await this._loadMetadata();
+    const extent = this._metadata.fullExtent;
+    return {
+      name: this._metadata.name || '',
+      title: this._metadata.name || '',
+      abstract: this._metadata.description || this._metadata.serviceDescription || '',
+      minZoom: 0,
+      maxZoom: this._metadata.tileInfo?.lods?.length
+        ? this._metadata.tileInfo.lods.length - 1
+        : undefined,
+      boundingBox: extent
+        ? [
+            [extent.xmin, extent.ymin],
+            [extent.xmax, extent.ymax]
+          ]
+        : undefined
+    };
+  }
+
+  /** Fetches and decodes one cached ArcGIS tile. */
+  async getTile(parameters: GetTileParameters): Promise<ImageType | null> {
+    const response = await this.fetch(this.getTileURL(parameters));
+    if (!response.ok) {
+      throw new Error(
+        `ArcGIS MapServer tile request failed: ${response.status} ${response.statusText}`
+      );
+    }
+    return (await this.coreApi.parse(
+      await response.arrayBuffer(),
+      ImageLoader,
+      this.loadOptions
+    )) as ImageType;
+  }
+
+  /** Fetches a tile using the deck.gl-compatible request shape. */
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
+    return this.getTile(parameters.index);
+  }
+
+  /** Builds the standard ArcGIS cached tile URL. */
+  getTileURL(parameters: GetTileParameters): string {
+    const template =
+      this.options['arcgis-map-server']?.urlTemplate || `${this.url}/tile/{z}/{y}/{x}`;
+    return template
+      .replaceAll('{z}', String(parameters.z))
+      .replaceAll('{y}', String(parameters.y))
+      .replaceAll('{x}', String(parameters.x));
+  }
+
+  private async _loadMetadata(): Promise<any> {
+    const response = await this.fetch(`${this.url}?f=pjson`);
+    if (!response.ok) {
+      throw new Error(
+        `ArcGIS MapServer metadata request failed: ${response.status} ${response.statusText}`
+      );
+    }
+    return response.json();
+  }
+}
+
+/** Source loader for ArcGIS cached MapServer tiles. */
+export const ArcGISMapTileSourceLoader = {
+  dataType: null as unknown as ArcGISMapTileSource,
+  batchType: null as never,
+  name: 'ArcGIS MapServer tiles',
+  id: 'arcgis-map-server',
+  module: 'wms',
+  version: '0.0.0',
+  extensions: [],
+  mimeTypes: [],
+  type: 'arcgis-map-server',
+  fromUrl: true,
+  fromBlob: false,
+  options: {'arcgis-map-server': {}},
+  defaultOptions: {'arcgis-map-server': {}},
+  testURL: (url: string): boolean =>
+    /mapserver/i.test(url) && !/imageserver|featureserver/i.test(url),
+  createDataSource: (
+    url: string,
+    options: ArcGISMapTileSourceLoaderOptions = {},
+    coreApi?: CoreAPI
+  ) => new ArcGISMapTileSource(url, options, coreApi)
+} as const satisfies SourceLoader<ArcGISMapTileSource>;
