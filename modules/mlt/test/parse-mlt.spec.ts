@@ -15,6 +15,7 @@ const POINTS = [
   {x: 2048, y: 4096}
 ];
 
+/** Creates an MLT feature fixture with the requested geometry and properties. */
 function createFeature(type: number, coordinates: unknown, id = 1) {
   return {id, geometry: {type, coordinates}, properties: {kind: 'test'}} as any;
 }
