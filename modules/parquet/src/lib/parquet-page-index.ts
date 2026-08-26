@@ -219,7 +219,8 @@ export async function createParquetPagePruningPlan(
 export function getParquetPageReadRanges(
   rowGroup: RowGroup,
   selectedColumnPaths: readonly string[][],
-  plan: ParquetPagePruningPlan
+  plan: ParquetPagePruningPlan,
+  schema: ParquetSchema
 ): Array<{offset: number; length: number}> {
   const ranges: Array<{offset: number; length: number}> = [];
   for (const columnChunk of getSelectedColumnChunks(rowGroup, selectedColumnPaths)) {
@@ -231,6 +232,8 @@ export function getParquetPageReadRanges(
     if (!selectedPages.length) {
       continue;
     }
+    const field = schema.findField(columnMetadata.path_in_schema);
+    const repeated = field.rLevelMax > 0 || field.repetitionType === 'REPEATED';
     const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset);
     if (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0) {
       ranges.push({
@@ -245,7 +248,9 @@ export function getParquetPageReadRanges(
       if (!overlappingPages.length) {
         continue;
       }
-      const firstPage = overlappingPages[0];
+      // A repeated page may begin with a continuation level. Transfer the complete prefix so
+      // worker-backed readers can probe predecessor pages before decoding the selected range.
+      const firstPage = repeated ? pages[0] : overlappingPages[0];
       const lastPage = overlappingPages[overlappingPages.length - 1];
       ranges.push({
         offset: firstPage.offset,

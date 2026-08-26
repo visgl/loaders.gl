@@ -402,8 +402,9 @@ export class ParquetReader {
     if (!overlappingPages.length) {
       throw new Error('Parquet page plan does not overlap the requested row range');
     }
-    const firstPage = overlappingPages[0];
+    let firstPageIndex = pages.indexOf(overlappingPages[0]);
     const lastPage = overlappingPages[overlappingPages.length - 1];
+    let firstPage = pages[firstPageIndex];
     const context: ParquetReaderContext = {
       type,
       rLevelMax: field.rLevelMax,
@@ -433,13 +434,37 @@ export class ParquetReader {
       dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
     }
 
+    if (field.rLevelMax !== 0) {
+      // Probe predecessor pages independently, then decode the final range once. This avoids
+      // quadratic re-decoding when a large repeated row spans many pages.
+      while (firstPageIndex > 0) {
+        const probeBuffer = toUint8Array(
+          await this.file.read(
+            firstPage.offset,
+            firstPage.compressedByteLength,
+            signal ?? this.props.signal
+          )
+        );
+        const probe = await decodeDataPages(probeBuffer, {...context, dictionary});
+        if (probe.rlevels[0] === 0) {
+          break;
+        }
+        firstPage = pages[--firstPageIndex];
+      }
+    }
     const dataLength = lastPage.offset + lastPage.compressedByteLength - firstPage.offset;
     const dataBuffer = toUint8Array(
       await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
     );
     const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
     if (field.rLevelMax !== 0) {
-      return decoded;
+      const rowStart = rowRange.start - firstPage.firstRowIndex;
+      return sliceRepeatedColumnChunk(
+        decoded,
+        Math.max(0, rowStart),
+        rowRange.end - rowRange.start,
+        field.dLevelMax
+      );
     }
     const relativeStart = rowRange.start - firstPage.firstRowIndex;
     const relativeEnd = relativeStart + rowRange.end - rowRange.start;
@@ -510,6 +535,38 @@ function sliceNonRepeatedColumnChunk(
     dlevels: columnChunk.dlevels.slice(start, end),
     values: columnChunk.values.slice(valueStart, valueEnd) as typeof columnChunk.values,
     count: end - start,
+    pageHeaders: columnChunk.pageHeaders
+  };
+}
+
+/** Slices a repeated column by logical rows while preserving its level/value alignment. */
+function sliceRepeatedColumnChunk(
+  columnChunk: ParquetColumnChunk,
+  rowStart: number,
+  rowCount: number,
+  definitionLevelMaximum: number
+): ParquetColumnChunk {
+  const rowStarts: number[] = [];
+  for (let levelIndex = 0; levelIndex < columnChunk.rlevels.length; levelIndex++) {
+    if (columnChunk.rlevels[levelIndex] === 0) {
+      rowStarts.push(levelIndex);
+    }
+  }
+  const levelStart = rowStarts[rowStart];
+  const endRow = rowStart + rowCount;
+  const levelEnd = rowStarts[endRow] ?? columnChunk.rlevels.length;
+  if (levelStart === undefined || endRow > rowStarts.length || levelEnd < levelStart) {
+    throw new Error('Parquet repeated page range does not contain the requested rows');
+  }
+  const valueStart = countDefinedValues(columnChunk.dlevels, definitionLevelMaximum, 0, levelStart);
+  const valueEnd =
+    valueStart +
+    countDefinedValues(columnChunk.dlevels, definitionLevelMaximum, levelStart, levelEnd);
+  return {
+    rlevels: columnChunk.rlevels.slice(levelStart, levelEnd),
+    dlevels: columnChunk.dlevels.slice(levelStart, levelEnd),
+    values: columnChunk.values.slice(valueStart, valueEnd) as typeof columnChunk.values,
+    count: levelEnd - levelStart,
     pageHeaders: columnChunk.pageHeaders
   };
 }
