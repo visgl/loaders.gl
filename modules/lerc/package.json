@@ -49,9 +49,9 @@
     "pre-build": "npm run copy-wasm",
     "pre-build-2": "echo npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
     "copy-wasm": "mkdir -p dist/libs/lerc && cp src/libs/lerc/lerc-wasm.wasm dist/libs/lerc/lerc-wasm.wasm",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js --external:url --external:fs --external:path",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js --external:url --external:fs --external:path",
-    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path"
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js --external:url --external:fs --external:path --external:module",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js --external:url --external:fs --external:path --external:module",
+    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path --external:module"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
