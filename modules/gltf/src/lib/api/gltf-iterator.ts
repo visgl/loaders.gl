@@ -33,6 +33,7 @@ import {
   getTypedArrayForBufferView as getBufferViewTypedArray,
   getTypedArrayForImageData as getImageTypedArray
 } from '../gltf-utils/get-typed-array';
+import {getAccessorTypeFromSize} from '../gltf-utils/gltf-utils';
 
 /** String tag identifying a glTF iterator wrapper. */
 export type GLTFIteratorType =
@@ -736,6 +737,48 @@ export class GLTFIterator {
   /** Return the loaded bytes addressed by a raw image index. */
   getTypedArrayForImageData(imageIndex: number): Uint8Array {
     return getImageTypedArray(this.data, this.gltf.buffers, imageIndex);
+  }
+
+  /** Append loaded bytes and a raw buffer definition, returning the new buffer index. */
+  addBuffer(array: ArrayBufferView): number {
+    const arrayBuffer = array.buffer.slice(
+      array.byteOffset,
+      array.byteOffset + array.byteLength
+    ) as ArrayBuffer;
+    this.gltf.buffers.push({arrayBuffer, byteOffset: 0, byteLength: array.byteLength});
+    this.data.buffers ||= [];
+    this.data.buffers.push({byteLength: array.byteLength});
+    return this.data.buffers.length - 1;
+  }
+
+  /** Append a raw bufferView definition and return its index. */
+  addBufferView(bufferIndex: number, byteLength: number, byteOffset = 0): number {
+    this.data.bufferViews ||= [];
+    this.data.bufferViews.push({buffer: bufferIndex, byteOffset, byteLength});
+    return this.data.bufferViews.length - 1;
+  }
+
+  /** Append a raw accessor definition and return its index. */
+  addAccessor(
+    bufferViewIndex: number,
+    accessor: {
+      size: number;
+      componentType: number;
+      count: number;
+      min?: number[];
+      max?: number[];
+    }
+  ): number {
+    this.data.accessors ||= [];
+    this.data.accessors.push({
+      bufferView: bufferViewIndex,
+      type: getAccessorTypeFromSize(accessor.size),
+      componentType: accessor.componentType,
+      count: accessor.count,
+      min: accessor.min,
+      max: accessor.max
+    });
+    return this.data.accessors.length - 1;
   }
 
   /** Return lazily resolved standard relationships for an iterator wrapper. */
