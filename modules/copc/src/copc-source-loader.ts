@@ -670,28 +670,40 @@ export class COPCTileSource
   ): AsyncIterable<Uint8Array> {
     const get = Getter.create(this._urlOrGetter);
     const rangeEnd = node.pointDataOffset + node.pointDataLength;
-    const ranges: Array<[number, number]> = [];
-    for (let begin = node.pointDataOffset; begin < rangeEnd; begin += rangeChunkSize) {
-      ranges.push([begin, Math.min(begin + rangeChunkSize, rangeEnd)]);
-    }
-
-    const pending = new Map<number, Promise<Uint8Array>>();
+    const rangeCount = Math.ceil(node.pointDataLength / rangeChunkSize);
+    type RangeResult = {chunk: Uint8Array; error?: never} | {chunk?: never; error: unknown};
+    const pending = new Map<number, Promise<RangeResult>>();
     let nextToSchedule = 0;
-    for (let nextToYield = 0; nextToYield < ranges.length; nextToYield++) {
-      if (signal?.aborted) {
-        throw new Error('COPC progressive tile range request was aborted');
+    try {
+      for (let nextToYield = 0; nextToYield < rangeCount; nextToYield++) {
+        if (signal?.aborted) {
+          throw new Error('COPC progressive tile range request was aborted');
+        }
+        while (nextToSchedule < rangeCount && pending.size < rangeConcurrency) {
+          const begin = node.pointDataOffset + nextToSchedule * rangeChunkSize;
+          const end = Math.min(begin + rangeChunkSize, rangeEnd);
+          pending.set(
+            nextToSchedule,
+            get(begin, end).then(
+              chunk => ({chunk}),
+              error => ({error})
+            )
+          );
+          nextToSchedule++;
+        }
+        const result = await pending.get(nextToYield)!;
+        pending.delete(nextToYield);
+        if ('error' in result) {
+          throw result.error;
+        }
+        if (signal?.aborted) {
+          throw new Error('COPC progressive tile range request was aborted');
+        }
+        yield result.chunk;
       }
-      while (nextToSchedule < ranges.length && pending.size < rangeConcurrency) {
-        const [begin, end] = ranges[nextToSchedule];
-        pending.set(nextToSchedule, get(begin, end));
-        nextToSchedule++;
-      }
-      const chunk = await pending.get(nextToYield)!;
-      pending.delete(nextToYield);
-      if (signal?.aborted) {
-        throw new Error('COPC progressive tile range request was aborted');
-      }
-      yield chunk;
+    } finally {
+      // Promises are handled at creation, so abandoned prefetches cannot reject globally.
+      pending.clear();
     }
   }
 
