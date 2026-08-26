@@ -72,6 +72,14 @@ export type ParsedImplicitSubtree = {
   contentAvailability?: ImplicitAvailability | ImplicitAvailability[];
   /** Availability of subtree roots immediately below this subtree. */
   childSubtreeAvailability: ImplicitAvailability;
+  /** Property-table payloads referenced by subtree metadata declarations. */
+  propertyTables?: unknown[];
+  /** Property-table index for metadata attached to each available tile. */
+  tileMetadata?: number;
+  /** Property-table indexes for metadata attached to each content stream. */
+  contentMetadata?: number[];
+  /** Metadata entity attached to the subtree itself. */
+  subtreeMetadata?: unknown;
 };
 
 /** Runtime header produced for an available implicit tile. */
@@ -82,6 +90,20 @@ export type ImplicitTileHeader = Record<string, any> & {
   children: ImplicitTileHeader[];
   /** Optional lazy reference when this tile begins a child subtree. */
   implicitSubtree?: ImplicitSubtreeReference;
+  /** Raw subtree metadata references preserved for application-level interpretation. */
+  implicitMetadata?: ImplicitSubtreeMetadata;
+};
+
+/** Metadata references inherited by generated implicit tile headers. */
+export type ImplicitSubtreeMetadata = {
+  /** Property tables declared by the subtree. */
+  propertyTables?: unknown[];
+  /** Tile-level metadata property-table index. */
+  tileMetadata?: number;
+  /** Content-level metadata property-table indexes in content order. */
+  contentMetadata?: number[];
+  /** Subtree-level metadata entity. */
+  subtreeMetadata?: unknown;
 };
 
 /** Result of materializing exactly one subtree resource. */
@@ -235,7 +257,7 @@ function materializeAvailableTile(
             childIndex,
             descriptor.subdivisionScheme
           );
-          children.push(createLazyImplicitTileHeader(descriptor, childCoordinates));
+          children.push(createLazyImplicitTileHeader(subtree, descriptor, childCoordinates));
           counters.childSubtreeCount++;
         }
       }
@@ -243,6 +265,7 @@ function materializeAvailableTile(
   }
 
   return formatImplicitTileHeader(
+    subtree,
     descriptor,
     reference,
     globalCoordinates,
@@ -259,6 +282,7 @@ function materializeAvailableTile(
  * @returns Header that participates in culling and SSE before its subtree is requested.
  */
 function createLazyImplicitTileHeader(
+  subtree: ParsedImplicitSubtree,
   descriptor: ImplicitTilingDescriptor,
   coordinates: ImplicitTileCoordinates
 ): ImplicitTileHeader {
@@ -276,7 +300,8 @@ function createLazyImplicitTileHeader(
     lodMetricType: descriptor.lodMetricType,
     lodMetricValue: descriptor.rootLodMetricValue / 2 ** coordinates.level,
     refine: descriptor.refine,
-    type: TILE_TYPE.EMPTY
+    type: TILE_TYPE.EMPTY,
+    implicitMetadata: getImplicitSubtreeMetadata(subtree)
   };
 }
 
@@ -291,6 +316,7 @@ function createLazyImplicitTileHeader(
  * @returns Runtime tile header.
  */
 function formatImplicitTileHeader(
+  subtree: ParsedImplicitSubtree,
   descriptor: ImplicitTilingDescriptor,
   reference: ImplicitSubtreeReference,
   coordinates: ImplicitTileCoordinates,
@@ -317,7 +343,36 @@ function formatImplicitTileHeader(
       descriptor.rootBoundingVolume,
       coordinates,
       descriptor.subdivisionScheme
-    )
+    ),
+    implicitMetadata: getImplicitSubtreeMetadata(subtree)
+  };
+}
+
+/**
+ * Copies subtree metadata references without interpreting property-table schemas.
+ *
+ * Keeping the references on generated headers makes metadata available to applications while
+ * avoiding a false promise that the runtime has already decoded classes, enums, or values.
+ *
+ * @param subtree - Parsed subtree containing optional metadata declarations.
+ * @returns Metadata references, or `undefined` when the subtree declares none.
+ */
+function getImplicitSubtreeMetadata(
+  subtree: ParsedImplicitSubtree
+): ImplicitSubtreeMetadata | undefined {
+  if (
+    !subtree.propertyTables &&
+    subtree.tileMetadata === undefined &&
+    !subtree.contentMetadata &&
+    subtree.subtreeMetadata === undefined
+  ) {
+    return undefined;
+  }
+  return {
+    propertyTables: subtree.propertyTables,
+    tileMetadata: subtree.tileMetadata,
+    contentMetadata: subtree.contentMetadata,
+    subtreeMetadata: subtree.subtreeMetadata
   };
 }
 
