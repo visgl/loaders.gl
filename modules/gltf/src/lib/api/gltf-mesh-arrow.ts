@@ -10,59 +10,108 @@ import type {GLTFWithBuffers} from '../types/gltf-types';
 import {getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 import {getSizeFromAccessorType} from '../gltf-utils/gltf-constants';
 
-/** A mesh primitive projected from a glTF scene into a Mesh Arrow table. */
-export type GLTFMeshArrowPrimitive = {
-  /** Arrow table containing the primitive's vertex attributes and optional indices. */
+/** Controls whether accessors requiring packed storage may be materialized. */
+export type GLTFMeshArrowOptions = {
+  /** Accessor layout policy. Defaults to materializing exact logical values when necessary. */
+  accessorLayout?: 'materialize' | 'zero-copy-only';
+};
+
+/** A glTF scene projected into reusable Mesh Arrow geometry and separate scene placements. */
+export type GLTFMeshArrow = {
+  /** Unique source mesh primitives, each represented by one Mesh Arrow table. */
+  geometries: GLTFMeshArrowGeometry[];
+  /** Scene occurrences that place reusable geometries at glTF nodes. */
+  placements: GLTFMeshArrowPlacement[];
+};
+
+/** One unique source glTF mesh primitive represented as Mesh Arrow geometry. */
+export type GLTFMeshArrowGeometry = {
+  /** Arrow table containing vertex attributes and the optional row-0 index list. */
   table: MeshArrowTable;
-  /** Source-compatible attribute descriptors, including normalized and stride metadata. */
+  /** Source-compatible attribute descriptors, including normalization metadata. */
   attributes: MeshAttributes;
-  /** World transform of the node that instantiates the primitive. */
-  worldMatrix: Matrix4;
-  /** Index of the source node. */
-  nodeIndex: number;
-  /** Node indices from the selected scene root through the source node. */
-  nodePath: number[];
   /** Index of the source mesh. */
   meshIndex: number;
   /** Index of the primitive within the source mesh. */
   primitiveIndex: number;
   /** Index of the primitive material, when specified. */
   materialIndex?: number;
+  /** Whether any accessor required packed allocation rather than borrowing source storage. */
+  materialized: boolean;
+};
+
+/** Placement of one reusable Mesh Arrow geometry in the selected glTF scene. */
+export type GLTFMeshArrowPlacement = {
+  /** Index into the result's geometries array. */
+  geometryIndex: number;
+  /** World transform of the node instantiating the geometry. */
+  worldMatrix: Matrix4;
+  /** Index of the source node. */
+  nodeIndex: number;
+  /** Node indices from the selected scene root through the source node. */
+  nodePath: number[];
+};
+
+type ConversionState = {
+  gltf: GLTFWithBuffers;
+  options: Required<GLTFMeshArrowOptions>;
+  geometries: GLTFMeshArrowGeometry[];
+  placements: GLTFMeshArrowPlacement[];
+  geometryIndices: Map<string, number>;
+};
+
+type MeshAttributeResult = {
+  attribute: MeshAttribute;
+  materialized: boolean;
+};
+
+type MeshTypedArrayConstructor = {
+  readonly BYTES_PER_ELEMENT: number;
+  new (length: number): MeshAttribute['value'];
+  new (buffer: ArrayBuffer, byteOffset: number, length: number): MeshAttribute['value'];
 };
 
 /**
- * Project the default glTF scene into one Mesh Arrow table per mesh primitive.
+ * Convert the selected glTF scene to reusable Mesh Arrow geometries and placements.
  *
- * This projection preserves source vertex attribute views for dense, non-interleaved accessors.
- * It does not bake node transforms, apply skinning or morph targets, or flatten GPU instancing.
- * Those scene-level concerns remain represented by the returned primitive metadata and source glTF.
+ * Dense packed accessors borrow their original storage. Interleaved, sparse, and implicit-zero
+ * accessors are materialized without changing component types, normalization, indexing, node
+ * transforms, or primitive reuse. The input glTF and its buffers are never modified.
  * @param gltf Parsed glTF data with resolved binary buffers.
- * @returns Mesh Arrow primitives in default-scene traversal order.
+ * @param options Accessor materialization policy.
+ * @returns Reusable geometries and their scene placements.
  */
-export function extractGLTFMeshArrowPrimitives(gltf: GLTFWithBuffers): GLTFMeshArrowPrimitive[] {
-  const rootNodeIndices = getRootNodeIndices(gltf);
-  const primitives: GLTFMeshArrowPrimitive[] = [];
+export function convertGLTFToMeshArrow(
+  gltf: GLTFWithBuffers,
+  options: GLTFMeshArrowOptions = {}
+): GLTFMeshArrow {
+  const state: ConversionState = {
+    gltf,
+    options: {accessorLayout: options.accessorLayout || 'materialize'},
+    geometries: [],
+    placements: [],
+    geometryIndices: new Map()
+  };
 
-  for (const rootNodeIndex of rootNodeIndices) {
-    visitNode(gltf, rootNodeIndex, new Matrix4(), [], primitives);
+  for (const rootNodeIndex of getRootNodeIndices(gltf)) {
+    visitNode(state, rootNodeIndex, new Matrix4(), []);
   }
 
-  return primitives;
+  return {geometries: state.geometries, placements: state.placements};
 }
 
-/** Visit a node and append each of its mesh primitives to the projection result. */
+/** Visit a node and append placements for each of its mesh primitives. */
 function visitNode(
-  gltf: GLTFWithBuffers,
+  state: ConversionState,
   nodeIndex: number,
   parentWorldMatrix: Matrix4,
-  parentNodePath: number[],
-  primitives: GLTFMeshArrowPrimitive[]
+  parentNodePath: number[]
 ): void {
   if (parentNodePath.includes(nodeIndex)) {
     throw new Error(`glTF node hierarchy contains a cycle at node ${nodeIndex}`);
   }
 
-  const node = gltf.json.nodes?.[nodeIndex];
+  const node = state.gltf.json.nodes?.[nodeIndex];
   if (!node) {
     throw new Error(`glTF scene references missing node ${nodeIndex}`);
   }
@@ -71,34 +120,51 @@ function visitNode(
   const worldMatrix = new Matrix4(parentWorldMatrix).multiplyRight(getNodeMatrix(node));
 
   if (node.mesh !== undefined) {
-    const mesh = gltf.json.meshes?.[node.mesh];
+    const mesh = state.gltf.json.meshes?.[node.mesh];
     if (!mesh) {
       throw new Error(`glTF node ${nodeIndex} references missing mesh ${node.mesh}`);
     }
 
     for (const [primitiveIndex, primitive] of mesh.primitives.entries()) {
-      const {table, attributes} = convertGLTFPrimitiveToMeshArrowTable(gltf, primitive);
-      primitives.push({
-        table,
-        attributes,
-        worldMatrix,
-        nodeIndex,
-        nodePath,
-        meshIndex: node.mesh,
-        primitiveIndex,
-        materialIndex: primitive.material
-      });
+      const geometryIndex = getOrCreateGeometry(state, node.mesh, primitiveIndex, primitive);
+      state.placements.push({geometryIndex, worldMatrix, nodeIndex, nodePath});
     }
   }
 
   for (const childNodeIndex of node.children || []) {
-    visitNode(gltf, childNodeIndex, worldMatrix, nodePath, primitives);
+    visitNode(state, childNodeIndex, worldMatrix, nodePath);
   }
+}
+
+/** Get or create the unique geometry for one source mesh primitive. */
+function getOrCreateGeometry(
+  state: ConversionState,
+  meshIndex: number,
+  primitiveIndex: number,
+  primitive: GLTFMeshPrimitive
+): number {
+  const key = `${meshIndex}:${primitiveIndex}`;
+  const existingIndex = state.geometryIndices.get(key);
+  if (existingIndex !== undefined) {
+    return existingIndex;
+  }
+
+  const geometry = convertGLTFPrimitiveToMeshArrowGeometry(
+    state.gltf,
+    meshIndex,
+    primitiveIndex,
+    primitive,
+    state.options
+  );
+  const geometryIndex = state.geometries.length;
+  state.geometries.push(geometry);
+  state.geometryIndices.set(key, geometryIndex);
+  return geometryIndex;
 }
 
 /** Get the selected scene roots, or infer roots when a glTF asset does not define scenes. */
 function getRootNodeIndices(gltf: GLTFWithBuffers): number[] {
-  const selectedScene = gltf.json.scenes?.[gltf.json.scene || 0];
+  const selectedScene = gltf.json.scenes?.[gltf.json.scene ?? 0];
   if (selectedScene) {
     return selectedScene.nodes || [];
   }
@@ -122,87 +188,188 @@ function getNodeMatrix(node: GLTFNode): Matrix4 {
     .scale(node.scale || [1, 1, 1]);
 }
 
-/** Convert one glTF mesh primitive to its Mesh Arrow representation. */
-function convertGLTFPrimitiveToMeshArrowTable(
+/** Convert one glTF mesh primitive to reusable Mesh Arrow geometry. */
+function convertGLTFPrimitiveToMeshArrowGeometry(
   gltf: GLTFWithBuffers,
-  primitive: GLTFMeshPrimitive
-): {table: MeshArrowTable; attributes: MeshAttributes} {
+  meshIndex: number,
+  primitiveIndex: number,
+  primitive: GLTFMeshPrimitive,
+  options: Required<GLTFMeshArrowOptions>
+): GLTFMeshArrowGeometry {
   const attributes: MeshAttributes = {};
+  let materialized = false;
 
   for (const [attributeName, accessorIndex] of Object.entries(primitive.attributes)) {
-    attributes[attributeName] = getMeshAttribute(gltf, accessorIndex);
+    const result = getMeshAttribute(gltf, accessorIndex, options);
+    attributes[attributeName] = result.attribute;
+    materialized ||= result.materialized;
   }
 
-  const indices =
-    primitive.indices === undefined ? undefined : getMeshAttribute(gltf, primitive.indices);
-  const mode = primitive.mode || 4;
+  const indexResult =
+    primitive.indices === undefined
+      ? undefined
+      : getMeshAttribute(gltf, primitive.indices, options);
+  materialized ||= indexResult?.materialized || false;
+  const mode = primitive.mode ?? 4;
 
   return {
-    table: makeMeshArrowTable(attributes, {topology: getMeshTopology(mode), mode, indices}),
-    attributes
+    table: makeMeshArrowTable(attributes, {
+      topology: getMeshTopology(mode),
+      mode,
+      indices: indexResult?.attribute
+    }),
+    attributes,
+    meshIndex,
+    primitiveIndex,
+    materialIndex: primitive.material,
+    materialized
   };
 }
 
-/** Get a zero-copy Mesh attribute from a dense glTF accessor. */
-function getMeshAttribute(gltf: GLTFWithBuffers, accessorIndex: number): MeshAttribute {
+/** Get an exact-value Mesh attribute, borrowing packed storage where possible. */
+function getMeshAttribute(
+  gltf: GLTFWithBuffers,
+  accessorIndex: number,
+  options: Required<GLTFMeshArrowOptions>
+): MeshAttributeResult {
   const accessor = gltf.json.accessors?.[accessorIndex];
   if (!accessor) {
     throw new Error(`glTF primitive references missing accessor ${accessorIndex}`);
   }
-  if (accessor.sparse) {
-    throw new Error(
-      `glTF accessor ${accessorIndex} is sparse and cannot be projected without materializing it`
-    );
-  }
-  if (accessor.bufferView === undefined) {
-    throw new Error(`glTF accessor ${accessorIndex} has no buffer view and cannot be projected`);
-  }
 
-  const bufferView = gltf.json.bufferViews?.[accessor.bufferView];
-  if (!bufferView) {
+  const size = getSizeFromAccessorType(accessor.type);
+  const ArrayType = getMeshTypedArrayConstructor(accessor.componentType);
+  const elementByteLength = size * ArrayType.BYTES_PER_ELEMENT;
+  const bufferView =
+    accessor.bufferView === undefined ? undefined : gltf.json.bufferViews?.[accessor.bufferView];
+  if (accessor.bufferView !== undefined && !bufferView) {
     throw new Error(
       `glTF accessor ${accessorIndex} references missing buffer view ${accessor.bufferView}`
     );
   }
 
-  const size = getSizeFromAccessorType(accessor.type);
-  const elementByteLength = size * getAccessorComponentByteLength(accessor);
-  if (bufferView.byteStride && bufferView.byteStride !== elementByteLength) {
+  const isInterleaved = Boolean(
+    bufferView?.byteStride && bufferView.byteStride !== elementByteLength
+  );
+  const requiresMaterialization = !bufferView || isInterleaved || Boolean(accessor.sparse);
+  if (requiresMaterialization && options.accessorLayout === 'zero-copy-only') {
+    const reason = accessor.sparse ? 'sparse' : isInterleaved ? 'interleaved' : 'implicit-zero';
     throw new Error(
-      `glTF accessor ${accessorIndex} is interleaved and cannot be projected without materializing it`
+      `glTF accessor ${accessorIndex} is ${reason} and cannot be projected without materializing it`
     );
   }
 
-  // Component byte-length validation above rejects the bigint component types that MeshAttribute excludes.
-  const value = getTypedArrayForAccessor(
-    gltf.json,
-    gltf.buffers,
-    accessor
-  ) as MeshAttribute['value'];
+  let value = bufferView
+    ? (getTypedArrayForAccessor(gltf.json, gltf.buffers, accessor) as MeshAttribute['value'])
+    : new ArrayType(accessor.count * size);
+
+  if (accessor.sparse) {
+    const materializedValue = new ArrayType(value.length);
+    materializedValue.set(value);
+    applySparseAccessor(gltf, accessorIndex, accessor, materializedValue, size);
+    value = materializedValue;
+  }
+
   return {
-    value,
-    size,
-    byteOffset: accessor.byteOffset,
-    byteStride: bufferView.byteStride,
-    normalized: accessor.normalized
+    attribute: {
+      value,
+      size,
+      byteOffset: requiresMaterialization ? 0 : accessor.byteOffset,
+      byteStride: requiresMaterialization ? undefined : bufferView?.byteStride,
+      normalized: accessor.normalized
+    },
+    materialized: requiresMaterialization
   };
 }
 
-/** Return the component byte length for a glTF accessor. */
-function getAccessorComponentByteLength(accessor: GLTFAccessor): number {
-  switch (accessor.componentType) {
+/** Apply sparse substitutions to an independently allocated accessor value. */
+function applySparseAccessor(
+  gltf: GLTFWithBuffers,
+  accessorIndex: number,
+  accessor: GLTFAccessor,
+  value: MeshAttribute['value'],
+  size: number
+): void {
+  const sparse = accessor.sparse!;
+  const sparseIndices = getBufferViewValues(
+    gltf,
+    sparse.indices.bufferView,
+    sparse.indices.byteOffset || 0,
+    sparse.indices.componentType,
+    sparse.count,
+    `glTF accessor ${accessorIndex} sparse indices`
+  );
+  const sparseValues = getBufferViewValues(
+    gltf,
+    sparse.values.bufferView,
+    sparse.values.byteOffset || 0,
+    accessor.componentType,
+    sparse.count * size,
+    `glTF accessor ${accessorIndex} sparse values`
+  );
+
+  for (let sparseIndex = 0; sparseIndex < sparse.count; sparseIndex++) {
+    const accessorElementIndex = Number(sparseIndices[sparseIndex]);
+    if (
+      !Number.isInteger(accessorElementIndex) ||
+      accessorElementIndex < 0 ||
+      accessorElementIndex >= accessor.count
+    ) {
+      throw new Error(`glTF accessor ${accessorIndex} sparse index is out of bounds`);
+    }
+    for (let componentIndex = 0; componentIndex < size; componentIndex++) {
+      value[accessorElementIndex * size + componentIndex] =
+        sparseValues[sparseIndex * size + componentIndex];
+    }
+  }
+}
+
+/** Get tightly packed typed values from a glTF buffer view. */
+function getBufferViewValues(
+  gltf: GLTFWithBuffers,
+  bufferViewIndex: number,
+  localByteOffset: number,
+  componentType: number,
+  count: number,
+  path: string
+): MeshAttribute['value'] {
+  const bufferView = gltf.json.bufferViews?.[bufferViewIndex];
+  if (!bufferView) {
+    throw new Error(`${path} reference missing buffer view ${bufferViewIndex}`);
+  }
+  const buffer = gltf.buffers[bufferView.buffer];
+  if (!buffer) {
+    throw new Error(`${path} reference missing buffer ${bufferView.buffer}`);
+  }
+  const ArrayType = getMeshTypedArrayConstructor(componentType);
+  const byteLength = count * ArrayType.BYTES_PER_ELEMENT;
+  if (localByteOffset + byteLength > bufferView.byteLength) {
+    throw new Error(`${path} exceed buffer view ${bufferViewIndex}`);
+  }
+  const byteOffset = buffer.byteOffset + (bufferView.byteOffset || 0) + localByteOffset;
+  return new ArrayType(buffer.arrayBuffer, byteOffset, count);
+}
+
+/** Return the numeric typed-array constructor for a Mesh Arrow accessor component type. */
+function getMeshTypedArrayConstructor(componentType: number): MeshTypedArrayConstructor {
+  switch (componentType) {
     case 5120:
+      return Int8Array;
     case 5121:
-      return 1;
+      return Uint8Array;
     case 5122:
+      return Int16Array;
     case 5123:
-      return 2;
+      return Uint16Array;
+    case 5124:
+      return Int32Array;
     case 5125:
+      return Uint32Array;
     case 5126:
-      return 4;
+      return Float32Array;
     default:
       throw new Error(
-        `glTF accessor component type ${accessor.componentType} is not supported by Mesh Arrow`
+        `glTF accessor component type ${componentType} is not supported by Mesh Arrow`
       );
   }
 }

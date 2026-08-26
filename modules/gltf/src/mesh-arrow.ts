@@ -3,6 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 export {
-  extractGLTFMeshArrowPrimitives,
-  type GLTFMeshArrowPrimitive
+  convertGLTFToMeshArrow,
+  type GLTFMeshArrow,
+  type GLTFMeshArrowGeometry,
+  type GLTFMeshArrowOptions,
+  type GLTFMeshArrowPlacement
 } from './lib/api/gltf-mesh-arrow';

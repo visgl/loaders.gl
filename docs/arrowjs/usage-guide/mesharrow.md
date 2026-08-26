@@ -79,24 +79,29 @@ Use `convertMeshToTable(mesh, 'arrow-table')` when starting from a legacy loader
 
 ### Project a glTF scene
 
-`@loaders.gl/gltf/mesh-arrow` projects an already loaded glTF scene into one Mesh Arrow table per primitive. It preserves each primitive's source-compatible attributes and returns scene placement separately, rather than baking transforms into vertex data.
+`@loaders.gl/gltf/mesh-arrow` converts an already loaded glTF scene into reusable Mesh Arrow geometries and separate scene placements. Each source primitive is converted once even when its mesh is referenced by multiple nodes.
 
 ```ts
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {extractGLTFMeshArrowPrimitives} from '@loaders.gl/gltf/mesh-arrow';
+import {convertGLTFToMeshArrow} from '@loaders.gl/gltf/mesh-arrow';
 
 const gltf = await load('scene.glb', GLTFLoader);
-const primitives = extractGLTFMeshArrowPrimitives(gltf);
+const meshArrow = convertGLTFToMeshArrow(gltf);
 
-for (const primitive of primitives) {
-  primitive.table; // MeshArrowTable
-  primitive.worldMatrix; // placement in the glTF scene
-  primitive.materialIndex; // optional source material reference
+for (const geometry of meshArrow.geometries) {
+  geometry.table; // MeshArrowTable, including optional row-0 indices
+  geometry.materialIndex; // optional source material reference
+  geometry.materialized; // true if packed storage had to be allocated
+}
+
+for (const placement of meshArrow.placements) {
+  meshArrow.geometries[placement.geometryIndex];
+  placement.worldMatrix;
 }
 ```
 
-The projection preserves dense, non-interleaved vertex buffer views. Sparse and interleaved accessors are rejected explicitly. It does not bake node transforms, evaluate skinning or morph targets, resolve GPU instancing, or decide how to batch draws.
+Dense, packed accessors retain views of their source buffers. Interleaved, sparse, and implicit-zero accessors are materialized into packed arrays containing the same component values. Use `{accessorLayout: 'zero-copy-only'}` to reject accessors that require allocation. Conversion does not modify the source glTF, bake node transforms, evaluate skinning or morph targets, resolve GPU instancing, or decide how to batch draws.
 
 ## Rendering with luma.gl
 
