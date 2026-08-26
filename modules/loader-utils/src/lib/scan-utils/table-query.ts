@@ -19,6 +19,8 @@ export type TableQueryOptions<
   columns?: readonly string[];
   /** Maximum number of rows retained after filtering and projection. */
   limit?: number;
+  /** Cancels discovery and batch production. */
+  signal?: AbortSignal;
 }>;
 
 /** Reads the minimum source columns required by the remaining table-query plan. */

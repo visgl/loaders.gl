@@ -38,6 +38,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./ndjson-source": {
+      "types": "./dist/ndjson-source.d.ts",
+      "import": "./dist/ndjson-source.js"
+    },
     "./json-table-loader": {
       "types": "./dist/json-table-loader-with-parser.d.ts",
       "import": "./dist/json-table-loader-with-parser.js"

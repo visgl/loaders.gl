@@ -41,6 +41,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./arrow-source": {
+      "types": "./dist/arrow-source.d.ts",
+      "import": "./dist/arrow-source.js"
+    },
     "./transport": {
       "types": "./dist/transport.d.ts",
       "import": "./dist/transport.js"
