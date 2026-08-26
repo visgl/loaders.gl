@@ -624,6 +624,23 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     workerOptions: ParquetSourceWorkerOptions | undefined,
     signal: AbortSignal
   ): Promise<ParquetRowGroupReadResult> {
+    if (
+      !workerOptions &&
+      predicate &&
+      projectedColumnNames &&
+      getParquetPredicateColumns(predicate).some(column => !projectedColumnNames.has(column))
+    ) {
+      return await this.readRowGroupWithLateMaterialization(
+        initialization,
+        rowGroupIndex,
+        columnList,
+        projectedSchema,
+        batchSize,
+        predicate,
+        projectedColumnNames,
+        signal
+      );
+    }
     const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
     const pagePlan = predicate
       ? await createParquetPagePruningPlan(
@@ -792,6 +809,58 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       );
     }
     return {rowGroupIndex, rowCount: workerResult.rowCount, workerResult};
+  }
+
+  /** Decodes predicate columns first, avoiding projected-column decoding for empty matches. */
+  private async readRowGroupWithLateMaterialization(
+    initialization: ParquetSourceInitialization,
+    rowGroupIndex: number,
+    columnList: string[][],
+    projectedSchema: Schema,
+    batchSize: number | undefined,
+    predicate: ParquetPredicate,
+    projectedColumnNames: ReadonlySet<string>,
+    signal: AbortSignal
+  ): Promise<ParquetRowGroupReadResult> {
+    const predicateColumns = getParquetPredicateColumns(predicate);
+    const predicateColumnList = predicateColumns.map(column => [column]);
+    const filterResult = await this.readRowGroup(
+      initialization,
+      rowGroupIndex,
+      predicateColumnList,
+      projectSchema(initialization.schema, predicateColumns),
+      batchSize,
+      predicate,
+      new Set(predicateColumns),
+      undefined,
+      signal
+    );
+    const rowIndices = filterResult.rowIndices;
+    if (!rowIndices || rowIndices.length === 0) {
+      return {rowGroupIndex, rowCount: 0, columns: {}, rowIndices: []};
+    }
+    const projectedColumnList = columnList.filter(columnPath =>
+      projectedColumnNames.has(columnPath[0])
+    );
+    const projectedResult = await this.readRowGroup(
+      initialization,
+      rowGroupIndex,
+      projectedColumnList,
+      projectedSchema,
+      batchSize,
+      undefined,
+      projectedColumnNames,
+      undefined,
+      signal
+    );
+    return {
+      rowGroupIndex,
+      rowCount: rowIndices.length,
+      rowIndices,
+      columns: projectedResult.columns
+        ? gatherParquetColumns(projectedResult.columns, rowIndices, projectedColumnNames)
+        : {}
+    };
   }
 
   /** Records the rows and pages avoided by one conservative page-index plan. */
