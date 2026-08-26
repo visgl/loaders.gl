@@ -45,8 +45,7 @@ export function convertGeometryToTWKB(
 
   encodeGeometry(writer, geometry, context);
 
-  // TODO - we need to slice it?
-  return writer.arrayBuffer;
+  return writer.getArrayBuffer();
 }
 
 function encodeGeometry(writer: BinaryWriter, geometry: Geometry, context: TWKBEncoderContext) {

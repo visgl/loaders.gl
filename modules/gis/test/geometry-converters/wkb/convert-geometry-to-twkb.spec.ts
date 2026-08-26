@@ -7,6 +7,7 @@ import {fetchFile} from '@loaders.gl/core';
 import {convertGeometryToTWKB, convertTWKBToGeometry} from '@loaders.gl/gis';
 import type {Geometry} from '@loaders.gl/schema';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
+import {BinaryWriter} from '../../../src/lib/utils/binary-writer';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
@@ -56,5 +57,17 @@ test('convertGeometryToTWKB marks M-only data and rejects unsupported geometry t
   expect(encoded[2] & 0x02).toBe(0x02);
   expect(() => convertGeometryToTWKB({type: 'Unsupported'} as unknown as Geometry)).toThrow(
     'unsupported geometry type'
+  );
+});
+
+test('BinaryWriter grows geometrically and returns only written bytes', () => {
+  const writer = new BinaryWriter(0, true);
+  for (let value = 0; value < 100; value++) {
+    writer.writeUInt8(value);
+  }
+
+  expect(writer.arrayBuffer.byteLength).toBe(128);
+  expect(new Uint8Array(writer.getArrayBuffer())).toEqual(
+    Uint8Array.from({length: 100}, (_, value) => value)
   );
 });
