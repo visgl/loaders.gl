@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 // Classic-worker entrypoint that lazily loads the ESM worker implementation.
-import(new URL('./workers/npy-worker.js', import.meta.url).toString());
+import(/* @vite-ignore */ new URL('./workers/npy-worker.js', import.meta.url).toString());
