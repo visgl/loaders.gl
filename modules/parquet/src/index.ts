@@ -111,8 +111,10 @@ export {
 export {
   checkParquetSplitBlockBloomFilter,
   decodeParquetSplitBlockBloomFilter,
+  encodeParquetBloomFilterValue,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter,
+  type ParquetBloomFilterPhysicalType,
   type ParquetSplitBlockBloomFilter
 } from './lib/parquet-bloom-filter';
 export {

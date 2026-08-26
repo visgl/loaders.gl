@@ -26,6 +26,75 @@ export type ParquetSplitBlockBloomFilter = {
   readonly bitset: Uint8Array;
 };
 
+/** Physical Parquet types supported by Bloom-filter plain-value encoding. */
+export type ParquetBloomFilterPhysicalType =
+  | 'BOOLEAN'
+  | 'INT32'
+  | 'INT64'
+  | 'FLOAT'
+  | 'DOUBLE'
+  | 'BYTE_ARRAY'
+  | 'FIXED_LEN_BYTE_ARRAY';
+
+/** Encodes one scalar using the Parquet PLAIN representation used by Bloom filters. */
+export function encodeParquetBloomFilterValue(
+  value: boolean | number | bigint | string | Uint8Array,
+  physicalType: ParquetBloomFilterPhysicalType,
+  typeLength?: number
+): Uint8Array {
+  switch (physicalType) {
+    case 'BOOLEAN':
+      if (typeof value !== 'boolean')
+        throw new Error('Parquet BOOLEAN Bloom value must be boolean');
+      return Uint8Array.of(value ? 1 : 0);
+    case 'INT32': {
+      if (typeof value !== 'number' || !Number.isInteger(value)) {
+        throw new Error('Parquet INT32 Bloom value must be an integer number');
+      }
+      const bytes = new Uint8Array(4);
+      new DataView(bytes.buffer).setInt32(0, value, true);
+      return bytes;
+    }
+    case 'INT64': {
+      const integerValue = typeof value === 'bigint' ? value : BigInt(value);
+      const bytes = new Uint8Array(8);
+      new DataView(bytes.buffer).setBigInt64(0, integerValue, true);
+      return bytes;
+    }
+    case 'FLOAT': {
+      if (typeof value !== 'number') throw new Error('Parquet FLOAT Bloom value must be a number');
+      const bytes = new Uint8Array(4);
+      new DataView(bytes.buffer).setFloat32(0, value, true);
+      return bytes;
+    }
+    case 'DOUBLE': {
+      if (typeof value !== 'number') throw new Error('Parquet DOUBLE Bloom value must be a number');
+      const bytes = new Uint8Array(8);
+      new DataView(bytes.buffer).setFloat64(0, value, true);
+      return bytes;
+    }
+    case 'BYTE_ARRAY': {
+      const payload = typeof value === 'string' ? new TextEncoder().encode(value) : value;
+      const bytes = new Uint8Array(4 + payload.byteLength);
+      new DataView(bytes.buffer).setInt32(0, payload.byteLength, true);
+      bytes.set(payload, 4);
+      return bytes;
+    }
+    case 'FIXED_LEN_BYTE_ARRAY': {
+      if (
+        !(value instanceof Uint8Array) ||
+        typeLength === undefined ||
+        value.byteLength !== typeLength
+      ) {
+        throw new Error('Parquet FIXED_LEN_BYTE_ARRAY Bloom value must match typeLength');
+      }
+      return value.slice();
+    }
+    default:
+      throw new Error(`Unsupported Parquet Bloom-filter physical type: ${physicalType}`);
+  }
+}
+
 /** Parses a Parquet Bloom-filter header and returns its uncompressed split-block bitset. */
 export function decodeParquetSplitBlockBloomFilter(data: Uint8Array): ParquetSplitBlockBloomFilter {
   const transport = new Uint8ArrayTransport(data);
