@@ -38,6 +38,18 @@ describe('GLTFIterator', () => {
     expect(iterator.getReferences(node)).toBe(iterator.getReferences(node));
   });
 
+  test('maps raw indices to loaded buffer and image companions', () => {
+    const gltf = makeGLTF();
+    const iterator = new GLTFIterator(gltf);
+    const [bufferView] = Array.from(iterator.bufferViews);
+    const [image] = Array.from(iterator.images);
+
+    expect(bufferView.loadedBufferView).toBeInstanceOf(Uint8Array);
+    expect(iterator.getTypedArrayForBufferView(0)).toBeInstanceOf(Uint8Array);
+    expect(iterator.getTypedArrayForAccessor(0)).toBeInstanceOf(Float32Array);
+    expect(image.loadedImage).toBe(gltf.images?.[0]);
+  });
+
   test('resolves and caches standard references lazily', () => {
     const gltf = makeGLTF();
     const iterator = new GLTFIterator(gltf);

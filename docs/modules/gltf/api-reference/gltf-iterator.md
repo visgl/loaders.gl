@@ -52,7 +52,7 @@ iterator.getReferences(node).mesh; // GLTFMeshIterator | undefined
 
 An absent optional reference returns `undefined`. An invalid present reference throws when accessed and includes the source JSON path in its error message.
 
-Loaded resource companions are exposed separately, such as `buffer.loadedBuffer`, `bufferView.loadedBufferView`, `image.loadedImage`, and `file.loadedFile`.
+`GLTFIterator` requires a `GLTFWithBuffers` container so JSON indices can be mapped to resolved resources without guesswork. Loaded resource companions are exposed separately, such as `buffer.loadedBuffer`, `bufferView.loadedBufferView`, `image.loadedImage`, and `file.loadedFile`. For extensions that need decoded bytes, `iterator.getTypedArrayForBufferView(index)`, `iterator.getTypedArrayForAccessor(index)`, and `iterator.getTypedArrayForImageData(index)` provide typed views over those mapped resources.
 
 ## Extension transformations
 

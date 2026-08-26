@@ -28,6 +28,11 @@ import type {
   GLTFTextureInfo
 } from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import {
+  getTypedArrayForAccessor as getAccessorTypedArray,
+  getTypedArrayForBufferView as getBufferViewTypedArray,
+  getTypedArrayForImageData as getImageTypedArray
+} from '../gltf-utils/get-typed-array';
 
 /** String tag identifying a glTF iterator wrapper. */
 export type GLTFIteratorType =
@@ -716,6 +721,21 @@ export class GLTFIterator {
   /** Exact unmodified glTF JSON root. */
   get data(): GLTF {
     return this.gltf.json;
+  }
+
+  /** Return the loaded bytes addressed by a raw bufferView index. */
+  getTypedArrayForBufferView(bufferViewIndex: number): Uint8Array {
+    return getBufferViewTypedArray(this.data, this.gltf.buffers, bufferViewIndex);
+  }
+
+  /** Return the loaded typed values addressed by a raw accessor index. */
+  getTypedArrayForAccessor(accessorIndex: number): unknown {
+    return getAccessorTypedArray(this.data, this.gltf.buffers, accessorIndex);
+  }
+
+  /** Return the loaded bytes addressed by a raw image index. */
+  getTypedArrayForImageData(imageIndex: number): Uint8Array {
+    return getImageTypedArray(this.data, this.gltf.buffers, imageIndex);
   }
 
   /** Return lazily resolved standard relationships for an iterator wrapper. */
