@@ -68,7 +68,6 @@ function normalizeTileContents(
 
   const contentEntries = Array.isArray(content) ? content : [content];
   const normalizedContents = contentEntries.map(contentEntry => {
-    const contentUri = contentEntry.uri || contentEntry.url;
     return {
       ...contentEntry,
       boundingVolume: normalizeS2BoundingVolume(contentEntry.boundingVolume),
