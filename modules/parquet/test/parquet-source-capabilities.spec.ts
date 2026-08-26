@@ -13,7 +13,7 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', t
   const expectedCapabilities: ParquetSourceCapabilities = {
     tableQuery: {
       projection: 'pushdown',
-      predicate: 'pushdown',
+      predicate: 'pushdown+residual',
       limit: 'pushdown',
       streaming: true,
       cancellation: true

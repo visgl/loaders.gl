@@ -346,26 +346,28 @@ correctness using the shared contract:
 
 ```ts
 type TableQueryCapabilities = Readonly<{
-  projection: 'unsupported' | 'residual' | 'pushdown';
-  predicate: 'unsupported' | 'residual' | 'pushdown';
-  limit: 'unsupported' | 'residual' | 'pushdown';
+  projection: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
+  predicate: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
+  limit: 'unsupported' | 'residual' | 'pushdown' | 'pushdown+residual';
   streaming: boolean;
   cancellation: boolean;
 }>;
 
 const PARQUET_TABLE_QUERY_CAPABILITIES = {
   projection: 'pushdown',
-  predicate: 'pushdown',
+  predicate: 'pushdown+residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true
 };
 ```
 
-`pushdown` means the backend has a physical opportunity to avoid work; it does not promise that
-every expression can be proven from metadata. Parquet still evaluates a residual predicate exactly
-after conservative statistics and page pruning. `residual` means correct local execution without a
-storage-level optimization. `unsupported` is a correctness gap that must be rejected or delegated.
+`pushdown` means the backend has a physical opportunity to avoid work and can execute the requested
+operator as part of physical planning. `pushdown+residual` means it can prune physical work before
+decoding and still must evaluate the surviving rows exactly. Parquet uses this level for statistics
+and page pruning followed by exact predicate evaluation. `residual` means correct local execution
+without a storage-level optimization. `unsupported` is a correctness gap that must be rejected or
+delegated.
 
 Capabilities answer two different questions:
 
@@ -482,7 +484,7 @@ const explanation = await parquetSource.explain({
   limit: 100
 });
 
-explanation.operators.predicate.support; // 'pushdown' | 'residual' | 'unsupported'
+explanation.operators.predicate.support; // 'pushdown' | 'pushdown+residual' | 'residual' | 'unsupported'
 explanation.rowGroups?.prunedByStatistics;
 ```
 
@@ -597,9 +599,9 @@ advertising the strongest correct level for each operator:
 | Format/source | Natural physical unit | Projection | Predicate | Limit | First useful tranche |
 | --- | --- | --- | --- | --- | --- |
 | Arrow / GeoArrow | record batch | residual/zero-copy | residual | residual | 7 |
-| Parquet / Iceberg | row group, page, file | pushdown | statistics + residual | global/pushdown | 4 |
+| Parquet / Iceberg | row group, page, file | pushdown | pushdown + residual | global/pushdown | 4 |
 | FlatGeobuf | R-tree feature range | residual | bbox pushdown, scalar residual | residual | 6 |
-| ORC | stripe, row index | pushdown | statistics + residual | global/pushdown | 8 |
+| ORC | stripe, row index | pushdown | pushdown + residual | global/pushdown | 8 |
 | CSV / JSONL | byte-range chunk | parser-dependent | residual | global | 8 |
 | Delta / Lance | file, fragment, delete vector | format-native | format-native + residual | global | 9 |
 | COPC / Potree | hierarchy node | attribute decode | bounds + attribute residual | global | 11 |
