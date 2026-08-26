@@ -857,9 +857,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       }
     }
 
-    // Worker decoding currently does not expose page CRC verification. Keep checksum-enabled
-    // reads on the TypeScript path so the requested integrity policy is honored.
-    if (workerOptions && !this.options.parquet?.verifyPageChecksums) {
+    if (workerOptions) {
       return await this.readRowGroupOnWorker(
         initialization,
         rowGroupIndex,
@@ -979,7 +977,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
           predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           pagePlan,
-          preserveBinary: Boolean(this.options.parquet?.preserveBinary)
+          preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+          verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },
         workerOptions
       );
@@ -1416,7 +1415,7 @@ function createRowGroupMetadata(
     sortingColumns: Object.freeze(
       (sortingColumns || []).map(
         sortingColumn =>
-          ({
+          Object.freeze({
             columnIndex: sortingColumn.column_idx,
             descending: sortingColumn.descending,
             nullsFirst: sortingColumn.nulls_first

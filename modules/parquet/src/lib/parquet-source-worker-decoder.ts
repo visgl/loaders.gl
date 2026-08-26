@@ -25,7 +25,10 @@ export async function decodeParquetSourceWorkerInput(
   await preloadCompressions();
   const file = new ParquetSourceWorkerFile(input.fileByteLength, input.ranges);
   const schema = new ParquetSchema(input.schemaDefinition);
-  const reader = new ParquetReader(file, {preserveBinary: input.preserveBinary});
+  const reader = new ParquetReader(file, {
+    preserveBinary: input.preserveBinary,
+    verifyPageChecksums: input.verifyPageChecksums
+  });
   const rowGroup = createWorkerRowGroup(input);
 
   const decodeStartTime = getCurrentTime();

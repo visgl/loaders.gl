@@ -155,6 +155,31 @@ describe('Parquet VARIANT binary encoding', () => {
     expect(rows).toEqual([{event: 'typed result'}]);
   });
 
+  test('preserves object-shaped typed_value fields ending in _value', () => {
+    const schema = new ParquetSchema({
+      event: {
+        optional: true,
+        logicalType: {type: 'VARIANT', specificationVersion: 1},
+        fields: {
+          typed_value: {fields: {price_value: {type: 'INT32'}}}
+        }
+      }
+    });
+    const rows = materializeRows(schema, {
+      rowCount: 1,
+      columnData: {
+        'event,typed_value,price_value': {
+          count: 1,
+          dlevels: [1],
+          rlevels: [0],
+          values: [10],
+          pageHeaders: []
+        }
+      }
+    });
+    expect(rows).toEqual([{event: {price_value: 10}}]);
+  });
+
   test('marks Arrow Variant storage with its Parquet specification version', () => {
     const schema = new ParquetSchema({
       event: {
