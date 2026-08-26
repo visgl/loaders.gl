@@ -134,3 +134,27 @@ test('RasterSet accepts non-viewport array requests', async () => {
   await expect(loadedRequest).resolves.toEqual({level: 2, channels: [1, 2]});
   rasterSet.finalize();
 });
+
+test('RasterSet preserves array request shape when injecting AbortSignal', async () => {
+  const rasterSet = RasterSet.fromCallbacks<RasterData, number[]>({
+    getMetadata: async () => ({width: 1, height: 1, bandCount: 1, dtype: 'uint8'}),
+    getRaster: async parameters => {
+      expect(Array.isArray(parameters)).toBe(true);
+      expect(parameters.map(value => value * 2)).toEqual([2, 4]);
+      expect((parameters as number[] & {signal?: AbortSignal}).signal).toBeInstanceOf(AbortSignal);
+      return {
+        data: new Uint8Array([1]),
+        width: 1,
+        height: 1,
+        bandCount: 1,
+        dtype: 'uint8'
+      };
+    }
+  });
+
+  await rasterSet.loadMetadata();
+  const loaded = new Promise<void>(resolve => rasterSet.subscribe({onRasterLoad: () => resolve()}));
+  rasterSet.requestRaster([1, 2]);
+  await loaded;
+  rasterSet.finalize();
+});

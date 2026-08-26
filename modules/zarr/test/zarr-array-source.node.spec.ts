@@ -27,6 +27,8 @@ test('ZarrArraySource reads array metadata and integer selections', async t => {
   t.deepEqual(metadata.shape, [1, 3, 1, 167, 439]);
   t.deepEqual(metadata.chunks, [1, 1, 1, 167, 439]);
   t.deepEqual(metadata.dimensions, ['t', 'c', 'z', 'y', 'x']);
+  t.equal(metadata.fillValue, 0);
+  t.equal(metadata.attributes['long_name'], 'Example georeferenced image');
 
   const selected = await source.getArray({selection: [0, 1, 0, null, null]});
   t.deepEqual(selected.shape, [167, 439]);
@@ -62,5 +64,9 @@ test('ZarrArraySource rejects unknown named dimensions', async t => {
   });
 
   await t.rejects(source.getArray({selectionByDimension: {unknown: 0}}), /Unknown Zarr array dimension/);
+  await t.rejects(
+    source.getArray({selection: [null, null, null, null, null], selectionByDimension: {t: 0}}),
+    /cannot combine positional and named selections/
+  );
   t.end();
 });

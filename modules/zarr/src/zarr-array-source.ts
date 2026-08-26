@@ -17,6 +17,10 @@ export type ZarrArraySourceMetadata = {
   chunks: number[];
   /** Zarrita dtype identifier. */
   dtype: string;
+  /** Zarr fill value used for uninitialized chunks. */
+  fillValue: unknown;
+  /** Array-level Zarr attributes. */
+  attributes: Record<string, unknown>;
   /** Stable dimension names, supplied by the caller or generated from rank. */
   dimensions: string[];
 };
@@ -124,6 +128,9 @@ export class ZarrArraySource extends ZarrSource {
   /** Reads the selected array values. */
   async getArray(parameters: GetZarrArrayParameters = {}): Promise<ZarrArrayData> {
     const {array, metadata} = await this.getInitializationPromise(parameters.signal);
+    if (parameters.selection && parameters.selectionByDimension) {
+      throw new Error('Zarr array requests cannot combine positional and named selections.');
+    }
     const selection = parameters.selection || createNamedSelection(parameters.selectionByDimension, metadata);
     if (selection.length !== metadata.shape.length) {
       throw new Error(`Zarr array selection must have ${metadata.shape.length} dimensions.`);
@@ -145,7 +152,15 @@ export class ZarrArraySource extends ZarrSource {
     if (!this.initializationPromise) {
       this.initializationPromise = this.initialize(signal);
     }
-    return await this.initializationPromise;
+    const initializationPromise = this.initializationPromise;
+    try {
+      return await initializationPromise;
+    } catch (error) {
+      if (this.initializationPromise === initializationPromise) {
+        this.initializationPromise = null;
+      }
+      throw error;
+    }
   }
 
   /** Opens the array selected by the source options. */
@@ -167,6 +182,8 @@ export class ZarrArraySource extends ZarrSource {
         shape: [...array.shape],
         chunks: [...array.chunks],
         dtype: String(array.dtype),
+        fillValue: array.fillValue,
+        attributes: {...array.attrs},
         dimensions: [...dimensions]
       }
     };
