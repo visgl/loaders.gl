@@ -17,6 +17,10 @@ export type ZarrArraySourceMetadata = {
   chunks: number[];
   /** Zarrita dtype identifier. */
   dtype: string;
+  /** Zarr fill value used for uninitialized chunks. */
+  fillValue: unknown;
+  /** Array-level Zarr attributes. */
+  attributes: Record<string, unknown>;
   /** Stable dimension names, supplied by the caller or generated from rank. */
   dimensions: string[];
 };
@@ -167,6 +171,8 @@ export class ZarrArraySource extends ZarrSource {
         shape: [...array.shape],
         chunks: [...array.chunks],
         dtype: String(array.dtype),
+        fillValue: array.fillValue,
+        attributes: {...array.attrs},
         dimensions: [...dimensions]
       }
     };
