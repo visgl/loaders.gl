@@ -151,6 +151,11 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     const selectedFiles = this.getSelectedFiles(options);
     for await (const indexedFile of selectedFiles) {
       const file = indexedFile.file;
+      if (typeof file.data !== 'string' && !file.id) {
+        throw new Error(
+          'Parquet dataset Blob fragments require an explicit stable id for fragment discovery'
+        );
+      }
       fragments.push(
         Object.freeze({
           id: getDatasetFileId(file, indexedFile.index),

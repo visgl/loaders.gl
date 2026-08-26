@@ -246,25 +246,36 @@ export class IcebergTableSource
   /** Discovers snapshot-selected data files as catalog-independent scan fragments. */
   async getScanFragments(options: IcebergScanOptions = {}): Promise<readonly ScanFragment[]> {
     this.assertOpen();
+    const metadata = await this.getMetadata(options.signal);
     const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
     return Object.freeze(
-      plan.dataFiles.map(file =>
-        Object.freeze({
-          id: file.data,
-          uri: file.data,
-          partitionValues: file.partition,
-          byteLength: file.fileSize,
-          rowCount: file.recordCount,
-          metadata: {
-            snapshotId: file.snapshotId,
-            manifestPath: file.manifestPath,
-            partitionSpecId: file.partitionSpecId,
-            schemaId: file.schemaId,
-            lowerBounds: file.lowerBounds,
-            upperBounds: file.upperBounds
-          }
-        })
-      )
+      plan.dataFiles
+        .filter(
+          file =>
+            canMatchIcebergPredicate(file, options.predicate, metadata) &&
+            canMatchIcebergSpatialFilter(file, options.spatialFilter, metadata) &&
+            matchesIcebergPartitions(
+              getIcebergPartitions(file.partition, file.partitionSpecId, file.schemaId, metadata),
+              options.partitions
+            )
+        )
+        .map(file =>
+          Object.freeze({
+            id: file.data,
+            uri: file.data,
+            partitionValues: file.partition,
+            byteLength: file.fileSize,
+            rowCount: file.recordCount,
+            metadata: {
+              snapshotId: file.snapshotId,
+              manifestPath: file.manifestPath,
+              partitionSpecId: file.partitionSpecId,
+              schemaId: file.schemaId,
+              lowerBounds: file.lowerBounds,
+              upperBounds: file.upperBounds
+            }
+          })
+        )
     );
   }
 
@@ -815,6 +826,21 @@ function getIcebergPartitions(
     if (value !== undefined) result[schemaField.name] = value;
   }
   return result;
+}
+
+/** Applies dataset-style exact partition constraints to an Iceberg partition map. */
+function matchesIcebergPartitions(
+  partitions: Readonly<Record<string, ParquetDatasetPartitionValue>> | undefined,
+  query: IcebergScanOptions['partitions']
+): boolean {
+  if (!query) return true;
+  for (const [key, requested] of Object.entries(query)) {
+    const actual = partitions?.[key];
+    if (actual === undefined) continue;
+    const accepted = Array.isArray(requested) ? requested : [requested];
+    if (!accepted.includes(actual)) return false;
+  }
+  return true;
 }
 
 /** Normalizes Avro map values, which may decode as JavaScript Maps or plain objects. */
