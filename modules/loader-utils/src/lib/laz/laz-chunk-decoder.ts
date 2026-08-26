@@ -115,6 +115,8 @@ export class FeedableLAZChunkDecoder {
   private cursor: LAZChunkDecoderCursor | null = null;
   private fedByteLength = 0;
   private requiredByteLength: number | null = null;
+  private progressiveRequiredByteLength: number | null = null;
+  private progressiveSelectionKey: number | null = null;
 
   constructor(metadata: LAZChunkMetadata) {
     this.metadata = metadata;
@@ -215,7 +217,7 @@ export class FeedableLAZChunkDecoder {
     if (this.requiredByteLength !== null) {
       return this.fedByteLength >= this.requiredByteLength;
     }
-    if (this.fedByteLength < getLAZChunkMinimumByteLength(this.metadata)) {
+    if (this.fedByteLength < getLAZChunkHeaderByteLength(this.metadata)) {
       return false;
     }
 
@@ -243,17 +245,27 @@ export class FeedableLAZChunkDecoder {
   }
 
   private getProgressivePointData(target: LAZPointDataTarget): Uint8Array | null {
-    const available = this.getCompressedAvailable();
-    const layout = getLayeredChunkLayout(available, this.metadata);
-    if (!layout) {
-      return null;
+    const selectionKey = getLAZPointDataSelectionKey(getLAZPointDataSelection(target));
+    if (this.progressiveSelectionKey !== selectionKey) {
+      this.progressiveRequiredByteLength = null;
+      this.progressiveSelectionKey = selectionKey;
     }
-    const requiredLayerCount = getProgressiveLayerCount(this.metadata, target);
-    const requiredByteLength = layout.getByteLength(requiredLayerCount);
-    if (available.byteLength < requiredByteLength) {
+
+    if (this.progressiveRequiredByteLength === null) {
+      const availableHeader = this.getCompressedAvailable();
+      const headerLayout = getLayeredChunkLayout(availableHeader, this.metadata);
+      if (!headerLayout) {
+        return null;
+      }
+      const requiredLayerCount = getProgressiveLayerCount(this.metadata, target);
+      this.progressiveRequiredByteLength = headerLayout.getByteLength(requiredLayerCount);
+    }
+    if (this.fedByteLength < this.progressiveRequiredByteLength) {
       return null;
     }
 
+    const available = this.getCompressedAvailable();
+    const layout = getLayeredChunkLayout(available, this.metadata)!;
     const compressed = new Uint8Array(layout.byteLength);
     compressed.set(available.subarray(0, Math.min(available.byteLength, layout.byteLength)));
     return compressed;
@@ -512,7 +524,8 @@ export function decodeLAZChunkTable(
   return chunks;
 }
 
-function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
+/** Return the bytes needed to read one layered LAZ chunk's size headers. */
+export function getLAZChunkHeaderByteLength(metadata: LAZChunkMetadata): number {
   if (!hasLayeredChunkSizeHeaders(metadata.pointDataRecordFormat)) {
     return metadata.pointDataRecordLength + 4;
   }
@@ -522,6 +535,26 @@ function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
     4 +
     getChunkSizeHeaderCount(metadata.pointDataRecordFormat, extraByteCount) * 4
   );
+}
+
+/**
+ * Return the compressed byte length declared by a layered LAZ chunk header.
+ *
+ * Unlike {@link getLAZChunkByteLength}, this function does not require the
+ * compressed layer payloads to have arrived.
+ */
+export function getLAZChunkDeclaredByteLength(
+  compressedHeader: ArrayBuffer | ArrayBufferView,
+  metadata: LAZChunkMetadata
+): number {
+  if (!hasLayeredChunkSizeHeaders(metadata.pointDataRecordFormat)) {
+    throw new NeedsMoreData('Legacy LAZ chunk byte length is not self-describing');
+  }
+  const layout = getLayeredChunkLayout(toUint8Array(compressedHeader), metadata);
+  if (!layout) {
+    throw new NeedsMoreData('LAZ chunk decoder needs the complete layered size header');
+  }
+  return layout.byteLength;
 }
 
 type LAZLayeredChunkLayout = {

@@ -169,7 +169,9 @@ export {
   decodeLAZChunkTable,
   decodeLAZChunk,
   decodeLAZChunkInBatches,
-  getLAZChunkByteLength
+  getLAZChunkByteLength,
+  getLAZChunkDeclaredByteLength,
+  getLAZChunkHeaderByteLength
 } from './lib/laz/laz-chunk-decoder';
 export type {
   FeedableLAZChunkDecoder,
