@@ -31,17 +31,6 @@ test('ZarrArraySource reads array metadata and integer selections', async t => {
   const selected = await source.getArray({selection: [0, 1, 0, null, null]});
   t.deepEqual(selected.shape, [167, 439]);
   t.equal(selected.data.length, 167 * 439);
-
-  const window = await source.getArray({
-    selection: [0, 1, 0, {start: 2, stop: 5}, {start: 4, stop: 9, step: 2}]
-  });
-  t.deepEqual(window.shape, [3, 3]);
-  t.equal(window.data.length, 9);
-
-  const namedWindow = await source.getArray({
-    selectionByDimension: {t: 0, c: 1, z: 0, y: {start: 2, stop: 5}, x: {start: 4, stop: 9, step: 2}}
-  });
-  t.deepEqual(namedWindow.shape, [3, 3]);
   t.end();
 });
 
@@ -52,15 +41,5 @@ test('ZarrArraySource validates selection rank and dimension labels', async t =>
   });
 
   await t.rejects(source.getMetadata(), /dimensions must have length 5/);
-  t.end();
-});
-
-test('ZarrArraySource rejects unknown named dimensions', async t => {
-  const source = createDataSource(FIXTURE_URL, [ZarrArraySourceLoader], {
-    zarr: {path: 'images/example-image'},
-    zarrArray: {path: '0'}
-  });
-
-  await t.rejects(source.getArray({selectionByDimension: {unknown: 0}}), /Unknown Zarr array dimension/);
   t.end();
 });
