@@ -506,6 +506,20 @@ function hasCompatiblePageBoundaries(
   if (!hasRepeatedLeaf) {
     return true;
   }
+  // Offset indexes identify the first logical row represented by each page, but do not
+  // expose repetition levels. Equal starts therefore indicate a continuation page whose
+  // boundary cannot be proven safe for a selective read; retain the full-column fallback.
+  if (
+    columnChunks.some(columnChunk => {
+      const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
+      return pages.some(
+        (page, pageIndex) =>
+          pageIndex > 0 && page.firstRowIndex === pages[pageIndex - 1].firstRowIndex
+      );
+    })
+  ) {
+    return false;
+  }
   const signatures = columnChunks.map(columnChunk => {
     const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
     return pages.map(page => `${page.firstRowIndex}:${page.endRowIndex}`).join('|');

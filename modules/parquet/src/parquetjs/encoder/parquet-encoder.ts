@@ -1084,7 +1084,7 @@ function createSizeStatistics(column: ParquetField, data: ParquetColumnChunk): S
   }
   return new SizeStatistics({
     unencoded_byte_array_data_bytes:
-      unencodedByteArrayDataBytes > 0 ? unencodedByteArrayDataBytes : undefined,
+      column.primitiveType === 'BYTE_ARRAY' ? unencodedByteArrayDataBytes : undefined,
     repetition_level_histogram: repetitionLevelHistogram,
     definition_level_histogram: definitionLevelHistogram
   });
