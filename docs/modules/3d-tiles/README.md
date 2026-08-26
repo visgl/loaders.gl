@@ -10,6 +10,9 @@ import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 
 The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 
+See the [3D Tiles format compatibility matrix](./formats/3d-tiles) for a capability-by-capability
+summary of parser, traversal, extension, and renderer-facing support.
+
 References
 
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.

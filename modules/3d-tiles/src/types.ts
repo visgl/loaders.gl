@@ -128,7 +128,11 @@ export type Tiles3DTileJSON = {
   /** A floating-point 4x4 affine transformation matrix, stored in column-major order, that transforms the tile's content */
   transform?: number[];
   /** Metadata about the tile's content and a link to the content. */
-  content?: Tiles3DTileContentJSON;
+  /**
+   * Tile content metadata. 3D Tiles 1.1 permits either one content object or an array of
+   * independent content objects; loaders.gl preserves the source shape during parsing.
+   */
+  content?: Tiles3DTileContentJSON | Tiles3DTileContentJSON[];
   /** An array of objects that define child tiles. */
   children: Tiles3DTileJSON[];
   /** Dictionary object with extension-specific objects. */
@@ -148,6 +152,8 @@ export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine' | 'chi
   id?: string;
   /** Content full URL */
   contentUrl?: string;
+  /** Resolved URLs for every content object when the source uses multiple contents. */
+  contentUrls?: string[];
   /** LOD metric type */
   lodMetricType?: LOD_METRIC_TYPE.GEOMETRIC_ERROR;
   /** LOD metric value */

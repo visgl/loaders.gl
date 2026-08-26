@@ -51,6 +51,40 @@ function getTileType(tile: Tiles3DTileJSON, tileContentUrl: string = ''): TILE_T
   }
 }
 
+/**
+ * Resolves one or more tile content references using the parse-scoped URI cache.
+ *
+ * @param content - Raw content metadata from the tile.
+ * @param resourceResolver - Resolver shared by the complete tileset parse.
+ * @returns Resolved content metadata and URLs in source order.
+ */
+function normalizeTileContents(
+  content: Tiles3DTileJSON['content'],
+  resourceResolver: CachedUriResolver
+): {content?: Tiles3DTileJSONPostprocessed['content']; contentUrls: string[]} {
+  if (!content) {
+    return {content: undefined, contentUrls: []};
+  }
+
+  const contentEntries = Array.isArray(content) ? content : [content];
+  const normalizedContents = contentEntries.map(contentEntry => {
+    const contentUri = contentEntry.uri || contentEntry.url;
+    return {
+      ...contentEntry,
+      boundingVolume: normalizeS2BoundingVolume(contentEntry.boundingVolume),
+      uri: contentUri ? resourceResolver.resolve(contentUri) : contentEntry.uri,
+      url: undefined
+    };
+  });
+
+  return {
+    content: Array.isArray(content) ? normalizedContents : normalizedContents[0],
+    contentUrls: normalizedContents
+      .map(contentEntry => contentEntry.uri)
+      .filter((contentUrl): contentUrl is string => Boolean(contentUrl))
+  };
+}
+
 function getRefine(refine?: string): TILE_REFINEMENT | string | undefined {
   switch (refine) {
     case 'REPLACE':
@@ -80,26 +114,15 @@ export function normalizeTileData(
   if (!tile) {
     return null;
   }
-  let tileContentUrl: string | undefined;
-  if (tile.content) {
-    const contentUri = tile.content.uri || tile.content?.url;
-    if (typeof contentUri !== 'undefined') {
-      // sparse implicit tilesets may not define content for all nodes
-      tileContentUrl = resourceResolver.resolve(contentUri);
-    }
-  }
+  const normalizedContents = normalizeTileContents(tile.content, resourceResolver);
+  const tileContentUrl = normalizedContents.contentUrls[0];
   const boundingVolume = normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume;
-  const content = tile.content
-    ? {
-        ...tile.content,
-        boundingVolume: normalizeS2BoundingVolume(tile.content.boundingVolume)
-      }
-    : undefined;
   const viewerRequestVolume = normalizeS2BoundingVolume(tile.viewerRequestVolume);
   const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
     ...tile,
     boundingVolume,
-    content,
+    content: normalizedContents.content,
+    contentUrls: normalizedContents.contentUrls,
     viewerRequestVolume,
     id: tileContentUrl,
     contentUrl: tileContentUrl,
@@ -241,14 +264,10 @@ export async function normalizeImplicitTileHeaders(
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
     boundingVolume: normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume,
-    content: tile.content
-      ? {
-          ...tile.content,
-          boundingVolume: normalizeS2BoundingVolume(tile.content.boundingVolume)
-        }
-      : undefined,
+    content: tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
+  const normalizedContents = normalizeTileContents(normalizedTile.content, resourceResolver);
   const maximumLevel = Number.isFinite(implicitTilingExtension.availableLevels)
     ? implicitTilingExtension.availableLevels - 1
     : implicitTilingExtension.maximumLevel;
@@ -264,11 +283,16 @@ export async function normalizeImplicitTileHeaders(
     );
   }
 
-  const contentUriTemplate = normalizedTile.content?.uri || normalizedTile.content?.url || '';
+  const contentEntries = Array.isArray(normalizedContents.content)
+    ? normalizedContents.content
+    : normalizedContents.content
+      ? [normalizedContents.content]
+      : [];
+  const contentUriTemplate = contentEntries[0]?.uri || contentEntries[0]?.url || '';
   const descriptor: ImplicitTilingDescriptor = {
     contentUrlTemplate: contentUriTemplate ? resourceResolver.resolve(contentUriTemplate) : '',
-    contentHeader: normalizedTile.content
-      ? {...normalizedTile.content, uri: undefined, url: undefined}
+    contentHeader: contentEntries[0]
+      ? {...contentEntries[0], uri: undefined, url: undefined}
       : undefined,
     subtreesUrlTemplate: resourceResolver.resolve(implicitTilingExtension.subtrees.uri),
     subdivisionScheme: implicitTilingExtension.subdivisionScheme,
@@ -296,7 +320,9 @@ export async function normalizeImplicitTileHeaders(
     type: TILE_TYPE.EMPTY,
     refine: descriptor.refine,
     children: [],
-    implicitSubtree
+    implicitSubtree,
+    content: normalizedContents.content,
+    contentUrls: normalizedContents.contentUrls
   } as Tiles3DTileJSONPostprocessed;
 }
 
