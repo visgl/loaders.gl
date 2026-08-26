@@ -33,7 +33,7 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 | Selective field decoding | **Full** | Unrequested LAZ field layers are skipped, avoiding arithmetic decoder state, output arrays, and point traversal for those fields. |
 | Progressive node decoding | **Full at layer boundaries** | Node byte ranges are fed incrementally. Rows are emitted when all compressed layers required by the requested columns are available. |
 | Cancellation | **Full** | Abort signals are checked during hierarchy traversal, range loading, and progressive point decoding. |
-| COPC writing | **Experimental** | Writes LAS 1.4 PDRF 6-8, variable LAZ chunks, a version 0 chunk table, COPC info VLR, and hierarchy EVLR. |
+| COPC writing | **Full for represented attributes** | Writes LAS 1.4 PDRF 6-8, variable LAZ chunks, a version 0 chunk table, COPC info VLR, and a range-pageable hierarchy EVLR. |
 | Waveform PDRF 9/10 | **Not part of COPC 1.0** | COPC 1.0 permits only PDRF 6, 7, and 8. |
 
 ### Arrow Columns
@@ -86,4 +86,4 @@ Key aspects distinguish an organized COPC LAZ file from an LAZ 1.4 that is unorg
 - It MUST contain a COPC info VLR
 - It MUST contain a COPC hierarchy VLR or EVLR
 
-`COPCWriter` emits LAS 1.4 PDRF 6-8 data with the COPC info VLR, variable-size LASzip chunks, a version 0 variable chunk table, and a single hierarchy EVLR. Points are sampled deterministically into parent levels and remaining points are partitioned spatially into child octants.
+`COPCWriter` emits LAS 1.4 PDRF 6-8 data with the COPC info VLR, variable-size LASzip chunks, a version 0 variable chunk table, and a hierarchy EVLR split into independently range-readable pages. Points are sampled deterministically into parent levels and remaining points are partitioned spatially into child octants. The info VLR publishes only the root page range; entries with a point count of `-1` reference descendant page ranges.
