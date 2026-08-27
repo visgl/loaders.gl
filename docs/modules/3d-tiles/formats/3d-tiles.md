@@ -98,7 +98,7 @@ called out explicitly rather than being counted as parser support.
 | LOD | Perspective and orthographic SSE | [x] | LOD metric | Logical/CSS viewport pixels are used; invalid orthographic pixel scales fall back to perspective. |
 | LOD | Dynamic SSE | [x] | Traversal tuning | Perspective distance-based adjustment is preserved; it does not change the declared error. |
 | Scheduling | Progressive and foveated priorities | [x] | Request scheduling | Priorities affect request order and cancellation, not the final SSE threshold. |
-| Scheduling | Skip-level-of-detail traversal | [ ] | Traversal | Planned Cesium-parity work; the current traversal refines through the hierarchy normally. |
+| Scheduling | Skip-level-of-detail traversal | [x] | Traversal | Ready ancestors remain selected while deep descendants stream; this can increase temporary overdraw and bandwidth. |
 | Cache | Byte-based tile cache | [x] | Runtime | Cache residency and overflow are measured in bytes; I3S defaults remain isolated. |
 | Extension | Required-extension validation | [x] | Parse boundary | Unsupported `extensionsRequired` names fail before normalization or network access. |
 | Extension | `3DTILES_implicit_tiling` | [x] | Parse + traversal | Availability, subdivision scheme, and subtree references are normalized. |
