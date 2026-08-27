@@ -163,6 +163,7 @@ export function getFrameState(
     topDownViewport,
     height,
     cullingVolume,
+    clippingPlanes: viewport.clippingPlanes,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
     sseDenominator: 1.15, // Assumes fovy = 60 degrees
     // Tileset3D fills this immediately before traversal because it depends on the root volume.
