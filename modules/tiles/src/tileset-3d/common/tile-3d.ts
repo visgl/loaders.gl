@@ -156,7 +156,13 @@ export class Tile3D {
   private _visible: boolean | undefined = undefined;
 
   private _contentBoundingVolume: any;
+  private _contentBoundingVolumes: any[] = [];
   private _viewerRequestVolume: any;
+
+  /** Transformed bounding volumes for all content entries that declare one. */
+  get contentBoundingVolumes(): any[] {
+    return this._contentBoundingVolumes;
+  }
 
   /** Bounding volume that limits when this tile may be requested, when declared. */
   get viewerRequestVolume(): any {
@@ -937,6 +943,7 @@ export class Tile3D {
 
   _initializeBoundingVolumes(tileHeader) {
     this._contentBoundingVolume = null;
+    this._contentBoundingVolumes = [];
     this._viewerRequestVolume = null;
 
     this._updateBoundingVolume(tileHeader);
@@ -1047,24 +1054,12 @@ export class Tile3D {
       );
     }
 
-    const content = header.content;
-    if (!content) {
-      return;
-    }
-
-    // TODO Cesium specific
-    // Non-leaf tiles may have a content bounding-volume, which is a tight-fit bounding volume
-    // around only the features in the tile. This box is useful for culling for rendering,
-    // but not for culling for traversing the tree since it does not guarantee spatial coherence, i.e.,
-    // since it only bounds features in the tile, not the entire tile, children may be
-    // outside of this box.
-    if (content.boundingVolume) {
-      this._contentBoundingVolume = createBoundingVolume(
-        content.boundingVolume,
-        this.computedTransform,
-        this._contentBoundingVolume
-      );
-    }
+    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
+    const contentVolumes = contentHeaders.filter(contentHeader => contentHeader?.boundingVolume);
+    this._contentBoundingVolumes = contentVolumes.map(contentHeader =>
+      createBoundingVolume(contentHeader.boundingVolume, this.computedTransform)
+    );
+    this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
   /**
