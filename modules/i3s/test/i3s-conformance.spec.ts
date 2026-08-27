@@ -7,6 +7,7 @@ import {I3SNodePageLoader} from '@loaders.gl/i3s';
 import {I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
+import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
 import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
@@ -67,6 +68,39 @@ describe('I3S conformance fixtures', () => {
     expect(values).toBeInstanceOf(Float64Array);
     expect(values[0]).toBe(0x1_89abcdef);
     expect(values[1]).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
+  it('decodes declared numeric feature attribute types', () => {
+    const int32Buffer = new ArrayBuffer(12);
+    const int32View = new DataView(int32Buffer);
+    int32View.setInt32(4, -7, true);
+    int32View.setInt32(8, 42, true);
+    const int32 = parseI3STileAttribute(int32Buffer, {
+      attributeName: 'LEVEL',
+      attributeType: 'Int32'
+    }).LEVEL;
+
+    const float32Buffer = new ArrayBuffer(12);
+    const float32View = new DataView(float32Buffer);
+    float32View.setFloat32(4, 1.5, true);
+    float32View.setFloat32(8, -2.25, true);
+    const float32 = parseI3STileAttribute(float32Buffer, {
+      attributeName: 'HEIGHT',
+      attributeType: 'Float32'
+    }).HEIGHT;
+
+    const uint64Buffer = new ArrayBuffer(24);
+    const uint64View = new DataView(uint64Buffer);
+    uint64View.setBigUint64(8, 0x1_0000_0001n, true);
+    uint64View.setBigUint64(16, 0x1_ffff_ffff_ffff_ffn, true);
+    const uint64 = parseI3STileAttribute(uint64Buffer, {
+      attributeName: 'GLOBAL_ID',
+      attributeType: 'UInt64'
+    }).GLOBAL_ID;
+
+    expect(Array.from(int32 as Int32Array)).toEqual([-7, 42]);
+    expect(Array.from(float32 as Float32Array)).toEqual([1.5, -2.25]);
+    expect(Array.from(uint64 as Float64Array)).toEqual([0x1_0000_0001, 0x1_ffff_ffff_ffff_ff]);
   });
 
   it('preserves UInt64 feature IDs through face-range expansion', async () => {
