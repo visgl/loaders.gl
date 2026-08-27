@@ -43,6 +43,7 @@ import {
 
 const VERSION = '1.0.0';
 const COPC_PREFIX_CACHE_LENGTH = 65536;
+const COPC_RANGE_CACHE_MAX_BYTES = 32 * 1024 * 1024;
 const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',
   LNGLAT_OFFSETS: 'lnglat-offsets'
@@ -2171,11 +2172,43 @@ class AsyncSemaphore {
 }
 
 /** Cache the metadata prefix while retaining exact reads for hierarchy and node ranges. */
-function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReader {
+/**
+ * Creates a range reader with prefix, completed-range, and in-flight caches.
+ *
+ * Exact ranges are shared by identity, which is important for repeated tile
+ * requests and for hierarchy traversals that rediscover the same page.
+ */
+export function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReader {
   const prefixPromise = Promise.resolve(readableFile.stat?.()).then(async stat => {
     const prefixLength = Math.min(stat?.size || COPC_PREFIX_CACHE_LENGTH, COPC_PREFIX_CACHE_LENGTH);
     return new Uint8Array(await readableFile.read(0, prefixLength));
   });
+  const completedRanges = new Map<string, Uint8Array>();
+  const inFlightRanges = new Map<string, Promise<Uint8Array>>();
+  let cachedByteLength = 0;
+
+  const cacheRange = (key: string, range: Uint8Array): void => {
+    if (range.byteLength > COPC_RANGE_CACHE_MAX_BYTES) {
+      return;
+    }
+    const previousRange = completedRanges.get(key);
+    if (previousRange) {
+      cachedByteLength -= previousRange.byteLength;
+    }
+    completedRanges.delete(key);
+    completedRanges.set(key, range);
+    cachedByteLength += range.byteLength;
+    while (cachedByteLength > COPC_RANGE_CACHE_MAX_BYTES) {
+      const oldestKey = completedRanges.keys().next().value as string | undefined;
+      if (!oldestKey) {
+        break;
+      }
+      const oldestRange = completedRanges.get(oldestKey)!;
+      completedRanges.delete(oldestKey);
+      cachedByteLength -= oldestRange.byteLength;
+    }
+  };
+
   return async (begin, end, signal) => {
     if (signal?.aborted) {
       throw createCOPCAbortError();
@@ -2187,6 +2220,33 @@ function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReade
     if (begin >= 0 && end <= prefix.byteLength) {
       return prefix.subarray(begin, end);
     }
-    return new Uint8Array(await readableFile.read(begin, end - begin, signal));
+    const key = `${begin}:${end}`;
+    const cachedRange = completedRanges.get(key);
+    if (cachedRange) {
+      completedRanges.delete(key);
+      completedRanges.set(key, cachedRange);
+      return cachedRange;
+    }
+    let rangePromise = inFlightRanges.get(key);
+    if (!rangePromise) {
+      rangePromise = Promise.resolve(readableFile.read(begin, end - begin, signal)).then(
+        range => new Uint8Array(range)
+      );
+      inFlightRanges.set(key, rangePromise);
+      void rangePromise.then(
+        range => {
+          inFlightRanges.delete(key);
+          cacheRange(key, range);
+        },
+        () => {
+          inFlightRanges.delete(key);
+        }
+      );
+    }
+    const range = await rangePromise;
+    if (signal?.aborted) {
+      throw createCOPCAbortError();
+    }
+    return range;
   };
 }

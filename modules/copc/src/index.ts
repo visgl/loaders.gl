@@ -37,6 +37,6 @@ export type {
   COPCRangeReader,
   COPCVariableLengthRecord
 } from './lib/copc-reader';
-export {COPCSourceLoader} from './copc-source-loader';
+export {COPCSourceLoader, createCachedCOPCRangeReader} from './copc-source-loader';
 export {COPCTileSource} from './copc-source-loader';
 export {COPCWriter} from './copc-writer';
