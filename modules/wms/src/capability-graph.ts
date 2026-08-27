@@ -120,6 +120,7 @@ function detectServiceType(value: string, url: string): GeoServiceType {
   const text = `${value} ${url}`.toLowerCase();
   if (text.includes('imageserver')) return 'arcgis-image-server';
   if (text.includes('featureserver')) return 'arcgis-feature-server';
+  if (text.includes('vectortileserver')) return 'arcgis-vector-tile-server';
   if (text.includes('mapserver')) return 'arcgis-map-server';
   if (text.includes('wmts')) return 'wmts';
   if (text.includes('wms')) return 'wms';

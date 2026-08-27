@@ -180,7 +180,7 @@ export const ArcGISVectorTileServerSourceLoader = {
   fromBlob: false,
   options: {'arcgis-vector-tile-server': {}},
   defaultOptions: {'arcgis-vector-tile-server': {}},
-  testURL: (url: string): boolean => /\/vectortileserver(?:\/|$)/i.test(url),
+  testURL: (url: string): boolean => /\/vectortileserver(?:[\/?#]|$)/i.test(url),
   createDataSource: (
     url: string,
     options: ArcGISVectorTileServerSourceLoaderOptions = {},

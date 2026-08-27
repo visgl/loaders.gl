@@ -63,4 +63,4 @@ export type {
 } from './arcgis/arcgis-vector-tile-server-source-loader';
 
 export type {ServiceLoader} from './service-registry';
-export {getServiceLoader} from './service-registry';
+export {createServiceSource, getServiceLoader} from './service-registry';
