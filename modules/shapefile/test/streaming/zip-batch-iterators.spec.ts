@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import type {ObjectRowTableBatch, ArrayRowTableBatch} from '@loaders.gl/schema';
 import {_zipBatchIterators as zipBatchIterators} from '@loaders.gl/shapefile';
-
 type RowTableBatch = ObjectRowTableBatch | ArrayRowTableBatch;
-
 type TestCase = {
   title: string;
   iterator1: Iterator<RowTableBatch>;
@@ -15,7 +13,6 @@ type TestCase = {
   shape: 'object-row-table' | 'array-row-table';
   result: RowTableBatch[];
 };
-
 const TEST_CASES: TestCase[] = [
   {
     title: 'empty iterators',
@@ -26,15 +23,13 @@ const TEST_CASES: TestCase[] = [
   }
   // TODO - add some non-trivial cases
 ];
-
-test('zipBatchIterators', async t => {
+test('zipBatchIterators', async () => {
   for (const tc of TEST_CASES) {
     const zippedIterator = zipBatchIterators(tc.iterator1, tc.iterator2, tc.shape);
     const batches: RowTableBatch[] = [];
     for await (const batch of zippedIterator) {
       batches.push(batch);
     }
-    t.deepEquals(batches, tc.result, tc.title);
+    expect(batches, tc.title).toEqual(tc.result);
   }
-  t.end();
 });
