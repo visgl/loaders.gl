@@ -127,6 +127,8 @@ export type LASMetadata = {
   creationYear: number;
   /** LAS header byte length. */
   headerSize: number;
+  /** LAS header extension bytes after the standard 393-byte LAS 1.5 header. */
+  userHeaderData?: Uint8Array;
   /** Number of VLRs before point data. */
   vlrCount: number;
   /** Offset of first EVLR, or zero when absent. */
@@ -184,6 +186,8 @@ export type LASHeader = {
   versionAsString?: string;
   isCompressed?: boolean;
   headerSize?: number;
+  /** LAS header extension bytes after the standard 393-byte LAS 1.5 header. */
+  userHeaderData?: Uint8Array;
   vlrCount?: number;
   metadata?: LASMetadata;
 };
