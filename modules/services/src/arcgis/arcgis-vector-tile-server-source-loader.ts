@@ -9,9 +9,12 @@ import type {
   GetTileParameters,
   SourceLoader,
   TileSourceMetadata,
-  TileSource
+  VectorTile,
+  VectorTileSource
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import {MVTLoader, type MVTLoaderOptions} from '@loaders.gl/mvt';
+import type {Schema} from '@loaders.gl/schema';
 
 /** ArcGIS vector tile service metadata. */
 export type ArcGISVectorTileServiceMetadata = {
@@ -44,15 +47,19 @@ export type ArcGISVectorTileServiceMetadata = {
 export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions & {
   'arcgis-vector-tile-server'?: {
     /** Optional MVT parser options. */
-    mvt?: Record<string, unknown>;
+    mvt?: MVTLoaderOptions['mvt'];
   };
 };
 
 /** A source for ArcGIS VectorTileServer metadata and PBF tiles. */
 export class ArcGISVectorTileServerSource
   extends DataSource<string, ArcGISVectorTileServerSourceLoaderOptions>
-  implements TileSource
+  implements VectorTileSource
 {
+  /** Decoded tile family consumed by generic tile renderers. */
+  readonly mimeType = 'application/vnd.mapbox-vector-tile';
+  /** ArcGIS tiles are decoded to WGS84 coordinates before rendering. */
+  readonly localCoordinates = false;
   /** Cached service metadata request. */
   private serviceMetadata: Promise<ArcGISVectorTileServiceMetadata> | null = null;
   /** Query parameters supplied with the service URL, such as an access token. */
@@ -117,9 +124,35 @@ export class ArcGISVectorTileServerSource
     return response.arrayBuffer();
   }
 
-  /** Provides raw PBF tiles through the deck.gl source interface. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ArrayBuffer | null> {
-    return this.getTile(parameters.index, parameters.signal);
+  /** Returns the schema advertised by decoded vector tiles. */
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
+  }
+
+  /** Fetches and decodes one ArcGIS vector tile to geographic coordinates. */
+  async getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null> {
+    const arrayBuffer = await this.getTile(parameters, parameters.signal);
+    if (!arrayBuffer) {
+      return null;
+    }
+    const inheritedOptions = (this.loadOptions as MVTLoaderOptions).mvt;
+    const sourceOptions = this.options['arcgis-vector-tile-server']?.mvt;
+    return (await this.coreApi.parse(arrayBuffer, MVTLoader, {
+      ...this.loadOptions,
+      mvt: {
+        ...inheritedOptions,
+        ...sourceOptions,
+        coordinates: 'wgs84',
+        tileIndex: {x: parameters.x, y: parameters.y, z: parameters.z},
+        layers:
+          normalizeLayers(parameters.layers) || sourceOptions?.layers || inheritedOptions?.layers
+      }
+    })) as VectorTile;
+  }
+
+  /** Provides decoded vector tiles through the deck.gl source interface. */
+  async getTileData(parameters: GetTileDataParameters): Promise<VectorTile | null> {
+    return this.getVectorTile({...parameters.index, signal: parameters.signal});
   }
 
   /** Builds the ArcGIS cached vector tile URL. */
@@ -191,4 +224,10 @@ export const ArcGISVectorTileServerSourceLoader = {
 /** Converts an ArcGIS spatial reference to an EPSG identifier. */
 function getSpatialReference(spatialReference: {wkid?: number; latestWkid?: number}): string {
   return `EPSG:${spatialReference.latestWkid || spatialReference.wkid}`;
+}
+
+/** Normalizes generic tile layer selection for the MVT parser. */
+function normalizeLayers(layers?: string | string[]): string[] | undefined {
+  if (!layers) return undefined;
+  return Array.isArray(layers) ? layers : [layers];
 }

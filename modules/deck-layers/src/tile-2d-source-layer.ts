@@ -41,13 +41,7 @@ export type TileSourceRuntime = TileSource & {
   /** Indicates that vector tiles can be rendered in local coordinates. */
   localCoordinates?: boolean;
   /** MIME type that identifies vector or image payload handling. */
-  mimeType: string | null;
-  /** Mutable source options forwarded to loaders.gl tile fetches. */
-  options: {
-    table?: {
-      coordinates?: string;
-    };
-  };
+  mimeType?: string | null;
   /** Source URL used for stable layer ids. */
   url?: string;
 };
@@ -414,17 +408,12 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     }
 
     if (this.sourceSupportsMVTLayer(resolvedData)) {
-      resolvedData.options.table = resolvedData.options.table || {};
-      resolvedData.options.table.coordinates = 'local';
       return this.renderMVTLayer(resolvedData);
     }
 
     if (!tileset) {
       return null;
     }
-
-    resolvedData.options.table = resolvedData.options.table || {};
-    resolvedData.options.table.coordinates = 'wgs84';
 
     return tileset.tiles.map(tile => {
       let layers = tileLayers.get(tile.id);

@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {
   CapabilityGraph,
+  DEFAULT_SERVICE_LOADERS,
   ServiceRequestError,
   ServiceRuntime,
   discoverServiceGraph
@@ -9,6 +10,20 @@ import {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('ServiceRuntime', () => {
+  test('registers every implemented OGC service source family', () => {
+    expect(DEFAULT_SERVICE_LOADERS.map(loader => loader.type)).toEqual([
+      'wmts',
+      'wms',
+      'wfs',
+      'wcs-coverage',
+      'ogc-api-features',
+      'ogc-api-tiles',
+      'ogc-api-coverages',
+      'ogc-api-edr',
+      'csw'
+    ]);
+  });
+
   test('retries transient responses and emits lifecycle telemetry', async () => {
     const telemetry: string[] = [];
     let attempts = 0;

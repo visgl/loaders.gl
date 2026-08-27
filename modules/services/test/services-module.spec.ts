@@ -4,12 +4,13 @@ import {
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
   ArcGISVectorTileServerSourceLoader,
-  createServiceSource,
+  ArcGISVectorSource,
+  SERVICE_LOADERS,
   discoverArcGISCapabilities,
   getServiceLoader,
   selectArcGISService
 } from '../src/index';
-import {coreApi} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {getArcGISServices} from '../src/arcgis/arcgis-server';
 import * as bundledServices from '../src/bundled';
 import * as unbundledServices from '../src/unbundled';
@@ -38,26 +39,24 @@ describe('@loaders.gl/services', () => {
     expect(getServiceLoader('unknown-service')).toBeUndefined();
   });
 
-  test('creates a source from normalized capability type or URL', () => {
-    expect(
-      createServiceSource(
-        'https://example.com/arcgis/rest/services/Basemap/VectorTileServer',
-        {},
-        'arcgis-vector-tile-server',
-        coreApi
-      )
-    ).toBeInstanceOf(Object);
-    expect(
-      createServiceSource(
-        'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-        {},
-        undefined,
-        coreApi
-      )
-    ).toBeInstanceOf(Object);
-    expect(() =>
-      createServiceSource('https://example.com/service', {}, 'unknown', coreApi)
-    ).toThrow('No service loader recognized type or URL');
+  test('exports one registry for core and deck.gl integration', () => {
+    expect(SERVICE_LOADERS).toEqual([
+      ArcGISFeatureServerSourceLoader,
+      ArcGISImageServerSourceLoader,
+      ArcGISImageTileSourceLoader,
+      ArcGISMapTileSourceLoader,
+      ArcGISVectorTileServerSourceLoader
+    ]);
+  });
+
+  test('passes the service registry directly to load', async () => {
+    const source = await load(
+      'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
+      SERVICE_LOADERS,
+      {core: {type: 'arcgis-feature-server'}}
+    );
+
+    expect(source).toBeInstanceOf(ArcGISVectorSource);
   });
 
   test('keeps the package entrypoints wired to the public exports', () => {

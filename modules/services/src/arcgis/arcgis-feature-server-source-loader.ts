@@ -17,6 +17,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Parameters for ArcGIS FeatureServer query requests. */
 export type ArcGISFeatureServiceQueryOptions = {
@@ -203,7 +204,10 @@ export class ArcGISVectorSource
       queryParameters.spatialRel ||= 'esriSpatialRelIntersects';
     }
 
-    return this.getUrl('query', queryParameters);
+    const layer = Array.isArray(parameters.layers) ? parameters.layers[0] : parameters.layers;
+    const isLayerEndpoint = /\/FeatureServer\/\d+\/?(?:\?|$)/i.test(this.url);
+    const resourcePath = isLayerEndpoint || !layer ? 'query' : `${layer}/query`;
+    return this.getUrl(resourcePath, queryParameters);
   }
 
   /** Builds an ArcGIS FeatureServer URL. */
@@ -212,8 +216,7 @@ export class ArcGISVectorSource
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    const baseUrl = path ? `${this.url}/${path}` : this.url;
-    return `${baseUrl}?${encodeArcGISParameters({...options, ...extra})}`;
+    return buildArcGISResourceURL(this.url, path, {...options, ...extra});
   }
 
   /** Checks an ArcGIS FeatureServer response. */
@@ -229,9 +232,23 @@ export class ArcGISVectorSource
 function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
   const layers: VectorSourceMetadata['layers'] = [];
   for (const layer of json.layers || []) {
+    const extent = layer.extent;
+    const spatialReference = layer.spatialReference || extent?.spatialReference;
     layers.push({
-      // id: layer.id,
-      name: layer.name
+      name: layer.id === undefined ? layer.name : String(layer.id),
+      title: layer.name,
+      crs: getArcGISCoordinateReferenceSystems(spatialReference),
+      boundingBox: normalizeArcGISExtent(extent)
+    });
+  }
+
+  if (!layers.length && (json.id !== undefined || json.name)) {
+    const extent = json.extent;
+    layers.push({
+      name: json.id === undefined ? json.name : String(json.id),
+      title: json.name,
+      crs: getArcGISCoordinateReferenceSystems(json.spatialReference || extent?.spatialReference),
+      boundingBox: normalizeArcGISExtent(extent)
     });
   }
 
@@ -245,6 +262,26 @@ function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
     // crs: 'EPSG:4326',
     layers
   };
+}
+
+/** Normalizes an ArcGIS spatial reference to a one-element CRS list. */
+function getArcGISCoordinateReferenceSystems(
+  spatialReference: {wkid?: number; latestWkid?: number} | undefined
+): string[] | undefined {
+  const wellKnownIdentifier = spatialReference?.latestWkid || spatialReference?.wkid;
+  return wellKnownIdentifier ? [`EPSG:${wellKnownIdentifier}`] : undefined;
+}
+
+/** Normalizes an ArcGIS extent to the loaders.gl two-corner shape. */
+function normalizeArcGISExtent(
+  extent: {xmin?: number; ymin?: number; xmax?: number; ymax?: number} | undefined
+): [[number, number], [number, number]] | undefined {
+  return extent && [extent.xmin, extent.ymin, extent.xmax, extent.ymax].every(Number.isFinite)
+    ? [
+        [extent.xmin!, extent.ymin!],
+        [extent.xmax!, extent.ymax!]
+      ]
+    : undefined;
 }
 
 /** Normalizes EPSG-prefixed CRS strings to ArcGIS WKID values. */
@@ -289,19 +326,6 @@ function getSchemaTypeFromArcGISFieldType(type: string): DataType {
     default:
       return 'utf8';
   }
-}
-
-/** Encodes ArcGIS REST query parameters. */
-function encodeArcGISParameters(parameters: Record<string, unknown>): string {
-  const searchParameters = new URLSearchParams();
-  for (const [key, value] of Object.entries(parameters)) {
-    if (value === undefined || value === null) {
-      continue;
-    }
-    const encodedValue = Array.isArray(value) ? value.join(',') : String(value);
-    searchParameters.set(key, encodedValue);
-  }
-  return searchParameters.toString();
 }
 
 /** Parses a GeoJSON FeatureCollection into the loaders.gl GeoJSON table shape. */

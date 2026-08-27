@@ -72,6 +72,7 @@
     "label": "Services",
     "items": [
       "modules/services/README",
+      "modules/wms/formats/csw",
       "modules/wms/formats/wcs",
       "modules/wms/formats/wfs",
       "modules/wms/formats/wmc",

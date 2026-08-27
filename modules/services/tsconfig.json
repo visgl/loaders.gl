@@ -12,6 +12,7 @@
     {"path": "../images"},
     {"path": "../lerc"},
     {"path": "../loader-utils"},
+    {"path": "../mvt"},
     {"path": "../schema"}
   ]
 }

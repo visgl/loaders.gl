@@ -92,7 +92,8 @@ const sidebars = {
       items: [
         'tiles/arcgis-map-server',
         'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
+        'tiles/arcgis-feature-server',
+        'tiles/arcgis-vector-tile-server'
       ]
     },
     {

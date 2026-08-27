@@ -65,6 +65,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'mlt', label: 'MapLibre Tile', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'mvt', label: 'MVT', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'obj', label: 'OBJ', logo: 'format-logo.svg', tags: ['meshes']},
+  {slug: 'ogc-api', label: 'OGC API Services', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'ows-context', label: 'OWS Context', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'parquet', label: 'Parquet', logo: 'parquet-logo.png', tags: ['tables']},
   {slug: 'pcd', label: 'PCD', logo: 'format-logo.svg', tags: ['pointclouds']},
@@ -87,7 +88,9 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'wms', label: 'WMS', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'wmts', label: 'WMTS', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'arcgis-image-server', label: 'ArcGIS Image Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-feature-server', label: 'ArcGIS Feature Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
+  {slug: 'arcgis-feature-server', label: 'ArcGIS Feature Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-map-server', label: 'ArcGIS MapServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-vector-tile-server', label: 'ArcGIS VectorTileServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
 ];
 
 const Gallery = styled.section`

@@ -15,10 +15,7 @@ import {
   WMTSSourceLoader
 } from '@loaders.gl/wms';
 import {
-  ArcGISFeatureServerSourceLoader,
-  ArcGISImageServerSourceLoader,
-  ArcGISImageTileSourceLoader,
-  ArcGISMapTileSourceLoader
+  SERVICE_LOADERS
 } from '@loaders.gl/services';
 
 import {Map} from 'react-map-gl';
@@ -59,12 +56,9 @@ type AppProps = {
 
 const SOURCE_FACTORIES = [
   WMSSourceLoader,
-  ArcGISImageServerSourceLoader,
-  ArcGISFeatureServerSourceLoader,
   WFSSourceLoader,
   WMTSSourceLoader,
-  ArcGISImageTileSourceLoader,
-  ArcGISMapTileSourceLoader
+  ...SERVICE_LOADERS
 ];
 
 /** Application state */
@@ -168,7 +162,10 @@ export default function App(props: AppProps = {}) {
       return null;
     }
 
-    const isVector = example.type === 'arcgis-feature-server' || example.type === 'wfs';
+    const isVector =
+      example.type === 'arcgis-feature-server' ||
+      example.type === 'arcgis-vector-tile-server' ||
+      example.type === 'wfs';
     const vectorLayerProps = isVector ? getVectorLayerProps(example.layerProps || {}) : {};
 
     return [

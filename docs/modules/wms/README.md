@@ -1,77 +1,128 @@
-# Overview
+# OGC geospatial services
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
-</p>
+The `@loaders.gl/wms` module provides read-only clients and response parsers for classic OGC Web
+Services, modern OGC APIs, and GML. Despite the historical package name, it covers maps, tiles,
+features, coverages, environmental observations, and catalogs.
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
+## Service matrix
 
-# OGC Web Services
+| Service or format | Primary source or loader | Data category | Status | Best use |
+| --- | --- | --- | --- | --- |
+| [WMS](/docs/modules/wms/formats/wms) | `WMSSourceLoader` | Rendered image | Supported | Dynamic maps, feature information, legends |
+| [WMTS](/docs/modules/wms/formats/wmts) | `WMTSSourceLoader` | Image tiles | Supported | Capability-driven tiled imagery |
+| [WFS](/docs/modules/wms/formats/wfs) | `WFSSourceLoader` | Vector features | Supported | GeoJSON or streaming GML feature queries |
+| [WCS](/docs/modules/wms/formats/wcs) | `WCSCoverageSourceLoader` | Analytical raster | Focused | Binary coverages and decoded LERC |
+| [CSW](/docs/modules/wms/formats/csw) | `CSWSourceLoader` | Catalog records | Focused | Read-only catalog search and service references |
+| [GML](/docs/modules/wms/formats/gml) | `GMLLoader` | Vector format | Supported subset | High-volume WFS feature ingestion |
+| [OGC API Features](/docs/modules/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesSourceLoader` | Vector features | Minimal | Common collections/items read path |
+| [OGC API Tiles](/docs/modules/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesSourceLoader` | Tile bytes | Minimal | Known tile templates |
+| [OGC API Coverages](/docs/modules/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesSourceLoader` | Coverage data | Minimal | Common collection coverage endpoint |
+| [OGC API EDR](/docs/modules/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRSourceLoader` | Environmental observations | Focused | Position, area, cube, and path queries |
+| [WMC](/docs/modules/wms/formats/wmc) | None | Map context | Not implemented | Documented to clarify scope |
+| [OWS Context](/docs/modules/wms/formats/ows-context) | None | Service context | Not implemented | Documented to clarify scope |
 
-The `@loaders.gl/wms` module provides support for a subset of the OGC Web Services which are a set of XML-based web mapping standards.
+“Focused” means the important read operations are implemented without claiming every optional
+operation. “Minimal” means a deliberately small interoperability adapter for the most common OGC
+API path.
 
-> The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
-
-## Services
-
-| OGC Protocol/Format                                                                 | Supported    | Description                                                                                                                          |
-| ----------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [**CSW**](/docs/modules/wms/formats/csw) (Catalog Service for the Web) protocol     | Y            | protocol for reading a catalog of geospatial assets and services from a URL.                                                         |
-| [**WMS**](/docs/modules/wms/formats/wms) (Web Map Service) protocol                 | Y            | protocol for serving geo-referenced map images over the internet.                                                                    |
-| [**WFS**](/docs/modules/wms/formats/wfs) (Web Feature Service) protocol             | experimental | protocol for serving geo-referenced map features (geometries) over the internet.                                                     |
-| [**WMTS**](/docs/modules/wms/formats/wmts) (Web Map Tile Service) protocol          | experimental | protocol for serving pre-rendered or run-time computed georeferenced map tiles over the Internet.                                    |
-| [**GML**](/docs/modules/wms/formats/gml) (Geographic Markup Language) format        | experimental | an XML grammar that describes geographical features.                                                                                 |
-| [**WCS**](/docs/modules/wms/formats/wcs) (Web Coverage Service)                     | experimental | Load analytical coverage data (including binary and LERC responses) from a server.                                                  |
-| [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
-| [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
-
-The module also includes minimal adapters for the modern OGC API family. These adapters cover
-landing pages, collections, basic GeoJSON Features queries, advertised tile templates, coverage
-retrieval, and EDR queries. They are intentionally not a full conformance implementation;
-advanced filtering and service-specific extensions remain available through the regular loaders.gl
-fetch APIs.
-
-```js
-import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/wms';
-import {createDataSource} from '@loaders.gl/core';
-
-const source = createDataSource('https://demo.ldproxy.net/daraa', [OGCAPIFeaturesSourceLoader], {
-  'ogc-api': {collectionId: 'VegetationSrf'}
-});
-const features = await source.getFeatures({
-  layers: 'VegetationSrf',
-  boundingBox: [
-    [12.4, 41.8],
-    [12.6, 42.0]
-  ]
-});
-```
-
-## API
-
-Support for the protocols is provided in the form of:
-
-- [`WMSService`][capabilities_loader].
-- [`WMSCapabilitiesLoader`][capabilities_loader].
-
-- a small collection of parsers for the XML responses from the various requests in these protocols.
-- a short write-up on each protocol to indicate how to use loaders.gl to parse responses
-
-Support for the GML format is provided as
-
-- A standard "geospatial category" loader that converts the data into GeoJSON format.
+ArcGIS REST services are provided by [`@loaders.gl/services`](/docs/modules/services).
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/wms
-npm install @loaders.gl/core
+npm install @loaders.gl/core @loaders.gl/wms
 ```
+
+Install `@loaders.gl/deck-layers` when visual services should render directly through deck.gl.
+
+## Standard source workflow
+
+Every service source can be created through the loaders.gl core API:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {WMSSourceLoader} from '@loaders.gl/wms';
+
+const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+  wms: {wmsParameters: {layers: ['workspace:roads']}}
+});
+
+const metadata = await source.getMetadata();
+const image = await source.getImage({
+  layers: ['workspace:roads'],
+  boundingBox: [[-10, 40], [10, 50]],
+  crs: 'CRS:84',
+  width: 1024,
+  height: 512
+});
+```
+
+The concrete runtime contract reflects the data category:
+
+| Contract | Typical methods | Services |
+| --- | --- | --- |
+| `ImageSource` | `getMetadata`, `getImage` | WMS |
+| `TileSource` | `getMetadata`, `getTile`, `getTileData` | WMTS, OGC API Tiles |
+| `VectorSource` | `getMetadata`, `getSchema`, `getFeatures` | WFS, OGC API Features |
+| Coverage source | `getMetadata`, `getCoverage` | WCS, OGC API Coverages |
+| Catalog source | `getMetadata`, `search` | CSW |
+| EDR source | `getLandingPage`, `getCollections`, `query` | OGC API EDR |
+
+## deck.gl integration
+
+Visual service sources work through one generic `SourceLayer`:
+
+```ts
+import {SourceLayer} from '@loaders.gl/deck-layers';
+import {WMTSSourceLoader} from '@loaders.gl/wms';
+
+const layer = new SourceLayer({
+  id: 'satellite',
+  data: wmtsUrl,
+  loaders: [WMTSSourceLoader],
+  sourceOptions: {wmts: {layer: layerId, tileMatrixSet: matrixSetId}}
+});
+```
+
+WMS, WMTS, WFS, and OGC API Features map naturally to visual source contracts. Catalog, EDR, and
+analytical coverage outputs require an application choice before rendering: select a catalog
+record, EDR representation, raster band, color ramp, and NoData policy first.
+
+## Shared service infrastructure
+
+- [`ServiceRuntime`](/docs/modules/wms/services/universal-service-runtime) adds loader selection, source caching,
+  retries, cancellation, shared headers, and telemetry.
+- [`CapabilityGraph`](/docs/modules/wms/services/capability-discovery) records relationships among discovered
+  endpoints and ranks them by type, format, CRS, latency, and quality.
+- [CRS and tile-grid utilities](/docs/modules/wms/api-reference/crs-and-tile-grids) normalize identifiers, axis
+  order, matrix sets, ArcGIS LODs, and antimeridian-sensitive metadata.
+- [Service capabilities](/docs/modules/wms/api-reference/service-capabilities) provide a provider-neutral metadata
+  shape while concrete sources retain provider-specific details.
+
+These pieces are optional. If an endpoint and protocol are already known, creating the concrete
+source directly remains the smallest API.
+
+## Authentication and errors
+
+All sources inherit loaders.gl fetch configuration. Applications can provide headers, credentials,
+request middleware, proxies, and custom fetch functions without protocol-specific wrappers.
+Abort signals are accepted by data requests that may be long-running.
+
+Protocol errors are checked before parsing. WMS and related XML service exceptions use dedicated
+error parsers; focused adapters report the operation and HTTP status.
+
+## Testing and conformance policy
+
+Fast tests use deterministic fixtures and block public-network access. Fixtures cover protocol
+versions, namespace variations, axis order, matrix grids, streaming chunk boundaries, and provider
+metadata. Live examples are demonstrations, not CI dependencies.
+
+loaders.gl documents its actual implemented subset on each service page. Optional standards
+features are marked pass-through or unsupported instead of being implied by the existence of a
+capabilities parser.
 
 ## Attributions
 
-`@loaders.gl/wms` relies heavily on `@loaders.gl/xml` to parse the XML heavy OGC standards.
-
-Some test cases are forked from open layers, see license in test directory,
-however no openlayers code is included in the published module, in order to
-avoid downstream "binary attribution" requirements on loaders.gl users.
+`@loaders.gl/wms` uses `@loaders.gl/xml` for XML parsing. Some test fixtures originated from
+OpenLayers and retain their licenses in the test data; no OpenLayers runtime code is included in the
+published module.

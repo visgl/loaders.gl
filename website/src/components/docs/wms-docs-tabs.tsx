@@ -18,6 +18,7 @@ export type WmsDocsTabId =
   | 'arcgis-image-server-example'
   | 'arcgis-feature-server-example'
   | 'arcgis-map-server-example'
+  | 'arcgis-vector-tile-server-example'
   | 'wcs'
   | 'wfs'
   | 'wmc'
@@ -25,7 +26,8 @@ export type WmsDocsTabId =
   | 'wmts'
   | 'arcgis-image-server'
   | 'arcgis-feature-server'
-  | 'arcgis-map-server';
+  | 'arcgis-map-server'
+  | 'arcgis-vector-tile-server';
 
 const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
   wms: [
@@ -72,6 +74,18 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
       href: '/docs/modules/services/arcgis-map-server'
     }
   ],
+  arcgisVectorTileServer: [
+    {
+      id: 'arcgis-vector-tile-server-example',
+      label: 'Try ArcGIS Vector Tiles',
+      href: '/examples/tiles/arcgis-vector-tile-server'
+    },
+    {
+      id: 'arcgis-vector-tile-server',
+      label: 'ArcGIS VectorTileServer',
+      href: '/docs/modules/services/arcgis-vector-tile-server'
+    }
+  ],
   wcs: [{id: 'wcs', label: 'WCS', href: '/docs/modules/wms/formats/wcs'}],
   wmc: [{id: 'wmc', label: 'WMC', href: '/docs/modules/wms/formats/wmc'}],
   wmts: [
@@ -95,6 +109,12 @@ function getWmsTabs(active: WmsDocsTabId): WmsDocsTab[] {
   }
   if (active === 'arcgis-map-server-example' || active === 'arcgis-map-server') {
     return WMS_TAB_GROUPS.arcgisMapServer;
+  }
+  if (
+    active === 'arcgis-vector-tile-server-example' ||
+    active === 'arcgis-vector-tile-server'
+  ) {
+    return WMS_TAB_GROUPS.arcgisVectorTileServer;
   }
   if (active === 'wmts-example' || active === 'wmts') {
     return WMS_TAB_GROUPS.wmts;

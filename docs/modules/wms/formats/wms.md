@@ -12,6 +12,54 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 WMS (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
 
+## Feature support
+
+| Capability | Support | API and behavior |
+| --- | --- | --- |
+| WMS 1.3.0 | Supported | Default protocol version with specification-correct axis order |
+| WMS 1.1.1 | Supported | Version-specific `SRS` and longitude/latitude request handling |
+| `GetCapabilities` | Supported | Parsed and normalized service, request, layer, CRS, extent, and dimension metadata |
+| `GetMap` | Supported | `getImage()` and `getMap()` return decoded image data |
+| `GetFeatureInfo` | Supported | Parsed feature information or raw text output |
+| `DescribeLayer` | Supported | Parses layer descriptions when the server advertises the operation |
+| `GetLegendGraphic` | Supported | Returns a decoded legend image |
+| Service exceptions | Supported | OGC XML errors are parsed and reported as request failures |
+| Layer hierarchy and inheritance | Supported | Parent metadata is inherited by renderable child layers |
+| Time, elevation, and custom dimensions | Supported | Standard and vendor parameters are forwarded |
+| CRS normalization and axis order | Supported | Handles the WMS 1.3.0 `EPSG:4326` axis-order change |
+| Server-side styling | Pass through | Named styles and vendor parameters are sent to the service |
+| Authentication | Supported | Standard fetch headers, credentials, proxies, and URL parameters |
+| deck.gl rendering | First class | Pass `WMSSourceLoader` to `SourceLayer` |
+
+## Quick start
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {WMSSourceLoader} from '@loaders.gl/wms';
+
+const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+  wms: {
+    wmsParameters: {
+      version: '1.3.0',
+      layers: ['workspace:land-cover'],
+      transparent: true
+    }
+  }
+});
+
+const metadata = await source.getMetadata();
+const image = await source.getImage({
+  layers: ['workspace:land-cover'],
+  boundingBox: [[-10, 40], [10, 50]],
+  crs: 'CRS:84',
+  width: 1024,
+  height: 512
+});
+```
+
+The generic `ImageSource` API is the shortest path for rendering. Protocol-specific methods remain
+available for feature information, legends, URL generation, and advanced WMS controls.
+
 ## Characteristics
 
 WMS is not a single file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses.
