@@ -834,6 +834,12 @@ export class COPCTileSource
       );
     }
 
+    if (columns?.includes('NIR') && copc.header.pointDataRecordFormat !== 8) {
+      throw new Error('COPC NIR output requires PDRF 8');
+    }
+    if (columns?.includes('EXTRA_BYTES') && !copc.extraBytes) {
+      throw new Error('COPC typed Extra Bytes output requires an Extra Bytes VLR');
+    }
     const selection = getCOPCPointSelection(copc, columns);
     const nativePositions = new Float64Array(pointCount * 3);
     const positions = new Float32Array(pointCount * 3);
