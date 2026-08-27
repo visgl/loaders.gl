@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import type {Schema, Field, Mesh, MeshArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
@@ -23,8 +23,15 @@ import {
   HttpFile,
   isBrowser,
   NodeFile,
+  filterColumnarRowIndices,
+  getColumnarPredicateColumns,
   parseWithWorker,
   RangeRequestCache,
+  selectPointCloudScanTiles,
+  validatePointCloudQueryOptions,
+  type PointCloudScanReadOptions,
+  type PointCloudScanSource,
+  type PointCloudScanTile,
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
@@ -272,7 +279,7 @@ export const COPCSourceLoader = {
  */
 export class COPCTileSource
   extends DataSource<string | Blob, COPCSourceLoaderOptions>
-  implements TileSource
+  implements TileSource, PointCloudScanSource<ArrowTableBatch>
 {
   /** Common point-cloud scan capabilities exposed by COPC. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
@@ -343,10 +350,7 @@ export class COPCTileSource
     return createScanQueryMetadata({
       sourceType: 'copc',
       queryType: 'point-cloud',
-      execution: {
-        status: 'metadata-only',
-        reason: 'Common point-cloud scan traversal is not implemented; use the COPC tile APIs.'
-      },
+      execution: {status: 'supported', method: 'scan'},
       schema,
       capabilities: {
         table: this.pointCloudQueryCapabilities,
@@ -364,6 +368,123 @@ export class COPCTileSource
       },
       statistics: {rowCount: copc.header.pointCount}
     });
+  }
+
+  /**
+   * Scans selected COPC hierarchy nodes as ordered Arrow point batches.
+   *
+   * Hierarchy bounds, levels, spacing, and requested decoder attributes are pushed down. Exact
+   * point bounds and portable attribute predicates are evaluated before the global point limit.
+   */
+  async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+    const {copc} = await this._initPromise;
+    const schema = getCOPCHeaderSchema(copc);
+    const sourceColumnNames = schema.fields.map(field => field.name);
+    validatePointCloudQueryOptions(sourceColumnNames, options);
+    const batchSize = validatePointCloudScanBatchSize(options.batchSize);
+    if (options.limit === 0) return;
+
+    const outputColumnNames = options.columns ? [...options.columns] : sourceColumnNames;
+    const predicateColumnNames = options.predicate
+      ? getColumnarPredicateColumns(options.predicate)
+      : [];
+    const requiredColumnNames = new Set([...outputColumnNames, ...predicateColumnNames]);
+    requiredColumnNames.add('X');
+    if (options.bounds) {
+      requiredColumnNames.add('X');
+      requiredColumnNames.add('Y');
+      requiredColumnNames.add('Z');
+    }
+    const outputSchema: Schema = {
+      fields: outputColumnNames.map(
+        columnName => schema.fields.find(field => field.name === columnName)!
+      ),
+      metadata: schema.metadata
+    };
+    const decoderColumns = getCOPCDecoderColumns([...requiredColumnNames], schema);
+    const rootTile = this.getCOPCScanTile(await this.getRootTile());
+    let remainingPointCount = options.limit ?? Number.POSITIVE_INFINITY;
+
+    for await (const tile of selectPointCloudScanTiles(
+      rootTile,
+      async parent => (await this.getChildren(parent)).map(child => this.getCOPCScanTile(child)),
+      options
+    )) {
+      for await (const content of this.loadTileContentInBatches(
+        {id: tile.id},
+        {batchSize, signal: options.signal, columns: decoderColumns}
+      )) {
+        throwIfCOPCLoadAborted(options.signal);
+        const columns = this.getCOPCScanColumns(content, [...requiredColumnNames], options.bounds);
+        const rowCount = columns.X.length;
+        const matchingRowIndices = filterColumnarRowIndices(
+          options.predicate,
+          columns,
+          rowCount
+        ).slice(0, remainingPointCount);
+        if (matchingRowIndices.length === 0) continue;
+
+        const builder = new ArrowTableBuilder(outputSchema);
+        for (const rowIndex of matchingRowIndices) {
+          builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
+        }
+        const batch = builder.finishBatch();
+        if (batch) yield batch;
+        remainingPointCount -= matchingRowIndices.length;
+        if (remainingPointCount === 0) return;
+      }
+    }
+  }
+
+  /** Converts a normalized COPC tile header to the source-coordinate planner shape. */
+  protected getCOPCScanTile(tile: {
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+  }): PointCloudScanTile {
+    const [minimum, maximum] = this.getNativeTileBounds(tile.id);
+    return {
+      id: tile.id,
+      level: tile.level,
+      pointCount: tile.pointCount,
+      geometricError: tile.geometricError,
+      bounds: {
+        minimum: [minimum[0], minimum[1], minimum[2]],
+        maximum: [maximum[0], maximum[1], maximum[2]]
+      }
+    };
+  }
+
+  /** Extracts query-visible source-coordinate columns from one decoded COPC batch. */
+  protected getCOPCScanColumns(
+    content: COPCTileContent,
+    columnNames: readonly string[],
+    bounds?: PointCloudScanReadOptions['bounds']
+  ): Record<string, unknown[]> {
+    const columns = Object.fromEntries(
+      columnNames.map(columnName => [columnName, [] as unknown[]])
+    );
+    const positionVector = content.data.data.getChild('POSITION');
+    for (let pointIndex = 0; pointIndex < content.pointCount; pointIndex++) {
+      const offsetPosition = readArrowListValue(positionVector?.get(pointIndex));
+      const projectedPosition = [
+        Number(offsetPosition[0]) + content.cartographicOrigin[0],
+        Number(offsetPosition[1]) + content.cartographicOrigin[1],
+        Number(offsetPosition[2]) + content.cartographicOrigin[2]
+      ];
+      const sourcePosition = this._projection
+        ? this._projection.unproject(projectedPosition)
+        : projectedPosition;
+      if (bounds && !isPointInsideBounds(sourcePosition, bounds)) continue;
+
+      for (const columnName of columnNames) {
+        columns[columnName].push(
+          getCOPCScanValue(content.data, columnName, pointIndex, sourcePosition)
+        );
+      }
+    }
+    return columns;
   }
 
   async getMetadata(): Promise<COPCMetadata> {
@@ -1481,6 +1602,118 @@ export class COPCTileSource
     }
   }
   */
+}
+
+const COPC_SCAN_COLUMN_MAP: Readonly<Record<string, COPCPointColumn>> = Object.freeze({
+  X: 'POSITION',
+  Y: 'POSITION',
+  Z: 'POSITION',
+  Intensity: 'intensity',
+  ReturnNumber: 'returnNumber',
+  NumberOfReturns: 'numberOfReturns',
+  ScanDirectionFlag: 'scanDirectionFlag',
+  EdgeOfFlightLine: 'edgeOfFlightLine',
+  Classification: 'classification',
+  Synthetic: 'synthetic',
+  KeyPoint: 'keyPoint',
+  Withheld: 'withheld',
+  Overlap: 'overlap',
+  ScannerChannel: 'scannerChannel',
+  ScanAngle: 'scanAngle',
+  UserData: 'userData',
+  PointSourceId: 'pointSourceId',
+  GpsTime: 'GPS_TIME',
+  Red: 'COLOR_0',
+  Green: 'COLOR_0',
+  Blue: 'COLOR_0',
+  Infrared: 'NIR'
+});
+
+const COPC_BOOLEAN_COLUMN_NAMES = new Set([
+  'ScanDirectionFlag',
+  'EdgeOfFlightLine',
+  'Synthetic',
+  'KeyPoint',
+  'Withheld',
+  'Overlap'
+]);
+
+/** Maps query-visible COPC fields to the smallest decoder attribute set. */
+function getCOPCDecoderColumns(columnNames: readonly string[], schema: Schema): COPCPointColumn[] {
+  const standardColumnNames = new Set(Object.keys(COPC_SCAN_COLUMN_MAP));
+  const schemaColumnNames = new Set(schema.fields.map(field => field.name));
+  const decoderColumns = new Set<COPCPointColumn>(['POSITION']);
+  for (const columnName of columnNames) {
+    const decoderColumn = COPC_SCAN_COLUMN_MAP[columnName];
+    if (decoderColumn) {
+      decoderColumns.add(decoderColumn);
+    } else if (schemaColumnNames.has(columnName) && !standardColumnNames.has(columnName)) {
+      decoderColumns.add('EXTRA_BYTES');
+    }
+  }
+  return [...decoderColumns];
+}
+
+/** Reads one query-visible COPC value from decoded Arrow attributes. */
+function getCOPCScanValue(
+  data: MeshArrowTable,
+  columnName: string,
+  pointIndex: number,
+  sourcePosition: readonly number[]
+): unknown {
+  if (columnName === 'X') return sourcePosition[0];
+  if (columnName === 'Y') return sourcePosition[1];
+  if (columnName === 'Z') return sourcePosition[2];
+
+  if (columnName === 'Red' || columnName === 'Green' || columnName === 'Blue') {
+    const color = readArrowListValue(data.data.getChild('COLOR_0')?.get(pointIndex));
+    return color[columnName === 'Red' ? 0 : columnName === 'Green' ? 1 : 2];
+  }
+  const decoderColumn = COPC_SCAN_COLUMN_MAP[columnName];
+  const value = normalizeArrowValue(
+    data.data.getChild(decoderColumn || columnName)?.get(pointIndex)
+  );
+  if (COPC_BOOLEAN_COLUMN_NAMES.has(columnName) && typeof value === 'number') {
+    return value !== 0;
+  }
+  return columnName === 'ScanAngle' && typeof value === 'number' ? value * 0.006 : value;
+}
+
+/** Normalizes Arrow scalar and fixed-size-list values for predicate evaluation and builders. */
+function normalizeArrowValue(value: unknown): unknown {
+  if (value && typeof value === 'object' && 'toArray' in value) {
+    return Array.from((value as {toArray(): ArrayLike<unknown>}).toArray());
+  }
+  return value;
+}
+
+/** Reads an Arrow list scalar into ordinary numeric values. */
+function readArrowListValue(value: unknown): unknown[] {
+  const normalizedValue = normalizeArrowValue(value);
+  if (Array.isArray(normalizedValue)) return normalizedValue;
+  if (ArrayBuffer.isView(normalizedValue)) {
+    return Array.from(normalizedValue as unknown as ArrayLike<unknown>);
+  }
+  return [];
+}
+
+/** Returns whether one source-coordinate point lies inside inclusive query bounds. */
+function isPointInsideBounds(
+  point: readonly number[],
+  bounds: NonNullable<PointCloudScanReadOptions['bounds']>
+): boolean {
+  return point.every(
+    (coordinate, dimension) =>
+      coordinate >= bounds.minimum[dimension] && coordinate <= bounds.maximum[dimension]
+  );
+}
+
+/** Validates and returns the requested point batch size. */
+function validatePointCloudScanBatchSize(batchSize = 65536): number {
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
+    throw new Error('Point cloud scan batchSize must be a positive safe integer.');
+  }
+  return batchSize;
 }
 
 /** Builds the query schema from COPC point-data and Extra Bytes metadata. */

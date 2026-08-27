@@ -128,6 +128,18 @@ test('ArrowTableBuilder#view types round-trip through IPC', () => {
   ]);
 });
 
+test('ArrowTableBuilder#finishBatch preserves rows in a zero-column projection', () => {
+  const builder = new ArrowTableBuilder({fields: [], metadata: {}});
+  builder.addArrayRow([]);
+  builder.addArrayRow([]);
+
+  const batch = builder.finishBatch();
+
+  expect(batch?.length).toBe(2);
+  expect(batch?.data.numRows).toBe(2);
+  expect(batch?.data.numCols).toBe(0);
+});
+
 test.each(
   PRIMITIVE_ARROW_TYPES
 )('%s type round-trips through serialized schema', (_, type, dataType) => {

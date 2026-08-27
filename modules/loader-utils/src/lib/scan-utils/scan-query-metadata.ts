@@ -9,6 +9,8 @@ import type {
   TableQueryOperatorSupport,
   TableQueryOptions
 } from './table-query';
+import type {PointCloudQueryOptions} from './point-cloud-query';
+import type {RasterQueryCapabilities} from './raster-query';
 
 /** Semantic role used by query editors to choose appropriate controls for a column. */
 export type ScanColumnRole =
@@ -79,6 +81,8 @@ export type ScanQueryCapabilities = Readonly<{
   bounds?: TableQueryOperatorSupport;
   /** Hierarchy or resolution selection support for point clouds and multiscale rasters. */
   levelOfDetail?: TableQueryOperatorSupport;
+  /** Raster variable, slice, window, streaming, and cancellation support. */
+  raster?: RasterQueryCapabilities;
 }>;
 
 /** Lightweight source statistics obtained without materializing result rows. */
@@ -174,6 +178,19 @@ export type TableScanSource<
 > = ScanQueryMetadataProvider & {
   /** Reads the query result as ordered batches without changing the logical query semantics. */
   read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
+};
+
+/** Point-cloud scan options with a bound on each emitted Arrow batch. */
+export type PointCloudScanReadOptions = PointCloudQueryOptions &
+  Readonly<{
+    /** Maximum number of retained points in each emitted batch. */
+    batchSize?: number;
+  }>;
+
+/** Shared point-cloud scan contract implemented by hierarchy-backed sources. */
+export type PointCloudScanSource<BatchT = unknown> = ScanQueryMetadataProvider & {
+  /** Reads selected hierarchy nodes as ordered, globally limited point batches. */
+  scan(options?: PointCloudScanReadOptions): AsyncIterable<BatchT>;
 };
 
 /** Inputs used to derive normalized query metadata from a loaders.gl schema. */

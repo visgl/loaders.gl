@@ -3,16 +3,35 @@
 // Copyright (c) vis.gl contributors
 
 import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
-import type {CoreAPI, Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  Loader,
+  LoaderOptions,
+  LoaderWithParser,
+  PointCloudScanReadOptions,
+  PointCloudScanSource,
+  PointCloudScanTile
+} from '@loaders.gl/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
+  filterColumnarRowIndices,
+  getColumnarPredicateColumns,
   resolvePath,
+  selectPointCloudScanTiles,
+  validatePointCloudQueryOptions,
   type PointCloudQueryCapabilities
 } from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
-import type {DataType, Field, Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import type {
+  ArrowTableBatch,
+  DataType,
+  Field,
+  Mesh,
+  MeshArrowTable,
+  Schema
+} from '@loaders.gl/schema';
+import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
   POTreeNode,
@@ -51,10 +70,13 @@ export interface PotreeNodeMesh extends LASMesh {
  * @version 1.7 - @see https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
-export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOptions> {
+export class PotreeNodesSource
+  extends DataSource<string, PotreeSourceLoaderOptions>
+  implements PointCloudScanSource<ArrowTableBatch>
+{
   /** Common point-cloud scan capabilities exposed by Potree metadata and hierarchy nodes. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
-    projection: 'pushdown',
+    projection: 'residual',
     predicate: 'residual',
     limit: 'residual',
     streaming: true,
@@ -142,16 +164,19 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   /** Discovers point attributes and hierarchy bounds without loading node content. */
   async getQueryMetadata() {
     await this.initPromise;
+    const isSupported = this.isSupported();
     const fields = getPotreeSchemaFields(this.metadata?.pointAttributes || []);
     const schema = {fields, metadata: {}};
     const bounds = this.nativeHierarchyBoundingBox || this.boundingBox;
     return createScanQueryMetadata({
       sourceType: 'potree',
       queryType: 'point-cloud',
-      execution: {
-        status: 'metadata-only',
-        reason: 'Common point-cloud scan traversal is not implemented; use the Potree tile APIs.'
-      },
+      execution: isSupported
+        ? {status: 'supported', method: 'scan'}
+        : {
+            status: 'metadata-only',
+            reason: 'This Potree version or point-attribute layout is not supported by the scanner.'
+          },
       schema,
       capabilities: {
         table: this.pointCloudQueryCapabilities,
@@ -174,6 +199,104 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
         : undefined,
       statistics: this.metadata?.points === undefined ? undefined : {rowCount: this.metadata.points}
     });
+  }
+
+  /**
+   * Scans Potree hierarchy nodes into ordered, globally limited Arrow point batches.
+   *
+   * Node bounds, hierarchy levels, and target spacing avoid unrelated node reads. Attribute
+   * predicates and exact point bounds are evaluated residually after each selected node decode.
+   */
+  async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+    await this.initPromise;
+    if (!this.isSupported()) {
+      throw new Error('This Potree version or point-attribute layout is not supported.');
+    }
+    const schema: Schema = {
+      fields: getPotreeSchemaFields(this.metadata?.pointAttributes || []),
+      metadata: {}
+    };
+    const sourceColumnNames = schema.fields.map(field => field.name);
+    validatePointCloudQueryOptions(sourceColumnNames, options);
+    const batchSize = validatePotreeScanBatchSize(options.batchSize);
+    if (options.limit === 0) return;
+
+    const outputColumnNames = options.columns ? [...options.columns] : sourceColumnNames;
+    const predicateColumnNames = options.predicate
+      ? getColumnarPredicateColumns(options.predicate)
+      : [];
+    const requiredColumnNames = new Set([...outputColumnNames, ...predicateColumnNames]);
+    const positionColumnNames = sourceColumnNames.includes('POSITION_CARTESIAN')
+      ? ['POSITION_CARTESIAN']
+      : ['X', 'Y', 'Z'];
+    for (const positionColumnName of positionColumnNames) {
+      requiredColumnNames.add(positionColumnName);
+    }
+    const outputSchema: Schema = {
+      fields: outputColumnNames.map(
+        columnName => schema.fields.find(field => field.name === columnName)!
+      ),
+      metadata: schema.metadata
+    };
+    const rootTile = this.getPotreeScanTile(await this.getRootTile());
+    let remainingPointCount = options.limit ?? Number.POSITIVE_INFINITY;
+
+    for await (const tile of selectPointCloudScanTiles(
+      rootTile,
+      async parent => (await this.getChildren(parent)).map(child => this.getPotreeScanTile(child)),
+      options
+    )) {
+      throwIfPotreeScanAborted(options.signal);
+      const nodeContent = await this.loadNodeContent(this.getNodeName(tile.id), {
+        signal: options.signal
+      });
+      throwIfPotreeScanAborted(options.signal);
+      if (!nodeContent) continue;
+      const columns = getPotreeScanColumns(
+        nodeContent,
+        [...requiredColumnNames],
+        options.bounds,
+        Boolean(this.projection)
+      );
+      const rowCount = columns[positionColumnNames[0]].length;
+      const matchingRowIndices = filterColumnarRowIndices(
+        options.predicate,
+        columns,
+        rowCount
+      ).slice(0, remainingPointCount);
+
+      for (let batchOffset = 0; batchOffset < matchingRowIndices.length; batchOffset += batchSize) {
+        const batchRowIndices = matchingRowIndices.slice(batchOffset, batchOffset + batchSize);
+        const builder = new ArrowTableBuilder(outputSchema);
+        for (const rowIndex of batchRowIndices) {
+          builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
+        }
+        const batch = builder.finishBatch();
+        if (batch) yield batch;
+        remainingPointCount -= batchRowIndices.length;
+        if (remainingPointCount === 0) return;
+      }
+    }
+  }
+
+  /** Converts one Potree hierarchy header to source-coordinate scan-planner metadata. */
+  private getPotreeScanTile(tile: {
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+  }): PointCloudScanTile {
+    const bounds = this.getNativeNodeBounds(tile.id);
+    return {
+      id: tile.id,
+      level: tile.level,
+      pointCount: tile.pointCount,
+      geometricError: tile.geometricError,
+      bounds: {
+        minimum: [bounds.lx, bounds.ly, bounds.lz],
+        maximum: [bounds.ux, bounds.uy, bounds.uz]
+      }
+    };
   }
 
   /** Is data set supported */
@@ -210,7 +333,10 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
    * @param nodeName name of a node, string of numbers in range 0..7
    * @return node content geometry or null if the node doesn't exist
    */
-  async loadNodeContent(nodeName: string): Promise<PotreeNodeMesh | null> {
+  async loadNodeContent(
+    nodeName: string,
+    options: {signal?: AbortSignal} = {}
+  ): Promise<PotreeNodeMesh | null> {
     await this.initPromise;
 
     if (!this.isSupported()) {
@@ -231,7 +357,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       const result = (await this.loadWithCoreApi(
         this.getNodeContentUrl(nodeName, contentExtension),
         loader,
-        loaderOptions
+        loaderOptions,
+        options.signal
       )) as PotreeNodeMesh & {
         header?: {boundingBox?: [number[], number[]]; vertexCount?: number};
         attributes: Record<string, any>;
@@ -386,13 +513,26 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   private async loadWithCoreApi<T>(
     url: string,
     loader: LoaderWithParser<T, never, LoaderOptions>,
-    options?: LoaderOptions
+    options?: LoaderOptions,
+    signal?: AbortSignal
   ): Promise<T> {
+    throwIfPotreeScanAborted(signal);
     if (this.hasCoreApi) {
-      return (await this.coreApi.load(url, loader as Loader, options || this.loadOptions)) as T;
+      const loaderOptions = options || this.loadOptions;
+      const cancellableOptions = signal
+        ? {
+            ...loaderOptions,
+            core: {
+              ...loaderOptions.core,
+              fetch: (resource: string, requestInit?: RequestInit) =>
+                this.fetch(resource, {...requestInit, signal})
+            }
+          }
+        : loaderOptions;
+      return (await this.coreApi.load(url, loader as Loader, cancellableOptions)) as T;
     }
 
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, {signal});
     if (!response.ok) {
       throw new Error(`Failed to load Potree resource: ${response.status} ${response.statusText}`);
     }
@@ -402,6 +542,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       throw new Error(`Loader ${loader.id} does not support parse()`);
     }
 
+    throwIfPotreeScanAborted(signal);
     return await loader.parse(arrayBuffer, options || this.loadOptions);
   }
 
@@ -899,6 +1040,84 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   }
 }
 
+/** Extracts query-visible source-coordinate columns from one decoded Potree node. */
+function getPotreeScanColumns(
+  mesh: PotreeNodeMesh,
+  columnNames: readonly string[],
+  bounds: PointCloudScanReadOptions['bounds'],
+  positionsAreOffsets: boolean
+): Record<string, unknown[]> {
+  const columns = Object.fromEntries(columnNames.map(columnName => [columnName, [] as unknown[]]));
+  const positions = mesh.attributes.POSITION?.value as Float32Array | Float64Array | undefined;
+  if (!positions) return columns;
+  const nativeOrigin = positionsAreOffsets
+    ? getNativeOriginFromBoundingBox(mesh.header?.boundingBox)
+    : [0, 0, 0];
+  const pointCount = Math.floor(positions.length / 3);
+
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const positionIndex = pointIndex * 3;
+    const sourcePosition = [
+      positions[positionIndex] + nativeOrigin[0],
+      positions[positionIndex + 1] + nativeOrigin[1],
+      positions[positionIndex + 2] + nativeOrigin[2]
+    ];
+    if (bounds && !isPotreePointInsideBounds(sourcePosition, bounds)) continue;
+
+    for (const columnName of columnNames) {
+      columns[columnName].push(getPotreeScanValue(mesh, columnName, pointIndex, sourcePosition));
+    }
+  }
+  return columns;
+}
+
+/** Reads one query-visible value from a Potree mesh attribute. */
+function getPotreeScanValue(
+  mesh: PotreeNodeMesh,
+  columnName: string,
+  pointIndex: number,
+  sourcePosition: readonly number[]
+): unknown {
+  if (columnName === 'X') return sourcePosition[0];
+  if (columnName === 'Y') return sourcePosition[1];
+  if (columnName === 'Z') return sourcePosition[2];
+  if (columnName === 'POSITION_CARTESIAN') return [...sourcePosition];
+
+  const attribute = mesh.attributes[columnName];
+  if (!attribute) return null;
+  const size = attribute.size || 1;
+  const values = attribute.value as unknown as ArrayLike<unknown>;
+  if (size === 1) return values[pointIndex];
+  const valueOffset = pointIndex * size;
+  return Array.from({length: size}, (_, componentIndex) => values[valueOffset + componentIndex]);
+}
+
+/** Returns whether a decoded Potree point lies within inclusive source bounds. */
+function isPotreePointInsideBounds(
+  point: readonly number[],
+  bounds: NonNullable<PointCloudScanReadOptions['bounds']>
+): boolean {
+  return point.every(
+    (coordinate, dimension) =>
+      coordinate >= bounds.minimum[dimension] && coordinate <= bounds.maximum[dimension]
+  );
+}
+
+/** Validates and returns the maximum retained point count per Potree batch. */
+function validatePotreeScanBatchSize(batchSize = 65536): number {
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
+    throw new Error('Point cloud scan batchSize must be a positive safe integer.');
+  }
+  return batchSize;
+}
+
+/** Throws a standard cancellation error for Potree scan work. */
+function throwIfPotreeScanAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new DOMException('The operation was aborted', 'AbortError');
+  }
+}
+
 /** Builds query-visible fields from Potree point-attribute metadata. */
 function getPotreeSchemaFields(pointAttributes: PotreeMetadata['pointAttributes']): Field[] {
   if (!Array.isArray(pointAttributes)) {
@@ -919,19 +1138,30 @@ function getPotreeSchemaFields(pointAttributes: PotreeMetadata['pointAttributes'
 /** Maps one Potree attribute identifier to a loaders.gl field. */
 function getPotreeField(attribute: string): Field | undefined {
   const fieldTypes: Record<string, {name: string; type: DataType}> = {
-    POSITION_CARTESIAN: {name: 'POSITION_CARTESIAN', type: 'float32'},
-    RGBA_PACKED: {name: 'RGBA_PACKED', type: 'uint8'},
-    COLOR_PACKED: {name: 'COLOR_PACKED', type: 'uint8'},
-    RGB_PACKED: {name: 'RGB_PACKED', type: 'uint8'},
-    NORMAL_FLOATS: {name: 'NORMAL_FLOATS', type: 'float32'},
+    POSITION_CARTESIAN: {
+      name: 'POSITION_CARTESIAN',
+      type: getPotreeListType('float32', 3)
+    },
+    RGBA_PACKED: {name: 'RGBA_PACKED', type: getPotreeListType('uint8', 3)},
+    COLOR_PACKED: {name: 'COLOR_PACKED', type: getPotreeListType('uint8', 3)},
+    RGB_PACKED: {name: 'RGB_PACKED', type: getPotreeListType('uint8', 3)},
+    NORMAL_FLOATS: {name: 'NORMAL_FLOATS', type: getPotreeListType('float32', 3)},
     INTENSITY: {name: 'INTENSITY', type: 'uint16'},
     CLASSIFICATION: {name: 'CLASSIFICATION', type: 'uint8'},
-    NORMAL_SPHEREMAPPED: {name: 'NORMAL_SPHEREMAPPED', type: 'uint8'},
+    NORMAL_SPHEREMAPPED: {
+      name: 'NORMAL_SPHEREMAPPED',
+      type: getPotreeListType('uint8', 2)
+    },
     NORMAL_OCT16: {name: 'NORMAL_OCT16', type: 'uint16'},
-    NORMAL: {name: 'NORMAL', type: 'float32'}
+    NORMAL: {name: 'NORMAL', type: getPotreeListType('float32', 3)}
   };
   const fieldType = fieldTypes[attribute];
   return fieldType ? {...fieldType, nullable: false} : undefined;
+}
+
+/** Creates a portable fixed-size-list type for packed Potree attributes. */
+function getPotreeListType(type: DataType, listSize: number): DataType {
+  return {type: 'fixed-size-list', listSize, children: [{name: 'value', type}]};
 }
 
 /** Infers a query-panel semantic role from a Potree attribute name. */

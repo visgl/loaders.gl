@@ -44,6 +44,25 @@ export type PointCloudQueryCapabilities = TableQueryCapabilities &
     spacing: TableQueryOperatorSupport;
   }>;
 
+/** One hierarchy node considered by a portable point-cloud scan planner. */
+export type PointCloudScanTile = Readonly<{
+  /** Stable source-defined node identifier. */
+  id: string;
+  /** Zero-based hierarchy level. */
+  level: number;
+  /** Number of points stored by this node. */
+  pointCount: number;
+  /** Source spacing or geometric error represented by this node. */
+  geometricError: number;
+  /** Three-dimensional node bounds in the source coordinate system. */
+  bounds: PointCloudQueryBounds;
+}>;
+
+/** Loads the direct children of one portable point-cloud scan tile. */
+export type PointCloudScanChildrenLoader<TileT extends PointCloudScanTile = PointCloudScanTile> = (
+  tile: TileT
+) => Promise<readonly TileT[]>;
+
 /** Validates a point-cloud query against the attributes exposed by one source. */
 export function validatePointCloudQueryOptions<
   ValueT,
@@ -69,6 +88,65 @@ export function validatePointCloudQueryOptions<
   }
 }
 
+/**
+ * Selects point-cloud hierarchy nodes in deterministic breadth-first order.
+ *
+ * Bounds reject whole subtrees. Maximum level and target spacing stop descent after the selected
+ * node, while minimum level suppresses coarser node payloads without suppressing their children.
+ */
+export async function* selectPointCloudScanTiles<TileT extends PointCloudScanTile>(
+  rootTile: TileT,
+  loadChildren: PointCloudScanChildrenLoader<TileT>,
+  options: PointCloudQueryOptions = {}
+): AsyncIterableIterator<TileT> {
+  const pendingTiles: TileT[] = [rootTile];
+  const minimumLevel = options.minimumLevel ?? 0;
+
+  while (pendingTiles.length > 0) {
+    throwIfPointCloudScanAborted(options.signal);
+    const tile = pendingTiles.shift()!;
+    if (options.bounds && !intersectPointCloudBounds(tile.bounds, options.bounds)) {
+      continue;
+    }
+
+    const satisfiesMinimumLevel = tile.level >= minimumLevel;
+    if (satisfiesMinimumLevel) {
+      yield tile;
+    }
+
+    const reachedMaximumLevel =
+      options.maximumLevel !== undefined && tile.level >= options.maximumLevel;
+    const reachedTargetSpacing =
+      satisfiesMinimumLevel &&
+      options.targetSpacing !== undefined &&
+      tile.geometricError <= options.targetSpacing;
+    if (reachedMaximumLevel || reachedTargetSpacing) {
+      continue;
+    }
+
+    const children = [...(await loadChildren(tile))].sort((left, right) =>
+      left.id.localeCompare(right.id)
+    );
+    pendingTiles.push(...children);
+  }
+}
+
+/** Returns whether two inclusive point-cloud bounds intersect. */
+export function intersectPointCloudBounds(
+  left: PointCloudQueryBounds,
+  right: PointCloudQueryBounds
+): boolean {
+  for (let dimension = 0; dimension < 3; dimension++) {
+    if (
+      left.maximum[dimension] < right.minimum[dimension] ||
+      left.minimum[dimension] > right.maximum[dimension]
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function validatePointCloudBounds(bounds: PointCloudQueryBounds | undefined): void {
   if (!bounds) {
     return;
@@ -88,5 +166,11 @@ function validatePointCloudBounds(bounds: PointCloudQueryBounds | undefined): vo
 function validateHierarchyLevel(level: number | undefined, name: string): void {
   if (level !== undefined && (!Number.isSafeInteger(level) || level < 0)) {
     throw new Error(`Point cloud query ${name} must be a non-negative safe integer.`);
+  }
+}
+
+function throwIfPointCloudScanAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new DOMException('The operation was aborted', 'AbortError');
   }
 }
