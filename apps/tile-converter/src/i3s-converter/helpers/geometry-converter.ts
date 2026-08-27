@@ -52,7 +52,7 @@ import {Geoid} from '@math.gl/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
 
 /*
   At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/types'.

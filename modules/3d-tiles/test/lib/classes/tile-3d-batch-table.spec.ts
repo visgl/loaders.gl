@@ -4,7 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
-import {concatTypedArrays} from '@loaders.gl/math'; // '@math.gl/geometry';
+import {concatTypedArrays} from '@math.gl/geometry-utils';
 // import {loadTileset} from '../utils/load-utils';
 
 // const WITH_BATCH_TABLE_URL =

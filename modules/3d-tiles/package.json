@@ -74,11 +74,11 @@
     "@loaders.gl/gltf": "5.0.0-alpha.2",
     "@loaders.gl/images": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/math": "5.0.0-alpha.2",
     "@loaders.gl/tiles": "5.0.0-alpha.2",
     "@loaders.gl/zip": "5.0.0-alpha.2",
     "@math.gl/core": "4.2.0-alpha.5",
     "@math.gl/culling": "4.2.0-alpha.5",
+    "@math.gl/geometry-utils": "4.2.0-alpha.5",
     "@math.gl/geospatial": "4.2.0-alpha.5",
     "long": "^5.2.1",
     "zod": "^4.1.12"

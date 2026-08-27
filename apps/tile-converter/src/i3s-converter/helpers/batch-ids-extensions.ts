@@ -10,7 +10,7 @@ import type {
 } from '@loaders.gl/gltf';
 import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
-import {emod} from '@loaders.gl/math';
+import {emod} from '@math.gl/geometry-utils';
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
 

@@ -347,21 +347,6 @@
         "branches": 71
       }
     },
-    "@loaders.gl/math": {
-      "path": "modules/math",
-      "browser": {
-        "statements": 43,
-        "lines": 44,
-        "functions": 61,
-        "branches": 28
-      },
-      "merged": {
-        "statements": 43,
-        "lines": 44,
-        "functions": 61,
-        "branches": 28
-      }
-    },
     "@loaders.gl/mlt": {
       "path": "modules/mlt",
       "browser": {

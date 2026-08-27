@@ -37,7 +37,7 @@ License reproduced above.
 Copyright (c) 2016 Axel Rauschmayer
 
 loaders.gl includes certain files from Cesium (https://github.com/CesiumGS/cesium)
-under the Apache 2.0 License, including files in modules/3d-tiles and modules/math.
+under the Apache 2.0 License, including files in modules/3d-tiles.
 
 Copyright 2011-2018 CesiumJS Contributors
 

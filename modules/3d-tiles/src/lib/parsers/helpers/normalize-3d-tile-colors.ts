@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
-import {decodeRGB565, GL} from '@loaders.gl/math';
+import {decodeRGB565, GL} from '@math.gl/geometry-utils';
 import {Tiles3DTileContent} from '../../../types';
 
 /* eslint-disable complexity*/

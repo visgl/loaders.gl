@@ -69,7 +69,6 @@
     "@loaders.gl/draco": "5.0.0-alpha.2",
     "@loaders.gl/images": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/math": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/textures": "5.0.0-alpha.2",
     "@loaders.gl/tiles": "5.0.0-alpha.2",
@@ -77,6 +76,7 @@
     "@math.gl/core": "4.2.0-alpha.5",
     "@math.gl/crs": "^4.2.0-alpha.5",
     "@math.gl/culling": "4.2.0-alpha.5",
+    "@math.gl/geometry-utils": "4.2.0-alpha.5",
     "@math.gl/geospatial": "4.2.0-alpha.5",
     "zod": "^4.1.12"
   },
