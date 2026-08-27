@@ -1271,16 +1271,14 @@ test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', () => {
     scale: [1, 1, 1] as [number, number, number],
     offset: [0, 0, 0] as [number, number, number]
   };
-  expect(
-    () => cursor.decodeIntoPointData(target, 1),
-    'legacy point formats reject direct point-data output'
-  ).toThrow(/does not support direct point-data output for point format 0/);
-  const rawOutput = new Uint8Array(expected.byteLength);
-  expect(
-    cursor.decodeInto(rawOutput, 0, 1),
-    'rejected direct output does not initialize or lock the cursor'
-  ).toBe(1);
-  expect(rawOutput, 'raw decode remains available after rejected direct output').toEqual(expected);
+  expect(cursor.decodeIntoPointData(target, 1), 'PDRF 0 supports direct point-data output').toBe(1);
+  expect(Array.from(target.positions), 'PDRF 0 positions are written directly').toEqual([
+    123456, -234567, 345678
+  ]);
+  expect(Array.from(target.intensities), 'PDRF 0 intensity is written directly').toEqual([321]);
+  expect(Array.from(target.classifications), 'PDRF 0 classification is written directly').toEqual([
+    2
+  ]);
 });
 test('TypeScriptLAZ#decodes single-point legacy point format 1 chunk', () => {
   const expected = new Uint8Array(28);
@@ -1295,6 +1293,23 @@ test('TypeScriptLAZ#decodes single-point legacy point format 1 chunk', () => {
     pointDataRecordLength: expected.byteLength
   });
   expect(actual, 'point format 1 first point and GPS time are preserved').toEqual(expected);
+  const target = {
+    positions: new Float64Array(3),
+    intensities: new Uint16Array(1),
+    classifications: new Uint8Array(1),
+    gpsTimes: new Float64Array(1),
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const cursor = createLAZChunkDecoderCursor(compressed, {
+    pointCount: 1,
+    pointDataRecordFormat: 1,
+    pointDataRecordLength: expected.byteLength
+  });
+  expect(cursor.decodeIntoPointData(target, 1)).toBe(1);
+  expect(Array.from(target.positions)).toEqual([123456, -234567, 345678]);
+  expect(Array.from(target.gpsTimes)).toEqual([12345.25]);
 });
 test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', () => {
   const expected = new Uint8Array(26);
@@ -1311,6 +1326,23 @@ test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', () => {
     pointDataRecordLength: expected.byteLength
   });
   expect(actual, 'point format 2 first point and RGB are preserved').toEqual(expected);
+  const target = {
+    positions: new Float64Array(3),
+    intensities: new Uint16Array(1),
+    classifications: new Uint8Array(1),
+    rawColors: new Uint16Array(3),
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const cursor = createLAZChunkDecoderCursor(compressed, {
+    pointCount: 1,
+    pointDataRecordFormat: 2,
+    pointDataRecordLength: expected.byteLength
+  });
+  expect(cursor.decodeIntoPointData(target, 1)).toBe(1);
+  expect(Array.from(target.positions)).toEqual([123456, -234567, 345678]);
+  expect(Array.from(target.rawColors)).toEqual([257, 1025, 4097]);
 });
 test('TypeScriptLAZ#decodes single-point legacy point format 3 chunk', () => {
   const expected = new Uint8Array(34);

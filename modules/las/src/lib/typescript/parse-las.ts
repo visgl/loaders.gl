@@ -172,10 +172,7 @@ export function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {
     const bytes = new Uint8Array(arrayBuffer);
     const laszip = parseLASZipVLR(bytes, header);
     validateTypeScriptLAZSupport(header, laszip);
-    if (
-      header.pointsFormatId === 3 ||
-      (header.pointsFormatId >= 6 && header.pointsFormatId <= 10)
-    ) {
+    if (header.pointsFormatId <= 5 || (header.pointsFormatId >= 6 && header.pointsFormatId <= 10)) {
       return parseCompleteLAZFileToArrowTable(bytes, header, laszip, options);
     }
     const rawPointData = decodeLAZFileToRawPointData(arrayBuffer, header, laszip);
@@ -695,8 +692,8 @@ async function* parseLAZInBatches(
 ): AsyncIterable<LASArrowTable> {
   const {pending, laszip} = await readLASZipVLRFromInput(initialPending, inputIterator, header);
   validateTypeScriptLAZSupport(header, laszip);
-  if (!laszip.variableChunks && header.pointsFormatId === 3) {
-    yield* parsePendingFixedPDRF3LAZFileInArrowBatches(
+  if (!laszip.variableChunks && header.pointsFormatId <= 5) {
+    yield* parsePendingFixedLegacyLAZFileInArrowBatches(
       pending,
       inputIterator,
       header,
@@ -722,13 +719,13 @@ async function* parseLAZInBatches(
 }
 
 /**
- * Decode fixed-size PDRF 3 LAZ chunks directly into streaming Arrow batches.
+ * Decode fixed-size legacy LAZ chunks directly into streaming Arrow batches.
  *
- * This path intentionally parallels the raw legacy stream loop. Writing into Arrow-owned arrays
- * avoids allocating and reparsing an intermediate raw LAS point-record batch, while the cursor
- * still provides point-atomic suspension when more compressed input is required.
+ * This path intentionally parallels the raw legacy stream loop for PDRFs 0-5. Writing into
+ * Arrow-owned arrays avoids allocating and reparsing an intermediate raw LAS point-record batch,
+ * while the cursor still provides point-atomic suspension when more compressed input is required.
  */
-async function* parsePendingFixedPDRF3LAZFileInArrowBatches(
+async function* parsePendingFixedLegacyLAZFileInArrowBatches(
   initialPending: Uint8Array<ArrayBufferLike>,
   inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
   header: LASHeader,
