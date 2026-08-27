@@ -1629,6 +1629,15 @@ const COPC_SCAN_COLUMN_MAP: Readonly<Record<string, COPCPointColumn>> = Object.f
   Infrared: 'NIR'
 });
 
+const COPC_BOOLEAN_COLUMN_NAMES = new Set([
+  'ScanDirectionFlag',
+  'EdgeOfFlightLine',
+  'Synthetic',
+  'KeyPoint',
+  'Withheld',
+  'Overlap'
+]);
+
 /** Maps query-visible COPC fields to the smallest decoder attribute set. */
 function getCOPCDecoderColumns(columnNames: readonly string[], schema: Schema): COPCPointColumn[] {
   const standardColumnNames = new Set(Object.keys(COPC_SCAN_COLUMN_MAP));
@@ -1664,6 +1673,9 @@ function getCOPCScanValue(
   const value = normalizeArrowValue(
     data.data.getChild(decoderColumn || columnName)?.get(pointIndex)
   );
+  if (COPC_BOOLEAN_COLUMN_NAMES.has(columnName) && typeof value === 'number') {
+    return value !== 0;
+  }
   return columnName === 'ScanAngle' && typeof value === 'number' ? value * 0.006 : value;
 }
 

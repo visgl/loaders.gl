@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 import type {IOBuffer} from '../iobuffer/iobuffer';
-import type {NetCDFRecordDimension, NetCDFVariable} from './netcdf-types';
+import type {NetCDFDimension, NetCDFRecordDimension, NetCDFVariable} from './netcdf-types';
 import {readType, str2num, num2bytes} from './read-type';
 
 // const STREAMING = 4294967295;
@@ -36,16 +36,22 @@ export function readNonRecord(
  * @param buffer - Buffer for the file data
  * @param variable - Variable metadata
  * @param recordDimension - Record dimension metadata
+ * @param dimensions - Declared file dimensions used to exclude record padding
  * @return - Data of the element
  */
 export function readRecord(
   buffer: IOBuffer,
   variable: NetCDFVariable,
-  recordDimension: NetCDFRecordDimension
+  recordDimension: NetCDFRecordDimension,
+  dimensions: NetCDFDimension[]
 ): (string | number | number[] | Uint8Array)[] {
   // variable type
   const type = str2num(variable.type);
-  const width = variable.size ? variable.size / num2bytes(type) : 1;
+  // NetCDF stores each record variable on a four-byte boundary. `variable.size` includes that
+  // padding, so derive the logical element count from the declared non-record dimensions.
+  const width = variable.dimensions
+    .filter(dimensionId => dimensionId !== recordDimension.id)
+    .reduce((elementCount, dimensionId) => elementCount * dimensions[dimensionId].size, 1);
 
   // size of the data
   // TODO streaming data

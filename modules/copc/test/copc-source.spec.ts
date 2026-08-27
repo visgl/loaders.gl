@@ -101,6 +101,26 @@ test('COPCSourceLoader#scans bounded projected Arrow point batches with a global
   await source.close();
 });
 
+test('COPCSourceLoader#normalizes boolean predicates and preserves empty projections', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  const batches = [];
+
+  for await (const batch of source.scan({
+    columns: [],
+    predicate: {op: '=', args: [{property: 'Synthetic'}, false]},
+    maximumLevel: 0,
+    limit: 2
+  })) {
+    batches.push(batch);
+  }
+
+  expect(batches.map(batch => batch.length)).toEqual([2]);
+  expect(batches[0].data.numCols).toBe(0);
+  await source.close();
+});
+
 test('COPCSourceLoader#validates scan batch size and cancellation', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   const invalidScan = source.scan({batchSize: 0});

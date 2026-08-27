@@ -99,6 +99,30 @@ test('PotreeSourceLoader#scans ordered Arrow point batches with a global limit',
   expect(batches[0].data.getChild('COLOR_PACKED')).toBeTruthy();
 });
 
+test('PotreeSourceLoader#preserves rows in an empty projection', async () => {
+  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const batches = [];
+
+  for await (const batch of source.scan({columns: [], maximumLevel: 0, limit: 2})) {
+    batches.push(batch);
+  }
+
+  expect(batches.map(batch => batch.length)).toEqual([2]);
+  expect(batches[0].data.numCols).toBe(0);
+});
+
+test('PotreeSourceLoader#does not advertise unsupported datasets as executable', async () => {
+  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  await source.initialize();
+  source.metadata!.version = '2.0';
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.execution).toMatchObject({status: 'metadata-only'});
+
+  const scan = source.scan();
+  await expect(scan.next()).rejects.toThrow('not supported');
+});
+
 test('PotreeSourceLoader#validates scan batch size and cancellation', async () => {
   const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
   const invalidScan = source.scan({batchSize: 0});

@@ -164,13 +164,19 @@ export class PotreeNodesSource
   /** Discovers point attributes and hierarchy bounds without loading node content. */
   async getQueryMetadata() {
     await this.initPromise;
+    const isSupported = this.isSupported();
     const fields = getPotreeSchemaFields(this.metadata?.pointAttributes || []);
     const schema = {fields, metadata: {}};
     const bounds = this.nativeHierarchyBoundingBox || this.boundingBox;
     return createScanQueryMetadata({
       sourceType: 'potree',
       queryType: 'point-cloud',
-      execution: {status: 'supported', method: 'scan'},
+      execution: isSupported
+        ? {status: 'supported', method: 'scan'}
+        : {
+            status: 'metadata-only',
+            reason: 'This Potree version or point-attribute layout is not supported by the scanner.'
+          },
       schema,
       capabilities: {
         table: this.pointCloudQueryCapabilities,
@@ -203,6 +209,9 @@ export class PotreeNodesSource
    */
   async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     await this.initPromise;
+    if (!this.isSupported()) {
+      throw new Error('This Potree version or point-attribute layout is not supported.');
+    }
     const schema: Schema = {
       fields: getPotreeSchemaFields(this.metadata?.pointAttributes || []),
       metadata: {}
