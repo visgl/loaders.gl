@@ -218,11 +218,23 @@ export class ParquetReader {
       throw new Error('Encrypted Parquet requires parquet.keyRetriever');
     }
     return (keyMetadata, context) => {
-      const cacheKey = createEncryptionKeyCacheKey(context.algorithm, keyMetadata);
+      const encryptionContext = this.encryptionContext;
+      const cacheKey = createEncryptionKeyCacheKey(
+        context.algorithm,
+        keyMetadata,
+        context.aad,
+        encryptionContext?.aadPrefix?.byteLength ?? this.props.aadPrefix?.byteLength,
+        encryptionContext?.fileUnique.byteLength
+      );
       let keyPromise = this.encryptionKeyCache.get(cacheKey);
       if (!keyPromise) {
         keyPromise = Promise.resolve().then(() => keyRetriever(keyMetadata, context));
         this.encryptionKeyCache.set(cacheKey, keyPromise);
+        void keyPromise.catch(() => {
+          if (this.encryptionKeyCache.get(cacheKey) === keyPromise) {
+            this.encryptionKeyCache.delete(cacheKey);
+          }
+        });
       }
       return keyPromise;
     };
@@ -1079,12 +1091,36 @@ function getColumnChunkPath(columnChunk: ColumnChunk): string[] | undefined {
   );
 }
 
-/** Builds a stable cache key from the algorithm and optional Parquet key metadata. */
+/** Builds a stable cache key while preserving module scope for context-dependent key providers. */
 function createEncryptionKeyCacheKey(
   algorithm: ParquetEncryptionAlgorithm,
-  keyMetadata: Uint8Array | undefined
+  keyMetadata: Uint8Array | undefined,
+  aad: Uint8Array,
+  aadPrefixByteLength: number | undefined,
+  fileUniqueByteLength: number | undefined
 ): string {
-  return `${algorithm}:${keyMetadata ? Array.from(keyMetadata).join(',') : 'footer'}`;
+  const metadataKey = keyMetadata ? Array.from(keyMetadata).join(',') : 'footer';
+  if (fileUniqueByteLength === undefined) {
+    return `${algorithm}:${metadataKey}:aad:${Array.from(aad).join(',')}`;
+  }
+
+  const moduleOffset = (aadPrefixByteLength ?? 0) + fileUniqueByteLength;
+  if (moduleOffset + 5 > aad.byteLength) {
+    return `${algorithm}:${metadataKey}:aad:${Array.from(aad).join(',')}`;
+  }
+
+  const moduleType = aad[moduleOffset];
+  if (moduleType === 0) {
+    return `${algorithm}:${metadataKey}:footer`;
+  }
+  const view = new DataView(
+    aad.buffer,
+    aad.byteOffset + moduleOffset,
+    aad.byteLength - moduleOffset
+  );
+  const rowGroupOrdinal = view.getInt16(1, true);
+  const columnOrdinal = view.getInt16(3, true);
+  return `${algorithm}:${metadataKey}:module:${moduleType}:row-group:${rowGroupOrdinal}:column:${columnOrdinal}`;
 }
 
 /** Returns the original row-group ordinal for a worker-reduced column list. */

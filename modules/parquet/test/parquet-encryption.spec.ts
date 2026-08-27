@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {load} from '@loaders.gl/core';
+import {fetchFile, load} from '@loaders.gl/core';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {
   ParquetJSLoader,
+  ParquetReader,
   ParquetSourceLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
@@ -161,10 +163,13 @@ test('worker key lookup uses the encrypted column ordinal', async () => {
 });
 
 test('ParquetReader resolves each encrypted key once per reader', async () => {
-  const requestedKeyMetadata: string[] = [];
-  const keyRetriever = (keyMetadata: Uint8Array | undefined) => {
+  const requestedKeyScopes: string[] = [];
+  const keyRetriever = (keyMetadata: Uint8Array | undefined, context: {aad: Uint8Array}) => {
     const keyId = keyMetadata ? new TextDecoder().decode(keyMetadata) : '';
-    requestedKeyMetadata.push(keyId);
+    const moduleType = context.aad[8];
+    const isPageModule = moduleType === 2 || moduleType === 4;
+    const scopeAad = isPageModule ? context.aad.subarray(0, context.aad.length - 2) : context.aad;
+    requestedKeyScopes.push(`${keyId}:${Array.from(scopeAad).join(',')}`);
     return ENCRYPTED_KEYS[keyId];
   };
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
@@ -177,7 +182,30 @@ test('ParquetReader resolves each encrypted key once per reader', async () => {
     }
   });
 
-  expect(requestedKeyMetadata.length).toBe(new Set(requestedKeyMetadata).size);
+  expect(requestedKeyScopes.length).toBe(new Set(requestedKeyScopes).size);
+});
+
+test('ParquetReader retries rejected encrypted key resolutions', async () => {
+  const response = await fetchFile(
+    `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`
+  );
+  const arrayBuffer = await response.arrayBuffer();
+  let attempts = 0;
+  const reader = new ParquetReader(new ArrayBufferFile(arrayBuffer), {
+    keyRetriever: (keyMetadata: Uint8Array | undefined) => {
+      attempts++;
+      if (attempts === 1) {
+        throw new Error('transient key provider failure');
+      }
+      return getEncryptedFixtureKey(keyMetadata);
+    }
+  });
+
+  await expect(reader.readFooter()).rejects.toThrow('transient key provider failure');
+  const metadata = await reader.readFooter();
+  expect(metadata.num_rows?.toNumber()).toBe(50);
+  expect(attempts).toBe(2);
+  reader.close();
 });
 
 test('verifies plaintext-footer signatures and rejects tampering', async () => {
