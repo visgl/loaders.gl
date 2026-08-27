@@ -118,6 +118,43 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
   t.end();
 });
 
+test('COPCSourceLoader#implements the TileSource getTileData contract', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.getTileData({
+    id: rootTile.id,
+    index: {x: rootTile.x, y: rootTile.y, z: rootTile.level},
+    bbox: {left: 0, top: 0, right: 0, bottom: 0}
+  });
+
+  t.ok(content, 'getTileData returns point-cloud content');
+  t.equal((content as any)?.data.shape, 'arrow-table', 'getTileData returns an Arrow table');
+  t.equal((content as any)?.pointCount, rootTile.pointCount, 'getTileData preserves point count');
+  t.end();
+});
+
+test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.loadTileContent(rootTile, {
+    columns: ['POSITION', 'COLOR_0', 'intensity', 'classification']
+  });
+
+  t.ok(content?.data.data.getChild('POSITION'), 'position is always returned');
+  t.ok(content?.data.data.getChild('COLOR_0'), 'selected color is returned');
+  t.ok(content?.data.data.getChild('intensity'), 'selected intensity is returned');
+  t.ok(content?.data.data.getChild('classification'), 'selected classification is returned');
+  t.notOk(content?.data.data.getChild('GPS_TIME'), 'unselected GPS time is omitted');
+  t.notOk(content?.data.data.getChild('scanAngle'), 'unselected scan angle is omitted');
+  t.end();
+});
+
 vitestTest('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
   const blob = await createEllipsoidBlob();
   const workerSource = createDataSource(blob, [COPCSourceLoader], {
