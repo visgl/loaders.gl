@@ -315,12 +315,12 @@ export async function normalizeImplicitTileHeaders(
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
     boundingVolume: normalizeS2BoundingVolume(
-      tile.boundingVolume || getMetadataBoundingVolume(tile.metadata, 'TILE')
+      getMetadataBoundingVolume(tile.metadata, 'TILE', tileset.schema) || tile.boundingVolume
     ) as Tile3DBoundingVolume,
     content: tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
-  const normalizedContents = normalizeTileContents(normalizedTile.content, resourceResolver);
+  const normalizedContents = normalizeTileContents(normalizedTile.content, resourceResolver, tileset.schema);
   const maximumLevel = Number.isFinite(implicitTilingExtension.availableLevels)
     ? implicitTilingExtension.availableLevels - 1
     : implicitTilingExtension.maximumLevel;
