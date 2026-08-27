@@ -78,6 +78,49 @@ test('LASWriter#encode LAS 1.4 point format 7', async () => {
     'TypeScript parser matches WASM parser for written classifications'
   ).toEqual(Array.from(wasmData.attributes.classification.value));
 });
+test('LASWriter#encode LAS 1.5 point format 7 with WKT metadata', async () => {
+  const arrayBuffer = await encode(mesh, LASWriter, {
+    las: {
+      version: '1.5',
+      pointDataRecordFormat: 7,
+      wkt: 'GEOGCRS["WGS 84"]'
+    }
+  });
+  const dataView = new DataView(arrayBuffer);
+  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  expect(data.loaderData.versionAsString, 'writes LAS 1.5 header').toBe('1.5');
+  expect(data.loaderData.headerSize, 'writes the LAS 1.5 header size').toBe(393);
+  expect(data.loaderData.pointsFormatId, 'writes modern point format 7').toBe(7);
+  expect(dataView.getUint16(6, true) & 0x10, 'sets the LAS 1.5 WKT flag').toBe(0x10);
+  expect(data.loaderData.metadata?.wkt, 'round trips the WKT VLR').toBe('GEOGCRS["WGS 84"]');
+});
+test('LASWriter#sets WKT and GPS time flags independently', async () => {
+  const gpsMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      gpsTime: {value: new Float64Array([0, 0, 0]), size: 1}
+    }
+  };
+  const arrayBuffer = await encode(gpsMesh, LASWriter, {
+    las: {
+      version: '1.5',
+      pointDataRecordFormat: 6,
+      wkt: 'GEOGCRS["WGS 84"]',
+      timeOffset: 10
+    }
+  });
+  const dataView = new DataView(arrayBuffer);
+  expect(dataView.getUint16(6, true) & 0x51, 'sets WKT, GPS time, and time offset flags').toBe(
+    0x51
+  );
+  expect(dataView.getUint16(391, true), 'writes the LAS 1.5 time offset').toBe(10);
+
+  const las14 = await encode(mesh, LASWriter, {
+    las: {version: '1.4', pointDataRecordFormat: 6, wkt: 'GEOGCRS["WGS 84"]'}
+  });
+  expect(new DataView(las14).getUint16(6, true) & 0x10, 'sets the LAS 1.4 WKT flag').toBe(0x10);
+});
 test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async () => {
   for (const pointDataRecordFormat of [6, 7, 8] as const) {
     const arrayBuffer = await encode(mesh, LASWriter, {
@@ -199,6 +242,10 @@ test('LASWriter#validates compressed output options', () => {
     new DataView(waveform!).getUint8(104) & 0x7f,
     'LAZ writer supports legacy waveform point formats'
   ).toBe(5);
+  const las11 = LASWriter.encodeSync?.(mesh, {
+    las: {format: 'laz', version: '1.1', pointDataRecordFormat: 1}
+  });
+  expect(new DataView(las11!).getUint8(25), 'LAZ PDRF 1 supports LAS 1.1').toBe(1);
   expect(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),
     'LAZ writer rejects empty chunks'
