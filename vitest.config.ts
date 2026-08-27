@@ -11,8 +11,6 @@ const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
 const excludePatterns = [
   '**/*.disabled.*',
   'modules/**/wip/**',
-  // Legacy hierarchy coverage exercises an incomplete production port; see the test migration audit.
-  'modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts',
   'modules/3d-tiles/test/lib/styles/**',
   'modules/xml/test/sax-ts/testcases/**/!(issue-30).spec.ts',
   'modules/core/test/lib/api/create-data-source.spec.ts',

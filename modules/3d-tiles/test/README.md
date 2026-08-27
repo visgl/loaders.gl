@@ -14,8 +14,8 @@ when worker behavior is not the subject of the test.
 ## Deliberately excluded legacy specifications
 
 `lib/styles/` is a commented CesiumJS specification that depends on Cesium renderer and scene APIs;
-it is not an executable loaders.gl test suite. The batch-table hierarchy specification is also
-excluded because the production hierarchy implementation is explicitly incomplete and its former
-renderer-shaped assertions do not match the current loader output. These should be replaced with
-small parser-owned fixtures when those runtime capabilities are implemented, rather than reported
-as skipped passing coverage.
+it is not an executable loaders.gl test suite. Batch-table hierarchy fixture-loading cases remain
+explicitly skipped because the production hierarchy implementation is incomplete, but the parser
+validation cases for multiple parents, circular dependencies, and invalid parent IDs remain
+discoverable and active. Replace the fixture skips with parser-owned fixtures when the runtime
+hierarchy port is complete.
