@@ -156,6 +156,7 @@ export class Tile3D {
   private _visible: boolean | undefined = undefined;
 
   private _contentBoundingVolume: any;
+  private _contentBoundingVolumes: any[] = [];
   /** Source content-volume headers retained after render content is unloaded. */
   private _contentBoundingVolumeHeaders: any[] = [];
   private _viewerRequestVolume: any;
@@ -787,19 +788,33 @@ export class Tile3D {
    * @returns The content visibility classification.
    */
   contentVisibility(frameState: FrameState): number {
-    if (!this.contentBoundingVolume || this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
-      return INTERSECTION.INSIDE;
-    }
-    const visibility = frameState.cullingVolume.computeVisibility(this.contentBoundingVolume);
-    if (visibility === INTERSECTION.OUTSIDE) {
-      return visibility;
-    }
-    for (const clippingPlane of frameState.clippingPlanes || []) {
-      if (this.contentBoundingVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
-        return INTERSECTION.OUTSIDE;
+    const contentVolumes = this._contentBoundingVolumes.length
+      ? this._contentBoundingVolumes
+      : [this.boundingVolume];
+    let visibleVolume = false;
+    let intersectingVolume = false;
+    for (const contentVolume of contentVolumes) {
+      if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
+        const visibility = frameState.cullingVolume.computeVisibility(contentVolume);
+        if (visibility === INTERSECTION.OUTSIDE) {
+          continue;
+        }
+        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
+      }
+      let clipped = false;
+      for (const clippingPlane of frameState.clippingPlanes || []) {
+        if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+          clipped = true;
+          break;
+        }
+      }
+      if (!clipped) {
+        visibleVolume = true;
+        break;
       }
     }
-    return visibility;
+    return visibleVolume ? (intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE) : INTERSECTION.OUTSIDE;
+  }
   }
 
   /**
@@ -1048,13 +1063,10 @@ export class Tile3D {
         : [content]
       : this._contentBoundingVolumeHeaders;
     const contentHeader = contentHeaders.find(headerEntry => headerEntry?.boundingVolume);
-    if (contentHeader?.boundingVolume) {
-      this._contentBoundingVolume = createBoundingVolume(
-        contentHeader.boundingVolume,
-        this.computedTransform,
-        this._contentBoundingVolume
-      );
-    }
+    this._contentBoundingVolumes = contentHeaders
+      .filter(headerEntry => headerEntry?.boundingVolume)
+      .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
+    this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
   /**
