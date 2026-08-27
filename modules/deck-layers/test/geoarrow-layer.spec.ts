@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {
   GEOARROW_LINE_FILE,
@@ -19,7 +22,6 @@ import {
 } from '@loaders.gl/deck-layers';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {GeoJsonLayer} from '@deck.gl/layers';
-
 /**
  * Loads an Apache Arrow table from a GeoArrow test fixture.
  * @param filePath Fixture path alias.
@@ -29,7 +31,6 @@ async function loadArrowTable(filePath: string): Promise<arrow.Table> {
   const file = await fetchFile(filePath);
   return arrow.tableFromIPC(await file.arrayBuffer());
 }
-
 /**
  * Creates a GeoArrow layer instance for testing.
  * @param props GeoArrow layer props.
@@ -41,7 +42,6 @@ function createLayer(props: GeoArrowLayerProps): GeoArrowLayer {
     ...props
   });
 }
-
 /**
  * Normalizes a layer render result to an array.
  * @param layerResult Layer render result.
@@ -53,55 +53,41 @@ function asLayerArray(layerResult: ReturnType<GeoArrowLayer['renderLayers']>) {
   }
   return Array.isArray(layerResult) ? layerResult : [layerResult];
 }
-
-test('GeoArrowLayer renders GeoJsonLayer binary data for point data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for point data', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
-
-  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
-  t.equal(
+  expect(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer').toBeTruthy();
+  expect(
     (sublayer as GeoJsonLayer).props.getLineWidth,
-    1,
     'preserves the GeoJsonLayer default for omitted accessors'
-  );
-  t.equal(
+  ).toBe(1);
+  expect(
     (sublayer as GeoJsonLayer).props.data.points.positions.value.length,
-    4,
     'passes point binary feature data'
-  );
-  t.end();
+  ).toBe(4);
 });
-
-test('GeoArrowLayer renders GeoJsonLayer binary data for multiline data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for multiline data', async () => {
   const table = await loadArrowTable(GEOARROW_MULTILINE_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
-
-  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
-  t.deepEqual(
+  expect(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer').toBeTruthy();
+  expect(
     Array.from((sublayer as GeoJsonLayer).props.data.lines.pathIndices.value),
-    [0, 2, 4, 6, 8],
     'passes exploded path indices'
-  );
-  t.end();
+  ).toEqual([0, 2, 4, 6, 8]);
 });
-
-test('GeoArrowLayer renders GeoJsonLayer binary data for polygon data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for polygon data', async () => {
   const table = await loadArrowTable(GEOARROW_POLYGON_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
-
-  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
-  t.equal(
+  expect(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer').toBeTruthy();
+  expect(
     (sublayer as GeoJsonLayer).props.data.polygons.positions.size,
-    2,
     'passes polygon binary feature data'
-  );
-  t.end();
+  ).toBe(2);
 });
-
-test('GeoArrowLayer respects explicit geometryColumn override', async t => {
+test('GeoArrowLayer respects explicit geometryColumn override', async () => {
   const pointTable = await loadArrowTable(GEOARROW_POINT_FILE);
   const lineTable = await loadArrowTable(GEOARROW_LINE_FILE);
   const table = new arrow.Table(
@@ -145,38 +131,33 @@ test('GeoArrowLayer respects explicit geometryColumn override', async t => {
   );
   const layer = createLayer({data: table, geometryColumn: 'geometry2'});
   const [sublayer] = asLayerArray(layer.renderLayers());
-
-  t.ok((sublayer as GeoJsonLayer).props.data.lines, 'uses the explicitly selected geometry column');
-  t.end();
+  expect(
+    (sublayer as GeoJsonLayer).props.data.lines,
+    'uses the explicitly selected geometry column'
+  ).toBeTruthy();
 });
-
-test('GeoArrowLayer throws when no geometry metadata is present', t => {
+test('GeoArrowLayer throws when no geometry metadata is present', () => {
   const table = arrow.tableFromArrays({
     longitude: [1, 2],
     latitude: [3, 4]
   });
   const layer = createLayer({data: table});
-
-  t.throws(
-    () => layer.renderLayers(),
-    /requires exactly one GeoArrow geometry column, but none were found/i,
-    'rejects tables without GeoArrow metadata'
+  expect(() => layer.renderLayers(), 'rejects tables without GeoArrow metadata').toThrow(
+    /requires exactly one GeoArrow geometry column, but none were found/i
   );
-  t.end();
 });
-
-test('GeoArrowLayer renders WKB point data through the GeoJsonLayer binary path', async t => {
+test('GeoArrowLayer renders WKB point data through the GeoJsonLayer binary path', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
   const layer = createLayer({data: table});
   const sublayers = asLayerArray(layer.renderLayers());
-
-  t.equal(sublayers.length, 1, 'renders a single sublayer for WKB points');
-  t.ok(sublayers[0] instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
-  t.ok(sublayers[0].props.data.points, 'converts WKB point data to binary point data');
-  t.end();
+  expect(sublayers.length, 'renders a single sublayer for WKB points').toBe(1);
+  expect(sublayers[0] instanceof GeoJsonLayer, 'creates a GeoJsonLayer').toBeTruthy();
+  expect(
+    sublayers[0].props.data.points,
+    'converts WKB point data to binary point data'
+  ).toBeTruthy();
 });
-
-test('GeoArrowLayer renders geometry collections as multiple primitive sublayers', t => {
+test('GeoArrowLayer renders geometry collections as multiple primitive sublayers', () => {
   const geometryTable = arrow.tableFromArrays({
     geometry: ['GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))']
   });
@@ -218,26 +199,26 @@ test('GeoArrowLayer renders geometry collections as multiple primitive sublayers
   );
   const layer = createLayer({data: table});
   const sublayers = asLayerArray(layer.renderLayers());
-
-  t.equal(sublayers.length, 1, 'renders one GeoJsonLayer sublayer');
-  t.ok(sublayers[0].props.data.points, 'renders points from the geometry collection');
-  t.ok(sublayers[0].props.data.lines, 'renders lines from the geometry collection');
-  t.end();
+  expect(sublayers.length, 'renders one GeoJsonLayer sublayer').toBe(1);
+  expect(
+    sublayers[0].props.data.points,
+    'renders points from the geometry collection'
+  ).toBeTruthy();
+  expect(sublayers[0].props.data.lines, 'renders lines from the geometry collection').toBeTruthy();
 });
-
-test('GeoArrow adapter accepts loaders.gl ArrowTable wrappers', async t => {
+test('GeoArrow adapter accepts loaders.gl ArrowTable wrappers', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
   const binaryFeatureCollection = convertGeoArrowTableToBinaryFeatureCollection({
     shape: 'arrow-table',
     data: table
   } as ArrowTable);
-
-  t.equal(binaryFeatureCollection.shape, 'binary-feature-collection');
-  t.ok(binaryFeatureCollection.points, 'converts wrapper input to binary point data');
-  t.end();
+  expect(binaryFeatureCollection.shape).toBe('binary-feature-collection');
+  expect(
+    binaryFeatureCollection.points,
+    'converts wrapper input to binary point data'
+  ).toBeTruthy();
 });
-
-test('GeoArrowLayer throws when multiple geometry columns are present without geometryColumn', async t => {
+test('GeoArrowLayer throws when multiple geometry columns are present without geometryColumn', async () => {
   const pointTable = await loadArrowTable(GEOARROW_POINT_FILE);
   const lineTable = await loadArrowTable(GEOARROW_LINE_FILE);
   const table = new arrow.Table(
@@ -280,11 +261,7 @@ test('GeoArrowLayer throws when multiple geometry columns are present without ge
     )
   );
   const layer = createLayer({data: table});
-
-  t.throws(
-    () => layer.renderLayers(),
-    /requires "geometryColumn" when multiple GeoArrow geometry columns are present/i,
-    'rejects ambiguous tables'
+  expect(() => layer.renderLayers(), 'rejects ambiguous tables').toThrow(
+    /requires "geometryColumn" when multiple GeoArrow geometry columns are present/i
   );
-  t.end();
 });

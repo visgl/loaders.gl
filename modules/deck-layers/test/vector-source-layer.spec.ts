@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
-
 function createDeferredPromise<T>() {
   let resolvePromise!: (value: T) => void;
   let rejectPromise!: (error?: Error) => void;
@@ -17,26 +16,21 @@ function createDeferredPromise<T>() {
   });
   return {promise, resolvePromise, rejectPromise};
 }
-
 async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
 }
-
 const TABLE_A = {
   shape: 'geojson-table',
   type: 'FeatureCollection',
   features: [{type: 'Feature', geometry: null, properties: {name: 'a'}}]
 } as const;
-
 const TABLE_B = {
   shape: 'geojson-table',
   type: 'FeatureCollection',
   features: [{type: 'Feature', geometry: null, properties: {name: 'b'}}]
 } as const;
-
 const ARROW_TABLE = createArrowTable();
-
 const TEST_VECTOR_SOURCE = {
   async getMetadata() {
     return {name: 'test', keywords: [], layers: []};
@@ -48,7 +42,6 @@ const TEST_VECTOR_SOURCE = {
     return TABLE_A as any;
   }
 };
-
 function createLayer(
   props: VectorSourceLayerProps = {
     id: 'test',
@@ -59,14 +52,12 @@ function createLayer(
 ) {
   return new VectorSourceLayer(props as any) as any;
 }
-
 function createViewport(bounds: [number, number, number, number]) {
   return {
     getBounds: () => bounds
   };
 }
-
-test('VectorSet#keeps only the latest viewport request and skips identical requests', async t => {
+test('VectorSet#keeps only the latest viewport request and skips identical requests', async () => {
   const firstRequest = createDeferredPromise<any>();
   const secondRequest = createDeferredPromise<any>();
   const requestedParameters: any[] = [];
@@ -82,34 +73,26 @@ test('VectorSet#keeps only the latest viewport request and skips identical reque
       return requestedParameters.length === 1 ? firstRequest.promise : secondRequest.promise;
     }
   };
-
   const vectorSet = new VectorSet({
     vectorSource: vectorSource as any,
     layers: ['roads'],
     crs: 'EPSG:4326',
     debounceTime: 0
   });
-
   const firstViewport = createViewport([0, 1, 2, 3]);
   const secondViewport = createViewport([10, 11, 12, 13]);
-
   const firstPromise = vectorSet.updateViewport(firstViewport as any);
   const secondPromise = vectorSet.updateViewport(secondViewport as any);
-
   secondRequest.resolvePromise(TABLE_B as any);
   await secondPromise;
   firstRequest.resolvePromise(TABLE_A as any);
   await firstPromise;
-
-  t.equal(requestedParameters.length, 2, 'issued one request per changed viewport');
-  t.equal(vectorSet.data, TABLE_B, 'keeps the latest resolved table');
-
+  expect(requestedParameters.length, 'issued one request per changed viewport').toBe(2);
+  expect(vectorSet.data, 'keeps the latest resolved table').toBe(TABLE_B);
   await vectorSet.updateViewport(secondViewport as any);
-  t.equal(requestedParameters.length, 2, 'does not refetch identical viewport parameters');
-  t.end();
+  expect(requestedParameters.length, 'does not refetch identical viewport parameters').toBe(2);
 });
-
-test('VectorSet#emits loading state changes', async t => {
+test('VectorSet#emits loading state changes', async () => {
   const loadingStates: boolean[] = [];
   let resolveRequest;
   const vectorSet = new VectorSet({
@@ -130,21 +113,16 @@ test('VectorSet#emits loading state changes', async t => {
     crs: 'EPSG:4326',
     debounceTime: 0
   });
-
   vectorSet.subscribe({
     onLoadingStateChange: isLoading => loadingStates.push(isLoading)
   });
-
   vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
   await flushMicrotasks();
   resolveRequest?.();
   await flushMicrotasks();
-
-  t.deepEqual(loadingStates, [true, false]);
-  t.end();
+  expect(loadingStates).toEqual([true, false]);
 });
-
-test('VectorSet#finishes superseded viewport loads', async t => {
+test('VectorSet#finishes superseded viewport loads', async () => {
   const loadingStates: boolean[] = [];
   const firstRequest = createDeferredPromise<any>();
   const secondRequest = createDeferredPromise<any>();
@@ -166,29 +144,24 @@ test('VectorSet#finishes superseded viewport loads', async t => {
     crs: 'EPSG:4326',
     debounceTime: 0
   });
-
   vectorSet.subscribe({
     onLoadingStateChange: isLoading => loadingStates.push(isLoading)
   });
-
   const firstPromise = vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
   const secondPromise = vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
-
   secondRequest.resolvePromise(TABLE_B as any);
   await secondPromise;
   firstRequest.resolvePromise(TABLE_A as any);
   await firstPromise;
-
-  t.deepEqual(
-    loadingStates,
-    [true, false],
-    'clears loading after stale and current requests settle'
+  expect(loadingStates, 'clears loading after stale and current requests settle').toEqual([
+    true,
+    false
+  ]);
+  expect(vectorSet.isLoading, 'does not leave isLoading stuck after superseded requests').toBe(
+    false
   );
-  t.equal(vectorSet.isLoading, false, 'does not leave isLoading stuck after superseded requests');
-  t.end();
 });
-
-test('VectorSet#debounces viewport requests', async t => {
+test('VectorSet#debounces viewport requests', async () => {
   const requestedParameters: any[] = [];
   const vectorSet = new VectorSet({
     vectorSource: {
@@ -207,20 +180,16 @@ test('VectorSet#debounces viewport requests', async t => {
     crs: 'EPSG:4326',
     debounceTime: 5
   });
-
   vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
   vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
   await new Promise(resolve => setTimeout(resolve, 20));
-
-  t.equal(requestedParameters.length, 1, 'only issues the last debounced viewport request');
-  t.deepEqual(requestedParameters[0].boundingBox, [
+  expect(requestedParameters.length, 'only issues the last debounced viewport request').toBe(1);
+  expect(requestedParameters[0].boundingBox).toEqual([
     [10, 11],
     [12, 13]
   ]);
-  t.end();
 });
-
-test('VectorSet#resolves canceled debounced viewport updates', async t => {
+test('VectorSet#resolves canceled debounced viewport updates', async () => {
   const requestedParameters: any[] = [];
   const vectorSet = new VectorSet({
     vectorSource: {
@@ -239,24 +208,21 @@ test('VectorSet#resolves canceled debounced viewport updates', async t => {
     crs: 'EPSG:4326',
     debounceTime: 20
   });
-
   const firstPromise = vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
   const secondPromise = vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
-
   await Promise.race([
     Promise.all([firstPromise, secondPromise]),
     new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), 100))
   ]);
-
-  t.equal(requestedParameters.length, 1, 'only the latest debounced request reaches the source');
-  t.deepEqual(requestedParameters[0].boundingBox, [
+  expect(requestedParameters.length, 'only the latest debounced request reaches the source').toBe(
+    1
+  );
+  expect(requestedParameters[0].boundingBox).toEqual([
     [10, 11],
     [12, 13]
   ]);
-  t.end();
 });
-
-test('VectorSourceLayer#fetches for initial and changed viewports and renders GeoJsonLayer', async t => {
+test('VectorSourceLayer#fetches for initial and changed viewports and renders GeoJsonLayer', async () => {
   const requestedParameters: any[] = [];
   const loadedTables: any[] = [];
   const source = {
@@ -277,7 +243,6 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
       };
     }
   };
-
   const layer = createLayer({
     id: 'vector-layer',
     data: source as any,
@@ -287,20 +252,16 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
     onDataLoad: table => loadedTables.push(table),
     geoJsonLayerProps: {pickable: true}
   });
-
   layer.initializeState();
   layer.context = {viewport: createViewport([0, 1, 2, 3])};
-
   layer.updateState({
     props: layer.props,
     oldProps: {...layer.props, data: null},
     changeFlags: {dataChanged: true, viewportChanged: true}
   });
   await flushMicrotasks();
-
-  t.equal(requestedParameters.length, 1, 'requests the initial viewport');
-  t.equal(loadedTables.length, 1, 'forwards successful table loads');
-
+  expect(requestedParameters.length, 'requests the initial viewport').toBe(1);
+  expect(loadedTables.length, 'forwards successful table loads').toBe(1);
   layer.context = {viewport: createViewport([10, 11, 12, 13])};
   layer.updateState({
     props: layer.props,
@@ -308,24 +269,18 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
     changeFlags: {dataChanged: false, viewportChanged: true}
   });
   await flushMicrotasks();
-
-  t.equal(requestedParameters.length, 2, 'requests changed viewports');
-
+  expect(requestedParameters.length, 'requests changed viewports').toBe(2);
   const renderedLayer = layer.renderLayers();
-  t.equal(renderedLayer.constructor.layerName, 'GeoJsonLayer', 'renders the default GeoJsonLayer');
-  t.equal(renderedLayer.props.pickable, true, 'forwards GeoJsonLayer props');
-  t.deepEqual(
-    renderedLayer.props.data,
-    {
-      type: 'FeatureCollection',
-      features: [{type: 'Feature', geometry: null, properties: {requestCount: 2}}]
-    },
-    'passes GeoJsonLayer a plain FeatureCollection'
+  expect(renderedLayer.constructor.layerName, 'renders the default GeoJsonLayer').toBe(
+    'GeoJsonLayer'
   );
-  t.end();
+  expect(renderedLayer.props.pickable, 'forwards GeoJsonLayer props').toBe(true);
+  expect(renderedLayer.props.data, 'passes GeoJsonLayer a plain FeatureCollection').toEqual({
+    type: 'FeatureCollection',
+    features: [{type: 'Feature', geometry: null, properties: {requestCount: 2}}]
+  });
 });
-
-test('VectorSourceLayer#forwards request errors', async t => {
+test('VectorSourceLayer#forwards request errors', async () => {
   const errors: Error[] = [];
   const source = {
     async getMetadata() {
@@ -338,7 +293,6 @@ test('VectorSourceLayer#forwards request errors', async t => {
       throw new Error('request failed');
     }
   };
-
   const layer = createLayer({
     id: 'vector-layer',
     data: source as any,
@@ -346,7 +300,6 @@ test('VectorSourceLayer#forwards request errors', async t => {
     debounceTime: 0,
     onError: error => errors.push(error)
   });
-
   layer.initializeState();
   layer.context = {viewport: createViewport([0, 1, 2, 3])};
   layer.updateState({
@@ -355,13 +308,10 @@ test('VectorSourceLayer#forwards request errors', async t => {
     changeFlags: {dataChanged: true, viewportChanged: true}
   });
   await flushMicrotasks();
-
-  t.equal(errors.length, 1, 'forwards fetch errors');
-  t.equal(errors[0]?.message, 'request failed');
-  t.end();
+  expect(errors.length, 'forwards fetch errors').toBe(1);
+  expect(errors[0]?.message).toBe('request failed');
 });
-
-test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer binary data', async t => {
+test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer binary data', async () => {
   const vectorSet = new VectorSet({
     vectorSource: {
       async getMetadata() {
@@ -379,10 +329,8 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     format: 'arrow',
     debounceTime: 0
   });
-
   await vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
-  t.equal(vectorSet.data, ARROW_TABLE, 'VectorSet keeps Arrow tables');
-
+  expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE);
   const layer = createLayer({
     id: 'vector-layer-arrow',
     data: {
@@ -405,7 +353,6 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
       }
     }
   });
-
   layer.initializeState();
   layer.context = {viewport: createViewport([0, 1, 2, 3])};
   layer.updateState({
@@ -414,26 +361,18 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     changeFlags: {dataChanged: true, viewportChanged: true}
   });
   await flushMicrotasks();
-
   const renderedLayer = layer.renderLayers();
-  t.equal(
-    renderedLayer.constructor.layerName,
-    'GeoJsonLayer',
-    'renders Arrow data through GeoJsonLayer'
+  expect(renderedLayer.constructor.layerName, 'renders Arrow data through GeoJsonLayer').toBe(
+    'GeoJsonLayer'
   );
-  t.equal(
-    renderedLayer.props.data.shape,
-    'binary-feature-collection',
-    'passes deck.gl binary feature data to GeoJsonLayer'
+  expect(renderedLayer.props.data.shape, 'passes deck.gl binary feature data to GeoJsonLayer').toBe(
+    'binary-feature-collection'
   );
-  t.deepEqual(
+  expect(
     renderedLayer.props.getFillColor,
-    [1, 2, 3, 4],
     'maps GeoArrowLayer point styling props to GeoJsonLayer props'
-  );
-  t.end();
+  ).toEqual([1, 2, 3, 4]);
 });
-
 function createArrowTable() {
   const schema = {
     fields: [

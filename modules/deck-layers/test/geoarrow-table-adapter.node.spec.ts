@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
 import {readFile} from 'node:fs/promises';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {resolvePath} from '@loaders.gl/core';
 import {
   GEOARROW_MULTILINE_FILE,
@@ -18,73 +21,73 @@ import {
   getGeoArrowGeometryColumn
 } from '../src/geoarrow-table-adapter';
 import {setupLoaderTestEnvironment} from '../../../test/vitest-setup-loaders';
-
 await setupLoaderTestEnvironment();
-
 /** Loads an Apache Arrow table from a GeoArrow fixture. */
 async function loadArrowTable(filePath: string): Promise<arrow.Table> {
   const file = await readFile(resolvePath(filePath));
   return arrow.tableFromIPC(file);
 }
-
-test('GeoArrowTableAdapter#converts native point, line, and polygon tables', async t => {
+test('GeoArrowTableAdapter#converts native point, line, and polygon tables', async () => {
   const pointTable = await loadArrowTable(GEOARROW_POINT_FILE);
   const lineTable = await loadArrowTable(GEOARROW_MULTILINE_FILE);
   const polygonTable = await loadArrowTable(GEOARROW_POLYGON_FILE);
-
   const pointData = convertGeoArrowTableToBinaryFeatureCollection(pointTable);
   const lineData = convertGeoArrowTableToBinaryFeatureCollection(lineTable);
   const polygonData = convertGeoArrowTableToBinaryFeatureCollection(polygonTable);
-
-  t.equal(pointData.shape, 'binary-feature-collection', 'point data is binary GeoJSON');
-  t.ok(pointData.points?.positions.value.length, 'point positions are populated');
-  t.ok(pointData.lines && pointData.polygons, 'point data includes empty deck.gl geometry bins');
-  t.equal(lineData.shape, 'binary-feature-collection', 'line data is binary GeoJSON');
-  t.ok(lineData.lines?.pathIndices.value.length, 'line path indices are populated');
-  t.ok(lineData.points && lineData.polygons, 'line data includes empty deck.gl geometry bins');
-  t.equal(polygonData.shape, 'binary-feature-collection', 'polygon data is binary GeoJSON');
-  t.ok(polygonData.polygons?.polygonIndices.value.length, 'polygon indices are populated');
-  t.ok(
+  expect(pointData.shape, 'point data is binary GeoJSON').toBe('binary-feature-collection');
+  expect(pointData.points?.positions.value.length, 'point positions are populated').toBeTruthy();
+  expect(
+    pointData.lines && pointData.polygons,
+    'point data includes empty deck.gl geometry bins'
+  ).toBeTruthy();
+  expect(lineData.shape, 'line data is binary GeoJSON').toBe('binary-feature-collection');
+  expect(lineData.lines?.pathIndices.value.length, 'line path indices are populated').toBeTruthy();
+  expect(
+    lineData.points && lineData.polygons,
+    'line data includes empty deck.gl geometry bins'
+  ).toBeTruthy();
+  expect(polygonData.shape, 'polygon data is binary GeoJSON').toBe('binary-feature-collection');
+  expect(
+    polygonData.polygons?.polygonIndices.value.length,
+    'polygon indices are populated'
+  ).toBeTruthy();
+  expect(
     polygonData.points && polygonData.lines,
     'polygon data includes empty deck.gl geometry bins'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('GeoArrowTableAdapter#converts WKB tables and loaders.gl table wrappers', async t => {
+test('GeoArrowTableAdapter#converts WKB tables and loaders.gl table wrappers', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
   const binaryData = convertGeoArrowTableToBinaryFeatureCollection({
     shape: 'arrow-table',
     data: table
   });
-
-  t.equal(binaryData.shape, 'binary-feature-collection', 'wrapper data is binary GeoJSON');
-  t.ok(binaryData.points?.positions.value.length, 'WKB point positions are populated');
-  t.ok(binaryData.lines && binaryData.polygons, 'WKB data includes empty deck.gl geometry bins');
-  t.equal(getApacheArrowTable(table), table, 'raw Apache Arrow table is returned as-is');
-  t.equal(
+  expect(binaryData.shape, 'wrapper data is binary GeoJSON').toBe('binary-feature-collection');
+  expect(
+    binaryData.points?.positions.value.length,
+    'WKB point positions are populated'
+  ).toBeTruthy();
+  expect(
+    binaryData.lines && binaryData.polygons,
+    'WKB data includes empty deck.gl geometry bins'
+  ).toBeTruthy();
+  expect(getApacheArrowTable(table), 'raw Apache Arrow table is returned as-is').toBe(table);
+  expect(
     getApacheArrowTable({shape: 'arrow-table', data: table}),
-    table,
     'loaders.gl wrapper resolves to Apache Arrow table'
-  );
-  t.end();
+  ).toBe(table);
 });
-
-test('GeoArrowTableAdapter#validates geometry column metadata', async t => {
+test('GeoArrowTableAdapter#validates geometry column metadata', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_FILE);
   const geometryColumn = getGeoArrowGeometryColumn(table, 'geometry');
-
-  t.equal(geometryColumn.geometryColumn, 'geometry', 'resolves explicit geometry column');
-  t.equal(geometryColumn.encoding, 'geoarrow.point', 'resolves point encoding');
-  t.throws(
+  expect(geometryColumn.geometryColumn, 'resolves explicit geometry column').toBe('geometry');
+  expect(geometryColumn.encoding, 'resolves point encoding').toBe('geoarrow.point');
+  expect(
     () => getApacheArrowTable({shape: 'not-arrow-table'} as any),
-    /expected an Apache Arrow table/,
     'rejects non-Arrow input'
-  );
-  t.throws(
+  ).toThrow(/expected an Apache Arrow table/);
+  expect(
     () => getGeoArrowGeometryColumn(table, 'missing'),
-    /could not find GeoArrow metadata/,
     'rejects missing geometry column metadata'
-  );
-  t.end();
+  ).toThrow(/could not find GeoArrow metadata/);
 });

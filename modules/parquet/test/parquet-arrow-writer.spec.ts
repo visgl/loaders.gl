@@ -2,115 +2,87 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
-import {encode, load} from '@loaders.gl/core';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+import { expect, test } from "vitest";
+import { encode, load } from '@loaders.gl/core';
+import type { ArrowTable, ObjectRowTable } from '@loaders.gl/schema';
 import * as parquet from '@loaders.gl/parquet';
 import * as bundledParquet from '@loaders.gl/parquet/bundled';
 import * as parquetSource from '@loaders.gl/parquet/parquet-source-loader';
 import * as unbundledParquet from '@loaders.gl/parquet/unbundled';
-import {ParquetJSLoader, ParquetJSWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
+import { ParquetJSLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
-
-test('ParquetWriter#writer objects', (t) => {
-  t.ok(ParquetWriter, 'ParquetWriter');
-  t.ok(ParquetJSLoader, 'ParquetJSLoader');
-  t.ok(ParquetJSWriter, 'ParquetJSWriter');
-  t.end();
+test('ParquetWriter#writer objects', () => {
+    expect(ParquetWriter, 'ParquetWriter').toBeTruthy();
+    expect(ParquetJSLoader, 'ParquetJSLoader').toBeTruthy();
+    expect(ParquetJSWriter, 'ParquetJSWriter').toBeTruthy();
 });
-
-test('ParquetSource#public exports', (t) => {
-  t.ok(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata');
-  t.notOk('ParquetSource' in parquet, 'root does not export runtime ParquetSource');
-  t.ok(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities');
-  t.ok(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader');
-  t.ok(parquetSource.ParquetSource, 'source subpath exports runtime source');
-  t.ok(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities');
-  t.ok(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader');
-  t.ok(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource');
-  t.ok(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities');
-  t.ok(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader');
-  t.ok(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource');
-  t.ok(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities');
-  t.end();
+test('ParquetSource#public exports', () => {
+    expect(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata').toBeTruthy();
+    expect('ParquetSource' in parquet, 'root does not export runtime ParquetSource').toBeFalsy();
+    expect(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities').toBeTruthy();
+    expect(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader').toBeTruthy();
+    expect(parquetSource.ParquetSource, 'source subpath exports runtime source').toBeTruthy();
+    expect(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities').toBeTruthy();
+    expect(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader').toBeTruthy();
+    expect(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource').toBeTruthy();
+    expect(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
+    expect(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader').toBeTruthy();
+    expect(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource').toBeTruthy();
+    expect(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities').toBeTruthy();
 });
-
-test('ParquetWriter#removed Arrow variant exports are absent', (t) => {
-  t.notOk('ParquetArrowLoader' in parquet, 'root does not export ParquetArrowLoader');
-  t.notOk('ParquetArrowWorkerLoader' in parquet, 'root does not export ParquetArrowWorkerLoader');
-  t.notOk('ParquetArrowLoaderOptions' in parquet, 'root does not export ParquetArrowLoaderOptions');
-  t.notOk('ParquetArrowWriter' in parquet, 'root does not export ParquetArrowWriter');
-  t.notOk('ParquetArrowWriterOptions' in parquet, 'root does not export ParquetArrowWriterOptions');
-  t.notOk('ParquetArrowLoader' in bundledParquet, 'bundled does not export ParquetArrowLoader');
-  t.notOk(
-    'ParquetArrowWorkerLoader' in bundledParquet,
-    'bundled does not export ParquetArrowWorkerLoader'
-  );
-  t.notOk(
-    'ParquetArrowLoader' in unbundledParquet,
-    'unbundled does not export ParquetArrowLoader'
-  );
-  t.notOk(
-    'ParquetArrowWorkerLoader' in unbundledParquet,
-    'unbundled does not export ParquetArrowWorkerLoader'
-  );
-  t.end();
+test('ParquetWriter#removed Arrow variant exports are absent', () => {
+    expect('ParquetArrowLoader' in parquet, 'root does not export ParquetArrowLoader').toBeFalsy();
+    expect('ParquetArrowWorkerLoader' in parquet, 'root does not export ParquetArrowWorkerLoader').toBeFalsy();
+    expect('ParquetArrowLoaderOptions' in parquet, 'root does not export ParquetArrowLoaderOptions').toBeFalsy();
+    expect('ParquetArrowWriter' in parquet, 'root does not export ParquetArrowWriter').toBeFalsy();
+    expect('ParquetArrowWriterOptions' in parquet, 'root does not export ParquetArrowWriterOptions').toBeFalsy();
+    expect('ParquetArrowLoader' in bundledParquet, 'bundled does not export ParquetArrowLoader').toBeFalsy();
+    expect('ParquetArrowWorkerLoader' in bundledParquet, 'bundled does not export ParquetArrowWorkerLoader').toBeFalsy();
+    expect('ParquetArrowLoader' in unbundledParquet, 'unbundled does not export ParquetArrowLoader').toBeFalsy();
+    expect('ParquetArrowWorkerLoader' in unbundledParquet, 'unbundled does not export ParquetArrowWorkerLoader').toBeFalsy();
 });
-
-test('ParquetWriter#removed JSON aliases are absent', (t) => {
-  t.notOk('ParquetJSONLoader' in parquet, 'ParquetJSONLoader removed');
-  t.notOk('ParquetJSONWorkerLoader' in parquet, 'ParquetJSONWorkerLoader removed');
-  t.notOk('ParquetJSONWriter' in parquet, 'ParquetJSONWriter removed');
-  t.notOk('_ParquetJSONLoader' in parquet, '_ParquetJSONLoader removed');
-  t.notOk('_ParquetJSONWriter' in parquet, '_ParquetJSONWriter removed');
-  t.end();
+test('ParquetWriter#removed JSON aliases are absent', () => {
+    expect('ParquetJSONLoader' in parquet, 'ParquetJSONLoader removed').toBeFalsy();
+    expect('ParquetJSONWorkerLoader' in parquet, 'ParquetJSONWorkerLoader removed').toBeFalsy();
+    expect('ParquetJSONWriter' in parquet, 'ParquetJSONWriter removed').toBeFalsy();
+    expect('_ParquetJSONLoader' in parquet, '_ParquetJSONLoader removed').toBeFalsy();
+    expect('_ParquetJSONWriter' in parquet, '_ParquetJSONWriter removed').toBeFalsy();
 });
-
-test('ParquetWriter#encodes Arrow tables through primary writer', async (t) => {
-  const table = createArrowTable();
-
-  const parquetBuffer = await encode(table, ParquetWriter, {
-    worker: false
-  });
-  const newTable = (await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false},
-    parquet: {shape: 'arrow-table'}
-  })) as ArrowTable;
-
-  t.deepEqual(table.data.schema, newTable.data.schema);
-  t.end();
+test('ParquetWriter#encodes Arrow tables through primary writer', async () => {
+    const table = createArrowTable();
+    const parquetBuffer = await encode(table, ParquetWriter, {
+        worker: false
+    });
+    const newTable = (await load(parquetBuffer, ParquetLoader, {
+        core: { worker: false },
+        parquet: { shape: 'arrow-table' }
+    })) as ArrowTable;
+    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
 });
-
-test('ParquetWriter#encodes plain JS tables through Arrow adapter', async (t) => {
-  const table: ObjectRowTable = {
-    shape: 'object-row-table',
-    data: [
-      {city: 'Paris', count: 2},
-      {city: 'New York', count: 5}
-    ]
-  };
-
-  const parquetBuffer = await encode(table, ParquetWriter, {
-    worker: false
-  });
-  const newTable = await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false}
-  });
-
-  t.equal(newTable.shape, 'object-row-table');
-  if (newTable.shape === 'object-row-table') {
-    t.deepEqual(newTable.data, table.data);
-  }
-  t.end();
+test('ParquetWriter#encodes plain JS tables through Arrow adapter', async () => {
+    const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: [
+            { city: 'Paris', count: 2 },
+            { city: 'New York', count: 5 }
+        ]
+    };
+    const parquetBuffer = await encode(table, ParquetWriter, {
+        worker: false
+    });
+    const newTable = await load(parquetBuffer, ParquetLoader, {
+        core: { worker: false }
+    });
+    expect(newTable.shape).toBe('object-row-table');
+    if (newTable.shape === 'object-row-table') {
+        expect(newTable.data).toEqual(table.data);
+    }
 });
-
 function createArrowTable(): ArrowTable {
-  const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8());
-  const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool());
-  const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
-  const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32());
-
-  const table = new arrow.Table({utf8Vector, uint8Vector, int32Vector, boolVector});
-  return {shape: 'arrow-table', data: table};
+    const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8());
+    const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool());
+    const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
+    const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32());
+    const table = new arrow.Table({ utf8Vector, uint8Vector, int32Vector, boolVector });
+    return { shape: 'arrow-table', data: table };
 }
