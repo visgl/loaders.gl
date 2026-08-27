@@ -102,6 +102,63 @@ test('COPCSourceLoader#loads full point content for a tile', async t => {
   t.end();
 });
 
+vitestTest('COPCSourceLoader#scans selected Arrow columns with an exact limit', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const batches = [];
+  let pointCount = 0;
+  for await (const batch of source.scan({
+    columns: ['POSITION'],
+    batchSize: 7,
+    limit: 23
+  })) {
+    batches.push(batch);
+    pointCount += batch.pointCount;
+    expect(batch.data.shape).toBe('arrow-table');
+    expect(batch.data.data.getChild('POSITION')).toBeTruthy();
+    expect(batch.data.data.getChild('COLOR_0')).toBeNull();
+  }
+
+  expect(batches.map(batch => batch.pointCount)).toEqual([7, 7, 7, 2]);
+  expect(pointCount).toBe(23);
+});
+
+vitestTest('COPCSourceLoader#exposes scan columns through query metadata', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getQueryMetadata();
+  const columnNames = metadata.schema.fields.map(field => field.name);
+
+  expect(columnNames).toContain('POSITION');
+  expect(columnNames).toContain('intensity');
+  expect(columnNames).not.toContain('X');
+  expect(metadata.capabilities.table?.projection).toBe('pushdown');
+
+  const requestedColumns = ['POSITION', 'intensity'] as const;
+  for await (const batch of source.scan({columns: requestedColumns, limit: 1})) {
+    expect(batch.data.data.getChild('POSITION')).toBeTruthy();
+    expect(batch.data.data.getChild('intensity')).toBeTruthy();
+  }
+});
+
+vitestTest('COPCSourceLoader#prunes scans by hierarchy level and bounds', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getMetadata();
+  const {header} = metadata.formatSpecificMetadata;
+  let pointCount = 0;
+  for await (const batch of source.scan({
+    columns: ['POSITION'],
+    minimumLevel: 0,
+    maximumLevel: 0,
+    bounds: {
+      minimum: [header.min[0], header.min[1], header.min[2]],
+      maximum: [header.max[0], header.max[1], header.max[2]]
+    }
+  })) {
+    pointCount += batch.pointCount;
+  }
+
+  expect(pointCount).toBeGreaterThan(0);
+});
+
 test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
