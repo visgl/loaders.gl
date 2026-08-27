@@ -10,6 +10,7 @@ import {
   COPCSourceLoader,
   COPCTileSource,
   COPCWriter,
+  createCachedCOPCRangeReader,
   loadCOPCHierarchyPage,
   loadCOPCNodeData,
   openCOPC,
@@ -80,6 +81,24 @@ test('COPCSourceLoader#loads normalized root and child tiles', async t => {
   const grandChildTiles = await source.getChildren(childTiles[0]);
   t.ok(Array.isArray(grandChildTiles), 'deeper hierarchy traversal succeeds');
   t.end();
+});
+
+vitestTest('COPC range reader deduplicates concurrent and repeated exact ranges', async () => {
+  let readCount = 0;
+  const readableFile = {
+    stat: async () => ({size: 200_000}),
+    read: async (begin: number, length: number) => {
+      readCount++;
+      return new Uint8Array(length).fill(begin % 251);
+    }
+  };
+  const readRange = createCachedCOPCRangeReader(readableFile as never);
+
+  await Promise.all([readRange(100_000, 100_100), readRange(100_000, 100_100)]);
+  await readRange(100_000, 100_100);
+  await readRange(100_200, 100_300);
+
+  expect(readCount).toBe(3);
 });
 
 test('COPCSourceLoader#loads full point content for a tile', async t => {
