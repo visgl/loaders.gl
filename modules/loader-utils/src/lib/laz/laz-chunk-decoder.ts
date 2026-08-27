@@ -3168,7 +3168,8 @@ class PointFormat6Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex++
+        targetPointIndex++,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
@@ -3308,7 +3309,8 @@ class PointFormat7Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -3482,7 +3484,8 @@ class PointFormat8Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -3652,7 +3655,8 @@ class PointFormat9Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex++
+        targetPointIndex++,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
@@ -3846,7 +3850,8 @@ class PointFormat10Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
