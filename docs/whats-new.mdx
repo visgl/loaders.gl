@@ -299,6 +299,7 @@ A minor release that includes:
 - **Region bounding volumes** - Geographic regions that cross the antimeridian now produce tight traversal OBBs instead of spanning the long way around the globe; polar and zero-height regions remain finite.
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
+- **Skip-LOD replacement traversal** `Tileset3D` now exposes `skipLevelOfDetail`; enabled traversals retain ready replacement ancestors as fallback coverage while descending through deep hierarchies.
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
 - **Same-frame dynamic SSE transforms** Animated local tilesets refresh the root transform before density calculation, and tilted oriented boxes derive height from every rotated half axis.
 - **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.

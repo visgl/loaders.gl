@@ -33,7 +33,12 @@ While a child subtree is loading, its existing tile stays the traversal boundary
 
 `ADD` means descendants augment their ancestors. The parent remains part of the result, so descendant requests can safely wait briefly while the camera moves.
 
-Some source traversers support skip-LOD replacement: a ready ancestor can remain as coverage while traversal jumps to deeper descendants. Progressive-resolution descendants needed for initial broad coverage remain urgent even in this mode.
+Set `skipLevelOfDetail: true` to enable skip-LOD replacement traversal. A ready replacement ancestor
+remains selected while traversal jumps over intermediate levels, so a deep tree can begin showing
+detail before every level is ready. The ancestor is fallback coverage, not a second LOD target: once
+descendants are available they refine independently, and progressive-resolution descendants remain
+urgent. The tradeoff is temporary overdraw and potentially higher bandwidth while the camera is
+moving. The default is `false`, preserving traditional all-required-children replacement behavior.
 
 ## Visibility, Selection, and Requests
 

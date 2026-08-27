@@ -140,7 +140,9 @@ export class TilesetTraverser {
         // Always load tiles in the base traversal
         // Select tiles that can't refine further
         this.loadTile(tile, frameState);
-        if (stoppedRefining) {
+        // Skip-LOD keeps a ready ancestor selected while descendants stream in. This prevents
+        // replacement holes when traversal jumps over one or more hierarchy levels.
+        if (stoppedRefining || this.options.skipLevelOfDetail) {
           this.selectTile(tile, frameState);
         }
       }
@@ -293,9 +295,9 @@ export class TilesetTraverser {
   }
 
   shouldSelectTile(tile: Tile3D): boolean {
-    // if select tile is in current frame
-    // and content available
-    return tile.contentAvailable && !this.options.skipLevelOfDetail;
+    // Content availability is the only selection prerequisite. Skip-LOD retains ready ancestors
+    // as fallback coverage, so it must not suppress selection globally.
+    return tile.contentAvailable;
   }
 
   /** Decide if tile LoD (level of detail) is not sufficient under current viewport */
