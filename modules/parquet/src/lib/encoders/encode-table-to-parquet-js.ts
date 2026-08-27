@@ -111,7 +111,9 @@ function convertSchemaToParquetSchema(
         field,
         objectRowTable.data,
         geoMetadata?.version,
-        geoMetadata?.columns?.[field.name]
+        geoMetadata?.columns?.[field.name],
+        undefined,
+        options.parquet?.int96AsTimestamp
       ),
       encoding: columnEncodings[field.name]
     };
@@ -131,7 +133,8 @@ function convertFieldToParquetFieldDefinition(
   rows: Array<Record<string, unknown>>,
   geoParquetVersion?: string,
   geoColumnMetadata?: GeoColumnMetadata,
-  fieldValues?: readonly unknown[]
+  fieldValues?: readonly unknown[],
+  int96AsTimestamp = false
 ): FieldDefinition {
   const values = fieldValues || rows.map(row => row[field.name]);
   const sampleValue = getFirstDefinedValue(values);
@@ -151,7 +154,8 @@ function convertFieldToParquetFieldDefinition(
                 [],
                 undefined,
                 undefined,
-                getStructChildValues(values, child.name)
+                getStructChildValues(values, child.name),
+                int96AsTimestamp
               )
             ])
           )
@@ -173,7 +177,8 @@ function convertFieldToParquetFieldDefinition(
                   [],
                   undefined,
                   undefined,
-                  flattenListValues(values)
+                  flattenListValues(values),
+                  int96AsTimestamp
                 )
               }
             }
@@ -210,7 +215,8 @@ function convertFieldToParquetFieldDefinition(
                     [],
                     undefined,
                     undefined,
-                    getMapChildValues(values, 'key')
+                    getMapChildValues(values, 'key'),
+                    int96AsTimestamp
                   ),
                   optional: false
                 },
@@ -220,7 +226,8 @@ function convertFieldToParquetFieldDefinition(
                     [],
                     undefined,
                     undefined,
-                    getMapChildValues(values, 'value')
+                    getMapChildValues(values, 'value'),
+                    int96AsTimestamp
                   )
                 }
               }
@@ -310,7 +317,10 @@ function convertFieldToParquetFieldDefinition(
       return {type: 'TIMESTAMP_MICROS', optional: nullable};
 
     case 'timestamp-nanosecond':
-      return {type: 'TIMESTAMP_NANOS', optional: nullable};
+      return {
+        type: int96AsTimestamp ? 'INT96' : 'TIMESTAMP_NANOS',
+        optional: nullable
+      };
 
     case 'time-second':
     case 'time-millisecond':

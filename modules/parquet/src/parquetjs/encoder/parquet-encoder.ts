@@ -141,6 +141,8 @@ export interface ParquetEncoderOptions {
   writeStatistics?: boolean | Record<string, boolean>;
   /** Declare the row-group sort order using top-level or dotted leaf column names. */
   sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Encode INT96 input values as epoch nanoseconds using the canonical Julian-day layout. */
+  int96AsTimestamp?: boolean;
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
   /** Authenticate a plaintext footer with a Parquet modular-encryption signature. */
@@ -549,7 +551,8 @@ async function encodeDataPage(
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
   writePageChecksums = false,
-  statistics?: Statistics
+  statistics?: Statistics,
+  int96AsTimestamp = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -585,7 +588,8 @@ async function encodeDataPage(
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: valueBitWidth ?? column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength,
+    int96AsTimestamp
   });
 
   const dataBuf = concatUint8Arrays([rLevelsBuf, dLevelsBuf, valuesBuf]);
@@ -625,7 +629,8 @@ async function encodeDataPageV2(
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
   writePageChecksums = false,
-  statistics?: Statistics
+  statistics?: Statistics,
+  int96AsTimestamp = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -634,7 +639,8 @@ async function encodeDataPageV2(
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: valueBitWidth ?? column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength,
+    int96AsTimestamp
   });
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
@@ -697,10 +703,12 @@ async function encodeDataPageV2(
 async function encodeDictionaryPage(
   column: ParquetField,
   dictionaryValues: unknown[],
-  writePageChecksums = false
+  writePageChecksums = false,
+  int96AsTimestamp = false
 ): Promise<{header: PageHeader; headerSize: number; page: Uint8Array}> {
   const valuesBuffer = encodeValues(column.primitiveType!, 'PLAIN', dictionaryValues as any[], {
-    typeLength: column.typeLength
+    typeLength: column.typeLength,
+    int96AsTimestamp
   });
   const compressedBuffer = await Compression.deflate(column.compression!, valuesBuffer);
   const header = new PageHeader({
@@ -832,7 +840,8 @@ async function encodeColumnChunk(
     const result = await encodeDictionaryPage(
       column,
       dictionaryPlan.values,
-      opts.writePageChecksums
+      opts.writePageChecksums,
+      opts.int96AsTimestamp
     );
     pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: true});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
@@ -868,7 +877,8 @@ async function encodeColumnChunk(
           opts.writePageChecksums,
           isStatisticsEnabled(opts.writeStatistics, column)
             ? createColumnStatistics(column, plannedPage.data)
-            : undefined
+            : undefined,
+          opts.int96AsTimestamp
         )
       : await encodeDataPage(
           column,
@@ -878,7 +888,8 @@ async function encodeColumnChunk(
           opts.writePageChecksums,
           isStatisticsEnabled(opts.writeStatistics, column)
             ? createColumnStatistics(column, plannedPage.data)
-            : undefined
+            : undefined,
+          opts.int96AsTimestamp
         );
     pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: false});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
@@ -933,7 +944,7 @@ async function encodeColumnChunk(
       : bloomFilter;
   const pageIndexEnabled = opts.pageIndex === true || opts.pageIndex?.[column.path[0]] === true;
   const pageIndexes = pageIndexEnabled
-    ? createColumnPageIndexes(column, plannedPages, pageLocations)
+    ? createColumnPageIndexes(column, plannedPages, pageLocations, opts.int96AsTimestamp)
     : undefined;
   const encodedPageIndexes =
     pageIndexes && encryptedColumn
@@ -1199,7 +1210,8 @@ async function encryptParquetPageIndexes(
 function createColumnPageIndexes(
   column: ParquetField,
   plannedPages: ReturnType<typeof planColumnPages>,
-  pageLocations: PageLocation[]
+  pageLocations: PageLocation[],
+  int96AsTimestamp = false
 ): {offsetIndex: Uint8Array; columnIndex?: Uint8Array} | undefined {
   if (
     !column.primitiveType ||
@@ -1232,7 +1244,12 @@ function createColumnPageIndexes(
       maxValues.push(new Uint8Array(0));
       continue;
     }
-    const bounds = getPageBounds(values, column.primitiveType!, column.typeLength);
+    const bounds = getPageBounds(
+      values,
+      column.primitiveType!,
+      column.typeLength,
+      int96AsTimestamp
+    );
     if (!bounds) return undefined;
     nullPages.push(false);
     minValues.push(bounds.min);
@@ -1260,6 +1277,7 @@ function isPageIndexPhysicalType(
     physicalType === 'BOOLEAN' ||
     physicalType === 'INT32' ||
     physicalType === 'INT64' ||
+    physicalType === 'INT96' ||
     physicalType === 'FLOAT' ||
     physicalType === 'DOUBLE' ||
     physicalType === 'BYTE_ARRAY' ||
@@ -1271,6 +1289,7 @@ type PageIndexPhysicalType =
   | 'BOOLEAN'
   | 'INT32'
   | 'INT64'
+  | 'INT96'
   | 'FLOAT'
   | 'DOUBLE'
   | 'BYTE_ARRAY'
@@ -1279,8 +1298,10 @@ type PageIndexPhysicalType =
 function getPageBounds(
   values: ParquetColumnChunk['values'],
   physicalType: PageIndexPhysicalType,
-  typeLength?: number
+  typeLength?: number,
+  int96AsTimestamp = false
 ): {min: Uint8Array; max: Uint8Array} | undefined {
+  if (physicalType === 'INT96' && !int96AsTimestamp) return undefined;
   const normalizedValues = Array.from(values as Iterable<unknown>, value =>
     normalizePageIndexValue(value, physicalType)
   );
@@ -1296,12 +1317,27 @@ function getPageBounds(
   }
   try {
     return {
-      min: encodeParquetBloomFilterValue(min, physicalType, typeLength),
-      max: encodeParquetBloomFilterValue(max, physicalType, typeLength)
+      min: encodePageIndexValue(min, physicalType, typeLength, int96AsTimestamp),
+      max: encodePageIndexValue(max, physicalType, typeLength, int96AsTimestamp)
     };
   } catch {
     return undefined;
   }
+}
+
+function encodePageIndexValue(
+  value: boolean | number | bigint | string | Uint8Array,
+  physicalType: PageIndexPhysicalType,
+  typeLength: number | undefined,
+  int96AsTimestamp: boolean
+): Uint8Array {
+  if (physicalType === 'INT96') {
+    if (!int96AsTimestamp) {
+      throw new Error('INT96 page indexes require timestamp mode');
+    }
+    return PARQUET_CODECS.PLAIN.encodeValues('INT96', [value], {int96AsTimestamp});
+  }
+  return encodeParquetBloomFilterValue(value, physicalType, typeLength);
 }
 
 function normalizePageIndexValue(
@@ -1345,7 +1381,7 @@ function comparePageIndexValues(
     return leftBytes.length - rightBytes.length;
   }
   if (typeof left === 'boolean' && typeof right === 'boolean') return Number(left) - Number(right);
-  if (physicalType !== 'INT64') {
+  if (physicalType !== 'INT64' && physicalType !== 'INT96') {
     const leftNumber = Number(left);
     const rightNumber = Number(right);
     return leftNumber < rightNumber ? -1 : leftNumber > rightNumber ? 1 : 0;
