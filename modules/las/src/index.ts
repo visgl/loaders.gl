@@ -21,6 +21,20 @@ export type {
   LASWaveformPacketDescriptor
 } from './lib/las-types';
 export {
+  decodeLASWaveformSamples,
+  getLASWaveformStorage,
+  parseLASWaveformPacketReference,
+  readLASWaveformPacket,
+  readLASWaveformPackets,
+  scaleLASWaveformSamples
+} from './lib/las-waveform';
+export type {
+  LASWaveformPacket,
+  LASWaveformPacketReference,
+  LASWaveformReadOptions,
+  LASWaveformStorage
+} from './lib/las-waveform';
+export {
   createLASTypedExtraBytesAttributes,
   createLASTypedExtraBytesValue,
   parseLASExtraBytes,

@@ -10,6 +10,20 @@ export {LAZPerfLoaderWithParser as LAZPerfLoader} from './lazperf-loader';
 export {LAZRsLoaderWithParser as LAZRsLoader} from './laz-rs-loader';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
+  decodeLASWaveformSamples,
+  getLASWaveformStorage,
+  parseLASWaveformPacketReference,
+  readLASWaveformPacket,
+  readLASWaveformPackets,
+  scaleLASWaveformSamples
+} from './lib/las-waveform';
+export type {
+  LASWaveformPacket,
+  LASWaveformPacketReference,
+  LASWaveformReadOptions,
+  LASWaveformStorage
+} from './lib/las-waveform';
+export {
   NeedsMoreData,
   createLAZChunkDecoder,
   createLAZChunkEncoder,
