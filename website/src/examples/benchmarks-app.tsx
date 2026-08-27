@@ -20,7 +20,13 @@ const SAMPLE_CSV_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/csv/test/data/sample-very-long.csv';
 const ROW_COUNT = 2000;
 const WIDE_COLUMN_COUNT = 40;
-const BENCHMARK_OPTIONS = {minIterations: 3, unit: 'rows'};
+const BENCHMARK_OPTIONS = {minIterations: 5, time: 100, unit: 'rows'};
+
+// Keep these labels synchronized with the exact versions resolved in yarn.lock.
+const CSV_LOADER_DISPLAY_NAME = 'CSVLoader v5.0.0-alpha.2 (arrow-table)';
+const D3_DSV_DISPLAY_NAME = 'd3-dsv v1.2.0';
+const UDSV_DISPLAY_NAME = 'uDSV v0.7.3';
+const PAPAPARSE_DISPLAY_NAME = 'PapaParse v5.5.3';
 
 const SI_MULTIPLIERS: Record<string, number> = {
   K: 1e3,
@@ -468,7 +474,7 @@ function getCSVLoaderBenchmarks(
   //   }
   // };
   return [
-    {name: 'CSVLoader (arrow-table)', loader: CSVLoader, options: arrowOptions}
+    {name: CSV_LOADER_DISPLAY_NAME, loader: CSVLoader, options: arrowOptions}
     // Keep the row-table control available for future investigations without adding a second
     // loaders.gl result to the Arrow-focused competitive page.
     // {name: 'CSVLoader', loader: CSVLoader, options: csvOptions}
@@ -513,14 +519,14 @@ function addD3ParseBenchmark(
   scenario: BenchmarkScenario,
   dynamicTyping: boolean
 ): void {
-  bench.addAsync(
-    createBenchmarkId('d3-dsv', {
+  bench.add(
+    createBenchmarkId(D3_DSV_DISPLAY_NAME, {
       dynamicTyping,
       operation: 'parseText',
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
-    async () =>
+    () =>
       scenario.delimiter === '\t'
         ? tsvParse(scenario.text, dynamicTyping ? autoType : undefined)
         : csvParse(scenario.text, dynamicTyping ? autoType : undefined)
@@ -538,14 +544,14 @@ function addPapaParseNPMBenchmark(
   scenario: BenchmarkScenario,
   dynamicTyping: boolean
 ): void {
-  bench.addAsync(
-    createBenchmarkId('PapaParse npm', {
+  bench.add(
+    createBenchmarkId(PAPAPARSE_DISPLAY_NAME, {
       dynamicTyping,
       operation: 'parseText',
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
-    async () =>
+    () =>
       PapaParseNPM.parse(scenario.text, {
         header: true,
         dynamicTyping,
@@ -565,14 +571,14 @@ function addUDSVParseBenchmark(
   scenario: BenchmarkScenario,
   dynamicTyping: boolean
 ): void {
-  bench.addAsync(
-    createBenchmarkId('uDSV', {
+  bench.add(
+    createBenchmarkId(UDSV_DISPLAY_NAME, {
       dynamicTyping,
       operation: 'parseText',
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
-    async () => {
+    () => {
       const schema = inferSchema(scenario.text, {col: scenario.delimiter});
       const parser = initParser(schema);
       return dynamicTyping ? parser.typedObjs(scenario.text) : parser.stringObjs(scenario.text);
@@ -609,7 +615,7 @@ function getBenchmarkDisplayName(benchmarkId: string): string {
  * @returns Whether the row is a loaders.gl benchmark.
  */
 function isLoadersGLBenchmarkName(displayName: string): boolean {
-  return displayName === 'CSVLoader (arrow-table)' || displayName === 'CSVLoader';
+  return displayName === CSV_LOADER_DISPLAY_NAME || displayName === 'CSVLoader';
 }
 
 /**

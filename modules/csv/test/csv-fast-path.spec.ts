@@ -5,6 +5,7 @@
 import {parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/bundled';
 import {describe, expect, test} from 'vitest';
+import {calculateInitialTypedColumnCapacity} from '../src/csv-arrow-table-parser';
 
 /** Reads one Arrow column into ordinary JavaScript values for assertions. */
 function getArrowColumnValues(table: any, columnName: string): unknown[] {
@@ -126,6 +127,22 @@ describe('CSV optimized parsing paths', () => {
 
     expect(table.schema?.fields.map(field => field.type)).toEqual(['float64']);
     expect(getArrowColumnValues(table, 'value')).toEqual([1, 2]);
+  });
+
+  test('bounds speculative typed storage for shallow high-cardinality input', async () => {
+    const columnCount = 5000;
+    const header = Array.from({length: columnCount}, (_, columnIndex) => `c${columnIndex}`);
+    const values = Array.from({length: columnCount}, (_, columnIndex) => String(columnIndex));
+    const csvBytes = new TextEncoder().encode(`${header.join(',')}\n${values.join(',')}\n`);
+
+    expect(calculateInitialTypedColumnCapacity(csvBytes.length, columnCount)).toBeLessThan(4);
+
+    const table = await CSVLoader.parse(csvBytes.buffer, {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true, skipEmptyLines: false}
+    });
+    expect(table.data.numCols).toBe(columnCount);
+    expect(table.data.numRows).toBe(1);
+    expect(table.data.getChildAt(columnCount - 1)?.get(0)).toBe(columnCount - 1);
   });
 
   test('preserves nulls and source strings in mixed typed columns', async () => {

@@ -18,7 +18,7 @@ import type {CSVLoaderOptions} from '../../csv-loader-options';
 import {CSV_LOADER_OPTIONS} from '../../csv-loader-options';
 import Papa from '../../papaparse/papaparse';
 import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
-import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
+import {parseRawArrowCSVASCIIText, parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
 
 /** CSV options accepted by the internal Arrow table parser. */
 export type CSVRawArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape' | 'header'> & {
@@ -77,6 +77,11 @@ export async function parseRawArrowCSVText(
   const csvOptions = createRawArrowCSVOptions(options);
   if (shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
     return parseRawArrowCSVTextWithPapa(csvText, options, csvOptions);
+  }
+
+  const rawASCIIArrowTable = parseRawArrowCSVASCIIText(csvText, csvOptions);
+  if (rawASCIIArrowTable) {
+    return rawASCIIArrowTable;
   }
 
   const encodedCSVText = textEncoder.encode(csvText);
