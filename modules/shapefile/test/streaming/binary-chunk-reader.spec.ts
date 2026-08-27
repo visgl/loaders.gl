@@ -2,152 +2,114 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {_BinaryChunkReader as BinaryChunkReader} from '@loaders.gl/shapefile';
-
 const buf1 = new Uint8Array([1, 2, 3]).buffer;
 const buf2 = new Uint8Array([4, 5, 6]).buffer;
 const buf3 = new Uint8Array([7, 8, 9]).buffer;
-
-test('BinaryChunkReader', t => {
+test('BinaryChunkReader', () => {
   const reader = new BinaryChunkReader();
-  t.ok(reader);
-  t.end();
+  expect(reader).toBeTruthy();
 });
-
-test('BinaryChunkReader#add arrayBuffers', t => {
+test('BinaryChunkReader#add arrayBuffers', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
-  t.equals(reader.arrayBuffers.length, 2);
-  t.end();
+  expect(reader.arrayBuffers.length).toBe(2);
 });
-
-test('BinaryChunkReader#findBufferOffsets single view', t => {
+test('BinaryChunkReader#findBufferOffsets single view', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   let bufferOffsets = reader.findBufferOffsets(2);
-  t.deepEquals(bufferOffsets, [[0, [0, 2]]]);
-
+  expect(bufferOffsets).toEqual([[0, [0, 2]]]);
   reader.skip(1);
   bufferOffsets = reader.findBufferOffsets(2);
-  t.deepEquals(bufferOffsets, [[0, [1, 3]]]);
-
+  expect(bufferOffsets).toEqual([[0, [1, 3]]]);
   reader.skip(2);
   bufferOffsets = reader.findBufferOffsets(2);
-  t.deepEquals(bufferOffsets, [[1, [0, 2]]]);
-
+  expect(bufferOffsets).toEqual([[1, [0, 2]]]);
   reader.skip(3);
   bufferOffsets = reader.findBufferOffsets(1);
-  t.deepEquals(bufferOffsets, [[2, [0, 1]]]);
-
+  expect(bufferOffsets).toEqual([[2, [0, 1]]]);
   bufferOffsets = reader.findBufferOffsets(3);
-  t.deepEquals(bufferOffsets, [[2, [0, 3]]]);
-
-  t.end();
+  expect(bufferOffsets).toEqual([[2, [0, 3]]]);
 });
-
-test('BinaryChunkReader#findBufferOffsets multiple views', t => {
+test('BinaryChunkReader#findBufferOffsets multiple views', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   let bufferOffsets = reader.findBufferOffsets(5);
-  t.deepEquals(bufferOffsets, [
+  expect(bufferOffsets).toEqual([
     [0, [0, 3]],
     [1, [0, 2]]
   ]);
-
   reader.skip(2);
   bufferOffsets = reader.findBufferOffsets(5);
-  t.deepEquals(bufferOffsets, [
+  expect(bufferOffsets).toEqual([
     [0, [2, 3]],
     [1, [0, 3]],
     [2, [0, 1]]
   ]);
-
   bufferOffsets = reader.findBufferOffsets(2);
-  t.deepEquals(bufferOffsets, [
+  expect(bufferOffsets).toEqual([
     [0, [2, 3]],
     [1, [0, 1]]
   ]);
-  t.end();
 });
-
-test('BinaryChunkReader#getDataView single source array', t => {
+test('BinaryChunkReader#getDataView single source array', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   let view = reader.getDataView(2);
-  t.equals(view?.getUint8(0), 1);
-  t.equals(view?.getUint8(1), 2);
-
+  expect(view?.getUint8(0)).toBe(1);
+  expect(view?.getUint8(1)).toBe(2);
   reader.skip(2);
   view = reader.getDataView(2);
-  t.equals(view?.getUint8(0), 5);
-  t.equals(view?.getUint8(1), 6);
-  t.end();
+  expect(view?.getUint8(0)).toBe(5);
+  expect(view?.getUint8(1)).toBe(6);
 });
-
-test('BinaryChunkReader#getDataView multiple source arrays', t => {
+test('BinaryChunkReader#getDataView multiple source arrays', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   reader.skip(2);
   let view = reader.getDataView(2);
-  t.equals(view?.getUint8(0), 3);
-  t.equals(view?.getUint8(1), 4);
-
+  expect(view?.getUint8(0)).toBe(3);
+  expect(view?.getUint8(1)).toBe(4);
   view = reader.getDataView(4);
-  t.equals(view?.getUint8(0), 5);
-  t.equals(view?.getUint8(1), 6);
-  t.equals(view?.getUint8(2), 7);
-  t.equals(view?.getUint8(3), 8);
-  t.end();
+  expect(view?.getUint8(0)).toBe(5);
+  expect(view?.getUint8(1)).toBe(6);
+  expect(view?.getUint8(2)).toBe(7);
+  expect(view?.getUint8(3)).toBe(8);
 });
-
-test('BinaryChunkReader#disposeBuffers', t => {
+test('BinaryChunkReader#disposeBuffers', () => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   reader.skip(2);
-  t.equals(reader.arrayBuffers.length, 3);
-
+  expect(reader.arrayBuffers.length).toBe(3);
   reader.getDataView(1);
-  t.equals(reader.arrayBuffers.length, 2);
-
+  expect(reader.arrayBuffers.length).toBe(2);
   reader.getDataView(3);
-  t.equals(reader.arrayBuffers.length, 1);
-
+  expect(reader.arrayBuffers.length).toBe(1);
   reader.getDataView(3);
-  t.equals(reader.arrayBuffers.length, 0);
-  t.end();
+  expect(reader.arrayBuffers.length).toBe(0);
 });
-
-test('BinaryChunkReader#disposeBuffers with maxRewindBytes', t => {
+test('BinaryChunkReader#disposeBuffers with maxRewindBytes', () => {
   const reader = new BinaryChunkReader({maxRewindBytes: 2});
   reader.write(buf1);
   reader.write(buf2);
   reader.write(buf3);
-
   reader.skip(2);
-  t.equals(reader.arrayBuffers.length, 3);
-
+  expect(reader.arrayBuffers.length).toBe(3);
   reader.getDataView(2);
-  t.equals(reader.arrayBuffers.length, 3);
-
+  expect(reader.arrayBuffers.length).toBe(3);
   reader.getDataView(1);
-  t.equals(reader.arrayBuffers.length, 2);
-
-  t.end();
+  expect(reader.arrayBuffers.length).toBe(2);
 });
