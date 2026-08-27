@@ -281,7 +281,7 @@ test('Parquet#DataPageHeaderV1#write a test file and then read it back', async (
     }
     const opts = { useDataPageV2: false, compression: 'UNCOMPRESSED' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file', async () => {
     if (isBrowser) {
@@ -289,7 +289,7 @@ test('Parquet#DataPageHeaderV2#write a test file', async () => {
     }
     const opts = { useDataPageV2: true, compression: 'UNCOMPRESSED' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file and then read it back', async () => {
     if (isBrowser) {
@@ -297,7 +297,7 @@ test('Parquet#DataPageHeaderV2#write a test file and then read it back', async (
     }
     const opts = { useDataPageV2: true, compression: 'UNCOMPRESSED' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file with GZIP compression', async () => {
     if (isBrowser) {
@@ -312,7 +312,7 @@ test('Parquet#DataPageHeaderV2#write a test file with GZIP compression and then 
     }
     const opts = { useDataPageV2: true, compression: 'GZIP' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file with SNAPPY compression', async () => {
     if (isBrowser) {
@@ -327,7 +327,7 @@ test('Parquet#DataPageHeaderV2#write a test file with SNAPPY compression and the
     }
     const opts = { useDataPageV2: true, compression: 'SNAPPY' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file with LZO compression', async () => {
     if (isBrowser) {
@@ -342,7 +342,7 @@ test('Parquet#DataPageHeaderV2#write a test file with LZO compression and then r
     }
     const opts = { useDataPageV2: true, compression: 'LZO' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test('Parquet#DataPageHeaderV2#write a test file with BROTLI compression', async () => {
     if (isBrowser) {
@@ -357,7 +357,7 @@ test('Parquet#DataPageHeaderV2#write a test file with BROTLI compression and the
     }
     const opts = { useDataPageV2: true, compression: 'BROTLI' };
     await writeTestFile(opts);
-    await readTestFile(t);
+    await readTestFile();
 });
 test.skip('Stream/Transform#write a test file', async () => {
 });
