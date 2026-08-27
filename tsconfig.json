@@ -385,6 +385,15 @@
       "@loaders.gl/wms/test": [
         "modules/wms/test"
       ],
+      "@loaders.gl/services": [
+        "modules/services/src"
+      ],
+      "@loaders.gl/services/unbundled": [
+        "modules/services/src/unbundled"
+      ],
+      "@loaders.gl/services/test": [
+        "modules/services/test"
+      ],
       "@loaders.gl/xml": [
         "modules/xml/src"
       ],

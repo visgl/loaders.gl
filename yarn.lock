@@ -5741,6 +5741,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/services@workspace:modules/services":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/services@workspace:modules/services"
+  dependencies:
+    "@loaders.gl/wms": "npm:5.0.0-alpha.2"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/shapefile@workspace:*, @loaders.gl/shapefile@workspace:modules/shapefile":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/shapefile@workspace:modules/shapefile"

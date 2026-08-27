@@ -131,6 +131,24 @@ export {
   ArcGISVectorTileServerSource,
   ArcGISVectorTileServerSourceLoader
 } from './arcgis/arcgis-vector-tile-server-source-loader';
+export {
+  ArcGISFeatureServerSourceLoader,
+  ArcGISVectorSource
+} from './arcgis/arcgis-feature-server-source-loader';
+export type {
+  ArcGISFeatureServiceQueryOptions,
+  ArcGISFeatureServerSourceLoaderOptions
+} from './arcgis/arcgis-feature-server-source-loader';
+export {
+  ArcGISImageServerSourceLoader,
+  ArcGISImageSource
+} from './arcgis/arcgis-image-server-source-loader';
+export type {
+  ArcGISExportImageParameters,
+  ArcGISImageSourceLoaderProps
+} from './arcgis/arcgis-image-server-source-loader';
+export {getArcGISServices} from './arcgis/arcgis-server';
+export type {Service} from './arcgis/arcgis-server';
 export type {ArcGISMapTileSourceLoaderOptions} from './arcgis/arcgis-map-tile-source-loader';
 export {
   ArcGISMapTileSourceLoader,
