@@ -92,6 +92,26 @@ test('ParquetJSLoader decrypts encrypted columns into an Arrow table', async () 
   }
 });
 
+test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns', async () => {
+  const requestedKeyMetadata: string[] = [];
+  const keyRetriever = (keyMetadata: Uint8Array | undefined) => {
+    const keyId = keyMetadata ? new TextDecoder().decode(keyMetadata) : '';
+    requestedKeyMetadata.push(keyId);
+    return ENCRYPTED_KEYS[keyId];
+  };
+  const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {
+      columns: ['double_field'],
+      keyRetriever
+    }
+  });
+
+  expect(table.data).toHaveLength(50);
+  expect(new Set(requestedKeyMetadata)).not.toEqual(new Set(['kf', 'kc1', 'kc2']));
+});
+
 test('verifies plaintext-footer signatures and rejects tampering', async () => {
   const footerBytes = new TextEncoder().encode('serialized parquet footer');
   const fileUnique = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
