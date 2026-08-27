@@ -324,8 +324,26 @@ function shouldApplyDynamicTyping(csvOptions: ArrowTableCSVOptions): boolean {
 type DirectTypedColumn = {
   /** Dynamically typed values or raw UTF-8 sentinels. */
   values: DynamicColumnValue[];
+  /** Input-size based initial capacity for specialized column buffers. */
+  initialCapacity: number;
+  /** Number of values appended across specialized and generic storage. */
+  valueCount: number;
   /** Narrowest type observed so far, promoted permanently to UTF-8 after mixed input. */
   inferredDataType: TypedColumnDataType | null;
+  /** Growable floating-point storage used while the column remains numeric. */
+  floatData: Float64Array | null;
+  /** Optional validity bitmap for specialized floating-point storage. */
+  floatNullBitmap: Uint8Array | null;
+  /** Number of nulls in specialized floating-point storage. */
+  floatNullCount: number;
+  /** Growable source starts used while the column remains raw UTF-8. */
+  rawValueStarts: Int32Array | null;
+  /** Growable source ends used while the column remains raw UTF-8. */
+  rawValueEnds: Int32Array | null;
+  /** Optional validity bitmap for specialized raw UTF-8 storage. */
+  rawNullBitmap: Uint8Array | null;
+  /** Number of nulls in specialized raw UTF-8 storage. */
+  rawNullCount: number;
   /** Whether every value can be copied directly from its retained source byte range. */
   hasOnlyRawUtf8OrNull: boolean;
   /** Inclusive source offsets, allocated only after a raw UTF-8 value is observed. */
@@ -603,9 +621,22 @@ function tryParseTypedUnquotedCSVBytes(
   }
   const headerEnd = findDirectRowEnd(bytes, 0);
   const headerRow = decodeDirectHeaderRow(bytes, 0, headerEnd.end, delimiterByte);
+  const initialColumnCapacity = Math.max(
+    1024,
+    Math.ceil(bytes.length / (Math.max(headerRow.length, 1) * 8))
+  );
   const columns: DirectTypedColumn[] = headerRow.map(() => ({
     values: [],
+    initialCapacity: initialColumnCapacity,
+    valueCount: 0,
     inferredDataType: null,
+    floatData: null,
+    floatNullBitmap: null,
+    floatNullCount: 0,
+    rawValueStarts: null,
+    rawValueEnds: null,
+    rawNullBitmap: null,
+    rawNullCount: 0,
     hasOnlyRawUtf8OrNull: true,
     valueStarts: null,
     valueEnds: null
@@ -756,18 +787,42 @@ function appendDirectTypedField(
   if (!column) {
     return;
   }
-  const dynamicValue =
-    column.inferredDataType === 'utf8' && valueStart !== valueEnd
-      ? RAW_UTF8_VALUE
-      : parseRawUtf8ValueWithDynamicTyping(bytes, valueStart, valueEnd);
+  const dynamicValue = parseRawUtf8ValueWithDynamicTyping(bytes, valueStart, valueEnd);
+  const rowIndex = column.valueCount;
+  column.valueCount++;
+
+  if (column.inferredDataType === 'float64' && column.floatData) {
+    if (dynamicValue === null || typeof dynamicValue === 'number') {
+      appendDirectFloatValue(column, dynamicValue, rowIndex);
+      return;
+    }
+    promoteDirectFloatColumnToGenericValues(column, rowIndex);
+  } else if (column.inferredDataType === null && typeof dynamicValue === 'number') {
+    startDirectFloatColumn(column, dynamicValue, rowIndex);
+    return;
+  }
+
+  if (column.inferredDataType === 'utf8' && column.rawValueStarts) {
+    if (dynamicValue === null || dynamicValue === RAW_UTF8_VALUE) {
+      appendDirectRawUtf8Value(column, dynamicValue, valueStart, valueEnd, rowIndex);
+      return;
+    }
+    promoteDirectRawUtf8ColumnToGenericValues(column, rowIndex);
+  } else if (column.inferredDataType === null && dynamicValue === RAW_UTF8_VALUE) {
+    startDirectRawUtf8Column(column, valueStart, valueEnd, rowIndex);
+    return;
+  }
+
   column.values.push(dynamicValue);
 
   if (dynamicValue !== null) {
-    const valueDataType = getTypedColumnDataType(dynamicValue);
-    if (column.inferredDataType === null) {
-      column.inferredDataType = valueDataType;
-    } else if (column.inferredDataType !== valueDataType) {
-      column.inferredDataType = 'utf8';
+    if (column.inferredDataType !== 'utf8') {
+      const valueDataType = getTypedColumnDataType(dynamicValue);
+      if (column.inferredDataType === null) {
+        column.inferredDataType = valueDataType;
+      } else if (column.inferredDataType !== valueDataType) {
+        column.inferredDataType = 'utf8';
+      }
     }
     if (dynamicValue !== RAW_UTF8_VALUE) {
       column.hasOnlyRawUtf8OrNull = false;
@@ -782,6 +837,184 @@ function appendDirectTypedField(
     column.valueStarts.push(dynamicValue === RAW_UTF8_VALUE ? valueStart : 0);
     column.valueEnds.push(dynamicValue === RAW_UTF8_VALUE ? valueEnd : 0);
   }
+}
+
+/** Starts specialized floating-point storage after optional leading nulls. */
+function startDirectFloatColumn(column: DirectTypedColumn, value: number, rowIndex: number): void {
+  const initialCapacity = Math.max(column.initialCapacity, rowIndex + 1);
+  column.floatData = new Float64Array(initialCapacity);
+  column.inferredDataType = 'float64';
+  column.hasOnlyRawUtf8OrNull = false;
+  column.values = [];
+
+  if (rowIndex > 0) {
+    column.floatNullBitmap = new Uint8Array(Math.ceil(initialCapacity / 8));
+    column.floatNullCount = rowIndex;
+    column.floatNullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+  }
+  column.floatData[rowIndex] = value;
+}
+
+/** Appends one value to specialized floating-point storage. */
+function appendDirectFloatValue(
+  column: DirectTypedColumn,
+  value: number | null,
+  rowIndex: number
+): void {
+  ensureDirectFloatCapacity(column, rowIndex + 1);
+  if (value === null) {
+    if (!column.floatNullBitmap) {
+      column.floatNullBitmap = new Uint8Array(Math.ceil(column.floatData!.length / 8));
+      for (let validRowIndex = 0; validRowIndex < rowIndex; validRowIndex++) {
+        column.floatNullBitmap[validRowIndex >> 3] |= 1 << (validRowIndex % 8);
+      }
+    }
+    column.floatNullCount++;
+    return;
+  }
+
+  column.floatData![rowIndex] = value;
+  if (column.floatNullBitmap) {
+    column.floatNullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+  }
+}
+
+/** Grows specialized floating-point and validity storage. */
+function ensureDirectFloatCapacity(column: DirectTypedColumn, requiredLength: number): void {
+  if (requiredLength <= column.floatData!.length) {
+    return;
+  }
+
+  let nextCapacity = column.floatData!.length * 2;
+  while (nextCapacity < requiredLength) {
+    nextCapacity *= 2;
+  }
+  const nextData = new Float64Array(nextCapacity);
+  nextData.set(column.floatData!);
+  column.floatData = nextData;
+
+  if (column.floatNullBitmap) {
+    const nextNullBitmap = new Uint8Array(Math.ceil(nextCapacity / 8));
+    nextNullBitmap.set(column.floatNullBitmap);
+    column.floatNullBitmap = nextNullBitmap;
+  }
+}
+
+/** Materializes specialized numeric values only when a later cell makes the column mixed. */
+function promoteDirectFloatColumnToGenericValues(
+  column: DirectTypedColumn,
+  valueCount: number
+): void {
+  const values = new Array<DynamicColumnValue>(valueCount);
+  for (let rowIndex = 0; rowIndex < valueCount; rowIndex++) {
+    const isValid =
+      !column.floatNullBitmap ||
+      (column.floatNullBitmap[rowIndex >> 3] & (1 << (rowIndex % 8))) !== 0;
+    values[rowIndex] = isValid ? column.floatData![rowIndex] : null;
+  }
+  column.values = values;
+  column.floatData = null;
+  column.floatNullBitmap = null;
+  column.floatNullCount = 0;
+  column.inferredDataType = 'utf8';
+}
+
+/** Starts specialized raw UTF-8 range storage after optional leading nulls. */
+function startDirectRawUtf8Column(
+  column: DirectTypedColumn,
+  valueStart: number,
+  valueEnd: number,
+  rowIndex: number
+): void {
+  const initialCapacity = Math.max(column.initialCapacity, rowIndex + 1);
+  column.rawValueStarts = new Int32Array(initialCapacity);
+  column.rawValueEnds = new Int32Array(initialCapacity);
+  column.inferredDataType = 'utf8';
+  column.values = [];
+
+  if (rowIndex > 0) {
+    column.rawNullBitmap = new Uint8Array(Math.ceil(initialCapacity / 8));
+    column.rawNullCount = rowIndex;
+    column.rawNullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+  }
+  column.rawValueStarts[rowIndex] = valueStart;
+  column.rawValueEnds[rowIndex] = valueEnd;
+}
+
+/** Appends one raw UTF-8 range or null to specialized source-range storage. */
+function appendDirectRawUtf8Value(
+  column: DirectTypedColumn,
+  value: typeof RAW_UTF8_VALUE | null,
+  valueStart: number,
+  valueEnd: number,
+  rowIndex: number
+): void {
+  ensureDirectRawUtf8Capacity(column, rowIndex + 1);
+  if (value === null) {
+    if (!column.rawNullBitmap) {
+      column.rawNullBitmap = new Uint8Array(Math.ceil(column.rawValueStarts!.length / 8));
+      for (let validRowIndex = 0; validRowIndex < rowIndex; validRowIndex++) {
+        column.rawNullBitmap[validRowIndex >> 3] |= 1 << (validRowIndex % 8);
+      }
+    }
+    column.rawNullCount++;
+    return;
+  }
+
+  column.rawValueStarts![rowIndex] = valueStart;
+  column.rawValueEnds![rowIndex] = valueEnd;
+  if (column.rawNullBitmap) {
+    column.rawNullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+  }
+}
+
+/** Grows specialized raw UTF-8 range and validity storage. */
+function ensureDirectRawUtf8Capacity(column: DirectTypedColumn, requiredLength: number): void {
+  if (requiredLength <= column.rawValueStarts!.length) {
+    return;
+  }
+
+  let nextCapacity = column.rawValueStarts!.length * 2;
+  while (nextCapacity < requiredLength) {
+    nextCapacity *= 2;
+  }
+  const nextStarts = new Int32Array(nextCapacity);
+  const nextEnds = new Int32Array(nextCapacity);
+  nextStarts.set(column.rawValueStarts!);
+  nextEnds.set(column.rawValueEnds!);
+  column.rawValueStarts = nextStarts;
+  column.rawValueEnds = nextEnds;
+
+  if (column.rawNullBitmap) {
+    const nextNullBitmap = new Uint8Array(Math.ceil(nextCapacity / 8));
+    nextNullBitmap.set(column.rawNullBitmap);
+    column.rawNullBitmap = nextNullBitmap;
+  }
+}
+
+/** Materializes raw range sentinels only when a later cell requires canonicalization. */
+function promoteDirectRawUtf8ColumnToGenericValues(
+  column: DirectTypedColumn,
+  valueCount: number
+): void {
+  const values = new Array<DynamicColumnValue>(valueCount);
+  const valueStarts = new Array<number>(valueCount);
+  const valueEnds = new Array<number>(valueCount);
+  for (let rowIndex = 0; rowIndex < valueCount; rowIndex++) {
+    const isValid =
+      !column.rawNullBitmap || (column.rawNullBitmap[rowIndex >> 3] & (1 << (rowIndex % 8))) !== 0;
+    values[rowIndex] = isValid ? RAW_UTF8_VALUE : null;
+    valueStarts[rowIndex] = isValid ? column.rawValueStarts![rowIndex] : 0;
+    valueEnds[rowIndex] = isValid ? column.rawValueEnds![rowIndex] : 0;
+  }
+  column.values = values;
+  column.valueStarts = valueStarts;
+  column.valueEnds = valueEnds;
+  column.rawValueStarts = null;
+  column.rawValueEnds = null;
+  column.rawNullBitmap = null;
+  column.rawNullCount = 0;
+  column.hasOnlyRawUtf8OrNull = false;
 }
 
 /** Builds a final typed Arrow table from direct-parser columns. */
@@ -806,8 +1039,16 @@ function buildDirectTypedArrowTable(
   const typedArrowSchema = convertSchemaToArrow(typedSchema, {viewTypes: 'never'});
   const typedArrowColumns = columns.map((column, columnIndex) => {
     const typedColumnDataType = typedColumnDataTypes[columnIndex];
+    if (typedColumnDataType === 'utf8' && column.rawValueStarts) {
+      return createDirectRawUtf8Column(bytes, column);
+    }
+
     if (typedColumnDataType === 'utf8' && column.hasOnlyRawUtf8OrNull) {
       return createDirectUtf8Column(bytes, column);
+    }
+
+    if (typedColumnDataType === 'float64' && column.floatData) {
+      return createDirectFloatColumn(column);
     }
 
     if (typedColumnDataType !== 'utf8') {
@@ -853,6 +1094,66 @@ function buildDirectTypedArrowTable(
     schema: typedSchema,
     data: typedArrowData
   };
+}
+
+/** Creates one Arrow floating-point vector from specialized direct-parser storage. */
+function createDirectFloatColumn(column: DirectTypedColumn): arrow.Vector {
+  return new arrow.Vector([
+    arrow.makeData({
+      type: new arrow.Float64(),
+      data: column.floatData!.subarray(0, column.valueCount),
+      length: column.valueCount,
+      nullBitmap:
+        column.floatNullCount > 0
+          ? column.floatNullBitmap!.subarray(0, Math.ceil(column.valueCount / 8))
+          : undefined,
+      nullCount: column.floatNullCount
+    })
+  ]);
+}
+
+/** Creates one Arrow UTF-8 vector from specialized direct-parser source ranges. */
+function createDirectRawUtf8Column(bytes: Uint8Array, column: DirectTypedColumn): arrow.Vector {
+  const valueOffsets = new Int32Array(column.valueCount + 1);
+  let dataLength = 0;
+  for (let rowIndex = 0; rowIndex < column.valueCount; rowIndex++) {
+    const isValid =
+      !column.rawNullBitmap || (column.rawNullBitmap[rowIndex >> 3] & (1 << (rowIndex % 8))) !== 0;
+    if (isValid) {
+      dataLength += column.rawValueEnds![rowIndex] - column.rawValueStarts![rowIndex];
+    }
+    valueOffsets[rowIndex + 1] = dataLength;
+  }
+
+  const data = new Uint8Array(dataLength);
+  let dataOffset = 0;
+  for (let rowIndex = 0; rowIndex < column.valueCount; rowIndex++) {
+    const isValid =
+      !column.rawNullBitmap || (column.rawNullBitmap[rowIndex >> 3] & (1 << (rowIndex % 8))) !== 0;
+    if (isValid) {
+      dataOffset = copyByteRange(
+        bytes,
+        column.rawValueStarts![rowIndex],
+        column.rawValueEnds![rowIndex],
+        data,
+        dataOffset
+      );
+    }
+  }
+
+  return new arrow.Vector([
+    arrow.makeData({
+      type: new arrow.Utf8(),
+      length: column.valueCount,
+      valueOffsets,
+      data,
+      nullBitmap:
+        column.rawNullCount > 0
+          ? column.rawNullBitmap!.subarray(0, Math.ceil(column.valueCount / 8))
+          : undefined,
+      nullCount: column.rawNullCount
+    })
+  ]);
 }
 
 /** Creates one Utf8 Arrow vector directly from retained source byte ranges. */
