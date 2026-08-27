@@ -64,11 +64,17 @@ test('ORC metadata preserves nested map and struct types', () => {
   ).toMatchObject({type: 'list'});
 });
 
-test('ORCSource rejects unsupported predicates before reading the source', async () => {
-  const source = new ORCSource(new Blob([new Uint8Array([0])]));
-  await expect(source.query({predicate: {type: 'literal', value: true} as never})).rejects.toThrow(
-    'ORC predicates are not implemented yet'
-  );
+test('ORCSource applies residual predicates with three-valued semantics', async () => {
+  const input = {
+    shape: 'arrow-table' as const,
+    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
+  };
+  const encoded = await ORCWriter.encode(input);
+  const source = new ORCSource(new Blob([encoded]));
+  const result = await source.query({
+    predicate: {op: '=', args: [{property: 'name'}, 'a']}
+  });
+  expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'a']);
 });
 
 test('ORCSource validates query limits before decoding rows', async () => {

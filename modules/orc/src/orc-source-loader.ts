@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/schema';
+import * as arrow from 'apache-arrow';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
@@ -13,7 +14,8 @@ import type {
 import {
   createScanQueryMetadata,
   DataSource,
-  validateTableQueryOptions
+  validateTableQueryOptions,
+  filterColumnarRowIndices
 } from '@loaders.gl/loader-utils';
 import {parseORC, ORCTypeKind, type ORCTypeDescription} from './lib/parsers/parse-orc';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
@@ -58,7 +60,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
       capabilities: {
         table: {
           projection: 'residual',
-          predicate: 'unsupported',
+          predicate: 'residual',
           limit: 'residual',
           streaming: false,
           cancellation: false
@@ -74,9 +76,6 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   /** Executes a portable query after decoding the ORC file into an Arrow table. */
   async query(options: ORCQueryOptions = {}): Promise<ArrowTable> {
     throwIfAborted(options.signal);
-    if (options.predicate) {
-      throw new Error('ORC predicates are not implemented yet.');
-    }
     const arrayBuffer = await this.getArrayBuffer(options.signal);
     await preloadORCCompression();
     const file = parseORC(arrayBuffer);
@@ -87,9 +86,24 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
       options
     );
     const table = parseORCToArrow(arrayBuffer);
-    const projectedData = table.data.select(
-      options.columns ? [...options.columns] : table.data.schema.fields.map(field => field.name)
+    const availableColumns = table.data.schema.fields.map(field => field.name);
+    validateTableQueryOptions(availableColumns, options);
+    const columns: Record<string, unknown[]> = Object.fromEntries(
+      availableColumns.map(name => [name, table.data.getChild(name)?.toArray() || []])
     );
+    const rowIndices = filterColumnarRowIndices(options.predicate, columns, table.data.numRows);
+    const selectedColumns = options.columns ? new Set(options.columns) : undefined;
+    const projectedData = options.predicate
+      ? arrow.tableFromArrays(
+          Object.fromEntries(
+            Object.entries(columns)
+              .filter(([name]) => !selectedColumns || selectedColumns.has(name))
+              .map(([name, values]) => [name, rowIndices.map(rowIndex => values[rowIndex])])
+          )
+        )
+      : table.data.select(
+          options.columns ? [...options.columns] : table.data.schema.fields.map(field => field.name)
+        );
     const limitedData = projectedData.slice(0, options.limit ?? Number.POSITIVE_INFINITY);
     return {
       shape: 'arrow-table',
