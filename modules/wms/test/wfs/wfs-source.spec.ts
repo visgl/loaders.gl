@@ -24,7 +24,7 @@ test('WFSSourceLoader#getFeaturesURL', t => {
   t.equal(featuresUrl.origin + featuresUrl.pathname, WFS_URL, 'keeps the base WFS URL');
   t.equal(featuresUrl.searchParams.get('SERVICE'), 'WFS');
   t.equal(featuresUrl.searchParams.get('REQUEST'), 'GetFeature');
-  t.equal(featuresUrl.searchParams.get('VERSION'), '1.3.0');
+  t.equal(featuresUrl.searchParams.get('VERSION'), '2.0.0');
   t.equal(featuresUrl.searchParams.get('TYPENAME'), 'roads,bridges');
   t.equal(featuresUrl.searchParams.get('BBOX'), '2,1,4,3,EPSG:4326');
   t.equal(featuresUrl.searchParams.get('SRSNAME'), 'EPSG:4326');
@@ -39,7 +39,7 @@ test('WFSSourceLoader#getCapabilitiesURL defaults version', t => {
   t.equal(capabilitiesUrl.origin + capabilitiesUrl.pathname, WFS_URL, 'keeps the base WFS URL');
   t.equal(capabilitiesUrl.searchParams.get('SERVICE'), 'WFS');
   t.equal(capabilitiesUrl.searchParams.get('REQUEST'), 'GetCapabilities');
-  t.equal(capabilitiesUrl.searchParams.get('VERSION'), '1.3.0');
+  t.equal(capabilitiesUrl.searchParams.get('VERSION'), '2.0.0');
   t.end();
 });
 

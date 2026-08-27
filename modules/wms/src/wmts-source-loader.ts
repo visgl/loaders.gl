@@ -10,6 +10,7 @@ import type {
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
+  TileGrid,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
@@ -193,7 +194,7 @@ export class WMTSImageTileSource
 }
 
 /** Converts a WMTS matrix set into the shared tile-grid metadata shape. */
-function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined) {
+function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined): TileGrid | undefined {
   if (!tileMatrixSet) return undefined;
   const firstMatrix = tileMatrixSet.matrices[0];
   return {

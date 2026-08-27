@@ -87,6 +87,7 @@ export {
   getServiceCRSAxisOrder
 } from './crs-utils';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
+export type {WFSVersion} from './wfs-source-loader';
 export type {
   OGCAPICollection,
   OGCAPILandingPage,
