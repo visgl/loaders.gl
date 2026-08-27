@@ -96,6 +96,7 @@ import {
  */
 const PARQUET_MAGIC = 'PAR1';
 const PARQUET_MAGIC_BYTES = encodeUtf8(PARQUET_MAGIC);
+const PARQUET_MAGIC_ENCRYPTED_BYTES = encodeUtf8(PARQUET_MAGIC_ENCRYPTED);
 
 /**
  * Parquet File Format Version
@@ -368,7 +369,7 @@ export class ParquetEnvelopeWriter {
    * Encode the parquet file header
    */
   writeHeader(): Promise<void> {
-    return this.writeSection(PARQUET_MAGIC_BYTES);
+    return this.writeSection(this.encryption ? PARQUET_MAGIC_ENCRYPTED_BYTES : PARQUET_MAGIC_BYTES);
   }
 
   /**
@@ -1338,7 +1339,7 @@ async function encodeEncryptedFooter(
   const algorithmParameters = {
     aad_prefix: options.aadPrefix && new Uint8Array(options.aadPrefix),
     aad_file_unique: fileUnique,
-    supply_aad_prefix: options.aadPrefix ? true : undefined
+    supply_aad_prefix: undefined
   };
   const encryptionAlgorithm =
     algorithm === 'AES_GCM_CTR_V1'

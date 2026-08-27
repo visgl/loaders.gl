@@ -51,6 +51,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
       }
     });
 
+    expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(0, 4))).toBe('PARE');
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
     expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(-4))).toBe('PARE');
   }
