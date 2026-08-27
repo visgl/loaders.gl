@@ -48,8 +48,10 @@ export function encodeGLBSync(
   if (version !== 2) throw new Error(`Unsupported GLB writer version ${version}.`);
   const binary =
     'binChunks' in glb
-      ? (glb.binary ?? glb.binChunks?.[0]?.arrayBuffer)
-      : glb.buffers?.[0]?.arrayBuffer;
+      ? glb.binary
+        ? new Uint8Array(glb.binary)
+        : glb.binChunks?.[0] && getChunkBytes(glb.binChunks[0])
+      : glb.buffers?.[0] && getChunkBytes(glb.buffers[0]);
 
   const byteOffsetStart = byteOffset;
 
@@ -91,7 +93,7 @@ export function encodeGLBSync(
     }
     byteOffset += 8; // GLB_CHUNK_HEADER_SIZE
 
-    byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, new Uint8Array(binary), 4);
+    byteOffset = copyPaddedArrayBufferToDataView(dataView, byteOffset, binary, 4);
 
     // Now we know the BIN chunk length so we can write it.
     if (dataView) {
@@ -122,8 +124,14 @@ function encodeGLBV3(
     {type: MAGIC_JSON, arrayBuffer: encodeJSON(json)},
     ...(('chunks' in glb ? glb.chunks : []) ?? []),
     ...('binChunks' in glb
-      ? (glb.binChunks ?? []).map(chunk => ({type: MAGIC_BIN, arrayBuffer: chunk.arrayBuffer}))
-      : (glb.buffers ?? []).map(buffer => ({type: MAGIC_BIN, arrayBuffer: buffer.arrayBuffer})))
+      ? (glb.binChunks ?? []).map(chunk => ({
+          type: MAGIC_BIN,
+          arrayBuffer: getChunkBytes(chunk).slice().buffer
+        }))
+      : (glb.buffers ?? []).map(buffer => ({
+          type: MAGIC_BIN,
+          arrayBuffer: getChunkBytes(buffer).slice().buffer
+        })))
   ];
 
   if (dataView) {
@@ -163,6 +171,14 @@ function encodeGLBV3(
     setUint64(dataView, byteOffsetStart + 8, byteOffset - byteOffsetStart, 'GLB file length');
   }
   return byteOffset;
+}
+
+function getChunkBytes(chunk: {
+  arrayBuffer: ArrayBuffer;
+  byteOffset: number;
+  byteLength: number;
+}): Uint8Array {
+  return new Uint8Array(chunk.arrayBuffer, chunk.byteOffset, chunk.byteLength);
 }
 
 function encodeJSON(json: Record<string, unknown>): ArrayBuffer {
