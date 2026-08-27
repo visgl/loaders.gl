@@ -168,10 +168,10 @@ path.
 
 ## I3S roadmap
 
-The matrix turns I3S priorities into measurable tranches. **I3S supremacy** means that every current
-mesh and point profile has either end-to-end support or an explicit, tested boundary, with renderer-
-ready semantics and conformance fixtures. The tranche list below is the delivery sequence; the
-sub-tranches under feature intelligence keep the remaining gaps independently shippable:
+The matrix turns I3S priorities into measurable tranches. The long-term target is for every current
+mesh and point profile to have either end-to-end support or an explicit, tested boundary, with
+renderer-ready semantics and conformance fixtures. The tranche list below is the delivery sequence;
+the sub-tranches under feature intelligence keep the remaining gaps independently shippable:
 
 | Tranche | Outcome | Status |
 | --- | --- | :---: |
@@ -190,7 +190,7 @@ sub-tranches under feature intelligence keep the remaining gaps independently sh
 The next high-value tranche is **4c**, followed by **4d**. Tranches 5–7 close the remaining profile,
 coordinate-system, and authoring gaps needed for full supremacy.
 
-### Remaining supremacy gaps
+### Remaining roadmap gaps
 
 The completed tranches establish a strong 3D Object mesh baseline, but the following boundaries are
 still visible in the matrix and should be treated as the open work list:
@@ -205,8 +205,8 @@ still visible in the matrix and should be treated as the open work list:
 | P2 | Validation and authoring parity (7) | Expand schema/conformance coverage beyond the mesh envelope and make converter output pass the same profile and semantic fixtures as the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 
-Supremacy should be declared only when every P0 and P1 row is complete and the P2 rows have either
-landed or an explicit, versioned compatibility boundary.
+The roadmap is considered substantially complete when every P0 and P1 row is complete and the P2
+rows have either landed or an explicit, versioned compatibility boundary.
 
 ## Related specifications and documentation
 
