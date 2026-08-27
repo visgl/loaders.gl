@@ -24,7 +24,7 @@ test('getContentVisibility treats multiple content volumes as a visible union', 
       [firstVolume, secondVolume],
       firstVolume,
       cullingVolume,
-      CullingVolume.MASK_OUTSIDE
+      0
     )
   ).toBe(INTERSECTION.INSIDE);
 });
