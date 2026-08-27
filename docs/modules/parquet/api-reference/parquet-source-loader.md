@@ -358,6 +358,7 @@ individual read.
 | `core.reuseWorkers` | `boolean` | `true` in browsers | Reuses selective source workers between row-group jobs. |
 | `parquet.headers` | `HeadersInit` | `undefined` | Headers forwarded to all remote Parquet requests. |
 | `parquet.preserveBinary` | `boolean` | `false` | Binary-value policy used by TypeScript-backed column reads. |
+| `parquet.int96AsTimestamp` | `boolean` | `false` | Decodes legacy INT96 physical values as epoch-nanosecond timestamps in the source schema and batches. |
 | `parquet.verifyPageChecksums` | `boolean` | `false` | Verifies CRC-32 page bodies when the file provides page checksums; checksum-enabled reads use the TypeScript path. |
 | `parquet.verifyFooterSignature` | `boolean` | `true` | Verifies plaintext-footer signatures on modular-encrypted files when a `keyRetriever` is supplied. |
 | `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted metadata, indexes, Bloom filters, and pages. |

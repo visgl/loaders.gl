@@ -518,7 +518,8 @@ async function decodeDataPage(
     output: target?.values,
     outputOffset: target?.valueOffset,
     dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
-    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+    int96AsTimestamp: context.int96AsTimestamp
   };
 
   const values = decodeValues(
@@ -643,7 +644,8 @@ async function decodeDataPageV2(
     output: target?.values,
     outputOffset: target?.valueOffset,
     dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
-    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+    int96AsTimestamp: context.int96AsTimestamp
   };
 
   const values = decodeValues(
@@ -739,6 +741,7 @@ function createParquetColumnValueBuffer(
     case 'INT64':
       return new BigInt64Array(capacity);
     case 'INT96':
+      return context.int96AsTimestamp ? new BigInt64Array(capacity) : new Float64Array(capacity);
     case 'DOUBLE':
       return new Float64Array(capacity);
     case 'FLOAT':
@@ -839,7 +842,8 @@ async function decodeDictionaryPage(
     {
       ...context,
       typeLength: context.column.typeLength,
-      int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+      int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+      int96AsTimestamp: context.int96AsTimestamp
     } as ParquetCodecOptions
   );
 

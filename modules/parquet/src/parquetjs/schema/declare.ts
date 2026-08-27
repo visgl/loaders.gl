@@ -204,6 +204,8 @@ export interface ParquetReaderContext {
   useTypedLevelBuffers?: boolean;
   /** Verify a page-header CRC when one is present. */
   verifyPageChecksums?: boolean;
+  /** Decode legacy INT96 physical values as epoch nanoseconds. */
+  int96AsTimestamp?: boolean;
 }
 
 /** Mutable storage for decoded Parquet repetition and definition levels. */

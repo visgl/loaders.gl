@@ -52,6 +52,21 @@ describe('Parquet page-index pruning', () => {
     ).toBe(0xffffffffffffffffn);
   });
 
+  test('decodes canonical INT96 page statistics when timestamp mode is enabled', () => {
+    const bytes = new Uint8Array(12);
+    const dataView = new DataView(bytes.buffer);
+    dataView.setBigUint64(0, 987_654_321n, true);
+    dataView.setInt32(8, 2440588, true);
+
+    expect(
+      decodeParquetPageStatisticsValue(
+        bytes,
+        {primitiveType: 'INT96'} as ParquetField,
+        {int96AsTimestamp: true}
+      )
+    ).toBe(987_654_321n);
+  });
+
   test('rejects optional index ranges outside the containing file', () => {
     expect(getParquetIndexRange(80n, 20, 100)).toEqual({offset: 80, length: 20});
     expect(getParquetIndexRange(80n, 21, 100)).toBeUndefined();

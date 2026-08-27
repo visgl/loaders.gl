@@ -85,6 +85,8 @@ export type ParquetSourceWorkerInput = {
   encryption?: ParquetSourceWorkerEncryption;
   /** Whether BYTE_ARRAY values stay binary during logical conversion. */
   preserveBinary: boolean;
+  /** Whether legacy INT96 values decode as epoch-nanosecond timestamps. */
+  int96AsTimestamp: boolean;
   /** Whether page CRC values are verified while decoding in the worker. */
   verifyPageChecksums: boolean;
 };

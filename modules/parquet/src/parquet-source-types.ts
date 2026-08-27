@@ -473,6 +473,8 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */
     preserveBinary?: boolean;
+    /** Decode legacy INT96 values as epoch-nanosecond timestamps. */
+    int96AsTimestamp?: boolean;
     /** Verify page-header CRC values in TypeScript reads. */
     verifyPageChecksums?: boolean;
     /** Resolves modular-encryption keys from file and column key metadata. */
