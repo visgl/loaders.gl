@@ -158,6 +158,11 @@ export class Tile3D {
   private _contentBoundingVolume: any;
   private _viewerRequestVolume: any;
 
+  /** Bounding volume that limits when this tile may be requested, when declared. */
+  get viewerRequestVolume(): any {
+    return this._viewerRequestVolume;
+  }
+
   _initialTransform: Matrix4 = new Matrix4();
 
   // Used by traverser, cannot be marked private
