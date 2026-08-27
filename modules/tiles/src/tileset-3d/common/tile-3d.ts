@@ -155,7 +155,6 @@ export class Tile3D {
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
 
-  private _contentBoundingVolume: any;
   private _contentBoundingVolumes: any[] = [];
   private _viewerRequestVolume: any;
 
@@ -942,7 +941,6 @@ export class Tile3D {
   }
 
   _initializeBoundingVolumes(tileHeader) {
-    this._contentBoundingVolume = null;
     this._contentBoundingVolumes = [];
     this._viewerRequestVolume = null;
 
@@ -1059,7 +1057,6 @@ export class Tile3D {
     this._contentBoundingVolumes = contentVolumes.map(contentHeader =>
       createBoundingVolume(contentHeader.boundingVolume, this.computedTransform)
     );
-    this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
   /**
