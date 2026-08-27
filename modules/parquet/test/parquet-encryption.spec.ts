@@ -160,6 +160,26 @@ test('worker key lookup uses the encrypted column ordinal', async () => {
   ).toEqual(new Uint8Array(secondKey));
 });
 
+test('ParquetReader resolves each encrypted key once per reader', async () => {
+  const requestedKeyMetadata: string[] = [];
+  const keyRetriever = (keyMetadata: Uint8Array | undefined) => {
+    const keyId = keyMetadata ? new TextDecoder().decode(keyMetadata) : '';
+    requestedKeyMetadata.push(keyId);
+    return ENCRYPTED_KEYS[keyId];
+  };
+  const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
+
+  await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {
+      columns: ['double_field', 'float_field'],
+      keyRetriever
+    }
+  });
+
+  expect(requestedKeyMetadata.length).toBe(new Set(requestedKeyMetadata).size);
+});
+
 test('verifies plaintext-footer signatures and rejects tampering', async () => {
   const footerBytes = new TextEncoder().encode('serialized parquet footer');
   const fileUnique = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);

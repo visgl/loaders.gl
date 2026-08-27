@@ -150,6 +150,8 @@ export class ParquetReader {
   private schema: Promise<ParquetSchema> | null = null;
   /** Encryption parameters decoded from plaintext or encrypted footer metadata. */
   private encryptionContext?: ParquetEncryptionContext;
+  /** Resolved keys shared by encrypted modules in this reader instance. */
+  private readonly encryptionKeyCache = new Map<string, Promise<ArrayBuffer | ArrayBufferView>>();
 
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
@@ -204,8 +206,26 @@ export class ParquetReader {
   }
 
   close(): void {
+    this.encryptionKeyCache.clear();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.file.close();
+  }
+
+  /** Returns a reader-scoped key resolver that avoids repeating key-provider work per module. */
+  private getCachedKeyRetriever(): ParquetKeyRetriever {
+    const keyRetriever = this.props.keyRetriever;
+    if (!keyRetriever) {
+      throw new Error('Encrypted Parquet requires parquet.keyRetriever');
+    }
+    return (keyMetadata, context) => {
+      const cacheKey = createEncryptionKeyCacheKey(context.algorithm, keyMetadata);
+      let keyPromise = this.encryptionKeyCache.get(cacheKey);
+      if (!keyPromise) {
+        keyPromise = Promise.resolve().then(() => keyRetriever(keyMetadata, context));
+        this.encryptionKeyCache.set(cacheKey, keyPromise);
+      }
+      return keyPromise;
+    };
   }
 
   // HIGH LEVEL METHODS
@@ -364,7 +384,7 @@ export class ParquetReader {
           'footer'
         ),
         keyMetadata: encryptionContext.footerSigningKeyMetadata,
-        keyRetriever: this.props.keyRetriever
+        keyRetriever: this.getCachedKeyRetriever()
       });
     }
     return metadata;
@@ -396,7 +416,7 @@ export class ParquetReader {
       algorithm,
       aad,
       keyMetadata: cryptoMetadata.metadata.key_metadata,
-      keyRetriever: this.props.keyRetriever
+      keyRetriever: this.getCachedKeyRetriever()
     });
     this.encryptionContext = {
       algorithm,
@@ -477,7 +497,7 @@ export class ParquetReader {
       algorithm: encryptionContext.algorithm,
       aad,
       keyMetadata: this.getColumnKeyMetadata(columnChunk),
-      keyRetriever: this.props.keyRetriever
+      keyRetriever: this.getCachedKeyRetriever()
     });
   }
 
@@ -506,7 +526,7 @@ export class ParquetReader {
         columnOrdinal
       ),
       keyMetadata,
-      keyRetriever: this.props.keyRetriever
+      keyRetriever: this.getCachedKeyRetriever()
     });
     const bitsetBytes = await decryptParquetModule(bitset.bytes, {
       algorithm: encryptionContext.algorithm,
@@ -518,7 +538,7 @@ export class ParquetReader {
         columnOrdinal
       ),
       keyMetadata,
-      keyRetriever: this.props.keyRetriever
+      keyRetriever: this.getCachedKeyRetriever()
     });
     const plaintext = new Uint8Array(headerBytes.byteLength + bitsetBytes.byteLength);
     plaintext.set(headerBytes);
@@ -564,7 +584,7 @@ export class ParquetReader {
         columnKey?.key_metadata ??
         encryptionContext.footerKeyMetadata ??
         encryptionContext.footerSigningKeyMetadata,
-      keyRetriever: this.props.keyRetriever
+      keyRetriever: this.getCachedKeyRetriever()
     });
     const metadata = decodeColumnMetadata(plaintext).metadata;
     if (
@@ -833,7 +853,7 @@ export class ParquetReader {
         algorithm: this.encryptionContext.algorithm,
         aad: headerAad,
         keyMetadata,
-        keyRetriever: this.props.keyRetriever
+        keyRetriever: this.getCachedKeyRetriever()
       });
       const {pageHeader} = decodePageHeader(headerBytes);
       const pageType = getThriftEnum(PageType, pageHeader.type);
@@ -851,7 +871,7 @@ export class ParquetReader {
         algorithm: this.encryptionContext.algorithm,
         aad: dataAad,
         keyMetadata,
-        keyRetriever: this.props.keyRetriever,
+        keyRetriever: this.getCachedKeyRetriever(),
         page: true
       });
       plaintextPages.push(serializeThrift(pageHeader), dataBytes);
@@ -1057,6 +1077,14 @@ function getColumnChunkPath(columnChunk: ColumnChunk): string[] | undefined {
     columnChunk.meta_data?.path_in_schema ??
     columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY?.path_in_schema
   );
+}
+
+/** Builds a stable cache key from the algorithm and optional Parquet key metadata. */
+function createEncryptionKeyCacheKey(
+  algorithm: ParquetEncryptionAlgorithm,
+  keyMetadata: Uint8Array | undefined
+): string {
+  return `${algorithm}:${keyMetadata ? Array.from(keyMetadata).join(',') : 'footer'}`;
 }
 
 /** Returns the original row-group ordinal for a worker-reduced column list. */
