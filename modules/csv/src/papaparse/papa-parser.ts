@@ -63,6 +63,9 @@ export class ChunkStreamer {
     meta: {}
   };
 
+  /** Reads and parses the next input chunk. */
+  _nextChunk(): void {}
+
   constructor(config: CSVParserConfig) {
     // Deep-copy the config so we can edit it
     const configCopy = {...config};
@@ -202,6 +205,9 @@ export class ParserHandle {
     errors: [],
     meta: {}
   };
+
+  /** Streamer that owns this parser handle. */
+  streamer!: ChunkStreamer;
 
   constructor(_config: CSVParserConfig) {
     // One goal is to minimize the use of regular expressions...
