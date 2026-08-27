@@ -55,8 +55,8 @@ export type NetCDFDimension = {
  */
 export type NetCDFVariable = {
   name: string;
-  dimensions: [];
-  attributes: [];
+  dimensions: number[];
+  attributes: NetCDFAttribute[];
   type: string;
   size: number;
   offset: number;

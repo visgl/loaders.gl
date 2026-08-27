@@ -33,6 +33,11 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./netcdf-source-loader": {
+      "types": "./dist/netcdf-source-loader.d.ts",
+      "import": "./dist/netcdf-source-loader.js",
+      "require": "./dist/netcdf-source-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -47,7 +52,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.2"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

@@ -29,7 +29,7 @@ different query model, such as tiles or raster windows, rather than a relational
 | Delta Lake / Lance | Partial | Read-only metadata and Arrow-batch paths exist; common snapshot/fragment planning and predicate pushdown are incomplete. |
 | COPC / Potree | Partial | Point-cloud metadata, coordinate roles, hierarchy bounds, level-of-detail, spacing, and capability discovery are available; full common point streaming is source-specific. |
 | GeoTIFF / COG / Zarr / GeoZarr / OME-Zarr | Partial | Raster window, band/channel, overview/level, and multidimensional selection APIs are available with shared query validation and capabilities. |
-| NetCDF | Planned | The loader is available; the shared multidimensional raster scan contract is not yet wired in. |
+| NetCDF | Partial | Header-only scan metadata exposes variables, dimensions, attributes, and file statistics; data reads and slice pushdown remain follow-up work. |
 | MVT / PMTiles / 3D Tiles / I3S | Specialized | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
 | WMS / WFS / STAC and other services | Specialized | Use the service or catalog query APIs; they are not normalized into the table scan contract. |
 
@@ -710,7 +710,7 @@ exposed yet. A residual predicate is still correct; it simply cannot avoid decod
 | LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |
 | GeoTIFF / COG | Foundation | TIFF/overview metadata | bands/windows | window pushdown | tile-local / typed arrays | P1 |
 | Zarr / GeoZarr / OME-Zarr | Foundation | group/array metadata | variables/channels | chunk/window pushdown | chunked / typed arrays | P1 |
-| NetCDF | Planned | file dimensions/variables | variables/slices | window/slice pushdown | chunked / typed arrays | P1 |
+| NetCDF | Foundation | file dimensions/variables | metadata only | planned window/slice pushdown | planned chunked / typed arrays | P1 |
 | Terrain / LERC | Planned | tile/codec metadata | bands/tiles | tile bounds | tile streams | P2 |
 | MVT / PMTiles | Specialized | tile/catalog metadata | feature-layer selection | tile bounds, optional residual table view | tile streams | P2 |
 | 3D Tiles / I3S | Specialized | tileset metadata | tile content | volume/LOD pushdown | tile streams | P2 |
