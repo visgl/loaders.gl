@@ -737,8 +737,8 @@
         "branches": 57
       }
     },
-    "@loaders.gl/arcgis": {
-      "path": "modules/arcgis",
+    "@loaders.gl/services": {
+      "path": "modules/services",
       "browser": {
         "statements": 100,
         "lines": 100,

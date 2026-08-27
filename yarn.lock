@@ -5138,16 +5138,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/arcgis@workspace:modules/arcgis":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
-  dependencies:
-    "@loaders.gl/wms": "npm:5.0.0-alpha.2"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
 "@loaders.gl/arrow@npm:5.0.0-alpha.2, @loaders.gl/arrow@workspace:*, @loaders.gl/arrow@workspace:modules/arrow":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow@workspace:modules/arrow"
@@ -5757,6 +5747,16 @@ __metadata:
   dependencies:
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@loaders.gl/services@workspace:modules/services":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/services@workspace:modules/services"
+  dependencies:
+    "@loaders.gl/wms": "npm:5.0.0-alpha.2"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
   linkType: soft
 

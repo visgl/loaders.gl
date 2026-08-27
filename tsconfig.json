@@ -391,14 +391,14 @@
       "@loaders.gl/wms/test": [
         "modules/wms/test"
       ],
-      "@loaders.gl/arcgis": [
-        "modules/arcgis/src"
+      "@loaders.gl/services": [
+        "modules/services/src"
       ],
-      "@loaders.gl/arcgis/unbundled": [
-        "modules/arcgis/src/unbundled"
+      "@loaders.gl/services/unbundled": [
+        "modules/services/src/unbundled"
       ],
-      "@loaders.gl/arcgis/test": [
-        "modules/arcgis/test"
+      "@loaders.gl/services/test": [
+        "modules/services/test"
       ],
       "@loaders.gl/xml": [
         "modules/xml/src"

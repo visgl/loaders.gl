@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/arcgis",
+  "name": "@loaders.gl/services",
   "version": "5.0.0-alpha.2",
-  "description": "Framework-independent loaders and sources for ArcGIS services",
+  "description": "Framework-independent loaders and sources for geospatial services",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -13,6 +13,7 @@
   },
   "keywords": [
     "ArcGIS",
+    "services",
     "FeatureServer",
     "ImageServer",
     "MapServer",

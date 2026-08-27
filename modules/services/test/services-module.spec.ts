@@ -3,10 +3,10 @@ import {
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader
-} from '@loaders.gl/arcgis';
+} from '@loaders.gl/services';
 import {describe, expect, test} from 'vitest';
 
-describe('@loaders.gl/arcgis', () => {
+describe('@loaders.gl/services', () => {
   test('exports the initial ArcGIS source family', () => {
     expect(ArcGISFeatureServerSourceLoader.id).toBe('arcgis-feature-server');
     expect(ArcGISImageServerSourceLoader.id).toBe('arcgis-image-server');
