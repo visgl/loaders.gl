@@ -1,48 +1,34 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
-
 import {DataViewReadableFile} from '../../src/parse-zip/readable-file-utils';
 import {generateLocalHeader, parseZipLocalFileHeader} from '../../src/parse-zip/local-file-header';
-
-test('SLPKLoader#local file header parse', async t => {
+test('SLPKLoader#local file header parse', async () => {
   const localFileHeader = await parseZipLocalFileHeader(
     0n,
     new DataViewReadableFile(new DataView(DATA_ARRAY.buffer))
   );
-  t.deepEqual(localFileHeader?.compressedSize, 39n);
-  t.deepEqual(localFileHeader?.fileNameLength, 9);
-  t.end();
+  expect(localFileHeader?.compressedSize).toEqual(39n);
+  expect(localFileHeader?.fileNameLength).toEqual(9);
 });
-
-test('SLPKLoader#central directory file header generation', async t => {
+test('SLPKLoader#central directory file header generation', async () => {
   const header = generateLocalHeader({
     crc32: 0,
     fileName: '@specialIndexFileHASH128@1',
     length: 0
   });
-  t.equal(header.byteLength, 56);
-  t.end();
+  expect(header.byteLength).toBe(56);
 });
-
-test('SLPKLoader#local file header rejects missing zip64 extra field', async t => {
+test('SLPKLoader#local file header rejects missing zip64 extra field', async () => {
   const header = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const view = new DataView(header);
   view.setUint32(18, 0xffffffff, true);
   view.setUint32(22, 0xffffffff, true);
-
-  await t.rejects(
-    parseZipLocalFileHeader(0n, new DataViewReadableFile(view)),
+  await await expect(parseZipLocalFileHeader(0n, new DataViewReadableFile(view))).rejects.toThrow(
     /Invalid ZIP archive:.*ZIP64/
   );
-  t.end();
 });
-
-test('SLPKLoader#local file header rejects truncated zip64 extra field', async t => {
+test('SLPKLoader#local file header rejects truncated zip64 extra field', async () => {
   const header = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const view = new DataView(header);
   view.setUint32(18, 0xffffffff, true);
@@ -52,15 +38,11 @@ test('SLPKLoader#local file header rejects truncated zip64 extra field', async t
   const buffer = new Uint8Array(header.byteLength + extra.byteLength);
   buffer.set(new Uint8Array(header), 0);
   buffer.set(extra, header.byteLength);
-
-  await t.rejects(
-    parseZipLocalFileHeader(0n, new DataViewReadableFile(new DataView(buffer.buffer))),
-    /Invalid ZIP archive:.*ZIP64/
-  );
-  t.end();
+  await await expect(
+    parseZipLocalFileHeader(0n, new DataViewReadableFile(new DataView(buffer.buffer)))
+  ).rejects.toThrow(/Invalid ZIP archive:.*ZIP64/);
 });
-
-test('SLPKLoader#local file header parses valid zip64 sizes', async t => {
+test('SLPKLoader#local file header parses valid zip64 sizes', async () => {
   const header = generateLocalHeader({
     crc32: 0,
     fileName: 'test.json',
@@ -70,14 +52,11 @@ test('SLPKLoader#local file header parses valid zip64 sizes', async t => {
     0n,
     new DataViewReadableFile(new DataView(header))
   );
-
-  t.equal(localFileHeader?.compressedSize, 0xffffffffffn);
-  t.equal(localFileHeader?.extraFieldLength, 20);
-  t.equal(localFileHeader?.fileDataOffset, BigInt(header.byteLength));
-  t.end();
+  expect(localFileHeader?.compressedSize).toBe(0xffffffffffn);
+  expect(localFileHeader?.extraFieldLength).toBe(20);
+  expect(localFileHeader?.fileDataOffset).toBe(BigInt(header.byteLength));
 });
-
-test('SLPKLoader#local file header requires the ZIP64 size pair', async t => {
+test('SLPKLoader#local file header requires the ZIP64 size pair', async () => {
   const compressedHeader = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const compressedHeaderView = new DataView(compressedHeader);
   compressedHeaderView.setUint32(18, 0xffffffff, true);
@@ -87,15 +66,13 @@ test('SLPKLoader#local file header requires the ZIP64 size pair', async t => {
   compressedExtraField.setUint16(2, 16, true);
   compressedExtraField.setBigUint64(4, 0x010203040506n, true);
   compressedExtraField.setBigUint64(12, 0x112233445566n, true);
-
   const compressedFileHeader = await parseZipLocalFileHeader(
     0n,
     new DataViewReadableFile(
       new DataView(concatenateArrayBuffers(compressedHeader, compressedExtraField.buffer))
     )
   );
-  t.equal(compressedFileHeader?.compressedSize, 0x112233445566n);
-
+  expect(compressedFileHeader?.compressedSize).toBe(0x112233445566n);
   const uncompressedHeader = generateLocalHeader({crc32: 0, fileName: 'test.json', length: 0});
   const uncompressedHeaderView = new DataView(uncompressedHeader);
   uncompressedHeaderView.setUint32(22, 0xffffffff, true);
@@ -105,18 +82,15 @@ test('SLPKLoader#local file header requires the ZIP64 size pair', async t => {
   uncompressedExtraField.setUint16(2, 16, true);
   uncompressedExtraField.setBigUint64(4, 0x223344556677n, true);
   uncompressedExtraField.setBigUint64(12, 0x334455667788n, true);
-
   const uncompressedFileHeader = await parseZipLocalFileHeader(
     0n,
     new DataViewReadableFile(
       new DataView(concatenateArrayBuffers(uncompressedHeader, uncompressedExtraField.buffer))
     )
   );
-  t.equal(uncompressedFileHeader?.compressedSize, 0n);
-  t.end();
+  expect(uncompressedFileHeader?.compressedSize).toBe(0n);
 });
-
-test('SLPKLoader#local file header finds zip64 data after an unrelated record', async t => {
+test('SLPKLoader#local file header finds zip64 data after an unrelated record', async () => {
   const header = generateLocalHeader({
     crc32: 0,
     fileName: 'test.json',
@@ -133,14 +107,11 @@ test('SLPKLoader#local file header finds zip64 data after an unrelated record', 
     unrelatedRecord.buffer,
     zip64ExtraField
   );
-
   const localFileHeader = await parseZipLocalFileHeader(
     0n,
     new DataViewReadableFile(new DataView(combinedHeader))
   );
-
-  t.equal(localFileHeader?.compressedSize, 0xffffffffffn);
-  t.equal(localFileHeader?.extraFieldLength, 28);
-  t.equal(localFileHeader?.fileDataOffset, BigInt(combinedHeader.byteLength));
-  t.end();
+  expect(localFileHeader?.compressedSize).toBe(0xffffffffffn);
+  expect(localFileHeader?.extraFieldLength).toBe(28);
+  expect(localFileHeader?.fileDataOffset).toBe(BigInt(combinedHeader.byteLength));
 });

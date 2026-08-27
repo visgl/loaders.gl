@@ -1,26 +1,16 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateWorkerVersion} from '../../../src/lib/worker-api/validate-worker-version';
-
-test('validateWorkerVersion', t => {
-  t.doesNotThrow(
+test('validateWorkerVersion', () => {
+  expect(
     // @ts-ignore
     () => validateWorkerVersion({version: '1.9.0'}, null),
     'missing version is ignored'
-  );
+  ).not.toThrow();
   // @ts-ignore
-  t.doesNotThrow(() => validateWorkerVersion({}, '1.10.0'), 'missing version is ignored');
+  expect(() => validateWorkerVersion({}, '1.10.0'), 'missing version is ignored').not.toThrow();
   // @ts-ignore
-  t.doesNotThrow(() => validateWorkerVersion({version: '1.10.0'}, '1.10.3'), 'version is valid');
-  // TODO enable when fixed
-  // t.throws(() => validateWorkerVersion({version: '1.9.0'}, '1.10.0'), 'version is not valid');
-  // t.throws(
-  //   () => validateWorkerVersion({version: '1.10.0'}, '2.0.0-alpha.1'),
-  //   'version is not valid'
-  // );
-
-  t.end();
+  expect(
+    () => validateWorkerVersion({version: '1.10.0'}, '1.10.3'),
+    'version is valid'
+  ).not.toThrow();
 });
