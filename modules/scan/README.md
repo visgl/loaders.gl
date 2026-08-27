@@ -79,6 +79,67 @@ table operators. NetCDF supports numeric variable selection and named dimension 
 range slices. GeoTIFF, OME-TIFF, GeoZarr, and OME-Zarr retain their format-specific window, level,
 channel, and chunk planners behind the same metadata vocabulary.
 
+## Ordered append federation
+
+`FederatedTableScanSource` exposes multiple managed table sources as one ordered Arrow stream. It
+uses `DataSourceManager` as the authoritative registry and resource owner; federation does not add
+a second loader registry, cache, or lifecycle system.
+
+```typescript
+import {DataSourceManager} from '@loaders.gl/loader-utils';
+import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/scan';
+
+const dataSourceManager = new DataSourceManager();
+dataSourceManager.add({dataSourceId: 'current', dataSource: currentSource});
+dataSourceManager.add({dataSourceId: 'archive', dataSource: archiveSource});
+
+const history = new FederatedTableScanSource(dataSourceManager, {
+  schemaPolicy: 'union',
+  sources: [
+    {dataSourceId: 'current'},
+    {
+      dataSourceId: 'archive',
+      query: {predicate: parseSQLPredicate('year >= 2020')},
+      columnMapping: {station_id: 'stationId'}
+    }
+  ]
+});
+
+for await (const batch of history.read({
+  columns: ['stationId', 'temperature'],
+  limit: 100
+})) {
+  console.log(batch.sourceId, batch.data);
+}
+```
+
+The source list is the stable result order: every surviving row from the first source precedes
+every surviving row from the second. Each source may have a source-local predicate, projection,
+and limit. Explicit `columnMapping` entries rename physical columns before schemas are compared.
+The global predicate and projection run against those mapped names.
+
+Two reconciliation policies are available:
+
+- `strict` (the default) requires every source to expose the same mapped column names and exact
+  portable data types. Physical column order may differ.
+- `union` creates columns in first-seen order and supplies typed nulls where a source lacks a
+  column. A column becomes nullable when it is absent from any source.
+
+The caller's limit is global, not per source. Once it is reached, the active iterator is closed and
+later sources are not opened. Cancellation is observed during asynchronous source resolution and
+between physical batches. Every emitted batch carries `sourceId`, `sourceIndex`, and
+`sourceBatchIndex`, while its metadata retains the original physical batch metadata under
+`sourceMetadata`.
+
+Metadata discovery, explanation, and reads subscribe to all referenced sources for the duration of
+the operation. Their `DataSourceManager` subscriptions are released on success, error,
+cancellation, a satisfied limit, or an early consumer return. This preserves the manager's existing
+replacement, deferred-id, non-persistent pruning, and lifecycle behavior.
+
+Append federation is deliberately not a distributed SQL engine. It does not reorder sources,
+parallelize reads, coerce incompatible data types, or join managed sources. It provides one
+predictable `UNION ALL`-style scan over sources that already implement `TableScanSource`.
+
 ## Addressed vector tables
 
 Specialized tile and service controls stay outside the portable relational query. Applications can

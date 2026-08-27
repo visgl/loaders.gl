@@ -57,6 +57,20 @@ export type {
 export type {ScanQuery} from './scan-query';
 
 export {
+  FEDERATED_TABLE_QUERY_CAPABILITIES,
+  FederatedTableScanSource
+} from './federated-table-scan-source';
+export type {
+  FederatedTableBatch,
+  FederatedTableBatchProvenance,
+  FederatedTableScanExplain,
+  FederatedTableScanSourceOptions,
+  FederatedTableSchemaPolicy,
+  FederatedTableSourceEntry,
+  FederatedTableSourceExplain
+} from './federated-table-scan-source';
+
+export {
   AddressedVectorTableScanSource,
   VectorFeatureTableScanSource,
   VectorTileTableScanSource

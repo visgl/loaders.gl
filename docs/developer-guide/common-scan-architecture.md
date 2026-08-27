@@ -754,9 +754,11 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while
    shared time, level-of-detail, and non-table discovery metadata are still open.
 8. **Portable relational growth — second slice landed.** Arrow and DuckDB now execute the shared
-   ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes. The
-   next slice is planner-level source resolution and duplicate-column naming for larger federated
-   plans before these operators become part of the default panel.
+   ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes.
+   Ordered append federation now resolves named `TableScanSource` instances through the existing
+   `DataSourceManager`, reconciles strict or union schemas with explicit column mappings, and
+   enforces source order, one global limit, cancellation, early termination, and batch provenance.
+   Managed multi-source joins remain outside this tranche.
 9. **GPU and acceleration — deferred.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
    materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest
    neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
@@ -822,8 +824,60 @@ only the rows needed by the relational operators and returns a bounded Arrow tab
 format adapters and the GPU executor a conformance target without committing them to the same
 physical implementation. In-memory unions resolve named child tables through an explicit table map;
 joins expose child fields with a source-qualified name and use SQL inner-join null semantics. SQL
-backends compile the same child relations to `UNION ALL` and qualified `JOIN` statements, leaving
-source registration and federated catalog resolution to the next tranche.
+backends compile the same child relations to `UNION ALL` and qualified `JOIN` statements. The
+following managed append layer adds source registration and streaming resolution without extending
+that materialized join path into a distributed executor.
+
+### Managed append federation
+
+The first managed federation layer is an ordered append, not a distributed database. Applications
+register runtime sources once with `DataSourceManager`; `FederatedTableScanSource` subscribes to
+their stable ids while discovering metadata or producing batches. This intentionally aligns scan
+planning with the existing loaders.gl resource-management system:
+
+```text
+SourceLoader / application factory
+              |
+              v
+       DataSourceManager
+       (identity, lifetime,
+        deferred resolution)
+              |
+              v
+ FederatedTableScanSource
+ (schema plan, ordered append,
+  global query semantics)
+              |
+              v
+     Arrow batches + provenance
+```
+
+The manager remains format-agnostic and does not inspect query capabilities. The federated adapter
+requires each resolved object to publish supported table scan metadata and `read()`. Consequently,
+CSV, NDJSON, Parquet, Iceberg, Delta, ORC, GeoPackage, FlatGeobuf, Arrow IPC, or an application
+source can participate through the same registry when its concrete source implements that
+contract.
+
+Source-local queries use physical source names and run before reconciliation. Explicit mappings
+then rename fields into the federated namespace. Under `strict`, every mapped schema must contain
+the same fields with identical portable data types. Under `union`, columns are ordered by first
+appearance and a source that lacks a field contributes typed nulls. The global predicate,
+projection, and limit operate on this reconciled namespace. No implicit numeric widening, string
+conversion, or geometry coercion is performed.
+
+Execution is serial by design. This is what makes the following guarantees inexpensive and
+testable:
+
+1. source-list order is row order;
+2. a global limit counts rows after the global predicate;
+3. reaching the limit closes the current child iterator and avoids opening later sources;
+4. abort signals cover deferred source resolution as well as batch reads;
+5. each result batch identifies its source id, source position, and physical batch position; and
+6. manager subscriptions are released for completion, errors, cancellation, and early return.
+
+Parallel scheduling, managed-source joins, optimizer-selected source order, schema coercion, and
+distributed aggregation are explicit non-goals. The in-memory relational executor can still join
+or union already supplied Arrow tables; that is a separate materialized execution path.
 
 ## Point-cloud participation
 

@@ -245,6 +245,33 @@ This split keeps responsibilities clear:
 - `DataSource` subclasses implement format-specific query APIs such as `getMetadata()`, `getTile()`, `getRaster()`, or SQL methods.
 - `DataSourceManager` handles object identity, subscriptions, replacement, and cleanup.
 
+### Use the manager for scan federation
+
+`@loaders.gl/scan` reuses this manager rather than defining a scan-only registry. Register each
+`TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
+
+```ts
+import {DataSourceManager} from '@loaders.gl/loader-utils';
+import {FederatedTableScanSource} from '@loaders.gl/scan';
+
+const dataSourceManager = new DataSourceManager();
+dataSourceManager.add({dataSourceId: 'today', dataSource: todaySource});
+dataSourceManager.add({dataSourceId: 'archive', dataSource: archiveSource});
+
+const source = new FederatedTableScanSource(dataSourceManager, {
+  sources: [{dataSourceId: 'today'}, {dataSourceId: 'archive'}]
+});
+```
+
+The federated source owns no child source resources. It creates operation-scoped subscriptions for
+metadata discovery, explanation, and iteration, then releases them on completion, error,
+cancellation, a global-limit stop, or early iterator return. Non-persistent sources therefore keep
+the same pruning and lifecycle behavior they have for any other manager consumer.
+
+The dependency direction is intentional: `DataSourceManager` remains a lightweight,
+format-agnostic resource manager in `@loaders.gl/loader-utils`; the optional scan package adds
+schema reconciliation and ordered query execution on top.
+
 ### Integrate with DataSource subclasses
 
 Any subclass of `DataSource` can be managed. Subclasses do not need to know that a manager exists.
