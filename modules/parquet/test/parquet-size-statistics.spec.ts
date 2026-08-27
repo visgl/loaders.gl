@@ -138,6 +138,23 @@ test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () 
   }
 });
 
+test('ParquetJSWriter omits unsafe page indexes for unsigned logical values', async () => {
+  const parquetBuffer = await encode(
+    {
+      shape: 'object-row-table',
+      schema: {fields: [{name: 'value', type: 'uint64', nullable: false}], metadata: {}},
+      data: [{value: 1n}, {value: 18_446_744_073_709_551_615n}]
+    } satisfies ObjectRowTable,
+    ParquetJSWriter,
+    {worker: false, parquet: {pageIndex: true}}
+  );
+  const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
+  const column = metadata.row_groups[0].columns[0];
+
+  expect(column.column_index_offset).toBeUndefined();
+  expect(column.offset_index_offset).toBeDefined();
+});
+
 test('ParquetJSWriter omits SizeStatistics by default', async () => {
   const parquetBuffer = await encode(TABLE, ParquetJSWriter, {worker: false});
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
