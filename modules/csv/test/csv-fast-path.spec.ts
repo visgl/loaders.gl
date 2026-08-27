@@ -89,6 +89,41 @@ describe('CSV optimized parsing paths', () => {
     expect(getArrowColumnValues(table, 'enabled')).toEqual([true, false]);
   });
 
+  test('parses an integer matrix directly into numeric Arrow columns', async () => {
+    const table = await CSVLoader.parseText('a,b,c\r\n1,2,3\r\n4,5,6', {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+    });
+
+    expect(table.schema?.fields.map(field => field.type)).toEqual([
+      'float64',
+      'float64',
+      'float64'
+    ]);
+    expect(getArrowColumnValues(table, 'a')).toEqual([1, 4]);
+    expect(getArrowColumnValues(table, 'b')).toEqual([2, 5]);
+    expect(getArrowColumnValues(table, 'c')).toEqual([3, 6]);
+  });
+
+  test('parses a single integer column without a final newline', async () => {
+    const table = await CSVLoader.parseText('value\r\n1\r\n2', {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+    });
+
+    expect(table.schema?.fields.map(field => field.type)).toEqual(['float64']);
+    expect(getArrowColumnValues(table, 'value')).toEqual([1, 2]);
+  });
+
+  test('preserves nulls and source strings in mixed typed columns', async () => {
+    const table = await CSVLoader.parseText('id,label,optional\n1,item-1,\n2,item-2,+2\n', {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+    });
+
+    expect(table.schema?.fields.map(field => field.type)).toEqual(['float64', 'utf8', 'utf8']);
+    expect(getArrowColumnValues(table, 'id')).toEqual([1, 2]);
+    expect(getArrowColumnValues(table, 'label')).toEqual(['item-1', 'item-2']);
+    expect(getArrowColumnValues(table, 'optional')).toEqual([null, '+2']);
+  });
+
   test('preserves custom delimiter inference for row output', async () => {
     const table = await CSVLoader.parseText('city^count\nParis^42\n', {
       csv: {
