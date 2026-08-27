@@ -72,7 +72,8 @@ function normalizeTileContents(
     return {
       ...contentEntry,
       boundingVolume: normalizeS2BoundingVolume(
-        getMetadataBoundingVolume(contentEntry.metadata, 'CONTENT', schema) || contentEntry.boundingVolume
+        getMetadataBoundingVolume(contentEntry.metadata, 'CONTENT', schema) ||
+          contentEntry.boundingVolume
       ),
       uri: contentEntry.uri,
       url: contentEntry.url
