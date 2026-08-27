@@ -5,11 +5,19 @@
 import type {Field, Schema, DataType} from '@loaders.gl/schema';
 import type {
   DataSourceOptions,
+  RasterChannelDataType,
+  RasterData,
+  RasterQueryCapabilities,
+  RasterQueryOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   SourceLoader
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  validateRasterQueryOptions
+} from '@loaders.gl/loader-utils';
 import {NetCDFFormat} from './netcdf-format';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';
 import type {NetCDFHeader, NetCDFVariable} from './netcdfjs/netcdf-types';
@@ -21,17 +29,30 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for a NetCDF source. */
 export type NetCDFSourceOptions = DataSourceOptions;
 
+/** Common NetCDF variable and dimension-slice request. */
+export type NetCDFRasterQueryOptions = RasterQueryOptions &
+  Readonly<{
+    /** Cancels the file request and cooperative slice materialization. */
+    signal?: AbortSignal;
+  }>;
+
 /**
- * Lightweight NetCDF source that exposes the classic-file header to the shared scan UI.
- *
- * The source intentionally performs metadata-only discovery. Data-variable reads and chunked
- * window scans remain format-specific follow-up work, but callers can already use one query
- * panel to inspect variables, dimensions, and source statistics.
+ * NetCDF classic source with header-only discovery and typed variable/slice execution.
  */
 export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions> {
   private static readonly HEADER_RANGE_SIZE = 64 * 1024;
   private static readonly MAX_HEADER_RANGE_SIZE = 4 * 1024 * 1024;
   private headerPromise: Promise<{header: NetCDFHeader; byteLength: number}> | null = null;
+
+  /** Capabilities of the NetCDF variable and dimension-slice executor. */
+  readonly rasterQueryCapabilities: RasterQueryCapabilities = Object.freeze({
+    bounds: 'unsupported',
+    level: 'unsupported',
+    variables: 'pushdown',
+    slices: 'residual',
+    streaming: false,
+    cancellation: true
+  });
 
   /** Creates a source over a NetCDF URL or Blob. */
   constructor(data: string | Blob, options: NetCDFSourceOptions = {}) {
@@ -48,21 +69,105 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
     return createScanQueryMetadata({
       sourceType: 'netcdf',
       queryType: 'raster',
-      execution: {
-        status: 'metadata-only',
-        reason: 'Common NetCDF variable and dimension-slice execution is not implemented.'
-      },
+      execution: {status: 'supported', method: 'getRaster'},
       name: typeof this.data === 'string' ? this.data.split('/').pop() : undefined,
       schema,
       capabilities: {
         bounds: 'unsupported',
-        levelOfDetail: 'unsupported'
+        levelOfDetail: 'unsupported',
+        raster: this.rasterQueryCapabilities
       },
       statistics: {
         byteLength,
         rowCount: header.recordDimension.length || undefined
       }
     });
+  }
+
+  /**
+   * Reads selected numeric variables and applies named dimension slices.
+   *
+   * Multiple variables must retain the same shape and numeric type so they can be returned as
+   * ordinary raster bands. Leading dimensions are folded into height and the final dimension is
+   * exposed as width; the original dimension names and shape remain in result metadata.
+   */
+  async getRaster(options: NetCDFRasterQueryOptions = {}): Promise<RasterData> {
+    validateRasterQueryOptions(options);
+    validateNetCDFUnsupportedRasterOptions(options);
+    throwIfAborted(options.signal);
+    const reader = await this.loadReader(options.signal);
+    throwIfAborted(options.signal);
+    validateNetCDFSliceNames(reader.header, options.slices);
+    const variables = selectNetCDFVariables(reader.header, options.variables);
+    const results = variables.map(variable => {
+      throwIfAborted(options.signal);
+      const dimensionNames = variable.dimensions.map(
+        dimensionId => reader.header.dimensions[dimensionId]?.name || `dimension_${dimensionId}`
+      );
+      const dimensionSizes = variable.dimensions.map(dimensionId =>
+        getDimensionSize(reader.header, dimensionId)
+      );
+      const values = flattenNetCDFValues(reader.getDataVariable(variable));
+      const selection = selectNetCDFValues(
+        values,
+        dimensionNames,
+        dimensionSizes,
+        options.slices || {},
+        options.signal
+      );
+      const dtype = getNetCDFRasterDataType(variable.type);
+      return {
+        variable,
+        dimensionNames: selection.dimensionNames,
+        shape: selection.shape,
+        data: createNetCDFTypedArray(selection.values, dtype),
+        dtype
+      };
+    });
+    const reference = results[0];
+    for (const result of results.slice(1)) {
+      if (result.dtype !== reference.dtype || !arraysEqual(result.shape, reference.shape)) {
+        throw new Error(
+          'NetCDF raster variables must retain the same shape and numeric type after slicing.'
+        );
+      }
+    }
+    const width = reference.shape.at(-1) ?? 1;
+    const height =
+      reference.shape.length < 2
+        ? 1
+        : reference.shape.slice(0, -1).reduce((product, size) => product * size, 1);
+    const noData = getNetCDFNoDataValue(reference.variable);
+
+    return {
+      data: results.length === 1 ? reference.data : results.map(result => result.data),
+      width,
+      height,
+      bandCount: results.length,
+      dtype: reference.dtype,
+      interleaved: false,
+      noData,
+      metadata: {
+        variables: results.map(result => result.variable.name),
+        dimensions: reference.dimensionNames,
+        shape: reference.shape,
+        slices: {...options.slices}
+      }
+    };
+  }
+
+  /** Loads a complete NetCDF reader for selected-variable execution. */
+  private async loadReader(signal?: AbortSignal): Promise<NetCDFReader> {
+    let arrayBuffer: ArrayBuffer;
+    if (typeof this.data === 'string') {
+      const response = await this.fetch(this.url, {signal});
+      if (!response.ok) throw new Error(`NetCDF request failed with status ${response.status}.`);
+      arrayBuffer = await response.arrayBuffer();
+    } else {
+      arrayBuffer = await this.data.arrayBuffer();
+    }
+    throwIfAborted(signal);
+    return new NetCDFReader(arrayBuffer);
   }
 
   /** Reads and caches the NetCDF header, preserving abort behavior for each caller. */
@@ -160,6 +265,221 @@ function getNetCDFDataType(type: string): DataType {
     default:
       return 'binary';
   }
+}
+
+type NetCDFTypedArray =
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array;
+
+type NetCDFValueSelection = {
+  values: number[];
+  dimensionNames: string[];
+  shape: number[];
+};
+
+/** Rejects raster operations that have no NetCDF classic interpretation. */
+function validateNetCDFUnsupportedRasterOptions(options: NetCDFRasterQueryOptions): void {
+  if (options.bounds) throw new Error('NetCDF raster bounds are not supported.');
+  if (options.level !== undefined) throw new Error('NetCDF raster levels are not supported.');
+  if (options.width !== undefined || options.height !== undefined) {
+    throw new Error('NetCDF raster resampling is not supported.');
+  }
+  if (options.channels?.length) {
+    throw new Error('NetCDF uses named variables instead of numeric channels.');
+  }
+}
+
+/** Selects and validates query-visible numeric NetCDF variables. */
+function selectNetCDFVariables(
+  header: NetCDFHeader,
+  requestedVariableNames?: readonly string[]
+): NetCDFVariable[] {
+  const defaultVariable = header.variables.find(
+    variable => variable.dimensions.length > 0 && isNetCDFRasterDataType(variable.type)
+  );
+  const variableNames = requestedVariableNames?.length
+    ? [...requestedVariableNames]
+    : defaultVariable
+      ? [defaultVariable.name]
+      : [];
+  if (variableNames.length === 0) {
+    throw new Error('NetCDF contains no numeric variables that can be read as raster data.');
+  }
+  if (new Set(variableNames).size !== variableNames.length) {
+    throw new Error('NetCDF raster variables must not contain duplicates.');
+  }
+  return variableNames.map(variableName => {
+    const variable = header.variables.find(candidate => candidate.name === variableName);
+    if (!variable) throw new Error(`NetCDF variable not found: ${variableName}`);
+    getNetCDFRasterDataType(variable.type);
+    return variable;
+  });
+}
+
+/** Validates slice names against file-level dimensions. */
+function validateNetCDFSliceNames(
+  header: NetCDFHeader,
+  slices: NetCDFRasterQueryOptions['slices']
+): void {
+  const dimensionNames = new Set(header.dimensions.map(dimension => dimension.name));
+  for (const dimensionName of Object.keys(slices || {})) {
+    if (!dimensionNames.has(dimensionName)) {
+      throw new Error(`NetCDF dimension not found: ${dimensionName}`);
+    }
+  }
+}
+
+/** Applies named dimension indices and half-open ranges to row-major variable values. */
+function selectNetCDFValues(
+  values: readonly unknown[],
+  dimensionNames: readonly string[],
+  dimensionSizes: readonly number[],
+  slices: NonNullable<NetCDFRasterQueryOptions['slices']>,
+  signal?: AbortSignal
+): NetCDFValueSelection {
+  const selectors = dimensionNames.map((dimensionName, dimensionIndex) => {
+    const size = dimensionSizes[dimensionIndex];
+    const slice = slices[dimensionName];
+    if (slice === undefined) return {start: 0, stop: size, remove: false};
+    if (typeof slice !== 'number') {
+      const [start, stop] = slice;
+      if (
+        !Number.isSafeInteger(start) ||
+        !Number.isSafeInteger(stop) ||
+        start < 0 ||
+        stop < start ||
+        stop > size
+      ) {
+        throw new Error(
+          `NetCDF slice ${dimensionName} must be a valid half-open range within 0..${size}.`
+        );
+      }
+      return {start, stop, remove: false};
+    }
+    if (!Number.isSafeInteger(slice) || slice < 0 || slice >= size) {
+      throw new Error(`NetCDF slice ${dimensionName} must be an index within 0..${size - 1}.`);
+    }
+    return {start: slice, stop: slice + 1, remove: true};
+  });
+  const strides = dimensionSizes.map((_, dimensionIndex) =>
+    dimensionSizes
+      .slice(dimensionIndex + 1)
+      .reduce((product, dimensionSize) => product * dimensionSize, 1)
+  );
+  const selectedValues: number[] = [];
+
+  const visitDimension = (dimensionIndex: number, flatOffset: number): void => {
+    throwIfAborted(signal);
+    if (dimensionIndex === selectors.length) {
+      const value = values[flatOffset];
+      if (typeof value !== 'number') {
+        throw new Error('NetCDF raster variables must contain numeric values.');
+      }
+      selectedValues.push(value);
+      return;
+    }
+    const selector = selectors[dimensionIndex];
+    for (let index = selector.start; index < selector.stop; index++) {
+      visitDimension(dimensionIndex + 1, flatOffset + index * strides[dimensionIndex]);
+    }
+  };
+  visitDimension(0, 0);
+
+  return {
+    values: selectedValues,
+    dimensionNames: dimensionNames.filter((_, index) => !selectors[index].remove),
+    shape: selectors
+      .map(selector => selector.stop - selector.start)
+      .filter((_, index) => !selectors[index].remove)
+  };
+}
+
+/** Flattens the nested arrays emitted by NetCDFReader into file-order scalar values. */
+function flattenNetCDFValues(values: unknown): unknown[] {
+  if (Array.isArray(values)) return values.flatMap(flattenNetCDFValues);
+  if (ArrayBuffer.isView(values)) {
+    return Array.from(values as unknown as ArrayLike<unknown>);
+  }
+  return [values];
+}
+
+/** Returns whether a NetCDF primitive can be represented by RasterData. */
+function isNetCDFRasterDataType(type: string): boolean {
+  try {
+    getNetCDFRasterDataType(type);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Maps a NetCDF numeric primitive to the common raster channel type. */
+function getNetCDFRasterDataType(type: string): RasterChannelDataType {
+  switch (type.toLowerCase()) {
+    case 'byte':
+      return 'int8';
+    case 'ubyte':
+      return 'uint8';
+    case 'short':
+      return 'int16';
+    case 'ushort':
+      return 'uint16';
+    case 'int':
+      return 'int32';
+    case 'uint':
+      return 'uint32';
+    case 'float':
+      return 'float32';
+    case 'double':
+      return 'float64';
+    default:
+      throw new Error(`NetCDF variable type is not supported as raster data: ${type}`);
+  }
+}
+
+/** Materializes numeric values in the selected NetCDF primitive type. */
+function createNetCDFTypedArray(
+  values: readonly number[],
+  dtype: RasterChannelDataType
+): NetCDFTypedArray {
+  switch (dtype) {
+    case 'int8':
+      return Int8Array.from(values);
+    case 'uint8':
+      return Uint8Array.from(values);
+    case 'int16':
+      return Int16Array.from(values);
+    case 'uint16':
+      return Uint16Array.from(values);
+    case 'int32':
+      return Int32Array.from(values);
+    case 'uint32':
+      return Uint32Array.from(values);
+    case 'float32':
+      return Float32Array.from(values);
+    case 'float64':
+      return Float64Array.from(values);
+  }
+}
+
+/** Reads the conventional fill or missing-value attribute when it is numeric. */
+function getNetCDFNoDataValue(variable: NetCDFVariable): number | null {
+  const attribute = variable.attributes.find(
+    candidate => candidate.name === '_FillValue' || candidate.name === 'missing_value'
+  );
+  const value = Number(attribute?.value);
+  return attribute && Number.isFinite(value) ? value : null;
+}
+
+/** Compares small raster shape arrays. */
+function arraysEqual(left: readonly number[], right: readonly number[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 /** Converts a NetCDF variable into a query-visible field. */

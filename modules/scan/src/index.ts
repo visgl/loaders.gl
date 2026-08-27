@@ -22,12 +22,21 @@ export type {
   TableQueryOptions
 } from '@loaders.gl/loader-utils';
 
-export {createScanQueryMetadata} from '@loaders.gl/loader-utils';
+export {
+  createScanQueryMetadata,
+  intersectPointCloudBounds,
+  selectPointCloudScanTiles,
+  validatePointCloudQueryOptions
+} from '@loaders.gl/loader-utils';
 export type {
   CreateScanQueryMetadataOptions,
   PointCloudQueryBounds,
   PointCloudQueryCapabilities,
   PointCloudQueryOptions,
+  PointCloudScanChildrenLoader,
+  PointCloudScanReadOptions,
+  PointCloudScanSource,
+  PointCloudScanTile,
   RasterQueryCapabilities,
   RasterQueryOptions,
   ScanBounds,

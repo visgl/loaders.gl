@@ -59,7 +59,7 @@ describe('Potree parser branches', () => {
     ).toThrow('missing parent node r7');
   });
 
-  test('decodes positions, packed colors, skipped attributes, and Arrow output', () => {
+  test('decodes positions, packed colors, typed attributes, and Arrow output', () => {
     const pointAttributes = [
       'POSITION_CARTESIAN',
       'RGB_PACKED',
@@ -96,6 +96,12 @@ describe('Potree parser branches', () => {
     }) as any;
     expect(Array.from(mesh.attributes.POSITION.value)).toEqual([51, -98, 153]);
     expect(Array.from(mesh.attributes.COLOR_0.value)).toEqual([19, 20, 21]);
+    expect(Array.from(mesh.attributes.INTENSITY.value)).toEqual([6167]);
+    expect(Array.from(mesh.attributes.NORMAL_SPHEREMAPPED.value)).toEqual([25, 26]);
+    expect(Array.from(mesh.attributes.NORMAL_OCT16.value)).toEqual([7195]);
+    expect(Array.from(mesh.attributes.CLASSIFICATION.value)).toEqual([29]);
+    expect(mesh.attributes.NORMAL_FLOATS.value).toHaveLength(3);
+    expect(mesh.attributes.NORMAL.value).toHaveLength(3);
     expect(mesh.header.boundingBox).toEqual([
       [51, -98, 153],
       [51, -98, 153]

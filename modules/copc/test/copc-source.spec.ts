@@ -58,15 +58,58 @@ test('COPCSourceLoader#creates a source through createDataSource', async () => {
   expect(dataSource).toBeInstanceOf(COPCTileSource);
 });
 
-test('COPCSourceLoader#conclusively reports metadata-only common scan support', async () => {
+test('COPCSourceLoader#conclusively reports common scan support', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   const metadata = await source.getQueryMetadata();
 
   expect(metadata.queryType).toBe('point-cloud');
-  expect(metadata.execution).toEqual({
-    status: 'metadata-only',
-    reason: 'Common point-cloud scan traversal is not implemented; use the COPC tile APIs.'
+  expect(metadata.execution).toEqual({status: 'supported', method: 'scan'});
+  await source.close();
+});
+
+test('COPCSourceLoader#scans bounded projected Arrow point batches with a global limit', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    core: {loadOptions: {core: {worker: false}}}
   });
+  const metadata = await source.getQueryMetadata();
+  const bounds = metadata.spatial?.bounds;
+  expect(bounds).toBeTruthy();
+  const batches = [];
+
+  for await (const batch of source.scan({
+    columns: ['X', 'Y', 'Z', 'Intensity'],
+    predicate: {op: '>=', args: [{property: 'Intensity'}, 0]},
+    bounds: {
+      minimum: bounds!.minimum as [number, number, number],
+      maximum: bounds!.maximum as [number, number, number]
+    },
+    maximumLevel: 0,
+    limit: 25,
+    batchSize: 10
+  })) {
+    batches.push(batch);
+  }
+
+  expect(batches.reduce((length, batch) => length + batch.length, 0)).toBe(25);
+  expect(batches.every(batch => batch.length <= 10)).toBe(true);
+  expect(batches[0].schema.fields.map(field => field.name)).toEqual(['X', 'Y', 'Z', 'Intensity']);
+  for (const batch of batches) {
+    for (const columnName of ['X', 'Y', 'Z', 'Intensity']) {
+      expect(batch.data.getChild(columnName)).toBeTruthy();
+    }
+  }
+  await source.close();
+});
+
+test('COPCSourceLoader#validates scan batch size and cancellation', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const invalidScan = source.scan({batchSize: 0});
+  await expect(invalidScan.next()).rejects.toThrow('batchSize');
+
+  const controller = new AbortController();
+  controller.abort();
+  const cancelledScan = source.scan({signal: controller.signal});
+  await expect(cancelledScan.next()).rejects.toMatchObject({name: 'AbortError'});
   await source.close();
 });
 

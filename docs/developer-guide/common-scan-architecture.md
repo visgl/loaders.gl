@@ -38,8 +38,8 @@ This is the end-user view of the architecture. The statuses are deliberately con
 | GeoTIFF / COG | Supported | `getRaster()` | Bounds and overview selection, bands, typed output, and validated raster queries. |
 | OME-TIFF | Supported | `getRaster()` | Multiscale levels, channels, slices, typed output, and validated raster queries. |
 | GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned bounds, channels or variables, multiscale levels, slices, and typed output. |
-| COPC / Potree | Metadata only | — | Schema, coordinate roles, hierarchy bounds, levels, and spacing are discoverable; use the existing tile APIs for point data. |
-| NetCDF | Metadata only | — | Variables, dimensions, attributes, and file statistics are discoverable; common variable and dimension-slice reads are not implemented. |
+| COPC / Potree | Supported | `scan()` | Ordered hierarchy traversal, bounds and level-of-detail pruning, residual attribute predicates, caller-ordered projection, global limits, cancellation, and Arrow point batches. |
+| NetCDF | Supported | `getRaster()` | Numeric variable selection, named half-open dimension slices, typed output, cancellation, and validated raster queries. |
 | Lance / Shapefile / MLT / LAS / LAZ / PLY / PCD | Not implemented | — | Their existing loaders or specialized sources do not expose the common scan contract. |
 | DuckDB / Snowflake SQL | Supported | `query()` | Compiles the portable table query to bound SQL; this is a backend rather than a file-format adapter. |
 | MVT / PMTiles / 3D Tiles / I3S | Outside protocol | — | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
@@ -738,15 +738,15 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    snapshots expose common execution. Delta replays versioned transaction logs and plans active
    Parquet fragments; checkpoint discovery, CDC, deletion-vector decoding, and writes remain
    separate format features. Lance is explicitly not implemented.
-5. **Point-cloud execution — open and unambiguous.** COPC and Potree expose query metadata but not a
-   common executor, so they are `metadata-only` with a reason and the panel cannot submit a scan.
-   Completing this tranche requires bounded Arrow point batches with ordered hierarchy traversal,
-   exact bounds and residual predicates, and a global limit. LAS/LAZ, PLY, PCD, and splats have no
-   common adapter.
-6. **Existing raster adapters — concluded; NetCDF execution remains open.** GeoTIFF/COG, OME-TIFF,
-   GeoZarr, and OME-Zarr execute validated raster queries through `getRaster()`. NetCDF is
-   `metadata-only` until variable and dimension-slice reads exist. Terrain and LERC have no common
-   adapter.
+5. **Point-cloud execution — concluded.** COPC and Potree execute the shared point-cloud query through
+   `scan()`. A common breadth-first hierarchy planner applies bounds, levels, and target spacing;
+   adapters then apply exact bounds, residual predicates, caller-ordered projection, and one global
+   limit while emitting bounded Arrow point batches. LAS/LAZ, PLY, PCD, and splats remain explicitly
+   not implemented rather than partially supported.
+6. **Existing raster adapters — concluded.** GeoTIFF/COG, OME-TIFF, GeoZarr, OME-Zarr, and NetCDF
+   execute validated raster queries through `getRaster()`. NetCDF supports numeric variable reads
+   and named dimension index or half-open range slices with typed output. Terrain and LERC remain
+   explicitly not implemented.
 7. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
    but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
    Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
@@ -776,11 +776,11 @@ and “Outside protocol” have the exact meanings defined at the top of this pa
 | ORC | Supported | `read()` | Materialized residual table query | Stripe and row-index pruning |
 | GeoPackage | Supported | `read()` | Materialized residual feature-table query | SQL and spatial-index pushdown |
 | Shapefile / MLT / Lance | Not implemented | — | No common scan claims | Add adapters only when end-to-end execution is available |
-| COPC / Potree | Metadata only | — | Schema and hierarchy discovery | Common ordered point-batch executor |
+| COPC / Potree | Supported | `scan()` | Ordered hierarchy selection, exact bounds, residual predicates, projection, global limit, cancellation, and Arrow batches | Finer decoder projection and hierarchy telemetry |
 | LAS / LAZ / PLY / PCD / splats | Not implemented | — | No common scan claims | Decide which formats justify sequential adapters |
 | GeoTIFF / COG / OME-TIFF | Supported | `getRaster()` | Windows, bands/channels, levels, typed output | More chunk telemetry and pushdown |
 | GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned windows, channels, levels, slices | More variable and dimension UI |
-| NetCDF | Metadata only | — | Variable and dimension discovery | Variable and dimension-slice executor |
+| NetCDF | Supported | `getRaster()` | Numeric variables, named dimension index/range slices, typed output, and cancellation | Range reads, chunk pruning, and broader NetCDF variants |
 | Terrain / LERC | Not implemented | — | No common scan claims | Raster adapter design |
 | MVT / PMTiles / 3D Tiles / I3S | Outside protocol | — | Specialized tile APIs | Optional explicit feature-table views |
 | WMS / WFS / STAC | Outside protocol | — | Specialized service and catalog APIs | Shared discovery metadata where useful |
@@ -850,8 +850,10 @@ to emit its own limit.
 non-finite or inverted bounds, invalid hierarchy levels, and non-positive spacing. A point-cloud
 adapter advertises table capabilities plus `bounds`, `levelOfDetail`, and `spacing` support.
 
-COPC is the first physical target because its hierarchy pages, node bounds, point counts, and LAZ
-chunks create a clean pruning ladder:
+COPC and Potree implement the same deterministic breadth-first hierarchy planner. Bounds prune
+whole subtrees, `minimumLevel` suppresses coarse payloads while preserving traversal,
+`maximumLevel` stops descent, and `targetSpacing` selects the first acceptable resolution. Their
+hierarchy pages, node bounds, point counts, and encoded chunks create a clean pruning ladder:
 
 ```text
 PointCloudQueryOptions
@@ -865,12 +867,12 @@ PointCloudQueryOptions
     -> Arrow or GeoArrow point batches
 ```
 
-Potree can reuse the logical query, metadata roles, hierarchy selection interface, scan executor,
-and result batches. Its physical adapter remains separate because Potree versions differ in
-metadata, hierarchy storage, point encoding, and URL layout. Initial Potree support can conservatively
-advertise bounds and level selection as pushdown while keeping scalar attribute predicates residual.
+The physical adapters remain separate because COPC and Potree differ in metadata, hierarchy
+storage, point encoding, and URL layout. Both conservatively advertise hierarchy bounds, level, and
+spacing selection as pushdown while keeping scalar attribute predicates and final point bounds
+residual. COPC minimizes requested LAZ attributes; Potree currently decodes complete point records.
 
-Both adapters should expose `x`, `y`, and `z` roles even when their native attribute names use LAS
+Both adapters expose `x`, `y`, and `z` roles even when their native attribute names use LAS
 conventions such as `X`, `Y`, and `Z`. Intensity, classification, color, GPS time, and point-source
 identifier roles allow the same query panel to render useful typed controls without embedding COPC
 or Potree naming rules in UI code.
@@ -933,6 +935,12 @@ GeoTIFF contributes internal tile offsets, overview selection, and COG byte rang
 OME-Zarr contribute array metadata, chunk coordinates, multiscale levels, dimension labels, and
 codec pipelines. Both can lower to the same `ScanTask` executor while preserving their natural
 typed-array result forms.
+
+NetCDF selects numeric variables and applies slices by discovered dimension name. A numeric slice
+selects one index and removes that dimension; a tuple uses half-open `[start, stop)` semantics and
+retains it. The current classic-file executor materializes the source before slicing, so slicing is
+reported as residual even though the result is fully supported. Range reads and chunk pruning are
+future physical optimizations, not prerequisites for the common `getRaster()` contract.
 
 Cross-domain operations belong above the physical scan layer. For example, sampling a raster at
 Arrow point coordinates or joining a raster window with vector features may coordinate a

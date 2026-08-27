@@ -67,3 +67,14 @@ point-cloud source names `scan()`. Metadata-only sources must supply a user-faci
 keeps query panels and support documentation from inferring readiness from optimization
 capabilities: a residual operator is fully supported even though it performs more work, while a
 metadata-only source never presents an executable scan.
+
+Point-cloud sources implement `PointCloudScanSource` and can share
+`selectPointCloudScanTiles()`. The planner traverses hierarchy nodes in deterministic breadth-first
+order, prunes by bounds, level, and spacing, and leaves exact point bounds and attribute predicates
+to the physical adapter. COPC and Potree use this contract to emit bounded Arrow batches with one
+global limit.
+
+Raster sources implement `getRaster()` and publish raster-specific capabilities independently of
+table operators. NetCDF supports numeric variable selection and named dimension index or half-open
+range slices. GeoTIFF, OME-TIFF, GeoZarr, and OME-Zarr retain their format-specific window, level,
+channel, and chunk planners behind the same metadata vocabulary.

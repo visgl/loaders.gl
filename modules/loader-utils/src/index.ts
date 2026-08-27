@@ -293,7 +293,11 @@ export type {
   RelationalQueryOptions
 } from './lib/scan-utils/relational-query';
 export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
-export {validatePointCloudQueryOptions} from './lib/scan-utils/point-cloud-query';
+export {
+  intersectPointCloudBounds,
+  selectPointCloudScanTiles,
+  validatePointCloudQueryOptions
+} from './lib/scan-utils/point-cloud-query';
 export {
   planTableQuery,
   validateTableQueryLimit,
@@ -313,6 +317,8 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  PointCloudScanReadOptions,
+  PointCloudScanSource,
   TableScanReadOptions,
   TableScanSource,
   ScanRasterLevel,
@@ -322,7 +328,9 @@ export type {
 export type {
   PointCloudQueryBounds,
   PointCloudQueryCapabilities,
-  PointCloudQueryOptions
+  PointCloudQueryOptions,
+  PointCloudScanChildrenLoader,
+  PointCloudScanTile
 } from './lib/scan-utils/point-cloud-query';
 export type {
   ColumnarComparisonPredicate,
