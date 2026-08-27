@@ -9,13 +9,13 @@ import type {GLTFWithBuffers} from '../src/lib/types/gltf-types';
 
 describe('glTF 2.1 culling shapes', () => {
   test('resolves top-level shapes without mutating JSON', () => {
-    const gltf = {
+    const gltf: GLTFWithBuffers = {
       json: {
         asset: {version: '2.1'},
         shapes: [{type: 'sphere', sphere: {radius: 2}}]
       },
       buffers: []
-    } as unknown as GLTFWithBuffers;
+    };
     const source = JSON.stringify(gltf.json);
 
     const shape = getGLTFCullingShape(gltf, 0);
@@ -25,7 +25,7 @@ describe('glTF 2.1 culling shapes', () => {
   });
 
   test('resolves node bounding volumes and applies the volume matrix', () => {
-    const gltf = {
+    const gltf: GLTFWithBuffers = {
       json: {
         asset: {version: '2.1'},
         shapes: [{type: 'box', box: {size: [2, 4, 6]}}],
@@ -34,7 +34,7 @@ describe('glTF 2.1 culling shapes', () => {
         ]
       },
       buffers: []
-    } as unknown as GLTFWithBuffers;
+    };
 
     const shape = getGLTFNodeCullingShape(gltf, 0);
     expect(shape).toBeInstanceOf(BoxShape);
@@ -43,10 +43,10 @@ describe('glTF 2.1 culling shapes', () => {
   });
 
   test('supports capsule defaults and reports invalid references', () => {
-    const gltf = {
+    const gltf: GLTFWithBuffers = {
       json: {asset: {version: '2.1'}, shapes: [{type: 'capsule', capsule: {height: 2}}]},
       buffers: []
-    } as unknown as GLTFWithBuffers;
+    };
     const shape = getGLTFCullingShape(gltf, 0);
     expect(shape).toBeInstanceOf(CapsuleShape);
     expect((shape as CapsuleShape).radiusBottom).toBe(0.5);
