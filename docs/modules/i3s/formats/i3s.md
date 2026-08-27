@@ -178,10 +178,10 @@ path.
 
 ## I3S roadmap
 
-The matrix turns I3S priorities into measurable tranches. **I3S supremacy** means that every current
-mesh and point profile has either end-to-end support or an explicit, tested boundary, with renderer-
-ready semantics and conformance fixtures. The tranche list below is the delivery sequence; the
-sub-tranches under feature intelligence keep the remaining gaps independently shippable:
+The matrix turns I3S priorities into measurable tranches. The long-term target is for every current
+mesh and point profile to have either end-to-end support or an explicit, tested boundary, with
+renderer-ready semantics and conformance fixtures. The tranche list below is the delivery sequence;
+the sub-tranches under feature intelligence keep the remaining gaps independently shippable:
 
 | Tranche | Outcome | Status |
 | --- | --- | :---: |
@@ -199,6 +199,24 @@ sub-tranches under feature intelligence keep the remaining gaps independently sh
 
 The next high-value tranche is **4c**, followed by **4d**. Tranches 5–7 close the remaining profile,
 coordinate-system, and authoring gaps needed for full supremacy.
+
+### Remaining roadmap gaps
+
+The completed tranches establish a strong 3D Object mesh baseline, but the following boundaries are
+still visible in the matrix and should be treated as the open work list:
+
+| Priority | Remaining gap | Exit criteria |
+| --- | --- | --- |
+| P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
+| P0 | Point and Point Cloud profiles (5) | Decode Point geometry and symbols, then I3S 2.1 LEPCC, density LOD, and point-cloud attributes with representative fixtures. |
+| P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
+| P1 | Spatial semantics (6) | Reproject supported horizontal CRSs, honor vertical CRS and units, and apply all `elevationInfo` placement modes. |
+| P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |
+| P2 | Validation and authoring parity (7) | Expand schema/conformance coverage beyond the mesh envelope and make converter output pass the same profile and semantic fixtures as the loaders. |
+| P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
+
+The roadmap is considered substantially complete when every P0 and P1 row is complete and the P2
+rows have either landed or an explicit, versioned compatibility boundary.
 
 ## Related specifications and documentation
 
