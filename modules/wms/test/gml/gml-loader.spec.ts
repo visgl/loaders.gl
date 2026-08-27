@@ -124,3 +124,10 @@ test('GMLLoader accepts alternate GML prefixes and schema-aware properties', () 
     geometry: {type: 'Point', coordinates: [1, 2, 3]}
   });
 });
+test('GMLLoader preserves interior rings with alternate GML prefixes', () => {
+  const geometry = GMLParserLoader.parseTextSync(
+    `<gml32:Polygon xmlns:gml32="http://www.opengis.net/gml/3.2"><gml32:exterior><gml32:LinearRing><gml32:posList>0 0 10 0 10 10 0 0</gml32:posList></gml32:LinearRing></gml32:exterior><gml32:interior><gml32:LinearRing><gml32:posList>2 2 4 2 4 4 2 2</gml32:posList></gml32:LinearRing></gml32:interior></gml32:Polygon>`,
+    {}
+  ) as GeoJSON.Polygon;
+  expect(geometry.coordinates).toHaveLength(2);
+});

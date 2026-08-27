@@ -497,8 +497,10 @@ export function parsePolygonOrRectangle(
 
   const pointLists: Position[][] = [parseExteriorOrInterior(exterior, options, childContext)];
 
-  const interiors = xml['gml:interior'];
-  for (const interior of Array.isArray(interiors) ? interiors : interiors ? [interiors] : []) {
+  const interiors = Object.entries(xml || {})
+    .filter(([key]) => stripNamespace(key) === 'interior')
+    .flatMap(([, value]) => (Array.isArray(value) ? value : [value]));
+  for (const interior of interiors) {
     pointLists.push(parseExteriorOrInterior(interior, options, childContext));
   }
 

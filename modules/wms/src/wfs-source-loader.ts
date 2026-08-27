@@ -382,7 +382,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const {GMLLoaderWithParser} = await import('./gml-loader-with-parser');
     for await (const batch of GMLLoaderWithParser.parseInBatches!(chunks, {
       ...this.loadOptions,
-      gml: {batchSize: options.batchSize || 1000}
+      gml: {
+        ...this.loadOptions.gml,
+        batchSize: options.batchSize || 1000,
+        propertyTypes: this.options.wfs?.propertyTypes
+      }
     })) {
       yield convertWFSFeatures(batch, parameters.format);
     }
@@ -642,7 +646,9 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       }
     }
 
-    return encodeURI(url);
+    // Parameter values are encoded individually in _getURLParameter. Encoding the
+    // complete URL here would encode the percent signs a second time.
+    return url;
   }
 
   _getWFS130Parameters<ParametersT extends {crs?: CRSIdentifier; srs?: CRSIdentifier}>(
@@ -724,9 +730,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
     key = key.toUpperCase();
 
-    return Array.isArray(value)
-      ? `${key}=${value.join(',')}`
-      : `${key}=${value ? String(value) : ''}`;
+    const parameterValue = Array.isArray(value) ? value.join(',') : value ? String(value) : '';
+    return `${key}=${encodeURIComponent(parameterValue)}`;
   }
 
   /** Coordinate order is flipped for certain CRS in WFS 1.1.0 and 2.0.0. */
