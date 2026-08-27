@@ -27,6 +27,8 @@ export type FrameState = {
   topDownViewport: GeospatialViewport; // Use it to calculate projected radius for a tile
   height: number;
   cullingVolume: CullingVolume;
+  /** Optional world-space clipping planes applied to render-content culling. */
+  clippingPlanes?: Plane[];
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
   sseDenominator: number; // Assumes fovy = 60 degrees
   /** View-dependent density used by perspective dynamic screen-space error for this traversal. */
