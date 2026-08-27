@@ -10,8 +10,10 @@ import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
 import {ParquetFormat} from './parquet-format';
 import type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
+import type {ParquetWriterEncryptionOptions} from './lib/parquet-encryption';
 
 export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
+export type {ParquetWriterEncryptionOptions} from './lib/parquet-encryption';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -47,6 +49,8 @@ type ParquetJSWriterEncoderOptions = {
   writeStatistics?: boolean | Record<string, boolean>;
   /** Declares row-group sort keys using top-level or dotted nested leaf names. */
   sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Encrypt the footer using Parquet modular encryption. */
+  encryption?: ParquetWriterEncryptionOptions;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;

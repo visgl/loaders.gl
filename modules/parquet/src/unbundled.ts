@@ -31,6 +31,7 @@ export {
 export {
   createParquetModuleAad,
   decryptParquetModule,
+  encryptParquetModule,
   type ParquetDecryptModuleOptions,
   type ParquetEncryptionAlgorithm,
   type ParquetKeyRetriever

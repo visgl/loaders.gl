@@ -256,7 +256,9 @@ column-chunk reads. Size statistics are available for memory and nested-value pl
 pruning remains future format-completeness work. The TypeScript reader supports AES-GCM and
 AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when a key retriever
 is provided. Encrypted source reads resolve selected data keys on the caller thread and transfer only
-the required key material to the worker; writer-side encryption remains future work.
+the required key material to the worker. `ParquetJSWriter` can now emit an encrypted footer with
+caller-supplied key metadata and a key retriever; column metadata, pages, indexes, and Bloom filters
+remain plaintext on the writer path until a later tranche.
 
 ## Integrity and Encryption
 
@@ -264,7 +266,7 @@ the required key material to the worker; writer-side encryption remains future w
 | ------- | ------- | -------- | ----- |
 | Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
 | Page CRC verification | ✅ (opt-in) | ✅ (opt-in) | CRC-32 covers the compressed page body; enable verification or emission explicitly to avoid a default throughput cost |
-| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ❌ | Encrypted footers, column metadata, page indexes, Bloom filters, and AES-GCM/AES-GCM-CTR page reads are supported; writer-side encryption remains future work |
+| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ⚠️ | Reader supports encrypted footers, column metadata, page indexes, Bloom filters, and AES-GCM/AES-GCM-CTR page reads; `ParquetJSWriter` emits encrypted footers, while encrypted columns/pages/indexes remain future work |
 | External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
 ## Parquet and Arrow
@@ -293,7 +295,7 @@ variant has been exhaustively certified.
 | Tranche | Status | Remaining work |
 | ------- | ------ | -------------- |
 | Statistics-driven pruning | ✅ foundation | Use declared sort order for semantic page/row-group pruning and keep selective-range cost estimates aligned with late materialization |
-| Modular encryption | ⚠️ reader foundation | Add encrypted page-index reads, plaintext-footer integrity verification, writer-side encryption/key rotation, and broader cross-implementation fixtures |
+| Modular encryption | ⚠️ expanding | Add writer-side encrypted column/page/index modules, key rotation, and broader cross-implementation fixtures |
 | Logical and legacy parity | ⚠️ expanding | Broaden INT96 and legacy encoding coverage; preserve Arrow fidelity for every logical annotation |
 | Conformance and scale gate | ⚠️ ongoing | Run the Apache corpus, nested/repeated matrices, all stable codecs, differential checks, and large-file benchmarks in the slow lane |
 | Emerging-format lab | 🧪 experimental | Track ALP, PFOR, VECTOR, and format-versioning proposals behind explicit experimental flags; do not advertise them as stable support |
