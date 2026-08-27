@@ -169,6 +169,7 @@ export class GeoTIFFRasterSource
     return createScanQueryMetadata({
       sourceType: 'geotiff',
       queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
       name: metadata.name,
       schema: {fields, metadata: {}},
       capabilities: {

@@ -62,6 +62,7 @@ export class ArrowTableSource
       return createScanQueryMetadata({
         sourceType: 'arrow',
         queryType: 'table',
+        execution: {status: 'supported', method: 'read'},
         schema: {fields: arrowSchema.fields as never, metadata: {}},
         capabilities: {
           table: {

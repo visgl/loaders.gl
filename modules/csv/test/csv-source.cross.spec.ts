@@ -4,6 +4,7 @@ import {CSVSourceLoader, CSVTableSource} from '../src/csv-source';
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
   const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\n']));
   const metadata = await source.getQueryMetadata();
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.map(column => column.name)).toEqual(['name', 'value']);
   const batches = [];
   for await (const batch of source.read({columns: ['value'], limit: 1})) batches.push(batch);

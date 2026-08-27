@@ -28,6 +28,7 @@ test('OMEZarrSourceLoader supports browser-relative store URLs', async t => {
 test('OMEZarrImageSource reads metadata and channel data in browsers', async t => {
   const source = createInMemoryOMEZarrSource();
   const metadata = await source.getMetadata();
+  const queryMetadata = await source.getQueryMetadata();
   const planarRaster = await source.getRaster({channels: [0, 2]});
   const interleavedRaster = await source.getRaster({channels: [0, 1], interleaved: true});
 
@@ -36,6 +37,7 @@ test('OMEZarrImageSource reads metadata and channel data in browsers', async t =
   t.equal(metadata.height, 2);
   t.equal(metadata.bandCount, 3);
   t.equal(metadata.dtype, 'uint8');
+  t.deepEqual(queryMetadata.execution, {status: 'supported', method: 'getRaster'});
   t.deepEqual(metadata.labels, ['t', 'c', 'z', 'y', 'x']);
   t.deepEqual(metadata.tileSize, {width: 3, height: 2});
   t.deepEqual(metadata.channels, [

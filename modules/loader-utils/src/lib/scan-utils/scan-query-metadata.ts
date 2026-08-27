@@ -89,12 +89,37 @@ export type ScanSourceStatistics = Readonly<{
   byteLength?: number | bigint;
 }>;
 
+/** Common source method that executes the query described by scan metadata. */
+export type ScanExecutionMethod = 'read' | 'query' | 'getRaster' | 'scan';
+
+/**
+ * Conclusive execution status advertised by a scan-aware source.
+ *
+ * `supported` identifies the common method applications can call today. `metadata-only` means the
+ * source can populate discovery UI but deliberately does not claim common scan execution.
+ */
+export type ScanExecutionSupport =
+  | Readonly<{
+      /** The source executes common scan requests. */
+      status: 'supported';
+      /** Public source method that executes the request. */
+      method: ScanExecutionMethod;
+    }>
+  | Readonly<{
+      /** The source only supports query metadata discovery. */
+      status: 'metadata-only';
+      /** Concrete missing execution capability shown to users and documentation tooling. */
+      reason: string;
+    }>;
+
 /** Metadata used to populate a source-neutral query editor before executing a scan. */
 export type ScanQueryMetadata = Readonly<{
   /** Stable adapter or format identifier. */
   sourceType: string;
   /** Query family used to enable table, point-cloud, or raster controls. */
   queryType: 'table' | 'point-cloud' | 'raster';
+  /** Conclusive common execution status and entry point. */
+  execution: ScanExecutionSupport;
   /** Optional source display name. */
   name?: string;
   /** Optional source description. */
@@ -157,6 +182,8 @@ export type CreateScanQueryMetadataOptions = Readonly<{
   sourceType: string;
   /** Query family used to enable specialized controls. */
   queryType: ScanQueryMetadata['queryType'];
+  /** Conclusive common execution status and entry point. */
+  execution: ScanExecutionSupport;
   /** Complete query-visible schema. */
   schema: Schema;
   /** Portable and source-family-specific execution capabilities. */
@@ -183,6 +210,7 @@ export type CreateScanQueryMetadataOptions = Readonly<{
 export function createScanQueryMetadata(
   options: CreateScanQueryMetadataOptions
 ): ScanQueryMetadata {
+  validateScanExecutionSupport(options.queryType, options.execution);
   const schema: Schema = Object.freeze({
     fields: Object.freeze(
       options.schema.fields.map(field =>
@@ -206,6 +234,7 @@ export function createScanQueryMetadata(
   return Object.freeze({
     sourceType: options.sourceType,
     queryType: options.queryType,
+    execution: Object.freeze({...options.execution}),
     name: options.name,
     description: options.description,
     schema,
@@ -239,6 +268,30 @@ export function createScanQueryMetadata(
         )
       : undefined
   });
+}
+
+/** Ensures supported metadata names an entry point appropriate for its query family. */
+function validateScanExecutionSupport(
+  queryType: ScanQueryMetadata['queryType'],
+  execution: ScanExecutionSupport
+): void {
+  if (execution.status === 'metadata-only') {
+    if (!execution.reason.trim()) {
+      throw new Error('Metadata-only scan support requires a concrete reason');
+    }
+    return;
+  }
+
+  const validMethods: Record<ScanQueryMetadata['queryType'], readonly ScanExecutionMethod[]> = {
+    table: ['read', 'query'],
+    raster: ['getRaster'],
+    'point-cloud': ['scan']
+  };
+  if (!validMethods[queryType].includes(execution.method)) {
+    throw new Error(
+      `Scan execution method "${execution.method}" is not valid for ${queryType} queries`
+    );
+  }
 }
 
 function getNonEmptyMetadataValue(

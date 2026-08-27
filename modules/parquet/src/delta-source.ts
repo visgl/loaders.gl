@@ -68,6 +68,7 @@ export class DeltaTableSource
     return createScanQueryMetadata({
       sourceType: 'delta',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: this.data instanceof Blob ? undefined : this.data,
       schema,
       capabilities: {table: PARQUET_TABLE_QUERY_CAPABILITIES},

@@ -33,6 +33,8 @@ export type {
   ScanBounds,
   ScanColumnMetadata,
   ScanColumnRole,
+  ScanExecutionMethod,
+  ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,

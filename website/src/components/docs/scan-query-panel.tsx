@@ -55,6 +55,8 @@ export function ScanQueryPanel({
   }, [value]);
 
   const columns = metadata?.columns || [];
+  const execution = metadata?.execution;
+  const isExecutable = execution?.status === 'supported';
   const isPointCloud = metadata?.queryType === 'point-cloud';
   const hasLimit = metadata?.capabilities.table?.limit && metadata.capabilities.table.limit !== 'unsupported';
   const hasBounds = metadata?.capabilities.bounds && metadata.capabilities.bounds !== 'unsupported';
@@ -85,12 +87,20 @@ export function ScanQueryPanel({
       {metadata ? (
         <>
           <MetadataSummary>
+            <SupportBadge $supported={isExecutable}>
+              {execution?.status === 'supported'
+                ? `Scan supported · ${execution.method}`
+                : 'Metadata only'}
+            </SupportBadge>
             <span>{columns.length} columns</span>
             {metadata.statistics?.rowCount !== undefined ? <span>{String(metadata.statistics.rowCount)} rows</span> : null}
             {metadata.spatial?.coordinateReferenceSystems?.[0] ? (
               <span>{metadata.spatial.coordinateReferenceSystems[0]}</span>
             ) : null}
           </MetadataSummary>
+          {execution?.status === 'metadata-only' ? (
+            <SupportMessage>{execution.reason}</SupportMessage>
+          ) : null}
           <FieldGroup>
             <FieldLabel>Output columns</FieldLabel>
             <ColumnGrid>
@@ -192,6 +202,7 @@ export function ScanQueryPanel({
           </InlineFields>
           <ApplyButton
             type="button"
+            disabled={!isExecutable}
             onClick={() => {
               const limit = limitText.trim() ? Number(limitText) : undefined;
               const boundingBox = parseBounds(boundingBoxText);
@@ -210,7 +221,7 @@ export function ScanQueryPanel({
               });
             }}
           >
-            Apply scan parameters
+            {isExecutable ? 'Apply scan parameters' : 'Scan execution unavailable'}
           </ApplyButton>
         </>
       ) : (
@@ -269,6 +280,18 @@ const MetadataSummary = styled.div`
   color: #475467;
   font-size: 0.82rem;
   margin-bottom: 10px;
+`;
+const SupportBadge = styled.span<{$supported: boolean}>`
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: ${({$supported}) => ($supported ? '#067647' : '#7a2e0e')};
+  background: ${({$supported}) => ($supported ? '#ecfdf3' : '#fff4ed')};
+  font-weight: 600;
+`;
+const SupportMessage = styled.div`
+  margin: -4px 0 12px;
+  color: #7a2e0e;
+  font-size: 0.82rem;
 `;
 const FieldGroup = styled.div`
   display: flex;
@@ -330,6 +353,11 @@ const ApplyButton = styled.button`
   color: white;
   background: #475467;
   cursor: pointer;
+
+  &:disabled {
+    background: #98a2b3;
+    cursor: not-allowed;
+  }
 `;
 const EmptyState = styled.div`
   color: #667085;

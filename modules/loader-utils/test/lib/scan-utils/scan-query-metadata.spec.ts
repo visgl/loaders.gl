@@ -10,6 +10,7 @@ describe('createScanQueryMetadata', () => {
     const metadata = createScanQueryMetadata({
       sourceType: 'example',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       schema: {
         fields: [
           {
@@ -65,6 +66,8 @@ describe('createScanQueryMetadata', () => {
       maximum: [180, 90]
     });
     expect(Object.isFrozen(metadata)).toBe(true);
+    expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
+    expect(Object.isFrozen(metadata.execution)).toBe(true);
     expect(Object.isFrozen(metadata.columns)).toBe(true);
     expect(Object.isFrozen(metadata.schema.fields)).toBe(true);
   });
@@ -73,6 +76,7 @@ describe('createScanQueryMetadata', () => {
     const metadata = createScanQueryMetadata({
       sourceType: 'omezarr',
       queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
       schema: {fields: [], metadata: {}},
       capabilities: {levelOfDetail: 'pushdown'},
       levels: [{index: 0, width: 1024, height: 512, scale: [1, 1]}]
@@ -81,5 +85,29 @@ describe('createScanQueryMetadata', () => {
     expect(metadata.levels).toEqual([{index: 0, width: 1024, height: 512, scale: [1, 1]}]);
     expect(Object.isFrozen(metadata.levels)).toBe(true);
     expect(Object.isFrozen(metadata.levels?.[0])).toBe(true);
+  });
+
+  test('requires a concrete reason for metadata-only sources', () => {
+    expect(() =>
+      createScanQueryMetadata({
+        sourceType: 'example',
+        queryType: 'point-cloud',
+        execution: {status: 'metadata-only', reason: '   '},
+        schema: {fields: [], metadata: {}},
+        capabilities: {}
+      })
+    ).toThrow('requires a concrete reason');
+  });
+
+  test('rejects execution methods from another query family', () => {
+    expect(() =>
+      createScanQueryMetadata({
+        sourceType: 'example',
+        queryType: 'raster',
+        execution: {status: 'supported', method: 'read'},
+        schema: {fields: [], metadata: {}},
+        capabilities: {}
+      })
+    ).toThrow('not valid for raster queries');
   });
 });

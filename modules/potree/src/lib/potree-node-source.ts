@@ -148,6 +148,10 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
     return createScanQueryMetadata({
       sourceType: 'potree',
       queryType: 'point-cloud',
+      execution: {
+        status: 'metadata-only',
+        reason: 'Common point-cloud scan traversal is not implemented; use the Potree tile APIs.'
+      },
       schema,
       capabilities: {
         table: this.pointCloudQueryCapabilities,

@@ -190,6 +190,7 @@ export class OMETiffImageSource
     return createScanQueryMetadata({
       sourceType: 'ometiff',
       queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
       name: metadata.name,
       schema: {fields, metadata: {}},
       capabilities: {

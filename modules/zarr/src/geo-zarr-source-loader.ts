@@ -197,6 +197,7 @@ export class GeoZarrRasterSource
     return createScanQueryMetadata({
       sourceType: 'geozarr',
       queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
       name: metadata.name,
       schema: {fields, metadata: {}},
       capabilities: {

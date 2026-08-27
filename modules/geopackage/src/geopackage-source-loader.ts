@@ -7,14 +7,24 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader
+  SourceLoader,
+  TableScanReadOptions,
+  TableScanSource
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  filterColumnarRowIndices,
+  validateTableQueryOptions
+} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import * as arrow from 'apache-arrow';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader';
 import {
   DEFAULT_SQLJS_CDN,
+  getGeoPackageArrowSchema,
   listGeoPackageVectorTables,
   loadGeoPackageDatabase,
   parseGeoPackageToArrow,
@@ -27,6 +37,8 @@ import {GeoPackageFormat} from './geopackage-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GeoPackageSourceTableMetadata = {
+  /** Query-visible WKB Arrow schema for this feature table. */
+  schema: Schema;
   name: string;
   identifier?: string;
   description?: string;
@@ -88,7 +100,10 @@ export const GeoPackageSource = {
 /**
  * GeoPackage data source that exposes vector table metadata and Arrow table reads.
  */
-export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSourceOptions> {
+export class GeoPackageDataSource
+  extends DataSource<string | Blob, GeoPackageSourceOptions>
+  implements TableScanSource<ArrowTableBatch>
+{
   private arrayBufferPromise: Promise<ArrayBuffer> | null = null;
   private metadataPromise: Promise<GeoPackageSourceMetadata> | null = null;
 
@@ -112,28 +127,24 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
     throwIfAborted(options.signal);
     const selectedTable = metadata.tables.find(table => table.isDefault) || metadata.tables[0];
     if (!selectedTable) throw new Error('GeoPackage contains no vector feature tables');
-    const table = await this.getTable(selectedTable.name);
-    throwIfAborted(options.signal);
-    const fieldNames = new Set(table.data.schema.fields.map(field => field.name));
+    const fieldNames = new Set(selectedTable.schema.fields.map(field => field.name));
     const geometryColumnName = fieldNames.has('geometry')
       ? 'geometry'
       : fieldNames.has(selectedTable.geometryColumnName)
         ? selectedTable.geometryColumnName
         : undefined;
-    const schemaMetadata = table.data.schema.metadata
-      ? Object.fromEntries(table.data.schema.metadata)
-      : {};
     return createScanQueryMetadata({
       sourceType: 'geopackage',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: selectedTable.identifier || selectedTable.name,
       description: selectedTable.description,
-      schema: {fields: table.data.schema.fields as never, metadata: schemaMetadata},
+      schema: selectedTable.schema,
       columnRoles: geometryColumnName ? {[geometryColumnName]: 'geometry'} : undefined,
       capabilities: {
         table: {
           projection: 'residual',
-          predicate: 'unsupported',
+          predicate: 'residual',
           limit: 'residual',
           streaming: false,
           cancellation: false
@@ -154,6 +165,26 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
     return parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName));
   }
 
+  /** Executes projection, residual predicates, and a global limit on the selected feature table. */
+  async query(options: TableScanReadOptions = {}): Promise<ArrowTable> {
+    throwIfAborted(options.signal);
+    const table = await this.getTable();
+    throwIfAborted(options.signal);
+    return queryGeoPackageTable(table, options);
+  }
+
+  /** Executes a common table scan as one bounded Arrow batch. */
+  async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+    const table = await this.query(options);
+    yield {
+      batchType: 'data',
+      shape: 'arrow-table',
+      schema: table.schema,
+      data: table.data,
+      length: table.data.numRows
+    };
+  }
+
   private async loadMetadata(): Promise<GeoPackageSourceMetadata> {
     const arrayBuffer = await this.getArrayBuffer();
     const database = await loadGeoPackageDatabase(
@@ -168,6 +199,7 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
 
     return {
       tables: vectorTables.map(vectorTable => ({
+        schema: getGeoPackageArrowSchema(database, vectorTable),
         name: vectorTable.name,
         identifier: vectorTable.identifier,
         description: vectorTable.description,
@@ -226,6 +258,46 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
       }
     };
   }
+}
+
+/** Applies the portable table query to a materialized GeoPackage feature table. */
+function queryGeoPackageTable(table: ArrowTable, options: TableScanReadOptions): ArrowTable {
+  const availableColumns = table.data.schema.fields.map(field => field.name);
+  validateTableQueryOptions(availableColumns, options);
+  const selectedColumns = options.columns ? [...options.columns] : availableColumns;
+  let data: arrow.Table;
+
+  if (options.predicate) {
+    const columns = Object.fromEntries(
+      availableColumns.map(name => [name, [...(table.data.getChild(name) || [])]])
+    );
+    const rowIndices = filterColumnarRowIndices(
+      options.predicate as never,
+      columns as never,
+      table.data.numRows
+    );
+    const vectors = Object.fromEntries(
+      selectedColumns.map(name => {
+        const sourceVector = table.data.getChild(name);
+        return [
+          name,
+          arrow.vectorFromArray(
+            rowIndices.map(rowIndex => columns[name][rowIndex]),
+            sourceVector?.type
+          )
+        ];
+      })
+    );
+    const schema = new arrow.Schema(
+      selectedColumns.map(name => table.data.schema.fields.find(field => field.name === name)!)
+    );
+    data = new arrow.Table(schema, vectors);
+  } else {
+    data = table.data.select(selectedColumns);
+  }
+
+  data = data.slice(0, options.limit ?? Number.POSITIVE_INFINITY);
+  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
 }
 
 function throwIfAborted(signal?: AbortSignal): void {

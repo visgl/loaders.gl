@@ -355,6 +355,7 @@ export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataP
     return createScanQueryMetadata({
       sourceType: 'omezarr',
       queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
       name: metadata.name,
       description: 'OME-Zarr multiscale image',
       schema: {fields: [], metadata: {}},
