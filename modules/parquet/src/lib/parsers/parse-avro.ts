@@ -201,6 +201,7 @@ export async function* parseAvroInBatchesFromUrl(
       yield* parseAvroInBatches(blockHeader.bytes.buffer as ArrayBuffer, batchSize, options);
       return;
     }
+    if (blockHeader.bytes.length === 0) break;
     const countResult = readAvroLongAt(blockHeader.bytes, 0);
     const sizeResult = readAvroLongAt(blockHeader.bytes, countResult.offset);
     if (countResult.value === 0) break;

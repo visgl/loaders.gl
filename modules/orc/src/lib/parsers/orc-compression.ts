@@ -2,23 +2,27 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
-import {LZ4Compression} from '@loaders.gl/compression/lz4-compression';
-import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
-import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
+import {LZ4Decompressor, SnappyDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
+import type {Decompressor} from '@loaders.gl/compression';
 import type {ORCCompression} from './parse-orc';
 
+const DEFLATE_DECOMPRESSOR = new DeflateDecompressor({useNative: false});
+const RAW_DEFLATE_DECOMPRESSOR = new DeflateDecompressor({raw: true, useNative: false});
+const SNAPPY_DECOMPRESSOR = new SnappyDecompressor();
+const LZ4_DECOMPRESSOR = new LZ4Decompressor();
+const ZSTD_DECOMPRESSOR = new ZstdDecompressor();
+
 /** Decompresses an ORC compression stream made of 3-byte framed chunks. */
-export function decompressORCStream(bytes: Uint8Array, compression: ORCCompression): Uint8Array {
+export function decompressORCStream(
+  bytes: Uint8Array,
+  compression: ORCCompression,
+  compressionBlockSize = 256 * 1024
+): Uint8Array {
   if (compression === 'NONE') return bytes.slice();
   if (!['ZLIB', 'SNAPPY', 'LZ4', 'ZSTD'].includes(compression))
     throw new Error(`ORC compression "${compression}" is not supported yet`);
   const output: Uint8Array[] = [];
-  const deflateCompression = new DeflateCompression();
-  const rawDeflateCompression = new DeflateCompression({raw: true});
-  const snappyCompression = new SnappyCompression();
-  const lz4Compression = new LZ4Compression();
-  const zstdCompression = new ZstdCompression();
   let offset = 0;
   while (offset < bytes.length) {
     if (offset + 3 > bytes.length) throw new Error('Truncated ORC compression chunk header');
@@ -35,11 +39,12 @@ export function decompressORCStream(bytes: Uint8Array, compression: ORCCompressi
       const decompressedChunk = decompressORCChunk(
         chunkBuffer,
         compression,
-        deflateCompression,
-        rawDeflateCompression,
-        snappyCompression,
-        lz4Compression,
-        zstdCompression
+        DEFLATE_DECOMPRESSOR,
+        RAW_DEFLATE_DECOMPRESSOR,
+        SNAPPY_DECOMPRESSOR,
+        LZ4_DECOMPRESSOR,
+        ZSTD_DECOMPRESSOR,
+        compressionBlockSize
       );
       output.push(new Uint8Array(decompressedChunk));
     }
@@ -57,33 +62,37 @@ export function decompressORCStream(bytes: Uint8Array, compression: ORCCompressi
 function decompressORCChunk(
   chunkBuffer: ArrayBuffer,
   compression: ORCCompression,
-  deflateCompression: DeflateCompression,
-  rawDeflateCompression: DeflateCompression,
-  snappyCompression: SnappyCompression,
-  lz4Compression: LZ4Compression,
-  zstdCompression: ZstdCompression
+  deflateDecompressor: Decompressor,
+  rawDeflateDecompressor: Decompressor,
+  snappyDecompressor: Decompressor,
+  lz4Decompressor: Decompressor,
+  zstdDecompressor: Decompressor,
+  compressionBlockSize: number
 ): ArrayBuffer {
   if (compression === 'ZLIB') {
     try {
-      return deflateCompression.decompressSync(chunkBuffer);
+      return deflateDecompressor.decompressSync(chunkBuffer);
     } catch (error) {
       try {
-        return rawDeflateCompression.decompressSync(chunkBuffer);
+        return rawDeflateDecompressor.decompressSync(chunkBuffer);
       } catch {
         throw error;
       }
     }
   }
-  if (compression === 'SNAPPY') return snappyCompression.decompressSync(chunkBuffer);
-  if (compression === 'LZ4') return lz4Compression.decompressSync(chunkBuffer, 256 * 1024);
-  return zstdCompression.decompressSync(chunkBuffer);
+  if (compression === 'SNAPPY') return snappyDecompressor.decompressSync(chunkBuffer);
+  if (compression === 'LZ4')
+    return lz4Decompressor.decompressSync(chunkBuffer, compressionBlockSize);
+  return zstdDecompressor.decompressSync(chunkBuffer);
 }
 
 /** Preloads optional ORC codec implementations for synchronous stream decoding. */
 export async function preloadORCCompression(modules: Record<string, any> = {}): Promise<void> {
   await Promise.all([
-    new SnappyCompression({modules}).preload(modules),
-    new LZ4Compression({modules}).preload(modules),
-    new ZstdCompression({modules}).preload(modules)
+    DEFLATE_DECOMPRESSOR.preload(modules),
+    RAW_DEFLATE_DECOMPRESSOR.preload(modules),
+    SNAPPY_DECOMPRESSOR.preload(modules),
+    LZ4_DECOMPRESSOR.preload(modules),
+    ZSTD_DECOMPRESSOR.preload(modules)
   ]);
 }
