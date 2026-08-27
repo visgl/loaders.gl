@@ -24,6 +24,7 @@ npm install @loaders.gl/core
 A standard complement of loader is provided to load the individual 3d Tile file formats:
 
 - [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader), a loader for loading a top-down or nested tileset and its tiles.
+- [`I3SPointCloudSource`](/docs/modules/i3s/api-reference/i3s-point-cloud-source), a source for I3S 2.x Point Cloud layers that can be used with [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset).
 
 To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
 

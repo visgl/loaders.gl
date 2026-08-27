@@ -5435,6 +5435,7 @@ __metadata:
     "@loaders.gl/images": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
+    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/textures": "npm:5.0.0-alpha.2"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.2"
     "@loaders.gl/zip": "npm:5.0.0-alpha.2"

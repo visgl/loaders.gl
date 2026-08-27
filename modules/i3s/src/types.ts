@@ -40,6 +40,52 @@ export type NodePage = {
   /** Array of nodes. */
   nodes: NodeInPage[];
 };
+
+/** I3S Point Cloud node-page document (I3S 2.0+). */
+export type I3SPointCloudNodePage = {
+  /** Nodes stored in this page. */
+  nodes: I3SPointCloudNode[];
+};
+
+/** A node reference in an I3S Point Cloud hierarchy. */
+export type I3SPointCloudNode = {
+  /** Stable node resource identifier. */
+  resourceId: number | string;
+  /** Node bounding box. */
+  obb: Obb;
+  /** Number of points in this node. */
+  vertexCount: number;
+  /** LOD threshold from the Point Cloud node page. */
+  lodThreshold?: number;
+  /** First child node id in the global node index. */
+  firstChild?: number;
+  /** Number of contiguous child nodes. */
+  childCount?: number;
+  /** Optional geometry resource id. */
+  geometryResource?: number;
+  /** Additional producer metadata. */
+  [key: string]: unknown;
+};
+
+/** Point Cloud attribute storage descriptor. */
+export type I3SPointCloudAttributeInfo = {
+  /** Attribute key used in resource URLs. */
+  key?: string;
+  /** Human-readable or canonical attribute name. */
+  name?: string;
+  /** Encoding name, for example `lepcc-rgb`. */
+  encoding?: string;
+  /** Resource identifier, when not implied by the key. */
+  resource?: number;
+  /** Scalar value type for uncompressed attributes. */
+  valueType?: string;
+  /** Number of scalar components per point. */
+  valueSize?: number;
+  /** Optional bit-field definitions for flag bytes. */
+  values?: Record<string, unknown>;
+  /** Additional producer metadata. */
+  [key: string]: unknown;
+};
 /**
  * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/mesh.cmn.md
  */
@@ -270,7 +316,7 @@ export type SceneLayer3D = {
   /** The relative URL to the 3DSceneLayerResource. Only present as part of the SceneServiceInfo resource. */
   href?: string;
   /** The user-visible layer type */
-  layerType: '3DObject' | 'IntegratedMesh';
+  layerType: '3DObject' | 'IntegratedMesh' | 'PointCloud';
   /** The spatialReference of the layer including the vertical coordinate reference system (CRS). Well Known Text (WKT) for CRS is included to support custom CRS. */
   spatialReference?: SpatialReference;
   /** Enables consuming clients to quickly determine whether this layer is compatible (with respect to its horizontal and vertical coordinate system) with existing content. */
@@ -360,7 +406,7 @@ export type NodePageDefinition = {
   /** Index of the root node. Default = 0. */
   rootIndex?: number;
   /** Defines the meaning of nodes[].lodThreshold for this layer. */
-  lodSelectionMetricType: 'maxScreenThresholdSQ';
+  lodSelectionMetricType: 'maxScreenThresholdSQ' | 'density-threshold';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitions.cmn.md */
 export type I3SMaterialDefinition = {
@@ -775,7 +821,7 @@ type Domain = {
 /**
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/store.cmn.md
  */
-type Store = {
+export type Store = {
   id?: string | number;
   profile: string;
   version: number | string;
@@ -809,6 +855,22 @@ type DefaultGeometrySchema = {
   featureAttributes: FeatureAttribute;
   // TODO Do we realy need this Property?
   attributesOrder?: string[];
+};
+
+/** Default geometry schema used by I3S Point Cloud stores. */
+export type PointCloudDefaultGeometrySchema = {
+  /** Point primitives are encoded as a LEPCC XYZ resource. */
+  geometryType: 'points';
+  /** Point cloud topology. */
+  topology?: 'PerAttributeArray';
+  /** Header fields for point count and optional producer metadata. */
+  header?: HeaderAttribute[];
+  /** Attribute ordering in the binary resources. */
+  ordering?: string[];
+  /** Point cloud geometry encoding, normally `lepcc-xyz`. */
+  encoding?: string;
+  /** Additional producer metadata. */
+  [key: string]: unknown;
 };
 /**
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/headerAttribute.cmn.md

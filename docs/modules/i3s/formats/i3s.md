@@ -32,9 +32,9 @@ traversal, lightweight metadata loaders with parser preloading, forward-compatib
 schemas, and complete PBR texture-set loading. The underlying mesh parser and most rendering capabilities predate v5.0 and retain their
 original introduction versions below.
 
-The Point Cloud decoder seam added in v5.0 is a dependency-free TypeScript implementation of the
-Apache-licensed Esri LEPCC wire format, isolated behind `I3SLEPCCDecoder` for future worker and
-Point Cloud traversal integration.
+Point Cloud support in v5.0 is exposed through `I3SPointCloudSource`, a dependency-free TypeScript
+LEPCC decoder, and the generic `PointCloudTileset` traversal API. The source supports REST layers
+and SLPK archives while preserving explicit boundaries for producer-specific extensions.
 
 ### Scene layer profiles
 
@@ -44,7 +44,7 @@ Point Cloud traversal integration.
 | Integrated Mesh | **Supported** | v2.0 | End-to-end textured-mesh loading and traversal. Feature-level operations are naturally narrower because this profile does not model discrete objects in the same way as 3D Object layers. |
 | Building Scene Layer | **Partial** | v3.1 | `I3SBuildingSceneLayerLoader` parses the composite hierarchy and returns its 3D Object sublayers. Group structure remains in the header; Point sublayers and Building filters are not evaluated by the loader. |
 | Point | **Not supported** | — | Point geometry, symbols, and point renderers are not decoded. |
-| Point Cloud | **Not supported** | — | I3S 2.x point-cloud node pages, density LOD, LEPCC geometry, and point-cloud attributes are not decoded. The loader rejects `PointCloud` layers explicitly. |
+| Point Cloud | **Supported** | **v5.0** | `I3SPointCloudSource` traverses I3S 2.x node pages, decodes LEPCC XYZ/RGB/intensity/flag resources, and returns point-list Arrow tables for REST and SLPK inputs. |
 
 ### Specification generations
 
@@ -58,7 +58,7 @@ those versions.
 | I3S 1.7 mesh resources | **Supported** | v2.3 | Node pages, OBBs, and geometry definitions arrived in v2.3; Draco geometry, material definitions, and texture-set selection followed in v3.0. |
 | I3S 1.8 mesh additions | **Supported** | v3.1 | KTX2/Basis textures and PBR material fields used by the rendering path are supported, subject to the material limitations below. |
 | I3S 1.9-1.10 mesh documents | **Partial** | **v5.0** | Forward fields are preserved by v5.0 metadata schemas, dedicated 1.9/1.10 fixtures cover the scene-layer envelope, and established mesh resource layouts are consumed. Newer semantics remain bounded by the feature rows below. |
-| I3S 2.0-2.1 Point Cloud | **Not supported** | — | The Point Cloud profile is outside the current mesh-oriented implementation. |
+| I3S 2.0-2.1 Point Cloud | **Partial** | **v5.0** | The Point Cloud source covers node pages, OBB bounds, LEPCC resources, standard attributes, and density thresholds. Producer-specific encodings and full renderer styling remain explicit follow-up work. |
 
 ### Delivery and resource access
 
@@ -84,7 +84,7 @@ those versions.
 | Oriented bounding box (OBB) | **Supported** | v2.0 | OBBs are converted to Cartesian boxes and conservative spheres. |
 | `maxScreenThreshold` LOD | **Supported** | v2.0 | Projected node size drives refinement for legacy node documents. |
 | `maxScreenThresholdSQ` LOD | **Supported** | v2.3 | Node-page thresholds are normalized for the same projected-size traversal. |
-| Other LOD metrics | **Not supported** | — | Density, feature-count, distance-range, and texel-resolution policies are not implemented. |
+| Density-threshold LOD | **Supported** | **v5.0** | Point Cloud node thresholds can drive projected point-density refinement through `PointCloudTileset`. Feature-count, distance-range, and texel-resolution policies remain unsupported. |
 | `REPLACE` refinement | **Supported** | v2.1 | I3S mesh ancestors are replaced as higher-detail children become renderable. |
 | Lazy child metadata | **Supported** | v2.1 | Child headers are requested only when traversal reaches them. |
 | Multiple viewports | **Supported** | v3.2.6 | Pending child-header requests are tracked independently by viewport and frame. |
@@ -113,7 +113,8 @@ those versions.
 
 | Capability | Status | Since | Notes |
 | --- | :---: | --- | --- |
-| LEPCC point-cloud attribute blobs | **Partial** | **v5.0** | The `I3SLEPCCDecoder` adapter decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. Point Cloud layer traversal, density LOD, and renderer integration remain planned. |
+| LEPCC point-cloud attribute blobs | **Supported** | **v5.0** | `I3SLEPCCDecoder` decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. `I3SPointCloudSource` maps them to Arrow point attributes. |
+| Point Cloud standard attributes | **Partial** | **v5.0** | RGB, intensity, flags, and metadata-described scalar arrays are normalized. Classification, returns, and producer-defined bit fields are preserved as raw attributes when no canonical mapping is declared. |
 
 ### Textures and materials
 
@@ -174,7 +175,7 @@ path.
 | 3D Tiles to I3S conversion | **Supported** | v3.0 | Produces I3S 1.8 mesh layers and SLPK output, with optional Draco, KTX2/JPEG generation, feature metadata, and generated bounds. |
 | SLPK / SceneServer serving | **Supported** | v4.0 | `i3s-server` exposes converter output or an SLPK through local REST endpoints. |
 | Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh scene-layer and node-page structures with forward-compatible passthrough fields; this is not full I3S conformance validation. |
-| Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders. |
+| Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders; Point Cloud source support is read-only in this tranche. |
 
 ## I3S roadmap
 
@@ -193,12 +194,18 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 4b. Layer statistics | Load typed `StatsInfo` resources, preserve missing-field isolation, and expose stable keys to applications. | **Complete** (**v5.0**) |
 | 4c. Drawing and popup intelligence | Evaluate renderer, visual variables, labels, and popup expressions while preserving unsupported definitions. | Planned |
 | 4d. Query and aggregation | Add server-side attribute query/filter helpers and client-side statistics aggregation over loaded features. | Planned |
-| 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal), including profile-specific attributes. | Planned |
+| 5a. Point Cloud profile model | Add Point Cloud scene-layer schemas, node-page types, OBB bounds, and metadata preservation. | **Complete** (**v5.0**) |
+| 5b. LEPCC geometry | Decode `lepcc-xyz` with checksum validation and point-count checks. | **Complete** (**v5.0**) |
+| 5c. Point Cloud attributes | Decode RGB, intensity, flags, and metadata-described scalar resources into Arrow attributes. | **Complete** (**v5.0**) |
+| 5d. Density traversal | Add density-threshold refinement to the shared point-cloud traversal and honor per-node thresholds. | **Complete** (**v5.0**) |
+| 5e. REST and SLPK access | Resolve Point Cloud node pages and resources from SceneServer URLs and indexed SLPK archives. | **Complete** (**v5.0**) |
+| 5f. Renderer metadata | Return point-list tables, coordinate-system/origin metadata, bounds, and stable canonical attribute names. | **Complete** (**v5.0**) |
+| 5g. Point Cloud conformance | Add deterministic decoder/source fixtures and document unsupported producer-specific extensions. | **Complete** (**v5.0**) |
 | 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
 | 7. Validation and authoring parity | Expand schema validation and converter fixtures until supported loader and authoring paths have matching conformance guarantees. | Planned |
 
-The next high-value tranche is **4c**, followed by **4d**. Tranches 5–7 close the remaining profile,
-coordinate-system, and authoring gaps needed for full supremacy.
+The next high-value work is renderer styling, CRS/elevation transforms, query helpers, and Point
+Cloud authoring.
 
 ### Remaining roadmap gaps
 
@@ -208,7 +215,7 @@ still visible in the matrix and should be treated as the open work list:
 | Priority | Remaining gap | Exit criteria |
 | --- | --- | --- |
 | P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
-| P0 | Point and Point Cloud profiles (5) | Decode Point geometry and symbols, then I3S 2.1 LEPCC, density LOD, and point-cloud attributes with representative fixtures. |
+| P0 | Point profile | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. Point Cloud support is complete for the documented v5.0 boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
 | P1 | Spatial semantics (6) | Reproject supported horizontal CRSs, honor vertical CRS and units, and apply all `elevationInfo` placement modes. |
 | P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |

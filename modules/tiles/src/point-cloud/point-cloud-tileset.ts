@@ -16,6 +16,10 @@ export type PointCloudTilesetOptions = {
   debounceTime?: number;
   minimumNodePixelSize?: number;
   maximumScreenSpaceError?: number;
+  /** Override source LOD metric for point-cloud traversal. */
+  lodSelectionMetricType?: 'maxScreenThresholdSQ' | 'density-threshold';
+  /** Minimum projected point density at which a node is refined. */
+  densityThreshold?: number;
   pointBudget?: number;
   maxDepth?: number;
   onTileLoad?: (tile: PointCloudTile) => void;
@@ -30,6 +34,8 @@ const DEFAULT_PROPS: PointCloudTilesetProps = {
   debounceTime: 0,
   minimumNodePixelSize: 150,
   maximumScreenSpaceError: 1,
+  lodSelectionMetricType: 'maxScreenThresholdSQ',
+  densityThreshold: 1,
   pointBudget: 2_000_000,
   maxDepth: Number.POSITIVE_INFINITY,
   onTileLoad: () => {},
@@ -307,6 +313,17 @@ export class PointCloudTileset {
 
   /** Whether a tile should refine to children based on its projected screen radius. */
   private shouldRefine(tile: PointCloudTile, traversalWeight: number): boolean {
+    if (
+      tile.level < this.options.maxDepth &&
+      Number.isFinite(traversalWeight) &&
+      (tile.header.lodSelectionMetricType || this.options.lodSelectionMetricType) ===
+        'density-threshold'
+    ) {
+      const projectedArea = Math.max(1, Math.PI * traversalWeight * traversalWeight);
+      const density = tile.pointCount / projectedArea;
+      const threshold = tile.header.lodThreshold || this.options.densityThreshold;
+      return density >= threshold;
+    }
     return (
       tile.level < this.options.maxDepth &&
       Number.isFinite(traversalWeight) &&

@@ -65,6 +65,24 @@ export const I3SNodePageSchema = z
   .object({nodes: z.array(I3SNodeInPageSchema)})
   .passthrough() satisfies z.ZodType<NodePage>;
 
+/** Zod schema for an I3S Point Cloud node. */
+export const I3SPointCloudNodeSchema = z
+  .object({
+    resourceId: z.union([z.number().int().nonnegative(), z.string().min(1)]),
+    obb: I3SObbSchema,
+    vertexCount: z.number().int().nonnegative(),
+    lodThreshold: z.number().finite().nonnegative().optional(),
+    firstChild: z.number().int().nonnegative().optional(),
+    childCount: z.number().int().nonnegative().optional(),
+    geometryResource: z.number().int().nonnegative().optional()
+  })
+  .passthrough();
+
+/** Zod schema for an I3S Point Cloud node-page document. */
+export const I3SPointCloudNodePageSchema = z
+  .object({nodes: z.array(I3SPointCloudNodeSchema)})
+  .passthrough();
+
 /** Zod schema for the spatial-reference metadata used by an I3S scene layer. */
 export const I3SSpatialReferenceSchema = z
   .object({
@@ -87,7 +105,7 @@ export const I3SSceneLayerSchema = z
   .object({
     id: z.number().int().nonnegative(),
     href: z.string().optional(),
-    layerType: z.enum(['3DObject', 'IntegratedMesh']),
+    layerType: z.enum(['3DObject', 'IntegratedMesh', 'PointCloud']),
     spatialReference: I3SSpatialReferenceSchema.optional(),
     version: z.string().min(1),
     name: z.string().optional(),
@@ -104,7 +122,10 @@ export const I3SSceneLayerSchema = z
       .object({
         nodesPerPage: z.number().int().positive().max(4096),
         rootIndex: z.number().int().nonnegative().optional(),
-        lodSelectionMetricType: z.literal('maxScreenThresholdSQ')
+        lodSelectionMetricType: z.union([
+          z.literal('maxScreenThresholdSQ'),
+          z.literal('density-threshold')
+        ])
       })
       .passthrough()
       .optional()

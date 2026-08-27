@@ -18,3 +18,5 @@ export {
   type I3SLEPCCDecodedValue,
   type I3SLEPCCDecoderOptions
 } from './i3s-lepcc';
+export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';
