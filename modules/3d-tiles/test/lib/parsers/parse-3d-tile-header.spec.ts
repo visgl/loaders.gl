@@ -50,8 +50,14 @@ test('normalizeTileData#corectly resolves different styles of URLs', async () =>
 test('normalizeTileData#derives metadata bounding volume semantics', () => {
   const normalizedTile = normalizeTileData(
     {
-      metadata: {properties: {TILE_BOUNDING_SPHERE: [1, 2, 3, 4]}},
-      content: {uri: 'tile.b3dm', metadata: {properties: {CONTENT_BOUNDING_REGION: [0, 0, 1, 1, 0, 10]}}}
+      metadata: {class: 'tile', properties: {bounds: [1, 2, 3, 4]}},
+      content: {uri: 'tile.b3dm', metadata: {class: 'content', properties: {bounds: [0, 0, 1, 1, 0, 10]}}},
+      schema: {
+        classes: {
+          tile: {properties: {bounds: {semantic: 'TILE_BOUNDING_SPHERE'}}},
+          content: {properties: {bounds: {semantic: 'CONTENT_BOUNDING_REGION'}}}
+        }
+      }
     } as any,
     'https://example.com/tiles'
   );
