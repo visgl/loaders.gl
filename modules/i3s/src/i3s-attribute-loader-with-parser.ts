@@ -6,6 +6,7 @@ import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
+import type {Field} from './types';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
 import {I3SAttributeLoader as I3SAttributeLoaderMetadata} from './i3s-attribute-loader';
@@ -189,9 +190,15 @@ function getFeatureAttributesByIndex(
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const attributeName = attributeStorageInfo[index].name;
-    const codedValues = getAttributeCodedValues(attributeName, tilesetFields);
+    const attributeField = getAttributeField(attributeName, tilesetFields);
+    const codedValues = attributeField?.domain?.codedValues || [];
     const attribute = getAttributeByIndexAndAttributeName(attributes, index, attributeName);
-    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex, codedValues);
+    attributesObject[attributeName] = formatAttributeValue(
+      attribute,
+      featureIdIndex,
+      codedValues,
+      attributeField?.type
+    );
   }
 
   return attributesObject;
@@ -202,12 +209,8 @@ function getFeatureAttributesByIndex(
  * @param attributeName
  * @param tilesetFields
  */
-function getAttributeCodedValues(attributeName, tilesetFields) {
-  const attributeField = tilesetFields.find(
-    field => field.name === attributeName || field.alias === attributeName
-  );
-
-  return attributeField?.domain?.codedValues || [];
+function getAttributeField(attributeName: string, tilesetFields: Field[]): Field | undefined {
+  return tilesetFields.find(field => field.name === attributeName || field.alias === attributeName);
 }
 
 /**
@@ -230,16 +233,29 @@ function getAttributeByIndexAndAttributeName(attributes, index, attributesName) 
  * Do formatting of attribute values or return empty string.
  * @param {Array} attribute
  * @param {Number} featureIdIndex
- * @returns {String}
+ * @param fieldType - optional ArcGIS field type used for semantic formatting
+ * @returns {String|null}
  */
-function formatAttributeValue(attribute, featureIdIndex, codedValues) {
+function formatAttributeValue(attribute, featureIdIndex, codedValues, fieldType?: string) {
   let value = EMPTY_VALUE;
 
   if (attribute && featureIdIndex in attribute) {
+    const rawValue = attribute[featureIdIndex];
+    if (typeof rawValue === 'number' && Number.isNaN(rawValue)) {
+      return null;
+    }
     // eslint-disable-next-line no-control-regex
-    value = String(attribute[featureIdIndex])
-      .replace(/\u0000|NaN/g, '')
+    value = String(rawValue)
+      .replace(/\u0000/g, '')
       .trim();
+  }
+
+  if (fieldType === 'esriFieldTypeDate' && value) {
+    const numericValue = Number(value);
+    const parsedDate = Number.isFinite(numericValue) ? new Date(numericValue) : new Date(value);
+    if (!Number.isNaN(parsedDate.getTime())) {
+      value = parsedDate.toISOString();
+    }
   }
 
   // Check if coded values are existed. If so we use them.
