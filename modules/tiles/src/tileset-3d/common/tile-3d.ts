@@ -161,9 +161,14 @@ export class Tile3D {
   private _contentBoundingVolumeHeaders: any[] = [];
   private _viewerRequestVolume: any;
 
-  /** Bounding volume used to cull the tile's renderable content, when declared. */
+  /** Bounding volume used to cull the tile's first renderable content entry. */
   get contentBoundingVolume(): any {
     return this._contentBoundingVolume;
+  }
+
+  /** All transformed render-content bounding volumes, including tile-volume fallbacks. */
+  get contentBoundingVolumes(): any[] {
+    return this._contentBoundingVolumes;
   }
 
   /** Bounding volume that limits when this tile may be requested, when declared. */
@@ -794,12 +799,12 @@ export class Tile3D {
     let visibleVolume = false;
     let intersectingVolume = false;
     for (const contentVolume of contentVolumes) {
+      let visibility = INTERSECTION.INSIDE;
       if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
-        const visibility = frameState.cullingVolume.computeVisibility(contentVolume);
+        visibility = frameState.cullingVolume.computeVisibility(contentVolume);
         if (visibility === INTERSECTION.OUTSIDE) {
           continue;
         }
-        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
       }
       let clipped = false;
       for (const clippingPlane of frameState.clippingPlanes || []) {
@@ -810,14 +815,14 @@ export class Tile3D {
       }
       if (!clipped) {
         visibleVolume = true;
-        break;
+        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
       }
     }
-    return visibleVolume
-      ? intersectingVolume
-        ? INTERSECTION.INTERSECTING
-        : INTERSECTION.INSIDE
-      : INTERSECTION.OUTSIDE;
+    if (!visibleVolume) {
+      return INTERSECTION.OUTSIDE;
+    }
+    return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
+  }
   }
 
   /**
@@ -1056,16 +1061,13 @@ export class Tile3D {
 
     const content = header.content;
     if (content) {
-      this._contentBoundingVolumeHeaders = (Array.isArray(content) ? content : [content]).filter(
-        contentHeader => contentHeader?.boundingVolume
-      );
+      this._contentBoundingVolumeHeaders = Array.isArray(content) ? content : [content];
     }
     const contentHeaders = content
       ? Array.isArray(content)
         ? content
         : [content]
       : this._contentBoundingVolumeHeaders;
-    const contentHeader = contentHeaders.find(headerEntry => headerEntry?.boundingVolume);
     this._contentBoundingVolumes = contentHeaders
       .filter(headerEntry => headerEntry?.boundingVolume)
       .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
