@@ -73,6 +73,15 @@ function transformTapeToVitest(sourceText, filePath) {
         return visitTestCallback(node, context, visitNode);
       }
 
+      if (ts.isCallExpression(node) && shouldDropAssertionTarget(node)) {
+        return ts.factory.updateCallExpression(
+          node,
+          node.expression,
+          node.typeArguments,
+          node.arguments.slice(1)
+        );
+      }
+
       if (ts.isCallExpression(node)) {
         return visitTapeCallExpression(node, context, visitNode);
       }
@@ -114,6 +123,23 @@ function transformTapeToVitest(sourceText, filePath) {
   transformed.dispose();
 
   return `${printedText}\n`;
+}
+
+/**
+ * Identifies shared assertion helpers whose first Tape argument is optional.
+ * @param {ts.CallExpression} node
+ * @returns {boolean}
+ */
+function shouldDropAssertionTarget(node) {
+  if (!ts.isIdentifier(node.expression) || node.arguments.length < 2) {
+    return false;
+  }
+
+  return (
+    /^validate/.test(node.expression.text) &&
+    ts.isIdentifier(node.arguments[0]) &&
+    TEST_CONTEXT_NAMES.has(node.arguments[0].text)
+  );
 }
 
 /**

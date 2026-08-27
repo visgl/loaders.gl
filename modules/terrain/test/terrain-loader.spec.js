@@ -1,32 +1,20 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-
 import {TerrainLoader, TerrainWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
-
 // Should be possible to remove this
 import {ImageBitmapLoader} from '@loaders.gl/images';
 registerLoaders([ImageBitmapLoader]);
-
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/terrarium.png';
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
-test('TerrainLoader#loader objects', async t => {
-  validateLoader(t, TerrainLoader, 'TerrainLoader');
-  validateLoader(t, TerrainWorkerLoader, 'TerrainWorkerLoader');
-  t.end();
+test('TerrainLoader#loader objects', async () => {
+  validateLoader(TerrainLoader, 'TerrainLoader');
+  validateLoader(TerrainWorkerLoader, 'TerrainWorkerLoader');
 });
-
-test('TerrainLoader#parse mapbox martini', async t => {
+test('TerrainLoader#parse mapbox martini', async () => {
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -41,23 +29,16 @@ test('TerrainLoader#parse mapbox martini', async t => {
     },
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, 103770 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 52302 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 52302 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(103770 * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(52302 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(52302 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('TerrainLoader#add skirt to mapbox martini', async t => {
+test('TerrainLoader#add skirt to mapbox martini', async () => {
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -72,13 +53,11 @@ test('TerrainLoader#add skirt to mapbox martini', async t => {
       skirtHeight: 50
     }
   });
-  t.equal(data.indices.value.length, 105434 * 3, 'indices was found');
-  t.equal(data.attributes.TEXCOORD_0.value.length, 53966 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.POSITION.value.length, 53966 * 3, 'POSITION attribute was found');
-  t.end();
+  expect(data.indices.value.length, 'indices was found').toBe(105434 * 3);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(53966 * 2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(53966 * 3);
 });
-
-test('TerrainLoader#parse terrarium martini', async t => {
+test('TerrainLoader#parse terrarium martini', async () => {
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -92,23 +71,16 @@ test('TerrainLoader#parse terrarium martini', async t => {
       tesselator: 'martini'
     }
   });
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, 11188 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 5696 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 5696 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(11188 * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(5696 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(5696 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('TerrainLoader#parse mapbox delatin', async t => {
+test('TerrainLoader#parse mapbox delatin', async () => {
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -122,23 +94,16 @@ test('TerrainLoader#parse mapbox delatin', async t => {
       tesselator: 'delatin'
     }
   });
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, 90245 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 45298 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 45298 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(90245 * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(45298 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(45298 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('TerrainLoader#add skirt to mapbox delatin', async t => {
+test('TerrainLoader#add skirt to mapbox delatin', async () => {
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -153,13 +118,11 @@ test('TerrainLoader#add skirt to mapbox delatin', async t => {
       skirtHeight: 50
     }
   });
-  t.equal(data.indices.value.length, 90943 * 3, 'indices was found');
-  t.equal(data.attributes.TEXCOORD_0.value.length, 45996 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.POSITION.value.length, 45996 * 3, 'POSITION attribute was found');
-  t.end();
+  expect(data.indices.value.length, 'indices was found').toBe(90943 * 3);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(45996 * 2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(45996 * 3);
 });
-
-test('TerrainLoader#parse terrarium delatin', async t => {
+test('TerrainLoader#parse terrarium delatin', async () => {
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
@@ -173,30 +136,20 @@ test('TerrainLoader#parse terrarium delatin', async t => {
       tesselator: 'delatin'
     }
   });
-
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, 6082 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 3071 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 3071 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(6082 * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(3071 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(3071 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('TerrainWorkerLoader#parse terrarium martini', async t => {
+test('TerrainWorkerLoader#parse terrarium martini', async () => {
   if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
+    console.log('Worker is not usable in non-browser environments');
     return;
   }
-
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
     terrain: {
       elevationDecoder: {
@@ -210,29 +163,20 @@ test('TerrainWorkerLoader#parse terrarium martini', async t => {
       tesselator: 'martini'
     }
   });
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices?.value.length, 11188 * 3, 'indices was found');
-  t.equal(data.indices?.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 5696 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 5696 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices?.value.length, 'indices was found').toBe(11188 * 3);
+  expect(data.indices?.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(5696 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(5696 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('TerrainWorkerLoader#parse terrarium delatin', async t => {
+test('TerrainWorkerLoader#parse terrarium delatin', async () => {
   if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
+    console.log('Worker is not usable in non-browser environments');
     return;
   }
-
   const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
     terrain: {
       elevationDecoder: {
@@ -246,19 +190,12 @@ test('TerrainWorkerLoader#parse terrarium delatin', async t => {
       tesselator: 'delatin'
     }
   });
-
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices?.value.length, 6082 * 3, 'indices was found');
-  t.equal(data.indices?.size, 1, 'indices was found');
-
-  t.equal(data.attributes.TEXCOORD_0.value.length, 3071 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(data.attributes.POSITION.value.length, 3071 * 3, 'POSITION attribute was found');
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices?.value.length, 'indices was found').toBe(6082 * 3);
+  expect(data.indices?.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(3071 * 2);
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(3071 * 3);
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });

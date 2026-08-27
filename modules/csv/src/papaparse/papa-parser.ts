@@ -63,6 +63,9 @@ export class ChunkStreamer {
     meta: {}
   };
 
+  /** Reads and parses the next input chunk. */
+  _nextChunk(): void {}
+
   constructor(config: CSVParserConfig) {
     // Deep-copy the config so we can edit it
     const configCopy = {...config};
@@ -132,7 +135,7 @@ export class ChunkStreamer {
       this._completed = true;
     }
 
-    // if (!finishedIncludingPreview && (!results || !results.meta.paused)) this._nextChunk();
+    if (!finishedIncludingPreview && (!results || !results.meta.paused)) this._nextChunk();
 
     // eslint-disable-next-line consistent-return
     return results;
@@ -202,6 +205,9 @@ export class ParserHandle {
     errors: [],
     meta: {}
   };
+
+  /** Streamer that owns this parser handle. */
+  streamer!: ChunkStreamer;
 
   constructor(_config: CSVParserConfig) {
     // One goal is to minimize the use of regular expressions...
@@ -283,13 +289,13 @@ export class ParserHandle {
     this._paused = true;
     this._parser.abort();
     this._input = this._input.substr(this._parser.getCharIndex());
+    this.streamer._partialLine = '';
     this._parser = null;
     this._parserConfig = null;
   }
 
   resume() {
     this._paused = false;
-    // @ts-expect-error
     this.streamer.parseChunk(this._input, true);
   }
 

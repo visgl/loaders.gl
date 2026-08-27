@@ -1,37 +1,22 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
-
 import {XMLLoader} from '@loaders.gl/xml';
 import {XMLLoader as BundledXMLLoader} from '@loaders.gl/xml/bundled';
 import {load} from '@loaders.gl/core';
-
 const FORECASTS_URL = '@loaders.gl/xml/test/data/forecasts.xml';
-
-test('XMLLoader#forecasts.xml', async t => {
+test('XMLLoader#forecasts.xml', async () => {
   const json = await load(FORECASTS_URL, XMLLoader);
-
-  t.ok(json, 'got result');
-  t.equal(typeof json, 'object', 'parsed');
-  t.equal(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'world_rivers', 'contents');
-
-  t.end();
+  expect(json, 'got result').toBeTruthy();
+  expect(typeof json, 'parsed').toBe('object');
+  expect(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'contents').toBe('world_rivers');
 });
-
-test('XMLLoader#internal parser#forecasts.xml', async t => {
+test('XMLLoader#internal parser#forecasts.xml', async () => {
   const json = await load(FORECASTS_URL, XMLLoader, {xml: {_parser: 'internal'}});
-
-  t.ok(json, 'got result');
-  t.equal(typeof json, 'object', 'parsed');
-  t.equal(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'world_rivers', 'contents');
-
-  t.end();
+  expect(json, 'got result').toBeTruthy();
+  expect(typeof json, 'parsed').toBe('object');
+  expect(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'contents').toBe('world_rivers');
 });
-
-test('XMLLoader#internal parser#parity', t => {
+test('XMLLoader#internal parser#parity', () => {
   const testCases = [
     {
       title: 'text-only node',
@@ -95,7 +80,6 @@ test('XMLLoader#internal parser#parity', t => {
       options: {_fastXML: {parseAttributeValue: true}}
     }
   ];
-
   for (const testCase of testCases) {
     const parserOptions = {textNodeName: 'value', ...testCase.options};
     const fastXML = BundledXMLLoader.parseTextSync?.(testCase.xml, {
@@ -104,9 +88,6 @@ test('XMLLoader#internal parser#parity', t => {
     const internalXML = BundledXMLLoader.parseTextSync?.(testCase.xml, {
       xml: {...parserOptions, _parser: 'internal'}
     });
-
-    t.deepEqual(internalXML, fastXML, testCase.title);
+    expect(internalXML, testCase.title).toEqual(fastXML);
   }
-
-  t.end();
 });

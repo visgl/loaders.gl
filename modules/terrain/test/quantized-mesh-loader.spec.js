@@ -1,91 +1,55 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-
 import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load} from '@loaders.gl/core';
-
 const TILE_WITH_EXTENSIONS_URL = '@loaders.gl/terrain/test/data/tile-with-extensions.terrain';
 const EXPECTED_TILE_VERTEX_COUNT = typeof window === 'undefined' ? 627 : 781;
 const EXPECTED_TILE_TRIANGLE_COUNT = typeof window === 'undefined' ? 1175 : 1329;
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
-test('QuantizedMeshLoader#loader objects', async t => {
-  validateLoader(t, QuantizedMeshLoader, 'QuantizedMeshLoader');
-  validateLoader(t, QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
-  t.end();
+test('QuantizedMeshLoader#loader objects', async () => {
+  validateLoader(QuantizedMeshLoader, 'QuantizedMeshLoader');
+  validateLoader(QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
 });
-
-test('QuantizedMeshLoader#parse tile-with-extensions', async t => {
+test('QuantizedMeshLoader#parse tile-with-extensions', async () => {
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader);
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, EXPECTED_TILE_TRIANGLE_COUNT * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(
-    data.attributes.TEXCOORD_0.value.length,
-    EXPECTED_TILE_VERTEX_COUNT * 2,
-    'TEXCOORD_0 attribute was found'
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(EXPECTED_TILE_TRIANGLE_COUNT * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(
+    EXPECTED_TILE_VERTEX_COUNT * 2
   );
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(
-    data.attributes.POSITION.value.length,
-    EXPECTED_TILE_VERTEX_COUNT * 3,
-    'POSITION attribute was found'
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
+    EXPECTED_TILE_VERTEX_COUNT * 3
   );
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-
-test('QuantizedMeshLoader#add skirt to tile-with-extensions', async t => {
+test('QuantizedMeshLoader#add skirt to tile-with-extensions', async () => {
   const options = {'quantized-mesh': {skirtHeight: 50}};
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
-  t.equal(data.indices.value.length, 1329 * 3, 'indices was found');
-  t.equal(data.attributes.TEXCOORD_0.value.length, 781 * 2, 'TEXCOORD_0 attribute was found');
-  t.equal(data.attributes.POSITION.value.length, 781 * 3, 'POSITION attribute was found');
-  t.end();
+  expect(data.indices.value.length, 'indices was found').toBe(1329 * 3);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(781 * 2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(781 * 3);
 });
-
-test('QuantizedMeshWorkerLoader#tile-with-extensions', async t => {
+test('QuantizedMeshWorkerLoader#tile-with-extensions', async () => {
   if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
+    console.log('Worker is not usable in non-browser environments');
     return;
   }
-
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader);
-  validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
-
-  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
-
-  t.equal(data.indices.value.length, EXPECTED_TILE_TRIANGLE_COUNT * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
-
-  t.equal(
-    data.attributes.TEXCOORD_0.value.length,
-    EXPECTED_TILE_VERTEX_COUNT * 2,
-    'TEXCOORD_0 attribute was found'
+  validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
+  expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
+  expect(data.indices.value.length, 'indices was found').toBe(EXPECTED_TILE_TRIANGLE_COUNT * 3);
+  expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(
+    EXPECTED_TILE_VERTEX_COUNT * 2
   );
-  t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
-
-  t.equal(
-    data.attributes.POSITION.value.length,
-    EXPECTED_TILE_VERTEX_COUNT * 3,
-    'POSITION attribute was found'
+  expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
+    EXPECTED_TILE_VERTEX_COUNT * 3
   );
-  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
-
-  t.end();
+  expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });

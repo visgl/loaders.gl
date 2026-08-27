@@ -1,29 +1,21 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {PotreeHierarchyChunkLoader} from '@loaders.gl/potree';
 import {PotreeNodesSource} from '../src/lib/potree-node-source';
 import {buildPotreeHierarchyFromMetadata} from '../src/parsers/parse-potree-hierarchy-chunk';
-
 const POTREE_HIERARCHY_CHUNK_URL = '@loaders.gl/potree/test/data/lion_takanawa/data/r/r.hrc';
-
-test('PotreeHierarchyChunkLoader#parse', async t => {
+test('PotreeHierarchyChunkLoader#parse', async () => {
   const response = await fetchFile(POTREE_HIERARCHY_CHUNK_URL);
   const rootNode = await parse(response, PotreeHierarchyChunkLoader);
-  t.equal(countTreeNodes(rootNode), 167);
-  t.equal(rootNode.name, '', 'rootNode.name');
-  t.equal(rootNode.pointCount, 3751, 'rootNode.pointCount');
-  t.equal(rootNode.header.childCount, 6, 'rootNode.childCount');
-  t.equal(rootNode.children.length, 6, 'rootNode.children');
-  t.equal(rootNode.childrenByIndex.length, 8, 'rootNode.childrenByIndex');
-  t.end();
+  expect(countTreeNodes(rootNode)).toBe(167);
+  expect(rootNode.name, 'rootNode.name').toBe('');
+  expect(rootNode.pointCount, 'rootNode.pointCount').toBe(3751);
+  expect(rootNode.header.childCount, 'rootNode.childCount').toBe(6);
+  expect(rootNode.children.length, 'rootNode.children').toBe(6);
+  expect(rootNode.childrenByIndex.length, 'rootNode.childrenByIndex').toBe(8);
 });
-
-test('buildPotreeHierarchyFromMetadata', t => {
+test('buildPotreeHierarchyFromMetadata', () => {
   const rootNode = buildPotreeHierarchyFromMetadata(
     [
       ['r', 10],
@@ -34,21 +26,18 @@ test('buildPotreeHierarchyFromMetadata', t => {
     ],
     {spacing: 8}
   );
-
-  t.equal(countTreeNodes(rootNode), 5);
-  t.equal(rootNode.name, '', 'rootNode.name');
-  t.equal(rootNode.pointCount, 10, 'rootNode.pointCount');
-  t.equal(rootNode.header.childCount, 2, 'rootNode.childCount');
-  t.equal(rootNode.header.childMask, 0b00001001, 'rootNode.childMask');
-  t.equal(rootNode.childrenByIndex[0].name, '0', 'root child 0');
-  t.equal(rootNode.childrenByIndex[3].name, '3', 'root child 3');
-  t.equal(rootNode.childrenByIndex[3].childrenByIndex[6].name, '36', 'nested child');
-  t.equal(rootNode.childrenByIndex[3].spacing, 4, 'child spacing');
-  t.equal(rootNode.childrenByIndex[3].childrenByIndex[6].spacing, 2, 'nested child spacing');
-  t.end();
+  expect(countTreeNodes(rootNode)).toBe(5);
+  expect(rootNode.name, 'rootNode.name').toBe('');
+  expect(rootNode.pointCount, 'rootNode.pointCount').toBe(10);
+  expect(rootNode.header.childCount, 'rootNode.childCount').toBe(2);
+  expect(rootNode.header.childMask, 'rootNode.childMask').toBe(0b00001001);
+  expect(rootNode.childrenByIndex[0].name, 'root child 0').toBe('0');
+  expect(rootNode.childrenByIndex[3].name, 'root child 3').toBe('3');
+  expect(rootNode.childrenByIndex[3].childrenByIndex[6].name, 'nested child').toBe('36');
+  expect(rootNode.childrenByIndex[3].spacing, 'child spacing').toBe(4);
+  expect(rootNode.childrenByIndex[3].childrenByIndex[6].spacing, 'nested child spacing').toBe(2);
 });
-
-test('PotreeNodesSource#initialize preserves direct cloud.js URL', async t => {
+test('PotreeNodesSource#initialize preserves direct cloud.js URL', async () => {
   const loadedUrls: string[] = [];
   const sourceUrl = 'https://potree.github.io/potree/pointclouds/vol_total/cloud.js';
   const coreApi = {
@@ -69,7 +58,6 @@ test('PotreeNodesSource#initialize preserves direct cloud.js URL', async t => {
       };
     }
   } as unknown as CoreAPI;
-
   const dataSource = new PotreeNodesSource(
     sourceUrl,
     {
@@ -79,16 +67,11 @@ test('PotreeNodesSource#initialize preserves direct cloud.js URL', async t => {
     coreApi
   );
   await dataSource.initialize();
-
-  t.equal(loadedUrls[0], sourceUrl, 'loads the exact cloud.js URL passed by the app');
-  t.equal(
-    dataSource.baseUrl,
-    'https://potree.github.io/potree/pointclouds/vol_total',
-    'uses the cloud.js directory as payload base URL'
+  expect(loadedUrls[0], 'loads the exact cloud.js URL passed by the app').toBe(sourceUrl);
+  expect(dataSource.baseUrl, 'uses the cloud.js directory as payload base URL').toBe(
+    'https://potree.github.io/potree/pointclouds/vol_total'
   );
-  t.end();
 });
-
 function countTreeNodes(node) {
   let count = 1;
   for (const child of node.children) {

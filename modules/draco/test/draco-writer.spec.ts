@@ -1,22 +1,15 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-
 import {DracoLoader, DracoWriterOptions, DracoWriter, DracoWriterWorker} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/schema-utils';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
-
 export type TestCase = {
   title: string;
   options: DracoWriterOptions;
 };
-
 const TEST_CASES: TestCase[] = [
   {
     title: 'Encoding Draco Mesh: SEQUENTIAL',
@@ -41,28 +34,22 @@ const TEST_CASES: TestCase[] = [
     }
   }
 ];
-
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
-
 async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
   // Decode Loaded Mesh to use as input data for encoders
   return await parse(arrayBuffer, DracoLoader);
 }
-
-test('DracoWriter#loader conformance', t => {
-  validateWriter(t, DracoWriter, 'DracoWriter');
-  t.end();
+test('DracoWriter#loader conformance', () => {
+  validateWriter(DracoWriter, 'DracoWriter');
 });
-
-test('DracoWriter#encode(bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#encode(bunny.drc)', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const MESH = {
     attributes: {
       POSITION: data.attributes.POSITION.value
@@ -75,60 +62,48 @@ test('DracoWriter#encode(bunny.drc)', async t => {
     }
   };
   const compressedMeshByteLengths = new Map<string, number>();
-
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
     compressedMeshByteLengths.set(tc.title, compressedMesh.byteLength);
-
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = await parse(compressedMesh, DracoLoader);
-      validateMeshCategoryData(t, data2);
-
+      validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
-      t.equal(
+      expect(
         data2.attributes.POSITION.value.length,
-        data.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      );
+      ).toBe(data.attributes.POSITION.value.length);
     }
   }
-
   const sequentialMeshByteLength = compressedMeshByteLengths.get('Encoding Draco Mesh: SEQUENTIAL');
   const edgebreakerMeshByteLength = compressedMeshByteLengths.get(
     'Encoding Draco Mesh: EDGEBREAKER'
   );
-  t.ok(sequentialMeshByteLength, 'Sequential mesh encoded');
-  t.ok(edgebreakerMeshByteLength, 'Edgebreaker mesh encoded');
-  t.ok(
+  expect(sequentialMeshByteLength, 'Sequential mesh encoded').toBeTruthy();
+  expect(edgebreakerMeshByteLength, 'Edgebreaker mesh encoded').toBeTruthy();
+  expect(
     sequentialMeshByteLength &&
       edgebreakerMeshByteLength &&
       edgebreakerMeshByteLength < sequentialMeshByteLength,
     `Edgebreaker mesh encoding (${edgebreakerMeshByteLength}) is smaller than sequential mesh encoding (${sequentialMeshByteLength})`
-  );
-
-  t.end();
+  ).toBeTruthy();
 });
-
 /**
  * Cannot import draco_encoder module:
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
  */
-test.skip('DracoWriter#Worker$encode(bunny.drc)', async t => {
+test.skip('DracoWriter#Worker$encode(bunny.drc)', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
   const data = await loadBunny();
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const MESH = {
     attributes: {
       POSITION: data.attributes.POSITION.value
@@ -140,44 +115,33 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async t => {
       POSITION: data.attributes.POSITION.value
     }
   };
-
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
-
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = await parse(compressedMesh, DracoLoader);
-      validateMeshCategoryData(t, data2);
-
+      validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
-      t.equal(
+      expect(
         data2.attributes.POSITION.value.length,
-        data.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      );
+      ).toBe(data.attributes.POSITION.value.length);
     }
   }
-
-  t.end();
 });
-
-test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
+test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   const data = await loadBunny();
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   for (const tc of TEST_CASES) {
     // Copy position buffer because it won't be available after being sent to the worker
     const mesh = {
@@ -190,47 +154,37 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
       // @ts-expect-error
       mesh.indices = cloneTypeArray(data.indices?.value);
     }
-
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
-
     // const compressedMesh = await encode(mesh, DracoWriter, tc.options);
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = await parse(compressedMesh, DracoLoader);
-      validateMeshCategoryData(t, data2);
-
+      validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
-      t.equal(
+      expect(
         data2.attributes.POSITION.value.length,
-        data.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      );
+      ).toBe(data.attributes.POSITION.value.length);
     }
   }
-
   // Destroy all workers in NodeJS
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#encode via draco3d npm package (bunny.drc)', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const MESH = {
     attributes: {
       POSITION: data.attributes.POSITION.value
@@ -242,21 +196,17 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
       POSITION: data.attributes.POSITION.value
     }
   };
-
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-
     const compressedMesh = await encode(mesh, DracoWriter, {
       ...tc.options,
       modules: {
         draco3d
       }
     });
-
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = await parse(compressedMesh, DracoLoader, {
@@ -264,28 +214,22 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
           draco3d
         }
       });
-      validateMeshCategoryData(t, data2);
-
+      validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
-      t.equal(
+      expect(
         data2.attributes.POSITION.value.length,
-        data.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      );
+      ).toBe(data.attributes.POSITION.value.length);
     }
   }
-
-  t.end();
 });
-
-test('DracoWriter#encode(bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#encode(bunny.drc)', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const meshAttributes = {
     POSITION: data.attributes.POSITION.value,
     indices: data.indices?.value
@@ -293,95 +237,70 @@ test('DracoWriter#encode(bunny.drc)', async t => {
   const pointCloudAttributes = {
     POSITION: data.attributes.POSITION.value
   };
-
   for (const tc of TEST_CASES) {
     const attributes = tc.options.draco?.pointcloud ? pointCloudAttributes : meshAttributes;
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
-
     // const meshSize = getMeshSize(attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
-
     if (!tc.options.pointcloud) {
       // Decode the mesh
       const data2 = await parse(compressedMesh, DracoLoader);
-      validateMeshCategoryData(t, data2);
-
+      validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
-      t.equal(
+      expect(
         data2.attributes.POSITION.value.length,
-        data.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      );
+      ).toBe(data.attributes.POSITION.value.length);
     }
   }
-
-  t.end();
 });
-
-test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const vertexCount = data.attributes.POSITION.value.length / 3;
   const texCoord = new Float32Array(vertexCount * 2);
   texCoord.fill(1);
-
   const meshAttributes = {
     POSITION: data.attributes.POSITION.value,
     texCoord,
     indices: data.indices?.value
   };
-
   const compressedMesh = await encode(meshAttributes, DracoWriter);
   const data2 = await parse(compressedMesh, DracoLoader);
-
-  t.equal(
-    data2.attributes.TEXCOORD_0.value.length,
-    texCoord.length,
-    'Decoded texCoord length matched'
+  expect(data2.attributes.TEXCOORD_0.value.length, 'Decoded texCoord length matched').toBe(
+    texCoord.length
   );
-
   const meshAttributes2 = {
     POSITION: data.attributes.POSITION.value,
     texCoords: texCoord,
     indices: data.indices?.value
   };
-
   const compressedMesh2 = await encode(meshAttributes2, DracoWriter);
   const data3 = await parse(compressedMesh2, DracoLoader);
-
-  t.equal(
-    data3.attributes.TEXCOORD_0.value.length,
-    texCoord.length,
-    'Decoded texCoords length matched'
+  expect(data3.attributes.TEXCOORD_0.value.length, 'Decoded texCoords length matched').toBe(
+    texCoord.length
   );
-
-  t.end();
 });
-
-test('DracoWriter#geometry metadata', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#geometry metadata', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const attributes = {
     POSITION: data.attributes.POSITION.value,
     indices: data.indices?.value
   };
-
   let compressedMesh = await encode(attributes, DracoWriter, {
     draco: {}
   });
-  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
-
+  expect(compressedMesh.byteLength, 'Correct length').toBe(435479);
   compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
       metadata: {
@@ -393,58 +312,45 @@ test('DracoWriter#geometry metadata', async t => {
       }
     }
   });
-  t.equal(
+  expect(
     compressedMesh.byteLength,
-    435614,
     'Correct length - different from encoded geometry without metadata'
-  );
-
+  ).toBe(435614);
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data2);
-
-  t.ok(data2.loaderData.metadata);
-  t.ok(data2.loaderData.metadata.author);
-  t.equal(data2.loaderData.metadata.author.string, 'loaders.gl');
-
-  t.ok(data2.loaderData.metadata['optional-entry-int']);
-  t.ok(data2.loaderData.metadata['optional-entry-int-negative']);
-  t.ok(data2.loaderData.metadata['optional-entry-int-zero']);
-  t.ok(data2.loaderData.metadata['optional-entry-double']);
-
-  t.equal(data2.loaderData.metadata['optional-entry-int'].int, 1444);
-  t.equal(data2.loaderData.metadata['optional-entry-int-negative'].int, -333333333);
-  t.equal(data2.loaderData.metadata['optional-entry-int-zero'].int, 0);
-  t.equal(data2.loaderData.metadata['optional-entry-double'].double, 1.00012323);
-
-  t.equal(
-    data2.attributes.POSITION.value.length,
-    data.attributes.POSITION.value.length,
-    'decoded POSITION length matched'
+  validateMeshCategoryData(data2);
+  expect(data2.loaderData.metadata).toBeTruthy();
+  expect(data2.loaderData.metadata.author).toBeTruthy();
+  expect(data2.loaderData.metadata.author.string).toBe('loaders.gl');
+  expect(data2.loaderData.metadata['optional-entry-int']).toBeTruthy();
+  expect(data2.loaderData.metadata['optional-entry-int-negative']).toBeTruthy();
+  expect(data2.loaderData.metadata['optional-entry-int-zero']).toBeTruthy();
+  expect(data2.loaderData.metadata['optional-entry-double']).toBeTruthy();
+  expect(data2.loaderData.metadata['optional-entry-int'].int).toBe(1444);
+  expect(data2.loaderData.metadata['optional-entry-int-negative'].int).toBe(-333333333);
+  expect(data2.loaderData.metadata['optional-entry-int-zero'].int).toBe(0);
+  expect(data2.loaderData.metadata['optional-entry-double'].double).toBe(1.00012323);
+  expect(data2.attributes.POSITION.value.length, 'decoded POSITION length matched').toBe(
+    data.attributes.POSITION.value.length
   );
-  t.end();
 });
-
-test('DracoWriter#attributes metadata', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#attributes metadata', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
   const attributes = {
     POSITION: data.attributes.POSITION.value,
     indices: data.indices?.value
   };
-
   let compressedMesh = await encode(attributes, DracoWriter, {
     draco: {}
   });
-  t.equal(compressedMesh.byteLength, 435479, 'Correct length');
-
+  expect(compressedMesh.byteLength, 'Correct length').toBe(435479);
   compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
       attributesMetadata: {
@@ -459,34 +365,26 @@ test('DracoWriter#attributes metadata', async t => {
       }
     }
   });
-  t.equal(
+  expect(
     compressedMesh.byteLength,
-    435682,
     'Correct length - different from encoded geometry without metadata'
-  );
-
+  ).toBe(435682);
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data2);
-  validatePositionMetadata(t, data2);
-  t.equals(
+  validateMeshCategoryData(data2);
+  validatePositionMetadata(data2);
+  expect(
     Object.keys(data2.schema.fields[0]?.metadata || {}).length,
-    7,
     'Schema: Attribute metadata correct number of keys'
+  ).toBe(7);
+  expect(data2.attributes.POSITION.value.length, 'decoded POSITION length matched').toBe(
+    data.attributes.POSITION.value.length
   );
-
-  t.equal(
-    data2.attributes.POSITION.value.length,
-    data.attributes.POSITION.value.length,
-    'decoded POSITION length matched'
-  );
-  t.end();
 });
-
-test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await loadBunny();
@@ -510,55 +408,44 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
       attributeNameEntry: 'custom-attribute-name'
     }
   });
-  validateMeshCategoryData(t, data2);
-  t.ok(data2.attributes.featureId);
-  t.equal(
-    data2.attributes.POSITION.value.length,
-    data.attributes.POSITION.value.length,
-    'decoded POSITION length matched'
+  validateMeshCategoryData(data2);
+  expect(data2.attributes.featureId).toBeTruthy();
+  expect(data2.attributes.POSITION.value.length, 'decoded POSITION length matched').toBe(
+    data.attributes.POSITION.value.length
   );
-  t.end();
 });
-
-function validatePositionMetadata(t, data) {
+function validatePositionMetadata(data) {
   const POSITION = 0;
-  t.ok(data.loaderData.attributes[POSITION].metadata);
-  t.ok(data.loaderData.attributes[POSITION].metadata.name);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry']);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int']);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative']);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero']);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-double']);
-  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-array']);
-
-  t.equal(data.loaderData.attributes[POSITION].metadata.name.string, 'POSITION');
-  t.equal(
-    data.loaderData.attributes[POSITION].metadata['optional-entry'].string,
+  expect(data.loaderData.attributes[POSITION].metadata).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata.name).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-double']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int-array']).toBeTruthy();
+  expect(data.loaderData.attributes[POSITION].metadata.name.string).toBe('POSITION');
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry'].string).toBe(
     'optional-entry-value'
   );
-  t.equal(data.loaderData.attributes[POSITION].metadata['optional-entry-int'].int, 1444);
-  t.equal(
-    data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative'].int,
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int'].int).toBe(1444);
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative'].int).toBe(
     -333333333
   );
-  t.equal(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero'].int, 0);
-  t.equal(
-    data.loaderData.attributes[POSITION].metadata['optional-entry-double'].double,
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero'].int).toBe(0);
+  expect(data.loaderData.attributes[POSITION].metadata['optional-entry-double'].double).toBe(
     1.00012323
   );
-  t.deepEqual(
-    data.loaderData.attributes[POSITION].metadata['optional-entry-int-array'].intArray,
-    [0, 1, 2, -3000, 31987, 77]
-  );
+  expect(
+    data.loaderData.attributes[POSITION].metadata['optional-entry-int-array'].intArray
+  ).toEqual([0, 1, 2, -3000, 31987, 77]);
 }
-
 /**
  * Skips Draco writer tests that depend on direct WASM module initialization in browser runs.
  */
-function skipBrowserDracoWasmTest(t) {
+function skipBrowserDracoWasmTest() {
   if (isBrowser) {
-    t.comment('Skipping Draco WASM writer test in browser');
-    t.end();
+    console.log('Skipping Draco WASM writer test in browser');
     return true;
   }
   return false;

@@ -1,32 +1,23 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader} from '@loaders.gl/i3s';
 // @ts-expect-error
 import {loadFeatureAttributes} from '@loaders.gl/i3s/i3s-attribute-loader';
-
 const objectIdsUrl = '@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin';
 const namesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/index.bin';
 const heightRoofUrl = '@loaders.gl/i3s/test/data/attributes/f_2/0/index.bin';
 const wrongNamesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/wrong.bin';
 const wrongBufferNamesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/wrong-buffer.bin';
-
 const objectIdsWithCodeValuesUrl =
   '@loaders.gl/i3s/test/data/BuildingSceneLayer/attributes/f_0/0/index.bin';
 const attributesWithCodeValuesUrl =
   '@loaders.gl/i3s/test/data/BuildingSceneLayer/attributes/f_27/0/index.bin';
 const shortInt16AttributesUrl =
   '@loaders.gl/i3s/test/data/BuildingSceneLayer/attributes/f_7/0/index.bin';
-
 const name602 = 'West End Building\0';
 const objecId0 = 979297;
 const heightRoof0 = 32.18;
 const codeValuesFeatureId = 5;
-
 const TILE_WITHOUT_URLS = {
   tileset: {
     tileset: {
@@ -37,7 +28,6 @@ const TILE_WITHOUT_URLS = {
     }
   }
 };
-
 const TILE = {
   tileset: {
     tileset: {
@@ -51,7 +41,6 @@ const TILE = {
     attributeUrls: [objectIdsUrl, namesUrl, heightRoofUrl]
   }
 };
-
 const TILE_WITH_WRONG_NAME_ATTRIBUTE_URL = {
   tileset: {
     tileset: {
@@ -65,7 +54,6 @@ const TILE_WITH_WRONG_NAME_ATTRIBUTE_URL = {
     attributeUrls: [objectIdsUrl, wrongNamesUrl, heightRoofUrl]
   }
 };
-
 const TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE = {
   tileset: {
     tileset: {
@@ -79,7 +67,6 @@ const TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE = {
     attributeUrls: [objectIdsUrl, wrongBufferNamesUrl, heightRoofUrl]
   }
 };
-
 const TILE_WITH_CODE_VALUES_ATTRIBUTE = {
   tileset: {
     tileset: {
@@ -135,7 +122,6 @@ const TILE_WITH_CODE_VALUES_ATTRIBUTE = {
     attributeUrls: [objectIdsWithCodeValuesUrl, attributesWithCodeValuesUrl]
   }
 };
-
 const TILE_WITH_INT_16_ATTRIBUTES = {
   tileset: {
     tileset: {
@@ -149,101 +135,79 @@ const TILE_WITH_INT_16_ATTRIBUTES = {
     attributeUrls: [objectIdsWithCodeValuesUrl, shortInt16AttributesUrl]
   }
 };
-
-test('I3SAttributeLoader# should return empty object if no attributeName provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeName provided', async () => {
   const options = {
     attributeType: 'Oid32'
   };
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
-  t.ok(attributes);
-  t.deepEqual(attributes, {});
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes).toEqual({});
 });
-
-test('I3SAttributeLoader# should return empty object if no attributeType provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeType provided', async () => {
   const options = {
     attributeName: 'OBJECTID'
   };
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
-  t.ok(attributes);
-  t.deepEqual(attributes, {OBJECTID: null});
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes).toEqual({OBJECTID: null});
 });
-
-test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async t => {
+test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async () => {
   const attributes = await load(objectIdsUrl, I3SAttributeLoader);
-  t.ok(attributes);
-  t.deepEqual(attributes, {});
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes).toEqual({});
 });
-
-test('I3SAttributeLoader# should load OBJECTID attribute', async t => {
+test('I3SAttributeLoader# should load OBJECTID attribute', async () => {
   const options = {
     attributeName: 'OBJECTID',
     attributeType: 'Oid32'
   };
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
-  t.ok(attributes);
-  t.ok(attributes.OBJECTID);
-  t.equal(attributes.OBJECTID?.[0], objecId0);
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes.OBJECTID).toBeTruthy();
+  expect(attributes.OBJECTID?.[0]).toBe(objecId0);
 });
-
-test('I3SAttributeLoader# should load string attribute', async t => {
+test('I3SAttributeLoader# should load string attribute', async () => {
   const options = {
     attributeName: 'NAME',
     attributeType: 'String'
   };
   const attributes = await load(namesUrl, I3SAttributeLoader, options);
-  t.ok(attributes);
-  t.ok(attributes.NAME);
-  t.equal(attributes.NAME?.[602], name602);
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes.NAME).toBeTruthy();
+  expect(attributes.NAME?.[602]).toBe(name602);
 });
-
-test('I3SAttributeLoader# should load float attribute', async t => {
+test('I3SAttributeLoader# should load float attribute', async () => {
   const options = {
     attributeName: 'HEIGHTROOF',
     attributeType: 'Float64'
   };
   const attributes = await load(heightRoofUrl, I3SAttributeLoader, options);
-  t.ok(attributes);
-  t.ok(attributes.HEIGHTROOF);
-  t.equal(attributes.HEIGHTROOF?.[0], heightRoof0);
-  t.end();
+  expect(attributes).toBeTruthy();
+  expect(attributes.HEIGHTROOF).toBeTruthy();
+  expect(attributes.HEIGHTROOF?.[0]).toBe(heightRoof0);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async () => {
   const tile = {};
   const featureId = 1;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.equal(attributes, null);
-  t.end();
+  expect(attributes).toBe(null);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no attributeUrls', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no attributeUrls', async () => {
   const tile = TILE_WITHOUT_URLS;
   const featureId = 1;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.equal(attributes, null);
-  t.end();
+  expect(attributes).toBe(null);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureId', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no featureId', async () => {
   const tile = TILE;
   const featureId = null;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.equal(attributes, null);
-  t.end();
+  expect(attributes).toBe(null);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectIds in attributes', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectIds in attributes', async () => {
   const tile = {
     ...TILE,
     tileset: {
@@ -257,53 +221,38 @@ test('I3SAttributeLoader#loadFeatureAttributes should return null if no objectId
   };
   const featureId = objecId0;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.equal(attributes, null);
-  t.end();
+  expect(attributes).toBe(null);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return null if no such objectId in objectIds array', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return null if no such objectId in objectIds array', async () => {
   const tile = TILE;
   const featureId = 12345;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.equal(attributes, null);
-  t.end();
+  expect(attributes).toBe(null);
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should return attributes object', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should return attributes object', async () => {
   const tile = TILE;
   const featureId = objecId0;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
-  t.end();
+  expect(attributes).toEqual({OBJECTID: '979297', NAME: ''});
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes if one of them are failed to fetch', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes if one of them are failed to fetch', async () => {
   const tile = TILE_WITH_WRONG_NAME_ATTRIBUTE_URL;
   const featureId = objecId0;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
-  t.end();
+  expect(attributes).toEqual({OBJECTID: '979297', NAME: ''});
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes string attribute should be empty if string attribute has multiple of 4 error from arrayBuffer', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes string attribute should be empty if string attribute has multiple of 4 error from arrayBuffer', async () => {
   const tile = TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE;
   const featureId = objecId0;
   const options = {};
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
-  t.end();
+  expect(attributes).toEqual({OBJECTID: '979297', NAME: ''});
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should work with fetch options', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should work with fetch options', async () => {
   const tile = TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE;
   const featureId = objecId0;
   const options = {
@@ -311,35 +260,27 @@ test('I3SAttributeLoader#loadFeatureAttributes should work with fetch options', 
     attributeType: 'Float64',
     fetch: {headers: {Authorization: '123456'}}
   };
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
-  t.end();
+  expect(attributes).toEqual({OBJECTID: '979297', NAME: ''});
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should work with code values if tilesetFields is provided', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should work with code values if tilesetFields is provided', async () => {
   const tile = TILE_WITH_CODE_VALUES_ATTRIBUTE;
   const featureId = codeValuesFeatureId;
   const options = {
     attributeName: 'BaseLevel',
     attributeType: 'Int32'
   };
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
-  t.deepEqual(attributes, {OBJECTID_1: '5', BaseLevel: '1ST FLOOR'});
-  t.end();
+  expect(attributes).toEqual({OBJECTID_1: '5', BaseLevel: '1ST FLOOR'});
 });
-
-test('I3SAttributeLoader#loadFeatureAttributes should work with Int16 attribute type', async t => {
+test('I3SAttributeLoader#loadFeatureAttributes should work with Int16 attribute type', async () => {
   const tile = TILE_WITH_INT_16_ATTRIBUTES;
   const featureId = codeValuesFeatureId;
   const options = {
     attributeName: 'BldgLevel_IsBuildingStory',
     attributeType: 'Int16'
   };
-
   const attributes = await loadFeatureAttributes(tile, featureId, options);
   // eslint-disable-next-line camelcase
-  t.deepEqual(attributes, {OBJECTID_1: '5', BldgLevel_IsBuildingStory: '-1'});
-  t.end();
+  expect(attributes).toEqual({OBJECTID_1: '5', BldgLevel_IsBuildingStory: '-1'});
 });

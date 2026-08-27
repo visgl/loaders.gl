@@ -1,23 +1,14 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
-
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
-
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
 function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
   const headerText = [
     '# .PCD v0.7 - Point Cloud Data file format',
@@ -43,7 +34,6 @@ function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
     {padding: [10, 20], position: [1, 2, 3]},
     {padding: [30, 40], position: [4, 5, 6]}
   ];
-
   for (let pointIndex = 0; pointIndex < positionValues.length; pointIndex++) {
     const rowOffset = pointIndex * rowByteSize;
     const pointValues = positionValues[pointIndex];
@@ -53,88 +43,68 @@ function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
     binaryDataView.setFloat32(rowOffset + 12, pointValues.position[1], littleEndian);
     binaryDataView.setFloat32(rowOffset + 16, pointValues.position[2], littleEndian);
   }
-
   const pcdArrayBuffer = new ArrayBuffer(headerBytes.length + binaryData.byteLength);
   const pcdBytes = new Uint8Array(pcdArrayBuffer);
   pcdBytes.set(headerBytes, 0);
   pcdBytes.set(new Uint8Array(binaryData), headerBytes.length);
   return pcdArrayBuffer;
 }
-
-test('PCDLoader#loader conformance', t => {
-  validateLoader(t, PCDLoader, 'PCDLoader');
-  validateLoader(t, PCDWorkerLoader, 'PCDWorkerLoader');
-  t.end();
+test('PCDLoader#loader conformance', () => {
+  validateLoader(PCDLoader, 'PCDLoader');
+  validateLoader(PCDWorkerLoader, 'PCDWorkerLoader');
 });
-
-test('PCDLoader#parse(text)', async t => {
+test('PCDLoader#parse(text)', async () => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(Object.keys(data.schema.fields).length, 2, 'schema field count is correct');
-  t.equal(data.schema.metadata.mode, '0', 'schema metadata is correct');
-  t.equal(data.schema.metadata.topology, 'point-list', 'schema metadata is correct');
-  t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
-
+  validateMeshCategoryData(data);
+  expect(Object.keys(data.schema.fields).length, 'schema field count is correct').toBe(2);
+  expect(data.schema.metadata.mode, 'schema metadata is correct').toBe('0');
+  expect(data.schema.metadata.topology, 'schema metadata is correct').toBe('point-list');
+  expect(data.schema.metadata.boundingBox, 'schema metadata is correct').toBeTruthy();
   const positionField = data.schema.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
-  t.equal(positionField?.type?.listSize, 3, 'schema size correct');
+  expect(positionField?.type?.listSize, 'schema size correct').toBe(3);
   // @ts-expect-error
-  t.equal(positionField?.type?.children[0]?.type, 'float32', 'schema type correct');
+  expect(positionField?.type?.children[0]?.type, 'schema type correct').toBe('float32');
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
-
   const colorField = data.schema.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
-  t.equal(colorField?.type?.listSize, 3, 'schema size correct');
+  expect(colorField?.type?.listSize, 'schema size correct').toBe(3);
   // @ts-expect-error
-  t.equal(colorField?.type?.children[0]?.type, 'uint8', 'schema type correct');
+  expect(colorField?.type?.children[0]?.type, 'schema type correct').toBe('uint8');
   // t.equal(colorField.type.valueType.bitWidth, 8, 'schema type correct');
   // t.equal(colorField.type.valueType.isSigned, false, 'schema type correct');
-
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'INDICES attribute was not found');
-
-  t.equal(data.attributes.POSITION.value.length, 639, 'POSITION attribute was found');
-  t.equal(data.attributes.COLOR_0.value.length, 639, 'COLOR attribute was found');
-
-  t.end();
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.indices, 'INDICES attribute was not found').toBeFalsy();
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(639);
+  expect(data.attributes.COLOR_0.value.length, 'COLOR attribute was found').toBe(639);
 });
-
-test('PCDLoader#parse(shape: arrow-table)', async t => {
+test('PCDLoader#parse(shape: arrow-table)', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false},
     pcd: {shape: 'arrow-table'}
   });
-
   validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
     schemaName: 'PCDLoader Mesh table'
   });
-
   const {data} = arrowTable;
-  t.equal(data.schema.fields.length, 2, 'schema field count is correct');
-  t.equal(data.schema.metadata.get('topology'), 'point-list', 'schema metadata is correct');
-  t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
-
-  t.equal(data.numRows, 639 / 3, 'table has 213 points');
-
+  expect(data.schema.fields.length, 'schema field count is correct').toBe(2);
+  expect(data.schema.metadata.get('topology'), 'schema metadata is correct').toBe('point-list');
+  expect(data.schema.metadata.get('boundingBox'), 'schema metadata is correct').toBeTruthy();
+  expect(data.numRows, 'table has 213 points').toBe(639 / 3);
   const positionField = arrowTable.schema?.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
-  t.equal(positionField?.type?.listSize, 3, 'position column size correct');
+  expect(positionField?.type?.listSize, 'position column size correct').toBe(3);
   // @ts-expect-error
-  t.equal(positionField?.type?.children[0]?.type, 'float32', 'position column type correct');
-
+  expect(positionField?.type?.children[0]?.type, 'position column type correct').toBe('float32');
   const colorField = arrowTable.schema?.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
-  t.equal(colorField?.type?.listSize, 3, 'color column size correct');
+  expect(colorField?.type?.listSize, 'color column size correct').toBe(3);
   // @ts-expect-error
-  t.equal(colorField?.type?.children[0]?.type, 'uint8', 'color column type correct');
-
-  t.end();
+  expect(colorField?.type?.children[0]?.type, 'color column type correct').toBe('uint8');
 });
-
-test('PCDLoader#parseInBatches(ascii, arrow-table)', async t => {
+test('PCDLoader#parseInBatches(ascii, arrow-table)', async () => {
   const response = await fetchFile(PCD_ASCII_URL);
   const batches = await parseInBatches(response, PCDLoader, {
     batchSize: 100,
@@ -142,54 +112,40 @@ test('PCDLoader#parseInBatches(ascii, arrow-table)', async t => {
     pcd: {shape: 'arrow-table'}
   });
   const batchRowCounts: number[] = [];
-
   for await (const batch of batches) {
-    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
-    t.equal(batch.batchType, 'data', 'batch has data batchType');
-    t.ok(batch.data.getChild('POSITION'), 'batch includes POSITION column');
+    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(batch.batchType, 'batch has data batchType').toBe('data');
+    expect(batch.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
     batchRowCounts.push(batch.length);
   }
-
-  t.deepEqual(batchRowCounts, [100, 100, 13], 'emits requested ASCII PCD Arrow batches');
-  t.end();
+  expect(batchRowCounts, 'emits requested ASCII PCD Arrow batches').toEqual([100, 100, 13]);
 });
-
-test('PCDLoader#parse(binary)', async t => {
+test('PCDLoader#parse(binary)', async () => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'indices were not preset');
-  t.notOk(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset');
-  t.notOk(data.attributes.NORMAL, 'NORMAL attribute was not preset');
-  t.equal(data.attributes.POSITION.value.length, 179250, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.indices, 'indices were not preset').toBeFalsy();
+  expect(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset').toBeFalsy();
+  expect(data.attributes.NORMAL, 'NORMAL attribute was not preset').toBeFalsy();
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(179250);
 });
-
-test('PCDLoader#parse(binary with counted fields)', async t => {
+test('PCDLoader#parse(binary with counted fields)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const data = await parse(binaryArrayBuffer, PCDLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.loaderData.rowSize, 20, 'row size accounts for count values');
-  t.equal(data.loaderData.offset.x, 8, 'offset for x accounts for count values');
-  t.equal(data.loaderData.offset.y, 12, 'offset for y accounts for count values');
-  t.equal(data.loaderData.offset.z, 16, 'offset for z accounts for count values');
-  t.deepEqual(
-    Array.from(data.attributes.POSITION.value),
-    [1, 2, 3, 4, 5, 6],
-    'positions read correctly'
-  );
-
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.loaderData.rowSize, 'row size accounts for count values').toBe(20);
+  expect(data.loaderData.offset.x, 'offset for x accounts for count values').toBe(8);
+  expect(data.loaderData.offset.y, 'offset for y accounts for count values').toBe(12);
+  expect(data.loaderData.offset.z, 'offset for z accounts for count values').toBe(16);
+  expect(Array.from(data.attributes.POSITION.value), 'positions read correctly').toEqual([
+    1, 2, 3, 4, 5, 6
+  ]);
 });
-
-test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async t => {
+test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const batches = await parseInBatches([binaryArrayBuffer], PCDLoader, {
     batchSize: 1,
@@ -198,34 +154,26 @@ test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async 
   });
   const positions: number[] = [];
   const batchRowCounts: number[] = [];
-
   for await (const batch of batches) {
-    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
-    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(batch.batchType, 'batch has data batchType').toBe('data');
     batchRowCounts.push(batch.length);
     const positionColumn = batch.data.getChild('POSITION');
     positions.push(...Array.from(positionColumn.get(0)));
   }
-
-  t.deepEqual(batchRowCounts, [1, 1], 'emits requested binary PCD Arrow batches');
-  t.deepEqual(positions, [1, 2, 3, 4, 5, 6], 'positions read correctly across batches');
-  t.end();
+  expect(batchRowCounts, 'emits requested binary PCD Arrow batches').toEqual([1, 1]);
+  expect(positions, 'positions read correctly across batches').toEqual([1, 2, 3, 4, 5, 6]);
 });
-
-test('PCDWorkerLoader#parse(binary)', async t => {
+test('PCDWorkerLoader#parse(binary)', async () => {
   if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
+    console.log('Worker is not usable in non-browser environments');
     return;
   }
-
   const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.notOk(data.indices, 'indices were not preset');
-  t.notOk(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset');
-  t.notOk(data.attributes.NORMAL, 'NORMAL attribute was not preset');
-  t.equal(data.attributes.POSITION.value.length, 179250, 'POSITION attribute was found');
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.indices, 'indices were not preset').toBeFalsy();
+  expect(data.attributes.COLOR_0, 'COLOR_0 attribute was not preset').toBeFalsy();
+  expect(data.attributes.NORMAL, 'NORMAL attribute was not preset').toBeFalsy();
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(179250);
 });

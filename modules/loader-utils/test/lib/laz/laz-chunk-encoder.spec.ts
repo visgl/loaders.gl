@@ -1,8 +1,4 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   createLAZChunkEncoder,
   createLAZChunkDecoderCursor,
@@ -13,39 +9,30 @@ import {
   encodeLAZChunkTable,
   getLAZChunkByteLength
 } from '@loaders.gl/loader-utils';
-
-test('LAZChunkEncoder#encodes LASzip v3 PDRF 6-8 chunks', t => {
+test('LAZChunkEncoder#encodes LASzip v3 PDRF 6-8 chunks', () => {
   for (const pointDataRecordFormat of [6, 7, 8]) {
     const {rawPointData, metadata} = createLAZEncodingFixture(pointDataRecordFormat);
     const compressed = encodeLAZChunk(rawPointData, metadata);
-
-    t.deepEqual(
-      decodeLAZChunk(compressed, metadata),
-      rawPointData,
-      `PDRF ${pointDataRecordFormat} roundtrip`
+    expect(decodeLAZChunk(compressed, metadata), `PDRF ${pointDataRecordFormat} roundtrip`).toEqual(
+      rawPointData
     );
-    t.deepEqual(
+    expect(
       encodeLAZChunk(rawPointData, metadata),
-      compressed,
       `PDRF ${pointDataRecordFormat} output is deterministic`
-    );
-    t.equal(
+    ).toEqual(compressed);
+    expect(
       getLAZChunkByteLength(compressed, metadata),
-      compressed.byteLength,
       `PDRF ${pointDataRecordFormat} layered size headers are complete`
-    );
+    ).toBe(compressed.byteLength);
   }
-  t.end();
 });
-
-test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data targets', t => {
+test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data targets', () => {
   for (const pointDataRecordFormat of [6, 7, 8]) {
     const {rawPointData, metadata} = createLAZEncodingFixture(pointDataRecordFormat);
     const compressed = encodeLAZChunk(rawPointData, metadata);
     const extraBytes = new Uint8Array(metadata.pointCount * 2);
     const positions = new Float64Array(metadata.pointCount * 3);
     const cursor = createLAZChunkDecoderCursor(compressed, metadata);
-
     cursor.decodeIntoPointData(
       {
         positions,
@@ -56,7 +43,6 @@ test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data target
       },
       metadata.pointCount
     );
-
     const expectedExtraBytes = new Uint8Array(metadata.pointCount * 2);
     for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
       const sourceOffset =
@@ -66,16 +52,13 @@ test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data target
     const mismatchIndex = extraBytes.findIndex(
       (value, index) => value !== expectedExtraBytes[index]
     );
-    t.equal(
+    expect(
       mismatchIndex,
-      -1,
       `PDRF ${pointDataRecordFormat} Extra Bytes (first mismatch ${mismatchIndex}: ${extraBytes[mismatchIndex]} vs ${expectedExtraBytes[mismatchIndex]})`
-    );
+    ).toBe(-1);
   }
-  t.end();
 });
-
-test('LAZChunkEncoder#feedable input preserves view ranges', t => {
+test('LAZChunkEncoder#feedable input preserves view ranges', () => {
   const {rawPointData, metadata} = createLAZEncodingFixture(8);
   const padded = new Uint8Array(rawPointData.byteLength + 16);
   padded.set(rawPointData, 8);
@@ -83,28 +66,22 @@ test('LAZChunkEncoder#feedable input preserves view ranges', t => {
   const splitOffset = Math.floor(rawPointData.byteLength / 2);
   encoder.feed(padded.subarray(8, 8 + splitOffset));
   encoder.feed(padded.subarray(8 + splitOffset, 8 + rawPointData.byteLength));
-  t.throws(
-    () => encoder.encode(),
-    /input is not closed/,
-    'feedable encoder requires close before encode'
+  expect(() => encoder.encode(), 'feedable encoder requires close before encode').toThrow(
+    /input is not closed/
   );
   encoder.close();
-  t.throws(
+  expect(
     () => encoder.feed(new Uint8Array(1)),
-    /closed LAZ chunk encoder/,
     'closed feedable encoder rejects more input'
-  );
-  t.deepEqual(
+  ).toThrow(/closed LAZ chunk encoder/);
+  expect(
     decodeLAZChunk(encoder.encode(), metadata),
-    rawPointData,
     'feedable encoder preserves input view byte ranges'
-  );
-  t.end();
+  ).toEqual(rawPointData);
 });
-
-test('LAZChunkEncoder#validates input and item versions', t => {
+test('LAZChunkEncoder#validates input and item versions', () => {
   const {rawPointData, metadata} = createLAZEncodingFixture(6);
-  t.throws(
+  expect(
     () =>
       encodeLASzipVLR({
         pointDataRecordFormat: 6,
@@ -112,10 +89,9 @@ test('LAZChunkEncoder#validates input and item versions', t => {
         chunkSize: 1,
         itemVersion: 2
       }),
-    /Modern LASzip point formats require item version 3/,
     'modern item version overrides are rejected'
-  );
-  t.throws(
+  ).toThrow(/Modern LASzip point formats require item version 3/);
+  expect(
     () =>
       encodeLASzipVLR({
         pointDataRecordFormat: 0,
@@ -123,10 +99,9 @@ test('LAZChunkEncoder#validates input and item versions', t => {
         chunkSize: 1,
         itemVersion: 3
       }),
-    /Legacy LASzip point formats require item version 2/,
     'legacy item version overrides are rejected'
-  );
-  t.throws(
+  ).toThrow(/Legacy LASzip point formats require item version 2/);
+  expect(
     () =>
       encodeLASzipVLR({
         pointDataRecordFormat: 0,
@@ -134,23 +109,18 @@ test('LAZChunkEncoder#validates input and item versions', t => {
         chunkSize: 1,
         itemVersion: 3
       }),
-    /Legacy LASzip point formats require item version 2/,
     'legacy item version overrides are rejected'
-  );
-  t.throws(
+  ).toThrow(/Legacy LASzip point formats require item version 2/);
+  expect(
     () => encodeLAZChunk(rawPointData.subarray(1), metadata),
-    /expected/,
     'incomplete point data is rejected'
-  );
-  t.throws(
+  ).toThrow(/expected/);
+  expect(
     () => encodeLAZChunk(rawPointData, {...metadata, point14ItemVersion: 4}),
-    /only supports Point14 item version 3/,
     'unsupported Point14 versions are rejected'
-  );
-  t.end();
+  ).toThrow(/only supports Point14 item version 3/);
 });
-
-test('LAZChunkEncoder#roundtrips legacy waveform items', t => {
+test('LAZChunkEncoder#roundtrips legacy waveform items', () => {
   for (const pointDataRecordFormat of [4, 5] as const) {
     const pointDataRecordLength = pointDataRecordFormat === 4 ? 57 : 63;
     const rawPointData = new Uint8Array(pointDataRecordLength * 2);
@@ -195,41 +165,35 @@ test('LAZChunkEncoder#roundtrips legacy waveform items', t => {
       pointDataRecordLength
     });
     const mismatchIndex = decoded.findIndex((value, index) => value !== rawPointData[index]);
-    t.equal(
+    expect(
       mismatchIndex,
-      -1,
       `PDRF ${pointDataRecordFormat} waveform item roundtrips (first mismatch ${mismatchIndex})`
-    );
+    ).toBe(-1);
   }
-  t.end();
 });
-
-test('LAZChunkEncoder#writes legacy waveform LASzip item descriptors', t => {
+test('LAZChunkEncoder#writes legacy waveform LASzip item descriptors', () => {
   const vlr = encodeLASzipVLR({
     pointDataRecordFormat: 5,
     pointDataRecordLength: 63,
-    chunkSize: 50_000
+    chunkSize: 50000
   });
   const dataView = new DataView(vlr.buffer, vlr.byteOffset, vlr.byteLength);
   const itemOffset = 54 + 34;
-  t.deepEqual(
+  expect(
     [0, 1, 2, 3].map(index => [
       dataView.getUint16(itemOffset + index * 6, true),
       dataView.getUint16(itemOffset + index * 6 + 2, true),
       dataView.getUint16(itemOffset + index * 6 + 4, true)
     ]),
-    [
-      [6, 20, 2],
-      [7, 8, 2],
-      [8, 6, 2],
-      [9, 29, 1]
-    ],
     'PDRF 5 items use the LASzip v1 waveform descriptor'
-  );
-  t.end();
+  ).toEqual([
+    [6, 20, 2],
+    [7, 8, 2],
+    [8, 6, 2],
+    [9, 29, 1]
+  ]);
 });
-
-test('LAZChunkEncoder#roundtrips modern waveform items', t => {
+test('LAZChunkEncoder#roundtrips modern waveform items', () => {
   for (const pointDataRecordFormat of [9, 10] as const) {
     const pointDataRecordLength = pointDataRecordFormat === 9 ? 59 : 67;
     const rawPointData = new Uint8Array(pointDataRecordLength * 2);
@@ -276,16 +240,13 @@ test('LAZChunkEncoder#roundtrips modern waveform items', t => {
       byte14ItemVersion: 3 as const
     };
     const compressed = encodeLAZChunk(rawPointData, metadata);
-    t.deepEqual(
+    expect(
       decodeLAZChunk(compressed, metadata),
-      rawPointData,
       `PDRF ${pointDataRecordFormat} waveform item roundtrips`
-    );
+    ).toEqual(rawPointData);
   }
-  t.end();
 });
-
-test('LAZChunkEncoder#encodes LASzip v2 PDRF 0 chunks', t => {
+test('LAZChunkEncoder#encodes LASzip v2 PDRF 0 chunks', () => {
   const pointCount = 32;
   const pointDataRecordLength = 22;
   const rawPointData = new Uint8Array(pointCount * pointDataRecordLength);
@@ -310,48 +271,42 @@ test('LAZChunkEncoder#encodes LASzip v2 PDRF 0 chunks', t => {
     pointDataRecordLength
   };
   const compressed = encodeLAZChunk(rawPointData, metadata);
-  t.deepEqual(decodeLAZChunk(compressed, metadata), rawPointData, 'PDRF 0 roundtrips');
-  t.deepEqual(encodeLAZChunk(rawPointData, metadata), compressed, 'PDRF 0 output is deterministic');
-  t.end();
+  expect(decodeLAZChunk(compressed, metadata), 'PDRF 0 roundtrips').toEqual(rawPointData);
+  expect(encodeLAZChunk(rawPointData, metadata), 'PDRF 0 output is deterministic').toEqual(
+    compressed
+  );
 });
-
-test('LAZChunkEncoder#encodes fixed and variable chunk tables', t => {
+test('LAZChunkEncoder#encodes fixed and variable chunk tables', () => {
   const chunks = [
-    {pointCount: 50_000, byteLength: 100_000},
-    {pointCount: 50_000, byteLength: 90_000},
+    {pointCount: 50000, byteLength: 100000},
+    {pointCount: 50000, byteLength: 90000},
     {pointCount: 23, byteLength: 800}
   ];
   const fixedTable = encodeLAZChunkTable(chunks);
-  t.deepEqual(
+  expect(
     decodeLAZChunkTable(fixedTable, {
       chunkCount: chunks.length,
-      pointCount: 100_023,
-      chunkSize: 50_000,
+      pointCount: 100023,
+      chunkSize: 50000,
       variable: false
     }),
-    chunks,
     'fixed-size chunk table roundtrips'
-  );
-
+  ).toEqual(chunks);
   const variableTable = encodeLAZChunkTable(chunks, {variable: true});
-  t.deepEqual(
+  expect(
     decodeLAZChunkTable(variableTable, {
       chunkCount: chunks.length,
-      pointCount: 100_023,
+      pointCount: 100023,
       chunkSize: 0xffffffff,
       variable: true
     }),
-    chunks,
     'variable-size chunk table roundtrips'
-  );
-  t.throws(
+  ).toEqual(chunks);
+  expect(
     () => encodeLAZChunkTable([{pointCount: 0, byteLength: 1}]),
-    /Invalid LAZ chunk point count/,
     'empty chunks are rejected'
-  );
-  t.end();
+  ).toThrow(/Invalid LAZ chunk point count/);
 });
-
 /** Create varied LAS 1.4 records for shared LAZ encoder tests. */
 function createLAZEncodingFixture(pointDataRecordFormat: number) {
   const baseRecordLength = {6: 30, 7: 36, 8: 38}[pointDataRecordFormat];
@@ -361,8 +316,7 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
   const pointCount = 32;
   const pointDataRecordLength = baseRecordLength + 2;
   const rawPointData = new Uint8Array(pointCount * pointDataRecordLength);
-  let previousGpsTime = 1_000_000_000;
-
+  let previousGpsTime = 1000000000;
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
     const recordOffset = pointIndex * pointDataRecordLength;
     const view = new DataView(
@@ -373,9 +327,8 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     const numberOfReturns = 1 + (pointIndex % 5);
     const returnNumber = 1 + (pointIndex % numberOfReturns);
     const scannerChannel = (pointIndex * 3 + 2) % 4;
-    const gpsTime = pointIndex % 7 === 0 ? previousGpsTime : 1_000_000_000 + pointIndex * 0.001;
+    const gpsTime = pointIndex % 7 === 0 ? previousGpsTime : 1000000000 + pointIndex * 0.001;
     previousGpsTime = gpsTime;
-
     view.setInt32(0, 1000 + pointIndex * 13, true);
     view.setInt32(4, -2000 + pointIndex * pointIndex, true);
     view.setInt32(8, 50 - pointIndex * 3, true);
@@ -387,7 +340,6 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     view.setInt16(18, -100 + pointIndex * 9, true);
     view.setUint16(20, 3 + (pointIndex >> 2), true);
     view.setFloat64(22, gpsTime, true);
-
     if (pointDataRecordFormat >= 7) {
       view.setUint16(30, pointIndex * 1000, true);
       view.setUint16(32, 65535 - pointIndex * 500, true);
@@ -399,7 +351,6 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     view.setUint8(baseRecordLength, pointIndex);
     view.setUint8(baseRecordLength + 1, 255 - pointIndex);
   }
-
   return {
     rawPointData,
     metadata: {

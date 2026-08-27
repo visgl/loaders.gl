@@ -1,16 +1,9 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import StreamingJSONParser from '../../../src/lib/json-parser/streaming-json-parser';
-
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
-
-test('StreamingJSONParser#geojson', async t => {
+test('StreamingJSONParser#geojson', async () => {
   const parser = new StreamingJSONParser();
-
   // Can return text stream by setting `{encoding: 'utf8'}`, but only works on Node
   const response = await fetchFile(GEOJSON_PATH);
   // TODO - https requests under Node return a Promise
@@ -18,7 +11,5 @@ test('StreamingJSONParser#geojson', async t => {
     const string = new TextDecoder().decode(chunk);
     parser.write(string);
   }
-
-  t.pass('should be able to parse geojson in chunks from a stream');
-  t.end();
+  expect(true, 'should be able to parse geojson in chunks from a stream').toBe(true);
 });

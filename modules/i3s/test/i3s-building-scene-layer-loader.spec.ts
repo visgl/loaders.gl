@@ -1,11 +1,6 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
-
 const BUILDING_SCENE_SUBLAYER_0_EXPECTED = {
   id: 31,
   layerType: '3DObject',
@@ -15,25 +10,18 @@ const BUILDING_SCENE_SUBLAYER_0_EXPECTED = {
   modelName: 'TelephoneDevices',
   discipline: 'Electrical'
 };
-
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/BuildingSceneLayer/BuildingSceneLayerTileset.json';
-
-test('ParseI3sTileContent#should parse tile content', async t => {
+test('ParseI3sTileContent#should parse tile content', async () => {
   const buildingSceneLayerStructure = await load(I3S_TILE_CONTENT, I3SBuildingSceneLayerLoader);
-
-  t.ok(buildingSceneLayerStructure);
-  t.ok(buildingSceneLayerStructure.header);
-  t.equal(buildingSceneLayerStructure.header.id, 0);
-  t.equal(buildingSceneLayerStructure.header.layerType, 'Building');
-  t.ok(buildingSceneLayerStructure.sublayers);
-
+  expect(buildingSceneLayerStructure).toBeTruthy();
+  expect(buildingSceneLayerStructure.header).toBeTruthy();
+  expect(buildingSceneLayerStructure.header.id).toBe(0);
+  expect(buildingSceneLayerStructure.header.layerType).toBe('Building');
+  expect(buildingSceneLayerStructure.sublayers).toBeTruthy();
   const firstSublayer = buildingSceneLayerStructure.sublayers[0];
   const {url, ...dataWithoutUrl} = firstSublayer;
-
-  t.ok(url);
-  t.equal(buildingSceneLayerStructure.sublayers.length, 32);
-  t.deepEqual(dataWithoutUrl, BUILDING_SCENE_SUBLAYER_0_EXPECTED);
-
-  t.end();
+  expect(url).toBeTruthy();
+  expect(buildingSceneLayerStructure.sublayers.length).toBe(32);
+  expect(dataWithoutUrl).toEqual(BUILDING_SCENE_SUBLAYER_0_EXPECTED);
 });

@@ -1,10 +1,5 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {ImageSet} from '@loaders.gl/tiles';
-
 function createImageSource() {
   return {
     async getMetadata() {
@@ -19,20 +14,14 @@ function createImageSource() {
     }
   };
 }
-
-test('ImageSet#loads metadata from ImageSource', async t => {
+test('ImageSet#loads metadata from ImageSource', async () => {
   const imageSet = ImageSet.fromImageSource(createImageSource() as any);
-
   const metadata = await imageSet.loadMetadata();
-
-  t.equal(metadata.name, 'test');
-  t.equal(imageSet.metadata?.name, 'test');
-
+  expect(metadata.name).toBe('test');
+  expect(imageSet.metadata?.name).toBe('test');
   imageSet.finalize();
-  t.end();
 });
-
-test('ImageSet#accepts the latest completed request', async t => {
+test('ImageSet#accepts the latest completed request', async () => {
   let resolveFirst;
   let resolveSecond;
   const imageSet = new ImageSet({
@@ -49,7 +38,6 @@ test('ImageSet#accepts the latest completed request', async t => {
       }) as Promise<any>;
     }
   });
-
   imageSet.requestImage({
     layers: [],
     boundingBox: [
@@ -68,20 +56,15 @@ test('ImageSet#accepts the latest completed request', async t => {
     width: 2,
     height: 2
   });
-
   resolveSecond?.();
   await new Promise(resolve => setTimeout(resolve, 0));
   resolveFirst?.();
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.equal((imageSet.image as any)?.name, 'second');
-  t.equal(imageSet.currentRequest?.requestId, 1);
-
+  expect((imageSet.image as any)?.name).toBe('second');
+  expect(imageSet.currentRequest?.requestId).toBe(1);
   imageSet.finalize();
-  t.end();
 });
-
-test('ImageSet#emits metadata and image errors', async t => {
+test('ImageSet#emits metadata and image errors', async () => {
   const metadataErrors: string[] = [];
   const imageErrors: string[] = [];
   let metadataFailed = true;
@@ -100,12 +83,10 @@ test('ImageSet#emits metadata and image errors', async t => {
       return {name: 'image'} as any;
     }
   });
-
   imageSet.subscribe({
     onMetadataLoadError: error => metadataErrors.push(error.message),
     onImageLoadError: (_requestId, error) => imageErrors.push(error.message)
   });
-
   await imageSet.loadMetadata().catch(() => {});
   imageSet.requestImage({
     layers: [],
@@ -117,7 +98,6 @@ test('ImageSet#emits metadata and image errors', async t => {
     height: 1
   });
   await new Promise(resolve => setTimeout(resolve, 0));
-
   metadataFailed = false;
   imageFailed = false;
   await imageSet.loadMetadata();
@@ -131,17 +111,13 @@ test('ImageSet#emits metadata and image errors', async t => {
     height: 2
   });
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.deepEqual(metadataErrors, ['metadata boom']);
-  t.deepEqual(imageErrors, ['image boom']);
-  t.equal(imageSet.metadata?.name, 'test');
-  t.equal((imageSet.image as any)?.name, 'image');
-
+  expect(metadataErrors).toEqual(['metadata boom']);
+  expect(imageErrors).toEqual(['image boom']);
+  expect(imageSet.metadata?.name).toBe('test');
+  expect((imageSet.image as any)?.name).toBe('image');
   imageSet.finalize();
-  t.end();
 });
-
-test('ImageSet#debounces image requests', async t => {
+test('ImageSet#debounces image requests', async () => {
   const calls: number[] = [];
   const imageSet = new ImageSet({
     debounceTime: 5,
@@ -153,7 +129,6 @@ test('ImageSet#debounces image requests', async t => {
       return {width: parameters.width} as any;
     }
   });
-
   imageSet.requestImage({
     layers: [],
     boundingBox: [
@@ -172,17 +147,12 @@ test('ImageSet#debounces image requests', async t => {
     width: 2,
     height: 2
   });
-
   await new Promise(resolve => setTimeout(resolve, 20));
-
-  t.deepEqual(calls, [2]);
-  t.equal((imageSet.image as any)?.width, 2);
-
+  expect(calls).toEqual([2]);
+  expect((imageSet.image as any)?.width).toBe(2);
   imageSet.finalize();
-  t.end();
 });
-
-test('ImageSet#emits loading state changes', async t => {
+test('ImageSet#emits loading state changes', async () => {
   let resolveImage;
   const loadingStates: boolean[] = [];
   const imageSet = new ImageSet({
@@ -195,11 +165,9 @@ test('ImageSet#emits loading state changes', async t => {
       }) as Promise<any>;
     }
   });
-
   imageSet.subscribe({
     onLoadingStateChange: isLoading => loadingStates.push(isLoading)
   });
-
   imageSet.requestImage({
     layers: [],
     boundingBox: [
@@ -212,9 +180,6 @@ test('ImageSet#emits loading state changes', async t => {
   await new Promise(resolve => setTimeout(resolve, 0));
   resolveImage?.();
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.deepEqual(loadingStates, [true, false]);
-
+  expect(loadingStates).toEqual([true, false]);
   imageSet.finalize();
-  t.end();
 });
