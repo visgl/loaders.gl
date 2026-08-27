@@ -24,6 +24,20 @@ export type ParquetKeyRetriever = (
   context: {algorithm: ParquetEncryptionAlgorithm; aad: Uint8Array}
 ) => Promise<ArrayBuffer | ArrayBufferView> | ArrayBuffer | ArrayBufferView;
 
+/** Writer configuration for an encrypted Parquet footer. */
+export type ParquetWriterEncryptionOptions = {
+  /** Encryption algorithm used for the footer and advertised in FileCryptoMetaData. */
+  algorithm?: ParquetEncryptionAlgorithm;
+  /** Optional key metadata passed to the key retriever and stored in FileCryptoMetaData. */
+  keyMetadata?: Uint8Array;
+  /** AAD prefix included in the file crypto metadata when provided. */
+  aadPrefix?: Uint8Array;
+  /** Eight-byte file identifier used in module AAD; generated when omitted. */
+  fileUnique?: Uint8Array;
+  /** Resolves the footer key without putting key material in writer options. */
+  keyRetriever: ParquetKeyRetriever;
+};
+
 /** Options used when decrypting one serialized Parquet module. */
 export type ParquetDecryptModuleOptions = {
   /** Encryption algorithm selected by the file crypto metadata. */
@@ -133,6 +147,41 @@ export async function decryptParquetModule(
   return new Uint8Array(plaintext);
 }
 
+/** Encrypts one Parquet footer module as nonce-prefixed AES-GCM bytes. */
+export async function encryptParquetModule(
+  plaintext: ArrayBuffer | ArrayBufferView,
+  options: {
+    algorithm: ParquetEncryptionAlgorithm;
+    aad: Uint8Array;
+    keyMetadata?: Uint8Array;
+    keyRetriever: ParquetKeyRetriever;
+  }
+): Promise<Uint8Array> {
+  const keyMaterial = await options.keyRetriever(options.keyMetadata, {
+    algorithm: options.algorithm,
+    aad: options.aad
+  });
+  const cryptoKey = await getCryptoKey(keyMaterial, options.algorithm, false, ['encrypt']);
+  const nonce = new Uint8Array(12);
+  const cryptoProvider = getCryptoProvider();
+  getCryptoRandomValues(nonce);
+  const ciphertext = new Uint8Array(
+    await cryptoProvider.encrypt(
+      {
+        name: 'AES-GCM',
+        iv: nonce as unknown as BufferSource,
+        additionalData: options.aad as unknown as BufferSource
+      },
+      cryptoKey,
+      toUint8Array(plaintext) as unknown as BufferSource
+    )
+  );
+  const encryptedModule = new Uint8Array(nonce.byteLength + ciphertext.byteLength);
+  encryptedModule.set(nonce);
+  encryptedModule.set(ciphertext, nonce.byteLength);
+  return encryptedModule;
+}
+
 /** Verifies a plaintext-footer signature by authenticating the serialized footer bytes. */
 export async function verifyParquetFooterSignature(
   footerBytes: Uint8Array,
@@ -209,6 +258,19 @@ function getCryptoProvider(): SubtleCrypto {
   const cryptoProvider = globalThis.crypto?.subtle;
   if (!cryptoProvider) throw new Error('Parquet encryption requires Web Crypto support');
   return cryptoProvider;
+}
+
+/** Fills a nonce with cryptographically secure random bytes. */
+function getCryptoRandomValues(array: Uint8Array): Uint8Array {
+  const cryptoProvider = globalThis.crypto;
+  if (!cryptoProvider?.getRandomValues) {
+    throw new Error('Parquet encryption requires Web Crypto random values');
+  }
+  const getRandomValues = cryptoProvider.getRandomValues.bind(cryptoProvider) as unknown as (
+    value: Uint8Array
+  ) => Uint8Array;
+  getRandomValues(array);
+  return array;
 }
 
 function toUint8Array(value: ArrayBuffer | ArrayBufferView): Uint8Array {

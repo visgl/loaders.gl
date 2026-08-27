@@ -82,6 +82,14 @@ import {
   encodeParquetSplitBlockBloomFilter
 } from '../../lib/parquet-bloom-filter';
 import {BoundaryOrder} from '../parquet-thrift/BoundaryOrder';
+import {EncryptionAlgorithm} from '../parquet-thrift/EncryptionAlgorithm';
+import {FileCryptoMetaData} from '../parquet-thrift/FileCryptoMetaData';
+import {PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
+import {
+  createParquetModuleAad,
+  encryptParquetModule,
+  type ParquetWriterEncryptionOptions
+} from '../../lib/parquet-encryption';
 
 /**
  * Parquet File Magic String
@@ -124,6 +132,8 @@ export interface ParquetEncoderOptions {
   writeStatistics?: boolean | Record<string, boolean>;
   /** Declare the row-group sort order using top-level or dotted leaf column names. */
   sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Encrypt the footer using Parquet modular encryption. */
+  encryption?: ParquetWriterEncryptionOptions;
 
   // Write Stream Options
   flags?: string;
@@ -319,6 +329,8 @@ export class ParquetEnvelopeWriter {
   public writeSizeStatistics: boolean;
   public writeStatistics?: boolean | Record<string, boolean>;
   public sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Optional modular-encryption configuration for the footer. */
+  public encryption?: ParquetWriterEncryptionOptions;
 
   constructor(
     schema: ParquetSchema,
@@ -344,6 +356,7 @@ export class ParquetEnvelopeWriter {
     this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
     this.writeStatistics = opts.writeStatistics;
     this.sortingColumns = opts.sortingColumns;
+    this.encryption = opts.encryption;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -386,15 +399,18 @@ export class ParquetEnvelopeWriter {
   /**
    * Write the parquet file footer
    */
-  writeFooter(userMetadata: Record<string, string>): Promise<void> {
+  async writeFooter(userMetadata: Record<string, string>): Promise<void> {
     if (!userMetadata) {
       // tslint:disable-next-line:no-parameter-reassignment
       userMetadata = {};
     }
 
-    return this.writeSection(
-      encodeFooter(this.schema, this.rowCount, this.rowGroups, userMetadata)
-    );
+    const footer = encodeFooter(this.schema, this.rowCount, this.rowGroups, userMetadata);
+    if (!this.encryption) {
+      await this.writeSection(footer);
+      return;
+    }
+    await this.writeSection(await encodeEncryptedFooter(footer, this.encryption));
   }
 
   /**
@@ -1307,6 +1323,56 @@ function encodeFooter(
   writeUInt32LE(footerEncoded, metadataEncoded.length, metadataEncoded.length);
   footerEncoded.set(PARQUET_MAGIC_BYTES, metadataEncoded.length + 4);
   return footerEncoded;
+}
+
+/** Wraps a serialized footer in Parquet modular-encryption metadata and AES-GCM. */
+async function encodeEncryptedFooter(
+  footer: Uint8Array,
+  options: ParquetWriterEncryptionOptions
+): Promise<Uint8Array> {
+  const algorithm = options.algorithm ?? 'AES_GCM_V1';
+  const fileUnique = options.fileUnique ? new Uint8Array(options.fileUnique) : createFileUnique();
+  if (fileUnique.byteLength !== 8) {
+    throw new Error(`Parquet encrypted footer file_unique must be 8 bytes`);
+  }
+  const algorithmParameters = {
+    aad_prefix: options.aadPrefix && new Uint8Array(options.aadPrefix),
+    aad_file_unique: fileUnique,
+    supply_aad_prefix: options.aadPrefix ? true : undefined
+  };
+  const encryptionAlgorithm =
+    algorithm === 'AES_GCM_CTR_V1'
+      ? new EncryptionAlgorithm({AES_GCM_CTR_V1: algorithmParameters})
+      : new EncryptionAlgorithm({AES_GCM_V1: algorithmParameters});
+  const cryptoMetadata = serializeThrift(
+    new FileCryptoMetaData({
+      encryption_algorithm: encryptionAlgorithm,
+      key_metadata: options.keyMetadata && new Uint8Array(options.keyMetadata)
+    })
+  );
+  const footerMetadata = footer.subarray(0, footer.byteLength - 8);
+  const encryptedFooter = await encryptParquetModule(footerMetadata, {
+    algorithm,
+    aad: createParquetModuleAad(options.aadPrefix, fileUnique, 'footer'),
+    keyMetadata: options.keyMetadata,
+    keyRetriever: options.keyRetriever
+  });
+  const metadataSize = cryptoMetadata.byteLength + encryptedFooter.byteLength;
+  const trailer = new Uint8Array(8);
+  writeUInt32LE(trailer, metadataSize, 0);
+  trailer.set(encodeUtf8(PARQUET_MAGIC_ENCRYPTED), 4);
+  return concatUint8Arrays([cryptoMetadata, encryptedFooter, trailer]);
+}
+
+/** Generates the eight-byte file identifier required by Parquet module AAD. */
+function createFileUnique(): Uint8Array {
+  const fileUnique = new Uint8Array(8);
+  const cryptoProvider = globalThis.crypto;
+  if (!cryptoProvider?.getRandomValues) {
+    throw new Error('Parquet encrypted footer requires Web Crypto random values');
+  }
+  cryptoProvider.getRandomValues(fileUnique);
+  return fileUnique;
 }
 
 /** Returns an explicit or inferred modern logical annotation for a writer field. */
