@@ -694,6 +694,7 @@ export class ParquetSource
         if (phase.phase === 'projection' && predicateProvedEmpty) {
           continue;
         }
+        await initialization.reader.resolveColumnMetadata(rowGroup, rowGroupIndex, phase.columns);
         const pagePlan = phase.predicate
           ? await createParquetPagePruningPlan(
               initialization.file,

@@ -291,7 +291,6 @@ export class ParquetReader {
     const decoded = decodeFileMetadata(metadataBuf);
     const {metadata} = decoded;
     this.setEncryptionContext(metadata);
-    await this.resolveEncryptedColumnMetadata(metadata);
     if (this.props.verifyFooterSignature && this.encryptionContext?.footerSigningKeyMetadata) {
       // The compact-protocol decoder may consume bytes from the signature that
       // happen to look like valid Thrift fields. The format defines the
@@ -355,7 +354,6 @@ export class ParquetReader {
       footerKeyMetadata: cryptoMetadata.metadata.key_metadata
     };
     const metadata = decodeFileMetadata(plaintext).metadata;
-    await this.resolveEncryptedColumnMetadata(metadata);
     return metadata;
   }
 
@@ -376,19 +374,30 @@ export class ParquetReader {
     };
   }
 
-  /** Resolves encrypted column metadata so source planning can inspect all column references. */
-  private async resolveEncryptedColumnMetadata(metadata: FileMetaData): Promise<void> {
-    for (let rowGroupOrdinal = 0; rowGroupOrdinal < metadata.row_groups.length; rowGroupOrdinal++) {
-      const rowGroup = metadata.row_groups[rowGroupOrdinal];
-      for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
-        const columnChunk = rowGroup.columns[columnOrdinal];
-        if (columnChunk.encrypted_column_metadata) {
-          columnChunk.meta_data = await this.getColumnMetadata(
-            columnChunk,
-            rowGroupOrdinal,
-            columnOrdinal
-          );
-        }
+  /** Resolves only the selected encrypted columns, using crypto metadata paths before decryption. */
+  async resolveColumnMetadata(
+    rowGroup: RowGroup,
+    rowGroupOrdinal: number,
+    selectedColumnPaths?: readonly string[][]
+  ): Promise<void> {
+    for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
+      const columnChunk = rowGroup.columns[columnOrdinal];
+      const path = getColumnChunkPath(columnChunk);
+      if (
+        selectedColumnPaths &&
+        path &&
+        !selectedColumnPaths.some(
+          selectedPath => fieldIndexOf([Array.from(selectedPath)], path) >= 0
+        )
+      ) {
+        continue;
+      }
+      if (columnChunk.encrypted_column_metadata && !columnChunk.meta_data) {
+        columnChunk.meta_data = await this.getColumnMetadata(
+          columnChunk,
+          rowGroupOrdinal,
+          columnOrdinal
+        );
       }
     }
   }
@@ -524,6 +533,7 @@ export class ParquetReader {
     signal?: AbortSignal,
     rowGroupOrdinal = 0
   ): Promise<ParquetRowGroup> {
+    await this.resolveColumnMetadata(rowGroup, rowGroupOrdinal, columnList);
     const selectedColumnChunks: Array<{
       columnChunk: ColumnChunk;
       metadata: NonNullable<ColumnChunk['meta_data']>;
@@ -531,6 +541,10 @@ export class ParquetReader {
     }> = [];
     for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
       const columnChunk = rowGroup.columns[columnOrdinal];
+      const path = getColumnChunkPath(columnChunk);
+      if (columnList.length > 0 && (!path || fieldIndexOf(columnList, path) < 0)) {
+        continue;
+      }
       const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
         selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
@@ -579,6 +593,7 @@ export class ParquetReader {
     signal?: AbortSignal,
     rowGroupOrdinal = 0
   ): Promise<ParquetRowGroup> {
+    await this.resolveColumnMetadata(rowGroup, rowGroupOrdinal, columnList);
     const selectedColumnChunks: Array<{
       columnChunk: ColumnChunk;
       metadata: NonNullable<ColumnChunk['meta_data']>;
@@ -586,6 +601,10 @@ export class ParquetReader {
     }> = [];
     for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
       const columnChunk = rowGroup.columns[columnOrdinal];
+      const path = getColumnChunkPath(columnChunk);
+      if (columnList.length > 0 && (!path || fieldIndexOf(columnList, path) < 0)) {
+        continue;
+      }
       const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
         selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
@@ -969,6 +988,14 @@ export class ParquetReader {
     const pagesBuf = toUint8Array(arrayBuffer);
     return await decodeDictionaryBuffer(pagesBuf, context);
   }
+}
+
+/** Returns a column path available without decrypting column metadata when possible. */
+function getColumnChunkPath(columnChunk: ColumnChunk): string[] | undefined {
+  return (
+    columnChunk.meta_data?.path_in_schema ??
+    columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY?.path_in_schema
+  );
 }
 
 /** Decodes one dictionary page from an already-read column-chunk range. */
