@@ -1,45 +1,41 @@
 import React, {useEffect, useState} from 'react';
-import type {FlatGeobufReadOptions} from '@loaders.gl/flatgeobuf';
+import {ArrowTableSource} from '@loaders.gl/arrow';
 import type {ArrowTable} from '@loaders.gl/schema';
-import {FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
-type FlatGeobufDemoState = Readonly<{
+type ArrowScanDemoState = Readonly<{
   metadata?: ScanQueryMetadata;
   table?: ArrowTable;
   error?: string;
   loading: boolean;
 }>;
 
-const DEFAULT_FLATGEOBUF_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/flatgeobuf/test/data/countries.fgb';
+const DEFAULT_ARROW_URL =
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/simple.arrow';
 
-/** Demonstrates metadata-driven projection, limit, and bbox controls over FlatGeobuf. */
-export function FlatGeobufScanLiveExample(): JSX.Element {
-  const [url, setUrl] = useState(DEFAULT_FLATGEOBUF_URL);
+/** Demonstrates the shared metadata-driven scan panel on an Arrow IPC source. */
+export function ArrowScanLiveExample(): JSX.Element {
+  const [url, setUrl] = useState(DEFAULT_ARROW_URL);
   const [query, setQuery] = useState<ScanQueryPanelState>({});
   const [submittedQuery, setSubmittedQuery] = useState<ScanQueryPanelState>({});
-  const [state, setState] = useState<FlatGeobufDemoState>({loading: true});
+  const [state, setState] = useState<ArrowScanDemoState>({loading: true});
 
   useEffect(() => {
     let mounted = true;
-    const source = new FlatGeobufVectorSource(url, {flatgeobuf: {format: 'arrow'}});
+    const source = new ArrowTableSource(url);
     setState({loading: true});
     void (async () => {
       try {
         const metadata = await source.getQueryMetadata();
-        const options: FlatGeobufReadOptions = {
+        let table: ArrowTable | undefined;
+        for await (const batch of source.read({
           columns: submittedQuery.columns,
-          limit: submittedQuery.limit,
-          boundingBox: submittedQuery.boundingBox
-            ? [
-                [submittedQuery.boundingBox[0], submittedQuery.boundingBox[1]],
-                [submittedQuery.boundingBox[2], submittedQuery.boundingBox[3]]
-              ]
-            : undefined
-        };
-        const table = await source.query(options);
+          limit: submittedQuery.limit
+        })) {
+          table = batch.data;
+          break;
+        }
         if (mounted) setState({metadata, table, loading: false});
       } catch (error) {
         if (mounted) setState({loading: false, error: error instanceof Error ? error.message : String(error)});
@@ -52,9 +48,9 @@ export function FlatGeobufScanLiveExample(): JSX.Element {
 
   return (
     <div>
-      <label htmlFor="flatgeobuf-scan-url">FlatGeobuf URL</label>
+      <label htmlFor="arrow-scan-url">Arrow IPC URL</label>
       <input
-        id="flatgeobuf-scan-url"
+        id="arrow-scan-url"
         style={{display: 'block', width: '100%', margin: '6px 0', padding: 7}}
         value={url}
         onChange={event => setUrl(event.target.value)}
@@ -67,22 +63,21 @@ export function FlatGeobufScanLiveExample(): JSX.Element {
           setQuery(nextQuery);
           setSubmittedQuery(nextQuery);
         }}
-        title="FlatGeobuf scan parameters"
+        title="Arrow scan parameters"
       />
       {state.error ? <p role="alert">{state.error}</p> : null}
-      {state.table ? <FlatGeobufPreview table={state.table} /> : null}
+      {state.table ? <ArrowPreview table={state.table} /> : null}
     </div>
   );
 }
 
-function FlatGeobufPreview({table}: {table: ArrowTable}): JSX.Element {
+/** Renders a compact preview of the first rows returned by an Arrow scan. */
+function ArrowPreview({table}: {table: ArrowTable}): JSX.Element {
   const columns = table.schema.fields.map(field => field.name);
   const rowCount = Math.min(table.data.numRows, 5);
   return (
     <div style={{overflowX: 'auto'}}>
-      <p>
-        <strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns
-      </p>
+      <p><strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns</p>
       <table>
         <thead><tr>{columns.map(column => <th key={column}>{column}</th>)}</tr></thead>
         <tbody>
@@ -97,6 +92,7 @@ function FlatGeobufPreview({table}: {table: ArrowTable}): JSX.Element {
   );
 }
 
+/** Formats one Arrow value for the compact example table. */
 function formatCell(value: unknown): string {
   if (value === null || value === undefined) return '—';
   if (typeof value === 'object') return '[value]';

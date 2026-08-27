@@ -33,3 +33,19 @@ const engine = await createScanEngine({backend: 'custom'});
 Format packages should depend on the lightweight scan contracts in `@loaders.gl/loader-utils` and
 should not import this package merely to expose metadata or a native scan adapter. Applications opt
 into this package when they want the shared planner or Arrow executor.
+
+The package also provides the application-facing query state and metadata vocabulary used by
+metadata-driven controls. These are deliberately framework-neutral:
+
+```typescript
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+
+const query: ScanQuery = {columns: ['name'], limit: 25};
+async function discover(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}) {
+  return await source.getQueryMetadata();
+}
+```
+
+`ScanQuery` is a portable control shape. Sources normalize unsupported fields and advertise their
+actual capabilities through `ScanQueryMetadata`; no React, GPU, or database dependency is pulled
+into applications that only use a format loader.

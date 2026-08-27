@@ -217,6 +217,25 @@ loading metadata does not require the scan runtime. The proof-of-concept backend
 intentionally internal to this one public package rather than exposing a family of backend
 subpaths.
 
+The same optional package is also the application-facing home for the source-neutral query state
+and metadata vocabulary:
+
+```ts
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+
+const query: ScanQuery = {columns: ['name'], limit: 25};
+async function describe(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}) {
+  return await source.getQueryMetadata();
+}
+```
+
+`ScanQuery` is intentionally a control-state shape, not a promise that every source supports every
+field. An adapter normalizes the values it understands and reports the rest through metadata
+capabilities. This keeps the panel reusable without making React, a database client, or a GPU
+runtime a dependency of the scan package. Format packages continue to implement the contracts from
+`@loaders.gl/loader-utils`, so applications that do not use scanning pay no scan-runtime bundle
+cost.
+
 ## Predicates and SQL semantics
 
 Portable predicates use a small JSON-shaped tree:
@@ -681,27 +700,30 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
 0. **Contract and reference implementation — landed.** Keep the generic predicates, immutable
    `TableQueryOptions`, point-cloud and raster siblings, canonical planning, late-bound parameters,
    capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
-1. **Panel everywhere — next priority.** Add a small adapter shim for every existing source that can
-   expose a schema or header. Populate projection, limit, bounds, level, band, variable, and time
-   controls from metadata rather than hard-coded examples. Add a support badge and an explain preview
-   to each compatible example. This tranche is successful when users can try the same panel against
-   the sources marked “Ready” or “Foundation” in the matrix below.
-2. **Tabular and vector coverage.** Finish Arrow/GeoArrow as the conformance executor, then bring
+1. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts,
+   and the reference runtime in `@loaders.gl/scan`, while format adapters retain lightweight
+   `@loaders.gl/loader-utils` dependencies. No UI or GPU code crosses this boundary.
+2. **Panel everywhere — implemented for the first linear sources in this stack.** The shared panel
+   now consumes the package-level metadata/query types, renders discovered raster overviews, and is
+   exercised by FlatGeobuf, Parquet, Iceberg, CSV, and Arrow examples. The next increment adds a
+   support badge and explain preview to each compatible example, then expands the panel to every
+   source marked “Ready” or “Foundation” in the matrix below.
+3. **Tabular and vector coverage.** Finish Arrow/GeoArrow as the conformance executor, then bring
    ORC, CSV, JSONL, GeoPackage, Shapefile, MLT, and existing FlatGeobuf paths to scan parity. Start
    with schema/projection/limit and residual predicates; add stripe, row-index, packed-index, or
    byte-range pruning only where the format can prove it safely.
-3. **Cloud and versioned tables.** Complete Parquet/Iceberg parity, then add Delta Lake and Lance
+4. **Cloud and versioned tables.** Complete Parquet/Iceberg parity, then add Delta Lake and Lance
    snapshot/fragment planners. Reuse delete semantics, hidden required columns, task ordering,
    global limits, and explain output. Do not create format-specific predicate ASTs.
-4. **Point-cloud coverage.** Turn COPC and Potree foundations into bounded Arrow point batches with
+5. **Point-cloud coverage.** Turn COPC and Potree foundations into bounded Arrow point batches with
    bounds pushdown, ordered hierarchy tasks, residual attribute predicates, and global point limits.
    Add LAS/LAZ as a sequential fallback and PLY/PCD/splats as metadata-first adapters where their
    native formats cannot prune remotely.
-5. **Raster and multidimensional coverage.** Complete GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr scan
+6. **Raster and multidimensional coverage.** Complete GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr scan
    requests, then wire NetCDF. Add terrain/heightmap and LERC-backed sources through the same raster
    panel. Standardize window, resolution/overview, band/channel, variable, dimension slice, typed
    output, and chunk telemetry without pretending pixels are table rows.
-6. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
+7. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
    but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
    Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
    keep tile addressing and rendering controls outside `TableQuery`.
@@ -726,7 +748,8 @@ exposed yet. A residual predicate is still correct; it simply cannot avoid decod
 | Parquet / Iceberg | Ready | footer/catalog | pushdown | statistics + residual | global / batches | maintain and extend |
 | FlatGeobuf | Ready | header/index | Arrow properties | bbox pushdown, scalar residual | bounded / batches | maintain and panel |
 | ORC | Planned | loader metadata only | planned | planned row-index/statistics | planned | P2 |
-| CSV / JSONL | Planned | header/sample | parser-dependent | residual | planned chunks | P2 |
+| CSV | Ready | header/sample | parser projection | residual | global / batches | P1 |
+| JSONL | Planned | header/sample | planned | planned residual | planned chunks | P2 |
 | GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
 | Delta Lake | Planned | loader not yet present | planned | planned log/deletion-vector pruning | planned | P1 |
 | Lance | Foundation | manifest/fragments | format-native | fragments + residual | global / batches | P1 |

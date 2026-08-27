@@ -21,3 +21,26 @@ export type {
   RelationalOrderKey,
   TableQueryOptions
 } from '@loaders.gl/loader-utils';
+
+export {createScanQueryMetadata} from '@loaders.gl/loader-utils';
+export type {
+  CreateScanQueryMetadataOptions,
+  PointCloudQueryBounds,
+  PointCloudQueryCapabilities,
+  PointCloudQueryOptions,
+  RasterQueryCapabilities,
+  RasterQueryOptions,
+  ScanBounds,
+  ScanColumnMetadata,
+  ScanColumnRole,
+  ScanQueryCapabilities,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider,
+  ScanRasterLevel,
+  ScanSourceStatistics,
+  ScanSpatialMetadata,
+  TableScanReadOptions,
+  TableScanSource
+} from '@loaders.gl/loader-utils';
+export type {ScanQuery} from './scan-query';
