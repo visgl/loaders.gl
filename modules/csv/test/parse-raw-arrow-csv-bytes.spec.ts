@@ -155,12 +155,18 @@ describe('raw Arrow CSV parser', () => {
   });
 
   test('uses the Papa fallback for memory-optimized and skipped-line input', async () => {
-    const table = await parseRawArrowCSVText('name,value\nalpha,1,extra\n\n', {
+    const table = await parseCSVTextAsArrow('name,value\nalpha,1,extra\n\n', {
       csv: {header: true, optimizeMemoryUsage: true, skipEmptyLines: true}
     });
     expect(table.data.numRows).toBe(1);
-    expect(table.schema.fields.map(field => field.name)).toEqual(['name', 'value']);
-    expect(toRows(table)).toEqual([{name: 'alpha', value: '1'}]);
+    expect(table.schema.fields.map(field => field.name)).toEqual([
+      'name',
+      'value',
+      '__parsed_extra'
+    ]);
+    expect(getArrowColumnValues(table, 'name')).toEqual(['alpha']);
+    expect(getArrowColumnValues(table, 'value')).toEqual(['1']);
+    expect(table.data.getChild('__parsed_extra')?.get(0)?.toArray()).toEqual(['extra']);
   });
 
   test('falls back when options are outside the raw byte parser contract', async () => {
