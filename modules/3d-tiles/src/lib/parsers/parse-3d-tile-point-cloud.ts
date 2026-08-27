@@ -8,7 +8,7 @@
 import {DracoLoader} from '@loaders.gl/draco';
 import type {DracoMesh} from '@loaders.gl/draco';
 import {LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
 import {Vector3} from '@math.gl/core';
 
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';

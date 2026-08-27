@@ -13,7 +13,6 @@
     {"path": "../draco"},
     {"path": "../gltf"},
     {"path": "../loader-utils"},
-    {"path": "../math"},
     {"path": "../tiles"},
     {"path": "../zip"}
   ]

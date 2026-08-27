@@ -52,12 +52,6 @@
       "@loaders.gl/polyfills/test": [
         "modules/polyfills/test"
       ],
-      "@loaders.gl/math": [
-        "modules/math/src"
-      ],
-      "@loaders.gl/math/test": [
-        "modules/math/test"
-      ],
       "@loaders.gl/geoarrow": [
         "modules/geoarrow/src"
       ],

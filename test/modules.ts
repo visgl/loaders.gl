@@ -7,7 +7,6 @@ import './init-tests';
 // Utility modules
 import '@loaders.gl/polyfills/test';
 import '@loaders.gl/worker-utils/test';
-import '@loaders.gl/math/test';
 import '@loaders.gl/geoarrow/test';
 
 // Core

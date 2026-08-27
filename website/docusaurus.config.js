@@ -140,7 +140,6 @@ const config = {
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/lerc': resolve('../modules/lerc/src'),
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
-            '@loaders.gl/math': resolve('../modules/math/src'),
             '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
             '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),

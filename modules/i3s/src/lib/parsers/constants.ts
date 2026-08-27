@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
 
 export function getConstructorForDataFormat(dataType: string) {
   switch (dataType) {

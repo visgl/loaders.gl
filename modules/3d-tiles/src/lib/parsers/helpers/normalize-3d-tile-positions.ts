@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
 
 // Prepare attribute for positions
 export function normalize3DTilePositionAttribute(tile, positions, options) {

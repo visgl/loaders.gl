@@ -22,6 +22,12 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 
 These deprecations and removals are being considered for v5.
 
+**@loaders.gl/math**
+
+- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`
+  and update imports for GL constants, typed-array, geometry, color, and attribute-compression
+  utilities.
+
 **CRS and @loaders.gl/wkt**
 
 - Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated

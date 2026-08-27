@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import test from 'test/utils/vitest-tape';
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
