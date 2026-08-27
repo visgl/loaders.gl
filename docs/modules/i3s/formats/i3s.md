@@ -163,9 +163,9 @@ path.
 | Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh scene-layer and node-page structures with forward-compatible passthrough fields; this is not full I3S conformance validation. |
 | Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders. |
 
-## I3S supremacy roadmap
+## I3S roadmap
 
-The matrix turns “I3S supremacy” into measurable tranches. Tranches 0 and 1 are implemented in the
+The matrix turns I3S priorities into measurable tranches. Tranches 0 and 1 are implemented in the
 current v5.0 development line; the remaining tranches close the largest unsupported or partial rows:
 
 | Tranche | Outcome | Status |

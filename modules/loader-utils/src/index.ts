@@ -342,6 +342,7 @@ export type {
 } from './lib/scan-utils/table-query-explain';
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
+export type {GeoServiceType, ServiceCapabilities} from './lib/sources/service-capabilities';
 
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';

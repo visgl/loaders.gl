@@ -3,44 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {TileSourceMetadata, VectorSourceMetadata} from '@loaders.gl/loader-utils';
+import type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/loader-utils';
 import type {WMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
 import type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 import type {WFSCapabilities} from './lib/parsers/wfs/parse-wfs-capabilities';
 
-/** Protocol-neutral service families understood by the geospatial service loaders. */
-export type GeoServiceType =
-  | 'wms'
-  | 'wmts'
-  | 'wfs'
-  | 'csw'
-  | 'arcgis-map-server'
-  | 'arcgis-image-server'
-  | 'arcgis-feature-server'
-  | 'unknown';
-
-/** A normalized description of a discoverable geospatial service. */
-export type ServiceCapabilities = {
-  /** Stable service URL. */
-  url?: string;
-  /** Protocol or vendor service family. */
-  type: GeoServiceType;
-  /** Machine-readable service identifier. */
-  name: string;
-  /** Human-readable service title. */
-  title?: string;
-  /** Service description. */
-  abstract?: string;
-  /** Supported coordinate reference systems. */
-  crs: string[];
-  /** Advertised response formats. */
-  formats: string[];
-  /** Named layers or feature types. */
-  layers: Array<{name: string; title?: string; crs?: string[]; bounds?: number[]}>;
-  /** Supported request names, when advertised. */
-  operations: string[];
-  /** Original protocol-specific capability document. */
-  formatSpecificMetadata?: Record<string, unknown>;
-};
+export type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/loader-utils';
 
 /** Normalizes WMS capabilities into the shared service contract. */
 export function normalizeWMSCapabilities(

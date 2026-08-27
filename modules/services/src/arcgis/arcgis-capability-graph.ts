@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {getArcGISServices} from './arcgis-server';
+import type {ServiceCapabilities} from '@loaders.gl/loader-utils';
 import type {Service as ArcGISService} from './arcgis-server';
 
 /** Normalized capabilities discovered from one ArcGIS REST service. */
@@ -11,10 +12,8 @@ export type ArcGISServiceCapabilities = ArcGISService & {
   id: string;
   /** Broad service family used for selection. */
   kind: 'vector' | 'image' | 'tile' | 'unknown';
-  /** Response or source formats advertised by the service. */
-  formats: string[];
-  /** WKID-based coordinate systems advertised by the service. */
-  crs: string[];
+  /** Shared normalized service capability contract. */
+  capabilities: ServiceCapabilities;
   /** Raw service metadata for provider-specific consumers. */
   metadata: Record<string, unknown>;
 };
@@ -74,9 +73,12 @@ export function selectArcGISService(
 ): ArcGISServiceCapabilities | undefined {
   return graph.nodes.find(node => {
     if (requirements.kind && node.kind !== requirements.kind) return false;
-    if (requirements.format && !node.formats.includes(requirements.format.toLowerCase()))
+    if (
+      requirements.format &&
+      !node.capabilities.formats.includes(requirements.format.toLowerCase())
+    )
       return false;
-    if (requirements.crs && !node.crs.includes(requirements.crs)) return false;
+    if (requirements.crs && !node.capabilities.crs.includes(requirements.crs)) return false;
     return true;
   });
 }
@@ -104,14 +106,35 @@ function normalizeServiceCapabilities(
   const kind = getServiceKind(serviceType);
   const formats = getServiceFormats(metadata);
   const crs = getServiceCrs(metadata);
+  const capabilities: ServiceCapabilities = {
+    url: service.url,
+    type: getServiceCapabilityType(kind),
+    name: service.name,
+    title: typeof metadata.name === 'string' ? metadata.name : undefined,
+    abstract: typeof metadata.description === 'string' ? metadata.description : undefined,
+    crs,
+    formats,
+    layers: [],
+    operations: [],
+    formatSpecificMetadata: metadata
+  };
   return {
     ...service,
     id: service.url,
     kind,
-    formats,
-    crs,
+    capabilities,
     metadata
   };
+}
+
+/** Maps a discovered ArcGIS family to the shared service capability type. */
+function getServiceCapabilityType(
+  kind: ArcGISServiceCapabilities['kind']
+): ServiceCapabilities['type'] {
+  if (kind === 'vector') return 'arcgis-feature-server';
+  if (kind === 'image') return 'arcgis-image-server';
+  if (kind === 'tile') return 'arcgis-map-server';
+  return 'unknown';
 }
 
 /** Maps an ArcGIS service type to the generic source family. */

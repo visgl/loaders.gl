@@ -14,7 +14,7 @@ npm install @loaders.gl/services @loaders.gl/core
 ## Capability discovery
 
 For applications that need to choose among services, the module can discover an ArcGIS REST
-directory and normalize the advertised service family, formats, and coordinate systems. The
+ directory and normalize the shared service capability contract: service family, formats, and coordinate systems. The
 capability graph is intentionally separate from source loading, so direct source construction
 remains the simplest path when the endpoint is already known.
 

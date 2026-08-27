@@ -110,8 +110,10 @@ describe('@loaders.gl/services', () => {
 
     expect(graph?.nodes[0]).toMatchObject({
       kind: 'image',
-      formats: ['jpeg', 'lerc', 'png'],
-      crs: ['EPSG:3857']
+      capabilities: {
+        formats: ['jpeg', 'lerc', 'png'],
+        crs: ['EPSG:3857']
+      }
     });
     expect(selectArcGISService(graph!, {kind: 'image', format: 'lerc'})?.name).toBe('Imagery');
     expect(selectArcGISService(graph!, {kind: 'vector'})).toBeUndefined();
@@ -129,7 +131,7 @@ describe('@loaders.gl/services', () => {
         )
     });
 
-    expect(graph?.nodes[0].formats).toEqual(['json']);
+    expect(graph?.nodes[0].capabilities.formats).toEqual(['json']);
     expect(selectArcGISService(graph!, {format: 'geojson'})).toBeUndefined();
   });
 });

@@ -47,7 +47,7 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 - The `shape` option that was introduced in loaders.gl v3 to allow loaders to return different data formats is now deprecated and will be removed in many places.
 - Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert for Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
 
-## Geospatial service supremacy roadmap
+## Geospatial service roadmap
 
 The service roadmap favors protocol depth and useful normalized outputs over a large universal
 abstraction. Costs are relative engineering estimates; impact describes the user-facing result.
