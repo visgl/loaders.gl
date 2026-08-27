@@ -62,12 +62,12 @@ those versions.
 | --- | :---: | :---: | --- |
 | SceneServer / i3sREST resources | **Supported** | v2.0 | Loads a layer document and resolves node pages, nodes, geometries, textures, and attributes on demand. The formal `I3SSource` interface was added in **v5.0**. |
 | Cloud/object-store REST layouts | **Supported** | v2.0 | Relative resources are resolved from the layer URL; custom fetch support was added in v3.2 for application-specific transport. |
-| ArcGIS token propagation | **Partial** | v3.1 | `i3s.token` is appended to node, geometry, texture, and attribute requests after the layer document is loaded. For a protected initial layer request, include the token in the input URL or provide authenticated fetch handling. |
+| ArcGIS token propagation | **Partial** | v3.1 | `I3SSource` appends `i3s.token` to the initial layer request as well as node, geometry, texture, and attribute requests. A direct `load(url, I3SLoader, ...)` call still needs the token in the input URL or authenticated fetch handling because core fetches the root before the parser runs. |
 | Lightweight metadata loaders and preloading | **Supported** | **v5.0** | Root exports carry loader metadata and dynamically preload parser-bearing implementations, reducing eager imports without changing async `load` behavior. |
 | SLPK archive traversal | **Supported** | **v5.0** | `SLPKSource` gives `Tileset3D` random access to URL- or `Blob`-backed archives through the same `I3SSource` contract used by REST layers. |
 | Individual SLPK resource extraction | **Supported** | v3.4 | `SLPKLoader` and `parseSLPKArchive` expose raw or HTTP-style path access, gzip decompression, and hashed-index lookup. `I3SLoader` itself intentionally does not accept an SLPK byte stream. |
 | Extracted SLPK / local resource tree | **Partial** | v2.0 | Works when resources are exposed through a compatible URL or custom fetch path. There is no separate high-level ESLPK directory source. |
-| ArcGIS WebScene discovery | **Partial** | v3.2 | `ArcGISWebSceneLoader` discovers ArcGIS scene-service, Integrated Mesh, Building, and Group layers and reports unsupported operational layers. It validates only the first supported non-Group layer as WGS84 (`WKID 4326`); subsequent layer CRSs are not checked. |
+| ArcGIS WebScene discovery | **Partial** | v3.2 | `ArcGISWebSceneLoader` discovers ArcGIS scene-service, Integrated Mesh, Building, and Group layers, validates every supported non-Group layer as WGS84 (`WKID 4326`), and reports unsupported operational layers. |
 | Offline SLPK server | **Supported** | v4.0 | The `i3s-server` utility in `@loaders.gl/tile-converter` serves an SLPK or extracted converter output as SceneServer-compatible endpoints. |
 
 ### Hierarchy, bounds, and runtime
@@ -85,7 +85,7 @@ those versions.
 | Lazy child metadata | **Supported** | v2.1 | Child headers are requested only when traversal reaches them. |
 | Multiple viewports | **Supported** | v3.2.6 | Pending child-header requests are tracked independently by viewport and frame. |
 | Request scheduling and cache eviction | **Supported** | v2.1 | Uses the shared `Tileset3D` request scheduler, loaded-tile cache, memory accounting, and callbacks. |
-| Layer and node metadata preservation | **Partial** | v2.0 | Unrecognized layer fields and legacy node-document fields pass through for application use. The node-page path constructs normalized tile headers and drops unrecognized node fields. Typed forward-compatible input schemas were added in **v5.0**. |
+| Layer and node metadata preservation | **Supported** | **v5.0** | Unrecognized layer fields, legacy node-document fields, and node-page extension fields pass through normalized headers for application use. Typed forward-compatible input schemas were added in **v5.0**. |
 
 ### Mesh geometry
 
@@ -103,7 +103,7 @@ those versions.
 | Mesh indices | **Supported** | v3.0 | Draco indices are preserved; uncompressed I3S face order is represented by the expanded vertex stream. |
 | Multiple UV sets | **Not supported** | — | Only the primary UV set is exposed. |
 | Legacy mesh segmentation | **Not supported** | — | Segment information appended to legacy geometry buffers is not parsed. |
-| 64-bit geometry attributes | **Partial** | v3.0 | UInt64 halves are combined but returned in a `Uint32Array`, so only values through `0xffffffff` are preserved and higher values are truncated. Signed 64-bit geometry attributes are not decoded. |
+| 64-bit geometry attributes | **Partial** | **v5.0** | UInt64 values are returned in a `Float64Array` and preserved exactly through `Number.MAX_SAFE_INTEGER`; larger values cannot be represented exactly. Signed 64-bit geometry attributes are not decoded. |
 
 ### Textures and materials
 
@@ -146,7 +146,7 @@ those versions.
 | WGS84 geographic layers | **Supported** | v2.0 | Geometry, extents, MBSs, and OBB centers are interpreted as longitude, latitude, and elevation on the WGS84 ellipsoid. |
 | Cartesian meter-offset output | **Supported** | v2.0 | This is the default geometry representation for deck.gl-compatible rendering. |
 | Longitude/latitude-offset output | **Supported** | v3.1 | Select with `i3s.coordinateSystem: 'lnglat-offsets'`. |
-| Projected or custom horizontal CRS | **Not supported** | — | `spatialReference` metadata is preserved but geometry is not reprojected. The WebScene loader rejects a non-4326 first supported layer but does not validate the CRS of subsequent layers. |
+| Projected or custom horizontal CRS | **Not supported** | — | `spatialReference` metadata is preserved but geometry is not reprojected. The WebScene loader rejects any supported layer whose horizontal CRS is not WGS84 (`WKID 4326`). |
 | Vertical CRS and height models | **Not supported** | — | `heightModelInfo`, VCS WKIDs, and elevation units are preserved as metadata but are not transformed. |
 | `elevationInfo` placement modes | **Not supported** | — | Ground-relative and scene-relative placement policies are not applied by the loader. |
 
@@ -163,21 +163,20 @@ path.
 | Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh scene-layer and node-page structures with forward-compatible passthrough fields; this is not full I3S conformance validation. |
 | Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders. |
 
-## Priority gap areas
+## I3S supremacy roadmap
 
-The largest coherent follow-up tranches are visible in the unsupported and partial rows above:
+The matrix turns “I3S supremacy” into measurable tranches. Tranches 0 and 1 are implemented in the
+current v5.0 development line; the remaining tranches close the largest unsupported or partial rows:
 
-1. Complete I3S 1.10 mesh conformance and fixtures, including legacy shared resources and mesh
-   segmentation.
-2. Complete material and texture semantics: multiple PBR textures, additional UV sets, and sampler
-   wrap modes.
-3. Complete typed feature attributes, statistics, drawing information, and query-oriented APIs.
-4. Add Point profile support.
-5. Add I3S 2.1 Point Cloud support, including LEPCC and density-based traversal.
-6. Add projected and vertical CRS handling plus elevation-placement semantics.
-
-This ordering is illustrative, not a commitment; the matrix is intended to make tranche selection
-and progress measurable.
+| Tranche | Outcome | Status |
+| --- | --- | :---: |
+| 0. Conformance foundation | Freeze the matrix, keep representative 1.6–1.10 fixtures, and run automated support-status checks. | **Complete** |
+| 1. Correctness hardening | Make root authentication, node metadata passthrough, UInt64 precision, and WebScene CRS validation match the documented boundaries. | **Complete** |
+| 2. 1.10 mesh parity | Add legacy shared-resource and mesh-segmentation support, then expand 1.9/1.10 conformance fixtures. | Planned |
+| 3. Material fidelity | Load complete PBR texture sets, multiple atlases/UV sets, and sampler wrap semantics. | Planned |
+| 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | Planned |
+| 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal). | Planned |
+| 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
 
 ## Related specifications and documentation
 

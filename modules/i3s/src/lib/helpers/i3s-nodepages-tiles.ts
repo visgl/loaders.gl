@@ -148,6 +148,7 @@ export default class I3SNodePagesTiles {
     const lodSelection = this.getLodSelection(node);
 
     return normalizeTileNonUrlData({
+      ...node,
       id: id.toString(),
       lodSelection,
       obb: node.obb,
