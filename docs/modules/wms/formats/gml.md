@@ -11,9 +11,9 @@ GML serves as a modeling language for geographic systems as well as an open inte
 
 ## Limitations
 
-GML is a very ambitious format, with a large set of primitives and many ways to express similar geometries by composing different primitives. Parsing GML is generally considered challenging, even when the goal is only to support the "GeoJSON subset" of primitives. Because of this, full support for GML is currently out of scope for loaders.gl.
+GML is a very ambitious format, with a large set of primitives and many ways to express similar geometries by composing different primitives. Parsing GML is generally considered challenging, even when the goal is only to support the "GeoJSON subset" of primitives. Because of this, full support for every GML application schema is currently out of scope for loaders.gl. The parser supports streaming feature members and the common GML 2/3 geometry subset used by WFS services.
 
-The `GMLLoader` only supports parsing the standard geospatial subset of features (points, multipoints, lines, linestrings, polygons and multipolygons), on a "best effort" basis. Because of this, the `GMLLoader` is treated as a geospatial loader and can return GeoJSON style output.
+The `GMLLoader` supports parsing the standard geospatial subset of features (points, multipoints, lines, linestrings, polygons and multipolygons), on a "best effort" basis. Its `parseInBatches` entry point emits feature collections as GML members arrive, so WFS responses do not need to be buffered in full. Because of this, the `GMLLoader` is treated as a geospatial loader and can return GeoJSON style output.
 
 A fun read that illustrates the challenge is the [GML madness](http://erouault.blogspot.com/2014/04/gml-madness.html) article by Even Rouault.
 

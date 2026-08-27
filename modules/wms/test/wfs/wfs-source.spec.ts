@@ -101,3 +101,61 @@ test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async t => {
   });
   t.end();
 });
+
+test('WFSSourceLoader#getFeatures parses GML feature responses', async t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  source.fetch = async () =>
+    new Response(
+      '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:name>Main Street</app:name><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>',
+      {headers: {'content-type': 'application/gml+xml'}}
+    );
+
+  const table = await source.getFeatures({
+    boundingBox: [
+      [0, 0],
+      [3, 3]
+    ],
+    layers: ['roads'],
+    crs: 'EPSG:4326'
+  });
+
+  t.equal(table.shape, 'arrow-table', 'returns Arrow tables for GML by default');
+  t.equal(table.data.numRows, 1, 'preserves GML feature rows');
+  t.end();
+});
+
+test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', async t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const xml =
+    '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember><gml:featureMember><app:road gml:id="road.2"><app:geometry><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>';
+  source.fetch = async () =>
+    new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(xml.slice(0, 180)));
+          controller.enqueue(new TextEncoder().encode(xml.slice(180)));
+          controller.close();
+        }
+      }),
+      {headers: {'content-type': 'application/gml+xml'}}
+    );
+
+  const batches = [];
+  for await (const batch of source.getFeaturesInBatches(
+    {
+      boundingBox: [
+        [0, 0],
+        [5, 5]
+      ],
+      layers: ['roads'],
+      crs: 'EPSG:4326'
+    },
+    {batchSize: 1}
+  )) {
+    batches.push(batch);
+  }
+
+  t.equal(batches.length, 2, 'emits one batch per feature');
+  t.equal(batches[0].data.numRows, 1, 'emits normalized Arrow data');
+  t.end();
+});
