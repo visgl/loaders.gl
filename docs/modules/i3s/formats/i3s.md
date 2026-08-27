@@ -201,8 +201,12 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 5e. REST and SLPK access | Resolve Point Cloud node pages and resources from SceneServer URLs and indexed SLPK archives. | **Complete** (**v5.0**) |
 | 5f. Renderer metadata | Return point-list tables, coordinate-system/origin metadata, bounds, and stable canonical attribute names. | **Complete** (**v5.0**) |
 | 5g. Point Cloud conformance | Add deterministic decoder/source fixtures and document unsupported producer-specific extensions. | **Complete** (**v5.0**) |
-| 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
-| 7. Validation and authoring parity | Expand schema validation and converter fixtures until supported loader and authoring paths have matching conformance guarantees. | Planned |
+| 6a. Horizontal CRS transforms | Reproject supported projected and geographic layer/node coordinates into the requested output coordinate system, with axis-order and unit tests. | Planned |
+| 6b. Vertical CRS and elevation | Resolve vertical CRS units and apply every `elevationInfo` mode, including offsets and relative-to-ground behavior. | Planned |
+| 6c. Precision and dateline handling | Preserve Float64 source precision through origin-relative output, and cover antimeridian/dateline bounds without discontinuities. | Planned |
+| 7a. Profile schema validation | Add discriminated schemas for Point, Point Cloud, Building, and mesh generations, including required/conditional fields. | Planned |
+| 7b. Cross-profile conformance | Build a small fixture matrix for REST and SLPK resources, malformed inputs, authentication, LOD, attributes, and renderer metadata. | Planned |
+| 7c. Authoring parity | Add Point/Point Cloud converter output and make generated resources pass the same loader and conformance fixtures. | Planned |
 
 The next high-value work is renderer styling, CRS/elevation transforms, query helpers, and Point
 Cloud authoring.
@@ -217,9 +221,9 @@ still visible in the matrix and should be treated as the open work list:
 | P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
 | P0 | Point profile | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. Point Cloud support is complete for the documented v5.0 boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
-| P1 | Spatial semantics (6) | Reproject supported horizontal CRSs, honor vertical CRS and units, and apply all `elevationInfo` placement modes. |
+| P1 | Spatial semantics (6a–6c) | Reproject supported horizontal CRSs, honor vertical CRS and units, apply all `elevationInfo` placement modes, and preserve precision at dateline boundaries. |
 | P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |
-| P2 | Validation and authoring parity (7) | Expand schema/conformance coverage beyond the mesh envelope and make converter output pass the same profile and semantic fixtures as the loaders. |
+| P2 | Validation and authoring parity (7a–7c) | Expand profile schemas and cross-profile fixtures, then make converter output pass the same profile and semantic tests as the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 
 The roadmap is considered substantially complete when every P0 and P1 row is complete and the P2
