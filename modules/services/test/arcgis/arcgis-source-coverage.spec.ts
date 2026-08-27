@@ -38,7 +38,7 @@ test('discovers ArcGIS services and nested folders', async () => {
     {
       name: 'Geometry',
       type: 'arcgis-gp-server',
-      url: 'https://example.com/arcgis/rest/services/UtilitiesGeometry/GPServer'
+      url: 'https://example.com/arcgis/rest/services/Utilities/Geometry/GPServer'
     }
   ]);
   expect(await getArcGISServices('https://example.com/catalog')).toBeNull();
