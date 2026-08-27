@@ -10,14 +10,16 @@ import {MapController} from '@deck.gl/core';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {
-  _ArcGISFeatureServerSourceLoader,
-  _ArcGISImageServerSourceLoader,
-  ArcGISImageTileSourceLoader,
-  ArcGISMapTileSourceLoader,
   WFSSourceLoader,
   WMSSourceLoader,
   WMTSSourceLoader
 } from '@loaders.gl/wms';
+import {
+  ArcGISFeatureServerSourceLoader,
+  ArcGISImageServerSourceLoader,
+  ArcGISImageTileSourceLoader,
+  ArcGISMapTileSourceLoader
+} from '@loaders.gl/services';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -57,8 +59,8 @@ type AppProps = {
 
 const SOURCE_FACTORIES = [
   WMSSourceLoader,
-  _ArcGISImageServerSourceLoader,
-  _ArcGISFeatureServerSourceLoader,
+  ArcGISImageServerSourceLoader,
+  ArcGISFeatureServerSourceLoader,
   WFSSourceLoader,
   WMTSSourceLoader,
   ArcGISImageTileSourceLoader,

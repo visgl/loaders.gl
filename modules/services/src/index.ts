@@ -47,7 +47,10 @@ export {
   ArcGISVectorTileServerSourceLoader,
   ArcGISVectorTileServerSource
 } from './arcgis/arcgis-vector-tile-server-source-loader';
-export type {ArcGISVectorTileServerSourceLoaderOptions} from './arcgis/arcgis-vector-tile-server-source-loader';
+export type {
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerSourceLoaderOptions
+} from './arcgis/arcgis-vector-tile-server-source-loader';
 
 export type {ServiceLoader} from './service-registry';
 export {getServiceLoader} from './service-registry';
