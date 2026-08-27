@@ -6,6 +6,8 @@ import type {DataSourceOptions, ReadableFile} from '@loaders.gl/loader-utils';
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {MeshAttributes} from '@loaders.gl/schema';
+import {Vector3} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 import type {
   PointCloudTileContent,
   PointCloudTileHeader,
@@ -55,12 +57,19 @@ export class I3SPointCloudSource
   /** Parsed Point Cloud layer metadata. */
   metadata: SceneLayer3D | null = null;
 
+  /** Random-access archive used for SLPK-backed resources. */
   private archive: SLPKArchive | null = null;
+  /** Node pages cached by physical page index. */
   private readonly nodePages = new Map<number, I3SPointCloudNodePage>();
+  /** Resolved hierarchy nodes cached by global node id. */
   private readonly nodes = new Map<string, I3SPointCloudNode>();
+  /** Decoder used for LEPCC geometry and attribute resources. */
   private readonly decoder: I3SLEPCCDecoder;
+  /** Normalized REST layer base URL. */
   private baseUrl = '';
+  /** Number of global nodes stored in each physical index page. */
   private nodesPerPage = 1;
+  /** Global node id of the hierarchy root. */
   private rootIndex = 0;
 
   /**
@@ -90,7 +99,10 @@ export class I3SPointCloudSource
     }
     this.metadata = layerJson as SceneLayer3D;
     this.baseUrl = this.url.replace(/\/+$/, '');
-    this.nodesPerPage = Math.max(1, Number(layerJson.nodePages?.nodesPerPage || 1));
+    this.nodesPerPage = Math.max(
+      1,
+      Number(layerJson.nodePages?.nodesPerPage || layerJson.store?.index?.nodePerIndexBlock || 1)
+    );
     this.rootIndex = Number(layerJson.nodePages?.rootIndex || 0);
     this.isReady = true;
   }
@@ -148,13 +160,13 @@ export class I3SPointCloudSource
     // MeshArrowTable's canonical POSITION field is Float32. Preserve the tile
     // origin separately in the returned content so renderers can reconstruct
     // full precision without widening the shared Arrow schema.
-    const origin = tile.boundingVolume.center.slice(0, 3);
-    const localPositions = Float32Array.from(
+    const normalizedPositions = normalizePointPositions(
       positions,
-      (value, index) => value - origin[index % 3]
+      tile.boundingVolume.center,
+      this.options.i3s?.coordinateSystem
     );
     const attributes: MeshAttributes = {
-      POSITION: {value: localPositions, size: 3}
+      POSITION: {value: normalizedPositions.positions, size: 3}
     };
     const descriptors = this.getAttributeDescriptors();
     await Promise.all(
@@ -192,8 +204,8 @@ export class I3SPointCloudSource
     return {
       data: table,
       pointCount,
-      cartographicOrigin: origin,
-      coordinateSystem: this.options.i3s?.coordinateSystem || 'cartesian'
+      cartographicOrigin: normalizedPositions.cartographicOrigin,
+      coordinateSystem: normalizedPositions.coordinateSystem
     };
   }
 
@@ -251,8 +263,23 @@ export class I3SPointCloudSource
   ): PointCloudTileHeader {
     const center = Array.from(node.obb.center as number[]);
     const halfSize = Array.from(node.obb.halfSize as number[]);
-    const minimum = center.map((value, index) => value - halfSize[index]);
-    const maximum = center.map((value, index) => value + halfSize[index]);
+    const radius = Math.hypot(...halfSize);
+    const latitudeRadians = (center[1] * Math.PI) / 180;
+    const latitudeDelta = (radius / EARTH_EQUATORIAL_RADIUS) * (180 / Math.PI);
+    const longitudeDelta = Math.min(
+      180,
+      latitudeDelta / Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12)
+    );
+    const minimum = [
+      center[0] - longitudeDelta,
+      Math.max(-90, center[1] - latitudeDelta),
+      center[2] - radius
+    ];
+    const maximum = [
+      center[0] + longitudeDelta,
+      Math.min(90, center[1] + latitudeDelta),
+      center[2] + radius
+    ];
     return {
       id: String(nodeId),
       level,
@@ -267,7 +294,7 @@ export class I3SPointCloudSource
       boundingVolume: {
         cartographicBounds: [minimum, maximum],
         center,
-        radius: Math.hypot(...halfSize)
+        radius
       }
     };
   }
@@ -310,8 +337,10 @@ export class I3SPointCloudSource
       return {value: this.decoder.decodeFlagBytes(data), size: 1, kind: 'flags'};
     }
 
-    const valueType = String(descriptor.valueType || 'UInt8').toLowerCase();
-    const valueSize = descriptor.valueSize || 1;
+    const valueType = String(
+      descriptor.attributeValues?.valueType || descriptor.valueType || 'UInt8'
+    ).toLowerCase();
+    const valueSize = descriptor.attributeValues?.valuesPerElement || descriptor.valueSize || 1;
     if (valueType.includes('float32')) {
       return {value: new Float32Array(bytes), size: valueSize, kind};
     }
@@ -375,4 +404,65 @@ export class I3SPointCloudSource
       return null;
     }
   }
+}
+
+const EARTH_EQUATORIAL_RADIUS = 6378137;
+
+/** Normalized point positions and renderer metadata for one coordinate-system request. */
+type NormalizedPointPositions = Readonly<{
+  /** Point coordinates passed to the Arrow mesh table. */
+  positions: Float32Array;
+  /** Geographic origin retained for offset coordinate systems. */
+  cartographicOrigin: number[];
+  /** Concrete renderer coordinate system after resolving `default`. */
+  coordinateSystem: PointCloudCoordinateSystem;
+}>;
+
+/** Converts absolute geographic LEPCC positions to the requested renderer representation. */
+function normalizePointPositions(
+  positions: Float64Array,
+  center: number[],
+  requestedCoordinateSystem?: PointCloudCoordinateSystem
+): NormalizedPointPositions {
+  const coordinateSystem =
+    !requestedCoordinateSystem || requestedCoordinateSystem === 'default'
+      ? 'lnglat-offsets'
+      : requestedCoordinateSystem;
+  if (coordinateSystem === 'cartesian') {
+    const cartesianPositions = new Float32Array(positions.length);
+    const cartesian = new Vector3();
+    for (let index = 0; index < positions.length; index += 3) {
+      Ellipsoid.WGS84.cartographicToCartesian(
+        new Vector3([positions[index], positions[index + 1], positions[index + 2]]),
+        cartesian
+      );
+      cartesianPositions.set(cartesian, index);
+    }
+    return {positions: cartesianPositions, cartographicOrigin: [0, 0, 0], coordinateSystem};
+  }
+  if (coordinateSystem === 'meter-offsets') {
+    const meterOffsets = new Float32Array(positions.length);
+    const latitudeRadians = (center[1] * Math.PI) / 180;
+    const metersPerLongitudeDegree =
+      (Math.PI / 180) * EARTH_EQUATORIAL_RADIUS * Math.cos(latitudeRadians);
+    const metersPerLatitudeDegree = (Math.PI / 180) * EARTH_EQUATORIAL_RADIUS;
+    for (let index = 0; index < positions.length; index += 3) {
+      meterOffsets[index] = (positions[index] - center[0]) * metersPerLongitudeDegree;
+      meterOffsets[index + 1] = (positions[index + 1] - center[1]) * metersPerLatitudeDegree;
+      meterOffsets[index + 2] = positions[index + 2] - center[2];
+    }
+    return {positions: meterOffsets, cartographicOrigin: [...center], coordinateSystem};
+  }
+  if (coordinateSystem === 'lnglat') {
+    return {
+      positions: Float32Array.from(positions),
+      cartographicOrigin: [0, 0, 0],
+      coordinateSystem
+    };
+  }
+  return {
+    positions: Float32Array.from(positions, (value, index) => value - center[index % 3]),
+    cartographicOrigin: [...center],
+    coordinateSystem: 'lnglat-offsets'
+  };
 }

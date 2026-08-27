@@ -322,7 +322,7 @@ export class PointCloudTileset {
       const projectedArea = Math.max(1, Math.PI * traversalWeight * traversalWeight);
       const density = tile.pointCount / projectedArea;
       const threshold = tile.header.lodThreshold || this.options.densityThreshold;
-      return density >= threshold;
+      return density < threshold;
     }
     return (
       tile.level < this.options.maxDepth &&

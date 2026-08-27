@@ -239,6 +239,21 @@ test('PointCloudTileset#selectTiles keeps coarse tiles when zoomed out', async t
   t.end();
 });
 
+test('PointCloudTileset#density refinement increases as projected density falls', t => {
+  const source = new TestPointCloudSource();
+  const tileset = new PointCloudTileset(source as any);
+  const tile = {
+    level: 0,
+    pointCount: 100,
+    header: {lodSelectionMetricType: 'density-threshold', lodThreshold: 1}
+  };
+  const shouldRefine = (tileset as any).shouldRefine.bind(tileset);
+
+  t.equal(shouldRefine(tile, 100), true, 'a large nearby footprint refines when density is low');
+  t.equal(shouldRefine(tile, 1), false, 'a compact distant footprint remains coarse');
+  t.end();
+});
+
 test('PointCloudTileset#selectTiles respects point budget', async t => {
   const source = new TestPointCloudSource();
   const tileset = new PointCloudTileset(source as any, {

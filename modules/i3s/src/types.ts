@@ -81,6 +81,13 @@ export type I3SPointCloudAttributeInfo = {
   valueType?: string;
   /** Number of scalar components per point. */
   valueSize?: number;
+  /** Standard uncompressed scalar storage descriptor. */
+  attributeValues?: {
+    /** Scalar value type. */
+    valueType?: string;
+    /** Number of scalar components per point. */
+    valuesPerElement?: number;
+  };
   /** Optional bit-field definitions for flag bytes. */
   values?: Record<string, unknown>;
   /** Additional producer metadata. */
