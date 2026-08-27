@@ -27,6 +27,8 @@ export type LAZChunkDecoderOptions = {
 export type LAZPointDataTarget = {
   /** XYZ positions populated with LAS scale and offset applied. */
   positions: Float32Array | Float64Array;
+  /** Optional native-coordinate origin subtracted while positions are written. */
+  positionOrigin?: readonly [number, number, number];
   /** Optional point intensity values. Omit to skip the independent Point14 intensity layer. */
   intensities?: Uint16Array | null;
   /** Optional point classification values. Omit to skip the independent Point14 class layer. */
@@ -3166,7 +3168,8 @@ class PointFormat6Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex++
+        targetPointIndex++,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
@@ -3306,7 +3309,8 @@ class PointFormat7Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -3480,7 +3484,8 @@ class PointFormat8Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -3650,7 +3655,8 @@ class PointFormat9Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex++
+        targetPointIndex++,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex - 1);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex - 1);
@@ -3844,7 +3850,8 @@ class PointFormat10Decompressor implements PointDecompressor {
         classifications,
         scale,
         offset,
-        targetPointIndex
+        targetPointIndex,
+        target.positionOrigin
       );
       writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
       writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -4119,7 +4126,8 @@ function writePoint14ToPointDataTarget(
     target.classifications,
     target.scale,
     target.offset,
-    targetPointIndex
+    targetPointIndex,
+    target.positionOrigin
   );
   writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
   writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
@@ -4132,12 +4140,13 @@ function writePoint14ToPointDataArrays(
   classifications: Uint8Array | null | undefined,
   scale: [number, number, number],
   offset: [number, number, number],
-  targetPointIndex: number
+  targetPointIndex: number,
+  positionOrigin?: readonly [number, number, number]
 ): void {
   const positionOffset = targetPointIndex * 3;
-  positions[positionOffset] = point.x * scale[0] + offset[0];
-  positions[positionOffset + 1] = point.y * scale[1] + offset[1];
-  positions[positionOffset + 2] = point.z * scale[2] + offset[2];
+  positions[positionOffset] = point.x * scale[0] + offset[0] - (positionOrigin?.[0] ?? 0);
+  positions[positionOffset + 1] = point.y * scale[1] + offset[1] - (positionOrigin?.[1] ?? 0);
+  positions[positionOffset + 2] = point.z * scale[2] + offset[2] - (positionOrigin?.[2] ?? 0);
   if (intensities) {
     intensities[targetPointIndex] = point.intensity;
   }
