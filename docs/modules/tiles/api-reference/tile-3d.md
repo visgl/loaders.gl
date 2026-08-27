@@ -26,6 +26,10 @@ Returns `true` when traversal may request a source-managed lazy child-header gro
 
 ###### `boundingVolume` (BoundingVolume)
 
+###### `contentVisibility(frameState)`
+
+Returns the render-content visibility classification after culling against the viewport and any optional world-space clipping planes. Clipping planes affect rendering only; hierarchy traversal continues to use the tile bounding volume.
+
 A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))
 
 ###### `viewerRequestVolume` (BoundingVolume | null)
