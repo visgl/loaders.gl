@@ -44,15 +44,37 @@ async function loadStatistic(
   statistic: StatisticsInfo,
   options: LoaderOptions & {i3s?: {token?: string | null}}
 ): Promise<StatsInfo | null> {
-  const url = getUrlWithToken(statistic.href, options.i3s?.token || null);
+  const baseUrl = options.core?.baseUrl || options.baseUri;
+  const resolvedUrl = resolveStatisticsUrl(statistic.href, baseUrl);
+  const url = getUrlWithToken(resolvedUrl, options.i3s?.token || null);
   try {
-    const response = await fetchStatisticsResource(url, options.fetch);
+    const fetchOptions = options.core?.fetch ?? options.fetch;
+    const response = await fetchStatisticsResource(url, fetchOptions);
     if (!response.ok) {
       return null;
     }
     return (await response.json()) as StatsInfo;
   } catch (_error) {
     return null;
+  }
+}
+
+/**
+ * Resolve a statistics resource href against the layer URL supplied by the caller.
+ * @param href - resource href from `statisticsInfo`
+ * @param baseUrl - loaded layer URL or canonical loader base URL
+ * @returns an absolute resource URL when a base URL is available
+ */
+function resolveStatisticsUrl(href: string, baseUrl?: string): string {
+  if (!baseUrl || /^(?:[a-z]+:)?\/\//i.test(href) || href.startsWith('data:')) {
+    return href;
+  }
+
+  try {
+    const directoryUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    return new URL(href, directoryUrl).toString();
+  } catch (_error) {
+    return `${baseUrl.replace(/\/$/, '')}/${href.replace(/^\.\//, '')}`;
   }
 }
 

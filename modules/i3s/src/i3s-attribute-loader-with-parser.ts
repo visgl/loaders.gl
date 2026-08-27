@@ -276,5 +276,5 @@ function formatAttributeValue(attribute, featureIdIndex, codedValues, fieldType?
  * @returns value with an explicit UTC suffix when it is offset-free
  */
 function appendUtcToOffsetFreeDate(value: string): string {
-  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(value) ? `${value}Z` : value;
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(value) ? `${value}Z` : value;
 }

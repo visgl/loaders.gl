@@ -241,6 +241,9 @@ The returned object is keyed by each descriptor's `key`; an unavailable resource
 import {loadStatistics} from '@loaders.gl/i3s';
 
 const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
+  core: {baseUrl: sceneLayer.url},
   i3s: {token}
 });
 ```
+
+Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.
