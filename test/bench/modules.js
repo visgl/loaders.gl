@@ -22,6 +22,11 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
     await lasBench(suite);
   }
 
+  if (shouldRunBenchmark('copc')) {
+    const {default: copcBench} = await import('@loaders.gl/copc/test/copc-source.bench');
+    await copcBench(suite);
+  }
+
   if (shouldRunBenchmark('gis')) {
     const {default: gisBench} = await import('@loaders.gl/gis/test/binary-features/gis.bench');
     await gisBench(suite);
