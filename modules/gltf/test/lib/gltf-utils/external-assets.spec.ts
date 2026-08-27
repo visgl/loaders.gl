@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {createGLBV3} from '../../test-utils/create-glb-v3';
-
-test('GLTFLoader#loads URI external assets and their relative dependencies', async t => {
+test('GLTFLoader#loads URI external assets and their relative dependencies', async () => {
   const fetchedUrls: string[] = [];
   const child = {
     asset: {version: '2.1'},
@@ -22,7 +21,6 @@ test('GLTFLoader#loads URI external assets and their relative dependencies', asy
     ],
     nodes: [{externalAsset: 0}, {externalAsset: 1}]
   };
-
   const gltf = await parse(new TextEncoder().encode(JSON.stringify(root)), GLTFLoader, {
     core: {
       baseUrl: 'https://example.com/models/root.gltf',
@@ -39,24 +37,19 @@ test('GLTFLoader#loads URI external assets and their relative dependencies', asy
     },
     gltf: {loadExternalAssets: true, loadImages: false}
   });
-
   const childAsset = gltf.externalAssets?.[0];
-  t.ok(childAsset, 'parses the referenced child asset');
-  t.equal(gltf.externalAssets?.[1], childAsset, 'caches repeated references to the same file');
-  t.deepEqual(
-    fetchedUrls,
-    ['https://example.com/models/child/child.gltf', 'https://example.com/models/child/child.bin'],
-    'resolves child dependencies relative to the child asset URI'
-  );
-  t.deepEqual(
+  expect(childAsset, 'parses the referenced child asset').toBeTruthy();
+  expect(gltf.externalAssets?.[1], 'caches repeated references to the same file').toBe(childAsset);
+  expect(fetchedUrls, 'resolves child dependencies relative to the child asset URI').toEqual([
+    'https://example.com/models/child/child.gltf',
+    'https://example.com/models/child/child.bin'
+  ]);
+  expect(
     Array.from(new Uint8Array(childAsset!.buffers[0].arrayBuffer)),
-    [1, 2, 3, 4],
     'loads the child buffer'
-  );
-  t.end();
+  ).toEqual([1, 2, 3, 4]);
 });
-
-test('GLTFLoader#resolves embedded external asset dependencies from the package', async t => {
+test('GLTFLoader#resolves embedded external asset dependencies from the package', async () => {
   const child = new TextEncoder().encode(
     JSON.stringify({
       asset: {version: '2.1'},
@@ -67,7 +60,6 @@ test('GLTFLoader#resolves embedded external asset dependencies from the package'
   const binary = new Uint8Array(child.byteLength + childBuffer.byteLength);
   binary.set(child);
   binary.set(childBuffer, child.byteLength);
-
   const data = createGLBV3(
     {
       asset: {version: '2.1'},
@@ -85,31 +77,25 @@ test('GLTFLoader#resolves embedded external asset dependencies from the package'
     },
     [binary]
   );
-
   const gltf = await parse(data, GLTFLoader, {
     gltf: {loadBuffers: true, loadExternalAssets: true, loadImages: false}
   });
   const childAsset = gltf.externalAssets?.[0];
-
-  t.ok(childAsset, 'parses the child JSON from its buffer view');
-  t.deepEqual(
+  expect(childAsset, 'parses the child JSON from its buffer view').toBeTruthy();
+  expect(
     Array.from(new Uint8Array(childAsset!.buffers[0].arrayBuffer)),
-    [5, 6, 7, 8],
     'resolves the child URI through the containing files array'
-  );
-  t.ok(gltf.files?.[1], 'caches the package dependency in the parent files array');
-  t.end();
+  ).toEqual([5, 6, 7, 8]);
+  expect(gltf.files?.[1], 'caches the package dependency in the parent files array').toBeTruthy();
 });
-
-test('GLTFLoader#rejects cyclical external assets', async t => {
+test('GLTFLoader#rejects cyclical external assets', async () => {
   const recursiveAsset = JSON.stringify({
     asset: {version: '2.1'},
     files: [{mimeType: 'model/gltf+json', uri: './child.gltf'}],
     externalAssets: [{file: 0}],
     nodes: [{externalAsset: 0}]
   });
-
-  await t.rejects(
+  await expect(
     parse(new TextEncoder().encode(recursiveAsset), GLTFLoader, {
       core: {
         baseUrl: 'https://example.com/root.gltf',
@@ -117,8 +103,6 @@ test('GLTFLoader#rejects cyclical external assets', async t => {
       },
       gltf: {loadExternalAssets: true, loadImages: false}
     }),
-    /external asset cycle detected at https:\/\/example.com\/child.gltf/,
     'rejects recursive references before awaiting the cached parse'
-  );
-  t.end();
+  ).rejects.toThrow(/external asset cycle detected at https:\/\/example.com\/child.gltf/);
 });

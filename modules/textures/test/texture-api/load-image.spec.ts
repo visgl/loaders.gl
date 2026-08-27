@@ -2,23 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {loadImageTexture, loadImageTextureArray, loadImageTextureCube} from '@loaders.gl/textures';
 import {getImageData, getImageType, isImage} from '@loaders.gl/images';
-
 const LUT_URL = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
 const PAPERMILL_URL = '@loaders.gl/images/test/data/ibl/papermill';
-
-test('loadImageTexture#mipLevels=0', async t => {
+test('loadImageTexture#mipLevels=0', async () => {
   const image = await loadImageTexture(LUT_URL, {fetch: fetchFile});
-  t.ok(isImage(image));
-  t.equal(getImageType(image), 'imagebitmap', 'returns the strict bitmap image type');
-  t.ok(getImageData(image).data.length > 0, 'bitmap result can be converted to raw pixel data');
-  t.end();
+  expect(isImage(image)).toBeTruthy();
+  expect(getImageType(image), 'returns the strict bitmap image type').toBe('imagebitmap');
+  expect(
+    getImageData(image).data.length > 0,
+    'bitmap result can be converted to raw pixel data'
+  ).toBeTruthy();
 });
-
-test('loadImageTexture#mipLevels=auto', async t => {
+test('loadImageTexture#mipLevels=auto', async () => {
   const mipmappedImage = await loadImageTexture(({lod}) => `specular/specular_back_${lod}.jpg`, {
     baseUrl: PAPERMILL_URL,
     fetch: fetchFile,
@@ -26,15 +25,13 @@ test('loadImageTexture#mipLevels=auto', async t => {
       mipLevels: 'auto'
     }
   });
-  t.ok(mipmappedImage.every(isImage));
-  t.ok(
+  expect(mipmappedImage.every(isImage)).toBeTruthy();
+  expect(
     mipmappedImage.every(image => getImageType(image) === 'imagebitmap'),
     'every mip level is returned as an ImageBitmap'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('loadImageTextureArray#mipLevels=0', async t => {
+test('loadImageTextureArray#mipLevels=0', async () => {
   const images = await loadImageTextureArray(
     10,
     ({index}) => `specular/specular_back_${index}.jpg`,
@@ -43,16 +40,14 @@ test('loadImageTextureArray#mipLevels=0', async t => {
       fetch: fetchFile
     }
   );
-  t.equal(images.length, 10, 'loadArray loaded 10 images');
-  t.ok(images.every(isImage));
-  t.ok(
+  expect(images.length, 'loadArray loaded 10 images').toBe(10);
+  expect(images.every(isImage)).toBeTruthy();
+  expect(
     images.every(image => getImageType(image) === 'imagebitmap'),
     'every layer is an ImageBitmap'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('loadImageTextureArray#mipLevels=auto', async t => {
+test('loadImageTextureArray#mipLevels=auto', async () => {
   const images = await loadImageTextureArray(
     1,
     ({index, lod}) => `specular/specular_back_${lod}.jpg`,
@@ -64,19 +59,17 @@ test('loadImageTextureArray#mipLevels=auto', async t => {
       }
     }
   );
-  t.equal(images.length, 1, 'loadArray loaded 1 image');
+  expect(images.length, 'loadArray loaded 1 image').toBe(1);
   images.every(imageMips => {
-    t.equal(imageMips.length, 10, 'array of mip images has correct length');
-    t.ok(imageMips.every(isImage), 'entry is a valid array of mip images');
-    t.ok(
+    expect(imageMips.length, 'array of mip images has correct length').toBe(10);
+    expect(imageMips.every(isImage), 'entry is a valid array of mip images').toBeTruthy();
+    expect(
       imageMips.every(image => getImageType(image) === 'imagebitmap'),
       'entry preserves the strict bitmap image type'
-    );
+    ).toBeTruthy();
   });
-  t.end();
 });
-
-test('loadImageTextureCube#mipLevels=0', async t => {
+test('loadImageTextureCube#mipLevels=0', async () => {
   const imageCube = await loadImageTextureCube(
     ({direction}) => `diffuse/diffuse_${direction}_0.jpg`,
     {
@@ -84,16 +77,14 @@ test('loadImageTextureCube#mipLevels=0', async t => {
       fetch: fetchFile
     }
   );
-  t.equal(Object.keys(imageCube).length, 6, 'image cube has 6 images');
+  expect(Object.keys(imageCube).length, 'image cube has 6 images').toBe(6);
   for (const face in imageCube) {
     const image = imageCube[face];
-    t.ok(isImage(image), `face ${face} is a valid image`);
-    t.equal(getImageType(image), 'imagebitmap', `face ${face} is returned as an ImageBitmap`);
+    expect(isImage(image), `face ${face} is a valid image`).toBeTruthy();
+    expect(getImageType(image), `face ${face} is returned as an ImageBitmap`).toBe('imagebitmap');
   }
-  t.end();
 });
-
-test('loadImageTextureCube#mipLevels=auto', async t => {
+test('loadImageTextureCube#mipLevels=auto', async () => {
   const imageCube = await loadImageTextureCube(
     ({direction, lod}) => `specular/specular_${direction}_${lod}.jpg`,
     {
@@ -104,27 +95,23 @@ test('loadImageTextureCube#mipLevels=auto', async t => {
       }
     }
   );
-  t.equal(Object.keys(imageCube).length, 6, 'image cube has 6 images');
+  expect(Object.keys(imageCube).length, 'image cube has 6 images').toBe(6);
   for (const face in imageCube) {
     const imageMips = imageCube[face];
-    t.equal(imageMips.length, 10, 'array of mip images has correct length');
-    t.ok(imageMips.every(isImage), `face ${face} is a valid array of mip images`);
-    t.ok(
+    expect(imageMips.length, 'array of mip images has correct length').toBe(10);
+    expect(imageMips.every(isImage), `face ${face} is a valid array of mip images`).toBeTruthy();
+    expect(
       imageMips.every(image => getImageType(image) === 'imagebitmap'),
       `face ${face} preserves the strict bitmap image type`
-    );
+    ).toBeTruthy();
   }
-  t.end();
 });
-
-test('loadImageTexture#rejects deprecated image output modes', async t => {
-  await t.rejects(
+test('loadImageTexture#rejects deprecated image output modes', async () => {
+  await expect(
     loadImageTexture(LUT_URL, {
       fetch: fetchFile,
       image: {type: 'data'}
     } as any),
-    /ImageBitmapLoader only accepts options\.image\.type='imagebitmap'/,
     'deprecated image output modes are rejected by the helper path'
-  );
-  t.end();
+  ).rejects.toThrow(/ImageBitmapLoader only accepts options\.image\.type='imagebitmap'/);
 });

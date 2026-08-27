@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable max-len, camelcase */
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import type {GLTFWithBuffers, GLTFPostprocessed} from '@loaders.gl/gltf';
 import {postProcessGLTF} from '@loaders.gl/gltf';
-
-const TEST_CASES: {name: string; input: GLTFWithBuffers; output: Partial<GLTFPostprocessed>}[] = [
+const TEST_CASES: {
+  name: string;
+  input: GLTFWithBuffers;
+  output: Partial<GLTFPostprocessed>;
+}[] = [
   {
     name: 'Simple scene',
     input: {
@@ -48,16 +49,13 @@ const TEST_CASES: {name: string; input: GLTFWithBuffers; output: Partial<GLTFPos
     }
   }
 ];
-
-test('gltf#postProcessGLTF', t => {
+test('gltf#postProcessGLTF', () => {
   for (const testCase of TEST_CASES) {
     const json = postProcessGLTF(testCase.input as unknown as GLTFWithBuffers);
-    t.deepEqual(json, testCase.output, testCase.name);
+    expect(json, testCase.name).toEqual(testCase.output);
   }
-  t.end();
 });
-
-test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', t => {
+test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', () => {
   const json = postProcessGLTF({
     json: {
       asset: {version: '2.1', thumbnail: 0},
@@ -66,13 +64,12 @@ test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', t => {
     buffers: [],
     images: [{width: 2, height: 2}]
   } as unknown as GLTFWithBuffers);
-
-  t.equal(json.asset.thumbnail, json.images[0], 'resolves the thumbnail to the processed image');
-  t.equal(json.asset.thumbnail?.image.width, 2, 'preserves the decoded thumbnail image');
-  t.end();
+  expect(json.asset.thumbnail, 'resolves the thumbnail to the processed image').toBe(
+    json.images[0]
+  );
+  expect(json.asset.thumbnail?.image.width, 'preserves the decoded thumbnail image').toBe(2);
 });
-
-test('gltf#postProcessGLTF normalizes indexed LINE_LOOP topology without mutating source data', t => {
+test('gltf#postProcessGLTF normalizes indexed LINE_LOOP topology without mutating source data', () => {
   const sourceIndices = new Uint16Array([3, 1, 4, 2]);
   const source = {
     json: {
@@ -93,24 +90,19 @@ test('gltf#postProcessGLTF normalizes indexed LINE_LOOP topology without mutatin
       }
     ]
   } as GLTFWithBuffers;
-
   const json = postProcessGLTF(source);
   const primitive = json.meshes[0].primitives[0];
-
-  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
-  t.deepEqual(
+  expect(primitive.mode, 'converts LINE_LOOP to LINES').toBe(1);
+  expect(
     Array.from(primitive.indices?.value || []),
-    [3, 1, 1, 4, 4, 2, 2, 3],
     'expands the loop into line-list indices'
-  );
-  t.equal(primitive.indices?.componentType, 5123, 'uses portable unsigned-short indices');
-  t.equal(source.json.meshes?.[0].primitives[0].mode, 2, 'preserves the source primitive mode');
-  t.equal(source.json.accessors?.[0].count, 4, 'preserves the source index accessor');
-  t.deepEqual(Array.from(sourceIndices), [3, 1, 4, 2], 'preserves the source index buffer');
-  t.end();
+  ).toEqual([3, 1, 1, 4, 4, 2, 2, 3]);
+  expect(primitive.indices?.componentType, 'uses portable unsigned-short indices').toBe(5123);
+  expect(source.json.meshes?.[0].primitives[0].mode, 'preserves the source primitive mode').toBe(2);
+  expect(source.json.accessors?.[0].count, 'preserves the source index accessor').toBe(4);
+  expect(Array.from(sourceIndices), 'preserves the source index buffer').toEqual([3, 1, 4, 2]);
 });
-
-test('gltf#postProcessGLTF normalizes non-indexed TRIANGLE_FAN topology', t => {
+test('gltf#postProcessGLTF normalizes non-indexed TRIANGLE_FAN topology', () => {
   const json = postProcessGLTF({
     json: {
       asset: {version: '2.0'},
@@ -120,19 +112,15 @@ test('gltf#postProcessGLTF normalizes non-indexed TRIANGLE_FAN topology', t => {
     buffers: []
   } as GLTFWithBuffers);
   const primitive = json.meshes[0].primitives[0];
-
-  t.equal(primitive.mode, 4, 'converts TRIANGLE_FAN to TRIANGLES');
-  t.deepEqual(
+  expect(primitive.mode, 'converts TRIANGLE_FAN to TRIANGLES').toBe(4);
+  expect(
     Array.from(primitive.indices?.value || []),
-    [0, 1, 2, 0, 2, 3],
     'expands the fan into triangle-list indices'
-  );
-  t.equal(primitive.indices?.count, 6, 'updates the generated index count');
-  t.equal(primitive.indices?.max?.[0], 3, 'records the generated maximum index');
-  t.end();
+  ).toEqual([0, 1, 2, 0, 2, 3]);
+  expect(primitive.indices?.count, 'updates the generated index count').toBe(6);
+  expect(primitive.indices?.max?.[0], 'records the generated maximum index').toBe(3);
 });
-
-test('gltf#postProcessGLTF materializes an implicit-zero index accessor', t => {
+test('gltf#postProcessGLTF materializes an implicit-zero index accessor', () => {
   const json = postProcessGLTF({
     json: {
       asset: {version: '2.0'},
@@ -144,18 +132,14 @@ test('gltf#postProcessGLTF materializes an implicit-zero index accessor', t => {
     },
     buffers: []
   } as GLTFWithBuffers);
-
   const primitive = json.meshes[0].primitives[0];
-  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
-  t.deepEqual(
+  expect(primitive.mode, 'converts LINE_LOOP to LINES').toBe(1);
+  expect(
     Array.from(primitive.indices?.value || []),
-    [0, 0, 0, 0, 0, 0],
     'uses the accessor implicit-zero values'
-  );
-  t.end();
+  ).toEqual([0, 0, 0, 0, 0, 0]);
 });
-
-test('gltf#postProcessGLTF applies sparse-only index accessor substitutions', t => {
+test('gltf#postProcessGLTF applies sparse-only index accessor substitutions', () => {
   const sparseData = new Uint8Array([1, 3, 5, 0, 2, 0]);
   const json = postProcessGLTF({
     json: {
@@ -182,13 +166,10 @@ test('gltf#postProcessGLTF applies sparse-only index accessor substitutions', t 
     },
     buffers: [{arrayBuffer: sparseData.buffer, byteOffset: 0, byteLength: sparseData.byteLength}]
   } as GLTFWithBuffers);
-
   const primitive = json.meshes[0].primitives[0];
-  t.equal(primitive.mode, 1, 'converts LINE_LOOP to LINES');
-  t.deepEqual(
+  expect(primitive.mode, 'converts LINE_LOOP to LINES').toBe(1);
+  expect(
     Array.from(primitive.indices?.value || []),
-    [0, 5, 5, 0, 0, 2, 2, 0],
     'applies sparse substitutions to the implicit-zero base'
-  );
-  t.end();
+  ).toEqual([0, 5, 5, 0, 0, 2, 2, 0]);
 });

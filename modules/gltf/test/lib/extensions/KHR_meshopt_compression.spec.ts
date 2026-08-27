@@ -2,76 +2,65 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {
   decodeMeshoptCompression,
   validateMeshoptCompressionExclusivity
 } from '../../../src/lib/extensions/meshopt-compression';
-
 const KHR_MESHOPT_CUBE_URL =
   '@loaders.gl/gltf/test/data/meshopt/MeshoptCubeTest/glTF-Meshopt/MeshoptCubeTest.gltf';
-
-test('KHR_meshopt_compression#decodes official version 1 fixture', async t => {
+test('KHR_meshopt_compression#decodes official version 1 fixture', async () => {
   const gltf = await load(KHR_MESHOPT_CUBE_URL, GLTFLoader, {
     gltf: {decompressMeshes: true, loadBuffers: true, loadImages: false}
   });
   const scenegraph = new GLTFScenegraph(gltf);
-
-  t.ok(
+  expect(
     scenegraph.getRemovedExtensions().includes('KHR_meshopt_compression'),
     'records KHR_meshopt_compression as processed'
-  );
-  t.notOk(
+  ).toBeTruthy();
+  expect(
     scenegraph.getUsedExtensions().includes('KHR_meshopt_compression'),
     'removes KHR_meshopt_compression from extensionsUsed'
-  );
-  t.notOk(
+  ).toBeFalsy();
+  expect(
     scenegraph.getRequiredExtensions().includes('KHR_meshopt_compression'),
     'removes KHR_meshopt_compression from extensionsRequired'
-  );
-  t.ok(
+  ).toBeFalsy();
+  expect(
     gltf.json.buffers?.every(buffer => !buffer.extensions?.KHR_meshopt_compression),
     'removes fallback markers from destination buffers'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     gltf.json.bufferViews?.every(bufferView => !bufferView.extensions?.KHR_meshopt_compression),
     'removes processed buffer-view extension objects'
-  );
-
+  ).toBeTruthy();
   const losslessAccessorPairs = [
     [8, 92, 'positions'],
     [9, 93, 'normals']
   ] as const;
   for (const [uncompressedAccessorIndex, compressedAccessorIndex, label] of losslessAccessorPairs) {
-    t.deepEqual(
+    expect(
       scenegraph.getTypedArrayForAccessor(compressedAccessorIndex),
-      scenegraph.getTypedArrayForAccessor(uncompressedAccessorIndex),
       `version 1 ${label} match the uncompressed reference`
-    );
+    ).toEqual(scenegraph.getTypedArrayForAccessor(uncompressedAccessorIndex));
   }
-
   const uncompressedColors = scenegraph.getTypedArrayForAccessor(10) as Uint8Array;
   const compressedColors = scenegraph.getTypedArrayForAccessor(94) as Uint8Array;
-  t.ok(
+  expect(
     Array.from(compressedColors).every(
       (component, componentIndex) => Math.abs(component - uncompressedColors[componentIndex]) <= 1
     ),
     'COLOR-filtered values stay within the expected one-byte rounding tolerance'
-  );
-
+  ).toBeTruthy();
   const uncompressedIndices = scenegraph.getTypedArrayForAccessor(11) as Uint16Array;
   const compressedIndices = scenegraph.getTypedArrayForAccessor(95) as Uint16Array;
-  t.deepEqual(
+  expect(
     getCanonicalTriangleIndices(compressedIndices),
-    getCanonicalTriangleIndices(uncompressedIndices),
     'triangle indices match the reference independent of cyclic vertex rotation'
-  );
-
-  t.end();
+  ).toEqual(getCanonicalTriangleIndices(uncompressedIndices));
 });
-
 /**
  * Rotates each triangle so equivalent cyclic index orderings compare identically.
  *
@@ -93,9 +82,8 @@ function getCanonicalTriangleIndices(indices: Uint16Array): number[] {
   }
   return canonicalIndices;
 }
-
-test('KHR_meshopt_compression#rejects KHR and EXT on one buffer view', t => {
-  t.throws(
+test('KHR_meshopt_compression#rejects KHR and EXT on one buffer view', () => {
+  expect(
     () =>
       validateMeshoptCompressionExclusivity({
         asset: {version: '2.0'},
@@ -110,10 +98,9 @@ test('KHR_meshopt_compression#rejects KHR and EXT on one buffer view', t => {
           }
         ]
       }),
-    /bufferView 0 cannot use both KHR_meshopt_compression and EXT_meshopt_compression/,
     'rejects the mutually exclusive buffer-view combination'
-  );
-  t.throws(
+  ).toThrow(/bufferView 0 cannot use both KHR_meshopt_compression and EXT_meshopt_compression/);
+  expect(
     () =>
       validateMeshoptCompressionExclusivity({
         asset: {version: '2.0'},
@@ -127,13 +114,10 @@ test('KHR_meshopt_compression#rejects KHR and EXT on one buffer view', t => {
           }
         ]
       }),
-    /buffer 0 cannot use both KHR_meshopt_compression and EXT_meshopt_compression/,
     'rejects the mutually exclusive buffer fallback combination'
-  );
-  t.end();
+  ).toThrow(/buffer 0 cannot use both KHR_meshopt_compression and EXT_meshopt_compression/);
 });
-
-test('KHR_meshopt_compression#preserves declarations when decoding fails', async t => {
+test('KHR_meshopt_compression#preserves declarations when decoding fails', async () => {
   const sourceBytes = new Uint8Array([0]);
   const destinationBytes = new Uint8Array(4);
   const gltf = {
@@ -174,27 +158,24 @@ test('KHR_meshopt_compression#preserves declarations when decoding fails', async
     ],
     images: []
   };
-
-  await t.rejects(
+  await expect(
     decodeMeshoptCompression(
       gltf,
       {gltf: {decompressMeshes: true, loadBuffers: true}},
       'KHR_meshopt_compression'
     ),
-    /Malformed buffer data/,
     'reports malformed compressed data'
-  );
-  t.ok(
+  ).rejects.toThrow(/Malformed buffer data/);
+  expect(
     gltf.json.bufferViews[0].extensions.KHR_meshopt_compression,
     'retains the buffer-view declaration'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     gltf.json.buffers[1].extensions.KHR_meshopt_compression,
     'retains the fallback-buffer marker'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     gltf.json.extensionsRequired.includes('KHR_meshopt_compression'),
     'retains the required capability declaration'
-  );
-  t.end();
+  ).toBeTruthy();
 });

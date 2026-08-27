@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable camelcase */
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 // @ts-expect-error
 import {decodeExtensions} from '@loaders.gl/gltf/lib/api/gltf-extensions';
-
 const TEST_CASES = [
   {
     name: 'KHR_lights_punctual',
@@ -54,12 +51,10 @@ const TEST_CASES = [
     }
   }
 ];
-
-test('gltf#KHR_lights_punctuals', async t => {
+test('gltf#KHR_lights_punctuals', async () => {
   for (const testCase of TEST_CASES) {
     await decodeExtensions(testCase.input);
     // Modifies input
-    t.deepEqual(testCase.input.json, testCase.output, testCase.name);
+    expect(testCase.input.json, testCase.name).toEqual(testCase.output);
   }
-  t.end();
 });

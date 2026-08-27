@@ -2,345 +2,201 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable camelcase */
-import test from 'test/utils/vitest-tape';
-
-import {BasisLoader} from '@loaders.gl/textures';
-import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {
-  GL_COMPRESSED_RGB_ETC1_WEBGL,
-  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-  GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-  GL_COMPRESSED_RGBA8_ETC2_EAC,
-  GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
-  GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
-  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-  GL_RGBA8
-} from '../src/lib/gl-extensions';
-import {withBasisTranscodingLock} from '../src/lib/parsers/parse-basis';
-
+import { expect, test } from "vitest";
+import { BasisLoader } from '@loaders.gl/textures';
+import { load, setLoaderOptions, isBrowser } from '@loaders.gl/core';
+import { GL_COMPRESSED_RGB_ETC1_WEBGL, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA_ASTC_4x4_KHR, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_RGBA8 } from '../src/lib/gl-extensions';
+import { withBasisTranscodingLock } from '../src/lib/parsers/parse-basis';
 const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 const KTX2_BASIS_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
-
 setLoaderOptions({
-  _workerType: 'test',
-  CDN: null
+    _workerType: 'test',
+    CDN: null
 });
-
-test('BasisLoader#imports', (t) => {
-  t.ok(BasisLoader, 'BasisLoader defined');
-  t.end();
+test('BasisLoader#imports', () => {
+    expect(BasisLoader, 'BasisLoader defined').toBeTruthy();
 });
-
-test('BasisLoader#load(URL, worker: false)', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {
-    core: {worker: false}
-  });
-
-  const image = images[0][0];
-
-  t.ok(image, 'image loaded successfully from URL');
-
-  t.equals(image.shape, 'texture-level', 'image shape is correct');
-  t.equals(image.width, 768, 'image width is correct');
-  t.equals(image.height, 512, 'image height is correct');
-  if (isBrowser) {
-    t.equals(image.compressed, true, 'image is compressed');
-    t.equals(image.data.byteLength, 393216, 'image `data.byteLength` is correct');
-  } else {
-    t.equals(image.compressed, false, 'image is compressed');
-    t.equals(image.data.byteLength, 1572864, 'image `data.byteLength` is correct');
-    t.equals(image.textureFormat, 'rgba8unorm', 'image `textureFormat` is correct');
-  }
-
-  t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-
-  t.end();
-});
-
-test('BasisLoader#load(URL, worker: true)', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: true, _nodeWorkers: true});
-
-  const image = images[0][0];
-
-  t.ok(image, 'image loaded successfully from URL');
-
-  t.equals(image.width, 768, 'image width is correct');
-  t.equals(image.height, 512, 'image height is correct');
-  t.equals(image.compressed, false, 'image height is correct');
-  t.equals(image.textureFormat, 'rgba8unorm', 'image `textureFormat` is correct');
-
-  t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-  t.equals(image.data.byteLength, 1572864, 'image `data.byteLength` is correct');
-
-  t.end();
-});
-
-test('BasisLoader#auto-select a target format', async (t) => {
-  // Can't auto-select format in worker because gl context isn't not available on a worker thread
-  const images = await load(BASIS_TEST_URL, BasisLoader, {
-    core: {worker: false},
-    basis: {format: 'auto'}
-  });
-
-  const image = images[0][0];
-
-  if (isBrowser) {
-    t.ok(
-      typeof image.format === 'number' &&
-        [
-          GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
-          GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
-          GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-          GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-          GL_COMPRESSED_RGBA8_ETC2_EAC,
-          GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-          GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-          GL_COMPRESSED_RGB_ETC1_WEBGL
-        ].includes(image.format),
-      'Browser supports one of GPU textures formats'
-    );
-    t.ok(image.compressed, 'Basis transcodes to compressed texture');
-  } else {
-    t.equals(image.format, GL_RGBA8, 'Basis transcodes alpha textures to RGBA8 in NodeJS');
-    t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
-  }
-
-  t.end();
-});
-
-test('BasisLoader#transcode to explicit format', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {
-    worker: true,
-    _nodeWorkers: true,
-    basis: {
-      format: {
-        alpha: 'BC3',
-        noAlpha: 'BC1'
-      }
-    }
-  });
-
-  const image = images[0][0];
-
-  t.equals(
-    image.format,
-    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-    'The texture was transcoded to DXT fromat'
-  );
-  t.equals(image.textureFormat, 'bc3-rgba-unorm', 'The texture exposes the WebGPU format');
-  t.ok(image.compressed, 'Basis transcodes to compressed texture');
-
-  t.end();
-});
-
-test('BasisLoader#auto-selects format from supportedTextureFormats', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {
-    core: {worker: false},
-    basis: {
-      format: 'auto',
-      supportedTextureFormats: ['bc3-rgba-unorm']
-    }
-  });
-
-  const image = images[0][0];
-
-  t.equals(
-    image.format,
-    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-    'BasisLoader selects the matching WebGL format'
-  );
-  t.equals(image.textureFormat, 'bc3-rgba-unorm', 'BasisLoader sets the selected texture format');
-  t.end();
-});
-
-test('BasisLoader#auto-select a decoder format', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {
-    worker: true,
-    basis: {
-      format: 'astc-4x4',
-      containerFormat: 'auto'
-    }
-  });
-  const image = images[0][0];
-  t.ok(image, 'Transcode .basis');
-
-  const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {
-    worker: true,
-    _nodeWorkers: true,
-    basis: {
-      format: 'astc-4x4',
-      containerFormat: 'auto'
-    }
-  });
-  const ktx2Image = ktx2Images[0];
-  t.ok(ktx2Image, 'Transcode .ktx2');
-  t.is(ktx2Image.length, 10, 'Transcode .ktx2 mips');
-
-  t.end();
-});
-
-test('BasisLoader#uses injected transcoder modules', async (t) => {
-  class FakeBasisFile {
-    constructor(data: Uint8Array) {
-      t.equals(data.byteLength, 4, 'forwards the provided payload to the injected BasisFile')
-    }
-
-    startTranscoding() {
-      return true
-    }
-
-    getNumImages() {
-      return 1
-    }
-
-    getNumLevels() {
-      return 1
-    }
-
-    getImageWidth() {
-      return 2
-    }
-
-    getImageHeight() {
-      return 2
-    }
-
-    getHasAlpha() {
-      return false
-    }
-
-    getBasisTexFormat() {
-      return 0
-    }
-
-    isHDR() {
-      return false
-    }
-
-    getBlockWidth() {
-      return 4
-    }
-
-    getBlockHeight() {
-      return 4
-    }
-
-    getImageTranscodedSizeInBytes() {
-      return 8
-    }
-
-    transcodeImage(decodedData: Uint8Array) {
-      decodedData.set([1, 2, 3, 4, 5, 6, 7, 8])
-      return true
-    }
-
-    close() {}
-
-    delete() {}
-  }
-
-  const images = await load(new Uint8Array([1, 2, 3, 4]).buffer, BasisLoader, {
-    core: {worker: false},
-    basis: {
-      format: 'rgb565',
-      containerFormat: 'basis'
-    },
-    modules: {
-      basis: {BasisFile: FakeBasisFile}
-    }
-  })
-
-  const image = images[0][0]
-
-  t.equals(image.width, 2, 'uses the injected BasisFile implementation')
-  t.equals(image.height, 2, 'returns the injected texture height')
-  t.equals(image.data.byteLength, 8, 'returns the injected transcoded payload size')
-  t.end()
-})
-
-test('BasisLoader#serializes Basis transcoding work', async (t) => {
-  const events: string[] = [];
-  let activeTranscodes = 0;
-
-  const runTranscode = async (label: string, delayMs: number) =>
-    await withBasisTranscodingLock(async () => {
-      events.push(`${label}:start`);
-      activeTranscodes++;
-      t.equals(activeTranscodes, 1, `${label} runs with exclusive access`);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      activeTranscodes--;
-      events.push(`${label}:end`);
-      return label;
+test('BasisLoader#load(URL, worker: false)', async () => {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {
+        core: { worker: false }
     });
-
-  const [first, second] = await Promise.all([runTranscode('first', 20), runTranscode('second', 0)]);
-
-  t.equals(first, 'first', 'first transcode resolves');
-  t.equals(second, 'second', 'second transcode resolves');
-  t.deepEqual(
-    events,
-    ['first:start', 'first:end', 'second:start', 'second:end'],
-    'concurrent requests are serialized'
-  );
-  t.end();
-})
-
-
-// test('BasisLoader#formats', async t => {
-//   for (const testCase of TEST_CASES) {
-//     await testLoadImage(t, testCase);
-//   }
-//   t.end();
-// });
-
-/*
-test('loadImageTexture#worker', t => {
-  if (typeof Worker === 'undefined') {
-    t.comment('loadImageTexture only works under browser');
-    t.end();
-    return;
-  }
-
-  const worker = new LoadImageWorker();
-  let testIndex = 0;
-
-  const runTest = index => {
-    const testCase = TEST_CASES[index];
-    if (!testCase) {
-      t.end();
-      return;
+    const image = images[0][0];
+    expect(image, 'image loaded successfully from URL').toBeTruthy();
+    expect(image.shape, 'image shape is correct').toBe('texture-level');
+    expect(image.width, 'image width is correct').toBe(768);
+    expect(image.height, 'image height is correct').toBe(512);
+    if (isBrowser) {
+        expect(image.compressed, 'image is compressed').toBe(true);
+        expect(image.data.byteLength, 'image `data.byteLength` is correct').toBe(393216);
     }
-    if (testCase.worker === false) {
-      // the current loader does not support loading from dataURL in a worker
-      runTest(testIndex++);
-      return;
+    else {
+        expect(image.compressed, 'image is compressed').toBe(false);
+        expect(image.data.byteLength, 'image `data.byteLength` is correct').toBe(1572864);
+        expect(image.textureFormat, 'image `textureFormat` is correct').toBe('rgba8unorm');
     }
-
-    const {title, width, height} = testCase;
-    // t.comment(title);
-
-    let {url} = testCase;
-    url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
-
-    worker.onmessage = ({data}) => {
-      if (data.error) {
-        t.fail(data.error);
-      } else {
-        t.ok(data.image, 'loadImageTexture loaded data from url');
-        t.ok(
-          data.image.width === width && data.image.height === height,
-          'loaded image has correct content'
-        );
-      }
-
-      runTest(testIndex++);
-    };
-
-    worker.postMessage(url);
-  };
-
-  runTest(testIndex++);
+    expect(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`').toBeTruthy();
 });
-*/
+test('BasisLoader#load(URL, worker: true)', async () => {
+    const images = await load(BASIS_TEST_URL, BasisLoader, { worker: true, _nodeWorkers: true });
+    const image = images[0][0];
+    expect(image, 'image loaded successfully from URL').toBeTruthy();
+    expect(image.width, 'image width is correct').toBe(768);
+    expect(image.height, 'image height is correct').toBe(512);
+    expect(image.compressed, 'image height is correct').toBe(false);
+    expect(image.textureFormat, 'image `textureFormat` is correct').toBe('rgba8unorm');
+    expect(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`').toBeTruthy();
+    expect(image.data.byteLength, 'image `data.byteLength` is correct').toBe(1572864);
+});
+test('BasisLoader#auto-select a target format', async () => {
+    // Can't auto-select format in worker because gl context isn't not available on a worker thread
+    const images = await load(BASIS_TEST_URL, BasisLoader, {
+        core: { worker: false },
+        basis: { format: 'auto' }
+    });
+    const image = images[0][0];
+    if (isBrowser) {
+        expect(typeof image.format === 'number' &&
+            [
+                GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+                GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
+                GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                GL_COMPRESSED_RGBA8_ETC2_EAC,
+                GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+                GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+                GL_COMPRESSED_RGB_ETC1_WEBGL
+            ].includes(image.format), 'Browser supports one of GPU textures formats').toBeTruthy();
+        expect(image.compressed, 'Basis transcodes to compressed texture').toBeTruthy();
+    }
+    else {
+        expect(image.format, 'Basis transcodes alpha textures to RGBA8 in NodeJS').toBe(GL_RGBA8);
+        expect(image.compressed, "Basis can't transcode to compressed texture in NodeJS").toBeFalsy();
+    }
+});
+test('BasisLoader#transcode to explicit format', async () => {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {
+        worker: true,
+        _nodeWorkers: true,
+        basis: {
+            format: {
+                alpha: 'BC3',
+                noAlpha: 'BC1'
+            }
+        }
+    });
+    const image = images[0][0];
+    expect(image.format, 'The texture was transcoded to DXT fromat').toBe(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+    expect(image.textureFormat, 'The texture exposes the WebGPU format').toBe('bc3-rgba-unorm');
+    expect(image.compressed, 'Basis transcodes to compressed texture').toBeTruthy();
+});
+test('BasisLoader#auto-selects format from supportedTextureFormats', async () => {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {
+        core: { worker: false },
+        basis: {
+            format: 'auto',
+            supportedTextureFormats: ['bc3-rgba-unorm']
+        }
+    });
+    const image = images[0][0];
+    expect(image.format, 'BasisLoader selects the matching WebGL format').toBe(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+    expect(image.textureFormat, 'BasisLoader sets the selected texture format').toBe('bc3-rgba-unorm');
+});
+test('BasisLoader#auto-select a decoder format', async () => {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {
+        worker: true,
+        basis: {
+            format: 'astc-4x4',
+            containerFormat: 'auto'
+        }
+    });
+    const image = images[0][0];
+    expect(image, 'Transcode .basis').toBeTruthy();
+    const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {
+        worker: true,
+        _nodeWorkers: true,
+        basis: {
+            format: 'astc-4x4',
+            containerFormat: 'auto'
+        }
+    });
+    const ktx2Image = ktx2Images[0];
+    expect(ktx2Image, 'Transcode .ktx2').toBeTruthy();
+    expect(ktx2Image.length, 'Transcode .ktx2 mips').toBe(10);
+});
+test('BasisLoader#uses injected transcoder modules', async () => {
+    class FakeBasisFile {
+        constructor(data: Uint8Array) {
+            expect(data.byteLength, 'forwards the provided payload to the injected BasisFile').toBe(4);
+        }
+        startTranscoding() {
+            return true;
+        }
+        getNumImages() {
+            return 1;
+        }
+        getNumLevels() {
+            return 1;
+        }
+        getImageWidth() {
+            return 2;
+        }
+        getImageHeight() {
+            return 2;
+        }
+        getHasAlpha() {
+            return false;
+        }
+        getBasisTexFormat() {
+            return 0;
+        }
+        isHDR() {
+            return false;
+        }
+        getBlockWidth() {
+            return 4;
+        }
+        getBlockHeight() {
+            return 4;
+        }
+        getImageTranscodedSizeInBytes() {
+            return 8;
+        }
+        transcodeImage(decodedData: Uint8Array) {
+            decodedData.set([1, 2, 3, 4, 5, 6, 7, 8]);
+            return true;
+        }
+        close() { }
+        delete() { }
+    }
+    const images = await load(new Uint8Array([1, 2, 3, 4]).buffer, BasisLoader, {
+        core: { worker: false },
+        basis: {
+            format: 'rgb565',
+            containerFormat: 'basis'
+        },
+        modules: {
+            basis: { BasisFile: FakeBasisFile }
+        }
+    });
+    const image = images[0][0];
+    expect(image.width, 'uses the injected BasisFile implementation').toBe(2);
+    expect(image.height, 'returns the injected texture height').toBe(2);
+    expect(image.data.byteLength, 'returns the injected transcoded payload size').toBe(8);
+});
+test('BasisLoader#serializes Basis transcoding work', async () => {
+    const events: string[] = [];
+    let activeTranscodes = 0;
+    const runTranscode = async (label: string, delayMs: number) => await withBasisTranscodingLock(async () => {
+        events.push(`${label}:start`);
+        activeTranscodes++;
+        expect(activeTranscodes, `${label} runs with exclusive access`).toBe(1);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        activeTranscodes--;
+        events.push(`${label}:end`);
+        return label;
+    });
+    const [first, second] = await Promise.all([runTranscode('first', 20), runTranscode('second', 0)]);
+    expect(first, 'first transcode resolves').toBe('first');
+    expect(second, 'second transcode resolves').toBe('second');
+    expect(events, 'concurrent requests are serialized').toEqual(['first:start', 'first:end', 'second:start', 'second:end']);
+});

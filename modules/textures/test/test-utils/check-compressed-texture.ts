@@ -2,19 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export function checkCompressedTexture(t, imageData, testCase) {
-  t.ok(imageData instanceof Array);
-  t.ok(imageData.length > 0);
+import {expect} from 'vitest';
+
+export function checkCompressedTexture(imageData, testCase) {
+  expect(imageData instanceof Array).toBeTruthy();
+  expect(imageData.length > 0).toBeTruthy();
   for (const level of imageData) {
-    t.equals(level.shape, 'texture-level');
-    t.ok(level.compressed);
-    t.equals(level.format, testCase.format);
+    expect(level.shape).toBe('texture-level');
+    expect(level.compressed).toBeTruthy();
+    expect(level.format).toBe(testCase.format);
     if (testCase.textureFormat) {
-      t.equals(level.textureFormat, testCase.textureFormat);
+      expect(level.textureFormat).toBe(testCase.textureFormat);
     }
-    t.ok(level.data instanceof Uint8Array);
-    t.ok(isFinite(level.width));
-    t.ok(isFinite(level.height));
-    t.ok(isFinite(level.levelSize));
+    expect(level.data instanceof Uint8Array).toBeTruthy();
+    expect(isFinite(level.width)).toBeTruthy();
+    expect(isFinite(level.height)).toBeTruthy();
+    expect(isFinite(level.levelSize)).toBeTruthy();
   }
 }

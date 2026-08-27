@@ -2,19 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import tapeTest from 'test/utils/vitest-tape';
 import {validateWriter} from 'test/common/conformance';
 import {describe, expect, test} from 'vitest';
-
 import {GLBWriter} from '@loaders.gl/gltf';
 import {parseSync} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf/bundled';
-
-tapeTest('GLBWriter#loader conformance', t => {
-  validateWriter(t, GLBWriter, 'GLBWriter');
-  t.end();
+test('GLBWriter#loader conformance', () => {
+  validateWriter(GLBWriter, 'GLBWriter');
 });
-
 describe('GLBWriter', () => {
   test('encodeSync(v3) round trips multiple binary chunks', () => {
     const glb = {
@@ -44,7 +39,6 @@ describe('GLBWriter', () => {
         }
       ]
     };
-
     const encoded = GLBWriter.encodeSync(glb);
     const decoded = parseSync(encoded, GLBLoader);
     expect(decoded.version).toBe(3);
@@ -58,7 +52,6 @@ describe('GLBWriter', () => {
       [5, 6, 7, 8]
     ]);
   });
-
   test('encodeSync(v2) remains the default', () => {
     const glb = {
       type: 'glTF',
@@ -74,7 +67,6 @@ describe('GLBWriter', () => {
     const decoded = parseSync(encoded, GLBLoader);
     expect(decoded.version).toBe(2);
   });
-
   test('encodeSync(v3) rejects unsupported chunk encodings', () => {
     const glb = {
       type: 'glTF',

@@ -2,18 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {copyPaddedStringToDataView} from '@loaders.gl/loader-utils';
-
-test('encode-utils', t => {
+test('encode-utils', () => {
   const STRING = 'abcdef';
   const byteLength = copyPaddedStringToDataView(null, 0, STRING, 4);
-  t.equals(byteLength, 8); // padded
+  expect(byteLength).toBe(8); // padded
   const arrayBuffer = new ArrayBuffer(byteLength);
   const dataView = new DataView(arrayBuffer);
   const finalLength = copyPaddedStringToDataView(dataView, 0, STRING, 4);
-  t.equals(finalLength, 8);
-  t.end();
+  expect(finalLength).toBe(8);
 });
