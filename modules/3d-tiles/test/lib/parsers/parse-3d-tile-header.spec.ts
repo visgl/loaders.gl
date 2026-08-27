@@ -46,7 +46,6 @@ test('normalizeTileData#corectly resolves different styles of URLs', async () =>
   }
 });
 
-
 test('normalizeTileData#derives metadata bounding volume semantics', () => {
   const tile = {
     metadata: {class: 'tile', properties: {bounds: [1, 2, 3, 4]}},
