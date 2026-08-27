@@ -19,7 +19,6 @@ import {
 } from './sql-predicate-types';
 import {
   getSQLPredicateColumnNames,
-  explainTableQuery,
   planTableQuery,
   type TableQueryFilterStep,
   type TableQueryLimitStep,
@@ -33,8 +32,13 @@ import type {
   RelationalExpression,
   RelationalOrderKey
 } from '@loaders.gl/loader-utils';
-import {planRelationalQuery} from '@loaders.gl/loader-utils';
-export {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
+import {
+  explainTableQuery as explainColumnarTableQuery,
+  planRelationalQuery
+} from '@loaders.gl/loader-utils';
+import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
+import {validateSQLPredicate} from './sql-predicate-schema';
+export {ARROW_TABLE_QUERY_CAPABILITIES};
 
 /** A named child relation using the SQL module's property-oriented predicate AST. */
 type ArrowChildQuery = Readonly<{
@@ -67,9 +71,13 @@ export type ArrowQueryOptions = TableQueryOptions &
 
 /** Explains an Arrow table query without materializing or scanning table rows. */
 export function explainArrowTableQuery(sourceTable: ArrowTable, options: ArrowQueryOptions = {}) {
-  return explainTableQuery(
+  if (options.predicate) {
+    validateSQLPredicate(options.predicate);
+  }
+  return explainColumnarTableQuery(
     sourceTable.data.schema.fields.map(field => field.name),
-    options
+    options,
+    ARROW_TABLE_QUERY_CAPABILITIES
   );
 }
 

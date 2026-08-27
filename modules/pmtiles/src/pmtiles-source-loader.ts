@@ -134,7 +134,7 @@ export class PMTilesTileSource
     const {x, y, z} = tileParams;
     let rangeResponse;
     try {
-      rangeResponse = await this.getZxyBatched(z, x, y, (tileParams as any).signal);
+      rangeResponse = await this.getZxyBatched(z, x, y, tileParams.signal);
     } catch (error) {
       this.reportError(error, `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`);
       return null;
@@ -185,14 +185,17 @@ export class PMTilesTileSource
 
   async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
     const arrayBuffer = await this.getTile(tileParams);
+    const inheritedMVTOptions = (this.loadOptions as MVTLoaderOptions)?.mvt;
+    const selectedLayers = normalizeTileLayers(tileParams.layers) || inheritedMVTOptions?.layers;
     const loadOptions: MVTLoaderOptions = {
+      ...this.loadOptions,
       mvt: {
-        shape: this.options.pmtiles?.shape || 'geojson-table',
+        ...inheritedMVTOptions,
+        shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
-        ...(this.loadOptions as MVTLoaderOptions)?.mvt
-      },
-      ...this.loadOptions
+        layers: selectedLayers
+      }
     };
 
     return arrayBuffer
@@ -241,6 +244,12 @@ export class PMTilesTileSource
         .then(tileRequest.resolve, tileRequest.reject);
     }
   }
+}
+
+/** Normalizes a non-empty tile layer selection for the MVT decoder. */
+function normalizeTileLayers(layers?: string | string[]): string[] | undefined {
+  const normalizedLayers = typeof layers === 'string' ? [layers] : layers;
+  return normalizedLayers?.length ? normalizedLayers : undefined;
 }
 
 type PendingTileRequest = {

@@ -78,3 +78,34 @@ Raster sources implement `getRaster()` and publish raster-specific capabilities 
 table operators. NetCDF supports numeric variable selection and named dimension index or half-open
 range slices. GeoTIFF, OME-TIFF, GeoZarr, and OME-Zarr retain their format-specific window, level,
 channel, and chunk planners behind the same metadata vocabulary.
+
+## Addressed vector tables
+
+Specialized tile and service controls stay outside the portable relational query. Applications can
+bind one vector tile or one bounded feature request, then expose the resulting Arrow feature table
+through the same metadata, explain, and `read()` surface:
+
+```typescript
+import {VectorTileTableScanSource} from '@loaders.gl/scan';
+
+const tileTable = new VectorTileTableScanSource(mvtSource, {
+  sourceType: 'mvt-tile-table',
+  tile: {x: 2, y: 6, z: 4, layers: ['places']}
+});
+
+const metadata = await tileTable.getQueryMetadata();
+for await (const batch of tileTable.read({
+  predicate: parseSQLPredicate('population >= 1000000'),
+  columns: ['name', 'population'],
+  limit: 25
+})) {
+  // Arrow feature table batch
+}
+```
+
+Configure MVT and vector PMTiles sources with `shape: 'arrow-table'`. The corresponding
+`VectorFeatureTableScanSource` requests Arrow output from bounded vector sources such as WFS and
+ArcGIS FeatureServer. Tile coordinates, selected layers, service bounds, and CRS remain immutable
+source parameters; predicates, projection, ordering, aggregates, and limits remain portable query
+operators. Both adapters cache the addressed result between metadata discovery and execution, so a
+query panel does not repeat the network request.
