@@ -122,4 +122,23 @@ describe('parseMLT', () => {
       'require a tileIndex'
     );
   });
+
+  test('ignores malformed tables, features, points, and geometry types', () => {
+    decodeTileMock.mockReturnValue({
+      malformed: null,
+      invalid: {
+        name: 'invalid',
+        features: [
+          {geometry: {type: 0, coordinates: [[]]}},
+          {geometry: {type: 99, coordinates: []}}
+        ]
+      },
+      empty: {name: 'empty', features: []},
+      notAFeatureTable: {name: 'not-a-table'}
+    } as any);
+
+    const result = parseMLT(new Uint8Array([1]).buffer) as any;
+
+    expect(result.features).toEqual([]);
+  });
 });
