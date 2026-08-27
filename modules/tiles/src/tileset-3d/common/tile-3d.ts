@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, INTERSECTION} from '@math.gl/culling';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -155,12 +155,15 @@ export class Tile3D {
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
 
+  private _contentBoundingVolume: any;
   private _contentBoundingVolumes: any[] = [];
+  /** Source content-volume headers retained after render content is unloaded. */
+  private _contentBoundingVolumeHeaders: any[] = [];
   private _viewerRequestVolume: any;
 
-  /** Transformed bounding volumes for all content entries that declare one. */
-  get contentBoundingVolumes(): any[] {
-    return this._contentBoundingVolumes;
+  /** Bounding volume used to cull the tile's renderable content, when declared. */
+  get contentBoundingVolume(): any {
+    return this._contentBoundingVolume;
   }
 
   /** Bounding volume that limits when this tile may be requested, when declared. */
@@ -776,47 +779,45 @@ export class Tile3D {
     return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
   }
 
-  // Assuming the tile's bounding volume intersects the culling volume, determines
-  // whether the tile's content's bounding volume intersects the culling volume.
-  // @param {FrameState} frameState The frame state.
-  // @returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
-  contentVisibility() {
-    return true;
-
-    // TODO restore
-    /*
-    // Assumes the tile's bounding volume intersects the culling volume already, so
-    // just return Intersect.INSIDE if there is no content bounding volume.
-    if (!defined(this.contentBoundingVolume)) {
-      return Intersect.INSIDE;
-    }
-
-    if (this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
-      // The tile's bounding volume is completely inside the culling volume so
-      // the content bounding volume must also be inside.
-      return Intersect.INSIDE;
-    }
-
-    // PERFORMANCE_IDEA: is it possible to burn less CPU on this test since we know the
-    // tile's (not the content's) bounding volume intersects the culling volume?
-    const cullingVolume = frameState.cullingVolume;
-    const boundingVolume = tile.contentBoundingVolume;
-
-    const tileset = this.tileset;
-    const clippingPlanes = tileset.clippingPlanes;
-    if (defined(clippingPlanes) && clippingPlanes.enabled) {
-      const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
-        boundingVolume,
-        tileset.clippingPlanesOriginMatrix
-      );
-      this._isClipped = intersection !== Intersect.INSIDE;
-      if (intersection === Intersect.OUTSIDE) {
-        return Intersect.OUTSIDE;
+  /**
+   * Determines whether renderable content intersects the view and configured clipping planes.
+   *
+   * Clipping planes are render-only constraints; traversal continues to use the tile volume.
+   *
+   * @param frameState Current camera, culling, and optional clipping-plane state.
+   * @returns The content visibility classification.
+   */
+  contentVisibility(frameState: FrameState): number {
+    const contentVolumes = this._contentBoundingVolumes.length
+      ? this._contentBoundingVolumes
+      : [this.boundingVolume];
+    let visibleVolume = false;
+    let intersectingVolume = false;
+    for (const contentVolume of contentVolumes) {
+      if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
+        const visibility = frameState.cullingVolume.computeVisibility(contentVolume);
+        if (visibility === INTERSECTION.OUTSIDE) {
+          continue;
+        }
+        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
+      }
+      let clipped = false;
+      for (const clippingPlane of frameState.clippingPlanes || []) {
+        if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+          clipped = true;
+          break;
+        }
+      }
+      if (!clipped) {
+        visibleVolume = true;
+        break;
       }
     }
-
-    return cullingVolume.computeVisibility(boundingVolume);
-    */
+    return visibleVolume
+      ? intersectingVolume
+        ? INTERSECTION.INTERSECTING
+        : INTERSECTION.INSIDE
+      : INTERSECTION.OUTSIDE;
   }
 
   /**
@@ -941,7 +942,8 @@ export class Tile3D {
   }
 
   _initializeBoundingVolumes(tileHeader) {
-    this._contentBoundingVolumes = [];
+    this._contentBoundingVolume = null;
+    this._contentBoundingVolumeHeaders = [];
     this._viewerRequestVolume = null;
 
     this._updateBoundingVolume(tileHeader);
@@ -1052,11 +1054,28 @@ export class Tile3D {
       );
     }
 
-    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
-    const contentVolumes = contentHeaders.filter(contentHeader => contentHeader?.boundingVolume);
-    this._contentBoundingVolumes = contentVolumes.map(contentHeader =>
-      createBoundingVolume(contentHeader.boundingVolume, this.computedTransform)
-    );
+    const content = header.content;
+    if (content) {
+      this._contentBoundingVolumeHeaders = (Array.isArray(content) ? content : [content]).filter(
+        contentHeader => contentHeader?.boundingVolume
+      );
+    }
+    const contentHeaders = content
+      ? Array.isArray(content)
+        ? content
+        : [content]
+      : this._contentBoundingVolumeHeaders;
+    const contentHeader = contentHeaders.find(headerEntry => headerEntry?.boundingVolume);
+    this._contentBoundingVolumes = contentHeaders
+      .filter(headerEntry => headerEntry?.boundingVolume)
+      .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
+    if (
+      !contentHeaders.length ||
+      contentHeaders.some(headerEntry => !headerEntry?.boundingVolume)
+    ) {
+      this._contentBoundingVolumes.push(this.boundingVolume);
+    }
+    this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
   /**
