@@ -102,6 +102,46 @@ test('COPCSourceLoader#loads full point content for a tile', async t => {
   t.end();
 });
 
+vitestTest('COPCSourceLoader#scans selected Arrow columns with an exact limit', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const batches = [];
+  let pointCount = 0;
+  for await (const batch of source.scan({
+    columns: ['POSITION'],
+    batchSize: 7,
+    limit: 23
+  })) {
+    batches.push(batch);
+    pointCount += batch.pointCount;
+    expect(batch.data.shape).toBe('arrow-table');
+    expect(batch.data.data.getChild('POSITION')).toBeTruthy();
+    expect(batch.data.data.getChild('COLOR_0')).toBeNull();
+  }
+
+  expect(batches.length).toBe(1);
+  expect(pointCount).toBe(23);
+});
+
+vitestTest('COPCSourceLoader#prunes scans by hierarchy level and bounds', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getMetadata();
+  const {header} = metadata.formatSpecificMetadata;
+  let pointCount = 0;
+  for await (const batch of source.scan({
+    columns: ['POSITION'],
+    minimumLevel: 0,
+    maximumLevel: 0,
+    bounds: {
+      minimum: [header.min[0], header.min[1], header.min[2]],
+      maximum: [header.max[0], header.max[1], header.max[2]]
+    }
+  })) {
+    pointCount += batch.pointCount;
+  }
+
+  expect(pointCount).toBeGreaterThan(0);
+});
+
 test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();

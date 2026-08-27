@@ -26,7 +26,12 @@ import {
   parseWithWorker,
   type ReadableFile
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  validatePointCloudQueryOptions,
+  type PointCloudQueryCapabilities,
+  type PointCloudQueryOptions
+} from '@loaders.gl/loader-utils';
 import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {
   createLASTypedExtraBytesAttributes,
@@ -78,7 +83,7 @@ type GetNodeParameters = {
   limit?: number;
 };
 
-type COPCPointColumn =
+export type COPCPointColumn =
   | 'POSITION'
   | 'COLOR_0'
   | 'NIR'
@@ -118,6 +123,16 @@ type COPCPointSelection = {
   scanDirectionFlag: boolean;
   edgeOfFlightLine: boolean;
   extraBytes: boolean;
+};
+
+/** Options for scanning COPC point data with hierarchy pushdown. */
+export type COPCScanOptions = PointCloudQueryOptions & {
+  /** Maximum number of points yielded in one Arrow batch. */
+  batchSize?: number;
+  /** Byte size for progressive node range requests. */
+  rangeChunkSize?: number;
+  /** Maximum number of node ranges fetched ahead of decode. */
+  rangeConcurrency?: number;
 };
 
 type COPCPointDataArrays = {
@@ -276,8 +291,8 @@ export class COPCTileSource
   /** Common point-cloud scan capabilities exposed by COPC. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
     projection: 'pushdown',
-    predicate: 'residual',
-    limit: 'residual',
+    predicate: 'unsupported',
+    limit: 'pushdown+residual',
     streaming: true,
     cancellation: true,
     bounds: 'pushdown',
@@ -359,6 +374,78 @@ export class COPCTileSource
       },
       statistics: {rowCount: copc.header.pointCount}
     });
+  }
+
+  /**
+   * Scan COPC points using hierarchy-level spatial and resolution pushdown.
+   *
+   * Bounds and level constraints are applied before node byte ranges are
+   * requested. The optional limit is exact and stops decoding once enough
+   * rows have been yielded. Predicate evaluation is intentionally rejected
+   * until a zero-copy Arrow residual filter is available.
+   */
+  async *scan(options: COPCScanOptions = {}): AsyncIterable<COPCTileContent> {
+    const {copc} = await this._initPromise;
+    const sourceColumns = getCOPCScanColumns(copc);
+    validatePointCloudQueryOptions(sourceColumns, options);
+    if (options.predicate) {
+      throw new Error('COPC scan predicates are not supported yet');
+    }
+    if (options.signal?.aborted) {
+      throw new Error('COPC scan was aborted');
+    }
+
+    // Load only hierarchy pages and keep point-data ranges deferred until the
+    // spatial and LOD filters have selected concrete nodes.
+    for await (const _page of this.loadHierarchyInBatches({signal: options.signal})) {
+      // Traversal updates the source hierarchy cache as pages arrive.
+    }
+
+    const selectedColumns = options.columns
+      ? ([
+          'POSITION',
+          ...options.columns.filter(column => column !== 'POSITION')
+        ] as COPCPointColumn[])
+      : getCOPCScanColumns(copc);
+    const selectedNodes = Object.entries(this._hierarchy?.nodes || {})
+      .filter(
+        ([tileId, node]) =>
+          node !== undefined && isCOPCScanNodeSelected(copc, tileId, node, options)
+      )
+      .sort(([firstTileId], [secondTileId]) => compareCOPCScanNodes(firstTileId, secondTileId));
+
+    let remaining = options.limit ?? Number.MAX_SAFE_INTEGER;
+    if (remaining === 0) {
+      return;
+    }
+    for (const [tileId] of selectedNodes) {
+      if (remaining <= 0) {
+        return;
+      }
+      if (options.signal?.aborted) {
+        throw new Error('COPC scan was aborted');
+      }
+      // A bounded scan uses one final batch sized to the remaining limit. This
+      // keeps the limit exact even when a node contains more points than the
+      // caller's preferred batch size.
+      const nodeBatchSize = options.limit === undefined ? (options.batchSize ?? 65536) : remaining;
+      for await (const batch of this.loadTileContentInBatches(
+        {id: tileId},
+        {
+          batchSize: nodeBatchSize,
+          columns: selectedColumns,
+          rangeChunkSize: options.rangeChunkSize,
+          rangeConcurrency: options.rangeConcurrency,
+          signal: options.signal
+        }
+      )) {
+        yield batch;
+        remaining -= batch.pointCount;
+        if (remaining === 0) {
+          return;
+        }
+      }
+    }
   }
 
   async getMetadata(): Promise<COPCMetadata> {
@@ -1476,6 +1563,88 @@ export class COPCTileSource
     }
   }
   */
+}
+
+/** Returns the Arrow columns that this COPC source can decode selectively. */
+function getCOPCScanColumns(copc: COPCFile): COPCPointColumn[] {
+  const columns: COPCPointColumn[] = ['POSITION'];
+  if (pointFormatHasColor(copc.header.pointDataRecordFormat)) {
+    columns.push('COLOR_0');
+  }
+  if (copc.header.pointDataRecordFormat === 8) {
+    columns.push('NIR');
+  }
+  columns.push(
+    'intensity',
+    'classification',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
+    'GPS_TIME',
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  );
+  if (copc.extraBytesDescriptors.length > 0) {
+    columns.push('EXTRA_BYTES');
+  }
+  return columns;
+}
+
+/** Tests whether one hierarchy node can contribute to a point-cloud scan. */
+function isCOPCScanNodeSelected(
+  copc: COPCFile,
+  tileId: string,
+  node: COPCHierarchyNode,
+  options: COPCScanOptions
+): boolean {
+  if (node.pointCount === 0) {
+    return false;
+  }
+  const [level] = parseCOPCKey(tileId);
+  if (options.minimumLevel !== undefined && level < options.minimumLevel) {
+    return false;
+  }
+  if (options.maximumLevel !== undefined && level > options.maximumLevel) {
+    return false;
+  }
+  if (options.targetSpacing !== undefined) {
+    const targetLevel = Math.max(
+      0,
+      Math.min(31, Math.ceil(Math.log2(copc.info.spacing / options.targetSpacing)))
+    );
+    if (
+      level !==
+      Math.max(options.minimumLevel ?? 0, Math.min(options.maximumLevel ?? 31, targetLevel))
+    ) {
+      return false;
+    }
+  }
+  if (options.bounds) {
+    const nodeBounds = getCOPCKeyBounds(copc.info.cube, parseCOPCKey(tileId));
+    for (let dimension = 0; dimension < 3; dimension++) {
+      if (
+        nodeBounds[dimension + 3] < options.bounds.minimum[dimension] ||
+        nodeBounds[dimension] > options.bounds.maximum[dimension]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/** Orders scan nodes from coarse to fine, then by stable hierarchy key. */
+function compareCOPCScanNodes(firstTileId: string, secondTileId: string): number {
+  const firstLevel = parseCOPCKey(firstTileId)[0];
+  const secondLevel = parseCOPCKey(secondTileId)[0];
+  return firstLevel - secondLevel || firstTileId.localeCompare(secondTileId);
 }
 
 /** Builds the query schema from COPC point-data and Extra Bytes metadata. */
