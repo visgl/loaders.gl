@@ -30,6 +30,7 @@ import {
   createScanQueryMetadata,
   validatePointCloudQueryOptions,
   type PointCloudQueryCapabilities,
+  type PointCloudQueryBounds,
   type PointCloudQueryOptions
 } from '@loaders.gl/loader-utils';
 import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
@@ -194,6 +195,8 @@ export type COPCTileContentLoadOptions = {
 export type COPCTileContentBatchOptions = {
   /** Maximum number of points in each yielded Arrow table. */
   batchSize?: number;
+  /** Maximum number of points to yield before closing the iterator. */
+  limit?: number;
   /** Optional cancellation signal for the range request and decode loop. */
   signal?: AbortSignal;
   /** Arrow attributes to populate. POSITION is always included. */
@@ -222,6 +225,8 @@ export type COPCTileContentBatchOptions = {
   rangeChunkSize?: number;
   /** Maximum number of node ranges fetched ahead of decode. Defaults to 1. */
   rangeConcurrency?: number;
+  /** Optional source-coordinate bounds for exact point-level filtering. */
+  bounds?: PointCloudQueryBounds;
 };
 
 /** Options for progressive COPC hierarchy page loading. */
@@ -350,7 +355,7 @@ export class COPCTileSource
   /** Discovers point attributes and spatial bounds without decoding point rows. */
   async getQueryMetadata() {
     const {copc} = await this._initPromise;
-    const schema = getCOPCHeaderSchema(copc);
+    const schema = getCOPCScanSchema(copc);
     const roles = Object.fromEntries(
       schema.fields.map(field => [field.name, inferCOPCColumnRole(field.name)])
     );
@@ -425,15 +430,16 @@ export class COPCTileSource
       if (options.signal?.aborted) {
         throw new Error('COPC scan was aborted');
       }
-      // A bounded scan uses one final batch sized to the remaining limit. This
-      // keeps the limit exact even when a node contains more points than the
-      // caller's preferred batch size.
-      const nodeBatchSize = options.limit === undefined ? (options.batchSize ?? 65536) : remaining;
+      // Keep the caller's preferred batch size while capping each node at the
+      // remaining limit. The progressive decoder emits a smaller final batch.
+      const nodeBatchSize = Math.min(remaining, options.batchSize ?? 65536);
       for await (const batch of this.loadTileContentInBatches(
         {id: tileId},
         {
           batchSize: nodeBatchSize,
+          limit: remaining,
           columns: selectedColumns,
+          bounds: options.bounds,
           rangeChunkSize: options.rangeChunkSize,
           rangeConcurrency: options.rangeConcurrency,
           signal: options.signal
@@ -612,6 +618,15 @@ export class COPCTileSource
     if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
       throw new Error('COPC progressive tile batchSize must be a positive integer');
     }
+    if (
+      options.limit !== undefined &&
+      (!Number.isSafeInteger(options.limit) || options.limit < 0)
+    ) {
+      throw new Error('COPC progressive tile limit must be a non-negative integer');
+    }
+    if (options.limit === 0) {
+      return;
+    }
     const nativeOrigin = this.getNativeTileCenter(tile.id);
     const cartographicOrigin = this.projectPoint(nativeOrigin);
     const selection = getCOPCPointSelection(copc, options.columns);
@@ -640,7 +655,9 @@ export class COPCTileSource
       rangeChunkSize,
       rangeConcurrency,
       options.signal,
-      selection
+      selection,
+      options.bounds,
+      options.limit
     );
   }
 
@@ -654,10 +671,13 @@ export class COPCTileSource
     rangeChunkSize: number,
     rangeConcurrency: number,
     signal: AbortSignal | undefined,
-    selection: COPCPointSelection
+    selection: COPCPointSelection,
+    bounds?: PointCloudQueryBounds,
+    limit?: number
   ): AsyncIterable<COPCTileContent> {
     const decoder = createLAZChunkDecoder(getCOPCLAZChunkMetadata(copc, node.pointCount));
     let decodedPointCount = 0;
+    const remainingPointCount = {value: limit ?? Number.MAX_SAFE_INTEGER};
 
     for await (const compressedChunk of this.loadCOPCNodeRangeChunks(
       node,
@@ -674,9 +694,14 @@ export class COPCTileSource
         cartographicOrigin,
         batchSize,
         decodedPointCount,
-        selection
+        selection,
+        bounds,
+        remainingPointCount
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
+      if (remainingPointCount.value <= 0) {
+        return;
+      }
     }
 
     decoder.close();
@@ -689,9 +714,14 @@ export class COPCTileSource
         cartographicOrigin,
         batchSize,
         decodedPointCount,
-        selection
+        selection,
+        bounds,
+        remainingPointCount
       );
       decodedPointCount = node.pointCount - decoder.remainingPointCount;
+      if (remainingPointCount.value <= 0) {
+        return;
+      }
     }
     if (decodedPointCount !== node.pointCount) {
       throw new Error(
@@ -709,12 +739,17 @@ export class COPCTileSource
     cartographicOrigin: number[],
     batchSize: number,
     decodedPointCount: number,
-    selection: COPCPointSelection
+    selection: COPCPointSelection,
+    bounds: PointCloudQueryBounds | undefined,
+    remainingPointCount: {value: number}
   ): Iterable<COPCTileContent> {
-    while (decodedPointCount < nodePointCount) {
-      const pointCount = Math.min(batchSize, nodePointCount - decodedPointCount);
+    while (decodedPointCount < nodePointCount && remainingPointCount.value > 0) {
+      const pointCount = Math.min(
+        batchSize,
+        nodePointCount - decodedPointCount,
+        remainingPointCount.value
+      );
       const nativePositions = new Float64Array(pointCount * 3);
-      const positions = new Float32Array(pointCount * 3);
       const batchColors = selection.colors ? new Uint16Array(pointCount * 3) : null;
       const batchNir = selection.nir ? new Uint16Array(pointCount) : null;
       const batchIntensities = selection.intensity ? new Uint16Array(pointCount) : null;
@@ -771,19 +806,24 @@ export class COPCTileSource
       if (decoded === 0) {
         return;
       }
-      const typedExtraBytes = batchExtraBytes
-        ? createLASTypedExtraBytesAttributes(pointCount, copc.extraBytesDescriptors, extraByteCount)
-        : [];
-      if (batchExtraBytes) {
-        populateLASTypedExtraBytes(batchExtraBytes, pointCount, extraByteCount, typedExtraBytes);
+      decodedPointCount += decoded;
+      const selectedPointIndices = bounds
+        ? getCOPCPointIndicesWithinBounds(nativePositions, decoded, bounds)
+        : Array.from({length: decoded}, (_value, index) => index);
+      if (selectedPointIndices.length === 0) {
+        continue;
       }
-      this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
-      yield this.createTileContentResult(
-        pointCount,
-        positions,
-        batchColors,
-        cartographicOrigin,
-        batchNir,
+      const filteredPointCount = selectedPointIndices.length;
+      remainingPointCount.value -= filteredPointCount;
+      const filteredNativePositions = selectCOPCPointArray(
+        nativePositions,
+        selectedPointIndices,
+        3
+      ) as Float64Array;
+      const filteredPositions = new Float32Array(filteredPointCount * 3);
+      const filteredColors = selectCOPCPointArray(batchColors, selectedPointIndices, 3);
+      const filteredNir = selectCOPCPointArray(batchNir, selectedPointIndices, 1);
+      const filteredPointData = filterCOPCPointData(
         {
           batchIntensities,
           batchClassifications,
@@ -800,10 +840,47 @@ export class COPCTileSource
           batchScannerChannels,
           batchScanDirectionFlags,
           batchEdgeOfFlightLines,
+          typedExtraBytes: []
+        },
+        selectedPointIndices
+      );
+      const filteredExtraBytes = selectCOPCPointArray(
+        batchExtraBytes,
+        selectedPointIndices,
+        extraByteCount
+      );
+      const typedExtraBytes = filteredExtraBytes
+        ? createLASTypedExtraBytesAttributes(
+            filteredPointCount,
+            copc.extraBytesDescriptors,
+            extraByteCount
+          )
+        : [];
+      if (filteredExtraBytes) {
+        populateLASTypedExtraBytes(
+          filteredExtraBytes,
+          filteredPointCount,
+          extraByteCount,
+          typedExtraBytes
+        );
+      }
+      this.transformTilePositions(
+        filteredNativePositions,
+        filteredPositions,
+        nativeOrigin,
+        cartographicOrigin
+      );
+      yield this.createTileContentResult(
+        filteredPointCount,
+        filteredPositions,
+        filteredColors,
+        cartographicOrigin,
+        filteredNir,
+        {
+          ...filteredPointData,
           typedExtraBytes
         }
       );
-      decodedPointCount += decoded;
     }
   }
 
@@ -1565,6 +1642,77 @@ export class COPCTileSource
   */
 }
 
+/** Returns point indexes whose native positions fall inside inclusive scan bounds. */
+function getCOPCPointIndicesWithinBounds(
+  nativePositions: Float64Array,
+  pointCount: number,
+  bounds: PointCloudQueryBounds
+): number[] {
+  const pointIndices: number[] = [];
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const positionIndex = pointIndex * 3;
+    if (
+      nativePositions[positionIndex] >= bounds.minimum[0] &&
+      nativePositions[positionIndex] <= bounds.maximum[0] &&
+      nativePositions[positionIndex + 1] >= bounds.minimum[1] &&
+      nativePositions[positionIndex + 1] <= bounds.maximum[1] &&
+      nativePositions[positionIndex + 2] >= bounds.minimum[2] &&
+      nativePositions[positionIndex + 2] <= bounds.maximum[2]
+    ) {
+      pointIndices.push(pointIndex);
+    }
+  }
+  return pointIndices;
+}
+
+/** Selects fixed-width values from a typed point-data array. */
+function selectCOPCPointArray<T extends Uint8Array | Uint16Array | Int16Array | Float64Array>(
+  values: T | null,
+  pointIndices: readonly number[],
+  itemSize: number
+): T | null {
+  if (!values) return null;
+  const TypedArrayConstructor = values.constructor as {new (length: number): T};
+  const selectedValues = new TypedArrayConstructor(pointIndices.length * itemSize);
+  for (let outputIndex = 0; outputIndex < pointIndices.length; outputIndex++) {
+    const inputIndex = pointIndices[outputIndex] * itemSize;
+    selectedValues.set(
+      values.subarray(inputIndex, inputIndex + itemSize) as T & ArrayLike<number>,
+      outputIndex * itemSize
+    );
+  }
+  return selectedValues;
+}
+
+/** Selects scalar point-data attributes while preserving their typed-array classes. */
+function filterCOPCPointData(
+  pointData: COPCPointDataArrays,
+  pointIndices: readonly number[]
+): COPCPointDataArrays {
+  return {
+    batchIntensities: selectCOPCPointArray(pointData.batchIntensities, pointIndices, 1),
+    batchClassifications: selectCOPCPointArray(pointData.batchClassifications, pointIndices, 1),
+    batchSyntheticFlags: selectCOPCPointArray(pointData.batchSyntheticFlags, pointIndices, 1),
+    batchKeyPointFlags: selectCOPCPointArray(pointData.batchKeyPointFlags, pointIndices, 1),
+    batchWithheldFlags: selectCOPCPointArray(pointData.batchWithheldFlags, pointIndices, 1),
+    batchOverlapFlags: selectCOPCPointArray(pointData.batchOverlapFlags, pointIndices, 1),
+    batchGpsTimes: selectCOPCPointArray(pointData.batchGpsTimes, pointIndices, 1),
+    batchScanAngles: selectCOPCPointArray(pointData.batchScanAngles, pointIndices, 1),
+    batchUserData: selectCOPCPointArray(pointData.batchUserData, pointIndices, 1),
+    batchPointSourceIds: selectCOPCPointArray(pointData.batchPointSourceIds, pointIndices, 1),
+    batchReturnNumbers: selectCOPCPointArray(pointData.batchReturnNumbers, pointIndices, 1),
+    batchNumberOfReturns: selectCOPCPointArray(pointData.batchNumberOfReturns, pointIndices, 1),
+    batchScannerChannels: selectCOPCPointArray(pointData.batchScannerChannels, pointIndices, 1),
+    batchScanDirectionFlags: selectCOPCPointArray(
+      pointData.batchScanDirectionFlags,
+      pointIndices,
+      1
+    ),
+    batchEdgeOfFlightLines: selectCOPCPointArray(pointData.batchEdgeOfFlightLines, pointIndices, 1),
+    typedExtraBytes: []
+  };
+}
+
 /** Returns the Arrow columns that this COPC source can decode selectively. */
 function getCOPCScanColumns(copc: COPCFile): COPCPointColumn[] {
   const columns: COPCPointColumn[] = ['POSITION'];
@@ -1597,6 +1745,58 @@ function getCOPCScanColumns(copc: COPCFile): COPCPointColumn[] {
   return columns;
 }
 
+/** Builds the canonical schema returned by the point-cloud scan API. */
+function getCOPCScanSchema(copc: COPCFile): Schema {
+  const scalarTypes: Partial<Record<COPCPointColumn, Field['type']>> = {
+    NIR: 'uint16',
+    intensity: 'uint16',
+    classification: 'uint8',
+    synthetic: 'uint8',
+    keyPoint: 'uint8',
+    withheld: 'uint8',
+    overlap: 'uint8',
+    GPS_TIME: 'float64',
+    scanAngle: 'int16',
+    userData: 'uint8',
+    pointSourceId: 'uint16',
+    returnNumber: 'uint8',
+    numberOfReturns: 'uint8',
+    scannerChannel: 'uint8',
+    scanDirectionFlag: 'uint8',
+    edgeOfFlightLine: 'uint8'
+  };
+  const extraBytes = getCOPCExtraByteCount(copc.header);
+  const fields = getCOPCScanColumns(copc).map((name): Field => {
+    if (name === 'POSITION') {
+      return {
+        name,
+        type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'value', type: 'float32'}]},
+        nullable: false
+      };
+    }
+    if (name === 'COLOR_0') {
+      return {
+        name,
+        type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'value', type: 'uint16'}]},
+        nullable: false
+      };
+    }
+    if (name === 'EXTRA_BYTES') {
+      return {
+        name,
+        type: {
+          type: 'fixed-size-list',
+          listSize: Math.max(extraBytes, 1),
+          children: [{name: 'value', type: 'uint8'}]
+        },
+        nullable: false
+      };
+    }
+    return {name, type: scalarTypes[name] || 'float64', nullable: false};
+  });
+  return {fields, metadata: {}};
+}
+
 /** Tests whether one hierarchy node can contribute to a point-cloud scan. */
 function isCOPCScanNodeSelected(
   copc: COPCFile,
@@ -1619,10 +1819,8 @@ function isCOPCScanNodeSelected(
       0,
       Math.min(31, Math.ceil(Math.log2(copc.info.spacing / options.targetSpacing)))
     );
-    if (
-      level !==
-      Math.max(options.minimumLevel ?? 0, Math.min(options.maximumLevel ?? 31, targetLevel))
-    ) {
+    const maximumSelectedLevel = Math.min(options.maximumLevel ?? 31, targetLevel);
+    if (level < (options.minimumLevel ?? 0) || level > maximumSelectedLevel) {
       return false;
     }
   }

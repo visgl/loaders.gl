@@ -118,8 +118,25 @@ vitestTest('COPCSourceLoader#scans selected Arrow columns with an exact limit', 
     expect(batch.data.data.getChild('COLOR_0')).toBeNull();
   }
 
-  expect(batches.length).toBe(1);
+  expect(batches.map(batch => batch.pointCount)).toEqual([7, 7, 7, 2]);
   expect(pointCount).toBe(23);
+});
+
+vitestTest('COPCSourceLoader#exposes scan columns through query metadata', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getQueryMetadata();
+  const columnNames = metadata.schema.fields.map(field => field.name);
+
+  expect(columnNames).toContain('POSITION');
+  expect(columnNames).toContain('intensity');
+  expect(columnNames).not.toContain('X');
+  expect(metadata.capabilities.table?.projection).toBe('pushdown');
+
+  const requestedColumns = ['POSITION', 'intensity'] as const;
+  for await (const batch of source.scan({columns: requestedColumns, limit: 1})) {
+    expect(batch.data.data.getChild('POSITION')).toBeTruthy();
+    expect(batch.data.data.getChild('intensity')).toBeTruthy();
+  }
 });
 
 vitestTest('COPCSourceLoader#prunes scans by hierarchy level and bounds', async () => {
