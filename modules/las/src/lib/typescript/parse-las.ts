@@ -170,7 +170,10 @@ export function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {
     const bytes = new Uint8Array(arrayBuffer);
     const laszip = parseLASZipVLR(bytes, header);
     validateTypeScriptLAZSupport(header, laszip);
-    if (header.pointsFormatId >= 6 && header.pointsFormatId <= 10) {
+    if (
+      header.pointsFormatId === 3 ||
+      (header.pointsFormatId >= 6 && header.pointsFormatId <= 10)
+    ) {
       return parseCompleteLAZFileToArrowTable(bytes, header, laszip, options);
     }
     const rawPointData = decodeLAZFileToRawPointData(arrayBuffer, header, laszip);
@@ -239,7 +242,7 @@ export function decodeLAZChunkToArrowTable(
   return makePointDataStateArrowTable(header, state, pointCount, options, true);
 }
 
-/** Decode one complete modern LAZ file directly into its represented Arrow columns. */
+/** Decode one complete supported LAZ file directly into its represented Arrow columns. */
 function parseCompleteLAZFileToArrowTable(
   bytes: Uint8Array,
   header: LASHeader,
@@ -272,9 +275,7 @@ function parseCompleteLAZFileToArrowTable(
   }
 
   if (decodedPointCount !== pointCount) {
-    throw new Error(
-      `LASLoader: decoded ${decodedPointCount} modern LAZ points; expected ${pointCount}`
-    );
+    throw new Error(`LASLoader: decoded ${decodedPointCount} LAZ points; expected ${pointCount}`);
   }
   return makePointDataStateArrowTable(header, state, pointCount, options);
 }
@@ -321,7 +322,7 @@ function makePointDataStateArrowTable(
   );
 }
 
-/** Decode one complete modern LAZ chunk into preallocated Arrow column buffers. */
+/** Decode one complete supported LAZ chunk into preallocated Arrow column buffers. */
 function decodeCompleteLAZChunkToPointData(
   bytes: Uint8Array,
   byteOffset: number,
@@ -334,7 +335,7 @@ function decodeCompleteLAZChunkToPointData(
 ): void {
   const compressed = bytes.subarray(byteOffset, byteOffset + byteLength);
   if (compressed.byteLength !== byteLength) {
-    throw new NeedsMoreData('LASLoader: truncated modern LAZ chunk');
+    throw new NeedsMoreData('LASLoader: truncated LAZ chunk');
   }
   const cursor = createLAZChunkDecoderCursor(
     compressed,

@@ -1261,20 +1261,9 @@ class IntegerDecompressor {
   }
 
   decompress(decoder: ArithmeticDecoder, prediction: number, context: number): number {
-    let real = toInt32(prediction + this.readCorrector(decoder, this.mBits[context]));
-    if (this.corrRange === 0) {
-      return real;
-    }
-    if (real < 0) {
-      real = toInt32(real + this.corrRange);
-    } else if (real >= this.corrRange) {
-      real = toInt32(real - this.corrRange);
-    }
-    return real;
-  }
-
-  private readCorrector(decoder: ArithmeticDecoder, mBits: ArithmeticModel): number {
-    const k = decoder.decodeSymbol(mBits);
+    // Keep corrector decoding in this hot method. Splitting it into a helper prevents
+    // V8 from optimizing the predictor and corrector as one stable operation.
+    const k = decoder.decodeSymbol(this.mBits[context]);
     this.k = k;
     let corrector: number;
     if (k) {
@@ -1299,7 +1288,16 @@ class IntegerDecompressor {
     } else {
       corrector = decoder.decodeBit(this.mCorrector0);
     }
-    return toInt32(corrector);
+    let real = toInt32(prediction + corrector);
+    if (this.corrRange === 0) {
+      return real;
+    }
+    if (real < 0) {
+      real = toInt32(real + this.corrRange);
+    } else if (real >= this.corrRange) {
+      real = toInt32(real - this.corrRange);
+    }
+    return real;
   }
 }
 
@@ -1415,6 +1413,7 @@ class Point10Decompressor {
   private lastYDiffMedian = Array.from({length: 16}, () => new StreamingMedian());
   private haveLast = false;
   private last = createPoint10();
+  private firstPoint = createPoint10();
 
   constructor(stream: ByteReader) {
     this.stream = stream;
@@ -1426,12 +1425,19 @@ class Point10Decompressor {
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
+    const point = this.decompressPoint();
+    writePoint10(point, output, outputOffset);
+    return outputOffset + 20;
+  }
+
+  /** Decode one legacy core point without materializing a raw LAS record. */
+  decompressPoint(): Point10 {
     if (!this.haveLast) {
       this.haveLast = true;
-      this.stream.getBytes(output, outputOffset, 20);
-      this.last = readPoint10(output, outputOffset);
+      readPoint10FromStreamInto(this.last, this.stream);
+      copyPoint10(this.firstPoint, this.last);
       this.last.intensity = 0;
-      return outputOffset + 20;
+      return this.firstPoint;
     }
 
     const changedValues = this.decoder.decodeSymbol(this.changedValuesModel);
@@ -1507,8 +1513,7 @@ class Point10Decompressor {
     );
     this.lastHeight[levelContext] = this.last.z;
 
-    writePoint10(this.last, output, outputOffset);
-    return outputOffset + 20;
+    return this.last;
   }
 
   readFirstMetadata(): void {
@@ -1532,13 +1537,21 @@ class RGB10Decompressor {
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
+    this.decompressRgb();
+    writeUint16(this.lastRed, output, outputOffset);
+    writeUint16(this.lastGreen, output, outputOffset + 2);
+    writeUint16(this.lastBlue, output, outputOffset + 4);
+    return outputOffset + 6;
+  }
+
+  /** Decode one legacy RGB item without materializing raw point bytes. */
+  decompressRgb(): void {
     if (!this.haveLast) {
       this.haveLast = true;
-      this.stream.getBytes(output, outputOffset, 6);
-      this.lastRed = readUint16(output, outputOffset);
-      this.lastGreen = readUint16(output, outputOffset + 2);
-      this.lastBlue = readUint16(output, outputOffset + 4);
-      return outputOffset + 6;
+      this.lastRed = readUint16FromStream(this.stream);
+      this.lastGreen = readUint16FromStream(this.stream);
+      this.lastBlue = readUint16FromStream(this.stream);
+      return;
     }
 
     const symbol = this.decoder.decodeSymbol(this.usedModel);
@@ -1603,10 +1616,21 @@ class RGB10Decompressor {
     this.lastRed = red;
     this.lastGreen = green;
     this.lastBlue = blue;
-    writeUint16(red, output, outputOffset);
-    writeUint16(green, output, outputOffset + 2);
-    writeUint16(blue, output, outputOffset + 4);
-    return outputOffset + 6;
+  }
+
+  /** Most recently decoded red channel. */
+  get decodedRed(): number {
+    return this.lastRed;
+  }
+
+  /** Most recently decoded green channel. */
+  get decodedGreen(): number {
+    return this.lastGreen;
+  }
+
+  /** Most recently decoded blue channel. */
+  get decodedBlue(): number {
+    return this.lastBlue;
   }
 }
 
@@ -1626,22 +1650,34 @@ class Byte10Decompressor {
     this.models = createModels(count, 256);
   }
 
+  /** Number of Extra Bytes stored for each point. */
+  get byteCount(): number {
+    return this.count;
+  }
+
   decompress(output: Uint8Array, outputOffset: number): number {
+    this.decompressToTarget(output, outputOffset);
+    return outputOffset + this.count;
+  }
+
+  /** Decode legacy Extra Bytes directly into an optional caller-owned target. */
+  decompressToTarget(output?: Uint8Array | null, outputOffset: number = 0): void {
     if (this.count === 0) {
-      return outputOffset;
+      return;
     }
     if (!this.haveLast) {
-      this.stream.getBytes(output, outputOffset, this.count);
-      this.last.set(output.subarray(outputOffset, outputOffset + this.count));
+      this.stream.getBytes(this.last, 0, this.count);
+      output?.set(this.last, outputOffset);
       this.haveLast = true;
-      return outputOffset + this.count;
+      return;
     }
     for (let index = 0; index < this.count; index++) {
       const value = (this.last[index] + this.decoder.decodeSymbol(this.models[index])) & 0xff;
-      output[outputOffset + index] = value;
+      if (output) {
+        output[outputOffset + index] = value;
+      }
       this.last[index] = value;
     }
-    return outputOffset + this.count;
   }
 }
 
@@ -2648,7 +2684,7 @@ function createPointDecompressor(
 
 /** Return whether a point format has a direct typed-array output path. */
 function supportsDirectPointDataOutput(pointDataRecordFormat: number): boolean {
-  return pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10;
+  return pointDataRecordFormat === 3 || (pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10);
 }
 
 class PointFormat0Decompressor implements PointDecompressor {
@@ -2695,16 +2731,20 @@ class GpsTime10Decompressor {
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
+    writeFloat64(this.decompressGpsTime(), output, outputOffset);
+    return outputOffset + 8;
+  }
+
+  /** Decode one legacy GPS time value without materializing raw point bytes. */
+  decompressGpsTime(): number {
     if (!this.haveLast) {
-      this.stream.getBytes(output, outputOffset, 8);
-      this.lastGpsTime[0] = readFloat64(output, outputOffset);
+      this.lastGpsTime[0] = readFloat64FromStream(this.stream);
       this.haveLast = true;
-      return outputOffset + 8;
+      return this.lastGpsTime[0];
     }
 
     this.decodeGpsTime();
-    writeFloat64(this.lastGpsTime[this.lastGpsSequence], output, outputOffset);
-    return outputOffset + 8;
+    return this.lastGpsTime[this.lastGpsSequence];
   }
 
   private decodeGpsTime(): void {
@@ -2900,6 +2940,97 @@ class PointFormat3Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode legacy PDRF 3 directly into selected typed point-data arrays. */
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    const positions = target.positions;
+    const intensities = target.intensities;
+    const classifications = target.classifications;
+    const colors = target.colors;
+    const rawColors = target.rawColors;
+    const scale = target.scale;
+    const offset = target.offset;
+    const extraByteCount = this.bytes.byteCount;
+    let targetPointIndex = target.pointOffset;
+    const hasMetadataOutput = Boolean(
+      target.gpsTimes ||
+        target.scanAngles ||
+        target.userData ||
+        target.pointSourceIds ||
+        target.returnNumbers ||
+        target.numberOfReturns ||
+        target.scannerChannels ||
+        target.scanDirectionFlags ||
+        target.edgeOfFlightLines ||
+        target.syntheticFlags ||
+        target.keyPointFlags ||
+        target.withheldFlags ||
+        target.overlapFlags
+    );
+
+    if (!hasMetadataOutput && !target.extraBytes) {
+      for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+        const point = this.point.decompressPoint();
+        this.gpsTime.decompressGpsTime();
+        this.rgb.decompressRgb();
+        this.bytes.decompressToTarget();
+        this.readFirstMetadata();
+        writePoint10ToPointDataArrays(
+          point,
+          positions,
+          intensities,
+          classifications,
+          scale,
+          offset,
+          targetPointIndex
+        );
+        if (colors) {
+          const colorOffset = targetPointIndex * 4;
+          colors[colorOffset] = this.rgb.decodedRed & 0xff;
+          colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+          colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+          colors[colorOffset + 3] = 255;
+        } else if (rawColors) {
+          const colorOffset = targetPointIndex * 3;
+          rawColors[colorOffset] = this.rgb.decodedRed;
+          rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+          rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+        }
+        targetPointIndex++;
+      }
+      return;
+    }
+
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      const gpsTime = this.gpsTime.decompressGpsTime();
+      this.rgb.decompressRgb();
+      this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * extraByteCount);
+      this.readFirstMetadata();
+
+      writePoint10ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex
+      );
+      writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+      if (target.gpsTimes) {
+        target.gpsTimes[targetPointIndex] = gpsTime;
+      }
+      writeRgbToPointDataTarget(
+        this.rgb.decodedRed,
+        this.rgb.decodedGreen,
+        this.rgb.decodedBlue,
+        target,
+        targetPointIndex
+      );
+      targetPointIndex++;
+    }
   }
 
   private readFirstMetadata(): void {
@@ -3203,7 +3334,6 @@ class PointFormat7Decompressor implements PointDecompressor {
   private bytes: Byte14Decompressor | null;
   /** Extra bytes stored with the first point and in independent later layers. */
   private extraByteCount: number;
-  private pointScratch = new Uint8Array(30);
   private first = true;
 
   constructor(
@@ -3242,7 +3372,7 @@ class PointFormat7Decompressor implements PointDecompressor {
   }
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
-    const point = this.point.decompressPoint(this.pointScratch, 0);
+    const point = this.point.decompressPoint();
     if (this.rgb) {
       this.rgb.decompressRgb(this.point.itemContextChannel);
     } else if (this.first) {
@@ -3280,13 +3410,14 @@ class PointFormat7Decompressor implements PointDecompressor {
     const scale = target.scale;
     const offset = target.offset;
     let targetPointIndex = target.pointOffset;
+    let remainingPointCount = pointCount;
 
-    // The first point stores extra bytes before the layered stream metadata.
-    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-      const point = this.point.decompressPoint(this.pointScratch, 0);
+    // Decode first-point literals and layer metadata before entering the steady-state loop.
+    if (this.first && remainingPointCount > 0) {
+      const point = this.point.decompressPoint();
       if (this.rgb) {
         this.rgb.decompressRgb(this.point.itemContextChannel);
-      } else if (this.first) {
+      } else {
         this.stream.consume(6);
       }
       if (this.bytes && target.extraBytes) {
@@ -3295,10 +3426,94 @@ class PointFormat7Decompressor implements PointDecompressor {
           targetPointIndex * this.extraByteCount,
           this.point.itemContextChannel
         );
-      } else if (this.first && this.extraByteCount) {
+      } else if (this.extraByteCount) {
         this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
+      writePoint14ToPointDataArrays(
+        point,
+        positions,
+        intensities,
+        classifications,
+        scale,
+        offset,
+        targetPointIndex
+      );
+      writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+      writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
+      if (colors && this.rgb) {
+        const colorOffset = targetPointIndex * 4;
+        colors[colorOffset] = this.rgb.decodedRed & 0xff;
+        colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+        colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+        colors[colorOffset + 3] = 255;
+      } else if (rawColors && this.rgb) {
+        const colorOffset = targetPointIndex * 3;
+        rawColors[colorOffset] = this.rgb.decodedRed;
+        rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+        rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+      }
+      targetPointIndex++;
+      remainingPointCount--;
+    }
+
+    const hasMetadataOutput = Boolean(
+      target.gpsTimes ||
+        target.scanAngles ||
+        target.userData ||
+        target.pointSourceIds ||
+        target.returnNumbers ||
+        target.numberOfReturns ||
+        target.scannerChannels ||
+        target.scanDirectionFlags ||
+        target.edgeOfFlightLines ||
+        target.syntheticFlags ||
+        target.keyPointFlags ||
+        target.withheldFlags ||
+        target.overlapFlags
+    );
+    const hasExtraByteOutput = Boolean(this.bytes && target.extraBytes);
+
+    if (!hasMetadataOutput && !hasExtraByteOutput) {
+      for (let pointIndex = 0; pointIndex < remainingPointCount; pointIndex++) {
+        const point = this.point.decompressPoint();
+        this.rgb?.decompressRgb(this.point.itemContextChannel);
+        writePoint14ToPointDataArrays(
+          point,
+          positions,
+          intensities,
+          classifications,
+          scale,
+          offset,
+          targetPointIndex
+        );
+        if (colors && this.rgb) {
+          const colorOffset = targetPointIndex * 4;
+          colors[colorOffset] = this.rgb.decodedRed & 0xff;
+          colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+          colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+          colors[colorOffset + 3] = 255;
+        } else if (rawColors && this.rgb) {
+          const colorOffset = targetPointIndex * 3;
+          rawColors[colorOffset] = this.rgb.decodedRed;
+          rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+          rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+        }
+        targetPointIndex++;
+      }
+      return;
+    }
+
+    for (let pointIndex = 0; pointIndex < remainingPointCount; pointIndex++) {
+      const point = this.point.decompressPoint();
+      this.rgb?.decompressRgb(this.point.itemContextChannel);
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      }
       writePoint14ToPointDataArrays(
         point,
         positions,
@@ -4013,18 +4228,28 @@ function createPoint10(): Point10 {
   };
 }
 
-function readPoint10(bytes: Uint8Array, offset: number): Point10 {
-  return {
-    x: readInt32(bytes, offset),
-    y: readInt32(bytes, offset + 4),
-    z: readInt32(bytes, offset + 8),
-    intensity: readUint16(bytes, offset + 12),
-    bitByte: bytes[offset + 14],
-    classification: bytes[offset + 15],
-    scanAngleRank: toInt8(bytes[offset + 16]),
-    userData: bytes[offset + 17],
-    pointSourceId: readUint16(bytes, offset + 18)
-  };
+function readPoint10FromStreamInto(point: Point10, stream: ByteReader): void {
+  point.x = readInt32FromStream(stream);
+  point.y = readInt32FromStream(stream);
+  point.z = readInt32FromStream(stream);
+  point.intensity = readUint16FromStream(stream);
+  point.bitByte = stream.getByte();
+  point.classification = stream.getByte();
+  point.scanAngleRank = toInt8(stream.getByte());
+  point.userData = stream.getByte();
+  point.pointSourceId = readUint16FromStream(stream);
+}
+
+function copyPoint10(target: Point10, source: Point10): void {
+  target.x = source.x;
+  target.y = source.y;
+  target.z = source.z;
+  target.intensity = source.intensity;
+  target.bitByte = source.bitByte;
+  target.classification = source.classification;
+  target.scanAngleRank = source.scanAngleRank;
+  target.userData = source.userData;
+  target.pointSourceId = source.pointSourceId;
 }
 
 function writePoint10(point: Point10, bytes: Uint8Array, offset: number): void {
@@ -4037,6 +4262,71 @@ function writePoint10(point: Point10, bytes: Uint8Array, offset: number): void {
   bytes[offset + 16] = point.scanAngleRank & 0xff;
   bytes[offset + 17] = point.userData;
   writeUint16(point.pointSourceId, bytes, offset + 18);
+}
+
+function writePoint10ToPointDataArrays(
+  point: Point10,
+  positions: Float32Array | Float64Array,
+  intensities: Uint16Array | null | undefined,
+  classifications: Uint8Array | null | undefined,
+  scale: [number, number, number],
+  offset: [number, number, number],
+  targetPointIndex: number
+): void {
+  const positionOffset = targetPointIndex * 3;
+  positions[positionOffset] = point.x * scale[0] + offset[0];
+  positions[positionOffset + 1] = point.y * scale[1] + offset[1];
+  positions[positionOffset + 2] = point.z * scale[2] + offset[2];
+  if (intensities) {
+    intensities[targetPointIndex] = point.intensity;
+  }
+  if (classifications) {
+    classifications[targetPointIndex] = point.classification & 0x1f;
+  }
+}
+
+function writePoint10MetadataToPointDataTarget(
+  point: Point10,
+  target: LAZPointDataTarget,
+  targetPointIndex: number
+): void {
+  const classificationFlags = point.classification >> 5;
+  if (target.syntheticFlags) {
+    target.syntheticFlags[targetPointIndex] = classificationFlags & 1;
+  }
+  if (target.keyPointFlags) {
+    target.keyPointFlags[targetPointIndex] = (classificationFlags >> 1) & 1;
+  }
+  if (target.withheldFlags) {
+    target.withheldFlags[targetPointIndex] = (classificationFlags >> 2) & 1;
+  }
+  if (target.overlapFlags) {
+    target.overlapFlags[targetPointIndex] = 0;
+  }
+  if (target.scanAngles) {
+    target.scanAngles[targetPointIndex] = point.scanAngleRank;
+  }
+  if (target.userData) {
+    target.userData[targetPointIndex] = point.userData;
+  }
+  if (target.pointSourceIds) {
+    target.pointSourceIds[targetPointIndex] = point.pointSourceId;
+  }
+  if (target.returnNumbers) {
+    target.returnNumbers[targetPointIndex] = point.bitByte & 0x07;
+  }
+  if (target.numberOfReturns) {
+    target.numberOfReturns[targetPointIndex] = (point.bitByte >> 3) & 0x07;
+  }
+  if (target.scannerChannels) {
+    target.scannerChannels[targetPointIndex] = 0;
+  }
+  if (target.scanDirectionFlags) {
+    target.scanDirectionFlags[targetPointIndex] = (point.bitByte >> 6) & 1;
+  }
+  if (target.edgeOfFlightLines) {
+    target.edgeOfFlightLines[targetPointIndex] = (point.bitByte >> 7) & 1;
+  }
 }
 
 function getPoint10ReturnNumber(point: Point10): number {
