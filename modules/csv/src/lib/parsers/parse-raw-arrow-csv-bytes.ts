@@ -7,6 +7,7 @@ import {getArrowViewTypeSupport} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVRawArrowOptions} from './parse-csv-to-arrow';
+import {copyByteRange} from '../utils/copy-byte-range';
 
 /** Normalized ASCII-byte CSV options used by the raw Arrow byte parser. */
 type CSVByteParserOptions = {
@@ -1091,21 +1092,6 @@ class RawArrowUtf8ColumnBuilder {
     this.valueOffsets[this.valueOffsetCount] = valueOffset;
     this.valueOffsetCount++;
   }
-}
-
-/** Copies one byte range into a target and returns the next write offset. */
-function copyByteRange(
-  source: Uint8Array,
-  start: number,
-  end: number,
-  target: Uint8Array,
-  targetStart: number
-): number {
-  const byteLength = end - start;
-  if (byteLength > 0) {
-    target.set(source.subarray(start, end), targetStart);
-  }
-  return targetStart + byteLength;
 }
 
 /** Counts fields in a byte range that contains unquoted delimiter bytes. */

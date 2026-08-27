@@ -22,6 +22,7 @@ import * as arrow from 'apache-arrow';
 import type {CSVLoaderOptions} from './csv-loader-options';
 import {CSV_LOADER_OPTIONS} from './csv-loader-options';
 import {CSVLoaderWithParser} from './csv-loader-with-parser';
+import {copyByteRange} from './lib/utils/copy-byte-range';
 import {
   parseRawArrowCSVInBatches,
   parseRawArrowCSVTable,
@@ -149,10 +150,16 @@ export async function parseCSVTextAsArrow(
   }
   const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
 
+  const directlyNumericTable = tryParseTypedNumericCSVText(csvText, csvOptions);
+  if (directlyNumericTable) {
+    return directlyNumericTable;
+  }
+
   if (shouldTryTypedUnquotedCSVText(csvText, csvOptions)) {
     const directlyTypedTable = tryParseTypedUnquotedCSVBytes(
       UTF8_ENCODER.encode(csvText),
-      csvOptions
+      csvOptions,
+      true
     );
     if (directlyTypedTable) {
       return directlyTypedTable;
@@ -317,11 +324,257 @@ function shouldApplyDynamicTyping(csvOptions: ArrowTableCSVOptions): boolean {
 type DirectTypedColumn = {
   /** Dynamically typed values or raw UTF-8 sentinels. */
   values: DynamicColumnValue[];
+  /** Narrowest type observed so far, promoted permanently to UTF-8 after mixed input. */
+  inferredDataType: TypedColumnDataType | null;
+  /** Whether every value can be copied directly from its retained source byte range. */
+  hasOnlyRawUtf8OrNull: boolean;
   /** Inclusive source offsets, allocated only after a raw UTF-8 value is observed. */
   valueStarts: number[] | null;
   /** Exclusive source offsets, allocated only after a raw UTF-8 value is observed. */
   valueEnds: number[] | null;
 };
+
+/** Validated dimensions for a direct numeric CSV text parse. */
+type DirectNumericCSVTextDimensions = {
+  /** Number of data rows. */
+  rowCount: number;
+  /** Number of fields in every data row. */
+  columnCount: number;
+};
+
+/** Parses an unquoted, non-null unsigned-integer matrix directly into Float64 Arrow columns. */
+function tryParseTypedNumericCSVText(
+  csvText: string,
+  csvOptions: ArrowTableCSVOptions
+): ArrowTable | null {
+  if (!canUseDirectTypedUnquotedParser(csvOptions) || csvText.length === 0) {
+    return null;
+  }
+
+  const delimiter = getDirectTextDelimiter(csvText, csvOptions);
+  if (delimiter === null) {
+    return null;
+  }
+
+  const headerEnd = findDirectTextRowEnd(csvText, 0);
+  const quoteCharacter = (csvOptions.quoteChar || '"').charCodeAt(0);
+  for (let characterIndex = 0; characterIndex < headerEnd.end; characterIndex++) {
+    if (csvText.charCodeAt(characterIndex) === quoteCharacter) {
+      return null;
+    }
+  }
+
+  const headerRow = decodeDirectTextHeaderRow(csvText, 0, headerEnd.end, delimiter);
+  const dimensions = validateDirectNumericCSVText(
+    csvText,
+    headerEnd.nextStart,
+    delimiter,
+    headerRow.length
+  );
+  if (!dimensions || dimensions.rowCount === 0) {
+    return null;
+  }
+
+  const columns = headerRow.map(() => new Float64Array(dimensions.rowCount));
+  let rowIndex = 0;
+  let columnIndex = 0;
+  let value = 0;
+
+  for (
+    let characterIndex = headerEnd.nextStart;
+    characterIndex < csvText.length;
+    characterIndex++
+  ) {
+    const character = csvText.charCodeAt(characterIndex);
+    if (character >= 48 && character <= 57) {
+      value = value * 10 + character - 48;
+      continue;
+    }
+
+    columns[columnIndex][rowIndex] = value;
+    value = 0;
+    columnIndex++;
+    if (character === delimiter) {
+      continue;
+    }
+
+    rowIndex++;
+    columnIndex = 0;
+    if (character === 13 && csvText.charCodeAt(characterIndex + 1) === 10) {
+      characterIndex++;
+    }
+  }
+
+  if (dimensions.columnCount === 1 || columnIndex > 0) {
+    columns[columnIndex][rowIndex] = value;
+  }
+
+  return createDirectNumericArrowTable(headerRow, columns, dimensions.rowCount);
+}
+
+/** Validates integer-only data rows and returns their exact dimensions. */
+function validateDirectNumericCSVText(
+  csvText: string,
+  dataStart: number,
+  delimiter: number,
+  expectedColumnCount: number
+): DirectNumericCSVTextDimensions | null {
+  let rowCount = 0;
+  let columnIndex = 0;
+  let fieldHasDigit = false;
+
+  for (let characterIndex = dataStart; characterIndex < csvText.length; characterIndex++) {
+    const character = csvText.charCodeAt(characterIndex);
+    if (character >= 48 && character <= 57) {
+      fieldHasDigit = true;
+      continue;
+    }
+    if (!fieldHasDigit) {
+      return null;
+    }
+    fieldHasDigit = false;
+    columnIndex++;
+
+    if (character === delimiter) {
+      if (columnIndex >= expectedColumnCount) {
+        return null;
+      }
+      continue;
+    }
+    if (character !== 10 && character !== 13) {
+      return null;
+    }
+    if (columnIndex !== expectedColumnCount) {
+      return null;
+    }
+
+    rowCount++;
+    columnIndex = 0;
+    if (character === 13 && csvText.charCodeAt(characterIndex + 1) === 10) {
+      characterIndex++;
+    }
+  }
+
+  if (fieldHasDigit) {
+    columnIndex++;
+    rowCount++;
+  }
+  return columnIndex === 0 || columnIndex === expectedColumnCount
+    ? {rowCount, columnCount: expectedColumnCount}
+    : null;
+}
+
+/** Selects an explicit or header-inferred delimiter for direct string parsing. */
+function getDirectTextDelimiter(csvText: string, csvOptions: ArrowTableCSVOptions): number | null {
+  const configuredDelimiter = (csvOptions as ArrowTableCSVOptions & {delimiter?: string}).delimiter;
+  if (configuredDelimiter) {
+    return configuredDelimiter.length === 1 && configuredDelimiter.charCodeAt(0) < 128
+      ? configuredDelimiter.charCodeAt(0)
+      : null;
+  }
+
+  const headerEnd = findDirectTextRowEnd(csvText, 0).end;
+  let selectedDelimiter: number | null = null;
+  let selectedCount = -1;
+  for (const candidate of csvOptions.delimitersToGuess || [',', '\t', '|', ';']) {
+    if (candidate.length !== 1 || candidate.charCodeAt(0) >= 128) {
+      continue;
+    }
+    const candidateCode = candidate.charCodeAt(0);
+    let candidateCount = 0;
+    for (let characterIndex = 0; characterIndex < headerEnd; characterIndex++) {
+      if (csvText.charCodeAt(characterIndex) === candidateCode) {
+        candidateCount++;
+      }
+    }
+    if (candidateCount > selectedCount) {
+      selectedDelimiter = candidateCode;
+      selectedCount = candidateCount;
+    }
+  }
+  return selectedDelimiter;
+}
+
+/** Finds one unquoted row boundary in string input. */
+function findDirectTextRowEnd(csvText: string, rowStart: number): {end: number; nextStart: number} {
+  for (let characterIndex = rowStart; characterIndex < csvText.length; characterIndex++) {
+    const character = csvText.charCodeAt(characterIndex);
+    if (character === 10 || character === 13) {
+      return {
+        end: characterIndex,
+        nextStart:
+          character === 13 && csvText.charCodeAt(characterIndex + 1) === 10
+            ? characterIndex + 2
+            : characterIndex + 1
+      };
+    }
+  }
+  return {end: csvText.length, nextStart: csvText.length};
+}
+
+/** Decodes and deduplicates a direct-parser header from string input. */
+function decodeDirectTextHeaderRow(
+  csvText: string,
+  rowStart: number,
+  rowEnd: number,
+  delimiter: number
+): string[] {
+  const headerRow: string[] = [];
+  const observedColumnNames = new Set<string>();
+  let fieldStart = rowStart;
+  for (let characterIndex = rowStart; characterIndex <= rowEnd; characterIndex++) {
+    if (characterIndex !== rowEnd && csvText.charCodeAt(characterIndex) !== delimiter) {
+      continue;
+    }
+    const originalColumnName = csvText.slice(fieldStart, characterIndex);
+    let columnName = originalColumnName;
+    let duplicateIndex = 1;
+    while (observedColumnNames.has(columnName)) {
+      columnName = `${originalColumnName}.${duplicateIndex}`;
+      duplicateIndex++;
+    }
+    observedColumnNames.add(columnName);
+    headerRow.push(columnName);
+    fieldStart = characterIndex + 1;
+  }
+  return headerRow;
+}
+
+/** Creates an Arrow table from final numeric column buffers without intermediate values. */
+function createDirectNumericArrowTable(
+  headerRow: string[],
+  columns: Float64Array[],
+  rowCount: number
+): ArrowTable {
+  const schema: Schema = {
+    fields: headerRow.map(name => ({name, type: 'float64', nullable: true})),
+    metadata: {
+      'loaders.gl#format': 'csv',
+      'loaders.gl#loader': 'CSVLoader'
+    }
+  };
+  const arrowSchema = convertSchemaToArrow(schema, {viewTypes: 'never'});
+  const arrowColumns = columns.map(
+    data =>
+      new arrow.Vector([
+        arrow.makeData({type: new arrow.Float64(), data, length: rowCount, nullCount: 0})
+      ])
+  );
+  const data = new arrow.Table([
+    new arrow.RecordBatch(
+      arrowSchema,
+      new arrow.Data(
+        new arrow.Struct(arrowSchema.fields),
+        0,
+        rowCount,
+        0,
+        undefined,
+        arrowColumns.map(column => column.data[0])
+      )
+    )
+  ]);
+  return {shape: 'arrow-table', schema, data};
+}
 
 /** Checks whether string input can enter the direct typed unquoted parser. */
 function shouldTryTypedUnquotedCSVText(csvText: string, csvOptions: ArrowTableCSVOptions): boolean {
@@ -332,14 +585,15 @@ function shouldTryTypedUnquotedCSVText(csvText: string, csvOptions: ArrowTableCS
 /** Parses common unquoted typed CSV directly into final Arrow columns when options are compatible. */
 function tryParseTypedUnquotedCSVBytes(
   bytes: Uint8Array,
-  csvOptions: ArrowTableCSVOptions
+  csvOptions: ArrowTableCSVOptions,
+  hasAlreadyCheckedQuotes: boolean = false
 ): ArrowTable | null {
   if (!canUseDirectTypedUnquotedParser(csvOptions) || bytes.length === 0) {
     return null;
   }
 
   const quoteByte = (csvOptions.quoteChar || '"').charCodeAt(0);
-  if (bytes.indexOf(quoteByte) !== -1) {
+  if (!hasAlreadyCheckedQuotes && bytes.indexOf(quoteByte) !== -1) {
     return null;
   }
 
@@ -351,6 +605,8 @@ function tryParseTypedUnquotedCSVBytes(
   const headerRow = decodeDirectHeaderRow(bytes, 0, headerEnd.end, delimiterByte);
   const columns: DirectTypedColumn[] = headerRow.map(() => ({
     values: [],
+    inferredDataType: null,
+    hasOnlyRawUtf8OrNull: true,
     valueStarts: null,
     valueEnds: null
   }));
@@ -500,8 +756,23 @@ function appendDirectTypedField(
   if (!column) {
     return;
   }
-  const dynamicValue = parseRawUtf8ValueWithDynamicTyping(bytes, valueStart, valueEnd);
+  const dynamicValue =
+    column.inferredDataType === 'utf8' && valueStart !== valueEnd
+      ? RAW_UTF8_VALUE
+      : parseRawUtf8ValueWithDynamicTyping(bytes, valueStart, valueEnd);
   column.values.push(dynamicValue);
+
+  if (dynamicValue !== null) {
+    const valueDataType = getTypedColumnDataType(dynamicValue);
+    if (column.inferredDataType === null) {
+      column.inferredDataType = valueDataType;
+    } else if (column.inferredDataType !== valueDataType) {
+      column.inferredDataType = 'utf8';
+    }
+    if (dynamicValue !== RAW_UTF8_VALUE) {
+      column.hasOnlyRawUtf8OrNull = false;
+    }
+  }
 
   if (dynamicValue === RAW_UTF8_VALUE && !column.valueStarts) {
     column.valueStarts = new Array(column.values.length - 1).fill(0);
@@ -520,7 +791,7 @@ function buildDirectTypedArrowTable(
   columns: DirectTypedColumn[],
   rowCount: number
 ): ArrowTable {
-  const typedColumnDataTypes = columns.map(column => deduceTypedColumnDataType(column.values));
+  const typedColumnDataTypes = columns.map(column => column.inferredDataType ?? 'utf8');
   const typedSchema: Schema = {
     fields: headerRow.map((name, columnIndex) => ({
       name,
@@ -535,11 +806,17 @@ function buildDirectTypedArrowTable(
   const typedArrowSchema = convertSchemaToArrow(typedSchema, {viewTypes: 'never'});
   const typedArrowColumns = columns.map((column, columnIndex) => {
     const typedColumnDataType = typedColumnDataTypes[columnIndex];
-    if (
-      typedColumnDataType === 'utf8' &&
-      column.values.every(value => value === null || value === RAW_UTF8_VALUE)
-    ) {
+    if (typedColumnDataType === 'utf8' && column.hasOnlyRawUtf8OrNull) {
       return createDirectUtf8Column(bytes, column);
+    }
+
+    if (typedColumnDataType !== 'utf8') {
+      return createTypedArrowColumn(
+        column.values,
+        typedColumnDataType,
+        typedArrowSchema.fields[columnIndex].type,
+        null
+      );
     }
 
     const typedValues = column.values.map((value, rowIndex) =>
@@ -603,8 +880,7 @@ function createDirectUtf8Column(bytes: Uint8Array, column: DirectTypedColumn): a
     }
     const valueStart = column.valueStarts![rowIndex];
     const valueEnd = column.valueEnds![rowIndex];
-    data.set(bytes.subarray(valueStart, valueEnd), dataOffset);
-    dataOffset += valueEnd - valueStart;
+    dataOffset = copyByteRange(bytes, valueStart, valueEnd, data, dataOffset);
     if (nullBitmap) {
       nullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
     }
@@ -794,6 +1070,22 @@ function parseRawUtf8ValueWithDynamicTyping(
     firstNonWhitespaceValue === 46 ||
     (firstNonWhitespaceValue >= 48 && firstNonWhitespaceValue <= 57);
   if (mightBeNumber) {
+    if (firstNonWhitespaceByte === valueStart && firstNonWhitespaceValue >= 48) {
+      let integerValue = 0;
+      let byteIndex = valueStart;
+      while (byteIndex < valueEnd) {
+        const byte = valueBytes[byteIndex];
+        if (byte < 48 || byte > 57) {
+          break;
+        }
+        integerValue = integerValue * 10 + byte - 48;
+        byteIndex++;
+      }
+      if (byteIndex === valueEnd) {
+        return integerValue;
+      }
+    }
+
     const numberValue = parseUTF8Number(valueBytes, valueStart, valueEnd);
     if (numberValue !== undefined) {
       return numberValue;
@@ -1056,9 +1348,16 @@ function createTypedUtf8Column(typedValues: unknown[], rawArrowColumn: arrow.Vec
 /** Creates a directly populated Arrow boolean vector. */
 function createTypedBooleanColumn(typedValues: unknown[]): arrow.Vector {
   const data = new Uint8Array(Math.ceil(typedValues.length / 8));
-  const {nullBitmap, nullCount} = createTypedNullBitmap(typedValues);
+  const nullBitmap = createOptionalTypedNullBitmap(typedValues);
+  let nullCount = 0;
   for (let rowIndex = 0; rowIndex < typedValues.length; rowIndex++) {
-    if (typedValues[rowIndex] === true) {
+    const typedValue = typedValues[rowIndex];
+    if (typedValue === null) {
+      nullCount++;
+    } else if (nullBitmap) {
+      nullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+    }
+    if (typedValue === true) {
       data[rowIndex >> 3] |= 1 << (rowIndex % 8);
     }
   }
@@ -1076,12 +1375,31 @@ function createTypedBooleanColumn(typedValues: unknown[]): arrow.Vector {
 
 /** Creates a directly populated Arrow floating-point vector. */
 function createTypedFloatColumn(typedValues: unknown[]): arrow.Vector {
+  const nullBitmap = createOptionalTypedNullBitmap(typedValues);
+  if (!nullBitmap) {
+    return new arrow.Vector([
+      arrow.makeData({
+        type: new arrow.Float64(),
+        data: Float64Array.from(typedValues as number[]),
+        length: typedValues.length,
+        nullCount: 0
+      })
+    ]);
+  }
+
   const data = new Float64Array(typedValues.length);
-  const {nullBitmap, nullCount} = createTypedNullBitmap(typedValues);
+  let nullCount = 0;
   for (let rowIndex = 0; rowIndex < typedValues.length; rowIndex++) {
     const typedValue = typedValues[rowIndex];
-    if (typeof typedValue === 'number') {
-      data[rowIndex] = typedValue;
+    if (typedValue === null) {
+      nullCount++;
+    } else {
+      if (nullBitmap) {
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+      }
+      if (typeof typedValue === 'number') {
+        data[rowIndex] = typedValue;
+      }
     }
   }
 
@@ -1099,11 +1417,19 @@ function createTypedFloatColumn(typedValues: unknown[]): arrow.Vector {
 /** Creates a directly populated Arrow millisecond-date vector. */
 function createTypedDateColumn(typedValues: unknown[]): arrow.Vector {
   const data = new BigInt64Array(typedValues.length);
-  const {nullBitmap, nullCount} = createTypedNullBitmap(typedValues);
+  const nullBitmap = createOptionalTypedNullBitmap(typedValues);
+  let nullCount = 0;
   for (let rowIndex = 0; rowIndex < typedValues.length; rowIndex++) {
     const typedValue = typedValues[rowIndex];
-    if (typedValue instanceof Date) {
-      data[rowIndex] = BigInt(typedValue.valueOf());
+    if (typedValue === null) {
+      nullCount++;
+    } else {
+      if (nullBitmap) {
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
+      }
+      if (typedValue instanceof Date) {
+        data[rowIndex] = BigInt(typedValue.valueOf());
+      }
     }
   }
 
@@ -1118,21 +1444,9 @@ function createTypedDateColumn(typedValues: unknown[]): arrow.Vector {
   ]);
 }
 
-/** Creates the validity bitmap needed by a typed primitive Arrow column. */
-function createTypedNullBitmap(typedValues: unknown[]): {
-  nullBitmap: Uint8Array | undefined;
-  nullCount: number;
-} {
-  let nullCount = 0;
-  const nullBitmap = new Uint8Array(Math.ceil(typedValues.length / 8));
-  for (let rowIndex = 0; rowIndex < typedValues.length; rowIndex++) {
-    if (typedValues[rowIndex] === null) {
-      nullCount++;
-    } else {
-      nullBitmap[rowIndex >> 3] |= 1 << (rowIndex % 8);
-    }
-  }
-  return {nullBitmap: nullCount > 0 ? nullBitmap : undefined, nullCount};
+/** Allocates a validity bitmap only when a typed primitive column contains nulls. */
+function createOptionalTypedNullBitmap(typedValues: unknown[]): Uint8Array | undefined {
+  return typedValues.includes(null) ? new Uint8Array(Math.ceil(typedValues.length / 8)) : undefined;
 }
 
 /** Reads an Arrow list column back to nullable JS arrays for table rebuilding. */
