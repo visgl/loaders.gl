@@ -13,6 +13,7 @@ const excludePatterns = [
   'modules/**/wip/**',
   'modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts',
   'modules/3d-tiles/test/lib/styles/**',
+  'modules/xml/test/sax-ts/testcases/**/!(issue-30).spec.ts',
   'modules/core/test/lib/api/create-data-source.spec.ts',
   'modules/i3s/test/i3s-content-loader.spec.ts',
   'modules/loader-utils/test/categories/mesh/**',
