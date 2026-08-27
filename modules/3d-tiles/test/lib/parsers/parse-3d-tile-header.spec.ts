@@ -45,3 +45,18 @@ test('normalizeTileData#corectly resolves different styles of URLs', async () =>
     expect(normalizedTile?.contentUrl, 'url should be resolved correctly').toBe(resolvedUrl);
   }
 });
+
+
+test('normalizeTileData#derives metadata bounding volume semantics', () => {
+  const normalizedTile = normalizeTileData(
+    {
+      metadata: {properties: {TILE_BOUNDING_SPHERE: [1, 2, 3, 4]}},
+      content: {uri: 'tile.b3dm', metadata: {properties: {CONTENT_BOUNDING_REGION: [0, 0, 1, 1, 0, 10]}}}
+    } as any,
+    'https://example.com/tiles'
+  );
+  expect(normalizedTile?.boundingVolume).toEqual({sphere: [1, 2, 3, 4]});
+  expect((normalizedTile?.content as any)?.boundingVolume).toEqual({
+    region: [0, 0, 1, 1, 0, 10]
+  });
+});
