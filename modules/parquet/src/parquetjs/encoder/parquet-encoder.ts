@@ -944,7 +944,7 @@ async function encodeColumnChunk(
       : bloomFilter;
   const pageIndexEnabled = opts.pageIndex === true || opts.pageIndex?.[column.path[0]] === true;
   const pageIndexes = pageIndexEnabled
-    ? createColumnPageIndexes(column, plannedPages, pageLocations)
+    ? createColumnPageIndexes(column, plannedPages, pageLocations, opts.int96AsTimestamp)
     : undefined;
   const encodedPageIndexes =
     pageIndexes && encryptedColumn
@@ -1210,7 +1210,8 @@ async function encryptParquetPageIndexes(
 function createColumnPageIndexes(
   column: ParquetField,
   plannedPages: ReturnType<typeof planColumnPages>,
-  pageLocations: PageLocation[]
+  pageLocations: PageLocation[],
+  int96AsTimestamp = false
 ): {offsetIndex: Uint8Array; columnIndex?: Uint8Array} | undefined {
   if (
     !column.primitiveType ||
@@ -1243,7 +1244,12 @@ function createColumnPageIndexes(
       maxValues.push(new Uint8Array(0));
       continue;
     }
-    const bounds = getPageBounds(values, column.primitiveType!, column.typeLength);
+    const bounds = getPageBounds(
+      values,
+      column.primitiveType!,
+      column.typeLength,
+      int96AsTimestamp
+    );
     if (!bounds) return undefined;
     nullPages.push(false);
     minValues.push(bounds.min);
@@ -1271,6 +1277,7 @@ function isPageIndexPhysicalType(
     physicalType === 'BOOLEAN' ||
     physicalType === 'INT32' ||
     physicalType === 'INT64' ||
+    physicalType === 'INT96' ||
     physicalType === 'FLOAT' ||
     physicalType === 'DOUBLE' ||
     physicalType === 'BYTE_ARRAY' ||
@@ -1282,6 +1289,7 @@ type PageIndexPhysicalType =
   | 'BOOLEAN'
   | 'INT32'
   | 'INT64'
+  | 'INT96'
   | 'FLOAT'
   | 'DOUBLE'
   | 'BYTE_ARRAY'
@@ -1290,8 +1298,10 @@ type PageIndexPhysicalType =
 function getPageBounds(
   values: ParquetColumnChunk['values'],
   physicalType: PageIndexPhysicalType,
-  typeLength?: number
+  typeLength?: number,
+  int96AsTimestamp = false
 ): {min: Uint8Array; max: Uint8Array} | undefined {
+  if (physicalType === 'INT96' && !int96AsTimestamp) return undefined;
   const normalizedValues = Array.from(values as Iterable<unknown>, value =>
     normalizePageIndexValue(value, physicalType)
   );
@@ -1307,12 +1317,24 @@ function getPageBounds(
   }
   try {
     return {
-      min: encodeParquetBloomFilterValue(min, physicalType, typeLength),
-      max: encodeParquetBloomFilterValue(max, physicalType, typeLength)
+      min: encodePageIndexValue(min, physicalType, typeLength, int96AsTimestamp),
+      max: encodePageIndexValue(max, physicalType, typeLength, int96AsTimestamp)
     };
   } catch {
     return undefined;
   }
+}
+
+function encodePageIndexValue(
+  value: boolean | number | bigint | string | Uint8Array,
+  physicalType: PageIndexPhysicalType,
+  typeLength: number | undefined,
+  int96AsTimestamp: boolean
+): Uint8Array {
+  if (physicalType === 'INT96' && int96AsTimestamp) {
+    return PARQUET_CODECS.PLAIN.encodeValues('INT96', [value], {int96AsTimestamp});
+  }
+  return encodeParquetBloomFilterValue(value, physicalType, typeLength);
 }
 
 function normalizePageIndexValue(
@@ -1356,7 +1378,7 @@ function comparePageIndexValues(
     return leftBytes.length - rightBytes.length;
   }
   if (typeof left === 'boolean' && typeof right === 'boolean') return Number(left) - Number(right);
-  if (physicalType !== 'INT64') {
+  if (physicalType !== 'INT64' && physicalType !== 'INT96') {
     const leftNumber = Number(left);
     const rightNumber = Number(right);
     return leftNumber < rightNumber ? -1 : leftNumber > rightNumber ? 1 : 0;
