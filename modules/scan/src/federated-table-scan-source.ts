@@ -6,6 +6,7 @@ import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
   explainTableQuery,
+  getColumnarPredicateColumns,
   planTableQuery,
   type DataSourceManager,
   type ManageableDataSource,
@@ -154,7 +155,9 @@ export class FederatedTableScanSource
   /** Human-readable description reported through scan metadata. */
   readonly description: string;
 
+  /** Stable id used to isolate this adapter's manager subscriptions. */
   private readonly instanceId = nextFederatedSourceId++;
+  /** Monotonic id used to isolate overlapping operations on this adapter. */
   private nextOperationId = 0;
 
   /** Creates an ordered federated source backed by one shared DataSourceManager. */
@@ -246,12 +249,28 @@ export class FederatedTableScanSource
           remaining,
           options
         );
+        const sourceResidualPredicate = getSourceResidualPredicate(resolvedSource);
+        let sourceRemaining = resolvedSource.entry.query?.limit ?? Number.POSITIVE_INFINITY;
         let sourceBatchIndex = 0;
         for await (const batch of resolvedSource.source.read(sourceReadOptions)) {
           throwIfAborted(options.signal);
           if (remaining <= 0) return;
+          if (sourceRemaining <= 0) break;
           if (batch.batchType !== 'data' || batch.length <= 0) continue;
-          const canonicalTable = createCanonicalArrowTable(plan.schema, resolvedSource, batch);
+          const physicalTable = convertBatch(batch, 'arrow-table');
+          const sourceResult = queryArrowTable(physicalTable, {
+            predicate: sourceResidualPredicate,
+            limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
+            signal: options.signal
+          });
+          sourceRemaining -= sourceResult.data.numRows;
+          const currentSourceBatchIndex = sourceBatchIndex++;
+          if (!sourceResult.data.numRows) continue;
+          const canonicalTable = createCanonicalArrowTable(
+            plan.schema,
+            resolvedSource,
+            sourceResult
+          );
           const result = queryArrowTable(canonicalTable, {
             predicate: options.predicate,
             columns: options.columns,
@@ -259,7 +278,6 @@ export class FederatedTableScanSource
             signal: options.signal
           });
           const resultLength = result.data.numRows;
-          const currentSourceBatchIndex = sourceBatchIndex++;
           if (!resultLength) continue;
           const provenance: FederatedTableBatchProvenance = Object.freeze({
             sourceId: resolvedSource.entry.dataSourceId,
@@ -443,9 +461,13 @@ function createSourceReadOptions(
   remaining: number,
   options: TableScanReadOptions<SQLPredicate>
 ): TableScanReadOptions<SQLPredicate> {
+  const sourceResidualPredicate = getSourceResidualPredicate(source);
   const requiredSourceColumns = requiredOutputColumns
     .map(outputName => source.sourceNameByOutputName.get(outputName))
     .filter((sourceName): sourceName is string => Boolean(sourceName));
+  if (sourceResidualPredicate) {
+    requiredSourceColumns.push(...getColumnarPredicateColumns(sourceResidualPredicate));
+  }
   if (!requiredSourceColumns.length) {
     requiredSourceColumns.push(source.fields[0].sourceName);
   }
@@ -457,27 +479,34 @@ function createSourceReadOptions(
   return {
     ...source.entry.query,
     columns: Object.freeze([...new Set(requiredSourceColumns)]),
-    limit: Number.isFinite(limit) ? limit : undefined,
+    predicate: sourceResidualPredicate ? undefined : source.entry.query?.predicate,
+    limit: sourceResidualPredicate ? undefined : Number.isFinite(limit) ? limit : undefined,
     signal: options.signal
   };
+}
+
+/** Returns the source-local predicate when the child requires residual execution. */
+function getSourceResidualPredicate(source: ResolvedFederatedSource): SQLPredicate | undefined {
+  return source.metadata.capabilities.table?.predicate === 'unsupported'
+    ? source.entry.query?.predicate
+    : undefined;
 }
 
 /** Converts one physical batch to the reconciled Arrow schema, renaming and null-filling fields. */
 function createCanonicalArrowTable(
   schema: Schema,
   source: ResolvedFederatedSource,
-  batch: TableBatch
+  physicalTable: ArrowTable
 ): ArrowTable {
-  const arrowBatch = convertBatch(batch, 'arrow-table');
   const arrowSchema = convertSchemaToArrow(schema);
   const columns: Record<string, arrow.Vector> = {};
   for (const field of arrowSchema.fields) {
     const sourceName = source.sourceNameByOutputName.get(field.name);
-    const vector = sourceName ? arrowBatch.data.getChild(sourceName) : null;
+    const vector = sourceName ? physicalTable.data.getChild(sourceName) : null;
     columns[field.name] =
       vector ||
       arrow.vectorFromArray(
-        Array.from({length: arrowBatch.length}, () => null),
+        Array.from({length: physicalTable.data.numRows}, () => null),
         field.type
       );
   }
@@ -529,11 +558,25 @@ function areDataTypesEqual(left: DataType, right: DataType): boolean {
 
 /** Serializes a portable data type for diagnostics and deterministic equality checks. */
 function formatDataType(dataType: DataType): string {
-  return typeof dataType === 'string'
-    ? dataType
-    : JSON.stringify(dataType, (_key, value) =>
-        ArrayBuffer.isView(value) ? Array.from(value as unknown as ArrayLike<number>) : value
-      );
+  return typeof dataType === 'string' ? dataType : JSON.stringify(canonicalizeValue(dataType));
+}
+
+/** Canonicalizes object keys while preserving array and typed-array element order. */
+function canonicalizeValue(value: unknown): unknown {
+  if (ArrayBuffer.isView(value)) {
+    return Array.from(value as unknown as ArrayLike<number>);
+  }
+  if (Array.isArray(value)) {
+    return value.map(canonicalizeValue);
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+        .map(([key, child]) => [key, canonicalizeValue(child)])
+    );
+  }
+  return value;
 }
 
 /** Resolves a current, asynchronous, or deferred source through one manager subscription. */
@@ -550,23 +593,33 @@ function resolveManagedSource(
     resolveDeferredSource = resolve;
     rejectDeferredSource = reject;
   });
+  let sourceGeneration = 0;
+  const acceptSource = (
+    source: ManagedTableScanSource | Promise<ManagedTableScanSource> | null
+  ): void => {
+    const generation = ++sourceGeneration;
+    if (source) {
+      void Promise.resolve(source).then(
+        result => {
+          if (generation === sourceGeneration) resolveDeferredSource(result);
+        },
+        error => {
+          if (generation === sourceGeneration) rejectDeferredSource(error);
+        }
+      );
+    }
+  };
   const managedSource = dataSourceManager.subscribe<ManagedTableScanSource>({
     dataSourceId,
     consumerId,
     requestId,
-    onChange: source => {
-      if (source) {
-        void Promise.resolve(source).then(resolveDeferredSource, rejectDeferredSource);
-      }
-    }
+    onChange: acceptSource
   });
   if (managedSource === undefined) {
     throw new Error(`Federated table source is not registered: ${dataSourceId}`);
   }
-  return waitForPromise(
-    managedSource === null ? deferredSource : Promise.resolve(managedSource),
-    signal
-  );
+  acceptSource(managedSource || null);
+  return waitForPromise(deferredSource, signal);
 }
 
 /** Waits for a managed asynchronous source while preserving operation-local cancellation. */

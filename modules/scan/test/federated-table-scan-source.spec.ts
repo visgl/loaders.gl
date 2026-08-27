@@ -94,6 +94,50 @@ describe('FederatedTableScanSource', () => {
     expect(secondSource.readOptions[0]?.columns).toEqual(['id', 'score']);
   });
 
+  test('executes unsupported source predicates residually before source-local limits', async () => {
+    const dataSourceManager = new DataSourceManager();
+    const filteredTable = makeArrowTable({id: [1], score: [10]});
+    const selectedTable = makeArrowTable({id: [2], score: [20]});
+    const finalTable = makeArrowTable({id: [3], score: [30]});
+    const metadata = createTestMetadata('arrow-ipc', filteredTable, filteredTable.schema!, 3);
+    const physicalSource = new TestTableScanSource(
+      'arrow-ipc',
+      [filteredTable, selectedTable, finalTable],
+      {
+        ignoreLimit: true,
+        metadata: {
+          ...metadata,
+          capabilities: {
+            table: {...TEST_CAPABILITIES, predicate: 'unsupported'}
+          }
+        }
+      }
+    );
+    dataSourceManager.add({dataSourceId: 'arrow-ipc', dataSource: physicalSource});
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [
+        {
+          dataSourceId: 'arrow-ipc',
+          query: {
+            predicate: parseSQLPredicate('score >= 20'),
+            columns: ['id'],
+            limit: 1
+          }
+        }
+      ]
+    });
+
+    const batches = await collectBatches(source.read());
+    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+      {id: 2}
+    ]);
+    expect(physicalSource.readOptions[0]).toMatchObject({
+      columns: ['id', 'score'],
+      predicate: undefined,
+      limit: undefined
+    });
+  });
+
   test('unions first-seen columns, applies mappings, and null-fills missing values', async () => {
     const dataSourceManager = new DataSourceManager();
     dataSourceManager.add({
@@ -395,6 +439,38 @@ describe('FederatedTableScanSource', () => {
         sources: [{dataSourceId: 'one'}, {dataSourceId: 'two'}]
       }).getQueryMetadata()
     ).resolves.toMatchObject({columns: [{name: 'choice'}]});
+
+    const firstDecimal = {type: 'decimal', bitWidth: 128, precision: 10, scale: 2} as const;
+    const secondDecimal = {
+      scale: 2,
+      precision: 10,
+      bitWidth: 128,
+      type: 'decimal'
+    } as const;
+    const decimalManager = new DataSourceManager();
+    decimalManager.add({
+      dataSourceId: 'first-decimal',
+      dataSource: new TestTableScanSource('first-decimal', [table], {
+        metadata: createTestMetadata('first-decimal', table, {
+          fields: [{name: 'amount', type: firstDecimal, nullable: false}],
+          metadata: {}
+        })
+      })
+    });
+    decimalManager.add({
+      dataSourceId: 'second-decimal',
+      dataSource: new TestTableScanSource('second-decimal', [table], {
+        metadata: createTestMetadata('second-decimal', table, {
+          fields: [{name: 'amount', type: secondDecimal, nullable: false}],
+          metadata: {}
+        })
+      })
+    });
+    await expect(
+      new FederatedTableScanSource(decimalManager, {
+        sources: [{dataSourceId: 'first-decimal'}, {dataSourceId: 'second-decimal'}]
+      }).getQueryMetadata()
+    ).resolves.toMatchObject({columns: [{name: 'amount'}]});
   });
 
   test('reports statistics only when every source count is exact', async () => {
@@ -507,6 +583,46 @@ describe('FederatedTableScanSource', () => {
     await expect(pendingSource.getQueryMetadata({signal: missingReasonSignal})).rejects.toThrow(
       'Request aborted'
     );
+  });
+
+  test('ignores superseded asynchronous source resolutions and reports current failures', async () => {
+    const dataSourceManager = new DataSourceManager();
+    let resolveFirst!: (source: TestTableScanSource) => void;
+    let rejectSecond!: (error: Error) => void;
+    let resolveThird!: (source: TestTableScanSource) => void;
+    const firstPromise = new Promise<TestTableScanSource>(resolve => {
+      resolveFirst = resolve;
+    });
+    const secondPromise = new Promise<TestTableScanSource>((_resolve, reject) => {
+      rejectSecond = reject;
+    });
+    const thirdPromise = new Promise<TestTableScanSource>(resolve => {
+      resolveThird = resolve;
+    });
+    dataSourceManager.add({dataSourceId: 'replaceable', dataSource: firstPromise});
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [{dataSourceId: 'replaceable'}]
+    });
+    const metadataPromise = source.getQueryMetadata();
+    await Promise.resolve();
+    dataSourceManager.add({dataSourceId: 'replaceable', dataSource: secondPromise});
+    dataSourceManager.add({dataSourceId: 'replaceable', dataSource: thirdPromise});
+    resolveFirst(new TestTableScanSource('stale', [makeArrowTable({stale: [1]})]));
+    rejectSecond(new Error('superseded failure'));
+    resolveThird(new TestTableScanSource('current', [makeArrowTable({current: [2]})]));
+    await expect(metadataPromise).resolves.toMatchObject({columns: [{name: 'current'}]});
+
+    const failedManager = new DataSourceManager();
+    const failedSource = new FederatedTableScanSource(failedManager, {
+      sources: [{dataSourceId: 'datasource://failed'}]
+    });
+    const failedMetadata = failedSource.getQueryMetadata();
+    failedManager.add({
+      dataSourceId: 'failed',
+      dataSource: Promise.reject(new Error('managed source failed')),
+      persistent: false
+    });
+    await expect(failedMetadata).rejects.toThrow('managed source failed');
   });
 
   test('explains resolved source order and immutable column mappings', async () => {
