@@ -45,7 +45,6 @@ export function parseORCToArrow(arrayBuffer: ArrayBuffer): ArrowTable {
         bytes,
         stripe,
         orcFile.postscript.compression,
-        orcFile.postscript.compressionBlockSize,
         orcFile.footer.types,
         typeId,
         type
@@ -115,7 +114,6 @@ function decodeColumn(
   bytes: Uint8Array,
   stripe: ORCStripeInformation,
   compression: ORCCompression,
-  compressionBlockSize: number,
   types: ORCTypeDescription[],
   typeId: number,
   type: ORCTypeDescription,
@@ -123,22 +121,13 @@ function decodeColumn(
 ): unknown[] {
   const rowCount = rowCountOverride ?? stripe.numberOfRows;
   if (type.kind === ORCTypeKind.STRUCT)
-    return decodeStructColumn(
-      bytes,
-      stripe,
-      compression,
-      compressionBlockSize,
-      types,
-      type,
-      rowCount
-    );
+    return decodeStructColumn(bytes, stripe, compression, types, type, rowCount);
   const dataStreams = getDataStreams(bytes, stripe);
   if (type.kind === ORCTypeKind.LIST || type.kind === ORCTypeKind.MAP)
     return decodeContainerColumn(
       bytes,
       stripe,
       compression,
-      compressionBlockSize,
       types,
       typeId,
       type,
@@ -149,10 +138,7 @@ function decodeColumn(
     stream => stream.kind === ORCStreamKind.PRESENT && stream.column === typeId
   );
   const presence = presentStream
-    ? readBooleanBits(
-        getStreamBytes(bytes, presentStream, compression, compressionBlockSize),
-        rowCount
-      )
+    ? readBooleanBits(getStreamBytes(bytes, presentStream, compression), rowCount)
     : new Array(rowCount).fill(true);
   const valueCount = presence.filter(Boolean).length;
   if (valueCount === 0) return presence.map(() => null);
@@ -160,7 +146,7 @@ function decodeColumn(
     stream => stream.kind === ORCStreamKind.DATA && stream.column === typeId
   );
   if (!dataStream) throw new Error(`ORC data stream is missing for column ${typeId}`);
-  const data = getStreamBytes(bytes, dataStream, compression, compressionBlockSize);
+  const data = getStreamBytes(bytes, dataStream, compression);
   const encodingKind = getColumnEncodingKind(stripe, typeId);
   switch (type.kind) {
     case ORCTypeKind.BOOLEAN:
@@ -182,7 +168,6 @@ function decodeColumn(
         dataStreams,
         stripe,
         compression,
-        compressionBlockSize,
         typeId,
         data,
         valueCount,
@@ -199,27 +184,19 @@ function decodeContainerColumn(
   bytes: Uint8Array,
   stripe: ORCStripeInformation,
   compression: ORCCompression,
-  compressionBlockSize: number,
   types: ORCTypeDescription[],
   typeId: number,
   type: ORCTypeDescription,
   dataStreams: LocatedStream[],
   rowCount: number
 ): unknown[] {
-  const presence = readColumnPresence(
-    bytes,
-    dataStreams,
-    typeId,
-    rowCount,
-    compression,
-    compressionBlockSize
-  );
+  const presence = readColumnPresence(bytes, dataStreams, typeId, rowCount, compression);
   const lengthStream = dataStreams.find(
     stream => stream.kind === ORCStreamKind.LENGTH && stream.column === typeId
   );
   if (!lengthStream) throw new Error(`ORC length stream is missing for column ${typeId}`);
   const lengths = readORCIntegers(
-    getStreamBytes(bytes, lengthStream, compression, compressionBlockSize),
+    getStreamBytes(bytes, lengthStream, compression),
     presence.filter(Boolean).length,
     getColumnEncodingKind(stripe, typeId),
     false
@@ -234,7 +211,6 @@ function decodeContainerColumn(
       bytes,
       stripe,
       compression,
-      compressionBlockSize,
       types,
       type.subtypes[index],
       childType,
@@ -265,7 +241,6 @@ function decodeStructColumn(
   bytes: Uint8Array,
   stripe: ORCStripeInformation,
   compression: ORCCompression,
-  compressionBlockSize: number,
   types: ORCTypeDescription[],
   type: ORCTypeDescription,
   rowCount: number
@@ -275,16 +250,7 @@ function decodeStructColumn(
     return {
       name: type.fieldNames[index] || `field_${index}`,
       values: childType
-        ? decodeColumn(
-            bytes,
-            stripe,
-            compression,
-            compressionBlockSize,
-            types,
-            typeId,
-            childType,
-            rowCount
-          )
+        ? decodeColumn(bytes, stripe, compression, types, typeId, childType, rowCount)
         : new Array(rowCount).fill(null)
     };
   });
@@ -306,17 +272,13 @@ function readColumnPresence(
   dataStreams: LocatedStream[],
   typeId: number,
   rowCount: number,
-  compression: ORCCompression,
-  compressionBlockSize: number
+  compression: ORCCompression
 ): boolean[] {
   const presentStream = dataStreams.find(
     stream => stream.kind === ORCStreamKind.PRESENT && stream.column === typeId
   );
   return presentStream
-    ? readBooleanBits(
-        getStreamBytes(bytes, presentStream, compression, compressionBlockSize),
-        rowCount
-      )
+    ? readBooleanBits(getStreamBytes(bytes, presentStream, compression), rowCount)
     : new Array(rowCount).fill(true);
 }
 
@@ -326,13 +288,11 @@ type LocatedStream = ORCStreamInformation & {offset: number};
 function getStreamBytes(
   bytes: Uint8Array,
   stream: LocatedStream,
-  compression: ORCCompression,
-  compressionBlockSize: number
+  compression: ORCCompression
 ): Uint8Array {
   return decompressORCStream(
     bytes.subarray(stream.offset, stream.offset + stream.length),
-    compression,
-    compressionBlockSize
+    compression
   );
 }
 
@@ -360,41 +320,10 @@ function getDataStreams(bytes: Uint8Array, stripe: ORCStripeInformation): Locate
 
 /** Decodes ORC boolean DATA streams, packed most-significant bit first. */
 function readBooleanBits(bytes: Uint8Array, count: number): boolean[] {
-  const expectedLength = Math.ceil(count / 8);
-  let bitBytes = bytes;
-  if (bytes.length !== expectedLength) {
-    try {
-      const decoded = decodeByteRLE(bytes);
-      if (decoded.length >= expectedLength) bitBytes = decoded;
-    } catch {
-      // Keep accepting raw packed bits from early experimental ORC fixtures.
-    }
-  }
   const values: boolean[] = [];
   for (let index = 0; index < count; index++)
-    values.push(Boolean(bitBytes[index >> 3] & (0x80 >> (index & 7))));
+    values.push(Boolean(bytes[index >> 3] & (0x80 >> (index & 7))));
   return values;
-}
-
-/** Decodes the ORC byte RLE encoding used by BOOLEAN and PRESENT streams. */
-function decodeByteRLE(bytes: Uint8Array): Uint8Array {
-  const output: number[] = [];
-  let offset = 0;
-  while (offset < bytes.length) {
-    const control = bytes[offset++];
-    if (control < 0x80) {
-      const length = control + 3;
-      if (offset >= bytes.length) throw new Error('Truncated ORC byte RLE run');
-      const value = bytes[offset++];
-      for (let index = 0; index < length; index++) output.push(value);
-    } else {
-      const length = 0x100 - control;
-      if (offset + length > bytes.length) throw new Error('Truncated ORC byte RLE literal');
-      output.push(...bytes.subarray(offset, offset + length));
-      offset += length;
-    }
-  }
-  return Uint8Array.from(output);
 }
 
 /** Decodes little-endian IEEE-754 primitive streams. */
@@ -415,7 +344,6 @@ function readBytesColumn(
   streams: LocatedStream[],
   stripe: ORCStripeInformation,
   compression: ORCCompression,
-  compressionBlockSize: number,
   typeId: number,
   data: Uint8Array,
   valueCount: number,
@@ -428,7 +356,6 @@ function readBytesColumn(
       bytes,
       streams,
       compression,
-      compressionBlockSize,
       typeId,
       data,
       valueCount,
@@ -442,7 +369,7 @@ function readBytesColumn(
   );
   if (!lengthStream) throw new Error(`ORC length stream is missing for column ${typeId}`);
   const lengths = readORCIntegers(
-    getStreamBytes(bytes, lengthStream, compression, compressionBlockSize),
+    getStreamBytes(bytes, lengthStream, compression),
     valueCount,
     getColumnEncodingKind(stripe, typeId),
     false
@@ -463,7 +390,6 @@ function readDictionaryColumn(
   bytes: Uint8Array,
   streams: LocatedStream[],
   compression: ORCCompression,
-  compressionBlockSize: number,
   typeId: number,
   indexes: Uint8Array,
   valueCount: number,
@@ -482,17 +408,12 @@ function readDictionaryColumn(
   const dictionarySize = encoding.dictionarySize || 0;
   if (!dictionarySize) throw new Error(`ORC dictionary size is missing for column ${typeId}`);
   const lengths = readORCIntegers(
-    getStreamBytes(bytes, lengthStream, compression, compressionBlockSize),
+    getStreamBytes(bytes, lengthStream, compression),
     dictionarySize,
     encoding.kind,
     false
   );
-  const dictionaryBytes = getStreamBytes(
-    bytes,
-    dictionaryDataStream,
-    compression,
-    compressionBlockSize
-  );
+  const dictionaryBytes = getStreamBytes(bytes, dictionaryDataStream, compression);
   const dictionary: unknown[] = [];
   let dictionaryOffset = 0;
   for (const length of lengths) {
@@ -529,8 +450,7 @@ function readORCIntegers(
   encodingKind: number | undefined,
   signed: boolean
 ): number[] {
-  if (encodingKind === undefined || encodingKind >= 2)
-    return readRLEv2Integers(bytes, count, signed);
+  if (encodingKind === undefined || encodingKind >= 2) return readRLEv2Integers(bytes, count);
   try {
     return readRLEv1Integers(bytes, count, signed);
   } catch (error) {
@@ -577,7 +497,7 @@ function readRLEv1Integers(bytes: Uint8Array, count: number, signed: boolean): n
 }
 
 /** Decodes the direct and short-repeat forms of ORC RLEv2 integer streams. */
-function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): number[] {
+function readRLEv2Integers(bytes: Uint8Array, count: number): number[] {
   const values: number[] = [];
   let offset = 0;
   while (values.length < count) {
@@ -591,7 +511,7 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
       const valueBytes = bytes.subarray(offset, offset + width);
       if (valueBytes.length !== width) throw new Error('Truncated ORC short-repeat stream');
       offset += width;
-      const value = signed ? decodeSignedBigInt(valueBytes) : decodeUnsignedBigInt(valueBytes);
+      const value = decodeSignedBigInt(valueBytes);
       for (let index = 0; index < repeatCount && values.length < count; index++)
         values.push(Number(value));
     } else if (encoding === 1) {
@@ -601,7 +521,7 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
       const bitReader = new BitReader(bytes, offset);
       for (let index = 0; index < length + 1 && values.length < count; index++) {
         const encoded = bitReader.read(width);
-        values.push(Number(signed ? decodeZigzag(encoded) : encoded));
+        values.push(Number((encoded >> 1n) ^ -(encoded & 1n)));
       }
       offset = bitReader.offset;
     } else if (encoding === 2) {
@@ -660,10 +580,9 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
         const bitReader = new BitReader(bytes, offset);
         let delta = deltaBase.value;
         for (let index = 0; index < length && values.length < count; index++) {
+          delta += Number(decodeZigzag(bitReader.read(width)));
           value += delta;
           values.push(value);
-          const magnitude = Number(bitReader.read(width));
-          delta = deltaBase.value < 0 ? -magnitude : magnitude;
         }
         offset = bitReader.offset;
       }
@@ -685,13 +604,6 @@ function decodeSignedBigInt(bytes: Uint8Array): bigint {
   for (const byte of bytes) value = (value << 8n) | BigInt(byte);
   const signBit = 1n << BigInt(bytes.length * 8 - 1);
   return value & signBit ? value - (signBit << 1n) : value;
-}
-
-/** Decodes a big-endian unsigned integer used by ORC RLEv2 values. */
-function decodeUnsignedBigInt(bytes: Uint8Array): bigint {
-  let value = 0n;
-  for (const byte of bytes) value = (value << 8n) | BigInt(byte);
-  return value;
 }
 
 /** Reads an ORC signed variable-length integer. */

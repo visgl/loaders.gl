@@ -105,15 +105,14 @@ export function parseORC(arrayBuffer: ArrayBuffer): ORCFile {
   if (footerStart < 3) throw new Error('Invalid ORC footer length');
   const footerBytes = decompressORCStream(
     bytes.subarray(footerStart, postscriptStart),
-    postscript.compression,
-    postscript.compressionBlockSize
+    postscript.compression
   );
   const footer = parseFooter(footerBytes);
   footer.stripes = footer.stripes.map(stripe => {
     const stripeFooterEnd =
       stripe.offset + stripe.indexLength + stripe.dataLength + stripe.footerLength;
     return stripeFooterEnd <= footerStart
-      ? parseORCStripeFooter(bytes, stripe, postscript.compression, postscript.compressionBlockSize)
+      ? parseORCStripeFooter(bytes, stripe, postscript.compression)
       : stripe;
   });
   return {format: 'orc', postscript, footer};
@@ -241,16 +240,13 @@ function parseStripeInformation(bytes: Uint8Array): ORCStripeInformation {
 export function parseORCStripeFooter(
   bytes: Uint8Array,
   stripe: ORCStripeInformation,
-  compression: ORCCompression = 'NONE',
-  compressionBlockSize = 256 * 1024
+  compression: ORCCompression = 'NONE'
 ): ORCStripeInformation {
   const footerStart = stripe.offset + stripe.indexLength + stripe.dataLength;
   const compressedFooterBytes = bytes.subarray(footerStart, footerStart + stripe.footerLength);
   if (compressedFooterBytes.length !== stripe.footerLength)
     throw new Error('Truncated ORC stripe footer');
-  const reader = new ProtoReader(
-    decompressORCStream(compressedFooterBytes, compression, compressionBlockSize)
-  );
+  const reader = new ProtoReader(decompressORCStream(compressedFooterBytes, compression));
   const streams: ORCStreamInformation[] = [];
   const encodings: ORCColumnEncoding[] = [];
   while (!reader.done) {

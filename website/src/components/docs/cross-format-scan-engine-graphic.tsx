@@ -1,160 +1,281 @@
 import React, {type ReactNode} from 'react';
 import styled from 'styled-components';
 
-const sources = ['Iceberg', 'Delta', 'Parquet', 'ORC', 'Avro', 'FlatGeobuf'];
-const scanSteps = ['catalog + metadata', 'prune files', 'range read', 'Arrow batches'];
-
-/** Renders the browser-native scan path shared by table and file formats. */
+/**
+ * Renders the browser-native scan engine as a format-neutral pipeline with format-specific readers.
+ */
 export function CrossFormatScanEngineGraphic(): ReactNode {
   return (
-    <GraphicFrame aria-label="Cross-format browser scan engine">
-      <GraphicHeading>One browser-native scan path</GraphicHeading>
-      <GraphicDescription>
-        Table metadata and file formats converge on the same selective, range-aware Arrow output.
-      </GraphicDescription>
-      <Diagram>
-        <SourceColumn>
-          <ColumnLabel>Sources</ColumnLabel>
-          <SourceGrid>
-            {sources.map(source => <SourceCard key={source}>{source}</SourceCard>)}
-          </SourceGrid>
-        </SourceColumn>
-        <Connector aria-hidden="true">→</Connector>
-        <EngineColumn>
-          <ColumnLabel>Shared scan engine</ColumnLabel>
-          <StepGrid>
-            {scanSteps.map((step, index) => (
-              <StepCard key={step}>
-                <StepNumber>{index + 1}</StepNumber>
-                {step}
-              </StepCard>
-            ))}
-          </StepGrid>
-        </EngineColumn>
-        <Connector aria-hidden="true">→</Connector>
-        <OutputColumn>
-          <ColumnLabel>Application output</ColumnLabel>
-          <OutputCard>Arrow tables</OutputCard>
-          <OutputCard>GeoArrow / GPU</OutputCard>
-        </OutputColumn>
-      </Diagram>
+    <GraphicFrame aria-label="Browser-native cross-format analytical scan engine architecture">
+      <DiagramTitle>Browser-native cross-format scan engine</DiagramTitle>
+      <DiagramIntro>
+        One bounded scan pipeline coordinates remote files and emits Arrow batches while each format
+        keeps its own physical decoder.
+      </DiagramIntro>
+
+      <PipelineDiagram>
+        <LayerCard $variant="application">
+          <LayerTitle>Visualization application</LayerTitle>
+          <LayerItems>
+            <LayerItem>Viewport / query</LayerItem>
+            <LayerItem>Columns + filter</LayerItem>
+            <LayerItem>Render target</LayerItem>
+          </LayerItems>
+        </LayerCard>
+        <ArrowConnector aria-hidden="true">↓</ArrowConnector>
+        <LayerCard $variant="planner">
+          <LayerTitle>Iceberg table planner</LayerTitle>
+          <LayerItems>
+            <LayerItem>Snapshot selection</LayerItem>
+            <LayerItem>Manifest discovery</LayerItem>
+            <LayerItem>Partition pruning</LayerItem>
+          </LayerItems>
+        </LayerCard>
+        <ArrowConnector aria-hidden="true">↓</ArrowConnector>
+        <LayerCard $variant="engine">
+          <LayerTitle>Shared scan engine</LayerTitle>
+          <EngineGrid>
+            <EngineItem>File discovery</EngineItem>
+            <EngineItem>Projection</EngineItem>
+            <EngineItem>Predicate AST</EngineItem>
+            <EngineItem>Bounded tasks</EngineItem>
+            <EngineItem>Range access</EngineItem>
+            <EngineItem>Batch scheduling</EngineItem>
+          </EngineGrid>
+        </LayerCard>
+        <ArrowConnector aria-hidden="true">↓</ArrowConnector>
+        <FormatGroup>
+          <FormatIntro>Format-specific readers</FormatIntro>
+          <FormatGrid>
+            <FormatCard $variant="parquet">
+              <FormatName>Parquet</FormatName>
+              <FormatDetail>row groups · pages · indexes</FormatDetail>
+            </FormatCard>
+            <FormatCard $variant="avro">
+              <FormatName>Avro</FormatName>
+              <FormatDetail>blocks · schemas · records</FormatDetail>
+            </FormatCard>
+            <FormatCard $variant="orc">
+              <FormatName>ORC</FormatName>
+              <FormatDetail>stripes · streams · indexes</FormatDetail>
+            </FormatCard>
+            <FormatCard $variant="future">
+              <FormatName>Lance · Vortex</FormatName>
+              <FormatDetail>native storage adapters</FormatDetail>
+            </FormatCard>
+          </FormatGrid>
+        </FormatGroup>
+        <ArrowConnector aria-hidden="true">↓</ArrowConnector>
+        <LayerCard $variant="output">
+          <LayerTitle>Common analytical result</LayerTitle>
+          <OutputRow>
+            <OutputBlock>Arrow batches</OutputBlock>
+            <OutputBlock>Zero-copy paths</OutputBlock>
+            <OutputBlock>Application / GPU</OutputBlock>
+          </OutputRow>
+        </LayerCard>
+        <ArrowConnector aria-hidden="true">↓</ArrowConnector>
+        <LayerCard $variant="browser">
+          <LayerTitle>Browser-native runtime</LayerTitle>
+          <LayerItems>
+            <LayerItem>Fetch + HTTP Range</LayerItem>
+            <LayerItem>Workers + cancellation</LayerItem>
+            <LayerItem>Typed arrays</LayerItem>
+          </LayerItems>
+        </LayerCard>
+      </PipelineDiagram>
+
+      <DiagramCaption>
+        Iceberg sits above the scan engine as a table-planning layer: snapshots and manifests select
+        files, then the matching reader performs the scan.
+      </DiagramCaption>
     </GraphicFrame>
   );
 }
 
-const GraphicFrame = styled.section`
-  margin: 2rem 0;
-  padding: 1.25rem;
-  border: 1px solid #d8e2ec;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f8fbff, #ffffff);
+const GraphicFrame = styled.div`
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  margin: 28px 0;
+  overflow-x: auto;
+  padding: 22px;
 `;
 
-const GraphicHeading = styled.h3`
+const DiagramTitle = styled.h2`
+  font-size: 20px;
   margin: 0;
-  color: #19324d;
 `;
 
-const GraphicDescription = styled.p`
-  margin: 0.35rem 0 1.1rem;
-  color: #53677b;
+const DiagramIntro = styled.p`
+  color: var(--ifm-color-gray-700);
+  margin: 8px 0 18px;
+  max-width: 760px;
 `;
 
-const Diagram = styled.div`
+const PipelineDiagram = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.6fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.75rem;
-
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-  }
+  gap: 10px;
+  justify-items: center;
+  min-width: 680px;
 `;
 
-const SourceColumn = styled.div``;
-const EngineColumn = styled.div``;
-const OutputColumn = styled.div``;
-
-const ColumnLabel = styled.div`
-  margin-bottom: 0.5rem;
-  color: #668096;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+const ArrowConnector = styled.div`
+  color: var(--ifm-color-gray-600);
+  font-size: 22px;
+  font-weight: 800;
+  height: 22px;
+  line-height: 22px;
 `;
 
-const SourceGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
-`;
-
-const SourceCard = styled.div`
-  padding: 0.55rem 0.65rem;
-  border: 1px solid #b9d3e7;
+const LayerCard = styled.section<{$variant: 'application' | 'browser' | 'engine' | 'output' | 'planner'}>`
+  background: ${props => getLayerBackground(props.$variant)};
+  border: 1px solid ${props => getLayerBorder(props.$variant)};
   border-radius: 8px;
-  background: #eaf5ff;
-  color: #244863;
-  font-size: 0.85rem;
+  padding: 12px;
+  width: min(100%, 720px);
+`;
+
+const LayerTitle = styled.h3`
+  color: var(--ifm-color-gray-900);
+  font-size: 15px;
+  margin: 0 0 10px;
   text-align: center;
 `;
 
-const StepGrid = styled.div`
+const LayerItems = styled.div`
   display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+`;
+
+const LayerItem = styled.div`
+  background: var(--ifm-color-white);
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  color: var(--ifm-color-gray-800);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 8px;
+  text-align: center;
+`;
+
+const EngineItem = styled(LayerItem)``;
+
+const EngineGrid = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+`;
+
+const FormatGroup = styled.section`
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  padding: 12px;
+  width: min(100%, 720px);
+`;
+
+const FormatIntro = styled.h3`
+  color: var(--ifm-color-gray-800);
+  font-size: 14px;
+  margin: 0 0 10px;
+  text-align: center;
+`;
+
+const FormatGrid = styled.div`
+  display: grid;
+  gap: 10px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.45rem;
-
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 `;
 
-const StepCard = styled.div`
-  display: flex;
-  min-height: 4.2rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border: 1px solid #9ec7e7;
+const FormatCard = styled.div<{$variant: 'avro' | 'future' | 'orc' | 'parquet'}>`
+  background: ${props => getFormatBackground(props.$variant)};
+  border: 1px solid ${props => getFormatBorder(props.$variant)};
   border-radius: 8px;
-  background: #f0f8ff;
-  color: #244863;
-  font-size: 0.76rem;
-  text-align: center;
-`;
-
-const StepNumber = styled.span`
   display: grid;
-  width: 1.35rem;
-  height: 1.35rem;
-  place-items: center;
-  border-radius: 50%;
-  background: #367da9;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 700;
-`;
-
-const OutputCard = styled.div`
-  margin-bottom: 0.45rem;
-  padding: 0.75rem;
-  border: 1px solid #b9d3e7;
-  border-radius: 8px;
-  background: #edf9f5;
-  color: #245746;
-  font-size: 0.85rem;
+  gap: 7px;
+  min-height: 82px;
+  padding: 10px 8px;
+  place-content: center;
   text-align: center;
 `;
 
-const Connector = styled.div`
-  color: #6f879b;
-  font-size: 1.7rem;
-  font-weight: 300;
-
-  @media (max-width: 700px) {
-    transform: rotate(90deg);
-  }
+const FormatName = styled.div`
+  color: var(--ifm-color-gray-900);
+  font-size: 14px;
+  font-weight: 800;
 `;
+
+const FormatDetail = styled.div`
+  color: var(--ifm-color-gray-800);
+  font-size: 11px;
+  line-height: 1.25;
+`;
+
+const OutputRow = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+`;
+
+const OutputBlock = styled.div`
+  background: rgba(76, 175, 80, 0.12);
+  border: 1px solid rgba(76, 175, 80, 0.55);
+  border-radius: 8px;
+  color: var(--ifm-color-gray-900);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px 8px;
+  text-align: center;
+`;
+
+const DiagramCaption = styled.p`
+  color: var(--ifm-color-gray-700);
+  font-size: 13px;
+  margin: 18px 0 0;
+`;
+
+function getLayerBackground(variant: 'application' | 'browser' | 'engine' | 'output' | 'planner'): string {
+  switch (variant) {
+    case 'application':
+      return 'rgba(156, 39, 176, 0.1)';
+    case 'browser':
+      return 'rgba(96, 125, 139, 0.12)';
+    case 'engine':
+      return 'rgba(0, 173, 230, 0.12)';
+    case 'output':
+      return 'rgba(76, 175, 80, 0.1)';
+    case 'planner':
+      return 'rgba(255, 193, 7, 0.14)';
+  }
+}
+
+function getLayerBorder(variant: 'application' | 'browser' | 'engine' | 'output' | 'planner'): string {
+  const colors = {
+    application: 'rgba(156, 39, 176, 0.42)',
+    browser: 'rgba(96, 125, 139, 0.5)',
+    engine: 'rgba(0, 173, 230, 0.7)',
+    output: 'rgba(76, 175, 80, 0.55)',
+    planner: 'rgba(255, 193, 7, 0.72)'
+  };
+  return colors[variant];
+}
+
+function getFormatBackground(variant: 'avro' | 'future' | 'orc' | 'parquet'): string {
+  const colors = {
+    avro: 'rgba(156, 39, 176, 0.1)',
+    future: 'rgba(96, 125, 139, 0.1)',
+    orc: 'rgba(255, 193, 7, 0.16)',
+    parquet: 'rgba(63, 81, 181, 0.1)'
+  };
+  return colors[variant];
+}
+
+function getFormatBorder(variant: 'avro' | 'future' | 'orc' | 'parquet'): string {
+  const colors = {
+    avro: 'rgba(156, 39, 176, 0.42)',
+    future: 'rgba(96, 125, 139, 0.45)',
+    orc: 'rgba(255, 193, 7, 0.75)',
+    parquet: 'rgba(63, 81, 181, 0.42)'
+  };
+  return colors[variant];
+}

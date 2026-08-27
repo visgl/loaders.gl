@@ -193,9 +193,9 @@ test('GLTFLoader#Basis image options', t => {
     {
       supportedTextureFormats: ['bc3-rgba-unorm'],
       containerFormat: 'ktx2',
-      format: {alpha: 'bc3', noAlpha: 'bc1'}
+      format: 'auto'
     },
-    'selects a concrete format while preserving partial Basis options'
+    'preserves automatic selection until the worker can inspect the source codec'
   );
   t.equal(imageOptions.core?.worker, true, 'preserves core options');
   t.equal(imageOptions.core?.mimeType, 'image/ktx2', 'sets the image MIME type');
@@ -203,18 +203,16 @@ test('GLTFLoader#Basis image options', t => {
 
   const explicitFormatOptions = getGLTFImageOptions({
     basis: {
-      format: 'rgba32',
-      module: 'encoder'
+      format: 'rgba32'
     }
   });
 
   t.deepEqual(
     explicitFormatOptions.basis,
     {
-      format: 'rgba32',
-      module: 'encoder'
+      format: 'rgba32'
     },
-    'preserves an explicit Basis format and other options'
+    'preserves an explicit Basis format'
   );
   t.end();
 });

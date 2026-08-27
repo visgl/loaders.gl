@@ -34,12 +34,7 @@ const ORC_TYPE = {
 export function encodeORC(table: Table, options?: ORCWriterOptions): ArrayBuffer {
   const fields = getFields(table, options);
   const rows = getRows(table, fields);
-  const normalizedFields = fields.map((field, index) =>
-    field.type.startsWith('Struct<') && rows.some(row => row[index] instanceof Uint8Array)
-      ? {...field, type: 'binary'}
-      : field
-  );
-  if (rows.length === 0) return encodeEmptyORC(normalizedFields);
+  if (rows.length === 0) return encodeEmptyORC(fields);
   const stripeSize = options?.orc?.stripeSize ?? rows.length;
   if (!Number.isInteger(stripeSize) || stripeSize <= 0)
     throw new Error('ORC stripeSize must be a positive integer');
@@ -48,7 +43,7 @@ export function encodeORC(table: Table, options?: ORCWriterOptions): ArrayBuffer
   let stripeOffset = 3;
   for (let start = 0; start < rows.length; start += stripeSize) {
     const stripeRows = rows.slice(start, start + stripeSize);
-    const encodedColumns = normalizedFields.map((field, index) =>
+    const encodedColumns = fields.map((field, index) =>
       encodeColumn(
         field.type,
         stripeRows.map(row => row[index])
@@ -70,7 +65,7 @@ export function encodeORC(table: Table, options?: ORCWriterOptions): ArrayBuffer
     );
     stripeOffset += streamBytes.length + stripeFooter.length;
   }
-  const types = encodeTypes(normalizedFields);
+  const types = encodeTypes(fields);
   const footer = encodeFooter(stripeInformations, types, rows.length);
   return encodeFile(concat(stripePayloads), footer);
 }
@@ -162,18 +157,10 @@ function encodeColumn(type: string, values: unknown[]): EncodedColumn {
                       ? value
                       : new TextEncoder().encode(String(value ?? ''));
                   return dictionaryIndexes.get(getBinaryKey(encodedValue)) || 0;
-                }),
-                false
+                })
               )
             },
-            {
-              kind: 2,
-              column: 0,
-              bytes: encodeRLEv2(
-                dictionary.map(value => value.length),
-                false
-              )
-            },
+            {kind: 2, column: 0, bytes: encodeRLEv2(dictionary.map(value => value.length))},
             {kind: 3, column: 0, bytes: concat(dictionary)}
           ])
         };
@@ -183,7 +170,7 @@ function encodeColumn(type: string, values: unknown[]): EncodedColumn {
       typeKind,
       streams: addPresentStream([
         {kind: 1, column: 0, bytes: concat(data)},
-        {kind: 2, column: 0, bytes: encodeRLEv2(lengths, false)}
+        {kind: 2, column: 0, bytes: encodeRLEv2(lengths)}
       ])
     };
   }
@@ -196,10 +183,7 @@ function encodeColumn(type: string, values: unknown[]): EncodedColumn {
         ? view.setFloat32(index * width, Number(value), true)
         : view.setFloat64(index * width, Number(value), true)
     );
-    return {
-      typeKind,
-      streams: addPresentStream([{kind: 1, column: 0, bytes: encodeByteRLE(bytes)}])
-    };
+    return {typeKind, streams: addPresentStream([{kind: 1, column: 0, bytes}])};
   }
   if (typeKind === ORC_TYPE.BOOLEAN) {
     const bytes = new Uint8Array(Math.ceil(nonNullValues.length / 8));
@@ -229,19 +213,11 @@ function encodePresence(values: unknown[]): Uint8Array {
   values.forEach((value, index) => {
     if (value !== null && value !== undefined) bytes[index >> 3] |= 0x80 >> (index & 7);
   });
-  return encodeByteRLE(bytes);
+  return bytes;
 }
 
-function encodeRLEv2(values: number[], signed = true): Uint8Array {
-  const runs: Uint8Array[] = [];
-  for (let offset = 0; offset < values.length; offset += 512)
-    runs.push(encodeRLEv2Run(values.slice(offset, offset + 512), signed));
-  return concat(runs);
-}
-
-function encodeRLEv2Run(values: number[], signed: boolean): Uint8Array {
-  if (values.length === 0) return new Uint8Array(0);
-  const bitWidth = Math.max(1, ...values.map(value => bitLength(signed ? zigzag(value) : value)));
+function encodeRLEv2(values: number[]): Uint8Array {
+  const bitWidth = Math.max(1, ...values.map(value => bitLength(zigzag(value))));
   const widthCode = [
     1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 26, 28, 30, 32, 40, 48, 56, 64
   ].findIndex(width => width >= bitWidth);
@@ -253,7 +229,7 @@ function encodeRLEv2Run(values: number[], signed: boolean): Uint8Array {
   let accumulator = 0;
   let bits = 0;
   for (const value of values) {
-    accumulator = accumulator * 2 ** width + (signed ? zigzag(value) : value);
+    accumulator = accumulator * 2 ** width + zigzag(value);
     bits += width;
     while (bits >= 8) {
       bits -= 8;
@@ -262,16 +238,6 @@ function encodeRLEv2Run(values: number[], signed: boolean): Uint8Array {
     }
   }
   if (bits > 0) output.push((accumulator * 2 ** (8 - bits)) & 0xff);
-  return Uint8Array.from(output);
-}
-
-function encodeByteRLE(bytes: Uint8Array): Uint8Array {
-  const output: number[] = [];
-  for (let offset = 0; offset < bytes.length; offset += 128) {
-    const length = Math.min(128, bytes.length - offset);
-    output.push(256 - length);
-    output.push(...bytes.subarray(offset, offset + length));
-  }
   return Uint8Array.from(output);
 }
 

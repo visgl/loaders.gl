@@ -275,8 +275,7 @@ export default class I3SNodePagesTiles {
       // For I3S 1.8 need to define basis target format to decode
       if (selectedFormat && selectedFormat.format === 'ktx2') {
         this.textureLoaderOptions.basis = {
-          containerFormat: 'ktx2',
-          module: 'encoder'
+          containerFormat: 'ktx2'
         };
       }
 

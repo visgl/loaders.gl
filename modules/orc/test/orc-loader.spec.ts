@@ -2,120 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import test from 'test/utils/vitest-tape';
 import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
 import {ORCLoaderWithParser} from '../src/orc-loader';
-import {
-  createORCSchema,
-  getORCDataType,
-  ORCSource,
-  ORCSourceLoaderWithParser
-} from '../src/orc-source-loader';
-import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
 import {ORCWriter} from '../src/orc-writer';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
 
-test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
-  const encoded = await ORCWriter.encode(input);
-  const source = new ORCSource(new Blob([encoded]));
-
-  const metadata = await source.getQueryMetadata();
-  expect(metadata.sourceType).toBe('orc');
-  expect(metadata.columns.map(column => column.name)).toEqual(['name']);
-  expect(metadata.statistics?.rowCount).toBe(4);
-
-  const result = await source.query({columns: ['name'], limit: 1});
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
-
-  const defaultQuery = await source.query({limit: 2});
-  expect(defaultQuery.data.numRows).toBe(2);
-  const batches = source.read({limit: 1});
-  const batch = await batches[Symbol.asyncIterator]().next();
-  expect(batch.value?.length).toBe(1);
-});
-
-test('ORC source loader exposes explicit parser entry points', () => {
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
-  expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
-});
-
-test('ORC metadata preserves nested map and struct types', () => {
-  const types = [
-    {kind: ORCTypeKind.STRUCT, fieldNames: ['properties', 'attributes'], subtypes: [1, 2]},
-    {kind: ORCTypeKind.MAP, fieldNames: [], subtypes: [3, 4]},
-    {kind: ORCTypeKind.STRUCT, fieldNames: ['x'], subtypes: [5]},
-    {kind: ORCTypeKind.STRING, fieldNames: [], subtypes: []},
-    {kind: ORCTypeKind.INT, fieldNames: [], subtypes: []},
-    {kind: ORCTypeKind.DOUBLE, fieldNames: [], subtypes: []}
-  ];
-  const schema = createORCSchema(types[0], types);
-  expect(schema.fields[0].type).toMatchObject({type: 'map'});
-  expect(schema.fields[1].type).toMatchObject({type: 'struct'});
-  expect(
-    getORCDataType(ORCTypeKind.LIST, {kind: ORCTypeKind.LIST, fieldNames: [], subtypes: [5]}, types)
-  ).toMatchObject({type: 'list'});
-});
-
-test('ORCSource applies residual predicates with three-valued semantics', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
-  const encoded = await ORCWriter.encode(input);
-  const source = new ORCSource(new Blob([encoded]));
-  const result = await source.query({
-    predicate: {op: '=', args: [{property: 'name'}, 'a']}
-  });
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'a']);
-});
-
-test('ORCSource validates query limits before decoding rows', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b']})
-  };
-  const encoded = await ORCWriter.encode(input);
-  const source = new ORCSource(new Blob([encoded]));
-  await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
-});
-
-test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a']})
-  };
-  const encoded = await ORCWriter.encode(input);
-  let attempts = 0;
-  const source = new ORCSource('https://example.com/data.orc', {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: async () => {
-            attempts++;
-            if (attempts === 1) throw new Error('temporary failure');
-            return new Response(encoded);
-          }
-        }
-      }
-    }
-  });
-  await expect(source.getQueryMetadata()).rejects.toThrow('temporary failure');
-  const metadata = await source.getQueryMetadata();
-  expect(metadata.statistics?.rowCount).toBe(1);
-  expect(attempts).toBe(2);
-});
-
-test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
-  const indexes = Uint8Array.from([0xfd, 0x00, 0x01, 0x00]);
-  const lengths = Uint8Array.from([0xfe, 0x01, 0x02]);
+test('ORCLoader#parse decodes dictionary-encoded string columns', async t => {
+  const indexes = Uint8Array.from([0x42, 0x02, 0x20]);
+  const lengths = Uint8Array.from([0x44, 0x01, 0x50]);
   const dictionary = new TextEncoder().encode('abb');
   const data = concatBytes(indexes, lengths, dictionary);
   const stripeFooter = encodeMessage([
@@ -189,13 +86,13 @@ test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
+  t.equal(result.shape, 'arrow-table');
   if (result.shape === 'arrow-table')
-    expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a']);
+    t.deepEqual(result.data.getChild('name')?.toArray(), ['a', 'bb', 'a']);
+  t.end();
 });
 
-test('ORC compression decodes framed ZLIB chunks', async () => {
-  await preloadORCCompression();
+test('ORC compression decodes framed ZLIB chunks', t => {
   const input = new TextEncoder().encode('orc-zlib');
   const compressed = zlibSync(input);
   const header = compressed.length << 1;
@@ -204,11 +101,11 @@ test('ORC compression decodes framed ZLIB chunks', async () => {
   framed[1] = (header >> 8) & 0xff;
   framed[2] = (header >> 16) & 0xff;
   framed.set(compressed, 3);
-  expect(Array.from(decompressORCStream(framed, 'ZLIB'))).toEqual(Array.from(input));
+  t.deepEqual(Array.from(decompressORCStream(framed, 'ZLIB')), Array.from(input));
+  t.end();
 });
 
-test('ORC compression decodes framed raw DEFLATE chunks', async () => {
-  await preloadORCCompression();
+test('ORC compression decodes framed raw DEFLATE chunks', t => {
   const input = new TextEncoder().encode('orc-raw-deflate');
   const compressed = deflateSync(input);
   const header = compressed.length << 1;
@@ -217,10 +114,11 @@ test('ORC compression decodes framed raw DEFLATE chunks', async () => {
   framed[1] = (header >> 8) & 0xff;
   framed[2] = (header >> 16) & 0xff;
   framed.set(compressed, 3);
-  expect(Array.from(decompressORCStream(framed, 'ZLIB'))).toEqual(Array.from(input));
+  t.deepEqual(Array.from(decompressORCStream(framed, 'ZLIB')), Array.from(input));
+  t.end();
 });
 
-test('ORC compression decodes framed Snappy chunks', async () => {
+test('ORC compression decodes framed Snappy chunks', async t => {
   await preloadORCCompression();
   const input = new TextEncoder().encode('orc-snappy');
   const compressed = new Uint8Array(new SnappyCompression().compressSync(input.buffer));
@@ -230,46 +128,45 @@ test('ORC compression decodes framed Snappy chunks', async () => {
   framed[1] = (header >> 8) & 0xff;
   framed[2] = (header >> 16) & 0xff;
   framed.set(compressed, 3);
-  expect(Array.from(decompressORCStream(framed, 'SNAPPY'))).toEqual(Array.from(input));
+  t.deepEqual(Array.from(decompressORCStream(framed, 'SNAPPY')), Array.from(input));
+  t.end();
 });
 
-test('ORCWriter#encode writes dictionary-encoded repeated strings', async () => {
+test('ORCWriter#encode writes dictionary-encoded repeated strings', async t => {
   const output = await ORCWriter.encode({
     shape: 'arrow-table',
     data: arrow.tableFromArrays({name: ['a', 'bb', 'a', 'bb']})
   });
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
+  t.equal(result.shape, 'arrow-table');
   if (result.shape === 'arrow-table')
-    expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a', 'bb']);
+    t.deepEqual(result.data.getChild('name')?.toArray(), ['a', 'bb', 'a', 'bb']);
+  t.end();
 });
 
-test('ORCWriter#encode writes dictionary-encoded repeated binary values', async () => {
+test('ORCWriter#encode writes dictionary-encoded repeated binary values', async t => {
   const output = await ORCWriter.encode({
     shape: 'arrow-table',
-    data: arrow.tableFromArrays({
-      payload: arrow.vectorFromArray(
-        [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
-        new arrow.Binary()
-      )
-    })
+    data: arrow.tableFromArrays({payload: [new Uint8Array([1, 2]), new Uint8Array([1, 2])]})
   });
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
+  t.equal(result.shape, 'arrow-table');
   if (result.shape === 'arrow-table') {
-    expect(
+    t.deepEqual(
       result.data
         .getChild('payload')
         ?.toArray()
-        .map(value => Array.from(value as Uint8Array))
-    ).toEqual([
-      [1, 2],
-      [1, 2]
-    ]);
+        .map(value => Array.from(value as Uint8Array)),
+      [
+        [1, 2],
+        [1, 2]
+      ]
+    );
   }
+  t.end();
 });
 
-test('ORCLoader#parse decodes patched-base RLEv2 integers', async () => {
+test('ORCLoader#parse decodes patched-base RLEv2 integers', async t => {
   const data = Uint8Array.from([0x82, 0x03, 0x07, 0x21, 0x64, 0x18, 0xf8, 0x40]);
   const stripeFooter = encodeMessage([
     [
@@ -320,16 +217,17 @@ test('ORCLoader#parse decodes patched-base RLEv2 integers', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
+  t.equal(result.shape, 'arrow-table');
   if (result.shape === 'arrow-table') {
     const values = result.data.getChild('id')?.toArray();
-    expect(Array.from(values || [])).toEqual([100, 101, 102, 1000]);
+    t.deepEqual(Array.from(values || []), [100, 101, 102, 1000]);
   }
+  t.end();
 });
 
-test('ORCLoader#parse reconstructs LIST child streams', async () => {
-  const lengths = Uint8Array.from([0xfd, 0x02, 0x00, 0x01]);
-  const values = Uint8Array.from([0xfd, 0x14, 0x16, 0x18]);
+test('ORCLoader#parse reconstructs LIST child streams', async t => {
+  const lengths = Uint8Array.from([0x44, 0x02, 0x81, 0x00]);
+  const values = Uint8Array.from([0x48, 0x02, 0xa5, 0xb0]);
   const data = concatBytes(lengths, values);
   const stripeFooter = encodeMessage([
     [
@@ -350,7 +248,7 @@ test('ORCLoader#parse reconstructs LIST child streams', async () => {
     ],
     [2, encodeMessage([[1, 12]])],
     [2, encodeMessage([[1, 0]])],
-    [2, encodeMessage([[1, 0]])]
+    [2, encodeMessage([[1, 2]])]
   ]);
   const stripeInformation = encodeMessage([
     [1, 3],
@@ -394,15 +292,16 @@ test('ORCLoader#parse reconstructs LIST child streams', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
+  t.equal(result.shape, 'arrow-table');
   if (result.shape === 'arrow-table') {
     const items = result.data.getChild('items');
-    expect(items?.get(0)?.length).toBe(2);
-    expect(items?.get(0)?.get(0)).toBe(10);
-    expect(items?.get(0)?.get(1)).toBe(11);
-    expect(items?.get(1)?.length).toBe(0);
-    expect(items?.get(2)?.get(0)).toBe(12);
+    t.equal(items?.get(0)?.length, 2);
+    t.equal(items?.get(0)?.get(0), 10);
+    t.equal(items?.get(0)?.get(1), 11);
+    t.equal(items?.get(1)?.length, 0);
+    t.equal(items?.get(2)?.get(0), 12);
   }
+  t.end();
 });
 
 function concatBytes(...arrays: Uint8Array[]): Uint8Array {
