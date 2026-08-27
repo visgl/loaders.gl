@@ -11,6 +11,17 @@ test('CSVTableSource discovers schema and applies projection and limit', async (
   expect(batches[0]?.data).toEqual([{value: 1}]);
 });
 
+test('CSVTableSource applies residual predicates before projection and limit', async () => {
+  const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\nc,3\n']));
+  const batches = [];
+  for await (const batch of source.read({predicate: {op: '>', args: [{property: 'value'}, 1]}}))
+    batches.push(batch);
+  expect(batches.flatMap(batch => batch.data)).toEqual([
+    {name: 'b', value: 2},
+    {name: 'c', value: 3}
+  ]);
+});
+
 test('CSVTableSource rejects invalid limits and forwards aborts', async () => {
   const source = new CSVTableSource(new Blob(['a\n1\n']));
   await expect(async () => {
