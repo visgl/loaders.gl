@@ -8,6 +8,7 @@ import {ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-so
 import {ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
 import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader';
 import {ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader';
+import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
 import {WMSSourceLoader} from './wms-source-loader';
 import {WMTSSourceLoader} from './wmts-source-loader';
 import {WFSSourceLoader} from './wfs-source-loader';
@@ -74,6 +75,7 @@ export const DEFAULT_SERVICE_LOADERS: readonly ServiceSourceLoader[] = [
   ArcGISFeatureServerSourceLoader,
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSourceLoader,
+  ArcGISVectorTileServerSourceLoader,
   ArcGISMapTileSourceLoader,
   WMTSSourceLoader,
   WMSSourceLoader,
