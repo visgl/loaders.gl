@@ -79,6 +79,7 @@ export class I3SSource implements Tileset3DSource {
     this.resolver = request.resolver;
     this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
+    this.initializeQueryParams(loadOptions);
   }
 
   /**
@@ -86,20 +87,12 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await this.loadRootData(this.url, this.loadOptions);
+      this.rootTileset = await this.loadRootData(this.getTileUrl(this.url), this.loadOptions);
     }
     this.tileset = this.rootTileset;
 
     if (this.rootTileset.root && typeof this.rootTileset.root.then === 'function') {
       this.rootTileset.root = await this.rootTileset.root;
-    }
-
-    const i3sOptions = this.loadOptions.i3s;
-    if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
-      const token = (i3sOptions as Record<string, unknown>).token;
-      if (typeof token === 'string') {
-        this.queryParams.token = token;
-      }
     }
 
     this.metadata = {
@@ -230,8 +223,15 @@ export class I3SSource implements Tileset3DSource {
       return tilePath;
     }
 
-    const queryParams = new URLSearchParams(this.queryParams).toString();
-    return `${tilePath}${tilePath.includes('?') ? '&' : '?'}${queryParams}`;
+    const [pathWithoutQuery, existingQuery = ''] = tilePath.split('?');
+    const queryParams = new URLSearchParams(existingQuery);
+    for (const [key, value] of Object.entries(this.queryParams)) {
+      if (!queryParams.has(key)) {
+        queryParams.set(key, value);
+      }
+    }
+
+    return `${pathWithoutQuery}?${queryParams.toString()}`;
   }
 
   /**
@@ -323,6 +323,20 @@ export class I3SSource implements Tileset3DSource {
     }
 
     return await this.loadWithCoreApi(url, options);
+  }
+
+  /**
+   * Initializes query parameters before any URL-backed resource is requested.
+   * @param loadOptions Loader options that may contain an ArcGIS token.
+   */
+  private initializeQueryParams(loadOptions: LoaderOptions): void {
+    const i3sOptions = loadOptions.i3s;
+    if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
+      const token = (i3sOptions as Record<string, unknown>).token;
+      if (typeof token === 'string') {
+        this.queryParams.token = token;
+      }
+    }
   }
 
   /**

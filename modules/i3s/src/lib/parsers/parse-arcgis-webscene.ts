@@ -54,7 +54,7 @@ export async function parseWebscene(data: string | ArrayBuffer): Promise<ArcGISW
   const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
   const layer0 = JSON.parse(text);
   const {operationalLayers} = layer0;
-  const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
+  const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers);
 
   if (!layers.length) {
     throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, unsupportedLayers);
@@ -72,8 +72,7 @@ export async function parseWebscene(data: string | ArrayBuffer): Promise<ArcGISW
  * @param layersList
  */
 async function parseOperationalLayers(
-  layersList: OperationalLayer[],
-  needToCheckCRS: boolean
+  layersList: OperationalLayer[]
 ): Promise<{layers: OperationalLayer[]; unsupportedLayers: OperationalLayer[]}> {
   const layers: OperationalLayer[] = [];
   let unsupportedLayers: OperationalLayer[] = [];
@@ -83,9 +82,8 @@ async function parseOperationalLayers(
     const isLayerSupported = SUPPORTED_LAYERS_TYPES.includes(layer.layerType);
 
     if (isLayerSupported) {
-      if (needToCheckCRS && layer.layerType !== GROUP_LAYER) {
+      if (layer.layerType !== GROUP_LAYER) {
         await checkSupportedIndexCRS(layer);
-        needToCheckCRS = false;
       }
 
       layers.push(layer);
@@ -95,7 +93,7 @@ async function parseOperationalLayers(
 
     if (layer.layers?.length) {
       const {layers: childLayers, unsupportedLayers: childUnsupportedLayers} =
-        await parseOperationalLayers(layer.layers, needToCheckCRS);
+        await parseOperationalLayers(layer.layers);
       layer.layers = childLayers;
       unsupportedLayers = [...unsupportedLayers, ...childUnsupportedLayers];
     }

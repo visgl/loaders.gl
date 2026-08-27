@@ -181,6 +181,41 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
   );
   expect(source.getTilesTotalCount()).toBe(7);
 });
+test('I3SSource appends auth tokens before loading URL-backed root metadata', async () => {
+  const requestedUrls: string[] = [];
+  const resolver: TilesetSourceResolver = {
+    async loadRoot(url) {
+      requestedUrls.push(url);
+      return {
+        type: 'tileset',
+        url,
+        loader: I3SLoader,
+        root: {id: 'root-node', refine: 'REPLACE'}
+      } as any;
+    },
+    async loadResource() {
+      return null;
+    }
+  };
+
+  const source = new I3SSource(
+    {
+      url: 'https://example.com/SceneServer/layers/0?existing=1',
+      loader: I3SLoader,
+      resolver
+    },
+    {i3s: {token: 'secret-token'}}
+  );
+
+  await source.initialize();
+
+  expect(requestedUrls).toEqual([
+    'https://example.com/SceneServer/layers/0?existing=1&token=secret-token'
+  ]);
+  expect(source.getTileUrl('https://example.com/SceneServer/layers/0?token=caller-token')).toBe(
+    'https://example.com/SceneServer/layers/0?token=caller-token'
+  );
+});
 test('Tiles3DSource uses injected resolvers for root metadata and tile content', async () => {
   const rootTileset: TilesetJSON = {
     asset: {version: '1.0'},

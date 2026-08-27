@@ -1,0 +1,20 @@
+{
+  "id": 0,
+  "layerType": "3DObject",
+  "version": "1.8",
+  "capabilities": ["View", "Query"],
+  "disablePopup": false,
+  "spatialReference": {"wkid": 4326},
+  "store": {
+    "profile": "meshpyramids",
+    "version": "1.8",
+    "defaultGeometrySchema": {
+      "geometryType": "triangles",
+      "vertexAttributes": {"position": {"valueType": "Float32", "valuesPerElement": 3}}
+    }
+  },
+  "nodePages": {
+    "nodesPerPage": 64,
+    "lodSelectionMetricType": "maxScreenThresholdSQ"
+  }
+}

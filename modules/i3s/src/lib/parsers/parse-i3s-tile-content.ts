@@ -443,13 +443,13 @@ function normalizeAttributes(
  *
  * @param buffer
  * @param elementsCount
- * @returns 64-bit array of values until precision is lost after Number.MAX_SAFE_INTEGER
+ * @returns Numeric values with exact representation through Number.MAX_SAFE_INTEGER
  */
-function parseUint64Values(
+export function parseUint64Values(
   buffer: ArrayBuffer,
   elementsCount: number,
   attributeSize: number
-): Uint32Array {
+): Float64Array {
   const values: number[] = [];
   const dataView = new DataView(buffer);
   let offset = 0;
@@ -465,7 +465,7 @@ function parseUint64Values(
     offset += attributeSize;
   }
 
-  return new Uint32Array(values);
+  return new Float64Array(values);
 }
 
 function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): Matrix4 {
