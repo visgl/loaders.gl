@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: ISC
-
 import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
 // non-strict: no error

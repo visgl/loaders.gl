@@ -19,6 +19,7 @@ import {
   type LanceSourceCapabilities
 } from '../src/lance-source-capabilities';
 import {LanceSourceLoader} from '../src/lance-source-loader';
+import {readLanceRemoteCoordinatesToArrow, readLanceRemoteFileToArrow} from '../src/lance-arrow';
 
 const MANIFEST_FIXTURE = Uint8Array.from([
   0x0a, 0x0d, 0x12, 0x02, 0x69, 0x64, 0x18, 0x00, 0x2a, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x30,
@@ -74,6 +75,8 @@ FLAT_FILE_FIXTURE_VIEW.setUint32(116, 1, true);
 FLAT_FILE_FIXTURE_VIEW.setUint16(120, 2, true);
 FLAT_FILE_FIXTURE_VIEW.setUint16(122, 1, true);
 FLAT_FILE_FIXTURE.set([0x4c, 0x41, 0x4e, 0x43], 124);
+
+const COORDINATE_FILE_FIXTURE = createCoordinateFileFixture();
 
 test('Lance scaffold exposes read-only metadata', () => {
   expect(LanceFormat.format).toBe('lance');
@@ -245,3 +248,208 @@ test('Lance scaffold uses an explicit decoder error', async () => {
     LanceDecoderUnavailableError
   );
 });
+
+test('Lance remote reader projects and slices flat primitive columns', async () => {
+  const fetchFunction = createRangeFetch(FLAT_FILE_FIXTURE);
+  const table = await readLanceRemoteFileToArrow(
+    'https://example.com/part.lance',
+    FLAT_FILE_FIXTURE.byteLength,
+    [{index: 0, name: 'id', type: 'int32'}],
+    1,
+    1,
+    fetchFunction
+  );
+
+  expect(Array.from(table.data.getChild('id').toArray())).toEqual([20]);
+
+  const emptyTable = await readLanceRemoteFileToArrow(
+    'https://example.com/part.lance',
+    FLAT_FILE_FIXTURE.byteLength,
+    [{index: 0, name: 'id', type: 'int32'}],
+    0,
+    0,
+    fetchFunction
+  );
+  expect(emptyTable.data.numRows).toBe(0);
+});
+
+test('Lance remote coordinate reader extracts interleaved float pairs', async () => {
+  const table = await readLanceRemoteCoordinatesToArrow(
+    'https://example.com/coordinates.lance',
+    COORDINATE_FILE_FIXTURE.byteLength,
+    [{index: 0, xName: 'x', yName: 'y'}],
+    2,
+    1,
+    createRangeFetch(COORDINATE_FILE_FIXTURE)
+  );
+
+  expect(Array.from(table.data.getChild('x').toArray())).toEqual([2, 3]);
+  expect(Array.from(table.data.getChild('y').toArray())).toEqual([20, 30]);
+});
+
+test('Lance remote readers reject invalid requests and responses', async () => {
+  const url = 'https://example.com/part.lance';
+  const fetchFunction = createRangeFetch(FLAT_FILE_FIXTURE);
+  const column = [{index: 0, name: 'id', type: 'int32' as const}];
+  const coordinateColumn = [{index: 0, xName: 'x', yName: 'y'}];
+
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      FLAT_FILE_FIXTURE.byteLength,
+      column,
+      undefined,
+      -1,
+      fetchFunction
+    )
+  ).rejects.toThrow('Invalid Lance remote row offset -1');
+  await expect(
+    readLanceRemoteFileToArrow(url, FLAT_FILE_FIXTURE.byteLength, column, -1, 0, fetchFunction)
+  ).rejects.toThrow('Invalid Lance remote row limit -1');
+  await expect(
+    readLanceRemoteCoordinatesToArrow(
+      url,
+      COORDINATE_FILE_FIXTURE.byteLength,
+      coordinateColumn,
+      undefined,
+      -1,
+      createRangeFetch(COORDINATE_FILE_FIXTURE)
+    )
+  ).rejects.toThrow('Invalid Lance coordinate offset -1');
+  await expect(
+    readLanceRemoteCoordinatesToArrow(
+      url,
+      COORDINATE_FILE_FIXTURE.byteLength,
+      coordinateColumn,
+      -1,
+      0,
+      createRangeFetch(COORDINATE_FILE_FIXTURE)
+    )
+  ).rejects.toThrow('Invalid Lance coordinate limit -1');
+
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      FLAT_FILE_FIXTURE.byteLength,
+      [{index: 1, name: 'id', type: 'int32'}],
+      undefined,
+      0,
+      fetchFunction
+    )
+  ).rejects.toThrow('Invalid Lance remote column index 1');
+  await expect(
+    readLanceRemoteCoordinatesToArrow(
+      url,
+      COORDINATE_FILE_FIXTURE.byteLength,
+      [{index: 1, xName: 'x', yName: 'y'}],
+      undefined,
+      0,
+      createRangeFetch(COORDINATE_FILE_FIXTURE)
+    )
+  ).rejects.toThrow('Invalid Lance coordinate column index 1');
+
+  const badMagic = FLAT_FILE_FIXTURE.slice();
+  badMagic.fill(0, badMagic.byteLength - 4);
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      badMagic.byteLength,
+      column,
+      undefined,
+      0,
+      createRangeFetch(badMagic)
+    )
+  ).rejects.toThrow('Invalid Lance remote file footer');
+  await expect(
+    readLanceRemoteCoordinatesToArrow(
+      url,
+      badMagic.byteLength,
+      coordinateColumn,
+      undefined,
+      0,
+      createRangeFetch(badMagic)
+    )
+  ).rejects.toThrow('Invalid Lance remote file footer');
+
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      FILE_FIXTURE.byteLength,
+      column,
+      undefined,
+      0,
+      createRangeFetch(FILE_FIXTURE)
+    )
+  ).rejects.toThrow('has a non-flat page');
+  await expect(
+    readLanceRemoteCoordinatesToArrow(
+      url,
+      FILE_FIXTURE.byteLength,
+      coordinateColumn,
+      undefined,
+      0,
+      createRangeFetch(FILE_FIXTURE)
+    )
+  ).rejects.toThrow('invalid float buffer size');
+
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      FLAT_FILE_FIXTURE.byteLength,
+      column,
+      undefined,
+      0,
+      async () => new Response(null, {status: 500})
+    )
+  ).rejects.toThrow('Failed to read Lance byte range');
+  await expect(
+    readLanceRemoteFileToArrow(
+      url,
+      FLAT_FILE_FIXTURE.byteLength,
+      column,
+      undefined,
+      0,
+      async () => new Response(new Uint8Array(0), {status: 206})
+    )
+  ).rejects.toThrow('range response returned 0 bytes');
+});
+
+function createRangeFetch(bytes: Uint8Array) {
+  return async (_url: string, options?: RequestInit): Promise<Response> => {
+    const headers = new Headers(options?.headers);
+    const match = /^bytes=(\d+)-(\d+)$/.exec(headers.get('Range') || '');
+    if (!match) {
+      return new Response(null, {status: 400});
+    }
+    const start = Number(match[1]);
+    const end = Number(match[2]);
+    return new Response(bytes.slice(start, end + 1), {status: 206});
+  };
+}
+
+function createCoordinateFileFixture(): Uint8Array {
+  const bytes = new Uint8Array(200);
+  const dataView = new DataView(bytes.buffer);
+  const columnMetadata = Uint8Array.from([
+    0x12, 0x0d, 0x0a, 0x03, 0x00, 0x80, 0x01, 0x12, 0x02, 0x08, 0x20, 0x18, 0x03, 0x28, 0x00
+  ]);
+  bytes.set(columnMetadata, 16);
+  dataView.setBigUint64(64, 16n, true);
+  dataView.setBigUint64(72, BigInt(columnMetadata.byteLength), true);
+
+  const coordinateView = new DataView(bytes.buffer, 136, 24);
+  [1, 10, 2, 20, 3, 30].forEach((value, index) =>
+    coordinateView.setFloat32(index * 4, value, true)
+  );
+
+  const footerOffset = bytes.byteLength - 40;
+  dataView.setBigUint64(footerOffset, 16n, true);
+  dataView.setBigUint64(footerOffset + 8, 64n, true);
+  dataView.setBigUint64(footerOffset + 16, 80n, true);
+  dataView.setUint32(footerOffset + 24, 0, true);
+  dataView.setUint32(footerOffset + 28, 1, true);
+  dataView.setUint16(footerOffset + 32, 2, true);
+  dataView.setUint16(footerOffset + 34, 1, true);
+  bytes.set([0x4c, 0x41, 0x4e, 0x43], footerOffset + 36);
+  return bytes;
+}
