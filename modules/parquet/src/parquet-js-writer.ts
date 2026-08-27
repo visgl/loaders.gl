@@ -56,6 +56,8 @@ type ParquetJSWriterEncoderOptions = {
   writeStatistics?: boolean | Record<string, boolean>;
   /** Declares row-group sort keys using top-level or dotted nested leaf names. */
   sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Encodes INT96 input values as epoch nanoseconds using the canonical Julian-day layout. */
+  int96AsTimestamp?: boolean;
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
   /** Authenticate a plaintext footer with a Parquet modular-encryption signature. */

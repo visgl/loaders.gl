@@ -445,13 +445,19 @@ function toPrimitive_UINT64(value: unknown): bigint {
   return BigInt.asIntN(64, primitiveValue);
 }
 
-function toPrimitive_INT96(value: any) {
-  const v = parseInt(value, 10);
-  if (Number.isNaN(v)) {
+function toPrimitive_INT96(value: unknown): number | bigint {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'number') {
+    if (Number.isSafeInteger(value)) return value;
     throw new Error(`invalid value for INT96: ${value}`);
   }
-
-  return v;
+  if (typeof value !== 'string' || !/^[+-]?\d+$/.test(value)) {
+    throw new Error(`invalid value for INT96: ${value}`);
+  }
+  const bigintValue = BigInt(value);
+  return bigintValue >= Number.MIN_SAFE_INTEGER && bigintValue <= Number.MAX_SAFE_INTEGER
+    ? Number(bigintValue)
+    : bigintValue;
 }
 
 function toPrimitive_BYTE_ARRAY(value: any): Uint8Array {

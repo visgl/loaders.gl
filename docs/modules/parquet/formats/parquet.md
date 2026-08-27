@@ -88,7 +88,7 @@ as a compatibility fallback.
 | `BOOLEAN` | One bit per value in plain encoding | ✅ | ✅ | Nulls are represented by definition levels, not value bits |
 | `INT32` | 32-bit little-endian signed integer | ✅ | ✅ | Also carries dates, narrow integers, and some decimals |
 | `INT64` | 64-bit little-endian signed integer | ✅ | ✅ | Preserved as exact `bigint` when required |
-| `INT96` | 12-byte legacy timestamp | ✅ (Arrow) | ⚠️ | TypeScript Arrow output can decode the canonical Julian-day plus nanoseconds representation as `timestamp-nanosecond`; object-row compatibility remains opt-in via `int96AsTimestamp` |
+| `INT96` | 12-byte legacy timestamp | ✅ (Arrow) | ✅ (opt-in) | Canonical Julian-day plus nanoseconds representation maps to `timestamp-nanosecond`; object-row compatibility remains available via `int96AsTimestamp` |
 | `FLOAT` | IEEE-754 binary32, little endian | ✅ | ✅ | Maps to Arrow Float32 |
 | `DOUBLE` | IEEE-754 binary64, little endian | ✅ | ✅ | Maps to Arrow Float64 |
 | `BYTE_ARRAY` | 32-bit length followed by bytes | ✅ | ✅ | Used for binary, strings, JSON, BSON, and arbitrary precision decimals |

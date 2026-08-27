@@ -138,6 +138,7 @@ read/write encoding matrix.
 | `parquet.pageIndex` | `boolean \| Record<string, boolean>` | `false` | Emits column and offset indexes for supported non-repeated scalar columns, globally or by top-level column name. |
 | `parquet.writeStatistics` | `boolean \| Record<string, boolean>` | `false` | Emits standard min/max/null-count statistics for supported scalar column chunks and data pages, globally or by top-level column name. |
 | `parquet.sortingColumns` | `readonly {column: string; descending?: boolean; nullsFirst?: boolean}[]` | `undefined` | Declares the row-group sort order using top-level or dotted nested leaf names. The writer does not sort rows. |
+| `parquet.int96AsTimestamp` | `boolean` | `false` | Encodes INT96 input values as signed epoch-nanosecond timestamps using the canonical Julian-day representation. |
 | `parquet.writePageChecksums` | `boolean` | `false` | Emits CRC-32 checksums for TypeScript writer data and dictionary pages. |
 | `parquet.writeSizeStatistics` | `boolean` | `false` | Emits byte-array size totals and repetition/definition-level histograms for TypeScript writer column chunks. |
 | `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |

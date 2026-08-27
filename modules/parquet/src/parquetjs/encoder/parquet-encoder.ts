@@ -141,6 +141,8 @@ export interface ParquetEncoderOptions {
   writeStatistics?: boolean | Record<string, boolean>;
   /** Declare the row-group sort order using top-level or dotted leaf column names. */
   sortingColumns?: readonly ParquetSortingColumnOption[];
+  /** Encode INT96 input values as epoch nanoseconds using the canonical Julian-day layout. */
+  int96AsTimestamp?: boolean;
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
   /** Authenticate a plaintext footer with a Parquet modular-encryption signature. */
@@ -549,7 +551,8 @@ async function encodeDataPage(
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
   writePageChecksums = false,
-  statistics?: Statistics
+  statistics?: Statistics,
+  int96AsTimestamp = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -585,7 +588,8 @@ async function encodeDataPage(
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: valueBitWidth ?? column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength,
+    int96AsTimestamp
   });
 
   const dataBuf = concatUint8Arrays([rLevelsBuf, dLevelsBuf, valuesBuf]);
@@ -625,7 +629,8 @@ async function encodeDataPageV2(
   valueEncoding: ParquetCodec = column.encoding!,
   valueBitWidth?: number,
   writePageChecksums = false,
-  statistics?: Statistics
+  statistics?: Statistics,
+  int96AsTimestamp = false
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -634,7 +639,8 @@ async function encodeDataPageV2(
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, valueEncoding, data.values as any[], {
     typeLength: column.typeLength,
-    bitWidth: valueBitWidth ?? column.typeLength
+    bitWidth: valueBitWidth ?? column.typeLength,
+    int96AsTimestamp
   });
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
@@ -697,10 +703,12 @@ async function encodeDataPageV2(
 async function encodeDictionaryPage(
   column: ParquetField,
   dictionaryValues: unknown[],
-  writePageChecksums = false
+  writePageChecksums = false,
+  int96AsTimestamp = false
 ): Promise<{header: PageHeader; headerSize: number; page: Uint8Array}> {
   const valuesBuffer = encodeValues(column.primitiveType!, 'PLAIN', dictionaryValues as any[], {
-    typeLength: column.typeLength
+    typeLength: column.typeLength,
+    int96AsTimestamp
   });
   const compressedBuffer = await Compression.deflate(column.compression!, valuesBuffer);
   const header = new PageHeader({
@@ -832,7 +840,8 @@ async function encodeColumnChunk(
     const result = await encodeDictionaryPage(
       column,
       dictionaryPlan.values,
-      opts.writePageChecksums
+      opts.writePageChecksums,
+      opts.int96AsTimestamp
     );
     pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: true});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
@@ -868,7 +877,8 @@ async function encodeColumnChunk(
           opts.writePageChecksums,
           isStatisticsEnabled(opts.writeStatistics, column)
             ? createColumnStatistics(column, plannedPage.data)
-            : undefined
+            : undefined,
+          opts.int96AsTimestamp
         )
       : await encodeDataPage(
           column,
@@ -878,7 +888,8 @@ async function encodeColumnChunk(
           opts.writePageChecksums,
           isStatisticsEnabled(opts.writeStatistics, column)
             ? createColumnStatistics(column, plannedPage.data)
-            : undefined
+            : undefined,
+          opts.int96AsTimestamp
         );
     pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: false});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;

@@ -42,7 +42,7 @@ export function encodeValues(
     case 'INT64':
       return encodeValues_INT64(values);
     case 'INT96':
-      return encodeValues_INT96(values);
+      return encodeValues_INT96(values, opts.int96AsTimestamp);
     case 'FLOAT':
       return encodeValues_FLOAT(values);
     case 'DOUBLE':
@@ -154,13 +154,31 @@ function decodeValues_INT64(
   return output;
 }
 
-function encodeValues_INT96(values: number[]): Uint8Array {
+function encodeValues_INT96(values: Array<number | bigint>, asTimestamp = false): Uint8Array {
   const buf = new Uint8Array(12 * values.length);
   for (let i = 0; i < values.length; i++) {
-    writeInt64LE(buf, values[i], i * 12);
-    writeUInt32LE(buf, values[i] >= 0 ? 0 : 0xffffffff, i * 12 + 8);
+    if (!asTimestamp) {
+      writeInt64LE(buf, values[i], i * 12);
+      writeUInt32LE(buf, values[i] >= 0 ? 0 : 0xffffffff, i * 12 + 8);
+      continue;
+    }
+    const epochNanoseconds = BigInt(values[i]);
+    const julianDayOffset = floorDivide(epochNanoseconds, NANOSECONDS_PER_DAY);
+    const nanosecondsOfDay = epochNanoseconds - julianDayOffset * NANOSECONDS_PER_DAY;
+    const julianDay = JULIAN_DAY_UNIX_EPOCH + julianDayOffset;
+    if (julianDay < -2147483648n || julianDay > 2147483647n) {
+      throw new Error(`INT96 timestamp has an unsupported Julian day: ${julianDay}`);
+    }
+    writeInt64LE(buf, nanosecondsOfDay, i * 12);
+    writeInt32LE(buf, Number(julianDay), i * 12 + 8);
   }
   return buf;
+}
+
+function floorDivide(value: bigint, divisor: bigint): bigint {
+  const quotient = value / divisor;
+  const remainder = value % divisor;
+  return remainder < 0n ? quotient - 1n : quotient;
 }
 
 function decodeValues_INT96(

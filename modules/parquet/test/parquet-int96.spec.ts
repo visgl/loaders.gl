@@ -21,6 +21,22 @@ test('INT96 decoder can produce canonical epoch nanoseconds', () => {
   expect(cursor.offset).toBe(12);
 });
 
+test('INT96 encoder writes canonical Julian-day timestamps', () => {
+  const encoded = PARQUET_CODECS.PLAIN.encodeValues(
+    'INT96',
+    [-1n, 0n, 86_400_000_000_001n],
+    {int96AsTimestamp: true}
+  );
+  const values = PARQUET_CODECS.PLAIN.decodeValues(
+    'INT96',
+    {buffer: encoded, offset: 0},
+    3,
+    {int96AsTimestamp: true}
+  );
+
+  expect(values).toEqual([-1n, 0n, 86_400_000_000_001n]);
+});
+
 test('INT96 decoder rejects an invalid nanoseconds-of-day value', () => {
   const bytes = new Uint8Array(12);
   const dataView = new DataView(bytes.buffer);
