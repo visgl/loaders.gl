@@ -1066,6 +1066,12 @@ export class Tile3D {
     this._contentBoundingVolumes = contentHeaders
       .filter(headerEntry => headerEntry?.boundingVolume)
       .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
+    if (
+      !contentHeaders.length ||
+      contentHeaders.some(headerEntry => !headerEntry?.boundingVolume)
+    ) {
+      this._contentBoundingVolumes.push(this.boundingVolume);
+    }
     this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
