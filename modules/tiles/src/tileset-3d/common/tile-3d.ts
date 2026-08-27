@@ -799,7 +799,7 @@ export class Tile3D {
     let visibleVolume = false;
     let intersectingVolume = false;
     for (const contentVolume of contentVolumes) {
-      let visibility = INTERSECTION.INSIDE;
+      let visibility: number = INTERSECTION.INSIDE;
       if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
         visibility = frameState.cullingVolume.computeVisibility(contentVolume);
         if (visibility === INTERSECTION.OUTSIDE) {
