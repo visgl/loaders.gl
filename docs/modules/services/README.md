@@ -19,10 +19,19 @@ capability graph is intentionally separate from source loading, so direct source
 remains the simplest path when the endpoint is already known.
 
 ```ts
-import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/services';
+import {
+  createServiceSource,
+  discoverArcGISCapabilities,
+  selectArcGISService
+} from '@loaders.gl/services';
 
 const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services');
 const imagery = graph && selectArcGISService(graph, {kind: 'image', format: 'lerc'});
+const source = imagery && createServiceSource(
+  imagery.url,
+  {},
+  imagery.capabilities.type
+);
 ```
 
 Discovery performs one metadata request per discovered service. Pass a custom `fetch` function when

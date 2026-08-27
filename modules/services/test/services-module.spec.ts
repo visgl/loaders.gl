@@ -4,6 +4,7 @@ import {
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
   ArcGISVectorTileServerSourceLoader,
+  createServiceSource,
   discoverArcGISCapabilities,
   getServiceLoader,
   selectArcGISService
@@ -34,6 +35,22 @@ describe('@loaders.gl/services', () => {
     expect(getServiceLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
     expect(getServiceLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);
     expect(getServiceLoader('unknown-service')).toBeUndefined();
+  });
+
+  test('creates a source from normalized capability type or URL', () => {
+    expect(
+      createServiceSource(
+        'https://example.com/arcgis/rest/services/Basemap/VectorTileServer',
+        {},
+        'arcgis-vector-tile-server'
+      )
+    ).toBeInstanceOf(Object);
+    expect(
+      createServiceSource('https://example.com/arcgis/rest/services/Roads/FeatureServer/0')
+    ).toBeInstanceOf(Object);
+    expect(() => createServiceSource('https://example.com/service', {}, 'unknown')).toThrow(
+      'No service loader recognized type or URL'
+    );
   });
 
   test('keeps the package entrypoints wired to the public exports', () => {
