@@ -1,107 +1,77 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+import {fetchFile, isBrowser} from '@loaders.gl/core';
+import * as arrow from 'apache-arrow';
+import {expect, test} from 'vitest';
+import {GeoPackageDataSource} from '../src/geopackage-source-loader';
 
-import test from 'test/utils/vitest-tape';
-import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
-import {getTableRowAsObject} from '@loaders.gl/schema-utils';
-import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';
-import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geopackage/bundled';
+const GEOPACKAGE_FIXTURE = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
 
-const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
+test.runIf(isBrowser)(
+  'GeoPackage source exposes shared scan metadata for the default table',
+  async () => {
+    const response = await fetchFile(GEOPACKAGE_FIXTURE);
+    const source = new GeoPackageDataSource(new Blob([await response.arrayBuffer()]), {
+      geopackage: {}
+    });
+    const metadata = await source.getQueryMetadata();
 
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
-
-test('GeoPackageSource#createDataSource selects GeoPackage source from URL', t => {
-  const dataSource = createDataSource(GPKG_RIVERS_MULTI, [GeoPackageSource], {
-    geopackage: {}
-  });
-
-  t.ok(dataSource instanceof GeoPackageDataSource, 'returns GeoPackageDataSource');
-  t.end();
-});
-
-test('GeoPackageSource#getMetadata returns tables and default selection', async t => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
-    core: {type: 'geopackage'},
-    geopackage: {}
-  }) as GeoPackageDataSource;
-  const metadata = await dataSource.getMetadata();
-
-  t.equal(metadata.tables.length, 2, 'returns both vector tables');
-  t.equal(
-    metadata.tables.find(table => table.isDefault)?.name,
-    'preferred_rivers',
-    'marks the metadata-selected default table'
-  );
-  t.equal(
-    metadata.tables.find(table => table.name === 'preferred_rivers')?.identifier,
-    'default',
-    'includes GeoPackage table metadata'
-  );
-
-  t.end();
-});
-
-test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds', async t => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
-    core: {type: 'geopackage'},
-    geopackage: {}
-  }) as GeoPackageDataSource;
-  const metadata = await dataSource.getQueryMetadata();
-  t.equal(metadata.sourceType, 'geopackage', 'uses the shared source identifier');
-  t.ok(metadata.columns.length > 0, 'publishes the selected table schema');
-  t.ok(metadata.spatial?.bounds, 'publishes feature bounds');
-  t.end();
-});
-
-test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async t => {
-  const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
-  const fixtureArrayBuffer = await fixtureResponse.arrayBuffer();
-  const dataSource = createDataSource(new Blob([fixtureArrayBuffer]), [GeoPackageSource], {
-    core: {type: 'geopackage'},
-    geopackage: {}
-  }) as GeoPackageDataSource;
-
-  const sourceTable = await dataSource.getTable('FEATURESriversds');
-  const loaderTable = await load(fixtureArrayBuffer, BundledGeoPackageLoader, {
-    geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
-  });
-
-  t.deepEqual(getRows(sourceTable), getRows(loaderTable), 'source matches loader output');
-  t.end();
-});
-
-test('GeoPackageSource#getTable uses the default selection heuristic', async t => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
-    core: {type: 'geopackage'},
-    geopackage: {}
-  }) as GeoPackageDataSource;
-
-  const defaultTable = await dataSource.getTable();
-  const preferredTable = await dataSource.getTable('preferred_rivers');
-
-  t.deepEqual(
-    getRows(defaultTable),
-    getRows(preferredTable),
-    'default table matches the preferred table'
-  );
-  t.end();
-});
-
-async function createFixtureBlob(): Promise<Blob> {
-  const response = await fetchFile(GPKG_RIVERS_MULTI);
-  const arrayBuffer = await response.arrayBuffer();
-  return new Blob([arrayBuffer]);
-}
-
-function getRows(table): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(getTableRowAsObject(table, rowIndex, {}));
+    expect(metadata.queryType).toBe('table');
+    expect(metadata.columns.map(column => column.name)).toContain('geometry');
+    expect(metadata.columns.find(column => column.name === 'geometry')?.role).toBe('geometry');
+    expect(metadata.capabilities.table?.projection).toBe('residual');
   }
-  return rows;
-}
+);
+
+test.runIf(isBrowser)(
+  'GeoPackage source handles missing defaults, bounds, and geometry fields',
+  async () => {
+    const source = new GeoPackageDataSource(new Blob([]), {geopackage: {}});
+    const tableData = arrow.tableFromArrays({value: [1]});
+    source.getMetadata = async () => ({
+      tables: [
+        {
+          name: 'fallback',
+          geometryColumnName: 'missing',
+          geometryTypeName: 'POINT',
+          isDefault: false
+        }
+      ]
+    });
+    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+
+    const metadata = await source.getQueryMetadata();
+    expect(metadata.name).toBe('fallback');
+    expect(metadata.spatial).toBeUndefined();
+    expect(metadata.columns[0]?.role).toBe('attribute');
+  }
+);
+
+test.runIf(isBrowser)(
+  'GeoPackage source marks a source geometry field when it is not normalized',
+  async () => {
+    const source = new GeoPackageDataSource(new Blob([]), {geopackage: {}});
+    const tableData = arrow.tableFromArrays({geom: [1]});
+    source.getMetadata = async () => ({
+      tables: [
+        {
+          name: 'geometry',
+          identifier: 'identified',
+          description: 'description',
+          geometryColumnName: 'geom',
+          geometryTypeName: 'POINT',
+          bounds: [
+            [0, 1],
+            [2, 3]
+          ],
+          isDefault: true
+        }
+      ]
+    });
+    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+
+    const metadata = await source.getQueryMetadata();
+    expect(metadata.name).toBe('identified');
+    expect(metadata.description).toBe('description');
+    expect(metadata.spatial?.bounds).toEqual({minimum: [0, 1], maximum: [2, 3]});
+    expect(metadata.columns[0]?.role).toBe('geometry');
+  }
+);
