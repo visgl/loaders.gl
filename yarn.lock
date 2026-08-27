@@ -5409,6 +5409,7 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/textures": "npm:5.0.0-alpha.2"
     "@math.gl/core": "npm:4.2.0-alpha.5"
+    "@math.gl/culling": "npm:^4.2.0-alpha.5"
     meshoptimizer: "npm:^1.2.0"
     zod: "npm:^4.1.12"
   peerDependencies:

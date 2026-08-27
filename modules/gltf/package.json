@@ -74,6 +74,7 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "@loaders.gl/textures": "5.0.0-alpha.2",
     "@math.gl/core": "4.2.0-alpha.5",
+    "@math.gl/culling": "^4.2.0-alpha.5",
     "meshoptimizer": "^1.2.0",
     "zod": "^4.1.12"
   },

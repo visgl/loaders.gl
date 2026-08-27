@@ -32,6 +32,8 @@ export type {
   GLTF_EXT_texture_webp
 } from './lib/types/gltf-json-schema';
 
+export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
+
 // 3DTiles extensions
 export type {
   GLTF_EXT_feature_metadata_GLTF,
@@ -128,7 +130,9 @@ export {
   GLTFKHRMeshoptCompressionSchema,
   GLTFEXTMeshoptCompressionSchema,
   GLTFEXTTextureWebpSchema,
-  GLTFMSFTTextureDdsSchema
+  GLTFMSFTTextureDdsSchema,
+  GLTFShapeSchema,
+  GLTFBoundingVolumeSchema
 } from './lib/types/gltf-zod-schema';
 export {GLTFFormat, GLBFormat} from './gltf-format';
 
@@ -164,6 +168,7 @@ export {
   type GLTFSkinReferences,
   type GLTFTextureReferences
 } from './lib/api/gltf-iterator';
+export {getGLTFCullingShape, getGLTFNodeCullingShape} from './lib/api/gltf-culling';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {
   convertGLTFV1ToGLTF2,

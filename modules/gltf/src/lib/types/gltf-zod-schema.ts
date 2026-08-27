@@ -16,6 +16,43 @@ const GLTF_NAMED_PROPERTY_SHAPE = {
   name: z.string().optional()
 };
 
+/** Zod schema for a draft glTF 2.1 implicit shape. */
+export const GLTFShapeSchema = z
+  .object({
+    type: z.enum(['box', 'capsule', 'cylinder', 'plane', 'sphere']),
+    box: z.object({size: z.array(z.number()).length(3)}).optional(),
+    capsule: z
+      .object({
+        height: z.number().positive(),
+        radiusBottom: z.number().nonnegative().optional(),
+        radiusTop: z.number().nonnegative().optional()
+      })
+      .optional(),
+    cylinder: z
+      .object({
+        height: z.number().positive(),
+        radiusBottom: z.number().nonnegative().optional(),
+        radiusTop: z.number().nonnegative().optional()
+      })
+      .optional(),
+    plane: z
+      .object({sizeX: z.number().positive().optional(), sizeZ: z.number().positive().optional()})
+      .optional(),
+    sphere: z.object({radius: z.number().positive()}).optional(),
+    name: z.string().optional(),
+    ...GLTF_PROPERTY_SHAPE
+  })
+  .catchall(z.unknown());
+
+/** Zod schema for a draft glTF 2.1 node bounding volume. */
+export const GLTFBoundingVolumeSchema = z
+  .object({
+    shape: GLTFIdSchema,
+    matrix: z.array(z.number()).length(16).optional(),
+    ...GLTF_PROPERTY_SHAPE
+  })
+  .catchall(z.unknown());
+
 /** Zod schema for sparse accessor indices. */
 export const GLTFAccessorSparseIndicesSchema = z
   .object({
@@ -307,6 +344,7 @@ export const GLTFNodeSchema = z
     translation: z.array(z.number()).length(3).optional(),
     weights: z.array(z.number()).min(1).optional(),
     externalAsset: GLTFIdSchema.optional(),
+    boundingVolume: GLTFBoundingVolumeSchema.optional(),
     ...GLTF_NAMED_PROPERTY_SHAPE
   })
   .catchall(z.unknown());
@@ -379,6 +417,7 @@ export const GLTFSchema = z
     bufferViews: z.array(GLTFBufferViewSchema).min(1).optional(),
     cameras: z.array(GLTFCameraSchema).min(1).optional(),
     externalAssets: z.array(GLTFExternalAssetSchema).min(1).optional(),
+    shapes: z.array(GLTFShapeSchema).min(1).optional(),
     images: z.array(GLTFImageSchema).min(1).optional(),
     materials: z.array(GLTFMaterialSchema).min(1).optional(),
     meshes: z.array(GLTFMeshSchema).min(1).optional(),
