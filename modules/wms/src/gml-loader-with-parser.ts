@@ -3,14 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GMLFeatureCollection, Geometry} from './lib/parsers/gml/parse-gml';
+import type {GMLFeatureCollection, Geometry, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import {GMLLoader as GMLLoaderMetadata} from './gml-loader';
 
 const {preload: _GMLLoaderPreload, ...GMLLoaderMetadataWithoutPreload} = GMLLoaderMetadata;
 
 export type GMLLoaderOptions = LoaderOptions & {
-  gml?: {batchSize?: number};
+  gml?: {
+    /** Number of feature members emitted in each streaming batch. */
+    batchSize?: number;
+    /** XML Schema scalar types keyed by the local feature property name. */
+    propertyTypes?: Record<string, GMLPropertyType>;
+  };
 };
 
 /**
@@ -19,8 +24,9 @@ export type GMLLoaderOptions = LoaderOptions & {
 export const GMLLoaderWithParser = {
   ...GMLLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: GMLLoaderOptions) =>
-    parseGML(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: GMLLoaderOptions) => parseGML(text, options),
+    parseGML(new TextDecoder().decode(arrayBuffer), options?.gml || options),
+  parseTextSync: (text: string, options?: GMLLoaderOptions) =>
+    parseGML(text, options?.gml || options),
   parseInBatches: parseGMLInBatches
 } as const satisfies LoaderWithParser<
   Geometry | GMLFeatureCollection | null,
@@ -47,7 +53,7 @@ async function* parseGMLInBatches(
       })
     );
     for (const fragment of fragments) {
-      const parsed = parseGMLFeatureFragment(fragment, options);
+      const parsed = parseGMLFeatureFragment(fragment, options?.gml || options);
       if (parsed && parsed.type === 'FeatureCollection') features.push(...parsed.features);
       if (features.length >= batchSize) {
         yield {type: 'FeatureCollection', features: features.splice(0, batchSize)};
@@ -55,7 +61,7 @@ async function* parseGMLInBatches(
     }
   }
   for (const fragment of parser.finish(decoder.decode())) {
-    const parsed = parseGMLFeatureFragment(fragment, options);
+    const parsed = parseGMLFeatureFragment(fragment, options?.gml || options);
     if (parsed && parsed.type === 'FeatureCollection') features.push(...parsed.features);
   }
   if (features.length) yield {type: 'FeatureCollection', features};
@@ -63,7 +69,7 @@ async function* parseGMLInBatches(
 
 function parseGMLFeatureFragment(
   fragment: string,
-  options?: GMLLoaderOptions
+  options?: GMLLoaderOptions['gml'] | GMLLoaderOptions
 ): Geometry | GMLFeatureCollection | null {
   return fragment.match(/<[^/!?][^>]*featureMember\b/i)
     ? parseGML(fragment, options)

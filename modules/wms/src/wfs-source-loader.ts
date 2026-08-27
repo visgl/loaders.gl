@@ -22,7 +22,7 @@ import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-pa
 import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
-import type {GMLFeatureCollection} from './lib/parsers/gml/parse-gml';
+import type {GMLFeatureCollection, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
 
@@ -37,6 +37,8 @@ export type WFSourceOptions = DataSourceOptions & {
     wfsParameters?: WFSParameters;
     /** Any additional service specific parameters */
     vendorParameters?: Record<string, unknown>;
+    /** XML Schema scalar types for feature properties returned by GML. */
+    propertyTypes?: Record<string, GMLPropertyType>;
   };
 };
 
@@ -101,6 +103,20 @@ export type WFSParameters = {
     | 'application/geo+json'
     | 'application/vnd.ogc.gml'
     | 'application/gml+xml';
+  /** Maximum number of features returned by a WFS 2.0 request. */
+  count?: number;
+  /** Zero-based feature offset used for paging. */
+  startIndex?: number;
+  /** WFS 1.1 equivalent of `count`. */
+  maxFeatures?: number;
+  /** Comma-separated feature properties to return. */
+  propertyName?: string | string[];
+  /** OGC Filter XML or a server-specific filter expression. */
+  filter?: string;
+  /** Return only the result count when supported by the server. */
+  resultType?: 'results' | 'hits';
+  /** Server-side sort expression. */
+  sortBy?: string | string[];
   /** Styling - Not yet supported */
   styles?: unknown;
   /** Any additional parameters specific to this WFSVectorSource (GetMap) */
@@ -163,6 +179,20 @@ export type WFSGetFeatureParameters = {
     | 'application/geo+json'
     | 'application/vnd.ogc.gml'
     | 'application/gml+xml';
+  /** Maximum number of features returned by a WFS 2.0 request. */
+  count?: number;
+  /** Zero-based feature offset used for paging. */
+  startIndex?: number;
+  /** WFS 1.1 equivalent of `count`. */
+  maxFeatures?: number;
+  /** Comma-separated feature properties to return. */
+  propertyName?: string | string[];
+  /** OGC Filter XML or a server-specific filter expression. */
+  filter?: string;
+  /** Return only the result count when supported by the server. */
+  resultType?: 'results' | 'hits';
+  /** Server-side sort expression. */
+  sortBy?: string | string[];
 };
 
 // /** GetMap parameters that are specific to the current view */
@@ -252,6 +282,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   /** Create a WFSVectorSource */
   constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
     super(data, options, WFSSourceLoader.defaultOptions, coreApi);
+    this.vendorParameters = options.wfs?.vendorParameters;
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.
@@ -280,7 +311,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const featureCollection = parseWFSFeatureCollection(
       text,
       response.headers.get('content-type'),
-      this.loadOptions
+      {...this.loadOptions, propertyTypes: this.options.wfs?.propertyTypes}
     );
     const geoJsonTable = parseGeoJSONTable(featureCollection);
     const format = parameters.format || 'arrow';
@@ -322,7 +353,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       if (isWFSExceptionDocument(text, response.headers.get('content-type'))) {
         throw new Error('WFS GetFeature returned an exception document');
       }
-      yield convertWFSFeatures(parseGML(text, this.loadOptions), parameters.format);
+      yield convertWFSFeatures(
+        parseGML(text, {...this.loadOptions, propertyTypes: this.options.wfs?.propertyTypes}),
+        parameters.format
+      );
       return;
     }
 
@@ -488,15 +522,16 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     vendorParameters?: Record<string, unknown>
   ): string {
     const requestParameters = this._normalizeGetFeatureParameters(parameters);
+    const defaultParameters = this.options.wfs?.wfsParameters || {};
     const options: WFSGetFeatureParameters & {version: WFSVersion} = {
+      ...defaultParameters,
+      ...requestParameters,
       version: requestParameters.version || '2.0.0',
       typeName: requestParameters.typeName,
       bbox: requestParameters.bbox,
       srsName: requestParameters.srsName || requestParameters.crs || 'EPSG:4326',
       outputFormat:
-        requestParameters.outputFormat ||
-        this.options.wfs?.wfsParameters?.outputFormat ||
-        'application/json'
+        requestParameters.outputFormat || defaultParameters.outputFormat || 'application/json'
     };
     return this._getWFSUrl('GetFeature', options, vendorParameters);
   }
@@ -600,7 +635,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const IGNORE_EMPTY_KEYS = ['transparent', 'time', 'elevation'];
     for (const [key, value] of Object.entries(allParameters)) {
       // hack to preserve test cases. Not super clear if keys should be included when values are undefined
-      if (!IGNORE_EMPTY_KEYS.includes(key) || value) {
+      if (value !== undefined && value !== null && (!IGNORE_EMPTY_KEYS.includes(key) || value)) {
         url += first ? '?' : '&';
         first = false;
         url += this._getURLParameter(key, value, wfsParameters);
@@ -653,6 +688,20 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
       case 'srsName':
         key = 'srsName';
+        break;
+
+      case 'count':
+        // WFS 1.1 uses maxFeatures for the equivalent page size.
+        if (wfsParameters.version === '1.1.0') {
+          key = 'maxFeatures';
+        }
+        break;
+
+      case 'maxFeatures':
+        // Keep the legacy spelling when targeting WFS 1.1; WFS 2.0 uses count.
+        if (wfsParameters.version === '2.0.0') {
+          key = 'count';
+        }
         break;
 
       case 'x':

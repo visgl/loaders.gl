@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GMLFeatureCollection, Geometry} from './lib/parsers/gml/parse-gml';
+import type {GMLFeatureCollection, Geometry, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 
 import {GMLFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -14,6 +14,8 @@ export type GMLLoaderOptions = LoaderOptions & {
   gml?: {
     /** Number of feature members emitted in each streaming batch. */
     batchSize?: number;
+    /** XML Schema scalar types keyed by the local feature property name. */
+    propertyTypes?: Record<string, GMLPropertyType>;
   };
 };
 
