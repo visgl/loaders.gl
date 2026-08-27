@@ -101,6 +101,30 @@ vitestTest('COPC range reader deduplicates concurrent and repeated exact ranges'
   expect(readCount).toBe(3);
 });
 
+vitestTest('COPC range reader isolates cancellation between shared waiters', async () => {
+  let resolveRange: ((value: ArrayBuffer) => void) | undefined;
+  const readableFile = {
+    stat: async () => ({size: 200_000}),
+    read: async (begin: number, length: number) => {
+      if (begin < 100_000) {
+        return new ArrayBuffer(length);
+      }
+      return await new Promise<ArrayBuffer>(resolve => {
+        resolveRange = resolve;
+      });
+    }
+  };
+  const readRange = createCachedCOPCRangeReader(readableFile as never);
+  const firstAbortController = new AbortController();
+  const firstRequest = readRange(100_000, 100_100, firstAbortController.signal);
+  const secondRequest = readRange(100_000, 100_100);
+
+  firstAbortController.abort();
+  await expect(firstRequest).rejects.toThrow('aborted');
+  resolveRange!(new ArrayBuffer(100));
+  await expect(secondRequest).resolves.toHaveLength(100);
+});
+
 test('COPCSourceLoader#loads full point content for a tile', async t => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();

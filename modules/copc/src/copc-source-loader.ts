@@ -2229,8 +2229,10 @@ export function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRan
     }
     let rangePromise = inFlightRanges.get(key);
     if (!rangePromise) {
-      rangePromise = Promise.resolve(readableFile.read(begin, end - begin, signal)).then(
-        range => new Uint8Array(range)
+      // The cached value must own its buffer: node loads may transfer their
+      // input to a worker, which would otherwise detach the cache entry.
+      rangePromise = Promise.resolve(readableFile.read(begin, end - begin)).then(range =>
+        new Uint8Array(range).slice()
       );
       inFlightRanges.set(key, rangePromise);
       void rangePromise.then(
@@ -2243,10 +2245,36 @@ export function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRan
         }
       );
     }
-    const range = await rangePromise;
-    if (signal?.aborted) {
-      throw createCOPCAbortError();
-    }
-    return range;
+    return await waitForCOPCRange(rangePromise, signal);
   };
+}
+
+/** Wait for a shared range without allowing one caller to cancel other callers. */
+function waitForCOPCRange(
+  rangePromise: Promise<Uint8Array>,
+  signal?: AbortSignal
+): Promise<Uint8Array> {
+  if (!signal) {
+    return rangePromise;
+  }
+  return new Promise((resolve, reject) => {
+    const handleAbort = (): void => {
+      signal.removeEventListener('abort', handleAbort);
+      reject(createCOPCAbortError());
+    };
+    signal.addEventListener('abort', handleAbort, {once: true});
+    rangePromise.then(
+      range => {
+        signal.removeEventListener('abort', handleAbort);
+        resolve(range);
+      },
+      error => {
+        signal.removeEventListener('abort', handleAbort);
+        reject(error);
+      }
+    );
+    if (signal.aborted) {
+      handleAbort();
+    }
+  });
 }
