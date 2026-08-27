@@ -24,6 +24,7 @@ import {
   BsonType,
   BoundingBox,
   ColumnChunk,
+  ColumnCryptoMetaData,
   ColumnIndex,
   ColumnMetaData,
   SizeStatistics,
@@ -78,10 +79,12 @@ import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 import {planColumnPages} from './page-planner';
 import {planDictionary, type ParquetDictionaryPolicy} from './dictionary-planner';
 import {
+  decodeParquetSplitBlockBloomFilter,
   encodeParquetBloomFilterValue,
   encodeParquetSplitBlockBloomFilter
 } from '../../lib/parquet-bloom-filter';
 import {BoundaryOrder} from '../parquet-thrift/BoundaryOrder';
+import {EncryptionWithFooterKey} from '../parquet-thrift/ColumnCryptoMetaData';
 import {EncryptionAlgorithm} from '../parquet-thrift/EncryptionAlgorithm';
 import {FileCryptoMetaData} from '../parquet-thrift/FileCryptoMetaData';
 import {PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
@@ -135,6 +138,10 @@ export interface ParquetEncoderOptions {
   sortingColumns?: readonly ParquetSortingColumnOption[];
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
+  /** Stable file identifier shared by encrypted column modules and the footer. */
+  encryptionFileUnique?: Uint8Array;
+  /** Zero-based row-group ordinal used by encrypted module AAD. */
+  rowGroupOrdinal?: number;
 
   // Write Stream Options
   flags?: string;
@@ -332,6 +339,8 @@ export class ParquetEnvelopeWriter {
   public sortingColumns?: readonly ParquetSortingColumnOption[];
   /** Optional modular-encryption configuration for the footer. */
   public encryption?: ParquetWriterEncryptionOptions;
+  /** File identifier used for encrypted column-module AAD. */
+  public encryptionFileUnique?: Uint8Array;
 
   constructor(
     schema: ParquetSchema,
@@ -357,7 +366,15 @@ export class ParquetEnvelopeWriter {
     this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
     this.writeStatistics = opts.writeStatistics;
     this.sortingColumns = opts.sortingColumns;
-    this.encryption = opts.encryption;
+    this.encryption = opts.encryption
+      ? {
+          ...opts.encryption,
+          fileUnique: opts.encryption.fileUnique
+            ? new Uint8Array(opts.encryption.fileUnique)
+            : createFileUnique()
+        }
+      : undefined;
+    this.encryptionFileUnique = this.encryption?.fileUnique;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -389,7 +406,10 @@ export class ParquetEnvelopeWriter {
       writePageChecksums: this.writePageChecksums,
       writeSizeStatistics: this.writeSizeStatistics,
       writeStatistics: this.writeStatistics,
-      sortingColumns: this.sortingColumns
+      sortingColumns: this.sortingColumns,
+      encryption: this.encryption,
+      encryptionFileUnique: this.encryptionFileUnique,
+      rowGroupOrdinal: this.rowGroups.length
     });
 
     this.rowCount += records.rowCount;
@@ -722,10 +742,14 @@ async function encodeColumnChunk(
   column: ParquetField,
   buffer: ParquetRowGroup,
   offset: number,
-  opts: ParquetEncoderOptions
+  opts: ParquetEncoderOptions,
+  rowGroupOrdinal: number,
+  columnOrdinal: number
 ): Promise<{
   body: Uint8Array;
   metadata: ColumnMetaData;
+  encryptedColumnMetadata?: Uint8Array;
+  cryptoMetadata?: ColumnCryptoMetaData;
   metadataOffset: number;
   offsetIndexOffset?: number;
   offsetIndexLength?: number;
@@ -735,10 +759,12 @@ async function encodeColumnChunk(
   const data = buffer.columnData[column.path.join()];
   const baseOffset = (opts.baseOffset || 0) + offset;
   /* encode data page(s) */
-  const pages: Uint8Array[] = [];
+  const pageRecords: Array<{
+    page: Uint8Array;
+    headerSize: number;
+    dictionary: boolean;
+  }> = [];
   const pageLocations: PageLocation[] = [];
-  let pageOffset = 0;
-  let firstRowIndex = 0;
   // tslint:disable-next-line:variable-name
   let total_uncompressed_size = 0;
   // tslint:disable-next-line:variable-name
@@ -763,8 +789,7 @@ async function encodeColumnChunk(
       dictionaryPlan.values,
       opts.writePageChecksums
     );
-    pages.push(result.page);
-    pageOffset += result.page.length;
+    pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: true});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
@@ -773,7 +798,9 @@ async function encodeColumnChunk(
     ? column.encoding === 'PLAIN_DICTIONARY'
       ? 'PLAIN_DICTIONARY'
       : 'RLE_DICTIONARY'
-    : column.encoding!;
+    : column.encoding === 'PLAIN_DICTIONARY' || column.encoding === 'RLE_DICTIONARY'
+      ? 'PLAIN'
+      : column.encoding!;
   let dictionaryIndexOffset = 0;
   for (const plannedPage of plannedPages) {
     const pageData = dictionaryPlan
@@ -808,29 +835,68 @@ async function encodeColumnChunk(
             ? createColumnStatistics(column, plannedPage.data)
             : undefined
         );
-    pageLocations.push(
-      new PageLocation({
-        offset: baseOffset + pageOffset,
-        compressed_page_size: result.page.length,
-        first_row_index: firstRowIndex
-      })
-    );
-    firstRowIndex += plannedPage.rowCount;
-    pages.push(result.page);
-    pageOffset += result.page.length;
+    pageRecords.push({page: result.page, headerSize: result.headerSize, dictionary: false});
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
 
+  const encryption = opts.encryption;
+  const encryptedColumn = Boolean(encryption && shouldEncryptColumn(encryption, column));
+  const pages = encryptedColumn
+    ? await encryptParquetColumnPages(
+        pageRecords,
+        encryption!,
+        opts.encryptionFileUnique!,
+        opts.rowGroupOrdinal ?? 0,
+        columnOrdinal
+      )
+    : pageRecords.map(record => record.page);
+  let pageOffset = 0;
+  let dataPageIndex = 0;
+  let firstRowIndex = 0;
+  for (const [pageIndex, page] of pages.entries()) {
+    if (!pageRecords[pageIndex].dictionary) {
+      pageLocations.push(
+        new PageLocation({
+          offset: baseOffset + pageOffset,
+          compressed_page_size: page.length,
+          first_row_index: firstRowIndex
+        })
+      );
+      firstRowIndex += plannedPages[dataPageIndex++].rowCount;
+    }
+    pageOffset += page.length;
+  }
+  total_compressed_size = pages.reduce((total, page) => total + page.length, 0);
   const pagesBuf = concatUint8Arrays(pages);
   // const compression = column.compression === 'UNCOMPRESSED' ? (opts.compression || 'UNCOMPRESSED') : column.compression;
   const bloomFilterEnabled =
     opts.bloomFilter === true || opts.bloomFilter?.[column.path[0]] === true;
   const bloomFilter = bloomFilterEnabled ? createColumnBloomFilter(column, data.values) : undefined;
+  const encodedBloomFilter =
+    bloomFilter && encryptedColumn
+      ? await encryptParquetBloomFilter(
+          bloomFilter,
+          encryption!,
+          opts.encryptionFileUnique!,
+          opts.rowGroupOrdinal ?? 0,
+          columnOrdinal
+        )
+      : bloomFilter;
   const pageIndexEnabled = opts.pageIndex === true || opts.pageIndex?.[column.path[0]] === true;
   const pageIndexes = pageIndexEnabled
     ? createColumnPageIndexes(column, plannedPages, pageLocations)
     : undefined;
+  const encodedPageIndexes =
+    pageIndexes && encryptedColumn
+      ? await encryptParquetPageIndexes(
+          pageIndexes,
+          encryption!,
+          opts.encryptionFileUnique!,
+          opts.rowGroupOrdinal ?? 0,
+          columnOrdinal
+        )
+      : pageIndexes;
 
   /* prepare metadata header */
   const metadata = new ColumnMetaData({
@@ -859,8 +925,8 @@ async function encodeColumnChunk(
     total_compressed_size: int64(total_compressed_size),
     type: Type[column.primitiveType!],
     codec: CompressionCodec[column.compression!],
-    bloom_filter_offset: bloomFilter ? int64(baseOffset + pagesBuf.length) : undefined,
-    bloom_filter_length: bloomFilter?.length,
+    bloom_filter_offset: encodedBloomFilter ? int64(baseOffset + pagesBuf.length) : undefined,
+    bloom_filter_length: encodedBloomFilter?.length,
     geospatial_statistics: createGeospatialStatistics(column, data.values),
     size_statistics: opts.writeSizeStatistics ? createSizeStatistics(column, data) : undefined,
     statistics: isStatisticsEnabled(opts.writeStatistics, column)
@@ -874,18 +940,28 @@ async function encodeColumnChunk(
   metadata.encodings.push(Encoding[valueEncoding]);
 
   /* concat metadata header and data pages */
-  const metadataOffset = baseOffset + pagesBuf.length + (bloomFilter?.length || 0);
   const metadataEncoded = serializeThrift(metadata);
-  const offsetIndexOffset = pageIndexes ? metadataOffset + metadataEncoded.length : undefined;
-  const columnIndexOffset = pageIndexes?.columnIndex
-    ? metadataOffset + metadataEncoded.length + pageIndexes.offsetIndex.length
+  const metadataSection = encryptedColumn ? undefined : metadataEncoded;
+  const metadataOffset =
+    baseOffset +
+    pagesBuf.length +
+    (encodedBloomFilter?.length || 0) +
+    (metadataSection?.length || 0);
+  const offsetIndexOffset = encodedPageIndexes
+    ? metadataOffset + (metadataSection?.length || 0)
+    : undefined;
+  const columnIndexOffset = encodedPageIndexes?.columnIndex
+    ? metadataOffset + (metadataSection?.length || 0) + encodedPageIndexes.offsetIndex.length
     : undefined;
   const body = concatUint8Arrays([
     pagesBuf,
-    ...(bloomFilter ? [bloomFilter] : []),
-    metadataEncoded,
-    ...(pageIndexes
-      ? [pageIndexes.offsetIndex, ...(pageIndexes.columnIndex ? [pageIndexes.columnIndex] : [])]
+    ...(encodedBloomFilter ? [encodedBloomFilter] : []),
+    ...(metadataSection ? [metadataSection] : []),
+    ...(encodedPageIndexes
+      ? [
+          encodedPageIndexes.offsetIndex,
+          ...(encodedPageIndexes.columnIndex ? [encodedPageIndexes.columnIndex] : [])
+        ]
       : [])
   ]);
   return {
@@ -893,9 +969,161 @@ async function encodeColumnChunk(
     metadata,
     metadataOffset,
     offsetIndexOffset,
-    offsetIndexLength: pageIndexes?.offsetIndex.length,
+    offsetIndexLength: encodedPageIndexes?.offsetIndex.length,
     columnIndexOffset,
-    columnIndexLength: pageIndexes?.columnIndex?.length
+    columnIndexLength: encodedPageIndexes?.columnIndex?.length,
+    ...(encryptedColumn
+      ? {
+          encryptedColumnMetadata: await encryptParquetModule(metadataEncoded, {
+            algorithm: encryption!.algorithm ?? 'AES_GCM_V1',
+            aad: createParquetModuleAad(
+              encryption!.aadPrefix,
+              opts.encryptionFileUnique!,
+              'column-metadata',
+              opts.rowGroupOrdinal ?? 0,
+              columnOrdinal
+            ),
+            keyMetadata: encryption!.keyMetadata,
+            keyRetriever: encryption!.keyRetriever
+          }),
+          cryptoMetadata: new ColumnCryptoMetaData({
+            ENCRYPTION_WITH_FOOTER_KEY: new EncryptionWithFooterKey()
+          })
+        }
+      : {})
+  };
+}
+
+/** Returns whether a writer column should use modular encryption. */
+function shouldEncryptColumn(
+  options: ParquetWriterEncryptionOptions,
+  column: ParquetField
+): boolean {
+  return options.encryptColumns === true || options.encryptColumns?.[column.path[0]] === true;
+}
+
+/** Adds the four-byte module length required by encrypted page and Bloom-filter modules. */
+function prefixEncryptedModule(module: Uint8Array): Uint8Array {
+  const prefixed = new Uint8Array(module.byteLength + 4);
+  writeUInt32LE(prefixed, module.byteLength, 0);
+  prefixed.set(module, 4);
+  return prefixed;
+}
+
+/** Encrypts one column's dictionary and data pages using the Parquet module AAD rules. */
+async function encryptParquetColumnPages(
+  pageRecords: readonly {page: Uint8Array; headerSize: number; dictionary: boolean}[],
+  options: ParquetWriterEncryptionOptions,
+  fileUnique: Uint8Array,
+  rowGroupOrdinal: number,
+  columnOrdinal: number
+): Promise<Uint8Array[]> {
+  const encryptedPages: Uint8Array[] = [];
+  let dataPageOrdinal = 0;
+  const algorithm = options.algorithm ?? 'AES_GCM_V1';
+  for (const pageRecord of pageRecords) {
+    const moduleType = pageRecord.dictionary ? 'dictionary-page' : 'data-page';
+    const headerModuleType = pageRecord.dictionary ? 'dictionary-page-header' : 'data-page-header';
+    const header = await encryptParquetModule(pageRecord.page.subarray(0, pageRecord.headerSize), {
+      algorithm,
+      aad: createParquetModuleAad(
+        options.aadPrefix,
+        fileUnique,
+        headerModuleType,
+        rowGroupOrdinal,
+        columnOrdinal,
+        pageRecord.dictionary ? undefined : dataPageOrdinal
+      ),
+      keyMetadata: options.keyMetadata,
+      keyRetriever: options.keyRetriever
+    });
+    const body = await encryptParquetModule(pageRecord.page.subarray(pageRecord.headerSize), {
+      algorithm,
+      aad: createParquetModuleAad(
+        options.aadPrefix,
+        fileUnique,
+        moduleType,
+        rowGroupOrdinal,
+        columnOrdinal,
+        pageRecord.dictionary ? undefined : dataPageOrdinal
+      ),
+      keyMetadata: options.keyMetadata,
+      keyRetriever: options.keyRetriever,
+      page: true
+    });
+    encryptedPages.push(
+      concatUint8Arrays([prefixEncryptedModule(header), prefixEncryptedModule(body)])
+    );
+    if (!pageRecord.dictionary) dataPageOrdinal++;
+  }
+  return encryptedPages;
+}
+
+/** Encrypts a split-block Bloom filter header and bitset as independent Parquet modules. */
+async function encryptParquetBloomFilter(
+  bloomFilter: Uint8Array,
+  options: ParquetWriterEncryptionOptions,
+  fileUnique: Uint8Array,
+  rowGroupOrdinal: number,
+  columnOrdinal: number
+): Promise<Uint8Array> {
+  const parsed = decodeParquetSplitBlockBloomFilter(bloomFilter);
+  const algorithm = options.algorithm ?? 'AES_GCM_V1';
+  const keyOptions = {
+    algorithm,
+    keyMetadata: options.keyMetadata,
+    keyRetriever: options.keyRetriever
+  };
+  const header = await encryptParquetModule(bloomFilter.subarray(0, parsed.headerByteLength), {
+    ...keyOptions,
+    aad: createParquetModuleAad(
+      options.aadPrefix,
+      fileUnique,
+      'bloom-filter-header',
+      rowGroupOrdinal,
+      columnOrdinal
+    )
+  });
+  const bitset = await encryptParquetModule(parsed.bitset, {
+    ...keyOptions,
+    aad: createParquetModuleAad(
+      options.aadPrefix,
+      fileUnique,
+      'bloom-filter-bitset',
+      rowGroupOrdinal,
+      columnOrdinal
+    )
+  });
+  return concatUint8Arrays([prefixEncryptedModule(header), prefixEncryptedModule(bitset)]);
+}
+
+/** Encrypts column and offset indexes independently while preserving their footer offsets. */
+async function encryptParquetPageIndexes(
+  pageIndexes: {offsetIndex: Uint8Array; columnIndex?: Uint8Array},
+  options: ParquetWriterEncryptionOptions,
+  fileUnique: Uint8Array,
+  rowGroupOrdinal: number,
+  columnOrdinal: number
+): Promise<{offsetIndex: Uint8Array; columnIndex?: Uint8Array}> {
+  const algorithm = options.algorithm ?? 'AES_GCM_V1';
+  const encryptIndex = (bytes: Uint8Array, module: 'offset-index' | 'column-index') =>
+    encryptParquetModule(bytes, {
+      algorithm,
+      aad: createParquetModuleAad(
+        options.aadPrefix,
+        fileUnique,
+        module,
+        rowGroupOrdinal,
+        columnOrdinal
+      ),
+      keyMetadata: options.keyMetadata,
+      keyRetriever: options.keyRetriever
+    });
+  return {
+    offsetIndex: await encryptIndex(pageIndexes.offsetIndex, 'offset-index'),
+    columnIndex: pageIndexes.columnIndex
+      ? await encryptIndex(pageIndexes.columnIndex, 'column-index')
+      : undefined
   };
 }
 
@@ -1229,11 +1457,18 @@ async function encodeRowGroup(
       continue; // eslint-disable-line no-continue
     }
 
-    const cchunkData = await encodeColumnChunk(field, data, body.length, opts);
+    const cchunkData = await encodeColumnChunk(
+      field,
+      data,
+      body.length,
+      opts,
+      opts.rowGroupOrdinal ?? 0,
+      metadata.columns.length
+    );
 
     const cchunk = new ColumnChunk({
       file_offset: int64(cchunkData.metadataOffset),
-      meta_data: cchunkData.metadata,
+      meta_data: cchunkData.encryptedColumnMetadata ? undefined : cchunkData.metadata,
       offset_index_offset:
         cchunkData.offsetIndexOffset === undefined
           ? undefined
@@ -1243,7 +1478,9 @@ async function encodeRowGroup(
         cchunkData.columnIndexOffset === undefined
           ? undefined
           : int64(cchunkData.columnIndexOffset),
-      column_index_length: cchunkData.columnIndexLength
+      column_index_length: cchunkData.columnIndexLength,
+      crypto_metadata: cchunkData.cryptoMetadata,
+      encrypted_column_metadata: cchunkData.encryptedColumnMetadata
     });
 
     metadata.columns.push(cchunk);

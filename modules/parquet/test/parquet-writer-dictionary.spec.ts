@@ -126,6 +126,29 @@ test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration
   );
 });
 
+test('ParquetJSWriter falls back from an oversized explicit PLAIN_DICTIONARY', async () => {
+  const input: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [{name: 'label', type: 'utf8', nullable: false}],
+      metadata: {}
+    },
+    data: [{label: 'alpha'}, {label: 'beta'}]
+  };
+  const parquetBuffer = await encode(input, ParquetJSWriter, {
+    worker: false,
+    parquet: {
+      dictionaryPageSizeLimit: 1,
+      columnEncodings: {label: 'PLAIN_DICTIONARY'}
+    }
+  });
+  const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  expect(output.data).toEqual(input.data);
+
+  const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
+  expect(metadata.row_groups[0].columns[0].meta_data?.encodings).not.toContain(2);
+});
+
 /** Selects scalar columns whose representation is identical across maintained readers. */
 function selectScalarColumns(rows: unknown[]): Array<{sequence: number; label: string}> {
   return rows.map(row => {

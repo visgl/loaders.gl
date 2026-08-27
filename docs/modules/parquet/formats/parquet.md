@@ -258,7 +258,8 @@ AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page mod
 is provided. Encrypted source reads resolve selected data keys on the caller thread and transfer only
 the required key material to the worker. `ParquetJSWriter` can now emit an encrypted footer with
 caller-supplied key metadata and a key retriever; column metadata, pages, indexes, and Bloom filters
-remain plaintext on the writer path until a later tranche.
+can also be encrypted for selected columns or all columns with the footer key. Per-column keys,
+key rotation, and plaintext-footer signature generation remain follow-up work.
 
 ## Integrity and Encryption
 
@@ -266,7 +267,7 @@ remain plaintext on the writer path until a later tranche.
 | ------- | ------- | -------- | ----- |
 | Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
 | Page CRC verification | ✅ (opt-in) | ✅ (opt-in) | CRC-32 covers the compressed page body; enable verification or emission explicitly to avoid a default throughput cost |
-| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ⚠️ | Reader supports encrypted footers, column metadata, page indexes, Bloom filters, and AES-GCM/AES-GCM-CTR page reads; `ParquetJSWriter` emits encrypted footers, while encrypted columns/pages/indexes remain future work |
+| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ✅ | ⚠️ | Reader supports encrypted footers, column metadata, page indexes, Bloom filters, and AES-GCM/AES-GCM-CTR page reads; `ParquetJSWriter` emits encrypted footers and optional footer-key column metadata/pages/indexes/Bloom filters. Per-column keys, rotation, and plaintext-footer signature writing remain future work |
 | External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
 ## Parquet and Arrow
@@ -297,14 +298,14 @@ rather than by individual missing methods.
 | ------- | ------ | ------ | ------------ |
 | Selective scan and physical planning | ✅ foundation | Footer statistics, Bloom filters, page/offset indexes, nested-leaf pruning, late materialization, and explainable range plans | Sorting-column semantics drive safe page/row-group pruning, and estimates describe the physical late-materialization plan |
 | Cloud-native table sources | ✅ read-only slice | Iceberg metadata/manifest planning and Delta snapshot replay dispatch selected files through `ParquetDatasetSource` | Checkpoints, CDC, deletion vectors, catalog discovery, and consistent snapshot/error semantics |
-| Modular encryption | ⚠️ expanding | Encrypted footer/column metadata, page/index/Bloom-filter reads, AES-GCM/AES-GCM-CTR pages, and encrypted-footer writing | Encrypted page indexes participate in selective planning; workers can decode encrypted scans; writers cover encrypted columns/pages/indexes, key rotation, and plaintext-footer signatures |
+| Modular encryption | ⚠️ expanding | Encrypted footer/column metadata, page/index/Bloom-filter reads, AES-GCM/AES-GCM-CTR pages, worker scans, and footer-key encrypted-column writing | Per-column keys, key rotation, plaintext-footer signature writing, and broader encrypted-file interoperability |
 | Logical and legacy parity | ⚠️ expanding | Logical Arrow mappings, nested LIST/MAP/VARIANT/geo types, legacy `BIT_PACKED` reads, and explicit `PLAIN_DICTIONARY` writes | Defined INT96 conversion, legacy nested/shredding variants, and exact Arrow fidelity across the stable logical-type matrix |
 | Conformance and scale gate | ⚠️ ongoing | Hermetic feature tests, differential checks, and representative browser benchmarks | Apache corpus plus nested/repeated cases, every stable codec/encoding, differential validation, and large-file/selective-range benchmarks pass in CI |
 | Emerging-format lab | 🧪 experimental | Tracking links and isolated capability flags | ALP, PFOR, VECTOR, and format-versioning experiments remain opt-in until an upstream format and interoperability fixtures stabilize |
 
 The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
-zero-valued size statistics, legacy `BIT_PACKED` level decoding, and explicit legacy
-`PLAIN_DICTIONARY` writer output. Preview features such as
+zero-valued size statistics, legacy `BIT_PACKED` level decoding, explicit legacy
+`PLAIN_DICTIONARY` writer output, and footer-key encrypted column modules. Preview features such as
 [ALP](https://github.com/apache/parquet-format/pull/557),
 [PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream
 [format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) remain

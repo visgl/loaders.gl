@@ -34,6 +34,8 @@ export type ParquetWriterEncryptionOptions = {
   aadPrefix?: Uint8Array;
   /** Eight-byte file identifier used in module AAD; generated when omitted. */
   fileUnique?: Uint8Array;
+  /** Encrypt all data columns, or only the named top-level columns, with the footer key. */
+  encryptColumns?: boolean | Record<string, boolean>;
   /** Resolves the footer key without putting key material in writer options. */
   keyRetriever: ParquetKeyRetriever;
 };
@@ -155,6 +157,8 @@ export async function encryptParquetModule(
     aad: Uint8Array;
     keyMetadata?: Uint8Array;
     keyRetriever: ParquetKeyRetriever;
+    /** Use AES-CTR for page data under AES_GCM_CTR_V1. */
+    page?: boolean;
   }
 ): Promise<Uint8Array> {
   const keyMaterial = await options.keyRetriever(options.keyMetadata, {
@@ -165,14 +169,20 @@ export async function encryptParquetModule(
   const nonce = new Uint8Array(12);
   const cryptoProvider = getCryptoProvider();
   getCryptoRandomValues(nonce);
+  const isCtrPage = options.page && options.algorithm === 'AES_GCM_CTR_V1';
+  const pageCryptoKey = isCtrPage
+    ? await getCryptoKey(keyMaterial, options.algorithm, true, ['encrypt'])
+    : cryptoKey;
   const ciphertext = new Uint8Array(
     await cryptoProvider.encrypt(
-      {
-        name: 'AES-GCM',
-        iv: nonce as unknown as BufferSource,
-        additionalData: options.aad as unknown as BufferSource
-      },
-      cryptoKey,
+      isCtrPage
+        ? {name: 'AES-CTR', counter: makeCounter(nonce) as unknown as BufferSource, length: 32}
+        : {
+            name: 'AES-GCM',
+            iv: nonce as unknown as BufferSource,
+            additionalData: options.aad as unknown as BufferSource
+          },
+      pageCryptoKey,
       toUint8Array(plaintext) as unknown as BufferSource
     )
   );
