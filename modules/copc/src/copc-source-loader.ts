@@ -2225,7 +2225,9 @@ export function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRan
     if (cachedRange) {
       completedRanges.delete(key);
       completedRanges.set(key, cachedRange);
-      return cachedRange;
+      // A node range may be transferred to a worker. Keep the cached copy
+      // attached by giving each consumer its own buffer.
+      return cachedRange.slice();
     }
     let rangePromise = inFlightRanges.get(key);
     if (!rangePromise) {
