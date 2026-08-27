@@ -749,7 +749,9 @@ export class COPCTileSource
         nodePointCount - decodedPointCount,
         remainingPointCount.value
       );
-      const nativePositions = new Float64Array(pointCount * 3);
+      const directRelativePositions = !this._projection && !bounds;
+      const nativePositions = directRelativePositions ? null : new Float64Array(pointCount * 3);
+      const positions = new Float32Array(pointCount * 3);
       const batchColors = selection.colors ? new Uint16Array(pointCount * 3) : null;
       const batchNir = selection.nir ? new Uint16Array(pointCount) : null;
       const batchIntensities = selection.intensity ? new Uint16Array(pointCount) : null;
@@ -775,7 +777,10 @@ export class COPCTileSource
         : null;
       const decoded = decoder.readPointDataBatch(
         {
-          positions: nativePositions,
+          positions: directRelativePositions ? positions : nativePositions!,
+          positionOrigin: directRelativePositions
+            ? (nativeOrigin as [number, number, number])
+            : undefined,
           rawColors: batchColors,
           nir: batchNir,
           intensities: batchIntensities,
@@ -808,47 +813,68 @@ export class COPCTileSource
       }
       decodedPointCount += decoded;
       const selectedPointIndices = bounds
-        ? getCOPCPointIndicesWithinBounds(nativePositions, decoded, bounds)
-        : Array.from({length: decoded}, (_value, index) => index);
-      if (selectedPointIndices.length === 0) {
+        ? getCOPCPointIndicesWithinBounds(nativePositions!, decoded, bounds)
+        : null;
+      if (selectedPointIndices && selectedPointIndices.length === 0) {
         continue;
       }
-      const filteredPointCount = selectedPointIndices.length;
+      const filteredPointCount = selectedPointIndices?.length ?? decoded;
       remainingPointCount.value -= filteredPointCount;
-      const filteredNativePositions = selectCOPCPointArray(
-        nativePositions,
-        selectedPointIndices,
-        3
-      ) as Float64Array;
-      const filteredPositions = new Float32Array(filteredPointCount * 3);
-      const filteredColors = selectCOPCPointArray(batchColors, selectedPointIndices, 3);
-      const filteredNir = selectCOPCPointArray(batchNir, selectedPointIndices, 1);
-      const filteredPointData = filterCOPCPointData(
-        {
-          batchIntensities,
-          batchClassifications,
-          batchSyntheticFlags,
-          batchKeyPointFlags,
-          batchWithheldFlags,
-          batchOverlapFlags,
-          batchGpsTimes,
-          batchScanAngles,
-          batchUserData,
-          batchPointSourceIds,
-          batchReturnNumbers,
-          batchNumberOfReturns,
-          batchScannerChannels,
-          batchScanDirectionFlags,
-          batchEdgeOfFlightLines,
-          typedExtraBytes: []
-        },
-        selectedPointIndices
-      );
-      const filteredExtraBytes = selectCOPCPointArray(
-        batchExtraBytes,
-        selectedPointIndices,
-        extraByteCount
-      );
+      const filteredNativePositions = bounds
+        ? (selectCOPCPointArray(nativePositions!, selectedPointIndices!, 3) as Float64Array)
+        : nativePositions;
+      const filteredPositions = directRelativePositions
+        ? positions
+        : new Float32Array(filteredPointCount * 3);
+      const filteredColors = bounds
+        ? selectCOPCPointArray(batchColors, selectedPointIndices!, 3)
+        : batchColors;
+      const filteredNir = bounds
+        ? selectCOPCPointArray(batchNir, selectedPointIndices!, 1)
+        : batchNir;
+      const filteredPointData = bounds
+        ? filterCOPCPointData(
+            {
+              batchIntensities,
+              batchClassifications,
+              batchSyntheticFlags,
+              batchKeyPointFlags,
+              batchWithheldFlags,
+              batchOverlapFlags,
+              batchGpsTimes,
+              batchScanAngles,
+              batchUserData,
+              batchPointSourceIds,
+              batchReturnNumbers,
+              batchNumberOfReturns,
+              batchScannerChannels,
+              batchScanDirectionFlags,
+              batchEdgeOfFlightLines,
+              typedExtraBytes: []
+            },
+            selectedPointIndices!
+          )
+        : {
+            batchIntensities,
+            batchClassifications,
+            batchSyntheticFlags,
+            batchKeyPointFlags,
+            batchWithheldFlags,
+            batchOverlapFlags,
+            batchGpsTimes,
+            batchScanAngles,
+            batchUserData,
+            batchPointSourceIds,
+            batchReturnNumbers,
+            batchNumberOfReturns,
+            batchScannerChannels,
+            batchScanDirectionFlags,
+            batchEdgeOfFlightLines,
+            typedExtraBytes: []
+          };
+      const filteredExtraBytes = bounds
+        ? selectCOPCPointArray(batchExtraBytes, selectedPointIndices!, extraByteCount)
+        : batchExtraBytes;
       const typedExtraBytes = filteredExtraBytes
         ? createLASTypedExtraBytesAttributes(
             filteredPointCount,
@@ -864,12 +890,14 @@ export class COPCTileSource
           typedExtraBytes
         );
       }
-      this.transformTilePositions(
-        filteredNativePositions,
-        filteredPositions,
-        nativeOrigin,
-        cartographicOrigin
-      );
+      if (!directRelativePositions) {
+        this.transformTilePositions(
+          filteredNativePositions!,
+          filteredPositions,
+          nativeOrigin,
+          cartographicOrigin
+        );
+      }
       yield this.createTileContentResult(
         filteredPointCount,
         filteredPositions,
