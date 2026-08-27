@@ -17,6 +17,14 @@ import type {
   RelationalOrderKey
 } from '@loaders.gl/loader-utils';
 
+/** A named child relation using the SQL module's property-oriented predicate AST. */
+type SQLChildQuery = Readonly<{
+  /** Logical source name resolved by the SQL data source. */
+  source: string;
+  /** Optional query applied to the child relation before combining it. */
+  query?: TableQueryOptions;
+}>;
+
 /** SQL dialects supported by the portable table-query compiler. */
 export type SQLTableQueryDialect = 'duckdb' | 'snowflake';
 
@@ -37,6 +45,10 @@ export type SQLTableQuery = TableQueryOptions &
     groupBy?: readonly string[];
     /** Aggregate output definitions. */
     aggregates?: readonly RelationalAggregate[];
+    /** Additional tables concatenated with `UNION ALL`. */
+    union?: readonly SQLChildQuery[];
+    /** Optional equi-join child table and key mapping. */
+    join?: Readonly<{child: SQLChildQuery; left: string; right: string}>;
   }>;
 
 /** Options controlling portable table-query compilation. */
@@ -72,25 +84,57 @@ export function compileSQLTableQuery(
     namedParameters: options.parameters,
     parameters: []
   };
+  return {
+    sql: compileTableStatement(query, context),
+    parameters: context.parameters
+  };
+}
+
+/** Compiles one table statement while sharing parameter bindings with child relations. */
+function compileTableStatement(query: SQLTableQuery, context: SQLCompilationContext): string {
   const projection = compileProjection(query);
   const table = [query.catalogName, query.schemaName, query.tableName]
     .filter((identifier): identifier is string => identifier !== undefined)
     .map(quoteSQLIdentifier)
     .join('.');
-  const clauses = [`SELECT ${projection}`, `FROM ${table}`];
+  const fromClause = query.join ? compileJoinFromClause(query, table, context) : `FROM ${table}`;
+  const clauses = [`SELECT ${projection}`, fromClause];
   if (query.predicate) {
     clauses.push(`WHERE ${compileSQLPredicate(query.predicate, context)}`);
   }
   if (query.groupBy?.length) {
     clauses.push(`GROUP BY ${query.groupBy.map(quoteSQLIdentifier).join(', ')}`);
   }
-  if (query.orderBy?.length) {
-    clauses.push(`ORDER BY ${query.orderBy.map(compileOrderKey).join(', ')}`);
+  let sql = clauses.join('\n');
+  for (const child of query.union || []) {
+    const childQuery: SQLTableQuery = {
+      tableName: child.source,
+      ...(child.query || {})
+    };
+    validateSQLTableQuery(childQuery);
+    sql = `${sql}\nUNION ALL\n${compileTableStatement(childQuery, context)}`;
   }
-  if (query.limit !== undefined) {
-    clauses.push(`LIMIT ${query.limit}`);
-  }
-  return {sql: clauses.join('\n'), parameters: context.parameters};
+  if (query.orderBy?.length) sql += `\nORDER BY ${query.orderBy.map(compileOrderKey).join(', ')}`;
+  if (query.limit !== undefined) sql += `\nLIMIT ${query.limit}`;
+  return sql;
+}
+
+/** Compiles a base table and optional child relation for an equi-join. */
+function compileJoinFromClause(
+  query: SQLTableQuery,
+  table: string,
+  context: SQLCompilationContext
+): string {
+  const join = query.join;
+  if (!join) return `FROM ${table}`;
+  validateSQLIdentifier(join.child.source);
+  validateSQLIdentifier(join.left);
+  validateSQLIdentifier(join.right);
+  const childTable = quoteSQLIdentifier(join.child.source);
+  const rightRelation = join.child.query
+    ? `(${compileTableStatement({tableName: join.child.source, ...join.child.query}, context)})`
+    : childTable;
+  return `FROM ${table} JOIN ${rightRelation} AS ${childTable} ON ${table}.${quoteSQLIdentifier(join.left)} = ${childTable}.${quoteSQLIdentifier(join.right)}`;
 }
 
 /** Compiles the SELECT list, including computed and aggregate output columns. */

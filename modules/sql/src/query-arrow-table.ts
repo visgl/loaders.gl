@@ -36,6 +36,14 @@ import type {
 import {planRelationalQuery} from '@loaders.gl/loader-utils';
 export {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
+/** A named child relation using the SQL module's property-oriented predicate AST. */
+type ArrowChildQuery = Readonly<{
+  /** Logical source name resolved through the query's table map. */
+  source: string;
+  /** Optional query applied to the child relation before combining it. */
+  query?: TableQueryOptions;
+}>;
+
 /** Options for the lightweight in-memory Arrow query executor. */
 export type ArrowQueryOptions = TableQueryOptions &
   Readonly<{
@@ -49,6 +57,12 @@ export type ArrowQueryOptions = TableQueryOptions &
     groupBy?: readonly string[];
     /** Aggregate definitions evaluated after filtering and expressions. */
     aggregates?: readonly RelationalAggregate[];
+    /** Additional Arrow tables concatenated in source order before relational operators. */
+    union?: readonly ArrowChildQuery[];
+    /** Optional equi-join against a table supplied in `tables`. */
+    join?: Readonly<{child: ArrowChildQuery; left: string; right: string}>;
+    /** Named in-memory child tables used by union and join operators. */
+    tables?: Readonly<Record<string, ArrowTable>>;
   }>;
 
 /** Explains an Arrow table query without materializing or scanning table rows. */
@@ -74,6 +88,13 @@ export function queryArrowTable(
   options: ArrowQueryOptions = {}
 ): ArrowTable {
   throwIfAborted(options.signal);
+
+  if (options.join && hasRelationalOperatorsExceptJoin(options)) {
+    throw new Error('Arrow joins cannot yet be combined with other relational operators.');
+  }
+  if (options.join && !hasRelationalOperatorsExceptJoin(options)) {
+    return queryArrowJoin(sourceTable, options);
+  }
 
   if (hasRelationalOperators(options)) {
     return queryArrowTableRelational(sourceTable, options);
@@ -128,7 +149,8 @@ function queryArrowTableRelational(
 ): ArrowTable {
   const sourceData = sourceTable.data;
   const sourceColumnNames = sourceData.schema.fields.map(field => field.name);
-  const relationalPlan = planRelationalQuery(sourceColumnNames, options);
+  // The shared planner is predicate-generic; this executor supplies the narrower SQL AST.
+  const relationalPlan = planRelationalQuery(sourceColumnNames, options as never);
   const scanStep = relationalPlan.tablePlan.find(step => step.kind === 'scan');
   if (!scanStep || scanStep.kind !== 'scan') {
     throw new Error('Arrow relational query plan is missing a scan step.');
@@ -140,6 +162,17 @@ function queryArrowTableRelational(
     signal: options.signal
   });
   let rows = arrowTableToRows(filteredTable.data);
+
+  for (const child of options.union || []) {
+    const childTable = options.tables?.[child.source];
+    if (!childTable) throw new Error(`Arrow union source not found: ${child.source}`);
+    const childResult = queryArrowTable(childTable, {
+      ...(child.query || {}),
+      columns: scanStep.columns,
+      signal: options.signal
+    });
+    rows = rows.concat(arrowTableToRows(childResult.data));
+  }
 
   for (const expression of options.expressions || []) {
     for (const row of rows) {
@@ -187,8 +220,72 @@ function hasRelationalOperators(options: ArrowQueryOptions): boolean {
     options.expressions?.length ||
       options.orderBy?.length ||
       options.groupBy?.length ||
-      options.aggregates?.length
+      options.aggregates?.length ||
+      options.union?.length ||
+      options.join
   );
+}
+
+/** Returns whether a join is the only relational operator requested. */
+function hasRelationalOperatorsExceptJoin(options: ArrowQueryOptions): boolean {
+  return Boolean(
+    options.expressions?.length ||
+      options.orderBy?.length ||
+      options.groupBy?.length ||
+      options.aggregates?.length ||
+      options.union?.length
+  );
+}
+
+/** Executes a bounded nested-loop equi-join for small in-memory Arrow proof-of-concept tables. */
+function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): ArrowTable {
+  const join = options.join;
+  if (!join) throw new Error('Arrow join query is missing a join definition.');
+  const childTable = options.tables?.[join.child.source];
+  if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
+  const leftResult = queryArrowTable(sourceTable, {
+    predicate: options.predicate,
+    columns: undefined,
+    signal: options.signal
+  });
+  const rightResult = queryArrowTable(childTable, {
+    ...(join.child.query || {}),
+    signal: options.signal
+  });
+  const leftRows = arrowTableToRows(leftResult.data);
+  const rightRows = arrowTableToRows(rightResult.data);
+  const rightPrefix = `${join.child.source}.`;
+  const defaultOutputColumns = [
+    ...sourceTable.data.schema.fields.map(field => field.name),
+    ...rightResult.data.schema.fields.map(field => `${rightPrefix}${field.name}`)
+  ];
+  const rows: Record<string, unknown>[] = [];
+  for (const leftRow of leftRows) {
+    for (const rightRow of rightRows) {
+      if (
+        leftRow[join.left] !== null &&
+        leftRow[join.left] !== undefined &&
+        rightRow[join.right] !== null &&
+        rightRow[join.right] !== undefined &&
+        compareSortValues(leftRow[join.left], rightRow[join.right]) === 0
+      ) {
+        rows.push({
+          ...leftRow,
+          ...Object.fromEntries(
+            Object.entries(rightRow).map(([key, value]) => [`${rightPrefix}${key}`, value])
+          )
+        });
+      }
+    }
+  }
+  const outputColumns = options.columns || defaultOutputColumns;
+  const outputRows = rows.map(row =>
+    Object.fromEntries(outputColumns.map(column => [column, row[column]]))
+  );
+  const limitedRows = outputRows.slice(0, options.limit);
+  return limitedRows.length
+    ? convertRowsToArrowTable(limitedRows)
+    : createEmptyRelationalResult(sourceTable.data, outputColumns, options);
 }
 
 /** Materializes one Arrow table into row objects for the relational proof of concept. */
