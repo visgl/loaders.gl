@@ -5,3 +5,6 @@ I3S is an open format/community standard, maintained by the [Open Geospatial Con
 The `SMALL_AUTZEN_LAS_All.pccxyz` and `SMALL_AUTZEN_LAS_All.pccint` fixtures are extracted from
 the [Esri LEPCC test package](https://github.com/Esri/lepcc/tree/master/testData). The LEPCC source
 and test package are distributed under Apache 2.0.
+
+The `SMALL_AUTZEN_LAS_All.rgb` and `SMALL_AUTZEN_LAS_All.flags` fixtures are generated with the
+same reference encoder for decoder coverage, using the Apache-licensed Esri LEPCC source.

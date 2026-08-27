@@ -149,6 +149,15 @@ export class I3SLEPCCDecoder {
         for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
           output.set(colorMap.subarray(0, 3), pointIndex * 3);
         }
+      } else if (compressionMethod === 2) {
+        const indexes = decodeHuffman(reader, pointCount);
+        for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+          const colorIndex = indexes[pointIndex];
+          if (colorIndex >= colorCount) {
+            throw new Error('LEPCC RGB Huffman color index is outside the color map');
+          }
+          output.set(colorMap.subarray(colorIndex * 3, colorIndex * 3 + 3), pointIndex * 3);
+        }
       } else {
         throw new Error(`Unsupported LEPCC RGB compression method: ${compressionMethod}`);
       }
@@ -209,10 +218,8 @@ export class I3SLEPCCDecoder {
     const compressionMethod = reader.readUint8();
     const minimumValue = reader.readUint8();
     reader.readUint16();
-    if (compressionMethod !== 0) {
-      throw new Error('LEPCC Huffman flag-byte decoding is not implemented');
-    }
-    const packedValues = decodeSimple(reader);
+    const packedValues =
+      compressionMethod === 0 ? decodeSimple(reader) : decodeHuffman(reader, pointCount);
     if (packedValues.length !== pointCount) {
       throw new Error('LEPCC flag-byte value count does not match the header');
     }
@@ -421,6 +428,82 @@ function decodeSimple(reader: BinaryReader): number[] {
   return values;
 }
 
+function decodeHuffman(reader: BinaryReader, elementCount: number): number[] {
+  const version = reader.readUint32();
+  const tableSize = reader.readUint32();
+  const firstSymbol = reader.readUint32();
+  const lastSymbol = reader.readUint32();
+  if (version < 2 || tableSize === 0 || tableSize > 32768 || firstSymbol >= lastSymbol) {
+    throw new Error('Invalid LEPCC Huffman code table');
+  }
+  const codeLengths = decodeSimple(reader);
+  if (codeLengths.length !== lastSymbol - firstSymbol) {
+    throw new Error('LEPCC Huffman code table length mismatch');
+  }
+
+  const lengthsBySymbol = new Array<number>(tableSize).fill(0);
+  let codeBitCount = 0;
+  for (let symbol = firstSymbol; symbol < lastSymbol; symbol++) {
+    const tableIndex = symbol < tableSize ? symbol : symbol - tableSize;
+    const codeLength = codeLengths[symbol - firstSymbol];
+    if (codeLength > 32) {
+      throw new Error('LEPCC Huffman code is too long');
+    }
+    lengthsBySymbol[tableIndex] = codeLength;
+    codeBitCount += codeLength;
+  }
+
+  const symbols = lengthsBySymbol
+    .map((codeLength, symbol) => ({codeLength, symbol}))
+    .filter(value => value.codeLength > 0)
+    .sort((left, right) => right.codeLength - left.codeLength || left.symbol - right.symbol);
+  if (symbols.length < 2) {
+    throw new Error('LEPCC Huffman table has fewer than two symbols');
+  }
+
+  const codeLookup = new Map<string, number>();
+  let canonicalCode = 0;
+  let canonicalLength = symbols[0].codeLength;
+  for (const symbol of symbols) {
+    const delta = canonicalLength - symbol.codeLength;
+    canonicalCode = Math.floor(canonicalCode / 2 ** delta);
+    canonicalLength = symbol.codeLength;
+    codeLookup.set(`${canonicalLength}:${canonicalCode}`, symbol.symbol);
+    canonicalCode++;
+  }
+
+  const codeReader = new MsbBitReader(reader);
+  for (const codeLength of lengthsBySymbol) {
+    if (codeLength > 0) {
+      codeReader.readBits(codeLength);
+    }
+  }
+  codeReader.finishWords();
+  if (codeBitCount === 0) {
+    throw new Error('LEPCC Huffman table has no code bits');
+  }
+
+  const valueReader = new MsbBitReader(reader);
+  const values = new Array<number>(elementCount);
+  for (let index = 0; index < elementCount; index++) {
+    let code = 0;
+    let decodedSymbol: number | undefined;
+    for (let codeLength = 1; codeLength <= 32; codeLength++) {
+      code = code * 2 + valueReader.readBits(1);
+      decodedSymbol = codeLookup.get(`${codeLength}:${code}`);
+      if (decodedSymbol !== undefined) {
+        break;
+      }
+    }
+    if (decodedSymbol === undefined) {
+      throw new Error('Invalid LEPCC Huffman value');
+    }
+    values[index] = decodedSymbol;
+  }
+  valueReader.finishWords(1);
+  return values;
+}
+
 class BitReader {
   readonly reader: BinaryReader;
   bitOffset = 0;
@@ -451,5 +534,44 @@ class BitReader {
       this.reader.offset++;
       this.bitOffset = 0;
     }
+  }
+}
+
+class MsbBitReader {
+  readonly reader: BinaryReader;
+  readonly startOffset: number;
+  bitOffset = 0;
+  bitsRead = 0;
+
+  constructor(reader: BinaryReader) {
+    this.reader = reader;
+    this.startOffset = reader.offset;
+  }
+
+  readBits(numberOfBits: number): number {
+    let value = 0;
+    for (let bitIndex = 0; bitIndex < numberOfBits; bitIndex++) {
+      if (this.bitOffset === 0) {
+        this.reader.ensure(4);
+      }
+      const word =
+        this.reader.bytes[this.reader.offset] |
+        (this.reader.bytes[this.reader.offset + 1] << 8) |
+        (this.reader.bytes[this.reader.offset + 2] << 16) |
+        (this.reader.bytes[this.reader.offset + 3] << 24);
+      value = value * 2 + ((word >>> (31 - this.bitOffset)) & 1);
+      this.bitOffset++;
+      this.bitsRead++;
+      if (this.bitOffset === 32) {
+        this.bitOffset = 0;
+        this.reader.offset += 4;
+      }
+    }
+    return value;
+  }
+
+  finishWords(extraWords = 0): void {
+    this.reader.offset = this.startOffset + Math.ceil(this.bitsRead / 32) * 4 + extraWords * 4;
+    this.bitOffset = 0;
   }
 }

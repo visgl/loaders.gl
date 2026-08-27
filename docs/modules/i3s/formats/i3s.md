@@ -113,7 +113,7 @@ those versions.
 
 | Capability | Status | Since | Notes |
 | --- | :---: | --- | --- |
-| LEPCC point-cloud attribute blobs | **Partial** | **v5.0** | The `I3SLEPCCDecoder` adapter decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed flag-byte resources. Huffman flag streams, Point Cloud layer traversal, density LOD, and renderer integration remain planned. |
+| LEPCC point-cloud attribute blobs | **Partial** | **v5.0** | The `I3SLEPCCDecoder` adapter decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. Point Cloud layer traversal, density LOD, and renderer integration remain planned. |
 
 ### Textures and materials
 
