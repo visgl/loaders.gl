@@ -2240,7 +2240,9 @@ export function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRan
       void rangePromise.then(
         range => {
           inFlightRanges.delete(key);
-          cacheRange(key, range);
+          // The promise result is returned to the current consumer and may be
+          // transferred to a worker, so the cache needs a separate buffer.
+          cacheRange(key, range.slice());
         },
         () => {
           inFlightRanges.delete(key);
