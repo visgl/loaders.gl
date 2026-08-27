@@ -813,8 +813,11 @@ export class Tile3D {
         break;
       }
     }
-    return visibleVolume ? (intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE) : INTERSECTION.OUTSIDE;
-  }
+    return visibleVolume
+      ? intersectingVolume
+        ? INTERSECTION.INTERSECTING
+        : INTERSECTION.INSIDE
+      : INTERSECTION.OUTSIDE;
   }
 
   /**
