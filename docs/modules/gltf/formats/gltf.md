@@ -14,14 +14,6 @@ An open standard developed and maintained by the Khronos Group, it supports 3D m
 
 ## Draft glTF 2.1 Unified File References
 
-## Draft glTF 2.1 Shapes and Bounding Volumes
-
-The glTF module preserves the draft 2.1 top-level `shapes` array and node `boundingVolume`
-references. `getGLTFCullingShape(gltf, index)` and `getGLTFNodeCullingShape(gltf, nodeIndex)`
-adapt recognized box, capsule, cylinder, plane, and sphere shapes to the analytic classes in
-`@math.gl/culling`. The helpers return derived objects and never modify the source JSON. Unknown
-shape types return `undefined`, allowing extension-defined shapes to remain available as raw data.
-
 Draft glTF 2.1 adds a top-level `files` array for generic dependencies beyond buffers and images.
 Each file has a required `mimeType` and exactly one source: an external or data `uri`, or an
 embedded `bufferView`. `GLTFLoader` can resolve these entries into its parallel `files` result
