@@ -23,6 +23,12 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 
 \* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
 
+For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
+listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
+continuing with a best-effort conversion. `convertGLTFV1ToGLTF2()` performs the same conversion on
+a cloned JSON document and leaves the caller's asset untouched. Legacy techniques, programs, and
+shaders are preserved under `json.extras.gltf1Resources`; they are not guessed into PBR materials.
+
 ## Usage
 
 ```
