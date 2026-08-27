@@ -34,7 +34,7 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['.bin.gz', '.draco.gz']
   },
   {
-    test: /nodes\/\d+\/attributes\/f_\d+\/\d+$/,
+    test: /nodes\/\d+\/attributes\/[^/]+\/\d+$/,
     extensions: ['.bin.gz']
   },
   {

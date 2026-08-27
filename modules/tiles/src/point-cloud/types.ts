@@ -54,6 +54,10 @@ export type PointCloudTileHeader = {
   pointCount: number;
   geometricError: number;
   boundingVolume: PointCloudBoundingVolume;
+  /** I3S LOD metric used to decide whether this node refines. */
+  lodSelectionMetricType?: 'maxScreenThresholdSQ' | 'density-threshold';
+  /** Source-provided LOD threshold for density or screen metrics. */
+  lodThreshold?: number;
 };
 
 /**

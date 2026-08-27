@@ -93,7 +93,8 @@ export type {
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource,
-  PointCloudTilesetViewState
+  PointCloudTilesetViewState,
+  PointCloudCoordinateSystem
 } from './point-cloud/types';
 export type {PointCloudTilesetOptions} from './point-cloud/point-cloud-tileset';
 export {PointCloudTileset} from './point-cloud/point-cloud-tileset';

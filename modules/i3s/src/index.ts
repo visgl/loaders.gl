@@ -38,6 +38,13 @@ export type {
   OperationalLayer,
   TextureSetDefinitionFormats
 } from './types';
+export type {
+  I3SPointCloudAttributeInfo,
+  I3SPointCloudNode,
+  I3SPointCloudNodePage,
+  PointCloudDefaultGeometrySchema,
+  Store
+} from './types';
 export type {I3SLoaderOptions} from './i3s-loader';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
@@ -74,3 +81,5 @@ export {
   type I3SLEPCCDecodedValue,
   type I3SLEPCCDecoderOptions
 } from './i3s-lepcc';
+export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';
