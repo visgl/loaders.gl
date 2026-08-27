@@ -87,6 +87,18 @@ export {
   getServiceCRSAxisOrder
 } from './crs-utils';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
+export type {
+  OGCAPICollection,
+  OGCAPILandingPage,
+  OGCAPILink,
+  OGCAPISourceOptions
+} from './ogc-api-source-loader';
+export {
+  OGCAPIFeaturesSource,
+  OGCAPIFeaturesSourceLoader,
+  OGCAPITilesSource,
+  OGCAPITilesSourceLoader
+} from './ogc-api-source-loader';
 
 export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
 export {

@@ -26,6 +26,27 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 | [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
 | [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
+The module also includes minimal adapters for the modern OGC API family. These adapters cover
+landing pages, collections, basic GeoJSON Features queries, and advertised tile templates. They
+are intentionally not a full conformance implementation; advanced filtering and service-specific
+extensions remain available through the regular loaders.gl fetch APIs.
+
+```js
+import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/wms';
+import {createDataSource} from '@loaders.gl/core';
+
+const source = createDataSource('https://demo.ldproxy.net/daraa', [OGCAPIFeaturesSourceLoader], {
+  'ogc-api': {collectionId: 'VegetationSrf'}
+});
+const features = await source.getFeatures({
+  layers: 'VegetationSrf',
+  boundingBox: [
+    [12.4, 41.8],
+    [12.6, 42.0]
+  ]
+});
+```
+
 ## API
 
 Support for the protocols is provided in the form of:
