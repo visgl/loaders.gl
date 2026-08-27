@@ -289,16 +289,18 @@ maintained browser-capable implementations. Required tests are hermetic; large a
 corpora run in the slow lane.
 
 The current implementation status is tracked in the following broad work tranches. A check mark
-means the capability is usable in the TypeScript reader; it does not imply that every producer
-variant has been exhaustively certified.
+means that the shipped path is usable; it does not imply that every producer variant has been
+exhaustively certified. The remaining work is intentionally grouped by user-visible outcomes
+rather than by individual missing methods.
 
-| Tranche | Status | Remaining work |
-| ------- | ------ | -------------- |
-| Statistics-driven pruning | ✅ foundation | Use declared sort order for semantic page/row-group pruning and keep selective-range cost estimates aligned with late materialization |
-| Modular encryption | ⚠️ expanding | Add writer-side encrypted column/page/index modules, key rotation, and broader cross-implementation fixtures |
-| Logical and legacy parity | ⚠️ expanding | Broaden INT96 and legacy encoding coverage; preserve Arrow fidelity for every logical annotation |
-| Conformance and scale gate | ⚠️ ongoing | Run the Apache corpus, nested/repeated matrices, all stable codecs, differential checks, and large-file benchmarks in the slow lane |
-| Emerging-format lab | 🧪 experimental | Track ALP, PFOR, VECTOR, and format-versioning proposals behind explicit experimental flags; do not advertise them as stable support |
+| Tranche | Status | Landed | Exit criteria |
+| ------- | ------ | ------ | ------------ |
+| Selective scan and physical planning | ✅ foundation | Footer statistics, Bloom filters, page/offset indexes, nested-leaf pruning, late materialization, and explainable range plans | Sorting-column semantics drive safe page/row-group pruning, and estimates describe the physical late-materialization plan |
+| Cloud-native table sources | ✅ read-only slice | Iceberg metadata/manifest planning and Delta snapshot replay dispatch selected files through `ParquetDatasetSource` | Checkpoints, CDC, deletion vectors, catalog discovery, and consistent snapshot/error semantics |
+| Modular encryption | ⚠️ expanding | Encrypted footer/column metadata, page/index/Bloom-filter reads, AES-GCM/AES-GCM-CTR pages, and encrypted-footer writing | Encrypted page indexes participate in selective planning; workers can decode encrypted scans; writers cover encrypted columns/pages/indexes, key rotation, and plaintext-footer signatures |
+| Logical and legacy parity | ⚠️ expanding | Logical Arrow mappings, nested LIST/MAP/VARIANT/geo types, legacy `BIT_PACKED` reads, and explicit `PLAIN_DICTIONARY` writes | Defined INT96 conversion, legacy nested/shredding variants, and exact Arrow fidelity across the stable logical-type matrix |
+| Conformance and scale gate | ⚠️ ongoing | Hermetic feature tests, differential checks, and representative browser benchmarks | Apache corpus plus nested/repeated cases, every stable codec/encoding, differential validation, and large-file/selective-range benchmarks pass in CI |
+| Emerging-format lab | 🧪 experimental | Tracking links and isolated capability flags | ALP, PFOR, VECTOR, and format-versioning experiments remain opt-in until an upstream format and interoperability fixtures stabilize |
 
 The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
 zero-valued size statistics, legacy `BIT_PACKED` level decoding, and explicit legacy
