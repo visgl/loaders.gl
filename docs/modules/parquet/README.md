@@ -16,6 +16,10 @@ Experimental loader and writer for the Apache Parquet format.
 - [`IcebergTableSource`](/docs/modules/parquet/api-reference/iceberg-table-source) provides read-only
   Iceberg metadata and manifest planning, dispatching selected Parquet files through the existing
   range-aware dataset reader.
+- `DeltaSourceLoader` provides metadata-only loader discovery for read-only Delta snapshots.
+  Import `DeltaTableSource` from the explicit `@loaders.gl/parquet/delta-source` subpath to replay
+  newline-delimited transaction logs and dispatch active Parquet files through the same dataset
+  reader.
 
 ## Geospatial Metadata
 

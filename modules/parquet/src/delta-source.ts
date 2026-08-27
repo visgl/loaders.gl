@@ -32,7 +32,7 @@ export class DeltaTableSource
     TableScanSource<ParquetDatasetBatch, ParquetPredicate>,
     ScanFragmentProvider<ParquetPredicate>
 {
-  private actionsPromise: Promise<readonly DeltaAction[]> | null = null;
+  private readonly actionsPromises = new Map<string, Promise<readonly DeltaAction[]>>();
 
   /** Creates a source from a Delta commit JSON URL or Blob. */
   constructor(data: string | Blob, options: DeltaSourceOptions = {}) {
@@ -41,7 +41,7 @@ export class DeltaTableSource
 
   /** Discovers the active Parquet files represented by the commit log. */
   async getScanFragments(options: DeltaScanOptions = {}): Promise<readonly ScanFragment[]> {
-    const actions = await this.getActions(options.signal);
+    const actions = await this.getActions(options.version, options.signal);
     const activeFiles = selectActiveDeltaFiles(actions);
     return Object.freeze(
       activeFiles.map(file =>
@@ -96,22 +96,69 @@ export class DeltaTableSource
     return this.read(options);
   }
 
-  private async getActions(signal?: AbortSignal): Promise<readonly DeltaAction[]> {
-    if (!this.actionsPromise) {
-      this.actionsPromise = (async () => {
-        const text =
-          typeof this.data === 'string'
-            ? await this.readResponse(await this.fetch(this.url, {signal}))
-            : await this.data.text();
-        return Object.freeze(
-          text
-            .split(/\r?\n/)
-            .filter(Boolean)
-            .map(line => JSON.parse(line) as DeltaAction)
-        );
-      })();
+  private async getActions(
+    requestedVersion?: number,
+    signal?: AbortSignal
+  ): Promise<readonly DeltaAction[]> {
+    const version = this.getSnapshotVersion(requestedVersion);
+    const cacheKey = version === undefined ? 'single-commit' : String(version);
+    let actionsPromise = this.actionsPromises.get(cacheKey);
+    if (!actionsPromise) {
+      actionsPromise = this.loadActions(version, signal);
+      this.actionsPromises.set(cacheKey, actionsPromise);
     }
-    return this.actionsPromise;
+    return actionsPromise;
+  }
+
+  /** Returns the configured or URL-derived snapshot version, when available. */
+  private getSnapshotVersion(version?: number): number | undefined {
+    const selectedVersion = version ?? this.options.delta?.version;
+    if (selectedVersion !== undefined) {
+      if (!Number.isSafeInteger(selectedVersion) || selectedVersion < 0) {
+        throw new Error('Delta snapshot version must be a non-negative safe integer');
+      }
+      return selectedVersion;
+    }
+    if (typeof this.data !== 'string') return undefined;
+    const match = /\/_delta_log\/(\d{20})\.json(?:$|[?#])/i.exec(this.data);
+    return match ? Number(match[1]) : undefined;
+  }
+
+  /** Reads one commit log or replays all commits through the requested version. */
+  private async loadActions(
+    version: number | undefined,
+    signal?: AbortSignal
+  ): Promise<readonly DeltaAction[]> {
+    if (typeof this.data !== 'string' || version === undefined) {
+      const text =
+        typeof this.data === 'string'
+          ? await this.readResponse(
+              await this.fetch(this.url, {
+                headers: this.options.delta?.headers,
+                signal
+              })
+            )
+          : await this.data.text();
+      const actions = parseDeltaActions(text);
+      validateDeltaActions(actions);
+      return actions;
+    }
+
+    const tableRoot = this.data.replace(/\/_delta_log\/[^/?#]+(?:[?#].*)?$/i, '');
+    const actions: DeltaAction[] = [];
+    for (let currentVersion = 0; currentVersion <= version; currentVersion++) {
+      const commitURL = `${tableRoot}/_delta_log/${String(currentVersion).padStart(20, '0')}.json`;
+      const text = await this.readResponse(
+        await this.fetch(commitURL, {
+          headers: this.options.delta?.headers,
+          signal
+        })
+      );
+      actions.push(...parseDeltaActions(text));
+    }
+    const replayedActions = Object.freeze(actions);
+    validateDeltaActions(replayedActions);
+    return replayedActions;
   }
 
   private async readResponse(response: Response): Promise<string> {
@@ -199,8 +246,59 @@ function selectActiveDeltaFiles(
 ): Array<NonNullable<DeltaAction['add']>> {
   const files = new Map<string, NonNullable<DeltaAction['add']>>();
   for (const action of actions) {
-    if (action.add) files.set(action.add.path, action.add);
+    if (action.add) {
+      files.set(action.add.path, action.add);
+    }
     if (action.remove) files.delete(action.remove.path);
   }
-  return [...files.values()];
+  const activeFiles = [...files.values()];
+  const deletionVectorFile = activeFiles.find(file => file.deletionVector !== undefined);
+  if (deletionVectorFile) {
+    throw new Error(
+      `Delta deletion vectors are not supported for active file ${deletionVectorFile.path}`
+    );
+  }
+  return activeFiles;
+}
+
+/** Parses a newline-delimited Delta commit into typed actions. */
+function parseDeltaActions(text: string): readonly DeltaAction[] {
+  return Object.freeze(
+    text
+      .split(/\r?\n/)
+      .filter(line => line.trim().length > 0)
+      .map(line => JSON.parse(line) as DeltaAction)
+  );
+}
+
+/** Rejects Delta protocol features that this Parquet snapshot adapter cannot interpret safely. */
+function validateDeltaActions(actions: readonly DeltaAction[]): void {
+  for (const action of actions) {
+    const protocol = action.protocol;
+    if (protocol) {
+      if (
+        protocol.minReaderVersion !== undefined &&
+        (!Number.isSafeInteger(protocol.minReaderVersion) || protocol.minReaderVersion < 1)
+      ) {
+        throw new Error('Delta protocol has an invalid minReaderVersion');
+      }
+      if ((protocol.minReaderVersion ?? 1) > 1) {
+        throw new Error(
+          `Delta reader protocol ${protocol.minReaderVersion} is not supported by this source`
+        );
+      }
+      if (protocol.readerFeatures?.length) {
+        throw new Error(
+          `Delta reader features are not supported: ${protocol.readerFeatures.join(', ')}`
+        );
+      }
+    }
+
+    const columnMappingMode = action.metaData?.configuration?.['delta.columnMapping.mode'];
+    if (columnMappingMode && columnMappingMode !== 'none') {
+      throw new Error(
+        `Delta column mapping mode "${columnMappingMode}" is not supported by this source`
+      );
+    }
+  }
 }
