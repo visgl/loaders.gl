@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tile3D} from './tile-3d';
+import {INTERSECTION} from '@math.gl/culling';
 import {ManagedArray} from '../../utils/managed-array';
 import {TILE_REFINEMENT} from '../../constants';
 import {FrameState} from '../helpers/frame-state';
@@ -230,7 +231,7 @@ export class TilesetTraverser {
 
   // tile to render in the browser
   selectTile(tile: Tile3D, frameState: FrameState): void {
-    if (this.shouldSelectTile(tile)) {
+    if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
       this.selectedTiles[tile.id] = tile;
@@ -294,10 +295,18 @@ export class TilesetTraverser {
     return tile.hasUnloadedContent || tile.contentExpired;
   }
 
-  shouldSelectTile(tile: Tile3D): boolean {
-    // Content availability is the only selection prerequisite. Skip-LOD retains ready ancestors
-    // as fallback coverage, so it must not suppress selection globally.
-    return tile.contentAvailable;
+  /**
+   * Returns whether a tile's renderable content may be selected after traversal.
+   *
+   * Traversal uses the tile bounding volume, while render selection additionally honors a
+   * tighter content volume when present. This keeps child traversal spatially coherent without
+   * drawing content that is outside the current culling volume.
+   *
+   * @param tile - Tile considered for rendering.
+   * @param frameState - Current camera and culling state.
+   */
+  shouldSelectTile(tile: Tile3D, frameState: FrameState): boolean {
+    return tile.contentAvailable && tile.contentVisibility(frameState) !== INTERSECTION.OUTSIDE;
   }
 
   /** Decide if tile LoD (level of detail) is not sufficient under current viewport */
