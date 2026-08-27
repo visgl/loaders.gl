@@ -370,7 +370,7 @@ export type {
   VectorSourceMetadata
 } from './lib/sources/vector-source';
 
-export type {TileSource} from './lib/sources/tile-source';
+export type {TileSource, TileGrid} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';

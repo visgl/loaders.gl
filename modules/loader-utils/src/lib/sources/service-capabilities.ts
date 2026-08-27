@@ -9,6 +9,7 @@ export type GeoServiceType =
   | 'wfs'
   | 'csw'
   | 'arcgis-map-server'
+  | 'arcgis-vector-tile-server'
   | 'arcgis-image-server'
   | 'arcgis-feature-server'
   | 'unknown';

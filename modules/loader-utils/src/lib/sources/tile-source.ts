@@ -53,6 +53,8 @@ export type TileSourceMetadata = {
   maxZoom?: number;
   /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
   boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
+  /** Advertised tile grid, when the service exposes matrix or level metadata. */
+  tileGrid?: TileGrid;
 
   /** Layer information */
   layer?: {
@@ -62,6 +64,20 @@ export type TileSourceMetadata = {
     boundingBox?: [number, number, number, number];
     layers: TileSourceLayer[];
   };
+};
+
+/** Normalized tile matrix information shared by WMTS and vendor tile services. */
+export type TileGrid = {
+  /** Coordinate reference system used by the grid. */
+  crs?: CRSIdentifier;
+  /** Tile width and height in pixels. */
+  tileSize?: [number, number];
+  /** Top-left origin in grid coordinates. */
+  origin?: [number, number];
+  /** Matrix identifiers in zoom order. */
+  matrixIds?: string[];
+  /** Matrix width and height in tile units in zoom order. */
+  matrixSizes?: Array<[number, number]>;
 };
 
 /**

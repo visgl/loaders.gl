@@ -24,9 +24,9 @@ test('WFSSourceLoader#getFeaturesURL', t => {
   t.equal(featuresUrl.origin + featuresUrl.pathname, WFS_URL, 'keeps the base WFS URL');
   t.equal(featuresUrl.searchParams.get('SERVICE'), 'WFS');
   t.equal(featuresUrl.searchParams.get('REQUEST'), 'GetFeature');
-  t.equal(featuresUrl.searchParams.get('VERSION'), '1.3.0');
+  t.equal(featuresUrl.searchParams.get('VERSION'), '2.0.0');
   t.equal(featuresUrl.searchParams.get('TYPENAME'), 'roads,bridges');
-  t.equal(featuresUrl.searchParams.get('BBOX'), '1,2,3,4,EPSG:4326');
+  t.equal(featuresUrl.searchParams.get('BBOX'), '2,1,4,3,EPSG:4326');
   t.equal(featuresUrl.searchParams.get('SRSNAME'), 'EPSG:4326');
   t.equal(featuresUrl.searchParams.get('OUTPUTFORMAT'), 'application/json');
   t.end();
@@ -39,7 +39,35 @@ test('WFSSourceLoader#getCapabilitiesURL defaults version', t => {
   t.equal(capabilitiesUrl.origin + capabilitiesUrl.pathname, WFS_URL, 'keeps the base WFS URL');
   t.equal(capabilitiesUrl.searchParams.get('SERVICE'), 'WFS');
   t.equal(capabilitiesUrl.searchParams.get('REQUEST'), 'GetCapabilities');
-  t.equal(capabilitiesUrl.searchParams.get('VERSION'), '1.3.0');
+  t.equal(capabilitiesUrl.searchParams.get('VERSION'), '2.0.0');
+  t.end();
+});
+
+test('WFSSourceLoader#getFeaturesURL supports WFS 1.1.0 parameter conventions', t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      version: '1.1.0',
+      typeName: 'roads',
+      bbox: [1, 2, 3, 4],
+      crs: 'EPSG:3857'
+    })
+  );
+
+  t.equal(featuresUrl.searchParams.get('VERSION'), '1.1.0');
+  t.equal(featuresUrl.searchParams.get('BBOX'), '1,2,3,4');
+  t.equal(featuresUrl.searchParams.get('SRSNAME'), 'EPSG:3857');
+
+  const mapUrl = new URL(
+    source.getMapURL({
+      version: '1.1.0',
+      bbox: [1, 2, 3, 4],
+      width: 256,
+      height: 256,
+      crs: 'EPSG:3857'
+    })
+  );
+  t.equal(mapUrl.searchParams.get('SRS'), 'EPSG:3857');
   t.end();
 });
 

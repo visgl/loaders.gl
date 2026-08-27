@@ -102,7 +102,22 @@ export class ArcGISMapTileSource
         name: metadata.name || '',
         srs: spatialReferenceWkid ? [`EPSG:${spatialReferenceWkid}`] : [],
         layers: []
-      }
+      },
+      tileGrid: metadata.tileInfo
+        ? {
+            crs: (metadata.tileInfo.spatialReference as {wkid?: number} | undefined)?.wkid
+              ? `EPSG:${(metadata.tileInfo.spatialReference as {wkid: number}).wkid}`
+              : undefined,
+            tileSize:
+              metadata.tileInfo.rows && metadata.tileInfo.cols
+                ? [metadata.tileInfo.cols, metadata.tileInfo.rows]
+                : undefined,
+            origin: metadata.tileInfo.origin
+              ? [metadata.tileInfo.origin.x, metadata.tileInfo.origin.y]
+              : undefined,
+            matrixIds: metadata.tileInfo.lods?.map(lod => String(lod.level))
+          }
+        : undefined
     };
   }
 

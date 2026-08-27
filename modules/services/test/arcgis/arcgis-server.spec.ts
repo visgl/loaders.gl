@@ -55,6 +55,79 @@ vitestTest('ArcGISMapTileSource distributes requests across configured service U
   expect(url.origin).toBe('https://tiles-b.example.com');
 });
 
+vitestTest('ArcGISMapTileSource fetches and decodes cached tiles', async () => {
+  let parseCount = 0;
+  const source = new ArcGISMapTileSource(
+    'https://example.com/MapServer',
+    {'arcgis-map-server': {mode: 'cached'}},
+    {
+      parse: async () => {
+        parseCount++;
+        return {width: 1, height: 1};
+      }
+    } as never
+  );
+  source.fetch = async () => new Response(new Uint8Array([1, 2, 3]));
+
+  expect(await source.getTile({x: 1, y: 2, z: 3})).toEqual({width: 1, height: 1});
+  expect(parseCount).toBe(1);
+});
+
+vitestTest('ArcGISMapTileSource falls back to dynamic export for incompatible caches', async () => {
+  const source = new ArcGISMapTileSource(
+    'https://example.com/MapServer',
+    {
+      'arcgis-map-server': {
+        mode: 'auto',
+        metadata: {tileInfo: {rows: 512, cols: 512}}
+      }
+    },
+    {parse: async () => ({width: 1, height: 1})} as never
+  );
+  let requestedURL = '';
+  source.fetch = async url => {
+    requestedURL = url;
+    return new Response(new Uint8Array([1]));
+  };
+
+  await source.getTile({x: 0, y: 0, z: 0});
+  expect(new URL(requestedURL).pathname).toBe('/MapServer/export');
+});
+
+vitestTest('ArcGISMapTileSource expands custom tile URL templates', () => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {urlTemplate: 'https://tiles.example/{z}/{y}/{x}.png?token=abc'}
+  });
+  expect(source.getTileURL({x: 3, y: 4, z: 5})).toBe('https://tiles.example/5/4/3.png?token=abc');
+});
+
+vitestTest('ArcGISMapTileSource exposes its cached tile grid', async () => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {
+      metadata: {
+        name: 'Basemap',
+        spatialReference: {wkid: 3857},
+        tileInfo: {
+          rows: 256,
+          cols: 256,
+          origin: {x: -20037508, y: 20037508},
+          spatialReference: {wkid: 3857},
+          lods: [{level: 0}, {level: 1}]
+        }
+      }
+    }
+  });
+
+  expect(await source.getMetadata()).toMatchObject({
+    tileGrid: {
+      crs: 'EPSG:3857',
+      tileSize: [256, 256],
+      origin: [-20037508, 20037508],
+      matrixIds: ['0', '1']
+    }
+  });
+});
+
 vitestTest('ArcGISImageTileSource builds exportImage tile requests', () => {
   const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
     'arcgis-image-server-tiles': {tileSize: 512, parameters: {time: '2020-01-01'}}

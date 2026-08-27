@@ -24,13 +24,14 @@ import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/crs';
+import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
 /** Properties for creating a enw WFS service */
 export type WFSourceOptions = DataSourceOptions & {
   wfs?: {
-    /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+    /** In WFS 2.0.0, replaces references to EPSG:4326 with CRS:84. */
     substituteCRS84?: boolean;
     /** Default WFS parameters. If not provided here, must be provided in the various request */
     wfsParameters?: WFSParameters;
@@ -38,6 +39,9 @@ export type WFSourceOptions = DataSourceOptions & {
     vendorParameters?: Record<string, unknown>;
   };
 };
+
+/** WFS protocol versions supported by the source URL builder. */
+export type WFSVersion = '1.1.0' | '2.0.0';
 
 /**
  * @deprecated This is a WIP, not fully implemented
@@ -77,7 +81,7 @@ export const WFSSourceLoader = {
  */
 export type WFSParameters = {
   /** WFS version (all requests) */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
   /** Layers to render (GetMap, GetFeatureInfo) */
   layers?: string[];
   /** list of layers to query.. (GetFeatureInfo) */
@@ -85,6 +89,8 @@ export type WFSParameters = {
 
   /** Coordinate Reference System (CRS) for the image (not the bounding box) */
   crs?: CRSIdentifier;
+  /** Output/input CRS parameter used by GetFeature requests. */
+  srsName?: CRSIdentifier;
   /** Requested format for the return image (GetMap, GetLegendGraphic) */
   format?: 'image/png';
   /** Requested MIME type of returned feature info (GetFeatureInfo) */
@@ -108,13 +114,13 @@ export type WFSParameters = {
 /** Parameters for GetCapabilities */
 export type WFSGetCapabilitiesParameters = {
   /** In case the endpoint supports multiple WFS versions */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
 };
 
 /** Parameters for GetMap */
 export type WFSGetMapParameters = {
   /** In case the endpoint supports multiple WFS versions */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
   /** bounding box of the requested map image `[[w, s], [e, n]]`  */
   // boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** bounding box of the requested map image @deprecated Use .boundingBox */
@@ -142,7 +148,7 @@ export type WFSGetMapParameters = {
 /** Parameters for GetFeature. */
 export type WFSGetFeatureParameters = {
   /** In case the endpoint supports multiple WFS versions. */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
   /** Requested feature types. */
   typeName?: string | string[];
   /** Bounding box filter, optionally suffixed with the bbox CRS. */
@@ -177,7 +183,7 @@ export type WFSGetFeatureParameters = {
  */
 export type WFSGetFeatureInfoParameters = {
   /** In case the endpoint supports multiple WFS versions */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
   /** x coordinate for the feature info request */
   x: number;
   /** y coordinate for the feature info request */
@@ -219,13 +225,13 @@ export type WFSGetFeatureInfoViewParameters = {
 /** Parameters for DescribeLayer */
 export type WFSDescribeLayerParameters = {
   /** In case the endpoint supports multiple WFS versions */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
 };
 
 /** Parameters for GetLegendGraphic */
 export type WFSGetLegendGraphicParameters = {
   /** In case the endpoint supports multiple WFS versions */
-  version?: '1.3.0' | '1.1.1';
+  version?: WFSVersion;
 };
 
 //
@@ -446,7 +452,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     vendorParameters?: Record<string, unknown>
   ): string {
     const options: Required<WFSGetCapabilitiesParameters> = {
-      version: wfsParameters?.version || this.options.wfs?.wfsParameters?.version || '1.3.0',
+      version: wfsParameters?.version || this.options.wfs?.wfsParameters?.version || '2.0.0',
       ...wfsParameters
     };
     return this._getWFSUrl('GetCapabilities', options, vendorParameters);
@@ -482,8 +488,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     vendorParameters?: Record<string, unknown>
   ): string {
     const requestParameters = this._normalizeGetFeatureParameters(parameters);
-    const options: WFSGetFeatureParameters & {version: '1.3.0' | '1.1.1'} = {
-      version: requestParameters.version || '1.3.0',
+    const options: WFSGetFeatureParameters & {version: WFSVersion} = {
+      version: requestParameters.version || '2.0.0',
       typeName: requestParameters.typeName,
       bbox: requestParameters.bbox,
       srsName: requestParameters.srsName || requestParameters.crs || 'EPSG:4326',
@@ -574,7 +580,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
    * */
   protected _getWFSUrl(
     request: string,
-    wfsParameters: {version?: '1.3.0' | '1.1.1'; [key: string]: unknown},
+    wfsParameters: {version?: WFSVersion; [key: string]: unknown},
     vendorParameters?: Record<string, unknown>
   ): string {
     let url = this.url;
@@ -620,25 +626,25 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     // Substitute by key
     switch (key) {
       case 'crs':
-        // CRS was called SRS before WFS 1.3.0
-        if (wfsParameters.version !== '1.3.0') {
+        // WFS 1.1.0 uses SRS; WFS 2.0.0 uses CRS.
+        if (wfsParameters.version !== '2.0.0') {
           key = 'srs';
           // } else if (this.substituteCRS84 && value === 'EPSG:4326') {
-          //   /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
+          //   /** In WFS 2.0.0, replace EPSG:4326 with the backwards-compatible CRS:84. */
           //   // Substitute by value
           //   value = 'CRS:84';
         }
         break;
 
       case 'srs':
-        // CRS was called SRS before WFS 1.3.0
-        if (wfsParameters.version === '1.3.0') {
+        // WFS 1.1.0 uses SRS; WFS 2.0.0 uses CRS.
+        if (wfsParameters.version === '2.0.0') {
           key = 'crs';
         }
         break;
 
       case 'bbox':
-        // Coordinate order is flipped for certain CRS in WFS 1.3.0
+        // Coordinate order is flipped for certain CRS in WFS 1.1.0 and 2.0.0.
         const bbox = this._flipBoundingBox(value, wfsParameters);
         if (bbox) {
           value = bbox;
@@ -650,17 +656,15 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
         break;
 
       case 'x':
-        // i is the parameter used in WFS 1.3
-        // TODO - change parameter to `i` and convert to `x` if not 1.3
-        if (wfsParameters.version === '1.3.0') {
+        // i is the parameter used in WFS 2.0.0.
+        if (wfsParameters.version === '2.0.0') {
           key = 'i';
         }
         break;
 
       case 'y':
-        // j is the parameter used in WFS 1.3
-        // TODO - change parameter to `j` and convert to `y` if not 1.3
-        if (wfsParameters.version === '1.3.0') {
+        // j is the parameter used in WFS 2.0.0.
+        if (wfsParameters.version === '2.0.0') {
           key = 'j';
         }
         break;
@@ -676,7 +680,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       : `${key}=${value ? String(value) : ''}`;
   }
 
-  /** Coordinate order is flipped for certain CRS in WFS 1.3.0 */
+  /** Coordinate order is flipped for certain CRS in WFS 1.1.0 and 2.0.0. */
   _flipBoundingBox(
     bboxValue: unknown,
     wfsParameters: WFSParameters
@@ -686,13 +690,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       return null;
     }
 
-    const flipCoordinates = false;
-    // // Only affects WFS 1.3.0
-    // wfsParameters.version === '1.3.0' &&
-    // // Flip if we are dealing with a CRS that was flipped in 1.3.0
-    // this.flipCRS.includes(wfsParameters.crs || '') &&
-    // // Don't flip if we are substituting EPSG:4326 with CRS:84
-    // !(this.substituteCRS84 && wfsParameters.crs === 'EPSG:4326');
+    const normalizedCRS = normalizeServiceCRS(wfsParameters.crs || wfsParameters.srsName);
+    const flipCoordinates =
+      (wfsParameters.version === '1.1.0' || wfsParameters.version === '2.0.0') &&
+      getServiceCRSAxisOrder(normalizedCRS) === 'yx' &&
+      !(this.options.wfs?.substituteCRS84 && normalizedCRS === 'EPSG:4326');
 
     const bbox = bboxValue as
       | [number, number, number, number]
@@ -741,7 +743,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     if ('boundingBox' in parameters) {
       const crs = parameters.crs || 'EPSG:4326';
       return {
-        version: this.options.wfs?.wfsParameters?.version || '1.3.0',
+        version: this.options.wfs?.wfsParameters?.version || '2.0.0',
         typeName: parameters.layers,
         bbox: [
           parameters.boundingBox[0][0],
