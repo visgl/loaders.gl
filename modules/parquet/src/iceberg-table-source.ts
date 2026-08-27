@@ -3,17 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI} from '@loaders.gl/loader-utils';
-import {
-  createScanQueryMetadata,
-  DataSource as BaseDataSource,
-  validateTableQueryLimit,
-  type ScanColumnRole,
-  type ScanFragment,
-  type ScanFragmentProvider,
-  type ScanQueryMetadata,
-  type ScanQueryMetadataOptions
-} from '@loaders.gl/loader-utils';
-import type {DataType, Schema} from '@loaders.gl/schema';
+import {DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -29,9 +19,7 @@ import type {
   IcebergTableSourceOptions
 } from './iceberg-types';
 import {parseAvro} from './lib/parsers/parse-avro';
-import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {ParquetDatasetSource} from './parquet-dataset-source';
-import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
   ParquetDatasetBatch,
   ParquetComparisonPredicate,
@@ -81,12 +69,7 @@ export type IcebergScanOptions = ParquetDatasetReadOptions & {
  * The source owns Iceberg metadata and manifest discovery, then delegates selected data files to
  * `ParquetDatasetSource` for projection, filtering, range access, workers, and Arrow materialization.
  */
-export class IcebergTableSource
-  extends BaseDataSource<string, IcebergSourceOptions>
-  implements ScanFragmentProvider<ParquetPredicate>
-{
-  /** Common query capabilities after Iceberg snapshot and delete processing. */
-  readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
+export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOptions> {
   private metadataPromise: Promise<IcebergTableMetadata> | null = null;
   private readonly closeController = new AbortController();
   private closed = false;
@@ -102,43 +85,6 @@ export class IcebergTableSource
       this.metadataPromise = this.loadMetadata(signal);
     }
     return this.metadataPromise;
-  }
-
-  /** Discovers the current snapshot schema and scan capabilities without decoding table rows. */
-  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
-    this.assertOpen();
-    const tableMetadata = await this.getMetadata(options.signal);
-    const plan = await this.getScanPlan(options.signal);
-    let schema: Schema;
-    if (plan.dataFiles.length > 0) {
-      const parquetSource = new ParquetDatasetSource(
-        [{data: plan.dataFiles[0].data, id: plan.dataFiles[0].data}],
-        this.options,
-        this.coreApi
-      );
-      try {
-        schema = await parquetSource.getSchema({signal: options.signal});
-      } finally {
-        await parquetSource.close();
-      }
-    } else {
-      const snapshot = await this.getCurrentSnapshot(options.signal);
-      const schemaId = snapshot?.['schema-id'] ?? tableMetadata['current-schema-id'];
-      const icebergSchema = tableMetadata.schemas?.find(
-        candidate => candidate['schema-id'] === schemaId
-      );
-      schema = createSchemaFromIcebergMetadata(icebergSchema);
-    }
-    const rowCount = plan.dataFiles.reduce((total, file) => total + (file.recordCount || 0), 0);
-    return createScanQueryMetadata({
-      sourceType: 'iceberg',
-      queryType: 'table',
-      name: this.data,
-      schema,
-      capabilities: {table: this.tableQueryCapabilities},
-      columnRoles: getIcebergColumnRoles(schema),
-      statistics: {rowCount}
-    });
   }
 
   /** Returns the snapshot selected by the table metadata, if one exists. */
@@ -193,10 +139,6 @@ export class IcebergTableSource
         if (isDeletedManifestEntry(entry)) continue;
         const dataFile = entry.data_file as IcebergDataFile | undefined;
         if (!dataFile || typeof dataFile.file_path !== 'string') continue;
-        const sequenceNumber =
-          getNumberValue(getIcebergRecordValue(entry, 'data_sequence_number')) ??
-          getNumberValue(getIcebergRecordValue(entry, 'data-sequence-number')) ??
-          getNumberValue(getIcebergRecordValue(manifest, 'sequence_number'));
         if (isDelete) {
           deleteFiles.push(
             createIcebergDeleteFile(
@@ -204,8 +146,7 @@ export class IcebergTableSource
               dataFile,
               manifest,
               snapshot['snapshot-id'],
-              schemaId,
-              sequenceNumber
+              schemaId
             )
           );
         } else if (dataFile.file_format?.toLowerCase() === 'parquet') {
@@ -215,8 +156,7 @@ export class IcebergTableSource
               dataFile,
               manifest,
               snapshot['snapshot-id'],
-              schemaId,
-              sequenceNumber
+              schemaId
             )
           );
         }
@@ -243,48 +183,9 @@ export class IcebergTableSource
     return (await this.getScanPlan(signal, snapshotId, snapshotRef)).deleteFiles;
   }
 
-  /** Discovers snapshot-selected data files as catalog-independent scan fragments. */
-  async getScanFragments(options: IcebergScanOptions = {}): Promise<readonly ScanFragment[]> {
-    this.assertOpen();
-    const metadata = await this.getMetadata(options.signal);
-    const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
-    return Object.freeze(
-      plan.dataFiles
-        .filter(
-          file =>
-            canMatchIcebergPredicate(file, options.predicate, metadata) &&
-            canMatchIcebergSpatialFilter(file, options.spatialFilter, metadata) &&
-            matchesIcebergPartitions(
-              getIcebergPartitions(file.partition, file.partitionSpecId, file.schemaId, metadata),
-              options.partitions
-            )
-        )
-        .map(file =>
-          Object.freeze({
-            id: file.data,
-            uri: file.data,
-            partitionValues: file.partition,
-            byteLength: file.fileSize,
-            rowCount: file.recordCount,
-            metadata: {
-              snapshotId: file.snapshotId,
-              manifestPath: file.manifestPath,
-              partitionSpecId: file.partitionSpecId,
-              schemaId: file.schemaId,
-              lowerBounds: file.lowerBounds,
-              upperBounds: file.upperBounds
-            }
-          })
-        )
-    );
-  }
-
   /** Reads the current snapshot as Arrow batches through the existing Parquet dataset source. */
   async *scan(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
-    validateTableQueryLimit(options.limit);
-    let remainingRows = options.limit ?? Number.POSITIVE_INFINITY;
-    if (remainingRows === 0) return;
     const metadata = await this.getMetadata(options.signal);
     const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
     const positionDeletes = options.applyDeletes
@@ -294,7 +195,7 @@ export class IcebergTableSource
       ? await this.loadEqualityDeletes(plan.deleteFiles, metadata, options.signal)
       : [];
     const equalityColumns = getEqualityDeleteColumns(equalityDeletes);
-    const readOptions = addEqualityColumns({...options, limit: undefined}, equalityColumns);
+    const readOptions = addEqualityColumns(options, equalityColumns);
     const parquetSource = new ParquetDatasetSource(
       plan.dataFiles
         .filter(
@@ -330,15 +231,7 @@ export class IcebergTableSource
         const filteredBatch = options.applyDeletes
           ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
           : batch;
-        if (filteredBatch.length > 0) {
-          const outputBatch = sliceParquetBatch(
-            filteredBatch,
-            Math.min(filteredBatch.length, remainingRows)
-          );
-          yield outputBatch;
-          remainingRows -= outputBatch.length;
-          if (remainingRows === 0) return;
-        }
+        if (filteredBatch.length > 0) yield filteredBatch;
       }
     } finally {
       await parquetSource.close();
@@ -503,12 +396,6 @@ function applyIcebergDeletes(
     selectedColumns.some((column, index) => column !== allColumns[index]);
   if (keptIndexes.length === batch.length && !needsColumnProjection) return batch;
   const columns: Record<string, unknown[]> = {};
-  const fields = selectedColumns.map(columnName => {
-    const field = batch.data.schema.fields.find(candidate => candidate.name === columnName);
-    if (!field)
-      throw new Error(`Equality delete column is missing from Parquet output: ${columnName}`);
-    return field;
-  });
   for (const columnName of selectedColumns) {
     const column = batch.data.getChild(columnName);
     if (!column)
@@ -519,13 +406,7 @@ function applyIcebergDeletes(
     index => batch.rowGroupRowIndices?.[index] ?? batch.rowGroupRowOffset + index
   );
   const rowIndices = keptIndexes.map(index => batch.rowIndices?.[index] ?? batch.rowOffset + index);
-  const columnVectors = Object.fromEntries(
-    fields.map(field => [field.name, arrow.vectorFromArray(columns[field.name], field.type)])
-  );
-  const data = new arrow.Table(
-    new arrow.Schema(fields, batch.data.schema.metadata),
-    columnVectors as unknown as Record<string, arrow.Vector>
-  );
+  const data = arrow.tableFromArrays(columns);
   return {
     ...batch,
     data,
@@ -776,16 +657,16 @@ function decodeIcebergBound(value: unknown, fieldType: unknown): unknown {
       return value.length === 1 ? value[0] !== 0 : undefined;
     case 'int':
     case 'date':
-      return value.length === 4 ? dataView.getInt32(0, true) : undefined;
+      return value.length === 4 ? dataView.getInt32(0, false) : undefined;
     case 'long':
     case 'time':
     case 'timestamp':
     case 'timestz':
-      return value.length === 8 ? dataView.getBigInt64(0, true) : undefined;
+      return value.length === 8 ? dataView.getBigInt64(0, false) : undefined;
     case 'float':
-      return value.length === 4 ? dataView.getFloat32(0, true) : undefined;
+      return value.length === 4 ? dataView.getFloat32(0, false) : undefined;
     case 'double':
-      return value.length === 8 ? dataView.getFloat64(0, true) : undefined;
+      return value.length === 8 ? dataView.getFloat64(0, false) : undefined;
     case 'string':
       return new TextDecoder().decode(value);
     default:
@@ -826,21 +707,6 @@ function getIcebergPartitions(
     if (value !== undefined) result[schemaField.name] = value;
   }
   return result;
-}
-
-/** Applies dataset-style exact partition constraints to an Iceberg partition map. */
-function matchesIcebergPartitions(
-  partitions: Readonly<Record<string, ParquetDatasetPartitionValue>> | undefined,
-  query: IcebergScanOptions['partitions']
-): boolean {
-  if (!query) return true;
-  for (const [key, requested] of Object.entries(query)) {
-    const actual = partitions?.[key];
-    if (actual === undefined) continue;
-    const accepted = Array.isArray(requested) ? requested : [requested];
-    if (!accepted.includes(actual)) return false;
-  }
-  return true;
 }
 
 /** Normalizes Avro map values, which may decode as JavaScript Maps or plain objects. */
@@ -948,8 +814,7 @@ function createIcebergParquetFile(
   dataFile: IcebergDataFile,
   manifest: IcebergManifestFile,
   snapshotId: number,
-  schemaId: number | undefined,
-  sequenceNumber?: number
+  schemaId: number | undefined
 ): IcebergParquetFile {
   return {
     data: resolveIcebergLocation(baseLocation, dataFile.file_path),
@@ -963,7 +828,6 @@ function createIcebergParquetFile(
     snapshotId,
     schemaId,
     dataSequenceNumber:
-      sequenceNumber ??
       dataFile.data_sequence_number ??
       (getIcebergRecordValue(dataFile, 'data_sequence_number') as number | undefined)
   };
@@ -975,8 +839,7 @@ function createIcebergDeleteFile(
   dataFile: IcebergDataFile,
   manifest: IcebergManifestFile,
   snapshotId: number,
-  schemaId: number | undefined,
-  sequenceNumber?: number
+  schemaId: number | undefined
 ): IcebergDeleteFile {
   return {
     data: resolveIcebergLocation(baseLocation, dataFile.file_path),
@@ -998,7 +861,6 @@ function createIcebergDeleteFile(
     snapshotId,
     schemaId,
     dataSequenceNumber:
-      sequenceNumber ??
       dataFile.data_sequence_number ??
       (getIcebergRecordValue(dataFile, 'data_sequence_number') as number | undefined)
   };
@@ -1067,75 +929,4 @@ function combineAbortSignals(
     signal: controller.signal,
     dispose: () => signals.forEach(candidate => candidate.removeEventListener('abort', abort))
   };
-}
-
-function getIcebergColumnRoles(schema: Schema): Record<string, ScanColumnRole> {
-  const roles: Record<string, ScanColumnRole> = {};
-  for (const field of schema.fields) {
-    const normalizedName = field.name.toLowerCase();
-    if (normalizedName === 'geometry' || normalizedName === 'geom' || normalizedName === 'shape') {
-      roles[field.name] = 'geometry';
-    } else if (
-      normalizedName === 'longitude' ||
-      normalizedName === 'lon' ||
-      normalizedName === 'x'
-    ) {
-      roles[field.name] = 'longitude';
-    } else if (
-      normalizedName === 'latitude' ||
-      normalizedName === 'lat' ||
-      normalizedName === 'y'
-    ) {
-      roles[field.name] = 'latitude';
-    }
-  }
-  return roles;
-}
-
-function createSchemaFromIcebergMetadata(
-  icebergSchema: NonNullable<IcebergTableMetadata['schemas']>[number] | undefined
-): Schema {
-  return {
-    fields: (icebergSchema?.fields || []).flatMap(field => {
-      const name = typeof field.name === 'string' ? field.name : undefined;
-      if (!name) return [];
-      return [
-        {
-          name,
-          type: getIcebergDataType(field.type),
-          nullable: field.required !== true,
-          metadata: {}
-        }
-      ];
-    }),
-    metadata: {}
-  };
-}
-
-function getIcebergDataType(type: unknown): DataType {
-  switch (typeof type === 'string' ? type.toLowerCase() : '') {
-    case 'boolean':
-      return 'bool';
-    case 'int':
-      return 'int32';
-    case 'long':
-      return 'int64';
-    case 'float':
-      return 'float32';
-    case 'double':
-      return 'float64';
-    case 'date':
-      return 'date-day';
-    case 'time':
-      return 'time-microsecond';
-    case 'timestamp':
-    case 'timestamptz':
-      return 'timestamp-microsecond';
-    case 'binary':
-    case 'fixed':
-      return 'binary';
-    case 'string':
-    default:
-      return 'utf8';
-  }
 }
