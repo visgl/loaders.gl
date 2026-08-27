@@ -100,6 +100,26 @@ export {
   OGCAPITilesSource,
   OGCAPITilesSourceLoader
 } from './ogc-api-source-loader';
+export type {OGCAPIEDRQueryParameters, OGCAPIEDRSourceOptions} from './ogc-api-edr-source-loader';
+export {
+  OGCAPIEDRSource,
+  OGCAPIEDRSourceLoader
+} from './ogc-api-edr-source-loader';
+export type {
+  OGCAPICoveragesQueryParameters,
+  OGCAPICoveragesSourceOptions
+} from './ogc-api-coverages-source-loader';
+export {
+  OGCAPICoveragesSource,
+  OGCAPICoveragesSourceLoader
+} from './ogc-api-coverages-source-loader';
+export type {
+  WCSCoverage,
+  WCSCoverageMetadata,
+  WCSGetCoverageParameters,
+  WCSSourceOptions
+} from './wcs-source-loader';
+export {WCSCoverageSource, WCSCoverageSourceLoader} from './wcs-source-loader';
 
 export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
 export {
