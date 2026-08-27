@@ -26,7 +26,8 @@ different query model, such as tiles or raster windows, rather than a relational
 | FlatGeobuf | Supported | Arrow feature queries, R-tree bounding-box pruning, residual attribute filtering, projection, and limits. |
 | DuckDB / Snowflake SQL | Supported | Raw SQL plus the portable table query with safe parameter binding. |
 | CSV / JSONL / ORC | Planned | Existing loaders are available; common chunk, stripe, and row-index scans are next. |
-| Delta Lake / Lance | Partial | Read-only metadata and Arrow-batch paths exist; common snapshot/fragment planning and predicate pushdown are incomplete. |
+| Delta Lake | Supported (read-only snapshots) | Versioned transaction-log replay, active-file planning, Parquet projection/filtering, global limits, streaming Arrow batches, cancellation, and explain output; deletion-vector rows are rejected until decoding is available. |
+| Lance | Partial | Read-only metadata and Arrow-batch paths exist; common snapshot/fragment planning and predicate pushdown are incomplete. |
 | COPC / Potree | Partial | Point-cloud metadata, coordinate roles, hierarchy bounds, level-of-detail, spacing, and capability discovery are available; full common point streaming is source-specific. |
 | GeoTIFF / COG / Zarr / GeoZarr / OME-Zarr | Partial | Raster window, band/channel, overview/level, and multidimensional selection APIs are available with shared query validation and capabilities. |
 | NetCDF | Partial | Header-only scan metadata exposes variables, dimensions, attributes, and file statistics; data reads and slice pushdown remain follow-up work. |
@@ -712,9 +713,12 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    ORC, CSV, JSONL, GeoPackage, Shapefile, MLT, and existing FlatGeobuf paths to scan parity. Start
    with schema/projection/limit and residual predicates; add stripe, row-index, packed-index, or
    byte-range pruning only where the format can prove it safely.
-4. **Cloud and versioned tables.** Complete Parquet/Iceberg parity, then add Delta Lake and Lance
-   snapshot/fragment planners. Reuse delete semantics, hidden required columns, task ordering,
-   global limits, and explain output. Do not create format-specific predicate ASTs.
+4. **Cloud and versioned tables — Delta read-only snapshot slice implemented in this stack.**
+   `DeltaTableSource` replays versioned transaction logs, plans active Parquet fragments, and reuses
+   hidden required columns, task ordering, global limits, and explain output. The remaining Delta
+   work is deliberately separate: checkpoint discovery, CDC, deletion-vector decoding, and writes.
+   Continue the same snapshot/fragment approach for Lance without creating format-specific
+   predicate ASTs.
 5. **Point-cloud coverage.** Turn COPC and Potree foundations into bounded Arrow point batches with
    bounds pushdown, ordered hierarchy tasks, residual attribute predicates, and global point limits.
    Add LAS/LAZ as a sequential fallback and PLY/PCD/splats as metadata-first adapters where their
@@ -751,7 +755,7 @@ exposed yet. A residual predicate is still correct; it simply cannot avoid decod
 | CSV | Ready | header/sample | parser projection | residual | global / batches | P1 |
 | JSONL | Planned | header/sample | planned | planned residual | planned chunks | P2 |
 | GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
-| Delta Lake | Planned | loader not yet present | planned | planned log/deletion-vector pruning | planned | P1 |
+| Delta Lake | Ready (read-only snapshots) | versioned transaction-log replay | Parquet projection | Parquet pushdown; deletion vectors rejected explicitly | global / batches | P1: checkpoints, CDC, and deletion-vector decoding |
 | Lance | Foundation | manifest/fragments | format-native | fragments + residual | global / batches | P1 |
 | COPC / Potree | Foundation | header/hierarchy | point attributes | bounds pushdown, attribute residual | planned global / batches | P1 |
 | LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |

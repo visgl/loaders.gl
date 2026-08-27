@@ -11,13 +11,22 @@ export type DeltaAction = Readonly<{
     size?: number;
     partitionValues?: Readonly<Record<string, string | null>>;
     stats?: string | Readonly<Record<string, unknown>>;
+    /** Delta deletion-vector descriptor, which is not decoded by this source. */
+    deletionVector?: unknown;
   }>;
   remove?: Readonly<{path: string}>;
 }>;
 
-/** Options for reading one Delta commit log as a snapshot. */
+/** Options for reading a Delta snapshot from its newline-delimited commit log. */
 export type DeltaSourceOptions = ParquetDatasetSourceOptions & {
-  delta?: {version?: number; baseUrl?: string};
+  delta?: {
+    /** Snapshot version to replay when the source is a commit-log URL. */
+    version?: number;
+    /** Table root used to resolve relative Parquet add-file paths. */
+    baseUrl?: string;
+    /** Headers sent while reading commit-log files. */
+    headers?: HeadersInit;
+  };
 };
 
 /** Query options accepted by a Delta snapshot scan. */

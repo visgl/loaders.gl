@@ -231,11 +231,29 @@ introduce a second worker protocol or a second range-reader implementation.
 
 ## Delta Lake adapter
 
-`DeltaTableSource` is a deliberately small read-only adapter for Delta tables whose active data is
-Parquet. It replays JSON commits through an explicit `delta.version`, then delegates active files
-to `ParquetDatasetSource`. Automatic latest-version discovery, deletion vectors, CDC, and writes
-remain outside this first adapter so the shared scan substrate does not inherit Delta-specific
-transaction semantics prematurely.
+`DeltaTableSource` is the read-only Delta adapter exported from `@loaders.gl/parquet`. It accepts a
+commit-log URL or an in-memory `Blob`, replays all JSON commits through the selected version, and
+delegates active Parquet files to `ParquetDatasetSource`. A commit URL with a twenty-digit version
+selects that snapshot automatically; callers can override it with `delta.version` or per-scan
+`version`.
+
+```ts
+import {DeltaTableSource} from '@loaders.gl/parquet';
+
+const source = new DeltaTableSource(
+  'https://data.example.com/events/_delta_log/00000000000000000042.json',
+  {delta: {headers: {Authorization: 'Bearer token'}}}
+);
+
+for await (const batch of source.scan({columns: ['timestamp', 'event_type']})) {
+  consume(batch);
+}
+```
+
+The adapter applies `add` and `remove` actions, preserves partition values and `numRecords`
+statistics for file planning, and rejects active files carrying deletion vectors rather than
+silently returning incomplete data. CDC actions, checkpoint discovery, writes, and deletion-vector
+decoding remain outside this read-only Parquet snapshot contract.
 
 The intended extension point for Iceberg is the scan plan: a future planner can select files and
 delete files, then dispatch each Parquet data file through `ParquetDatasetSource` without depending

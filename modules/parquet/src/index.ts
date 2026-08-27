@@ -35,6 +35,7 @@ export {IcebergTableSource} from './iceberg-table-source';
 export type {IcebergScanOptions, IcebergSourceOptions} from './iceberg-table-source';
 export {DeltaSourceLoader} from './delta-source-loader-types';
 export type {DeltaSourceLoaderOptions} from './delta-source-loader-types';
+export {DeltaTableSource} from './delta-source';
 export type {DeltaAction, DeltaScanOptions, DeltaSourceOptions} from './delta-types';
 export {IcebergRestCatalog} from './iceberg-rest-catalog';
 export type {
