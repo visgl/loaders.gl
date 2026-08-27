@@ -94,6 +94,40 @@ JavaScript runtimes supported by loaders.gl do not yet consistently provide `Flo
 
 - GLB was introduced as an extension.
 
+## loaders.gl glTF Feature Coverage
+
+The table below summarizes the level of glTF support exposed by `@loaders.gl/gltf`. “Raw” means
+the JSON is accepted and preserved in `gltf.json`; “runtime” means loaders.gl resolves, decodes,
+normalizes, or otherwise exposes the feature to applications. Draft 2.1 support follows the
+evolving specification and is intentionally marked separately from stable glTF 2.0 support.
+
+| Feature | Version | Raw | Runtime | Tests / notes |
+| --- | --- | --- | --- | --- |
+| Core asset, scene, node, mesh, material, camera, skin, animation, texture, image, sampler, buffer, and accessor objects | 2.0 | Complete | Complete | Loader, writer, schema, and post-processing coverage |
+| `.gltf` JSON and external resources | 1.0 / 2.0 / 2.1 | Complete | Complete | URI and data-URI resolution |
+| GLB v1 and v2 | 1.0 / 2.0 | Complete | Complete | GLB loader and writer tests |
+| GLB v3 / multiple binary chunks | 2.1 draft | Complete | Partial | Draft parsing support; format may evolve |
+| glTF v1 to v2 normalization | 1.0 → 2.0 | Complete | Partial | Best-effort conversion via `gltf.normalize` |
+| Sparse accessors and normalized component values | 2.0 | Complete | Complete | Typed-array extraction and accessor utilities |
+| Draft 2.1 accessor component types | 2.1 draft | Complete | Partial | Includes 32-bit, 16-bit float words, and 64-bit integer representations |
+| Unified `files` references | 2.1 draft | Complete | Complete | URI, data-URI, and bufferView-backed files |
+| External asset composition | 2.1 draft | Complete | Complete | Recursive loading, caching, and cycle rejection |
+| Asset thumbnails | 2.1 draft | Complete | Complete | Thumbnail image loading and post-processing |
+| Implicit shapes and node bounding volumes | 2.1 draft | Complete | Partial | Box, capsule, cylinder, plane, and sphere adapters via `@math.gl/culling` |
+| Mesh and buffer compression (Draco) | 2.0 extension | Complete | Complete | `KHR_draco_mesh_compression` |
+| Mesh compression (meshopt) | 2.0 extension | Complete | Complete | `KHR_meshopt_compression` and `EXT_meshopt_compression` |
+| KTX2 / Basis Universal textures | 2.0 extension | Complete | Complete | `KHR_texture_basisu` |
+| WebP and AVIF textures | 2.0 extensions | Complete | Complete | Optional decoder support; required-extension failures preserved |
+| Texture transforms | 2.0 extension | Complete | Partial | `KHR_texture_transform` metadata is exposed for rendering integrations |
+| Mesh features and structural metadata | 2.0 / 3D Tiles extensions | Complete | Partial | Loaders.gl helpers expose metadata tables and feature IDs |
+| Punctual lights, unlit materials, and legacy techniques | 2.0 extensions | Complete | Partial | Parsed and retained; renderer-specific behavior remains application-owned |
+| Vendor and unknown extensions | 2.0 / 2.1 | Complete | Raw only | Unknown payloads are preserved without invented runtime semantics |
+| BVH construction and hierarchical traversal | 2.1 draft | Complete | Planned | Shape references are available; automatic BVH building is not yet provided |
+
+This is a support snapshot rather than a compatibility guarantee. New 2.1 rows should be updated
+as the Khronos draft stabilizes, and each runtime claim should be backed by a focused conformance
+or integration test.
+
 ## glTF Extensions
 
 glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can be supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
