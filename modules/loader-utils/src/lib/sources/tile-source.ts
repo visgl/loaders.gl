@@ -109,6 +109,8 @@ export type GetTileParameters = {
   styles?: unknown;
   /** requested format for the return image (in case of bitmap tiles) */
   format?: 'image/png';
+  /** Abort signal for canceling metadata, range, and tile-content requests. */
+  signal?: AbortSignal;
 };
 
 /** deck.gl compatibility: parameters for TileSource.getTileData() */

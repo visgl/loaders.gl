@@ -134,7 +134,7 @@ export class PMTilesTileSource
     const {x, y, z} = tileParams;
     let rangeResponse;
     try {
-      rangeResponse = await this.getZxyBatched(z, x, y, (tileParams as any).signal);
+      rangeResponse = await this.getZxyBatched(z, x, y, tileParams.signal);
     } catch (error) {
       this.reportError(error, `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`);
       return null;

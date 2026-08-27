@@ -162,7 +162,10 @@ export class MVTTileSource
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
     const {x, y, z} = parameters;
     const tileUrl = this.getTileURL(x, y, z);
-    const response = await this.fetch(tileUrl);
+    const response = await this.fetch(
+      tileUrl,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
     if (!response.ok) {
       this.reportError(
         new Error(`${response.status} ${response.statusText}`),

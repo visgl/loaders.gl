@@ -55,3 +55,14 @@ export type {
   TableScanSource
 } from '@loaders.gl/loader-utils';
 export type {ScanQuery} from './scan-query';
+
+export {
+  AddressedVectorTableScanSource,
+  VectorFeatureTableScanSource,
+  VectorTileTableScanSource
+} from './vector-table-scan-source';
+export type {
+  VectorFeatureTableScanSourceOptions,
+  VectorTableScanSourceOptions,
+  VectorTileTableScanSourceOptions
+} from './vector-table-scan-source';

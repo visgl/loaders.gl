@@ -747,10 +747,12 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    execute validated raster queries through `getRaster()`. NetCDF supports numeric variable reads
    and named dimension index or half-open range slices with typed output. Terrain and LERC remain
    explicitly not implemented.
-7. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
-   but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
-   Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
-   keep tile addressing and rendering controls outside `TableQuery`.
+7. **Tiles and services bridge — feature-table slice landed.** MVT/PMTiles vector tiles and bounded
+   WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/scan` adapters. The
+   physical tile address, layers, bounds, and CRS remain outside `TableQuery`; the resolved Arrow
+   feature table exposes shared metadata, explain, cancellation, residual predicates, projection,
+   relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while
+   shared time, level-of-detail, and non-table discovery metadata are still open.
 8. **Portable relational growth — second slice landed.** Arrow and DuckDB now execute the shared
    ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes. The
    next slice is planner-level source resolution and duplicate-column naming for larger federated
@@ -782,8 +784,10 @@ and “Outside protocol” have the exact meanings defined at the top of this pa
 | GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned windows, channels, levels, slices | More variable and dimension UI |
 | NetCDF | Supported | `getRaster()` | Numeric variables, named dimension index/range slices, typed output, and cancellation | Range reads, chunk pruning, and broader NetCDF variants |
 | Terrain / LERC | Not implemented | — | No common scan claims | Raster adapter design |
-| MVT / PMTiles / 3D Tiles / I3S | Outside protocol | — | Specialized tile APIs | Optional explicit feature-table views |
-| WMS / WFS / STAC | Outside protocol | — | Specialized service and catalog APIs | Shared discovery metadata where useful |
+| MVT / PMTiles | Outside protocol; optional table view | `read()` after binding a vector tile | Tile addressing stays specialized; Arrow feature rows use portable residual queries | Cross-tile planning and tile-statistics discovery |
+| 3D Tiles / I3S | Outside protocol | — | Specialized tile APIs | Shared bounds, time, level-of-detail, and explain metadata |
+| WFS / ArcGIS FeatureServer | Outside protocol; optional table view | `read()` after binding a bounded request | Service controls stay specialized; Arrow feature rows use portable residual queries | DescribeFeatureType schema discovery and server-side filter translation |
+| WMS / STAC | Outside protocol | — | Specialized imagery and catalog APIs | Shared time and non-table discovery metadata |
 
 “Pushdown” is a promise about avoiding physical work, not merely accepting an option. Every adapter
 must report `residual` when it decodes rows, features, points, or chunks before evaluating a filter.

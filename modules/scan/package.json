@@ -41,10 +41,10 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "@loaders.gl/sql": "5.0.0-alpha.2"
   },
   "devDependencies": {
-    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "apache-arrow": ">= 17.0.0"
   }
 }

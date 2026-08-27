@@ -30,6 +30,21 @@ test('Arrow executor advertises portable query capabilities', () => {
   expect(Object.isFrozen(ARROW_TABLE_QUERY_CAPABILITIES)).toBe(true);
 });
 
+test('Arrow executor explains operators as residual work', () => {
+  const source = new ArrowTableSource(makeArrowTable({id: [1], value: [10]}));
+  const explanation = source.explain({
+    predicate: {op: '>', args: [{property: 'value'}, 5]},
+    columns: ['id'],
+    limit: 1
+  });
+
+  expect(explanation.operators).toEqual({
+    projection: {enabled: true, support: 'residual'},
+    predicate: {enabled: true, support: 'residual'},
+    limit: {enabled: true, support: 'residual'}
+  });
+});
+
 test('ArrowTableSource exposes shared metadata and bounded scan batches', async () => {
   const source = new ArrowTableSource(makeArrowTable({x: [1, 2], value: [10, 20]}));
 
