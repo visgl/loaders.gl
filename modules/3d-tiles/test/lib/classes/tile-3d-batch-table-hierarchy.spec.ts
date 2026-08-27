@@ -190,6 +190,7 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents', () => {
         '3DTILES_batch_table_hierarchy': true
     })).not.toThrow();
 });
+
 test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', () => {
     //             zone
     //             / |  \

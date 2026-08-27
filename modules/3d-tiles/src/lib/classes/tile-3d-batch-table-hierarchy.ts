@@ -10,6 +10,10 @@
 // @ts-nocheck
 const defined = x => x !== undefined;
 
+const scratchVisited = [];
+const scratchStack = [];
+let marker = 0;
+
 /** Throws an error when a hierarchy invariant is violated. */
 function assert(condition, message) {
   if (!condition) {
@@ -156,10 +160,10 @@ export function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback
 
   const parentCounts = hierarchy.parentCounts;
   const parentIds = hierarchy.parentIds;
-  if (parentIds) {
+  if (!parentIds) {
     return endConditionCallback(hierarchy, instanceIndex);
   }
-  if (parentCounts > 0) {
+  if (parentCounts) {
     return traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback);
   }
   return traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback);
@@ -223,7 +227,7 @@ function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCal
     hasParent = parentId !== instanceIndex;
     instanceIndex = parentId;
   }
-  throw new Error('traverseHierarchySingleParent');
+  return undefined;
 }
 
 // DEBUG CODE
