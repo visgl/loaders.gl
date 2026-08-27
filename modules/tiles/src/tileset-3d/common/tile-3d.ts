@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, INTERSECTION, Plane} from '@math.gl/culling';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
