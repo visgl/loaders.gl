@@ -76,6 +76,8 @@ export type {
   GLTF_EXT_texture_webp
 } from './gltf-json-schema';
 
+export type {GLTFShape, GLTFBoundingVolume} from './gltf-shape-schema';
+
 export type {
   GLTFPostprocessed,
   GLTFAccessorPostprocessed,

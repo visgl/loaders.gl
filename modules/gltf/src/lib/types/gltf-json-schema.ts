@@ -3,6 +3,8 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-interface` on 2018-02-24
 
+import type {GLTFBoundingVolume, GLTFShape} from './gltf-shape-schema';
+
 export type GLTFId = number;
 
 /**
@@ -607,6 +609,8 @@ export type GLTFNode = {
   mesh?: GLTFId;
   /** Index of the draft glTF 2.1 external asset instantiated by this node. */
   externalAsset?: GLTFId;
+  /** Draft glTF 2.1 bounding-volume shape reference. */
+  boundingVolume?: GLTFBoundingVolume;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */
@@ -752,6 +756,8 @@ export type GLTF = {
    * Draft glTF 2.1 external glTF assets.
    */
   externalAssets?: GLTFExternalAsset[];
+  /** Draft glTF 2.1 implicit shape definitions. */
+  shapes?: GLTFShape[];
   /**
    * An array of materials.
    */
