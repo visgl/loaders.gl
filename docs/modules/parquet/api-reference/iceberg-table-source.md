@@ -238,7 +238,7 @@ selects that snapshot automatically; callers can override it with `delta.version
 `version`.
 
 ```ts
-import {DeltaTableSource} from '@loaders.gl/parquet';
+import {DeltaTableSource} from '@loaders.gl/parquet/delta-source';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json',

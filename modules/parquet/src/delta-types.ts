@@ -6,6 +6,13 @@ import type {ParquetDatasetSourceOptions, ParquetDatasetReadOptions} from './par
 
 /** One Delta Lake transaction action from a commit log or checkpoint projection. */
 export type DeltaAction = Readonly<{
+  protocol?: Readonly<{
+    minReaderVersion?: number;
+    readerFeatures?: readonly string[];
+  }>;
+  metaData?: Readonly<{
+    configuration?: Readonly<Record<string, string | null>>;
+  }>;
   add?: Readonly<{
     path: string;
     size?: number;

@@ -139,7 +139,9 @@ export class DeltaTableSource
               })
             )
           : await this.data.text();
-      return parseDeltaActions(text);
+      const actions = parseDeltaActions(text);
+      validateDeltaActions(actions);
+      return actions;
     }
 
     const tableRoot = this.data.replace(/\/_delta_log\/[^/?#]+(?:[?#].*)?$/i, '');
@@ -154,7 +156,9 @@ export class DeltaTableSource
       );
       actions.push(...parseDeltaActions(text));
     }
-    return Object.freeze(actions);
+    const replayedActions = Object.freeze(actions);
+    validateDeltaActions(replayedActions);
+    return replayedActions;
   }
 
   private async readResponse(response: Response): Promise<string> {
@@ -243,16 +247,18 @@ function selectActiveDeltaFiles(
   const files = new Map<string, NonNullable<DeltaAction['add']>>();
   for (const action of actions) {
     if (action.add) {
-      if (action.add.deletionVector !== undefined) {
-        throw new Error(
-          `Delta deletion vectors are not supported for active file ${action.add.path}`
-        );
-      }
       files.set(action.add.path, action.add);
     }
     if (action.remove) files.delete(action.remove.path);
   }
-  return [...files.values()];
+  const activeFiles = [...files.values()];
+  const deletionVectorFile = activeFiles.find(file => file.deletionVector !== undefined);
+  if (deletionVectorFile) {
+    throw new Error(
+      `Delta deletion vectors are not supported for active file ${deletionVectorFile.path}`
+    );
+  }
+  return activeFiles;
 }
 
 /** Parses a newline-delimited Delta commit into typed actions. */
@@ -263,4 +269,36 @@ function parseDeltaActions(text: string): readonly DeltaAction[] {
       .filter(line => line.trim().length > 0)
       .map(line => JSON.parse(line) as DeltaAction)
   );
+}
+
+/** Rejects Delta protocol features that this Parquet snapshot adapter cannot interpret safely. */
+function validateDeltaActions(actions: readonly DeltaAction[]): void {
+  for (const action of actions) {
+    const protocol = action.protocol;
+    if (protocol) {
+      if (
+        protocol.minReaderVersion !== undefined &&
+        (!Number.isSafeInteger(protocol.minReaderVersion) || protocol.minReaderVersion < 1)
+      ) {
+        throw new Error('Delta protocol has an invalid minReaderVersion');
+      }
+      if ((protocol.minReaderVersion ?? 1) > 1) {
+        throw new Error(
+          `Delta reader protocol ${protocol.minReaderVersion} is not supported by this source`
+        );
+      }
+      if (protocol.readerFeatures?.length) {
+        throw new Error(
+          `Delta reader features are not supported: ${protocol.readerFeatures.join(', ')}`
+        );
+      }
+    }
+
+    const columnMappingMode = action.metaData?.configuration?.['delta.columnMapping.mode'];
+    if (columnMappingMode && columnMappingMode !== 'none') {
+      throw new Error(
+        `Delta column mapping mode "${columnMappingMode}" is not supported by this source`
+      );
+    }
+  }
 }

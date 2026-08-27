@@ -67,11 +67,46 @@ test('DeltaTableSource replays every commit through the selected snapshot versio
 });
 
 test('DeltaTableSource rejects active files with deletion vectors', async () => {
+  const historicalDeletionVectorSource = new DeltaTableSource(
+    new Blob([
+      [
+        JSON.stringify({add: {path: 'part-old.parquet', deletionVector: {storageType: 'u'}}}),
+        JSON.stringify({remove: {path: 'part-old.parquet'}}),
+        JSON.stringify({add: {path: 'part-current.parquet'}})
+      ].join('\n')
+    ]),
+    {}
+  );
+  await expect(historicalDeletionVectorSource.getScanFragments()).resolves.toEqual([
+    expect.objectContaining({id: 'part-current.parquet'})
+  ]);
+
   const source = new DeltaTableSource(
-    new Blob([JSON.stringify({add: {path: 'part-0.parquet', deletionVector: {storageType: 'u'}}})]),
+    new Blob([
+      [
+        JSON.stringify({add: {path: 'part-current.parquet'}}),
+        JSON.stringify({add: {path: 'part-deleted.parquet', deletionVector: {storageType: 'u'}}})
+      ].join('\n')
+    ]),
     {}
   );
   await expect(source.getScanFragments()).rejects.toThrow('deletion vectors are not supported');
+});
+
+test('DeltaTableSource rejects unsupported reader protocols and column mapping', async () => {
+  const protocolSource = new DeltaTableSource(
+    new Blob([JSON.stringify({protocol: {minReaderVersion: 2}})]),
+    {}
+  );
+  await expect(protocolSource.getScanFragments()).rejects.toThrow('reader protocol 2');
+
+  const columnMappingSource = new DeltaTableSource(
+    new Blob([
+      JSON.stringify({metaData: {configuration: {'delta.columnMapping.mode': 'name'}}})
+    ]),
+    {}
+  );
+  await expect(columnMappingSource.getScanFragments()).rejects.toThrow('column mapping mode');
 });
 
 test('DeltaSourceLoader identifies commit-log URLs', () => {
