@@ -24,13 +24,15 @@ import {
   discoverArcGISCapabilities,
   selectArcGISService
 } from '@loaders.gl/services';
+import {coreApi} from '@loaders.gl/core';
 
 const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services');
 const imagery = graph && selectArcGISService(graph, {kind: 'image', format: 'lerc'});
 const source = imagery && createServiceSource(
   imagery.url,
   {},
-  imagery.capabilities.type
+  imagery.capabilities.type,
+  coreApi
 );
 ```
 

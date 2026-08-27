@@ -9,6 +9,7 @@ import {
   getServiceLoader,
   selectArcGISService
 } from '../src/index';
+import {coreApi} from '@loaders.gl/core';
 import {getArcGISServices} from '../src/arcgis/arcgis-server';
 import * as bundledServices from '../src/bundled';
 import * as unbundledServices from '../src/unbundled';
@@ -42,15 +43,21 @@ describe('@loaders.gl/services', () => {
       createServiceSource(
         'https://example.com/arcgis/rest/services/Basemap/VectorTileServer',
         {},
-        'arcgis-vector-tile-server'
+        'arcgis-vector-tile-server',
+        coreApi
       )
     ).toBeInstanceOf(Object);
     expect(
-      createServiceSource('https://example.com/arcgis/rest/services/Roads/FeatureServer/0')
+      createServiceSource(
+        'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
+        {},
+        undefined,
+        coreApi
+      )
     ).toBeInstanceOf(Object);
-    expect(() => createServiceSource('https://example.com/service', {}, 'unknown')).toThrow(
-      'No service loader recognized type or URL'
-    );
+    expect(() =>
+      createServiceSource('https://example.com/service', {}, 'unknown', coreApi)
+    ).toThrow('No service loader recognized type or URL');
   });
 
   test('keeps the package entrypoints wired to the public exports', () => {
