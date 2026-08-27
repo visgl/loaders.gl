@@ -158,6 +158,58 @@ test('Lance decoder reads flat little-endian primitive pages', () => {
   expect(Array.from(values)).toEqual([1, -2, 300]);
 });
 
+test('Lance decoder supports every fixed-width primitive type', () => {
+  const primitiveTypes = [
+    ['int8', new Int8Array([-1, 2])],
+    ['uint8', new Uint8Array([1, 255])],
+    ['int16', new Int16Array([-2, 300])],
+    ['uint16', new Uint16Array([2, 300])],
+    ['int32', new Int32Array([-2, 300])],
+    ['uint32', new Uint32Array([2, 300])],
+    ['int64', new BigInt64Array([-2n, 300n])],
+    ['uint64', new BigUint64Array([2n, 300n])],
+    ['float', new Float32Array([-2.5, 300.5])],
+    ['double', new Float64Array([-2.5, 300.5])]
+  ] as const;
+
+  for (const [type, expected] of primitiveTypes) {
+    const bytes = expected.buffer.slice(0);
+    const values = decodeLanceFlatPage(
+      bytes,
+      {bufferOffsets: [0], bufferSizes: [bytes.byteLength], length: expected.length, priority: 0},
+      type
+    );
+    expect(Array.from(values)).toEqual(Array.from(expected));
+  }
+});
+
+test('Lance decoder rejects invalid page ranges and priorities', () => {
+  const page = {bufferOffsets: [0], bufferSizes: [4], length: 1, priority: 0};
+  expect(() =>
+    decodeLanceFlatPage(new ArrayBuffer(4), {...page, bufferOffsets: [-1]}, 'int32')
+  ).toThrow('invalid value buffer range');
+  expect(() =>
+    decodeLanceFlatPage(new ArrayBuffer(4), {...page, bufferSizes: [3]}, 'int32')
+  ).toThrow('does not match its page type');
+  expect(() =>
+    decodeLanceFlatPage(new ArrayBuffer(4), {...page, length: Number.MAX_SAFE_INTEGER + 1}, 'int32')
+  ).toThrow('exceeds JavaScript limits');
+  expect(() =>
+    decodeLanceFlatColumn(
+      new ArrayBuffer(8),
+      {
+        pages: [
+          {...page, priority: 1},
+          {...page, priority: 1}
+        ],
+        bufferOffsets: [],
+        bufferSizes: []
+      },
+      'int32'
+    )
+  ).toThrow('invalid priorities');
+});
+
 test('Lance decoder rejects non-flat page shapes', () => {
   expect(() =>
     decodeLanceFlatPage(
