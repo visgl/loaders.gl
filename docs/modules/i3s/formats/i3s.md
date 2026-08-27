@@ -132,7 +132,8 @@ those versions.
 | OID32 and UInt32 attributes | **Supported** | v2.3 | Object IDs and common unsigned integer values are decoded. |
 | Float64 attributes | **Supported** | v2.3 | Double-precision attribute values are decoded. |
 | Int16 attributes | **Supported** | v3.1 | Used by tested Building Scene Layer attribute resources. |
-| Other declared scalar types | **Partial** | v2.3 | The generic fallback reads UInt32. Int32, Int64, UInt64, Float32, dates, GUIDs, and null masks do not have complete type-specific decoding. |
+| Typed numeric attributes (UInt8/16/32/64, Int16/32/64, Float32/64) | **Supported** | **v5.0** | Declared numeric types are decoded into matching typed arrays; 64-bit integers use `Float64Array` and are exact through `Number.MAX_SAFE_INTEGER`. |
+| Date, GUID, and null-mask attributes | **Partial** | v2.3 | Date/GUID conversion and explicit null-mask propagation remain open feature-intelligence work. |
 | Coded-value domains | **Supported** | v3.0 | Numeric domain codes are mapped to their display names when loading a selected feature. |
 | Attribute-driven colorization | **Supported** | v3.3 | Numeric attributes can replace or multiply vertex colors through `colorsByAttribute`. |
 | Layer statistics | **Partial** | v2.0 | Statistics metadata passes through; raw SLPK statistics extraction was added in v3.4. There is no typed statistics loader or query API. |
@@ -174,7 +175,7 @@ current v5.0 development line; the remaining tranches close the largest unsuppor
 | 1. Correctness hardening | Make root authentication, node metadata passthrough, UInt64 precision, and WebScene CRS validation match the documented boundaries. | **Complete** |
 | 2. 1.10 mesh parity | Add legacy shared-resource material interpretation and mesh-segmentation preservation, then expand 1.9/1.10 conformance fixtures. | **Complete** |
 | 3. Material fidelity | Load complete PBR texture sets, preserve multiple referenced atlases, and carry sampler wrap semantics into material metadata. | **Complete** |
-| 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | Planned |
+| 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | **In progress** (typed numeric attributes complete in v5.0) |
 | 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal). | Planned |
 | 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
 
