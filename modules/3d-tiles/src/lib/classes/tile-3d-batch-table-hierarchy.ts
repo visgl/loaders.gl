@@ -223,7 +223,7 @@ function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCal
     hasParent = parentId !== instanceIndex;
     instanceIndex = parentId;
   }
-  throw new Error('traverseHierarchySingleParent');
+  return undefined;
 }
 
 // DEBUG CODE
