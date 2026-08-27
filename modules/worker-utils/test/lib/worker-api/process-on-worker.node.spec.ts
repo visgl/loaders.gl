@@ -1,10 +1,5 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-
 const TestWorker = {
   id: 'context-test',
   name: 'context-test',
@@ -13,7 +8,6 @@ const TestWorker = {
   worker: true,
   options: {}
 };
-
 const testWorkerSource = `
 const {parentPort} = require('worker_threads');
 
@@ -46,7 +40,6 @@ parentPort.on('message', message => {
   }
 });
 `;
-
 const AbortWorker = {
   id: 'abort-test',
   name: 'abort-test',
@@ -55,7 +48,6 @@ const AbortWorker = {
   worker: true,
   options: {}
 };
-
 const abortWorkerSource = `
 const {parentPort} = require('worker_threads');
 
@@ -70,8 +62,7 @@ parentPort.on('message', message => {
   }
 });
 `;
-
-test('processOnWorker#jobContext', async t => {
+test('processOnWorker#jobContext', async () => {
   const result = await processOnWorker(
     TestWorker,
     'abc',
@@ -92,41 +83,32 @@ test('processOnWorker#jobContext', async t => {
       loaderContext: 'job-context'
     }
   );
-
-  t.deepEqual(
-    result,
-    {
-      input: 'abc',
-      options: {workerOption: 'worker-option'},
-      jobContext: {workerContext: 'job-context'}
-    },
-    'job context is transferred separately from options'
-  );
-  t.end();
+  expect(result, 'job context is transferred separately from options').toEqual({
+    input: 'abc',
+    options: {workerOption: 'worker-option'},
+    jobContext: {workerContext: 'job-context'}
+  });
 });
-
-test('processOnWorker#AbortSignal terminates and replaces an active worker', async t => {
+test('processOnWorker#AbortSignal terminates and replaces an active worker', async () => {
   const abortController = new AbortController();
   const abortedResult = processOnWorker(AbortWorker, 'aborted', {
     worker: true,
     source: abortWorkerSource,
-    delay: 1_000,
+    delay: 1000,
     signal: abortController.signal
   });
   setTimeout(() => abortController.abort(), 10);
-
   let abortError: unknown;
   try {
     await abortedResult;
   } catch (error) {
     abortError = error;
   }
-  t.equal((abortError as Error | undefined)?.name, 'AbortError', 'rejects with an abort error');
+  expect((abortError as Error | undefined)?.name, 'rejects with an abort error').toBe('AbortError');
   const nextResult = await processOnWorker(AbortWorker, 'replacement', {
     worker: true,
     source: abortWorkerSource,
     delay: 0
   });
-  t.equal(nextResult, 'replacement', 'the pool starts a replacement worker after cancellation');
-  t.end();
+  expect(nextResult, 'the pool starts a replacement worker after cancellation').toBe('replacement');
 });
