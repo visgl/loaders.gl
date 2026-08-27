@@ -17,6 +17,10 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/schema';
+import {
+  convertFeaturesToWKBArrowTable,
+  convertGeojsonToBinaryFeatureCollection
+} from '@loaders.gl/gis';
 
 /** Options shared by the minimal OGC API source adapters. */
 export type OGCAPISourceOptions = DataSourceOptions & {
@@ -56,12 +60,12 @@ export class OGCAPIFeaturesSource
 
   /** Returns the landing page metadata. */
   async getLandingPage(): Promise<OGCAPILandingPage> {
-    return (await this.fetchJSON(this.url)) as OGCAPILandingPage;
+    return (await this.fetchJSON(this.getServiceURL())) as OGCAPILandingPage;
   }
 
   /** Lists the feature collections advertised by the service. */
   async getCollections(): Promise<OGCAPICollection[]> {
-    const response = (await this.fetchJSON(`${this.url}/collections`)) as {
+    const response = (await this.fetchJSON(`${this.getServiceURL()}/collections`)) as {
       collections?: OGCAPICollection[];
     };
     return response.collections || [];
@@ -88,27 +92,45 @@ export class OGCAPIFeaturesSource
   /** Fetches a page of GeoJSON features using the standard bbox parameters. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
     const collectionId = this.getCollectionId(parameters.layers);
-    const url = new URL(`${this.url}/collections/${encodeURIComponent(collectionId)}/items`);
+    const collectionURL = /\/collections\/[^/]+$/.test(this.url)
+      ? `${this.url}/items`
+      : `${this.getServiceURL()}/collections/${encodeURIComponent(collectionId)}/items`;
+    const url = new URL(collectionURL);
     url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox).join(','));
     if (parameters.crs) url.searchParams.set('crs', parameters.crs);
-    const response = await this.fetchJSON(url.toString());
+    const response = await this.fetchJSON(
+      url.toString(),
+      'application/geo+json, application/json;q=0.9'
+    );
     if (!isFeatureCollection(response)) {
       throw new Error('OGC API Features response was not a GeoJSON FeatureCollection');
     }
-    return {shape: 'geojson-table', ...response} as GeoJSONTable;
+    const geoJSONTable = {shape: 'geojson-table', ...response} as GeoJSONTable;
+    switch (parameters.format || 'geojson') {
+      case 'binary':
+        return convertGeojsonToBinaryFeatureCollection(geoJSONTable.features);
+      case 'arrow':
+        return convertFeaturesToWKBArrowTable(geoJSONTable.features);
+      case 'geojson':
+      default:
+        return geoJSONTable;
+    }
   }
 
-  private async fetchJSON(url: string): Promise<unknown> {
-    const response = await this.fetch(url, {headers: {Accept: 'application/json'}});
+  /** Fetches and decodes a JSON representation from the service. */
+  private async fetchJSON(url: string, accept = 'application/json'): Promise<unknown> {
+    const response = await this.fetch(url, {headers: {Accept: accept}});
     if (!response.ok) throw new Error(`OGC API request failed: ${response.status}`);
     return response.json();
   }
 
+  /** Selects the requested collection from a collections response. */
   private getCollection(collections: OGCAPICollection[]): OGCAPICollection | undefined {
     const collectionId = this.getCollectionId();
     return collections.find(collection => collection.id === collectionId) || collections[0];
   }
 
+  /** Returns the configured collection identifier or the first URL collection segment. */
   private getCollectionId(layers?: string | string[]): string {
     const configuredId = this.options['ogc-api']?.collectionId;
     const layerId = Array.isArray(layers) ? layers[0] : layers;
@@ -116,6 +138,11 @@ export class OGCAPIFeaturesSource
     const match = this.url.match(/\/collections\/([^/]+)/);
     if (match) return decodeURIComponent(match[1]);
     return '';
+  }
+
+  /** Returns the service root for both landing-page and collection URLs. */
+  private getServiceURL(): string {
+    return this.url.replace(/\/collections\/[^/]+$/, '');
   }
 }
 
@@ -209,14 +236,17 @@ export const OGCAPITilesSourceLoader = {
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;
 
+/** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
 function flattenBoundingBox(boundingBox: GetFeaturesParameters['boundingBox']): number[] {
   return [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]];
 }
 
+/** Checks that a decoded response has the required GeoJSON feature-collection marker. */
 function isFeatureCollection(value: unknown): value is Pick<GeoJSONTable, 'type' | 'features'> {
   return Boolean(value && typeof value === 'object' && (value as any).type === 'FeatureCollection');
 }
 
+/** Converts an OGC collection extent into the normalized source-layer shape. */
 function toVectorLayer(collection: OGCAPICollection) {
   const bbox = collection.extent?.spatial?.bbox?.[0];
   return {
@@ -224,10 +254,10 @@ function toVectorLayer(collection: OGCAPICollection) {
     title: collection.title,
     crs: collection.crs,
     boundingBox: bbox
-      ? [
+      ? ([
           [bbox[0], bbox[1]],
           [bbox[2], bbox[3]]
-        ]
+        ] as [[number, number], [number, number]])
       : undefined,
     layers: []
   };
