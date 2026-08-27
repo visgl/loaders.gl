@@ -194,6 +194,29 @@ Keeping the common contracts in loader-utils avoids making Parquet or GPU code d
 adapter. SQL retains compatibility exports from `@loaders.gl/sql/table-query` while new generic
 planners can import the lower-level contract directly.
 
+### Optional scan runtime
+
+Applications that want the shared planner and reference executor can opt into the single
+`@loaders.gl/scan` package:
+
+```ts
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/scan';
+
+const engine = await createScanEngine();
+const result = engine.query(table, {
+  predicate: parseSQLPredicate('population >= 1000000'),
+  columns: ['name', 'population'],
+  limit: 100
+});
+```
+
+Arrow is the built-in reference backend. The factory is asynchronous so optional backends can be
+loaded later without adding backend-specific imports to application code. Format adapters continue
+to import only the lightweight contracts from `@loaders.gl/loader-utils`; importing a format or
+loading metadata does not require the scan runtime. The proof-of-concept backend registry is
+intentionally internal to this one public package rather than exposing a family of backend
+subpaths.
+
 ## Predicates and SQL semantics
 
 Portable predicates use a small JSON-shaped tree:
