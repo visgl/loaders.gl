@@ -85,6 +85,12 @@ export type TableQueryCapabilities = Readonly<{
   streaming: boolean;
   /** Whether active and queued physical work observes cancellation. */
   cancellation: boolean;
+  /** Whether scalar expressions can be evaluated before projection. */
+  expressions?: TableQueryOperatorSupport;
+  /** Whether output rows can be ordered before the global limit. */
+  orderBy?: TableQueryOperatorSupport;
+  /** Whether grouped aggregate output is supported. */
+  aggregates?: TableQueryOperatorSupport;
 }>;
 
 /**

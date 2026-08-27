@@ -64,6 +64,11 @@ export type {
   SQLTableQueryDialect
 } from './compile-table-query';
 export type {
+  RelationalAggregate,
+  RelationalExpression,
+  RelationalOrderKey
+} from '@loaders.gl/loader-utils';
+export type {
   TableQueryFilterStep,
   TableQueryLimitStep,
   TableQueryOptions,

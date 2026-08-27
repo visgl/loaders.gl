@@ -16,7 +16,7 @@ import {
   queryArrowTable
 } from './query-arrow-table';
 import type {ArrowQueryOptions} from './query-arrow-table';
-import type {TableQueryExplain, TableQueryOptions} from './table-query';
+import type {TableQueryExplain} from './table-query';
 
 /** In-memory source options; the source owns the supplied Arrow table. */
 export type ArrowTableSourceOptions = DataSourceOptions;
@@ -54,7 +54,7 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
   }
 
   /** Explains a portable query without evaluating table rows. */
-  explain(options: TableQueryOptions = {}): TableQueryExplain {
+  explain(options: ArrowQueryOptions = {}): TableQueryExplain {
     return explainArrowTableQuery(this.data, options);
   }
 

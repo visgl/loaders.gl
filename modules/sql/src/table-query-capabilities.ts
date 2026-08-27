@@ -10,7 +10,10 @@ export const ARROW_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object.fre
   predicate: 'residual',
   limit: 'residual',
   streaming: false,
-  cancellation: true
+  cancellation: true,
+  expressions: 'residual',
+  orderBy: 'residual',
+  aggregates: 'residual'
 });
 
 /** Portable query capabilities shared by the current SQL data-source adapters. */
@@ -19,5 +22,8 @@ export const SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = 
   predicate: 'pushdown',
   limit: 'pushdown',
   streaming: false,
-  cancellation: false
+  cancellation: false,
+  expressions: 'pushdown',
+  orderBy: 'pushdown',
+  aggregates: 'pushdown'
 });

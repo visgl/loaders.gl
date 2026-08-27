@@ -80,4 +80,29 @@ describe('compileSQLTableQuery', () => {
       compileSQLTableQuery({tableName: 'flights', limit: -1}, {dialect: 'duckdb'})
     ).toThrow(/non-negative/);
   });
+
+  test('compiles portable expressions, aggregates, and ordering', () => {
+    const compiled = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        expressions: [{name: 'metric', expression: {op: 'literal', value: 1}}],
+        columns: ['carrier', 'metric'],
+        groupBy: ['carrier'],
+        aggregates: [{name: 'flightCount', function: 'count'}],
+        orderBy: [{column: 'flightCount', direction: 'desc', nulls: 'last'}],
+        limit: 10
+      },
+      {dialect: 'duckdb'}
+    );
+
+    expect(compiled.sql).toBe(
+      [
+        'SELECT "carrier", 1 AS "metric", COUNT(*) AS "flightCount"',
+        'FROM "flights"',
+        'GROUP BY "carrier"',
+        'ORDER BY "flightCount" DESC NULLS LAST',
+        'LIMIT 10'
+      ].join('\n')
+    );
+  });
 });

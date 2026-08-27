@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ColumnarPredicate} from './columnar-predicate';
+import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {TableQueryOptions} from './table-query';
 import {planTableQuery} from './table-query';
 
@@ -42,31 +42,39 @@ export type RelationalAggregate = Readonly<{
 }>;
 
 /** A relational child query used by unions and joins. */
-export type RelationalChildQuery<PredicateT extends ColumnarPredicate = ColumnarPredicate> =
-  Readonly<{
-    /** Logical source name. */
-    source: string;
-    /** Portable table query applied to the child. */
-    query?: TableQueryOptions<PredicateT>;
-  }>;
+export type RelationalChildQuery<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+> = Readonly<{
+  /** Logical source name. */
+  source: string;
+  /** Portable table query applied to the child. */
+  query?: TableQueryOptions<PredicateT>;
+}>;
 
 /** Portable relational extensions layered on top of a table scan. */
-export type RelationalQueryOptions<PredicateT extends ColumnarPredicate = ColumnarPredicate> =
-  TableQueryOptions<PredicateT> &
-    Readonly<{
-      /** Computed columns evaluated before projection. */
-      expressions?: readonly RelationalExpression[];
-      /** Stable ordering applied before the global limit. */
-      orderBy?: readonly RelationalOrderKey[];
-      /** Grouping keys for aggregate output. */
-      groupBy?: readonly string[];
-      /** Aggregate output definitions. */
-      aggregates?: readonly RelationalAggregate[];
-      /** Additional child queries to concatenate. */
-      union?: readonly RelationalChildQuery<PredicateT>[];
-      /** Optional equi-join child and key mapping. */
-      join?: Readonly<{child: RelationalChildQuery<PredicateT>; left: string; right: string}>;
-    }>;
+export type RelationalQueryOptions<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+> = TableQueryOptions<PredicateT> &
+  Readonly<{
+    /** Computed columns evaluated before projection. */
+    expressions?: readonly RelationalExpression[];
+    /** Stable ordering applied before the global limit. */
+    orderBy?: readonly RelationalOrderKey[];
+    /** Grouping keys for aggregate output. */
+    groupBy?: readonly string[];
+    /** Aggregate output definitions. */
+    aggregates?: readonly RelationalAggregate[];
+    /** Additional child queries to concatenate. */
+    union?: readonly RelationalChildQuery<PredicateT>[];
+    /** Optional equi-join child and key mapping. */
+    join?: Readonly<{child: RelationalChildQuery<PredicateT>; left: string; right: string}>;
+  }>;
 
 /** Logical operator in a relational query plan. */
 export type RelationalPlanStep = Readonly<{
@@ -75,7 +83,12 @@ export type RelationalPlanStep = Readonly<{
 }>;
 
 /** Validates and normalizes the relational extensions without executing them. */
-export function planRelationalQuery<PredicateT extends ColumnarPredicate = ColumnarPredicate>(
+export function planRelationalQuery<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate<
+    unknown,
+    ColumnarPredicateProperty
+  >
+>(
   sourceColumnNames: readonly string[],
   options: RelationalQueryOptions<PredicateT> = {}
 ): {
@@ -91,20 +104,31 @@ export function planRelationalQuery<PredicateT extends ColumnarPredicate = Colum
     }
     expressionNames.add(expression.name);
   }
+  const aggregateNames = new Set((options.aggregates || []).map(aggregate => aggregate.name));
   const requiredColumns = new Set<string>();
+  const availableColumns = new Set(sourceColumnNames);
   for (const expression of options.expressions || []) {
-    if (expression.expression.op === 'column') requiredColumns.add(expression.expression.column);
-    if ('left' in expression.expression) {
-      requiredColumns.add(expression.expression.left);
-      requiredColumns.add(expression.expression.right);
+    const definition = expression.expression;
+    if (definition.op === 'column') {
+      validateRelationalColumnReference(definition.column, availableColumns);
+      if (available.has(definition.column)) requiredColumns.add(definition.column);
     }
+    if ('left' in definition) {
+      validateRelationalColumnReference(definition.left, availableColumns);
+      validateRelationalColumnReference(definition.right, availableColumns);
+      if (available.has(definition.left)) requiredColumns.add(definition.left);
+      if (available.has(definition.right)) requiredColumns.add(definition.right);
+    }
+    availableColumns.add(expression.name);
   }
   for (const key of options.orderBy || []) requiredColumns.add(key.column);
   for (const key of options.groupBy || []) requiredColumns.add(key);
   for (const aggregate of options.aggregates || []) {
     if (aggregate.column) requiredColumns.add(aggregate.column);
   }
-  const outputColumns = options.columns?.filter(column => !expressionNames.has(column));
+  const outputColumns = options.columns?.filter(
+    column => !expressionNames.has(column) && !aggregateNames.has(column)
+  );
   const tablePlan = [
     ...planTableQuery(sourceColumnNames, {
       ...options,
@@ -147,4 +171,14 @@ export function planRelationalQuery<PredicateT extends ColumnarPredicate = Colum
   if (options.union?.length) relationalSteps.push({kind: 'union', detail: options.union});
   if (options.join) relationalSteps.push({kind: 'join', detail: options.join});
   return {tablePlan, relationalSteps: Object.freeze(relationalSteps)};
+}
+
+/** Validates that an expression operand refers to a source or earlier computed column. */
+function validateRelationalColumnReference(
+  columnName: string,
+  availableColumns: ReadonlySet<string>
+): void {
+  if (!availableColumns.has(columnName)) {
+    throw new Error(`Relational expression column not found: ${columnName}`);
+  }
 }
