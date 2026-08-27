@@ -10,6 +10,7 @@ export const GL_RGBA = 0x1908;
 export const GL_RGBA4 = 0x8056;
 export const GL_RGB5_A1 = 0x8057;
 export const GL_RGBA8 = 0x8058;
+export const GL_SRGB8_ALPHA8 = 0x8c43;
 export const GL_RGB565 = 0x8d62;
 export const GL_RGBA16F = 0x881a;
 export const GL_RGBA32F = 0x8814;
@@ -101,6 +102,7 @@ export const GL_EXTENSIONS_CONSTANTS = {
   RGBA4: GL_RGBA4,
   RGB5_A1: GL_RGB5_A1,
   RGBA8: GL_RGBA8,
+  SRGB8_ALPHA8: GL_SRGB8_ALPHA8,
   RGB565: GL_RGB565,
   RGBA16F: GL_RGBA16F,
   RGBA32F: GL_RGBA32F,

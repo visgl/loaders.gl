@@ -70,7 +70,8 @@ export function parseKTX(arrayBuffer: ArrayBuffer): TextureLevel[] {
   return extractMipmapImages(ktx2.levels, {
     mipMapLevels: ktx2.levelCount,
     width: ktx2.pixelWidth,
-    height: ktx2.pixelHeight,
+    // KTX2 represents a one-dimensional texture with pixelHeight = 0.
+    height: Math.max(1, ktx2.pixelHeight),
     sizeFunction: (level: KTX2Level): number => level.uncompressedByteLength,
     textureFormat
   });
@@ -115,8 +116,8 @@ export function readKTX2Container(arrayBuffer: ArrayBuffer): KTX2Container {
     levels: []
   };
 
-  if (container.pixelWidth === 0 || container.pixelHeight === 0) {
-    throw new Error('KTX2 texture dimensions must be non-zero');
+  if (container.pixelWidth === 0) {
+    throw new Error('KTX2 texture width must be non-zero');
   }
   if (container.faceCount !== 1 && container.faceCount !== 6) {
     throw new Error(`Invalid KTX2 face count ${container.faceCount}`);

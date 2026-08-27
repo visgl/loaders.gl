@@ -70,7 +70,8 @@ import type {
   GL_RGBA16F,
   GL_RGBA32F,
   GL_RGBA4,
-  GL_RGBA8
+  GL_RGBA8,
+  GL_SRGB8_ALPHA8
 } from './gl-extensions';
 
 /** WebGL/OpenGL texture format constants used internally by the textures module. */
@@ -141,4 +142,5 @@ export type GLTextureFormat =
   | typeof GL_RGBA16F
   | typeof GL_RGBA32F
   | typeof GL_RGBA4
-  | typeof GL_RGBA8;
+  | typeof GL_RGBA8
+  | typeof GL_SRGB8_ALPHA8;

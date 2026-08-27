@@ -64,7 +64,8 @@ import {
   GL_RGB9_E5,
   GL_RGBA4,
   GL_RGBA8,
-  GL_RGBA16F
+  GL_RGBA16F,
+  GL_SRGB8_ALPHA8
 } from '../gl-extensions';
 import {selectSupportedBasisFormat} from '../utils/basis-format-utils';
 import {loadBasisTranscoderModule} from './basis-module-loader';
@@ -224,7 +225,7 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
     'atc-rgbai-unorm-webgl'
   ),
-  rgba32: uncompressedOutput(13, GL_RGBA8, 'rgba8unorm', undefined, 'rgba8unorm-srgb'),
+  rgba32: uncompressedOutput(13, GL_RGBA8, 'rgba8unorm', GL_SRGB8_ALPHA8, 'rgba8unorm-srgb'),
   rgb565: uncompressedOutput(14, GL_RGB565, 'rgb565unorm-webgl'),
   bgr565: uncompressedOutput(15, GL_RGB565, 'rgb565unorm-webgl'),
   rgba4444: uncompressedOutput(16, GL_RGBA4, 'rgba4unorm-webgl'),

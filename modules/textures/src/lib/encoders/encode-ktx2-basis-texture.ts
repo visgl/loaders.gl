@@ -132,6 +132,7 @@ type NormalizedWriterOptions = {
   ldrToHdrNitMultiplier: number;
 };
 
+/** Validates image dimensions, storage, and v2.50 encoder constraints. */
 function validateWriterOptions(image: BasisImageData, options: NormalizedWriterOptions): void {
   if (
     !Number.isInteger(image.width) ||
@@ -183,6 +184,7 @@ function validateWriterOptions(image: BasisImageData, options: NormalizedWriterO
   }
 }
 
+/** Applies the upstream Basis content preset and transfer-function settings. */
 function applyContentPreset(
   basisEncoder: any,
   format: BasisEncoderFormat,
@@ -208,14 +210,16 @@ function applyContentPreset(
   }
 }
 
+/** Supplies an HDR or LDR pixel buffer to the Basis HDR encoder entry point. */
 function setHDRSource(
   basisEncoder: any,
   image: BasisImageData,
   convertSRGBToLinear: boolean,
   ldrToHdrNitMultiplier: number
 ): boolean {
-  const imageType =
-    image.data instanceof Uint16Array ? 0 : image.data instanceof Float32Array ? 1 : 7;
+  // v2.50's raw typed-pixel path uses cHITRGBA8Image (7) for both half and
+  // full-float buffers. The other enum values describe encoded PNG/EXR input.
+  const imageType = 7;
   return basisEncoder.setSliceSourceImageHDR(
     0,
     image.data,
@@ -227,10 +231,12 @@ function setHDRSource(
   );
 }
 
+/** Tests whether a pixel buffer contains 8-bit RGBA samples. */
 function isRGBA8Array(data: BasisImageData['data']): data is Uint8Array | Uint8ClampedArray {
   return data instanceof Uint8Array || data instanceof Uint8ClampedArray;
 }
 
+/** Calculates a bounded output allocation for the Basis encoder. */
 function getOutputBufferByteLength(inputByteLength: number): number {
   const outputByteLength = Math.max(
     MINIMUM_OUTPUT_BYTE_LENGTH,
