@@ -47,10 +47,10 @@ function isMultiGeometryType(geometry: BinaryGeometry) {
       return positions.value.length / positions.size > 1;
     case 'LineString':
       const {pathIndices} = geometry;
-      return pathIndices.value.length > 1;
+      return pathIndices.value.length > 2;
     case 'Polygon':
       const {polygonIndices} = geometry;
-      return polygonIndices.value.length > 1;
+      return polygonIndices.value.length > 2;
     default:
       return false;
   }

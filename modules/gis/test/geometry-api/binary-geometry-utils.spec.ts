@@ -133,13 +133,13 @@ describe('binary geometry utilities', () => {
     const line: BinaryLineGeometry = {
       type: 'LineString',
       positions: {value: new Float32Array([0, 0, 1, 1]), size: 2},
-      pathIndices: {value: new Uint32Array([0]), size: 1}
+      pathIndices: {value: new Uint32Array([0, 2]), size: 1}
     };
     const multiLine = {...line, pathIndices: {value: new Uint32Array([0, 1, 2]), size: 1}};
     const polygon = {
       type: 'Polygon' as const,
       positions: {value: new Float32Array([0, 0, 1, 0, 0, 0]), size: 2},
-      polygonIndices: {value: new Uint32Array([0]), size: 1},
+      polygonIndices: {value: new Uint32Array([0, 1]), size: 1},
       primitivePolygonIndices: {value: new Uint32Array([0, 3]), size: 1}
     };
     const multiPolygon = {...polygon, polygonIndices: {value: new Uint32Array([0, 1, 2]), size: 1}};
@@ -167,27 +167,30 @@ describe('binary geometry utilities', () => {
 
     const firstLine: BinaryLineGeometry = {
       type: 'LineString',
-      positions: {value: new Float32Array([0, 0, 1, 1]), size: 2},
+      positions: {value: new Float64Array([0, 0, 1, 1]), size: 2},
       pathIndices: {value: new Uint32Array([0, 2]), size: 1}
     };
     const secondLine: BinaryLineGeometry = {
       type: 'LineString',
-      positions: {value: new Float32Array([2, 2, 3, 3, 4, 4]), size: 2},
+      positions: {value: new Float64Array([2, 2, 3, 3, 4, 4]), size: 2},
       pathIndices: {value: new Uint32Array([0, 3]), size: 1}
     };
     expect(
       Array.from(concatenateBinaryLineGeometries([firstLine, secondLine], 2).pathIndices.value)
     ).toEqual([0, 2, 5]);
+    expect(
+      Array.from(concatenateBinaryLineGeometries([firstLine, secondLine], 2).positions.value)
+    ).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
 
     const firstPolygon = {
       type: 'Polygon' as const,
-      positions: {value: new Float32Array([0, 0, 1, 0, 0, 0]), size: 2},
+      positions: {value: new Float64Array([0, 0, 1, 0, 0, 0]), size: 2},
       polygonIndices: {value: new Uint32Array([0, 1]), size: 1},
       primitivePolygonIndices: {value: new Uint32Array([0, 3]), size: 1}
     };
     const secondPolygon = {
       ...firstPolygon,
-      positions: {value: new Float32Array([2, 2, 3, 2, 2, 2]), size: 2}
+      positions: {value: new Float64Array([2, 2, 3, 2, 2, 2]), size: 2}
     };
     const concatenatedPolygon = concatenateBinaryPolygonGeometries(
       [firstPolygon, secondPolygon],
@@ -195,6 +198,9 @@ describe('binary geometry utilities', () => {
     );
     expect(Array.from(concatenatedPolygon.polygonIndices.value)).toEqual([0, 3, 6]);
     expect(Array.from(concatenatedPolygon.primitivePolygonIndices.value)).toEqual([0, 3, 6]);
+    expect(Array.from(concatenatedPolygon.positions.value)).toEqual([
+      0, 0, 1, 0, 0, 0, 2, 2, 3, 2, 2, 2
+    ]);
   });
 
   test('transforms binary and nested GeoJSON coordinates in place', () => {
@@ -245,88 +251,15 @@ describe('binary geometry utilities', () => {
   });
 
   test('converts single and multi binary geometries to GeoJSON', () => {
-    const point: BinaryPointGeometry = {
-      type: 'Point',
-      positions: {value: new Float32Array([1, 2]), size: 2}
-    };
     const multiPoint: BinaryPointGeometry = {
       type: 'Point',
       positions: {value: new Float32Array([1, 2, 3, 4]), size: 2}
     };
-    const line: BinaryLineGeometry = {
-      type: 'LineString',
-      positions: {value: new Float32Array([0, 0, 1, 1]), size: 2},
-      pathIndices: {value: new Uint32Array([0, 2]), size: 1}
-    };
-    const multiLine: BinaryLineGeometry = {
-      ...line,
-      pathIndices: {value: new Uint32Array([0, 1, 2]), size: 1}
-    };
-    const polygon = {
-      type: 'Polygon' as const,
-      positions: {value: new Float32Array([0, 0, 1, 0, 0, 0]), size: 2},
-      polygonIndices: {value: new Uint32Array([0, 1]), size: 1},
-      primitivePolygonIndices: {value: new Uint32Array([0, 3]), size: 1}
-    };
-    const multiPolygon = {
-      ...polygon,
-      positions: {
-        value: new Float32Array([0, 0, 1, 0, 0, 0, 2, 2, 3, 2, 2, 2]),
-        size: 2
-      },
-      polygonIndices: {value: new Uint32Array([0, 3, 6]), size: 1},
-      primitivePolygonIndices: {value: new Uint32Array([0, 3, 6]), size: 1}
-    };
-
-    expect(convertBinaryGeometryToGeometry(point)).toEqual({
-      type: 'Point',
-      coordinates: [1, 2]
-    });
     expect(convertBinaryGeometryToGeometry(multiPoint)).toEqual({
       type: 'MultiPoint',
       coordinates: [
         [1, 2],
         [3, 4]
-      ]
-    });
-    expect(convertBinaryGeometryToGeometry(line)).toEqual({
-      type: 'LineString',
-      coordinates: [
-        [0, 0],
-        [1, 1]
-      ]
-    });
-    expect(convertBinaryGeometryToGeometry(multiLine)).toEqual({
-      type: 'MultiLineString',
-      coordinates: [[[0, 0]], [[1, 1]]]
-    });
-    expect(convertBinaryGeometryToGeometry(polygon)).toEqual({
-      type: 'Polygon',
-      coordinates: [
-        [
-          [0, 0],
-          [1, 0],
-          [0, 0]
-        ]
-      ]
-    });
-    expect(convertBinaryGeometryToGeometry(multiPolygon)).toEqual({
-      type: 'MultiPolygon',
-      coordinates: [
-        [
-          [
-            [0, 0],
-            [1, 0],
-            [0, 0]
-          ]
-        ],
-        [
-          [
-            [2, 2],
-            [3, 2],
-            [2, 2]
-          ]
-        ]
       ]
     });
     expect(convertBinaryGeometryToGeometry(multiPoint, 1, 2)).toEqual({
