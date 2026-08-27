@@ -16,17 +16,20 @@ import {
 
 const features = await createDataSource(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-  [ArcGISFeatureServerSourceLoader]
+  [ArcGISFeatureServerSourceLoader],
+  {}
 );
 
 const imagery = await createDataSource(
   'https://example.com/arcgis/rest/services/Elevation/ImageServer',
-  [ArcGISImageServerSourceLoader]
+  [ArcGISImageServerSourceLoader],
+  {}
 );
 
 const mapTiles = await createDataSource(
   'https://example.com/arcgis/rest/services/World/MapServer',
-  [ArcGISMapTileSourceLoader]
+  [ArcGISMapTileSourceLoader],
+  {}
 );
 ```
 

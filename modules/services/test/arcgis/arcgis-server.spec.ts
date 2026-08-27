@@ -4,6 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 import {expect, test as vitestTest} from 'vitest';
+import {LERCLoader} from '@loaders.gl/lerc';
 
 import {
   ArcGISFeatureServerSourceLoader,
@@ -138,7 +139,6 @@ vitestTest('ArcGISImageSource#exportImageURL supports LERC analytical rasters', 
 });
 
 vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster data', async () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   const raster = {
     width: 2,
     height: 1,
@@ -149,6 +149,16 @@ vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster dat
     depthCount: 1
   };
   let parsedLoader;
+  const source = ArcGISImageServerSourceLoader.createDataSource(
+    IMAGE_SERVER_URL,
+    {},
+    {
+      parse: async (_data, loader) => {
+        parsedLoader = loader;
+        return raster;
+      }
+    }
+  );
   source.fetch = async url => {
     const requestURL = new URL(url);
     expect(requestURL.pathname).toBe('/arcgis/rest/services/Imagery/ImageServer/exportImage');
@@ -156,11 +166,6 @@ vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster dat
     expect(requestURL.searchParams.get('pixelType')).toBe('F32');
     return new Response(new Uint8Array([1, 2, 3]));
   };
-  source.coreApi.parse = async (_data, loader) => {
-    parsedLoader = loader;
-    return raster;
-  };
-
   const result = await source.exportRaster({
     bbox: [1, 2, 3, 4],
     width: 2,
@@ -168,7 +173,7 @@ vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster dat
     pixelType: 'F32'
   });
 
-  expect(parsedLoader).toBeDefined();
+  expect(parsedLoader).toBe(LERCLoader);
   expect(result).toBe(raster);
   expect(result.pixels[0]).toBeInstanceOf(Float32Array);
 });
