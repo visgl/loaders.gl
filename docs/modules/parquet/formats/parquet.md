@@ -255,8 +255,8 @@ including pages that continue one logical row; files with incompatible boundarie
 column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting
 pruning remains future format-completeness work. The TypeScript reader supports AES-GCM and
 AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when a key retriever
-is provided. Encrypted sources conservatively stay on the caller thread because worker key-transfer
-protocols are not yet part of the public API; writer-side encryption remains future work.
+is provided. Encrypted source reads resolve selected data keys on the caller thread and transfer only
+the required key material to the worker; writer-side encryption remains future work.
 
 ## Integrity and Encryption
 

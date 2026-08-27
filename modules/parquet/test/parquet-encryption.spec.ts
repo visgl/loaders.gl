@@ -5,9 +5,12 @@
 import {load} from '@loaders.gl/core';
 import {
   ParquetJSLoader,
+  ParquetSourceLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
 } from '@loaders.gl/parquet';
+import type {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
+import {createWorkerKeyRetriever} from '../src/lib/parquet-source-worker-decoder';
 import {expect, test} from 'vitest';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
@@ -110,6 +113,51 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
 
   expect(table.data).toHaveLength(50);
   expect(new Set(requestedKeyMetadata)).not.toEqual(new Set(['kf', 'kc1', 'kc2']));
+});
+
+test('ParquetSource decrypts encrypted pages in a worker', async () => {
+  const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
+  const source = (await load(url, ParquetSourceLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'},
+    parquet: {
+      columns: ['double_field'],
+      keyRetriever: getEncryptedFixtureKey
+    }
+  })) as ParquetSource;
+  const batches = [];
+  for await (const batch of source.read({columns: ['double_field']})) {
+    batches.push(batch);
+  }
+  await source.close();
+
+  expect(batches.reduce((count, batch) => count + batch.rowCount, 0)).toBe(50);
+  expect(batches[0]?.data.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
+});
+
+test('worker key lookup uses the encrypted column ordinal', async () => {
+  const firstKey = new Uint8Array([1, 2, 3]).buffer;
+  const secondKey = new Uint8Array([4, 5, 6]).buffer;
+  const sharedMetadata = new Uint8Array([7, 8]).buffer;
+  const keyRetriever = createWorkerKeyRetriever(
+    [
+      {columnOrdinal: 0, keyMetadata: sharedMetadata, keyMaterial: firstKey},
+      {columnOrdinal: 1, keyMetadata: sharedMetadata, keyMaterial: secondKey}
+    ],
+    0,
+    2
+  );
+  const aad = new Uint8Array(9);
+  aad.set([9, 9], 0);
+  aad[2] = 2;
+  new DataView(aad.buffer).setInt16(3, 0, true);
+  new DataView(aad.buffer).setInt16(5, 1, true);
+
+  expect(
+    keyRetriever(new Uint8Array(sharedMetadata), {
+      algorithm: 'AES_GCM_V1',
+      aad
+    })
+  ).toEqual(new Uint8Array(secondKey));
 });
 
 test('verifies plaintext-footer signatures and rejects tampering', async () => {
