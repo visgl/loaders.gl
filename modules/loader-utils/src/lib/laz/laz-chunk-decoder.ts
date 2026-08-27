@@ -407,7 +407,7 @@ export class LAZChunkDecoderCursor {
   }
 
   /**
-   * Decode complete legacy PDRF 3 points directly into typed point-data arrays.
+   * Decode complete legacy PDRF 0-5 points directly into typed point-data arrays.
    *
    * The method preserves the point-atomic streaming contract of {@link decodeAvailableInto} but
    * bypasses raw LAS record materialization. It returns when the next point lacks compressed
@@ -418,8 +418,8 @@ export class LAZChunkDecoderCursor {
     pointCount: number,
     inputComplete = false
   ): number {
-    if (this.metadata.pointDataRecordFormat !== 3) {
-      throw new Error('Available point-data decoding is limited to legacy PDRF 3 LAZ chunks');
+    if (this.metadata.pointDataRecordFormat > 5) {
+      throw new Error('Available point-data decoding is limited to legacy PDRF 0-5 LAZ chunks');
     }
     const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
     if (pointsToDecode === 0) {
@@ -428,6 +428,7 @@ export class LAZChunkDecoderCursor {
     const selection = getLAZPointDataSelection(target);
     const decoder = this.selectOutputMode('point-data', pointsToDecode, selection)!;
     let decodedPointCount = 0;
+    const targetPointOffset = target.pointOffset;
 
     while (decodedPointCount < pointsToDecode) {
       const requiredLookahead =
@@ -438,8 +439,14 @@ export class LAZChunkDecoderCursor {
         break;
       }
       try {
-        decoder.decompressPointData!(target, target.pointOffset + decodedPointCount);
+        target.pointOffset = targetPointOffset + decodedPointCount;
+        if (decoder.decompressPointData) {
+          decoder.decompressPointData(target, target.pointOffset);
+        } else {
+          decoder.decompressPointDataBatch!(target, 1);
+        }
       } catch (error) {
+        target.pointOffset = targetPointOffset;
         if (error instanceof NeedsMoreData && !inputComplete) {
           throw new Error(
             `Legacy LAZ point exceeded the ${requiredLookahead}-byte streaming lookahead`
@@ -450,6 +457,7 @@ export class LAZChunkDecoderCursor {
       decodedPointCount++;
       this.pointIndex++;
     }
+    target.pointOffset = targetPointOffset;
 
     return decodedPointCount;
   }
@@ -2737,7 +2745,7 @@ function createPointDecompressor(
 
 /** Return whether a point format has a direct typed-array output path. */
 function supportsDirectPointDataOutput(pointDataRecordFormat: number): boolean {
-  return pointDataRecordFormat === 3 || (pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10);
+  return pointDataRecordFormat <= 5 || (pointDataRecordFormat >= 6 && pointDataRecordFormat <= 10);
 }
 
 class PointFormat0Decompressor implements PointDecompressor {
@@ -2755,6 +2763,29 @@ class PointFormat0Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode PDRF 0 points directly into represented Arrow columns. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      this.decompressPointData(target, target.pointOffset + pointIndex);
+    }
   }
 
   private readFirstMetadata(): void {
@@ -2934,6 +2965,33 @@ class PointFormat1Decompressor implements PointDecompressor {
     return outputOffset;
   }
 
+  /** Decode PDRF 1 points directly into represented Arrow columns. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    const gpsTime = this.gpsTime.decompressGpsTime();
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+    if (target.gpsTimes) {
+      target.gpsTimes[targetPointIndex] = gpsTime;
+    }
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      this.decompressPointData(target, target.pointOffset + pointIndex);
+    }
+  }
+
   private readFirstMetadata(): void {
     if (this.first) {
       this.point.readFirstMetadata();
@@ -2961,6 +3019,37 @@ class PointFormat2Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode PDRF 2 points directly into represented Arrow columns. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    this.rgb.decompressRgb();
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+    writeRgbToPointDataTarget(
+      this.rgb.decodedRed,
+      this.rgb.decodedGreen,
+      this.rgb.decodedBlue,
+      target,
+      targetPointIndex
+    );
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      this.decompressPointData(target, target.pointOffset + pointIndex);
+    }
   }
 
   private readFirstMetadata(): void {
@@ -3273,6 +3362,8 @@ class PointFormat4Decompressor implements PointDecompressor {
   private wavePacket: WavePacket13Decompressor;
   /** Extra Bytes decoder. */
   private bytes: Byte10Decompressor;
+  /** Reused sink for waveform references when the caller did not request WAVEFORM output. */
+  private waveformScratch = new Uint8Array(29);
   /** Whether the first raw items remain unread. */
   private first = true;
 
@@ -3292,6 +3383,38 @@ class PointFormat4Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode PDRF 4 points directly into represented Arrow columns and waveform references. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    const gpsTime = this.gpsTime.decompressGpsTime();
+    if (target.waveforms) {
+      this.wavePacket.decompressToTarget(target.waveforms, targetPointIndex * 29);
+    } else {
+      this.wavePacket.decompressToTarget(this.waveformScratch, 0);
+    }
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+    if (target.gpsTimes) {
+      target.gpsTimes[targetPointIndex] = gpsTime;
+    }
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      this.decompressPointData(target, target.pointOffset + pointIndex);
+    }
   }
 
   /** Initialize the shared legacy arithmetic decoder after first raw items. */
@@ -3315,6 +3438,8 @@ class PointFormat5Decompressor implements PointDecompressor {
   private wavePacket: WavePacket13Decompressor;
   /** Extra Bytes decoder. */
   private bytes: Byte10Decompressor;
+  /** Reused sink for waveform references when the caller did not request WAVEFORM output. */
+  private waveformScratch = new Uint8Array(29);
   /** Whether the first raw items remain unread. */
   private first = true;
 
@@ -3336,6 +3461,46 @@ class PointFormat5Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode PDRF 5 points directly into represented Arrow columns and waveform references. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    const gpsTime = this.gpsTime.decompressGpsTime();
+    this.rgb.decompressRgb();
+    if (target.waveforms) {
+      this.wavePacket.decompressToTarget(target.waveforms, targetPointIndex * 29);
+    } else {
+      this.wavePacket.decompressToTarget(this.waveformScratch, 0);
+    }
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+    if (target.gpsTimes) {
+      target.gpsTimes[targetPointIndex] = gpsTime;
+    }
+    writeRgbToPointDataTarget(
+      this.rgb.decodedRed,
+      this.rgb.decodedGreen,
+      this.rgb.decodedBlue,
+      target,
+      targetPointIndex
+    );
+  }
+
+  decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
+    for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+      this.decompressPointData(target, target.pointOffset + pointIndex);
+    }
   }
 
   /** Initialize the shared legacy arithmetic decoder after first raw items. */
