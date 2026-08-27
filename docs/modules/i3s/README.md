@@ -4,6 +4,9 @@
 
 The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
 
+See the [I3S format support matrix](/docs/modules/i3s/formats/i3s) for detailed coverage of scene layer profiles,
+specification generations, geometry, textures, attributes, delivery options, and known gaps.
+
 References
 
 - [I3S Tiles Specification](https://github.com/Esri/i3s-spec) - The living specification.

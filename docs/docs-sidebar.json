@@ -38,6 +38,7 @@
       "modules/kml/formats/gpx",
       "modules/textures/formats/hdr",
       "modules/xml/formats/html",
+      "modules/i3s/formats/i3s",
       "modules/json/formats/json",
       "modules/kml/formats/kml",
       "modules/textures/formats/ktx",
