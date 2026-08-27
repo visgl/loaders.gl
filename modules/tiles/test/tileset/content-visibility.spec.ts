@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {BoundingSphere, CullingVolume, INTERSECTION, Plane} from '@math.gl/culling';
 import {Vector3} from '@math.gl/core';
+import {BoundingSphere, CullingVolume, INTERSECTION, Plane} from '@math.gl/culling';
 import {getContentVisibility} from '../../src/tileset-3d/common/tile-3d';
 
 function createCullingVolume(visibleCenters: Set<number>) {
