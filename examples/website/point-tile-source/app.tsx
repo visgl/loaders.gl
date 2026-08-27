@@ -10,23 +10,20 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, LinearInterpolator, OrbitView, TerrainController} from '@deck.gl/core';
-import type {
-  PointCloudBoundingVolume,
-  PointCloudTileset,
-  PointCloudTilesetSource
-} from '@loaders.gl/tiles';
+import type {PointCloudBoundingVolume, PointCloudTileset} from '@loaders.gl/tiles';
+import {COPCSourceLoader} from '@loaders.gl/copc';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 
 import {
   DEFAULT_EXAMPLE_ID,
   POINT_TILE_SOURCE_EXAMPLES,
-  createPointCloudDataSource,
   type PointTileMapViewState,
   type PointTileOrbitViewState,
   type PointTileSourceExample,
   type PointTileViewState
 } from './examples';
-import {PointTileSourceLayer} from './point-tile-source-layer';
 
 const INITIAL_MAP_VIEW_STATE: PointTileMapViewState = {
   longitude: -96,
@@ -303,7 +300,6 @@ export default function App({
   const [viewState, setViewState] = useState<PointTileViewState>(INITIAL_MAP_VIEW_STATE);
   const [selectedExampleId, setSelectedExampleId] = useState<string>(initialExampleId);
   const [selectedUrl, setSelectedUrl] = useState<string>(initialExample?.url || '');
-  const [dataSource, setDataSource] = useState<PointCloudTilesetSource | null>(null);
   const [tilesetSummary, setTilesetSummary] = useState<TilesetSummary | null>(null);
   const [metadataText, setMetadataText] = useState<string>('Loading metadata...');
   const [error, setError] = useState<string | null>(null);
@@ -320,94 +316,35 @@ export default function App({
       return;
     }
 
-    let isCancelled = false;
-
-    try {
-      const nextDataSource = createPointCloudDataSource(selectedExample.format, selectedUrl);
-      setError(null);
-      setTilesetSummary(null);
-      setMetadataText('Loading metadata...');
-      setViewState(getInitialViewState(selectedExample));
-      setActiveViewMode(selectedExample.viewMode);
-      setDataSource(null);
-
-      void nextDataSource
-        .initialize()
-        .then(async () => {
-          if (isCancelled) {
-            return;
-          }
-
-          setDataSource(nextDataSource);
-          const sourceViewState = await nextDataSource.getViewState?.();
-          const mapViewState =
-            selectedExample.viewMode === 'map'
-              ? getMapPointCloudViewState(
-                  sourceViewState?.cartographicCenter,
-                  sourceViewState?.zoom
-                )
-              : null;
-          const nextViewMode = mapViewState ? 'map' : selectedExample.viewMode;
-          const nextViewState =
-            nextViewMode === 'map'
-              ? mapViewState
-              : getOrbitPointCloudViewStateFromBoundingVolume(sourceViewState?.boundingVolume);
-
-          setActiveViewMode(nextViewMode);
-
-          if (nextViewState) {
-            setViewState({
-              ...(nextViewMode === 'map'
-                ? INITIAL_MAP_VIEW_STATE
-                : {
-                    ...INITIAL_ORBIT_VIEW_STATE,
-                    ...getExampleViewState(selectedExample)
-                  }),
-              ...nextViewState
-            });
-          }
-
-          return await nextDataSource.getMetadata?.();
-        })
-        .then((metadata) => {
-          if (!isCancelled && metadata) {
-            setMetadataText(JSON.stringify(metadata, null, 2));
-          }
-        })
-        .catch((initializationError) => {
-          if (!isCancelled) {
-            logPointTileSourceError('Failed to initialize point-cloud source', initializationError);
-            setDataSource(null);
-            setError((initializationError as Error).message);
-            setMetadataText(`Metadata unavailable: ${(initializationError as Error).message}`);
-          }
-        });
-
-    } catch (creationError) {
-      logPointTileSourceError('Failed to create point-cloud source', creationError);
-      setDataSource(null);
-      setError((creationError as Error).message);
-      setMetadataText('Metadata unavailable');
-    }
-
-    return () => {
-      isCancelled = true;
-    };
+    setError(null);
+    setTilesetSummary(null);
+    setMetadataText('Loading metadata...');
+    setViewState(getInitialViewState(selectedExample));
+    setActiveViewMode(selectedExample.viewMode);
   }, [selectedExample, selectedUrl]);
 
-  const layers = dataSource
+  const layers = selectedExample
     ? [
-        new PointTileSourceLayer({
+        new SourceLayer({
           id: 'point-tile-source-layer',
-          dataSource,
+          data: selectedUrl,
+          loaders: [COPCSourceLoader, PotreeSourceLoader],
+          sourceOptions: {
+            core: {type: selectedExample.format},
+            copc: {},
+            potree: {}
+          },
           pointSize: selectedExample?.pointSize || 1,
           getPointColor: selectedExample?.color || [55, 126, 184],
           showTileBoundingBoxes: false,
-          pointTilesetOptions: {
+          pointCloudTilesetOptions: {
             minimumNodePixelSize: 150,
             pointBudget: 2_000_000
           },
-          onPointTilesetLoad: (tileset) => {
+          onMetadataLoad: (metadata) => {
+            setMetadataText(JSON.stringify(metadata, null, 2));
+          },
+          onPointCloudTilesetLoad: (tileset) => {
             const nextViewState =
               activeViewMode === 'map'
                 ? getMapPointCloudViewState(tileset.cartographicCenter, tileset.zoom)
@@ -420,12 +357,17 @@ export default function App({
               }));
             }
           },
-          onPointTilesetUpdate: (tileset) => {
+          onPointCloudTilesetUpdate: (tileset) => {
             setTilesetSummary(summarizeTileset(tileset));
           },
-          onPointTileError: (tile, tileError) => {
+          onPointCloudTileError: (tile, tileError) => {
             logPointTileSourceError(`Failed to load point-cloud tile ${tile.id}`, tileError);
             setError(tileError.message);
+          },
+          onSourceError: (sourceError) => {
+            logPointTileSourceError('Failed to initialize point-cloud source', sourceError);
+            setError(sourceError.message);
+            setMetadataText(`Metadata unavailable: ${sourceError.message}`);
           }
         })
       ]
@@ -436,14 +378,14 @@ export default function App({
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
         key={activeViewMode}
-        controller={
-          activeViewMode === 'map'
-            ? {
-                type: TerrainController,
-                rotationPivot: '3d'
-              }
-            : true
-        }
+          controller={
+            activeViewMode === 'map'
+              ? ({
+                  type: TerrainController,
+                  rotationPivot: '3d'
+                } as any)
+              : true
+          }
         layers={layers}
         views={activeViewMode === 'orbit' ? new OrbitView({id: 'orbit'}) : undefined}
         viewState={deckViewState as any}

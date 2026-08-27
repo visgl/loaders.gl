@@ -19,5 +19,5 @@
     },
     "jsx": "react-jsx"
   },
-  "include": ["./app.tsx", "./react-dom-client.d.ts"]
+  "include": ["./app.tsx", "./react-dom-client.d.ts", "./style-modules.d.ts"]
 }

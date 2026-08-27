@@ -2,38 +2,44 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import {SourceLayer, type SourceLayerProps} from '@loaders.gl/deck-layers';
+import {expect, test} from 'vitest';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 
 const TEST_3D_LOADER = {
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
-  version: '0.0.0'
+  version: '1.0.0',
+  extensions: ['json'],
+  mimeTypes: ['application/json']
 };
 
-/** Creates a source dispatcher without requiring a deck.gl rendering context. */
-function createSourceLayer(props: SourceLayerProps): SourceLayer {
-  return new SourceLayer(props as any);
-}
-
-test('SourceLayer#preserves URL inputs for browser 3D loader dispatch', t => {
+test('SourceLayer preserves URL inputs for parser-backed 3D dispatch', () => {
   const tilesetUrl = 'https://example.com/tileset.json';
-  const layer = createSourceLayer({
+  const layer = new SourceLayer({
     id: 'tiles-3d',
     data: tilesetUrl,
     loaders: [TEST_3D_LOADER as any]
-  });
+  }) as any;
 
-  t.equal(layer.props.data, tilesetUrl, 'data is not replaced by deck.gl async prop handling');
+  expect(layer.props.data).toBe(tilesetUrl);
+  layer.initializeState();
+  layer.state = {
+    resolvedSource: {
+      source: tilesetUrl,
+      sourceType: 'tile-3d',
+      parserLoaders: [TEST_3D_LOADER],
+      owned: false
+    },
+    metadata: null,
+    resolvedLayers: undefined,
+    resolvedCoordinateReferenceSystem: undefined,
+    isResolving: false
+  };
+  const childLayer = layer.renderLayers()[0];
 
-  const resolvedData = (layer as any)._resolveData(layer.props);
-  (layer as any).state = {resolvedData};
-  const renderedLayers = layer.renderLayers() as any[];
-
-  t.equal(resolvedData, tilesetUrl, 'URL is retained for the 3D child layer');
-  t.equal(renderedLayers[0].constructor.layerName, 'Tile3DSourceLayer');
-  t.equal(renderedLayers[0].id, 'tiles-3d-tiles-3d', 'child layer has a unique sublayer id');
-  t.equal(renderedLayers[0].props.loaders[0], TEST_3D_LOADER);
-  t.end();
+  expect(childLayer.constructor.layerName).toBe('Tile3DSourceLayer');
+  expect(childLayer.id).toBe('tiles-3d-tile-3d');
+  expect(childLayer.props.data).toBe(tilesetUrl);
+  expect(childLayer.props.loaders).toEqual([TEST_3D_LOADER]);
 });

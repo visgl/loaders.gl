@@ -1,3 +1,3 @@
 # GeoTIFF Raster Source Example
 
-Viewport-driven demo for `GeoTIFFSourceLoader`.
+Viewport-driven URL-plus-loader demo for `SourceLayer` and `GeoTIFFSourceLoader`.

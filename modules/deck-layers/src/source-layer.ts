@@ -6,176 +6,412 @@ import {
   CompositeLayer,
   type CompositeLayerProps,
   type DefaultProps,
+  type LayerContext,
   type LayersList
 } from '@deck.gl/core';
 import type {Tile3DLayerProps} from '@deck.gl/geo-layers';
-import {createDataSource} from '@loaders.gl/core';
 import type {
-  DataSource,
   DataSourceOptions,
+  ImageSource,
+  Loader,
+  RasterSource,
   SourceLoader,
-  TileSourceMetadata
+  TileSourceMetadata,
+  VectorSource
 } from '@loaders.gl/loader-utils';
-import {isTileset3DSource, type Tileset3DSource} from '@loaders.gl/tiles';
-import {Tile3DSourceLayer} from './tile-3d-source-layer';
+import type {PointCloudTilesetSource, Tileset3DSource} from '@loaders.gl/tiles';
+import {type ImageSourceLayerProps, ImageSourceLayer} from './image-source-layer';
+import {type PointCloudSourceLayerProps, PointCloudSourceLayer} from './point-cloud-source-layer';
+import {type RasterSourceLayerProps, RasterSourceLayer} from './raster-source-layer';
 import {
-  TileSourceLayer,
-  type TileSourceLayerProps,
-  type TileSourceRuntime
-} from './tile-source-layer';
+  createSourceViewState,
+  finalizeOwnedSource,
+  getFirstSourceLayerName,
+  getSourceCoordinateReferenceSystem,
+  loadVisualSourceMetadata,
+  resolveVisualSource,
+  type ResolvedVisualSource,
+  type SourceLayerLoadInfo,
+  type SourceLayerViewState
+} from './source-layer-utils';
+import {
+  type Tile2DSourceLayerProps,
+  type TileSourceRuntime,
+  Tile2DSourceLayer
+} from './tile-2d-source-layer';
+import {type Tile3DSourceLayerProps, Tile3DSourceLayer} from './tile-3d-source-layer';
+import {type VectorSourceLayerProps, VectorSourceLayer} from './vector-source-layer';
 
-/**
- * Props for `SourceLayer`.
- *
- * `data` may be a concrete tile source, a concrete tileset source, or a URL/blob that can be
- * resolved using `sources` or the 3D layer loader props.
- */
-export type SourceLayerProps<DataT = unknown> = CompositeLayerProps &
-  Partial<Omit<TileSourceLayerProps, 'data'>> &
-  Partial<Omit<Tile3DLayerProps<DataT>, 'data'>> & {
-    /** A tile source, tileset source, or URL/blob from which one can be created. */
-    data: string | Blob | TileSourceRuntime | Tileset3DSource;
-    /** Source factories used to auto-create tile sources from a URL/blob. */
-    sources?: Readonly<SourceLoader[]>;
-    /** Options forwarded to `createDataSource` when `sources` are supplied. */
-    sourceOptions?: DataSourceOptions;
-    /** Optional metadata for `TileSourceLayer`. */
-    metadata?: TileSourceMetadata | null;
-  };
-
-/**
- * Internal union of source values that can be rendered once `data` resolution finishes.
- */
-type ResolvedSourceData =
+/** Inputs accepted by the canonical source-backed deck.gl layer. */
+export type SourceLayerData =
   | string
   | Blob
+  | ImageSource
+  | VectorSource
+  | RasterSource
   | TileSourceRuntime
-  | DataSource<any, any>
-  | Tileset3DSource
-  | null;
+  | PointCloudTilesetSource
+  | Tileset3DSource;
 
-/**
- * Synchronous prop definitions for source dispatch.
- *
- * deck.gl's inherited `data` prop is asynchronous and replaces URL inputs with an empty array while
- * it loads them. `SourceLayer` must retain the original URL or Blob so that the selected child layer
- * can resolve it with the supplied source factories or 3D loader.
- */
+/** Props for {@link SourceLayer}. */
+export type SourceLayerProps<DataT = unknown> = Omit<CompositeLayerProps, 'data' | 'loaders'> &
+  Partial<
+    Omit<
+      ImageSourceLayerProps,
+      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers' | 'onMetadataLoad'
+    >
+  > &
+  Partial<
+    Omit<VectorSourceLayerProps, 'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers'>
+  > &
+  Partial<
+    Omit<
+      RasterSourceLayerProps,
+      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onMetadataLoad'
+    >
+  > &
+  Partial<
+    Omit<
+      Tile2DSourceLayerProps<DataT>,
+      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'onTileError'
+    >
+  > &
+  Partial<
+    Omit<
+      PointCloudSourceLayerProps,
+      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onSourceError'
+    >
+  > &
+  Partial<Omit<Tile3DLayerProps<DataT>, 'data' | 'loader' | 'loaders' | 'onTileError'>> & {
+    /** URL/blob input or a fully constructed visual source runtime. */
+    data: SourceLayerData;
+    /** Parser loaders and SourceLoaders available for automatic resolution. */
+    loaders?: ReadonlyArray<Loader | SourceLoader>;
+    /** Singular loader compatibility prop. */
+    loader?: Loader | SourceLoader | Array<Loader | SourceLoader>;
+    /** @deprecated Put SourceLoaders in `loaders`. */
+    sources?: Readonly<SourceLoader[]>;
+    /** Options forwarded to source construction. */
+    sourceOptions?: DataSourceOptions;
+    /** Named source layer selection, or automatic first-leaf discovery. */
+    layers?: string | string[] | 'auto';
+    /** Optional preloaded normalized source metadata. */
+    metadata?: unknown | null;
+    /** Called after a runtime source has been resolved and classified. */
+    onSourceLoad?: (info: SourceLayerLoadInfo) => void;
+    /** Called after normalized source metadata has loaded. */
+    onMetadataLoad?: (metadata: unknown, info: SourceLayerLoadInfo) => void;
+    /** Called with non-binding navigation hints derived from source metadata. */
+    onViewStateLoad?: (viewState: SourceLayerViewState, info: SourceLayerLoadInfo) => void;
+    /** Called when source resolution, classification, or metadata discovery fails. */
+    onSourceError?: (error: Error, info?: SourceLayerLoadInfo) => void;
+    /** Error callback for either 2D or 3D tile runtimes. */
+    onTileError?:
+      | ((error: unknown, tileParameters?: unknown) => void)
+      | ((tile: unknown, url: string, message: string) => void);
+  };
+
+type SourceLayerState = {
+  resolvedSource: ResolvedVisualSource | null;
+  metadata: unknown | null;
+  resolvedLayers: string | string[] | undefined;
+  resolvedCoordinateReferenceSystem: string | undefined;
+  isResolving: boolean;
+};
+
 const defaultProps: DefaultProps<SourceLayerProps> = {
   id: 'source-layer',
   data: '',
+  loaders: {type: 'array', compare: false, value: []},
   sources: {type: 'array', compare: false, value: []},
-  sourceOptions: {type: 'object', compare: false, value: {}}
+  sourceOptions: {type: 'object', compare: false, value: {}},
+  layers: 'auto',
+  onSourceLoad: {type: 'function', value: () => {}},
+  onMetadataLoad: {type: 'function', value: () => {}},
+  onViewStateLoad: {type: 'function', value: () => {}},
+  onSourceError: {type: 'function', value: () => {}}
 };
 
 /**
- * Internal deck.gl dispatcher that selects the appropriate source-backed layer for an input.
+ * Canonical internal deck.gl adapter for loaders.gl visual sources.
  *
- * This class is exported for internal repository use and examples, and is not documented
- * beyond these TSDoc comments.
+ * The layer accepts URLs, Blobs, or concrete source runtimes. A single mixed `loaders` array may
+ * contain SourceLoaders and parser loaders; the former construct a runtime source and the latter
+ * remain available to that source or the parser-backed 3D Tiles fallback.
  */
-export class SourceLayer<
-  DataT = any,
-  ExtraProps extends Record<string, unknown> = Record<string, unknown>
-> extends CompositeLayer<SourceLayerProps<DataT> & ExtraProps> {
+export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<DataT>> {
   /** deck.gl layer name used in debugging output. */
   static layerName = 'SourceLayer';
 
-  /** Synchronous prop definitions that preserve URL and Blob inputs for source dispatch. */
+  /** Synchronous prop definitions preserve URL and Blob inputs for source selection. */
   static defaultProps: DefaultProps = defaultProps;
 
-  /** Initialize resolved source state. */
-  initializeState(): void {
-    this.setState({
-      resolvedData: null
-    });
+  /** Typed source resolution state. */
+  state = null as unknown as SourceLayerState;
+
+  private resolutionId = 0;
+
+  /** Creates a source layer without deck.gl's parser-only loader constraint. */
+  constructor(props: SourceLayerProps<DataT>) {
+    super(props as any);
   }
 
-  /** Resolve URL/blob inputs to concrete source instances when props change. */
+  /** Initializes asynchronous resolution state. */
+  initializeState(): void {
+    this.state = {
+      resolvedSource: null,
+      metadata: null,
+      resolvedLayers: undefined,
+      resolvedCoordinateReferenceSystem: undefined,
+      isResolving: false
+    };
+  }
+
+  /** Releases layer-owned runtime sources and invalidates pending resolutions. */
+  finalizeState(context: LayerContext): void {
+    this.resolutionId++;
+    const resolvedSource = this.state?.resolvedSource;
+    if (resolvedSource?.owned) {
+      void finalizeOwnedSource(resolvedSource.source);
+    }
+    super.finalizeState(context);
+  }
+
+  /** Returns false while the URL/Blob is still being resolved. */
+  get isLoaded(): boolean {
+    return !this.state?.isResolving && Boolean(this.state?.resolvedSource) && super.isLoaded;
+  }
+
+  /** Starts a fresh resolution whenever source-defining props change. */
   updateState({props, oldProps, changeFlags}: any): void {
     if (
       changeFlags.dataChanged ||
-      props.sources !== oldProps.sources ||
       props.loader !== oldProps.loader ||
       props.loaders !== oldProps.loaders ||
-      props.sourceOptions !== oldProps.sourceOptions
+      props.sources !== oldProps.sources ||
+      props.sourceOptions !== oldProps.sourceOptions ||
+      props.layers !== oldProps.layers
     ) {
-      this.setState({
-        resolvedData: this._resolveData(props)
-      });
+      void this.resolveSource(props);
     }
   }
 
-  /** Render either `TileSourceLayer` or `Tile3DSourceLayer` based on the resolved source type. */
+  /** Renders the adapter matching the resolved runtime contract. */
   renderLayers(): LayersList | null {
-    const {resolvedData} = this.state as {resolvedData: ResolvedSourceData};
-    if (!resolvedData) {
+    const {resolvedSource, metadata, resolvedLayers, resolvedCoordinateReferenceSystem} =
+      this.state;
+    if (!resolvedSource) {
       return null;
     }
 
-    const {sources, sourceOptions, metadata, ...layerProps} = this.props;
-    if (isTileSourceRuntime(resolvedData)) {
-      return [
-        new TileSourceLayer(
-          this.getSubLayerProps({
-            ...layerProps,
-            id: 'tile-source',
-            data: resolvedData,
+    const {
+      data,
+      loader,
+      loaders,
+      sources,
+      sourceOptions,
+      layers,
+      onSourceLoad,
+      onMetadataLoad,
+      onViewStateLoad,
+      onSourceError,
+      ...layerProps
+    } = this.props;
+    const childProps = this.getSubLayerProps({...layerProps, id: resolvedSource.sourceType});
+
+    switch (resolvedSource.sourceType) {
+      case 'image':
+        return [
+          new ImageSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as ImageSource,
+            layers: normalizeImageLayers(resolvedLayers),
+            srs: this.props.srs || (resolvedCoordinateReferenceSystem as any)
+          } as ImageSourceLayerProps)
+        ];
+
+      case 'vector':
+        return [
+          new VectorSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as VectorSource,
+            layers: resolvedLayers || [],
+            crs: this.props.crs || resolvedCoordinateReferenceSystem
+          } as VectorSourceLayerProps)
+        ];
+
+      case 'raster':
+        return [
+          new RasterSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as RasterSource,
+            metadata: metadata as any
+          } as RasterSourceLayerProps)
+        ];
+
+      case 'tile-2d':
+        return [
+          new Tile2DSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as TileSourceRuntime,
+            metadata: metadata as TileSourceMetadata | null
+          } as any)
+        ];
+
+      case 'point-cloud':
+        return [
+          new PointCloudSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as PointCloudTilesetSource,
             metadata
-          }) as unknown as TileSourceLayerProps
-        )
-      ];
-    }
+          } as any)
+        ];
 
-    return [
-      new Tile3DSourceLayer(
-        this.getSubLayerProps({
-          ...layerProps,
-          id: 'tiles-3d',
-          data: resolvedData
-        }) as any
-      )
-    ];
+      case 'tile-3d':
+        return [
+          new Tile3DSourceLayer({
+            ...childProps,
+            data: resolvedSource.source as string | Blob | Tileset3DSource,
+            loaders: resolvedSource.parserLoaders,
+            onTilesetLoad: tileset => {
+              this.props.onTilesetLoad?.(tileset);
+              void this.handleTilesetLoad(tileset, resolvedSource);
+            }
+          } as Tile3DSourceLayerProps)
+        ];
+
+      default:
+        return null;
+    }
   }
 
-  /**
-   * Resolves the `data` prop to a tile source or tileset source.
-   */
-  private _resolveData(props: SourceLayerProps<DataT>): ResolvedSourceData {
-    const {data, sources, sourceOptions = {}} = props;
-    const loaders = props.loader || props.loaders;
+  private async resolveSource(props: SourceLayerProps<DataT>): Promise<void> {
+    const resolutionId = ++this.resolutionId;
+    const previousSource = this.state.resolvedSource;
+    let activeResolvedSource: ResolvedVisualSource | null = null;
+    let activeInfo: SourceLayerLoadInfo | undefined;
+    this.setState({
+      resolvedSource: null,
+      metadata: null,
+      resolvedLayers: undefined,
+      resolvedCoordinateReferenceSystem: undefined,
+      isResolving: true
+    });
 
-    if (isTileSourceRuntime(data) || isTileset3DSource(data)) {
-      return data;
+    try {
+      const resolvedSource = await resolveVisualSource(props);
+      activeResolvedSource = resolvedSource;
+      if (resolutionId !== this.resolutionId) {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        return;
+      }
+
+      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
+        await finalizeOwnedSource(previousSource.source);
+      }
+
+      const info = toLoadInfo(resolvedSource);
+      activeInfo = info;
+      this.props.onSourceLoad?.(info);
+      const metadata = props.metadata || (await loadVisualSourceMetadata(resolvedSource));
+      if (resolutionId !== this.resolutionId) {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        return;
+      }
+
+      if (metadata && resolvedSource.sourceType !== 'tile-3d') {
+        this.props.onMetadataLoad?.(metadata, info);
+      }
+      const viewState =
+        resolvedSource.sourceType === 'tile-3d'
+          ? null
+          : await createSourceViewState(resolvedSource.source, metadata);
+      if (viewState && resolutionId === this.resolutionId) {
+        this.props.onViewStateLoad?.(viewState, info);
+      }
+
+      const resolvedLayers =
+        props.layers === undefined || props.layers === 'auto'
+          ? getFirstSourceLayerName(metadata) || undefined
+          : props.layers;
+      this.setState({
+        resolvedSource,
+        metadata,
+        resolvedLayers,
+        resolvedCoordinateReferenceSystem: getSourceCoordinateReferenceSystem(metadata),
+        isResolving: false
+      });
+    } catch (error) {
+      if (resolutionId !== this.resolutionId) {
+        return;
+      }
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      if (activeResolvedSource?.owned) {
+        await finalizeOwnedSource(activeResolvedSource.source);
+      }
+      this.setState({isResolving: false});
+      this.props.onSourceError?.(normalizedError, activeInfo);
+      this.raiseError(normalizedError, 'resolving loaders.gl source');
     }
+  }
 
-    if ((typeof data === 'string' || data instanceof Blob) && sources?.length) {
-      return createDataSource(data, sources, sourceOptions) as unknown as TileSourceRuntime;
+  private async handleTilesetLoad(
+    tileset: {
+      tileset?: unknown;
+      cartographicCenter?: ArrayLike<number> | null;
+      zoom?: number;
+      boundingVolume?: {cartographicBounds?: [number[], number[]]} | null;
+    },
+    resolvedSource: ResolvedVisualSource
+  ): Promise<void> {
+    if (this.state.resolvedSource !== resolvedSource) {
+      return;
     }
-
-    if (typeof data === 'string') {
-      return data;
+    const info = toLoadInfo(resolvedSource);
+    const metadata = tileset.tileset || null;
+    if (metadata) {
+      this.props.onMetadataLoad?.(metadata, info);
     }
-
-    if (data instanceof Blob && loaders) {
-      return data;
+    const cartographicCenter = tileset.cartographicCenter
+      ? Array.from(tileset.cartographicCenter)
+      : undefined;
+    const viewState = await createSourceViewState(
+      {
+        getViewState: () => ({
+          cartographicCenter,
+          zoom: tileset.zoom,
+          boundingVolume: tileset.boundingVolume
+        })
+      },
+      metadata
+    );
+    if (viewState && this.state.resolvedSource === resolvedSource) {
+      this.props.onViewStateLoad?.(viewState, info);
     }
-
-    throw new Error('SourceLayer requires `sources` or 3D loaders to resolve Blob inputs');
   }
 }
 
-/**
- * Detects whether a resolved `data` value is a loaders.gl tile source runtime.
- * @param value Value to test.
- * @returns `true` when the value matches the runtime tile source shape.
- */
-function isTileSourceRuntime(value: unknown): value is TileSourceRuntime {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      'getTileData' in value &&
-      'getMetadata' in value &&
-      !('initialize' in value)
-  );
+function toLoadInfo(resolvedSource: ResolvedVisualSource): SourceLayerLoadInfo {
+  return {
+    source: resolvedSource.source,
+    sourceType: resolvedSource.sourceType,
+    sourceLoader: resolvedSource.sourceLoader
+  };
 }
+
+function normalizeImageLayers(layers: string | string[] | undefined): string[] {
+  if (!layers) {
+    return [];
+  }
+  return Array.isArray(layers) ? layers : [layers];
+}
+
+export type {
+  SourceLayerLoadInfo,
+  SourceLayerViewState,
+  VisualSourceType
+} from './source-layer-utils';
