@@ -406,6 +406,48 @@ export class LAZChunkDecoderCursor {
     return decodedPointCount;
   }
 
+  /** Decode available legacy PDRF 3 points directly into typed point-data arrays. */
+  decodeAvailableIntoPointData(
+    target: LAZPointDataTarget,
+    pointCount: number,
+    inputComplete = false
+  ): number {
+    if (this.metadata.pointDataRecordFormat !== 3) {
+      throw new Error('Available point-data decoding is limited to legacy PDRF 3 LAZ chunks');
+    }
+    const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
+    if (pointsToDecode === 0) {
+      return 0;
+    }
+    const selection = getLAZPointDataSelection(target);
+    const decoder = this.selectOutputMode('point-data', pointsToDecode, selection)!;
+    let decodedPointCount = 0;
+
+    while (decodedPointCount < pointsToDecode) {
+      const requiredLookahead =
+        this.pointIndex === 0
+          ? this.metadata.pointDataRecordLength + 4
+          : getLegacyLAZPointDecodeLookahead(this.metadata.pointDataRecordLength);
+      if (!inputComplete && this.stream.availableByteLength < requiredLookahead) {
+        break;
+      }
+      try {
+        decoder.decompressPointData!(target, target.pointOffset + decodedPointCount);
+      } catch (error) {
+        if (error instanceof NeedsMoreData && !inputComplete) {
+          throw new Error(
+            `Legacy LAZ point exceeded the ${requiredLookahead}-byte streaming lookahead`
+          );
+        }
+        throw error;
+      }
+      decodedPointCount++;
+      this.pointIndex++;
+    }
+
+    return decodedPointCount;
+  }
+
   /** Decode up to `pointCount` points directly into typed point-data arrays. */
   decodeIntoPointData(target: LAZPointDataTarget, pointCount: number): number {
     const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
@@ -2660,7 +2702,11 @@ function createPointDecompressor(
     case 2:
       return new PointFormat2Decompressor(stream, extraByteCount);
     case 3:
-      return new PointFormat3Decompressor(stream, extraByteCount);
+      return new PointFormat3Decompressor(
+        stream,
+        extraByteCount,
+        outputMode === 'point-data' ? selection : null
+      );
     case 4:
       return new PointFormat4Decompressor(stream, extraByteCount);
     case 5:
@@ -2924,13 +2970,28 @@ class PointFormat3Decompressor implements PointDecompressor {
   private rgb: RGB10Decompressor;
   private bytes: Byte10Decompressor;
   private first = true;
+  private directCommonOutput: boolean;
 
-  constructor(stream: ByteReader, extraByteCount: number) {
+  constructor(
+    stream: ByteReader,
+    extraByteCount: number,
+    selection: LAZPointDataSelection | null = null
+  ) {
     this.point = new Point10Decompressor(stream);
     const decoder = this.point.getDecoder();
     this.gpsTime = new GpsTime10Decompressor(stream, decoder);
     this.rgb = new RGB10Decompressor(stream, decoder);
     this.bytes = new Byte10Decompressor(stream, decoder, extraByteCount);
+    this.directCommonOutput = Boolean(
+      selection &&
+        !selection.gpsTime &&
+        !selection.scanAngle &&
+        !selection.userData &&
+        !selection.pointSourceId &&
+        !selection.flags &&
+        !selection.waveform &&
+        !selection.extraBytes
+    );
   }
 
   decompress(output: Uint8Array, outputOffset: number): number {
@@ -2940,6 +3001,61 @@ class PointFormat3Decompressor implements PointDecompressor {
     outputOffset = this.bytes.decompress(output, outputOffset);
     this.readFirstMetadata();
     return outputOffset;
+  }
+
+  /** Decode one legacy PDRF 3 point directly into typed point-data arrays. */
+  decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
+    const point = this.point.decompressPoint();
+    const gpsTime = this.gpsTime.decompressGpsTime();
+    this.rgb.decompressRgb();
+    if (this.directCommonOutput) {
+      this.bytes.decompressToTarget();
+      this.readFirstMetadata();
+      writePoint10ToPointDataArrays(
+        point,
+        target.positions,
+        target.intensities,
+        target.classifications,
+        target.scale,
+        target.offset,
+        targetPointIndex
+      );
+      if (target.colors) {
+        const colorOffset = targetPointIndex * 4;
+        target.colors[colorOffset] = this.rgb.decodedRed & 0xff;
+        target.colors[colorOffset + 1] = this.rgb.decodedGreen & 0xff;
+        target.colors[colorOffset + 2] = this.rgb.decodedBlue & 0xff;
+        target.colors[colorOffset + 3] = 255;
+      } else if (target.rawColors) {
+        const colorOffset = targetPointIndex * 3;
+        target.rawColors[colorOffset] = this.rgb.decodedRed;
+        target.rawColors[colorOffset + 1] = this.rgb.decodedGreen;
+        target.rawColors[colorOffset + 2] = this.rgb.decodedBlue;
+      }
+      return;
+    }
+    this.bytes.decompressToTarget(target.extraBytes, targetPointIndex * this.bytes.byteCount);
+    this.readFirstMetadata();
+    writePoint10ToPointDataArrays(
+      point,
+      target.positions,
+      target.intensities,
+      target.classifications,
+      target.scale,
+      target.offset,
+      targetPointIndex
+    );
+    writePoint10MetadataToPointDataTarget(point, target, targetPointIndex);
+    if (target.gpsTimes) {
+      target.gpsTimes[targetPointIndex] = gpsTime;
+    }
+    writeRgbToPointDataTarget(
+      this.rgb.decodedRed,
+      this.rgb.decodedGreen,
+      this.rgb.decodedBlue,
+      target,
+      targetPointIndex
+    );
   }
 
   /** Decode legacy PDRF 3 directly into selected typed point-data arrays. */
