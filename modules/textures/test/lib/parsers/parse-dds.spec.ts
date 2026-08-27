@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {parseDDS} from '../../../src/lib/parsers/parse-dds';
 import {
@@ -14,7 +14,6 @@ import {
   GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
 } from '../../../src/lib/gl-extensions';
 import {checkCompressedTexture} from '../../test-utils/check-compressed-texture';
-
 const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-dxt1.dds',
@@ -47,13 +46,11 @@ const TEST_CASES = [
     textureFormat: 'atc-rgbai-unorm-webgl'
   }
 ];
-
-test('CompressedTextureLoader#dds', async t => {
+test('CompressedTextureLoader#dds', async () => {
   for (const testCase of TEST_CASES) {
     const response = await fetchFile(testCase.url);
     const data = await response.arrayBuffer();
     const result = parseDDS(data);
-    checkCompressedTexture(t, result, testCase);
+    checkCompressedTexture(result, testCase);
   }
-  t.end();
 });
