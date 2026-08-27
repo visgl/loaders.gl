@@ -308,6 +308,17 @@ export class LAZChunkDecoderCursor {
     this.stream = new ByteReader(toUint8Array(compressed));
   }
 
+  /**
+   * Append compressed input to a legacy PDRF 0-5 cursor without resetting decoder state.
+   * Layered PDRF 6-10 cursors use bounded contiguous field ranges and cannot be extended.
+   */
+  feed(compressed: ArrayBuffer | ArrayBufferView): void {
+    if (this.metadata.pointDataRecordFormat > 5) {
+      throw new Error('Only legacy PDRF 0-5 LAZ cursors accept additional compressed input');
+    }
+    this.stream.append(toUint8Array(compressed));
+  }
+
   /** Number of points still available in this compressed chunk. */
   get remainingPointCount(): number {
     return this.metadata.pointCount - this.pointIndex;
@@ -316,6 +327,18 @@ export class LAZChunkDecoderCursor {
   /** Number of compressed input bytes consumed by decoded points. */
   get compressedByteOffset(): number {
     return this.stream.byteOffset;
+  }
+
+  /** Absolute legacy chunk prefix length needed before another point decode attempt. */
+  get requiredInputByteLength(): number {
+    if (this.metadata.pointDataRecordFormat > 5) {
+      return this.stream.byteOffset;
+    }
+    const lookahead =
+      this.pointIndex === 0
+        ? this.metadata.pointDataRecordLength + 4
+        : getLegacyLAZPointDecodeLookahead(this.metadata.pointDataRecordLength);
+    return this.stream.byteOffset + lookahead;
   }
 
   /** Decode up to `pointCount` points into `output` at `outputOffset`. */
@@ -333,6 +356,54 @@ export class LAZChunkDecoderCursor {
 
     this.pointIndex += pointsToDecode;
     return pointsToDecode;
+  }
+
+  /**
+   * Decode complete legacy points that have enough compressed lookahead available.
+   *
+   * The method returns without mutating a partial point. Set `inputComplete` only after the
+   * enclosing input stream ends; incomplete final input then raises {@link NeedsMoreData}.
+   */
+  decodeAvailableInto(
+    output: Uint8Array,
+    outputOffset: number,
+    pointCount: number,
+    inputComplete = false
+  ): number {
+    if (this.metadata.pointDataRecordFormat > 5) {
+      throw new Error('Available-point decoding is limited to legacy PDRF 0-5 LAZ chunks');
+    }
+    const pointsToDecode = Math.min(pointCount, this.remainingPointCount);
+    if (pointsToDecode === 0) {
+      return 0;
+    }
+    const decoder = this.selectOutputMode('raw', pointsToDecode)!;
+    let decodedPointCount = 0;
+    let targetOffset = outputOffset;
+
+    while (decodedPointCount < pointsToDecode) {
+      const requiredLookahead =
+        this.pointIndex === 0
+          ? this.metadata.pointDataRecordLength + 4
+          : getLegacyLAZPointDecodeLookahead(this.metadata.pointDataRecordLength);
+      if (!inputComplete && this.stream.availableByteLength < requiredLookahead) {
+        break;
+      }
+      try {
+        targetOffset = decoder.decompress(output, targetOffset);
+      } catch (error) {
+        if (error instanceof NeedsMoreData && !inputComplete) {
+          throw new Error(
+            `Legacy LAZ point exceeded the ${requiredLookahead}-byte streaming lookahead`
+          );
+        }
+        throw error;
+      }
+      decodedPointCount++;
+      this.pointIndex++;
+    }
+
+    return decodedPointCount;
   }
 
   /** Decode up to `pointCount` points directly into typed point-data arrays. */
@@ -722,6 +793,16 @@ const GPS_TIME10_MULTI_CODE_FULL = GPS_TIME_MULTI - GPS_TIME_MULTI_MINUS + 2;
 const FLOAT64_SCRATCH = new ArrayBuffer(8);
 const FLOAT64_SCRATCH_BYTES = new Uint8Array(FLOAT64_SCRATCH);
 const FLOAT64_SCRATCH_VIEW = new DataView(FLOAT64_SCRATCH);
+const LEGACY_LAZ_POINT_DECODE_LOOKAHEAD = 16 * 1024;
+
+/**
+ * Return enough compressed lookahead to decode one interleaved legacy point atomically.
+ * Arithmetic symbols renormalize by at most two bytes; the scaled term covers every Extra Bytes
+ * symbol while the fixed floor covers the bounded core, GPS, RGB, and waveform operations.
+ */
+function getLegacyLAZPointDecodeLookahead(pointDataRecordLength: number): number {
+  return Math.max(LEGACY_LAZ_POINT_DECODE_LOOKAHEAD, pointDataRecordLength * 2 + 512);
+}
 
 const NUMBER_RETURN_MAP_10_CONTEXT: number[][] = [
   [15, 14, 13, 12, 11, 10, 9, 8],
@@ -747,30 +828,53 @@ const NUMBER_RETURN_LEVEL_10_CONTEXT: number[][] = [
 
 class ByteReader {
   private bytes: Uint8Array;
+  private length: number;
   private offset = 0;
 
   constructor(bytes: Uint8Array) {
     this.bytes = bytes;
+    this.length = bytes.byteLength;
   }
 
   get byteOffset(): number {
     return this.offset;
   }
 
+  /** Number of unread bytes currently available. */
+  get availableByteLength(): number {
+    return this.length - this.offset;
+  }
+
   /** Underlying contiguous bytes used by bounded arithmetic layers. */
   get data(): Uint8Array {
-    return this.bytes;
+    return this.length === this.bytes.byteLength ? this.bytes : this.bytes.subarray(0, this.length);
+  }
+
+  /** Append bytes while preserving the current read offset and decoder state. */
+  append(input: Uint8Array): void {
+    if (input.byteLength === 0) {
+      return;
+    }
+    const requiredLength = this.length + input.byteLength;
+    if (requiredLength > this.bytes.byteLength) {
+      const capacity = Math.max(requiredLength, Math.max(64, this.bytes.byteLength * 2));
+      const bytes = new Uint8Array(capacity);
+      bytes.set(this.bytes.subarray(0, this.length));
+      this.bytes = bytes;
+    }
+    this.bytes.set(input, this.length);
+    this.length = requiredLength;
   }
 
   getByte(): number {
-    if (this.offset >= this.bytes.length) {
+    if (this.offset >= this.length) {
       throw new NeedsMoreData();
     }
     return this.bytes[this.offset++];
   }
 
   getBytes(target: Uint8Array, targetOffset: number, length: number): void {
-    if (this.offset + length > this.bytes.length) {
+    if (this.offset + length > this.length) {
       throw new NeedsMoreData();
     }
     target.set(this.bytes.subarray(this.offset, this.offset + length), targetOffset);
@@ -779,7 +883,7 @@ class ByteReader {
 
   /** Consume a bounded byte range without constructing a subreader. */
   consume(length: number): number {
-    if (this.offset + length > this.bytes.length) {
+    if (this.offset + length > this.length) {
       throw new NeedsMoreData();
     }
     const startOffset = this.offset;

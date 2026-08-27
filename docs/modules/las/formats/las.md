@@ -38,7 +38,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Waveform packet fields | PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Waveform sample payload handling is not implemented. |
 | Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Scalar data types 1-6 and 9-10 plus deprecated 2-component and 3-component vector codes based on those scalar types are supported with per-component descriptor scale/offset. 64-bit integer types 7-8 and vector codes based on them remain raw-only. Raw Extra Bytes are opt-in when `las.columns` is omitted; list `EXTRA_BYTES` explicitly. Typed Extra Bytes are included by default when `las.extraBytes: 'typed'` and `las.columns` is omitted. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads and resolved GeoKey entries, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
-| `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ can emit complete rows with bounded replay; layered PDRF 6-10 emits selected Arrow rows once their required layers arrive. Waveform references do not wait for trailing Extra Bytes, while raw or typed Extra Bytes become ready after their Byte14 layers arrive. |
+| `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ preserves arithmetic and item state across input chunks without replay; layered PDRF 6-10 emits selected Arrow rows once their required layers arrive. Waveform references do not wait for trailing Extra Bytes, while raw or typed Extra Bytes become ready after their Byte14 layers arrive. |
 
 ### TypeScript LAS Writer
 
@@ -104,7 +104,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Input case | First output can be emitted | Retained input / limitation |
 | --- | --- | --- |
 | Uncompressed LAS | After the header and enough complete point records arrive. | Only incomplete framing and the current output batch are retained. |
-| Fixed-chunk legacy LAZ PDRF 0-5 | Before the current compressed chunk is complete, after enough bytes decode complete rows. | Uses bounded geometric replay and retains the current compressed chunk. |
+| Fixed-chunk legacy LAZ PDRF 0-5 | Before the current compressed chunk is complete, after enough bytes decode complete rows. | Preserves arithmetic and item predictors across feeds, retains a bounded lookahead, and never replays emitted rows. |
 | Fixed-chunk layered LAZ PDRF 6-8 | After all compressed layers required by the requested Arrow columns arrive. | Unrequested trailing layers do not delay the first batch. Raw and typed Extra Bytes are projected directly after their trailing Byte14 layers arrive. |
 | Fixed-chunk layered LAZ PDRF 9-10 | After the required Point14, RGB/NIR, WavePacket14, or Byte14 layers arrive. | Waveform rows can precede trailing Extra Bytes. Selecting Extra Bytes requires their final layers but no complete raw-record decode or copy. |
 | Variable-chunk LAZ | After the EOF chunk table is available. | A forward-only source is buffered because per-chunk point counts are stored at EOF. |
@@ -246,10 +246,9 @@ A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads t
 
 ## Remaining Roadmap
 
-Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, selective layered decoding, progressive PDRF 6-10 delivery, direct raw and typed Extra Bytes projection, classification flags, LAZ writing, native COPC hierarchy and range parsing, bounded parallel COPC node decoding through the single TypeScript LAS worker, independently validated paged COPC writing, seeded split conformance, malformed-input handling, and memory and throughput regression gates. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
+Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, stateful legacy and selective layered streaming, progressive PDRF 6-10 delivery, direct raw and typed Extra Bytes projection, classification flags, LAZ writing, native COPC hierarchy and range parsing, bounded parallel COPC node decoding through the single TypeScript LAS worker, independently validated paged COPC writing, seeded split conformance, malformed-input handling, and memory and throughput regression gates. The remaining work is ordered by value to the primary LAS 1.4 and COPC rendering path.
 
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
-| 1 | Replace legacy LAZ bounded replay | Low for COPC, medium for older LAZ | High | Preserve resumable arithmetic and item state for PDRF 0-5 so one-byte and arbitrary input splits make forward progress without replaying compressed input. |
-| 2 | Add waveform sample payload access | Low for COPC, specialized elsewhere | High | Range-read internal waveform EVLRs and external WDP data, apply waveform descriptors, and expose samples without losing exact packet-reference offsets. |
-| 3 | Complete LAS 1.5 conformance and writing | Medium | Medium | Enforce LAS 1.5 header, WKT, and PDRF rules; add broader fixtures; and emit LAS 1.5 only after independent-reader interoperability is demonstrated. |
+| 1 | Add waveform sample payload access | Low for COPC, specialized elsewhere | High | Range-read internal waveform EVLRs and external WDP data, apply waveform descriptors, and expose samples without losing exact packet-reference offsets. |
+| 2 | Complete LAS 1.5 conformance and writing | Medium | Medium | Enforce LAS 1.5 header, WKT, and PDRF rules; add broader fixtures; and emit LAS 1.5 only after independent-reader interoperability is demonstrated. |
