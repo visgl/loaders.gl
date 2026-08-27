@@ -375,19 +375,26 @@ export class ParquetEnvelopeWriter {
     this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
     this.writeStatistics = opts.writeStatistics;
     this.sortingColumns = opts.sortingColumns;
-    this.encryption = opts.encryption
-      ? {
-          ...opts.encryption,
-          fileUnique: opts.encryption.fileUnique
-            ? new Uint8Array(opts.encryption.fileUnique)
-            : createFileUnique()
-        }
+    const encryptionFileUnique = opts.encryption?.fileUnique
+      ? new Uint8Array(opts.encryption.fileUnique)
       : undefined;
-    if (this.encryption && opts.footerSignature) {
-      throw new Error(
-        'Parquet footer encryption and plaintext-footer signatures are mutually exclusive'
-      );
+    const footerSignatureFileUnique = opts.footerSignature?.fileUnique
+      ? new Uint8Array(opts.footerSignature.fileUnique)
+      : undefined;
+    if (
+      encryptionFileUnique &&
+      footerSignatureFileUnique &&
+      !encryptionFileUnique.every((value, index) => value === footerSignatureFileUnique[index])
+    ) {
+      throw new Error('Parquet encryption and footer signature file_unique values must match');
     }
+    const sharedFileUnique =
+      encryptionFileUnique ??
+      footerSignatureFileUnique ??
+      (opts.encryption || opts.footerSignature ? createFileUnique() : undefined);
+    this.encryption = opts.encryption
+      ? {...opts.encryption, fileUnique: new Uint8Array(sharedFileUnique!)}
+      : undefined;
     this.footerSignature = opts.footerSignature
       ? {
           ...opts.footerSignature,
@@ -395,12 +402,10 @@ export class ParquetEnvelopeWriter {
           aadPrefix: opts.footerSignature.aadPrefix
             ? new Uint8Array(opts.footerSignature.aadPrefix)
             : undefined,
-          fileUnique: opts.footerSignature.fileUnique
-            ? new Uint8Array(opts.footerSignature.fileUnique)
-            : createFileUnique()
+          fileUnique: new Uint8Array(sharedFileUnique!)
         }
       : undefined;
-    this.encryptionFileUnique = this.encryption?.fileUnique;
+    this.encryptionFileUnique = sharedFileUnique;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -412,7 +417,9 @@ export class ParquetEnvelopeWriter {
    * Encode the parquet file header
    */
   writeHeader(): Promise<void> {
-    return this.writeSection(this.encryption ? PARQUET_MAGIC_ENCRYPTED_BYTES : PARQUET_MAGIC_BYTES);
+    return this.writeSection(
+      this.encryption && !this.footerSignature ? PARQUET_MAGIC_ENCRYPTED_BYTES : PARQUET_MAGIC_BYTES
+    );
   }
 
   /**
@@ -452,19 +459,21 @@ export class ParquetEnvelopeWriter {
       userMetadata = {};
     }
 
+    if (this.footerSignature) {
+      await this.writeSection(
+        await encodeSignedFooter(
+          this.schema,
+          this.rowCount,
+          this.rowGroups,
+          userMetadata,
+          this.footerSignature
+        )
+      );
+      return;
+    }
     const footer = encodeFooter(this.schema, this.rowCount, this.rowGroups, userMetadata);
     if (!this.encryption) {
-      await this.writeSection(
-        this.footerSignature
-          ? await encodeSignedFooter(
-              this.schema,
-              this.rowCount,
-              this.rowGroups,
-              userMetadata,
-              this.footerSignature
-            )
-          : footer
-      );
+      await this.writeSection(footer);
       return;
     }
     await this.writeSection(await encodeEncryptedFooter(footer, this.encryption));

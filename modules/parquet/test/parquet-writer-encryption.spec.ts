@@ -125,6 +125,45 @@ test('ParquetJSWriter emits a verifiable plaintext-footer signature', async () =
   expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(-4))).toBe('PAR1');
 });
 
+test('ParquetJSWriter combines a signed plaintext footer with encrypted columns', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    worker: false,
+    parquet: {
+      encryption: {
+        fileUnique: FILE_UNIQUE,
+        keyMetadata: KEY_METADATA,
+        columnKeyMetadata: {label: COLUMN_KEY_METADATA},
+        encryptColumns: {label: true},
+        keyRetriever: keyMetadata =>
+          keyMetadata && new TextDecoder().decode(keyMetadata) === 'writer-label-key-v2'
+            ? COLUMN_KEY
+            : KEY
+      },
+      footerSignature: {
+        fileUnique: FILE_UNIQUE,
+        keyMetadata: KEY_METADATA,
+        keyRetriever: keyMetadata => {
+          expect(keyMetadata).toEqual(KEY_METADATA);
+          return KEY;
+        }
+      }
+    }
+  });
+
+  const output = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {
+      keyRetriever: keyMetadata => {
+        const metadata = keyMetadata && new TextDecoder().decode(keyMetadata);
+        return metadata === new TextDecoder().decode(COLUMN_KEY_METADATA) ? COLUMN_KEY : KEY;
+      }
+    }
+  });
+
+  expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
+  expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(0, 4))).toBe('PAR1');
+});
+
 test('ParquetJSWriter rejects unknown column encryption metadata', async () => {
   await expect(
     encode(INPUT, ParquetJSWriter, {
