@@ -58,7 +58,7 @@ provides a visual implementation for that feature.
 | `EXT_mesh_features` | [x] | Feature identifiers are preserved for supported glTF payloads. |
 | `EXT_structural_metadata` | [x] | Schema and property-table metadata are exposed where present. |
 | Metadata topology preservation | [x] | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
-| Metadata-derived bounding volumes | [ ] | `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantics are planned. |
+| Metadata-derived bounding volumes | [x] | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
 | Styling expressions | [ ] | Rendering-side style evaluation is not provided by this module. |
 
 ## How to read the matrix
@@ -108,7 +108,7 @@ called out explicitly rather than being counted as parser support.
 | Extension | `3DTILES_batch_table_hierarchy` | [~] | Parse validation | Parser scaffolding and boundary validation exist; complete hierarchy semantics remain planned. |
 | Metadata | `EXT_mesh_features` | [x] | Parse + preserve | Feature identifiers are retained for supported glTF payloads. |
 | Metadata | `EXT_structural_metadata` | [x] | Parse + preserve | Schema, property tables, groups, and entity links are exposed; value decoding is application-side. |
-| Metadata | Metadata-derived bounding volumes | [ ] | Culling | `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` selection is planned. |
+| Metadata | Metadata-derived bounding volumes | [x] | Culling | Direct numeric semantic arrays are normalized into tile/content volumes; property-table decoding remains application-owned. |
 | Renderer | Styling expressions | [ ] | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | [ ] | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |
 
