@@ -70,7 +70,9 @@ function normalizeTileContents(
   const normalizedContents = contentEntries.map(contentEntry => {
     return {
       ...contentEntry,
-      boundingVolume: normalizeS2BoundingVolume(contentEntry.boundingVolume),
+      boundingVolume: normalizeS2BoundingVolume(
+        contentEntry.boundingVolume || getMetadataBoundingVolume(contentEntry.metadata, 'CONTENT')
+      ),
       uri: contentEntry.uri,
       url: contentEntry.url
     };
@@ -118,7 +120,9 @@ export function normalizeTileData(
   }
   const normalizedContents = normalizeTileContents(tile.content, resourceResolver);
   const tileContentUrl = normalizedContents.contentUrls[0];
-  const boundingVolume = normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume;
+  const boundingVolume = normalizeS2BoundingVolume(
+    tile.boundingVolume || getMetadataBoundingVolume(tile.metadata, 'TILE')
+  ) as Tile3DBoundingVolume;
   const viewerRequestVolume = normalizeS2BoundingVolume(tile.viewerRequestVolume);
   const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
     ...tile,
@@ -136,6 +140,46 @@ export function normalizeTileData(
   };
 
   return tilePostprocessed;
+}
+
+/**
+ * Resolves a metadata-derived tile or content bounding volume when the source exposes a direct
+ * semantic value. Property-table decoding is intentionally left to the metadata consumer; this
+ * helper only recognizes numeric arrays already materialized in the metadata entity.
+ *
+ * @param metadata - Tile or content metadata entity.
+ * @param scope - Semantic scope, either `TILE` or `CONTENT`.
+ * @returns A normalized source bounding volume, or `undefined` when no supported semantic is present.
+ */
+function getMetadataBoundingVolume(
+  metadata: Tiles3DTileJSON['metadata'] | undefined,
+  scope: 'TILE' | 'CONTENT'
+): Tile3DBoundingVolume | undefined {
+  const properties = metadata?.properties;
+  if (!properties) {
+    return undefined;
+  }
+  const semanticNames = [
+    `${scope}_BOUNDING_BOX`,
+    `${scope}_BOUNDING_REGION`,
+    `${scope}_BOUNDING_SPHERE`
+  ];
+  for (const semanticName of semanticNames) {
+    const value = properties[semanticName];
+    if (!Array.isArray(value) || !value.every(component => typeof component === 'number')) {
+      continue;
+    }
+    if (semanticName.endsWith('_BOX') && value.length === 12) {
+      return {box: value};
+    }
+    if (semanticName.endsWith('_REGION') && value.length === 6) {
+      return {region: value};
+    }
+    if (semanticName.endsWith('_SPHERE') && value.length === 4) {
+      return {sphere: value};
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -265,7 +309,9 @@ export async function normalizeImplicitTileHeaders(
   void context;
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
-    boundingVolume: normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume,
+    boundingVolume: normalizeS2BoundingVolume(
+      tile.boundingVolume || getMetadataBoundingVolume(tile.metadata, 'TILE')
+    ) as Tile3DBoundingVolume,
     content: tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
