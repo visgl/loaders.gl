@@ -618,7 +618,7 @@ test('ParquetSourceLoader#abort and close cancel initialization', async () => {
   await expect(closeSource.getMetadata()).rejects.toThrow(/closed/i);
   });
 
-test('ParquetRangeFile#close cancels oversized uncached reads', async (t) => {
+test('ParquetRangeFile#close cancels oversized uncached reads', async () => {
   const fileByteLength = 100_000;
   let requestCount = 0;
   let markReadStarted: () => void = () => {};
@@ -651,8 +651,7 @@ test('ParquetRangeFile#close cancels oversized uncached reads', async (t) => {
   await readStarted;
   await file.close();
 
-  await t.rejects(read, /abort/i, 'close aborts a read larger than the cache budget');
-  t.end();
+  await expect(read).rejects.toThrow(/abort/i);
 });
 
 /** Loads the shared Parquet fixture into memory for deterministic transport tests. */
