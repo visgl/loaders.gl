@@ -43,6 +43,34 @@ test('WFSSourceLoader#getCapabilitiesURL defaults version', t => {
   t.end();
 });
 
+test('WFSSourceLoader#getFeaturesURL supports WFS 1.1.0 parameter conventions', t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      version: '1.1.0',
+      typeName: 'roads',
+      bbox: [1, 2, 3, 4],
+      crs: 'EPSG:3857'
+    })
+  );
+
+  t.equal(featuresUrl.searchParams.get('VERSION'), '1.1.0');
+  t.equal(featuresUrl.searchParams.get('BBOX'), '1,2,3,4');
+  t.equal(featuresUrl.searchParams.get('SRSNAME'), 'EPSG:3857');
+
+  const mapUrl = new URL(
+    source.getMapURL({
+      version: '1.1.0',
+      bbox: [1, 2, 3, 4],
+      width: 256,
+      height: 256,
+      crs: 'EPSG:3857'
+    })
+  );
+  t.equal(mapUrl.searchParams.get('SRS'), 'EPSG:3857');
+  t.end();
+});
+
 test('WFSSourceLoader#getFeatures returns Arrow by default', async t => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const featureCollection = {

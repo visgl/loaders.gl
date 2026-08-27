@@ -235,3 +235,35 @@ test('WMTSImageTileSource uses advertised identifiers for KVP requests', async (
   await source.getMetadata();
   expect(new URL(source.getTileURL({x: 1, y: 2, z: 1})).searchParams.get('TILEMATRIX')).toBe('1g');
 });
+
+test('WMTSImageTileSource preserves an exact advertised matrix identifier', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      tileMatrixSet: 'Custom',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'Custom'}],
+              resourceURLs: [{template: 'https://tiles.example/{TileMatrix}'}]
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'Custom',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: '5'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+
+  await source.getMetadata();
+  expect(source.getTileURL({x: 0, y: 0, z: 5})).toBe('https://tiles.example/5');
+});
