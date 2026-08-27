@@ -115,15 +115,21 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
     const table = await this.getTable(selectedTable.name);
     throwIfAborted(options.signal);
     const fieldNames = new Set(table.data.schema.fields.map(field => field.name));
+    const geometryColumnName = fieldNames.has('geometry')
+      ? 'geometry'
+      : fieldNames.has(selectedTable.geometryColumnName)
+        ? selectedTable.geometryColumnName
+        : undefined;
+    const schemaMetadata = table.data.schema.metadata
+      ? Object.fromEntries(table.data.schema.metadata)
+      : {};
     return createScanQueryMetadata({
       sourceType: 'geopackage',
       queryType: 'table',
       name: selectedTable.identifier || selectedTable.name,
       description: selectedTable.description,
-      schema: {fields: table.data.schema.fields as never, metadata: {}},
-      columnRoles: fieldNames.has(selectedTable.geometryColumnName)
-        ? {[selectedTable.geometryColumnName]: 'geometry'}
-        : undefined,
+      schema: {fields: table.data.schema.fields as never, metadata: schemaMetadata},
+      columnRoles: geometryColumnName ? {[geometryColumnName]: 'geometry'} : undefined,
       capabilities: {
         table: {
           projection: 'residual',
