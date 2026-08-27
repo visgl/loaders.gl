@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import {csvParse} from 'd3-dsv';
 
 import {
   parseCSVArrayBufferAsArrow,
@@ -10,7 +11,10 @@ import {
   parseCSVTextAsArrow
 } from '../src/csv-arrow-table-parser';
 import {parseRawArrowCSVTable, parseRawArrowCSVText} from '../src/lib/parsers/parse-csv-to-arrow';
-import {parseRawArrowCSVBytes} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
+import {
+  parseRawArrowCSVASCIIText,
+  parseRawArrowCSVBytes
+} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
 
 /** Encodes a CSV fixture for the byte parser. */
 function encode(text: string): ArrayBuffer {
@@ -18,6 +22,33 @@ function encode(text: string): ArrayBuffer {
 }
 
 describe('raw Arrow CSV parser', () => {
+  test('matches d3-dsv string contents on the unquoted ASCII text fast path', async () => {
+    const csvRows = ['id,value,name'];
+    for (let rowIndex = 0; rowIndex < 2000; rowIndex++) {
+      csvRows.push(`${rowIndex},${rowIndex * 2},name-${rowIndex}`);
+    }
+    const csvText = `${csvRows.join('\n')}\n`;
+    const d3Rows = csvParse(csvText).map(row => ({...row}));
+    const table = await parseCSVTextAsArrow(csvText, {
+      csv: {header: true, delimiter: ',', dynamicTyping: false}
+    });
+
+    expect(table.schema.fields.map(field => field.name)).toEqual(['id', 'value', 'name']);
+    expect(toRows(table)).toEqual(d3Rows);
+  });
+
+  test('falls back from the ASCII text fast path for general CSV input and options', () => {
+    const options = {header: true, delimiter: ',', dynamicTyping: false} as const;
+
+    expect(toRows(parseRawArrowCSVASCIIText('a,b\r\n1,2\r\n', options)!)).toEqual([
+      {a: '1', b: '2'}
+    ]);
+    expect(parseRawArrowCSVASCIIText('a,b\n"1",2\n', options)).toBeNull();
+    expect(parseRawArrowCSVASCIIText('a,b\ncafé,2\n', options)).toBeNull();
+    expect(parseRawArrowCSVASCIIText('a,b\n1,2\n', {...options, skipEmptyLines: true})).toBeNull();
+    expect(parseRawArrowCSVASCIIText('a,b\n1,2\n', {header: true})).toBeNull();
+  });
+
   test('parses unquoted rows, headers, guessed delimiters, and dynamic typing', async () => {
     const table = await parseRawArrowCSVTable(encode('name,value\nalpha,1\nbeta,2\n'), {
       csv: {header: true, dynamicTyping: false}

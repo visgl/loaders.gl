@@ -35,6 +35,7 @@ const CARRIAGE_RETURN = 13;
 const LINE_FEED = 10;
 const SPACE = 32;
 const TAB = 9;
+const ASCII_TEXT_PROBE_LENGTH = 256;
 
 const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
@@ -77,6 +78,65 @@ export function parseRawArrowCSVBytes(
 
   const parser = new RawArrowCSVByteParser(bytes, parserOptions);
   return parser.parseTable();
+}
+
+/**
+ * Parses explicit-delimiter, unquoted ASCII CSV text directly into an Arrow Utf8 table.
+ *
+ * Returns `null` when the input or options require the general UTF-8 byte parser.
+ */
+export function parseRawArrowCSVASCIIText(
+  csvText: string,
+  csvOptions: CSVRawArrowOptions
+): ArrowTable | null {
+  const parserOptions = getCSVASCIITextParserOptions(csvOptions);
+  if (!parserOptions) {
+    return null;
+  }
+
+  const probeLength = Math.min(csvText.length, ASCII_TEXT_PROBE_LENGTH);
+  for (let characterIndex = 0; characterIndex < probeLength; characterIndex++) {
+    const characterCode = csvText.charCodeAt(characterIndex);
+    if (characterCode === parserOptions.quote || characterCode >= 128) {
+      return null;
+    }
+  }
+
+  const parser = new RawArrowUnquotedCSVTextParser(csvText, parserOptions);
+  return parser.parseTable();
+}
+
+/** Returns parser options for the direct unquoted ASCII text path. */
+function getCSVASCIITextParserOptions(csvOptions: CSVRawArrowOptions): CSVByteParserOptions | null {
+  const shouldUseUtf8View =
+    csvOptions.viewTypes === 'require' ||
+    (csvOptions.viewTypes === 'prefer' && getArrowViewTypeSupport().utf8View);
+  if (shouldUseUtf8View || csvOptions.comments || csvOptions.skipEmptyLines) {
+    return null;
+  }
+
+  const quoteChar = csvOptions.quoteChar || '"';
+  const escapeChar = csvOptions.escapeChar || '"';
+  const configuredDelimiter = (csvOptions as CSVRawArrowOptions & {delimiter?: string}).delimiter;
+  if (
+    quoteChar.length !== 1 ||
+    quoteChar.charCodeAt(0) >= 128 ||
+    escapeChar !== quoteChar ||
+    !configuredDelimiter ||
+    configuredDelimiter.length !== 1 ||
+    configuredDelimiter.charCodeAt(0) >= 128
+  ) {
+    return null;
+  }
+
+  return {
+    delimiter: configuredDelimiter.charCodeAt(0),
+    quote: quoteChar.charCodeAt(0),
+    columnPrefix: csvOptions.columnPrefix || 'column',
+    header: csvOptions.header ?? false,
+    dynamicTyping: Boolean(csvOptions.dynamicTyping),
+    skipEmptyLines: false
+  };
 }
 
 /** Returns byte parser options when the CSV options are safe for the raw byte fast path. */
@@ -859,6 +919,145 @@ class RawArrowUnquotedCSVByteParser {
   }
 }
 
+/** Single-string parser for CSV text containing only unquoted ASCII fields. */
+class RawArrowUnquotedCSVTextParser {
+  /** Source CSV text. */
+  private readonly csvText: string;
+  /** Normalized parser options. */
+  private readonly options: CSVByteParserOptions;
+  /** Header transformer that makes duplicate column names unique. */
+  private readonly duplicateColumnTransformer = createDuplicateColumnTransformer();
+
+  /** Creates a direct ASCII text parser. */
+  constructor(csvText: string, options: CSVByteParserOptions) {
+    this.csvText = csvText;
+    this.options = options;
+  }
+
+  /** Parses the text or returns `null` when it requires the general UTF-8 parser. */
+  parseTable(): ArrowTable | null {
+    if (this.csvText.length === 0) {
+      return createRawArrowTable([], []);
+    }
+
+    let dataStart = 0;
+    const firstRow = this.findRowEnd(0);
+    const isHeader = this.options.header === 'auto' ? true : Boolean(this.options.header);
+    let headerRow: string[];
+
+    if (isHeader) {
+      const decodedHeaderRow = this.decodeHeaderRow(0, firstRow.end);
+      if (!decodedHeaderRow) {
+        return null;
+      }
+      headerRow = decodedHeaderRow;
+      dataStart = firstRow.nextStart;
+    } else {
+      headerRow = generateHeader(
+        this.options.columnPrefix,
+        countDelimitedTextFields(this.csvText, 0, firstRow.end, this.options.delimiter)
+      );
+    }
+
+    const columnBuilders = createRawArrowColumnBuilders(headerRow, this.csvText.length);
+    if (!this.appendDataRows(dataStart, columnBuilders)) {
+      return null;
+    }
+    return createRawArrowTable(headerRow, columnBuilders);
+  }
+
+  /** Appends data rows and reports whether every field was unquoted ASCII. */
+  private appendDataRows(start: number, columnBuilders: RawArrowUtf8ColumnBuilder[]): boolean {
+    if (start >= this.csvText.length) {
+      return true;
+    }
+
+    const columnCount = columnBuilders.length;
+    const delimiter = this.options.delimiter;
+    const quote = this.options.quote;
+    let fieldStart = start;
+    let columnIndex = 0;
+
+    for (let characterIndex = start; characterIndex <= this.csvText.length; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === quote || characterCode >= 128) {
+        return false;
+      }
+      if (
+        characterCode !== delimiter &&
+        characterCode !== LINE_FEED &&
+        characterCode !== CARRIAGE_RETURN &&
+        characterIndex !== this.csvText.length
+      ) {
+        continue;
+      }
+
+      const columnBuilder = columnBuilders[columnIndex];
+      if (columnBuilder) {
+        columnBuilder.appendASCIITextRange(this.csvText, fieldStart, characterIndex);
+      }
+      columnIndex++;
+
+      if (characterCode === delimiter) {
+        fieldStart = characterIndex + 1;
+        continue;
+      }
+
+      for (; columnIndex < columnCount; columnIndex++) {
+        columnBuilders[columnIndex].appendNull();
+      }
+      columnIndex = 0;
+
+      if (
+        characterCode === CARRIAGE_RETURN &&
+        this.csvText.charCodeAt(characterIndex + 1) === LINE_FEED
+      ) {
+        characterIndex++;
+      }
+      fieldStart = characterIndex + 1;
+      if (fieldStart >= this.csvText.length) {
+        break;
+      }
+    }
+    return true;
+  }
+
+  /** Decodes and deduplicates an ASCII header row. */
+  private decodeHeaderRow(start: number, end: number): string[] | null {
+    const headerRow: string[] = [];
+    let fieldStart = start;
+    for (let characterIndex = start; characterIndex <= end; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === this.options.quote || characterCode >= 128) {
+        return null;
+      }
+      if (characterIndex === end || characterCode === this.options.delimiter) {
+        headerRow.push(
+          this.duplicateColumnTransformer(this.csvText.slice(fieldStart, characterIndex))
+        );
+        fieldStart = characterIndex + 1;
+      }
+    }
+    return headerRow;
+  }
+
+  /** Locates the end of one row and the beginning of the next. */
+  private findRowEnd(start: number): {end: number; nextStart: number} {
+    for (let characterIndex = start; characterIndex < this.csvText.length; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === LINE_FEED || characterCode === CARRIAGE_RETURN) {
+        const nextStart =
+          characterCode === CARRIAGE_RETURN &&
+          this.csvText.charCodeAt(characterIndex + 1) === LINE_FEED
+            ? characterIndex + 2
+            : characterIndex + 1;
+        return {end: characterIndex, nextStart};
+      }
+    }
+    return {end: this.csvText.length, nextStart: this.csvText.length};
+  }
+}
+
 /** Accumulates unescaped quoted field bytes without converting the field to a string. */
 class ByteRangeBuilder {
   private data: Uint8Array;
@@ -969,6 +1168,18 @@ class RawArrowUtf8ColumnBuilder {
   /** Appends a non-null value from a byte range. */
   appendRange(source: Uint8Array, start: number, end: number): void {
     this.appendValue(source, start, end);
+  }
+
+  /** Appends a non-null value from a previously validated ASCII text range. */
+  appendASCIITextRange(source: string, start: number, end: number): void {
+    const characterLength = end - start;
+    this.reserveData(characterLength);
+    for (let characterIndex = start; characterIndex < end; characterIndex++) {
+      this.data[this.dataLength] = source.charCodeAt(characterIndex);
+      this.dataLength++;
+    }
+    this.appendValueOffset(this.dataLength);
+    this.setValid(this.valueOffsetCount - 2);
   }
 
   /** Appends an escaped quoted value by collapsing doubled quote bytes. */
@@ -1104,6 +1315,22 @@ function countDelimitedFields(
   let fieldCount = 1;
   for (let byteIndex = start; byteIndex < end; byteIndex++) {
     if (bytes[byteIndex] === delimiter) {
+      fieldCount++;
+    }
+  }
+  return fieldCount;
+}
+
+/** Counts fields in an unquoted text range. */
+function countDelimitedTextFields(
+  csvText: string,
+  start: number,
+  end: number,
+  delimiter: number
+): number {
+  let fieldCount = 1;
+  for (let characterIndex = start; characterIndex < end; characterIndex++) {
+    if (csvText.charCodeAt(characterIndex) === delimiter) {
       fieldCount++;
     }
   }

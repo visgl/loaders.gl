@@ -621,10 +621,9 @@ function tryParseTypedUnquotedCSVBytes(
   }
   const headerEnd = findDirectRowEnd(bytes, 0);
   const headerRow = decodeDirectHeaderRow(bytes, 0, headerEnd.end, delimiterByte);
-  const initialColumnCapacity = Math.max(
-    1024,
-    Math.ceil(bytes.length / (Math.max(headerRow.length, 1) * 8))
-  );
+  // Keep aggregate speculative typed storage proportional to input size. A large per-column
+  // minimum can exhaust memory for valid CSV files with tens of thousands of shallow columns.
+  const initialColumnCapacity = calculateInitialTypedColumnCapacity(bytes.length, headerRow.length);
   const columns: DirectTypedColumn[] = headerRow.map(() => ({
     values: [],
     initialCapacity: initialColumnCapacity,
@@ -678,6 +677,17 @@ function tryParseTypedUnquotedCSVBytes(
   }
 
   return buildDirectTypedArrowTable(bytes, headerRow, columns, rowCount);
+}
+
+/**
+ * Calculates per-column speculative storage for the direct typed parser.
+ * @internal
+ */
+export function calculateInitialTypedColumnCapacity(
+  byteLength: number,
+  columnCount: number
+): number {
+  return Math.max(1, Math.ceil(byteLength / (Math.max(columnCount, 1) * 8)));
 }
 
 /** Checks the conservative option set supported by the direct unquoted typed parser. */
