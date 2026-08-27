@@ -156,7 +156,14 @@ export class Tile3D {
   private _visible: boolean | undefined = undefined;
 
   private _contentBoundingVolume: any;
+  /** Source content-volume headers retained after render content is unloaded. */
+  private _contentBoundingVolumeHeaders: any[] = [];
   private _viewerRequestVolume: any;
+
+  /** Bounding volume used to cull the tile's renderable content, when declared. */
+  get contentBoundingVolume(): any {
+    return this._contentBoundingVolume;
+  }
 
   /** Bounding volume that limits when this tile may be requested, when declared. */
   get viewerRequestVolume(): any {
@@ -771,47 +778,28 @@ export class Tile3D {
     return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
   }
 
-  // Assuming the tile's bounding volume intersects the culling volume, determines
-  // whether the tile's content's bounding volume intersects the culling volume.
-  // @param {FrameState} frameState The frame state.
-  // @returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
-  contentVisibility() {
-    return true;
-
-    // TODO restore
-    /*
-    // Assumes the tile's bounding volume intersects the culling volume already, so
-    // just return Intersect.INSIDE if there is no content bounding volume.
-    if (!defined(this.contentBoundingVolume)) {
-      return Intersect.INSIDE;
+  /**
+   * Determines whether renderable content intersects the view and configured clipping planes.
+   *
+   * Clipping planes are render-only constraints; traversal continues to use the tile volume.
+   *
+   * @param frameState Current camera, culling, and optional clipping-plane state.
+   * @returns The content visibility classification.
+   */
+  contentVisibility(frameState: FrameState): number {
+    if (!this.contentBoundingVolume || this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
+      return INTERSECTION.INSIDE;
     }
-
-    if (this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
-      // The tile's bounding volume is completely inside the culling volume so
-      // the content bounding volume must also be inside.
-      return Intersect.INSIDE;
+    const visibility = frameState.cullingVolume.computeVisibility(this.contentBoundingVolume);
+    if (visibility === INTERSECTION.OUTSIDE) {
+      return visibility;
     }
-
-    // PERFORMANCE_IDEA: is it possible to burn less CPU on this test since we know the
-    // tile's (not the content's) bounding volume intersects the culling volume?
-    const cullingVolume = frameState.cullingVolume;
-    const boundingVolume = tile.contentBoundingVolume;
-
-    const tileset = this.tileset;
-    const clippingPlanes = tileset.clippingPlanes;
-    if (defined(clippingPlanes) && clippingPlanes.enabled) {
-      const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
-        boundingVolume,
-        tileset.clippingPlanesOriginMatrix
-      );
-      this._isClipped = intersection !== Intersect.INSIDE;
-      if (intersection === Intersect.OUTSIDE) {
-        return Intersect.OUTSIDE;
+    for (const clippingPlane of frameState.clippingPlanes || []) {
+      if (this.contentBoundingVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+        return INTERSECTION.OUTSIDE;
       }
     }
-
-    return cullingVolume.computeVisibility(boundingVolume);
-    */
+    return visibility;
   }
 
   /**
@@ -937,6 +925,7 @@ export class Tile3D {
 
   _initializeBoundingVolumes(tileHeader) {
     this._contentBoundingVolume = null;
+    this._contentBoundingVolumeHeaders = [];
     this._viewerRequestVolume = null;
 
     this._updateBoundingVolume(tileHeader);
@@ -1048,19 +1037,20 @@ export class Tile3D {
     }
 
     const content = header.content;
-    if (!content) {
-      return;
+    if (content) {
+      this._contentBoundingVolumeHeaders = (Array.isArray(content) ? content : [content]).filter(
+        contentHeader => contentHeader?.boundingVolume
+      );
     }
-
-    // TODO Cesium specific
-    // Non-leaf tiles may have a content bounding-volume, which is a tight-fit bounding volume
-    // around only the features in the tile. This box is useful for culling for rendering,
-    // but not for culling for traversing the tree since it does not guarantee spatial coherence, i.e.,
-    // since it only bounds features in the tile, not the entire tile, children may be
-    // outside of this box.
-    if (content.boundingVolume) {
+    const contentHeaders = content
+      ? Array.isArray(content)
+        ? content
+        : [content]
+      : this._contentBoundingVolumeHeaders;
+    const contentHeader = contentHeaders.find(headerEntry => headerEntry?.boundingVolume);
+    if (contentHeader?.boundingVolume) {
       this._contentBoundingVolume = createBoundingVolume(
-        content.boundingVolume,
+        contentHeader.boundingVolume,
         this.computedTransform,
         this._contentBoundingVolume
       );
