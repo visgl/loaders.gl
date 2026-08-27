@@ -277,6 +277,12 @@
       "@loaders.gl/sql": [
         "modules/sql/src"
       ],
+      "@loaders.gl/scan": [
+        "modules/scan/src"
+      ],
+      "@loaders.gl/scan/test": [
+        "modules/scan/test"
+      ],
       "@loaders.gl/sql/test": [
         "modules/sql/test"
       ],
