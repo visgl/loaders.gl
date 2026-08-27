@@ -46,11 +46,26 @@ describe('CSV optimized parsing paths', () => {
   });
 
   test('coerces mixed dynamically typed UTF-8 columns to strings', async () => {
-    const table = await CSVLoader.parseText('value\ntrue\n42\ntext\n', {
+    const table = await CSVLoader.parseText('value\n42\ntext\n001\n', {
       csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
     });
 
-    expect(getArrowColumnValues(table, 'value')).toEqual(['true', '42', 'text']);
+    expect(getArrowColumnValues(table, 'value')).toEqual(['42', 'text', '1']);
+  });
+
+  test('continues dynamic typing after a column is promoted to UTF-8', async () => {
+    const dateText = '2018-05-04T21:08:03.269Z';
+    const table = await CSVLoader.parseText(`value\ntext\n001\nTRUE\n 7 \n${dateText}\n`, {
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+    });
+
+    expect(getArrowColumnValues(table, 'value')).toEqual([
+      'text',
+      '1',
+      'true',
+      '7',
+      String(new Date(dateText))
+    ]);
   });
 
   test('preserves Papa-compatible dynamic number and boolean grammar', async () => {
