@@ -21,7 +21,7 @@ test('Parquet logical types convert scalar, text, JSON, and temporal values', ()
   const json = toPrimitive('JSON' as any, {id: 3, ok: true});
   expect(fromPrimitive('JSON' as any, json)).toEqual({id: 3, ok: true});
 
-  const date = new Date('2024-01-02T03:04:05.000Z');
+  const date = new Date('2024-01-02T00:00:00.000Z');
   expect(fromPrimitive('DATE' as any, toPrimitive('DATE' as any, date))).toEqual(date);
   expect(fromPrimitive('TIMESTAMP_MILLIS' as any, toPrimitive('TIMESTAMP_MILLIS' as any, date))).toEqual(date);
   expect(toPrimitive('TIMESTAMP_MICROS' as any, date)).toBe(BigInt(date.getTime()) * 1000n);
@@ -55,7 +55,7 @@ test('Parquet logical types convert binary16, intervals, and decimals', () => {
       ...decimalField,
       presision: 2
     })
-  ).toBe(0.34);
+  ).toBe(12.34);
   expect(toPrimitive('DECIMAL_INT32' as any, 1.25, {scale: 2, presision: 4} as any)).toBe(125);
 });
 

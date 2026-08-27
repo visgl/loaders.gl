@@ -700,24 +700,9 @@ function decimalFromPrimitive_INT(value: any, field: ParquetField) {
 }
 
 function decimalFromPrimitive_BYTE_ARRAY(value: any, field: ParquetField) {
-  let number = 0;
-  if (value.length <= 4) {
-    // Bytewise operators faster. Use them if it is possible
-    for (let i = 0; i < value.length; i++) {
-      // `value.length - i - 1` bytes have reverse order (big-endian)
-      const component = value[i] << (8 * (value.length - i - 1));
-      number += component;
-    }
-  } else {
-    for (let i = 0; i < value.length; i++) {
-      // `value.length - i - 1` bytes have reverse order (big-endian)
-      const component = value[i] * 2 ** (8 * (value.length - 1 - i));
-      number += component;
-    }
-  }
-
-  const presisionInt = Math.round(
-    ((number * 10 ** -field.presision!) % 1) * 10 ** field.presision!
-  );
-  return presisionInt * 10 ** -(field.scale || 0);
+  const bytes = toUint8Array(value);
+  let unscaledValue = 0n;
+  for (const byte of bytes) unscaledValue = (unscaledValue << 8n) | BigInt(byte);
+  if (bytes.length > 0 && (bytes[0] & 0x80) !== 0) unscaledValue -= 1n << BigInt(bytes.length * 8);
+  return Number(unscaledValue) / 10 ** (field.scale || 0);
 }
