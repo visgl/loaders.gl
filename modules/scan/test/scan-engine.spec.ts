@@ -35,6 +35,35 @@ test('loads a registered backend through the same root API', async () => {
   expect(engine.query(table)).toBe(table);
 });
 
+test('validates backend registrations and loader names', async () => {
+  expect(() => registerScanBackend('' as never, () => ({}) as never)).toThrow(
+    'A scan backend name and loader are required'
+  );
+  expect(() => registerScanBackend('invalid-loader', undefined as never)).toThrow(
+    'A scan backend name and loader are required'
+  );
+
+  registerScanBackend('mismatch', () => ({
+    name: 'different',
+    query: sourceTable => sourceTable,
+    explain: () => ({}) as never
+  }));
+  await expect(createScanEngine({backend: 'mismatch'})).rejects.toThrow(
+    'returned "different" while "mismatch" was requested'
+  );
+});
+
+test('explains Arrow queries through the same engine', async () => {
+  const engine = await createScanEngine({backend: 'arrow'});
+  const explanation = engine.explain(makeArrowTable({value: [1]}), {
+    predicate: parseSQLPredicate('value >= 1'),
+    columns: ['value'],
+    limit: 1
+  });
+
+  expect(explanation.plan.map(step => step.kind)).toEqual(['scan', 'filter', 'project', 'limit']);
+});
+
 test('reports unavailable backends clearly', async () => {
   await expect(createScanEngine({backend: 'duckdb'})).rejects.toThrow(
     'Scan backend "duckdb" is not registered'

@@ -557,6 +557,21 @@
         "branches": 76
       }
     },
+    "@loaders.gl/scan": {
+      "path": "modules/scan",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      }
+    },
     "@loaders.gl/shapefile": {
       "path": "modules/shapefile",
       "browser": {
