@@ -12,8 +12,11 @@ import {SourceLayer} from '@loaders.gl/deck-layers';
 import {
   _ArcGISFeatureServerSourceLoader,
   _ArcGISImageServerSourceLoader,
+  ArcGISImageTileSourceLoader,
+  ArcGISMapTileSourceLoader,
   WFSSourceLoader,
-  WMSSourceLoader
+  WMSSourceLoader,
+  WMTSSourceLoader
 } from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
@@ -56,7 +59,10 @@ const SOURCE_FACTORIES = [
   WMSSourceLoader,
   _ArcGISImageServerSourceLoader,
   _ArcGISFeatureServerSourceLoader,
-  WFSSourceLoader
+  WFSSourceLoader,
+  WMTSSourceLoader,
+  ArcGISImageTileSourceLoader,
+  ArcGISMapTileSourceLoader
 ];
 
 /** Application state */

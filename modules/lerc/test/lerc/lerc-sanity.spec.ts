@@ -6,13 +6,13 @@
 // under Apache 2 license
 // (only used for test cases)
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
 // import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../src/lerc-loader';
-import {parse, isBrowser} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 
 /***************
  * es6.
@@ -33,47 +33,35 @@ const LERC_DATA_4D_NUMBERS =
     .map(x => Number(x));
 const LERC_DATA_4D = new Uint8Array(LERC_DATA_4D_NUMBERS).buffer;
 
-test('LERCLoader#4D sanity', async t => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
+test('LERCLoader#4D sanity', async () => {
   const result = await parse(LERC_DATA_4D, LERCLoader);
 
   // test default decoding
 
-  t.equal(result.width, 30, 'width');
-  t.equal(result.height, 20, 'height');
-  t.equal(result.pixelType, 'U8', 'pixelType');
-  t.equal(result.depthCount, 3, 'depthCount');
-  t.equal(result.mask, null, 'mask');
+  expect(result.width).toBe(30);
+  expect(result.height).toBe(20);
+  expect(result.pixelType).toBe('U8');
+  expect(result.depthCount).toBe(3);
+  expect(result.mask).toBe(null);
 
   const bandStat = result.statistics[0];
-  t.equal(bandStat.minValue, 0, 'minValue');
-  t.equal(bandStat.maxValue, 89, 'maxValue');
-  t.equal(bandStat.depthStats?.minValues.join(','), '0,30,60', 'depthStats.minValues');
+  expect(bandStat.minValue).toBe(0);
+  expect(bandStat.maxValue).toBe(89);
+  expect(bandStat.depthStats?.minValues.join(',')).toBe('0,30,60');
 
   const min0 = Math.min.apply(null, result.pixels[0].slice(0, 600) as unknown as number[]);
   const min1 = Math.min.apply(null, result.pixels[0].slice(600, 1200) as unknown as number[]);
   const min2 = Math.min.apply(null, result.pixels[0].slice(1200) as unknown as number[]);
 
-  t.equal(min0, 0, 'min0');
-  t.equal(min1, 30, 'min1');
-  t.equal(min2, 60, 'min2');
-
-  t.end();
+  expect(min0).toBe(0);
+  expect(min1).toBe(30);
+  expect(min2).toBe(60);
 });
 
-test('LERCLoader#4D sanity', async t => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
+test('LERCLoader#4D interleaved output', async () => {
   // test interleaved flag
   const bipResult = await parse(LERC_DATA_4D, LERCLoader, {
     lerc: {returnInterleaved: true}
   });
-  t.equal(bipResult.pixels[0].slice(0, 6).join(','), '13,57,68,14,59,80', 'returnInterleaved');
-
-  t.end();
+  expect(bipResult.pixels[0].slice(0, 6).join(',')).toBe('13,57,68,14,59,80');
 });

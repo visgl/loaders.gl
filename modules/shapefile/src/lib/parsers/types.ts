@@ -4,6 +4,7 @@
 
 import type {Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Proj4CRSDefinition} from '@math.gl/proj4';
 
 /**
  * GeoArrow geometry encoding mode for SHP Arrow output.
@@ -42,7 +43,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     };
     gis?: {
       reproject?: boolean;
-      _targetCrs?: string;
+      _targetCrs?: Proj4CRSDefinition;
     };
   };
 

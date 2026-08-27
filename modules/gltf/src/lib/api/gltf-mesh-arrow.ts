@@ -389,10 +389,18 @@ function getMeshTopology(mode: number): MeshArrowTable['topology'] {
   switch (mode) {
     case 0:
       return 'point-list';
+    case 1:
+      return 'line-list';
+    case 3:
+      return 'line-strip';
+    case 2:
+      return 'line-loop';
     case 4:
       return 'triangle-list';
     case 5:
       return 'triangle-strip';
+    case 6:
+      return 'triangle-fan';
     default:
       throw new Error(`glTF primitive mode ${mode} is not supported by Mesh Arrow`);
   }

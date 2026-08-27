@@ -64,6 +64,8 @@ export type ParquetSourceWorkerInput = {
   pagePlan?: ParquetPagePruningPlan;
   /** Whether BYTE_ARRAY values stay binary during logical conversion. */
   preserveBinary: boolean;
+  /** Whether page CRC values are verified while decoding in the worker. */
+  verifyPageChecksums: boolean;
 };
 
 /** One directly transferable Arrow batch decoded by a Parquet source worker. */

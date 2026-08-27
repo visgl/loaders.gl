@@ -2,6 +2,9 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+current COPC/LAS projection-record support and vertical/compound CRS roadmap.
+
 ![copc-logo](../../images/logos/copc-logo-80.png)
 
 <p class="badges">
@@ -12,7 +15,7 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 <CopcDocsTabs active="overview" />
 
-The `@loaders.gl/copc` module loads and writes the [COPC](/docs/modules/copc/formats/copc) format.
+The `@loaders.gl/copc` module loads and writes the [COPC](/docs/modules/copc/formats/copc) format. Its primary reader is TypeScript-only and performs native COPC hierarchy, byte-range, and LAZ point decoding.
 
 ## Installation
 
@@ -29,4 +32,4 @@ npm install @loaders.gl/core @loaders.gl/copc
 
 ## Attribution
 
-This module is a fork of Connor Manning's awesome [copc.js](https://github.com/connormanning/copc.js/) module, under MIT license.
+The original module was based on Connor Manning's [copc.js](https://github.com/connormanning/copc.js/) project under the MIT license. The current primary reader is a first-party TypeScript implementation with no `copc` runtime dependency.

@@ -50,8 +50,7 @@
     "@loaders.gl/compression": "5.0.0-alpha.2",
     "@loaders.gl/crypto": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "jszip": "^3.1.5",
-    "md5": "^2.3.0"
+    "jszip": "^3.1.5"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

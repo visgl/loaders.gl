@@ -3,10 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'test/utils/vitest-tape';
+import {expect, test as vitestTest} from 'vitest';
 
 import {
   _ArcGISFeatureServerSourceLoader as ArcGISFeatureServerSourceLoader,
   _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader,
+  ArcGISImageTileSource,
   ArcGISMapTileSource
 } from '@loaders.gl/wms';
 
@@ -28,6 +30,63 @@ test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', t => {
   t.equal(url.pathname, '/MapServer/tile/5/4/3');
   t.equal(url.searchParams.get('token'), 'abc');
   t.end();
+});
+
+vitestTest('ArcGISMapTileSource builds dynamic export tiles and updates parameters', () => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {mode: 'dynamic', tileSize: 512}
+  });
+  source.updateParameters({layers: 'show:0', format: 'jpgpng'});
+  const url = new URL(source.getExportTileURL({x: 1, y: 2, z: 3}));
+  expect(url.pathname).toBe('/MapServer/export');
+  expect(url.searchParams.get('size')).toBe('512,512');
+  expect(url.searchParams.get('layers')).toBe('show:0');
+  expect(url.searchParams.get('format')).toBe('jpgpng');
+});
+
+vitestTest('ArcGISMapTileSource distributes requests across configured service URLs', () => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {
+      urls: ['https://tiles-a.example.com/MapServer', 'https://tiles-b.example.com/MapServer']
+    }
+  });
+  const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
+  expect(url.origin).toBe('https://tiles-b.example.com');
+});
+
+vitestTest('ArcGISImageTileSource builds exportImage tile requests', () => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {tileSize: 512, parameters: {time: '2020-01-01'}}
+  });
+  source.updateParameters({renderingRule: '{"rasterFunction":"Hillshade"}'});
+  const url = new URL(source.getTileURL({x: 0, y: 0, z: 0}));
+  expect(url.pathname).toBe('/ImageServer/exportImage');
+  expect(url.searchParams.get('size')).toBe('512,512');
+  expect(url.searchParams.get('time')).toBe('2020-01-01');
+  expect(url.searchParams.get('renderingRule')).toBe('{"rasterFunction":"Hillshade"}');
+});
+
+vitestTest('ArcGISImageTileSource distributes requests across configured service URLs', () => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {
+      urls: [
+        'https://imagery-a.example.com/ImageServer',
+        'https://imagery-b.example.com/ImageServer'
+      ]
+    }
+  });
+  const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
+  expect(url.origin).toBe('https://imagery-b.example.com');
+});
+
+vitestTest('ArcGISImageTileSource parses the effective response format', () => {
+  const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    'arcgis-image-server-tiles': {format: 'lerc', parameters: {format: 'png32'}}
+  });
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
+  expect(source.mimeType).toBe('image/png');
+  source.updateParameters({format: 'png32'});
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
 });
 
 test('ArcGISImageSource#metadataURL', t => {
@@ -61,6 +120,21 @@ test('ArcGISImageSource#exportImageURL', t => {
   t.equal(exportImageUrl.searchParams.get('format'), 'png');
   t.equal(exportImageUrl.searchParams.get('f'), 'image');
   t.end();
+});
+
+vitestTest('ArcGISImageSource#exportImageURL supports LERC analytical rasters', () => {
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const exportRasterUrl = new URL(
+    source.exportImageURL({
+      bbox: [1, 2, 3, 4],
+      width: 128,
+      height: 128,
+      format: 'lerc',
+      pixelType: 'F32'
+    })
+  );
+  expect(exportRasterUrl.searchParams.get('format')).toBe('lerc');
+  expect(exportRasterUrl.searchParams.get('pixelType')).toBe('F32');
 });
 
 test('ArcGISImageSource#getMetadata', async t => {

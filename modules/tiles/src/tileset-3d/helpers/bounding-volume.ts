@@ -4,9 +4,9 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
+import {Quaternion, Vector3, Matrix3, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/loader-utils';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
@@ -18,12 +18,6 @@ function defined(x) {
 // const scratchMatrix = new Matrix3();
 const scratchPoint = new Vector3();
 const scratchScale = new Vector3();
-const scratchNorthWest = new Vector3();
-const scratchSouthEast = new Vector3();
-const scratchCenter = new Vector3();
-const scratchXAxis = new Vector3();
-const scratchYAxis = new Vector3();
-const scratchZAxis = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
 // const scratchTransform = new Matrix4();
@@ -44,7 +38,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    return createObbFromRegion(boundingVolumeHeader.region);
+    return makeOBBFromRegion(boundingVolumeHeader.region);
   }
 
   if (boundingVolumeHeader.sphere) {
@@ -219,52 +213,6 @@ function createSphere(sphere, transform, result?) {
   }
 
   return new BoundingSphere(center, radius);
-}
-
-/**
- * Create OrientedBoundingBox instance from region 3D tiles bounding volume
- * @param region - region 3D tiles bounding volume
- * @returns OrientedBoundingBox instance
- */
-function createObbFromRegion(region: number[]): OrientedBoundingBox {
-  // [west, south, east, north, minimum height, maximum height]
-  // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
-  // Heights are in meters above (or below) the WGS 84 ellipsoid.
-  const [west, south, east, north, minHeight, maxHeight] = region;
-
-  const northWest = Ellipsoid.WGS84.cartographicToCartesian(
-    [degrees(west), degrees(north), minHeight],
-    scratchNorthWest
-  );
-  const southEast = Ellipsoid.WGS84.cartographicToCartesian(
-    [degrees(east), degrees(south), maxHeight],
-    scratchSouthEast
-  );
-  const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyByScalar(0.5);
-  Ellipsoid.WGS84.cartesianToCartographic(centerInCartesian, scratchCenter);
-
-  Ellipsoid.WGS84.cartographicToCartesian(
-    [degrees(east), scratchCenter[1], scratchCenter[2]],
-    scratchXAxis
-  );
-  Ellipsoid.WGS84.cartographicToCartesian(
-    [scratchCenter[0], degrees(north), scratchCenter[2]],
-    scratchYAxis
-  );
-  Ellipsoid.WGS84.cartographicToCartesian(
-    [scratchCenter[0], scratchCenter[1], maxHeight],
-    scratchZAxis
-  );
-
-  return createBox(
-    [
-      ...centerInCartesian,
-      ...scratchXAxis.subtract(centerInCartesian),
-      ...scratchYAxis.subtract(centerInCartesian),
-      ...scratchZAxis.subtract(centerInCartesian)
-    ],
-    new Matrix4()
-  );
 }
 
 /**

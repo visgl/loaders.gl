@@ -50,16 +50,16 @@
     "@loaders.gl/compression": {
       "path": "modules/compression",
       "browser": {
-        "statements": 24,
-        "lines": 23,
-        "functions": 45,
-        "branches": 15
+        "statements": 70,
+        "lines": 72,
+        "functions": 73,
+        "branches": 56
       },
       "merged": {
-        "statements": 24,
-        "lines": 23,
-        "functions": 45,
-        "branches": 16
+        "statements": 67,
+        "lines": 72,
+        "functions": 69,
+        "branches": 56
       }
     },
     "@loaders.gl/core": {
@@ -80,16 +80,16 @@
     "@loaders.gl/crypto": {
       "path": "modules/crypto",
       "browser": {
-        "statements": 63,
-        "lines": 61,
-        "functions": 84,
-        "branches": 46
+        "statements": 88,
+        "lines": 88,
+        "functions": 90,
+        "branches": 70
       },
       "merged": {
-        "statements": 62,
-        "lines": 62,
-        "functions": 84,
-        "branches": 46
+        "statements": 87,
+        "lines": 88,
+        "functions": 90,
+        "branches": 70
       }
     },
     "@loaders.gl/csv": {
@@ -200,16 +200,16 @@
     "@loaders.gl/gis": {
       "path": "modules/gis",
       "browser": {
-        "statements": 68,
-        "lines": 68,
-        "functions": 75,
-        "branches": 53
+        "statements": 81,
+        "lines": 81,
+        "functions": 84,
+        "branches": 65
       },
       "merged": {
-        "statements": 67,
-        "lines": 68,
-        "functions": 75,
-        "branches": 53
+        "statements": 80,
+        "lines": 81,
+        "functions": 84,
+        "branches": 65
       }
     },
     "@loaders.gl/gltf": {
@@ -440,16 +440,16 @@
     "@loaders.gl/parquet": {
       "path": "modules/parquet",
       "browser": {
-        "statements": 66,
-        "lines": 65,
-        "functions": 74,
-        "branches": 60
+        "statements": 78,
+        "lines": 79,
+        "functions": 83,
+        "branches": 68
       },
       "merged": {
-        "statements": 65,
-        "lines": 65,
-        "functions": 74,
-        "branches": 59
+        "statements": 77,
+        "lines": 79,
+        "functions": 82,
+        "branches": 68
       }
     },
     "@loaders.gl/pcd": {
@@ -506,25 +506,25 @@
         "branches": 0
       },
       "merged": {
-        "statements": 13,
-        "lines": 14,
-        "functions": 17,
-        "branches": 6
+        "statements": 61,
+        "lines": 61,
+        "functions": 64,
+        "branches": 46
       }
     },
     "@loaders.gl/potree": {
       "path": "modules/potree",
       "browser": {
-        "statements": 63,
-        "lines": 63,
-        "functions": 65,
-        "branches": 54
+        "statements": 82,
+        "lines": 83,
+        "functions": 82,
+        "branches": 66
       },
       "merged": {
-        "statements": 62,
-        "lines": 63,
-        "functions": 62,
-        "branches": 54
+        "statements": 81,
+        "lines": 83,
+        "functions": 78,
+        "branches": 66
       }
     },
     "@loaders.gl/scene": {
@@ -560,16 +560,16 @@
     "@loaders.gl/schema-utils": {
       "path": "modules/schema-utils",
       "browser": {
-        "statements": 56,
-        "lines": 56,
-        "functions": 52,
-        "branches": 46
+        "statements": 81,
+        "lines": 81,
+        "functions": 87,
+        "branches": 76
       },
       "merged": {
-        "statements": 55,
-        "lines": 56,
-        "functions": 52,
-        "branches": 46
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 76
       }
     },
     "@loaders.gl/shapefile": {
@@ -635,16 +635,16 @@
     "@loaders.gl/terrain": {
       "path": "modules/terrain",
       "browser": {
-        "statements": 54,
-        "lines": 53,
-        "functions": 61,
-        "branches": 34
+        "statements": 90,
+        "lines": 90,
+        "functions": 98,
+        "branches": 60
       },
       "merged": {
-        "statements": 53,
-        "lines": 53,
-        "functions": 61,
-        "branches": 34
+        "statements": 87,
+        "lines": 89,
+        "functions": 96,
+        "branches": 60
       }
     },
     "@loaders.gl/textures": {
@@ -695,16 +695,16 @@
     "@loaders.gl/video": {
       "path": "modules/video",
       "browser": {
-        "statements": 0,
-        "lines": 0,
-        "functions": 1,
-        "branches": 0
+        "statements": 83,
+        "lines": 83,
+        "functions": 77,
+        "branches": 60
       },
       "merged": {
-        "statements": 0,
-        "lines": 0,
-        "functions": 1,
-        "branches": 0
+        "statements": 82,
+        "lines": 83,
+        "functions": 77,
+        "branches": 60
       }
     },
     "@loaders.gl/wkt": {
@@ -725,16 +725,16 @@
     "@loaders.gl/wms": {
       "path": "modules/wms",
       "browser": {
-        "statements": 50,
-        "lines": 49,
-        "functions": 59,
-        "branches": 44
+        "statements": 67,
+        "lines": 67,
+        "functions": 69,
+        "branches": 57
       },
       "merged": {
-        "statements": 48,
-        "lines": 49,
-        "functions": 54,
-        "branches": 44
+        "statements": 65,
+        "lines": 66,
+        "functions": 64,
+        "branches": 57
       }
     },
     "@loaders.gl/worker-utils": {

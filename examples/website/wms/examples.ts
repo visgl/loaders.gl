@@ -105,6 +105,14 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       }
     },
   },
+  'ArcGIS ImageServer tiles': {
+    'NLCD Land Cover tile exports': {
+      type: 'arcgis-image-server-tiles',
+      url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      description: 'ArcGIS ImageServer exportImage requests rendered as deck.gl tiles.',
+      viewState: {longitude: -96, latitude: 38.5, zoom: 4}
+    }
+  },
   'ArcGIS MapServer': {
     'World Imagery cached tiles': {
       type: 'arcgis-map-server',

@@ -6,6 +6,7 @@ import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
 import * as Lerc from 'lerc';
 import {LERCLoader as LERCLoaderMetadata} from './lerc-loader';
+import {LERC_WASM_URL} from './lerc-wasm-url';
 
 const {preload: _LERCLoaderPreload, ...LERCLoaderMetadataWithoutPreload} = LERCLoaderMetadata;
 
@@ -33,7 +34,7 @@ export const LERCLoaderWithParser = {
 
 async function parseLERC(arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions): Promise<LERCData> {
   // Load the WASM library
-  await Lerc.load();
+  await Lerc.load({locateFile: () => LERC_WASM_URL});
   // Perform the decode
   const pixelBlock = Lerc.decode(arrayBuffer, options?.lerc);
   return pixelBlock;

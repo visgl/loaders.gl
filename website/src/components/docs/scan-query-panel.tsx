@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useId, useState} from 'react';
 import styled from 'styled-components';
 import type {ScanQueryMetadata} from '@loaders.gl/loader-utils';
 
@@ -10,6 +10,14 @@ export type ScanQueryPanelState = Readonly<{
   limit?: number;
   /** Optional source-coordinate bounding box in minX, minY, maxX, maxY order. */
   boundingBox?: readonly [number, number, number, number];
+  /** Optional raster overview or point-cloud minimum hierarchy level. */
+  level?: number;
+  /** Optional point-cloud minimum hierarchy level. */
+  minimumLevel?: number;
+  /** Optional point-cloud maximum hierarchy level. */
+  maximumLevel?: number;
+  /** Optional point-cloud target spacing. */
+  targetSpacing?: number;
 }>;
 
 /** Props for a source-neutral query-parameter panel. */
@@ -34,18 +42,38 @@ export function ScanQueryPanel({
   onApply,
   title = 'Scan query'
 }: ScanQueryPanelProps): JSX.Element {
+  const panelId = useId().replace(/:/g, '');
   const [selectedColumns, setSelectedColumns] = useState<string[]>(value?.columns ? [...value.columns] : []);
   const [limitText, setLimitText] = useState(value?.limit === undefined ? '' : String(value.limit));
-  const [boundingBoxText, setBoundingBoxText] = useState('');
+  const [boundingBoxText, setBoundingBoxText] = useState(
+    value?.boundingBox ? value.boundingBox.join(',') : ''
+  );
+  const [levelText, setLevelText] = useState(value?.level === undefined ? '' : String(value.level));
+  const [minimumLevelText, setMinimumLevelText] = useState(
+    value?.minimumLevel === undefined ? '' : String(value.minimumLevel)
+  );
+  const [maximumLevelText, setMaximumLevelText] = useState(
+    value?.maximumLevel === undefined ? '' : String(value.maximumLevel)
+  );
+  const [targetSpacingText, setTargetSpacingText] = useState(
+    value?.targetSpacing === undefined ? '' : String(value.targetSpacing)
+  );
 
   useEffect(() => {
     setSelectedColumns(value?.columns ? [...value.columns] : []);
     setLimitText(value?.limit === undefined ? '' : String(value.limit));
+    setBoundingBoxText(value?.boundingBox ? value.boundingBox.join(',') : '');
+    setLevelText(value?.level === undefined ? '' : String(value.level));
+    setMinimumLevelText(value?.minimumLevel === undefined ? '' : String(value.minimumLevel));
+    setMaximumLevelText(value?.maximumLevel === undefined ? '' : String(value.maximumLevel));
+    setTargetSpacingText(value?.targetSpacing === undefined ? '' : String(value.targetSpacing));
   }, [value]);
 
   const columns = metadata?.columns || [];
   const hasLimit = metadata?.capabilities.table?.limit && metadata.capabilities.table.limit !== 'unsupported';
   const hasBounds = metadata?.capabilities.bounds && metadata.capabilities.bounds !== 'unsupported';
+  const hasLevel = metadata?.capabilities.levelOfDetail && metadata.capabilities.levelOfDetail !== 'unsupported';
+  const isPointCloud = metadata?.queryType === 'point-cloud';
   const sourceBounds = metadata?.spatial?.bounds;
   const toggleColumn = (name: string): void => {
     setSelectedColumns(current =>
@@ -94,9 +122,9 @@ export function ScanQueryPanel({
           <InlineFields>
             {hasLimit ? (
               <FieldGroup>
-                <FieldLabel htmlFor="scan-query-limit">Row limit</FieldLabel>
+                <FieldLabel htmlFor={`${panelId}-limit`}>Row limit</FieldLabel>
                 <TextInput
-                  id="scan-query-limit"
+                  id={`${panelId}-limit`}
                   inputMode="numeric"
                   min="0"
                   placeholder="All rows"
@@ -107,14 +135,55 @@ export function ScanQueryPanel({
             ) : null}
             {hasBounds ? (
               <FieldGroup>
-                <FieldLabel htmlFor="scan-query-bounds">Bounding box</FieldLabel>
+                <FieldLabel htmlFor={`${panelId}-bounds`}>Bounding box</FieldLabel>
                 <TextInput
-                  id="scan-query-bounds"
+                  id={`${panelId}-bounds`}
                   placeholder={sourceBounds ? formatBounds(sourceBounds) : 'minX,minY,maxX,maxY'}
                   value={boundingBoxText}
                   onChange={event => setBoundingBoxText(event.target.value)}
                 />
               </FieldGroup>
+            ) : null}
+            {hasLevel ? (
+              <FieldGroup>
+                <FieldLabel htmlFor={`${panelId}-level`}>{isPointCloud ? 'Minimum level' : 'Overview level'}</FieldLabel>
+                <TextInput
+                  id={`${panelId}-level`}
+                  inputMode="numeric"
+                  min="0"
+                  placeholder="Native/default"
+                  value={isPointCloud ? minimumLevelText : levelText}
+                  onChange={event =>
+                    isPointCloud ? setMinimumLevelText(event.target.value) : setLevelText(event.target.value)
+                  }
+                />
+              </FieldGroup>
+            ) : null}
+            {isPointCloud && hasLevel ? (
+              <>
+                <FieldGroup>
+                  <FieldLabel htmlFor={`${panelId}-maximum-level`}>Maximum level</FieldLabel>
+                  <TextInput
+                    id={`${panelId}-maximum-level`}
+                    inputMode="numeric"
+                    min="0"
+                    placeholder="Any"
+                    value={maximumLevelText}
+                    onChange={event => setMaximumLevelText(event.target.value)}
+                  />
+                </FieldGroup>
+                <FieldGroup>
+                  <FieldLabel htmlFor={`${panelId}-spacing`}>Target spacing</FieldLabel>
+                  <TextInput
+                    id={`${panelId}-spacing`}
+                    inputMode="decimal"
+                    min="0"
+                    placeholder="Native/default"
+                    value={targetSpacingText}
+                    onChange={event => setTargetSpacingText(event.target.value)}
+                  />
+                </FieldGroup>
+              </>
             ) : null}
           </InlineFields>
           <ApplyButton
@@ -122,10 +191,18 @@ export function ScanQueryPanel({
             onClick={() => {
               const limit = limitText.trim() ? Number(limitText) : undefined;
               const boundingBox = parseBounds(boundingBoxText);
+              const level = parseNonNegativeInteger(levelText);
+              const minimumLevel = parseNonNegativeInteger(minimumLevelText);
+              const maximumLevel = parseNonNegativeInteger(maximumLevelText);
+              const targetSpacing = parsePositiveNumber(targetSpacingText);
               onApply({
                 columns: selectedColumns.length && selectedColumns.length < columns.length ? selectedColumns : undefined,
                 limit: Number.isSafeInteger(limit) && (limit as number) >= 0 ? limit : undefined,
-                boundingBox
+                boundingBox,
+                level: isPointCloud ? undefined : level,
+                minimumLevel: isPointCloud ? minimumLevel : undefined,
+                maximumLevel,
+                targetSpacing
               });
             }}
           >
@@ -139,13 +216,29 @@ export function ScanQueryPanel({
   );
 }
 
+/** Parses a four-coordinate source bounding box from panel text. */
 function parseBounds(value: string): readonly [number, number, number, number] | undefined {
   const numbers = value.split(',').map(part => Number(part.trim()));
   return numbers.length === 4 && numbers.every(Number.isFinite) ? [numbers[0], numbers[1], numbers[2], numbers[3]] : undefined;
 }
 
+/** Formats the two-dimensional portion of discovered source bounds. */
 function formatBounds(bounds: {minimum: readonly number[]; maximum: readonly number[]}): string {
   return [...bounds.minimum.slice(0, 2), ...bounds.maximum.slice(0, 2)].join(',');
+}
+
+/** Parses an optional non-negative hierarchy or overview level. */
+function parseNonNegativeInteger(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const number = Number(value);
+  return Number.isSafeInteger(number) && number >= 0 ? number : undefined;
+}
+
+/** Parses an optional positive point-cloud spacing. */
+function parsePositiveNumber(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : undefined;
 }
 
 const Panel = styled.section`

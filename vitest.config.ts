@@ -22,7 +22,6 @@ const excludePatterns = [
   'modules/mvt/test/table-tile-source-loader-full.spec.ts',
   'modules/mvt/test/table-tile-source-loader-multi-world.spec.ts',
   'modules/polyfills/test/load-library/require-utils.spec.ts',
-  'modules/video/test/**',
   'modules/xml/test/sax-ts/testcases/issue-30.spec.ts',
   'modules/xml/test/sax-ts/testcases/**/*.spec.ts',
   'test/browser.ts',

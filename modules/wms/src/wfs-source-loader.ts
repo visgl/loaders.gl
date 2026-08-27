@@ -21,6 +21,7 @@ import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-pa
 
 import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
+import type {CRSIdentifier} from '@math.gl/crs';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
@@ -81,7 +82,7 @@ export type WFSParameters = {
   query_layers?: string[];
 
   /** Coordinate Reference System (CRS) for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Requested format for the return image (GetMap, GetLegendGraphic) */
   format?: 'image/png';
   /** Requested MIME type of returned feature info (GetFeatureInfo) */
@@ -119,7 +120,7 @@ export type WFSGetMapParameters = {
   /** Layers to render - can be provided in service constructor */
   layers?: string | string[];
   /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Styling. can be provided in service constructor */
   styles?: unknown;
   /** Don't render background when no data. can be provided in service constructor */
@@ -137,11 +138,11 @@ export type WFSGetFeatureParameters = {
   /** Requested feature types. */
   typeName?: string | string[];
   /** Bounding box filter, optionally suffixed with the bbox CRS. */
-  bbox: [number, number, number, number] | [number, number, number, number, string];
+  bbox: [number, number, number, number] | [number, number, number, number, CRSIdentifier];
   /** Output CRS for returned features. */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Output CRS for returned features. */
-  srsName?: string;
+  srsName?: CRSIdentifier;
   /** Requested output format. */
   outputFormat?: 'application/json' | 'application/geo+json';
 };
@@ -184,7 +185,7 @@ export type WFSGetFeatureInfoParameters = {
   /** pixels */
   height: number;
   /** srs for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
 };
 
 /** GetMap parameters that are specific to the current view */
@@ -200,7 +201,7 @@ export type WFSGetFeatureInfoViewParameters = {
   /** bounding box of the requested map image */
   bbox: [number, number, number, number];
   /** srs for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
 };
 
 /** Parameters for DescribeLayer */
@@ -525,7 +526,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     return encodeURI(url);
   }
 
-  _getWFS130Parameters<ParametersT extends {crs?: string; srs?: string}>(
+  _getWFS130Parameters<ParametersT extends {crs?: CRSIdentifier; srs?: CRSIdentifier}>(
     wfsParameters: ParametersT
   ): ParametersT {
     const newParameters = {...wfsParameters};

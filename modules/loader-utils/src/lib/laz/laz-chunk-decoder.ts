@@ -31,6 +31,14 @@ export type LAZPointDataTarget = {
   intensities?: Uint16Array | null;
   /** Optional point classification values. Omit to skip the independent Point14 class layer. */
   classifications?: Uint8Array | null;
+  /** Optional synthetic classification flags. */
+  syntheticFlags?: Uint8Array | null;
+  /** Optional key-point classification flags. */
+  keyPointFlags?: Uint8Array | null;
+  /** Optional withheld classification flags. */
+  withheldFlags?: Uint8Array | null;
+  /** Optional overlap classification flags. */
+  overlapFlags?: Uint8Array | null;
   /** Optional GPS time values from the Point14 layer. */
   gpsTimes?: Float64Array | null;
   /** Optional near-infrared channel values from RGBNIR14. */
@@ -95,6 +103,7 @@ type LAZPointDataSelection = {
   pointSourceId: boolean;
   flags: boolean;
   waveform: boolean;
+  extraBytes: boolean;
 };
 
 /** Error raised when a feedable decoder needs more compressed bytes. */
@@ -114,6 +123,8 @@ export class FeedableLAZChunkDecoder {
   private cursor: LAZChunkDecoderCursor | null = null;
   private fedByteLength = 0;
   private requiredByteLength: number | null = null;
+  private progressiveRequiredByteLength: number | null = null;
+  private progressiveSelectionKey: number | null = null;
 
   constructor(metadata: LAZChunkMetadata) {
     this.metadata = metadata;
@@ -214,7 +225,7 @@ export class FeedableLAZChunkDecoder {
     if (this.requiredByteLength !== null) {
       return this.fedByteLength >= this.requiredByteLength;
     }
-    if (this.fedByteLength < getLAZChunkMinimumByteLength(this.metadata)) {
+    if (this.fedByteLength < getLAZChunkHeaderByteLength(this.metadata)) {
       return false;
     }
 
@@ -242,17 +253,27 @@ export class FeedableLAZChunkDecoder {
   }
 
   private getProgressivePointData(target: LAZPointDataTarget): Uint8Array | null {
-    const available = this.getCompressedAvailable();
-    const layout = getLayeredChunkLayout(available, this.metadata);
-    if (!layout) {
-      return null;
+    const selectionKey = getLAZPointDataSelectionKey(getLAZPointDataSelection(target));
+    if (this.progressiveSelectionKey !== selectionKey) {
+      this.progressiveRequiredByteLength = null;
+      this.progressiveSelectionKey = selectionKey;
     }
-    const requiredLayerCount = getProgressiveLayerCount(this.metadata, target);
-    const requiredByteLength = layout.getByteLength(requiredLayerCount);
-    if (available.byteLength < requiredByteLength) {
+
+    if (this.progressiveRequiredByteLength === null) {
+      const availableHeader = this.getCompressedAvailable();
+      const headerLayout = getLayeredChunkLayout(availableHeader, this.metadata);
+      if (!headerLayout) {
+        return null;
+      }
+      const requiredLayerCount = getProgressiveLayerCount(this.metadata, target);
+      this.progressiveRequiredByteLength = headerLayout.getByteLength(requiredLayerCount);
+    }
+    if (this.fedByteLength < this.progressiveRequiredByteLength) {
       return null;
     }
 
+    const available = this.getCompressedAvailable();
+    const layout = getLayeredChunkLayout(available, this.metadata)!;
     const compressed = new Uint8Array(layout.byteLength);
     compressed.set(available.subarray(0, Math.min(available.byteLength, layout.byteLength)));
     return compressed;
@@ -371,8 +392,17 @@ function getLAZPointDataSelection(target: LAZPointDataTarget): LAZPointDataSelec
     scanAngle: Boolean(target.scanAngles),
     userData: Boolean(target.userData),
     pointSourceId: Boolean(target.pointSourceIds),
-    flags: Boolean(target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines),
-    waveform: Boolean(target.waveforms)
+    flags: Boolean(
+      target.scannerChannels ||
+        target.scanDirectionFlags ||
+        target.edgeOfFlightLines ||
+        target.syntheticFlags ||
+        target.keyPointFlags ||
+        target.withheldFlags ||
+        target.overlapFlags
+    ),
+    waveform: Boolean(target.waveforms),
+    extraBytes: Boolean(target.extraBytes)
   };
 }
 
@@ -388,7 +418,8 @@ function getLAZPointDataSelectionKey(selection: LAZPointDataSelection): number {
     (selection.userData ? 64 : 0) |
     (selection.pointSourceId ? 128 : 0) |
     (selection.flags ? 256 : 0) |
-    (selection.waveform ? 512 : 0)
+    (selection.waveform ? 512 : 0) |
+    (selection.extraBytes ? 1024 : 0)
   );
 }
 
@@ -509,7 +540,8 @@ export function decodeLAZChunkTable(
   return chunks;
 }
 
-function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
+/** Return the bytes needed to read one layered LAZ chunk's size headers. */
+export function getLAZChunkHeaderByteLength(metadata: LAZChunkMetadata): number {
   if (!hasLayeredChunkSizeHeaders(metadata.pointDataRecordFormat)) {
     return metadata.pointDataRecordLength + 4;
   }
@@ -519,6 +551,26 @@ function getLAZChunkMinimumByteLength(metadata: LAZChunkMetadata): number {
     4 +
     getChunkSizeHeaderCount(metadata.pointDataRecordFormat, extraByteCount) * 4
   );
+}
+
+/**
+ * Return the compressed byte length declared by a layered LAZ chunk header.
+ *
+ * Unlike {@link getLAZChunkByteLength}, this function does not require the
+ * compressed layer payloads to have arrived.
+ */
+export function getLAZChunkDeclaredByteLength(
+  compressedHeader: ArrayBuffer | ArrayBufferView,
+  metadata: LAZChunkMetadata
+): number {
+  if (!hasLayeredChunkSizeHeaders(metadata.pointDataRecordFormat)) {
+    throw new NeedsMoreData('Legacy LAZ chunk byte length is not self-describing');
+  }
+  const layout = getLayeredChunkLayout(toUint8Array(compressedHeader), metadata);
+  if (!layout) {
+    throw new NeedsMoreData('LAZ chunk decoder needs the complete layered size header');
+  }
+  return layout.byteLength;
 }
 
 type LAZLayeredChunkLayout = {
@@ -558,6 +610,9 @@ function getLayeredChunkLayout(
 
 /** Return the layered-stream prefix needed to satisfy a direct-output selection. */
 function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDataTarget): number {
+  if (target.extraBytes) {
+    return getChunkSizeHeaderCount(metadata.pointDataRecordFormat, getExtraByteCount(metadata));
+  }
   // The first two streams contain XY and Z. Optional Point14 streams follow
   // in codec order: classification, flags, intensity, scan angle, user data,
   // point source ID, and GPS time.
@@ -565,7 +620,15 @@ function getProgressiveLayerCount(metadata: LAZChunkMetadata, target: LAZPointDa
   if (target.classifications) {
     layerCount = 3;
   }
-  if (target.scannerChannels || target.scanDirectionFlags || target.edgeOfFlightLines) {
+  if (
+    target.scannerChannels ||
+    target.scanDirectionFlags ||
+    target.edgeOfFlightLines ||
+    target.syntheticFlags ||
+    target.keyPointFlags ||
+    target.withheldFlags ||
+    target.overlapFlags
+  ) {
     layerCount = 4;
   }
   if (target.intensities) {
@@ -2934,7 +2997,7 @@ class PointFormat6Decompressor implements PointDecompressor {
       selection
     );
     this.bytes =
-      outputMode === 'raw' && extraByteCount
+      (outputMode === 'raw' || selection?.extraBytes) && extraByteCount
         ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
@@ -2950,7 +3013,13 @@ class PointFormat6Decompressor implements PointDecompressor {
 
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
     const point = this.point.decompressPoint();
-    if (this.first && this.extraByteCount) {
+    if (this.bytes && target.extraBytes) {
+      this.bytes.decompress(
+        target.extraBytes,
+        targetPointIndex * this.extraByteCount,
+        this.point.itemContextChannel
+      );
+    } else if (this.first && this.extraByteCount) {
       this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
@@ -2967,7 +3036,13 @@ class PointFormat6Decompressor implements PointDecompressor {
 
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
       const point = this.point.decompressPoint();
-      if (this.first && this.extraByteCount) {
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      } else if (this.first && this.extraByteCount) {
         this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
@@ -3038,7 +3113,7 @@ class PointFormat7Decompressor implements PointDecompressor {
         ? new RGB14Decompressor(stream, metadata.rgb14ItemVersion ?? 3)
         : null;
     this.bytes =
-      outputMode === 'raw' && extraByteCount
+      (outputMode === 'raw' || selection?.extraBytes) && extraByteCount
         ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
@@ -3061,7 +3136,13 @@ class PointFormat7Decompressor implements PointDecompressor {
       this.stream.consume(6);
     }
     // The first point stores extra bytes before the layered stream metadata.
-    if (this.first && this.extraByteCount) {
+    if (this.bytes && target.extraBytes) {
+      this.bytes.decompress(
+        target.extraBytes,
+        targetPointIndex * this.extraByteCount,
+        this.point.itemContextChannel
+      );
+    } else if (this.first && this.extraByteCount) {
       this.stream.consume(this.extraByteCount);
     }
     this.readFirstMetadata();
@@ -3095,7 +3176,13 @@ class PointFormat7Decompressor implements PointDecompressor {
       } else if (this.first) {
         this.stream.consume(6);
       }
-      if (this.first && this.extraByteCount) {
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      } else if (this.first && this.extraByteCount) {
         this.stream.consume(this.extraByteCount);
       }
       this.readFirstMetadata();
@@ -3190,7 +3277,7 @@ class PointFormat8Decompressor implements PointDecompressor {
         ? new NIR14Decompressor(stream, metadata.rgb14ItemVersion ?? 3)
         : null;
     this.bytes =
-      outputMode === 'raw' && extraByteCount
+      (outputMode === 'raw' || selection?.extraBytes) && extraByteCount
         ? new Byte14Decompressor(stream, extraByteCount, metadata.byte14ItemVersion ?? 3)
         : null;
   }
@@ -3213,9 +3300,19 @@ class PointFormat8Decompressor implements PointDecompressor {
     } else if (this.first) {
       this.stream.consume(6);
     }
+    if (!this.nir && this.first) {
+      this.stream.consume(2);
+    }
     const nir = this.nir ? this.nir.decompressNir(this.point.itemContextChannel) : 0;
+    if (this.bytes && target.extraBytes) {
+      this.bytes.decompress(
+        target.extraBytes,
+        targetPointIndex * this.extraByteCount,
+        this.point.itemContextChannel
+      );
+    }
     if (this.first) {
-      this.stream.consume((this.nir ? 0 : 2) + this.extraByteCount);
+      this.stream.consume(this.bytes ? 0 : this.extraByteCount);
     }
     this.readFirstMetadata();
     writePoint14ToPointDataTarget(point, target, targetPointIndex);
@@ -3248,9 +3345,19 @@ class PointFormat8Decompressor implements PointDecompressor {
       } else if (this.first) {
         this.stream.consume(6);
       }
+      if (!this.nir && this.first) {
+        this.stream.consume(2);
+      }
       const nir = this.nir ? this.nir.decompressNir(this.point.itemContextChannel) : 0;
+      if (this.bytes && target.extraBytes) {
+        this.bytes.decompress(
+          target.extraBytes,
+          targetPointIndex * this.extraByteCount,
+          this.point.itemContextChannel
+        );
+      }
       if (this.first) {
-        this.stream.consume((this.nir ? 0 : 2) + this.extraByteCount);
+        this.stream.consume(this.bytes ? 0 : this.extraByteCount);
       }
       this.readFirstMetadata();
       writePoint14ToPointDataArrays(
@@ -3877,9 +3984,8 @@ function writePoint14ToPointDataTarget(
     target.offset,
     targetPointIndex
   );
-  if (target.gpsTimes) {
-    target.gpsTimes[targetPointIndex] = point.gpsTime;
-  }
+  writeGpsTimeToPointDataTarget(point, target, targetPointIndex);
+  writePoint14MetadataToPointDataTarget(point, target, targetPointIndex);
 }
 
 function writePoint14ToPointDataArrays(
@@ -3941,6 +4047,18 @@ function writePoint14MetadataToPointDataTarget(
   }
   if (target.edgeOfFlightLines) {
     target.edgeOfFlightLines[targetPointIndex] = (point.flags >> 7) & 1;
+  }
+  if (target.syntheticFlags) {
+    target.syntheticFlags[targetPointIndex] = point.flags & 1;
+  }
+  if (target.keyPointFlags) {
+    target.keyPointFlags[targetPointIndex] = (point.flags >> 1) & 1;
+  }
+  if (target.withheldFlags) {
+    target.withheldFlags[targetPointIndex] = (point.flags >> 2) & 1;
+  }
+  if (target.overlapFlags) {
+    target.overlapFlags[targetPointIndex] = (point.flags >> 3) & 1;
   }
 }
 

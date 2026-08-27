@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {getDracoSchema} from '../../../src/lib/utils/get-draco-schema';
 
 const ATTRIBUTES_STUB = {
@@ -66,15 +66,25 @@ const INDICES_STUB = {
   size: 1
 };
 
-test('DracoLoader#getDracoSchema', t => {
+test('DracoLoader#getDracoSchema', () => {
   const schema = getDracoSchema(ATTRIBUTES_STUB, LOADER_DATA_STUB, INDICES_STUB);
-  t.ok(schema, 'Makes schema from attributes');
-  t.equals(Object.keys(schema.metadata).length, 2, 'Metadata size');
-  t.equals(schema.fields.length, 2, 'Number of fields');
-  t.equals(
-    Object.keys(schema.fields[0]?.metadata || {}).length,
-    2,
-    'Attribute metadata correct number of keys'
+  expect(schema).toBeDefined();
+  expect(Object.keys(schema.metadata)).toHaveLength(2);
+  expect(schema.fields).toHaveLength(2);
+  expect(Object.keys(schema.fields[0]?.metadata || {})).toHaveLength(2);
+});
+
+test('DracoLoader#getDracoSchema handles unnamed attributes and missing indices', () => {
+  const schema = getDracoSchema(
+    {POSITION: {value: new Float32Array([0, 1, 2]), size: 3}},
+    {
+      ...LOADER_DATA_STUB,
+      metadata: {},
+      attributes: {0: {...LOADER_DATA_STUB.attributes[0], name: undefined}}
+    }
   );
-  t.end();
+
+  expect(schema.fields).toHaveLength(1);
+  expect(schema.fields[0].name).toBe('POSITION');
+  expect(schema.metadata).toEqual({});
 });

@@ -145,7 +145,9 @@ function getScriptKind(filePath) {
 function isTapeImport(node) {
   return (
     ts.isStringLiteral(node.moduleSpecifier) &&
-    (node.moduleSpecifier.text === 'tape-promise/tape' || node.moduleSpecifier.text === 'tape')
+    (node.moduleSpecifier.text === 'tape-promise/tape' ||
+      node.moduleSpecifier.text === 'tape' ||
+      node.moduleSpecifier.text === 'test/utils/vitest-tape')
   );
 }
 

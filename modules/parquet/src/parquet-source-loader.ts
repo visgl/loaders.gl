@@ -15,7 +15,8 @@ import {
 import type {
   ScanColumnRole,
   ScanQueryMetadata,
-  ScanQueryMetadataOptions
+  ScanQueryMetadataOptions,
+  TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -69,12 +70,14 @@ import type {
   ParquetBatch,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
   ParquetPageScanPlan,
   ParquetPredicate,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -121,6 +124,7 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialBoundingBox,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
@@ -137,6 +141,7 @@ export type {
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -229,7 +234,10 @@ export const ParquetSourceLoaderWithParser = {
 export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
-export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
+export class ParquetSource
+  extends DataSource<string | Blob, ParquetSourceLoaderOptions>
+  implements TableScanSource<ParquetSourceBatch, ParquetPredicate>
+{
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
   readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Immutable feature support for the current range-backed source implementation. */
@@ -709,9 +717,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
                 selectedPages: pagePlan.selectedPageCount,
                 rowsPruned: pagePlan.prunedRowCount,
                 ranges: Object.freeze(
-                  getParquetPageReadRanges(rowGroup, phase.columns, pagePlan).map(range =>
-                    Object.freeze({...range})
-                  )
+                  getParquetPageReadRanges(
+                    rowGroup,
+                    phase.columns,
+                    pagePlan,
+                    initialization.parquetSchema
+                  ).map(range => Object.freeze({...range}))
                 )
               })
             : createFullColumnScanPlan(rowGroup, rowGroupIndex, phase.phase, phase.columns)
@@ -952,7 +963,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       return Boolean(path && (columnList.length === 0 || fieldIndexOf(columnList, path) >= 0));
     });
     const rangeDescriptors = pagePlan
-      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan)
+      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan, initialization.parquetSchema)
       : selectedColumnChunks.map(getColumnChunkRange);
     const ranges = await Promise.all(
       rangeDescriptors.map(async ({offset, length}) => {
@@ -975,7 +986,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
           predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           pagePlan,
-          preserveBinary: Boolean(this.options.parquet?.preserveBinary)
+          preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+          verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },
         workerOptions
       );
@@ -1095,6 +1107,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     try {
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
+        verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
+        keyRetriever: this.options.parquet?.keyRetriever,
+        aadPrefix: this.options.parquet?.aadPrefix,
         signal
       });
       const fileMetadata = await reader.getFileMetadata();
@@ -1210,7 +1225,8 @@ function createParquetSourceMetadata(
       rowOffset,
       Number(rowGroup.num_rows),
       Number(rowGroup.total_byte_size),
-      columns
+      columns,
+      rowGroup.sorting_columns
     );
     rowOffset += normalizedRowGroup.rowCount;
     return normalizedRowGroup;
@@ -1248,6 +1264,7 @@ function createColumnChunkMetadata(
     parquetSchema.findField(columnMetadata.path_in_schema)
   );
   const geospatialStatistics = createGeospatialStatistics(columnMetadata.geospatial_statistics);
+  const sizeStatistics = createSizeStatistics(columnMetadata.size_statistics);
   const compressedByteLength = Number(columnMetadata.total_compressed_size);
   const uncompressedByteLength = Number(columnMetadata.total_uncompressed_size);
   return Object.freeze({
@@ -1284,8 +1301,62 @@ function createColumnChunkMetadata(
         : Number(columnMetadata.bloom_filter_offset),
     bloomFilterByteLength: columnMetadata.bloom_filter_length,
     statistics,
+    sizeStatistics,
     geospatialStatistics
   });
+}
+
+/** Normalizes optional Parquet size statistics without inventing missing counts. */
+function createSizeStatistics(
+  statistics:
+    | {
+        unencoded_byte_array_data_bytes?: {toNumber?: () => number} | number;
+        repetition_level_histogram?: Array<{toNumber?: () => number} | number>;
+        definition_level_histogram?: Array<{toNumber?: () => number} | number>;
+      }
+    | undefined
+): ParquetColumnChunkSizeStatistics | undefined {
+  if (!statistics) return undefined;
+  const result: ParquetColumnChunkSizeStatistics = {
+    unencodedByteArrayDataBytes:
+      statistics.unencoded_byte_array_data_bytes === undefined
+        ? undefined
+        : toSafeNumber(statistics.unencoded_byte_array_data_bytes),
+    repetitionLevelHistogram: normalizeSizeStatisticsList(statistics.repetition_level_histogram),
+    definitionLevelHistogram: normalizeSizeStatisticsList(statistics.definition_level_histogram)
+  };
+  if (
+    result.unencodedByteArrayDataBytes === undefined &&
+    result.repetitionLevelHistogram === undefined &&
+    result.definitionLevelHistogram === undefined
+  ) {
+    return undefined;
+  }
+  return Object.freeze({
+    ...result,
+    repetitionLevelHistogram: result.repetitionLevelHistogram
+      ? Object.freeze(result.repetitionLevelHistogram)
+      : undefined,
+    definitionLevelHistogram: result.definitionLevelHistogram
+      ? Object.freeze(result.definitionLevelHistogram)
+      : undefined
+  });
+}
+
+function toSafeNumber(value: {toNumber?: () => number} | number): number | undefined {
+  const numberValue = typeof value === 'number' ? value : value.toNumber?.();
+  return numberValue !== undefined && Number.isSafeInteger(numberValue) && numberValue >= 0
+    ? numberValue
+    : undefined;
+}
+
+/** Converts a Thrift int64 histogram only when every entry is a safe non-negative integer. */
+function normalizeSizeStatisticsList(
+  values: Array<{toNumber?: () => number} | number> | undefined
+): readonly number[] | undefined {
+  if (!values) return undefined;
+  const normalized = values.map(toSafeNumber);
+  return normalized.every((value): value is number => value !== undefined) ? normalized : undefined;
 }
 
 /** Normalizes native Parquet geospatial statistics from the decoded footer. */
@@ -1391,7 +1462,8 @@ function createRowGroupMetadata(
   rowOffset: number,
   rowCount: number,
   uncompressedByteLength: number,
-  columns: ParquetColumnChunkMetadata[]
+  columns: ParquetColumnChunkMetadata[],
+  sortingColumns: RowGroup['sorting_columns']
 ): ParquetRowGroupMetadata {
   const compressedByteLength = columns.reduce(
     (sum, column) => sum + column.compressedByteLength,
@@ -1405,7 +1477,17 @@ function createRowGroupMetadata(
     uncompressedSize: uncompressedByteLength,
     compressedByteLength,
     compressedSize: compressedByteLength,
-    columns: Object.freeze(columns)
+    columns: Object.freeze(columns),
+    sortingColumns: Object.freeze(
+      (sortingColumns || []).map(
+        sortingColumn =>
+          Object.freeze({
+            columnIndex: sortingColumn.column_idx,
+            descending: sortingColumn.descending,
+            nullsFirst: sortingColumn.nulls_first
+          }) satisfies ParquetSortingColumn
+      )
+    )
   });
 }
 

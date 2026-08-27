@@ -17,6 +17,12 @@ import {MapView} from '@deck.gl/core';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {
+  createExampleSourcePanel,
+  getExampleSourceFromUrl,
+  type ExampleSource
+} from '../shared/example-source-picker';
+import {getExampleDevicePixelRatio} from '../shared/example-performance';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -70,6 +76,12 @@ export default function App(props: AppProps = {}) {
   });
 
   useEffect(() => {
+    const shareableSource = getExampleSourceFromUrl('tiles');
+    if (shareableSource) {
+      void loadExampleSource(shareableSource);
+      return;
+    }
+
     const initialCategoryName = props.format || INITIAL_CATEGORY_NAME;
     const initialExamples = availableExamples[initialCategoryName];
     if (!initialExamples) {
@@ -160,6 +172,14 @@ export default function App(props: AppProps = {}) {
           id: 'tiles-example-panel',
           title: '',
           panels: {
+            source: createExampleSourcePanel({
+              surface: 'tiles',
+              selectedLabel: state.selectedExampleName || undefined,
+              selectedUrl: typeof currentExample?.data === 'string' ? currentExample.data : undefined,
+              onSourceChange: (source) => {
+                void loadExampleSource(source);
+              }
+            }),
             controls: new CustomPanel({
               id: 'tiles-example-controls',
               title: '',
@@ -201,6 +221,7 @@ export default function App(props: AppProps = {}) {
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
+        useDevicePixels={getExampleDevicePixelRatio()}
         layers={[tileLayer]}
         views={new MapView({repeat: true})}
         viewState={state.viewState as any}
@@ -270,6 +291,19 @@ export default function App(props: AppProps = {}) {
     ) {
       setRangeStats(getRangeStats(rangeStatsObjectRef.current));
     }
+  }
+
+  async function loadExampleSource(source: ExampleSource): Promise<void> {
+    const sourceType = source.format.toLowerCase() === 'pmtiles' ? 'pmtiles' : 'table';
+    const example: Example = {
+      sourceType,
+      data: source.value
+    };
+    await onExampleChange({
+      categoryName: source.format,
+      exampleName: source.label,
+      example
+    });
   }
 }
 

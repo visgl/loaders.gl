@@ -115,7 +115,7 @@ The exact physical constraints and sort orders are defined by Apache's
 | `UNKNOWN` | Any physical type | Null | ✅ | ⚠️ | Values must be treated as null; writing is low-level only |
 | `LIST` | Three-level nested structure | List | ✅ | ✅ | High-level writer emits the standard `list`/`element` layout, including nested element types |
 | `MAP` | Repeated key/value structure | Map | ✅ | ✅ | High-level writer accepts `Map`, entry arrays, and plain objects; keys must be non-nullable |
-| [`VARIANT`](https://github.com/apache/parquet-format/blob/master/VariantEncoding.md) | Variant metadata/value byte columns | Struct of binary metadata/value fields | ⚠️ | ❌ | Unshredded values are decoded for TypeScript object-row reads; Arrow and WASM retain the canonical binary fields, and shredded-value reconstruction remains a roadmap item |
+| [`VARIANT`](https://github.com/apache/parquet-format/blob/master/VariantEncoding.md) | Variant metadata/value and typed-value columns | Struct storage with Variant metadata | ✅ | ❌ | TypeScript object-row reads decode unshredded values and collapse the one-field shredded typed-value union; Arrow retains canonical struct storage and specification metadata |
 | [`VECTOR`](https://github.com/apache/parquet-format/pull/592) | Vector logical type (proposed) | Not yet mapped | ❌ | ❌ | Active upstream proposal; intentionally not advertised as supported |
 | `GEOMETRY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS plus native bbox/type statistics; TypeScript writer |
 | `GEOGRAPHY` | `BYTE_ARRAY` | GeoArrow WKB binary | ✅ | ✅ | CRS, all five edge algorithms, antimeridian-aware reads, and native statistics |
@@ -155,7 +155,7 @@ need to inflate an entire column chunk at once.
 | Data Page V1 | ✅ | ✅ | Levels and values share one compressed payload |
 | Data Page V2 | ✅ | ✅ | Levels remain uncompressed; value compression is independently declared |
 | Dictionary page | ✅ | ✅ | One chunk-wide dictionary may be shared by multiple data pages |
-| Optional page CRC | ⚠️ | ❌ | CRC metadata is decoded but payload verification is not yet enforced |
+| Optional page CRC | ✅ (opt-in) | ✅ (opt-in) | `ParquetReader`/`ParquetSource` can verify CRC-32 page bodies; `ParquetJSWriter` can emit them with `writePageChecksums` |
 | Legacy `INDEX_PAGE` | ❌ | ❌ | Deprecated and distinct from the modern page-index structures |
 
 `ParquetJSWriter` selects Data Page V2 with `parquet.useDataPageV2`. The reader accepts both versions
@@ -173,7 +173,7 @@ uses, while each page identifies its actual value encoding.
 | `PLAIN` | All physical types | ✅ | ✅ | Required baseline encoding |
 | `PLAIN_DICTIONARY` | All physical types | ✅ | ❌ | Deprecated dictionary identifier |
 | `RLE` | Boolean, levels, dictionary indexes | ✅ | ✅ | Writer uses it for definition/repetition levels |
-| `BIT_PACKED` | Legacy levels | ❌ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid |
+| `BIT_PACKED` | Legacy levels | ✅ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid; supported for legacy page-level compatibility |
 | `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ✅ | Effective for ordered integer sequences |
 | `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | ✅ | ✅ | Delta-encodes lengths followed by concatenated bytes |
 | `DELTA_BYTE_ARRAY` | `BYTE_ARRAY`, `FIXED_LEN_BYTE_ARRAY` | ✅ | ✅ | Prefix/suffix encoding for related byte strings |
@@ -238,28 +238,30 @@ can make selective reads much cheaper.
 | ------- | ------- | -------- | ---------------- |
 | File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetSourceLoader` |
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
-| Column-chunk min/max/null/distinct statistics | ✅ | ❌ | Drive conservative `ParquetSource` predicate pushdown and remain exposed in metadata |
-| Page statistics in page headers | ⚠️ | ❌ | Thrift fields are decoded but not exposed as a pruning API |
-| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children; repeated-leaf indexes remain conservative until continuation starts can be proven safe |
-| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected non-repeated columns use page locations and first-row indexes for selective byte reads; repeated indexes are retained for future continuation-safe pruning |
+| Column-chunk min/max/null/distinct statistics | ✅ | ✅ (opt-in) | Drive conservative `ParquetSource` predicate pushdown; `ParquetJSWriter` emits min/max/null-count statistics with `writeStatistics` |
+| Page statistics in page headers | ⚠️ | ✅ (opt-in) | Thrift fields are decoded; `ParquetJSWriter` emits min/max/null-count page statistics with `writeStatistics` |
+| [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including nested struct children and repeated leaves when selected columns share page boundaries |
+| [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md) | ✅ | ✅ (opt-in) | Selected columns use page locations and first-row indexes for selective byte reads; repeated values and continuation pages are decoded only from complete, mutually aligned row ranges |
 | [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅ | ✅ | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in |
-| Size statistics | ❌ | ❌ | Histogram metadata from newer format work is not yet exposed; see the upstream [`ColumnMetaData`](https://github.com/apache/parquet-format/blob/master/src/main/thrift/parquet.thrift) definition |
-| Column order and sorting columns | ⚠️ | ❌ | Raw footer metadata is retained; semantic pruning is not yet applied |
+| Size statistics | ✅ | ✅ (opt-in) | Byte-array sizes and repetition/definition histograms are decoded and exposed; `ParquetJSWriter` emits them with `writeSizeStatistics` |
+| Column order and sorting columns | ✅ (metadata) | ✅ (declaration) | Row-group sort declarations are normalized as `sortingColumns`; `ParquetJSWriter` can emit declarations but does not sort rows or apply semantic pruning |
 
 `ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using
 footer statistics and split-block Bloom filters, and uses column/offset indexes to avoid irrelevant
 data pages for primitive leaves, including nested struct children. Filter-only columns are not
 returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller
-thread or worker. Repeated-leaf continuation, size statistics, sorting metadata, and encryption
-remain future format-completeness work.
+thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page boundaries,
+including pages that continue one logical row; files with incompatible boundaries conservatively use full
+column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting
+pruning and encrypted-column reads remain future format-completeness work.
 
 ## Integrity and Encryption
 
 | Feature | JS read | JS write | Notes |
 | ------- | ------- | -------- | ----- |
 | Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
-| Page CRC verification | ❌ | ❌ | Optional CRC fields are not yet verified or emitted |
-| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ❌ | ❌ | Encrypted footer and encrypted-column files use the `PARE` magic value |
+| Page CRC verification | ✅ (opt-in) | ✅ (opt-in) | CRC-32 covers the compressed page body; enable verification or emission explicitly to avoid a default throughput cost |
+| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ❌ | AES-GCM/AES-CTR module primitives, AAD construction, and encrypted-footer metadata plumbing are available; encrypted-column range reads remain in progress |
 | External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
 ## Parquet and Arrow
@@ -281,13 +283,21 @@ The compatibility suite uses checked-in files from
 maintained browser-capable implementations. Required tests are hermetic; large and exhaustive
 corpora run in the slow lane.
 
-The TypeScript implementation is aiming for complete stable-format read support. The largest known
-gaps are currently:
+The current implementation status is tracked in the following broad work tranches. A check mark
+means the capability is usable in the TypeScript reader; it does not imply that every producer
+variant has been exhaustively certified.
 
-1. repeated-leaf page-index continuation and pruning;
-2. Variant shredding and Arrow-native Variant extension output (unshredded object-row decoding is supported);
-3. page CRC verification and emission;
-4. size statistics and semantic sorting metadata; and
-5. Parquet modular encryption.
+| Tranche | Status | Remaining work |
+| ------- | ------ | -------------- |
+| Statistics-driven pruning | ✅ foundation | Use declared sort order for semantic page/row-group pruning and keep selective-range cost estimates aligned with late materialization |
+| Modular encryption | ⚠️ footer foundation | Decrypt column metadata and page/index modules for range reads; add key rotation and cross-implementation fixtures |
+| Logical and legacy parity | ⚠️ expanding | Broaden INT96 and legacy encoding coverage; preserve Arrow fidelity for every logical annotation |
+| Conformance and scale gate | ⚠️ ongoing | Run the Apache corpus, nested/repeated matrices, all stable codecs, differential checks, and large-file benchmarks in the slow lane |
+| Emerging-format lab | 🧪 experimental | Track ALP, PFOR, VECTOR, and format-versioning proposals behind explicit experimental flags; do not advertise them as stable support |
 
-Preview features such as [ALP](https://github.com/apache/parquet-format/pull/557), [PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream [format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) are tracked separately from stable-format completeness.
+The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
+zero-valued size statistics, and legacy `BIT_PACKED` level decoding. Preview features such as
+[ALP](https://github.com/apache/parquet-format/pull/557),
+[PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream
+[format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) remain
+separate from stable-format completeness.

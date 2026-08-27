@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CRSIdentifier} from '@math.gl/crs';
+
 /**
  * Props for a TileSource
  */
@@ -56,7 +58,7 @@ export type TileSourceMetadata = {
   layer?: {
     name: string;
     title?: string;
-    srs?: string[];
+    srs?: CRSIdentifier[];
     boundingBox?: [number, number, number, number];
     layers: TileSourceLayer[];
   };
@@ -68,7 +70,7 @@ export type TileSourceMetadata = {
 export type TileSourceLayer = {
   name: string;
   title?: string;
-  srs?: string[];
+  srs?: CRSIdentifier[];
   boundingBox?: [number, number, number, number];
   layers: TileSourceLayer[];
 };
@@ -84,7 +86,7 @@ export type GetTileParameters = {
   /** tile y coordinate */
   y: number;
   /** Coordinate reference system for the tile */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Layers to render */
   layers?: string | string[];
   /** Styling */

@@ -23,6 +23,10 @@ export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
     encodeValues: RLE.encodeValues,
     decodeValues: RLE.decodeValues
   },
+  BIT_PACKED: {
+    encodeValues: RLE.encodeBitPackedValues,
+    decodeValues: RLE.decodeBitPackedValues
+  },
   // Using the PLAIN_DICTIONARY enum value is deprecated in the Parquet 2.0 specification.
   PLAIN_DICTIONARY: {
     // @ts-ignore

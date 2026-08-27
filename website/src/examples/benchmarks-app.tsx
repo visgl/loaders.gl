@@ -196,9 +196,9 @@ export default function BenchmarksApp(): JSX.Element {
       {errorMessage ? <pre className="benchmark-error">{errorMessage}</pre> : null}
       <div className="benchmark-legend" aria-label="Benchmark color legend">
         <span className="benchmark-legend-item benchmark-legend-red">&lt; 1M rows/s</span>
-        <span className="benchmark-legend-item benchmark-legend-orange">1M - 10M rows/s</span>
-        <span className="benchmark-legend-item benchmark-legend-green">&gt; 10M rows/s</span>
-        <span className="benchmark-legend-item benchmark-legend-green">50M rows/s</span>
+        <span className="benchmark-legend-item benchmark-legend-orange">1M - 5M rows/s</span>
+        <span className="benchmark-legend-item benchmark-legend-green">&ge; 5M rows/s</span>
+        <span className="benchmark-legend-item benchmark-legend-green">25M rows/s</span>
       </div>
       <div className="benchmark-results">
         <BenchResults log={rows} />
@@ -334,7 +334,7 @@ function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
       const displayName = getBenchmarkDisplayName(entry.id);
       return {
         id: isLoadersGLBenchmarkName(displayName) ? <strong>{displayName}</strong> : displayName,
-        value: getLogEntryThroughput(entry),
+        value: getBenchmarkDisplayScore(getLogEntryThroughput(entry)),
         formattedValue: entry.itersPerSecond,
         formattedError: `${(entry.error * 100).toFixed(2)}%`
       };
@@ -344,6 +344,17 @@ function createBenchmarkResultRow(entry: LogEntry): BenchmarkResultRow | null {
     default:
       return null;
   }
+}
+
+/** Maps measured throughput onto probe.gl's fixed 1M/10M/50M display bands. */
+function getBenchmarkDisplayScore(throughput: number): number {
+  if (throughput <= 1e6) {
+    return throughput;
+  }
+  if (throughput < 5e6) {
+    return 1e6 + (throughput - 1e6) * 2.25;
+  }
+  return throughput * 2;
 }
 
 /**
@@ -448,17 +459,19 @@ function getCSVLoaderBenchmarks(
       shape: 'arrow-table' as const
     }
   };
-  const csvOptions = {
-    csv: {
-      header: true as const,
-      delimiter: scenario.delimiter,
-      shape: 'array-row-table' as const,
-      dynamicTyping
-    }
-  };
+  // const csvOptions = {
+  //   csv: {
+  //     header: true as const,
+  //     delimiter: scenario.delimiter,
+  //     shape: 'array-row-table' as const,
+  //     dynamicTyping
+  //   }
+  // };
   return [
-    {name: 'CSVLoader (arrow-table)', loader: CSVLoader, options: arrowOptions},
-    {name: 'CSVLoader', loader: CSVLoader, options: csvOptions}
+    {name: 'CSVLoader (arrow-table)', loader: CSVLoader, options: arrowOptions}
+    // Keep the row-table control available for future investigations without adding a second
+    // loaders.gl result to the Arrow-focused competitive page.
+    // {name: 'CSVLoader', loader: CSVLoader, options: csvOptions}
   ];
 }
 
@@ -606,7 +619,7 @@ function isLoadersGLBenchmarkName(displayName: string): boolean {
  * @returns CSV parse group title.
  */
 function getCSVParseGroupTitle(scenario: BenchmarkScenario, dynamicTyping: boolean): string {
-  return `CSV Parse - ${scenario.description} - ${getTypingParameterLabel(dynamicTyping)} delimiter=${getDelimiterLabel(scenario.delimiter)} ${scenario.rowCount.toLocaleString()} rows`;
+  return `CSV Parse: ${scenario.description}, ${getTypingParameterLabel(dynamicTyping)}, delimiter=${getDelimiterLabel(scenario.delimiter)}, ${scenario.rowCount.toLocaleString()} rows`;
 }
 
 /**
@@ -615,7 +628,7 @@ function getCSVParseGroupTitle(scenario: BenchmarkScenario, dynamicTyping: boole
  * @returns Delimiter label.
  */
 function getDelimiterLabel(delimiter: ',' | '\t'): string {
-  return delimiter === '\t' ? '\\t' : delimiter;
+  return delimiter === '\t' ? 'tab' : 'comma';
 }
 
 /**
@@ -624,7 +637,7 @@ function getDelimiterLabel(delimiter: ',' | '\t'): string {
  * @returns Dynamic typing parameter text.
  */
 function getTypingParameterLabel(dynamicTyping: boolean): string {
-  return `dynamicTyping=${dynamicTyping ? '\u2705' : '\u274c'}`;
+  return dynamicTyping ? 'typed' : 'untyped';
 }
 
 /**

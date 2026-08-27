@@ -61,6 +61,13 @@ const gltf = await load(url, GLTFLoader);
 const meshArrow = convertGLTFToMeshArrow(gltf);
 ```
 
+The result separates reusable source geometries from scene placements. Each geometry contains one
+Arrow table per mesh primitive plus the original attribute component types and normalization
+metadata; each placement identifies the source node and its world transform. All glTF primitive
+attributes are projected as columns, including normals, tangents, texture coordinates, colors,
+joints, and weights. Standard glTF point, line, and triangle modes are represented by the table's
+`topology` metadata. The converter does not modify the input JSON or buffers.
+
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
 In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.

@@ -10,6 +10,7 @@ import {
   getXMLBoolean
 } from '../xml/parse-xml-helpers';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
+import type {CRSIdentifier} from '@math.gl/crs';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
@@ -62,7 +63,7 @@ export type WMSLayer = {
   /** layer limits in unspecified CRS:84-like lng/lat, for quick access w/o CRS calculations.  Defined or inherited. */
   geographicBoundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Supported CRS. Either defined or inherited. */
-  crs?: string[];
+  crs?: CRSIdentifier[];
   /** Bounding boxes in specific CRS:es */
   boundingBoxes?: WMSBoundingBox[];
 
@@ -101,7 +102,7 @@ export type WMSLayer = {
  */
 export type WMSBoundingBox = {
   /** CRS indicates the Layer CRS that applies to this bounding box. */
-  crs: string;
+  crs: CRSIdentifier;
   /** `[[w, s], [e, n]]`, indicates the limits of the bounding box using the axis units and order of the specified CRS. */
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Spatial horizontal resolution of data in same units as bounding box */

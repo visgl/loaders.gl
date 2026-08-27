@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 
+import type {CRSIdentifier, PROJJSONCRS, WKTCRSDefinition} from '@math.gl/crs';
 import {getMetadataValue, type Metadata, setMetadataValue} from './metadata-utils';
 
 /**
@@ -31,8 +32,8 @@ export type GeoColumnMetadata = {
     | 'multilinestring'
     | 'multipolygon';
   geometry_types: GeoParquetGeometryType[];
-  crs?: object | null;
-  crs_type?: 'projjson' | 'wkt2:2019';
+  /** PROJJSON CRS, explicit unknown CRS (`null`), or omitted default OGC:CRS84. */
+  crs?: PROJJSONCRS | null;
   orientation?: 'counterclockwise';
   bbox?:
     | [number, number, number, number]
@@ -93,23 +94,31 @@ export type GeoArrowEncoding =
 /** CRS serialization identifiers defined by the GeoArrow extension metadata specification. */
 export type GeoArrowCRSType = 'projjson' | 'wkt2:2019' | 'authority_code' | 'srid';
 
+/** CRS metadata representations supported by GeoArrow extension metadata. */
+export type GeoArrowCRSMetadata =
+  | {crs?: undefined; crs_type?: undefined}
+  | {crs: PROJJSONCRS; crs_type?: 'projjson'}
+  | {crs: WKTCRSDefinition; crs_type: 'wkt2:2019'}
+  | {crs: CRSIdentifier; crs_type: 'authority_code'}
+  | {crs: string; crs_type: 'srid'}
+  | {crs: string; crs_type?: undefined};
+
 /** Non-planar edge interpretations supported by GeoArrow extension metadata. */
 export type GeoArrowEdgeType = 'spherical' | 'vincenty' | 'thomas' | 'andoyer' | 'karney';
 
 /** Geospatial metadata stored on one GeoArrow extension field. */
-export type GeoArrowMetadata = {
+type GeoArrowMetadataBase = {
   /** Geometry encoding declared by the Arrow extension name. */
   encoding?: GeoArrowEncoding;
-  /** Coordinate reference system metadata as PROJJSON or a serialized string. */
-  crs?: Record<string, unknown> | string;
-  /** Serialization used when `crs` is represented as a string. */
-  crs_type?: GeoArrowCRSType;
   /** Non-planar interpretation of edges between geometry vertices. */
   edges?: GeoArrowEdgeType;
   /** Geometry types represented by the field. */
   geometry_types?: GeoParquetGeometryType[];
   [key: string]: unknown;
 };
+
+/** Geospatial metadata stored on one GeoArrow extension field. */
+export type GeoArrowMetadata = GeoArrowMetadataBase & GeoArrowCRSMetadata;
 
 /**
  * Reads GeoParquet metadata from a metadata container.

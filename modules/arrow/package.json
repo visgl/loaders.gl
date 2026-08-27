@@ -41,6 +41,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./arrow-source": {
+      "types": "./dist/arrow-source.d.ts",
+      "import": "./dist/arrow-source.js"
+    },
     "./transport": {
       "types": "./dist/transport.d.ts",
       "import": "./dist/transport.js"
@@ -79,7 +83,7 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "@loaders.gl/wkt": "5.0.0-alpha.2",
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
-    "@math.gl/polygon": "^4.1.0",
+    "@math.gl/polygon": "4.2.0-alpha.5",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

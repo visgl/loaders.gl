@@ -2,6 +2,9 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for raster
+CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
+
 <GeoTiffDocsTabs active="overview" />
 
 <p class="badges">
@@ -22,6 +25,11 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 ```
 
 ## Loaders and Sources
+
+`GeoTIFFRasterSource` also implements the shared scan metadata contract. Call
+`getQueryMetadata()` to discover raster bands, source bounds, and available overview levels for
+the source-neutral scan query panel. This is metadata discovery only; pixel reads continue to use
+the viewport-oriented `getRaster()` API and preserve GeoTIFF/COG range access.
 
 | Loader / Source | Description |
 | ---------------- | ----------- |

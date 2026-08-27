@@ -85,6 +85,29 @@ The logical query does not prescribe whether a backend materializes rows, return
 retains selection indices. It prescribes which rows and columns are visible to the caller and in
 which source order they are selected.
 
+### Catalog fragments
+
+Catalog-backed sources may additionally implement `ScanFragmentProvider`. Its
+`getScanFragments()` method returns immutable, format-neutral descriptors after cheap catalog
+pruning and before opening Parquet pages:
+
+```ts
+type ScanFragment = {
+  id: string;
+  uri?: string;
+  partitionValues?: Record<string, unknown>;
+  byteLength?: number | bigint;
+  rowCount?: number | bigint;
+  metadata?: Record<string, unknown>;
+};
+```
+
+`ParquetDatasetSource` exposes descriptor-selected files through this contract. `IcebergTableSource`
+uses the same shape for snapshot-selected data files and preserves snapshot, manifest, partition,
+schema, and column-bound metadata. The fragment layer is deliberately separate from Parquet row
+groups: catalog planning chooses files, while the Parquet executor continues to choose row groups,
+pages, and byte ranges.
+
 ## The portable logical query
 
 The foundational types live in `@loaders.gl/loader-utils`, below every storage, SQL, and Arrow
@@ -137,6 +160,24 @@ This plan is intentionally logical. Parquet may fuse scan, filter, and project i
 ranges; DuckDB may compile the whole sequence to one prepared statement; Arrow may interpret the
 steps over vectors; luma.gl may lower filter to WGSL and retain indices. Operator fusion is welcome
 as long as the visible result is equivalent.
+
+### The source contract
+
+Format adapters that participate in the table scan architecture implement `TableScanSource`. It
+combines metadata discovery with an ordered batch reader:
+
+```ts
+type TableScanSource<BatchT, PredicateT extends ColumnarPredicate = ColumnarPredicate> =
+  ScanQueryMetadataProvider & {
+    read(options?: TableQueryOptions<PredicateT> & {signal?: AbortSignal}): AsyncIterable<BatchT>;
+  };
+```
+
+`getQueryMetadata()` is intentionally cheap and drives the query panel. `read()` is the execution
+boundary: it may prune manifests, row groups, pages, or ranges, but it must preserve the logical
+plan's projection, three-valued predicate semantics, source ordering, and global limit. Parquet is
+the reference implementation: its `ParquetSource` exposes the shared capabilities and explainable
+logical plan while adding row-group, page-index, Bloom-filter, range, and worker details.
 
 ### Package ownership
 
@@ -598,9 +639,9 @@ The architecture favors small, composable contracts over a speculative universal
 test for every addition is: can two materially different backends execute it with the same visible
 semantics?
 
-## Scan supremacy roadmap
+## SOTA scan roadmap
 
-“Scan supremacy” means that a user can open a supported loaders.gl format, discover its queryable
+“SOTA scan support” means that a user can open a supported loaders.gl format, discover its queryable
 fields and capabilities, use the same query panel, and receive bounded Arrow/typed results without
 learning a format-specific API. It does not mean that every format gets the same physical plan. The
 winning strategy is to make more formats *scan-compatible* before making the portable language
@@ -657,13 +698,14 @@ exposed yet. A residual predicate is still correct; it simply cannot avoid decod
 
 | Family and representative sources | Status | Discovery | Projection / selection | Filter / spatial controls | Limit / stream | Priority |
 | --- | --- | --- | --- | --- | --- | --- |
-| Arrow / GeoArrow | Ready | schema | zero-copy/residual | residual, null-safe | yes / batches | conformance reference |
+| Arrow / GeoArrow | Foundation | schema for Arrow tables | zero-copy/residual | residual, null-safe | yes / batches | P1: add common source and panel adapter |
 | Parquet / Iceberg | Ready | footer/catalog | pushdown | statistics + residual | global / batches | maintain and extend |
 | FlatGeobuf | Ready | header/index | Arrow properties | bbox pushdown, scalar residual | bounded / batches | maintain and panel |
-| ORC | Foundation | stripe schema | planned stripe projection | planned row-index/statistics | planned | P2 |
+| ORC | Planned | loader metadata only | planned | planned row-index/statistics | planned | P2 |
 | CSV / JSONL | Planned | header/sample | parser-dependent | residual | planned chunks | P2 |
 | GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
-| Delta Lake / Lance | Foundation | log/manifest | format-native | fragments + residual | global / batches | P1 |
+| Delta Lake | Planned | loader not yet present | planned | planned log/deletion-vector pruning | planned | P1 |
+| Lance | Foundation | manifest/fragments | format-native | fragments + residual | global / batches | P1 |
 | COPC / Potree | Foundation | header/hierarchy | point attributes | bounds pushdown, attribute residual | planned global / batches | P1 |
 | LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |
 | GeoTIFF / COG | Foundation | TIFF/overview metadata | bands/windows | window pushdown | tile-local / typed arrays | P1 |

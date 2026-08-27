@@ -47,7 +47,10 @@
     "@loaders.gl/mvt": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
-    "@math.gl/proj4": "^4.1.0",
+    "@math.gl/crs": "^4.2.0-alpha.5",
+    "@math.gl/proj4": "^4.2.0-alpha.5"
+  },
+  "devDependencies": {
     "copc": "0.0.8"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

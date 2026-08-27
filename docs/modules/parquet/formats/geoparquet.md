@@ -13,6 +13,9 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 GeoParquet is a standard for storing geospatial data in Parquet files.
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+cross-format CRS model and the distinction between metadata preservation and reprojection.
+
 Standardization is happening at [geoparquet.org](https://geoparquet.org).
 
 A GeoParquet file additionally follows these conventions:
@@ -33,7 +36,8 @@ A GeoParquet file additionally follows these conventions:
 | Native row-group bbox and geometry-type statistics | ✅ | ✅ |
 | GeoParquet 1.1 single-geometry encodings | ✅ metadata/layout pass-through | ✅ metadata/layout pass-through |
 | GeoParquet 1.1 `covering.bbox` | ✅ row-group, page, and exact-row filtering | preserved when supplied |
-| CRS coordinate transformation | ❌ | ❌ |
+| CRS metadata (`PROJJSON`, omitted default, explicit `null`, and coordinate epoch) | ✅ preserved | ✅ preserved when supplied |
+| CRS coordinate transformation | ❌ metadata preservation does not transform coordinates | ❌ |
 | Ring rewinding from `orientation` | ❌ | ❌ |
 
 ## Metadata behavior in Arrow output

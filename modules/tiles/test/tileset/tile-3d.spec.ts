@@ -45,7 +45,7 @@ const TILE_HEADER_WITH_BOUNDING_REGION = {
   refine: 'REPLACE',
   children: [],
   boundingVolume: {
-    region: [-1.2, -1.2, 0.0, 0.0, -30, -34]
+    region: [-1.2, -1.2, 0.0, 0.0, -34, -30]
   }
 };
 
@@ -57,11 +57,11 @@ const TILE_HEADER_WITH_CONTENT_BOUNDING_REGION = {
   content: {
     url: '0/0.b3dm',
     boundingVolume: {
-      region: [-1.2, -1.2, 0, 0, -30, -34]
+      region: [-1.2, -1.2, 0, 0, -34, -30]
     }
   },
   boundingVolume: {
-    region: [-1.2, -1.2, 0, 0, -30, -34]
+    region: [-1.2, -1.2, 0, 0, -34, -30]
   }
 };
 */

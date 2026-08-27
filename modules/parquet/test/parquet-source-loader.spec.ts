@@ -875,7 +875,8 @@ async function createParquetSourceWorkerInput(
     }),
     ranges,
     batchSize: 1,
-    preserveBinary: false
+    preserveBinary: false,
+    verifyPageChecksums: false
   };
 }
 

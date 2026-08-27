@@ -9,6 +9,8 @@ export type {JSONTableLoaderOptions} from './json-table-loader';
 export {JSONTableLoader} from './json-table-loader';
 export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';
+export {NDJSONSourceLoader, NDJSONTableSource} from './ndjson-source';
+export type {NDJSONSourceOptions} from './ndjson-source';
 export type {
   ArrowConversionOptions,
   GeoJSONArrowConversionOptions,

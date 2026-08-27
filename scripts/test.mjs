@@ -150,7 +150,11 @@ function runProcess(command, commandArguments) {
   return new Promise(resolveExitCode => {
     const childProcess = spawn(command, commandArguments, {
       cwd: process.cwd(),
-      env: {...process.env, NODE_ENV: 'test'},
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        ...(mode.startsWith('cover') ? {LOADERS_GL_TEST_COVERAGE: 'true'} : {})
+      },
       shell: process.platform === 'win32',
       stdio: 'inherit'
     });

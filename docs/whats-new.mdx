@@ -21,6 +21,19 @@ Release Date: 2026
 
 **Features**
 
+**Coordinate reference systems**
+
+- Adopts the shared `@math.gl/crs` identifier, definition, PROJJSON, WKT, and PROJ types across
+  loader metadata and service source APIs.
+- `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free math.gl WKT codec
+  and use its value-preserving `WKTCRSAst` result.
+- GeoParquet metadata distinguishes omitted default CRS, explicit `null`, PROJJSON, and coordinate
+  epoch; GeoArrow field metadata types discriminate PROJJSON, WKT2:2019, authority codes, SRIDs,
+  and opaque strings.
+- Adds a cross-format [CRS support guide](/docs/developer-guide/coordinate-reference-systems) that
+  separates metadata preservation from coordinate transformation and records the reprojection
+  roadmap.
+
 **@loaders.gl/arrow**
 
 - `convertArrowVariableWidthVector` and `convertArrowTableVariableWidthTypes` convert `Utf8`,
@@ -282,6 +295,7 @@ A minor release that includes:
 - **Implicit multiple contents** - Implicit subtrees now preserve every content-availability stream and materialize available content URLs in source order, while retaining the legacy single-content shape when only one stream is available.
 - **i3dm orientation** - Instanced 3D Model tiles now decode `NORMAL_UP_OCT32P` and `NORMAL_RIGHT_OCT32P`, including quantized-position fixtures, and use the decoded basis for per-instance transforms.
 - **3D Tiles metadata topology** - Tileset schemas, groups, tileset/tile/content metadata entities, and content group references are now typed and preserved through normalization; binary property-table decoding and metadata-derived bounds remain follow-up work.
+- **Region bounding volumes** - Geographic regions that cross the antimeridian now produce tight traversal OBBs instead of spanning the long way around the globe; polar and zero-height regions remain finite.
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
+import type {CRSIdentifier} from '@math.gl/crs';
 
 export type VectorSourceProps = {};
 
@@ -51,7 +52,7 @@ export type VectorSourceLayer = {
   /** Human readable title of this layer */
   title?: string;
   /** Coordinate systems supported by this layer */
-  crs?: string[];
+  crs?: CRSIdentifier[];
   /** layer limits in unspecified CRS:84-like lng/lat, for quick access w/o CRS calculations. */
   boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Sub layers of this layer */
@@ -65,7 +66,7 @@ export type GetFeaturesParameters = {
   /** bounding box on the map (only return features within this bbox) */
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** crs for the returned features (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
   /**
    * Requested feature encoding for the returned table.
    * `arrow` returns a loaders.gl `ArrowTable` with `shape: 'arrow-table'`.

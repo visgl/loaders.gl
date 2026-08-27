@@ -16,6 +16,7 @@ import type {
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {WMTSCapabilities, WMTSLayer} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+import {selectServiceCRS, type ServiceCRS} from './crs-utils';
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions & {
@@ -35,6 +36,8 @@ export type WMTSSourceLoaderOptions = DataSourceOptions & {
     /** Capabilities document or URL used to derive layer and tile matrix options. */
     capabilities?: WMTSCapabilities;
     capabilitiesUrl?: string;
+    /** Preferred coordinate reference system for matrix-set selection. */
+    crs?: ServiceCRS;
   };
 };
 
@@ -102,12 +105,17 @@ export class WMTSImageTileSource
       resource.format ? resource.format === (parameters.format || wmts.format) : true
     );
     const urlTemplate = wmts.urlTemplate || resourceURL?.template;
+    const tileMatrixSet = this._getTileMatrixSet(layer);
+    const tileMatrix =
+      tileMatrixSet?.matrices.find(matrix => matrix.identifier === String(parameters.z)) ||
+      tileMatrixSet?.matrices[parameters.z];
+    const tileMatrixIdentifier = tileMatrix?.identifier || String(parameters.z);
     if (urlTemplate) {
       return urlTemplate
-        .replaceAll('{TileMatrix}', String(parameters.z))
+        .replaceAll('{TileMatrix}', tileMatrixIdentifier)
         .replaceAll('{TileRow}', String(parameters.y))
         .replaceAll('{TileCol}', String(parameters.x))
-        .replaceAll('{TileMatrixSet}', wmts.tileMatrixSet || '');
+        .replaceAll('{TileMatrixSet}', tileMatrixSet?.identifier || wmts.tileMatrixSet || '');
     }
     const url = new URL(this.url);
     const searchParameters = new URLSearchParams({
@@ -116,8 +124,8 @@ export class WMTSImageTileSource
       VERSION: '1.0.0',
       LAYER: parameters.layers ? String(parameters.layers) : wmts.layer || layer?.identifier || '',
       STYLE: wmts.style || 'default',
-      TILEMATRIXSET: wmts.tileMatrixSet || layer?.tileMatrixSetLinks[0]?.tileMatrixSet || '',
-      TILEMATRIX: String(parameters.z),
+      TILEMATRIXSET: tileMatrixSet?.identifier || wmts.tileMatrixSet || '',
+      TILEMATRIX: tileMatrixIdentifier,
       TILEROW: String(parameters.y),
       TILECOL: String(parameters.x),
       FORMAT: parameters.format || wmts.format || 'image/png',
@@ -151,6 +159,34 @@ export class WMTSImageTileSource
     return capabilities?.contents.layers.find(
       layer => !layerName || layer.identifier === layerName
     );
+  }
+
+  /** Selects a linked tile matrix set using an explicit identifier or compatible CRS. */
+  private _getTileMatrixSet(layer: WMTSLayer | undefined) {
+    const capabilities = this._capabilities;
+    const wmts = this.options.wmts || {};
+    const linkedIdentifiers = layer?.tileMatrixSetLinks.map(link => link.tileMatrixSet) || [];
+    const candidates =
+      capabilities?.contents.tileMatrixSets.filter(tileMatrixSet =>
+        linkedIdentifiers.includes(tileMatrixSet.identifier)
+      ) || [];
+    const requestedCRS = wmts.crs;
+    if (wmts.tileMatrixSet) {
+      return capabilities?.contents.tileMatrixSets.find(
+        tileMatrixSet => tileMatrixSet.identifier === wmts.tileMatrixSet
+      );
+    }
+    if (candidates.length) {
+      const selectedCRS = selectServiceCRS(
+        requestedCRS,
+        candidates.map(tileMatrixSet => tileMatrixSet.supportedCRS || '')
+      );
+      return (
+        candidates.find(tileMatrixSet => tileMatrixSet.supportedCRS === selectedCRS) ||
+        candidates[0]
+      );
+    }
+    return undefined;
   }
 }
 

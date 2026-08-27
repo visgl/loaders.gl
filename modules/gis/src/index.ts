@@ -193,10 +193,10 @@ export {
 
 // CRS
 export type {PROJ4CRS} from './lib/crs/crs';
-export type {WKTCRS, ParseWKTCRSOptions} from './lib//wkt-crs/parse-wkt-crs';
-export {parseWKTCRS} from './lib//wkt-crs/parse-wkt-crs';
-export type {EncodeWKTCRSOptions} from './lib//wkt-crs/encode-wkt-crs';
-export {encodeWKTCRS} from './lib//wkt-crs/encode-wkt-crs';
+export type {WKTCRS, ParseWKTCRSOptions} from './lib/wkt-crs/parse-wkt-crs';
+export {parseWKTCRS} from './lib/wkt-crs/parse-wkt-crs';
+export type {EncodeWKTCRSOptions} from './lib/wkt-crs/encode-wkt-crs';
+export {encodeWKTCRS} from './lib/wkt-crs/encode-wkt-crs';
 
 // EXPERIMENTAL APIs
 

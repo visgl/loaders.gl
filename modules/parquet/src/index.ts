@@ -33,6 +33,9 @@ export type {
 } from './iceberg-types';
 export {IcebergTableSource} from './iceberg-table-source';
 export type {IcebergScanOptions, IcebergSourceOptions} from './iceberg-table-source';
+export {DeltaSourceLoader} from './delta-source-loader-types';
+export type {DeltaSourceLoaderOptions} from './delta-source-loader-types';
+export type {DeltaAction, DeltaScanOptions, DeltaSourceOptions} from './delta-types';
 export {IcebergRestCatalog} from './iceberg-rest-catalog';
 export type {
   IcebergRestCatalogOptions,
@@ -50,6 +53,7 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialBoundingBox,
   ParquetGeospatialStatistics,
   ParquetDatasetBatch,
@@ -80,6 +84,7 @@ export type {
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -95,8 +100,25 @@ export {
 } from './parquet-source-capabilities';
 
 export {ParquetWriter} from './parquet-writer';
-export type {ParquetJSWriterEncoding, ParquetJSWriterOptions} from './parquet-js-writer';
+export type {
+  ParquetJSWriterEncoding,
+  ParquetJSWriterOptions,
+  ParquetSortingColumnOption
+} from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
+
+export {
+  decodeParquetColumnIndex,
+  decodeParquetPageStatisticsValue,
+  canUseParquetPageIndexForColumn,
+  type ParquetPageStatistics
+} from './lib/parquet-page-index';
+export {
+  decryptParquetModule,
+  type ParquetDecryptModuleOptions,
+  type ParquetEncryptionAlgorithm,
+  type ParquetKeyRetriever
+} from './lib/parquet-encryption';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 

@@ -4,7 +4,7 @@
 
 export type Example = {
   sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
-  data: string;
+  data: string | File;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];

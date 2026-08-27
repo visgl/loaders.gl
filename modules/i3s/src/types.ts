@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CRSIdentifier} from '@math.gl/crs';
+
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {ImageDataType} from '@loaders.gl/images';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
@@ -759,8 +761,8 @@ type Store = {
   resourcePattern?: string[];
   rootNode?: string;
   extent?: number[];
-  indexCRS?: string;
-  vertexCRS?: string;
+  indexCRS?: CRSIdentifier;
+  vertexCRS?: CRSIdentifier;
   normalReferenceFrame?: string;
   lodType?: string;
   lodModel?: string;
@@ -829,7 +831,7 @@ export interface I3SMeshAttribute extends MeshAttribute {
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/heightModelInfo.cmn.md */
 type HeightModelInfo = {
   heightModel: 'gravity_related_height' | 'ellipsoidal';
-  vertCRS: string;
+  vertCRS: CRSIdentifier;
   heightUnit:
     | 'meter'
     | 'us-foot'

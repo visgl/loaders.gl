@@ -7,6 +7,7 @@ import {describe, expect, test} from 'vitest';
 import {decodeVariant} from '../../src/parquetjs/schema/variant';
 import {ParquetSchema} from '../../src/parquetjs/schema/schema';
 import {materializeRows} from '../../src/parquetjs/schema/shred';
+import {convertParquetSchema} from '../../src/lib/arrow/convert-schema-from-parquet';
 
 function createMetadata(dictionary: string[]): Uint8Array {
   const dictionaryBytes = new TextEncoder().encode(dictionary.join(''));
@@ -127,5 +128,69 @@ describe('Parquet VARIANT binary encoding', () => {
     const rows = materializeRows(schema, {rowCount: 1, columnData: {}});
     expect(rows).toEqual([{}]);
     expect(Object.prototype.hasOwnProperty.call(rows[0], 'event')).toBe(false);
+  });
+
+  test('materializes a shredded typed_value Variant child', () => {
+    const schema = new ParquetSchema({
+      event: {
+        optional: true,
+        logicalType: {type: 'VARIANT', specificationVersion: 1},
+        fields: {
+          typed_value: {fields: {string_value: {type: 'UTF8'}}}
+        }
+      }
+    });
+    const rows = materializeRows(schema, {
+      rowCount: 1,
+      columnData: {
+        'event,typed_value,string_value': {
+          count: 1,
+          dlevels: [1],
+          rlevels: [0],
+          values: [new TextEncoder().encode('typed result')],
+          pageHeaders: []
+        }
+      }
+    });
+    expect(rows).toEqual([{event: 'typed result'}]);
+  });
+
+  test('preserves object-shaped typed_value fields ending in _value', () => {
+    const schema = new ParquetSchema({
+      event: {
+        optional: true,
+        logicalType: {type: 'VARIANT', specificationVersion: 1},
+        fields: {
+          typed_value: {fields: {price_value: {type: 'INT32'}}}
+        }
+      }
+    });
+    const rows = materializeRows(schema, {
+      rowCount: 1,
+      columnData: {
+        'event,typed_value,price_value': {
+          count: 1,
+          dlevels: [1],
+          rlevels: [0],
+          values: [10],
+          pageHeaders: []
+        }
+      }
+    });
+    expect(rows).toEqual([{event: {price_value: 10}}]);
+  });
+
+  test('marks Arrow Variant storage with its Parquet specification version', () => {
+    const schema = new ParquetSchema({
+      event: {
+        logicalType: {type: 'VARIANT', specificationVersion: 1},
+        fields: {typed_value: {type: 'UTF8'}}
+      }
+    });
+    const arrowSchema = convertParquetSchema(schema, null);
+    expect(arrowSchema.fields[0]).toMatchObject({
+      type: {type: 'struct'},
+      metadata: {'parquet.variant.specification_version': '1'}
+    });
   });
 });

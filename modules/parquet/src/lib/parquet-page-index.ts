@@ -77,7 +77,8 @@ export type ParquetPagePruningPlan = {
   prunedRowCount: number;
 };
 
-type ParquetPageStatistics = {
+/** Logical statistics attached to one data page. */
+export type ParquetPageStatistics = {
   min?: unknown;
   max?: unknown;
   nullCount?: number;
@@ -94,9 +95,9 @@ type ParquetColumnPageStatistics = {
  * Builds a conservative selective-page plan from Parquet column and offset indexes.
  *
  * Returns `undefined` when indexes or the selected decoder cannot safely avoid full column-chunk
- * reads. Repeated leaves are retained on the conservative full-column path until page starts can
- * be proven to begin at repetition level zero. An empty `rowRanges` array means the indexes prove
- * the predicate cannot match.
+ * reads. Repeated leaves are selected only when every decoded column uses the same page row
+ * boundaries, so ranges begin and end on complete logical rows. An empty `rowRanges` array means
+ * the indexes prove the predicate cannot match.
  */
 export async function createParquetPagePruningPlan(
   file: ReadableFile,
@@ -165,7 +166,7 @@ export async function createParquetPagePruningPlan(
       try {
         pageStatistics[pathKey] = {
           pages,
-          statistics: decodeColumnIndex(toUint8Array(columnIndexBytes), pages, field)
+          statistics: decodeParquetColumnIndex(toUint8Array(columnIndexBytes), pages, field)
         };
       } catch {
         return;
@@ -179,6 +180,10 @@ export async function createParquetPagePruningPlan(
       columnChunk => !pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)]
     )
   ) {
+    return undefined;
+  }
+
+  if (!hasCompatiblePageBoundaries(schema, selectedColumnChunks, pageLocations)) {
     return undefined;
   }
 
@@ -214,7 +219,8 @@ export async function createParquetPagePruningPlan(
 export function getParquetPageReadRanges(
   rowGroup: RowGroup,
   selectedColumnPaths: readonly string[][],
-  plan: ParquetPagePruningPlan
+  plan: ParquetPagePruningPlan,
+  schema: ParquetSchema
 ): Array<{offset: number; length: number}> {
   const ranges: Array<{offset: number; length: number}> = [];
   for (const columnChunk of getSelectedColumnChunks(rowGroup, selectedColumnPaths)) {
@@ -226,6 +232,8 @@ export function getParquetPageReadRanges(
     if (!selectedPages.length) {
       continue;
     }
+    const field = schema.findField(columnMetadata.path_in_schema);
+    const repeated = field.rLevelMax > 0 || field.repetitionType === 'REPEATED';
     const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset);
     if (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0) {
       ranges.push({
@@ -240,7 +248,9 @@ export function getParquetPageReadRanges(
       if (!overlappingPages.length) {
         continue;
       }
-      const firstPage = overlappingPages[0];
+      // A repeated page may begin with a continuation level. Transfer the complete prefix so
+      // worker-backed readers can probe predecessor pages before decoding the selected range.
+      const firstPage = repeated ? pages[0] : overlappingPages[0];
       const lastPage = overlappingPages[overlappingPages.length - 1];
       ranges.push({
         offset: firstPage.offset,
@@ -261,10 +271,27 @@ export function decodeOffsetIndex(bytes: Uint8Array, rowCount: number): ParquetD
   ) {
     throw new Error('Invalid Parquet offset index page locations');
   }
+  let previousFirstRowIndex = -1;
+  for (const location of offsetIndex.page_locations) {
+    const firstRowIndex = Number(location.first_row_index);
+    if (!Number.isSafeInteger(firstRowIndex) || firstRowIndex < previousFirstRowIndex) {
+      throw new Error('Invalid Parquet offset index page locations');
+    }
+    previousFirstRowIndex = firstRowIndex;
+  }
   return offsetIndex.page_locations.map((location, index, locations) => {
     const firstRowIndex = Number(location.first_row_index);
-    const endRowIndex =
-      index + 1 < locations.length ? Number(locations[index + 1].first_row_index) : rowCount;
+    // A repeated row may continue on one or more pages. In that case the offset index
+    // legitimately repeats first_row_index. Extend each continuation page to the next
+    // strictly larger row start so selecting the row includes the complete continuation.
+    let endRowIndex = rowCount;
+    for (let nextIndex = index + 1; nextIndex < locations.length; nextIndex++) {
+      const nextFirstRowIndex = Number(locations[nextIndex].first_row_index);
+      if (nextFirstRowIndex > firstRowIndex) {
+        endRowIndex = nextFirstRowIndex;
+        break;
+      }
+    }
     const offset = Number(location.offset);
     const compressedByteLength = location.compressed_page_size;
     if (
@@ -336,8 +363,8 @@ function getPredicateRowRanges(
   return mergeRowRanges(ranges);
 }
 
-/** Decodes column-index values into the logical representation used by exact predicates. */
-function decodeColumnIndex(
+/** Decodes column-index values into logical per-page statistics. */
+export function decodeParquetColumnIndex(
   bytes: Uint8Array,
   pages: readonly ParquetDataPageLocation[],
   field: ParquetField
@@ -417,7 +444,7 @@ function getSelectedColumnChunks(
   });
 }
 
-/** Restricts selective page reads to independently materializable primitive leaf columns. */
+/** Restricts selective page reads to primitive leaves with safe page boundaries. */
 function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly ColumnChunk[]): boolean {
   return (
     columnChunks.length > 0 &&
@@ -433,13 +460,71 @@ function isSafePageSelection(schema: ParquetSchema, columnChunks: readonly Colum
       const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
       return (
         field.primitiveType !== undefined &&
-        field.repetitionType !== 'REPEATED' &&
-        field.rLevelMax === 0 &&
         (!dictionaryEncoded ||
           (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
       );
     })
   );
+}
+
+/**
+ * Returns whether a column can be decoded from selected page ranges without changing row shape.
+ *
+ * Repeated leaves are safe only when the selected columns share complete logical-row boundaries.
+ */
+export function canUseParquetPageIndexForColumn(
+  schema: ParquetSchema,
+  columnChunk: ColumnChunk
+): boolean {
+  const path = columnChunk.meta_data?.path_in_schema;
+  if (!path) {
+    return false;
+  }
+  const field = schema.findField(path);
+  const dictionaryEncoded = columnChunk.meta_data!.encodings.some(
+    encoding => encoding === Encoding.PLAIN_DICTIONARY || encoding === Encoding.RLE_DICTIONARY
+  );
+  const dictionaryPageOffset = Number(columnChunk.meta_data!.dictionary_page_offset);
+  return (
+    field.primitiveType !== undefined &&
+    field.repetitionType !== 'REPEATED' &&
+    field.rLevelMax === 0 &&
+    (!dictionaryEncoded || (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0))
+  );
+}
+
+/** Ensures repeated selective reads keep every selected column on identical row boundaries. */
+function hasCompatiblePageBoundaries(
+  schema: ParquetSchema,
+  columnChunks: readonly ColumnChunk[],
+  pageLocations: ParquetPageLocations
+): boolean {
+  const hasRepeatedLeaf = columnChunks.some(columnChunk => {
+    const field = schema.findField(columnChunk.meta_data!.path_in_schema);
+    return field.rLevelMax > 0 || field.repetitionType === 'REPEATED';
+  });
+  if (!hasRepeatedLeaf) {
+    return true;
+  }
+  // Offset indexes identify the first logical row represented by each page, but do not
+  // expose repetition levels. Equal starts therefore indicate a continuation page whose
+  // boundary cannot be proven safe for a selective read; retain the full-column fallback.
+  if (
+    columnChunks.some(columnChunk => {
+      const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
+      return pages.some(
+        (page, pageIndex) =>
+          pageIndex > 0 && page.firstRowIndex === pages[pageIndex - 1].firstRowIndex
+      );
+    })
+  ) {
+    return false;
+  }
+  const signatures = columnChunks.map(columnChunk => {
+    const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
+    return pages.map(page => `${page.firstRowIndex}:${page.endRowIndex}`).join('|');
+  });
+  return signatures.every(signature => signature === signatures[0]);
 }
 
 /** Validates one optional footer index byte range against the containing file. */

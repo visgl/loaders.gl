@@ -48,6 +48,8 @@ const GeoParquetGeometryTypesSchema = z
     message: 'GeoParquet geometry_types entries must be unique'
   });
 
+const PROJJSONCRSSchema = z.record(z.string(), z.unknown());
+
 /** Zod schema for metadata attached to one GeoParquet geometry column. */
 export const GeoParquetColumnMetadataSchema = z
   .object({
@@ -62,8 +64,7 @@ export const GeoParquetColumnMetadataSchema = z
       'multipolygon'
     ]),
     geometry_types: GeoParquetGeometryTypesSchema,
-    crs: z.union([z.record(z.string(), z.unknown()), z.null()]).optional(),
-    crs_type: z.enum(['projjson', 'wkt2:2019']).optional(),
+    crs: z.union([PROJJSONCRSSchema, z.null()]).optional(),
     orientation: z.literal('counterclockwise').optional(),
     bbox: z
       .union([
@@ -84,7 +85,7 @@ export const GeoParquetColumnMetadataSchema = z
     edges: z.enum(['planar', 'spherical', 'vincenty', 'thomas', 'andoyer', 'karney']).optional(),
     epoch: z.number().finite().optional()
   })
-  .passthrough() satisfies z.ZodType<GeoColumnMetadata>;
+  .passthrough() as unknown as z.ZodType<GeoColumnMetadata>;
 
 /** Zod schema for the GeoParquet metadata stored in a Parquet file's `geo` key. */
 export const GeoParquetMetadataSchema = z
@@ -129,9 +130,29 @@ export const GeoArrowMetadataSchema = z
         'geoarrow.wkt'
       ])
       .optional(),
-    crs: z.union([z.record(z.string(), z.unknown()), z.string()]).optional(),
+    crs: z.union([PROJJSONCRSSchema, z.string()]).optional(),
     crs_type: z.enum(['projjson', 'wkt2:2019', 'authority_code', 'srid']).optional(),
     edges: z.enum(['spherical', 'vincenty', 'thomas', 'andoyer', 'karney']).optional(),
     geometry_types: GeoParquetGeometryTypesSchema.optional()
   })
-  .passthrough() satisfies z.ZodType<GeoArrowMetadata>;
+  .passthrough()
+  .superRefine((metadata, context) => {
+    const {crs, crs_type: crsType} = metadata;
+    const valid =
+      (crs === undefined && crsType === undefined) ||
+      (typeof crs === 'object' &&
+        crs !== null &&
+        (crsType === undefined || crsType === 'projjson')) ||
+      (typeof crs === 'string' &&
+        (crsType === undefined ||
+          crsType === 'wkt2:2019' ||
+          crsType === 'authority_code' ||
+          crsType === 'srid'));
+    if (!valid) {
+      context.addIssue({
+        code: 'custom',
+        message: 'GeoArrow crs and crs_type must describe the same CRS representation',
+        path: ['crs_type']
+      });
+    }
+  }) as z.ZodType<GeoArrowMetadata>;

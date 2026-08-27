@@ -32,6 +32,7 @@ import {decompress} from '../compression';
 import type {TimeUnit as ParquetThriftTimeUnit} from '../parquet-thrift/TimeUnit';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
+import {crc32} from '../utils/crc32';
 
 /** Preallocated column destination used to bypass page-local value and level arrays. */
 type ParquetPageDecodeTarget = {
@@ -150,6 +151,17 @@ export async function decodePage(
   cursor.offset += length;
 
   const pageType = getThriftEnum(PageType, pageHeader.type);
+  const pageEnd = cursor.offset + pageHeader.compressed_page_size;
+  if (context.verifyPageChecksums && pageHeader.crc !== undefined) {
+    if (pageEnd > (cursor.size ?? cursor.buffer.length)) {
+      throw new Error('Parquet page extends beyond the available buffer');
+    }
+    const expected = pageHeader.crc >>> 0;
+    const actual = crc32(cursor.buffer.subarray(cursor.offset, pageEnd));
+    if (actual !== expected) {
+      throw new Error(`Parquet page checksum mismatch: expected ${expected}, calculated ${actual}`);
+    }
+  }
 
   switch (pageType) {
     case 'DATA_PAGE':

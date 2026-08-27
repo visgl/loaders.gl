@@ -23,7 +23,7 @@ import {
   reprojectWKBInPlace,
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
@@ -252,7 +252,7 @@ export function getGeoPackageGeoJSONTable(
   database: Database,
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: string}
+  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
 ): GeoJSONTable {
   const dataColumns = getDataColumns(database, vectorTable.name);
   const featureIdColumn = getFeatureIdName(database, vectorTable.name);
@@ -279,7 +279,7 @@ export function getGeoPackageArrowTable(
   database: Database,
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: string}
+  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
 ): ArrowTable {
   const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
   const columns = queryResult?.columns || [];
@@ -381,7 +381,7 @@ function constructArrowRow(
 function getProjection(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: string}
+  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
 ): Proj4Projection | null {
   if (!options.reproject || vectorTable.srsId === undefined) {
     return null;

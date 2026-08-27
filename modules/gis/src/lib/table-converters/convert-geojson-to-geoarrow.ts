@@ -12,6 +12,7 @@ import type {
   GeoJSONTable,
   Schema
 } from '@loaders.gl/schema';
+import type {PROJJSONCRS} from '@math.gl/crs';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {convertGeometryToWKT} from '../geometry-converters/wkb/convert-geometry-to-wkt';
 import {
@@ -78,7 +79,7 @@ const CRS84_PROJJSON = {
     authority: 'OGC',
     code: 'CRS84'
   }
-};
+} satisfies PROJJSONCRS;
 
 const EPSG_4326_PROJJSON = {
   ...CRS84_PROJJSON,
@@ -104,7 +105,7 @@ const EPSG_4326_PROJJSON = {
     authority: 'EPSG',
     code: 4326
   }
-};
+} satisfies PROJJSONCRS;
 
 /** Supported GeoArrow encodings for GeoJSON feature conversion. */
 export type GeoJSONToGeoArrowEncoding = 'wkb' | 'wkt';
@@ -267,7 +268,6 @@ export function applyLegacyGeoJSONCRSToSchema(
 
   if (normalizedCRS) {
     columnMetadata.crs = normalizedCRS.projjson;
-    columnMetadata.crs_type = 'projjson';
   }
 
   schema.metadata ||= {};
@@ -427,7 +427,7 @@ function isLegacyGeoJSONCRS(value: unknown): value is LegacyGeoJSONCRS {
 /** Normalizes recognized legacy GeoJSON CRS names to GeoArrow-compatible CRS metadata. */
 function normalizeLegacyGeoJSONCRS(
   crs: LegacyGeoJSONCRS
-): {name: string; projjson: Record<string, unknown>} | null {
+): {name: string; projjson: PROJJSONCRS} | null {
   const name = getLegacyGeoJSONCRSName(crs);
   if (!name) {
     return null;
@@ -486,8 +486,8 @@ function parseExtensionMetadata(metadata: string | undefined): Record<string, un
 }
 
 /** Clones a JSON-compatible object so schema metadata callers cannot mutate shared constants. */
-function cloneJSON(value: Record<string, unknown>): Record<string, unknown> {
-  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+function cloneJSON<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 /** Returns unique property field names in encounter order. */

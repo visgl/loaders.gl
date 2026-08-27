@@ -79,7 +79,32 @@ export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
 export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
 export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
+export type {ServiceCRS} from './crs-utils';
+export {
+  normalizeServiceCRS,
+  areServiceCRSEquivalent,
+  selectServiceCRS,
+  getServiceCRSAxisOrder
+} from './crs-utils';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
+
+export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
+export {
+  normalizeWMSCapabilities,
+  normalizeWMTSCapabilities,
+  normalizeWFSCapabilities,
+  normalizeTileServiceCapabilities,
+  normalizeVectorServiceCapabilities
+} from './service-capabilities';
+
+export type {
+  ServiceRuntimeOptions,
+  ServiceTelemetryEvent,
+  ServiceSourceLoader
+} from './service-runtime';
+export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './service-runtime';
+export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
+export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 
 // ArcGIS SourceLoaders
 
@@ -91,6 +116,11 @@ export {
   ArcGISMapTileSourceLoader,
   ArcGISMapTileSource
 } from './arcgis/arcgis-map-tile-source-loader';
+export type {ArcGISImageTileSourceLoaderOptions} from './arcgis/arcgis-image-tile-source-loader';
+export {
+  ArcGISImageTileSourceLoader,
+  ArcGISImageTileSource
+} from './arcgis/arcgis-image-tile-source-loader';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';

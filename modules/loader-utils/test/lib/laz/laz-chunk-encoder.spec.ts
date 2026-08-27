@@ -5,6 +5,7 @@
 import test from 'test/utils/vitest-tape';
 import {
   createLAZChunkEncoder,
+  createLAZChunkDecoderCursor,
   decodeLAZChunk,
   decodeLAZChunkTable,
   encodeLAZChunk,
@@ -32,6 +33,43 @@ test('LAZChunkEncoder#encodes LASzip v3 PDRF 6-8 chunks', t => {
       getLAZChunkByteLength(compressed, metadata),
       compressed.byteLength,
       `PDRF ${pointDataRecordFormat} layered size headers are complete`
+    );
+  }
+  t.end();
+});
+
+test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data targets', t => {
+  for (const pointDataRecordFormat of [6, 7, 8]) {
+    const {rawPointData, metadata} = createLAZEncodingFixture(pointDataRecordFormat);
+    const compressed = encodeLAZChunk(rawPointData, metadata);
+    const extraBytes = new Uint8Array(metadata.pointCount * 2);
+    const positions = new Float64Array(metadata.pointCount * 3);
+    const cursor = createLAZChunkDecoderCursor(compressed, metadata);
+
+    cursor.decodeIntoPointData(
+      {
+        positions,
+        extraBytes,
+        pointOffset: 0,
+        scale: [1, 1, 1],
+        offset: [0, 0, 0]
+      },
+      metadata.pointCount
+    );
+
+    const expectedExtraBytes = new Uint8Array(metadata.pointCount * 2);
+    for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+      const sourceOffset =
+        pointIndex * metadata.pointDataRecordLength + metadata.pointDataRecordLength - 2;
+      expectedExtraBytes.set(rawPointData.subarray(sourceOffset, sourceOffset + 2), pointIndex * 2);
+    }
+    const mismatchIndex = extraBytes.findIndex(
+      (value, index) => value !== expectedExtraBytes[index]
+    );
+    t.equal(
+      mismatchIndex,
+      -1,
+      `PDRF ${pointDataRecordFormat} Extra Bytes (first mismatch ${mismatchIndex}: ${extraBytes[mismatchIndex]} vs ${expectedExtraBytes[mismatchIndex]})`
     );
   }
   t.end();

@@ -138,7 +138,7 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return 'bool';
     case arrow.Int:
       const intType = arrowType as arrow.Int;
-      return `${intType.isSigned ? 'u' : ''}int${intType.bitWidth}`;
+      return `${intType.isSigned ? '' : 'u'}int${intType.bitWidth}`;
     case arrow.Int8:
       return 'int8';
     case arrow.Int16:
