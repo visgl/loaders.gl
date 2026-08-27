@@ -294,10 +294,18 @@ export class TilesetTraverser {
     return tile.hasUnloadedContent || tile.contentExpired;
   }
 
-  shouldSelectTile(tile: Tile3D): boolean {
-    // Content availability is the only selection prerequisite. Skip-LOD retains ready ancestors
-    // as fallback coverage, so it must not suppress selection globally.
-    return tile.contentAvailable;
+  /**
+   * Returns whether a tile's renderable content may be selected after traversal.
+   *
+   * Traversal uses the tile bounding volume, while render selection additionally honors a
+   * tighter content volume when present. This keeps child traversal spatially coherent without
+   * drawing content that is outside the current culling volume.
+   *
+   * @param tile - Tile considered for rendering.
+   * @param frameState - Current camera and culling state.
+   */
+  shouldSelectTile(tile: Tile3D, frameState: FrameState): boolean {
+    return tile.contentAvailable && tile.contentVisibility(frameState) !== CullingVolume.MASK_OUTSIDE;
   }
 
   /** Decide if tile LoD (level of detail) is not sufficient under current viewport */
