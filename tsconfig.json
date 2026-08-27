@@ -229,6 +229,9 @@
       "@loaders.gl/netcdf": [
         "modules/netcdf/src"
       ],
+      "@loaders.gl/netcdf/*": [
+        "modules/netcdf/src/*"
+      ],
       "@loaders.gl/netcdf/test": [
         "modules/netcdf/test"
       ],
