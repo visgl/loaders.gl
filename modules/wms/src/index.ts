@@ -123,6 +123,14 @@ export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
 export {ArcGISFeatureServerSourceLoader as _ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
 export {ArcGISImageServerSourceLoader as _ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
+export type {
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerSourceLoaderOptions
+} from './arcgis/arcgis-vector-tile-server-source-loader';
+export {
+  ArcGISVectorTileServerSource,
+  ArcGISVectorTileServerSourceLoader
+} from './arcgis/arcgis-vector-tile-server-source-loader';
 export type {ArcGISMapTileSourceLoaderOptions} from './arcgis/arcgis-map-tile-source-loader';
 export {
   ArcGISMapTileSourceLoader,
