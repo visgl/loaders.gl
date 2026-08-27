@@ -33,6 +33,57 @@ import {
 
 const scratchVector = new Vector3();
 
+/**
+ * Classifies render-content visibility across all content volumes owned by a tile.
+ *
+ * Content volumes form a union: one visible content entry keeps the tile renderable even when
+ * another entry is outside the frustum or clipping planes. The traversal volume is intentionally
+ * not used here except as a fallback when a tile has no content-specific volume. This separation
+ * keeps clipping render-only and prevents a tight content volume from pruning descendants.
+ *
+ * @param contentVolumes - Transformed content volumes in source order.
+ * @param fallbackVolume - Tile volume used when content does not declare its own volume.
+ * @param cullingVolume - Current view frustum.
+ * @param visibilityPlaneMask - Parent visibility mask optimization.
+ * @param clippingPlanes - Optional world-space planes applied to render content only.
+ * @returns Union visibility classification for the renderable content.
+ */
+export function getContentVisibility(
+  contentVolumes: any[],
+  fallbackVolume: any,
+  cullingVolume: CullingVolume,
+  visibilityPlaneMask: number | undefined,
+  clippingPlanes: any[] = []
+): number {
+  const volumes = contentVolumes.length ? contentVolumes : [fallbackVolume];
+  let visibleVolume = false;
+  let intersectingVolume = false;
+  for (const contentVolume of volumes) {
+    let visibility: number = INTERSECTION.INSIDE;
+    if (visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
+      visibility = cullingVolume.computeVisibility(contentVolume);
+      if (visibility === INTERSECTION.OUTSIDE) {
+        continue;
+      }
+    }
+    let clipped = false;
+    for (const clippingPlane of clippingPlanes) {
+      if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+        clipped = true;
+        break;
+      }
+    }
+    if (!clipped) {
+      visibleVolume = true;
+      intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
+    }
+  }
+  if (!visibleVolume) {
+    return INTERSECTION.OUTSIDE;
+  }
+  return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
+}
+
 function defined(x) {
   return x !== undefined && x !== null;
 }
@@ -793,35 +844,13 @@ export class Tile3D {
    * @returns The content visibility classification.
    */
   contentVisibility(frameState: FrameState): number {
-    const contentVolumes = this._contentBoundingVolumes.length
-      ? this._contentBoundingVolumes
-      : [this.boundingVolume];
-    let visibleVolume = false;
-    let intersectingVolume = false;
-    for (const contentVolume of contentVolumes) {
-      let visibility: number = INTERSECTION.INSIDE;
-      if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
-        visibility = frameState.cullingVolume.computeVisibility(contentVolume);
-        if (visibility === INTERSECTION.OUTSIDE) {
-          continue;
-        }
-      }
-      let clipped = false;
-      for (const clippingPlane of frameState.clippingPlanes || []) {
-        if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
-          clipped = true;
-          break;
-        }
-      }
-      if (!clipped) {
-        visibleVolume = true;
-        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
-      }
-    }
-    if (!visibleVolume) {
-      return INTERSECTION.OUTSIDE;
-    }
-    return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
+    return getContentVisibility(
+      this._contentBoundingVolumes,
+      this.boundingVolume,
+      frameState.cullingVolume,
+      this._visibilityPlaneMask,
+      frameState.clippingPlanes
+    );
   }
 
   /**
