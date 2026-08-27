@@ -372,8 +372,9 @@ export function createDefaultRasterRenderResult(
       coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
     };
   }
+  const rasterCoordinateReferenceSystem = getRasterCRSIdentifier(raster.crs || metadata.crs);
   const bounds =
-    (raster.crs || metadata.crs) === 'EPSG:3857'
+    rasterCoordinateReferenceSystem === 'EPSG:3857'
       ? unprojectPseudoMercatorBounds(rasterBounds)
       : flattenBounds(rasterBounds);
   return {
@@ -420,6 +421,7 @@ export function createRasterViewport(
     Math.min(maxTextureSize, Math.round(viewport.height * devicePixelRatio))
   );
   const viewportBounds = viewport.getBounds?.();
+  const coordinateReferenceSystem = getRasterCRSIdentifier(metadata.crs);
   let bounds: RasterBoundingBox | undefined;
   if (!metadata.boundingBox && !metadata.crs) {
     bounds = [
@@ -431,9 +433,13 @@ export function createRasterViewport(
       [viewportBounds[0], viewportBounds[1]],
       [viewportBounds[2], viewportBounds[3]]
     ];
-    if (metadata.crs === 'EPSG:3857') {
+    if (coordinateReferenceSystem === 'EPSG:3857') {
       bounds = [projectWGS84ToPseudoMercator(bounds[0]), projectWGS84ToPseudoMercator(bounds[1])];
-    } else if (metadata.crs && !/EPSG:4326|CRS:84/i.test(metadata.crs) && !allowCustomProjection) {
+    } else if (
+      metadata.crs &&
+      (!coordinateReferenceSystem || !/EPSG:4326|CRS:84/i.test(coordinateReferenceSystem)) &&
+      !allowCustomProjection
+    ) {
       throw new Error(
         `RasterSourceLayer cannot infer viewport reprojection for ${metadata.crs}. Provide getRasterParameters().`
       );
@@ -449,7 +455,7 @@ export function createRasterViewport(
     height,
     zoom: 'zoom' in viewport ? Number((viewport as any).zoom) : 0,
     center,
-    crs: metadata.crs,
+    crs: coordinateReferenceSystem,
     bounds,
     getBounds: bounds
       ? () => [bounds![0][0], bounds![0][1], bounds![1][0], bounds![1][1]]
@@ -458,6 +464,25 @@ export function createRasterViewport(
     unprojectPosition: position =>
       viewport.unprojectPosition(position as any) as [number, number, number]
   };
+}
+
+/** Extracts an authority code from a serialized or PROJJSON CRS definition. */
+function getRasterCRSIdentifier(crs: RasterSourceMetadata['crs']): string | undefined {
+  if (typeof crs === 'string') {
+    return crs;
+  }
+  if (!crs || typeof crs !== 'object') {
+    return undefined;
+  }
+  const identifier = (crs as {id?: {authority?: string; code?: string | number}}).id;
+  if (identifier?.authority && identifier.code !== undefined) {
+    return `${identifier.authority}:${identifier.code}`;
+  }
+  const identifiers = (crs as {ids?: Array<{authority?: string; code?: string | number}>}).ids;
+  const firstIdentifier = identifiers?.[0];
+  return firstIdentifier?.authority && firstIdentifier.code !== undefined
+    ? `${firstIdentifier.authority}:${firstIdentifier.code}`
+    : undefined;
 }
 
 function writeSingleBand(
