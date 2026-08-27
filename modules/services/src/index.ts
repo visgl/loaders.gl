@@ -35,3 +35,13 @@ export type {ArcGISMapTileSourceLoaderOptions} from '@loaders.gl/wms';
 /** ArcGIS ImageServer export tile source and loader. */
 export {ArcGISImageTileSourceLoader, ArcGISImageTileSource} from '@loaders.gl/wms';
 export type {ArcGISImageTileSourceLoaderOptions} from '@loaders.gl/wms';
+
+/** ArcGIS vector tile service source and loader. */
+export {
+  ArcGISVectorTileServerSourceLoader,
+  ArcGISVectorTileServerSource
+} from '@loaders.gl/wms';
+export type {ArcGISVectorTileServerSourceLoaderOptions} from '@loaders.gl/wms';
+
+export type {ServiceLoader} from './service-registry';
+export {getServiceLoader} from './service-registry';
