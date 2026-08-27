@@ -823,7 +823,6 @@ export class Tile3D {
     }
     return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
   }
-  }
 
   /**
    * Computes the (potentially approximate) distance from the closest point of the tile's bounding volume to the camera.
