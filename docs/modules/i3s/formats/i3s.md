@@ -32,11 +32,9 @@ traversal, lightweight metadata loaders with parser preloading, forward-compatib
 schemas, and complete PBR texture-set loading. The underlying mesh parser and most rendering capabilities predate v5.0 and retain their
 original introduction versions below.
 
-The Point Cloud decoder seam added in v5.0 currently uses the browser WebAssembly build of
-[`@bitruvius/turbo-lepcc`](https://www.npmjs.com/package/@bitruvius/turbo-lepcc), which is a
-proprietary third-party dependency. It is isolated behind `I3SLEPCCDecoder` while licensing and
-long-term maintenance are evaluated; a native decoder remains the fallback if that dependency
-cannot be adopted.
+The Point Cloud decoder seam added in v5.0 is a dependency-free TypeScript implementation of the
+Apache-licensed Esri LEPCC wire format, isolated behind `I3SLEPCCDecoder` for future worker and
+Point Cloud traversal integration.
 
 ### Scene layer profiles
 
@@ -115,7 +113,7 @@ those versions.
 
 | Capability | Status | Since | Notes |
 | --- | :---: | --- | --- |
-| LEPCC point-cloud attribute blobs | **Partial** | **v5.0** | The `I3SLEPCCDecoder` adapter decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and packed flag-byte resources. Point Cloud layer traversal, density LOD, and renderer integration remain planned. |
+| LEPCC point-cloud attribute blobs | **Partial** | **v5.0** | The `I3SLEPCCDecoder` adapter decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed flag-byte resources. Huffman flag streams, Point Cloud layer traversal, density LOD, and renderer integration remain planned. |
 
 ### Textures and materials
 

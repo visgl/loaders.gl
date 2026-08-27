@@ -1917,31 +1917,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitruvius/foundation@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "@bitruvius/foundation@npm:0.3.2"
-  checksum: 10c0/7dcf83ff77bdfb6cb4a68e350997d97a1faf89b30569eef6843c81105e09213cec4f04aaaf117ead4d8a9c5446a937e4925721d7847829c9ce81bfad399f9422
-  languageName: node
-  linkType: hard
-
-"@bitruvius/geo-core@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "@bitruvius/geo-core@npm:0.3.2"
-  dependencies:
-    "@bitruvius/foundation": "npm:^0.3.2"
-  checksum: 10c0/713dbff7a3e250b82d865d2ae6df5f66c9f271ee4526533864e25ce8c7f0005a345a444ca24929b897392949ae22b9cada0a350011bbe42e2eba26497533af71
-  languageName: node
-  linkType: hard
-
-"@bitruvius/turbo-lepcc@npm:0.3.2":
-  version: 0.3.2
-  resolution: "@bitruvius/turbo-lepcc@npm:0.3.2"
-  dependencies:
-    "@bitruvius/geo-core": "npm:^0.3.2"
-  checksum: 10c0/71146e7f2c07e21e046454cc8270d5003a9afa9599fb3a4a427fc6b91f56a6b7d0aa2b41b29012d40b3df83f2033bb72208f51d756d9e9cec677cc4e409188fc
-  languageName: node
-  linkType: hard
-
 "@blazediff/core@npm:1.9.1":
   version: 1.9.1
   resolution: "@blazediff/core@npm:1.9.1"
@@ -5454,7 +5429,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/i3s@workspace:modules/i3s"
   dependencies:
-    "@bitruvius/turbo-lepcc": "npm:0.3.2"
     "@loaders.gl/compression": "npm:5.0.0-alpha.2"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.2"
     "@loaders.gl/draco": "npm:5.0.0-alpha.2"
