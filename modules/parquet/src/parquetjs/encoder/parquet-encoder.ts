@@ -769,7 +769,11 @@ async function encodeColumnChunk(
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
 
-  const valueEncoding: ParquetCodec = dictionaryPlan ? 'RLE_DICTIONARY' : column.encoding!;
+  const valueEncoding: ParquetCodec = dictionaryPlan
+    ? column.encoding === 'PLAIN_DICTIONARY'
+      ? 'PLAIN_DICTIONARY'
+      : 'RLE_DICTIONARY'
+    : column.encoding!;
   let dictionaryIndexOffset = 0;
   for (const plannedPage of plannedPages) {
     const pageData = dictionaryPlan

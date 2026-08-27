@@ -101,6 +101,31 @@ test('ParquetJSWriter multi-page dictionaries interoperate with maintained brows
   expect(selectScalarColumns(hyparquetRows)).toEqual(expectedRows);
 });
 
+test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration', async () => {
+  const input: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema: {
+      fields: [{name: 'label', type: 'utf8', nullable: false}],
+      metadata: {}
+    },
+    data: [{label: 'alpha'}, {label: 'beta'}, {label: 'alpha'}]
+  };
+  const parquetBuffer = await encode(input, ParquetJSWriter, {
+    worker: false,
+    parquet: {dictionary: true, columnEncodings: {label: 'PLAIN_DICTIONARY'}}
+  });
+  const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  expect(output.data).toEqual(input.data);
+
+  const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
+  expect(metadata.row_groups[0].columns[0].meta_data?.encodings).toEqual(
+    expect.arrayContaining([0, 2])
+  );
+  expect(metadata.row_groups[0].columns[0].meta_data?.encoding_stats).toEqual(
+    expect.arrayContaining([expect.objectContaining({page_type: 0, encoding: 2})])
+  );
+});
+
 /** Selects scalar columns whose representation is identical across maintained readers. */
 function selectScalarColumns(rows: unknown[]): Array<{sequence: number; label: string}> {
   return rows.map(row => {

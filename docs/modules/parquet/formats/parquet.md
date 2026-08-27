@@ -171,7 +171,7 @@ uses, while each page identifies its actual value encoding.
 | Encoding | Valid targets | JS read | JS write | Status |
 | -------- | ------------- | ------- | -------- | ------ |
 | `PLAIN` | All physical types | ✅ | ✅ | Required baseline encoding |
-| `PLAIN_DICTIONARY` | All physical types | ✅ | ❌ | Deprecated dictionary identifier |
+| `PLAIN_DICTIONARY` | All physical types | ✅ | ✅ | Deprecated dictionary identifier; emitted when explicitly selected for legacy interoperability |
 | `RLE` | Boolean, levels, dictionary indexes | ✅ | ✅ | Writer uses it for definition/repetition levels |
 | `BIT_PACKED` | Legacy levels | ✅ | ❌ | Deprecated and superseded by the RLE/bit-packing hybrid; supported for legacy page-level compatibility |
 | `DELTA_BINARY_PACKED` | `INT32`, `INT64` | ✅ | ✅ | Effective for ordered integer sequences |
@@ -301,7 +301,8 @@ variant has been exhaustively certified.
 | Emerging-format lab | 🧪 experimental | Track ALP, PFOR, VECTOR, and format-versioning proposals behind explicit experimental flags; do not advertise them as stable support |
 
 The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
-zero-valued size statistics, and legacy `BIT_PACKED` level decoding. Preview features such as
+zero-valued size statistics, legacy `BIT_PACKED` level decoding, and explicit legacy
+`PLAIN_DICTIONARY` writer output. Preview features such as
 [ALP](https://github.com/apache/parquet-format/pull/557),
 [PFOR](https://github.com/apache/parquet-format/pull/579), and the upstream
 [format-versioning RFCs](https://github.com/apache/parquet-format/pulls?q=is%3Apr+versioning) remain
