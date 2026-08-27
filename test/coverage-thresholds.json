@@ -737,6 +737,21 @@
         "branches": 57
       }
     },
+    "@loaders.gl/arcgis": {
+      "path": "modules/arcgis",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      }
+    },
     "@loaders.gl/worker-utils": {
       "path": "modules/worker-utils",
       "browser": {

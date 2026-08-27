@@ -394,6 +394,9 @@
       "@loaders.gl/arcgis": [
         "modules/arcgis/src"
       ],
+      "@loaders.gl/arcgis/unbundled": [
+        "modules/arcgis/src/unbundled"
+      ],
       "@loaders.gl/arcgis/test": [
         "modules/arcgis/test"
       ],
