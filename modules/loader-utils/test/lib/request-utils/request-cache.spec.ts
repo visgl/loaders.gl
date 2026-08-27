@@ -193,6 +193,20 @@ test('RangeRequestCache bypasses storage and copies for oversized ranges', async
   expect(cache.byteLength).toBe(0);
 });
 
+test('RangeRequestCache validates responses when storage is bypassed', async () => {
+  const cache = new RangeRequestCache({maxBytes: 2});
+
+  await expect(
+    cache.read({
+      sourceId: 'source',
+      offset: 0,
+      length: 4,
+      fetchRange: async () => new Uint8Array([0, 1, 2]).buffer
+    })
+  ).rejects.toThrow('expected 4');
+  expect(cache.size).toBe(0);
+});
+
 test('RangeRequestCache deletes source ranges and reports evictions', async () => {
   const events: string[] = [];
   const cache = new RangeRequestCache({

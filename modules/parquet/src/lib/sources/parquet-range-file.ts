@@ -140,32 +140,37 @@ export class ParquetRangeFile implements ReadableFile {
       return new ArrayBuffer(0);
     }
 
-    return await this.cache.read({
-      sourceId: getVersionedSourceId(this.url, this.version),
-      offset,
-      length,
-      signal,
-      fetchRange: async (rangeOffset, rangeLength, cacheSignal) =>
-        await this.scheduler.scheduleRequest({
-          sourceId: getVersionedSourceId(this.url, this.version),
-          offset: rangeOffset,
-          length: rangeLength,
-          signal: cacheSignal,
-          fetchRange: async (transportOffset, transportLength, transportSignal) => {
-            const result = await this.fetchExactRange(
-              transportOffset,
-              transportLength,
-              transportSignal,
-              true
-            );
-            return {
-              arrayBuffer: result.arrayBuffer,
-              status: result.response.status,
-              transportBytes: result.arrayBuffer.byteLength
-            };
-          }
-        })
-    });
+    const abortContext = createCombinedAbortSignal(signal, this.closeController.signal);
+    try {
+      return await this.cache.read({
+        sourceId: getVersionedSourceId(this.url, this.version),
+        offset,
+        length,
+        signal: abortContext.signal,
+        fetchRange: async (rangeOffset, rangeLength, cacheSignal) =>
+          await this.scheduler.scheduleRequest({
+            sourceId: getVersionedSourceId(this.url, this.version),
+            offset: rangeOffset,
+            length: rangeLength,
+            signal: cacheSignal,
+            fetchRange: async (transportOffset, transportLength, transportSignal) => {
+              const result = await this.fetchExactRange(
+                transportOffset,
+                transportLength,
+                transportSignal,
+                true
+              );
+              return {
+                arrayBuffer: result.arrayBuffer,
+                status: result.response.status,
+                transportBytes: result.arrayBuffer.byteLength
+              };
+            }
+          })
+      });
+    } finally {
+      abortContext.dispose();
+    }
   }
 
   /** Returns file length information without another HTTP request. */

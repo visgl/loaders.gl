@@ -25,6 +25,7 @@ import {
 import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
 import type {ParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-types';
+import {ParquetRangeFile} from '../src/lib/sources/parquet-range-file';
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -616,6 +617,43 @@ test('ParquetSourceLoader#abort and close cancel initialization', async () => {
   await expect(closeRequest).rejects.toThrow(/abort/i);
   await expect(closeSource.getMetadata()).rejects.toThrow(/closed/i);
   });
+
+test('ParquetRangeFile#close cancels oversized uncached reads', async (t) => {
+  const fileByteLength = 100_000;
+  let requestCount = 0;
+  let markReadStarted: () => void = () => {};
+  const readStarted = new Promise<void>(resolve => {
+    markReadStarted = resolve;
+  });
+  const file = new ParquetRangeFile(REMOTE_URL, {
+    fetch: async (_url, options = {}) => {
+      requestCount++;
+      if (requestCount === 1) {
+        return new Response(new Uint8Array(4), {
+          status: 206,
+          headers: {'Content-Range': `bytes 0-3/${fileByteLength}`, ETag: '"fixture-v1"'}
+        });
+      }
+      markReadStarted();
+      return await new Promise<Response>((_resolve, reject) => {
+        const rejectAborted = () => reject(createAbortError());
+        if (options.signal?.aborted) {
+          rejectAborted();
+        } else {
+          options.signal?.addEventListener('abort', rejectAborted, {once: true});
+        }
+      });
+    }
+  });
+
+  await file.open();
+  const read = file.read(4, 70_000);
+  await readStarted;
+  await file.close();
+
+  await t.rejects(read, /abort/i, 'close aborts a read larger than the cache budget');
+  t.end();
+});
 
 /** Loads the shared Parquet fixture into memory for deterministic transport tests. */
 async function loadFixture(url = FIXTURE_URL): Promise<ArrayBuffer> {

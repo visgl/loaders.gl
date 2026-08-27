@@ -138,7 +138,9 @@ export class RangeRequestCache {
       if (signal?.aborted) {
         throw createAbortError();
       }
-      return await fetchRange(offset, length, signal || new AbortController().signal);
+      const arrayBuffer = await fetchRange(offset, length, signal || new AbortController().signal);
+      validateResponseLength(arrayBuffer, length);
+      return arrayBuffer;
     }
     const key = getRangeKey(sourceId, offset, length);
     const placeholder: CachedRange = {
@@ -153,11 +155,7 @@ export class RangeRequestCache {
         key,
         async cacheSignal => {
           const arrayBuffer = await fetchRange(offset, length, cacheSignal);
-          if (arrayBuffer.byteLength !== length) {
-            throw new Error(
-              `Range request returned ${arrayBuffer.byteLength} bytes; expected ${length}`
-            );
-          }
+          validateResponseLength(arrayBuffer, length);
           const loadedRange = {...placeholder, arrayBuffer};
           this.registerRange(key, loadedRange);
           this.onEvent?.({type: 'store', sourceId, offset, length});
@@ -261,6 +259,15 @@ function validateRange(offset: number, length: number): void {
   }
   if (!Number.isSafeInteger(offset + length)) {
     throw new Error('Byte range end must be a safe integer');
+  }
+}
+
+/** Rejects transport responses that do not exactly cover the requested range. */
+function validateResponseLength(arrayBuffer: ArrayBuffer, expectedLength: number): void {
+  if (arrayBuffer.byteLength !== expectedLength) {
+    throw new Error(
+      `Range request returned ${arrayBuffer.byteLength} bytes; expected ${expectedLength}`
+    );
   }
 }
 
