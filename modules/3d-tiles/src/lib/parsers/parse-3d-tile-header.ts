@@ -174,9 +174,15 @@ function getMetadataBoundingVolume(
     if (!value.every(component => typeof component === 'number')) {
       continue;
     }
-    if (semantic === `${scope}_BOUNDING_BOX` && value.length === 12) return {box: value};
-    if (semantic === `${scope}_BOUNDING_REGION` && value.length === 6) return {region: value};
-    if (semantic === `${scope}_BOUNDING_SPHERE` && value.length === 4) return {sphere: value};
+    if (semantic === `${scope}_BOUNDING_BOX` && value.length === 12) {
+      return {box: value};
+    }
+    if (semantic === `${scope}_BOUNDING_REGION` && value.length === 6) {
+      return {region: value};
+    }
+    if (semantic === `${scope}_BOUNDING_SPHERE` && value.length === 4) {
+      return {sphere: value};
+    }
   }
   return undefined;
 }
