@@ -24,7 +24,7 @@ import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
-  normalize?: boolean;
+  normalize?: boolean | 'best-effort' | 'strict';
   loadImages?: boolean;
   /** Load linked and embedded buffers; required for meshopt decompression. @default true */
   loadBuffers?: boolean;

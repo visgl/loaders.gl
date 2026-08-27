@@ -165,6 +165,12 @@ export {
   type GLTFTextureReferences
 } from './lib/api/gltf-iterator';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
+export {
+  convertGLTFV1ToGLTF2,
+  normalizeGLTFV1,
+  type GLTFV1NormalizationOptions,
+  type GLTFV1NormalizationReport
+} from './lib/api/normalize-gltf-v1';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
 export {
   findGLTFFileIndex,
