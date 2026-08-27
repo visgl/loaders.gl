@@ -5,15 +5,13 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {coreApi, parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
-
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
 const ACTUAL_B3DM =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithVertexColors/batchedWithVertexColors.b3dm';
@@ -23,7 +21,6 @@ const DEPRECATED_B3DM_2 =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedDeprecated2/batchedDeprecated2.b3dm';
 const GLTF_CONTENT_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/VNext/agi-ktx2/tileset.json';
-
 const IMPLICIT_OCTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/SparseOctree/tileset.json';
 const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
@@ -32,7 +29,6 @@ const IMPLICIT_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/tileset.json';
 const IMPLICIT_QUADTREE_SUBTREE_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/subtrees/0/0/0.subtree';
-
 /** Encodes a minimal valid tileset with optional top-level or root overrides. */
 function encodeTilesetJson(overrides: {[key: string]: any} = {}): ArrayBuffer {
   const tilesetJson = {
@@ -51,42 +47,31 @@ function encodeTilesetJson(overrides: {[key: string]: any} = {}): ArrayBuffer {
     encodedJson.byteOffset + encodedJson.byteLength
   ) as ArrayBuffer;
 }
-
-test('Tiles3DLoader#Tileset file', async t => {
+test('Tiles3DLoader#Tileset file', async () => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
-  t.ok(tileset);
-
-  t.equals(tileset.type, 'TILES3D');
-  t.equals(tileset.lodMetricType, 'geometricError');
-  t.equals(tileset.lodMetricValue, 0);
-  t.equals(tileset.loader, BundledTiles3DLoader);
-
-  t.equals(tileset.root.refine, 1);
-  t.deepEqual(
-    tileset.root.boundingVolume.region,
-    [-1.3197004795898053, 0.6988582109, -1.3196595204101946, 0.6988897891, 0, 20]
-  );
-
-  t.equals(tileset.root.geometricError, 0);
-  t.equals(tileset.root.content.uri, 'batchedColors.b3dm');
-  t.equals(tileset.root.lodMetricType, 'geometricError');
-  t.equals(tileset.root.lodMetricValue, 0);
-  t.equals(tileset.root.type, 'scenegraph');
-
-  t.end();
+  expect(tileset).toBeTruthy();
+  expect(tileset.type).toBe('TILES3D');
+  expect(tileset.lodMetricType).toBe('geometricError');
+  expect(tileset.lodMetricValue).toBe(0);
+  expect(tileset.loader).toBe(BundledTiles3DLoader);
+  expect(tileset.root.refine).toBe(1);
+  expect(tileset.root.boundingVolume.region).toEqual([
+    -1.3197004795898053, 0.6988582109, -1.3196595204101946, 0.6988897891, 0, 20
+  ]);
+  expect(tileset.root.geometricError).toBe(0);
+  expect(tileset.root.content.uri).toBe('batchedColors.b3dm');
+  expect(tileset.root.lodMetricType).toBe('geometricError');
+  expect(tileset.root.lodMetricValue).toBe(0);
+  expect(tileset.root.type).toBe('scenegraph');
 });
-
-test('Tiles3DLoader#detects extensionless tileset JSON from structure', async t => {
+test('Tiles3DLoader#detects extensionless tileset JSON from structure', async () => {
   const tileset = await parse(encodeTilesetJson(), Tiles3DLoader, {worker: false});
-
-  t.equal(tileset.shape, 'tileset3d');
-  t.equal(tileset.asset.version, '1.1');
-  t.equal(tileset.root.lodMetricValue, 0);
-  t.end();
+  expect(tileset.shape).toBe('tileset3d');
+  expect(tileset.asset.version).toBe('1.1');
+  expect(tileset.root.lodMetricValue).toBe(0);
 });
-
-test('Tiles3DLoader#detects JSON glTF tile content from structure', async t => {
+test('Tiles3DLoader#detects JSON glTF tile content from structure', async () => {
   const gltfJson = new TextEncoder().encode(
     JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
   );
@@ -98,13 +83,12 @@ test('Tiles3DLoader#detects JSON glTF tile content from structure', async t => {
     worker: false,
     '3d-tiles': {loadGLTF: false}
   });
-
-  t.equal(tile.type, 'glTF', 'routes JSON glTF through the shared glTF content parser');
-  t.equal(tile.gltfArrayBuffer, gltfArrayBuffer, 'preserves JSON glTF bytes for deferred parsing');
-  t.end();
+  expect(tile.type, 'routes JSON glTF through the shared glTF content parser').toBe('glTF');
+  expect(tile.gltfArrayBuffer, 'preserves JSON glTF bytes for deferred parsing').toBe(
+    gltfArrayBuffer
+  );
 });
-
-test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', async t => {
+test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', async () => {
   const gltfJson = new TextEncoder().encode(
     JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
   );
@@ -116,31 +100,24 @@ test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', asyn
     worker: false,
     '3d-tiles': {loadGLTF: true}
   });
-
-  t.equal(tile.type, 'glTF');
-  t.equal(tile.gltf?.asset.version, '2.0', 'parses the preprocessed JSON glTF object');
-  t.end();
+  expect(tile.type).toBe('glTF');
+  expect(tile.gltf?.asset.version, 'parses the preprocessed JSON glTF object').toBe('2.0');
 });
-
-test('Tiles3DLoader#reports explicit content-mode mismatches', async t => {
-  await t.rejects(
+test('Tiles3DLoader#reports explicit content-mode mismatches', async () => {
+  await await expect(
     parse(encodeTilesetJson(), Tiles3DLoader, {
       worker: false,
       '3d-tiles': {isTileset: false}
-    }),
-    /Expected 3D tile render content; detected external tileset JSON/
-  );
-  await t.rejects(
+    })
+  ).rejects.toThrow(/Expected 3D tile render content; detected external tileset JSON/);
+  await await expect(
     parse(new TextEncoder().encode(JSON.stringify({asset: {version: '2.0'}})), Tiles3DLoader, {
       worker: false,
       '3d-tiles': {isTileset: true}
-    }),
-    /Expected 3D Tiles tileset JSON; detected gltf/
-  );
-  t.end();
+    })
+  ).rejects.toThrow(/Expected 3D Tiles tileset JSON; detected gltf/);
 });
-
-test('Tiles3DLoader#accepts supported required extensions', async t => {
+test('Tiles3DLoader#accepts supported required extensions', async () => {
   const extensionsRequired = [
     '3DTILES_implicit_tiling',
     '3DTILES_bounding_volume_S2',
@@ -153,12 +130,11 @@ test('Tiles3DLoader#accepts supported required extensions', async t => {
     Tiles3DLoader,
     {worker: false, '3d-tiles': {isTileset: true}}
   );
-
-  t.deepEqual(tileset.extensionsRequired, extensionsRequired, 'preserves the required extensions');
-  t.end();
+  expect(tileset.extensionsRequired, 'preserves the required extensions').toEqual(
+    extensionsRequired
+  );
 });
-
-test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async t => {
+test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async () => {
   const s2VolumeInfo = {token: '1', minimumHeight: 0, maximumHeight: 10};
   const s2BoundingVolume = {
     extensions: {'3DTILES_bounding_volume_S2': s2VolumeInfo}
@@ -177,52 +153,39 @@ test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async t => {
     Tiles3DLoader,
     {worker: false, '3d-tiles': {isTileset: true}}
   );
-
-  t.equal(tileset.root.boundingVolume.box.length, 12, 'normalizes the tile traversal volume');
-  t.equal(
+  expect(tileset.root.boundingVolume.box.length, 'normalizes the tile traversal volume').toBe(12);
+  expect(
     tileset.root.content.boundingVolume.box.length,
-    12,
     'normalizes the explicit content volume'
-  );
-  t.equal(
+  ).toBe(12);
+  expect(
     tileset.root.viewerRequestVolume.box.length,
-    12,
     'normalizes the explicit viewer request volume'
-  );
-  t.deepEqual(
+  ).toBe(12);
+  expect(
     tileset.root.boundingVolume.s2VolumeInfo,
-    s2VolumeInfo,
     'retains S2 metadata for implicit subdivision and diagnostics'
-  );
-  t.end();
+  ).toEqual(s2VolumeInfo);
 });
-
-test('Tiles3DLoader#allows unknown extensionsUsed entries', async t => {
+test('Tiles3DLoader#allows unknown extensionsUsed entries', async () => {
   const tileset = await parse(
     encodeTilesetJson({extensionsUsed: ['VENDOR_optional_extension']}),
     Tiles3DLoader,
     {worker: false, '3d-tiles': {isTileset: true}}
   );
-
-  t.deepEqual(
-    tileset.extensionsUsed,
-    ['VENDOR_optional_extension'],
-    'optional unknown extensions do not prevent loading'
-  );
-  t.end();
+  expect(tileset.extensionsUsed, 'optional unknown extensions do not prevent loading').toEqual([
+    'VENDOR_optional_extension'
+  ]);
 });
-
-test('Tiles3DLoader#rejects unsupported required extensions', async t => {
-  await t.rejects(
+test('Tiles3DLoader#rejects unsupported required extensions', async () => {
+  await await expect(
     parse(encodeTilesetJson({extensionsRequired: ['VENDOR_required_extension']}), Tiles3DLoader, {
       worker: false,
       '3d-tiles': {isTileset: true}
     }),
-    /Unsupported required 3D Tiles extension: VENDOR_required_extension/,
     'names an unsupported required extension'
-  );
-
-  await t.rejects(
+  ).rejects.toThrow(/Unsupported required 3D Tiles extension: VENDOR_required_extension/);
+  await await expect(
     parse(
       encodeTilesetJson({
         extensionsRequired: ['VENDOR_first', '3DTILES_multiple_contents', 'VENDOR_first']
@@ -230,27 +193,22 @@ test('Tiles3DLoader#rejects unsupported required extensions', async t => {
       Tiles3DLoader,
       {worker: false, '3d-tiles': {isTileset: true}}
     ),
-    /Unsupported required 3D Tiles extensions: VENDOR_first, 3DTILES_multiple_contents/,
     'reports every unsupported extension once in declaration order'
+  ).rejects.toThrow(
+    /Unsupported required 3D Tiles extensions: VENDOR_first, 3DTILES_multiple_contents/
   );
-  t.end();
 });
-
-test('Tiles3DLoader#rejects unknown binary tile types', async t => {
+test('Tiles3DLoader#rejects unknown binary tile types', async () => {
   const unknownTile = new TextEncoder().encode('nope').buffer as ArrayBuffer;
-
-  await t.rejects(
+  await await expect(
     parse(unknownTile, Tiles3DLoader, {
       worker: false,
       '3d-tiles': {isTileset: false}
     }),
-    /Invalid 3D Tiles content: expected supported binary magic or JSON object/,
     'reports an unsupported resource-boundary payload'
-  );
-  t.end();
+  ).rejects.toThrow(/Invalid 3D Tiles content: expected supported binary magic or JSON object/);
 });
-
-test('Tiles3DLoader#validates required extensions before implicit subtree fetching', async t => {
+test('Tiles3DLoader#validates required extensions before implicit subtree fetching', async () => {
   let fetchCallCount = 0;
   const implicitRoot = {
     geometricError: 1,
@@ -264,8 +222,7 @@ test('Tiles3DLoader#validates required extensions before implicit subtree fetchi
       subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
     }
   };
-
-  await t.rejects(
+  await await expect(
     parse(
       encodeTilesetJson({
         extensionsRequired: ['VENDOR_required_before_fetch'],
@@ -281,14 +238,11 @@ test('Tiles3DLoader#validates required extensions before implicit subtree fetchi
         }
       }
     ),
-    /Unsupported required 3D Tiles extension: VENDOR_required_before_fetch/,
     'rejects before normalization starts'
-  );
-  t.equals(fetchCallCount, 0, 'does not request an implicit subtree');
-  t.end();
+  ).rejects.toThrow(/Unsupported required 3D Tiles extension: VENDOR_required_before_fetch/);
+  expect(fetchCallCount, 'does not request an implicit subtree').toBe(0);
 });
-
-test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching', async t => {
+test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching', async () => {
   let fetchCallCount = 0;
   const tileset = await parse(
     encodeTilesetJson({
@@ -316,58 +270,46 @@ test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching
       }
     }
   );
-
-  t.equal(fetchCallCount, 0);
-  t.equal(tileset.root.children.length, 0);
-  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 0);
-  t.end();
+  expect(fetchCallCount).toBe(0);
+  expect(tileset.root.children.length).toBe(0);
+  expect(tileset.root.implicitSubtree.descriptor.maximumLevel).toBe(0);
 });
-
-test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
+test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async () => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
   const tile = await parse(response, [Tiles3DLoader, DracoLoader], {worker: false});
-  t.ok(tile);
+  expect(tile).toBeTruthy();
   // @ts-expect-error type Tiles3DLoader
-  t.ok(tile.gltf);
+  expect(tile.gltf).toBeTruthy();
   // @ts-expect-error type Tiles3DLoader
-  t.equals(tile.type, 'b3dm', 'Should parse the correct tiles type.');
-  t.end();
+  expect(tile.type, 'Should parse the correct tiles type.').toBe('b3dm');
 });
-
-test('Tiles3DLoader#Tile with actual b3dm file', async t => {
+test('Tiles3DLoader#Tile with actual b3dm file', async () => {
   const response = await fetchFile(ACTUAL_B3DM);
   const tile = await parse(response, Tiles3DLoader);
-  t.ok(tile);
-  t.ok(tile.batchTableJson);
-  t.deepEqual(tile.batchTableJson.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  t.ok(tile.gltf);
-  t.end();
+  expect(tile).toBeTruthy();
+  expect(tile.batchTableJson).toBeTruthy();
+  expect(tile.batchTableJson.id).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  expect(tile.gltf).toBeTruthy();
 });
-
-test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async t => {
+test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async () => {
   const response = await fetchFile(DEPRECATED_B3DM_1);
   const tile = await parse(response, Tiles3DLoader);
-  t.ok(tile);
-  t.ok(tile.batchTableJson);
-  t.deepEqual(tile.batchTableJson.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  t.ok(tile.gltf);
-  t.end();
+  expect(tile).toBeTruthy();
+  expect(tile.batchTableJson).toBeTruthy();
+  expect(tile.batchTableJson.id).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  expect(tile.gltf).toBeTruthy();
 });
-
-test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async t => {
+test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async () => {
   const response = await fetchFile(DEPRECATED_B3DM_2);
   const tile = await parse(response, Tiles3DLoader);
-  t.ok(tile);
-  t.ok(tile.batchTableJson);
-  t.deepEqual(tile.batchTableJson.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  t.ok(tile.gltf);
-  t.end();
+  expect(tile).toBeTruthy();
+  expect(tile.batchTableJson).toBeTruthy();
+  expect(tile.batchTableJson.id).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  expect(tile.gltf).toBeTruthy();
 });
-
-test('Tiles3DLoader#loads json from base64 URL', async t => {
+test('Tiles3DLoader#loads json from base64 URL', async () => {
   // fetching base64 doesn't work in NodeJS
   if (!isBrowser) {
-    t.end();
   }
   const tilesetJson = {
     asset: {
@@ -379,56 +321,50 @@ test('Tiles3DLoader#loads json from base64 URL', async t => {
       geometricError: 0
     }
   };
-
   const uri = `data:text/plain;base64,${btoa(JSON.stringify(tilesetJson))}`;
-
   const response = await fetchFile(uri);
   const tilesetHeader = await parse(response, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
-  t.ok(tilesetHeader.asset, 'should contain asset');
-  t.ok(tilesetHeader.asset.version, 'asset should contain version');
-  t.ok(tilesetHeader.loader, 'should contain loader the header loaded with');
-  t.equals(tilesetHeader.loader.id, '3d-tiles', 'loaded with supported tiles 3D format loader');
-  t.equals(typeof tilesetHeader.url, 'string', 'url should be string');
-  t.equals(typeof tilesetHeader.basePath, 'string', 'basePath should be string');
-  t.ok('root' in tilesetHeader, 'should contain root tile');
-  t.equals(tilesetHeader.type, 'TILES3D');
-  t.end();
+  expect(tilesetHeader.asset, 'should contain asset').toBeTruthy();
+  expect(tilesetHeader.asset.version, 'asset should contain version').toBeTruthy();
+  expect(tilesetHeader.loader, 'should contain loader the header loaded with').toBeTruthy();
+  expect(tilesetHeader.loader.id, 'loaded with supported tiles 3D format loader').toBe('3d-tiles');
+  expect(typeof tilesetHeader.url, 'url should be string').toBe('string');
+  expect(typeof tilesetHeader.basePath, 'basePath should be string').toBe('string');
+  expect('root' in tilesetHeader, 'should contain root tile').toBeTruthy();
+  expect(tilesetHeader.type).toBe('TILES3D');
 });
-
-test('Tiles3DLoader#Tile GLTF content extension', async t => {
-  const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader);
-  const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader);
-  t.equals(glbTileContent.type, 'glTF');
-  t.ok(glbTileContent.gltf);
+test('Tiles3DLoader#Tile GLTF content extension', async () => {
+  const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader, {worker: false});
+  const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader, {
+    worker: false
+  });
+  expect(glbTileContent.type).toBe('glTF');
+  expect(glbTileContent.gltf).toBeTruthy();
 });
-
-test('Tiles3DLoader#normalizes an implicit octree without subtree requests', async t => {
+test('Tiles3DLoader#normalizes an implicit octree without subtree requests', async () => {
   const IMPLICIT_TILING_EXPECTED = {
     subdivisionScheme: 'OCTREE',
     subtreeLevels: 3,
     availableLevels: 6,
     subtrees: {uri: 'subtrees/{level}/{x}/{y}/{z}.subtree'}
   };
-
   const response = await fetchFile(IMPLICIT_OCTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
-
-  t.ok(tileset);
-  t.ok(tileset.root);
-  t.deepEqual(tileset.root.implicitTiling, IMPLICIT_TILING_EXPECTED);
-  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}/{z}.glb');
-  t.equal(tileset.root.lodMetricValue, 32);
-  t.equal(tileset.root.type, 'empty');
-  t.equal(tileset.root.refine, 1);
-  t.equal(tileset.root.children.length, 0, 'does not eagerly materialize subtree headers');
-  t.equal(tileset.root.implicitSubtree.coordinates.level, 0);
-  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 5);
-  t.ok(tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0/0.subtree'));
-
-  t.end();
+  expect(tileset).toBeTruthy();
+  expect(tileset.root).toBeTruthy();
+  expect(tileset.root.implicitTiling).toEqual(IMPLICIT_TILING_EXPECTED);
+  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}/{z}.glb');
+  expect(tileset.root.lodMetricValue).toBe(32);
+  expect(tileset.root.type).toBe('empty');
+  expect(tileset.root.refine).toBe(1);
+  expect(tileset.root.children.length, 'does not eagerly materialize subtree headers').toBe(0);
+  expect(tileset.root.implicitSubtree.coordinates.level).toBe(0);
+  expect(tileset.root.implicitSubtree.descriptor.maximumLevel).toBe(5);
+  expect(
+    tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0/0.subtree')
+  ).toBeTruthy();
 });
-
-test('Tiles3DLoader#normalizes a legacy implicit quadtree as a lazy root', async t => {
+test('Tiles3DLoader#normalizes a legacy implicit quadtree as a lazy root', async () => {
   const ROOT_EXTENSION_EXPECTED = {
     '3DTILES_implicit_tiling': {
       subdivisionScheme: 'QUADTREE',
@@ -437,30 +373,24 @@ test('Tiles3DLoader#normalizes a legacy implicit quadtree as a lazy root', async
       subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
     }
   };
-
   const response = await fetchFile(IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
-
-  t.ok(tileset);
-  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
-  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
-  t.ok(tileset.root);
-  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}.b3dm');
-  t.equal(tileset.root.lodMetricValue, 5000);
-  t.equal(tileset.root.type, 'empty');
-  t.equal(tileset.root.refine, 1);
-  t.equal(tileset.root.children.length, 0);
-  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
-  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 2);
-  t.ok(tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0.subtree'));
-
-  t.end();
+  expect(tileset).toBeTruthy();
+  expect(tileset.extensionsRequired[0]).toBe('3DTILES_implicit_tiling');
+  expect(tileset.extensionsUsed[0]).toBe('3DTILES_implicit_tiling');
+  expect(tileset.root).toBeTruthy();
+  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}.b3dm');
+  expect(tileset.root.lodMetricValue).toBe(5000);
+  expect(tileset.root.type).toBe('empty');
+  expect(tileset.root.refine).toBe(1);
+  expect(tileset.root.children.length).toBe(0);
+  expect(tileset.root.extensions).toEqual(ROOT_EXTENSION_EXPECTED);
+  expect(tileset.root.implicitSubtree.descriptor.maximumLevel).toBe(2);
+  expect(tileset.root.implicitSubtree.subtreeUrl.endsWith('/subtrees/0/0/0.subtree')).toBeTruthy();
 });
-
-test('Tiles3DLoader#preserves ADD refinement on a lazy implicit root', async t => {
+test('Tiles3DLoader#preserves ADD refinement on a lazy implicit root', async () => {
   const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
-
   const ROOT_EXTENSION_EXPECTED = {
     '3DTILES_implicit_tiling': {
       subdivisionScheme: 'QUADTREE',
@@ -469,52 +399,41 @@ test('Tiles3DLoader#preserves ADD refinement on a lazy implicit root', async t =
       subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
     }
   };
-
-  t.ok(tileset);
-  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
-  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
-  t.ok(tileset.root);
-  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}.b3dm');
-  t.equal(tileset.root.lodMetricValue, 5000);
-  t.equal(tileset.root.type, 'empty');
-  t.equal(tileset.root.refine, 2);
-  t.equal(tileset.root.children.length, 0);
-  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
-  t.equal(tileset.root.implicitSubtree.descriptor.maximumLevel, 1);
-
-  t.end();
+  expect(tileset).toBeTruthy();
+  expect(tileset.extensionsRequired[0]).toBe('3DTILES_implicit_tiling');
+  expect(tileset.extensionsUsed[0]).toBe('3DTILES_implicit_tiling');
+  expect(tileset.root).toBeTruthy();
+  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}.b3dm');
+  expect(tileset.root.lodMetricValue).toBe(5000);
+  expect(tileset.root.type).toBe('empty');
+  expect(tileset.root.refine).toBe(2);
+  expect(tileset.root.children.length).toBe(0);
+  expect(tileset.root.extensions).toEqual(ROOT_EXTENSION_EXPECTED);
+  expect(tileset.root.implicitSubtree.descriptor.maximumLevel).toBe(1);
 });
-
-test('Tiles3DLoader#parses source-managed implicit subtree resources', async t => {
+test('Tiles3DLoader#parses source-managed implicit subtree resources', async () => {
   const response = await fetchFile(IMPLICIT_QUADTREE_SUBTREE_URL);
   const subtree = await parse(response, BundledTiles3DLoader, {
     worker: false,
     '3d-tiles': {isSubtree: true}
   } as any);
-
-  t.ok(subtree.tileAvailability.explicitBitstream);
-  t.ok(subtree.contentAvailability.explicitBitstream);
-  t.equal(subtree.childSubtreeAvailability.constant, 0);
-  t.end();
+  expect(subtree.tileAvailability.explicitBitstream).toBeTruthy();
+  expect(subtree.contentAvailability.explicitBitstream).toBeTruthy();
+  expect(subtree.childSubtreeAvailability.constant).toBe(0);
 });
-
-test('Tiles3DSource#loads an actual implicit subtree after initialization', async t => {
+test('Tiles3DSource#loads an actual implicit subtree after initialization', async () => {
   const tilesetJson = await load(IMPLICIT_QUADTREE_TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   await tileset.tilesetInitializationPromise;
-
   const root = tileset.root!;
-  t.equal(root.children.length, 0, 'starts with the lazy implicit root only');
+  expect(root.children.length, 'starts with the lazy implicit root only').toBe(0);
   await root.loadChildren({} as any);
-
-  t.equal(root.childrenState, 'ready');
-  t.ok(root.contentUrl.endsWith('/content/0/0/0.b3dm'));
-  t.equal(root.children.length, 3, 'installs every available sparse tile header');
-  t.equal(
+  expect(root.childrenState).toBe('ready');
+  expect(root.contentUrl.endsWith('/content/0/0/0.b3dm')).toBeTruthy();
+  expect(root.children.length, 'installs every available sparse tile header').toBe(3);
+  expect(
     root.children.filter(child => child.hasRenderContent).length,
-    2,
     'preserves the two content-bearing children'
-  );
-  t.ok(root.children.every(child => child.depth === 1));
-  t.end();
+  ).toBe(2);
+  expect(root.children.every(child => child.depth === 1)).toBeTruthy();
 });

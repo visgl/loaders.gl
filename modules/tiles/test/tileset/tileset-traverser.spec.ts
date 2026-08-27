@@ -1,37 +1,32 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {coreApi} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
 import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';
-
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
-
-test('Tileset3D#traverser base class', async t => {
+test('Tileset3D#traverser base class', async () => {
   const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader, coreApi});
   const tileset = new Tileset3D(source);
   await tileset.tilesetInitializationPromise;
-
-  t.equals(
+  expect(
     tileset.options.progressiveResolutionHeightFraction,
-    0.3,
     'uses the progressive-resolution default'
+  ).toBe(0.3);
+  expect(tileset.options.foveatedScreenSpaceError, 'enables foveated priority by default').toBe(
+    true
   );
-  t.equals(tileset.options.foveatedScreenSpaceError, true, 'enables foveated priority by default');
-  t.equals(tileset.options.foveatedTimeDelay, 0.2, 'uses the moving-camera delay default');
-
+  expect(tileset.options.foveatedTimeDelay, 'uses the moving-camera delay default').toBe(0.2);
   const traverser = new TilesetTraverser({
     basePath: tileset.basePath,
     onTraversalEnd: traversalEnd
   });
-
   const viewport = new WebMercatorViewport({
     altitude: 1.5,
     bearing: 0,
@@ -54,7 +49,6 @@ test('Tileset3D#traverser base class', async t => {
   });
   traverser.traverse(tileset.root, getFrameState(viewport, 0), {});
   function traversalEnd() {
-    t.ok(traverser);
-    t.end();
+    expect(traverser).toBeTruthy();
   }
 });

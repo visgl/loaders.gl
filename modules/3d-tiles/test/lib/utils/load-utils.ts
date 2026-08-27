@@ -12,52 +12,30 @@ import type {Tile3D} from '@loaders.gl/tiles';
 
 /** @typedef {import('@loaders.gl/tiles').Tile3D} Tile3D */
 
-/**
- * @returns {Promise<Tile3D>}
- */
-export async function loadRootTile(t, tilesetUrl) {
-  try {
-    // Load tileset
-    const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
-    const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
+/** Loads and parses the root content tile for a local 3D Tiles fixture. */
+export async function loadRootTile(tilesetUrl: string): Promise<Tile3D> {
+  const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {worker: false});
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
 
-    // Load root tile
-    /** @type {Tile3D} */
-    // @ts-ignore
-    const sourceRootTile = tileset.root as Tile3D;
-    await tileset._loadTile(sourceRootTile);
-    return sourceRootTile;
-  } catch (error) {
-    t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
-    throw error;
-  }
+  /** @type {Tile3D} */
+  // @ts-ignore
+  const sourceRootTile = tileset.root as Tile3D;
+  await tileset._loadTile(sourceRootTile);
+  return sourceRootTile;
 }
 
-export async function loadTileset(t, tilesetUrl) {
-  try {
-    // Load tileset
-    const tileset = await load(tilesetUrl, Tiles3DLoader);
-    const tileset3d = new Tileset3D(new Tiles3DSource({...tileset, coreApi}));
-    return tileset3d;
-  } catch (error) {
-    t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
-    throw error;
-  }
+/** Loads a local tileset fixture into the shared runtime. */
+export async function loadTileset(tilesetUrl: string): Promise<Tileset3D> {
+  const tileset = await load(tilesetUrl, Tiles3DLoader, {worker: false});
+  return new Tileset3D(new Tiles3DSource({...tileset, coreApi}));
 }
 
-export async function loadRootTileFromTileset(t, tilesetUrl) {
-  try {
-    // Load tileset
-    const tileset = await load(tilesetUrl, Tiles3DLoader);
-    const tileset3d = new Tileset3D(new Tiles3DSource({...tileset, coreApi}));
+/** Returns the unparsed root-content bytes declared by a local tileset fixture. */
+export async function loadRootTileFromTileset(tilesetUrl: string): Promise<ArrayBuffer> {
+  const tileset = await load(tilesetUrl, Tiles3DLoader, {worker: false});
+  const tileset3d = new Tileset3D(new Tiles3DSource({...tileset, coreApi}));
 
-    // Load binary data for root tile
-    // @ts-ignore root is possibly null
-    const response = await fetchFile(tileset3d.root.contentUrl);
-    return response.arrayBuffer();
-    // return tile;
-  } catch (error) {
-    t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
-    throw error;
-  }
+  // @ts-ignore root is possibly null
+  const response = await fetchFile(tileset3d.root.contentUrl);
+  return response.arrayBuffer();
 }
