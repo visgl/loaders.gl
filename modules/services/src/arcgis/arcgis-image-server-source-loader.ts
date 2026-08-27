@@ -64,7 +64,7 @@ export const ArcGISImageServerSourceLoader = {
   batchType: null as never,
   name: 'ArcGISImageServer',
   id: 'arcgis-image-server',
-  module: 'wms',
+  module: 'services',
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],

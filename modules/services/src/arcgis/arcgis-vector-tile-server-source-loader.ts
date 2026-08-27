@@ -171,7 +171,7 @@ export const ArcGISVectorTileServerSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS VectorTileServer',
   id: 'arcgis-vector-tile-server',
-  module: 'wms',
+  module: 'services',
   version: '0.0.0',
   extensions: [],
   mimeTypes: ['application/vnd.mapbox-vector-tile', 'application/x-protobuf'],

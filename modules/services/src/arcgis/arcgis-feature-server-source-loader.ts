@@ -65,7 +65,6 @@ export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
 };
 
 /**
- * @ndeprecated This is a WIP, not fully implemented
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
 export const ArcGISFeatureServerSourceLoader = {
@@ -73,7 +72,7 @@ export const ArcGISFeatureServerSourceLoader = {
   batchType: null as never,
   name: 'ArcGISFeatureServer',
   id: 'arcgis-feature-server',
-  module: 'wms',
+  module: 'services',
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],

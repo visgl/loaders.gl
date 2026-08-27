@@ -252,7 +252,7 @@ export const ArcGISMapTileSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS MapServer tiles',
   id: 'arcgis-map-server',
-  module: 'wms',
+  module: 'services',
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
