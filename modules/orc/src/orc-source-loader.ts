@@ -88,22 +88,38 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
     const table = parseORCToArrow(arrayBuffer);
     const availableColumns = table.data.schema.fields.map(field => field.name);
     validateTableQueryOptions(availableColumns, options);
-    const columns: Record<string, unknown[]> = Object.fromEntries(
-      availableColumns.map(name => [name, table.data.getChild(name)?.toArray() || []])
-    );
-    const rowIndices = filterColumnarRowIndices(options.predicate, columns, table.data.numRows);
-    const selectedColumns = options.columns ? new Set(options.columns) : undefined;
-    const projectedData = options.predicate
-      ? arrow.tableFromArrays(
-          Object.fromEntries(
-            Object.entries(columns)
-              .filter(([name]) => !selectedColumns || selectedColumns.has(name))
-              .map(([name, values]) => [name, rowIndices.map(rowIndex => values[rowIndex])])
-          )
+    const selectedColumnNames = options.columns ? [...options.columns] : availableColumns;
+    let projectedData;
+    if (options.predicate) {
+      const columns: Record<string, unknown[]> = Object.fromEntries(
+        availableColumns.map(name => [name, [...(table.data.getChild(name) || [])]])
+      );
+      const rowIndices = filterColumnarRowIndices(
+        options.predicate,
+        columns as never,
+        table.data.numRows
+      );
+      const vectors = Object.fromEntries(
+        selectedColumnNames.map(name => {
+          const sourceVector = table.data.getChild(name);
+          return [
+            name,
+            arrow.vectorFromArray(
+              rowIndices.map(rowIndex => columns[name][rowIndex]),
+              sourceVector?.type
+            )
+          ];
+        })
+      );
+      const schema = new arrow.Schema(
+        selectedColumnNames.map(
+          name => table.data.schema.fields.find(field => field.name === name)!
         )
-      : table.data.select(
-          options.columns ? [...options.columns] : table.data.schema.fields.map(field => field.name)
-        );
+      );
+      projectedData = new arrow.Table(schema, vectors);
+    } else {
+      projectedData = table.data.select(selectedColumnNames);
+    }
     const limitedData = projectedData.slice(0, options.limit ?? Number.POSITIVE_INFINITY);
     return {
       shape: 'arrow-table',
