@@ -25,7 +25,9 @@ export async function parseParquetFile(
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
-    preserveBinary: options?.parquet?.preserveBinary
+    preserveBinary: options?.parquet?.preserveBinary,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
   });
 
   const schema = await getSchemaFromParquetReader(reader);
@@ -78,7 +80,9 @@ export async function* parseParquetFileInBatches(
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
-    preserveBinary: options?.parquet?.preserveBinary
+    preserveBinary: options?.parquet?.preserveBinary,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
   });
 
   const schema = await getSchemaFromParquetReader(reader);

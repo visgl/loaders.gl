@@ -174,6 +174,8 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
 | `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
+| `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files when using `ParquetJSLoader`. |
+| `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
 
 ## Loader Variants
 
@@ -181,7 +183,8 @@ Supports table category options such as `batchType` and `batchSize`.
   and can use the package's prebuilt worker.
 - Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and
   Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`,
-  `batchSize`, and `preserveBinary`.
+  `batchSize`, and `preserveBinary`. It can also read AES-GCM and AES-GCM-CTR encrypted column
+  metadata and page modules when `keyRetriever` is supplied.
 
 The implementation is selected by the loader import. There is no runtime backend option.
 The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)

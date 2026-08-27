@@ -11,7 +11,14 @@ import {decodeSchema, decodeDataPages, decodePage} from './decoders';
 import {materializeRows} from '../schema/shred';
 
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
-import {ColumnChunk, CompressionCodec, FileMetaData, RowGroup, Type} from '../parquet-thrift/index';
+import {
+  ColumnChunk,
+  CompressionCodec,
+  FileMetaData,
+  PageType,
+  RowGroup,
+  Type
+} from '../parquet-thrift/index';
 import {
   ParquetRowGroup,
   ParquetCompression,
@@ -21,10 +28,13 @@ import {
   type ParquetLevelBuffer
 } from '../schema/declare';
 import {
+  decodeColumnMetadata,
   decodeFileCryptoMetadata,
   decodeFileMetadata,
+  decodePageHeader,
   getThriftEnum,
-  fieldIndexOf
+  fieldIndexOf,
+  serializeThrift
 } from '../utils/read-utils';
 import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
 import {CompactInt64} from '../utils/uint8-array-compact-protocol';
@@ -39,6 +49,7 @@ import {
   type ParquetEncryptionAlgorithm,
   type ParquetKeyRetriever
 } from '../../lib/parquet-encryption';
+import type {ParquetEncryptionModule} from '../../lib/parquet-encryption';
 
 /** Bounds concurrent range requests when a row group contains unusually many selected columns. */
 const MAXIMUM_CONCURRENT_COLUMN_READS = 16;
@@ -89,6 +100,14 @@ type NormalizedParquetReaderProps = Required<
 > &
   Pick<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix'>;
 
+/** File-level parameters needed to authenticate modular-encrypted modules. */
+type ParquetEncryptionContext = {
+  algorithm: ParquetEncryptionAlgorithm;
+  aadPrefix?: Uint8Array;
+  fileUnique: Uint8Array;
+  footerKeyMetadata?: Uint8Array;
+};
+
 /**
  * The parquet envelope reader allows direct, unbuffered access to the individual
  * sections of the parquet file, namely the header, footer and the row groups.
@@ -114,6 +133,8 @@ export class ParquetReader {
   metadata: Promise<FileMetaData> | null = null;
   /** Parsed Parquet schema shared by metadata, iteration, and materialization paths. */
   private schema: Promise<ParquetSchema> | null = null;
+  /** Encryption parameters decoded from plaintext or encrypted footer metadata. */
+  private encryptionContext?: ParquetEncryptionContext;
 
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
@@ -165,7 +186,8 @@ export class ParquetReader {
         schema,
         metadata.row_groups[rowGroupIndex],
         columnList,
-        props?.signal
+        props?.signal,
+        rowGroupIndex
       );
       yield rowGroup;
     }
@@ -256,6 +278,7 @@ export class ParquetReader {
     // parquet_util.decodeThrift(metadata, metadataBuf);
 
     const {metadata} = decodeFileMetadata(metadataBuf);
+    this.setEncryptionContext(metadata.encryption_algorithm);
     return metadata;
   }
 
@@ -287,7 +310,77 @@ export class ParquetReader {
       keyMetadata: cryptoMetadata.metadata.key_metadata,
       keyRetriever: this.props.keyRetriever
     });
+    this.encryptionContext = {
+      algorithm,
+      aadPrefix,
+      fileUnique: algorithmMetadata.aad_file_unique,
+      footerKeyMetadata: cryptoMetadata.metadata.key_metadata
+    };
     return decodeFileMetadata(plaintext).metadata;
+  }
+
+  /** Records the encryption parameters exposed by plaintext-footer files. */
+  private setEncryptionContext(
+    encryptionAlgorithm: FileMetaData['encryption_algorithm'] | undefined
+  ): void {
+    if (!encryptionAlgorithm) return;
+    const algorithm = getEncryptionAlgorithm(encryptionAlgorithm);
+    const algorithmMetadata = encryptionAlgorithm.AES_GCM_V1 || encryptionAlgorithm.AES_GCM_CTR_V1;
+    if (!algorithmMetadata?.aad_file_unique) {
+      throw new Error('Encrypted Parquet footer is missing aad_file_unique');
+    }
+    this.encryptionContext = {
+      algorithm,
+      aadPrefix: algorithmMetadata.aad_prefix || this.props.aadPrefix,
+      fileUnique: algorithmMetadata.aad_file_unique
+    };
+  }
+
+  /** Resolves a column's plaintext metadata, decrypting column-specific metadata when present. */
+  private async getColumnMetadata(
+    columnChunk: ColumnChunk,
+    rowGroupOrdinal: number,
+    columnOrdinal: number
+  ): Promise<NonNullable<ColumnChunk['meta_data']>> {
+    if (!columnChunk.encrypted_column_metadata) {
+      if (!columnChunk.meta_data) {
+        throw new Error('Parquet column metadata is missing');
+      }
+      return columnChunk.meta_data;
+    }
+    if (!this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet column metadata requires parquet.keyRetriever');
+    }
+    const encryptionContext = this.encryptionContext;
+    if (!encryptionContext) {
+      throw new Error('Encrypted Parquet column metadata has no file encryption context');
+    }
+    const columnKey = columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY;
+    const usesFooterKey = Boolean(columnChunk.crypto_metadata?.ENCRYPTION_WITH_FOOTER_KEY);
+    if (!columnKey && !usesFooterKey) {
+      throw new Error('Encrypted Parquet column metadata has no key reference');
+    }
+    const aad = createParquetModuleAad(
+      encryptionContext.aadPrefix,
+      encryptionContext.fileUnique,
+      'column-metadata',
+      rowGroupOrdinal,
+      columnOrdinal
+    );
+    const plaintext = await decryptParquetModule(columnChunk.encrypted_column_metadata, {
+      algorithm: encryptionContext.algorithm,
+      aad,
+      keyMetadata: columnKey?.key_metadata ?? encryptionContext.footerKeyMetadata,
+      keyRetriever: this.props.keyRetriever
+    });
+    const metadata = decodeColumnMetadata(plaintext).metadata;
+    if (
+      columnKey &&
+      JSON.stringify(metadata.path_in_schema) !== JSON.stringify(columnKey.path_in_schema)
+    ) {
+      throw new Error('Encrypted Parquet column metadata path does not match crypto metadata');
+    }
+    return metadata;
   }
 
   /** Data is stored in row groups (similar to Apache Arrow record batches) */
@@ -295,12 +388,21 @@ export class ParquetReader {
     schema: ParquetSchema,
     rowGroup: RowGroup,
     columnList: string[][],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0
   ): Promise<ParquetRowGroup> {
-    const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
-      const columnKey = columnChunk.meta_data?.path_in_schema;
-      return columnList.length === 0 || fieldIndexOf(columnList, columnKey!) >= 0;
-    });
+    const selectedColumnChunks: Array<{
+      columnChunk: ColumnChunk;
+      metadata: NonNullable<ColumnChunk['meta_data']>;
+      columnOrdinal: number;
+    }> = [];
+    for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
+      const columnChunk = rowGroup.columns[columnOrdinal];
+      const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
+      if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
+        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
+      }
+    }
     const columnEntries: Array<readonly [string, ParquetColumnChunk]> = [];
     for (
       let batchStart = 0;
@@ -313,9 +415,16 @@ export class ParquetReader {
       );
       columnEntries.push(
         ...(await Promise.all(
-          columnBatch.map(async columnChunk => {
-            const columnKey = columnChunk.meta_data!.path_in_schema.join();
-            const columnData = await this.readColumnChunk(schema, columnChunk, signal);
+          columnBatch.map(async ({columnChunk, metadata, columnOrdinal}) => {
+            const columnKey = metadata.path_in_schema.join();
+            const columnData = await this.readColumnChunk(
+              schema,
+              columnChunk,
+              signal,
+              rowGroupOrdinal,
+              columnOrdinal,
+              metadata
+            );
             return [columnKey, columnData] as const;
           })
         ))
@@ -334,16 +443,25 @@ export class ParquetReader {
     columnList: string[][],
     rowRange: ParquetRowRange,
     pageLocations: ParquetPageLocations,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0
   ): Promise<ParquetRowGroup> {
-    const selectedColumnChunks = rowGroup.columns.filter(columnChunk => {
-      const columnKey = columnChunk.meta_data?.path_in_schema;
-      return columnList.length === 0 || fieldIndexOf(columnList, columnKey!) >= 0;
-    });
+    const selectedColumnChunks: Array<{
+      columnChunk: ColumnChunk;
+      metadata: NonNullable<ColumnChunk['meta_data']>;
+      columnOrdinal: number;
+    }> = [];
+    for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
+      const columnChunk = rowGroup.columns[columnOrdinal];
+      const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
+      if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
+        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
+      }
+    }
     const columnEntries = await Promise.all(
-      selectedColumnChunks.map(async columnChunk => {
-        const columnKey = columnChunk.meta_data!.path_in_schema.join();
-        const pages = pageLocations[JSON.stringify(columnChunk.meta_data!.path_in_schema)];
+      selectedColumnChunks.map(async ({columnChunk, metadata, columnOrdinal}) => {
+        const columnKey = metadata.path_in_schema.join();
+        const pages = pageLocations[JSON.stringify(metadata.path_in_schema)];
         if (!pages) {
           throw new Error(`Parquet offset index missing for ${columnKey}`);
         }
@@ -352,7 +470,10 @@ export class ParquetReader {
           columnChunk,
           rowRange,
           pages,
-          signal
+          signal,
+          rowGroupOrdinal,
+          columnOrdinal,
+          metadata
         );
         return [columnKey, columnData] as const;
       })
@@ -369,32 +490,36 @@ export class ParquetReader {
   async readColumnChunk(
     schema: ParquetSchema,
     colChunk: ColumnChunk,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0,
+    columnOrdinal = 0,
+    resolvedMetadata?: NonNullable<ColumnChunk['meta_data']>
   ): Promise<ParquetColumnChunk> {
     if (colChunk.file_path !== undefined && colChunk.file_path !== null) {
       throw new Error('external references are not supported');
     }
 
-    const field = schema.findField(colChunk.meta_data?.path_in_schema!);
-    const type: PrimitiveType = getThriftEnum(Type, colChunk.meta_data?.type!) as any;
+    const metadata = resolvedMetadata || colChunk.meta_data;
+    if (!metadata) {
+      throw new Error('Parquet column metadata is missing');
+    }
+    const field = schema.findField(metadata.path_in_schema);
+    const type: PrimitiveType = getThriftEnum(Type, metadata.type) as any;
 
     if (type !== field.primitiveType) {
       throw new Error(`chunk type not matching schema: ${type}`);
     }
 
-    const compression: ParquetCompression = getThriftEnum(
-      CompressionCodec,
-      colChunk.meta_data?.codec!
-    ) as any;
+    const compression: ParquetCompression = getThriftEnum(CompressionCodec, metadata.codec) as any;
 
-    const pagesOffset = Number(colChunk.meta_data?.data_page_offset!);
-    const dictionaryPageOffset = colChunk.meta_data?.dictionary_page_offset;
+    const pagesOffset = Number(metadata.data_page_offset);
+    const dictionaryPageOffset = metadata.dictionary_page_offset;
     const validDictionaryPageOffset =
       dictionaryPageOffset !== undefined && Number(dictionaryPageOffset) > 0
         ? Number(dictionaryPageOffset)
         : undefined;
     const chunkOffset = Math.min(pagesOffset, validDictionaryPageOffset ?? pagesOffset);
-    const chunkEnd = chunkOffset + Number(colChunk.meta_data?.total_compressed_size!);
+    const chunkEnd = chunkOffset + Number(metadata.total_compressed_size);
     const chunkSize = Math.min(this.file.size - chunkOffset, Math.max(0, chunkEnd - chunkOffset));
     const arrayBuffer = await this.file.read(chunkOffset, chunkSize, signal ?? this.props.signal);
     const chunkBuffer = toUint8Array(arrayBuffer);
@@ -433,12 +558,108 @@ export class ParquetReader {
         dictionaryRelativeOffset,
         dictionaryRelativeOffset + dictionarySize
       );
-      dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
+      const decodedDictionaryBuffer = colChunk.crypto_metadata
+        ? await this.decryptColumnPages(
+            dictionaryBuffer,
+            context,
+            rowGroupOrdinal,
+            columnOrdinal,
+            this.getColumnKeyMetadata(colChunk),
+            true
+          )
+        : dictionaryBuffer;
+      dictionary = await decodeDictionaryBuffer(decodedDictionaryBuffer, context);
     }
 
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
-    const pagesBuf = chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize);
+    const pagesBuf = colChunk.crypto_metadata
+      ? await this.decryptColumnPages(
+          chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize),
+          context,
+          rowGroupOrdinal,
+          columnOrdinal,
+          this.getColumnKeyMetadata(colChunk)
+        )
+      : chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
+  }
+
+  /** Decrypts the length-prefixed page header and data modules in one column chunk. */
+  private async decryptColumnPages(
+    encryptedPages: Uint8Array,
+    context: ParquetReaderContext,
+    rowGroupOrdinal: number,
+    columnOrdinal: number,
+    keyMetadata: Uint8Array | undefined,
+    includesDictionary = false
+  ): Promise<Uint8Array> {
+    if (!this.encryptionContext || !this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet pages require parquet.keyRetriever');
+    }
+    const plaintextPages: Uint8Array[] = [];
+    let offset = 0;
+    let dataPageOrdinal = 0;
+    let pageIndex = 0;
+    while (offset < encryptedPages.length) {
+      const headerModule = readEncryptedModule(encryptedPages, offset);
+      offset = headerModule.nextOffset;
+      const dictionaryPage = includesDictionary && pageIndex === 0;
+      const headerModuleType: ParquetEncryptionModule = dictionaryPage
+        ? 'dictionary-page-header'
+        : 'data-page-header';
+      const headerAad = createParquetModuleAad(
+        this.encryptionContext.aadPrefix,
+        this.encryptionContext.fileUnique,
+        headerModuleType,
+        rowGroupOrdinal,
+        columnOrdinal,
+        dictionaryPage ? undefined : dataPageOrdinal
+      );
+      const headerBytes = await decryptParquetModule(headerModule.bytes, {
+        algorithm: this.encryptionContext.algorithm,
+        aad: headerAad,
+        keyMetadata,
+        keyRetriever: this.props.keyRetriever
+      });
+      const {pageHeader} = decodePageHeader(headerBytes);
+      const pageType = getThriftEnum(PageType, pageHeader.type);
+      const dataModule = readEncryptedModule(encryptedPages, offset);
+      offset = dataModule.nextOffset;
+      const dataAad = createParquetModuleAad(
+        this.encryptionContext.aadPrefix,
+        this.encryptionContext.fileUnique,
+        dictionaryPage ? 'dictionary-page' : 'data-page',
+        rowGroupOrdinal,
+        columnOrdinal,
+        dictionaryPage ? undefined : dataPageOrdinal
+      );
+      const dataBytes = await decryptParquetModule(dataModule.bytes, {
+        algorithm: this.encryptionContext.algorithm,
+        aad: dataAad,
+        keyMetadata,
+        keyRetriever: this.props.keyRetriever,
+        page: true
+      });
+      plaintextPages.push(serializeThrift(pageHeader), dataBytes);
+      if (pageType !== 'DICTIONARY_PAGE') dataPageOrdinal++;
+      pageIndex++;
+    }
+    const plaintextLength = plaintextPages.reduce((total, page) => total + page.length, 0);
+    const plaintext = new Uint8Array(plaintextLength);
+    let plaintextOffset = 0;
+    for (const page of plaintextPages) {
+      plaintext.set(page, plaintextOffset);
+      plaintextOffset += page.length;
+    }
+    return plaintext;
+  }
+
+  /** Resolves the key metadata reference for an encrypted column. */
+  private getColumnKeyMetadata(columnChunk: ColumnChunk): Uint8Array | undefined {
+    return (
+      columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY?.key_metadata ??
+      this.encryptionContext?.footerKeyMetadata
+    );
   }
 
   /** Reads and decodes contiguous data pages that begin and end on complete row boundaries. */
@@ -447,12 +668,43 @@ export class ParquetReader {
     columnChunk: ColumnChunk,
     rowRange: ParquetRowRange,
     pages: readonly ParquetDataPageLocation[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0,
+    columnOrdinal = 0,
+    resolvedMetadata?: NonNullable<ColumnChunk['meta_data']>
   ): Promise<ParquetColumnChunk> {
     if (columnChunk.file_path !== undefined && columnChunk.file_path !== null) {
       throw new Error('external references are not supported');
     }
-    const columnMetadata = columnChunk.meta_data!;
+    const columnMetadata = resolvedMetadata || columnChunk.meta_data;
+    if (!columnMetadata) {
+      throw new Error('Parquet column metadata is missing');
+    }
+    if (columnChunk.crypto_metadata) {
+      const fullColumnChunk = await this.readColumnChunk(
+        schema,
+        columnChunk,
+        signal,
+        rowGroupOrdinal,
+        columnOrdinal,
+        columnMetadata
+      );
+      const field = schema.findField(columnMetadata.path_in_schema);
+      if (field.rLevelMax !== 0) {
+        return sliceRepeatedColumnChunk(
+          fullColumnChunk,
+          rowRange.start,
+          rowRange.end - rowRange.start,
+          field.dLevelMax
+        );
+      }
+      return sliceNonRepeatedColumnChunk(
+        fullColumnChunk,
+        field.dLevelMax,
+        rowRange.start,
+        rowRange.end
+      );
+    }
     const field = schema.findField(columnMetadata.path_in_schema);
     const type: PrimitiveType = getThriftEnum(Type, columnMetadata.type) as any;
     if (type !== field.primitiveType) {
@@ -584,6 +836,23 @@ async function decodeDictionaryBuffer(
   const cursor = {buffer: dictionaryBuffer, offset: 0, size: dictionaryBuffer.length};
   const decodedPage = await decodePage(cursor, context);
   return decodedPage.dictionary!;
+}
+
+/** Reads one length-prefixed encrypted module from a page stream. */
+function readEncryptedModule(
+  buffer: Uint8Array,
+  offset: number
+): {bytes: Uint8Array; nextOffset: number} {
+  if (offset + 4 > buffer.length) {
+    throw new Error('Invalid encrypted Parquet page: missing module length');
+  }
+  const length = readUInt32LE(buffer, offset);
+  const moduleStart = offset + 4;
+  const moduleEnd = moduleStart + length;
+  if (length < 12 || moduleEnd > buffer.length) {
+    throw new Error('Invalid encrypted Parquet page: truncated module');
+  }
+  return {bytes: buffer.subarray(moduleStart, moduleEnd), nextOffset: moduleEnd};
 }
 
 /** Slices one decoded non-repeated column chunk while preserving optional-value alignment. */

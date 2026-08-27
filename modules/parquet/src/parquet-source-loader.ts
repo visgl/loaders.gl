@@ -890,7 +890,8 @@ export class ParquetSource
               columnList,
               rowRange,
               pagePlan.pageLocations,
-              signal
+              signal,
+              rowGroupIndex
             )
           )
         )
