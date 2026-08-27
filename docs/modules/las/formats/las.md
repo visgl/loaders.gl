@@ -44,8 +44,8 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 | Capability | TypeScript status |
 | --- | --- |
-| Uncompressed LAS writing | Partial. Supports LAS output for represented mesh/table fields. |
-| LAS versions | Versions 1.0-1.4 are selectable and LAS 1.5 is rejected. Round-trip coverage currently targets default LAS 1.2 and LAS 1.4/PDRF 7; full version conformance is not claimed. |
+| Uncompressed LAS writing | Partial. Supports LAS output for represented mesh/table fields, including LAS 1.5 modern records with WKT metadata. |
+| LAS versions | Versions 1.0-1.5 are selectable. LAS 1.5 requires `las.wkt` and modern PDRF 6-10. Round-trip coverage targets default LAS 1.2, LAS 1.4/PDRF 7, and LAS 1.5/PDRF 7; full version conformance is not claimed. |
 | Point data record formats | PDRF 0-10 are selectable. Position, intensity, classification, RGB, NIR, GPS time, return/scan fields, waveform packet references, and configured Extra Bytes are mapped from input attributes. Missing fields are zero-filled. |
 | LAZ writing | Supported for PDRF 0-10 with fixed-size or variable-size LASzip chunk tables. Legacy PDRFs use LASzip compressor 2/item version 2; modern PDRFs use layered compressor 3/item version 3. |
 | COPC writing | Supported by `@loaders.gl/copc` through its separate `COPCWriter` entry point. |
@@ -144,7 +144,7 @@ PDRF 7 performance checks combine deterministic memory invariants with conservat
 
 | Version | Point data record formats | Main additions | loaders.gl status |
 | --- | --- | --- | --- |
-| 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records, and an extended public header. | TypeScript reads and validates the modern header, parses its GPS-time fields, and decodes PDRF 6-10; writing is not targeted. |
+| 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records, and an extended public header. | TypeScript reads and validates the modern header, parses its GPS-time fields, decodes PDRF 6-10, and writes modern records when WKT metadata is supplied. |
 | 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 0-10. |
 | 1.3 | 0-5 | EVLRs and waveform packet support. | TypeScript LAZ decoding supports all PDRFs, including raw PDRF 4/5 waveform references. |
 | 1.2 | 0-3 | RGB point formats and broader geospatial metadata conventions. | Read and write support for common uncompressed LAS attributes. |
@@ -264,4 +264,4 @@ Within the documented version, PDRF, and codec matrix, the TypeScript implementa
 
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
-| 1 | Complete LAS 1.5 conformance and writing | Medium | Medium | Add broader independent-reader fixtures, validate LAS 1.5 WKT and extension semantics, and emit LAS 1.5 only after interoperability is demonstrated. |
+| 1 | Complete LAS 1.5 conformance and writing | Medium | Medium | Add broader independent-reader fixtures and validate LAS 1.5 output across WKT, extension, EVLR, and modern PDRF combinations. |
