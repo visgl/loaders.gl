@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase, indent */
-export type {GLB} from './lib/types/glb-types';
+export type {GLB, GLBChunk} from './lib/types/glb-types';
 
 // Raw GLTF Types (i.e. not post-processed)
 export type {

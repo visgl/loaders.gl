@@ -36,6 +36,7 @@ const gltf = await load(url, GLBLoader);
 Remarks:
 
 - Parses GLB v2 encoded data.
+- Parses draft GLB v3 encoded data, including 64-bit file/chunk lengths and multiple binary chunks.
 - Parses GLB v1 encoded data (enabling support for the glTF v1 `KHR_binary_gltf` extension). Parsed GLB v1 data is returned in the standard `GLB` format.
 - Extracts multiple binary chunks if present (this is supported by the GLB specification but is not used in the glTF specification).
 
