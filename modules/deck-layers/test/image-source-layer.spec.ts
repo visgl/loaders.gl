@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
-
 const TEST_IMAGE_SOURCE = {
   async getMetadata() {
     return {name: 'test', keywords: [], layers: []};
@@ -16,7 +15,6 @@ const TEST_IMAGE_SOURCE = {
     return JSON.stringify(parameters);
   }
 };
-
 const TEST_SOURCE_FACTORY = {
   name: 'TestImageSource',
   id: 'test-image-source',
@@ -32,55 +30,40 @@ const TEST_SOURCE_FACTORY = {
     return TEST_IMAGE_SOURCE as any;
   }
 };
-
 function createLayer(props: ImageSourceLayerProps = {id: 'test', data: TEST_IMAGE_SOURCE as any}) {
   return new ImageSourceLayer(props as any) as any;
 }
-
-test('ImageSourceLayer#accepts direct ImageSource inputs', t => {
+test('ImageSourceLayer#accepts direct ImageSource inputs', () => {
   const layer = createLayer();
   const resolvedData = layer._resolveData(layer.props);
-  t.equal(resolvedData, TEST_IMAGE_SOURCE);
-  t.end();
+  expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-
-test('ImageSourceLayer#resolves URL inputs with sources', t => {
+test('ImageSourceLayer#resolves URL inputs with sources', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/wms',
     sources: [TEST_SOURCE_FACTORY as any]
   });
-
   const resolvedData = layer._resolveData(layer.props);
-  t.equal(resolvedData, TEST_IMAGE_SOURCE);
-  t.end();
+  expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-
-test('ImageSourceLayer#rejects Blob inputs without sources', t => {
+test('ImageSourceLayer#rejects Blob inputs without sources', () => {
   const layer = createLayer({id: 'test', data: new Blob(['test'])});
-
-  t.throws(() => layer._resolveData(layer.props), /requires `sources`/);
-  t.end();
+  expect(() => layer._resolveData(layer.props)).toThrow(/requires `sources`/);
 });
-
-test('ImageSourceLayer#creates an ImageSet for resolved sources', t => {
+test('ImageSourceLayer#creates an ImageSet for resolved sources', () => {
   const layer = createLayer();
   layer.state = {
     resolvedData: null,
     imageSet: null,
     unsubscribeImageSetEvents: null
   };
-
   const imageSet = layer._getOrCreateImageSet(TEST_IMAGE_SOURCE as any, true);
-
-  t.ok(imageSet);
-  t.equal(layer.state.imageSet, imageSet);
-
+  expect(imageSet).toBeTruthy();
+  expect(layer.state.imageSet).toBe(imageSet);
   layer._releaseImageSet();
-  t.end();
 });
-
-test('ImageSourceLayer#forwards feature info using the last request parameters', async t => {
+test('ImageSourceLayer#forwards feature info using the last request parameters', async () => {
   const layer = createLayer();
   layer.state = {
     resolvedData: TEST_IMAGE_SOURCE,
@@ -103,17 +86,12 @@ test('ImageSourceLayer#forwards feature info using the last request parameters',
     },
     unsubscribeImageSetEvents: null
   };
-
   const featureInfo = await layer.getFeatureInfoText(10, 20);
-
-  t.ok(featureInfo?.includes('"query_layers":["visible"]'));
-  t.ok(featureInfo?.includes('"width":256'));
-  t.end();
+  expect(featureInfo?.includes('"query_layers":["visible"]')).toBeTruthy();
+  expect(featureInfo?.includes('"width":256')).toBeTruthy();
 });
-
-test('ImageSourceLayer#keeps auto-SRS request shaping behavior', t => {
+test('ImageSourceLayer#keeps auto-SRS request shaping behavior', () => {
   const layer = createLayer({id: 'test', data: TEST_IMAGE_SOURCE as any, srs: 'auto'});
-
   const geographicParameters = layer._getImageParameters({
     getBounds: () => [1, 2, 3, 4],
     width: 10,
@@ -125,45 +103,35 @@ test('ImageSourceLayer#keeps auto-SRS request shaping behavior', t => {
     width: 10,
     height: 20
   });
-
-  t.equal(geographicParameters.crs, 'EPSG:4326');
-  t.equal(mercatorParameters.crs, 'EPSG:3857');
-  t.notDeepEqual(mercatorParameters.boundingBox, [
+  expect(geographicParameters.crs).toBe('EPSG:4326');
+  expect(mercatorParameters.crs).toBe('EPSG:3857');
+  expect(mercatorParameters.boundingBox).not.toEqual([
     [1, 2],
     [3, 4]
   ]);
-  t.end();
 });
-
-test('ImageSourceLayer#passes debounceTime into ImageSet', t => {
+test('ImageSourceLayer#passes debounceTime into ImageSet', () => {
   const layer = createLayer({
     id: 'test',
     data: TEST_IMAGE_SOURCE as any,
     debounceTime: 25
   });
-
   layer.state = {
     resolvedData: null,
     imageSet: null,
     unsubscribeImageSetEvents: null
   };
-
   const imageSet = layer._getOrCreateImageSet(TEST_IMAGE_SOURCE as any, true);
-
-  t.equal(imageSet._opts.debounceTime, 25);
-
+  expect(imageSet._opts.debounceTime).toBe(25);
   layer._releaseImageSet();
-  t.end();
 });
-
-test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', t => {
+test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', () => {
   const requestedParameters: any[] = [];
   const layer = createLayer({
     id: 'test',
     data: TEST_IMAGE_SOURCE as any,
     srs: 'EPSG:4326'
   });
-
   layer.context = {
     viewport: {
       getBounds: () => [1, 2, 3, 4],
@@ -181,18 +149,17 @@ test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', t
     },
     unsubscribeImageSetEvents: null
   };
-
   layer.updateState({
     props: layer.props,
     oldProps: {...layer.props, srs: 'EPSG:3857'},
     changeFlags: {dataChanged: false, viewportChanged: false}
   });
-
-  t.equal(requestedParameters.length, 1, 'issues a fresh image request when srs changes');
-  t.equal(requestedParameters[0].crs, 'EPSG:4326', 'uses the updated srs in request parameters');
-  t.deepEqual(requestedParameters[0].boundingBox, [
+  expect(requestedParameters.length, 'issues a fresh image request when srs changes').toBe(1);
+  expect(requestedParameters[0].crs, 'uses the updated srs in request parameters').toBe(
+    'EPSG:4326'
+  );
+  expect(requestedParameters[0].boundingBox).toEqual([
     [1, 2],
     [3, 4]
   ]);
-  t.end();
 });

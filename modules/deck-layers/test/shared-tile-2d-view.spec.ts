@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles';
 import {SharedTile2DView} from '../src/shared-tile-2d/shared-tile-2d-view';
-
 const TEST_ADAPTER: Tileset2DAdapter<any> = {
   getTileIndices: () => [
     {x: 0, y: 0, z: 0},
@@ -18,15 +17,13 @@ const TEST_ADAPTER: Tileset2DAdapter<any> = {
     north: index.y + 1
   })
 };
-
 const TEST_VIEWPORT = {
   id: 'test-viewport',
   equals(other) {
     return other === this;
   }
 } as any;
-
-test('SharedTile2DView#custom refinement strategies can control visibility', t => {
+test('SharedTile2DView#custom refinement strategies can control visibility', () => {
   const tileset = new Tileset2D({
     adapter: TEST_ADAPTER,
     getTileData: async () => null,
@@ -36,21 +33,22 @@ test('SharedTile2DView#custom refinement strategies can control visibility', t =
     }
   });
   const view = new SharedTile2DView(tileset as any);
-
   view.update(TEST_VIEWPORT);
-
   const [firstTile, secondTile] = view.selectedTiles || [];
-  t.ok(firstTile);
-  t.ok(secondTile);
-  t.ok(view.isTileVisible(firstTile), 'custom refinement keeps the first tile visible');
-  t.notOk(view.isTileVisible(secondTile), 'custom refinement can hide placeholder tiles');
-
+  expect(firstTile).toBeTruthy();
+  expect(secondTile).toBeTruthy();
+  expect(
+    view.isTileVisible(firstTile),
+    'custom refinement keeps the first tile visible'
+  ).toBeTruthy();
+  expect(
+    view.isTileVisible(secondTile),
+    'custom refinement can hide placeholder tiles'
+  ).toBeFalsy();
   view.finalize();
   tileset.finalize();
-  t.end();
 });
-
-test('SharedTile2DView#same-viewport updates reload only stale selected tiles', async t => {
+test('SharedTile2DView#same-viewport updates reload only stale selected tiles', async () => {
   let requestCount = 0;
   const tileset = new Tileset2D({
     adapter: TEST_ADAPTER,
@@ -60,18 +58,14 @@ test('SharedTile2DView#same-viewport updates reload only stale selected tiles', 
     }
   });
   const view = new SharedTile2DView(tileset as any);
-
   view.update(TEST_VIEWPORT);
   await Promise.all((view.selectedTiles || []).map(tile => tile.data));
-  t.equal(requestCount, 2, 'initial viewport update loads both selected tiles');
-
+  expect(requestCount, 'initial viewport update loads both selected tiles').toBe(2);
   const [firstTile] = view.selectedTiles || [];
   firstTile.setNeedsReload();
   view.update(TEST_VIEWPORT);
   await Promise.all((view.selectedTiles || []).map(tile => tile.data));
-  t.equal(requestCount, 3, 'same-viewport reload only refreshes the stale tile');
-
+  expect(requestCount, 'same-viewport reload only refreshes the stale tile').toBe(3);
   view.finalize();
   tileset.finalize();
-  t.end();
 });

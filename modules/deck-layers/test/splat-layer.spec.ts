@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {SplatLayer, type SplatLayerProps} from '../src/splat-layer';
 import type {ArrowTableBatch} from '@loaders.gl/schema';
-
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;
 };
-
 /** Creates a SplatLayer instance for testing. */
 function createLayer(props: SplatLayerProps): SplatLayer {
   const layer = new SplatLayer({
@@ -21,7 +22,6 @@ function createLayer(props: SplatLayerProps): SplatLayer {
   layer.context = {device: {type: 'webgl'}} as any;
   return layer;
 }
-
 /** Creates a minimal Gaussian splat Arrow table. */
 function createGaussianSplatTable(): arrow.Table {
   return arrow.tableFromArrays({
@@ -42,7 +42,6 @@ function createGaussianSplatTable(): arrow.Table {
     rot_3: [0, 0]
   });
 }
-
 /** Creates a loaders.gl Arrow table batch from a Gaussian splat table. */
 function createGaussianSplatBatch(table: arrow.Table): ArrowTableBatch {
   return {
@@ -52,7 +51,6 @@ function createGaussianSplatBatch(table: arrow.Table): ArrowTableBatch {
     length: table.numRows
   };
 }
-
 /** Normalizes a layer render result to an array. */
 function asLayerArray(layerResult: ReturnType<SplatLayer['renderLayers']>) {
   if (!layerResult) {
@@ -60,13 +58,11 @@ function asLayerArray(layerResult: ReturnType<SplatLayer['renderLayers']>) {
   }
   return Array.isArray(layerResult) ? layerResult : [layerResult];
 }
-
 /** Creates a manually advanced async iterable. */
 function createControlledAsyncIterable<T>(): ControlledAsyncIterable<T> {
   const queuedValues: T[] = [];
   const queuedResolves: ((result: IteratorResult<T>) => void)[] = [];
   let closed = false;
-
   return {
     push(value: T): void {
       const resolve = queuedResolves.shift();
@@ -98,7 +94,6 @@ function createControlledAsyncIterable<T>(): ControlledAsyncIterable<T> {
     }
   };
 }
-
 /** Lets pending async iterator work settle. */
 async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
@@ -106,33 +101,28 @@ async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
 }
-
-test('SplatLayer renders Gaussian splat Arrow table through binary attributes', t => {
+test('SplatLayer renders Gaussian splat Arrow table through binary attributes', () => {
   const layer = createLayer({data: createGaussianSplatTable()});
   const sublayer = layer.renderLayers() as any;
   const data = sublayer.props.data;
-
-  t.equal(sublayer.constructor.layerName, 'SplatPrimitiveLayer', 'creates primitive splat layer');
-  t.equal(data.length, 2, 'passes one rendered object per splat');
-  t.deepEqual(
-    Array.from(data.attributes.getPosition.value),
-    [0, 0, 0, 1, 2, 3],
-    'passes interleaved positions'
+  expect(sublayer.constructor.layerName, 'creates primitive splat layer').toBe(
+    'SplatPrimitiveLayer'
   );
-  t.equal(data.attributes.getRadius.value[0], 3, 'decodes first log scale support radius');
-  t.ok(
+  expect(data.length, 'passes one rendered object per splat').toBe(2);
+  expect(Array.from(data.attributes.getPosition.value), 'passes interleaved positions').toEqual([
+    0, 0, 0, 1, 2, 3
+  ]);
+  expect(data.attributes.getRadius.value[0], 'decodes first log scale support radius').toBe(3);
+  expect(
     Math.abs(data.attributes.getRadius.value[1] - Math.exp(0) * 3) < 1e-6,
     'decodes second log scale support radius from geometric mean'
-  );
-  t.deepEqual(
+  ).toBeTruthy();
+  expect(
     Array.from(data.attributes.getColor.value.slice(0, 4)),
-    [128, 128, 128, 128],
     'derives first color from SH DC and logit opacity'
-  );
-  t.end();
+  ).toEqual([128, 128, 128, 128]);
 });
-
-test('SplatLayer incrementally renders Arrow table batches', async t => {
+test('SplatLayer incrementally renders Arrow table batches', async () => {
   const splatBatches = createControlledAsyncIterable<ArrowTableBatch>();
   const layer = createLayer({data: splatBatches});
   layer.state = {} as any;
@@ -142,28 +132,23 @@ test('SplatLayer incrementally renders Arrow table batches', async t => {
     oldProps: {...layer.props, data: null},
     changeFlags: {dataChanged: true}
   } as any);
-
-  t.equal(asLayerArray(layer.renderLayers()).length, 0, 'renders no sublayers before batches load');
-
+  expect(
+    asLayerArray(layer.renderLayers()).length,
+    'renders no sublayers before batches load'
+  ).toBe(0);
   splatBatches.push(createGaussianSplatBatch(createGaussianSplatTable()));
   await waitForAsyncIterator();
-
   let sublayers = asLayerArray(layer.renderLayers());
-  t.equal(sublayers.length, 1, 'renders one sublayer after the first batch');
-  t.equal((sublayers[0].props.data as any).length, 2, 'uses the first batch row count');
-
+  expect(sublayers.length, 'renders one sublayer after the first batch').toBe(1);
+  expect((sublayers[0].props.data as any).length, 'uses the first batch row count').toBe(2);
   splatBatches.push(createGaussianSplatBatch(createGaussianSplatTable()));
   await waitForAsyncIterator();
-
   sublayers = asLayerArray(layer.renderLayers());
-  t.equal(sublayers.length, 1, 'keeps streaming batches in one engine-backed sublayer');
-  t.equal((sublayers[0].props.data as any).length, 4, 'uses the accumulated batch row count');
-
+  expect(sublayers.length, 'keeps streaming batches in one engine-backed sublayer').toBe(1);
+  expect((sublayers[0].props.data as any).length, 'uses the accumulated batch row count').toBe(4);
   splatBatches.close();
-  t.end();
 });
-
-test('SplatLayer reports invalid async batch shapes', async t => {
+test('SplatLayer reports invalid async batch shapes', async () => {
   const splatBatches = createControlledAsyncIterable<ArrowTableBatch>();
   const layer = createLayer({data: splatBatches});
   layer.state = {} as any;
@@ -173,15 +158,11 @@ test('SplatLayer reports invalid async batch shapes', async t => {
     oldProps: {...layer.props, data: null},
     changeFlags: {dataChanged: true}
   } as any);
-
   splatBatches.push({shape: 'object-row-table', batchType: 'data', length: 1} as any);
   await waitForAsyncIterator();
-
-  t.throws(
+  expect(
     () => layer.renderLayers(),
-    /requires ArrowTableBatch values/,
     'throws a stable error for invalid async batch values'
-  );
+  ).toThrow(/requires ArrowTableBatch values/);
   splatBatches.close();
-  t.end();
 });
