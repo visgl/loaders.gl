@@ -5583,6 +5583,7 @@ __metadata:
   resolution: "@loaders.gl/netcdf@workspace:modules/netcdf"
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.2"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
