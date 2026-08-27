@@ -1,8 +1,8 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import type {Subtree} from '../../../src/types';
 import type {ImplicitOptions} from '../../../src/lib/parsers/parse-3d-tile-header';
 import {
@@ -14,8 +14,7 @@ import {
   replaceContentUrlTemplate
 } from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
-
-test('parseImplicitTiles#supports a single available level', async t => {
+test('parseImplicitTiles#supports a single available level', async () => {
   const subtree: Subtree = {
     buffers: [],
     bufferViews: [],
@@ -34,20 +33,16 @@ test('parseImplicitTiles#supports a single available level', async t => {
     rootLodMetricValue: 500,
     rootBoundingVolume: {region: [0, 0, 1, 1, 0, 100]}
   };
-
   const tile = await parseImplicitTiles({
     subtree,
     implicitOptions,
     loaderOptions: {}
   });
-
-  t.equal(tile.contentUrl, 'https://example.com/content/0/0/0.b3dm');
-  t.equal(tile.children.length, 0);
-  t.equal(tile.lodMetricValue, 500);
-  t.end();
+  expect(tile.contentUrl).toBe('https://example.com/content/0/0/0.b3dm');
+  expect(tile.children.length).toBe(0);
+  expect(tile.lodMetricValue).toBe(500);
 });
-
-test('parseImplicitTiles#supports subtrees without content availability', async t => {
+test('parseImplicitTiles#supports subtrees without content availability', async () => {
   const subtree: Subtree = {
     buffers: [],
     bufferViews: [],
@@ -68,19 +63,15 @@ test('parseImplicitTiles#supports subtrees without content availability', async 
     getTileType: () => TILE_TYPE.SCENEGRAPH,
     getRefine: () => TILE_REFINEMENT.REPLACE
   };
-
   const tile = await parseImplicitTiles({
     subtree,
     implicitOptions,
     loaderOptions: {}
   });
-
-  t.equal(tile.contentUrl, undefined, 'omits a render URL when content availability is absent');
-  t.equal(tile.children.length, 0);
-  t.end();
+  expect(tile.contentUrl, 'omits a render URL when content availability is absent').toBe(undefined);
+  expect(tile.children.length).toBe(0);
 });
-
-test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates its descriptor', async t => {
+test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates its descriptor', async () => {
   const tile = {
     geometricError: 16,
     refine: 'REPLACE',
@@ -99,37 +90,31 @@ test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates
     tile.implicitTiling as any,
     {}
   );
-
-  t.equal(normalizedTile?.contentUrl, undefined);
-  t.equal(normalizedTile?.implicitSubtree.descriptor.maximumLevel, 0);
-  t.equal(
-    normalizedTile?.implicitSubtree.subtreeUrl,
+  expect(normalizedTile?.contentUrl).toBe(undefined);
+  expect(normalizedTile?.implicitSubtree.descriptor.maximumLevel).toBe(0);
+  expect(normalizedTile?.implicitSubtree.subtreeUrl).toBe(
     'https://example.com/tiles/subtrees/0/0/0.subtree'
   );
-  await t.rejects(
+  await await expect(
     normalizeImplicitTileHeaders(
       tile as any,
       {root: tile} as any,
       'https://example.com/tiles',
       {...tile.implicitTiling, availableLevels: 0} as any,
       {}
-    ),
-    /availableLevels to include at least the root level/
-  );
-  await t.rejects(
+    )
+  ).rejects.toThrow(/availableLevels to include at least the root level/);
+  await await expect(
     normalizeImplicitTileHeaders(
       tile as any,
       {root: tile} as any,
       'https://example.com/tiles',
       {...tile.implicitTiling, subdivisionScheme: 'TRIANGLE'} as any,
       {}
-    ),
-    /Unsupported implicit subdivision scheme/
-  );
-  t.end();
+    )
+  ).rejects.toThrow(/Unsupported implicit subdivision scheme/);
 });
-
-test('implicit parser compatibility helpers materialize one subtree and replace URL coordinates', async t => {
+test('implicit parser compatibility helpers materialize one subtree and replace URL coordinates', async () => {
   const implicitOptions: ImplicitOptions = {
     contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
     subtreesUrlTemplate: 'https://example.com/subtrees/{level}/{x}/{y}.subtree',
@@ -154,8 +139,6 @@ test('implicit parser compatibility helpers materialize one subtree and replace 
     implicitOptions,
     {}
   );
-
-  t.equal(tile?.contentUrl, 'https://example.com/content/0/0/0.b3dm');
-  t.equal(replaceContentUrlTemplate('/{LEVEL}/{X}/{y}/{z}', 1, 2, 3, 4), '/1/2/3/4');
-  t.end();
+  expect(tile?.contentUrl).toBe('https://example.com/content/0/0/0.b3dm');
+  expect(replaceContentUrlTemplate('/{LEVEL}/{X}/{y}/{z}', 1, 2, 3, 4)).toBe('/1/2/3/4');
 });

@@ -295,6 +295,7 @@ A minor release that includes:
 - **Implicit multiple contents** - Implicit subtrees now preserve every content-availability stream and materialize available content URLs in source order, while retaining the legacy single-content shape when only one stream is available.
 - **i3dm orientation** - Instanced 3D Model tiles now decode `NORMAL_UP_OCT32P` and `NORMAL_RIGHT_OCT32P`, including quantized-position fixtures, and use the decoded basis for per-instance transforms.
 - **3D Tiles metadata topology** - Tileset schemas, groups, tileset/tile/content metadata entities, and content group references are now typed and preserved through normalization; binary property-table decoding and metadata-derived bounds remain follow-up work.
+- **Native 3D Tiles test suites** - Active 3D Tiles parser and runtime suites now use native Vitest assertions, recover composite-i3dm and SSE coverage, and remove thousands of lines of non-executable Cesium renderer specifications from active test files.
 - **Region bounding volumes** - Geographic regions that cross the antimeridian now produce tight traversal OBBs instead of spanning the long way around the globe; polar and zero-height regions remain finite.
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.

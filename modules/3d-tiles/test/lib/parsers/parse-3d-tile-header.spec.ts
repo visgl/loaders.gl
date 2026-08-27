@@ -1,11 +1,9 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {normalizeTileData} from '../../../src/lib/parsers/parse-3d-tile-header';
-
 const TESTS = [
   // relative paths - different notations
   ['test.glb', 'https://example.tld/a/b/c', 'https://example.tld/a/b/c/test.glb'],
@@ -32,7 +30,6 @@ const TESTS = [
   ],
   // non-url basePath
   ['c/file.glb', '/a/b', '/a/b/c/file.glb'],
-
   // template-urls
   [
     '/implicit-tiling/{level}/{x}/{y}/{z}.glb',
@@ -40,15 +37,11 @@ const TESTS = [
     'https://example.tld/implicit-tiling/{level}/{x}/{y}/{z}.glb'
   ]
 ];
-
-test('normalizeTileData#corectly resolves different styles of URLs', async t => {
+test('normalizeTileData#corectly resolves different styles of URLs', async () => {
   for (const [contentUri, basePath, resolvedUrl] of TESTS) {
     const tile = {content: {uri: contentUri}};
     // @ts-expect-error
     const normalizedTile = normalizeTileData(tile, basePath);
-
-    t.equals(normalizedTile?.contentUrl, resolvedUrl, 'url should be resolved correctly');
+    expect(normalizedTile?.contentUrl, 'url should be resolved correctly').toBe(resolvedUrl);
   }
-
-  t.end();
 });
