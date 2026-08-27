@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {BoundingSphere, CullingVolume, INTERSECTION, Plane} from '@math.gl/culling';
+import {Vector3} from '@math.gl/core';
 import {getContentVisibility} from '../../src/tileset-3d/common/tile-3d';
 
 function createCullingVolume(visibleCenters: Set<number>) {
@@ -31,7 +32,7 @@ test('getContentVisibility treats multiple content volumes as a visible union', 
 test('getContentVisibility applies clipping planes to content without pruning traversal', () => {
   const contentVolume = new BoundingSphere([0, 0, 0], 1);
   const cullingVolume = createCullingVolume(new Set([0]));
-  const clippingPlane = new Plane([1, 0, 0], -2);
+  const clippingPlane = new Plane(new Vector3([1, 0, 0]), -2);
 
   expect(
     getContentVisibility(
