@@ -252,7 +252,10 @@ function formatAttributeValue(attribute, featureIdIndex, codedValues, fieldType?
 
   if (fieldType === 'esriFieldTypeDate' && value) {
     const numericValue = Number(value);
-    const parsedDate = Number.isFinite(numericValue) ? new Date(numericValue) : new Date(value);
+    const dateValue = Number.isFinite(numericValue)
+      ? numericValue
+      : appendUtcToOffsetFreeDate(value);
+    const parsedDate = new Date(dateValue);
     if (!Number.isNaN(parsedDate.getTime())) {
       value = parsedDate.toISOString();
     }
@@ -265,4 +268,13 @@ function formatAttributeValue(attribute, featureIdIndex, codedValues, fieldType?
   }
 
   return value;
+}
+
+/**
+ * Make an ISO date-time without an explicit offset deterministic across runtimes.
+ * @param value - date value from an I3S attribute resource
+ * @returns value with an explicit UTC suffix when it is offset-free
+ */
+function appendUtcToOffsetFreeDate(value: string): string {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(value) ? `${value}Z` : value;
 }

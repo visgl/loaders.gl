@@ -230,3 +230,20 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
 | `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
 | `attributes.texCoords` | `Object` | `{value, type, size, normalized}` |
+
+### Layer statistics
+
+Use `loadStatistics` to fetch the resources listed in a scene layer's `statisticsInfo` array.
+The returned object is keyed by each descriptor's `key`; an unavailable resource is represented by
+`null` so other fields can still be consumed.
+
+```typescript
+import {loadStatistics} from '@loaders.gl/i3s';
+
+const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
+  core: {baseUrl: sceneLayer.url},
+  i3s: {token}
+});
+```
+
+Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.

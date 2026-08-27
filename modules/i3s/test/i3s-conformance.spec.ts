@@ -11,6 +11,7 @@ import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
 import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
 import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';
+import {loadStatistics} from '../src/i3s-statistics';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
@@ -115,6 +116,20 @@ describe('I3S conformance fixtures', () => {
     datesView.setFloat64(8, Date.UTC(2024, 0, 1), true);
     datesView.setFloat64(16, Date.UTC(2024, 0, 2, 3, 4, 5), true);
 
+    const stringDateValues = ['2024-01-01T00:00:00\0', '2024-01-02T03:04\0'];
+    const encodedStringDateValues = stringDateValues.map(value => new TextEncoder().encode(value));
+    const stringDatesBuffer = new ArrayBuffer(
+      16 + encodedStringDateValues[0].byteLength + encodedStringDateValues[1].byteLength
+    );
+    const stringDatesView = new DataView(stringDatesBuffer);
+    stringDatesView.setUint32(0, stringDateValues.length, true);
+    stringDatesView.setUint32(8, encodedStringDateValues[0].byteLength, true);
+    stringDatesView.setUint32(12, encodedStringDateValues[1].byteLength, true);
+    new Uint8Array(stringDatesBuffer, 16).set(encodedStringDateValues[0]);
+    new Uint8Array(stringDatesBuffer, 16 + encodedStringDateValues[0].byteLength).set(
+      encodedStringDateValues[1]
+    );
+
     const nullValuesBuffer = new ArrayBuffer(24);
     const nullValuesView = new DataView(nullValuesBuffer);
     nullValuesView.setFloat64(8, 10, true);
@@ -138,6 +153,7 @@ describe('I3S conformance fixtures', () => {
     const responses: Record<string, ArrayBuffer> = {
       '/attributes/objectids': objectIdsBuffer,
       '/attributes/dates': datesBuffer,
+      '/attributes/string-dates': stringDatesBuffer,
       '/attributes/guids': guidsBuffer,
       '/attributes/nulls': nullValuesBuffer
     };
@@ -148,12 +164,14 @@ describe('I3S conformance fixtures', () => {
             attributeStorageInfo: [
               {name: 'OBJECTID', objectIds: []},
               {name: 'BuildDate', attributeValues: {valueType: 'Float64'}},
+              {name: 'CreatedDate', attributeValues: {valueType: 'String'}},
               {name: 'AssetGuid', attributeValues: {valueType: 'String'}},
               {name: 'OptionalHeight', attributeValues: {valueType: 'Float64'}}
             ],
             fields: [
               {name: 'OBJECTID', type: 'esriFieldTypeOID'},
               {name: 'BuildDate', type: 'esriFieldTypeDate'},
+              {name: 'CreatedDate', type: 'esriFieldTypeDate'},
               {name: 'AssetGuid', type: 'esriFieldTypeGUID'},
               {name: 'OptionalHeight', type: 'esriFieldTypeDouble'}
             ]
@@ -163,6 +181,7 @@ describe('I3S conformance fixtures', () => {
           attributeUrls: [
             '/attributes/objectids',
             '/attributes/dates',
+            '/attributes/string-dates',
             '/attributes/guids',
             '/attributes/nulls'
           ]
@@ -177,9 +196,59 @@ describe('I3S conformance fixtures', () => {
     expect(attributes).toEqual({
       OBJECTID: '8',
       BuildDate: '2024-01-02T03:04:05.000Z',
+      CreatedDate: '2024-01-02T03:04:00.000Z',
       AssetGuid: '{22222222-2222-2222-2222-222222222222}',
       OptionalHeight: null
     });
+  });
+
+  it('loads typed layer statistics and isolates missing resources', async () => {
+    const requestedUrls: string[] = [];
+    const statistics = await loadStatistics(
+      [
+        {key: 'height', name: 'Height', href: './statistics/height'},
+        {key: 'missing', name: 'Missing', href: './statistics/missing'}
+      ],
+      {
+        core: {
+          baseUrl: 'https://example.com/layers/0',
+          fetch: async url => {
+            requestedUrls.push(String(url));
+            if (String(url).includes('/missing')) {
+              return new Response(null, {status: 404});
+            }
+            return new Response(JSON.stringify({count: 2, min: 1, max: 3, avg: 2}));
+          }
+        },
+        i3s: {token: 'secret'}
+      }
+    );
+
+    expect(requestedUrls).toEqual([
+      'https://example.com/layers/0/statistics/height?token=secret',
+      'https://example.com/layers/0/statistics/missing?token=secret'
+    ]);
+    expect(statistics).toEqual({
+      height: {count: 2, min: 1, max: 3, avg: 2},
+      missing: null
+    });
+  });
+
+  it('keeps absolute statistics URLs unchanged', async () => {
+    const statistics = await loadStatistics(
+      [{key: 'height', name: 'Height', href: 'https://cdn.example.com/statistics/height'}],
+      {
+        core: {
+          baseUrl: 'https://example.com/layers/0',
+          fetch: async url => {
+            expect(url).toBe('https://cdn.example.com/statistics/height');
+            return new Response(JSON.stringify({count: 1}));
+          }
+        }
+      }
+    );
+
+    expect(statistics).toEqual({height: {count: 1}});
   });
 
   it('preserves UInt64 feature IDs through face-range expansion', async () => {
