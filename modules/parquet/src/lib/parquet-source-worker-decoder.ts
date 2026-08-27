@@ -14,6 +14,7 @@ import {ParquetSchema} from '../parquetjs/schema/schema';
 import {ParquetSourceWorkerFile} from './parquet-source-worker-file';
 import type {
   ParquetSourceWorkerBatch,
+  ParquetSourceWorkerColumnChunk,
   ParquetSourceWorkerInput,
   ParquetSourceWorkerResult
 } from './parquet-source-worker-types';
@@ -25,20 +26,40 @@ export async function decodeParquetSourceWorkerInput(
   await preloadCompressions();
   const file = new ParquetSourceWorkerFile(input.fileByteLength, input.ranges);
   const schema = new ParquetSchema(input.schemaDefinition);
+  const keyRetriever = input.encryption ? createWorkerKeyRetriever(input.columnChunks) : undefined;
   const reader = new ParquetReader(file, {
     preserveBinary: input.preserveBinary,
-    verifyPageChecksums: input.verifyPageChecksums
+    verifyPageChecksums: input.verifyPageChecksums,
+    encryptionContext: input.encryption
+      ? {
+          algorithm: input.encryption.algorithm,
+          aadPrefix: input.encryption.aadPrefix
+            ? new Uint8Array(input.encryption.aadPrefix)
+            : undefined,
+          fileUnique: new Uint8Array(input.encryption.fileUnique)
+        }
+      : undefined,
+    keyRetriever
   });
   const rowGroup = createWorkerRowGroup(input);
 
   const decodeStartTime = getCurrentTime();
-  const decodedRowGroups = input.pagePlan
-    ? await Promise.all(
-        input.pagePlan.rowRanges.map(rowRange =>
-          reader.readRowGroupRange(schema, rowGroup, [], rowRange, input.pagePlan!.pageLocations)
+  let decodedRowGroups;
+  try {
+    decodedRowGroups = input.pagePlan
+      ? await Promise.all(
+          input.pagePlan.rowRanges.map(rowRange =>
+            reader.readRowGroupRange(schema, rowGroup, [], rowRange, input.pagePlan!.pageLocations)
+          )
         )
-      )
-    : [await reader.readRowGroup(schema, rowGroup, [])];
+      : [await reader.readRowGroup(schema, rowGroup, [])];
+  } catch (error) {
+    throw new Error(
+      `Parquet worker decode failed: ${
+        error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+      }`
+    );
+  }
   const columns = concatenateMaterializedColumns(
     decodedRowGroups.map(decodedRowGroup => schema.materializeColumns(decodedRowGroup))
   );
@@ -136,21 +157,64 @@ function createWorkerRowGroup(input: ParquetSourceWorkerInput): RowGroup {
   return {
     num_rows: input.rowCount,
     total_byte_size: input.uncompressedByteLength,
-    columns: input.columnChunks.map(columnChunk => ({
-      file_path: columnChunk.filePath,
-      meta_data: {
-        type: columnChunk.physicalType,
-        codec: columnChunk.compressionCodec,
-        path_in_schema: columnChunk.path,
-        num_values: columnChunk.valueCount,
-        total_compressed_size: columnChunk.compressedByteLength,
-        total_uncompressed_size: columnChunk.uncompressedByteLength,
-        data_page_offset: columnChunk.dataPageOffset,
-        dictionary_page_offset: columnChunk.dictionaryPageOffset,
-        encodings: []
+    columns: input.columnChunks.map((columnChunk, index) => {
+      const result = {
+        file_path: columnChunk.filePath,
+        parquetColumnOrdinal: columnChunk.columnOrdinal ?? index,
+        meta_data: {
+          type: columnChunk.physicalType,
+          codec: columnChunk.compressionCodec,
+          path_in_schema: columnChunk.path,
+          num_values: columnChunk.valueCount,
+          total_compressed_size: columnChunk.compressedByteLength,
+          total_uncompressed_size: columnChunk.uncompressedByteLength,
+          data_page_offset: columnChunk.dataPageOffset,
+          dictionary_page_offset: columnChunk.dictionaryPageOffset,
+          encodings: []
+        }
+      } as unknown as RowGroup['columns'][number];
+      if (columnChunk.encrypted) {
+        result.crypto_metadata = (columnChunk.keyMetadata
+          ? {
+              ENCRYPTION_WITH_COLUMN_KEY: {
+                path_in_schema: columnChunk.path,
+                key_metadata: new Uint8Array(columnChunk.keyMetadata)
+              }
+            }
+          : {
+              ENCRYPTION_WITH_FOOTER_KEY: {}
+            }) as unknown as RowGroup['columns'][number]['crypto_metadata'];
       }
-    }))
+      return result;
+    })
   } as unknown as RowGroup;
+}
+
+/** Creates a worker-local key retriever from caller-resolved transferable keys. */
+function createWorkerKeyRetriever(
+  columnChunks: readonly ParquetSourceWorkerColumnChunk[]
+): (keyMetadata: Uint8Array | undefined) => Uint8Array {
+  return keyMetadata => {
+    const matchingColumn = columnChunks.find(columnChunk =>
+      equalBytes(keyMetadata, columnChunk.keyMetadata && new Uint8Array(columnChunk.keyMetadata))
+    );
+    if (!matchingColumn?.keyMaterial) {
+      throw new Error('Encrypted Parquet worker key was not transferred for the selected column');
+    }
+    return new Uint8Array(matchingColumn.keyMaterial);
+  };
+}
+
+/** Compares optional key metadata without exposing key material in structured-clone state. */
+function equalBytes(
+  firstBytes: Uint8Array | undefined,
+  secondBytes: Uint8Array | undefined
+): boolean {
+  if (!firstBytes || !secondBytes) return !firstBytes && !secondBytes;
+  return (
+    firstBytes.length === secondBytes.length &&
+    firstBytes.every((value, index) => value === secondBytes[index])
+  );
 }
 
 /** Returns a monotonic timestamp when available and falls back to wall-clock time. */

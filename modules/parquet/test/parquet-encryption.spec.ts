@@ -5,9 +5,11 @@
 import {load} from '@loaders.gl/core';
 import {
   ParquetJSLoader,
+  ParquetSourceLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
 } from '@loaders.gl/parquet';
+import type {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import {expect, test} from 'vitest';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
@@ -110,6 +112,25 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
 
   expect(table.data).toHaveLength(50);
   expect(new Set(requestedKeyMetadata)).not.toEqual(new Set(['kf', 'kc1', 'kc2']));
+});
+
+test('ParquetSource decrypts encrypted pages in a worker', async () => {
+  const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
+  const source = (await load(url, ParquetSourceLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'},
+    parquet: {
+      columns: ['double_field'],
+      keyRetriever: getEncryptedFixtureKey
+    }
+  })) as ParquetSource;
+  const batches = [];
+  for await (const batch of source.read({columns: ['double_field']})) {
+    batches.push(batch);
+  }
+  await source.close();
+
+  expect(batches.reduce((count, batch) => count + batch.rowCount, 0)).toBe(50);
+  expect(batches[0]?.data.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
 });
 
 test('verifies plaintext-footer signatures and rejects tampering', async () => {

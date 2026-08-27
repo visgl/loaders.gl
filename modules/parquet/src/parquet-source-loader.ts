@@ -425,7 +425,8 @@ export class ParquetSource
       const projectedColumnNames = columns.length ? new Set(columns) : undefined;
       const workerOptions = this.getWorkerOptions(concurrency, readContext.abortController.signal);
       const decodeOnWorker =
-        canDecodeParquetSourceOnWorker(workerOptions) && !initialization.reader.encrypted;
+        canDecodeParquetSourceOnWorker(workerOptions) &&
+        (!initialization.reader.encrypted || Boolean(this.options.parquet?.keyRetriever));
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
       let remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
@@ -862,6 +863,7 @@ export class ParquetSource
       );
     }
     const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+    await initialization.reader.resolveColumnMetadata(rowGroup, rowGroupIndex, columnList);
     const pagePlan = predicate
       ? await createParquetPagePruningPlan(
           initialization.file,
@@ -998,6 +1000,26 @@ export class ParquetSource
     );
     throwIfAborted(signal);
 
+    const workerColumnChunks = await Promise.all(
+      selectedColumnChunks.map(async columnChunk => {
+        const descriptor = createParquetSourceWorkerColumnChunk(columnChunk);
+        descriptor.columnOrdinal = rowGroup.columns.indexOf(columnChunk);
+        if (columnChunk.crypto_metadata) {
+          const columnOrdinal = rowGroup.columns.indexOf(columnChunk);
+          const key = await initialization.reader.getColumnKeyForWorker(
+            columnChunk,
+            rowGroupIndex,
+            columnOrdinal
+          );
+          descriptor.encrypted = true;
+          descriptor.keyMetadata = key.keyMetadata?.slice().buffer;
+          descriptor.keyMaterial = key.keyMaterial.slice().buffer;
+        }
+        return descriptor;
+      })
+    );
+    const encryptionContext = initialization.reader.getEncryptionContextForWorker();
+
     let workerResult: ParquetSourceWorkerResult;
     try {
       workerResult = await decodeParquetSourceRowGroupOnWorker(
@@ -1007,11 +1029,18 @@ export class ParquetSource
           uncompressedByteLength: Number(rowGroup.total_byte_size),
           schemaDefinition: initialization.parquetSchema.schema,
           projectedSchema,
-          columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
+          columnChunks: workerColumnChunks,
           ranges,
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
           predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           pagePlan,
+          encryption: encryptionContext
+            ? {
+                algorithm: encryptionContext.algorithm,
+                aadPrefix: encryptionContext.aadPrefix?.slice().buffer,
+                fileUnique: encryptionContext.fileUnique.slice().buffer
+              }
+            : undefined,
           preserveBinary: Boolean(this.options.parquet?.preserveBinary),
           verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },

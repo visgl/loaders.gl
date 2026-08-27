@@ -87,6 +87,8 @@ export type ParquetReaderProps = {
   keyRetriever?: ParquetKeyRetriever;
   /** AAD prefix for files that intentionally omit it from FileCryptoMetaData. */
   aadPrefix?: Uint8Array;
+  /** Pre-resolved encryption context used by worker-local readers. */
+  encryptionContext?: ParquetReaderEncryptionContext;
 };
 
 /** Properties for initializing a ParquetRowGroupReader */
@@ -100,9 +102,9 @@ export type ParquetIterationProps = {
 };
 
 type NormalizedParquetReaderProps = Required<
-  Omit<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix'>
+  Omit<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix' | 'encryptionContext'>
 > &
-  Pick<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix'>;
+  Pick<ParquetReaderProps, 'signal' | 'keyRetriever' | 'aadPrefix' | 'encryptionContext'>;
 
 /** File-level parameters needed to authenticate modular-encrypted modules. */
 type ParquetEncryptionContext = {
@@ -112,6 +114,12 @@ type ParquetEncryptionContext = {
   footerKeyMetadata?: Uint8Array;
   footerSigningKeyMetadata?: Uint8Array;
 };
+
+/** File-level encryption parameters needed to decrypt worker-transferred page modules. */
+export type ParquetReaderEncryptionContext = Pick<
+  ParquetEncryptionContext,
+  'algorithm' | 'aadPrefix' | 'fileUnique' | 'footerKeyMetadata'
+>;
 
 /**
  * The parquet envelope reader allows direct, unbuffered access to the individual
@@ -131,7 +139,8 @@ export class ParquetReader {
     verifyFooterSignature: true,
     signal: undefined,
     keyRetriever: undefined,
-    aadPrefix: undefined
+    aadPrefix: undefined,
+    encryptionContext: undefined
   };
 
   props: NormalizedParquetReaderProps;
@@ -145,11 +154,53 @@ export class ParquetReader {
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
     this.props = {...ParquetReader.defaultProps, ...props};
+    this.encryptionContext = this.props.encryptionContext;
   }
 
   /** Whether the decoded footer describes an encrypted Parquet file. */
   get encrypted(): boolean {
     return Boolean(this.encryptionContext);
+  }
+
+  /** Returns a cloneable snapshot of the file encryption context for worker decoding. */
+  getEncryptionContextForWorker(): ParquetReaderEncryptionContext | undefined {
+    const encryptionContext = this.encryptionContext;
+    if (!encryptionContext) return undefined;
+    return {
+      algorithm: encryptionContext.algorithm,
+      aadPrefix: encryptionContext.aadPrefix && new Uint8Array(encryptionContext.aadPrefix),
+      fileUnique: new Uint8Array(encryptionContext.fileUnique),
+      footerKeyMetadata:
+        encryptionContext.footerKeyMetadata && new Uint8Array(encryptionContext.footerKeyMetadata)
+    };
+  }
+
+  /** Resolves one column key on the caller thread before transferring encrypted ranges. */
+  async getColumnKeyForWorker(
+    columnChunk: ColumnChunk,
+    rowGroupOrdinal: number,
+    columnOrdinal: number
+  ): Promise<{keyMetadata?: Uint8Array; keyMaterial: Uint8Array}> {
+    if (!this.encryptionContext || !this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet worker reads require parquet.keyRetriever');
+    }
+    const keyMetadata = this.getColumnKeyMetadata(columnChunk);
+    const keyMaterial = await this.props.keyRetriever(keyMetadata, {
+      algorithm: this.encryptionContext.algorithm,
+      aad: createParquetModuleAad(
+        this.encryptionContext.aadPrefix,
+        this.encryptionContext.fileUnique,
+        'data-page',
+        rowGroupOrdinal,
+        columnOrdinal,
+        0
+      )
+    });
+    const keyBytes =
+      keyMaterial instanceof ArrayBuffer
+        ? new Uint8Array(keyMaterial)
+        : new Uint8Array(keyMaterial.buffer, keyMaterial.byteOffset, keyMaterial.byteLength);
+    return {keyMetadata, keyMaterial: keyBytes};
   }
 
   close(): void {
@@ -396,7 +447,7 @@ export class ParquetReader {
         columnChunk.meta_data = await this.getColumnMetadata(
           columnChunk,
           rowGroupOrdinal,
-          columnOrdinal
+          getPhysicalColumnOrdinal(columnChunk, columnOrdinal)
         );
       }
     }
@@ -545,9 +596,14 @@ export class ParquetReader {
       if (columnList.length > 0 && (!path || fieldIndexOf(columnList, path) < 0)) {
         continue;
       }
-      const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
+      const physicalColumnOrdinal = getPhysicalColumnOrdinal(columnChunk, columnOrdinal);
+      const metadata = await this.getColumnMetadata(
+        columnChunk,
+        rowGroupOrdinal,
+        physicalColumnOrdinal
+      );
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
-        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
+        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal: physicalColumnOrdinal});
       }
     }
     const columnEntries: Array<readonly [string, ParquetColumnChunk]> = [];
@@ -605,9 +661,14 @@ export class ParquetReader {
       if (columnList.length > 0 && (!path || fieldIndexOf(columnList, path) < 0)) {
         continue;
       }
-      const metadata = await this.getColumnMetadata(columnChunk, rowGroupOrdinal, columnOrdinal);
+      const physicalColumnOrdinal = getPhysicalColumnOrdinal(columnChunk, columnOrdinal);
+      const metadata = await this.getColumnMetadata(
+        columnChunk,
+        rowGroupOrdinal,
+        physicalColumnOrdinal
+      );
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
-        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal});
+        selectedColumnChunks.push({columnChunk, metadata, columnOrdinal: physicalColumnOrdinal});
       }
     }
     const columnEntries = await Promise.all(
@@ -995,6 +1056,14 @@ function getColumnChunkPath(columnChunk: ColumnChunk): string[] | undefined {
   return (
     columnChunk.meta_data?.path_in_schema ??
     columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY?.path_in_schema
+  );
+}
+
+/** Returns the original row-group ordinal for a worker-reduced column list. */
+function getPhysicalColumnOrdinal(columnChunk: ColumnChunk, fallbackOrdinal: number): number {
+  return (
+    (columnChunk as ColumnChunk & {parquetColumnOrdinal?: number}).parquetColumnOrdinal ??
+    fallbackOrdinal
   );
 }
 
