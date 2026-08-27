@@ -183,6 +183,6 @@ function filterBatch(batch: TableBatch, predicate: TableScanReadOptions['predica
   const columns = Object.fromEntries(
     [...columnNames].map(name => [name, rows.map(row => row[name])])
   );
-  const rowIndices = filterColumnarRowIndices(predicate, columns, rows.length);
+  const rowIndices = filterColumnarRowIndices(predicate as never, columns, rows.length);
   return {...batch, data: rowIndices.map(rowIndex => rows[rowIndex]), length: rowIndices.length};
 }
