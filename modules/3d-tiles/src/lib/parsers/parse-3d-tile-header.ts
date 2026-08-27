@@ -60,7 +60,8 @@ function getTileType(tile: Tiles3DTileJSON, tileContentUrl: string = ''): TILE_T
  */
 function normalizeTileContents(
   content: Tiles3DTileJSON['content'],
-  resourceResolver: CachedUriResolver
+  resourceResolver: CachedUriResolver,
+  schema?: Tiles3DTilesetJSON['schema']
 ): {content?: Tiles3DTileJSONPostprocessed['content']; contentUrls: string[]} {
   if (!content) {
     return {content: undefined, contentUrls: []};
@@ -70,7 +71,9 @@ function normalizeTileContents(
   const normalizedContents = contentEntries.map(contentEntry => {
     return {
       ...contentEntry,
-      boundingVolume: normalizeS2BoundingVolume(contentEntry.boundingVolume),
+      boundingVolume: normalizeS2BoundingVolume(
+        getMetadataBoundingVolume(contentEntry.metadata, 'CONTENT', schema) || contentEntry.boundingVolume
+      ),
       uri: contentEntry.uri,
       url: contentEntry.url
     };
@@ -111,14 +114,17 @@ function getRefine(refine?: string): TILE_REFINEMENT | string | undefined {
 export function normalizeTileData(
   tile: Tiles3DTileJSON | null,
   basePath: string,
-  resourceResolver: CachedUriResolver = new CachedUriResolver(basePath)
+  resourceResolver: CachedUriResolver = new CachedUriResolver(basePath),
+  schema?: Tiles3DTilesetJSON['schema']
 ): Tiles3DTileJSONPostprocessed | null {
   if (!tile) {
     return null;
   }
-  const normalizedContents = normalizeTileContents(tile.content, resourceResolver);
+  const normalizedContents = normalizeTileContents(tile.content, resourceResolver, schema);
   const tileContentUrl = normalizedContents.contentUrls[0];
-  const boundingVolume = normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume;
+  const boundingVolume = normalizeS2BoundingVolume(
+    getMetadataBoundingVolume(tile.metadata, 'TILE', schema) || tile.boundingVolume
+  ) as Tile3DBoundingVolume;
   const viewerRequestVolume = normalizeS2BoundingVolume(tile.viewerRequestVolume);
   const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
     ...tile,
@@ -136,6 +142,42 @@ export function normalizeTileData(
   };
 
   return tilePostprocessed;
+}
+
+/**
+ * Resolves a metadata-derived tile or content bounding volume from the declared class schema.
+ *
+ * Metadata property identifiers are application-defined; the semantic lives on the matching class
+ * property definition. Only already-materialized numeric arrays are handled here, while property
+ * table decoding remains the responsibility of the metadata consumer.
+ *
+ * @param metadata - Tile or content metadata entity.
+ * @param scope - Semantic scope, either `TILE` or `CONTENT`.
+ * @param schema - Inline tileset metadata schema, when available.
+ * @returns A source bounding volume, or `undefined` when no matching semantic is present.
+ */
+function getMetadataBoundingVolume(
+  metadata: Tiles3DTileJSON['metadata'] | undefined,
+  scope: 'TILE' | 'CONTENT',
+  schema?: Tiles3DTilesetJSON['schema']
+): Tile3DBoundingVolume | undefined {
+  const classDefinition = metadata?.class && schema?.classes?.[metadata.class];
+  const propertyDefinitions = (
+    classDefinition as {properties?: Record<string, {semantic?: string}>} | undefined
+  )?.properties;
+  for (const [propertyId, value] of Object.entries(metadata?.properties || {})) {
+    const semantic = propertyDefinitions?.[propertyId]?.semantic;
+    if (!semantic?.startsWith(`${scope}_BOUNDING_`) || !Array.isArray(value)) {
+      continue;
+    }
+    if (!value.every(component => typeof component === 'number')) {
+      continue;
+    }
+    if (semantic === `${scope}_BOUNDING_BOX` && value.length === 12) return {box: value};
+    if (semantic === `${scope}_BOUNDING_REGION` && value.length === 6) return {region: value};
+    if (semantic === `${scope}_BOUNDING_SPHERE` && value.length === 4) return {sphere: value};
+  }
+  return undefined;
 }
 
 /**
@@ -202,7 +244,7 @@ export async function normalizeTileHeaders(
       resourceResolver
     );
   } else {
-    root = normalizeTileData(tileset.root, basePath, resourceResolver);
+    root = normalizeTileData(tileset.root, basePath, resourceResolver, tileset.schema);
   }
 
   const stack: any[] = [];
@@ -226,7 +268,7 @@ export async function normalizeTileHeaders(
           resourceResolver
         );
       } else {
-        childHeaderPostprocessed = normalizeTileData(childHeader, basePath, resourceResolver);
+        childHeaderPostprocessed = normalizeTileData(childHeader, basePath, resourceResolver, tileset.schema);
       }
 
       if (childHeaderPostprocessed) {
@@ -265,7 +307,9 @@ export async function normalizeImplicitTileHeaders(
   void context;
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
-    boundingVolume: normalizeS2BoundingVolume(tile.boundingVolume) as Tile3DBoundingVolume,
+    boundingVolume: normalizeS2BoundingVolume(
+      tile.boundingVolume || getMetadataBoundingVolume(tile.metadata, 'TILE')
+    ) as Tile3DBoundingVolume,
     content: tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
