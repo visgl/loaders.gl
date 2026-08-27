@@ -19,6 +19,14 @@ describe('@loaders.gl/services', () => {
     expect(ArcGISVectorTileServerSourceLoader.id).toBe('arcgis-vector-tile-server');
   });
 
+  test('identifies services-owned loaders', () => {
+    expect(ArcGISFeatureServerSourceLoader.module).toBe('services');
+    expect(ArcGISImageServerSourceLoader.module).toBe('services');
+    expect(ArcGISMapTileSourceLoader.module).toBe('services');
+    expect(ArcGISImageTileSourceLoader.module).toBe('services');
+    expect(ArcGISVectorTileServerSourceLoader.module).toBe('services');
+  });
+
   test('finds service loaders by id or type', () => {
     expect(getServiceLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
     expect(getServiceLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);

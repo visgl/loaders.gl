@@ -176,7 +176,7 @@ export const ArcGISImageTileSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS ImageServer tiles',
   id: 'arcgis-image-server-tiles',
-  module: 'wms',
+  module: 'services',
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
