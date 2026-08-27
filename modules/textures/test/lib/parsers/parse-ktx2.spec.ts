@@ -46,6 +46,11 @@ describe('KTX2 container reader', () => {
     expect(() => parseKTX(createKTX2({vkFormat: 0}))).toThrow('BasisLoader');
   });
 
+  test('accepts one-dimensional KTX2 textures', () => {
+    const levels = parseKTX(createKTX2({pixelHeight: 0}));
+    expect(levels[0]).toMatchObject({width: 4, height: 1});
+  });
+
   test('rejects 3D textures', () => {
     expect(() => parseKTX(createKTX2({pixelDepth: 2}))).toThrow('3D KTX2');
   });
@@ -55,6 +60,7 @@ describe('KTX2 container reader', () => {
 function createKTX2(
   options: {
     vkFormat?: number;
+    pixelHeight?: number;
     pixelDepth?: number;
     supercompressionScheme?: number;
     totalByteLength?: number;
@@ -67,7 +73,7 @@ function createKTX2(
   dataView.setUint32(12, options.vkFormat ?? 131, true);
   dataView.setUint32(16, 1, true);
   dataView.setUint32(20, 4, true);
-  dataView.setUint32(24, 4, true);
+  dataView.setUint32(24, options.pixelHeight ?? 4, true);
   dataView.setUint32(28, options.pixelDepth ?? 0, true);
   dataView.setUint32(36, 1, true);
   dataView.setUint32(40, 1, true);
