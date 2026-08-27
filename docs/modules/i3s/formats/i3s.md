@@ -138,7 +138,7 @@ those versions.
 | Null numeric values | **Supported** | **v5.0** | Numeric `NaN` sentinels are returned as `null`; unavailable resources retain the legacy empty-string fallback. |
 | Coded-value domains | **Supported** | v3.0 | Numeric domain codes are mapped to their display names when loading a selected feature. |
 | Attribute-driven colorization | **Supported** | v3.3 | Numeric attributes can replace or multiply vertex colors through `colorsByAttribute`. |
-| Layer statistics | **Partial** | v2.0 | Statistics metadata passes through; raw SLPK statistics extraction was added in v3.4. There is no typed statistics loader or query API. |
+| Layer statistics | **Supported** | **v5.0** | `loadStatistics` fetches typed `StatsInfo` resources keyed by `statisticsInfo.key`; unavailable fields resolve to `null`. Query and client-side aggregation APIs remain open. |
 | Popup and drawing metadata | **Partial** | v2.0 | Metadata passes through for applications; popup expressions, renderer definitions, labels, and visual variables are not evaluated by the loader. |
 | Server-side attribute query/filter | **Not supported** | — | The client loads node-local attribute resources; it does not implement SceneServer query operations. |
 
@@ -177,7 +177,7 @@ current v5.0 development line; the remaining tranches close the largest unsuppor
 | 1. Correctness hardening | Make root authentication, node metadata passthrough, UInt64 precision, and WebScene CRS validation match the documented boundaries. | **Complete** |
 | 2. 1.10 mesh parity | Add legacy shared-resource material interpretation and mesh-segmentation preservation, then expand 1.9/1.10 conformance fixtures. | **Complete** |
 | 3. Material fidelity | Load complete PBR texture sets, preserve multiple referenced atlases, and carry sampler wrap semantics into material metadata. | **Complete** |
-| 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | **In progress** (typed scalar/date/GUID/null semantics complete in v5.0) |
+| 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | **In progress** (typed attributes and statistics loading complete in v5.0) |
 | 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal). | Planned |
 | 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
 

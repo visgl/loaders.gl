@@ -66,3 +66,5 @@ export {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 export {LayerError} from './lib/parsers/parse-arcgis-webscene';
 export {customizeColors} from './lib/utils/customize-colors';
 export {type I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
+export {loadStatistics} from './i3s-statistics';
+export type {I3SStatistics} from './i3s-statistics';
