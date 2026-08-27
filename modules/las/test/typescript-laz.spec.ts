@@ -341,6 +341,98 @@ vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () 
   expect(nir).toEqual(expectedNir);
 });
 
+vitestTest.each(
+  FIXTURES.filter(({pointDataRecordFormat}) => [9, 10].includes(pointDataRecordFormat))
+)('TypeScript LAZ progressively delivers $label waveform references', async fixture => {
+  const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const rawPointData = decodeLAZChunk(compressed, metadata);
+  const waveformOffset = metadata.pointDataRecordFormat === 9 ? 30 : 38;
+  const extraByteOffset = metadata.pointDataRecordFormat === 9 ? 59 : 67;
+  const extraByteCount = metadata.pointDataRecordLength - extraByteOffset;
+  const expectedWaveforms = extractPackedPointField(rawPointData, metadata, waveformOffset, 29);
+  const expectedExtraBytes = extractPackedPointField(
+    rawPointData,
+    metadata,
+    extraByteOffset,
+    extraByteCount
+  );
+
+  const completeTarget = {
+    ...createPointDataTarget(metadata.pointCount),
+    waveforms: new Uint8Array(metadata.pointCount * 29),
+    extraBytes: new Uint8Array(metadata.pointCount * extraByteCount)
+  };
+  createLAZChunkDecoderCursor(compressed, metadata).decodeIntoPointData(
+    completeTarget,
+    metadata.pointCount
+  );
+  expect(completeTarget.waveforms).toEqual(expectedWaveforms);
+  expect(completeTarget.extraBytes).toEqual(expectedExtraBytes);
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const progressiveTarget = {
+    ...createPointDataTarget(metadata.pointCount),
+    waveforms: new Uint8Array(metadata.pointCount * 29)
+  };
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+  for (
+    let byteOffset = 0;
+    byteOffset < compressed.byteLength;
+    byteOffset += TEST_INPUT_CHUNK_SIZE
+  ) {
+    const end = Math.min(byteOffset + TEST_INPUT_CHUNK_SIZE, compressed.byteLength);
+    decoder.feed(compressed.subarray(byteOffset, end));
+    progressiveTarget.pointOffset = decodedPointCount;
+    const pointsDecoded = decoder.readPointDataBatch(
+      progressiveTarget,
+      metadata.pointCount - decodedPointCount
+    );
+    if (pointsDecoded) {
+      firstDecodedByteLength = firstDecodedByteLength < 0 ? end : firstDecodedByteLength;
+      decodedPointCount += pointsDecoded;
+    }
+  }
+
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength).toBeGreaterThan(0);
+  expect(firstDecodedByteLength).toBeLessThan(compressed.byteLength);
+  expect(progressiveTarget.waveforms).toEqual(expectedWaveforms);
+});
+
+vitestTest.each(
+  FIXTURES.filter(({pointDataRecordFormat}) => [9, 10].includes(pointDataRecordFormat))
+)('TypeScript LAZ parser yields $label waveform rows before trailing layers', async fixture => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    loadArrayBuffer(fixture.lasUrl),
+    loadArrayBuffer(fixture.lazUrl)
+  ]);
+  const {compressed} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const pointDataOffset = new DataView(lazArrayBuffer).getUint32(96, true);
+  const firstChunkEnd = pointDataOffset + 8 + compressed.byteLength;
+  const options = {batchSize: TEST_BATCH_SIZE, las: {columns: ['POSITION', 'WAVEFORM'] as const}};
+  const expected = parseLAS(lasArrayBuffer, options);
+  let consumedByteLength = 0;
+  const batches = parseLASInBatches(
+    trackSplitArrayBuffer(lazArrayBuffer, 31, byteLength => {
+      consumedByteLength = byteLength;
+    }),
+    options
+  )[Symbol.asyncIterator]();
+
+  const firstBatch = await batches.next();
+  expect(firstBatch.done).toBe(false);
+  expect(consumedByteLength).toBeLessThan(firstChunkEnd);
+  expect(readArrowColumn(firstBatch.value!, 'POSITION')).toEqual(
+    readArrowColumn(expected, 'POSITION').slice(0, TEST_BATCH_SIZE)
+  );
+  expect(readArrowColumn(firstBatch.value!, 'WAVEFORM')).toEqual(
+    readArrowColumn(expected, 'WAVEFORM').slice(0, TEST_BATCH_SIZE)
+  );
+  await batches.return?.();
+});
+
 vitestTest('TypeScript LAZ does not wait for unrequested Point14 layers', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
@@ -499,6 +591,33 @@ function createPointDataTarget(pointCount: number): LAZPointDataTarget {
   };
 }
 
+/** Extract one fixed-width field from interleaved raw LAS point records. */
+function extractPackedPointField(
+  rawPointData: Uint8Array,
+  metadata: LAZChunkMetadata,
+  fieldOffset: number,
+  fieldByteLength: number
+): Uint8Array {
+  const packed = new Uint8Array(metadata.pointCount * fieldByteLength);
+  for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+    const sourceOffset = pointIndex * metadata.pointDataRecordLength + fieldOffset;
+    packed.set(
+      rawPointData.subarray(sourceOffset, sourceOffset + fieldByteLength),
+      pointIndex * fieldByteLength
+    );
+  }
+  return packed;
+}
+
+/** Read one Arrow column into stable JavaScript values for batch-prefix comparison. */
+function readArrowColumn(table: LASArrowTable, columnName: string): unknown[] {
+  const column = table.data.getChild(columnName);
+  return Array.from({length: column?.length || 0}, (_, index) => {
+    const value = column?.get(index);
+    return value?.toArray ? Array.from(value.toArray()) : value;
+  });
+}
+
 /** Extract direct-output oracle columns from complete raw PDRF 6-10 records. */
 function getExpectedPointData(
   rawPointData: Uint8Array,
@@ -597,6 +716,20 @@ async function* splitArrayBuffer(
   const bytes = new Uint8Array(arrayBuffer);
   for (let byteOffset = 0; byteOffset < bytes.byteLength; byteOffset += chunkSize) {
     yield bytes.slice(byteOffset, Math.min(byteOffset + chunkSize, bytes.byteLength)).buffer;
+  }
+}
+
+/** Yield deterministic chunks while reporting how much source input has been requested. */
+async function* trackSplitArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  chunkSize: number,
+  onRead: (byteLength: number) => void
+): AsyncIterable<ArrayBuffer> {
+  const bytes = new Uint8Array(arrayBuffer);
+  for (let byteOffset = 0; byteOffset < bytes.byteLength; byteOffset += chunkSize) {
+    const end = Math.min(byteOffset + chunkSize, bytes.byteLength);
+    onRead(end);
+    yield bytes.slice(byteOffset, end).buffer;
   }
 }
 

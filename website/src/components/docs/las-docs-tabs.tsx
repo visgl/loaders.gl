@@ -11,10 +11,17 @@ type LasDocsTab = {
 };
 
 /** LAS documentation tab identifiers. */
-export type LasDocsTabId = 'overview' | 'try-it' | 'format' | 'lasloader' | 'laswriter';
+export type LasDocsTabId =
+  | 'overview'
+  | 'try-it'
+  | 'benchmarks'
+  | 'format'
+  | 'lasloader'
+  | 'laswriter';
 
 const LAS_DOCS_TABS: LasDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/las'},
+  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/las/benchmarks'},
   {id: 'overview', label: 'Overview', href: '/docs/modules/las/formats/las'},
   {id: 'format', label: 'Format', href: '/docs/modules/las/format'},
   {id: 'lasloader', label: 'LASLoader', href: '/docs/modules/las/api-reference/las-loader'},
