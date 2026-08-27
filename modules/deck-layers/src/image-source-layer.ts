@@ -7,6 +7,7 @@ import {
   type CompositeLayerProps,
   type DefaultProps,
   type Layer,
+  type LayerContext,
   type UpdateParameters,
   type Viewport,
   COORDINATE_SYSTEM,
@@ -19,27 +20,37 @@ import type {
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
+  Loader,
   SourceLoader
 } from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
+import {
+  finalizeOwnedSource,
+  getFirstSourceLayerName,
+  resolveVisualSource,
+  type ResolvedVisualSource
+} from './source-layer-utils';
 
 type ImageSourceLayerData = string | Blob | ImageSource;
 
 /** Props for {@link ImageSourceLayer}. */
-export type ImageSourceLayerProps = CompositeLayerProps & {
+export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'> & {
   /** URL/blob input or a fully constructed loaders.gl image source. */
   data: ImageSourceLayerData;
   /** Optional source type hint when resolving URL/blob inputs. */
   serviceType?: 'wms' | 'auto';
   /** Layers forwarded to `getImage`. */
-  layers?: string[];
+  layers?: string[] | 'auto';
   /** Output CRS for the requested image. */
   srs?: 'EPSG:4326' | 'EPSG:3857' | 'auto';
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
   /** Source factories used to auto-create image sources from URL/blob inputs. */
   sources?: Readonly<SourceLoader[]>;
+  /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
+  loaders?: ReadonlyArray<Loader | SourceLoader>;
   /** Options forwarded to `createDataSource` when `sources` are supplied. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
@@ -54,10 +65,14 @@ export type ImageSourceLayerProps = CompositeLayerProps & {
   onImageLoadError?: (requestId: number, error: Error) => void;
   /** Called when metadata/image loading starts or stops. */
   onLoadingStateChange?: (isLoading: boolean) => void;
+  /** Called when URL/Blob source resolution fails. */
+  onSourceError?: (error: Error) => void;
 };
 
 type ImageSourceLayerState = {
   resolvedData: ImageSource | null;
+  resolvedSource: ResolvedVisualSource | null;
+  resolvedLayers: string[];
   imageSet: ImageSet | null;
   unsubscribeImageSetEvents: (() => void) | null;
 };
@@ -68,8 +83,9 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   serviceType: 'auto',
   srs: 'auto',
   debounceTime: 200,
-  layers: {type: 'array', compare: true, value: []},
+  layers: 'auto',
   sources: {type: 'array', compare: false, value: []},
+  loaders: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   onMetadataLoad: {type: 'function', value: () => {}},
   onMetadataLoadError: {
@@ -87,7 +103,8 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
       console.error(error, requestId);
     }
   },
-  onLoadingStateChange: {type: 'function', value: () => {}}
+  onLoadingStateChange: {type: 'function', value: () => {}},
+  onSourceError: {type: 'function', value: () => {}}
 };
 
 /**
@@ -106,6 +123,13 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
   /** Typed deck.gl state for resolved source and image manager lifecycle. */
   state = null as unknown as ImageSourceLayerState;
 
+  private resolutionId = 0;
+
+  /** Creates an image source layer with mixed parser and source loader support. */
+  constructor(props: ImageSourceLayerProps) {
+    super(props as any);
+  }
+
   /** Returns true when the current image manager is idle and has a current image. */
   get isLoaded(): boolean {
     return Boolean(this.state?.imageSet?.isLoaded) && super.isLoaded;
@@ -120,41 +144,35 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
   initializeState(): void {
     this.state = {
       resolvedData: null,
+      resolvedSource: null,
+      resolvedLayers: [],
       imageSet: null,
       unsubscribeImageSetEvents: null
     };
   }
 
   /** Finalizes subscriptions and owned resources. */
-  finalizeState(): void {
+  finalizeState(context: LayerContext): void {
+    this.resolutionId++;
     this._releaseImageSet();
+    if (this.state.resolvedSource?.owned) {
+      void finalizeOwnedSource(this.state.resolvedSource.source);
+    }
+    super.finalizeState(context);
   }
 
   /** Keeps the image manager in sync with current props and viewport. */
   updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
     const dataChanged =
       changeFlags.dataChanged ||
-      props.sources !== oldProps.sources ||
-      props.sourceOptions !== oldProps.sourceOptions ||
-      props.serviceType !== oldProps.serviceType;
+      (changeFlags.propsChanged &&
+        (props.sources !== oldProps.sources ||
+          props.loaders !== oldProps.loaders ||
+          props.sourceOptions !== oldProps.sourceOptions ||
+          props.serviceType !== oldProps.serviceType));
 
     if (dataChanged) {
-      const resolvedData = this._resolveData(props);
-      const previousResolvedData = this.state.resolvedData;
-      this.setState({resolvedData});
-
-      if (!resolvedData) {
-        this._releaseImageSet();
-        return;
-      }
-
-      const imageSet = this._getOrCreateImageSet(
-        resolvedData,
-        resolvedData !== previousResolvedData
-      );
-      imageSet.setOptions({imageSource: resolvedData});
-      void imageSet.loadMetadata().catch(() => {});
-      this.loadImage(this.context.viewport, 0);
+      void this.resolveImageSource(props);
       return;
     }
 
@@ -171,9 +189,81 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         imageSource: this.state.resolvedData,
         debounceTime: props.debounceTime
       });
+      if (props.layers !== 'auto' && props.layers !== undefined) {
+        this.setState({resolvedLayers: props.layers});
+      }
       this.loadImage(this.context.viewport, 0);
     } else if (changeFlags.viewportChanged) {
       this.loadImage(this.context.viewport);
+    }
+  }
+
+  private async resolveImageSource(props: ImageSourceLayerProps): Promise<void> {
+    const resolutionId = ++this.resolutionId;
+    const previousSource = this.state.resolvedSource;
+    try {
+      const resolvedSource = await resolveVisualSource({
+        ...props,
+        sourceOptions: {
+          ...props.sourceOptions,
+          core: {
+            ...props.sourceOptions?.core,
+            type:
+              props.serviceType && props.serviceType !== 'auto'
+                ? props.serviceType
+                : props.sourceOptions?.core?.type
+          }
+        }
+      });
+      if (resolvedSource.sourceType !== 'image') {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        throw new Error(
+          `ImageSourceLayer expected an image source but resolved ${resolvedSource.sourceType}.`
+        );
+      }
+      if (resolutionId !== this.resolutionId) {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        return;
+      }
+      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
+        await finalizeOwnedSource(previousSource.source);
+      }
+
+      const resolvedData = resolvedSource.source as ImageSource;
+      const previousResolvedData = this.state.resolvedData;
+      this.setState({resolvedData, resolvedSource});
+      const imageSet = this._getOrCreateImageSet(
+        resolvedData,
+        resolvedData !== previousResolvedData
+      );
+      imageSet.setOptions({imageSource: resolvedData});
+      void imageSet
+        .loadMetadata()
+        .then(metadata => {
+          if (this.state.imageSet !== imageSet) {
+            return;
+          }
+          if (props.layers === 'auto' || props.layers === undefined) {
+            const layerName = getFirstSourceLayerName(metadata);
+            this.setState({resolvedLayers: layerName ? [layerName] : []});
+          }
+          this.loadImage(this.context.viewport, 0);
+        })
+        .catch(() => {});
+      if (props.layers !== 'auto' && props.layers !== undefined) {
+        this.setState({resolvedLayers: props.layers});
+        this.loadImage(this.context.viewport, 0);
+      }
+    } catch (error) {
+      if (resolutionId === this.resolutionId) {
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+        this.props.onSourceError?.(normalizedError);
+        this.raiseError(normalizedError, 'resolving image source');
+      }
     }
   }
 
@@ -234,7 +324,8 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
   /** Builds and issues an image request for the active viewport. */
   loadImage(viewport: Viewport, debounceTime?: number): void {
-    const {layers, serviceType} = this.props;
+    const {serviceType} = this.props;
+    const layers = this.state.resolvedLayers || normalizeImageLayers(this.props.layers);
     const imageSet = this.state.imageSet;
 
     if (!imageSet || !viewport) {
@@ -250,20 +341,25 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
   }
 
   /** Resolves URL/blob inputs to concrete image sources. */
-  private _resolveData(props: ImageSourceLayerProps): ImageSource | null {
-    const {data, sources, sourceOptions} = props;
+  _resolveData(props: ImageSourceLayerProps): ImageSource | null {
+    const {data, sources, sourceOptions, loaders = []} = props;
 
     if (this._isImageSource(data)) {
       return data;
     }
 
-    if ((typeof data === 'string' || data instanceof Blob) && sources?.length) {
-      return createDataSource(data, sources, {
+    const sourceLoaders = Array.from(
+      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
+    );
+    const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+    if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
+      return createDataSource(data, sourceLoaders, {
         ...sourceOptions,
         core: {
           ...sourceOptions?.core,
           type: props.serviceType,
-          loadOptions: props.loadOptions || sourceOptions?.core?.loadOptions
+          loadOptions: props.loadOptions || sourceOptions?.core?.loadOptions,
+          loaders: [...(sourceOptions?.core?.loaders || []), ...parserLoaders]
         }
       }) as unknown as ImageSource;
     }
@@ -312,7 +408,8 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     this.state?.imageSet?.finalize();
     this.setState?.({
       imageSet: null,
-      unsubscribeImageSetEvents: null
+      unsubscribeImageSetEvents: null,
+      resolvedLayers: []
     });
   }
 
@@ -340,7 +437,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       width,
       height,
       boundingBox,
-      layers: this.props.layers || [],
+      layers: this.state?.resolvedLayers || normalizeImageLayers(this.props.layers),
       crs: resolvedSrs
     };
   }
@@ -355,4 +452,8 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         !('getTileData' in value)
     );
   }
+}
+
+function normalizeImageLayers(layers: string[] | 'auto' | undefined): string[] {
+  return Array.isArray(layers) ? layers : [];
 }

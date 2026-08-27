@@ -14,7 +14,11 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-import type {WMTSCapabilities, WMTSLayer} from './lib/parsers/wmts/parse-wmts-capabilities';
+import type {
+  WMTSCapabilities,
+  WMTSTileMatrixSet,
+  WMTSLayer
+} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {selectServiceCRS, type ServiceCRS} from './crs-utils';
 
@@ -106,10 +110,7 @@ export class WMTSImageTileSource
     );
     const urlTemplate = wmts.urlTemplate || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
-    const tileMatrix =
-      tileMatrixSet?.matrices.find(matrix => matrix.identifier === String(parameters.z)) ||
-      tileMatrixSet?.matrices[parameters.z];
-    const tileMatrixIdentifier = tileMatrix?.identifier || String(parameters.z);
+    const tileMatrixIdentifier = getTileMatrixIdentifier(tileMatrixSet, parameters.z);
     if (urlTemplate) {
       return urlTemplate
         .replaceAll('{TileMatrix}', tileMatrixIdentifier)
@@ -188,6 +189,21 @@ export class WMTSImageTileSource
     }
     return undefined;
   }
+}
+
+/** Selects the advertised WMTS matrix identifier for a deck.gl zoom level. */
+function getTileMatrixIdentifier(
+  tileMatrixSet: WMTSTileMatrixSet | undefined,
+  zoom: number
+): string {
+  const matrices = tileMatrixSet?.matrices || [];
+  const exactMatrix = matrices.find(matrix => matrix.identifier === String(zoom));
+  if (exactMatrix) {
+    return exactMatrix.identifier;
+  }
+
+  const matrixIndex = Math.max(0, Math.min(matrices.length - 1, Math.round(zoom)));
+  return matrices[matrixIndex]?.identifier || String(zoom);
 }
 
 /** Source loader for WMTS image tiles. */

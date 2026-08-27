@@ -11,7 +11,7 @@ import {
   type Tileset3DProps,
   type Tileset3DSource
 } from '@loaders.gl/tiles';
-import {coreApi} from '@loaders.gl/core';
+import {coreApi, preload, selectLoader} from '@loaders.gl/core';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
@@ -84,7 +84,20 @@ export class Tile3DSourceLayer<
     // TODO: deprecate `loader` in v9.0
     // @ts-ignore
     const loaders = this.props.loader || this.props.loaders;
-    const loader = (Array.isArray(loaders) ? loaders[0] : loaders) as LoaderWithParser;
+    const loaderCandidates = (Array.isArray(loaders) ? loaders : [loaders]).filter(Boolean);
+    const selectedLoader =
+      (await selectLoader(tilesetUrl, loaderCandidates as any, {
+        ...loadOptions,
+        core: {...loadOptions.core, nothrow: true}
+      })) || loaderCandidates[0];
+    if (!selectedLoader) {
+      throw new Error('Tile3DSourceLayer requires a loader for URL or Blob inputs.');
+    }
+    const loader = await preload(
+      selectedLoader,
+      loadOptions,
+      typeof tilesetUrl === 'string' ? tilesetUrl : undefined
+    );
 
     const options: {loadOptions: LoaderOptions} & Partial<Tileset3DProps> = {
       loadOptions: {...loadOptions}

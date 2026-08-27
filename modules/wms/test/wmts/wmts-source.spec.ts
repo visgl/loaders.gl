@@ -2,39 +2,36 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import {expect, test as vitestTest} from 'vitest';
+import {expect, test} from 'vitest';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 
 const WMTS_URL = 'https://example.com/wmts?token=abc';
 
-test('WMTSImageTileSource#getTileURL preserves endpoint parameters', t => {
+test('WMTSImageTileSource#getTileURL preserves endpoint parameters', () => {
   const source = new WMTSImageTileSource(WMTS_URL, {
     wmts: {layer: 'basemap', tileMatrixSet: 'WebMercatorQuad'}
   });
   const url = new URL(source.getTileURL({x: 3, y: 4, z: 5}));
 
-  t.equal(url.searchParams.get('token'), 'abc');
-  t.equal(url.searchParams.get('LAYER'), 'basemap');
-  t.equal(url.searchParams.get('TILEMATRIX'), '5');
-  t.equal(url.searchParams.get('TILEROW'), '4');
-  t.equal(url.searchParams.get('TILECOL'), '3');
-  t.end();
+  expect(url.searchParams.get('token')).toBe('abc');
+  expect(url.searchParams.get('LAYER')).toBe('basemap');
+  expect(url.searchParams.get('TILEMATRIX')).toBe('5');
+  expect(url.searchParams.get('TILEROW')).toBe('4');
+  expect(url.searchParams.get('TILECOL')).toBe('3');
 });
 
-test('WMTSImageTileSource#getTileURL expands REST templates', t => {
+test('WMTSImageTileSource#getTileURL expands REST templates', () => {
   const source = WMTSSourceLoader.createDataSource(
     'https://example.com/{TileMatrix}/{TileRow}/{TileCol}.png',
     {
       wmts: {urlTemplate: 'https://tiles.example/{TileMatrix}/{TileRow}/{TileCol}.png'}
     }
   );
-  t.equal(source.getTileURL({x: 1, y: 2, z: 3}), 'https://tiles.example/3/2/1.png');
-  t.end();
+  expect(source.getTileURL({x: 1, y: 2, z: 3})).toBe('https://tiles.example/3/2/1.png');
 });
 
-test('WMTSCapabilitiesLoader normalizes layers and tile matrices', async t => {
+test('WMTSCapabilitiesLoader normalizes layers and tile matrices', async () => {
   const capabilities = await WMTSCapabilitiesLoader.preload();
   const parsed = capabilities.parseTextSync(`
     <Capabilities xmlns="http://www.opengis.net/wmts/1.0">
@@ -57,13 +54,12 @@ test('WMTSCapabilitiesLoader normalizes layers and tile matrices', async t => {
       </Contents>
     </Capabilities>`);
 
-  t.equal(parsed.contents.layers[0].identifier, 'basemap');
-  t.equal(parsed.contents.layers[0].resourceURLs[0].template.includes('{TileRow}'), true);
-  t.equal(parsed.contents.tileMatrixSets[0].matrices[0].matrixWidth, 1);
-  t.end();
+  expect(parsed.contents.layers[0].identifier).toBe('basemap');
+  expect(parsed.contents.layers[0].resourceURLs[0].template).toContain('{TileRow}');
+  expect(parsed.contents.tileMatrixSets[0].matrices[0].matrixWidth).toBe(1);
 });
 
-test('WMTSImageTileSource derives URL options from capabilities', async t => {
+test('WMTSImageTileSource derives URL options from capabilities', async () => {
   const source = new WMTSImageTileSource('https://example.com/wmts', {
     wmts: {
       capabilities: {
@@ -85,11 +81,10 @@ test('WMTSImageTileSource derives URL options from capabilities', async t => {
     }
   });
   await source.getMetadata();
-  t.equal(source.getTileURL({x: 1, y: 2, z: 3}), 'https://tiles.example/3/2/1.png');
-  t.end();
+  expect(source.getTileURL({x: 1, y: 2, z: 3})).toBe('https://tiles.example/3/2/1.png');
 });
 
-vitestTest('WMTSImageTileSource selects CRS-compatible matrix identifiers', async () => {
+test('WMTSImageTileSource selects CRS-compatible matrix identifiers', async () => {
   const source = new WMTSImageTileSource('https://example.com/wmts', {
     wmts: {
       layer: 'imagery',
@@ -126,4 +121,70 @@ vitestTest('WMTSImageTileSource selects CRS-compatible matrix identifiers', asyn
   expect(source.getTileURL({x: 1, y: 2, z: 0})).toBe(
     'https://tiles.example/WebMercatorQuad/L04/2/1'
   );
+});
+
+test('WMTSImageTileSource uses advertised nonnumeric matrix identifiers', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      tileMatrixSet: 'Custom',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'Custom'}],
+              resourceURLs: [
+                {template: 'https://tiles.example/{TileMatrix}/{TileRow}/{TileCol}.png'}
+              ]
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'Custom',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: '2g'}, {identifier: '1g'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+
+  await source.getMetadata();
+  expect(source.getTileURL({x: 1, y: 2, z: 1})).toBe('https://tiles.example/1g/2/1.png');
+});
+
+test('WMTSImageTileSource uses advertised identifiers for KVP requests', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      tileMatrixSet: 'Custom',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'Custom'}],
+              resourceURLs: []
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'Custom',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: '2g'}, {identifier: '1g'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+
+  await source.getMetadata();
+  expect(new URL(source.getTileURL({x: 1, y: 2, z: 1})).searchParams.get('TILEMATRIX')).toBe('1g');
 });

@@ -7,36 +7,62 @@ import {
   type CompositeLayerProps,
   type DefaultProps,
   type Layer,
+  type LayerContext,
   type UpdateParameters,
   _deepEqual as deepEqual
 } from '@deck.gl/core';
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
+import {createDataSource} from '@loaders.gl/core';
 import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/gis';
 import type {GeoJSONTable} from '@loaders.gl/schema';
-import type {GetFeaturesParameters, VectorSource, VectorSourceData} from '@loaders.gl/loader-utils';
+import type {
+  DataSourceOptions,
+  Loader,
+  SourceLoader,
+  VectorSource,
+  VectorSourceData,
+  VectorSourceMetadata
+} from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
+import {
+  finalizeOwnedSource,
+  getFirstSourceLayerName,
+  resolveVisualSource,
+  type ResolvedVisualSource
+} from './source-layer-utils';
 
 /** Props for {@link VectorSourceLayer}. */
-export type VectorSourceLayerProps = CompositeLayerProps & {
-  /** Fully constructed loaders.gl vector source. */
-  data: VectorSource;
+export type VectorSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'> & {
+  /** Vector source runtime, URL, or Blob. */
+  data: VectorSource | string | Blob;
+  /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
+  loaders?: ReadonlyArray<Loader | SourceLoader>;
+  /** @deprecated Put SourceLoaders in `loaders`. */
+  sources?: Readonly<SourceLoader[]>;
+  /** Options forwarded to source construction. */
+  sourceOptions?: DataSourceOptions;
   /** Named source layers forwarded to `VectorSource#getFeatures`. */
-  layers: string | string[];
+  layers?: string | string[] | 'auto';
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
-  crs?: GetFeaturesParameters['crs'];
+  crs?: string;
   /** Output format forwarded to `VectorSource#getFeatures`. */
   format?: 'geojson' | 'binary' | 'arrow';
   /** Debounce interval applied before viewport requests are issued. */
   debounceTime?: number;
   /** Called when the current viewport request resolves successfully. */
   onDataLoad?: (table: VectorSourceData) => void;
+  /** Called when source metadata resolves. */
+  onMetadataLoad?: (metadata: VectorSourceMetadata) => void;
   /** Called when metadata or viewport requests fail. */
   onError?: (error: Error) => void;
   /** Called when metadata/viewport loading starts or stops. */
   onLoadingStateChange?: (isLoading: boolean) => void;
+  /** Called when URL/Blob source resolution fails. */
+  onSourceError?: (error: Error) => void;
   /** Optional props forwarded into the default `GeoJsonLayer`. */
   geoJsonLayerProps?: Partial<GeoJsonLayerProps>;
   /** Optional props forwarded into the default `GeoArrowLayer`. */
@@ -44,18 +70,27 @@ export type VectorSourceLayerProps = CompositeLayerProps & {
 };
 
 type VectorSourceLayerState = {
+  resolvedData: VectorSource | null;
+  resolvedSource: ResolvedVisualSource | null;
   vectorSet: VectorSet | null;
   unsubscribeVectorSetEvents: (() => void) | null;
 };
 
 const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   id: 'vector-source-layer',
+  data: null as never,
+  loaders: {type: 'array', compare: false, value: []},
+  sources: {type: 'array', compare: false, value: []},
+  sourceOptions: {type: 'object', compare: false, value: {}},
+  layers: 'auto',
   crs: 'EPSG:4326',
   format: 'arrow',
   debounceTime: 200,
   geoJsonLayerProps: {type: 'object', compare: false, value: {}},
   geoArrowLayerProps: {type: 'object', compare: false, value: {}},
   onDataLoad: {type: 'function', value: () => {}},
+  onMetadataLoad: {type: 'function', value: () => {}},
+  onSourceError: {type: 'function', value: () => {}},
   onError: {
     type: 'function',
     compare: false,
@@ -86,6 +121,13 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
   /** Reusable scratch buffers for WKB/WKT conversion. */
   private geometryScratch: GeometryColumnBinaryFeatureCollectionScratch = {};
 
+  private resolutionId = 0;
+
+  /** Creates a vector source layer with mixed parser and source loader support. */
+  constructor(props: VectorSourceLayerProps) {
+    super(props as any);
+  }
+
   /** Returns true when the current vector runtime has accepted data. */
   get isLoaded(): boolean {
     return Boolean(this.state?.vectorSet?.isLoaded) && super.isLoaded;
@@ -99,25 +141,33 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
   /** Initializes state on first render. */
   initializeState(): void {
     this.state = {
+      resolvedData: null,
+      resolvedSource: null,
       vectorSet: null,
       unsubscribeVectorSetEvents: null
     };
   }
 
   /** Finalizes subscriptions and owned vector state. */
-  finalizeState(): void {
+  finalizeState(context: LayerContext): void {
+    this.resolutionId++;
     this._releaseVectorSet();
+    if (this.state.resolvedSource?.owned) {
+      void finalizeOwnedSource(this.state.resolvedSource.source);
+    }
+    super.finalizeState(context);
   }
 
   /** Keeps the owned vector runtime in sync with the current source props and viewport. */
   updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
-    const dataChanged = changeFlags.dataChanged;
+    const dataChanged =
+      changeFlags.dataChanged ||
+      props.loaders !== oldProps.loaders ||
+      props.sources !== oldProps.sources ||
+      props.sourceOptions !== oldProps.sourceOptions;
 
     if (dataChanged) {
-      const vectorSet = this._getOrCreateVectorSet(props.data, true);
-      vectorSet.setOptions(this._getVectorSetOptions(props));
-      void vectorSet.loadMetadata().catch(() => {});
-      void this._updateViewport();
+      void this.resolveVectorSource(props);
       return;
     }
 
@@ -131,18 +181,69 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       props.format !== oldProps.format
     ) {
       this.state.vectorSet.setOptions(this._getVectorSetOptions(props));
-      void this._updateViewport();
+      if (props.layers !== 'auto' && props.layers !== undefined) {
+        void this._updateViewport();
+      }
       return;
     }
 
     if (props.debounceTime !== oldProps.debounceTime) {
       this.state.vectorSet.setOptions(this._getVectorSetOptions(props));
-      void this._updateViewport();
+      if (props.layers !== 'auto' && props.layers !== undefined) {
+        void this._updateViewport();
+      }
       return;
     }
 
     if (changeFlags.viewportChanged) {
-      void this._updateViewport();
+      if (
+        this.props.layers !== 'auto' ||
+        (this.state.vectorSet?.layers && this.state.vectorSet.layers.length > 0)
+      ) {
+        void this._updateViewport();
+      }
+    }
+  }
+
+  private async resolveVectorSource(props: VectorSourceLayerProps): Promise<void> {
+    const resolutionId = ++this.resolutionId;
+    const previousSource = this.state.resolvedSource;
+    try {
+      const resolvedSource = await resolveVisualSource(props);
+      if (resolvedSource.sourceType !== 'vector') {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        throw new Error(
+          `VectorSourceLayer expected a vector source but resolved ${resolvedSource.sourceType}.`
+        );
+      }
+      if (resolutionId !== this.resolutionId) {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        return;
+      }
+      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
+        await finalizeOwnedSource(previousSource.source);
+      }
+
+      this.setState({
+        resolvedData: resolvedSource.source as VectorSource,
+        resolvedSource
+      });
+      const vectorSet = this._getOrCreateVectorSet(resolvedSource.source as VectorSource, true);
+      vectorSet.setOptions(this._getVectorSetOptions(props));
+      void vectorSet.loadMetadata().catch(() => {});
+      if (props.layers !== 'auto' && props.layers !== undefined) {
+        void this._updateViewport();
+      }
+    } catch (error) {
+      if (resolutionId === this.resolutionId) {
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+        this.props.onSourceError?.(normalizedError);
+        this.raiseError(normalizedError, 'resolving vector source');
+      }
     }
   }
 
@@ -194,7 +295,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       this._releaseVectorSet();
 
       const vectorSet = VectorSet.fromVectorSource(vectorSource, {
-        layers: this.props.layers,
+        layers: normalizeVectorLayers(this.props.layers),
         crs: this.props.crs,
         format: this.props.format,
         debounceTime: this.props.debounceTime
@@ -203,6 +304,16 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
         onLoadingStateChange: isLoading => this.props.onLoadingStateChange?.(isLoading),
         onUpdate: () => this.setNeedsUpdate(),
         onDataLoad: table => this.props.onDataLoad?.(table),
+        onMetadataLoad: metadata => {
+          this.props.onMetadataLoad?.(metadata);
+          if (this.props.layers === 'auto' || this.props.layers === undefined) {
+            const layerName = getFirstSourceLayerName(metadata);
+            if (layerName) {
+              vectorSet.setOptions({...this._getVectorSetOptions(this.props), layers: layerName});
+              void this._updateViewport();
+            }
+          }
+        },
         onError: error => this.props.onError?.(error)
       });
 
@@ -225,13 +336,42 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
 
   /** Builds runtime options from the current layer props. */
   private _getVectorSetOptions(props: VectorSourceLayerProps) {
+    const vectorSource = this.state.resolvedData;
+    if (!vectorSource) {
+      throw new Error('VectorSourceLayer source has not been resolved.');
+    }
     return {
-      vectorSource: props.data,
-      layers: props.layers,
+      vectorSource,
+      layers:
+        props.layers === 'auto' || props.layers === undefined
+          ? this.state.vectorSet?.layers || []
+          : props.layers,
       crs: props.crs,
       format: props.format,
       debounceTime: props.debounceTime
     };
+  }
+
+  /** Resolves URL/blob inputs to a concrete vector source. */
+  _resolveData(props: VectorSourceLayerProps): VectorSource {
+    if (isVectorSource(props.data)) {
+      return props.data;
+    }
+    const loaders = props.loaders || [];
+    const sourceLoaders = Array.from(
+      new Set([...(props.sources || []), ...loaders.filter(isSourceLoader)])
+    );
+    if (!sourceLoaders.length) {
+      throw new Error('VectorSourceLayer requires a SourceLoader for URL or Blob inputs.');
+    }
+    const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+    return createDataSource(props.data, sourceLoaders, {
+      ...props.sourceOptions,
+      core: {
+        ...props.sourceOptions?.core,
+        loaders: [...(props.sourceOptions?.core?.loaders || []), ...parserLoaders]
+      }
+    }) as unknown as VectorSource;
   }
 
   /** Requests the current viewport table when a viewport is available. */
@@ -244,6 +384,20 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
 
     await vectorSet.updateViewport(viewport);
   }
+}
+
+function isVectorSource(value: unknown): value is VectorSource {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'getMetadata' in value &&
+      'getSchema' in value &&
+      'getFeatures' in value
+  );
+}
+
+function normalizeVectorLayers(layers: string | string[] | 'auto' | undefined): string | string[] {
+  return layers === 'auto' || layers === undefined ? [] : layers;
 }
 
 function isGeoJSONTable(data: VectorSourceData): data is GeoJSONTable {

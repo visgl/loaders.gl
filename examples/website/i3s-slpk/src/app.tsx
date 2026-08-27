@@ -4,7 +4,7 @@ import {createRoot} from 'react-dom/client';
 import {FlyToInterpolator, MapController} from '@deck.gl/core';
 import type {MapViewState} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
-import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {I3SLoader, SLPKSource} from '@loaders.gl/i3s';
 import type {Tileset3D} from '@loaders.gl/tiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -82,7 +82,7 @@ export default function App() {
 
   const layers = source
     ? [
-        new Tile3DSourceLayer<unknown>({
+        new SourceLayer<unknown>({
           id: 'slpk-archive',
           data: source,
           onTilesetLoad: handleTilesetLoad,

@@ -3,10 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {MapViewState, OrbitViewState} from '@deck.gl/core';
-import {createDataSource} from '@loaders.gl/core';
-import {COPCSourceLoader} from '@loaders.gl/copc';
-import {PotreeSourceLoader} from '@loaders.gl/potree';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
 
 export type PointTileMapViewState = MapViewState & {
   nearZMultiplier?: number;
@@ -33,7 +29,6 @@ export type PointTileSourceExample = {
   pointSize: number;
   color: [number, number, number];
   initialViewState?: Partial<PointTileViewState>;
-  createPointCloudDataSource: () => PointCloudTilesetSource;
 };
 
 const POTREE_FARMLAND_URL =
@@ -45,46 +40,6 @@ const COPC_ELLIPSOID_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/copc/test/data/ellipsoid.copc.laz';
 const COPC_MIAMI_URL =
   'https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9271/20180425_324741D.copc.laz';
-
-export function createPotreeDataSource(url: string): PointCloudTilesetSource {
-  return createDataSource(getExampleSourceUrl(url), [PotreeSourceLoader], {
-    core: {type: 'potree'},
-    potree: {}
-  }) as PointCloudTilesetSource;
-}
-
-export function createCopcDataSource(
-  url: string,
-  sourceCoordinateSystem?: string
-): PointCloudTilesetSource {
-  return createDataSource(getExampleSourceUrl(url), [COPCSourceLoader], {
-    core: {type: 'copc'},
-    copc: {
-      sourceCoordinateSystem
-    }
-  }) as PointCloudTilesetSource;
-}
-
-/**
- * Creates a point-cloud tileset source for a supported tiled point-cloud format.
- */
-export function createPointCloudDataSource(
-  format: PointTileSourceExample['format'],
-  url: string
-): PointCloudTilesetSource {
-  return format === 'potree' ? createPotreeDataSource(url) : createCopcDataSource(url);
-}
-
-/**
- * Returns a source URL from the example input without rewriting absolute web URLs.
- */
-function getExampleSourceUrl(url: string): string {
-  const trimmedUrl = url.trim();
-  if (/^https?:\/\//i.test(trimmedUrl)) {
-    return trimmedUrl;
-  }
-  return trimmedUrl;
-}
 
 export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
   {
@@ -107,8 +62,7 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
       minZoom: 0,
       maxZoom: 12,
       zoom: 7.2
-    },
-    createPointCloudDataSource: () => createPotreeDataSource(POTREE_LION_URL)
+    }
   },
   {
     id: 'potree-farmland',
@@ -122,8 +76,7 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
     description: 'Point-cloud octree streamed from a georeferenced Potree 1.8 dataset.',
     url: POTREE_FARMLAND_URL,
     pointSize: 2,
-    color: [55, 126, 184],
-    createPointCloudDataSource: () => createPotreeDataSource(POTREE_FARMLAND_URL)
+    color: [55, 126, 184]
   },
   {
     id: 'potree-vol-total',
@@ -136,8 +89,7 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
     description: 'Legacy public Potree cloud.js dataset from the Potree examples.',
     url: POTREE_VOL_TOTAL_URL,
     pointSize: 2,
-    color: [96, 165, 250],
-    createPointCloudDataSource: () => createPotreeDataSource(POTREE_VOL_TOTAL_URL)
+    color: [96, 165, 250]
   },
   {
     id: 'copc-ellipsoid',
@@ -151,8 +103,7 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
     description: 'Small synthetic COPC fixture loaded through hierarchy pages.',
     url: COPC_ELLIPSOID_URL,
     pointSize: 2,
-    color: [208, 97, 40],
-    createPointCloudDataSource: () => createCopcDataSource(COPC_ELLIPSOID_URL)
+    color: [208, 97, 40]
   },
   {
     id: 'copc-miami',
@@ -166,8 +117,7 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
     description: 'Public NOAA coastal lidar COPC tile in a projected UTM coordinate system.',
     url: COPC_MIAMI_URL,
     pointSize: 1.5,
-    color: [36, 160, 117],
-    createPointCloudDataSource: () => createCopcDataSource(COPC_MIAMI_URL)
+    color: [36, 160, 117]
   }
 ];
 

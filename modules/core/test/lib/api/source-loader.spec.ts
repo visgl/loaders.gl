@@ -3,7 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource, fetchFile, load, parse, resolvePath} from '@loaders.gl/core';
+import {
+  _selectSource as selectSource,
+  createDataSource,
+  fetchFile,
+  load,
+  parse,
+  resolvePath
+} from '@loaders.gl/core';
 import {
   MVTSourceLoader,
   MVTTileSource,
@@ -81,4 +88,19 @@ test('parse#parse rejects SourceLoader candidates', async () => {
   await expect(parse('https://example.com/service=wms', [WMSSourceLoader])).rejects.toThrow(
     'SourceLoader'
   );
+});
+
+test('selectSource#selectSource selects an explicit source type', () => {
+  expect(selectSource('https://example.com/service=wms', [WMSSourceLoader], {type: 'wms'})).toBe(
+    WMSSourceLoader
+  );
+});
+
+test('selectSource#selectSource returns null for an unknown type with nothrow', () => {
+  expect(
+    selectSource('https://example.com/service=wms', [WMSSourceLoader], {
+      type: 'unknown',
+      nothrow: true
+    })
+  ).toBeNull();
 });

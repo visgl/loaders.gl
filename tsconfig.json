@@ -382,6 +382,9 @@
       "@loaders.gl/wms": [
         "modules/wms/src"
       ],
+      "@loaders.gl/wms/*": [
+        "modules/wms/src/*"
+      ],
       "@loaders.gl/wms/test": [
         "modules/wms/test"
       ],

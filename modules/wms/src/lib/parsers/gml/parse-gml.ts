@@ -253,7 +253,8 @@ export function parsePoint(xml: any, options: ParseGMLOptions, context: ParseGML
     const x = textOf(findIn(coord, 'gml:X'));
     const y = textOf(findIn(coord, 'gml:Y'));
     const z = findIn(coord, 'gml:Z');
-    return [x, y, ...(z ? [textOf(z)] : [])].map(Number);
+    const point = [x, y, ...(z ? [textOf(z)] : [])].map(Number);
+    return options.transformCoords?.(...point) || point;
   }
 
   const coordinates = findIn(xml, 'gml:coordinates');
@@ -563,10 +564,13 @@ export function parseMultiSurface(
   for (const member of getMembers(xml, ['gml:surfaceMember', 'gml:surfaceMembers'])) {
     const polygon = findIn(member, 'gml:Polygon');
     const surface = findIn(member, 'gml:Surface');
+    const compositeSurface = findIn(member, 'gml:CompositeSurface');
     if (polygon) {
       polygons.push(parsePolygonOrRectangle(polygon, options, context));
     } else if (surface) {
       polygons.push(...parseSurface(surface, options, context));
+    } else if (compositeSurface) {
+      polygons.push(...parseCompositeSurface(compositeSurface, options, context));
     }
   }
 

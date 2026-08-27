@@ -41,6 +41,10 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./wmts-capabilities-loader-with-parser": {
+      "types": "./dist/wmts-capabilities-loader-with-parser.d.ts",
+      "import": "./dist/wmts-capabilities-loader-with-parser.js"
     }
   },
   "sideEffects": false,

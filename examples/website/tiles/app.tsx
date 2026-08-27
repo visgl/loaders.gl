@@ -5,14 +5,8 @@
 import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import type {
-  ImageTileSource,
-  RangeRequestEvent,
-  RangeStats,
-  VectorTileSource
-} from '@loaders.gl/loader-utils';
+import type {RangeRequestEvent, RangeStats} from '@loaders.gl/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
-import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/mlt';
 import {MVTSourceLoader, TableTileSourceLoader} from '@loaders.gl/mvt';
@@ -21,7 +15,7 @@ import {GeoJSONLoader} from '@loaders.gl/json';
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
-import {Tile2DSourceLayer} from '@loaders.gl/deck-layers';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import {
   createExampleSourcePanel,
@@ -55,7 +49,6 @@ type AppProps = {
 };
 
 type AppState = {
-  tileSource: VectorTileSource | ImageTileSource | null;
   metadata: string | null;
   viewState: Record<string, unknown>;
   error: string | null;
@@ -75,7 +68,6 @@ export default function App(props: AppProps = {}) {
     [props.format]
   );
   const [state, setState] = useState<AppState>({
-    tileSource: null,
     metadata: null,
     viewState: INITIAL_VIEW_STATE,
     error: null,
@@ -117,7 +109,6 @@ export default function App(props: AppProps = {}) {
               type: currentExample.sourceType,
               worker: false,
               attributions: currentExample.attributions,
-              loaders: [GeoJSONLoader],
               loadOptions: {
                 core: {worker: false},
                 tilejson: {maxValues: 10}
@@ -143,14 +134,23 @@ export default function App(props: AppProps = {}) {
   const tileLayer =
     currentExample &&
     sourceOptions &&
-    new Tile2DSourceLayer({
+    new SourceLayer({
       data: currentExample.data,
-      sources: TILE_SOURCE_FACTORIES,
+      loaders: [...TILE_SOURCE_FACTORIES, GeoJSONLoader],
       sourceOptions,
       showTileBorders: props.showTileBorders ?? true,
-      metadata: state.metadata as any,
       onTileError: onTileLoadError,
       onTilesLoad: props.onTilesLoad as any,
+      onMetadataLoad: (metadata) => {
+        setState((currentState) => ({
+          ...currentState,
+          metadata: JSON.stringify(metadata, null, 2),
+          viewState: adjustViewStateToMetadata(currentState.viewState, metadata as Record<string, any>)
+        }));
+      },
+      onSourceError: (error) => {
+        setState((currentState) => ({...currentState, error: error.message}));
+      },
       pickable: true,
       autoHighlight: true
     });
@@ -254,44 +254,15 @@ export default function App(props: AppProps = {}) {
       setRangeStats(getRangeStats(rangeStatsObjectRef.current));
       setCurrentExample(example);
 
-      const tileSource = createTileSource(example, rangeStatsObjectRef.current, onTileRangeRequest);
-
       setState((currentState) => ({
         ...currentState,
-        tileSource,
         metadata: null,
+        viewState: {...currentState.viewState, ...example.viewState},
         error: null,
         selectedCategoryName: categoryName,
         selectedExampleName: exampleName
       }));
 
-      void tileSource
-        .getMetadata()
-        .then((metadata) => {
-          const initialViewState = adjustViewStateToMetadata(
-            {...state.viewState, ...example.viewState},
-            metadata
-          );
-
-          setState((currentState) => ({
-            ...currentState,
-            viewState: initialViewState,
-            error: null,
-            metadata: metadata ? JSON.stringify(metadata, null, 2) : '',
-            selectedCategoryName: categoryName,
-            selectedExampleName: exampleName
-          }));
-        })
-        .catch((error) => {
-          console.error('Failed to load metadata', url, error);
-          setState((currentState) => ({
-            ...currentState,
-            metadata: null,
-            error: `Could not load metadata for ${exampleName}: ${getErrorMessage(error)}`,
-            selectedCategoryName: categoryName,
-            selectedExampleName: exampleName
-          }));
-        });
     } catch (error) {
       console.error('Failed to load data', url, error);
       setState((currentState) => ({
@@ -550,38 +521,6 @@ function getTooltip(info: {tile?: {index: {x: number; y: number; z: number}}}) {
 
 export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
-}
-
-function createTileSource(
-  example: Example,
-  rangeStatsObject: ReturnType<typeof createRangeStats>,
-  onTileRangeRequest: (event: RangeRequestEvent) => void
-): VectorTileSource | ImageTileSource {
-  return createDataSource(
-    example.data,
-    [PMTilesSourceLoader, TableTileSourceLoader, MVTSourceLoader, MLTSourceLoader],
-    {
-      core: {
-        type: example.sourceType,
-        worker: false,
-        attributions: example.attributions,
-        loaders: [GeoJSONLoader],
-        loadOptions: {
-          core: {worker: false},
-          tilejson: {maxValues: 10}
-        }
-      },
-      pmtiles: {shape: 'arrow-table'},
-      mvt: {shape: 'arrow-table'},
-      mlt: {shape: 'arrow-table'},
-      table: {generateId: true, shape: 'geojson-table'},
-      rangeRequests: {
-        batchDelayMs: 50,
-        stats: rangeStatsObject,
-        onEvent: onTileRangeRequest
-      }
-    }
-  ) as VectorTileSource | ImageTileSource;
 }
 
 function formatBytes(bytes: number): string {
