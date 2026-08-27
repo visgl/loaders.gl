@@ -60,11 +60,7 @@ export function createParquetModuleAad(
     'bloom-filter-bitset'
   ].indexOf(module);
   if (moduleType < 0) throw new Error(`Unknown Parquet encryption module ${module}`);
-  const isPageModule =
-    module === 'data-page' ||
-    module === 'dictionary-page' ||
-    module === 'data-page-header' ||
-    module === 'dictionary-page-header';
+  const isPageModule = module === 'data-page' || module === 'data-page-header';
   const suffixLength = fileUnique.length + (module === 'footer' ? 1 : isPageModule ? 7 : 5);
   const suffix = new Uint8Array(suffixLength);
   suffix.set(fileUnique);
