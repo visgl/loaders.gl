@@ -112,7 +112,9 @@ function compileTableStatement(query: SQLTableQuery, context: SQLCompilationCont
       ...(child.query || {})
     };
     validateSQLTableQuery(childQuery);
-    sql = `${sql}\nUNION ALL\n${compileTableStatement(childQuery, context)}`;
+    const childSQL = compileTableStatement(childQuery, context);
+    const branchSQL = hasBranchLocalModifiers(childQuery) ? `(${childSQL})` : childSQL;
+    sql = `${sql}\nUNION ALL\n${branchSQL}`;
   }
   if (query.orderBy?.length) sql += `\nORDER BY ${query.orderBy.map(compileOrderKey).join(', ')}`;
   if (query.limit !== undefined) sql += `\nLIMIT ${query.limit}`;
@@ -155,7 +157,7 @@ function compileProjection(query: SQLTableQuery): string {
     const aggregate = aggregateByName.get(column);
     return aggregate
       ? `${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`
-      : quoteSQLIdentifier(column);
+      : compileProjectionColumn(column, query);
   });
   if (!selections.length)
     return expressions.length
@@ -173,6 +175,19 @@ function compileProjection(query: SQLTableQuery): string {
             .join(', ')
         : '*';
   return selections.join(', ');
+}
+
+/** Quotes a projection column, qualifying joined child fields component-wise. */
+function compileProjectionColumn(column: string, query: SQLTableQuery): string {
+  const childSource = query.join?.child.source;
+  return childSource && column.startsWith(`${childSource}.`)
+    ? column.split('.').map(quoteSQLIdentifier).join('.')
+    : quoteSQLIdentifier(column);
+}
+
+/** Returns whether a UNION child contains modifiers that must remain branch-local. */
+function hasBranchLocalModifiers(query: SQLTableQuery): boolean {
+  return Boolean(query.limit !== undefined || query.orderBy?.length || query.union?.length);
 }
 
 /** Compiles one portable scalar expression into quoted SQL. */

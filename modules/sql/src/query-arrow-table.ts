@@ -89,6 +89,10 @@ export function queryArrowTable(
 ): ArrowTable {
   throwIfAborted(options.signal);
 
+  if (options.join) {
+    validateArrowJoinQuery(sourceTable, options);
+  }
+
   if (options.join && hasRelationalOperatorsExceptJoin(options)) {
     throw new Error('Arrow joins cannot yet be combined with other relational operators.');
   }
@@ -168,7 +172,7 @@ function queryArrowTableRelational(
     if (!childTable) throw new Error(`Arrow union source not found: ${child.source}`);
     const childResult = queryArrowTable(childTable, {
       ...(child.query || {}),
-      columns: scanStep.columns,
+      columns: getUnionChildColumns(sourceColumnNames, options),
       signal: options.signal
     });
     rows = rows.concat(arrowTableToRows(childResult.data));
@@ -212,6 +216,42 @@ function queryArrowTableRelational(
   return limitedRows.length
     ? convertRowsToArrowTable(limitedRows)
     : createEmptyRelationalResult(sourceData, outputColumns, options);
+}
+
+/** Derives the source columns a UNION child needs without inheriting base-only predicate columns. */
+function getUnionChildColumns(
+  sourceColumnNames: readonly string[],
+  options: ArrowQueryOptions
+): string[] {
+  const expressionNames = new Set((options.expressions || []).map(expression => expression.name));
+  const aggregateNames = new Set((options.aggregates || []).map(aggregate => aggregate.name));
+  const outputColumns =
+    options.columns ||
+    (options.groupBy?.length || options.aggregates?.length
+      ? [...(options.groupBy || []), ...(options.aggregates || []).map(aggregate => aggregate.name)]
+      : sourceColumnNames);
+  const requiredColumns = new Set(
+    outputColumns.filter(column => !expressionNames.has(column) && !aggregateNames.has(column))
+  );
+
+  for (const expression of options.expressions || []) {
+    const definition = expression.expression;
+    if (definition.op === 'column') requiredColumns.add(definition.column);
+    if ('left' in definition) {
+      requiredColumns.add(definition.left);
+      requiredColumns.add(definition.right);
+    }
+  }
+  for (const key of options.orderBy || []) {
+    if (!expressionNames.has(key.column) && !aggregateNames.has(key.column)) {
+      requiredColumns.add(key.column);
+    }
+  }
+  for (const column of options.groupBy || []) requiredColumns.add(column);
+  for (const aggregate of options.aggregates || []) {
+    if (aggregate.column) requiredColumns.add(aggregate.column);
+  }
+  return sourceColumnNames.filter(column => requiredColumns.has(column));
 }
 
 /** Returns whether the query uses any in-memory relational operator. */
@@ -285,7 +325,70 @@ function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): Ar
   const limitedRows = outputRows.slice(0, options.limit);
   return limitedRows.length
     ? convertRowsToArrowTable(limitedRows)
-    : createEmptyRelationalResult(sourceTable.data, outputColumns, options);
+    : createEmptyRelationalResult(
+        sourceTable.data,
+        outputColumns,
+        options,
+        new Map(
+          rightResult.data.schema.fields.map(field => [
+            `${rightPrefix}${field.name}`,
+            new arrow.Field(
+              `${rightPrefix}${field.name}`,
+              field.type,
+              field.nullable,
+              field.metadata
+            )
+          ])
+        )
+      );
+}
+
+/** Validates root and child projections before dispatching to the join executor. */
+function validateArrowJoinQuery(sourceTable: ArrowTable, options: ArrowQueryOptions): void {
+  const join = options.join;
+  if (!join) return;
+  const sourceColumnNames = sourceTable.data.schema.fields.map(field => field.name);
+  const childTable = options.tables?.[join.child.source];
+  if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
+  const childColumnNames = childTable.data.schema.fields.map(field => field.name);
+  if (!sourceColumnNames.includes(join.left)) {
+    throw new Error(`Arrow join column not found: ${join.left}`);
+  }
+  if (!childColumnNames.includes(join.right)) {
+    throw new Error(`Arrow join column not found: ${join.right}`);
+  }
+
+  const childPrefix = `${join.child.source}.`;
+  const rootColumns = options.columns?.filter(column => !column.startsWith(childPrefix));
+  planTableQuery(sourceColumnNames, {
+    predicate: options.predicate,
+    columns: rootColumns?.length ? rootColumns : undefined,
+    limit: options.limit,
+    signal: options.signal
+  });
+
+  const childQuery = join.child.query || {};
+  planTableQuery(childColumnNames, childQuery);
+  const childOutputColumns = childQuery.columns || childColumnNames;
+  if (!childOutputColumns.includes(join.right)) {
+    throw new Error(`Arrow join child projection must include: ${join.right}`);
+  }
+  const projectedChildColumns =
+    options.columns?.filter(column => column.startsWith(childPrefix)) || [];
+  const seenChildColumns = new Set<string>();
+  for (const projectedColumn of projectedChildColumns) {
+    const childColumn = projectedColumn.slice(childPrefix.length);
+    if (!childColumnNames.includes(childColumn)) {
+      throw new Error(`Arrow join column not found: ${projectedColumn}`);
+    }
+    if (seenChildColumns.has(childColumn)) {
+      throw new Error(`Arrow query column was selected more than once: ${projectedColumn}`);
+    }
+    seenChildColumns.add(childColumn);
+    if (!childOutputColumns.includes(childColumn)) {
+      throw new Error(`Arrow join child projection does not include: ${childColumn}`);
+    }
+  }
 }
 
 /** Materializes one Arrow table into row objects for the relational proof of concept. */
@@ -410,7 +513,8 @@ function serializeGroupKey(values: readonly unknown[]): string {
 function createEmptyRelationalResult(
   sourceData: arrow.Table,
   outputColumns: readonly string[],
-  options: ArrowQueryOptions
+  options: ArrowQueryOptions,
+  additionalFields?: ReadonlyMap<string, arrow.Field>
 ): ArrowTable {
   const sourceFields = new Map(sourceData.schema.fields.map(field => [field.name, field]));
   const expressions = new Map(
@@ -422,6 +526,8 @@ function createEmptyRelationalResult(
   const fields = outputColumns.map(columnName => {
     const sourceField = sourceFields.get(columnName);
     if (sourceField) return sourceField;
+    const additionalField = additionalFields?.get(columnName);
+    if (additionalField) return additionalField;
     const expression = expressions.get(columnName);
     if (expression)
       return new arrow.Field(columnName, getExpressionType(expression, sourceFields), true);

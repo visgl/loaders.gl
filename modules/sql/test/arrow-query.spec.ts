@@ -271,6 +271,43 @@ test('queryArrowTable unions child tables and performs an equi-join', () => {
   ).toThrow(/cannot yet be combined/);
 });
 
+test('queryArrowTable does not require base-only predicate columns in UNION children', () => {
+  const result = queryArrowTable(makeArrowTable({id: [1, 2], active: [true, false]}), {
+    columns: ['id'],
+    predicate: parseSQLPredicate('active = TRUE'),
+    union: [{source: 'archive'}],
+    tables: {archive: makeArrowTable({id: [3]})}
+  });
+
+  expect(toRows(result)).toEqual([{id: 1}, {id: 3}]);
+});
+
+test('queryArrowTable validates join projections and preserves empty child field types', () => {
+  const sourceTable = makeArrowTable({id: [1]});
+  const childTable = makeArrowTable({id: [1], value: [42]});
+  const join = {child: {source: 'lookup'}, left: 'id', right: 'id'} as const;
+  const tables = {lookup: childTable};
+
+  expect(() => queryArrowTable(sourceTable, {join, tables, limit: -1})).toThrow(/non-negative/);
+  expect(() => queryArrowTable(sourceTable, {join, tables, columns: ['missing']})).toThrow(
+    /column not found/
+  );
+  expect(() => queryArrowTable(sourceTable, {join, tables, columns: ['lookup.missing']})).toThrow(
+    /lookup\.missing/
+  );
+
+  const emptyResult = queryArrowTable(sourceTable, {
+    join,
+    tables,
+    columns: ['id', 'lookup.value'],
+    limit: 0
+  });
+  expect(emptyResult.data.numRows).toBe(0);
+  expect(
+    emptyResult.data.schema.fields.find(field => field.name === 'lookup.value')?.type.toString()
+  ).toBe(childTable.data.schema.fields.find(field => field.name === 'value')?.type.toString());
+});
+
 test.each([
   [{columns: ['missing']}, /column not found/],
   [{columns: ['value', 'value']}, /more than once/],
