@@ -1331,7 +1331,10 @@ function encodePageIndexValue(
   typeLength: number | undefined,
   int96AsTimestamp: boolean
 ): Uint8Array {
-  if (physicalType === 'INT96' && int96AsTimestamp) {
+  if (physicalType === 'INT96') {
+    if (!int96AsTimestamp) {
+      throw new Error('INT96 page indexes require timestamp mode');
+    }
     return PARQUET_CODECS.PLAIN.encodeValues('INT96', [value], {int96AsTimestamp});
   }
   return encodeParquetBloomFilterValue(value, physicalType, typeLength);

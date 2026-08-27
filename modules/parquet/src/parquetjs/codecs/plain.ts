@@ -32,7 +32,7 @@ const INT64_MAX = (1n << 63n) - 1n;
 export function encodeValues(
   type: PrimitiveType,
   values: any[],
-  opts: ParquetCodecOptions
+  opts: ParquetCodecOptions = {}
 ): Uint8Array {
   switch (type) {
     case 'BOOLEAN':
@@ -163,6 +163,9 @@ function encodeValues_INT96(values: Array<number | bigint>, asTimestamp = false)
       continue;
     }
     const epochNanoseconds = BigInt(values[i]);
+    if (epochNanoseconds < INT64_MIN || epochNanoseconds > INT64_MAX) {
+      throw new Error(`INT96 timestamp is outside the signed 64-bit range: ${epochNanoseconds}`);
+    }
     const julianDayOffset = floorDivide(epochNanoseconds, NANOSECONDS_PER_DAY);
     const nanosecondsOfDay = epochNanoseconds - julianDayOffset * NANOSECONDS_PER_DAY;
     const julianDay = JULIAN_DAY_UNIX_EPOCH + julianDayOffset;
