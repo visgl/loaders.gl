@@ -1067,7 +1067,11 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
 
   const versionMajor = dataView.getUint8(24);
   const versionMinor = dataView.getUint8(25);
+  if (versionMajor !== 1 || versionMinor > 5) {
+    throw new Error(`LASLoader: unsupported LAS version ${versionMajor}.${versionMinor}`);
+  }
   const headerSize = dataView.getUint16(94, true);
+  const globalEncoding = dataView.getUint16(6, true);
   const vlrCount = dataView.getUint32(100, true);
   const pointFormatByte = dataView.getUint8(104);
   const pointsFormatId = pointFormatByte & POINT_FORMAT_MASK;
@@ -1078,6 +1082,19 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
   const pointsCount = extendedPointCount || legacyPointCount;
   const pointsOffset = dataView.getUint32(96, true);
   const pointsStructSize = dataView.getUint16(105, true);
+  if (versionMinor === 5) {
+    if (headerSize < 393) {
+      throw new Error('LASLoader: LAS 1.5 header must be at least 393 bytes');
+    }
+    if (pointsFormatId < 6 || pointsFormatId > 10) {
+      throw new Error(
+        `LASLoader: LAS 1.5 requires point data record formats 6-10; received ${pointsFormatId}`
+      );
+    }
+    if ((globalEncoding & 0x10) === 0) {
+      throw new Error('LASLoader: LAS 1.5 requires the WKT global encoding flag');
+    }
+  }
   const scale: [number, number, number] = [
     dataView.getFloat64(131, true),
     dataView.getFloat64(139, true),
@@ -1114,7 +1131,11 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     versionAsString: `${versionMajor}.${versionMinor}`,
     isCompressed,
     headerSize,
-    vlrCount
+    vlrCount,
+    userHeaderData:
+      versionMinor === 5 && headerSize > 393
+        ? new Uint8Array(arrayBuffer, 393, headerSize - 393).slice()
+        : undefined
   };
   if (hasCompleteLASMetadata(arrayBuffer, header)) {
     header.metadata = parseLASMetadata(arrayBuffer, header);
@@ -1149,9 +1170,13 @@ function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASM
     creationDayOfYear: dataView.getUint16(90, true),
     creationYear: dataView.getUint16(92, true),
     headerSize: header.headerSize!,
+    userHeaderData: header.userHeaderData,
     vlrCount: header.vlrCount!,
     evlrOffset: evlrOffset || undefined,
     evlrCount: evlrCount || undefined,
+    maxGpsTime: versionParts[1] === 5 ? dataView.getFloat64(375, true) : undefined,
+    minGpsTime: versionParts[1] === 5 ? dataView.getFloat64(383, true) : undefined,
+    timeOffset: versionParts[1] === 5 ? dataView.getUint16(391, true) : undefined,
     pointsByReturn: parsePointsByReturn(dataView, isAtLeast14),
     vlrs,
     evlrs,
