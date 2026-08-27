@@ -10,6 +10,7 @@ import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
 import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
 import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
+import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
@@ -101,6 +102,84 @@ describe('I3S conformance fixtures', () => {
     expect(Array.from(int32 as Int32Array)).toEqual([-7, 42]);
     expect(Array.from(float32 as Float32Array)).toEqual([1.5, -2.25]);
     expect(Array.from(uint64 as Float64Array)).toEqual([0x1_0000_0001, 0x1_ffff_ffff_ffff_ff]);
+  });
+
+  it('formats date fields and preserves null numeric values', async () => {
+    const objectIdsBuffer = new ArrayBuffer(12);
+    const objectIdsView = new DataView(objectIdsBuffer);
+    objectIdsView.setUint32(4, 7, true);
+    objectIdsView.setUint32(8, 8, true);
+
+    const datesBuffer = new ArrayBuffer(24);
+    const datesView = new DataView(datesBuffer);
+    datesView.setFloat64(8, Date.UTC(2024, 0, 1), true);
+    datesView.setFloat64(16, Date.UTC(2024, 0, 2, 3, 4, 5), true);
+
+    const nullValuesBuffer = new ArrayBuffer(24);
+    const nullValuesView = new DataView(nullValuesBuffer);
+    nullValuesView.setFloat64(8, 10, true);
+    nullValuesView.setFloat64(16, Number.NaN, true);
+
+    const guidValues = [
+      '{11111111-1111-1111-1111-111111111111}\0',
+      '{22222222-2222-2222-2222-222222222222}\0'
+    ];
+    const encodedGuidValues = guidValues.map(value => new TextEncoder().encode(value));
+    const guidsBuffer = new ArrayBuffer(
+      16 + encodedGuidValues[0].byteLength + encodedGuidValues[1].byteLength
+    );
+    const guidsView = new DataView(guidsBuffer);
+    guidsView.setUint32(0, guidValues.length, true);
+    guidsView.setUint32(8, encodedGuidValues[0].byteLength, true);
+    guidsView.setUint32(12, encodedGuidValues[1].byteLength, true);
+    new Uint8Array(guidsBuffer, 16).set(encodedGuidValues[0]);
+    new Uint8Array(guidsBuffer, 16 + encodedGuidValues[0].byteLength).set(encodedGuidValues[1]);
+
+    const responses: Record<string, ArrayBuffer> = {
+      '/attributes/objectids': objectIdsBuffer,
+      '/attributes/dates': datesBuffer,
+      '/attributes/guids': guidsBuffer,
+      '/attributes/nulls': nullValuesBuffer
+    };
+    const attributes = await loadFeatureAttributes(
+      {
+        tileset: {
+          tileset: {
+            attributeStorageInfo: [
+              {name: 'OBJECTID', objectIds: []},
+              {name: 'BuildDate', attributeValues: {valueType: 'Float64'}},
+              {name: 'AssetGuid', attributeValues: {valueType: 'String'}},
+              {name: 'OptionalHeight', attributeValues: {valueType: 'Float64'}}
+            ],
+            fields: [
+              {name: 'OBJECTID', type: 'esriFieldTypeOID'},
+              {name: 'BuildDate', type: 'esriFieldTypeDate'},
+              {name: 'AssetGuid', type: 'esriFieldTypeGUID'},
+              {name: 'OptionalHeight', type: 'esriFieldTypeDouble'}
+            ]
+          }
+        },
+        header: {
+          attributeUrls: [
+            '/attributes/objectids',
+            '/attributes/dates',
+            '/attributes/guids',
+            '/attributes/nulls'
+          ]
+        }
+      },
+      8,
+      {
+        fetch: async url => new Response(responses[String(url).split('?')[0]])
+      }
+    );
+
+    expect(attributes).toEqual({
+      OBJECTID: '8',
+      BuildDate: '2024-01-02T03:04:05.000Z',
+      AssetGuid: '{22222222-2222-2222-2222-222222222222}',
+      OptionalHeight: null
+    });
   });
 
   it('preserves UInt64 feature IDs through face-range expansion', async () => {
