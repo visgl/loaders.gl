@@ -1,16 +1,14 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-
 /* eslint-disable max-len */
 import '@loaders.gl/polyfills';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   validateLoader,
   validateMeshCategoryData,
   validateTableCategoryData
 } from 'test/common/conformance';
-
 import {
   LASCOPCLoader,
   LASLoader,
@@ -50,7 +48,6 @@ import {LAZPerfLoaderWithParser} from '../src/lazperf-loader';
 import {LAZRsLoaderWithParser} from '../src/laz-rs-loader';
 import {LASLoaderWithParser} from '../src/las-loader';
 // import {ArrowLoader} from '@loaders.gl/arrow';
-
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
 const LAS_POINT_COUNT = 808042;
@@ -83,75 +80,72 @@ const LAZ_1_4_PARITY_VARIANTS = [
   {name: 'COPC', loader: LASCOPCLoader},
   {name: 'laz-rs', loader: LAZRsLoader}
 ] as const;
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
-test('LASLoader#loader conformance', t => {
-  validateLoader(t, LASLoader, 'LASLoader');
-  validateLoader(t, LASWorkerLoader, 'LASWorkerLoader');
-  validateLoader(t, LAZPerfLoader, 'LAZPerfLoader');
-  validateLoader(t, LASCOPCLoader, 'LASCOPCLoader');
-  validateLoader(t, LAZRsLoader, 'LAZRsLoader');
-  t.end();
+const vitestAssertions = {
+  ok(value: unknown, message?: string) {
+    expect(value, message).toBeTruthy();
+  },
+  notOk(value: unknown, message?: string) {
+    expect(value, message).toBeFalsy();
+  },
+  equal(actual: unknown, expected: unknown, message?: string) {
+    expect(actual, message).toBe(expected);
+  },
+  equals(actual: unknown, expected: unknown, message?: string) {
+    expect(actual, message).toBe(expected);
+  }
+};
+test('LASLoader#loader conformance', () => {
+  validateLoader(LASLoader, 'LASLoader');
+  validateLoader(LASWorkerLoader, 'LASWorkerLoader');
+  validateLoader(LAZPerfLoader, 'LAZPerfLoader');
+  validateLoader(LASCOPCLoader, 'LASCOPCLoader');
+  validateLoader(LAZRsLoader, 'LAZRsLoader');
 });
-
-test('LASLoader#removed Arrow variant exports are absent', t => {
-  t.notOk('LASArrowLoader' in las, 'root does not export LASArrowLoader');
-  t.notOk('LASArrowLoader' in bundledLas, 'bundled does not export LASArrowLoader');
-  t.notOk('LASArrowLoader' in unbundledLas, 'unbundled does not export LASArrowLoader');
-  t.end();
+test('LASLoader#removed Arrow variant exports are absent', () => {
+  expect('LASArrowLoader' in las, 'root does not export LASArrowLoader').toBeFalsy();
+  expect('LASArrowLoader' in bundledLas, 'bundled does not export LASArrowLoader').toBeFalsy();
+  expect('LASArrowLoader' in unbundledLas, 'unbundled does not export LASArrowLoader').toBeFalsy();
 });
-
-test('LAS loader variants preload explicit parser implementations', async t => {
-  t.equal(
-    await preload(LASLoader),
-    LASLoaderWithParser,
-    'primary loader resolves TypeScript parser'
+test('LAS loader variants preload explicit parser implementations', async () => {
+  expect(await preload(LASLoader), 'primary loader resolves TypeScript parser').toBe(
+    LASLoaderWithParser
   );
-  t.equal(
-    await preload(LAZPerfLoader),
-    LAZPerfLoaderWithParser,
-    'laz-perf variant resolves laz-perf parser'
+  expect(await preload(LAZPerfLoader), 'laz-perf variant resolves laz-perf parser').toBe(
+    LAZPerfLoaderWithParser
   );
-  t.equal(
-    await preload(LASCOPCLoader),
-    LASCOPCLoaderWithParser,
-    'COPC variant resolves COPC parser'
+  expect(await preload(LASCOPCLoader), 'COPC variant resolves COPC parser').toBe(
+    LASCOPCLoaderWithParser
   );
-  t.equal(
-    await preload(LAZRsLoader),
-    LAZRsLoaderWithParser,
-    'laz-rs variant resolves laz-rs parser'
+  expect(await preload(LAZRsLoader), 'laz-rs variant resolves laz-rs parser').toBe(
+    LAZRsLoaderWithParser
   );
-  t.ok(LASLoaderWithParser.worker, 'primary TypeScript variant uses the packaged worker');
-  t.notOk(LAZPerfLoaderWithParser.worker, 'laz-perf variant defaults to the main thread');
-  t.notOk(LASCOPCLoaderWithParser.worker, 'COPC variant defaults to the main thread');
-  t.notOk(LAZRsLoaderWithParser.worker, 'laz-rs variant defaults to the main thread');
-  t.end();
+  expect(
+    LASLoaderWithParser.worker,
+    'primary TypeScript variant uses the packaged worker'
+  ).toBeTruthy();
+  expect(
+    LAZPerfLoaderWithParser.worker,
+    'laz-perf variant defaults to the main thread'
+  ).toBeFalsy();
+  expect(LASCOPCLoaderWithParser.worker, 'COPC variant defaults to the main thread').toBeFalsy();
+  expect(LAZRsLoaderWithParser.worker, 'laz-rs variant defaults to the main thread').toBeFalsy();
 });
-
-test('LASLoader#parse(binary)', async t => {
+test('LASLoader#parse(binary)', async () => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.is(data.header?.vertexCount, data.loaderData.totalRead, 'Original header was found');
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-
-  t.notOk(data.indices, 'INDICES attribute was not preset');
-  t.equal(
-    data.attributes.POSITION.value.length,
-    LAS_POINT_COUNT * 3,
-    'POSITION attribute was found'
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.header?.vertexCount, 'Original header was found').toBe(data.loaderData.totalRead);
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.indices, 'INDICES attribute was not preset').toBeFalsy();
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
+    LAS_POINT_COUNT * 3
   );
-
-  t.end();
 });
-
-test('LASLoader#parseInBatches(mesh)', async t => {
+test('LASLoader#parseInBatches(mesh)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
@@ -159,34 +153,28 @@ test('LASLoader#parseInBatches(mesh)', async t => {
   });
   const batchVertexCounts: number[] = [];
   let totalVertexCount = 0;
-
   for await (const batch of batches as AsyncIterable<any>) {
-    validateMeshCategoryData(t, batch);
-    t.equal(batch.mode, 0, 'batch mode is POINTS (0)');
-    t.ok(batch.attributes.POSITION, 'batch includes POSITION attribute');
-    t.ok(batch.attributes.intensity, 'batch includes intensity attribute');
-    t.ok(batch.attributes.classification, 'batch includes classification attribute');
-    t.ok(batch.attributes.COLOR_0, 'batch includes COLOR_0 attribute');
-    t.equal(
+    validateMeshCategoryData(vitestAssertions, batch);
+    expect(batch.mode, 'batch mode is POINTS (0)').toBe(0);
+    expect(batch.attributes.POSITION, 'batch includes POSITION attribute').toBeTruthy();
+    expect(batch.attributes.intensity, 'batch includes intensity attribute').toBeTruthy();
+    expect(batch.attributes.classification, 'batch includes classification attribute').toBeTruthy();
+    expect(batch.attributes.COLOR_0, 'batch includes COLOR_0 attribute').toBeTruthy();
+    expect(
       batch.attributes.POSITION.value.length,
-      batch.header.vertexCount * 3,
       'POSITION length matches batch vertex count'
-    );
-    t.ok(batch.progress > 0 && batch.progress <= 1, 'batch includes progress');
+    ).toBe(batch.header.vertexCount * 3);
+    expect(batch.progress > 0 && batch.progress <= 1, 'batch includes progress').toBeTruthy();
     batchVertexCounts.push(batch.header.vertexCount);
     totalVertexCount += batch.header.vertexCount;
   }
-
-  t.deepEqual(
-    batchVertexCounts,
-    [...new Array(32).fill(25000), 8042],
-    'emits requested mesh batches'
-  );
-  t.equal(totalVertexCount, LAS_POINT_COUNT, 'batched vertex count matches full parse');
-  t.end();
+  expect(batchVertexCounts, 'emits requested mesh batches').toEqual([
+    ...new Array(32).fill(25000),
+    8042
+  ]);
+  expect(totalVertexCount, 'batched vertex count matches full parse').toBe(LAS_POINT_COUNT);
 });
-
-test('LASLoader#parseInBatches(arrow-table)', async t => {
+test('LASLoader#parseInBatches(arrow-table)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 30000,
@@ -194,43 +182,37 @@ test('LASLoader#parseInBatches(arrow-table)', async t => {
     core: {worker: false}
   });
   const batchRowCounts: number[] = [];
-
   for await (const table of batches as AsyncIterable<any>) {
-    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
-    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
-    t.ok(table.data.getChild('intensity'), 'batch includes intensity column');
-    t.ok(table.data.getChild('classification'), 'batch includes classification column');
+    expect(table.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(table.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    expect(table.data.getChild('intensity'), 'batch includes intensity column').toBeTruthy();
+    expect(
+      table.data.getChild('classification'),
+      'batch includes classification column'
+    ).toBeTruthy();
     batchRowCounts.push(table.data.numRows);
   }
-
-  t.deepEqual(
-    batchRowCounts,
-    [...new Array(26).fill(30000), 28042],
-    'emits requested Arrow batches'
-  );
-  t.end();
+  expect(batchRowCounts, 'emits requested Arrow batches').toEqual([
+    ...new Array(26).fill(30000),
+    28042
+  ]);
 });
-
-test('LASLoader#parseInBatches(fp64)', async t => {
+test('LASLoader#parseInBatches(fp64)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
     las: {fp64: true},
     core: {worker: false}
   });
-
   for await (const batch of batches as AsyncIterable<any>) {
-    t.ok(
+    expect(
       batch.attributes.POSITION.value instanceof Float64Array,
       'batch POSITION attribute is Float64Array'
-    );
+    ).toBeTruthy();
     break;
   }
-
-  t.end();
 });
-
-test('LAS loader variants parseInBatches', async t => {
+test('LAS loader variants parseInBatches', async () => {
   for (const {name, loader} of [
     {name: 'TypeScript', loader: LASLoader},
     {name: 'laz-perf', loader: LAZPerfLoader},
@@ -243,21 +225,15 @@ test('LAS loader variants parseInBatches', async t => {
       core: {worker: false}
     });
     let totalVertexCount = 0;
-
     for await (const batch of batches as AsyncIterable<any>) {
       totalVertexCount += batch.header.vertexCount;
     }
-
-    t.equal(totalVertexCount, LAS_POINT_COUNT, `${name} loader variant emits all points`);
+    expect(totalVertexCount, `${name} loader variant emits all points`).toBe(LAS_POINT_COUNT);
   }
-
-  t.end();
 });
-
-test('LAS loader variants return Arrow tables', async t => {
+test('LAS loader variants return Arrow tables', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
-
   for (const {name, loader} of [
     {name: 'laz-perf', loader: LAZPerfLoader},
     {name: 'COPC', loader: LASCOPCLoader},
@@ -267,39 +243,33 @@ test('LAS loader variants return Arrow tables', async t => {
       core: {worker: false},
       las: {shape: 'arrow-table'}
     });
-    t.equal(table.shape, 'arrow-table', `${name} variant returns an Arrow table`);
-    t.equal(table.data.numRows, LAS_EXTRABYTES_POINT_COUNT, `${name} variant returns every point`);
+    expect(table.shape, `${name} variant returns an Arrow table`).toBe('arrow-table');
+    expect(table.data.numRows, `${name} variant returns every point`).toBe(
+      LAS_EXTRABYTES_POINT_COUNT
+    );
   }
-
   const syncTable = LAZPerfLoaderWithParser.parseSync(arrayBuffer, {
     las: {shape: 'arrow-table'}
   });
-  t.equal(syncTable.shape, 'arrow-table', 'laz-perf parseSync returns an Arrow table');
-  t.equal(
-    syncTable.data.numRows,
-    LAS_EXTRABYTES_POINT_COUNT,
-    'laz-perf parseSync returns every point'
+  expect(syncTable.shape, 'laz-perf parseSync returns an Arrow table').toBe('arrow-table');
+  expect(syncTable.data.numRows, 'laz-perf parseSync returns every point').toBe(
+    LAS_EXTRABYTES_POINT_COUNT
   );
-  t.end();
 });
-
-test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async t => {
+test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
   const expected = await parse(fetchFile(LAS_BINARY_URL), LAZRsLoader, {
     core: {worker: false}
   });
   const actual = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, actual);
-
-  t.equal(actual.loaderData.versionAsString, '1.2', 'fixture is LAS 1.2');
-  t.equal(actual.loaderData.pointsFormatId, 3, 'fixture uses point format 3');
-  t.equal(actual.header.vertexCount, LAS_POINT_COUNT, 'fixture point count is expected');
-  compareMeshAttributes(t, actual, expected, 'TypeScript LAZ PDRF 3 parse matches laz-rs');
-  t.end();
+  validateMeshCategoryData(vitestAssertions, actual);
+  expect(actual.loaderData.versionAsString, 'fixture is LAS 1.2').toBe('1.2');
+  expect(actual.loaderData.pointsFormatId, 'fixture uses point format 3').toBe(3);
+  expect(actual.header.vertexCount, 'fixture point count is expected').toBe(LAS_POINT_COUNT);
+  compareMeshAttributes(actual, expected, 'TypeScript LAZ PDRF 3 parse matches laz-rs');
 }, 30000);
-
-test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', async t => {
+test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LAZRsLoader, {
@@ -310,17 +280,12 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', asy
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
-
-  t.equal(expected.loaderData.versionAsString, '1.2', 'fixture is LAS 1.2');
-  t.equal(expected.loaderData.pointsFormatId, 3, 'fixture uses point format 3');
-  t.equal(
-    expected.header.vertexCount,
-    LAS_EXTRABYTES_POINT_COUNT,
-    'fixture point count is expected'
+  expect(expected.loaderData.versionAsString, 'fixture is LAS 1.2').toBe('1.2');
+  expect(expected.loaderData.pointsFormatId, 'fixture uses point format 3').toBe(3);
+  expect(expected.header.vertexCount, 'fixture point count is expected').toBe(
+    LAS_EXTRABYTES_POINT_COUNT
   );
-
   compareCollectedMeshAttributes(
-    t,
     actual,
     {
       positions: Array.from(expected.attributes.POSITION.value),
@@ -330,10 +295,8 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', asy
     },
     'split TypeScript LAZ PDRF 3 streaming matches laz-rs'
   );
-  t.end();
 }, 30000);
-
-test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async t => {
+test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   let consumedByteLength = 0;
@@ -350,7 +313,6 @@ test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async t
   let batchCount = 0;
   let pointCount = 0;
   let firstBatchConsumedByteLength = 0;
-
   for await (const batch of batches as AsyncIterable<any>) {
     if (batchCount === 0) {
       firstBatchConsumedByteLength = consumedByteLength;
@@ -358,16 +320,13 @@ test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async t
     batchCount++;
     pointCount += batch.header.vertexCount;
   }
-
-  t.ok(batchCount > 1, 'fixture emits multiple batches');
-  t.equal(pointCount, LAS_EXTRABYTES_POINT_COUNT, 'stream emits every point once');
-  t.ok(
+  expect(batchCount > 1, 'fixture emits multiple batches').toBeTruthy();
+  expect(pointCount, 'stream emits every point once').toBe(LAS_EXTRABYTES_POINT_COUNT);
+  expect(
     firstBatchConsumedByteLength < arrayBuffer.byteLength,
     `first batch emitted after ${firstBatchConsumedByteLength} of ${arrayBuffer.byteLength} bytes`
-  );
-  t.end();
+  ).toBeTruthy();
 }, 30000);
-
 for (const fixture of [
   {
     pointDataRecordFormat: 4,
@@ -383,28 +342,23 @@ for (const fixture of [
   }
 ]) {
   const label = `PDRF ${fixture.pointDataRecordFormat}`;
-
-  test(`TypeScriptLAZ#raw LAS 1.3 ${label} output matches uncompressed records`, async t => {
+  test(`TypeScriptLAZ#raw LAS 1.3 ${label} output matches uncompressed records`, async () => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
-
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
       batchSize: 127
     })) {
       batches.push(new Uint8Array(batch.arrayBuffer));
     }
-
     const pointDataOffset = new DataView(lasArrayBuffer).getUint32(96, true);
     const expected = new Uint8Array(
       lasArrayBuffer,
       pointDataOffset,
       1024 * fixture.pointDataRecordLength
     );
-    t.deepEqual(
-      concatenateUint8ArraysForTest(batches),
-      expected,
-      `${label} preserves every point byte`
+    expect(concatenateUint8ArraysForTest(batches), `${label} preserves every point byte`).toEqual(
+      expected
     );
     const waveformByteOffset = fixture.pointDataRecordFormat === 4 ? 29 : 35;
     const waveformOffset = new DataView(
@@ -412,14 +366,12 @@ for (const fixture of [
       expected.byteOffset,
       expected.byteLength
     ).getBigUint64(waveformByteOffset, true);
-    t.ok(
+    expect(
       waveformOffset > BigInt(Number.MAX_SAFE_INTEGER),
       `${label} preserves waveform offsets beyond Number.MAX_SAFE_INTEGER`
-    );
-    t.end();
+    ).toBeTruthy();
   });
-
-  test(`LASLoader#parse and split streaming LAS 1.3 ${label} match uncompressed LAS`, async t => {
+  test(`LASLoader#parse and split streaming LAS 1.3 ${label} match uncompressed LAS`, async () => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     // Bundled laz-rs rejects WavePacket13 item type 9; the raw test above uses current LASzip's
@@ -433,16 +385,12 @@ for (const fixture of [
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
-
-    t.equal(actual.loaderData.versionAsString, '1.3', `${label} fixture is LAS 1.3`);
-    t.equal(
-      actual.loaderData.pointsFormatId,
-      fixture.pointDataRecordFormat,
-      `${label} fixture has the expected point format`
+    expect(actual.loaderData.versionAsString, `${label} fixture is LAS 1.3`).toBe('1.3');
+    expect(actual.loaderData.pointsFormatId, `${label} fixture has the expected point format`).toBe(
+      fixture.pointDataRecordFormat
     );
-    compareMeshAttributes(t, actual, expected, `${label} TypeScript LAZ matches uncompressed LAS`);
+    compareMeshAttributes(actual, expected, `${label} TypeScript LAZ matches uncompressed LAS`);
     compareCollectedMeshAttributes(
-      t,
       streamed,
       {
         positions: Array.from(expected.attributes.POSITION.value),
@@ -452,41 +400,33 @@ for (const fixture of [
       },
       `${label} TypeScript streaming matches uncompressed LAS`
     );
-    t.end();
   });
 }
-
-test('LASCOPCLoader#parse LAS 1.4 fixture', async t => {
+test('LASCOPCLoader#parse LAS 1.4 fixture', async () => {
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
-  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
-  t.equal(data.header.vertexCount, 3, 'fixture point count is expected');
-  t.ok(data.attributes.COLOR_0, 'fixture includes color');
-  t.end();
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
+  expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
+  expect(data.header.vertexCount, 'fixture point count is expected').toBe(3);
+  expect(data.attributes.COLOR_0, 'fixture includes color').toBeTruthy();
 });
-
-test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async t => {
+test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async () => {
   const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
-  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
-  t.equal(data.header.vertexCount, 3, 'fixture point count is expected');
-  t.ok(data.attributes.COLOR_0, 'fixture includes color');
-  compareMeshAttributes(t, data, expected, 'TypeScript variant matches COPC variant');
-  t.end();
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
+  expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
+  expect(data.header.vertexCount, 'fixture point count is expected').toBe(3);
+  expect(data.attributes.COLOR_0, 'fixture includes color').toBeTruthy();
+  compareMeshAttributes(data, expected, 'TypeScript variant matches COPC variant');
 });
-
-test('LASLoader#parseInBatches matches COPC variant', async t => {
+test('LASLoader#parseInBatches matches COPC variant', async () => {
   const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
@@ -499,79 +439,58 @@ test('LASLoader#parseInBatches matches COPC variant', async t => {
   const intensities: number[] = [];
   const classifications: number[] = [];
   const colors: number[] = [];
-
   for await (const batch of batches as AsyncIterable<any>) {
     positions.push(...batch.attributes.POSITION.value);
     intensities.push(...batch.attributes.intensity.value);
     classifications.push(...batch.attributes.classification.value);
     colors.push(...(batch.attributes.COLOR_0?.value || []));
   }
-
-  t.deepEqual(positions, Array.from(expected.attributes.POSITION.value), 'positions match WASM');
-  t.deepEqual(
-    intensities,
-    Array.from(expected.attributes.intensity.value),
-    'intensities match WASM'
+  expect(positions, 'positions match WASM').toEqual(Array.from(expected.attributes.POSITION.value));
+  expect(intensities, 'intensities match WASM').toEqual(
+    Array.from(expected.attributes.intensity.value)
   );
-  t.deepEqual(
-    classifications,
-    Array.from(expected.attributes.classification.value),
-    'classifications match WASM'
+  expect(classifications, 'classifications match WASM').toEqual(
+    Array.from(expected.attributes.classification.value)
   );
-  t.deepEqual(colors, Array.from(expected.attributes.COLOR_0.value), 'colors match WASM');
-  t.end();
+  expect(colors, 'colors match WASM').toEqual(Array.from(expected.attributes.COLOR_0.value));
 });
-
-test('LASCOPCLoader#parse LAZ 1.4 fixture', async t => {
+test('LASCOPCLoader#parse LAZ 1.4 fixture', async () => {
   const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASCOPCLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
-  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
-  t.equal(data.header.vertexCount, LAZ_1_4_POINT_COUNT, 'fixture point count is expected');
-  t.ok(data.attributes.COLOR_0, 'fixture includes color');
-  t.end();
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
+  expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
+  expect(data.header.vertexCount, 'fixture point count is expected').toBe(LAZ_1_4_POINT_COUNT);
+  expect(data.attributes.COLOR_0, 'fixture includes color').toBeTruthy();
 });
-
-test('LASLoader#parse LAZ 1.4 matches other loader variants', async t => {
+test('LASLoader#parse LAZ 1.4 matches other loader variants', async () => {
   const actual = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, actual);
-
+  validateMeshCategoryData(vitestAssertions, actual);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
       core: {worker: false}
     });
-
-    t.equal(
-      actual.header.vertexCount,
-      expected.header.vertexCount,
-      `TypeScript LAZ point count matches ${name}`
+    expect(actual.header.vertexCount, `TypeScript LAZ point count matches ${name}`).toBe(
+      expected.header.vertexCount
     );
-    compareMeshAttributes(t, actual, expected, `TypeScript LAZ parse matches ${name}`);
+    compareMeshAttributes(actual, expected, `TypeScript LAZ parse matches ${name}`);
   }
-
-  t.end();
 });
-
-test('LASLoader#parseInBatches LAZ 1.4 fixture', async t => {
+test('LASLoader#parseInBatches LAZ 1.4 fixture', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
-
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
       core: {worker: false}
     });
-
     compareCollectedMeshAttributes(
-      t,
       actual,
       {
         positions: Array.from(expected.attributes.POSITION.value),
@@ -582,11 +501,8 @@ test('LASLoader#parseInBatches LAZ 1.4 fixture', async t => {
       `TypeScript LAZ streaming matches ${name}`
     );
   }
-
-  t.end();
 });
-
-test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', async t => {
+test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
@@ -594,14 +510,11 @@ test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', asy
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
-
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(arrayBuffer.slice(0), loader, {
       core: {worker: false}
     });
-
     compareCollectedMeshAttributes(
-      t,
       actual,
       {
         positions: Array.from(expected.attributes.POSITION.value),
@@ -612,11 +525,8 @@ test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', asy
       `split TypeScript LAZ streaming matches ${name}`
     );
   }
-
-  t.end();
 });
-
-test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async t => {
+test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASLoader, {
@@ -627,9 +537,7 @@ test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async t => {
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
-
   compareCollectedMeshAttributes(
-    t,
     actual,
     {
       positions: Array.from(expected.attributes.POSITION.value),
@@ -639,9 +547,7 @@ test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async t => {
     },
     'split file chunks match complete-buffer TypeScript parse'
   );
-  t.end();
 });
-
 for (const fixture of [
   {
     version: '1.4',
@@ -726,35 +632,28 @@ for (const fixture of [
   }
 ]) {
   const label = `PDRF ${fixture.pointDataRecordFormat}`;
-
-  test(`TypeScriptLAZ#raw LAS ${fixture.version} ${label} output matches uncompressed records`, async t => {
+  test(`TypeScriptLAZ#raw LAS ${fixture.version} ${label} output matches uncompressed records`, async () => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
-
     if ('expectedItemVersions' in fixture) {
       const lazDataView = new DataView(lazArrayBuffer);
       for (const [itemType, expectedVersion] of fixture.expectedItemVersions) {
         const itemVersionOffset = findLASZipItemVersionOffset(lazArrayBuffer, itemType);
-        t.equal(
+        expect(
           lazDataView.getUint16(itemVersionOffset, true),
-          expectedVersion,
           `${label} LASzip item ${itemType} uses version ${expectedVersion}`
-        );
+        ).toBe(expectedVersion);
       }
     }
-
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
       batchSize: 127
     })) {
-      t.equal(
-        batch.header.pointsFormatId,
-        fixture.pointDataRecordFormat,
-        `${label} header preserves point format`
+      expect(batch.header.pointsFormatId, `${label} header preserves point format`).toBe(
+        fixture.pointDataRecordFormat
       );
       batches.push(new Uint8Array(batch.arrayBuffer));
     }
-
     const lasDataView = new DataView(lasArrayBuffer);
     const pointDataOffset = lasDataView.getUint32(96, true);
     const expected = new Uint8Array(
@@ -762,10 +661,8 @@ for (const fixture of [
       pointDataOffset,
       1024 * fixture.pointDataRecordLength
     );
-    t.deepEqual(
-      concatenateUint8ArraysForTest(batches),
-      expected,
-      `${label} preserves every point byte`
+    expect(concatenateUint8ArraysForTest(batches), `${label} preserves every point byte`).toEqual(
+      expected
     );
     if (fixture.pointDataRecordFormat >= 9) {
       const waveformByteOffset = fixture.pointDataRecordFormat === 9 ? 31 : 39;
@@ -774,26 +671,23 @@ for (const fixture of [
         expected.byteOffset,
         expected.byteLength
       ).getBigUint64(waveformByteOffset, true);
-      t.ok(
+      expect(
         waveformOffset > BigInt(Number.MAX_SAFE_INTEGER),
         `${label} preserves waveform offsets beyond Number.MAX_SAFE_INTEGER`
-      );
+      ).toBeTruthy();
     }
     if ('exercisesAllScannerChannels' in fixture && fixture.exercisesAllScannerChannels) {
       const scannerChannels = new Set<number>();
       for (let pointIndex = 0; pointIndex < 1024; pointIndex++) {
         scannerChannels.add((expected[pointIndex * fixture.pointDataRecordLength + 15] >> 4) & 3);
       }
-      t.deepEqual(
+      expect(
         Array.from(scannerChannels).sort(),
-        [0, 1, 2, 3],
         `${label} exercises all LASzip v4 scanner-channel contexts`
-      );
+      ).toEqual([0, 1, 2, 3]);
     }
-    t.end();
   });
-
-  test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async t => {
+  test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async () => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const expected = await parse(lasArrayBuffer, LASLoader, {core: {worker: false}});
@@ -805,22 +699,15 @@ for (const fixture of [
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
-
-    t.equal(
-      actual.loaderData.versionAsString,
-      fixture.version,
-      `${label} fixture is LAS ${fixture.version}`
+    expect(actual.loaderData.versionAsString, `${label} fixture is LAS ${fixture.version}`).toBe(
+      fixture.version
     );
-    t.equal(
-      actual.loaderData.pointsFormatId,
-      fixture.pointDataRecordFormat,
-      `${label} fixture has the expected point format`
+    expect(actual.loaderData.pointsFormatId, `${label} fixture has the expected point format`).toBe(
+      fixture.pointDataRecordFormat
     );
-    t.equal(actual.header.vertexCount, 1024, `${label} fixture has 1,024 points`);
-    compareMeshAttributes(t, actual, expected, `${label} TypeScript LAZ matches uncompressed LAS`);
-
+    expect(actual.header.vertexCount, `${label} fixture has 1,024 points`).toBe(1024);
+    compareMeshAttributes(actual, expected, `${label} TypeScript LAZ matches uncompressed LAS`);
     compareCollectedMeshAttributes(
-      t,
       streamed,
       {
         positions: Array.from(expected.attributes.POSITION.value),
@@ -830,14 +717,12 @@ for (const fixture of [
       },
       `${label} TypeScript streaming matches uncompressed LAS`
     );
-
     for (const {name, loader} of fixture.parityVariants) {
       const expected = await parse(lazArrayBuffer.slice(0), loader, {
         core: {worker: false}
       });
-      compareMeshAttributes(t, actual, expected, `${label} TypeScript parse matches ${name}`);
+      compareMeshAttributes(actual, expected, `${label} TypeScript parse matches ${name}`);
       compareCollectedMeshAttributes(
-        t,
         streamed,
         {
           positions: Array.from(expected.attributes.POSITION.value),
@@ -848,11 +733,9 @@ for (const fixture of [
         `${label} TypeScript streaming matches ${name}`
       );
     }
-    t.end();
   });
 }
-
-test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t => {
+test('LASLoader#TypeScript rejects unsupported LASzip item versions', async () => {
   for (const fixture of [
     {
       url: PDRF_4_LAZ_1_3_BINARY_URL,
@@ -880,19 +763,15 @@ test('LASLoader#TypeScript rejects unsupported LASzip item versions', async t =>
     const corrupted = lazArrayBuffer.slice(0);
     const itemVersionOffset = findLASZipItemVersionOffset(corrupted, fixture.itemType);
     new DataView(corrupted).setUint16(itemVersionOffset, fixture.invalidVersion, true);
-
-    await t.rejects(
+    await await expect(
       parse(corrupted, LASLoader, {
         core: {worker: false}
       }),
-      fixture.error,
       `unsupported ${fixture.label} versions fail before point decoding`
-    );
+    ).rejects.toThrow(fixture.error);
   }
-  t.end();
 });
-
-test('LASLoader#TypeScript rejects incompatible LASzip item layouts', async t => {
+test('LASLoader#TypeScript rejects incompatible LASzip item layouts', async () => {
   const source = await (await fetchFile(PDRF_7_V4_LAZ_1_4_BINARY_URL)).arrayBuffer();
   for (const fixture of [
     {
@@ -930,18 +809,15 @@ test('LASLoader#TypeScript rejects incompatible LASzip item layouts', async t =>
   ]) {
     const corrupted = source.slice(0);
     fixture.mutate(corrupted);
-    await t.rejects(
+    await await expect(
       parse(corrupted, LASLoader, {
         core: {worker: false}
       }),
-      fixture.error,
       fixture.label
-    );
+    ).rejects.toThrow(fixture.error);
   }
-  t.end();
 });
-
-test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', async t => {
+test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', async () => {
   const lasArrayBuffer = await (await fetchFile(PDRF_8_LAS_1_4_BINARY_URL)).arrayBuffer();
   const lazArrayBuffer = await (await fetchFile(PDRF_8_LAZ_1_4_BINARY_URL)).arrayBuffer();
   const lazDataView = new DataView(lazArrayBuffer);
@@ -963,19 +839,16 @@ test('TypeScriptLAZ#PDRF 8 cursor preserves one complete fixed-size chunk', asyn
   });
   const actual = new Uint8Array(256 * pointDataRecordLength);
   const pointsDecoded = cursor.decodeInto(actual, 0, 256);
-
   const lasDataView = new DataView(lasArrayBuffer);
   const expected = new Uint8Array(
     lasArrayBuffer,
     lasDataView.getUint32(96, true),
     actual.byteLength
   );
-  t.equal(pointsDecoded, 256, 'raw cursor decodes every point in the chunk');
-  t.deepEqual(actual, expected, 'raw PDRF 8 chunk matches uncompressed records');
-  t.end();
+  expect(pointsDecoded, 'raw cursor decodes every point in the chunk').toBe(256);
+  expect(actual, 'raw PDRF 8 chunk matches uncompressed records').toEqual(expected);
 });
-
-test('LASLoader#parse variable-chunk LAZ 1.4 matches COPC variant', async t => {
+test('LASLoader#parse variable-chunk LAZ 1.4 matches COPC variant', async () => {
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
@@ -984,19 +857,14 @@ test('LASLoader#parse variable-chunk LAZ 1.4 matches COPC variant', async t => {
   const actual = await parse(arrayBuffer.slice(0), LASLoader, {
     core: {worker: false}
   });
-
-  t.equal(actual.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
-  t.equal(actual.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
-  t.equal(
-    actual.header.vertexCount,
-    VARIABLE_LAZ_1_4_POINT_COUNT,
-    'variable chunks contain every point'
+  expect(actual.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
+  expect(actual.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
+  expect(actual.header.vertexCount, 'variable chunks contain every point').toBe(
+    VARIABLE_LAZ_1_4_POINT_COUNT
   );
-  compareMeshAttributes(t, actual, expected, 'variable-chunk TypeScript parse matches COPC');
-  t.end();
+  compareMeshAttributes(actual, expected, 'variable-chunk TypeScript parse matches COPC');
 }, 15000);
-
-test('TypeScriptLAZ#decodes the COPC variable chunk table', async t => {
+test('TypeScriptLAZ#decodes the COPC variable chunk table', async () => {
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
@@ -1010,22 +878,17 @@ test('TypeScriptLAZ#decodes the COPC variable chunk table', async t => {
     chunkSize: 0xffffffff,
     variable: true
   });
-
-  t.equal(chunks.length, 5, 'fixture contains five variable-size chunks');
-  t.equal(
+  expect(chunks.length, 'fixture contains five variable-size chunks').toBe(5);
+  expect(
     chunks.reduce((pointCount, chunk) => pointCount + chunk.pointCount, 0),
-    VARIABLE_LAZ_1_4_POINT_COUNT,
     'chunk point counts cover the file'
-  );
-  t.equal(
+  ).toBe(VARIABLE_LAZ_1_4_POINT_COUNT);
+  expect(
     chunks.reduce((byteLength, chunk) => byteLength + chunk.byteLength, 0),
-    chunkTableOffset - pointDataOffset - 8,
     'chunk byte lengths reach the chunk table exactly'
-  );
-  t.end();
+  ).toBe(chunkTableOffset - pointDataOffset - 8);
 });
-
-test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async t => {
+test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async () => {
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
@@ -1036,9 +899,7 @@ test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
-
   compareCollectedMeshAttributes(
-    t,
     actual,
     {
       positions: Array.from(expected.attributes.POSITION.value),
@@ -1048,71 +909,54 @@ test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async
     },
     'split variable-chunk TypeScript streaming matches COPC'
   );
-  t.end();
 }, 15000);
-
-test('LASLoader#parseInBatches rejects a truncated variable chunk table', async t => {
-  const response = await fetchFile(COPC_BINARY_URL);
+test('decodeLAZFileInBatches rejects a truncated chunk table', async () => {
+  const response = await fetchFile(PDRF_7_V4_LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const truncated = arrayBuffer.slice(0, arrayBuffer.byteLength - 16);
-  const batches = await parseInBatches(splitArrayBuffer(truncated, 257), LASLoader, {
-    core: {worker: false}
-  });
-
-  await t.rejects(
-    async () => {
+  const batches = decodeLAZFileInBatches(splitArrayBuffer(truncated, 257), {batchSize: 25000});
+  await expect(
+    (async () => {
       for await (const _batch of batches) {
         _batch;
       }
-    },
-    /LAZ chunk table|Needs more data/,
-    'truncated variable chunk table fails deterministically'
-  );
-  t.end();
+    })()
+  ).rejects.toThrow(/LAZ chunk table|Needs more data/);
 });
-
-test('LAS loader variants expose parseSync only when supported', async t => {
+test('LAS loader variants expose parseSync only when supported', async () => {
   const arrayBuffer = new ArrayBuffer(0);
   const copcLoader = await preload(LASCOPCLoader);
   const lazRsLoader = await preload(LAZRsLoader);
   const typeScriptLoader = await preload(LASLoader);
-
-  t.notOk(copcLoader.parseSync, 'COPC variant does not expose parseSync');
-  t.notOk(lazRsLoader.parseSync, 'laz-rs variant does not expose parseSync');
-  t.throws(
+  expect(copcLoader.parseSync, 'COPC variant does not expose parseSync').toBeFalsy();
+  expect(lazRsLoader.parseSync, 'laz-rs variant does not expose parseSync').toBeFalsy();
+  expect(
     () => typeScriptLoader.parseSync?.(arrayBuffer),
-    /invalid LAS header/,
     'TypeScript variant can run through parseSync'
-  );
-  t.end();
+  ).toThrow(/invalid LAS header/);
 });
-
-test('TypeScriptLAZ#decodes COPC chunk like laz-perf', async t => {
+test('TypeScriptLAZ#decodes COPC chunk like laz-perf', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = await Las.PointData.decompressChunk(compressed, metadata);
   const actual = decodeLAZChunk(compressed, metadata);
-
-  t.equal(actual.byteLength, expected.byteLength, 'decoded byte length matches');
-  t.deepEqual(actual, expected, 'decoded raw point records match laz-perf');
-  t.end();
-});
-
-test('TypeScriptLAZ#feedable decoder accepts split chunks', async t => {
+  expect(actual.byteLength, 'decoded byte length matches').toBe(expected.byteLength);
+  expect(actual, 'decoded raw point records match laz-perf').toEqual(expected);
+}, 30000);
+test('TypeScriptLAZ#feedable decoder accepts split chunks', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = decodeLAZChunk(compressed, metadata);
-
   const singleChunkDecoder = createLAZChunkDecoder(metadata);
   singleChunkDecoder.feed(compressed);
   singleChunkDecoder.close();
-  t.deepEqual(singleChunkDecoder.decode(), expected, 'single input chunk decodes the same output');
-
+  expect(singleChunkDecoder.decode(), 'single input chunk decodes the same output').toEqual(
+    expected
+  );
   const byteDecoder = createLAZChunkDecoder(metadata);
   for (let offset = 0; offset < compressed.byteLength; offset++) {
     byteDecoder.feed(compressed.subarray(offset, offset + 1));
   }
   byteDecoder.close();
-  t.deepEqual(byteDecoder.decode(), expected, 'one-byte input chunks decode the same output');
-
+  expect(byteDecoder.decode(), 'one-byte input chunks decode the same output').toEqual(expected);
   const decoder = createLAZChunkDecoder(metadata);
   let chunkLength = 1;
   for (let offset = 0; offset < compressed.byteLength; offset += chunkLength) {
@@ -1122,12 +966,9 @@ test('TypeScriptLAZ#feedable decoder accepts split chunks', async t => {
     );
   }
   decoder.close();
-
-  t.deepEqual(decoder.decode(), expected, 'random-sized input chunks decode the same output');
-  t.end();
-});
-
-test('TypeScriptLAZ#position batches start before later layers arrive', async t => {
+  expect(decoder.decode(), 'random-sized input chunks decode the same output').toEqual(expected);
+}, 60000);
+test('TypeScriptLAZ#position batches start before later layers arrive', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expectedPositions = new Float64Array(metadata.pointCount * 3);
   const expectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
@@ -1140,7 +981,6 @@ test('TypeScriptLAZ#position batches start before later layers arrive', async t 
     },
     metadata.pointCount
   );
-
   const decoder = createLAZChunkDecoder(metadata);
   const positions = new Float64Array(metadata.pointCount * 3);
   let decodedPointCount = 0;
@@ -1175,80 +1015,60 @@ test('TypeScriptLAZ#position batches start before later layers arrive', async t 
       break;
     }
   }
-
-  t.equal(decodedPointCount, metadata.pointCount, 'all positions decode from the first layer');
-  t.ok(
+  expect(decodedPointCount, 'all positions decode from the first layer').toBe(metadata.pointCount);
+  expect(
     firstDecodedByteLength > 0 && firstDecodedByteLength < compressed.byteLength,
     'positions decode before the complete compressed chunk arrives'
-  );
-  t.deepEqual(positions, expectedPositions, 'progressive positions match complete decoding');
-  t.end();
+  ).toBeTruthy();
+  expect(positions, 'progressive positions match complete decoding').toEqual(expectedPositions);
 });
-
-test('TypeScriptLAZ#decodeLAZChunkInBatches accepts split chunks', async t => {
+test('TypeScriptLAZ#decodeLAZChunkInBatches accepts split chunks', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = decodeLAZChunk(compressed, metadata);
   const batches: Uint8Array[] = [];
-
   for await (const batch of decodeLAZChunkInBatches(splitArrayBuffer(compressed, 257), metadata, {
     batchSize: 17
   })) {
     batches.push(batch);
   }
-
-  t.deepEqual(
-    concatenateUint8ArraysForTest(batches),
-    expected,
-    'streamed batches match decodeLAZChunk'
+  expect(concatenateUint8ArraysForTest(batches), 'streamed batches match decodeLAZChunk').toEqual(
+    expected
   );
-  t.end();
-});
-
-test('TypeScriptLAZ#decodeLAZFileInBatches accepts split PDRF 3 files', async t => {
+}, 30000);
+test('TypeScriptLAZ#decodeLAZFileInBatches accepts split PDRF 3 files', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches: Uint8Array[] = [];
-
   for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257), {
     batchSize: 250
   })) {
     batches.push(new Uint8Array(batch.arrayBuffer));
-    t.equal(batch.header.pointsFormatId, 3, 'batch header preserves point format 3');
+    expect(batch.header.pointsFormatId, 'batch header preserves point format 3').toBe(3);
   }
-
-  t.equal(batches.length, 5, 'emits raw point batches');
-  t.equal(
+  expect(batches.length, 'emits raw point batches').toBe(5);
+  expect(
     concatenateUint8ArraysForTest(batches).byteLength,
-    LAS_EXTRABYTES_POINT_COUNT * 61,
     'raw point byte length matches point record length'
-  );
-  t.end();
+  ).toBe(LAS_EXTRABYTES_POINT_COUNT * 61);
 });
-
-test('TypeScriptLAZ#decodeLAZFileInBatches rejects uncompressed LAS input', async t => {
+test('TypeScriptLAZ#decodeLAZFileInBatches rejects uncompressed LAS input', async () => {
   const response = await fetchFile(LAS_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257));
-
-  await t.rejects(
-    async () => {
+  await expect(
+    (async () => {
       for await (const _batch of batches) {
         _batch;
       }
-    },
-    /requires compressed LAZ input/,
-    'decodeLAZFileInBatches requires compressed input'
-  );
-  t.end();
+    })()
+  ).rejects.toThrow(/requires compressed LAZ input/);
 });
-
-test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async t => {
+test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = decodeLAZChunk(compressed, metadata);
   const smallBatchOutput = new Uint8Array(expected.byteLength);
   const largeBatchOutput = new Uint8Array(expected.byteLength);
   const pointByteLength = metadata.pointDataRecordLength;
-
   const smallBatchCursor = createLAZChunkDecoderCursor(compressed, metadata);
   let smallBatchPointOffset = 0;
   while (smallBatchCursor.remainingPointCount > 0) {
@@ -1259,22 +1079,20 @@ test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async
     );
     smallBatchPointOffset += pointsDecoded;
   }
-
   const largeBatchCursor = createLAZChunkDecoderCursor(compressed, metadata);
   const largeBatchPointsDecoded = largeBatchCursor.decodeInto(
     largeBatchOutput,
     0,
     metadata.pointCount * 2
   );
-
-  t.equal(smallBatchPointOffset, metadata.pointCount, 'small batches decode every point');
-  t.equal(largeBatchPointsDecoded, metadata.pointCount, 'large batch stops at chunk point count');
-  t.deepEqual(smallBatchOutput, expected, 'small direct batches match decodeLAZChunk');
-  t.deepEqual(largeBatchOutput, expected, 'large direct batch matches decodeLAZChunk');
-  t.end();
-});
-
-test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async t => {
+  expect(smallBatchPointOffset, 'small batches decode every point').toBe(metadata.pointCount);
+  expect(largeBatchPointsDecoded, 'large batch stops at chunk point count').toBe(
+    metadata.pointCount
+  );
+  expect(smallBatchOutput, 'small direct batches match decodeLAZChunk').toEqual(expected);
+  expect(largeBatchOutput, 'large direct batch matches decodeLAZChunk').toEqual(expected);
+}, 60000);
+test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const rawPointData = decodeLAZChunk(compressed, metadata);
   const rawPointDataView = new DataView(
@@ -1296,12 +1114,10 @@ test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async
     offset: [0, 0, 0] as [number, number, number]
   };
   const cursor = createLAZChunkDecoderCursor(compressed, metadata);
-
   while (cursor.remainingPointCount > 0) {
     target.pointOffset = metadata.pointCount - cursor.remainingPointCount;
     cursor.decodeIntoPointData(target, 17);
   }
-
   const expectedPositions = new Float64Array(metadata.pointCount * 3);
   const expectedIntensities = new Uint16Array(metadata.pointCount);
   const expectedClassifications = new Uint8Array(metadata.pointCount);
@@ -1318,60 +1134,45 @@ test('TypeScriptLAZ#cursor point-data output matches full PDRF 7 records', async
     expectedRawColors[positionOffset + 1] = rawPointDataView.getUint16(pointOffset + 32, true);
     expectedRawColors[positionOffset + 2] = rawPointDataView.getUint16(pointOffset + 34, true);
   }
-
-  t.deepEqual(positions, expectedPositions, 'selected positions match full point records');
-  t.deepEqual(intensities, expectedIntensities, 'selected intensities match full point records');
-  t.deepEqual(
-    classifications,
-    expectedClassifications,
-    'selected classifications match full point records'
+  expect(positions, 'selected positions match full point records').toEqual(expectedPositions);
+  expect(intensities, 'selected intensities match full point records').toEqual(expectedIntensities);
+  expect(classifications, 'selected classifications match full point records').toEqual(
+    expectedClassifications
   );
-  t.deepEqual(rawColors, expectedRawColors, 'selected colors match full point records');
-
+  expect(rawColors, 'selected colors match full point records').toEqual(expectedRawColors);
   target.pointOffset = 0;
   const zeroPointDataCursor = createLAZChunkDecoderCursor(compressed, metadata);
-  t.equal(
+  expect(
     zeroPointDataCursor.decodeIntoPointData(target, 0),
-    0,
     'zero-point selected decode does not consume input'
-  );
-  t.equal(
+  ).toBe(0);
+  expect(
     zeroPointDataCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1),
-    1,
     'zero-point selected decode does not lock the cursor output mode'
-  );
-
+  ).toBe(1);
   const zeroRawCursor = createLAZChunkDecoderCursor(compressed, metadata);
-  t.equal(
+  expect(
     zeroRawCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 0),
-    0,
     'zero-point raw decode does not consume input'
-  );
-  t.equal(
+  ).toBe(0);
+  expect(
     zeroRawCursor.decodeIntoPointData(target, 1),
-    1,
     'zero-point raw decode does not lock the cursor output mode'
-  );
-
+  ).toBe(1);
   const pointDataFirstCursor = createLAZChunkDecoderCursor(compressed, metadata);
   pointDataFirstCursor.decodeIntoPointData(target, 1);
-  t.throws(
+  expect(
     () => pointDataFirstCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1),
-    /Cannot mix raw and point-data decoding/,
     'cursor rejects switching from selected to raw output'
-  );
-
+  ).toThrow(/Cannot mix raw and point-data decoding/);
   const rawFirstCursor = createLAZChunkDecoderCursor(compressed, metadata);
   rawFirstCursor.decodeInto(new Uint8Array(metadata.pointDataRecordLength), 0, 1);
-  t.throws(
+  expect(
     () => rawFirstCursor.decodeIntoPointData(target, 1),
-    /Cannot mix raw and point-data decoding/,
     'cursor rejects switching from raw to selected output'
-  );
-  t.end();
+  ).toThrow(/Cannot mix raw and point-data decoding/);
 });
-
-test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async t => {
+test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const rawPointData = decodeLAZChunk(compressed, metadata);
   const rawPointDataView = new DataView(
@@ -1389,12 +1190,10 @@ test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async t => {
     offset: [0, 0, 0] as [number, number, number]
   };
   const selectedCursor = createLAZChunkDecoderCursor(compressed, metadata);
-
   while (selectedCursor.remainingPointCount > 0) {
     selectedTarget.pointOffset = metadata.pointCount - selectedCursor.remainingPointCount;
     selectedCursor.decodeIntoPointData(selectedTarget, 17);
   }
-
   const expectedPositions = new Float64Array(metadata.pointCount * 3);
   const expectedRawColors = new Uint16Array(metadata.pointCount * 3);
   for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
@@ -1407,18 +1206,12 @@ test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async t => {
     expectedRawColors[positionOffset + 1] = rawPointDataView.getUint16(pointOffset + 32, true);
     expectedRawColors[positionOffset + 2] = rawPointDataView.getUint16(pointOffset + 34, true);
   }
-
-  t.deepEqual(
-    positions,
-    expectedPositions,
-    'positions match while intensity and class are skipped'
+  expect(positions, 'positions match while intensity and class are skipped').toEqual(
+    expectedPositions
   );
-  t.deepEqual(
-    rawColors,
-    expectedRawColors,
-    'RGB matches while unrelated Point14 layers are skipped'
+  expect(rawColors, 'RGB matches while unrelated Point14 layers are skipped').toEqual(
+    expectedRawColors
   );
-
   const positionsOnlyTarget = {
     positions: new Float64Array(metadata.pointCount * 3),
     pointOffset: 0,
@@ -1426,44 +1219,34 @@ test('TypeScriptLAZ#cursor skips unrequested PDRF 7 field layers', async t => {
     offset: [0, 0, 0] as [number, number, number]
   };
   const positionsOnlyCursor = createLAZChunkDecoderCursor(compressed, metadata);
-  t.equal(
+  expect(
     positionsOnlyCursor.decodeIntoPointData(positionsOnlyTarget, metadata.pointCount),
-    metadata.pointCount,
     'positions-only output skips every optional independent layer'
+  ).toBe(metadata.pointCount);
+  expect(positionsOnlyTarget.positions, 'positions remain correct while RGB is skipped').toEqual(
+    expectedPositions
   );
-  t.deepEqual(
-    positionsOnlyTarget.positions,
-    expectedPositions,
-    'positions remain correct while RGB is skipped'
-  );
-
   const lockedCursor = createLAZChunkDecoderCursor(compressed, metadata);
   lockedCursor.decodeIntoPointData(positionsOnlyTarget, 1);
-  t.throws(
+  expect(
     () =>
       lockedCursor.decodeIntoPointData(
         {...positionsOnlyTarget, classifications: new Uint8Array(metadata.pointCount)},
         1
       ),
-    /Cannot change selected point-data fields/,
     'cursor rejects changing independent field selection after decoding starts'
-  );
-  t.end();
+  ).toThrow(/Cannot change selected point-data fields/);
 });
-
-test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
+test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', () => {
   const expected = createPointFormat0Record();
   const compressed = new Uint8Array(expected.byteLength + 4);
   compressed.set(expected);
-
   const actual = decodeLAZChunk(compressed, {
     pointCount: 1,
     pointDataRecordFormat: 0,
     pointDataRecordLength: expected.byteLength
   });
-
-  t.deepEqual(actual, expected, 'point format 0 first point is preserved');
-
+  expect(actual, 'point format 0 first point is preserved').toEqual(expected);
   const cursor = createLAZChunkDecoderCursor(compressed, {
     pointCount: 1,
     pointDataRecordFormat: 0,
@@ -1477,40 +1260,32 @@ test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
     scale: [1, 1, 1] as [number, number, number],
     offset: [0, 0, 0] as [number, number, number]
   };
-  t.throws(
+  expect(
     () => cursor.decodeIntoPointData(target, 1),
-    /does not support direct point-data output for point format 0/,
     'legacy point formats reject direct point-data output'
-  );
+  ).toThrow(/does not support direct point-data output for point format 0/);
   const rawOutput = new Uint8Array(expected.byteLength);
-  t.equal(
+  expect(
     cursor.decodeInto(rawOutput, 0, 1),
-    1,
     'rejected direct output does not initialize or lock the cursor'
-  );
-  t.deepEqual(rawOutput, expected, 'raw decode remains available after rejected direct output');
-  t.end();
+  ).toBe(1);
+  expect(rawOutput, 'raw decode remains available after rejected direct output').toEqual(expected);
 });
-
-test('TypeScriptLAZ#decodes single-point legacy point format 1 chunk', t => {
+test('TypeScriptLAZ#decodes single-point legacy point format 1 chunk', () => {
   const expected = new Uint8Array(28);
   expected.set(createPointFormat0Record());
   const dataView = new DataView(expected.buffer, expected.byteOffset, expected.byteLength);
   dataView.setFloat64(20, 12345.25, true);
   const compressed = new Uint8Array(expected.byteLength + 4);
   compressed.set(expected);
-
   const actual = decodeLAZChunk(compressed, {
     pointCount: 1,
     pointDataRecordFormat: 1,
     pointDataRecordLength: expected.byteLength
   });
-
-  t.deepEqual(actual, expected, 'point format 1 first point and GPS time are preserved');
-  t.end();
+  expect(actual, 'point format 1 first point and GPS time are preserved').toEqual(expected);
 });
-
-test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', t => {
+test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', () => {
   const expected = new Uint8Array(26);
   expected.set(createPointFormat0Record());
   const dataView = new DataView(expected.buffer, expected.byteOffset, expected.byteLength);
@@ -1519,18 +1294,14 @@ test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', t => {
   dataView.setUint16(24, 4097, true);
   const compressed = new Uint8Array(expected.byteLength + 4);
   compressed.set(expected);
-
   const actual = decodeLAZChunk(compressed, {
     pointCount: 1,
     pointDataRecordFormat: 2,
     pointDataRecordLength: expected.byteLength
   });
-
-  t.deepEqual(actual, expected, 'point format 2 first point and RGB are preserved');
-  t.end();
+  expect(actual, 'point format 2 first point and RGB are preserved').toEqual(expected);
 });
-
-test('TypeScriptLAZ#decodes single-point legacy point format 3 chunk', t => {
+test('TypeScriptLAZ#decodes single-point legacy point format 3 chunk', () => {
   const expected = new Uint8Array(34);
   expected.set(createPointFormat0Record());
   const dataView = new DataView(expected.buffer, expected.byteOffset, expected.byteLength);
@@ -1540,66 +1311,50 @@ test('TypeScriptLAZ#decodes single-point legacy point format 3 chunk', t => {
   dataView.setUint16(32, 4097, true);
   const compressed = new Uint8Array(expected.byteLength + 4);
   compressed.set(expected);
-
   const actual = decodeLAZChunk(compressed, {
     pointCount: 1,
     pointDataRecordFormat: 3,
     pointDataRecordLength: expected.byteLength
   });
-
-  t.deepEqual(actual, expected, 'point format 3 first point, GPS time, and RGB are preserved');
-  t.end();
+  expect(actual, 'point format 3 first point, GPS time, and RGB are preserved').toEqual(expected);
 });
-
-test('TypeScriptLAZ#feedable decoder reports missing data', async t => {
+test('TypeScriptLAZ#feedable decoder reports missing data', async () => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const decoder = createLAZChunkDecoder(metadata);
   decoder.feed(compressed.subarray(0, Math.max(0, compressed.byteLength - 1)));
   decoder.close();
-
-  t.throws(() => decoder.decode(), NeedsMoreData, 'truncated input reports NeedsMoreData');
-  t.end();
+  expect(() => decoder.decode(), 'truncated input reports NeedsMoreData').toThrow(NeedsMoreData);
 });
-
-test('TypeScriptLAZ#rejects unsupported point format', t => {
-  t.throws(
+test('TypeScriptLAZ#rejects unsupported point format', () => {
+  expect(
     () =>
       decodeLAZChunk(new Uint8Array(0), {
         pointCount: 1,
         pointDataRecordFormat: 11,
         pointDataRecordLength: 0
       }),
-    /does not support point format 11/,
     'unsupported point formats fail clearly'
-  );
-  t.end();
+  ).toThrow(/does not support point format 11/);
 });
-
-test('TypeScriptLAZ#encoder writes LASzip v3 PDRF 6-8 chunks', async t => {
+test('TypeScriptLAZ#encoder writes LASzip v3 PDRF 6-8 chunks', async () => {
   for (const pointDataRecordFormat of [6, 7, 8]) {
     const {rawPointData, metadata} = createLAZEncodingFixture(pointDataRecordFormat);
     const compressed = encodeLAZChunk(rawPointData, metadata);
     const decoded = decodeLAZChunk(compressed, metadata);
     const lazPerfDecoded = await Las.PointData.decompressChunk(compressed, metadata);
-
-    t.deepEqual(decoded, rawPointData, `PDRF ${pointDataRecordFormat} TypeScript roundtrip`);
-    t.deepEqual(
-      lazPerfDecoded,
-      rawPointData,
-      `PDRF ${pointDataRecordFormat} laz-perf interoperability`
+    expect(decoded, `PDRF ${pointDataRecordFormat} TypeScript roundtrip`).toEqual(rawPointData);
+    expect(lazPerfDecoded, `PDRF ${pointDataRecordFormat} laz-perf interoperability`).toEqual(
+      rawPointData
     );
-    t.deepEqual(
+    expect(
       encodeLAZChunk(rawPointData, metadata),
-      compressed,
       `PDRF ${pointDataRecordFormat} output is deterministic`
-    );
-    t.equal(
+    ).toEqual(compressed);
+    expect(
       getLAZChunkByteLength(compressed, metadata),
-      compressed.byteLength,
       `PDRF ${pointDataRecordFormat} layered size headers are complete`
-    );
+    ).toBe(compressed.byteLength);
   }
-
   const {rawPointData, metadata} = createLAZEncodingFixture(8);
   const padded = new Uint8Array(rawPointData.byteLength + 16);
   padded.set(rawPointData, 8);
@@ -1608,127 +1363,93 @@ test('TypeScriptLAZ#encoder writes LASzip v3 PDRF 6-8 chunks', async t => {
   encoder.feed(padded.subarray(8, 8 + splitOffset));
   encoder.feed(padded.subarray(8 + splitOffset, 8 + rawPointData.byteLength));
   encoder.close();
-  t.deepEqual(
+  expect(
     decodeLAZChunk(encoder.encode(), metadata),
-    rawPointData,
     'feedable encoder preserves input view byte ranges'
-  );
-  t.end();
+  ).toEqual(rawPointData);
 });
-
-test('TypeScriptLAZ#encoder validates input and item versions', t => {
+test('TypeScriptLAZ#encoder validates input and item versions', () => {
   const {rawPointData, metadata} = createLAZEncodingFixture(6);
-  t.throws(
+  expect(
     () =>
       encodeLAZChunk(new Uint8Array(20), {
         pointCount: 1,
         pointDataRecordFormat: 11,
         pointDataRecordLength: 20
       }),
-    /does not support point format 11/,
     'unsupported point formats fail clearly'
-  );
-  t.throws(
+  ).toThrow(/does not support point format 11/);
+  expect(
     () => encodeLAZChunk(rawPointData.subarray(1), metadata),
-    /expected/,
     'incomplete point data is rejected'
-  );
-  t.throws(
+  ).toThrow(/expected/);
+  expect(
     () => encodeLAZChunk(rawPointData, {...metadata, point14ItemVersion: 4}),
-    /only supports Point14 item version 3/,
     'unsupported Point14 versions are rejected'
-  );
-
+  ).toThrow(/only supports Point14 item version 3/);
   const encoder = createLAZChunkEncoder(metadata);
   encoder.feed(new Uint8Array(10).subarray(2, 8));
-  t.throws(
-    () => encoder.encode(),
-    /input is not closed/,
-    'feedable encoder requires close before encode'
+  expect(() => encoder.encode(), 'feedable encoder requires close before encode').toThrow(
+    /input is not closed/
   );
   encoder.close();
-  t.throws(
+  expect(
     () => encoder.feed(new Uint8Array(1)),
-    /closed LAZ chunk encoder/,
     'closed feedable encoder rejects more input'
-  );
-  t.end();
+  ).toThrow(/closed LAZ chunk encoder/);
 });
-
-test('LASLoader#options', async t => {
+test('LASLoader#options', async () => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {fp64: false},
     core: {worker: false}
   });
-  t.ok(
+  expect(
     data.attributes.POSITION.value instanceof Float32Array,
     'POSITION attribute is Float32Array'
-  );
-
+  ).toBeTruthy();
   const data64 = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {fp64: true},
     core: {worker: false}
   });
-  t.ok(
+  expect(
     data64.attributes.POSITION.value instanceof Float64Array,
     'POSITION attribute is Float64Array'
-  );
-
-  t.end();
+  ).toBeTruthy();
 });
-
-test('LASWorker#parse(binary) extra bytes', async t => {
+test('LASWorker#parse(binary) extra bytes', async () => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-
-  t.is(data.header?.vertexCount, data.loaderData.totalRead, 'Original header was found');
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-
-  t.notOk(data.indices, 'INDICES attribute was not preset');
-  t.equal(
-    data.attributes.POSITION.value.length,
-    LAS_EXTRABYTES_POINT_COUNT * 3,
-    'POSITION attribute was found'
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.header?.vertexCount, 'Original header was found').toBe(data.loaderData.totalRead);
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.indices, 'INDICES attribute was not preset').toBeFalsy();
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
+    LAS_EXTRABYTES_POINT_COUNT * 3
   );
-
-  t.end();
 });
-
-test('LASWorkerLoader#load(worker)', async t => {
+test('LASWorkerLoader#load(worker)', async () => {
   if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
+    console.log('Worker is not usable in non-browser environments');
     return;
   }
-
   const data = await load(LAS_BINARY_URL, LASWorkerLoader);
-  validateMeshCategoryData(t, data);
-
-  t.equal(
-    data.attributes.POSITION.value.length,
-    LAS_POINT_COUNT * 3,
-    'POSITION attribute was found'
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
+    LAS_POINT_COUNT * 3
   );
-  t.end();
 });
-
-test('LASLoader#shape="mesh"', async t => {
+test('LASLoader#shape="mesh"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
-  validateMeshCategoryData(t, result);
-  t.end();
+  validateMeshCategoryData(vitestAssertions, result);
 });
-
 // Related code was commented due to breaking pointcloud example on the website
-test.skip('LASLoader#shape="columnar-table"', async t => {
+test.skip('LASLoader#shape="columnar-table"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });
-  validateTableCategoryData(t, result);
-  t.end();
+  validateTableCategoryData(vitestAssertions, result);
 });
-
 async function getCOPCRootChunk() {
   copcArrayBufferPromise ||= fetchFile(COPC_BINARY_URL).then(response => response.arrayBuffer());
   const copcArrayBuffer = await copcArrayBufferPromise;
@@ -1741,7 +1462,6 @@ async function getCOPCRootChunk() {
     throw new Error('COPC root node not found');
   }
   const compressed = await Copc.loadCompressedPointDataBuffer(getCopcBytes, node);
-
   return {
     compressed,
     metadata: {
@@ -1751,7 +1471,6 @@ async function getCOPCRootChunk() {
     }
   };
 }
-
 /** Create varied LAS 1.4 records for LAZ encoder interoperability tests. */
 function createLAZEncodingFixture(pointDataRecordFormat: number) {
   const baseRecordLength = {6: 30, 7: 36, 8: 38}[pointDataRecordFormat];
@@ -1761,8 +1480,7 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
   const pointCount = 32;
   const pointDataRecordLength = baseRecordLength + 2;
   const rawPointData = new Uint8Array(pointCount * pointDataRecordLength);
-  let previousGpsTime = 1_000_000_000;
-
+  let previousGpsTime = 1000000000;
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
     const recordOffset = pointIndex * pointDataRecordLength;
     const view = new DataView(
@@ -1773,9 +1491,8 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     const numberOfReturns = 1 + (pointIndex % 5);
     const returnNumber = 1 + (pointIndex % numberOfReturns);
     const scannerChannel = (pointIndex * 3 + 2) % 4;
-    const gpsTime = pointIndex % 7 === 0 ? previousGpsTime : 1_000_000_000 + pointIndex * 0.001;
+    const gpsTime = pointIndex % 7 === 0 ? previousGpsTime : 1000000000 + pointIndex * 0.001;
     previousGpsTime = gpsTime;
-
     view.setInt32(0, 1000 + pointIndex * 13, true);
     view.setInt32(4, -2000 + pointIndex * pointIndex, true);
     view.setInt32(8, 50 - pointIndex * 3, true);
@@ -1787,7 +1504,6 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     view.setInt16(18, -100 + pointIndex * 9, true);
     view.setUint16(20, 3 + (pointIndex >> 2), true);
     view.setFloat64(22, gpsTime, true);
-
     if (pointDataRecordFormat >= 7) {
       view.setUint16(30, pointIndex * 1000, true);
       view.setUint16(32, 65535 - pointIndex * 500, true);
@@ -1799,7 +1515,6 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     view.setUint8(baseRecordLength, pointIndex);
     view.setUint8(baseRecordLength + 1, 255 - pointIndex);
   }
-
   return {
     rawPointData,
     metadata: {
@@ -1812,58 +1527,43 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
     }
   };
 }
-
-function compareMeshAttributes(t, actual: any, expected: any, label: string): void {
-  t.deepEqual(
-    Array.from(actual.attributes.POSITION.value),
-    Array.from(expected.attributes.POSITION.value),
-    `${label}: positions`
+function compareMeshAttributes(actual: any, expected: any, label: string): void {
+  expect(Array.from(actual.attributes.POSITION.value), `${label}: positions`).toEqual(
+    Array.from(expected.attributes.POSITION.value)
   );
-  t.deepEqual(
-    Array.from(actual.attributes.intensity.value),
-    Array.from(expected.attributes.intensity.value),
-    `${label}: intensities`
+  expect(Array.from(actual.attributes.intensity.value), `${label}: intensities`).toEqual(
+    Array.from(expected.attributes.intensity.value)
   );
-  t.deepEqual(
-    Array.from(actual.attributes.classification.value),
-    Array.from(expected.attributes.classification.value),
-    `${label}: classifications`
+  expect(Array.from(actual.attributes.classification.value), `${label}: classifications`).toEqual(
+    Array.from(expected.attributes.classification.value)
   );
-  t.deepEqual(
-    Array.from(actual.attributes.COLOR_0?.value || []),
-    Array.from(expected.attributes.COLOR_0?.value || []),
-    `${label}: colors`
+  expect(Array.from(actual.attributes.COLOR_0?.value || []), `${label}: colors`).toEqual(
+    Array.from(expected.attributes.COLOR_0?.value || [])
   );
 }
-
 async function collectMeshAttributes(batches: AsyncIterable<any>) {
   const positions: number[] = [];
   const intensities: number[] = [];
   const classifications: number[] = [];
   const colors: number[] = [];
-
   for await (const batch of batches) {
     positions.push(...batch.attributes.POSITION.value);
     intensities.push(...batch.attributes.intensity.value);
     classifications.push(...batch.attributes.classification.value);
     colors.push(...(batch.attributes.COLOR_0?.value || []));
   }
-
   return {positions, intensities, classifications, colors};
 }
-
 function compareCollectedMeshAttributes(
-  t,
   actual: Awaited<ReturnType<typeof collectMeshAttributes>>,
   expected: Awaited<ReturnType<typeof collectMeshAttributes>>,
   label: string
 ): void {
-  t.deepEqual(actual.positions, expected.positions, `${label}: positions`);
-  t.deepEqual(actual.intensities, expected.intensities, `${label}: intensities`);
-  t.deepEqual(actual.classifications, expected.classifications, `${label}: classifications`);
-  t.deepEqual(actual.colors, expected.colors, `${label}: colors`);
+  expect(actual.positions, `${label}: positions`).toEqual(expected.positions);
+  expect(actual.intensities, `${label}: intensities`).toEqual(expected.intensities);
+  expect(actual.classifications, `${label}: classifications`).toEqual(expected.classifications);
+  expect(actual.colors, `${label}: colors`).toEqual(expected.colors);
 }
-
 async function* splitArrayBuffer(
   arrayBuffer: ArrayBuffer | Uint8Array,
   chunkSize: number,
@@ -1876,7 +1576,6 @@ async function* splitArrayBuffer(
     yield chunk.buffer;
   }
 }
-
 function concatenateUint8ArraysForTest(chunks: Uint8Array[]): Uint8Array {
   const byteLength = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
   const result = new Uint8Array(byteLength);
@@ -1887,18 +1586,15 @@ function concatenateUint8ArraysForTest(chunks: Uint8Array[]): Uint8Array {
   }
   return result;
 }
-
 /** Find the LASzip item-version field for one item type in a test fixture. */
 function findLASZipItemVersionOffset(arrayBuffer: ArrayBuffer, targetItemType: number): number {
   return findLASZipItemOffset(arrayBuffer, targetItemType) + 4;
 }
-
 /** Find one LASzip item descriptor in a test fixture. */
 function findLASZipItemOffset(arrayBuffer: ArrayBuffer, targetItemType: number): number {
   const dataView = new DataView(arrayBuffer);
   let offset = dataView.getUint16(94, true);
   const variableLengthRecordCount = dataView.getUint32(100, true);
-
   for (let recordIndex = 0; recordIndex < variableLengthRecordCount; recordIndex++) {
     const recordId = dataView.getUint16(offset + 18, true);
     const recordLength = dataView.getUint16(offset + 20, true);
@@ -1914,16 +1610,13 @@ function findLASZipItemOffset(arrayBuffer: ArrayBuffer, targetItemType: number):
     }
     offset = dataOffset + recordLength;
   }
-
   throw new Error(`LASzip item type ${targetItemType} not found`);
 }
-
 /** Find the LASzip VLR payload in a test fixture. */
 function findLASZipVLRDataOffset(arrayBuffer: ArrayBuffer): number {
   const dataView = new DataView(arrayBuffer);
   let offset = dataView.getUint16(94, true);
   const variableLengthRecordCount = dataView.getUint32(100, true);
-
   for (let recordIndex = 0; recordIndex < variableLengthRecordCount; recordIndex++) {
     const recordId = dataView.getUint16(offset + 18, true);
     const recordLength = dataView.getUint16(offset + 20, true);
@@ -1933,10 +1626,8 @@ function findLASZipVLRDataOffset(arrayBuffer: ArrayBuffer): number {
     }
     offset = dataOffset + recordLength;
   }
-
   throw new Error('LASzip VLR not found');
 }
-
 function createPointFormat0Record(): Uint8Array {
   const record = new Uint8Array(20);
   const dataView = new DataView(record.buffer, record.byteOffset, record.byteLength);
@@ -1951,13 +1642,11 @@ function createPointFormat0Record(): Uint8Array {
   dataView.setUint16(18, 99, true);
   return record;
 }
-
-test('LASLoader#shape="arrow-table"', async t => {
+test('LASLoader#shape="arrow-table"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table'},
     core: {worker: false}
   });
-  t.equal(result.shape, 'arrow-table', 'returns Arrow table shape');
-  t.ok(result.data.getChild('POSITION'), 'returns POSITION column');
-  t.end();
+  expect(result.shape, 'returns Arrow table shape').toBe('arrow-table');
+  expect(result.data.getChild('POSITION'), 'returns POSITION column').toBeTruthy();
 });
