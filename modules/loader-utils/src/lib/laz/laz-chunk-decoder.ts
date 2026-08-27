@@ -406,7 +406,13 @@ export class LAZChunkDecoderCursor {
     return decodedPointCount;
   }
 
-  /** Decode available legacy PDRF 3 points directly into typed point-data arrays. */
+  /**
+   * Decode complete legacy PDRF 3 points directly into typed point-data arrays.
+   *
+   * The method preserves the point-atomic streaming contract of {@link decodeAvailableInto} but
+   * bypasses raw LAS record materialization. It returns when the next point lacks compressed
+   * lookahead and raises {@link NeedsMoreData} only after `inputComplete` is set.
+   */
   decodeAvailableIntoPointData(
     target: LAZPointDataTarget,
     pointCount: number,
@@ -1455,6 +1461,7 @@ class Point10Decompressor {
   private lastYDiffMedian = Array.from({length: 16}, () => new StreamingMedian());
   private haveLast = false;
   private last = createPoint10();
+  /** Stable first-point value returned before `last` becomes mutable predictor state. */
   private firstPoint = createPoint10();
 
   constructor(stream: ByteReader) {
@@ -2970,6 +2977,7 @@ class PointFormat3Decompressor implements PointDecompressor {
   private rgb: RGB10Decompressor;
   private bytes: Byte10Decompressor;
   private first = true;
+  /** Whether only the common position, color, intensity, and classification columns are needed. */
   private directCommonOutput: boolean;
 
   constructor(
@@ -3058,7 +3066,13 @@ class PointFormat3Decompressor implements PointDecompressor {
     );
   }
 
-  /** Decode legacy PDRF 3 directly into selected typed point-data arrays. */
+  /**
+   * Decode legacy PDRF 3 directly into selected typed point-data arrays.
+   *
+   * The common-column branch deliberately duplicates the short output loop. Keeping optional
+   * metadata and Extra Bytes checks outside that loop measurably reduces work for visualization
+   * workloads, which normally request only position, color, intensity, and classification.
+   */
   decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
     const positions = target.positions;
     const intensities = target.intensities;
@@ -3487,6 +3501,7 @@ class PointFormat7Decompressor implements PointDecompressor {
     return outputOffset;
   }
 
+  /** Decode one PDRF 7 point directly into represented typed-array columns. */
   decompressPointData(target: LAZPointDataTarget, targetPointIndex: number): void {
     const point = this.point.decompressPoint();
     if (this.rgb) {
@@ -3517,6 +3532,13 @@ class PointFormat7Decompressor implements PointDecompressor {
     }
   }
 
+  /**
+   * Decode PDRF 7 points directly into represented typed-array columns.
+   *
+   * First-point literals and layer metadata are handled once before the steady-state loop. The
+   * common-column loop then avoids per-point capability checks; the comprehensive loop preserves
+   * optional metadata and Extra Bytes output.
+   */
   decompressPointDataBatch(target: LAZPointDataTarget, pointCount: number): void {
     const positions = target.positions;
     const intensities = target.intensities;
@@ -4344,6 +4366,7 @@ function createPoint10(): Point10 {
   };
 }
 
+/** Read one unaligned legacy core point directly into reusable predictor state. */
 function readPoint10FromStreamInto(point: Point10, stream: ByteReader): void {
   point.x = readInt32FromStream(stream);
   point.y = readInt32FromStream(stream);
@@ -4356,6 +4379,7 @@ function readPoint10FromStreamInto(point: Point10, stream: ByteReader): void {
   point.pointSourceId = readUint16FromStream(stream);
 }
 
+/** Copy legacy point predictor state in place without allocating an object. */
 function copyPoint10(target: Point10, source: Point10): void {
   target.x = source.x;
   target.y = source.y;
@@ -4380,6 +4404,7 @@ function writePoint10(point: Point10, bytes: Uint8Array, offset: number): void {
   writeUint16(point.pointSourceId, bytes, offset + 18);
 }
 
+/** Write common legacy point fields directly into caller-owned typed arrays. */
 function writePoint10ToPointDataArrays(
   point: Point10,
   positions: Float32Array | Float64Array,
@@ -4401,6 +4426,7 @@ function writePoint10ToPointDataArrays(
   }
 }
 
+/** Write optional legacy point metadata into the columns represented by a decode target. */
 function writePoint10MetadataToPointDataTarget(
   point: Point10,
   target: LAZPointDataTarget,
@@ -4667,6 +4693,7 @@ function readUint16(bytes: Uint8Array, offset: number): number {
   return bytes[offset] | (bytes[offset + 1] << 8);
 }
 
+/** Read an unaligned little-endian unsigned 16-bit integer without allocating a DataView. */
 function readUint16FromStream(stream: ByteReader): number {
   const b0 = stream.getByte();
   const b1 = stream.getByte();
@@ -4721,6 +4748,7 @@ function readInt32(bytes: Uint8Array, offset: number): number {
   );
 }
 
+/** Read an unaligned little-endian signed 32-bit integer without allocating a DataView. */
 function readInt32FromStream(stream: ByteReader): number {
   const b0 = stream.getByte();
   const b1 = stream.getByte();
@@ -4743,6 +4771,7 @@ function readFloat64(bytes: Uint8Array, offset: number): number {
   return FLOAT64_SCRATCH_VIEW.getFloat64(0, true);
 }
 
+/** Read an unaligned little-endian float64 through the shared aligned scratch view. */
 function readFloat64FromStream(stream: ByteReader): number {
   for (let index = 0; index < 8; index++) {
     FLOAT64_SCRATCH_BYTES[index] = stream.getByte();
