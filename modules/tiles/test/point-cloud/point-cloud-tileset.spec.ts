@@ -212,10 +212,9 @@ test('PointCloudTileset#density refinement increases as projected density falls'
   };
   const shouldRefine = (tileset as any).shouldRefine.bind(tileset);
 
-  expect(
-    shouldRefine(tile, 100),
-    'a large nearby footprint refines when density is low'
-  ).toBe(true);
+  expect(shouldRefine(tile, 100), 'a large nearby footprint refines when density is low').toBe(
+    true
+  );
   expect(shouldRefine(tile, 1), 'a compact distant footprint remains coarse').toBe(false);
 });
 

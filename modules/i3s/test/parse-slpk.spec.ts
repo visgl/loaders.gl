@@ -27,14 +27,9 @@ test('SLPKSource#initialize reads archive through I3SSource contract', async () 
   expect(tileset.store, 'loads root I3S metadata from the archive').toBeTruthy();
 });
 test('SLPKLoader#slpk load error', async () => {
-  try {
-    await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/5.json'}});
-    (() => {
-      throw new Error('error should be thrown');
-    })();
-  } catch (e) {
-    if (e) expect(true, 'correct error thrown').toBe(true);
-  }
+  await expect(load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/5.json'}})).rejects.toThrow(
+    'No such file in the archive: nodepages/5.json'
+  );
 });
 test('SLPKLoader#slpk load http nodepage', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {

@@ -263,13 +263,13 @@ const CUSTOM_TESTS = [
         chunkSize: 10,
         chunk(response, h) {
           updates.push(response.data);
-          if (!first) return;
+          if (!first) {
+            callback(updates);
+            return;
+          }
           handle = h;
           handle.pause();
           first = false;
-        },
-        complete() {
-          callback(updates);
         }
       });
       setTimeout(() => {
@@ -288,10 +288,8 @@ const CUSTOM_TESTS = [
           if (response.data.length) {
             updates.push(response.data);
             handle.abort();
+            callback(updates);
           }
-        },
-        complete(response) {
-          callback(updates);
         }
       });
     }
@@ -533,31 +531,40 @@ test('papaparse#Parse Tests', () => {
     }
   }
 });
-test('Parse Async Tests', () => {
-  for (const testCase of PARSE_ASYNC_TESTS) {
-    if (!testCase.disabled) {
-      const config: any = testCase.config;
-      config.complete = function (actual) {
-        expect(JSON.stringify(actual.errors), testCase.description).toEqual(
-          JSON.stringify(testCase.expected.errors)
-        );
-        expect(actual.data, testCase.description).toEqual(testCase.expected.data);
-      };
-      config.error = function (err) {
-        throw err;
-      };
-      Papa.parse(testCase.input, config);
-    }
-  }
+test.each(
+  PARSE_ASYNC_TESTS.filter(testCase => !testCase.disabled)
+)('papaparse#Parse Async Tests: $description', async testCase => {
+  await new Promise<void>((resolve, reject) => {
+    Papa.parse(testCase.input, {
+      ...testCase.config,
+      complete(actual) {
+        try {
+          expect(JSON.stringify(actual.errors), testCase.description).toEqual(
+            JSON.stringify(testCase.expected.errors)
+          );
+          expect(actual.data, testCase.description).toEqual(testCase.expected.data);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      },
+      error: reject
+    });
+  });
 });
-test('papaparse#Custom Tests', () => {
-  for (const testCase of CUSTOM_TESTS) {
-    if (!testCase.disabled) {
-      testCase.run(function (actual) {
+test.each(
+  CUSTOM_TESTS.filter(testCase => !testCase.disabled)
+)('papaparse#Custom Tests: $description', async testCase => {
+  await new Promise<void>((resolve, reject) => {
+    testCase.run(actual => {
+      try {
         expect(JSON.stringify(actual), testCase.description).toEqual(
           JSON.stringify(testCase.expected)
         );
-      });
-    }
-  }
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
 });
