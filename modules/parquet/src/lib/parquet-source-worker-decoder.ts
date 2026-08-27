@@ -12,6 +12,7 @@ import type {RowGroup} from '../parquetjs/parquet-thrift/index';
 import {ParquetReader} from '../parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../parquetjs/schema/schema';
 import {ParquetSourceWorkerFile} from './parquet-source-worker-file';
+import type {ParquetKeyRetriever} from './parquet-encryption';
 import type {
   ParquetSourceWorkerBatch,
   ParquetSourceWorkerColumnChunk,
@@ -26,7 +27,13 @@ export async function decodeParquetSourceWorkerInput(
   await preloadCompressions();
   const file = new ParquetSourceWorkerFile(input.fileByteLength, input.ranges);
   const schema = new ParquetSchema(input.schemaDefinition);
-  const keyRetriever = input.encryption ? createWorkerKeyRetriever(input.columnChunks) : undefined;
+  const keyRetriever = input.encryption
+    ? createWorkerKeyRetriever(
+        input.columnChunks,
+        input.encryption.aadPrefix?.byteLength ?? 0,
+        input.encryption.fileUnique.byteLength
+      )
+    : undefined;
   const reader = new ParquetReader(file, {
     preserveBinary: input.preserveBinary,
     verifyPageChecksums: input.verifyPageChecksums,
@@ -191,18 +198,39 @@ function createWorkerRowGroup(input: ParquetSourceWorkerInput): RowGroup {
 }
 
 /** Creates a worker-local key retriever from caller-resolved transferable keys. */
-function createWorkerKeyRetriever(
-  columnChunks: readonly ParquetSourceWorkerColumnChunk[]
-): (keyMetadata: Uint8Array | undefined) => Uint8Array {
-  return keyMetadata => {
-    const matchingColumn = columnChunks.find(columnChunk =>
+export function createWorkerKeyRetriever(
+  columnChunks: readonly ParquetSourceWorkerColumnChunk[],
+  aadPrefixByteLength: number,
+  fileUniqueByteLength: number
+): ParquetKeyRetriever {
+  return (keyMetadata, context) => {
+    const columnOrdinal = getColumnOrdinalFromAad(
+      context.aad,
+      aadPrefixByteLength,
+      fileUniqueByteLength
+    );
+    const metadataMatches = columnChunks.filter(columnChunk =>
       equalBytes(keyMetadata, columnChunk.keyMetadata && new Uint8Array(columnChunk.keyMetadata))
     );
+    const matchingColumn =
+      metadataMatches.find(columnChunk => columnChunk.columnOrdinal === columnOrdinal) ??
+      (metadataMatches.length === 1 ? metadataMatches[0] : undefined);
     if (!matchingColumn?.keyMaterial) {
       throw new Error('Encrypted Parquet worker key was not transferred for the selected column');
     }
     return new Uint8Array(matchingColumn.keyMaterial);
   };
+}
+
+/** Extracts the physical column ordinal encoded in a page-module AAD suffix. */
+function getColumnOrdinalFromAad(
+  aad: Uint8Array,
+  aadPrefixByteLength: number,
+  fileUniqueByteLength: number
+): number | undefined {
+  const columnOrdinalOffset = aadPrefixByteLength + fileUniqueByteLength + 3;
+  if (columnOrdinalOffset + 2 > aad.byteLength) return undefined;
+  return new DataView(aad.buffer, aad.byteOffset + columnOrdinalOffset, 2).getInt16(0, true);
 }
 
 /** Compares optional key metadata without exposing key material in structured-clone state. */
