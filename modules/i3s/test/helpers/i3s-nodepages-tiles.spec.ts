@@ -85,30 +85,6 @@ test('I3SNodePagesTiles#Layer without textures', async t => {
   t.end();
 });
 
-test('I3SNodePagesTiles#preserves node-page extension fields', async t => {
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
-  const node = {
-    index: 0,
-    obb: {
-      center: [8.67, 50.1, 189],
-      halfSize: [10, 20, 30],
-      quaternion: [0, 0, 0, 1]
-    },
-    children: [],
-    vendorExtension: {classification: 'historic'}
-  };
-  i3SNodePagesTiles.nodePages[0] = {nodes: [node]} as any;
-  i3SNodePagesTiles.pendingNodePages[0] = {
-    status: 'Done',
-    promise: Promise.resolve({nodes: [node]})
-  };
-
-  const tile = await i3SNodePagesTiles.formTileFromNodePages(0);
-
-  t.deepEqual((tile as any).vendorExtension, {classification: 'historic'});
-  t.end();
-});
-
 // Logic moved to parse-i3s.js to avoid calling extra conversion the center from cartographic to cartesian
 test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async t => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});

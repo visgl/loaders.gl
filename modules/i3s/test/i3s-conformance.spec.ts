@@ -6,7 +6,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {I3SNodePageLoader} from '@loaders.gl/i3s';
 import {I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
-import {parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
+import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
 
 const SCENE_LAYER_FIXTURES = [
   {
@@ -59,5 +59,51 @@ describe('I3S conformance fixtures', () => {
     expect(values).toBeInstanceOf(Float64Array);
     expect(values[0]).toBe(0x1_89abcdef);
     expect(values[1]).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
+  it('preserves UInt64 feature IDs through face-range expansion', async () => {
+    const featureId = 0x1_89abcdef;
+    const buffer = new ArrayBuffer(60);
+    const dataView = new DataView(buffer);
+    dataView.setUint32(0, 3, true);
+    dataView.setUint32(4, 1, true);
+    for (let index = 0; index < 9; index++) {
+      dataView.setFloat32(8 + index * 4, index % 3 === 2 ? 0 : index % 3, true);
+    }
+    dataView.setUint32(44, featureId >>> 0, true);
+    dataView.setUint32(48, Math.floor(featureId / 2 ** 32), true);
+    dataView.setUint32(52, 0, true);
+    dataView.setUint32(56, 0, true);
+
+    const content = await parseI3STileContent(
+      buffer,
+      {mbs: [0, 0, 0]} as any,
+      {
+        store: {
+          defaultGeometrySchema: {
+            header: [
+              {property: 'vertexCount', type: 'UInt32'},
+              {property: 'featureCount', type: 'UInt32'}
+            ],
+            ordering: ['position'],
+            vertexAttributes: {
+              position: {valueType: 'Float32', valuesPerElement: 3}
+            },
+            featureAttributeOrder: ['id', 'faceRange'],
+            featureAttributes: {
+              id: {valueType: 'UInt64', valuesPerElement: 1},
+              faceRange: {valueType: 'UInt32', valuesPerElement: 2}
+            }
+          }
+        }
+      } as any
+    );
+
+    expect(content.featureIds).toBeInstanceOf(Float64Array);
+    expect(Array.from(content.featureIds as Float64Array)).toEqual([
+      featureId,
+      featureId,
+      featureId
+    ]);
   });
 });

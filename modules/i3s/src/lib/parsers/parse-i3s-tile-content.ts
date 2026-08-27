@@ -641,7 +641,7 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: I3SMeshAttri
   const featureIds = id.value;
   const range = faceRange.value;
   const featureIdsLength = range[range.length - 1] + 1;
-  const orderedFeatureIndices = new Uint32Array(featureIdsLength * 3);
+  const orderedFeatureIndices = new Float64Array(featureIdsLength * 3);
 
   let featureIndex = 0;
   let startIndex = 0;

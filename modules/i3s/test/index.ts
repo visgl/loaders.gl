@@ -10,6 +10,7 @@ import './i3s-loader.spec';
 import './parse-slpk.spec';
 import './parse-slpk-readable-file.spec';
 import './i3s-node-page-loader.spec';
+import './i3s-nodepages-tiles-metadata.spec';
 import './i3s-zod-schema.spec';
 import './i3s-conformance.spec';
 import './arcgis-webscene-crs.spec';

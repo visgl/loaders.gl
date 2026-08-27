@@ -223,15 +223,24 @@ export class I3SSource implements Tileset3DSource {
       return tilePath;
     }
 
-    const [pathWithoutQuery, existingQuery = ''] = tilePath.split('?');
-    const queryParams = new URLSearchParams(existingQuery);
+    const queryDelimiterIndex = tilePath.indexOf('?');
+    if (queryDelimiterIndex === -1) {
+      return `${tilePath}?${new URLSearchParams(this.queryParams).toString()}`;
+    }
+
+    const existingQuery = tilePath.slice(queryDelimiterIndex + 1);
+    const existingQueryKeys = new Set(
+      existingQuery.split('&').map(parameter => parameter.split('=', 1)[0])
+    );
+    const queryParams = new URLSearchParams();
     for (const [key, value] of Object.entries(this.queryParams)) {
-      if (!queryParams.has(key)) {
+      if (!existingQueryKeys.has(key)) {
         queryParams.set(key, value);
       }
     }
 
-    return `${pathWithoutQuery}?${queryParams.toString()}`;
+    const queryString = queryParams.toString();
+    return queryString ? `${tilePath}${existingQuery ? '&' : ''}${queryString}` : tilePath;
   }
 
   /**

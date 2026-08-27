@@ -215,6 +215,11 @@ test('I3SSource appends auth tokens before loading URL-backed root metadata', as
   expect(source.getTileUrl('https://example.com/SceneServer/layers/0?token=caller-token')).toBe(
     'https://example.com/SceneServer/layers/0?token=caller-token'
   );
+  expect(
+    source.getTileUrl('https://example.com/SceneServer/layers/0?redirect=https://host/path?a=1')
+  ).toBe(
+    'https://example.com/SceneServer/layers/0?redirect=https://host/path?a=1&token=secret-token'
+  );
 });
 test('Tiles3DSource uses injected resolvers for root metadata and tile content', async () => {
   const rootTileset: TilesetJSON = {
