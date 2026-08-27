@@ -203,14 +203,71 @@ vitestTest('COPCSourceLoader#prunes scans by hierarchy level and bounds', async 
 });
 
 vitestTest('COPCSourceLoader#does not fetch hierarchy pages outside scan bounds', async () => {
-  const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
-  await source.initialize();
-  source.setRangeGetter(async () => {
-    throw new Error('outside hierarchy page should not be fetched');
+  const arrayBuffer = encodeSync(createCOPCWriterMesh(), COPCWriter, {
+    copc: {
+      hierarchyPageDepth: 1,
+      maximumDepth: 4,
+      nodePointLimit: 1,
+      pointDataRecordFormat: 7,
+      scale: [0.01, 0.01, 0.01]
+    }
+  });
+  const sourceBytes = new Uint8Array(arrayBuffer);
+  const readRange = async (begin: number, end: number): Promise<Uint8Array> =>
+    sourceBytes.slice(begin, end);
+
+  const inBoundsSource = new TestCOPCTileSource(new Blob([sourceBytes]), {});
+  await inBoundsSource.initialize();
+  const inBoundsHierarchyPages = Object.values((inBoundsSource as any)._hierarchy.pages) as Array<{
+    pageOffset: number;
+    pageLength: number;
+  }>;
+  expect(inBoundsHierarchyPages.length).toBeGreaterThan(0);
+  let fetchedChildPageCount = 0;
+  inBoundsSource.setRangeGetter(async (begin, end) => {
+    if (
+      inBoundsHierarchyPages.some(
+        page => page.pageOffset === begin && page.pageOffset + page.pageLength === end
+      )
+    ) {
+      fetchedChildPageCount++;
+    }
+    return readRange(begin, end);
+  });
+
+  let inBoundsPointCount = 0;
+  for await (const batch of inBoundsSource.scan({
+    bounds: {
+      minimum: [-20, -12, -15],
+      maximum: [-19, -11, -14]
+    }
+  })) {
+    inBoundsPointCount += batch.pointCount;
+  }
+  expect(inBoundsPointCount).toBeGreaterThan(0);
+  expect(fetchedChildPageCount).toBeGreaterThan(0);
+
+  const outOfBoundsSource = new TestCOPCTileSource(new Blob([sourceBytes]), {});
+  await outOfBoundsSource.initialize();
+  const outOfBoundsHierarchyPages = Object.values(
+    (outOfBoundsSource as any)._hierarchy.pages
+  ) as Array<{
+    pageOffset: number;
+    pageLength: number;
+  }>;
+  outOfBoundsSource.setRangeGetter(async (begin, end) => {
+    if (
+      outOfBoundsHierarchyPages.some(
+        page => page.pageOffset === begin && page.pageOffset + page.pageLength === end
+      )
+    ) {
+      throw new Error('outside hierarchy page should not be fetched');
+    }
+    return readRange(begin, end);
   });
 
   const batches = [];
-  for await (const batch of source.scan({
+  for await (const batch of outOfBoundsSource.scan({
     bounds: {
       minimum: [1e9, 1e9, 1e9],
       maximum: [1e9 + 1, 1e9 + 1, 1e9 + 1]
