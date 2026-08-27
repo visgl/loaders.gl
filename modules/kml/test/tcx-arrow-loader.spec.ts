@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-
 import {load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
@@ -13,22 +12,16 @@ import * as kml from '@loaders.gl/kml';
 import * as bundledKml from '@loaders.gl/kml/bundled';
 import * as unbundledKml from '@loaders.gl/kml/unbundled';
 import type {ArrowTable, Feature, Geometry} from '@loaders.gl/schema';
-
 const TCX_URL = '@loaders.gl/kml/test/data/tcx/tcx_sample.tcx';
-
-test('TCXLoader#loader conformance', t => {
-  validateLoader(t, TCXLoader, 'TCXLoader');
-  t.end();
+test('TCXLoader#loader conformance', () => {
+  validateLoader(TCXLoader, 'TCXLoader');
 });
-
-test('TCXLoader#removed Arrow loader exports', t => {
-  t.notOk('TCXArrowLoader' in kml, 'root does not export TCXArrowLoader');
-  t.notOk('TCXArrowLoader' in bundledKml, 'bundled does not export TCXArrowLoader');
-  t.notOk('TCXArrowLoader' in unbundledKml, 'unbundled does not export TCXArrowLoader');
-  t.end();
+test('TCXLoader#removed Arrow loader exports', () => {
+  expect('TCXArrowLoader' in kml, 'root does not export TCXArrowLoader').toBeFalsy();
+  expect('TCXArrowLoader' in bundledKml, 'bundled does not export TCXArrowLoader').toBeFalsy();
+  expect('TCXArrowLoader' in unbundledKml, 'unbundled does not export TCXArrowLoader').toBeFalsy();
 });
-
-test('TCXLoader#parse with shape: arrow-table', async t => {
+test('TCXLoader#parse with shape: arrow-table', async () => {
   const arrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const roundTripped = convertWKBTableToGeoJSON(
@@ -40,19 +33,15 @@ test('TCXLoader#parse with shape: arrow-table', async t => {
     expectedTable.shape === 'geojson-table'
       ? normalizeComplexProperties(expectedTable.features)
       : [];
-
-  t.equal(arrowTable.shape, 'arrow-table', 'shape is arrow-table');
-  t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
-  t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
-  t.deepEqual(
+  expect(arrowTable.shape, 'shape is arrow-table').toBe('arrow-table');
+  expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
+  expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses WKB encoding').toBe('wkb');
+  expect(
     geoMetadata?.columns.geometry.geometry_types,
-    inferExpectedGeometryTypes(expectedFeatures),
     'geo metadata geometry type matches TCX output'
-  );
-  t.deepEqual(roundTripped.features, expectedFeatures, 'Arrow output matches TCXLoader output');
-  t.end();
+  ).toEqual(inferExpectedGeometryTypes(expectedFeatures));
+  expect(roundTripped.features, 'Arrow output matches TCXLoader output').toEqual(expectedFeatures);
 });
-
 /**
  * Reads Arrow rows as plain objects so they can be passed to WKB conversion helpers.
  *
@@ -67,7 +56,6 @@ function getRowsFromArrowTable(table: ArrowTable): Record<string, unknown>[] {
   }
   return rows;
 }
-
 /**
  * Infers expected GeoParquet geometry type strings from classic GeoJSON features.
  *
@@ -85,7 +73,6 @@ function inferExpectedGeometryTypes(features: Feature[]): string[] {
   }
   return [...geometryTypes];
 }
-
 /**
  * Returns the coordinate dimensionality of one representative geometry coordinate tuple.
  *
@@ -104,7 +91,6 @@ function getCoordinateDimensions(coordinates: unknown): number {
   }
   return getCoordinateDimensions(coordinates[0]);
 }
-
 /**
  * Extracts one representative coordinate payload from a geometry.
  *
@@ -120,7 +106,6 @@ function getGeometrySampleCoordinates(geometry: Geometry): unknown {
   }
   return undefined;
 }
-
 /**
  * Normalizes classic GeoJSON feature properties to the Arrow-safe representation used by the loader.
  *
@@ -133,7 +118,6 @@ function normalizeComplexProperties(features: Feature[]): Feature[] {
     properties: normalizePropertiesObject(feature.properties || {})
   }));
 }
-
 /**
  * Converts nested property values to strings so expected data matches Arrow column preservation.
  *
@@ -147,7 +131,6 @@ function normalizePropertiesObject(properties: Record<string, unknown>): Record<
   }
   return normalizedProperties;
 }
-
 /**
  * Converts nested property values to Arrow-safe scalar values.
  *
@@ -166,7 +149,6 @@ function normalizePropertyValue(propertyValue: unknown): unknown {
   }
   return JSON.stringify(propertyValue);
 }
-
 /**
  * Ensures the geometry column is represented as a typed byte array for WKB conversion helpers.
  *
@@ -180,7 +162,6 @@ function normalizeBinaryGeometryRow(row: Record<string, unknown>): Record<string
   }
   return row;
 }
-
 /**
  * Returns true when a value is a plain object containing numeric keys for byte values.
  *

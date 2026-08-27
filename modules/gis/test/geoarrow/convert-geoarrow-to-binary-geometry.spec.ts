@@ -332,6 +332,12 @@ async function testGetBinaryGeometriesFromArrow(
   return Promise.resolve();
 }
 
+/**
+ * Converts typed arrays nested in a test result to regular arrays for value-only comparisons.
+ *
+ * @param value - A test result containing arrays, typed arrays, or plain objects.
+ * @returns A structurally equivalent value with typed arrays normalized to regular arrays.
+ */
 function normalizeTypedArrays(value: unknown): unknown {
   if (ArrayBuffer.isView(value)) {
     return Array.from(value as ArrayLike<unknown>);
