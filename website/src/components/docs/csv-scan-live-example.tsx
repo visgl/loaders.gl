@@ -45,7 +45,7 @@ export function CSVScanLiveExample(): JSX.Element {
     };
   }, [url, submittedQuery]);
 
-  const columns = state.metadata?.columns.map(column => column.name) || [];
+  const columns = submittedQuery.columns || state.metadata?.columns.map(column => column.name) || [];
   return (
     <div>
       <label htmlFor="csv-scan-url">CSV URL</label>
@@ -71,6 +71,7 @@ export function CSVScanLiveExample(): JSX.Element {
   );
 }
 
+/** Renders a compact preview of the projected rows returned by a CSV scan. */
 function CSVPreview({columns, rows}: {columns: readonly string[]; rows: readonly Record<string, unknown>[]}): JSX.Element {
   return (
     <div style={{overflowX: 'auto'}}>
@@ -89,6 +90,7 @@ function CSVPreview({columns, rows}: {columns: readonly string[]; rows: readonly
   );
 }
 
+/** Formats one CSV value for the compact example table. */
 function formatCell(value: unknown): string {
   if (value === null || value === undefined) return '—';
   if (typeof value === 'object') return '[value]';

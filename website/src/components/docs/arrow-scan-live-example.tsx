@@ -71,6 +71,7 @@ export function ArrowScanLiveExample(): JSX.Element {
   );
 }
 
+/** Renders a compact preview of the first rows returned by an Arrow scan. */
 function ArrowPreview({table}: {table: ArrowTable}): JSX.Element {
   const columns = table.schema.fields.map(field => field.name);
   const rowCount = Math.min(table.data.numRows, 5);
@@ -91,6 +92,7 @@ function ArrowPreview({table}: {table: ArrowTable}): JSX.Element {
   );
 }
 
+/** Formats one Arrow value for the compact example table. */
 function formatCell(value: unknown): string {
   if (value === null || value === undefined) return '—';
   if (typeof value === 'object') return '[value]';
