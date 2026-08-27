@@ -20,6 +20,7 @@ import {
 test('VectorTileTableScanSource binds tile addressing outside the portable query', async () => {
   const sourceTable = makeArrowTable({id: [1, 2, 3], value: [10, 20, 30]});
   const requestedTiles: GetTileParameters[] = [];
+  const tileLayers = ['roads'];
   const source = {
     async getMetadata() {
       return {minZoom: 0, maxZoom: 10};
@@ -42,8 +43,9 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
     sourceType: 'mvt-tile-table',
     name: 'Roads',
     description: 'Addressed roads tile',
-    tile: {x: 2, y: 1, z: 2, layers: ['roads']}
+    tile: {x: 2, y: 1, z: 2, layers: tileLayers}
   });
+  tileLayers.push('mutated');
 
   const metadata = await scanSource.getQueryMetadata();
   expect(metadata).toMatchObject({
@@ -71,6 +73,7 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
   expect(Array.from(batches[0].data.getChild('id')?.toArray() || [])).toEqual([2]);
   expect(requestedTiles).toHaveLength(1);
   expect(requestedTiles[0]).toMatchObject({x: 2, y: 1, z: 2, layers: ['roads']});
+  expect(Object.isFrozen(scanSource.tile.layers)).toBe(true);
 });
 
 test('VectorFeatureTableScanSource binds service controls and requests Arrow output', async () => {
@@ -173,6 +176,7 @@ test('addressed vector scans propagate cancellation and reject non-Arrow output'
 test('addressed vector scans infer missing schema and optional service metadata', async () => {
   const data = arrow.tableFromArrays({id: [1]});
   const sourceTable = {shape: 'arrow-table', data} as ArrowTable;
+  const requests: GetFeaturesParameters[] = [];
   const source = {
     async getSchema() {
       return convertArrowToSchema(data.schema);
@@ -180,25 +184,81 @@ test('addressed vector scans infer missing schema and optional service metadata'
     async getMetadata() {
       return {name: 'features', keywords: [], layers: []};
     },
-    async getFeatures() {
+    async getFeatures(parameters: GetFeaturesParameters) {
+      requests.push(parameters);
       return sourceTable;
     }
   } as VectorSource;
+  const layers = ['roads', 'buildings'];
+  const boundingBox: GetFeaturesParameters['boundingBox'] = [
+    [0, 0],
+    [1, 1]
+  ];
   const scanSource = new VectorFeatureTableScanSource(source, {
     request: {
-      layers: ['roads', 'buildings'],
-      boundingBox: [
-        [0, 0],
-        [1, 1]
-      ]
+      layers,
+      boundingBox
     }
   });
+  layers.push('mutated');
+  boundingBox[0][0] = 10;
 
   const metadata = await scanSource.getQueryMetadata();
   expect(metadata.sourceType).toBe('vector-feature-table');
   expect(metadata.description).toBe('Vector feature request for roads, buildings');
   expect(metadata.columns.map(column => column.name)).toEqual(['id']);
   expect(metadata.spatial?.coordinateReferenceSystems).toBeUndefined();
+  expect(requests[0]).toMatchObject({
+    layers: ['roads', 'buildings'],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ]
+  });
+  expect(Object.isFrozen(scanSource.request.layers)).toBe(true);
+  expect(Object.isFrozen(scanSource.request.boundingBox)).toBe(true);
+  expect(Object.isFrozen(scanSource.request.boundingBox[0])).toBe(true);
+});
+
+test('addressed vector scans isolate shared loads from caller cancellation', async () => {
+  const sourceTable = makeArrowTable({id: [1]});
+  let resolveLoad!: (table: ArrowTable) => void;
+  let loadCount = 0;
+  let physicalSignal: AbortSignal | undefined;
+  const source = {
+    async getMetadata() {
+      return {};
+    },
+    async getTile() {
+      return null;
+    },
+    async getTileData() {
+      return null;
+    },
+    async getSchema() {
+      return sourceTable.schema;
+    },
+    getVectorTile(parameters: GetTileParameters) {
+      loadCount++;
+      physicalSignal = parameters.signal;
+      return new Promise<ArrowTable>(resolve => {
+        resolveLoad = resolve;
+      });
+    }
+  } satisfies VectorTileSource;
+  const scanSource = new VectorTileTableScanSource(source, {tile: {x: 0, y: 0, z: 0}});
+  const cancelledController = new AbortController();
+  const successfulController = new AbortController();
+
+  const cancelledMetadata = scanSource.getQueryMetadata({signal: cancelledController.signal});
+  const successfulQuery = scanSource.query({signal: successfulController.signal});
+  cancelledController.abort();
+
+  await expect(cancelledMetadata).rejects.toMatchObject({name: 'AbortError'});
+  resolveLoad(sourceTable);
+  await expect(successfulQuery).resolves.toMatchObject({shape: 'arrow-table'});
+  expect(loadCount).toBe(1);
+  expect(physicalSignal).toBeUndefined();
 });
 
 /** Creates a loaders.gl Arrow table from ordinary named arrays. */

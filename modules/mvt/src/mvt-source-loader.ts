@@ -241,14 +241,17 @@ export class MVTTileSource
     arrayBuffer: ArrayBuffer,
     tileParams: GetTileParameters
   ): Promise<VectorTile | null> {
+    const inheritedMVTOptions = (this.loadOptions as MVTLoaderOptions)?.mvt;
+    const selectedLayers = normalizeTileLayers(tileParams.layers) || inheritedMVTOptions?.layers;
     const loadOptions: MVTLoaderOptions = {
+      ...this.loadOptions,
       mvt: {
-        shape: this.options.mvt?.shape || 'geojson-table',
+        ...inheritedMVTOptions,
+        shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
-        ...(this.loadOptions as MVTLoaderOptions)?.mvt
-      },
-      ...this.loadOptions
+        layers: selectedLayers
+      }
     };
 
     return (await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions)) as VectorTile;
@@ -270,6 +273,12 @@ export class MVTTileSource
         throw new Error(this.schema);
     }
   }
+}
+
+/** Normalizes a non-empty tile layer selection for the MVT decoder. */
+function normalizeTileLayers(layers?: string | string[]): string[] | undefined {
+  const normalizedLayers = typeof layers === 'string' ? [layers] : layers;
+  return normalizedLayers?.length ? normalizedLayers : undefined;
 }
 
 export function isURLTemplate(s: string): boolean {

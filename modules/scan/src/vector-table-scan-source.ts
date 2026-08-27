@@ -133,9 +133,8 @@ export abstract class AddressedVectorTableScanSource {
   private async getTable(signal?: AbortSignal): Promise<ArrowTable> {
     throwIfAborted(signal);
     if (!this.tablePromise) {
-      this.tablePromise = this.loadTable(signal)
+      this.tablePromise = this.loadTable()
         .then(table => {
-          throwIfAborted(signal);
           if (!table) {
             throw new Error('The addressed vector selection did not return a feature table.');
           }
@@ -151,7 +150,7 @@ export abstract class AddressedVectorTableScanSource {
           throw error;
         });
     }
-    return await this.tablePromise;
+    return await waitForPromise(this.tablePromise, signal);
   }
 }
 
@@ -169,7 +168,10 @@ export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
 
   /** Creates a portable table view over one vector tile. */
   constructor(source: VectorTileSource, options: VectorTileTableScanSourceOptions) {
-    const tile = Object.freeze({...options.tile});
+    const tile = Object.freeze({
+      ...options.tile,
+      layers: cloneAndFreezeLayers(options.tile.layers)
+    });
     super(options, {
       sourceType: 'vector-tile-table',
       description: `Vector tile ${tile.z}/${tile.x}/${tile.y}`,
@@ -202,7 +204,14 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
 
   /** Creates a portable table view over one bounded vector-service request. */
   constructor(source: VectorSource, options: VectorFeatureTableScanSourceOptions) {
-    const request = Object.freeze({...options.request});
+    const request = Object.freeze({
+      ...options.request,
+      layers: cloneAndFreezeLayers(options.request.layers),
+      boundingBox: Object.freeze([
+        Object.freeze([...options.request.boundingBox[0]]),
+        Object.freeze([...options.request.boundingBox[1]])
+      ]) as GetFeaturesParameters['boundingBox']
+    });
     const coordinateReferenceSystems = typeof request.crs === 'string' ? [request.crs] : undefined;
     super(options, {
       sourceType: 'vector-feature-table',
@@ -258,9 +267,34 @@ function normalizeLayers(layers: string | string[]): string[] {
   return Array.isArray(layers) ? layers : [layers];
 }
 
+/** Clones and freezes a possibly plural layer selection for an immutable physical address. */
+function cloneAndFreezeLayers<LayersT extends string | string[] | undefined>(
+  layers: LayersT
+): LayersT {
+  return (Array.isArray(layers) ? Object.freeze([...layers]) : layers) as LayersT;
+}
+
+/** Waits for a shared cached load while preserving one caller's independent cancellation. */
+async function waitForPromise<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) {
+    return await promise;
+  }
+  throwIfAborted(signal);
+  return await new Promise<T>((resolve, reject) => {
+    const abort = () => reject(getAbortReason(signal));
+    signal.addEventListener('abort', abort, {once: true});
+    void promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
+
 /** Throws before physical or residual work begins when cancellation was requested. */
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
-    throw signal.reason || new DOMException('Request aborted', 'AbortError');
+    throw getAbortReason(signal);
   }
+}
+
+/** Returns the caller's cancellation reason or a portable AbortError fallback. */
+function getAbortReason(signal: AbortSignal): unknown {
+  return signal.reason || new DOMException('Request aborted', 'AbortError');
 }
