@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {makeTableFromData} from '@loaders.gl/schema-utils';
-
 // import * from '../../data/table/tables';
 import {
   TABLES,
@@ -26,17 +25,13 @@ import {
   // LZ4_RAW_COMPRESSED_PLAIN_TABLE,
   // NON_HADOOP_LZ4_COMPRESSED_PLAIN_TABLE
 } from '../../data/table/tables';
-
-test.skip('makeTableFromData', async t => {
+test.skip('makeTableFromData', async () => {
   const table = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
-  t.equal(table.data.length, 8);
-  t.end();
+  expect(table.data.length).toBe(8);
 });
-
-test('makeTableFromData', async t => {
+test('makeTableFromData', async () => {
   for (const tc of TABLES) {
     const table = makeTableFromData(tc.table);
-    t.equal(table.data.length, tc.length, tc.name);
+    expect(table.data.length, tc.name).toBe(tc.length);
   }
-  t.end();
 });

@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   makeTableFromBatches,
   makeTableFromData,
   makeBatchFromTable,
   getTableLength
 } from '../../../src'; // '@loaders.gl/schema'; why don't we get typings?
-
 // import * from '../../data/table/tables';
 import {
   TABLES,
@@ -31,21 +30,17 @@ import {
   // LZ4_RAW_COMPRESSED_PLAIN_TABLE,
   // NON_HADOOP_LZ4_COMPRESSED_PLAIN_TABLE
 } from '../../data/table/tables';
-
-test.skip('makeTableFromBatches', async t => {
+test.skip('makeTableFromBatches', async () => {
   const tempTable = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
   const batch = makeBatchFromTable(tempTable);
   const table = await makeTableFromBatches([batch]);
-  t.equal(getTableLength(table!), 8);
-  t.end();
+  expect(getTableLength(table!)).toBe(8);
 });
-
-test('makeTableFromBatches', async t => {
+test('makeTableFromBatches', async () => {
   for (const tc of TABLES) {
     const tempTable = makeTableFromData(tc.table);
     const batch = makeBatchFromTable(tempTable);
     const table = await makeTableFromBatches([batch]);
-    t.equal(getTableLength(table!), tc.length, tc.name);
+    expect(getTableLength(table!), tc.name).toBe(tc.length);
   }
-  t.end();
 });

@@ -2,62 +2,51 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {tightenArrowTableSchemaNullability} from '@loaders.gl/arrow';
-
 import type {ArrowTable} from '@loaders.gl/schema';
-
-test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async t => {
+test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async () => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],
     nullable: true
   });
-
   const tightenedTable = tightenArrowTableSchemaNullability(table);
-
-  t.equal(tightenedTable.schema?.fields[0].nullable, false, 'loaders.gl schema is tightened');
-  t.equal(tightenedTable.data.schema.fields[0].nullable, false, 'Arrow schema is tightened');
-  t.equal(tightenedTable.data.getChildAt(0)?.get(1), 'b', 'column values are preserved');
-  t.notEqual(tightenedTable.data, table.data, 'Arrow table wrapper is replaced');
-  t.end();
+  expect(tightenedTable.schema?.fields[0].nullable, 'loaders.gl schema is tightened').toBe(false);
+  expect(tightenedTable.data.schema.fields[0].nullable, 'Arrow schema is tightened').toBe(false);
+  expect(tightenedTable.data.getChildAt(0)?.get(1), 'column values are preserved').toBe('b');
+  expect(tightenedTable.data, 'Arrow table wrapper is replaced').not.toBe(table.data);
 });
-
-test('tightenArrowTableSchemaNullability#keeps nullable fields with nulls', async t => {
+test('tightenArrowTableSchemaNullability#keeps nullable fields with nulls', async () => {
   const table = makeTestArrowTable({
     values: ['a', null, 'c'],
     nullable: true
   });
-
   const tightenedTable = tightenArrowTableSchemaNullability(table);
-
-  t.equal(tightenedTable, table, 'table is reused when nullability is unchanged');
-  t.equal(tightenedTable.schema?.fields[0].nullable, true, 'loaders.gl schema stays nullable');
-  t.equal(tightenedTable.data.schema.fields[0].nullable, true, 'Arrow schema stays nullable');
-  t.end();
+  expect(tightenedTable, 'table is reused when nullability is unchanged').toBe(table);
+  expect(tightenedTable.schema?.fields[0].nullable, 'loaders.gl schema stays nullable').toBe(true);
+  expect(tightenedTable.data.schema.fields[0].nullable, 'Arrow schema stays nullable').toBe(true);
 });
-
-test('tightenArrowTableSchemaNullability#keeps non-nullable fields unchanged', async t => {
+test('tightenArrowTableSchemaNullability#keeps non-nullable fields unchanged', async () => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],
     nullable: false
   });
-
   const tightenedTable = tightenArrowTableSchemaNullability(table);
-
-  t.equal(tightenedTable, table, 'table is reused when schema is already non-nullable');
-  t.equal(tightenedTable.schema?.fields[0].nullable, false, 'loaders.gl schema stays non-nullable');
-  t.equal(tightenedTable.data.schema.fields[0].nullable, false, 'Arrow schema stays non-nullable');
-  t.end();
+  expect(tightenedTable, 'table is reused when schema is already non-nullable').toBe(table);
+  expect(tightenedTable.schema?.fields[0].nullable, 'loaders.gl schema stays non-nullable').toBe(
+    false
+  );
+  expect(tightenedTable.data.schema.fields[0].nullable, 'Arrow schema stays non-nullable').toBe(
+    false
+  );
 });
-
 /** Test table construction options. */
 type TestArrowTableOptions = {
   values: (string | null)[];
   nullable: boolean;
 };
-
 /** Creates a single-column ArrowTable with explicit field nullability. */
 function makeTestArrowTable(options: TestArrowTableOptions): ArrowTable {
   const vector = arrow.vectorFromArray(options.values, new arrow.Utf8());
@@ -72,7 +61,6 @@ function makeTestArrowTable(options: TestArrowTableOptions): ArrowTable {
     })
   );
   const data = new arrow.Table([recordBatch]);
-
   return {
     shape: 'arrow-table',
     schema: convertArrowToSchema(data.schema),
