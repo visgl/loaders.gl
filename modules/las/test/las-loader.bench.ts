@@ -30,12 +30,12 @@ const COMPETITIVE_ARROW_FIELDS = [
 ] as const;
 const LAZ_1_2_LOADER_VARIANTS = [
   {name: 'loaders.gl (TypeScript)', loader: LASLoader},
-  {name: 'laz-perf (C++ to JS) 0.0.7', loader: LAZPerfLoader},
-  {name: 'laz-rs (Rust to WASM) 0.1.0', loader: LAZRsLoader}
+  {name: 'laz-perf v0.0.7 (CPP->JS)', loader: LAZPerfLoader},
+  {name: 'laz-rs v0.1.0 (Rust->WASM)', loader: LAZRsLoader}
 ] as const;
 const LAZ_1_4_LOADER_VARIANTS = [
   {name: 'loaders.gl (TypeScript)', loader: LASLoader},
-  {name: 'laz-rs (Rust to WASM) 0.1.0', loader: LAZRsLoader}
+  {name: 'laz-rs v0.1.0 (Rust->WASM)', loader: LAZRsLoader}
 ] as const;
 
 /**

@@ -81,12 +81,12 @@ const LOADER_VARIANTS: LoaderVariant[] = [
     pointDataRecordFormats: [LAZ_1_2_PDRF_3, LAZ_1_4_PDRF_7]
   },
   {
-    name: 'laz-perf (C++ to JS) · 0.0.7',
+    name: 'laz-perf v0.0.7 (CPP->JS)',
     loader: LAZPerfLoader,
     pointDataRecordFormats: [LAZ_1_2_PDRF_3]
   },
   {
-    name: 'laz-rs (Rust to WASM) · 0.1.0',
+    name: 'laz-rs v0.1.0 (Rust->WASM)',
     loader: LAZRsLoader,
     pointDataRecordFormats: [LAZ_1_2_PDRF_3, LAZ_1_4_PDRF_7]
   }
