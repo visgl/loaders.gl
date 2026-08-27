@@ -9,6 +9,7 @@
 
 - Expose tileset metadata topology (`schema`, `schemaUri`, `groups`, `metadata`, and `statistics`) on the shared `Tileset3D` runtime for application inspection.
 - Normalize direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` metadata semantics into traversal-ready bounding volumes with metadata semantics taking precedence over ordinary header volumes.
+- Classify multi-content render volumes as a union, apply clipping planes only to render content, and document the 3D Tiles correctness/conformance contract for SSE, implicit boundaries, extensions, and lifecycle diagnostics.
 
 
 Release Date: 2026
