@@ -21,14 +21,15 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 | [**WFS**](/docs/modules/wms/formats/wfs) (Web Feature Service) protocol             | experimental | protocol for serving geo-referenced map features (geometries) over the internet.                                                     |
 | [**WMTS**](/docs/modules/wms/formats/wmts) (Web Map Tile Service) protocol          | experimental | protocol for serving pre-rendered or run-time computed georeferenced map tiles over the Internet.                                    |
 | [**GML**](/docs/modules/wms/formats/gml) (Geographic Markup Language) format        | experimental | an XML grammar that describes geographical features.                                                                                 |
-| [**WCS**](/docs/modules/wms/formats/wcs) (Web Coverage Service)                     | N            | Load coverage data (e.g. geotiff images for satellite data) from a server.                                                           |
+| [**WCS**](/docs/modules/wms/formats/wcs) (Web Coverage Service)                     | experimental | Load analytical coverage data (including binary and LERC responses) from a server.                                                  |
 | [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
 | [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
 The module also includes minimal adapters for the modern OGC API family. These adapters cover
-landing pages, collections, basic GeoJSON Features queries, and advertised tile templates. They
-are intentionally not a full conformance implementation; advanced filtering and service-specific
-extensions remain available through the regular loaders.gl fetch APIs.
+landing pages, collections, basic GeoJSON Features queries, advertised tile templates, coverage
+retrieval, and EDR queries. They are intentionally not a full conformance implementation;
+advanced filtering and service-specific extensions remain available through the regular loaders.gl
+fetch APIs.
 
 ```js
 import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/wms';
