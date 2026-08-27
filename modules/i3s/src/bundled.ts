@@ -15,3 +15,9 @@ export {
 export {I3SBuildingSceneLayerLoaderWithParser as I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader-with-parser';
 export {I3SNodePageLoaderWithParser as I3SNodePageLoader} from './i3s-node-page-loader-with-parser';
 export {ArcGISWebSceneLoaderWithParser as ArcGISWebSceneLoader} from './arcgis-webscene-loader-with-parser';
+export {
+  I3SLEPCCDecoder,
+  type I3SLEPCCBlobType,
+  type I3SLEPCCDecodedValue,
+  type I3SLEPCCDecoderOptions
+} from './i3s-lepcc';

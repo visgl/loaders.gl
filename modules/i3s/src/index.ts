@@ -68,3 +68,9 @@ export {customizeColors} from './lib/utils/customize-colors';
 export {type I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 export {loadStatistics} from './i3s-statistics';
 export type {I3SStatistics} from './i3s-statistics';
+export {
+  I3SLEPCCDecoder,
+  type I3SLEPCCBlobType,
+  type I3SLEPCCDecodedValue,
+  type I3SLEPCCDecoderOptions
+} from './i3s-lepcc';

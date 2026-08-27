@@ -12,3 +12,9 @@ export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader'
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
+export {
+  I3SLEPCCDecoder,
+  type I3SLEPCCBlobType,
+  type I3SLEPCCDecodedValue,
+  type I3SLEPCCDecoderOptions
+} from './i3s-lepcc';
