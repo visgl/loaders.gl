@@ -74,6 +74,12 @@ export type Tileset3DProps = {
   modelMatrix?: Matrix4;
 
   maximumScreenSpaceError?: number;
+  /**
+   * Enables replacement traversal that may skip hierarchy levels while retaining ready ancestors
+   * as coverage. This trades temporary overdraw for faster refinement on deep trees.
+   * @default false
+   */
+  skipLevelOfDetail?: boolean;
   /** Enables perspective dynamic SSE to reduce distant, horizon-facing refinement. */
   dynamicScreenSpaceError?: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -139,6 +145,8 @@ type Props = {
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   onUpdate: () => void;
   maximumScreenSpaceError: number;
+  /** Whether replacement traversal may skip levels while retaining ancestor coverage. */
+  skipLevelOfDetail: boolean;
   /** Whether perspective dynamic SSE is enabled. */
   dynamicScreenSpaceError: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -264,6 +272,7 @@ const DEFAULT_PROPS: Props = {
   foveatedInterpolationCallback: interpolateLinearly,
   foveatedTimeDelay: 0.2,
   maximumScreenSpaceError: 8,
+  skipLevelOfDetail: false,
   dynamicScreenSpaceError: true,
   dynamicScreenSpaceErrorDensity: 2.0e-4,
   dynamicScreenSpaceErrorFactor: 24,

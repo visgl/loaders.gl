@@ -208,6 +208,15 @@ For formulas, projection-specific behavior, transform scaling, and tuning guidan
 ^default 8 \*
 ^exception `maximumScreenSpaceError` must be greater than or equal to zero.
 
+### skipLevelOfDetail : Boolean
+
+Enables skip-LOD replacement traversal. When enabled, traversal may descend past one or more
+hierarchy levels without waiting for every intermediate child, while keeping ready replacement
+ancestors selected as temporary coverage. This can improve first-detail latency on deep trees at
+the cost of temporary ancestor/descendant overdraw. `ADD` refinement is unaffected.
+
+^default false
+
 ### cacheBytes : Number
 
 The soft target in bytes for estimated tile content retained by the cache. The estimate includes

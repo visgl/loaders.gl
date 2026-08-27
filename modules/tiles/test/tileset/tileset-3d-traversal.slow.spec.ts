@@ -13,6 +13,8 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
+const TILESET_REPLACEMENT_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement1/tileset.json';
 const ASYNC_TRAVERSAL_TIMEOUT = 10000;
 /*
 // Parent tile with no content and four child tiles with content
@@ -260,4 +262,25 @@ test('Tileset3D#loadTiles option', async () => {
   tileset.update(viewport);
   await new Promise(resolve => setTimeout(resolve, 300));
   expect(tileLoadCounter).toBe(0);
+});
+
+test('Tileset3D#skipLevelOfDetail retains replacement ancestors as coverage', async () => {
+  expect.assertions(3);
+  const tilesetJson = await load(TILESET_REPLACEMENT_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    maximumScreenSpaceError: 0,
+    skipLevelOfDetail: true,
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+    }
+  });
+  tileset.update(viewport);
+  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.options.skipLevelOfDetail).toBe(true);
+  expect(tileset.selectedTiles.some(tile => tile.depth === 0)).toBe(true);
+  expect(tileset.selectedTiles.length).toBeGreaterThan(1);
 });
