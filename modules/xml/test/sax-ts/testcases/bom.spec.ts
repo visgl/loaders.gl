@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: ISC
-
 import {test} from 'vitest';
 import {testSax} from '../utils/test-utils';
 // BOM at the very beginning of the stream should be ignored
