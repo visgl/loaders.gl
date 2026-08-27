@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
+import type {Schema, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 import {
   convertFeaturesToWKBArrowTable,
   convertGeojsonToBinaryFeatureCollection
@@ -21,6 +21,8 @@ import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-pa
 
 import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
+import {parseGML} from './lib/parsers/gml/parse-gml';
+import type {GMLFeatureCollection} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/crs';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
@@ -87,6 +89,12 @@ export type WFSParameters = {
   format?: 'image/png';
   /** Requested MIME type of returned feature info (GetFeatureInfo) */
   info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
+  /** Requested MIME type of WFS GetFeature responses. */
+  outputFormat?:
+    | 'application/json'
+    | 'application/geo+json'
+    | 'application/vnd.ogc.gml'
+    | 'application/gml+xml';
   /** Styling - Not yet supported */
   styles?: unknown;
   /** Any additional parameters specific to this WFSVectorSource (GetMap) */
@@ -144,7 +152,11 @@ export type WFSGetFeatureParameters = {
   /** Output CRS for returned features. */
   srsName?: CRSIdentifier;
   /** Requested output format. */
-  outputFormat?: 'application/json' | 'application/geo+json';
+  outputFormat?:
+    | 'application/json'
+    | 'application/geo+json'
+    | 'application/vnd.ogc.gml'
+    | 'application/gml+xml';
 };
 
 // /** GetMap parameters that are specific to the current view */
@@ -259,7 +271,12 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     const text = new TextDecoder().decode(arrayBuffer);
-    const geoJsonTable = parseGeoJSONTable(JSON.parse(text));
+    const featureCollection = parseWFSFeatureCollection(
+      text,
+      response.headers.get('content-type'),
+      this.loadOptions
+    );
+    const geoJsonTable = parseGeoJSONTable(featureCollection);
     const format = parameters.format || 'arrow';
 
     switch (format) {
@@ -270,6 +287,64 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       case 'arrow':
       default:
         return convertFeaturesToWKBArrowTable(geoJsonTable.features);
+    }
+  }
+
+  /**
+   * Streams a WFS GetFeature response as normalized vector batches.
+   *
+   * GML feature members are parsed as they arrive, allowing large WFS responses
+   * to be consumed without holding the complete XML document in memory.
+   */
+  async *getFeaturesInBatches(
+    parameters: GetFeaturesParameters,
+    options: {batchSize?: number} = {}
+  ): AsyncIterable<VectorSourceData> {
+    const url = this.getFeaturesURL(parameters, {
+      outputFormat: 'application/vnd.ogc.gml'
+    });
+    const response = await this.fetch(
+      url,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
+    if (!response.ok) {
+      const arrayBuffer = await response.arrayBuffer();
+      this._checkResponse(response, arrayBuffer);
+    }
+    if (!response.body) {
+      const text = await response.text();
+      if (isWFSExceptionDocument(text, response.headers.get('content-type'))) {
+        throw new Error('WFS GetFeature returned an exception document');
+      }
+      yield convertWFSFeatures(parseGML(text, this.loadOptions), parameters.format);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const initialChunks: Uint8Array[] = [];
+    let initialText = '';
+    const textDecoder = new TextDecoder();
+    while (initialText.length < 4096 && !initialText.includes('>')) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      if (value) {
+        initialChunks.push(value);
+        initialText += textDecoder.decode(value, {stream: true});
+      }
+    }
+    initialText += textDecoder.decode();
+    if (isWFSExceptionDocument(initialText, response.headers.get('content-type'))) {
+      reader.releaseLock();
+      throw new Error('WFS GetFeature returned an exception document');
+    }
+
+    const chunks = readResponseChunks(reader, initialChunks);
+    const {GMLLoaderWithParser} = await import('./gml-loader-with-parser');
+    for await (const batch of GMLLoaderWithParser.parseInBatches!(chunks, {
+      ...this.loadOptions,
+      gml: {batchSize: options.batchSize || 1000}
+    })) {
+      yield convertWFSFeatures(batch, parameters.format);
     }
   }
 
@@ -412,7 +487,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       typeName: requestParameters.typeName,
       bbox: requestParameters.bbox,
       srsName: requestParameters.srsName || requestParameters.crs || 'EPSG:4326',
-      outputFormat: requestParameters.outputFormat || 'application/json'
+      outputFormat:
+        requestParameters.outputFormat ||
+        this.options.wfs?.wfsParameters?.outputFormat ||
+        'application/json'
     };
     return this._getWFSUrl('GetFeature', options, vendorParameters);
   }
@@ -638,8 +716,9 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
   /** Checks for and parses a WFS XML formatted ServiceError and throws an exception */
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
-    const contentType = response.headers['content-type'];
-    if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.includes(contentType)) {
+    const contentType = response.headers.get('content-type') || '';
+    const responseText = new TextDecoder().decode(arrayBuffer);
+    if (!response.ok || isWFSExceptionDocument(responseText, contentType)) {
       // We want error responses to throw exceptions, the WMSErrorLoaderWithParser can do this
       const loadOptions = mergeOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
@@ -672,8 +751,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
           crs
         ],
         crs,
-        srsName: crs,
-        outputFormat: 'application/json'
+        srsName: crs
       };
     }
 
@@ -692,4 +770,62 @@ function parseGeoJSONTable(json: any): GeoJSONTable {
   }
 
   throw new Error('WFS GetFeature did not return a GeoJSON FeatureCollection');
+}
+
+/** Parses a WFS response as GeoJSON or GML based on its content. */
+function parseWFSFeatureCollection(
+  text: string,
+  contentType: string | null,
+  options: Record<string, unknown>
+): GMLFeatureCollection | any {
+  const trimmedText = text.trimStart();
+  if (contentType?.includes('xml') || trimmedText.startsWith('<')) {
+    return parseGML(text, options) as GMLFeatureCollection;
+  }
+  return JSON.parse(text);
+}
+
+/** Detects WFS exception reports without treating ordinary XML as an error. */
+function isWFSExceptionDocument(text: string, contentType: string | null): boolean {
+  return (
+    contentType?.includes('application/vnd.ogc.se_xml') === true ||
+    /<(?:[\w-]+:)?ServiceExceptionReport\b/i.test(text) ||
+    /<(?:[\w-]+:)?ExceptionReport\b/i.test(text)
+  );
+}
+
+/** Converts a GML feature collection into the generic vector source result. */
+function convertWFSFeatures(
+  parsed: Geometry | GMLFeatureCollection | null,
+  format?: string
+): VectorSourceData {
+  if (!parsed || parsed.type !== 'FeatureCollection') {
+    throw new Error('WFS GetFeature did not return a GML FeatureCollection');
+  }
+  if (format === 'geojson') {
+    return {shape: 'geojson-table', type: 'FeatureCollection', features: parsed.features as any};
+  }
+  if (format === 'binary') {
+    return convertGeojsonToBinaryFeatureCollection(parsed.features as any);
+  }
+  return convertFeaturesToWKBArrowTable(parsed.features as any);
+}
+
+/** Adapts a browser response stream to the chunk iterator expected by GML. */
+async function* readResponseChunks(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  initialChunks: Uint8Array[] = []
+): AsyncIterable<Uint8Array> {
+  for (const chunk of initialChunks) {
+    yield chunk;
+  }
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) return;
+      if (value) yield value;
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }

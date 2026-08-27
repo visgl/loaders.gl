@@ -37,6 +37,30 @@ The WFS standard specifies a number of "request types" that a standards-complian
 
 Note that the response to `GetCapabilities` contains information about which request types are supported
 
+## Streaming feature access
+
+`WFSSourceLoader` accepts GeoJSON and GML `GetFeature` responses. GeoJSON remains the default;
+request GML explicitly when a service does not provide GeoJSON, or use the streaming API for
+large feature collections:
+
+```ts
+const source = WFSSourceLoader.createDataSource(url, {
+  wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
+});
+
+for await (const batch of source.getFeaturesInBatches(
+  {boundingBox: [[-10, 35], [10, 55]], layers: ['roads'], crs: 'EPSG:4326'},
+  {batchSize: 1000}
+)) {
+  // Each batch is an Arrow table by default.
+  consume(batch);
+}
+```
+
+The batch API parses GML feature members incrementally and supports `geojson`, `binary`, and
+Arrow output through the usual `format` parameter. Complete GML responses are converted to the
+same normalized vector-source outputs.
+
 ## Features
 
 A WFS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.
