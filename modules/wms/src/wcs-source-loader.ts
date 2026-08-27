@@ -38,6 +38,8 @@ export type WCSGetCoverageParameters = {
   format?: string;
   /** WCS 2.x subset expressions, for example `Long(10,20)`. */
   subset?: string[];
+  /** Axis names used when converting bbox to WCS 2.x subset expressions. */
+  subsetAxes?: [string, string];
   /** Requested output width. */
   width?: number;
   /** Requested output height. */
@@ -80,23 +82,7 @@ export class WCSCoverageSource extends DataSource<string, WCSSourceOptions> {
 
   /** Returns normalized coverage metadata from GetCapabilities. */
   async getMetadata(): Promise<WCSCoverageMetadata> {
-    const capabilities = (await this.getCapabilities()) as any;
-    const coverages = Array.isArray(capabilities?.contents?.layers)
-      ? capabilities.contents.layers.map((coverage: any) => ({
-          identifier: coverage.identifier,
-          title: coverage.title,
-          format: coverage.formats,
-          boundingBox: coverage.bounds
-            ? [
-                coverage.bounds.left,
-                coverage.bounds.bottom,
-                coverage.bounds.right,
-                coverage.bounds.top
-              ]
-            : undefined
-        }))
-      : [];
-    return {title: capabilities?.serviceIdentification?.title, coverages};
+    return normalizeWCSMetadata(await this.getCapabilities());
   }
 
   /** Fetches a coverage and decodes LERC responses through the existing loader. */
@@ -126,17 +112,31 @@ export class WCSCoverageSource extends DataSource<string, WCSSourceOptions> {
   /** Builds a WCS 2.x GetCoverage URL. */
   getCoverageURL(parameters: WCSGetCoverageParameters = {}): string {
     const defaults = this.options.wcs || {};
+    const version = defaults.version || '2.0.1';
     const query: Record<string, string | number | boolean | readonly string[] | undefined> = {
       service: 'WCS',
       request: 'GetCoverage',
-      version: defaults.version || '2.0.1',
+      version,
       coverageId: parameters.coverageId || defaults.coverageId,
       format: parameters.format || defaults.format || 'image/tiff',
-      bbox: parameters.bbox?.join(','),
       subset: parameters.subset
     };
-    if (parameters.crs) query.subsetCRS = parameters.crs;
-    if (parameters.responseCRS) query.outputCRS = parameters.responseCRS;
+    if (version.startsWith('2')) {
+      const [firstAxis, secondAxis] = parameters.subsetAxes || ['Long', 'Lat'];
+      if (parameters.bbox) {
+        query.subset = [
+          `${firstAxis}(${parameters.bbox[0]},${parameters.bbox[2]})`,
+          `${secondAxis}(${parameters.bbox[1]},${parameters.bbox[3]})`,
+          ...(parameters.subset || [])
+        ];
+      }
+      if (parameters.crs) query.subsetCRS = parameters.crs;
+      if (parameters.responseCRS) query.outputCRS = parameters.responseCRS;
+    } else {
+      query.bbox = parameters.bbox?.join(',');
+      if (parameters.crs) query.crs = parameters.crs;
+      if (parameters.responseCRS) query.responseCRS = parameters.responseCRS;
+    }
     if (parameters.width) query.width = parameters.width;
     if (parameters.height) query.height = parameters.height;
     return this.createURL({...defaults.parameters, ...query, ...parameters.parameters});
@@ -186,4 +186,75 @@ export const WCSCoverageSourceLoader = {
 /** Checks a service response and reports a protocol-specific error. */
 async function checkResponse(response: Response, operation: string): Promise<void> {
   if (!response.ok) throw new Error(`${operation} request failed: ${response.status}`);
+}
+
+/** Normalizes both legacy and case-preserving WCS capability trees. */
+function normalizeWCSMetadata(capabilities: WCSCapabilities): WCSCoverageMetadata {
+  const rawCapabilities = capabilities as any;
+  const serviceIdentification = getProperty(
+    rawCapabilities,
+    'serviceIdentification',
+    'ServiceIdentification'
+  );
+  const contents = getProperty(rawCapabilities, 'contents', 'Contents') || {};
+  const rawCoverages = getProperty(
+    contents,
+    'layers',
+    'layer',
+    'CoverageSummary',
+    'coverageSummary'
+  );
+  const coverages = asArray(rawCoverages)
+    .map(coverage => {
+      const bounds = getProperty(coverage, 'bounds', 'BoundingBox', 'WGS84BoundingBox');
+      const lowerCorner = parseNumbers(getProperty(bounds, 'lowerCorner', 'LowerCorner'));
+      const upperCorner = parseNumbers(getProperty(bounds, 'upperCorner', 'UpperCorner'));
+      return {
+        identifier: readText(getProperty(coverage, 'identifier', 'Identifier')),
+        title: readText(getProperty(coverage, 'title', 'Title')) || undefined,
+        format: asArray(getProperty(coverage, 'formats', 'format', 'Format')).map(readText),
+        boundingBox:
+          lowerCorner.length >= 2 && upperCorner.length >= 2
+            ? ([lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]] as [
+                number,
+                number,
+                number,
+                number
+              ])
+            : undefined
+      };
+    })
+    .filter(coverage => coverage.identifier);
+  return {
+    title: readText(getProperty(serviceIdentification, 'title', 'Title')) || undefined,
+    coverages
+  };
+}
+
+/** Reads a property using the key casing used by a WCS version. */
+function getProperty(value: any, ...names: string[]): any {
+  if (!value) return undefined;
+  for (const name of names) {
+    if (value[name] !== undefined) return value[name];
+  }
+  return undefined;
+}
+
+/** Converts a parser value into a list. */
+function asArray(value: any): any[] {
+  return value === undefined || value === null ? [] : Array.isArray(value) ? value : [value];
+}
+
+/** Extracts text from the XML parser's scalar or `#text` representation. */
+function readText(value: any): string {
+  return value === undefined || value === null
+    ? ''
+    : typeof value === 'object'
+      ? String(value['#text'] || '')
+      : String(value);
+}
+
+/** Parses an XML corner value into numeric coordinates. */
+function parseNumbers(value: any): number[] {
+  return readText(value).trim().split(/\s+/).map(Number).filter(Number.isFinite);
 }

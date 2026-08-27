@@ -71,7 +71,7 @@ export class OGCAPIEDRSource extends DataSource<string, OGCAPIEDRSourceOptions> 
       coords: parameters.coords,
       bbox: parameters.bbox?.join(','),
       datetime: parameters.datetime,
-      parameter_name: Array.isArray(parameters.parameterName)
+      'parameter-name': Array.isArray(parameters.parameterName)
         ? parameters.parameterName.join(',')
         : parameters.parameterName,
       z: parameters.z,

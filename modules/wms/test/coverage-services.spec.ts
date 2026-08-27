@@ -12,7 +12,8 @@ test('WCSCoverageSource builds GetCoverage requests and preserves binary respons
   source.fetch = async url => {
     expect(url).toContain('request=GetCoverage');
     expect(url).toContain('coverageId=elevation');
-    expect(url).toContain('bbox=1%2C2%2C3%2C4');
+    expect(url).toContain('subset=Long%281%2C3%29');
+    expect(url).toContain('subset=Lat%282%2C4%29');
     return new Response(new Uint8Array([1, 2, 3]), {
       headers: {'content-type': 'image/tiff'}
     });
@@ -44,7 +45,7 @@ test('OGC API EDR builds a position query with temporal and parameter filters', 
     expect(url).toContain('/collections/weather/position');
     expect(url).toContain('coords=POINT%2810+20%29');
     expect(url).toContain('datetime=2025-01-01');
-    expect(url).toContain('parameter_name=temperature%2Cwind');
+    expect(url).toContain('parameter-name=temperature%2Cwind');
     return new Response(JSON.stringify({type: 'CoverageJSON'}), {
       headers: {'content-type': 'application/json'}
     });
