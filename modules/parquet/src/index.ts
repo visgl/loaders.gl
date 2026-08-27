@@ -104,7 +104,8 @@ export type {
   ParquetJSWriterEncoding,
   ParquetJSWriterOptions,
   ParquetSortingColumnOption,
-  ParquetWriterEncryptionOptions
+  ParquetWriterEncryptionOptions,
+  ParquetWriterFooterSignatureOptions
 } from './parquet-js-writer';
 export {ParquetJSWriter} from './parquet-js-writer';
 
@@ -118,6 +119,7 @@ export {
   createParquetModuleAad,
   decryptParquetModule,
   encryptParquetModule,
+  createParquetFooterSignature,
   readParquetEncryptedModule,
   verifyParquetFooterSignature,
   type ParquetDecryptModuleOptions,

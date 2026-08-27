@@ -84,14 +84,19 @@ import {
   encodeParquetSplitBlockBloomFilter
 } from '../../lib/parquet-bloom-filter';
 import {BoundaryOrder} from '../parquet-thrift/BoundaryOrder';
-import {EncryptionWithFooterKey} from '../parquet-thrift/ColumnCryptoMetaData';
+import {
+  EncryptionWithColumnKey,
+  EncryptionWithFooterKey
+} from '../parquet-thrift/ColumnCryptoMetaData';
 import {EncryptionAlgorithm} from '../parquet-thrift/EncryptionAlgorithm';
 import {FileCryptoMetaData} from '../parquet-thrift/FileCryptoMetaData';
 import {PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
 import {
   createParquetModuleAad,
+  createParquetFooterSignature,
   encryptParquetModule,
-  type ParquetWriterEncryptionOptions
+  type ParquetWriterEncryptionOptions,
+  type ParquetWriterFooterSignatureOptions
 } from '../../lib/parquet-encryption';
 
 /**
@@ -138,6 +143,8 @@ export interface ParquetEncoderOptions {
   sortingColumns?: readonly ParquetSortingColumnOption[];
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
+  /** Authenticate a plaintext footer with a Parquet modular-encryption signature. */
+  footerSignature?: ParquetWriterFooterSignatureOptions;
   /** Stable file identifier shared by encrypted column modules and the footer. */
   encryptionFileUnique?: Uint8Array;
   /** Zero-based row-group ordinal used by encrypted module AAD. */
@@ -339,6 +346,8 @@ export class ParquetEnvelopeWriter {
   public sortingColumns?: readonly ParquetSortingColumnOption[];
   /** Optional modular-encryption configuration for the footer. */
   public encryption?: ParquetWriterEncryptionOptions;
+  /** Optional plaintext-footer signature configuration. */
+  public footerSignature?: ParquetWriterFooterSignatureOptions;
   /** File identifier used for encrypted column-module AAD. */
   public encryptionFileUnique?: Uint8Array;
 
@@ -366,15 +375,37 @@ export class ParquetEnvelopeWriter {
     this.writeSizeStatistics = Boolean(opts.writeSizeStatistics);
     this.writeStatistics = opts.writeStatistics;
     this.sortingColumns = opts.sortingColumns;
+    const encryptionFileUnique = opts.encryption?.fileUnique
+      ? new Uint8Array(opts.encryption.fileUnique)
+      : undefined;
+    const footerSignatureFileUnique = opts.footerSignature?.fileUnique
+      ? new Uint8Array(opts.footerSignature.fileUnique)
+      : undefined;
+    if (
+      encryptionFileUnique &&
+      footerSignatureFileUnique &&
+      !encryptionFileUnique.every((value, index) => value === footerSignatureFileUnique[index])
+    ) {
+      throw new Error('Parquet encryption and footer signature file_unique values must match');
+    }
+    const sharedFileUnique =
+      encryptionFileUnique ??
+      footerSignatureFileUnique ??
+      (opts.encryption || opts.footerSignature ? createFileUnique() : undefined);
     this.encryption = opts.encryption
+      ? {...opts.encryption, fileUnique: new Uint8Array(sharedFileUnique!)}
+      : undefined;
+    this.footerSignature = opts.footerSignature
       ? {
-          ...opts.encryption,
-          fileUnique: opts.encryption.fileUnique
-            ? new Uint8Array(opts.encryption.fileUnique)
-            : createFileUnique()
+          ...opts.footerSignature,
+          keyMetadata: new Uint8Array(opts.footerSignature.keyMetadata),
+          aadPrefix: opts.footerSignature.aadPrefix
+            ? new Uint8Array(opts.footerSignature.aadPrefix)
+            : undefined,
+          fileUnique: new Uint8Array(sharedFileUnique!)
         }
       : undefined;
-    this.encryptionFileUnique = this.encryption?.fileUnique;
+    this.encryptionFileUnique = sharedFileUnique;
   }
 
   writeSection(buf: Uint8Array): Promise<void> {
@@ -386,7 +417,9 @@ export class ParquetEnvelopeWriter {
    * Encode the parquet file header
    */
   writeHeader(): Promise<void> {
-    return this.writeSection(this.encryption ? PARQUET_MAGIC_ENCRYPTED_BYTES : PARQUET_MAGIC_BYTES);
+    return this.writeSection(
+      this.encryption && !this.footerSignature ? PARQUET_MAGIC_ENCRYPTED_BYTES : PARQUET_MAGIC_BYTES
+    );
   }
 
   /**
@@ -426,6 +459,18 @@ export class ParquetEnvelopeWriter {
       userMetadata = {};
     }
 
+    if (this.footerSignature) {
+      await this.writeSection(
+        await encodeSignedFooter(
+          this.schema,
+          this.rowCount,
+          this.rowGroups,
+          userMetadata,
+          this.footerSignature
+        )
+      );
+      return;
+    }
     const footer = encodeFooter(this.schema, this.rowCount, this.rowGroups, userMetadata);
     if (!this.encryption) {
       await this.writeSection(footer);
@@ -842,13 +887,15 @@ async function encodeColumnChunk(
 
   const encryption = opts.encryption;
   const encryptedColumn = Boolean(encryption && shouldEncryptColumn(encryption, column));
+  const columnKeyMetadata = encryption ? getColumnKeyMetadata(encryption, column) : undefined;
   const pages = encryptedColumn
     ? await encryptParquetColumnPages(
         pageRecords,
         encryption!,
         opts.encryptionFileUnique!,
         opts.rowGroupOrdinal ?? 0,
-        columnOrdinal
+        columnOrdinal,
+        columnKeyMetadata
       )
     : pageRecords.map(record => record.page);
   let pageOffset = 0;
@@ -880,7 +927,8 @@ async function encodeColumnChunk(
           encryption!,
           opts.encryptionFileUnique!,
           opts.rowGroupOrdinal ?? 0,
-          columnOrdinal
+          columnOrdinal,
+          columnKeyMetadata
         )
       : bloomFilter;
   const pageIndexEnabled = opts.pageIndex === true || opts.pageIndex?.[column.path[0]] === true;
@@ -894,7 +942,8 @@ async function encodeColumnChunk(
           encryption!,
           opts.encryptionFileUnique!,
           opts.rowGroupOrdinal ?? 0,
-          columnOrdinal
+          columnOrdinal,
+          columnKeyMetadata
         )
       : pageIndexes;
 
@@ -979,11 +1028,18 @@ async function encodeColumnChunk(
               opts.rowGroupOrdinal ?? 0,
               columnOrdinal
             ),
-            keyMetadata: encryption!.keyMetadata,
+            keyMetadata: columnKeyMetadata ?? encryption!.keyMetadata,
             keyRetriever: encryption!.keyRetriever
           }),
           cryptoMetadata: new ColumnCryptoMetaData({
-            ENCRYPTION_WITH_FOOTER_KEY: new EncryptionWithFooterKey()
+            ...(columnKeyMetadata
+              ? {
+                  ENCRYPTION_WITH_COLUMN_KEY: new EncryptionWithColumnKey({
+                    path_in_schema: [...column.path],
+                    key_metadata: new Uint8Array(columnKeyMetadata)
+                  })
+                }
+              : {ENCRYPTION_WITH_FOOTER_KEY: new EncryptionWithFooterKey()})
           })
         }
       : {})
@@ -995,7 +1051,20 @@ function shouldEncryptColumn(
   options: ParquetWriterEncryptionOptions,
   column: ParquetField
 ): boolean {
-  return options.encryptColumns === true || options.encryptColumns?.[column.path[0]] === true;
+  return Boolean(
+    options.columnKeyMetadata?.[column.path[0]] ||
+      options.encryptColumns === true ||
+      options.encryptColumns?.[column.path[0]] === true
+  );
+}
+
+/** Returns a defensive copy of the key metadata assigned to one top-level column. */
+function getColumnKeyMetadata(
+  options: ParquetWriterEncryptionOptions,
+  column: ParquetField
+): Uint8Array | undefined {
+  const keyMetadata = options.columnKeyMetadata?.[column.path[0]];
+  return keyMetadata ? new Uint8Array(keyMetadata) : undefined;
 }
 
 /** Adds the four-byte module length required by encrypted page and Bloom-filter modules. */
@@ -1012,7 +1081,8 @@ async function encryptParquetColumnPages(
   options: ParquetWriterEncryptionOptions,
   fileUnique: Uint8Array,
   rowGroupOrdinal: number,
-  columnOrdinal: number
+  columnOrdinal: number,
+  keyMetadata?: Uint8Array
 ): Promise<Uint8Array[]> {
   const encryptedPages: Uint8Array[] = [];
   let dataPageOrdinal = 0;
@@ -1030,7 +1100,7 @@ async function encryptParquetColumnPages(
         columnOrdinal,
         pageRecord.dictionary ? undefined : dataPageOrdinal
       ),
-      keyMetadata: options.keyMetadata,
+      keyMetadata: keyMetadata ?? options.keyMetadata,
       keyRetriever: options.keyRetriever
     });
     const body = await encryptParquetModule(pageRecord.page.subarray(pageRecord.headerSize), {
@@ -1043,7 +1113,7 @@ async function encryptParquetColumnPages(
         columnOrdinal,
         pageRecord.dictionary ? undefined : dataPageOrdinal
       ),
-      keyMetadata: options.keyMetadata,
+      keyMetadata: keyMetadata ?? options.keyMetadata,
       keyRetriever: options.keyRetriever,
       page: true
     });
@@ -1061,13 +1131,14 @@ async function encryptParquetBloomFilter(
   options: ParquetWriterEncryptionOptions,
   fileUnique: Uint8Array,
   rowGroupOrdinal: number,
-  columnOrdinal: number
+  columnOrdinal: number,
+  keyMetadata?: Uint8Array
 ): Promise<Uint8Array> {
   const parsed = decodeParquetSplitBlockBloomFilter(bloomFilter);
   const algorithm = options.algorithm ?? 'AES_GCM_V1';
   const keyOptions = {
     algorithm,
-    keyMetadata: options.keyMetadata,
+    keyMetadata: keyMetadata ?? options.keyMetadata,
     keyRetriever: options.keyRetriever
   };
   const header = await encryptParquetModule(bloomFilter.subarray(0, parsed.headerByteLength), {
@@ -1099,7 +1170,8 @@ async function encryptParquetPageIndexes(
   options: ParquetWriterEncryptionOptions,
   fileUnique: Uint8Array,
   rowGroupOrdinal: number,
-  columnOrdinal: number
+  columnOrdinal: number,
+  keyMetadata?: Uint8Array
 ): Promise<{offsetIndex: Uint8Array; columnIndex?: Uint8Array}> {
   const algorithm = options.algorithm ?? 'AES_GCM_V1';
   const encryptIndex = (bytes: Uint8Array, module: 'offset-index' | 'column-index') =>
@@ -1112,7 +1184,7 @@ async function encryptParquetPageIndexes(
         rowGroupOrdinal,
         columnOrdinal
       ),
-      keyMetadata: options.keyMetadata,
+      keyMetadata: keyMetadata ?? options.keyMetadata,
       keyRetriever: options.keyRetriever
     });
   return {
@@ -1491,19 +1563,44 @@ async function encodeRowGroup(
 /**
  * Encode a parquet file metadata footer
  */
-function encodeFooter(
+function encodeFooterMetadata(
   schema: ParquetSchema,
   rowCount: number,
   rowGroups: RowGroup[],
-  userMetadata: Record<string, string>
+  userMetadata: Record<string, string>,
+  footerSignature?: ParquetWriterFooterSignatureOptions
 ): Uint8Array {
+  const signatureAlgorithm = footerSignature?.algorithm ?? 'AES_GCM_V1';
+  const signatureFileUnique = footerSignature?.fileUnique
+    ? new Uint8Array(footerSignature.fileUnique)
+    : undefined;
   const metadata = new FileMetaData({
     version: PARQUET_VERSION,
     created_by: 'parquets',
     num_rows: int64(rowCount),
     row_groups: rowGroups,
     schema: [],
-    key_value_metadata: []
+    key_value_metadata: [],
+    encryption_algorithm: footerSignature
+      ? new EncryptionAlgorithm({
+          ...(signatureAlgorithm === 'AES_GCM_CTR_V1'
+            ? {
+                AES_GCM_CTR_V1: {
+                  aad_prefix: footerSignature.aadPrefix,
+                  aad_file_unique: signatureFileUnique
+                }
+              }
+            : {
+                AES_GCM_V1: {
+                  aad_prefix: footerSignature.aadPrefix,
+                  aad_file_unique: signatureFileUnique
+                }
+              })
+        })
+      : undefined,
+    footer_signing_key_metadata: footerSignature
+      ? new Uint8Array(footerSignature.keyMetadata)
+      : undefined
   });
 
   for (const key in userMetadata) {
@@ -1554,12 +1651,44 @@ function encodeFooter(
     metadata.schema.push(schemaElem);
   }
 
-  const metadataEncoded = serializeThrift(metadata);
+  return serializeThrift(metadata);
+}
+
+/** Encodes an unsigned plaintext footer with its standard Parquet trailer. */
+function encodeFooter(
+  schema: ParquetSchema,
+  rowCount: number,
+  rowGroups: RowGroup[],
+  userMetadata: Record<string, string>
+): Uint8Array {
+  const metadataEncoded = encodeFooterMetadata(schema, rowCount, rowGroups, userMetadata);
   const footerEncoded = new Uint8Array(metadataEncoded.length + 8);
 
   footerEncoded.set(metadataEncoded);
   writeUInt32LE(footerEncoded, metadataEncoded.length, metadataEncoded.length);
   footerEncoded.set(PARQUET_MAGIC_BYTES, metadataEncoded.length + 4);
+  return footerEncoded;
+}
+
+/** Encodes a plaintext footer with its trailing 28-byte authenticated signature. */
+async function encodeSignedFooter(
+  schema: ParquetSchema,
+  rowCount: number,
+  rowGroups: RowGroup[],
+  userMetadata: Record<string, string>,
+  options: ParquetWriterFooterSignatureOptions
+): Promise<Uint8Array> {
+  const metadata = encodeFooterMetadata(schema, rowCount, rowGroups, userMetadata, options);
+  const signature = await createParquetFooterSignature(metadata, options);
+  const footerEncoded = new Uint8Array(metadata.length + signature.length + 8);
+  footerEncoded.set(metadata);
+  footerEncoded.set(signature, metadata.length);
+  writeUInt32LE(
+    footerEncoded,
+    metadata.length + signature.length,
+    metadata.length + signature.length
+  );
+  footerEncoded.set(PARQUET_MAGIC_BYTES, metadata.length + signature.length + 4);
   return footerEncoded;
 }
 

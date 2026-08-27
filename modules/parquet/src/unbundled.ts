@@ -32,9 +32,11 @@ export {
   createParquetModuleAad,
   decryptParquetModule,
   encryptParquetModule,
+  createParquetFooterSignature,
   type ParquetDecryptModuleOptions,
   type ParquetEncryptionAlgorithm,
-  type ParquetKeyRetriever
+  type ParquetKeyRetriever,
+  type ParquetWriterFooterSignatureOptions
 } from './lib/parquet-encryption';
 export {
   ParquetDatasetSource,

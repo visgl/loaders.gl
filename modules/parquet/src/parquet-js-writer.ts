@@ -10,10 +10,16 @@ import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
 import {ParquetFormat} from './parquet-format';
 import type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
-import type {ParquetWriterEncryptionOptions} from './lib/parquet-encryption';
+import type {
+  ParquetWriterEncryptionOptions,
+  ParquetWriterFooterSignatureOptions
+} from './lib/parquet-encryption';
 
 export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
-export type {ParquetWriterEncryptionOptions} from './lib/parquet-encryption';
+export type {
+  ParquetWriterEncryptionOptions,
+  ParquetWriterFooterSignatureOptions
+} from './lib/parquet-encryption';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -52,6 +58,8 @@ type ParquetJSWriterEncoderOptions = {
   sortingColumns?: readonly ParquetSortingColumnOption[];
   /** Encrypt the footer using Parquet modular encryption. */
   encryption?: ParquetWriterEncryptionOptions;
+  /** Authenticate a plaintext footer with a Parquet modular-encryption signature. */
+  footerSignature?: ParquetWriterFooterSignatureOptions;
   rowGroupSize?: number;
   pageSize?: number;
   useDataPageV2?: boolean;

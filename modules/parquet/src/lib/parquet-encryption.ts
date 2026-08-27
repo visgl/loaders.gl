@@ -36,7 +36,23 @@ export type ParquetWriterEncryptionOptions = {
   fileUnique?: Uint8Array;
   /** Encrypt all data columns, or only the named top-level columns, with the footer key. */
   encryptColumns?: boolean | Record<string, boolean>;
+  /** Optional per-column key metadata, enabling column-key encryption and key rotation. */
+  columnKeyMetadata?: Record<string, Uint8Array>;
   /** Resolves the footer key without putting key material in writer options. */
+  keyRetriever: ParquetKeyRetriever;
+};
+
+/** Writer configuration for a plaintext footer authenticated by a Parquet signature. */
+export type ParquetWriterFooterSignatureOptions = {
+  /** Algorithm used to authenticate the footer signature. */
+  algorithm?: ParquetEncryptionAlgorithm;
+  /** Key metadata stored in FileMetaData and supplied to the key retriever. */
+  keyMetadata: Uint8Array;
+  /** AAD prefix included in the signature AAD when provided. */
+  aadPrefix?: Uint8Array;
+  /** Eight-byte file identifier used in the signature AAD; generated when omitted. */
+  fileUnique?: Uint8Array;
+  /** Resolves the signing key without putting key material in writer options. */
   keyRetriever: ParquetKeyRetriever;
 };
 
@@ -232,10 +248,48 @@ export async function verifyParquetFooterSignature(
   }
 }
 
+/** Creates the nonce and authentication tag used by a plaintext-footer signature. */
+export async function createParquetFooterSignature(
+  footerBytes: Uint8Array,
+  options: ParquetWriterFooterSignatureOptions
+): Promise<Uint8Array> {
+  const algorithm = options.algorithm ?? 'AES_GCM_V1';
+  const fileUnique = options.fileUnique ? new Uint8Array(options.fileUnique) : createFileUnique();
+  if (fileUnique.byteLength !== 8) {
+    throw new Error('Parquet plaintext-footer signature file_unique must be 8 bytes');
+  }
+  const aad = createParquetModuleAad(options.aadPrefix, fileUnique, 'footer');
+  const keyMaterial = await options.keyRetriever(options.keyMetadata, {algorithm, aad});
+  const cryptoKey = await getCryptoKey(keyMaterial, algorithm, false, ['encrypt']);
+  const nonce = new Uint8Array(12);
+  getCryptoRandomValues(nonce);
+  const encryptedFooter = new Uint8Array(
+    await getCryptoProvider().encrypt(
+      {
+        name: 'AES-GCM',
+        iv: nonce as unknown as BufferSource,
+        additionalData: aad as unknown as BufferSource
+      },
+      cryptoKey,
+      footerBytes as unknown as BufferSource
+    )
+  );
+  const signature = new Uint8Array(28);
+  signature.set(nonce);
+  signature.set(encryptedFooter.subarray(encryptedFooter.byteLength - 16), nonce.byteLength);
+  return signature;
+}
+
 function hasLengthPrefix(bytes: Uint8Array): boolean {
   if (bytes.length < 4) return false;
   const length = new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, true);
   return length === bytes.length - 4;
+}
+
+function createFileUnique(): Uint8Array {
+  const fileUnique = new Uint8Array(8);
+  getCryptoRandomValues(fileUnique);
+  return fileUnique;
 }
 
 function makeCounter(nonce: Uint8Array): Uint8Array {

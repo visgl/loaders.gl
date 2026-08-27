@@ -76,6 +76,7 @@ function convertSchemaToParquetSchema(
     options.parquet?.pageIndex && typeof options.parquet.pageIndex === 'object'
       ? options.parquet.pageIndex
       : {};
+  const columnKeyMetadata = options.parquet?.encryption?.columnKeyMetadata || {};
   const fieldNames = new Set(schema.fields.map(field => field.name));
   const geoMetadata = getGeoMetadata(schema.metadata);
   for (const columnName of Object.keys(columnEncodings)) {
@@ -96,6 +97,11 @@ function convertSchemaToParquetSchema(
   for (const columnName of Object.keys(pageIndexColumns)) {
     if (!fieldNames.has(columnName)) {
       throw new Error(`ParquetJSWriter: Unknown page-index column "${columnName}"`);
+    }
+  }
+  for (const columnName of Object.keys(columnKeyMetadata)) {
+    if (!fieldNames.has(columnName)) {
+      throw new Error(`ParquetJSWriter: Unknown encryption column key "${columnName}"`);
     }
   }
 
