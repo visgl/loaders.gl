@@ -942,11 +942,7 @@ async function encodeColumnChunk(
   /* concat metadata header and data pages */
   const metadataEncoded = serializeThrift(metadata);
   const metadataSection = encryptedColumn ? undefined : metadataEncoded;
-  const metadataOffset =
-    baseOffset +
-    pagesBuf.length +
-    (encodedBloomFilter?.length || 0) +
-    (metadataSection?.length || 0);
+  const metadataOffset = baseOffset + pagesBuf.length + (encodedBloomFilter?.length || 0);
   const offsetIndexOffset = encodedPageIndexes
     ? metadataOffset + (metadataSection?.length || 0)
     : undefined;
