@@ -9,11 +9,41 @@ import {
   ArcGISFeatureServerSourceLoader,
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSource,
-  ArcGISMapTileSource
+  ArcGISMapTileSource,
+  getArcGISServices
 } from '@loaders.gl/services';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
+
+vitestTest('getArcGISServices recursively loads service directories', async () => {
+  const requestedUrls: string[] = [];
+  const fetchFile = async (input: RequestInfo | URL): Promise<Response> => {
+    const url = String(input);
+    requestedUrls.push(url);
+    const directory = url.includes('/Utilities?')
+      ? {services: []}
+      : {
+          services: [{name: 'Roads', type: 'MapServer'}],
+          folders: ['Utilities']
+        };
+    return new Response(JSON.stringify(directory));
+  };
+
+  await expect(
+    getArcGISServices('https://example.com/arcgis/rest/services/Roads/MapServer', fetchFile)
+  ).resolves.toEqual([
+    {
+      name: 'Roads',
+      type: 'arcgis-map-server',
+      url: 'https://example.com/arcgis/rest/services/Roads/MapServer'
+    }
+  ]);
+  expect(requestedUrls).toEqual([
+    'https://example.com/arcgis/rest/services/?f=pjson',
+    'https://example.com/arcgis/rest/services/Utilities?f=pjson'
+  ]);
+});
 
 test('ArcGISImageServerSourceLoader#testURL', t => {
   t.ok(ArcGISImageServerSourceLoader);
