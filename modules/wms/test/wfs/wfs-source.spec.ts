@@ -4,6 +4,7 @@
 
 import test from 'test/utils/vitest-tape';
 import {WFSSourceLoader} from '@loaders.gl/wms';
+import {expect, test as vitestTest} from 'vitest';
 
 const WFS_URL = 'https://example.com/geoserver/wfs';
 
@@ -102,12 +103,12 @@ test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async t => {
   t.end();
 });
 
-test('WFSSourceLoader#getFeatures parses GML feature responses', async t => {
+vitestTest('WFSSourceLoader#getFeatures parses GML feature responses', async () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   source.fetch = async () =>
     new Response(
       '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:name>Main Street</app:name><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>',
-      {headers: {'content-type': 'application/gml+xml'}}
+      {headers: {'content-type': 'application/xml'}}
     );
 
   const table = await source.getFeatures({
@@ -119,12 +120,11 @@ test('WFSSourceLoader#getFeatures parses GML feature responses', async t => {
     crs: 'EPSG:4326'
   });
 
-  t.equal(table.shape, 'arrow-table', 'returns Arrow tables for GML by default');
-  t.equal(table.data.numRows, 1, 'preserves GML feature rows');
-  t.end();
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data.numRows).toBe(1);
 });
 
-test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', async t => {
+vitestTest('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', async () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const xml =
     '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember><gml:featureMember><app:road gml:id="road.2"><app:geometry><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>';
@@ -155,7 +155,37 @@ test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', asyn
     batches.push(batch);
   }
 
-  t.equal(batches.length, 2, 'emits one batch per feature');
-  t.equal(batches[0].data.numRows, 1, 'emits normalized Arrow data');
-  t.end();
+  expect(batches).toHaveLength(2);
+  expect(batches[0].data.numRows).toBe(1);
 });
+
+vitestTest('WFSSourceLoader#getFeatures honors configured output format', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+    wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
+  });
+  const featuresUrl = new URL(source.getFeaturesURL({layers: ['roads'], crs: 'EPSG:4326'}));
+
+  expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/vnd.ogc.gml');
+});
+
+vitestTest(
+  'WFSSourceLoader#getFeaturesInBatches rejects successful WFS exception responses',
+  async () => {
+    const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+    source.fetch = async () =>
+      new Response(
+        '<ServiceExceptionReport><ServiceException>Denied</ServiceException></ServiceExceptionReport>',
+        {
+          headers: {'content-type': 'application/xml'}
+        }
+      );
+
+    await expect(
+      (async () => {
+        for await (const _batch of source.getFeaturesInBatches({layers: ['roads']})) {
+          // The response should fail before any feature batch is emitted.
+        }
+      })()
+    ).rejects.toThrow('exception document');
+  }
+);

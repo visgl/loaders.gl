@@ -308,15 +308,37 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       parameters.signal ? {signal: parameters.signal} : undefined
     );
     if (!response.ok) {
-      throw new Error(`WFS GetFeature request failed: ${response.status} ${response.statusText}`);
+      const arrayBuffer = await response.arrayBuffer();
+      this._checkResponse(response, arrayBuffer);
     }
     if (!response.body) {
       const text = await response.text();
+      if (isWFSExceptionDocument(text, response.headers.get('content-type'))) {
+        throw new Error('WFS GetFeature returned an exception document');
+      }
       yield convertWFSFeatures(parseGML(text, this.loadOptions), parameters.format);
       return;
     }
 
-    const chunks = readResponseChunks(response.body);
+    const reader = response.body.getReader();
+    const initialChunks: Uint8Array[] = [];
+    let initialText = '';
+    const textDecoder = new TextDecoder();
+    while (initialText.length < 4096 && !initialText.includes('>')) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      if (value) {
+        initialChunks.push(value);
+        initialText += textDecoder.decode(value, {stream: true});
+      }
+    }
+    initialText += textDecoder.decode();
+    if (isWFSExceptionDocument(initialText, response.headers.get('content-type'))) {
+      reader.releaseLock();
+      throw new Error('WFS GetFeature returned an exception document');
+    }
+
+    const chunks = readResponseChunks(reader, initialChunks);
     const {GMLLoaderWithParser} = await import('./gml-loader-with-parser');
     for await (const batch of GMLLoaderWithParser.parseInBatches!(chunks, {
       ...this.loadOptions,
@@ -695,10 +717,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   /** Checks for and parses a WFS XML formatted ServiceError and throws an exception */
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers.get('content-type') || '';
-    if (
-      !response.ok ||
-      WMSErrorLoaderWithParser.mimeTypes.some(type => contentType.includes(type))
-    ) {
+    const responseText = new TextDecoder().decode(arrayBuffer);
+    if (!response.ok || isWFSExceptionDocument(responseText, contentType)) {
       // We want error responses to throw exceptions, the WMSErrorLoaderWithParser can do this
       const loadOptions = mergeOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
@@ -731,8 +751,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
           crs
         ],
         crs,
-        srsName: crs,
-        outputFormat: 'application/json'
+        srsName: crs
       };
     }
 
@@ -766,6 +785,15 @@ function parseWFSFeatureCollection(
   return JSON.parse(text);
 }
 
+/** Detects WFS exception reports without treating ordinary XML as an error. */
+function isWFSExceptionDocument(text: string, contentType: string | null): boolean {
+  return (
+    contentType?.includes('application/vnd.ogc.se_xml') === true ||
+    /<(?:[\w-]+:)?ServiceExceptionReport\b/i.test(text) ||
+    /<(?:[\w-]+:)?ExceptionReport\b/i.test(text)
+  );
+}
+
 /** Converts a GML feature collection into the generic vector source result. */
 function convertWFSFeatures(
   parsed: Geometry | GMLFeatureCollection | null,
@@ -784,8 +812,13 @@ function convertWFSFeatures(
 }
 
 /** Adapts a browser response stream to the chunk iterator expected by GML. */
-async function* readResponseChunks(body: ReadableStream<Uint8Array>): AsyncIterable<Uint8Array> {
-  const reader = body.getReader();
+async function* readResponseChunks(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  initialChunks: Uint8Array[] = []
+): AsyncIterable<Uint8Array> {
+  for (const chunk of initialChunks) {
+    yield chunk;
+  }
   try {
     while (true) {
       const {done, value} = await reader.read();

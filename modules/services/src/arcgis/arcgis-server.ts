@@ -28,7 +28,7 @@ async function loadServiceDirectory(
   fetch: FetchLike,
   path: string[]
 ): Promise<Service[]> {
-  const serviceUrl = `${serverUrl}/${path.join('/')}`;
+  const serviceUrl = path.length ? `${serverUrl}/${path.join('/')}` : serverUrl;
 
   const response = await fetch(`${serviceUrl}?f=pjson`);
   const directory = await response.json();
@@ -54,7 +54,7 @@ function extractServices(directory: unknown, url: string): Service[] {
     services.push({
       name: service.name,
       type: `arcgis-${service.type.toLocaleLowerCase().replace('server', '-server')}`,
-      url: `${url}${service.name}/${service.type}`
+      url: `${url}/${service.name}/${service.type}`
     });
   }
   return services;
