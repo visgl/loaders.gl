@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test, {Test} from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
-
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
@@ -13,16 +12,12 @@ import {
   getGeoMetadata,
   type LegacyGeoJSONCRS
 } from '@loaders.gl/gis';
-
-test('ArrowLoader#shape:geojson-table', async t => {
+test('ArrowLoader#shape:geojson-table', async () => {
   for (const testCase of GEOARROW_TEST_CASES) {
-    await testConversion(t, testCase[0], testCase[1]);
+    await testConversion(testCase[0], testCase[1]);
   }
-  t.end();
 });
-
 async function testConversion(
-  t: Test,
   arrowFile: string,
   expectedGeojson: FeatureCollection
 ): Promise<void> {
@@ -30,38 +25,28 @@ async function testConversion(
     core: {worker: false},
     arrow: {shape: 'geojson-table'}
   });
-
-  t.equal(table.shape, 'geojson-table');
-
+  expect(table.shape).toBe('geojson-table');
   if (table.shape === 'geojson-table') {
     // check if the arrow table is loaded correctly
-    t.equal(
-      table.features.length,
-      expectedGeojson.features.length,
-      `arrow table has ${expectedGeojson.features.length} row`
+    expect(table.features.length, `arrow table has ${expectedGeojson.features.length} row`).toBe(
+      expectedGeojson.features.length
     );
-
     // const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
     // t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
-
     // // check fields exist in arrow table schema
     // table.schema.fields.map((field) =>
     //   t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
     // );
-
     // get first geometry from arrow geometry column
     const firstFeature = table.features[0];
-
     // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
-    t.deepEqual(
+    expect(
       firstFeature?.geometry,
-      expectedGeojson.features[0].geometry,
       'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
-    );
+    ).toEqual(expectedGeojson.features[0].geometry);
   }
 }
-
-test('convertFeaturesToGeoArrowTable#preserves arbitrary legacy GeoJSON CRS metadata', t => {
+test('convertFeaturesToGeoArrowTable#preserves arbitrary legacy GeoJSON CRS metadata', () => {
   const crs: LegacyGeoJSONCRS = {
     type: 'link',
     properties: {
@@ -76,22 +61,17 @@ test('convertFeaturesToGeoArrowTable#preserves arbitrary legacy GeoJSON CRS meta
   const extensionMetadata = JSON.parse(
     geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
   );
-
-  t.deepEqual(
+  expect(
     geometryColumnMetadata?.geojson_crs,
-    crs,
     'preserves raw legacy CRS on GeoParquet column metadata'
-  );
-  t.deepEqual(
+  ).toEqual(crs);
+  expect(
     extensionMetadata.geojson_crs,
-    crs,
     'preserves raw legacy CRS on GeoArrow field metadata'
-  );
-  t.equal(geometryColumnMetadata?.crs, undefined, 'does not map unknown CRS to GeoArrow CRS');
-  t.end();
+  ).toEqual(crs);
+  expect(geometryColumnMetadata?.crs, 'does not map unknown CRS to GeoArrow CRS').toBe(undefined);
 });
-
-test('convertFeaturesToGeoArrowTable#maps known legacy GeoJSON CRS metadata', t => {
+test('convertFeaturesToGeoArrowTable#maps known legacy GeoJSON CRS metadata', () => {
   const crs: LegacyGeoJSONCRS = {
     type: 'name',
     properties: {
@@ -105,23 +85,18 @@ test('convertFeaturesToGeoArrowTable#maps known legacy GeoJSON CRS metadata', t 
   const extensionMetadata = JSON.parse(
     geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
   );
-
-  t.deepEqual(geometryColumnMetadata?.geojson_crs, crs, 'preserves raw legacy CRS');
-  t.equal(
+  expect(geometryColumnMetadata?.geojson_crs, 'preserves raw legacy CRS').toEqual(crs);
+  expect(
     (geometryColumnMetadata?.crs as any)?.id?.authority,
-    'EPSG',
     'maps EPSG:4326 to GeoParquet CRS metadata'
-  );
-  t.equal(
+  ).toBe('EPSG');
+  expect(
     (extensionMetadata.crs as any)?.id?.code,
-    4326,
     'maps EPSG:4326 to GeoArrow field CRS metadata'
-  );
-  t.equal(extensionMetadata.crs_type, 'projjson', 'sets GeoArrow CRS metadata type');
-  t.end();
+  ).toBe(4326);
+  expect(extensionMetadata.crs_type, 'sets GeoArrow CRS metadata type').toBe('projjson');
 });
-
-test('convertFeaturesToGeoArrowTable#applies legacy GeoJSON CRS to custom geometry column', t => {
+test('convertFeaturesToGeoArrowTable#applies legacy GeoJSON CRS to custom geometry column', () => {
   const crs: LegacyGeoJSONCRS = {
     type: 'name',
     properties: {
@@ -137,17 +112,15 @@ test('convertFeaturesToGeoArrowTable#applies legacy GeoJSON CRS to custom geomet
   const extensionMetadata = JSON.parse(
     geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
   );
-
-  t.deepEqual(geoMetadata?.columns.geom.geojson_crs, crs, 'stores CRS under custom column');
-  t.equal(geoMetadata?.columns.geometry, undefined, 'does not create default geometry metadata');
-  t.equal(
-    (extensionMetadata.crs as any)?.id?.code,
-    'CRS84',
-    'maps CRS84 to GeoArrow field CRS metadata'
+  expect(geoMetadata?.columns.geom.geojson_crs, 'stores CRS under custom column').toEqual(crs);
+  expect(geoMetadata?.columns.geometry, 'does not create default geometry metadata').toBe(
+    undefined
   );
-  t.end();
+  expect(
+    (extensionMetadata.crs as any)?.id?.code,
+    'maps CRS84 to GeoArrow field CRS metadata'
+  ).toBe('CRS84');
 });
-
 function makePointFeatures(): Feature[] {
   return [
     {

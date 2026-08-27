@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import {convert} from '@loaders.gl/schema-utils';
 import {
@@ -15,35 +15,30 @@ import {
   reprojectWKBInPlace,
   writeBinaryGeometryToWKB
 } from '@loaders.gl/gis';
-
-test('convertBinaryGeometryToWKB#Point', t => {
+test('convertBinaryGeometryToWKB#Point', () => {
   const geometry = makePoint([1, 2]);
   const wkb = convertBinaryGeometryToWKB(geometry);
-
-  t.deepEqual(convertWKBToGeometry(toArrayBuffer(wkb!)), {type: 'Point', coordinates: [1, 2]});
-  t.deepEqual(convert(geometry, 'wkb', [GeometryConverter]), wkb);
-  t.equal(getBinaryGeometryWKBSize(geometry), wkb!.byteLength, 'measured byte length matches WKB');
-  t.end();
+  expect(convertWKBToGeometry(toArrayBuffer(wkb!))).toEqual({type: 'Point', coordinates: [1, 2]});
+  expect(convert(geometry, 'wkb', [GeometryConverter])).toEqual(wkb);
+  expect(getBinaryGeometryWKBSize(geometry), 'measured byte length matches WKB').toBe(
+    wkb!.byteLength
+  );
 });
-
-test('convertBinaryGeometryToWKB#LineString', t => {
+test('convertBinaryGeometryToWKB#LineString', () => {
   const geometry = makeLineString([
     [1, 2],
     [3, 4]
   ]);
   const wkb = convertBinaryGeometryToWKB(geometry);
-
-  t.deepEqual(convertWKBToGeometry(toArrayBuffer(wkb!)), {
+  expect(convertWKBToGeometry(toArrayBuffer(wkb!))).toEqual({
     type: 'LineString',
     coordinates: [
       [1, 2],
       [3, 4]
     ]
   });
-  t.end();
 });
-
-test('convertBinaryGeometryToWKB#Polygon', t => {
+test('convertBinaryGeometryToWKB#Polygon', () => {
   const geometry = makePolygon([
     [0, 0],
     [1, 0],
@@ -52,8 +47,7 @@ test('convertBinaryGeometryToWKB#Polygon', t => {
     [0, 0]
   ]);
   const wkb = convertBinaryGeometryToWKB(geometry);
-
-  t.deepEqual(convertWKBToGeometry(toArrayBuffer(wkb!)), {
+  expect(convertWKBToGeometry(toArrayBuffer(wkb!))).toEqual({
     type: 'Polygon',
     coordinates: [
       [
@@ -65,20 +59,18 @@ test('convertBinaryGeometryToWKB#Polygon', t => {
       ]
     ]
   });
-  t.end();
 });
-
-test('convertBinaryGeometryToWKB#reprojectWKBInPlace', t => {
+test('convertBinaryGeometryToWKB#reprojectWKBInPlace', () => {
   const wkb = convertBinaryGeometryToWKB(makePoint([1, 2, 9]), {hasZ: true})!;
   const reprojected = reprojectWKBInPlace(wkb, ([x, y]) => [x + 10, y + 20]);
-
-  t.equal(reprojected, wkb);
-  t.deepEqual(convertWKBToGeometry(toArrayBuffer(wkb)), {type: 'Point', coordinates: [11, 22, 9]});
-  t.end();
+  expect(reprojected).toBe(wkb);
+  expect(convertWKBToGeometry(toArrayBuffer(wkb))).toEqual({
+    type: 'Point',
+    coordinates: [11, 22, 9]
+  });
 });
-
-test('convertBinaryGeometryToWKB#inferBinaryGeometryTypes', t => {
-  t.deepEqual(
+test('convertBinaryGeometryToWKB#inferBinaryGeometryTypes', () => {
+  expect(
     inferBinaryGeometryTypes([
       makePoint([1, 2]),
       makeLineString([
@@ -86,13 +78,10 @@ test('convertBinaryGeometryToWKB#inferBinaryGeometryTypes', t => {
         [4, 5, 6]
       ]),
       null
-    ]),
-    ['Point', 'LineString Z']
-  );
-  t.end();
+    ])
+  ).toEqual(['Point', 'LineString Z']);
 });
-
-test('WKBBuilder#incremental geometry writers measure and write the same bytes', t => {
+test('WKBBuilder#incremental geometry writers measure and write the same bytes', () => {
   const geometryWriters = [
     (builder: WKBBuilder) => {
       builder.beginPoint();
@@ -136,23 +125,20 @@ test('WKBBuilder#incremental geometry writers measure and write the same bytes',
       builder.writeCoordinate(0, 0);
     }
   ];
-
   for (const geometryWriter of geometryWriters) {
     const measureBuilder = new WKBBuilder({mode: 'measure'});
     geometryWriter(measureBuilder);
     const byteLength = measureBuilder.finishGeometry();
-
     const values = new Uint8Array(byteLength);
     const writeBuilder = new WKBBuilder({mode: 'write', target: values});
     geometryWriter(writeBuilder);
-    t.equal(writeBuilder.finishGeometry(), byteLength, 'writer byte length matches measure pass');
-    t.ok(convertWKBToGeometry(toArrayBuffer(values)), 'written WKB decodes');
+    expect(writeBuilder.finishGeometry(), 'writer byte length matches measure pass').toBe(
+      byteLength
+    );
+    expect(convertWKBToGeometry(toArrayBuffer(values)), 'written WKB decodes').toBeTruthy();
   }
-
-  t.end();
 });
-
-test('WKBBuilder#buildGeometryArray builds offsets, values and null bitmap', t => {
+test('WKBBuilder#buildGeometryArray builds offsets, values and null bitmap', () => {
   const geometryWriters = [
     (builder: WKBBuilder) => {
       builder.beginPoint();
@@ -165,28 +151,22 @@ test('WKBBuilder#buildGeometryArray builds offsets, values and null bitmap', t =
     }
   ];
   const geometryArray = WKBBuilder.buildGeometryArray(geometryWriters);
-
-  t.deepEqual([...geometryArray.valueOffsets], [0, 21, 21, 42], 'offsets include null geometry');
-  t.deepEqual(
-    geometryArray.nullBitmap,
-    new Uint8Array([0b00000101]),
-    'null bitmap marks valid rows'
+  expect([...geometryArray.valueOffsets], 'offsets include null geometry').toEqual([0, 21, 21, 42]);
+  expect(geometryArray.nullBitmap, 'null bitmap marks valid rows').toEqual(
+    new Uint8Array([0b00000101])
   );
-  t.equal(geometryArray.nullCount, 1, 'null count is tracked');
-  t.deepEqual(
+  expect(geometryArray.nullCount, 'null count is tracked').toBe(1);
+  expect(
     convertWKBToGeometry(
       geometryArray.values.buffer.slice(
         geometryArray.valueOffsets[2],
         geometryArray.valueOffsets[3]
       ) as ArrayBuffer
     ),
-    {type: 'Point', coordinates: [3, 4]},
     'second non-null value decodes from contiguous values buffer'
-  );
-  t.end();
+  ).toEqual({type: 'Point', coordinates: [3, 4]});
 });
-
-test('writeBinaryGeometryToWKB#adapter matches convenience conversion', t => {
+test('writeBinaryGeometryToWKB#adapter matches convenience conversion', () => {
   const geometry = makeLineString([
     [1, 2, 3],
     [4, 5, 6]
@@ -194,24 +174,19 @@ test('writeBinaryGeometryToWKB#adapter matches convenience conversion', t => {
   const expected = convertBinaryGeometryToWKB(geometry, {hasZ: true})!;
   const values = new Uint8Array(getBinaryGeometryWKBSize(geometry, {hasZ: true}));
   const builder = new WKBBuilder({mode: 'write', target: values, hasZ: true});
-
   writeBinaryGeometryToWKB(builder, geometry);
-  t.equal(builder.finishGeometry(), values.byteLength, 'adapter wrote expected byte length');
-  t.deepEqual(values, expected, 'adapter output matches convenience conversion');
-  t.end();
+  expect(builder.finishGeometry(), 'adapter wrote expected byte length').toBe(values.byteLength);
+  expect(values, 'adapter output matches convenience conversion').toEqual(expected);
 });
-
 function makePoint(coordinates: number[]): BinaryGeometry {
   return {
     type: 'Point',
     positions: {value: new Float64Array(coordinates), size: coordinates.length}
   } as BinaryGeometry;
 }
-
 function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
   return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }
-
 function makeLineString(coordinates: number[][]): BinaryGeometry {
   return {
     type: 'LineString',
@@ -222,7 +197,6 @@ function makeLineString(coordinates: number[][]): BinaryGeometry {
     pathIndices: {value: new Uint32Array([0, coordinates.length]), size: 1}
   } as BinaryGeometry;
 }
-
 function makePolygon(coordinates: number[][]): BinaryGeometry {
   return {
     type: 'Polygon',

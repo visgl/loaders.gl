@@ -2,18 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {validateLoader} from 'test/common/conformance';
 import {MapStyleLoader} from '@loaders.gl/mvt/bundled';
 import inlineStyleText from './data/map-style/inline.style.json?raw';
 import {resolveMapStyle, type MapStyle, type MapStyleLoadOptions} from '../src/index';
-
 const INLINE_STYLE_URL = new URL('./data/map-style/inline.style.json', import.meta.url);
 const STYLE_BASE_URL = 'https://example.com/styles/root.style.json';
 const TILEJSON_URL = 'https://example.com/styles/terrain.tilejson';
 const TILE_TEMPLATE_URL = 'https://example.com/styles/tiles/{z}/{x}/{y}.pbf';
-
 function createJsonResponse(json: unknown, ok = true, status = 200) {
   return {
     ok,
@@ -23,46 +21,33 @@ function createJsonResponse(json: unknown, ok = true, status = 200) {
     }
   };
 }
-
-test('MapStyleLoader#loader conformance', t => {
-  validateLoader(t, MapStyleLoader, 'MapStyleLoader');
-  t.end();
+test('MapStyleLoader#loader conformance', () => {
+  validateLoader(MapStyleLoader, 'MapStyleLoader');
 });
-
-test('MapStyleLoader#parse inline style fixture', async t => {
+test('MapStyleLoader#parse inline style fixture', async () => {
   const style = await parse(inlineStyleText, MapStyleLoader, {
     mapStyle: {baseUrl: INLINE_STYLE_URL.href}
   });
-
-  t.equal(style.version, 8, 'style version is preserved');
-  t.equal(style.layers.length, 1, 'style layers are loaded');
-  t.equal(style.sources['inline-source']?.type, 'vector', 'source metadata is preserved');
-  t.equal(
+  expect(style.version, 'style version is preserved').toBe(8);
+  expect(style.layers.length, 'style layers are loaded').toBe(1);
+  expect(style.sources['inline-source']?.type, 'source metadata is preserved').toBe('vector');
+  expect(
     style.sources['inline-source']?.tiles?.[0]?.includes('/tiles/{z}/{x}/{y}.mvt'),
-    true,
     'relative tile template is normalized'
-  );
-  t.deepEqual(
-    style.sources['inline-source']?.custom,
-    {preserved: true},
-    'unknown source fields are preserved'
-  );
-
-  t.end();
+  ).toBe(true);
+  expect(style.sources['inline-source']?.custom, 'unknown source fields are preserved').toEqual({
+    preserved: true
+  });
 });
-
-test('MapStyleLoader#parseText inline style fixture', async t => {
+test('MapStyleLoader#parseText inline style fixture', async () => {
   const style = await MapStyleLoader.parseText?.(inlineStyleText, {
     mapStyle: {baseUrl: INLINE_STYLE_URL.href}
   });
-
-  t.ok(style, 'parseText returns a resolved style');
-  t.equal(style?.version, 8, 'style version is preserved');
-  t.equal(style?.sources['inline-source']?.type, 'vector', 'source metadata is preserved');
-  t.end();
+  expect(style, 'parseText returns a resolved style').toBeTruthy();
+  expect(style?.version, 'style version is preserved').toBe(8);
+  expect(style?.sources['inline-source']?.type, 'source metadata is preserved').toBe('vector');
 });
-
-test('resolveMapStyle resolves relative tiles from baseUrl', async t => {
+test('resolveMapStyle resolves relative tiles from baseUrl', async () => {
   const style: MapStyle = {
     version: 8,
     sources: {
@@ -73,21 +58,15 @@ test('resolveMapStyle resolves relative tiles from baseUrl', async t => {
     },
     layers: [{id: 'land', type: 'fill', source: 'basemap'}]
   };
-
   const resolvedStyle = await resolveMapStyle(style, {
     mapStyle: {baseUrl: STYLE_BASE_URL}
   });
-
-  t.equal(
+  expect(
     resolvedStyle.sources.basemap.tiles?.[0],
-    'https://example.com/styles/tiles/{z}/{x}/{y}.mvt',
     'tile template is resolved against baseUrl'
-  );
-
-  t.end();
+  ).toBe('https://example.com/styles/tiles/{z}/{x}/{y}.mvt');
 });
-
-test('resolveMapStyle resolves TileJSON-backed sources', async t => {
+test('resolveMapStyle resolves TileJSON-backed sources', async () => {
   let requestedUrl = '';
   const resolvedStyle = await resolveMapStyle(
     {
@@ -116,25 +95,18 @@ test('resolveMapStyle resolves TileJSON-backed sources', async t => {
       }
     }
   );
-
-  t.equal(requestedUrl, TILEJSON_URL, 'relative TileJSON URL is resolved before fetch');
-  t.equal(resolvedStyle.sources.terrain.url, TILEJSON_URL, 'resolved source URL is stored');
-  t.equal(
+  expect(requestedUrl, 'relative TileJSON URL is resolved before fetch').toBe(TILEJSON_URL);
+  expect(resolvedStyle.sources.terrain.url, 'resolved source URL is stored').toBe(TILEJSON_URL);
+  expect(
     resolvedStyle.sources.terrain.tiles?.[0],
-    TILE_TEMPLATE_URL,
     'TileJSON tiles are resolved against the TileJSON URL'
+  ).toBe(TILE_TEMPLATE_URL);
+  expect(resolvedStyle.sources.terrain.minzoom, 'TileJSON fields are merged').toBe(2);
+  expect(resolvedStyle.sources.terrain.attribution, 'existing source fields are preserved').toBe(
+    'kept'
   );
-  t.equal(resolvedStyle.sources.terrain.minzoom, 2, 'TileJSON fields are merged');
-  t.equal(
-    resolvedStyle.sources.terrain.attribution,
-    'kept',
-    'existing source fields are preserved'
-  );
-
-  t.end();
 });
-
-test('MapStyleLoader honors custom fetch implementation', async t => {
+test('MapStyleLoader honors custom fetch implementation', async () => {
   const arrayBuffer = new TextEncoder().encode(
     JSON.stringify({
       version: 8,
@@ -157,62 +129,45 @@ test('MapStyleLoader honors custom fetch implementation', async t => {
       }
     }
   };
-
   const style = await parse(arrayBuffer, MapStyleLoader, options);
-
-  t.deepEqual(requestedUrls, [TILEJSON_URL], 'custom fetch is used for source resolution');
-  t.equal(style.sources.basemap.tiles?.[0], 'https://example.com/styles/tiles/{z}/{x}/{y}.mvt');
-
-  t.end();
+  expect(requestedUrls, 'custom fetch is used for source resolution').toEqual([TILEJSON_URL]);
+  expect(style.sources.basemap.tiles?.[0]).toBe('https://example.com/styles/tiles/{z}/{x}/{y}.mvt');
 });
-
-test('resolveMapStyle preserves extra fields and initializes empty collections', async t => {
+test('resolveMapStyle preserves extra fields and initializes empty collections', async () => {
   const style = await resolveMapStyle({
     version: 8,
     metadata: {theme: 'test'},
     custom: {enabled: true}
   });
-
-  t.deepEqual(style.sources, {}, 'sources default to an empty object');
-  t.deepEqual(style.layers, [], 'layers default to an empty array');
-  t.deepEqual(style.custom, {enabled: true}, 'extra top-level fields are preserved');
-
-  t.end();
+  expect(style.sources, 'sources default to an empty object').toEqual({});
+  expect(style.layers, 'layers default to an empty array').toEqual([]);
+  expect(style.custom, 'extra top-level fields are preserved').toEqual({enabled: true});
 });
-
-test('MapStyleLoader rejects invalid JSON', async t => {
-  await t.rejects(
-    async () => await MapStyleLoader.parse(new TextEncoder().encode('{"version":8').buffer, {}),
-    /JSON/,
+test('MapStyleLoader rejects invalid JSON', async () => {
+  await expect(
+    MapStyleLoader.parse(new TextEncoder().encode('{"version":8').buffer, {}),
     'invalid JSON is rejected'
-  );
-
-  t.end();
+  ).rejects.toThrow(/JSON/);
 });
-
-test('resolveMapStyle rejects invalid fetched TileJSON', async t => {
-  await t.rejects(
-    async () =>
-      await resolveMapStyle(
-        {
-          version: 8,
-          sources: {
-            basemap: {
-              type: 'vector',
-              url: './terrain.tilejson'
-            }
-          }
-        },
-        {
-          mapStyle: {
-            baseUrl: STYLE_BASE_URL,
-            fetch: async () => createJsonResponse('not-an-object') as Response
+test('resolveMapStyle rejects invalid fetched TileJSON', async () => {
+  await expect(
+    resolveMapStyle(
+      {
+        version: 8,
+        sources: {
+          basemap: {
+            type: 'vector',
+            url: './terrain.tilejson'
           }
         }
-      ),
-    /Invalid input/,
+      },
+      {
+        mapStyle: {
+          baseUrl: STYLE_BASE_URL,
+          fetch: async () => createJsonResponse('not-an-object') as Response
+        }
+      }
+    ),
     'invalid fetched TileJSON is rejected'
-  );
-
-  t.end();
+  ).rejects.toThrow(/Invalid input/);
 });
