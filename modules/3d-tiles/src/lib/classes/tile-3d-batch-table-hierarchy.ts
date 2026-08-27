@@ -10,6 +10,12 @@
 // @ts-nocheck
 const defined = x => x !== undefined;
 
+// Reused traversal scratch state. These are module-local so a hierarchy query does not allocate
+// temporary arrays on every feature lookup; the marker separates concurrent logical traversals.
+const scratchVisited = [];
+const scratchStack = [];
+let marker = 0;
+
 /** Throws an error when a hierarchy invariant is violated. */
 function assert(condition, message) {
   if (!condition) {
@@ -156,10 +162,10 @@ export function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback
 
   const parentCounts = hierarchy.parentCounts;
   const parentIds = hierarchy.parentIds;
-  if (!parentIds) {
+  if (parentIds) {
     return endConditionCallback(hierarchy, instanceIndex);
   }
-  if (parentCounts) {
+  if (parentCounts > 0) {
     return traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback);
   }
   return traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback);
@@ -223,7 +229,7 @@ function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCal
     hasParent = parentId !== instanceIndex;
     instanceIndex = parentId;
   }
-  return undefined;
+  throw new Error('traverseHierarchySingleParent');
 }
 
 // DEBUG CODE
