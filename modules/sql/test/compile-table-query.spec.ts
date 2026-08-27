@@ -105,4 +105,74 @@ describe('compileSQLTableQuery', () => {
       ].join('\n')
     );
   });
+
+  test('compiles unions and qualified equi-joins', () => {
+    const union = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        union: [{source: 'archived_flights', query: {columns: ['carrier']}}]
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(union.sql).toBe(
+      [
+        'SELECT "carrier"',
+        'FROM "flights"',
+        'UNION ALL',
+        'SELECT "carrier"',
+        'FROM "archived_flights"'
+      ].join('\n')
+    );
+
+    const limitedUnion = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        union: [{source: 'archived_flights', query: {columns: ['carrier'], limit: 1}}]
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(limitedUnion.sql).toBe(
+      [
+        'SELECT "carrier"',
+        'FROM "flights"',
+        'UNION ALL',
+        '(SELECT "carrier"',
+        'FROM "archived_flights"',
+        'LIMIT 1)'
+      ].join('\n')
+    );
+
+    const join = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        join: {child: {source: 'airlines'}, left: 'carrier', right: 'code'}
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(join.sql).toContain(
+      'JOIN "airlines" AS "airlines" ON "flights"."carrier" = "airlines"."code"'
+    );
+
+    const joinedProjection = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['airlines.name'],
+        join: {child: {source: 'airlines'}, left: 'carrier', right: 'code'}
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(joinedProjection.sql).toContain('SELECT "airlines"."name"');
+  });
+
+  test('rejects non-count aggregates without an input column', () => {
+    expect(() =>
+      compileSQLTableQuery(
+        {tableName: 'flights', aggregates: [{name: 'total', function: 'sum'}]},
+        {dialect: 'duckdb'}
+      )
+    ).toThrow(/requires a column/);
+  });
 });

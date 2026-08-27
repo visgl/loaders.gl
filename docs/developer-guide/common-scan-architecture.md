@@ -682,10 +682,10 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
    Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
    keep tile addressing and rendering controls outside `TableQuery`.
-7. **Portable relational growth — first slice landed.** Arrow and DuckDB now execute the shared
-   ordering, scalar-expression, and grouped-aggregate request shape. The next slice is unions and
-   equi-joins, which must retain source ordering, duplicate-column rules, and explicit join semantics
-   across at least two backends before they become part of the default panel.
+7. **Portable relational growth — second slice landed.** Arrow and DuckDB now execute the shared
+   ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes. The
+   next slice is planner-level source resolution and duplicate-column naming for larger federated
+   plans before these operators become part of the default panel.
 8. **GPU and acceleration.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
    materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest
    neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
@@ -747,8 +747,10 @@ const query = {
 The Arrow executor remains intentionally row-oriented for this proof of concept: it materializes
 only the rows needed by the relational operators and returns a bounded Arrow table. This gives
 format adapters and the GPU executor a conformance target without committing them to the same
-physical implementation. Union and join planning remains metadata-only until child-source
-resolution and duplicate-column naming are standardized.
+physical implementation. In-memory unions resolve named child tables through an explicit table map;
+joins expose child fields with a source-qualified name and use SQL inner-join null semantics. SQL
+backends compile the same child relations to `UNION ALL` and qualified `JOIN` statements, leaving
+source registration and federated catalog resolution to the next tranche.
 
 ## Point-cloud participation
 
