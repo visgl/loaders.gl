@@ -343,6 +343,10 @@ export class COPCTileSource
     return createScanQueryMetadata({
       sourceType: 'copc',
       queryType: 'point-cloud',
+      execution: {
+        status: 'metadata-only',
+        reason: 'Common point-cloud scan traversal is not implemented; use the COPC tile APIs.'
+      },
       schema,
       capabilities: {
         table: this.pointCloudQueryCapabilities,

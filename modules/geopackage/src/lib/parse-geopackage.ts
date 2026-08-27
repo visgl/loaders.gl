@@ -285,7 +285,7 @@ export function getGeoPackageArrowTable(
   const columns = queryResult?.columns || [];
   const values = queryResult?.values || [];
   const projection = getProjection(vectorTable, projections, options);
-  const schema = getArrowSchema(database, vectorTable);
+  const schema = getGeoPackageArrowSchema(database, vectorTable);
   const tableBuilder = new ArrowTableBuilder(schema);
 
   for (const row of values) {
@@ -502,7 +502,11 @@ function getSchema(database: Database, tableName: string): Schema {
   return {fields, metadata: {}};
 }
 
-function getArrowSchema(database: Database, vectorTable: GeoPackageVectorTableInfo): Schema {
+/** Reads a selected GeoPackage feature-table schema without materializing its rows. */
+export function getGeoPackageArrowSchema(
+  database: Database,
+  vectorTable: GeoPackageVectorTableInfo
+): Schema {
   const statement = database.prepare(`PRAGMA table_info(\`${vectorTable.name}\`)`);
   const fields: Field[] = [];
 

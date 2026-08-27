@@ -49,3 +49,21 @@ async function discover(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}
 `ScanQuery` is a portable control shape. Sources normalize unsupported fields and advertise their
 actual capabilities through `ScanQueryMetadata`; no React, GPU, or database dependency is pulled
 into applications that only use a format loader.
+
+Metadata also makes the execution conclusion explicit:
+
+```typescript
+const metadata = await source.getQueryMetadata();
+
+if (metadata.execution.status === 'supported') {
+  console.log(`Execute with source.${metadata.execution.method}()`);
+} else {
+  console.log(`Discovery only: ${metadata.execution.reason}`);
+}
+```
+
+A supported table source names `read()` or `query()`, a raster source names `getRaster()`, and a
+point-cloud source names `scan()`. Metadata-only sources must supply a user-facing reason. This
+keeps query panels and support documentation from inferring readiness from optimization
+capabilities: a residual operator is fully supported even though it performs more work, while a
+metadata-only source never presents an executable scan.

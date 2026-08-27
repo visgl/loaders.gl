@@ -62,6 +62,7 @@ export class NDJSONTableSource
         return createScanQueryMetadata({
           sourceType: 'ndjson',
           queryType: 'table',
+          execution: {status: 'supported', method: 'read'},
           schema: batch.schema,
           capabilities: {
             table: {

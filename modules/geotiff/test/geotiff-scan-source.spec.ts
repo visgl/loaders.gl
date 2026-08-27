@@ -24,6 +24,7 @@ test('GeoTIFFRasterSource exposes normalized scan metadata', async () => {
   const metadata = await source.getQueryMetadata();
   expect(metadata.sourceType).toBe('geotiff');
   expect(metadata.queryType).toBe('raster');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'getRaster'});
   expect(metadata.columns.map(column => column.name)).toEqual(['band_1', 'band_2']);
   expect(metadata.columns[0]?.type).toBe('float32');
   expect(metadata.spatial?.bounds).toEqual({minimum: [-10, 20], maximum: [30, 60]});

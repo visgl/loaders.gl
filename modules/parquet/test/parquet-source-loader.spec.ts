@@ -106,6 +106,7 @@ test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics',
 
   expect(metadata.sourceType).toBe('parquet');
   expect(metadata.queryType).toBe('table');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.length > 0).toBeTruthy();
   expect(metadata.capabilities.table?.projection).toBe('pushdown');
   expect(Number(metadata.statistics?.rowCount) > 0).toBeTruthy();

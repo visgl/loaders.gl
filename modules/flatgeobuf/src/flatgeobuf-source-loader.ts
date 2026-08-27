@@ -111,6 +111,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     return createScanQueryMetadata({
       sourceType: 'flatgeobuf',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: info.layerName,
       description: info.header.description,
       schema: info.querySchema,

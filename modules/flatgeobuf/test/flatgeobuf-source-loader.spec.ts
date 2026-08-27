@@ -54,6 +54,10 @@ test('FlatGeobufVectorSource#getQueryMetadata discovers panel controls from the 
   const source = await createSource();
   const queryMetadata = await source.getQueryMetadata();
   expect(queryMetadata.sourceType, 'identifies the source adapter').toBe('flatgeobuf');
+  expect(queryMetadata.execution, 'identifies the common execution entry point').toEqual({
+    status: 'supported',
+    method: 'read'
+  });
   expect(
     queryMetadata.columns.map(column => column.name),
     'includes every query-visible column'

@@ -6,6 +6,7 @@ test('ArrowTableSource discovers schema and applies projection and limit', async
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a', 'b'], value: [1, 2]}));
   const source = new ArrowTableSource(new Blob([bytes]));
   const metadata = await source.getQueryMetadata();
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.map(column => column.name)).toEqual(['name', 'value']);
   const batches = [];
   for await (const batch of source.read({columns: ['value'], limit: 1})) batches.push(batch);

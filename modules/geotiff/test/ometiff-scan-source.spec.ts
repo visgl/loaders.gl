@@ -25,6 +25,7 @@ test('OMETiffImageSource exposes channel and pyramid scan metadata', async () =>
   });
   const metadata = await source.getQueryMetadata();
   expect(metadata.sourceType).toBe('ometiff');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'getRaster'});
   expect(metadata.columns.map(column => column.name)).toEqual(['DAPI', 'GFP']);
   expect(metadata.capabilities.levelOfDetail).toBe('pushdown');
   expect(metadata.levels?.map(level => level.scale)).toEqual([

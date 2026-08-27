@@ -41,6 +41,7 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
     return createScanQueryMetadata({
       sourceType: 'arrow-table',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       schema,
       capabilities: {table: ARROW_TABLE_QUERY_CAPABILITIES},
       columnRoles: getArrowColumnRoles(schema.fields.map(field => field.name)),

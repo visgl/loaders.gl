@@ -35,6 +35,7 @@ test('ArrowTableSource exposes shared metadata and bounded scan batches', async 
 
   const metadata = await source.getQueryMetadata();
   expect(metadata.queryType).toBe('table');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.map(column => [column.name, column.role])).toEqual([
     ['x', 'x'],
     ['value', 'attribute']

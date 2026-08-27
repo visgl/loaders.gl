@@ -27,6 +27,7 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
 
   const metadata = await source.getQueryMetadata();
   expect(metadata.sourceType).toBe('orc');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.map(column => column.name)).toEqual(['name']);
   expect(metadata.statistics?.rowCount).toBe(4);
 

@@ -56,6 +56,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
     return createScanQueryMetadata({
       sourceType: 'orc',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       schema,
       capabilities: {
         table: {

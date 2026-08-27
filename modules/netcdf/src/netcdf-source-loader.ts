@@ -48,6 +48,10 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
     return createScanQueryMetadata({
       sourceType: 'netcdf',
       queryType: 'raster',
+      execution: {
+        status: 'metadata-only',
+        reason: 'Common NetCDF variable and dimension-slice execution is not implemented.'
+      },
       name: typeof this.data === 'string' ? this.data.split('/').pop() : undefined,
       schema,
       capabilities: {

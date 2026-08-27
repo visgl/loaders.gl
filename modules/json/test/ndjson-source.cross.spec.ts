@@ -6,6 +6,7 @@ test('NDJSONTableSource discovers schema and applies projection and limit', asyn
     new Blob(['{"name":"a","value":1}\n{"name":"b","value":2}\n'])
   );
   const metadata = await source.getQueryMetadata();
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
   expect(metadata.columns.map(column => column.name)).toEqual(['name', 'value']);
   const batches = [];
   for await (const batch of source.read({columns: ['name'], limit: 1})) batches.push(batch);

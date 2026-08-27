@@ -58,6 +58,18 @@ test('COPCSourceLoader#creates a source through createDataSource', async () => {
   expect(dataSource).toBeInstanceOf(COPCTileSource);
 });
 
+test('COPCSourceLoader#conclusively reports metadata-only common scan support', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  const metadata = await source.getQueryMetadata();
+
+  expect(metadata.queryType).toBe('point-cloud');
+  expect(metadata.execution).toEqual({
+    status: 'metadata-only',
+    reason: 'Common point-cloud scan traversal is not implemented; use the COPC tile APIs.'
+  });
+  await source.close();
+});
+
 test('COPCSourceLoader#loads normalized root and child tiles', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();

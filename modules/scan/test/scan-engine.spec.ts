@@ -31,6 +31,7 @@ test('exposes the shared metadata vocabulary from the optional scan package', ()
   const metadata = createScanQueryMetadata({
     sourceType: 'test',
     queryType: 'table',
+    execution: {status: 'supported', method: 'read'},
     schema: table.schema,
     capabilities: {
       table: {

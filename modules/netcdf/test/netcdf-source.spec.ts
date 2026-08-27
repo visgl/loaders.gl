@@ -10,6 +10,10 @@ test.runIf(isBrowser)('NetCDF source discovers raster metadata from a Blob', asy
   const metadata = await source.getQueryMetadata();
 
   expect(metadata.queryType).toBe('raster');
+  expect(metadata.execution).toEqual({
+    status: 'metadata-only',
+    reason: 'Common NetCDF variable and dimension-slice execution is not implemented.'
+  });
   expect(metadata.statistics?.rowCount).toBe(178);
   expect(metadata.columns.map(column => column.name)).toContain('wmoId');
   expect(metadata.columns.find(column => column.name === 'wmoId')?.metadata?.dimensions).toBe(

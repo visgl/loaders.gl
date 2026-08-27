@@ -63,6 +63,7 @@ export class CSVTableSource
       return createScanQueryMetadata({
         sourceType: 'csv',
         queryType: 'table',
+        execution: {status: 'supported', method: 'read'},
         schema: batch.schema,
         capabilities: {
           table: {

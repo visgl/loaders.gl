@@ -291,6 +291,7 @@ export class ParquetSource
     return createScanQueryMetadata({
       sourceType: 'parquet',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: metadata.name,
       schema,
       capabilities: {table: this.tableQueryCapabilities},
