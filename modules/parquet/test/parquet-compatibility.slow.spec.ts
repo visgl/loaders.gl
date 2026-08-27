@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import type {Test} from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
@@ -39,28 +38,26 @@ for (const backend of ['typescript', 'wasm'] as const) {
     if (backend === 'wasm' && fixture.testWasm === false) {
       continue;
     }
-    test(`Parquet compatibility matrix#${backend}#${fixture.title}`, async (t) => {
+    test(`Parquet compatibility matrix#${backend}#${fixture.title}`, async () => {
       const url = `${PARQUET_DIRECTORY}/${fixture.path}`;
       const file = await readCompatibilityFixture(url);
       const result = await readWithLoadersGl(file, backend);
-      assertCompatibilityResult(t, fixture, backend, fixture[supportProperty], result);
-      t.end();
+      assertCompatibilityResult(fixture, backend, fixture[supportProperty], result);
     });
   }
 }
 
 for (const fixture of PARQUET_FILES) {
-  test(`Parquet compatibility matrix#hyparquet#${fixture.title}`, async (t) => {
+  test(`Parquet compatibility matrix#hyparquet#${fixture.title}`, async () => {
     const url = `${PARQUET_DIRECTORY}/${fixture.path}`;
     const file = await readCompatibilityFixture(url);
     const result = await readWithHyparquet(file);
-    assertCompatibilityResult(t, fixture, 'hyparquet', fixture.supportedHyparquet, result);
-    t.end();
+    assertCompatibilityResult(fixture, 'hyparquet', fixture.supportedHyparquet, result);
   });
 }
 
 for (const fixture of PARQUET_FILES.filter(({title}) => TYPESCRIPT_DIFFERENTIAL_FIXTURES.has(title))) {
-  test(`Parquet compatibility differential#typescript#${fixture.title}`, async (t) => {
+  test(`Parquet compatibility differential#typescript#${fixture.title}`, async () => {
     const url = `${PARQUET_DIRECTORY}/${fixture.path}`;
     const file = await readCompatibilityFixture(url);
     const [loadersGlResult, hyparquetResult] = await Promise.all([
@@ -68,14 +65,11 @@ for (const fixture of PARQUET_FILES.filter(({title}) => TYPESCRIPT_DIFFERENTIAL_
       readWithHyparquet(file)
     ]);
 
-    t.ok(loadersGlResult.supported, 'TypeScript backend reads the fixture');
-    t.ok(hyparquetResult.supported, 'hyparquet reads the fixture');
-    t.deepEqual(
+    expect(loadersGlResult.supported, 'TypeScript backend reads the fixture').toBe(true);
+    expect(hyparquetResult.supported, 'hyparquet reads the fixture').toBe(true);
+    expect(
       normalizeRows(loadersGlResult.rows || []),
-      normalizeRows(hyparquetResult.rows || []),
-      'decoded rows match the reference implementation'
-    );
-    t.end();
+    ).toEqual(normalizeRows(hyparquetResult.rows || []));
   });
 }
 
@@ -159,18 +153,16 @@ function normalizeValue(value: unknown): unknown {
 
 /** Assert one observed backend result against the executable matrix. */
 function assertCompatibilityResult(
-  t: Test,
   fixture: ParquetTestFile,
   backend: LoadersGlBackend | 'hyparquet',
   expectedSupport: boolean,
   result: CompatibilityResult
 ): void {
   const errorSuffix = result.error ? ` (${result.error})` : '';
-  t.equal(
+  expect(
     result.supported,
-    expectedSupport,
     `${backend} ${fixture.title}: support classification matches${errorSuffix}`
-  );
+  ).toBe(expectedSupport);
 }
 
 /** Convert an unknown thrown value into a stable diagnostic string. */

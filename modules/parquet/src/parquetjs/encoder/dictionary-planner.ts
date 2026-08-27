@@ -32,7 +32,12 @@ export function planDictionary(
       `Parquet dictionary page size limit must be a positive integer, received ${dictionaryPageSizeLimit}`
     );
   }
-  if (policy === false || values.length === 0 || isDictionaryEncoding(column.encoding!)) {
+  if (policy === false || values.length === 0) {
+    if (policy === false && isDictionaryEncoding(column.encoding!)) {
+      throw new Error(
+        `Parquet column ${column.path.join('.')} requests ${column.encoding} but dictionary encoding is disabled`
+      );
+    }
     return undefined;
   }
 
@@ -58,7 +63,7 @@ export function planDictionary(
     return undefined;
   }
   const bitWidth = dictionaryValues.length <= 1 ? 0 : Math.ceil(Math.log2(dictionaryValues.length));
-  if (policy === 'auto') {
+  if (policy === 'auto' && !isDictionaryEncoding(column.encoding!)) {
     const encodedIndices = PARQUET_CODECS.RLE_DICTIONARY.encodeValues(
       column.primitiveType!,
       indices,

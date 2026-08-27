@@ -111,6 +111,7 @@ The selectable primary encodings are:
 | Encoding | Physical types | Typical data |
 | -------- | -------------- | ------------ |
 | `PLAIN` | All | Baseline or already-compressed values |
+| `PLAIN_DICTIONARY` | All | Legacy dictionary identifier for interoperability |
 | `BYTE_STREAM_SPLIT` | `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `FIXED_LEN_BYTE_ARRAY` | Fixed-width numeric values followed by compression |
 | `DELTA_BINARY_PACKED` | `INT32`, `INT64` | Ordered counters, timestamps, and low-delta integers |
 | `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | Variable-width values with compressible lengths |
@@ -143,6 +144,38 @@ read/write encoding matrix.
 | `parquet.pageSize` | `number` | `8192` | Sets the target shredded level-entry count per page. Boundaries remain aligned to top-level rows. |
 | `parquet.useDataPageV2` | `boolean` | `false` | Emits Data Page V2 from `ParquetJSWriter`. |
 
+### Writer encryption
+
+`ParquetJSWriter` can encrypt the footer and, optionally, selected column chunks with the same
+footer key. Column encryption covers column metadata, dictionary/data page headers and bodies,
+page indexes, and Bloom-filter modules. The existing `ParquetJSLoader` and `ParquetSourceLoader`
+can read these files, including selective range reads and worker decoding. Keys stay in the caller's
+`keyRetriever`; they are not serialized into the writer options.
+
+```typescript
+const parquetBuffer = await encode(table, ParquetJSWriter, {
+  core: {worker: false},
+  parquet: {
+    encryption: {
+      algorithm: 'AES_GCM_CTR_V1',
+      encryptColumns: {identifier: true},
+      keyRetriever: async () => encryptionKey
+    }
+  }
+});
+```
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `parquet.encryption.algorithm` | `'AES_GCM_V1' \| 'AES_GCM_CTR_V1'` | `'AES_GCM_V1'` | Parquet modular-encryption algorithm used for footer and column modules. |
+| `parquet.encryption.keyMetadata` | `Uint8Array` | `undefined` | Opaque metadata supplied to the key retriever and stored in the file crypto metadata. |
+| `parquet.encryption.aadPrefix` | `Uint8Array` | `undefined` | Optional AAD prefix shared by encrypted modules. |
+| `parquet.encryption.fileUnique` | `Uint8Array` | generated | Eight-byte file identifier used to construct module AAD. |
+| `parquet.encryption.encryptColumns` | `boolean \| Record<string, boolean>` | `false` | Encrypt all columns or only named top-level columns with the footer key. |
+| `parquet.encryption.keyRetriever` | `ParquetKeyRetriever` | required | Resolves the footer key without placing key bytes in the options object. |
+
+Per-column keys, key rotation, and plaintext-footer signature generation remain follow-up work.
+
 ## Writer Variants
 
 - Use `ParquetWriter` for the default wasm-backed plain-table writer.
@@ -172,6 +205,8 @@ written without conversion through JavaScript `number`.
 
 ## Supported Files
 
-The Parquet format supports a large set of features (data types, encodings, compressions, encryptions etc) it require time and contributions for the loaders.gl implementation to provide support for all variations.
+The Parquet format supports a large set of data types, encodings, compressions, and encryption
+variants. The feature matrix tracks the stable combinations implemented by loaders.gl and the
+experimental or producer-specific combinations that still need interoperability coverage.
 
 Please refer to the detailed information about which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.

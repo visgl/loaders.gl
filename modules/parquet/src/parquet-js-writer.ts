@@ -22,6 +22,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Stable value encodings selectable by the TypeScript Parquet writer. */
 export type ParquetJSWriterEncoding =
   | 'PLAIN'
+  | 'PLAIN_DICTIONARY'
   | 'BYTE_STREAM_SPLIT'
   | 'DELTA_BINARY_PACKED'
   | 'DELTA_LENGTH_BYTE_ARRAY'
