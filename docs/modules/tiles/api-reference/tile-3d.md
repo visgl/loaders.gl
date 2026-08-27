@@ -28,6 +28,10 @@ Returns `true` when traversal may request a source-managed lazy child-header gro
 
 A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))
 
+###### `contentBoundingVolumes` (BoundingVolume[])
+
+The transformed content bounding volumes, one for each content entry that declares a `boundingVolume`. The array is empty when no content entry declares one. These volumes are for render culling; traversal continues to use the tile's `boundingVolume`.
+
 ###### `viewerRequestVolume` (BoundingVolume | null)
 
 The transformed volume that limits when this tile may be requested. It is `null` when the tile does not declare a viewer request volume. This volume affects traversal/request eligibility, not render-content culling.
