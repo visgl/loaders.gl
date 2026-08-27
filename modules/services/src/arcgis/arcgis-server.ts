@@ -33,7 +33,7 @@ async function loadServiceDirectory(
   const response = await fetch(`${serviceUrl}?f=pjson`);
   const directory = await response.json();
 
-  const services = extractServices(directory, serviceUrl);
+  const services = extractServices(directory, serviceUrl, serverUrl);
 
   const folders = (directory.folders || []) as string[];
   const promises = folders.map(folder =>
@@ -47,14 +47,14 @@ async function loadServiceDirectory(
   return services;
 }
 
-function extractServices(directory: unknown, url: string): Service[] {
+function extractServices(directory: unknown, url: string, serverUrl: string): Service[] {
   const arcgisServices = ((directory as any).services || []) as {name: string; type: string}[];
   const services: Service[] = [];
   for (const service of arcgisServices) {
     services.push({
       name: service.name,
       type: `arcgis-${service.type.toLocaleLowerCase().replace('server', '-server')}`,
-      url: `${url}/${service.name}/${service.type}`
+      url: `${service.name.includes('/') ? serverUrl : url}/${service.name}/${service.type}`
     });
   }
   return services;

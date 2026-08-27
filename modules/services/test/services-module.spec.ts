@@ -4,7 +4,9 @@ import {
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
   ArcGISVectorTileServerSourceLoader,
-  getServiceLoader
+  discoverArcGISCapabilities,
+  getServiceLoader,
+  selectArcGISService
 } from '../src/index';
 import {getArcGISServices} from '../src/arcgis/arcgis-server';
 import * as bundledServices from '../src/bundled';
@@ -72,5 +74,64 @@ describe('@loaders.gl/services', () => {
     ]);
     expect(requests).toHaveLength(2);
     expect(await getArcGISServices('https://example.com/not-an-arcgis-service')).toBeNull();
+  });
+
+  test('resolves qualified service names from ArcGIS folder directories', async () => {
+    const services = await getArcGISServices(
+      'https://example.com/arcgis/rest/services',
+      async url =>
+        new Response(
+          JSON.stringify(
+            url.endsWith('/services?f=pjson')
+              ? {folders: ['AGP']}
+              : {services: [{name: 'AGP/Census', type: 'MapServer'}]}
+          )
+        )
+    );
+
+    expect(services?.[0].url).toBe('https://example.com/arcgis/rest/services/AGP/Census/MapServer');
+  });
+
+  test('normalizes and selects ArcGIS service capabilities', async () => {
+    const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services', {
+      fetch: async url => {
+        if (url.endsWith('/services?f=pjson')) {
+          return new Response(JSON.stringify({services: [{name: 'Imagery', type: 'ImageServer'}]}));
+        }
+        return new Response(
+          JSON.stringify({
+            supportedImageFormatTypes: 'PNG,JPEG,LERC',
+            spatialReference: {wkid: 3857},
+            fullExtent: {spatialReference: {latestWkid: 3857}}
+          })
+        );
+      }
+    });
+
+    expect(graph?.nodes[0]).toMatchObject({
+      kind: 'image',
+      capabilities: {
+        formats: ['jpeg', 'lerc', 'png'],
+        crs: ['EPSG:3857']
+      }
+    });
+    expect(selectArcGISService(graph!, {kind: 'image', format: 'lerc'})?.name).toBe('Imagery');
+    expect(selectArcGISService(graph!, {kind: 'vector'})).toBeUndefined();
+  });
+
+  test('does not infer unsupported GeoJSON output', async () => {
+    const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services', {
+      fetch: async url =>
+        new Response(
+          JSON.stringify(
+            url.endsWith('/services?f=pjson')
+              ? {services: [{name: 'Legacy', type: 'FeatureServer'}]}
+              : {supportedQueryFormats: 'JSON'}
+          )
+        )
+    });
+
+    expect(graph?.nodes[0].capabilities.formats).toEqual(['json']);
+    expect(selectArcGISService(graph!, {format: 'geojson'})).toBeUndefined();
   });
 });
