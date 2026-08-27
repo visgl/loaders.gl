@@ -88,72 +88,45 @@ export async function parseI3STileContent(
   };
   const requiredContext = context ? getRequiredContext(context, 'parse nested resources') : null;
 
-  if (tileOptions.textureUrl) {
+  const textureResources = tileOptions.textureUrls?.length
+    ? tileOptions.textureUrls
+    : tileOptions.textureUrl
+      ? [
+          {
+            textureSetDefinitionId: getMaterialTextureSetDefinitionId(
+              tileOptions.materialDefinition
+            ),
+            textureUrl: tileOptions.textureUrl,
+            textureFormat: tileOptions.textureFormat || 'jpg'
+          }
+        ]
+      : [];
+  const decodedTextures: Record<string, TileContentTexture> = {};
+
+  for (const textureResource of textureResources) {
     try {
-      // @ts-expect-error options is not properly typed
-      const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
-      const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-      const fetchFunc = context?.fetch || fetch;
-      const response = await fetchFunc(url); // options?.fetch
-      if (!response.ok) {
-        throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
-      }
-
-      const textureArrayBuffer = await response.arrayBuffer();
-
-      // @ts-expect-error options is not properly typed
-      if (options?.i3s.decodeTextures) {
-        const nestedContext = getRequiredContext(
-          requiredContext || context,
-          'decode texture payloads'
-        );
-        // TODO - replace with switch
-        if (loader === ImageBitmapLoader) {
-          const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
-          try {
-            const parsedTexture: any = await parseFromContext(
-              textureArrayBuffer,
-              ImageBitmapLoader,
-              imageLoaderOptions,
-              nestedContext
-            );
-            content.texture = getImageData(parsedTexture);
-          } catch (_error) {
-            const parsedTexture: any = await parseFromContext(
-              textureArrayBuffer,
-              loader,
-              imageLoaderOptions,
-              nestedContext
-            );
-            content.texture = getImageData(parsedTexture);
-          }
-        } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-          let texture: any = await parseFromContext(
-            textureArrayBuffer,
-            loader,
-            tileOptions.textureLoaderOptions,
-            nestedContext
-          );
-          if (loader === BasisLoader) {
-            texture = texture[0];
-          }
-          content.texture = {
-            compressed: true,
-            mipmaps: false,
-            width: texture[0].width,
-            height: texture[0].height,
-            data: texture
-          };
-        }
-      } else {
-        content.texture = textureArrayBuffer;
+      const texture = await loadI3STexture(
+        textureResource.textureUrl,
+        textureResource.textureFormat,
+        tileOptions,
+        options,
+        requiredContext || context
+      );
+      if (texture) {
+        decodedTextures[textureResource.textureSetDefinitionId] = texture;
       }
     } catch (error) {
       console.warn(error);
     }
   }
 
-  content.material = makePbrMaterial(tileOptions.materialDefinition, content.texture);
+  const firstTexture = Object.values(decodedTextures)[0] || null;
+  content.texture = firstTexture;
+  if (Object.keys(decodedTextures).length > 0) {
+    content.textures = decodedTextures;
+  }
+
+  content.material = makePbrMaterial(tileOptions.materialDefinition, decodedTextures, firstTexture);
   if (content.material) {
     content.texture = null;
   }
@@ -166,6 +139,77 @@ export async function parseI3STileContent(
     options,
     context
   );
+}
+
+/**
+ * Fetch and optionally decode one I3S texture-set resource.
+ * @param textureUrl - texture resource URL
+ * @param textureFormat - I3S texture format
+ * @param tileOptions - texture decoder options
+ * @param options - top-level loader options
+ * @param context - loader context for nested parsing
+ * @returns decoded texture or raw bytes
+ */
+async function loadI3STexture(
+  textureUrl: string,
+  textureFormat: I3STileOptions['textureFormat'],
+  tileOptions: I3STileOptions,
+  options: StrictLoaderOptions | undefined,
+  context?: LoaderContext
+): Promise<TileContentTexture | null> {
+  // @ts-expect-error options is not properly typed
+  const url = getUrlWithToken(textureUrl, options?.i3s?.token);
+  const loader = getLoaderForTextureFormat(textureFormat);
+  const fetchFunc = context?.fetch || fetch;
+  const response = await fetchFunc(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
+  }
+
+  const textureArrayBuffer = await response.arrayBuffer();
+
+  if (!options?.i3s?.decodeTextures) {
+    return textureArrayBuffer;
+  }
+
+  const nestedContext = getRequiredContext(context, 'decode texture payloads');
+  if (loader === ImageBitmapLoader) {
+    const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
+    try {
+      const parsedTexture: any = await parseFromContext(
+        textureArrayBuffer,
+        ImageBitmapLoader,
+        imageLoaderOptions,
+        nestedContext
+      );
+      return getImageData(parsedTexture);
+    } catch (_error) {
+      const parsedTexture: any = await parseFromContext(
+        textureArrayBuffer,
+        loader,
+        imageLoaderOptions,
+        nestedContext
+      );
+      return getImageData(parsedTexture);
+    }
+  }
+
+  let texture: any = await parseFromContext(
+    textureArrayBuffer,
+    loader,
+    tileOptions.textureLoaderOptions,
+    nestedContext
+  );
+  if (loader === BasisLoader) {
+    texture = texture[0];
+  }
+  return {
+    compressed: true,
+    mipmaps: false,
+    width: texture[0].width,
+    height: texture[0].height,
+    data: texture
+  };
 }
 
 /* eslint-disable max-statements */
@@ -559,13 +603,35 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
  * @param texture - Decoded texture data when one was fetched successfully.
  * @returns Material definition normalized for glTF-style rendering.
  */
-function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
+function makePbrMaterial(
+  materialDefinition?: I3SMaterialDefinition,
+  textures: Record<string, TileContentTexture> = {},
+  texture?: TileContentTexture
+) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
       ...materialDefinition,
+      normalTexture: materialDefinition.normalTexture
+        ? {...materialDefinition.normalTexture}
+        : undefined,
+      occlusionTexture: materialDefinition.occlusionTexture
+        ? {...materialDefinition.occlusionTexture}
+        : undefined,
+      emissiveTexture: materialDefinition.emissiveTexture
+        ? {...materialDefinition.emissiveTexture}
+        : undefined,
       pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-        ? {...materialDefinition.pbrMetallicRoughness}
+        ? {
+            ...materialDefinition.pbrMetallicRoughness,
+            baseColorTexture: materialDefinition.pbrMetallicRoughness.baseColorTexture
+              ? {...materialDefinition.pbrMetallicRoughness.baseColorTexture}
+              : undefined,
+            metallicRoughnessTexture: materialDefinition.pbrMetallicRoughness
+              .metallicRoughnessTexture
+              ? {...materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture}
+              : undefined
+          }
         : {baseColorFactor: [255, 255, 255, 255]}
     };
   } else {
@@ -597,8 +663,10 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
     );
   }
 
-  if (texture) {
-    setMaterialTexture(pbrMaterial, texture!);
+  if (Object.keys(textures).length > 0) {
+    setMaterialTextures(pbrMaterial, textures);
+  } else if (texture) {
+    setMaterialTexture(pbrMaterial, texture);
   }
 
   return pbrMaterial;
@@ -646,6 +714,46 @@ function setMaterialTexture(material, image: TileContentTexture): void {
   } else if (material.occlusionTexture) {
     material.occlusionTexture = {...material.occlusionTexture, texture};
   }
+}
+
+/**
+ * Attach each decoded texture-set resource to its matching PBR material slot.
+ * @param material - normalized I3S material definition
+ * @param textures - decoded textures keyed by texture-set definition id
+ */
+function setMaterialTextures(material, textures: Record<string, TileContentTexture>): void {
+  const textureSlots = [
+    material.pbrMetallicRoughness?.baseColorTexture,
+    material.pbrMetallicRoughness?.metallicRoughnessTexture,
+    material.normalTexture,
+    material.occlusionTexture,
+    material.emissiveTexture
+  ];
+  for (const textureSlot of textureSlots) {
+    if (!textureSlot) {
+      continue;
+    }
+    const texture = textures[textureSlot.textureSetDefinitionId];
+    if (texture) {
+      textureSlot.texture = {source: {image: texture}};
+    }
+  }
+}
+
+/**
+ * Get the texture-set definition id used by the legacy singleton texture URL.
+ * @param materialDefinition - optional material definition containing texture references
+ * @returns referenced texture-set definition id, or zero when no reference is available
+ */
+function getMaterialTextureSetDefinitionId(materialDefinition?: I3SMaterialDefinition): number {
+  return (
+    materialDefinition?.pbrMetallicRoughness?.baseColorTexture?.textureSetDefinitionId ??
+    materialDefinition?.pbrMetallicRoughness?.metallicRoughnessTexture?.textureSetDefinitionId ??
+    materialDefinition?.normalTexture?.textureSetDefinitionId ??
+    materialDefinition?.occlusionTexture?.textureSetDefinitionId ??
+    materialDefinition?.emissiveTexture?.textureSetDefinitionId ??
+    0
+  );
 }
 
 /**

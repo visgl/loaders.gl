@@ -123,6 +123,8 @@ export type I3SMinimalNodeData = {
   contentUrl?: string;
   /** Texture image URL */
   textureUrl?: string;
+  /** All texture-set resources referenced by the node material. */
+  textureUrls?: I3STextureResource[];
   /** Feature attributes URLs */
   attributeUrls?: string[];
   /** Material definition from I3S layer metadata */
@@ -189,10 +191,19 @@ export type I3STileOptions = {
   isDracoGeometry: boolean;
   textureUrl?: string;
   textureFormat?: I3STextureFormat;
+  /** All texture-set resources referenced by the node material. */
+  textureUrls?: I3STextureResource[];
   textureLoaderOptions?: any;
   materialDefinition?: I3SMaterialDefinition;
   attributeUrls: string[];
   mbs: Mbs;
+};
+
+/** A selected texture-set resource for an I3S node. */
+export type I3STextureResource = {
+  textureSetDefinitionId: number;
+  textureUrl: string;
+  textureFormat: I3STextureFormat;
 };
 
 export type I3STilesetOptions = {
@@ -211,6 +222,8 @@ export type I3STileContent = {
   coordinateSystem: CoordinateSystem;
   byteLength: number;
   texture: TileContentTexture;
+  /** Decoded texture-set resources keyed by texture-set definition id. */
+  textures?: Record<string, TileContentTexture>;
   /** Opaque mesh-segmentation payload appended to a legacy geometry buffer. */
   meshSegmentation?: ArrayBuffer;
   [key: string]: any;
@@ -391,6 +404,10 @@ export type I3SMaterialTexture = {
   texCoord?: number;
   /** The normal texture: scalar multiplier applied to each normal vector of the normal texture. For occlusion texture,scalar multiplier controlling the amount of occlusion applied. Default=1 */
   factor?: number;
+  /** Legacy I3S texture wrapping mode for the S coordinate. */
+  wrapS?: 'none' | 'repeat' | 'mirror';
+  /** Legacy I3S texture wrapping mode for the T coordinate. */
+  wrapT?: 'none' | 'repeat' | 'mirror';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md */
 export type AttributeStorageInfo = {
