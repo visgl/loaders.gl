@@ -230,7 +230,7 @@ export class TilesetTraverser {
 
   // tile to render in the browser
   selectTile(tile: Tile3D, frameState: FrameState): void {
-    if (this.shouldSelectTile(tile)) {
+    if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
       this.selectedTiles[tile.id] = tile;
