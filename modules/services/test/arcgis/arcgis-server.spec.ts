@@ -55,6 +55,33 @@ vitestTest('ArcGISMapTileSource distributes requests across configured service U
   expect(url.origin).toBe('https://tiles-b.example.com');
 });
 
+vitestTest('ArcGISMapTileSource exposes its cached tile grid', async () => {
+  const source = new ArcGISMapTileSource('https://example.com/MapServer', {
+    'arcgis-map-server': {
+      metadata: {
+        name: 'Basemap',
+        spatialReference: {wkid: 3857},
+        tileInfo: {
+          rows: 256,
+          cols: 256,
+          origin: {x: -20037508, y: 20037508},
+          spatialReference: {wkid: 3857},
+          lods: [{level: 0}, {level: 1}]
+        }
+      }
+    }
+  });
+
+  expect(await source.getMetadata()).toMatchObject({
+    tileGrid: {
+      crs: 'EPSG:3857',
+      tileSize: [256, 256],
+      origin: [-20037508, 20037508],
+      matrixIds: ['0', '1']
+    }
+  });
+});
+
 vitestTest('ArcGISImageTileSource builds exportImage tile requests', () => {
   const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
     'arcgis-image-server-tiles': {tileSize: 512, parameters: {time: '2020-01-01'}}

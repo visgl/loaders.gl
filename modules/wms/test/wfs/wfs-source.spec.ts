@@ -26,7 +26,7 @@ test('WFSSourceLoader#getFeaturesURL', t => {
   t.equal(featuresUrl.searchParams.get('REQUEST'), 'GetFeature');
   t.equal(featuresUrl.searchParams.get('VERSION'), '1.3.0');
   t.equal(featuresUrl.searchParams.get('TYPENAME'), 'roads,bridges');
-  t.equal(featuresUrl.searchParams.get('BBOX'), '1,2,3,4,EPSG:4326');
+  t.equal(featuresUrl.searchParams.get('BBOX'), '2,1,4,3,EPSG:4326');
   t.equal(featuresUrl.searchParams.get('SRSNAME'), 'EPSG:4326');
   t.equal(featuresUrl.searchParams.get('OUTPUTFORMAT'), 'application/json');
   t.end();

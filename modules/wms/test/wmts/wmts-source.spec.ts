@@ -157,6 +157,53 @@ test('WMTSImageTileSource uses advertised nonnumeric matrix identifiers', async 
   expect(source.getTileURL({x: 1, y: 2, z: 1})).toBe('https://tiles.example/1g/2/1.png');
 });
 
+test('WMTSImageTileSource exposes the selected tile grid', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      tileMatrixSet: 'WebMercatorQuad',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'WebMercatorQuad'}],
+              resourceURLs: []
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'WebMercatorQuad',
+              supportedCRS: 'EPSG:3857',
+              matrices: [
+                {
+                  identifier: '0',
+                  tileWidth: 256,
+                  tileHeight: 256,
+                  topLeftCorner: [-20037508, 20037508],
+                  matrixWidth: 1,
+                  matrixHeight: 1
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  });
+
+  const metadata = await source.getMetadata();
+  expect(metadata.tileGrid).toEqual({
+    crs: 'EPSG:3857',
+    tileSize: [256, 256],
+    origin: [-20037508, 20037508],
+    matrixIds: ['0'],
+    matrixSizes: [[1, 1]]
+  });
+});
+
 test('WMTSImageTileSource uses advertised identifiers for KVP requests', async () => {
   const source = new WMTSImageTileSource('https://example.com/wmts', {
     wmts: {

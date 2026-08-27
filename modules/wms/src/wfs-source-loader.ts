@@ -24,6 +24,7 @@ import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/crs';
+import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
@@ -686,13 +687,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       return null;
     }
 
-    const flipCoordinates = false;
-    // // Only affects WFS 1.3.0
-    // wfsParameters.version === '1.3.0' &&
-    // // Flip if we are dealing with a CRS that was flipped in 1.3.0
-    // this.flipCRS.includes(wfsParameters.crs || '') &&
-    // // Don't flip if we are substituting EPSG:4326 with CRS:84
-    // !(this.substituteCRS84 && wfsParameters.crs === 'EPSG:4326');
+    const normalizedCRS = normalizeServiceCRS(wfsParameters.crs || wfsParameters.srsName);
+    const flipCoordinates =
+      wfsParameters.version === '1.3.0' &&
+      getServiceCRSAxisOrder(normalizedCRS) === 'yx' &&
+      !(this.options.wfs?.substituteCRS84 && normalizedCRS === 'EPSG:4326');
 
     const bbox = bboxValue as
       | [number, number, number, number]

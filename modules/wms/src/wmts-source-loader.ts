@@ -78,7 +78,8 @@ export class WMTSImageTileSource
             [layer.bounds[2], layer.bounds[3]]
           ]
         : undefined,
-      layer: {name: wmts.layer || layer?.identifier || '', layers: []}
+      layer: {name: wmts.layer || layer?.identifier || '', layers: []},
+      tileGrid: toTileGrid(this._getTileMatrixSet(layer))
     };
   }
 
@@ -189,6 +190,23 @@ export class WMTSImageTileSource
     }
     return undefined;
   }
+}
+
+/** Converts a WMTS matrix set into the shared tile-grid metadata shape. */
+function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined) {
+  if (!tileMatrixSet) return undefined;
+  const firstMatrix = tileMatrixSet.matrices[0];
+  return {
+    crs: tileMatrixSet.supportedCRS,
+    tileSize: firstMatrix?.tileWidth
+      ? [firstMatrix.tileWidth, firstMatrix.tileHeight || firstMatrix.tileWidth]
+      : undefined,
+    origin: firstMatrix?.topLeftCorner,
+    matrixIds: tileMatrixSet.matrices.map(matrix => matrix.identifier),
+    matrixSizes: tileMatrixSet.matrices
+      .filter(matrix => matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined)
+      .map(matrix => [matrix.matrixWidth!, matrix.matrixHeight!])
+  };
 }
 
 /** Selects the advertised WMTS matrix identifier for a deck.gl zoom level. */
