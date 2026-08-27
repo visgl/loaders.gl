@@ -401,11 +401,9 @@ export class COPCTileSource
       throw new Error('COPC scan was aborted');
     }
 
-    // Load only hierarchy pages and keep point-data ranges deferred until the
-    // spatial and LOD filters have selected concrete nodes.
-    for await (const _page of this.loadHierarchyInBatches({signal: options.signal})) {
-      // Traversal updates the source hierarchy cache as pages arrive.
-    }
+    // Load only hierarchy pages that can contain selected nodes. Point-data
+    // ranges remain deferred until the resulting node set is known.
+    await this.loadHierarchyPagesForScan(copc, options);
 
     const selectedColumns = options.columns
       ? ([
@@ -450,6 +448,37 @@ export class COPCTileSource
         remaining -= batch.pointCount;
         if (remaining === 0) {
           return;
+        }
+      }
+    }
+  }
+
+  /** Load only hierarchy pages whose conservative subtree can match a scan. */
+  protected async loadHierarchyPagesForScan(
+    copc: COPCFile,
+    options: COPCScanOptions
+  ): Promise<void> {
+    if (!this._hierarchy) {
+      return;
+    }
+    const pending = Object.entries(this._hierarchy.pages);
+    const visited = new Set<string>();
+    while (pending.length > 0) {
+      if (options.signal?.aborted) {
+        throw new Error('COPC scan was aborted');
+      }
+      const [pageId, page] = pending.shift()!;
+      if (!page || visited.has(pageId) || !isCOPCScanPageSelected(copc, pageId, options)) {
+        continue;
+      }
+      visited.add(pageId);
+      const subtree = await loadCOPCHierarchyPage(this._readRange, page, options.signal);
+      this._hierarchy.nodes = {...this._hierarchy.nodes, ...subtree.nodes};
+      this._hierarchy.pages = {...this._hierarchy.pages, ...subtree.pages};
+      delete this._hierarchy.pages[pageId];
+      for (const [childPageId, childPage] of Object.entries(subtree.pages)) {
+        if (childPage) {
+          pending.push([childPageId, childPage]);
         }
       }
     }
@@ -1862,6 +1891,33 @@ function isCOPCScanNodeSelected(
       ) {
         return false;
       }
+    }
+  }
+  return true;
+}
+
+/** Tests whether a hierarchy page can contain a node selected by a scan. */
+function isCOPCScanPageSelected(copc: COPCFile, pageId: string, options: COPCScanOptions): boolean {
+  const [level] = parseCOPCKey(pageId);
+  const maximumLevel = Math.min(
+    options.maximumLevel ?? 31,
+    options.targetSpacing === undefined
+      ? 31
+      : Math.max(0, Math.min(31, Math.ceil(Math.log2(copc.info.spacing / options.targetSpacing))))
+  );
+  if (level > maximumLevel) {
+    return false;
+  }
+  if (!options.bounds) {
+    return true;
+  }
+  const pageBounds = getCOPCKeyBounds(copc.info.cube, parseCOPCKey(pageId));
+  for (let dimension = 0; dimension < 3; dimension++) {
+    if (
+      pageBounds[dimension + 3] < options.bounds.minimum[dimension] ||
+      pageBounds[dimension] > options.bounds.maximum[dimension]
+    ) {
+      return false;
     }
   }
   return true;

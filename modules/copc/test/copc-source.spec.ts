@@ -202,6 +202,26 @@ vitestTest('COPCSourceLoader#prunes scans by hierarchy level and bounds', async 
   expect(pointCount).toBeGreaterThan(0);
 });
 
+vitestTest('COPCSourceLoader#does not fetch hierarchy pages outside scan bounds', async () => {
+  const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+  source.setRangeGetter(async () => {
+    throw new Error('outside hierarchy page should not be fetched');
+  });
+
+  const batches = [];
+  for await (const batch of source.scan({
+    bounds: {
+      minimum: [1e9, 1e9, 1e9],
+      maximum: [1e9 + 1, 1e9 + 1, 1e9 + 1]
+    }
+  })) {
+    batches.push(batch);
+  }
+
+  expect(batches).toHaveLength(0);
+});
+
 test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
