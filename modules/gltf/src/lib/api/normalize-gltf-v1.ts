@@ -121,12 +121,14 @@ class GLTFV1Normalizer {
   };
 
   json;
+  /** Diagnostics collected during this normalization pass. */
   report: GLTFV1NormalizationReport = {
     converted: false,
-    mutated: true,
+    mutated: false,
     unsupported: [],
     warnings: []
   };
+  /** Whether unsupported legacy features should abort conversion. */
   strict = false;
 
   // constructor() {}
@@ -145,7 +147,6 @@ class GLTFV1Normalizer {
       return report;
     }
     this.strict = options.normalize === 'strict';
-    this.report.mutated = true;
     this.json = gltf.json;
     const json = gltf.json;
 
@@ -173,6 +174,7 @@ class GLTFV1Normalizer {
     }
 
     this.report.converted = true;
+    this.report.mutated = true;
 
     // eslint-disable-next-line no-undef, no-console
     console.warn('Converting glTF v1 to glTF v2 format. This is experimental and may fail.');
@@ -423,6 +425,10 @@ class GLTFV1Normalizer {
       for (const meshIndex of meshIndices) {
         const extraNode = {...node, mesh: meshIndex, children: undefined};
         delete extraNode.id;
+        delete extraNode.matrix;
+        delete extraNode.translation;
+        delete extraNode.rotation;
+        delete extraNode.scale;
         nodes.push(extraNode);
         node.children ||= [];
         node.children.push(nodes.length - 1);

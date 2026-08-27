@@ -17,6 +17,7 @@ describe('glTF 1 normalization', () => {
     expect(gltf.json.nodes?.[0].mesh).toBe(0);
     expect(gltf.json.nodes?.[0].children).toEqual([1]);
     expect(gltf.json.nodes?.[1].mesh).toBe(1);
+    expect(gltf.json.nodes?.[1].translation).toBeUndefined();
     expect(gltf.json.animations?.[0].samplers?.[0]).toMatchObject({input: 0, output: 0});
     expect(gltf.json.animations?.[0].channels?.[0]).toMatchObject({
       sampler: 0,
@@ -63,6 +64,15 @@ describe('glTF 1 normalization', () => {
     expect(report.mutated).toBe(false);
     expect(JSON.stringify(gltf.json)).toBe(originalJson);
   });
+
+  test('reports no mutation for assets that do not require conversion', () => {
+    const gltf = {json: {asset: {version: '2.0'}}, buffers: []} as GLTFWithBuffers;
+
+    const report = normalizeGLTFV1(gltf, {normalize: true});
+
+    expect(report.converted).toBe(false);
+    expect(report.mutated).toBe(false);
+  });
 });
 
 /** Create a compact glTF 1 object-map asset with representative legacy relationships. */
@@ -74,7 +84,7 @@ function makeGLTFV1(): GLTFWithBuffers {
       scene: 'scene0',
       scenes: {scene0: {nodes: ['node0']}},
       nodes: {
-        node0: {meshes: ['mesh0', 'mesh1']}
+        node0: {meshes: ['mesh0', 'mesh1'], translation: [1, 2, 3]}
       },
       meshes: {
         mesh0: {primitives: [{attributes: {POSITION: 'accessor0'}}]},
