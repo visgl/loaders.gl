@@ -890,7 +890,8 @@ export class ParquetSource
               columnList,
               rowRange,
               pagePlan.pageLocations,
-              signal
+              signal,
+              rowGroupIndex
             )
           )
         )
@@ -899,7 +900,8 @@ export class ParquetSource
             initialization.parquetSchema,
             rowGroup,
             columnList,
-            signal
+            signal,
+            rowGroupIndex
           )
         ];
     throwIfAborted(signal);

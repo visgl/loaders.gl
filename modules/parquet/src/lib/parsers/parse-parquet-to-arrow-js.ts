@@ -127,7 +127,9 @@ async function readProjectedSchema(
   options?: ParquetJSLoaderOptions
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
-    preserveBinary: options?.parquet?.preserveBinary
+    preserveBinary: options?.parquet?.preserveBinary,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
   });
   return projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
 }
@@ -149,7 +151,9 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     preserveBinary: options?.parquet?.preserveBinary,
     retainByteArrayViews: true,
     useTypedValueBuffers: true,
-    useTypedLevelBuffers: true
+    useTypedLevelBuffers: true,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
   });
   const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
   const arrowSchema = createParquetArrowSchema(schema);

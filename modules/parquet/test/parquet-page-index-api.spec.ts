@@ -103,15 +103,19 @@ describe('Parquet page-index public helpers', () => {
     expect(new TextDecoder().decode(decoded)).toBe('footer');
   });
 
-  test('includes page ordinals for all encrypted page modules', () => {
+  test('includes page ordinals only for data page modules', () => {
     const fileUnique = new Uint8Array(8).fill(2);
-    for (const module of ['data-page', 'dictionary-page', 'data-page-header', 'dictionary-page-header'] as const) {
+    for (const module of ['data-page', 'data-page-header'] as const) {
       const aad = createParquetModuleAad(undefined, fileUnique, module, 3, 5, 7);
       expect(aad.byteLength).toBe(15);
       const suffix = new DataView(aad.buffer, aad.byteOffset, aad.byteLength);
       expect(suffix.getInt16(8 + 1, true)).toBe(3);
       expect(suffix.getInt16(8 + 3, true)).toBe(5);
       expect(suffix.getInt16(8 + 5, true)).toBe(7);
+    }
+    for (const module of ['dictionary-page', 'dictionary-page-header'] as const) {
+      const aad = createParquetModuleAad(undefined, fileUnique, module, 3, 5, 7);
+      expect(aad.byteLength).toBe(13);
     }
   });
 });

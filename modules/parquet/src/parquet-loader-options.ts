@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Shared row-level options supported by both Parquet backends. */
 type ParquetCommonLoaderOptions = {
@@ -38,6 +39,10 @@ export type ParquetLoaderOptions = LoaderOptions & {
 export type ParquetJSLoaderOptions = LoaderOptions & {
   parquet?: {
     shape?: 'object-row-table' | 'arrow-table';
+    /** Resolves modular-encryption keys from file and column key metadata. */
+    keyRetriever?: ParquetKeyRetriever;
+    /** AAD prefix for encrypted files that intentionally omit it from metadata. */
+    aadPrefix?: Uint8Array;
   } & {
     [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };
