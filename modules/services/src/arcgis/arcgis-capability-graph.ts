@@ -102,7 +102,7 @@ function normalizeServiceCapabilities(
 ): ArcGISServiceCapabilities {
   const serviceType = service.type;
   const kind = getServiceKind(serviceType);
-  const formats = getServiceFormats(kind, metadata);
+  const formats = getServiceFormats(metadata);
   const crs = getServiceCrs(metadata);
   return {
     ...service,
@@ -123,10 +123,7 @@ function getServiceKind(serviceType: string): ArcGISServiceCapabilities['kind'] 
 }
 
 /** Extracts and canonicalizes formats advertised by an ArcGIS service. */
-function getServiceFormats(
-  kind: ArcGISServiceCapabilities['kind'],
-  metadata: Record<string, unknown>
-): string[] {
+function getServiceFormats(metadata: Record<string, unknown>): string[] {
   const formats = new Set<string>();
   const supportedFormats = metadata.supportedQueryFormats;
   if (typeof supportedFormats === 'string') {
@@ -138,7 +135,6 @@ function getServiceFormats(
   }
   const tileInfo = metadata.tileInfo as {format?: string} | undefined;
   if (typeof tileInfo?.format === 'string') formats.add(tileInfo.format.toLowerCase());
-  if (kind === 'vector') formats.add('geojson');
   return [...formats].sort();
 }
 
