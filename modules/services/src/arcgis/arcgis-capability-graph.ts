@@ -108,7 +108,7 @@ function normalizeServiceCapabilities(
   const crs = getServiceCrs(metadata);
   const capabilities: ServiceCapabilities = {
     url: service.url,
-    type: getServiceCapabilityType(kind),
+    type: getServiceCapabilityType(serviceType),
     name: service.name,
     title: typeof metadata.name === 'string' ? metadata.name : undefined,
     abstract: typeof metadata.description === 'string' ? metadata.description : undefined,
@@ -128,12 +128,13 @@ function normalizeServiceCapabilities(
 }
 
 /** Maps a discovered ArcGIS family to the shared service capability type. */
-function getServiceCapabilityType(
-  kind: ArcGISServiceCapabilities['kind']
-): ServiceCapabilities['type'] {
-  if (kind === 'vector') return 'arcgis-feature-server';
-  if (kind === 'image') return 'arcgis-image-server';
-  if (kind === 'tile') return 'arcgis-map-server';
+function getServiceCapabilityType(serviceType: string): ServiceCapabilities['type'] {
+  if (serviceType.includes('vectortile') || serviceType.includes('vector-tile')) {
+    return 'arcgis-vector-tile-server';
+  }
+  if (serviceType.includes('feature')) return 'arcgis-feature-server';
+  if (serviceType.includes('image')) return 'arcgis-image-server';
+  if (serviceType.includes('map')) return 'arcgis-map-server';
   return 'unknown';
 }
 
@@ -141,7 +142,12 @@ function getServiceCapabilityType(
 function getServiceKind(serviceType: string): ArcGISServiceCapabilities['kind'] {
   if (serviceType.includes('feature')) return 'vector';
   if (serviceType.includes('image')) return 'image';
-  if (serviceType.includes('map') || serviceType.includes('vector-tile')) return 'tile';
+  if (
+    serviceType.includes('map') ||
+    serviceType.includes('vectortile') ||
+    serviceType.includes('vector-tile')
+  )
+    return 'tile';
   return 'unknown';
 }
 

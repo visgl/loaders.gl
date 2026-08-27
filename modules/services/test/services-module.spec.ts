@@ -134,4 +134,22 @@ describe('@loaders.gl/services', () => {
     expect(graph?.nodes[0].capabilities.formats).toEqual(['json']);
     expect(selectArcGISService(graph!, {format: 'geojson'})).toBeUndefined();
   });
+
+  test('normalizes VectorTileServer directory entries', async () => {
+    const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services', {
+      fetch: async url =>
+        new Response(
+          JSON.stringify(
+            url.endsWith('/services?f=pjson')
+              ? {services: [{name: 'Basemap', type: 'VectorTileServer'}]}
+              : {tileInfo: {format: 'pbf'}}
+          )
+        )
+    });
+
+    expect(graph?.nodes[0]).toMatchObject({
+      kind: 'tile',
+      capabilities: {type: 'arcgis-vector-tile-server', formats: ['pbf']}
+    });
+  });
 });
