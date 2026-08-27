@@ -68,6 +68,7 @@ const LASZIP_USER_ID = 'laszip encoded';
 const LASZIP_RECORD_ID = 22204;
 const VARIABLE_CHUNK_SIZE = 0xffffffff;
 const LAZ_CHUNK_TABLE_POINTER_LENGTH = 8;
+const LEGACY_LAZ_FEED_BLOCK_SIZE = 64 * 1024;
 
 /** One compressed field item declared by the LASzip VLR. */
 type LASZipItem = {
@@ -170,7 +171,10 @@ export function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {
     const bytes = new Uint8Array(arrayBuffer);
     const laszip = parseLASZipVLR(bytes, header);
     validateTypeScriptLAZSupport(header, laszip);
-    if (header.pointsFormatId >= 6 && header.pointsFormatId <= 10) {
+    if (
+      header.pointsFormatId === 3 ||
+      (header.pointsFormatId >= 6 && header.pointsFormatId <= 10)
+    ) {
       return parseCompleteLAZFileToArrowTable(bytes, header, laszip, options);
     }
     const rawPointData = decodeLAZFileToRawPointData(arrayBuffer, header, laszip);
@@ -239,7 +243,7 @@ export function decodeLAZChunkToArrowTable(
   return makePointDataStateArrowTable(header, state, pointCount, options, true);
 }
 
-/** Decode one complete modern LAZ file directly into its represented Arrow columns. */
+/** Decode one complete supported LAZ file directly into its represented Arrow columns. */
 function parseCompleteLAZFileToArrowTable(
   bytes: Uint8Array,
   header: LASHeader,
@@ -272,9 +276,7 @@ function parseCompleteLAZFileToArrowTable(
   }
 
   if (decodedPointCount !== pointCount) {
-    throw new Error(
-      `LASLoader: decoded ${decodedPointCount} modern LAZ points; expected ${pointCount}`
-    );
+    throw new Error(`LASLoader: decoded ${decodedPointCount} LAZ points; expected ${pointCount}`);
   }
   return makePointDataStateArrowTable(header, state, pointCount, options);
 }
@@ -321,7 +323,7 @@ function makePointDataStateArrowTable(
   );
 }
 
-/** Decode one complete modern LAZ chunk into preallocated Arrow column buffers. */
+/** Decode one complete supported LAZ chunk into preallocated Arrow column buffers. */
 function decodeCompleteLAZChunkToPointData(
   bytes: Uint8Array,
   byteOffset: number,
@@ -334,7 +336,7 @@ function decodeCompleteLAZChunkToPointData(
 ): void {
   const compressed = bytes.subarray(byteOffset, byteOffset + byteLength);
   if (compressed.byteLength !== byteLength) {
-    throw new NeedsMoreData('LASLoader: truncated modern LAZ chunk');
+    throw new NeedsMoreData('LASLoader: truncated LAZ chunk');
   }
   const cursor = createLAZChunkDecoderCursor(
     compressed,
@@ -598,7 +600,11 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
 
     while (cursor.remainingPointCount > 0) {
       const availableByteLength = reader.getAvailableByteLength();
-      const requestedByteLength = Math.min(availableByteLength, cursor.requiredInputByteLength);
+      const requestedByteLength = getLegacyLAZFeedByteLength(
+        availableByteLength,
+        fedByteLength,
+        cursor.requiredInputByteLength
+      );
       if (requestedByteLength > fedByteLength) {
         const checkpoint = reader.checkpoint();
         reader.skip(fedByteLength);
@@ -661,6 +667,18 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
   }
 }
 
+/** Return a bounded legacy decoder prefix that amortizes feed and reader bookkeeping. */
+function getLegacyLAZFeedByteLength(
+  availableByteLength: number,
+  fedByteLength: number,
+  requiredInputByteLength: number
+): number {
+  return Math.min(
+    availableByteLength,
+    Math.max(requiredInputByteLength, fedByteLength + LEGACY_LAZ_FEED_BLOCK_SIZE)
+  );
+}
+
 async function* parseLAZInBatches(
   initialPending: Uint8Array<ArrayBufferLike>,
   inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
@@ -669,6 +687,16 @@ async function* parseLAZInBatches(
 ): AsyncIterable<LASArrowTable> {
   const {pending, laszip} = await readLASZipVLRFromInput(initialPending, inputIterator, header);
   validateTypeScriptLAZSupport(header, laszip);
+  if (!laszip.variableChunks && header.pointsFormatId === 3) {
+    yield* parsePendingFixedPDRF3LAZFileInArrowBatches(
+      pending,
+      inputIterator,
+      header,
+      laszip,
+      options
+    );
+    return;
+  }
   if (!laszip.variableChunks && header.pointsFormatId >= 6 && header.pointsFormatId <= 10) {
     yield* parsePendingLAZFileInArrowBatches(pending, inputIterator, header, laszip, options);
     return;
@@ -682,6 +710,109 @@ async function* parseLAZInBatches(
     options
   )) {
     yield parseLASArrowTableBatch(batch.arrayBuffer, batch.header, options);
+  }
+}
+
+/** Decode fixed-size PDRF 3 LAZ chunks directly into streaming Arrow batches. */
+async function* parsePendingFixedPDRF3LAZFileInArrowBatches(
+  initialPending: Uint8Array<ArrayBufferLike>,
+  inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
+  header: LASHeader,
+  laszip: LASZipVLR,
+  options: LASLoaderOptions
+): AsyncIterable<LASArrowTable> {
+  const outputHeader = {...header, totalToRead: header.pointsCount};
+  const state = createPointDataBatchState(getBatchSize(options), header, options);
+  const stats = getLAZStreamingDecodeStats(options);
+  const chunkByteLengths: number[] = [];
+  const reader = new BinaryChunkReader();
+  reader.write(initialPending);
+
+  await readUntilAvailable(
+    reader,
+    inputIterator,
+    header.pointsOffset + LAZ_CHUNK_TABLE_POINTER_LENGTH,
+    'LASLoader: incomplete compressed LAZ point data'
+  );
+  reader.skip(header.pointsOffset);
+  const chunkTableOffset = readStreamedLAZChunkTableOffset(
+    reader.getDataView(LAZ_CHUNK_TABLE_POINTER_LENGTH)!
+  );
+
+  let sourcePointIndex = 0;
+  while (sourcePointIndex < header.pointsCount) {
+    const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
+    const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
+    const cursor = createLAZChunkDecoderCursor(new Uint8Array(0), metadata);
+    let fedByteLength = 0;
+    let inputDone = false;
+
+    while (cursor.remainingPointCount > 0) {
+      const availableByteLength = reader.getAvailableByteLength();
+      const requestedByteLength = getLegacyLAZFeedByteLength(
+        availableByteLength,
+        fedByteLength,
+        cursor.requiredInputByteLength
+      );
+      if (requestedByteLength > fedByteLength) {
+        const checkpoint = reader.checkpoint();
+        reader.skip(fedByteLength);
+        const addedByteLength = requestedByteLength - fedByteLength;
+        recordReadBytesStats(reader, addedByteLength, stats);
+        cursor.feed(reader.readBytes(addedByteLength));
+        reader.restore(checkpoint);
+        fedByteLength = requestedByteLength;
+      }
+
+      state.target.pointOffset = state.batchPointCount;
+      const availableBatchPointCount = state.batchCapacity - state.batchPointCount;
+      const decodedPointCount = cursor.decodeAvailableIntoPointData(
+        state.target,
+        availableBatchPointCount,
+        inputDone
+      );
+      if (decodedPointCount > 0) {
+        populateDecodedTypedExtraBytes(state, state.batchPointCount, decodedPointCount);
+        state.batchPointCount += decodedPointCount;
+        if (state.batchPointCount === state.batchCapacity) {
+          const batch = flushPointDataBatch(outputHeader, state, options);
+          if (batch) {
+            yield batch;
+          }
+        }
+        continue;
+      }
+
+      if (inputDone) {
+        throw new NeedsMoreData(
+          `LASLoader: truncated legacy LAZ chunk after ${chunkPointCount - cursor.remainingPointCount} of ${chunkPointCount} points with ${availableByteLength} bytes available`
+        );
+      }
+      const next = await inputIterator.next();
+      if (next.done) {
+        inputDone = true;
+      } else {
+        reader.write(next.value);
+      }
+    }
+
+    reader.skip(cursor.compressedByteOffset);
+    chunkByteLengths.push(cursor.compressedByteOffset);
+    sourcePointIndex += chunkPointCount;
+  }
+
+  await validateStreamedFixedLAZChunkTable(
+    reader,
+    inputIterator,
+    header,
+    laszip,
+    chunkTableOffset,
+    chunkByteLengths
+  );
+
+  const finalBatch = flushPointDataBatch(outputHeader, state, options);
+  if (finalBatch) {
+    yield finalBatch;
   }
 }
 

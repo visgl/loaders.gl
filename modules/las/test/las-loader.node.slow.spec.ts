@@ -19,6 +19,7 @@ import {
 import * as las from '@loaders.gl/las';
 import * as bundledLas from '@loaders.gl/las/bundled';
 import * as unbundledLas from '@loaders.gl/las/unbundled';
+import type {LASLoaderOptions} from '@loaders.gl/las';
 import {
   setLoaderOptions,
   fetchFile,
@@ -272,12 +273,21 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
 test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
+  const streamingStats = {
+    copiedBytes: 0,
+    chunkConcatenations: 0,
+    rawBatchAllocations: 0,
+    decodedChunkAllocations: 0
+  };
   const expected = await parse(arrayBuffer.slice(0), LAZRsLoader, {
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 250,
-    core: {worker: false}
+    core: {worker: false},
+    las: {lazStreamingStats: streamingStats} as LASLoaderOptions['las'] & {
+      lazStreamingStats: typeof streamingStats;
+    }
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   expect(expected.loaderData.versionAsString, 'fixture is LAS 1.2').toBe('1.2');
@@ -295,6 +305,7 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', asy
     },
     'split TypeScript LAZ PDRF 3 streaming matches laz-rs'
   );
+  expect(streamingStats.rawBatchAllocations, 'PDRF 3 streaming avoids raw point batches').toBe(0);
 }, 30000);
 test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async () => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
