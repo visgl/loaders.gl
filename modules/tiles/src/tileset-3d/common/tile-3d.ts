@@ -1067,15 +1067,15 @@ export class Tile3D {
         ? content
         : [content]
       : this._contentBoundingVolumeHeaders;
-    this._contentBoundingVolumes = contentHeaders
-      .filter(headerEntry => headerEntry?.boundingVolume)
-      .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
-    if (
-      !contentHeaders.length ||
-      contentHeaders.some(headerEntry => !headerEntry?.boundingVolume)
-    ) {
-      this._contentBoundingVolumes.push(this.boundingVolume);
-    }
+    // Preserve source order: an unbounded content entry uses the tile volume at its
+    // corresponding index rather than being appended after bounded sibling entries.
+    this._contentBoundingVolumes = contentHeaders.length
+      ? contentHeaders.map(headerEntry =>
+          headerEntry?.boundingVolume
+            ? createBoundingVolume(headerEntry.boundingVolume, this.computedTransform)
+            : this.boundingVolume
+        )
+      : [this.boundingVolume];
     this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
