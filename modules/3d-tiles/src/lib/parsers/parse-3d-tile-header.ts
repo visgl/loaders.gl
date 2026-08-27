@@ -275,7 +275,12 @@ export async function normalizeTileHeaders(
           resourceResolver
         );
       } else {
-        childHeaderPostprocessed = normalizeTileData(childHeader, basePath, resourceResolver, tileset.schema);
+        childHeaderPostprocessed = normalizeTileData(
+          childHeader,
+          basePath,
+          resourceResolver,
+          tileset.schema
+        );
       }
 
       if (childHeaderPostprocessed) {
@@ -320,7 +325,11 @@ export async function normalizeImplicitTileHeaders(
     content: tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
-  const normalizedContents = normalizeTileContents(normalizedTile.content, resourceResolver, tileset.schema);
+  const normalizedContents = normalizeTileContents(
+    normalizedTile.content,
+    resourceResolver,
+    tileset.schema
+  );
   const maximumLevel = Number.isFinite(implicitTilingExtension.availableLevels)
     ? implicitTilingExtension.availableLevels - 1
     : implicitTilingExtension.maximumLevel;
