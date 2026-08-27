@@ -110,7 +110,6 @@ export default getVitestConfig({
         'geotiff',
         'get-pixels',
         'jszip',
-        'ktx-parse',
         'lerc',
         'long',
         'lz4js',

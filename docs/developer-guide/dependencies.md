@@ -96,13 +96,13 @@ const mesh = await load(url, DracoLoader, {
 
 ### Basis
 
-Bundled encoder injection:
+Bundled transcoder injection:
 
 ```typescript
 const texture = await load(url, CompressedTextureLoader, {
   'compressed-texture': {useBasis: true},
   modules: {
-    basisEncoder
+    basis
   }
 });
 ```
@@ -111,7 +111,6 @@ URL overrides:
 
 ```typescript
 const texture = await load(url, BasisLoader, {
-  basis: {module: 'transcoder'},
   modules: {
     'basis_transcoder.js': '/vendor/basis/basis_transcoder.js',
     'basis_transcoder.wasm': '/vendor/basis/basis_transcoder.wasm'

@@ -11,10 +11,12 @@ import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,
   GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
   GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+  GL_COMPRESSED_RGBA8_ETC2_EAC,
   GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+  GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
   GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
   GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-  GL_RGB565
+  GL_RGBA8
 } from '../src/lib/gl-extensions';
 import {withBasisTranscodingLock} from '../src/lib/parsers/parse-basis';
 
@@ -48,8 +50,8 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
     t.equals(image.data.byteLength, 393216, 'image `data.byteLength` is correct');
   } else {
     t.equals(image.compressed, false, 'image is compressed');
-    t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
-    t.equals(image.textureFormat, 'rgb565unorm-webgl', 'image `textureFormat` is correct');
+    t.equals(image.data.byteLength, 1572864, 'image `data.byteLength` is correct');
+    t.equals(image.textureFormat, 'rgba8unorm', 'image `textureFormat` is correct');
   }
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
@@ -67,10 +69,10 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
   t.equals(image.width, 768, 'image width is correct');
   t.equals(image.height, 512, 'image height is correct');
   t.equals(image.compressed, false, 'image height is correct');
-  t.equals(image.textureFormat, 'rgb565unorm-webgl', 'image `textureFormat` is correct');
+  t.equals(image.textureFormat, 'rgba8unorm', 'image `textureFormat` is correct');
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-  t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
+  t.equals(image.data.byteLength, 1572864, 'image `data.byteLength` is correct');
 
   t.end();
 });
@@ -89,8 +91,10 @@ test('BasisLoader#auto-select a target format', async (t) => {
       typeof image.format === 'number' &&
         [
           GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+          GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
           GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
           GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+          GL_COMPRESSED_RGBA8_ETC2_EAC,
           GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
           GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
           GL_COMPRESSED_RGB_ETC1_WEBGL
@@ -99,11 +103,7 @@ test('BasisLoader#auto-select a target format', async (t) => {
     );
     t.ok(image.compressed, 'Basis transcodes to compressed texture');
   } else {
-    t.equals(
-      image.format,
-      GL_RGB565,
-      'Basis transcodes to RGB565 in NodeJS'
-    );
+    t.equals(image.format, GL_RGBA8, 'Basis transcodes alpha textures to RGBA8 in NodeJS');
     t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
   }
 
@@ -209,6 +209,22 @@ test('BasisLoader#uses injected transcoder modules', async (t) => {
 
     getHasAlpha() {
       return false
+    }
+
+    getBasisTexFormat() {
+      return 0
+    }
+
+    isHDR() {
+      return false
+    }
+
+    getBlockWidth() {
+      return 4
+    }
+
+    getBlockHeight() {
+      return 4
     }
 
     getImageTranscodedSizeInBytes() {

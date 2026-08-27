@@ -21,7 +21,7 @@ let loadBasisTranscoderPromise;
 /**
  * Loads wasm transcoder module
  * @param options
- * @returns {BasisFile} promise
+ * @returns initialized Basis transcoder module
  */
 export async function loadBasisTranscoderModule(options: LoadLibraryOptions) {
   registerJSModules(options.modules);
@@ -37,7 +37,7 @@ export async function loadBasisTranscoderModule(options: LoadLibraryOptions) {
 /**
  * Loads wasm transcoder module
  * @param options
- * @returns {BasisFile} promise
+ * @returns initialized Basis transcoder module
  */
 async function loadBasisTranscoder(options: LoadLibraryOptions) {
   let BASIS = null;
@@ -58,7 +58,7 @@ async function loadBasisTranscoder(options: LoadLibraryOptions) {
  * Initialize wasm transcoder module
  * @param BasisModule - js part of the module
  * @param wasmBinary - wasm part of the module
- * @returns {BasisFile} promise
+ * @returns initialized Basis transcoder module
  */
 function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
   const options: {wasmBinary?} = {};
@@ -70,9 +70,22 @@ function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
   return new Promise(resolve => {
     // if you try to return BasisModule the browser crashes!
     BasisModule(options).then(module => {
-      const {BasisFile, initializeBasis} = module;
+      const {
+        BasisFile,
+        KTX2File,
+        getBasisTexFormatBlockHeight,
+        getBasisTexFormatBlockWidth,
+        initializeBasis,
+        isFormatSupported
+      } = module;
       initializeBasis();
-      resolve({BasisFile});
+      resolve({
+        BasisFile,
+        KTX2File,
+        getBasisTexFormatBlockHeight,
+        getBasisTexFormatBlockWidth,
+        isFormatSupported
+      });
     });
   });
 }
@@ -82,7 +95,7 @@ let loadBasisEncoderPromise;
 /**
  * Loads wasm encoder module
  * @param options
- * @returns {BasisFile, KTX2File} promise
+ * @returns initialized Basis encoder module
  */
 export async function loadBasisEncoderModule(options: LoadLibraryOptions) {
   const modules = options.modules || {};
@@ -97,7 +110,7 @@ export async function loadBasisEncoderModule(options: LoadLibraryOptions) {
 /**
  * Loads wasm encoder module
  * @param options
- * @returns {BasisFile, KTX2File} promise
+ * @returns initialized Basis encoder module
  */
 async function loadBasisEncoder(options: LoadLibraryOptions) {
   let BASIS_ENCODER = null;
@@ -118,7 +131,7 @@ async function loadBasisEncoder(options: LoadLibraryOptions) {
  * Initialize wasm transcoder module
  * @param BasisEncoderModule - js part of the module
  * @param wasmBinary - wasm part of the module
- * @returns {BasisFile, KTX2File} promise
+ * @returns initialized Basis encoder module
  */
 function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
   const options: {wasmBinary?} = {};

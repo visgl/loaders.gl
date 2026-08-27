@@ -19,6 +19,17 @@ export {
 } from './texture-format';
 
 export type {BasisLoaderOptions} from './basis-loader';
+export type {
+  BasisASTCBlockSize,
+  BasisCodec,
+  BasisEncoderFormat,
+  BasisFormat,
+  BasisFormatSelection,
+  BasisImageData,
+  BasisSupportedTextureFeatures,
+  BasisTargetFormat,
+  BasisTextureInfo
+} from './basis-types';
 export {BasisLoader} from './basis-loader';
 
 export type {CompressedTextureLoaderOptions} from './compressed-texture-loader';
@@ -66,10 +77,11 @@ export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
 
 // Basis format selection
-export {selectSupportedBasisFormat} from './lib/utils/basis-format-utils';
+export {getSupportedBasisFormats, selectSupportedBasisFormat} from './lib/utils/basis-format-utils';
 
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
+export type {KTX2BasisWriterOptions} from './ktx2-basis-writer';
 export {KTX2BasisWriter} from './ktx2-basis-writer';
 
 export const KTX2BasisWriterWorker = {
@@ -80,10 +92,13 @@ export const KTX2BasisWriterWorker = {
   extensions: ['ktx2'],
   worker: true,
   options: {
-    useSRGB: false,
-    qualityLevel: 10,
-    encodeUASTC: false,
-    mipmaps: false
+    ['ktx2-basis-writer']: {
+      format: 'etc1s',
+      contentType: 'linear',
+      mipmaps: false,
+      zstd: false,
+      ldrToHdrNitMultiplier: 100
+    }
   }
 };
 

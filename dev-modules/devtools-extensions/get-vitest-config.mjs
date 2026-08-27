@@ -102,7 +102,6 @@ export async function getVitestConfig(options = {}) {
         'geotiff',
         'get-pixels',
         'jszip',
-        'ktx-parse',
         'lerc',
         'long',
         'lz4js',
