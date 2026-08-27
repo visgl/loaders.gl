@@ -172,9 +172,12 @@ const parquetBuffer = await encode(table, ParquetJSWriter, {
 | `parquet.encryption.aadPrefix` | `Uint8Array` | `undefined` | Optional AAD prefix shared by encrypted modules. |
 | `parquet.encryption.fileUnique` | `Uint8Array` | generated | Eight-byte file identifier used to construct module AAD. |
 | `parquet.encryption.encryptColumns` | `boolean \| Record<string, boolean>` | `false` | Encrypt all columns or only named top-level columns with the footer key. |
+| `parquet.encryption.columnKeyMetadata` | `Record<string, Uint8Array>` | `undefined` | Assigns opaque key metadata per top-level column; columns use `ENCRYPTION_WITH_COLUMN_KEY` and may rotate independently. |
 | `parquet.encryption.keyRetriever` | `ParquetKeyRetriever` | required | Resolves the footer key without placing key bytes in the options object. |
+| `parquet.footerSignature` | `ParquetWriterFooterSignatureOptions` | `undefined` | Authenticates a plaintext footer with a 28-byte Parquet signature; mutually exclusive with encrypted footers. |
 
-Per-column keys, key rotation, and plaintext-footer signature generation remain follow-up work.
+Per-column keys, key rotation, and plaintext-footer signatures are opt-in. The key retriever receives
+the corresponding footer or column metadata and key material is never serialized into writer options.
 
 ## Writer Variants
 
