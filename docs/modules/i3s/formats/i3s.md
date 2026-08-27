@@ -50,10 +50,10 @@ those versions.
 
 | Generation | Status | Since | Notes |
 | --- | :---: | :---: | --- |
-| I3S 1.6 mesh resources | **Partial** | v2.0 | Legacy `/nodes/{id}` hierarchies and uncompressed `defaultGeometrySchema` buffers are supported. Legacy `sharedResource` material interpretation and mesh-segmentation data are gaps. |
+| I3S 1.6 mesh resources | **Partial** | v2.0 | Legacy `/nodes/{id}` hierarchies and uncompressed `defaultGeometrySchema` buffers are supported. Shared-resource materials are normalized from the first legacy definition, and appended mesh-segmentation payloads are retained but not decoded into draw segments. |
 | I3S 1.7 mesh resources | **Supported** | v2.3 | Node pages, OBBs, and geometry definitions arrived in v2.3; Draco geometry, material definitions, and texture-set selection followed in v3.0. |
 | I3S 1.8 mesh additions | **Supported** | v3.1 | KTX2/Basis textures and PBR material fields used by the rendering path are supported, subject to the material limitations below. |
-| I3S 1.9-1.10 mesh documents | **Partial** | **v5.0** | Forward fields are preserved by v5.0 metadata schemas and the established mesh resource layouts are consumed. There is no dedicated 1.9/1.10 conformance fixture suite, and newer semantics are supported only where listed in this matrix. |
+| I3S 1.9-1.10 mesh documents | **Partial** | **v5.0** | Forward fields are preserved by v5.0 metadata schemas, dedicated 1.9/1.10 fixtures cover the scene-layer envelope, and established mesh resource layouts are consumed. Newer semantics remain bounded by the feature rows below. |
 | I3S 2.0-2.1 Point Cloud | **Not supported** | — | The Point Cloud profile is outside the current mesh-oriented implementation. |
 
 ### Delivery and resource access
@@ -102,7 +102,7 @@ those versions.
 | Feature IDs | **Supported** | v3.0 | Expands uncompressed face ranges and Draco feature-index metadata into per-vertex feature IDs. |
 | Mesh indices | **Supported** | v3.0 | Draco indices are preserved; uncompressed I3S face order is represented by the expanded vertex stream. |
 | Multiple UV sets | **Not supported** | — | Only the primary UV set is exposed. |
-| Legacy mesh segmentation | **Not supported** | — | Segment information appended to legacy geometry buffers is not parsed. |
+| Legacy mesh segmentation | **Partial** | **v5.0** | Bytes appended after schema-defined legacy geometry attributes are retained as `meshSegmentation`; the service-specific segment record is not yet decoded into renderer draw ranges. |
 | 64-bit geometry attributes | **Partial** | **v5.0** | UInt64 values are returned in a `Float64Array` and preserved exactly through `Number.MAX_SAFE_INTEGER`; larger values cannot be represented exactly. Signed 64-bit geometry attributes are not decoded. |
 
 ### Textures and materials
@@ -172,7 +172,7 @@ current v5.0 development line; the remaining tranches close the largest unsuppor
 | --- | --- | :---: |
 | 0. Conformance foundation | Freeze the matrix, keep representative 1.6–1.10 fixtures, and run automated support-status checks. | **Complete** |
 | 1. Correctness hardening | Make root authentication, node metadata passthrough, UInt64 precision, and WebScene CRS validation match the documented boundaries. | **Complete** |
-| 2. 1.10 mesh parity | Add legacy shared-resource and mesh-segmentation support, then expand 1.9/1.10 conformance fixtures. | Planned |
+| 2. 1.10 mesh parity | Add legacy shared-resource material interpretation and mesh-segmentation preservation, then expand 1.9/1.10 conformance fixtures. | **Complete** |
 | 3. Material fidelity | Load complete PBR texture sets, multiple atlases/UV sets, and sampler wrap semantics. | Planned |
 | 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | Planned |
 | 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal). | Planned |

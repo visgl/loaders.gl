@@ -127,6 +127,8 @@ export type I3SMinimalNodeData = {
   attributeUrls?: string[];
   /** Material definition from I3S layer metadata */
   materialDefinition?: I3SMaterialDefinition;
+  /** Legacy shared-resource bundle loaded for this node, when present. */
+  sharedResources?: SharedResources;
   /** Texture format per I3S spec */
   textureFormat: I3STextureFormat;
   /** Loader options for texture loader. The loader might be `CompressedTextureLoader` for `dds`, BasisLoader for `ktx2` or `ImageBitmapLoader` for `jpg` and `png`. */
@@ -209,6 +211,8 @@ export type I3STileContent = {
   coordinateSystem: CoordinateSystem;
   byteLength: number;
   texture: TileContentTexture;
+  /** Opaque mesh-segmentation payload appended to a legacy geometry buffer. */
+  meshSegmentation?: ArrayBuffer;
   [key: string]: any;
 };
 

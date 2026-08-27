@@ -245,13 +245,19 @@ async function parseI3SNodeGeometry(
     );
 
     // Getting feature attributes such as featureIds and faceRange
-    const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
-      arrayBuffer,
-      offset,
-      featureAttributes,
-      featureCount,
-      featureAttributeOrder
-    );
+    const {attributes: normalizedFeatureAttributes, byteOffset: featureByteOffset} =
+      normalizeAttributes(
+        arrayBuffer,
+        offset,
+        featureAttributes,
+        featureCount,
+        featureAttributeOrder
+      );
+
+    const meshSegmentation = extractMeshSegmentation(arrayBuffer, featureByteOffset);
+    if (meshSegmentation) {
+      content.meshSegmentation = meshSegmentation;
+    }
 
     flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes);
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
@@ -294,6 +300,22 @@ async function parseI3SNodeGeometry(
   content.byteLength = contentByteLength;
 
   return content;
+}
+
+/**
+ * Preserve the optional legacy mesh-segmentation payload that follows the schema-defined attributes.
+ * Older I3S services append this payload to the geometry buffer without adding it to
+ * `defaultGeometrySchema`; retaining it keeps the bytes available to applications that understand
+ * the service-specific segmentation record.
+ * @param arrayBuffer - complete legacy geometry buffer
+ * @param byteOffset - first byte after schema-defined attributes
+ * @returns segmentation bytes, or undefined when the schema consumes the complete buffer
+ */
+function extractMeshSegmentation(
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number
+): ArrayBuffer | undefined {
+  return byteOffset < arrayBuffer.byteLength ? arrayBuffer.slice(byteOffset) : undefined;
 }
 
 /**
