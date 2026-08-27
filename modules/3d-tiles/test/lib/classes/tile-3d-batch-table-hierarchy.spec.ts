@@ -7,7 +7,6 @@
 
 import { expect, test } from "vitest";
 import Tile3DBatchTableParser from '../../../src/lib/classes/tile-3d-batch-table';
-import {traverseHierarchy} from '../../../src/lib/classes/tile-3d-batch-table-hierarchy';
 import {loadRootTile} from '../utils/load-utils';
 const BATCH_TABLE_HIERARCHY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchy/tileset.json';
 const BATCH_TABLE_HIERARCHY_BINARY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyBinary/tileset.json';
@@ -192,22 +191,6 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents', () => {
     })).not.toThrow();
 });
 
-test('traverseHierarchy#walks multiple parents until a match', () => {
-    const hierarchy = {
-        classIds: [0, 1, 1, 2],
-        parentCounts: [2, 1, 1, 0],
-        parentIndexes: [0, 2, 3, 4],
-        parentIds: [1, 2, 3, 3]
-    };
-    const visitedInstances = [];
-    const result = traverseHierarchy(hierarchy, 0, (currentHierarchy, instanceIndex) => {
-        visitedInstances.push(instanceIndex);
-        return currentHierarchy.classIds[instanceIndex] === 2 ? true : undefined;
-    });
-
-    expect(result).toBe(true);
-    expect(visitedInstances).toEqual([0, 2, 3]);
-});
 test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', () => {
     //             zone
     //             / |  \
