@@ -147,16 +147,16 @@ function queryArrowTableRelational(
     }
   }
 
+  if (options.groupBy?.length || options.aggregates?.length) {
+    rows = aggregateRows(rows, options.groupBy || [], options.aggregates || []);
+  }
+
   if (options.orderBy?.length) {
     const orderBy = options.orderBy;
     rows = rows
       .map((row, index) => ({row, index}))
       .sort((left, right) => compareRows(left.row, right.row, orderBy) || left.index - right.index)
       .map(entry => entry.row);
-  }
-
-  if (options.groupBy?.length || options.aggregates?.length) {
-    rows = aggregateRows(rows, options.groupBy || [], options.aggregates || []);
   }
 
   const outputColumns =
@@ -175,7 +175,10 @@ function queryArrowTableRelational(
     return output;
   });
   const limit = options.limit === undefined ? outputRows.length : options.limit;
-  return convertRowsToArrowTable(outputRows.slice(0, limit));
+  const limitedRows = outputRows.slice(0, limit);
+  return limitedRows.length
+    ? convertRowsToArrowTable(limitedRows)
+    : createEmptyRelationalResult(sourceData, outputColumns, options);
 }
 
 /** Returns whether the query uses any in-memory relational operator. */
@@ -248,7 +251,7 @@ function compareRows(
     ) {
       if (leftValue === rightValue) continue;
       const nullResult = leftValue === null || leftValue === undefined ? -1 : 1;
-      return (nulls === 'first' ? nullResult : -nullResult) * (key.direction === 'desc' ? -1 : 1);
+      return nulls === 'first' ? nullResult : -nullResult;
     }
     const result = compareSortValues(leftValue, rightValue);
     if (result) return (key.direction === 'desc' ? -1 : 1) * result;
@@ -279,7 +282,7 @@ function aggregateRows(
 ): Record<string, unknown>[] {
   const groups = new Map<string, Record<string, unknown>[]>();
   for (const row of rows) {
-    const key = JSON.stringify(groupBy.map(column => row[column]));
+    const key = serializeGroupKey(groupBy.map(column => row[column]));
     const group = groups.get(key) || [];
     group.push(row);
     groups.set(key, group);
@@ -292,6 +295,75 @@ function aggregateRows(
       output[aggregate.name] = evaluateAggregate(aggregate, group);
     return output;
   });
+}
+
+/** Produces a collision-resistant group key for Arrow scalar values, including bigint values. */
+function serializeGroupKey(values: readonly unknown[]): string {
+  return values
+    .map(value => {
+      if (value === null || value === undefined) return 'null:';
+      if (value instanceof Date) return `date:${value.getTime()}`;
+      if (value instanceof Uint8Array) return `bytes:${Array.from(value).join('.')}`;
+      return `${typeof value}:${String(value)}`;
+    })
+    .join('\u001f');
+}
+
+/** Creates a zero-row Arrow result while preserving source and computed output fields. */
+function createEmptyRelationalResult(
+  sourceData: arrow.Table,
+  outputColumns: readonly string[],
+  options: ArrowQueryOptions
+): ArrowTable {
+  const sourceFields = new Map(sourceData.schema.fields.map(field => [field.name, field]));
+  const expressions = new Map(
+    (options.expressions || []).map(expression => [expression.name, expression])
+  );
+  const aggregates = new Map(
+    (options.aggregates || []).map(aggregate => [aggregate.name, aggregate])
+  );
+  const fields = outputColumns.map(columnName => {
+    const sourceField = sourceFields.get(columnName);
+    if (sourceField) return sourceField;
+    const expression = expressions.get(columnName);
+    if (expression)
+      return new arrow.Field(columnName, getExpressionType(expression, sourceFields), true);
+    const aggregate = aggregates.get(columnName);
+    if (aggregate)
+      return new arrow.Field(columnName, getAggregateType(aggregate, sourceFields), true);
+    return new arrow.Field(columnName, new arrow.Utf8(), true);
+  });
+  const columns: Record<string, arrow.Vector> = {};
+  for (const field of fields) columns[field.name] = arrow.vectorFromArray([], field.type);
+  return wrapArrowTable(new arrow.Table(new arrow.Schema(fields), columns));
+}
+
+/** Infers the Arrow type for an expression in an empty relational result. */
+function getExpressionType(
+  expression: RelationalExpression,
+  sourceFields: ReadonlyMap<string, arrow.Field>
+): arrow.DataType {
+  if (expression.expression.op === 'literal') {
+    const value = expression.expression.value;
+    if (typeof value === 'boolean') return new arrow.Bool();
+    if (typeof value === 'number') return new arrow.Float64();
+    return new arrow.Utf8();
+  }
+  if (expression.expression.op === 'column') {
+    return sourceFields.get(expression.expression.column)?.type || new arrow.Utf8();
+  }
+  return new arrow.Float64();
+}
+
+/** Infers the Arrow type for an aggregate in an empty relational result. */
+function getAggregateType(
+  aggregate: RelationalAggregate,
+  sourceFields: ReadonlyMap<string, arrow.Field>
+): arrow.DataType {
+  if (aggregate.function === 'count') return new arrow.Int32();
+  return aggregate.column
+    ? sourceFields.get(aggregate.column)?.type || new arrow.Float64()
+    : new arrow.Float64();
 }
 
 /** Computes one aggregate over a group while ignoring null input values. */

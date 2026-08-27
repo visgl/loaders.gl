@@ -145,6 +145,7 @@ export function planRelationalQuery<
     tablePlan[0] = Object.freeze({kind: 'scan', columns: Object.freeze([...scanColumns])});
   }
   for (const expression of expressionNames) available.add(expression);
+  for (const aggregate of aggregateNames) available.add(aggregate);
   for (const key of options.orderBy || []) {
     if (!available.has(key.column))
       throw new Error(`Relational order column not found: ${key.column}`);
@@ -154,6 +155,9 @@ export function planRelationalQuery<
   }
   for (const aggregate of options.aggregates || []) {
     if (!aggregate.name) throw new Error('Relational aggregate names must be non-empty.');
+    if (aggregate.function !== 'count' && !aggregate.column) {
+      throw new Error(`Relational aggregate ${aggregate.function} requires a column.`);
+    }
     if (aggregate.column && !available.has(aggregate.column)) {
       throw new Error(`Relational aggregate column not found: ${aggregate.column}`);
     }

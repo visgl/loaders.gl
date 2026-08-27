@@ -86,7 +86,7 @@ describe('compileSQLTableQuery', () => {
       {
         tableName: 'flights',
         expressions: [{name: 'metric', expression: {op: 'literal', value: 1}}],
-        columns: ['carrier', 'metric'],
+        columns: ['carrier', 'metric', 'flightCount'],
         groupBy: ['carrier'],
         aggregates: [{name: 'flightCount', function: 'count'}],
         orderBy: [{column: 'flightCount', direction: 'desc', nulls: 'last'}],

@@ -97,19 +97,22 @@ export function compileSQLTableQuery(
 function compileProjection(query: SQLTableQuery): string {
   const expressions = query.expressions || [];
   const expressionByName = new Map(expressions.map(expression => [expression.name, expression]));
+  const aggregates = query.aggregates || [];
+  const aggregateByName = new Map(aggregates.map(aggregate => [aggregate.name, aggregate]));
   const columns = query.columns === undefined ? undefined : [...query.columns];
   const projectionColumns =
     columns ||
     (query.groupBy?.length || query.aggregates?.length ? [...(query.groupBy || [])] : []);
   const selections = projectionColumns.map(column => {
     const expression = expressionByName.get(column);
-    return expression
-      ? `${compileRelationalExpression(expression.expression)} AS ${quoteSQLIdentifier(expression.name)}`
+    if (expression) {
+      return `${compileRelationalExpression(expression.expression)} AS ${quoteSQLIdentifier(expression.name)}`;
+    }
+    const aggregate = aggregateByName.get(column);
+    return aggregate
+      ? `${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`
       : quoteSQLIdentifier(column);
   });
-  for (const aggregate of query.aggregates || []) {
-    selections.push(`${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`);
-  }
   if (!selections.length)
     return expressions.length
       ? expressions
@@ -118,7 +121,13 @@ function compileProjection(query: SQLTableQuery): string {
               `${compileRelationalExpression(expression.expression)} AS ${quoteSQLIdentifier(expression.name)}`
           )
           .join(', ')
-      : '*';
+      : aggregates.length
+        ? aggregates
+            .map(
+              aggregate => `${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`
+            )
+            .join(', ')
+        : '*';
   return selections.join(', ');
 }
 
@@ -272,6 +281,8 @@ function validateRelationalQuery(query: SQLTableQuery): void {
   }
   for (const aggregate of query.aggregates || []) {
     validateSQLIdentifier(aggregate.name);
+    if (aggregate.function !== 'count' && !aggregate.column)
+      throw new Error(`Relational aggregate ${aggregate.function} requires a column.`);
     if (aggregate.column) validateSQLIdentifier(aggregate.column);
   }
 }
