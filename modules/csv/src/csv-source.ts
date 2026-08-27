@@ -1,4 +1,9 @@
-import {createScanQueryMetadata, validateTableQueryLimit} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  filterColumnarRowIndices,
+  validateColumnarPredicate,
+  validateTableQueryLimit
+} from '@loaders.gl/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -40,9 +45,10 @@ export class CSVTableSource
       options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
     for await (const batch of this.parseBatches(options.signal)) {
       if (remaining <= 0) return;
-      const projectedBatch = projectBatch(batch, options.columns);
+      const filteredBatch = filterBatch(batch, options.predicate);
+      const projectedBatch = projectBatch(filteredBatch, options.columns);
       if (projectedBatch.length <= remaining) {
-        remaining -= batch.length;
+        remaining -= projectedBatch.length;
         yield projectedBatch;
       } else {
         yield truncateBatch(projectedBatch, remaining);
@@ -60,7 +66,7 @@ export class CSVTableSource
         schema: batch.schema,
         capabilities: {
           table: {
-            predicate: 'unsupported',
+            predicate: 'residual',
             projection: 'pushdown',
             limit: 'pushdown',
             streaming: true,
@@ -167,4 +173,16 @@ function projectBatch(batch: TableBatch, columns?: readonly string[]): TableBatc
   if (batch.shape === 'arrow-table')
     return {...batch, data: batch.data.select([...columns])} as TableBatch;
   return batch;
+}
+
+function filterBatch(batch: TableBatch, predicate: TableScanReadOptions['predicate']): TableBatch {
+  if (!predicate || batch.shape !== 'object-row-table') return batch;
+  const rows = batch.data;
+  const columnNames = new Set(batch.schema?.fields.map(field => field.name) || []);
+  validateColumnarPredicate(predicate, columnNames);
+  const columns = Object.fromEntries(
+    [...columnNames].map(name => [name, rows.map(row => row[name])])
+  );
+  const rowIndices = filterColumnarRowIndices(predicate, columns, rows.length);
+  return {...batch, data: rowIndices.map(rowIndex => rows[rowIndex]), length: rowIndices.length};
 }

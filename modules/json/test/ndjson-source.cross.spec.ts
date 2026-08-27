@@ -12,6 +12,16 @@ test('NDJSONTableSource discovers schema and applies projection and limit', asyn
   expect(batches[0]?.data).toEqual([{name: 'a'}]);
 });
 
+test('NDJSONTableSource applies residual predicates before projection and limit', async () => {
+  const source = new NDJSONTableSource(
+    new Blob(['{"name":"a","value":1}\n{"name":"b","value":2}\n'])
+  );
+  const batches = [];
+  for await (const batch of source.read({predicate: {op: '=', args: [{property: 'name'}, 'b']}}))
+    batches.push(batch);
+  expect(batches.flatMap(batch => batch.data)).toEqual([{name: 'b', value: 2}]);
+});
+
 test('NDJSONTableSource handles zero limits, empty projections and invalid limits', async () => {
   const source = new NDJSONTableSource(
     new Blob(['{"name":"a","value":1}\n{"name":"b","value":2}\n'])
