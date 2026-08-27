@@ -25,7 +25,8 @@ const {preload: _ParquetJSLoaderPreload, ...ParquetJSLoaderMetadataWithoutPreloa
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
   columns: undefined,
-  preserveBinary: false
+  preserveBinary: false,
+  verifyFooterSignature: true
 };
 
 /** Parser-bearing TypeScript-only Parquet loader implementation. */

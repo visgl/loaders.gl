@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {load} from '@loaders.gl/core';
-import {ParquetJSLoader} from '@loaders.gl/parquet';
+import {
+  ParquetJSLoader,
+  createParquetModuleAad,
+  verifyParquetFooterSignature
+} from '@loaders.gl/parquet';
 import {expect, test} from 'vitest';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
@@ -86,4 +90,77 @@ test('ParquetJSLoader decrypts encrypted columns into an Arrow table', async () 
       'float_field'
     ]);
   }
+});
+
+test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns', async () => {
+  const requestedKeyMetadata: string[] = [];
+  const keyRetriever = (keyMetadata: Uint8Array | undefined) => {
+    const keyId = keyMetadata ? new TextDecoder().decode(keyMetadata) : '';
+    requestedKeyMetadata.push(keyId);
+    return ENCRYPTED_KEYS[keyId];
+  };
+  const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
+  const table = await load(url, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {
+      columns: ['double_field'],
+      keyRetriever
+    }
+  });
+
+  expect(table.data).toHaveLength(50);
+  expect(new Set(requestedKeyMetadata)).not.toEqual(new Set(['kf', 'kc1', 'kc2']));
+});
+
+test('verifies plaintext-footer signatures and rejects tampering', async () => {
+  const footerBytes = new TextEncoder().encode('serialized parquet footer');
+  const fileUnique = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+  const aad = createParquetModuleAad(undefined, fileUnique, 'footer');
+  const key = new TextEncoder().encode('0123456789012345');
+  const cryptoKey = await globalThis.crypto.subtle.importKey(
+    'raw',
+    key,
+    {name: 'AES-GCM'},
+    false,
+    ['encrypt', 'decrypt']
+  );
+  const nonce = new Uint8Array(12);
+  nonce.set([9, 8, 7, 6, 5, 4, 3, 2, 1]);
+  const encrypted = new Uint8Array(
+    await globalThis.crypto.subtle.encrypt(
+      {name: 'AES-GCM', iv: nonce, additionalData: aad},
+      cryptoKey,
+      footerBytes
+    )
+  );
+  const signature = new Uint8Array(28);
+  signature.set(nonce);
+  signature.set(encrypted.subarray(encrypted.length - 16), 12);
+  const keyRetriever = () => key;
+
+  await expect(
+    globalThis.crypto.subtle.decrypt(
+      {name: 'AES-GCM', iv: nonce, additionalData: aad},
+      cryptoKey,
+      encrypted
+    )
+  ).resolves.toEqual(footerBytes.buffer);
+
+  await verifyParquetFooterSignature(footerBytes, signature, {
+    algorithm: 'AES_GCM_V1',
+    aad,
+    keyMetadata: new TextEncoder().encode('footer'),
+    keyRetriever
+  });
+
+  const tamperedFooter = footerBytes.slice();
+  tamperedFooter[0] ^= 1;
+  await expect(
+    verifyParquetFooterSignature(tamperedFooter, signature, {
+      algorithm: 'AES_GCM_V1',
+      aad,
+      keyMetadata: new TextEncoder().encode('footer'),
+      keyRetriever
+    })
+  ).rejects.toThrow();
 });

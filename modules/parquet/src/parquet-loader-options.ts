@@ -43,6 +43,8 @@ export type ParquetJSLoaderOptions = LoaderOptions & {
     keyRetriever?: ParquetKeyRetriever;
     /** AAD prefix for encrypted files that intentionally omit it from metadata. */
     aadPrefix?: Uint8Array;
+    /** Verify plaintext-footer signatures when present. Enabled by default. */
+    verifyFooterSignature?: boolean;
   } & {
     [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };

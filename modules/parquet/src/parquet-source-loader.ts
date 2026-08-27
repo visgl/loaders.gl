@@ -424,7 +424,8 @@ export class ParquetSource
       const projectedSchema = projectSchema(initialization.schema, columns);
       const projectedColumnNames = columns.length ? new Set(columns) : undefined;
       const workerOptions = this.getWorkerOptions(concurrency, readContext.abortController.signal);
-      const decodeOnWorker = canDecodeParquetSourceOnWorker(workerOptions);
+      const decodeOnWorker =
+        canDecodeParquetSourceOnWorker(workerOptions) && !initialization.reader.encrypted;
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
       let remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
@@ -693,6 +694,7 @@ export class ParquetSource
         if (phase.phase === 'projection' && predicateProvedEmpty) {
           continue;
         }
+        await initialization.reader.resolveColumnMetadata(rowGroup, rowGroupIndex, phase.columns);
         const pagePlan = phase.predicate
           ? await createParquetPagePruningPlan(
               initialization.file,
@@ -700,7 +702,18 @@ export class ParquetSource
               initialization.parquetSchema,
               phase.columns,
               phase.predicate,
-              signal
+              signal,
+              {
+                rowGroupOrdinal: rowGroupIndex,
+                decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
+                  initialization.reader.decryptIndexModule(
+                    bytes,
+                    module,
+                    rowGroupOrdinal,
+                    columnOrdinal,
+                    columnChunk
+                  )
+              }
             )
           : undefined;
         plans.push(
@@ -856,7 +869,18 @@ export class ParquetSource
           initialization.parquetSchema,
           columnList,
           predicate,
-          signal
+          signal,
+          {
+            rowGroupOrdinal: rowGroupIndex,
+            decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
+              initialization.reader.decryptIndexModule(
+                bytes,
+                module,
+                rowGroupOrdinal,
+                columnOrdinal,
+                columnChunk
+              )
+          }
         )
       : undefined;
     if (pagePlan) {
@@ -1110,6 +1134,7 @@ export class ParquetSource
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
         verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
+        verifyFooterSignature: this.options.parquet?.verifyFooterSignature,
         keyRetriever: this.options.parquet?.keyRetriever,
         aadPrefix: this.options.parquet?.aadPrefix,
         signal
@@ -1919,12 +1944,31 @@ async function filterParquetRowGroupsWithBloomFilters(
       if (!field.primitiveType) continue;
       let filter: ReturnType<typeof decodeParquetSplitBlockBloomFilter>;
       try {
+        const rawColumnOrdinal = initialization.fileMetadata.row_groups[
+          rowGroupIndex
+        ].columns.findIndex(
+          columnChunk =>
+            JSON.stringify(columnChunk.meta_data?.path_in_schema) ===
+            JSON.stringify(probe.column.path)
+        );
+        const rawColumnChunk =
+          rawColumnOrdinal >= 0
+            ? initialization.fileMetadata.row_groups[rowGroupIndex].columns[rawColumnOrdinal]
+            : undefined;
         const data = await initialization.file.read(
           probe.column.bloomFilterOffset,
           probe.column.bloomFilterByteLength,
           signal
         );
-        filter = decodeParquetSplitBlockBloomFilter(toUint8Array(data));
+        const decodedBloomFilter = rawColumnChunk
+          ? await initialization.reader.decryptBloomFilter(
+              toUint8Array(data),
+              rowGroupIndex,
+              rawColumnOrdinal,
+              rawColumnChunk
+            )
+          : toUint8Array(data);
+        filter = decodeParquetSplitBlockBloomFilter(decodedBloomFilter);
         filtersRead++;
         bytesRead += data.byteLength;
       } catch {

@@ -128,6 +128,7 @@ async function readProjectedSchema(
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
+    verifyFooterSignature: options?.parquet?.verifyFooterSignature,
     keyRetriever: options?.parquet?.keyRetriever,
     aadPrefix: options?.parquet?.aadPrefix
   });
@@ -152,6 +153,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     retainByteArrayViews: true,
     useTypedValueBuffers: true,
     useTypedLevelBuffers: true,
+    verifyFooterSignature: options?.parquet?.verifyFooterSignature,
     keyRetriever: options?.parquet?.keyRetriever,
     aadPrefix: options?.parquet?.aadPrefix
   });

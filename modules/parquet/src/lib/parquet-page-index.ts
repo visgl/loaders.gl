@@ -77,6 +77,23 @@ export type ParquetPagePruningPlan = {
   prunedRowCount: number;
 };
 
+/** Decrypts an encrypted page-index module before Thrift decoding. */
+export type ParquetPageIndexDecryptor = (
+  bytes: Uint8Array,
+  module: 'column-index' | 'offset-index',
+  rowGroupOrdinal: number,
+  columnOrdinal: number,
+  columnChunk: ColumnChunk
+) => Promise<Uint8Array>;
+
+/** Optional controls for reading page indexes from a Parquet source. */
+export type ParquetPagePruningOptions = {
+  /** Row-group ordinal used when constructing encrypted-module AAD. */
+  rowGroupOrdinal?: number;
+  /** Decrypts encrypted index modules; omitted for plaintext files. */
+  decryptModule?: ParquetPageIndexDecryptor;
+};
+
 /** Logical statistics attached to one data page. */
 export type ParquetPageStatistics = {
   min?: unknown;
@@ -105,7 +122,8 @@ export async function createParquetPagePruningPlan(
   schema: ParquetSchema,
   selectedColumnPaths: readonly string[][],
   predicate: ParquetPredicate,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options?: ParquetPagePruningOptions
 ): Promise<ParquetPagePruningPlan | undefined> {
   const rowCount = Number(rowGroup.num_rows);
   const selectedColumnChunks = getSelectedColumnChunks(rowGroup, selectedColumnPaths);
@@ -122,6 +140,7 @@ export async function createParquetPagePruningPlan(
 
   await Promise.all(
     selectedColumnChunks.map(async columnChunk => {
+      const columnOrdinal = rowGroup.columns.indexOf(columnChunk);
       const path = columnChunk.meta_data!.path_in_schema;
       const pathKey = JSON.stringify(path);
       const offsetIndexRange = getParquetIndexRange(
@@ -139,7 +158,16 @@ export async function createParquetPagePruningPlan(
       );
       let pages: ParquetDataPageLocation[];
       try {
-        pages = decodeOffsetIndex(toUint8Array(offsetIndexBytes), rowCount);
+        const decryptedBytes = options?.decryptModule
+          ? await options.decryptModule(
+              toUint8Array(offsetIndexBytes),
+              'offset-index',
+              options.rowGroupOrdinal ?? 0,
+              columnOrdinal,
+              columnChunk
+            )
+          : toUint8Array(offsetIndexBytes);
+        pages = decodeOffsetIndex(decryptedBytes, rowCount);
       } catch {
         return;
       }
@@ -164,9 +192,18 @@ export async function createParquetPagePruningPlan(
       );
       const field = schema.findField(path);
       try {
+        const decryptedBytes = options?.decryptModule
+          ? await options.decryptModule(
+              toUint8Array(columnIndexBytes),
+              'column-index',
+              options.rowGroupOrdinal ?? 0,
+              columnOrdinal,
+              columnChunk
+            )
+          : toUint8Array(columnIndexBytes);
         pageStatistics[pathKey] = {
           pages,
-          statistics: decodeParquetColumnIndex(toUint8Array(columnIndexBytes), pages, field)
+          statistics: decodeParquetColumnIndex(decryptedBytes, pages, field)
         };
       } catch {
         return;
