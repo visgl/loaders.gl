@@ -23,7 +23,15 @@ const sidebars = {
     {
       type: 'category',
       label: 'Table Formats',
-      items: ['table/arrow', 'table/parquet', 'table/avro', 'table/orc', 'table/csv']
+      items: [
+        'table/arrow',
+        'table/arrow-scan',
+        'table/parquet',
+        'table/avro',
+        'table/orc',
+        'table/csv',
+        'table/csv-scan'
+      ]
     },
     {
       type: 'category',

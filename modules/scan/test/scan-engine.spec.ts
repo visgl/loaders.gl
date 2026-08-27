@@ -6,7 +6,12 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {createScanEngine, parseSQLPredicate, registerScanBackend} from '@loaders.gl/scan';
+import {
+  createScanEngine,
+  createScanQueryMetadata,
+  parseSQLPredicate,
+  registerScanBackend
+} from '@loaders.gl/scan';
 
 test('creates the Arrow reference engine by default', async () => {
   const engine = await createScanEngine();
@@ -19,6 +24,27 @@ test('creates the Arrow reference engine by default', async () => {
   expect(engine.name).toBe('arrow');
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
   expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
+});
+
+test('exposes the shared metadata vocabulary from the optional scan package', () => {
+  const table = makeArrowTable({name: ['a'], value: [1]});
+  const metadata = createScanQueryMetadata({
+    sourceType: 'test',
+    queryType: 'table',
+    schema: table.schema,
+    capabilities: {
+      table: {
+        predicate: 'residual',
+        projection: 'pushdown',
+        limit: 'pushdown',
+        streaming: true,
+        cancellation: true
+      }
+    }
+  });
+
+  expect(metadata.columns.map(column => column.name)).toEqual(['name', 'value']);
+  expect(Object.isFrozen(metadata)).toBe(true);
 });
 
 test('loads a registered backend through the same root API', async () => {

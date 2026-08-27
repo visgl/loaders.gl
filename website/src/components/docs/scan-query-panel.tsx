@@ -1,24 +1,9 @@
 import React, {useEffect, useId, useState} from 'react';
 import styled from 'styled-components';
-import type {ScanQueryMetadata} from '@loaders.gl/loader-utils';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
 
 /** State emitted by the reusable scan-query controls. */
-export type ScanQueryPanelState = Readonly<{
-  /** Output columns; an empty selection means all columns. */
-  columns?: readonly string[];
-  /** Maximum number of rows to return. */
-  limit?: number;
-  /** Optional source-coordinate bounding box in minX, minY, maxX, maxY order. */
-  boundingBox?: readonly [number, number, number, number];
-  /** Optional raster overview or point-cloud minimum hierarchy level. */
-  level?: number;
-  /** Optional point-cloud minimum hierarchy level. */
-  minimumLevel?: number;
-  /** Optional point-cloud maximum hierarchy level. */
-  maximumLevel?: number;
-  /** Optional point-cloud target spacing. */
-  targetSpacing?: number;
-}>;
+export type ScanQueryPanelState = ScanQuery;
 
 /** Props for a source-neutral query-parameter panel. */
 export type ScanQueryPanelProps = Readonly<{
@@ -70,10 +55,14 @@ export function ScanQueryPanel({
   }, [value]);
 
   const columns = metadata?.columns || [];
+  const isPointCloud = metadata?.queryType === 'point-cloud';
   const hasLimit = metadata?.capabilities.table?.limit && metadata.capabilities.table.limit !== 'unsupported';
   const hasBounds = metadata?.capabilities.bounds && metadata.capabilities.bounds !== 'unsupported';
-  const hasLevel = metadata?.capabilities.levelOfDetail && metadata.capabilities.levelOfDetail !== 'unsupported';
-  const isPointCloud = metadata?.queryType === 'point-cloud';
+  const hasLevel = Boolean(
+    metadata?.levels?.length ||
+      (metadata?.capabilities.levelOfDetail && metadata.capabilities.levelOfDetail !== 'unsupported')
+  );
+  const hasRasterLevels = !isPointCloud && Boolean(metadata?.levels?.length);
   const sourceBounds = metadata?.spatial?.bounds;
   const toggleColumn = (name: string): void => {
     setSelectedColumns(current =>
@@ -147,16 +136,31 @@ export function ScanQueryPanel({
             {hasLevel ? (
               <FieldGroup>
                 <FieldLabel htmlFor={`${panelId}-level`}>{isPointCloud ? 'Minimum level' : 'Overview level'}</FieldLabel>
-                <TextInput
-                  id={`${panelId}-level`}
-                  inputMode="numeric"
-                  min="0"
-                  placeholder="Native/default"
-                  value={isPointCloud ? minimumLevelText : levelText}
-                  onChange={event =>
-                    isPointCloud ? setMinimumLevelText(event.target.value) : setLevelText(event.target.value)
-                  }
-                />
+                {hasRasterLevels ? (
+                  <Select
+                    id={`${panelId}-level`}
+                    value={levelText}
+                    onChange={event => setLevelText(event.target.value)}
+                  >
+                    <option value="">Native/default</option>
+                    {metadata.levels?.map(level => (
+                      <option key={level.index} value={level.index}>
+                        Level {level.index} ({level.width} × {level.height})
+                      </option>
+                    ))}
+                  </Select>
+                ) : (
+                  <TextInput
+                    id={`${panelId}-level`}
+                    inputMode="numeric"
+                    min="0"
+                    placeholder="Native/default"
+                    value={isPointCloud ? minimumLevelText : levelText}
+                    onChange={event =>
+                      isPointCloud ? setMinimumLevelText(event.target.value) : setLevelText(event.target.value)
+                    }
+                  />
+                )}
               </FieldGroup>
             ) : null}
             {isPointCloud && hasLevel ? (
@@ -310,6 +314,13 @@ const TextInput = styled.input`
   border: 1px solid #d0d5dd;
   border-radius: 5px;
   padding: 7px;
+`;
+const Select = styled.select`
+  min-width: 180px;
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+  padding: 7px;
+  background: white;
 `;
 const ApplyButton = styled.button`
   margin-top: 12px;

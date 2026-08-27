@@ -5710,7 +5710,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/scan@workspace:modules/scan":
+"@loaders.gl/scan@workspace:*, @loaders.gl/scan@workspace:modules/scan":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scan@workspace:modules/scan"
   dependencies:
@@ -27986,6 +27986,7 @@ __metadata:
     "@loaders.gl/orc": "workspace:*"
     "@loaders.gl/parquet": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
+    "@loaders.gl/scan": "workspace:*"
     "@loaders.gl/scene": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"

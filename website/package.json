@@ -51,6 +51,7 @@
     "@loaders.gl/orc": "workspace:*",
     "@loaders.gl/parquet": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
+    "@loaders.gl/scan": "workspace:*",
     "@loaders.gl/scene": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
     "@loaders.gl/schema-utils": "workspace:*",
