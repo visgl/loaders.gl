@@ -174,7 +174,10 @@ export default function App(props: AppProps = {}) {
         id: `${example.type}-${example.url}`,
         data: example.url,
         loaders: SOURCE_FACTORIES,
-        sourceOptions: {core: {type: example.type}},
+        sourceOptions: {
+          ...example.sourceOptions,
+          core: {...example.sourceOptions?.core, type: example.type}
+        },
         layers: example.layers || [],
         pickable: true,
         autoHighlight: true,

@@ -103,6 +103,35 @@ vitestTest('GMLLoader batches plural featureMembers without retaining the contai
   expect(batches).toHaveLength(2);
 });
 
+vitestTest('GMLLoader transforms legacy gml:coord points', () => {
+  const geometry = GMLParserLoader.parseTextSync(
+    '<gml:Point xmlns:gml="http://www.opengis.net/gml"><gml:coord><gml:X>1</gml:X><gml:Y>2</gml:Y></gml:coord></gml:Point>',
+    {transformCoords: (x: number, y: number) => [x + 10, y + 20]}
+  ) as GeoJSON.Geometry;
+
+  expect(geometry).toEqual({type: 'Point', coordinates: [11, 22]});
+});
+
+vitestTest('GMLLoader preserves CompositeSurface members in MultiSurface', () => {
+  const geometry = GMLParserLoader.parseTextSync(
+    `<gml:MultiSurface xmlns:gml="http://www.opengis.net/gml">
+      <gml:surfaceMember>
+        <gml:CompositeSurface>
+          <gml:surfaceMember>
+            <gml:Polygon>
+              <gml:exterior><gml:LinearRing><gml:posList>0 0 1 0 1 1 0 0</gml:posList></gml:LinearRing></gml:exterior>
+            </gml:Polygon>
+          </gml:surfaceMember>
+        </gml:CompositeSurface>
+      </gml:surfaceMember>
+    </gml:MultiSurface>`,
+    {}
+  ) as GeoJSON.MultiPolygon;
+
+  expect(geometry.type).toBe('MultiPolygon');
+  expect(geometry.coordinates).toHaveLength(1);
+});
+
 /*
 function test_boundedBy(t) {
     t.plan(5);

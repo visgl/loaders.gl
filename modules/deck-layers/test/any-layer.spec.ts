@@ -350,6 +350,31 @@ describe('SourceLayer lifecycle and dispatch', () => {
     expect(secondSource.finalize).not.toHaveBeenCalled();
   });
 
+  test('finalizes the previous owned source when replacement resolution fails', async () => {
+    const firstSource = createTileSource({finalize: vi.fn()});
+    const firstLoader = createSourceLoader('first', () => firstSource as any);
+    const failingLoader = createSourceLoader('failing', () => {
+      throw new Error('source resolution failed');
+    });
+    const layer = createTestLayer({
+      id: 'failed-replacement',
+      data: 'https://example.com/first',
+      loaders: [firstLoader]
+    });
+
+    await layer.resolveSource(layer.props);
+    const failingProps = {
+      ...layer.props,
+      data: 'https://example.com/failing',
+      loaders: [failingLoader]
+    };
+    layer.props = failingProps;
+    await layer.resolveSource(failingProps);
+
+    expect(firstSource.finalize).toHaveBeenCalledOnce();
+    expect(layer.state.resolvedSource).toBeNull();
+  });
+
   test('AnyLayer is a compatibility alias with its historical debug name', () => {
     const layer = new AnyLayer({id: 'compatibility', data: createTileSource() as any});
     expect(layer).toBeInstanceOf(SourceLayer);

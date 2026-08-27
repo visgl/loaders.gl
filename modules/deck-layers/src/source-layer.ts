@@ -308,10 +308,6 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
         return;
       }
 
-      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
-        await finalizeOwnedSource(previousSource.source);
-      }
-
       const info = toLoadInfo(resolvedSource);
       activeInfo = info;
       this.props.onSourceLoad?.(info);
@@ -334,6 +330,10 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
         this.props.onViewStateLoad?.(viewState, info);
       }
 
+      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
+        await finalizeOwnedSource(previousSource.source);
+      }
+
       const resolvedLayers =
         props.layers === undefined || props.layers === 'auto'
           ? getFirstSourceLayerName(metadata) || undefined
@@ -352,6 +352,9 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       const normalizedError = error instanceof Error ? error : new Error(String(error));
       if (activeResolvedSource?.owned) {
         await finalizeOwnedSource(activeResolvedSource.source);
+      }
+      if (previousSource?.owned && previousSource.source !== activeResolvedSource?.source) {
+        await finalizeOwnedSource(previousSource.source);
       }
       this.setState({isResolving: false});
       this.props.onSourceError?.(normalizedError, activeInfo);
