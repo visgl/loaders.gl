@@ -15,6 +15,24 @@ GML is a very ambitious format, with a large set of primitives and many ways to 
 
 The `GMLLoader` supports parsing the standard geospatial subset of features (points, multipoints, lines, linestrings, polygons and multipolygons), on a "best effort" basis. Its `parseInBatches` entry point emits feature collections as GML members arrive, so WFS responses do not need to be buffered in full. Because of this, the `GMLLoader` is treated as a geospatial loader and can return GeoJSON style output.
 
+GML 2 coordinate encodings (`coord` and `coordinates`) and GML 3 encodings (`pos`, `posList`,
+curves, surfaces, and dimensional positions) are accepted. Namespace prefixes are not required
+to be named `gml`; the parser matches the namespace-local names used by GML 2 and GML 3.2
+application schemas. When an application has a DescribeFeatureType schema, scalar property types
+can be supplied to preserve values while parsing:
+
+```ts
+import {GMLLoader} from '@loaders.gl/wms/bundled';
+
+const features = GMLLoader.parseTextSync!(xml, {
+  gml: {propertyTypes: {population: 'integer', active: 'boolean'}}
+});
+```
+
+Supported scalar type hints are `string`, `boolean`, `integer`, `number`, `date`, and `date-time`.
+Unknown or untyped properties remain strings or structured XML values, preserving the server
+response instead of guessing types.
+
 A fun read that illustrates the challenge is the [GML madness](http://erouault.blogspot.com/2014/04/gml-madness.html) article by Even Rouault.
 
 ## Examples

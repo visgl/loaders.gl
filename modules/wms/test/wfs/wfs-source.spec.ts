@@ -160,12 +160,96 @@ test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', asyn
   expect(batches).toHaveLength(2);
   expect(batches[0].data.numRows).toBe(1);
 });
+test('WFSSourceLoader#getFeaturesInBatches forwards GML property types', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+    wfs: {propertyTypes: {height: 'number'}}
+  });
+  const xml =
+    '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road><app:height>12</app:height><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>';
+  source.fetch = async () =>
+    new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(xml));
+          controller.close();
+        }
+      }),
+      {headers: {'content-type': 'application/gml+xml'}}
+    );
+  const batches = [];
+  for await (const batch of source.getFeaturesInBatches(
+    {
+      boundingBox: [
+        [0, 0],
+        [5, 5]
+      ],
+      layers: ['roads'],
+      format: 'geojson'
+    },
+    {batchSize: 1}
+  )) {
+    batches.push(batch);
+  }
+  expect((batches[0] as any).features[0].properties.height).toBe(12);
+});
 test('WFSSourceLoader#getFeatures honors configured output format', () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {
     wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
   });
   const featuresUrl = new URL(source.getFeaturesURL({layers: ['roads'], crs: 'EPSG:4326'}));
   expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/vnd.ogc.gml');
+});
+test('WFSSourceLoader#getFeaturesURL supports paging and server-side filters', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      version: '2.0.0',
+      typeName: 'roads',
+      bbox: [1, 2, 3, 4, 'EPSG:4326'],
+      srsName: 'EPSG:4326',
+      count: 25,
+      startIndex: 50,
+      propertyName: ['name', 'geometry'],
+      filter: '<fes:Filter><fes:PropertyIsEqualTo/></fes:Filter>',
+      resultType: 'results',
+      sortBy: ['name A', 'id D']
+    })
+  );
+  expect(featuresUrl.searchParams.get('COUNT')).toBe('25');
+  expect(featuresUrl.searchParams.get('STARTINDEX')).toBe('50');
+  expect(featuresUrl.searchParams.get('PROPERTYNAME')).toBe('name,geometry');
+  expect(featuresUrl.searchParams.get('FILTER')).toContain('<fes:Filter>');
+  expect(featuresUrl.searchParams.get('RESULTTYPE')).toBe('results');
+  expect(featuresUrl.searchParams.get('SORTBY')).toBe('name A,id D');
+});
+test('WFSSourceLoader#getFeaturesURL maps page size for WFS 1.1', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      version: '1.1.0',
+      typeName: 'roads',
+      bbox: [1, 2, 3, 4, 'CRS:84'],
+      count: 10,
+      startIndex: 20
+    })
+  );
+  expect(featuresUrl.searchParams.get('MAXFEATURES')).toBe('10');
+  expect(featuresUrl.searchParams.get('STARTINDEX')).toBe('20');
+  expect(featuresUrl.searchParams.get('COUNT')).toBeNull();
+});
+test('WFSSourceLoader#getFeaturesURL encodes reserved filter characters', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      typeName: 'roads',
+      bbox: [1, 2, 3, 4],
+      filter: '<fes:Filter><fes:Literal>A&B #1</fes:Literal></fes:Filter>'
+    })
+  );
+  expect(featuresUrl.hash).toBe('');
+  expect(featuresUrl.searchParams.get('FILTER')).toBe(
+    '<fes:Filter><fes:Literal>A&B #1</fes:Literal></fes:Filter>'
+  );
 });
 test('WFSSourceLoader#getFeaturesInBatches rejects successful WFS exception responses', async () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});

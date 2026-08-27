@@ -61,6 +61,28 @@ The batch API parses GML feature members incrementally and supports `geojson`, `
 Arrow output through the usual `format` parameter. Complete GML responses are converted to the
 same normalized vector-source outputs.
 
+### Paging and filtering
+
+The typed `getFeaturesURL` API exposes the standard WFS query controls. WFS 2.0 uses `count` and
+`startIndex`; WFS 1.1 requests automatically translate `count` to `maxFeatures`:
+
+```ts
+const requestUrl = source.getFeaturesURL({
+  version: '2.0.0',
+  typeName: 'roads',
+  bbox: [-10, 35, 10, 55, 'EPSG:4326'],
+  count: 1000,
+  startIndex: 2000,
+  propertyName: ['name', 'geometry'],
+  filter: '<fes:Filter>...</fes:Filter>',
+  sortBy: 'name A'
+});
+```
+
+`resultType: 'hits'` can be used for servers that support count-only requests. Filter XML is
+passed through as a request parameter; applications should use their server's supported FES
+version and escape or encode user-controlled values before constructing it.
+
 ## Features
 
 A WFS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.

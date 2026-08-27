@@ -48,9 +48,21 @@ function noTransform(...coords) {
 export type {Geometry};
 
 export type ParseGMLOptions = {
-  transformCoords?: Function;
+  /** Coordinate transformation applied to every decoded position. */
+  transformCoords?: (...coordinates: number[]) => Position;
   stride?: 2 | 3 | 4;
+  /** Optional XML Schema types keyed by the local feature property name. */
+  propertyTypes?: Record<string, GMLPropertyType>;
 };
+
+/** XML Schema scalar types understood by the GML property decoder. */
+export type GMLPropertyType =
+  | 'string'
+  | 'boolean'
+  | 'integer'
+  | 'number'
+  | 'date'
+  | 'date-time';
 
 export type ParseGMLContext = {
   srsDimension?: number;
@@ -111,7 +123,8 @@ export function parseGMLFeature(inputXML: any, options: ParseGMLOptions = {}): G
     ) {
       continue;
     }
-    properties[stripNamespace(key)] = extractXMLValue(value);
+    const propertyName = stripNamespace(key);
+    properties[propertyName] = extractXMLValue(value, options.propertyTypes?.[propertyName]);
   }
 
   const id = findFeatureId(feature);
@@ -130,55 +143,55 @@ export function parseGMLToGeometry(
 
   const [name, xml] = getFirstKeyValue(inputXML);
 
-  switch (name) {
-    case 'gml:Point':
+  switch (stripNamespace(name)) {
+    case 'Point':
       geometry = {type: 'Point', coordinates: parsePoint(xml, options, childContext)};
       break;
 
-    case 'gml:MultiPoint':
+    case 'MultiPoint':
       geometry = {type: 'MultiPoint', coordinates: parseMultiPoint(xml, options, childContext)};
       break;
 
-    case 'gml:LineString':
+    case 'LineString':
       geometry = {
         type: 'LineString',
         coordinates: parseLinearRingOrLineString(xml, options, childContext)
       };
       break;
 
-    case 'gml:Curve':
+    case 'Curve':
       geometry = {type: 'LineString', coordinates: parseCurve(xml, options, childContext)};
       break;
 
-    case 'gml:MultiLineString':
-    case 'gml:MultiCurve':
+    case 'MultiLineString':
+    case 'MultiCurve':
       geometry = {
         type: 'MultiLineString',
         coordinates: parseMultiLineString(xml, options, childContext)
       };
       break;
 
-    case 'gml:MultiPolygon':
+    case 'MultiPolygon':
       geometry = {
         type: 'MultiPolygon',
         coordinates: parseMultiPolygon(xml, options, childContext)
       };
       break;
 
-    case 'gml:Polygon':
-    case 'gml:Rectangle':
+    case 'Polygon':
+    case 'Rectangle':
       geometry = {
         type: 'Polygon',
         coordinates: parsePolygonOrRectangle(xml, options, childContext)
       };
       break;
-    case 'gml:Surface':
+    case 'Surface':
       geometry = {
         type: 'MultiPolygon',
         coordinates: parseSurface(xml, options, childContext)
       };
       break;
-    case 'gml:MultiSurface':
+    case 'MultiSurface':
       geometry = {
         type: 'MultiPolygon',
         coordinates: parseMultiSurface(xml, options, childContext)
@@ -347,19 +360,19 @@ export function parseLinearRingOrLineString(
     points = parsePosList(posList, options, childContext);
   } else {
     for (const [childName, childXML] of Object.entries(xml)) {
-      switch (childName) {
-        case 'gml:Point':
+      switch (stripNamespace(childName)) {
+        case 'Point':
           points.push(parsePoint(childXML, options, childContext));
           break;
-        case 'gml:pos':
+        case 'pos':
           points.push(parsePos(childXML, options, childContext));
           break;
-        case 'gml:coord':
+        case 'coord':
           for (const coord of Array.isArray(childXML) ? childXML : [childXML]) {
             points.push(parseLegacyCoord(coord, options));
           }
           break;
-        case 'gml:coordinates':
+        case 'coordinates':
           points.push(...parseLegacyCoordinates(textOf(childXML), options, childContext));
           break;
         default:
@@ -382,8 +395,8 @@ export function parseCurveSegments(
   const points: Position[] = [];
 
   for (const [childName, childXML] of Object.entries(xml)) {
-    switch (childName) {
-      case 'gml:LineStringSegment':
+    switch (stripNamespace(childName)) {
+      case 'LineStringSegment':
         const points2 = parseLinearRingOrLineString(childXML, options, context);
 
         // remove overlapping
@@ -416,8 +429,8 @@ export function parseRing(
   const points: Position[] = [];
 
   for (const [childName, childXML] of Object.entries(xml)) {
-    switch (childName) {
-      case 'gml:curveMember':
+    switch (stripNamespace(childName)) {
+      case 'curveMember':
         let points2;
 
         const lineString = findIn(childXML, 'gml:LineString');
@@ -484,8 +497,10 @@ export function parsePolygonOrRectangle(
 
   const pointLists: Position[][] = [parseExteriorOrInterior(exterior, options, childContext)];
 
-  const interiors = xml['gml:interior'];
-  for (const interior of Array.isArray(interiors) ? interiors : interiors ? [interiors] : []) {
+  const interiors = Object.entries(xml || {})
+    .filter(([key]) => stripNamespace(key) === 'interior')
+    .flatMap(([, value]) => (Array.isArray(value) ? value : [value]));
+  for (const interior of interiors) {
     pointLists.push(parseExteriorOrInterior(interior, options, childContext));
   }
 
@@ -506,9 +521,9 @@ export function parseSurface(
 
   const polygons: Position[][][] = [];
   for (const [childName, childXML] of Object.entries(patches)) {
-    switch (childName) {
-      case 'gml:PolygonPatch':
-      case 'gml:Rectangle':
+    switch (stripNamespace(childName)) {
+      case 'PolygonPatch':
+      case 'Rectangle':
         polygons.push(parsePolygonOrRectangle(childXML, options, childContext));
         break;
 
@@ -533,15 +548,15 @@ export function parseCompositeSurface(
 
   const polygons: Position[][][] = [];
   for (const [childName, childXML] of Object.entries(xml)) {
-    switch (childName) {
-      case 'gml:surfaceMember':
-      case 'gml:surfaceMembers':
+    switch (stripNamespace(childName)) {
+      case 'surfaceMember':
+      case 'surfaceMembers':
         const [c2Name, c2Xml] = getFirstKeyValue(childXML);
-        switch (c2Name) {
-          case 'gml:Surface':
+        switch (stripNamespace(c2Name)) {
+          case 'Surface':
             polygons.push(...parseSurface(c2Xml, options, childContext));
             break;
-          case 'gml:Polygon':
+          case 'Polygon':
             polygons.push(parsePolygonOrRectangle(c2Xml, options, childContext));
             break;
         }
@@ -627,7 +642,7 @@ function findGeometryElement(
 ): {key: string; value: any; propertyKey: string} | null {
   if (!feature || typeof feature !== 'object') return null;
   for (const [key, value] of Object.entries(feature)) {
-    if (key.startsWith('gml:') && GEOMETRY_NAMES.has(stripNamespace(key))) {
+    if (GEOMETRY_NAMES.has(stripNamespace(key))) {
       return {
         key,
         value: Array.isArray(value) ? value[0] : value,
@@ -660,22 +675,34 @@ function stripNamespace(key: string): string {
   return key.includes(':') ? key.slice(key.indexOf(':') + 1) : key;
 }
 
-function extractXMLValue(value: any): unknown {
-  if (Array.isArray(value)) return value.map(extractXMLValue);
+function extractXMLValue(value: any, propertyType?: GMLPropertyType): unknown {
+  if (Array.isArray(value)) return value.map(item => extractXMLValue(item, propertyType));
   if (value && typeof value === 'object') {
-    if ('value' in value) return extractXMLValue(value.value);
-    if ('#text' in value) return value['#text'];
+    if ('value' in value) return extractXMLValue(value.value, propertyType);
+    if ('#text' in value) return extractXMLValue(value['#text'], propertyType);
   }
+  if (propertyType === 'boolean') return value === true || value === 'true' || value === '1';
+  if (propertyType === 'integer') return Number.parseInt(String(value), 10);
+  if (propertyType === 'number') return Number(value);
+  if (propertyType === 'date' || propertyType === 'date-time') return String(value);
   return value;
 }
 
 function findFeatureId(value: any): string | undefined {
   if (!value || typeof value !== 'object') return undefined;
-  const directId = value.id || value['gml:id'] || value.fid;
+  const directId =
+    value.id ||
+    value['gml:id'] ||
+    value.fid ||
+    Object.entries(value).find(([key]) => stripNamespace(key) === 'id')?.[1];
   if (directId !== undefined && typeof directId !== 'object') return String(directId);
   const attributes = value.attributes;
   if (attributes) {
-    const id = attributes.id || attributes['gml:id'] || attributes.fid;
+    const id =
+      attributes.id ||
+      attributes['gml:id'] ||
+      attributes.fid ||
+      Object.entries(attributes).find(([key]) => stripNamespace(key) === 'id')?.[1];
     if (id !== undefined) return String(id);
   }
   return undefined;
@@ -697,7 +724,9 @@ function textOf(el: any): string {
 function findIn(root: any, ...tags: string[]): any {
   let el = root;
   for (const tag of tags) {
-    const child = el[tag];
+    const child = Object.entries(el || {}).find(
+      ([key]) => key === tag || stripNamespace(key) === stripNamespace(tag)
+    )?.[1];
     if (!child) {
       return null;
     }
@@ -720,7 +749,9 @@ function getFirstKeyValue(object: any): [string, any] {
 function getMembers(root: any, names: string[]): any[] {
   const members: any[] = [];
   for (const name of names) {
-    const value = root[name];
+    const value = Object.entries(root || {}).find(
+      ([key]) => key === name || stripNamespace(key) === stripNamespace(name)
+    )?.[1];
     if (!value) {
       continue;
     }
@@ -773,7 +804,11 @@ function parseLegacyCoordinates(
 
 /** A bit heavyweight for just tracking dimension? */
 function createChildContext(xml, options, context): ParseGMLContext {
-  const srsDimensionAttribute = xml.attributes && xml.attributes.srsDimension;
+  const attributes = xml?.attributes || xml || {};
+  const srsDimensionAttribute =
+    attributes.srsDimension ||
+    attributes['@_srsDimension'] ||
+    Object.entries(attributes).find(([key]) => stripNamespace(key).toLowerCase() === 'srsdimension')?.[1];
 
   if (srsDimensionAttribute) {
     const srsDimension = parseInt(srsDimensionAttribute);

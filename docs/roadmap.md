@@ -63,7 +63,7 @@ abstraction. Costs are relative engineering estimates; impact describes the user
 | 7 | WMTS matrix sets and ArcGIS tile-grid negotiation | Planned | L | Correct tile requests across heterogeneous grids |
 | 8 | CRS normalization, axis order, reprojection-aware requests, and edge cases | Planned | XL | Correct behavior across projections, antimeridian, and polar regions |
 | 9 | Shared service lifecycle for retries, cancellation, caching, auth, and telemetry | Planned | XL | Consistent operational behavior without protocol-specific duplication |
-| 10 | Deep GML/WFS conformance, paging, filtering, schema-aware properties, and fixtures | In progress | XL | Production-scale standards interoperability |
+| 10 | Deep GML/WFS conformance, paging, filtering, schema-aware properties, and fixtures | Complete | XL | Production-scale standards interoperability |
 | 11 | Capability-driven source configuration and endpoint negotiation | Planned | L | Better defaults when applications provide incomplete service information |
 | 12 | Analytical raster preservation: NoData, bands, statistics, and rendering rules | Complete | L | Faithful scientific imagery workflows |
 | 13 | ArcGIS capability graph and requirement-based service selection | Assumed complete | M | Discover, compare, and select service endpoints explicitly |
