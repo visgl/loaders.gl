@@ -46,6 +46,8 @@ import type {
 import {
   createParquetModuleAad,
   decryptParquetModule,
+  readParquetEncryptedModule,
+  verifyParquetFooterSignature,
   type ParquetEncryptionAlgorithm,
   type ParquetKeyRetriever
 } from '../../lib/parquet-encryption';
@@ -77,6 +79,8 @@ export type ParquetReaderProps = {
   useTypedLevelBuffers?: boolean;
   /** Verify page-header CRC values when present. Disabled by default for throughput. */
   verifyPageChecksums?: boolean;
+  /** Verify plaintext-footer signatures when present. Enabled by default. */
+  verifyFooterSignature?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
   signal?: AbortSignal;
   /** Resolves modular-encryption keys from the file's key metadata. */
@@ -106,6 +110,7 @@ type ParquetEncryptionContext = {
   aadPrefix?: Uint8Array;
   fileUnique: Uint8Array;
   footerKeyMetadata?: Uint8Array;
+  footerSigningKeyMetadata?: Uint8Array;
 };
 
 /**
@@ -123,6 +128,7 @@ export class ParquetReader {
     useTypedValueBuffers: false,
     useTypedLevelBuffers: false,
     verifyPageChecksums: false,
+    verifyFooterSignature: true,
     signal: undefined,
     keyRetriever: undefined,
     aadPrefix: undefined
@@ -139,6 +145,11 @@ export class ParquetReader {
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
     this.props = {...ParquetReader.defaultProps, ...props};
+  }
+
+  /** Whether the decoded footer describes an encrypted Parquet file. */
+  get encrypted(): boolean {
+    return Boolean(this.encryptionContext);
   }
 
   close(): void {
@@ -277,8 +288,35 @@ export class ParquetReader {
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
 
-    const {metadata} = decodeFileMetadata(metadataBuf);
+    const decoded = decodeFileMetadata(metadataBuf);
+    const {metadata} = decoded;
     this.setEncryptionContext(metadata);
+    await this.resolveEncryptedColumnMetadata(metadata);
+    if (this.props.verifyFooterSignature && this.encryptionContext?.footerSigningKeyMetadata) {
+      // The compact-protocol decoder may consume bytes from the signature that
+      // happen to look like valid Thrift fields. The format defines the
+      // signature as the final fixed 28 bytes of the footer range, so use the
+      // physical boundary rather than the decoder's consumed length.
+      const signatureOffset = metadataBuf.byteLength - 28;
+      if (signatureOffset < decoded.length) {
+        throw new Error('Invalid Parquet plaintext-footer signature boundary');
+      }
+      const signature = metadataBuf.subarray(signatureOffset);
+      const encryptionContext = this.encryptionContext;
+      if (!this.props.keyRetriever) {
+        throw new Error('Signed Parquet footer requires parquet.keyRetriever');
+      }
+      await verifyParquetFooterSignature(metadataBuf.subarray(0, signatureOffset), signature, {
+        algorithm: encryptionContext.algorithm,
+        aad: createParquetModuleAad(
+          encryptionContext.aadPrefix,
+          encryptionContext.fileUnique,
+          'footer'
+        ),
+        keyMetadata: encryptionContext.footerSigningKeyMetadata,
+        keyRetriever: this.props.keyRetriever
+      });
+    }
     return metadata;
   }
 
@@ -316,7 +354,9 @@ export class ParquetReader {
       fileUnique: algorithmMetadata.aad_file_unique,
       footerKeyMetadata: cryptoMetadata.metadata.key_metadata
     };
-    return decodeFileMetadata(plaintext).metadata;
+    const metadata = decodeFileMetadata(plaintext).metadata;
+    await this.resolveEncryptedColumnMetadata(metadata);
+    return metadata;
   }
 
   /** Records the encryption parameters exposed by plaintext-footer files. */
@@ -332,8 +372,98 @@ export class ParquetReader {
       algorithm,
       aadPrefix: algorithmMetadata.aad_prefix || this.props.aadPrefix,
       fileUnique: algorithmMetadata.aad_file_unique,
-      footerKeyMetadata: metadata.footer_signing_key_metadata
+      footerSigningKeyMetadata: metadata.footer_signing_key_metadata
     };
+  }
+
+  /** Resolves encrypted column metadata so source planning can inspect all column references. */
+  private async resolveEncryptedColumnMetadata(metadata: FileMetaData): Promise<void> {
+    for (let rowGroupOrdinal = 0; rowGroupOrdinal < metadata.row_groups.length; rowGroupOrdinal++) {
+      const rowGroup = metadata.row_groups[rowGroupOrdinal];
+      for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
+        const columnChunk = rowGroup.columns[columnOrdinal];
+        if (columnChunk.encrypted_column_metadata) {
+          columnChunk.meta_data = await this.getColumnMetadata(
+            columnChunk,
+            rowGroupOrdinal,
+            columnOrdinal
+          );
+        }
+      }
+    }
+  }
+
+  /** Decrypts one encrypted column index or offset index module for selective planning. */
+  async decryptIndexModule(
+    bytes: Uint8Array,
+    module: 'column-index' | 'offset-index',
+    rowGroupOrdinal: number,
+    columnOrdinal: number,
+    columnChunk: ColumnChunk
+  ): Promise<Uint8Array> {
+    if (!columnChunk.crypto_metadata) return bytes;
+    const encryptionContext = this.encryptionContext;
+    if (!encryptionContext || !this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet indexes require parquet.keyRetriever');
+    }
+    const aad = createParquetModuleAad(
+      encryptionContext.aadPrefix,
+      encryptionContext.fileUnique,
+      module,
+      rowGroupOrdinal,
+      columnOrdinal
+    );
+    return await decryptParquetModule(bytes, {
+      algorithm: encryptionContext.algorithm,
+      aad,
+      keyMetadata: this.getColumnKeyMetadata(columnChunk),
+      keyRetriever: this.props.keyRetriever
+    });
+  }
+
+  /** Decrypts the encrypted Bloom-filter header and bitset modules for one column chunk. */
+  async decryptBloomFilter(
+    bytes: Uint8Array,
+    rowGroupOrdinal: number,
+    columnOrdinal: number,
+    columnChunk: ColumnChunk
+  ): Promise<Uint8Array> {
+    if (!columnChunk.crypto_metadata) return bytes;
+    const encryptionContext = this.encryptionContext;
+    if (!encryptionContext || !this.props.keyRetriever) {
+      throw new Error('Encrypted Parquet Bloom filters require parquet.keyRetriever');
+    }
+    const header = readParquetEncryptedModule(bytes);
+    const bitset = readParquetEncryptedModule(bytes, header.nextOffset);
+    const keyMetadata = this.getColumnKeyMetadata(columnChunk);
+    const headerBytes = await decryptParquetModule(header.bytes, {
+      algorithm: encryptionContext.algorithm,
+      aad: createParquetModuleAad(
+        encryptionContext.aadPrefix,
+        encryptionContext.fileUnique,
+        'bloom-filter-header',
+        rowGroupOrdinal,
+        columnOrdinal
+      ),
+      keyMetadata,
+      keyRetriever: this.props.keyRetriever
+    });
+    const bitsetBytes = await decryptParquetModule(bitset.bytes, {
+      algorithm: encryptionContext.algorithm,
+      aad: createParquetModuleAad(
+        encryptionContext.aadPrefix,
+        encryptionContext.fileUnique,
+        'bloom-filter-bitset',
+        rowGroupOrdinal,
+        columnOrdinal
+      ),
+      keyMetadata,
+      keyRetriever: this.props.keyRetriever
+    });
+    const plaintext = new Uint8Array(headerBytes.byteLength + bitsetBytes.byteLength);
+    plaintext.set(headerBytes);
+    plaintext.set(bitsetBytes, headerBytes.byteLength);
+    return plaintext;
   }
 
   /** Resolves a column's plaintext metadata, decrypting column-specific metadata when present. */
@@ -370,7 +500,10 @@ export class ParquetReader {
     const plaintext = await decryptParquetModule(columnChunk.encrypted_column_metadata, {
       algorithm: encryptionContext.algorithm,
       aad,
-      keyMetadata: columnKey?.key_metadata ?? encryptionContext.footerKeyMetadata,
+      keyMetadata:
+        columnKey?.key_metadata ??
+        encryptionContext.footerKeyMetadata ??
+        encryptionContext.footerSigningKeyMetadata,
       keyRetriever: this.props.keyRetriever
     });
     const metadata = decodeColumnMetadata(plaintext).metadata;
@@ -591,17 +724,18 @@ export class ParquetReader {
     rowGroupOrdinal: number,
     columnOrdinal: number,
     keyMetadata: Uint8Array | undefined,
-    includesDictionary = false
+    includesDictionary = false,
+    dataPageOrdinalStart = 0
   ): Promise<Uint8Array> {
     if (!this.encryptionContext || !this.props.keyRetriever) {
       throw new Error('Encrypted Parquet pages require parquet.keyRetriever');
     }
     const plaintextPages: Uint8Array[] = [];
     let offset = 0;
-    let dataPageOrdinal = 0;
+    let dataPageOrdinal = dataPageOrdinalStart;
     let pageIndex = 0;
     while (offset < encryptedPages.length) {
-      const headerModule = readEncryptedModule(encryptedPages, offset);
+      const headerModule = readParquetEncryptedModule(encryptedPages, offset);
       offset = headerModule.nextOffset;
       const dictionaryPage = includesDictionary && pageIndex === 0;
       const headerModuleType: ParquetEncryptionModule = dictionaryPage
@@ -623,7 +757,7 @@ export class ParquetReader {
       });
       const {pageHeader} = decodePageHeader(headerBytes);
       const pageType = getThriftEnum(PageType, pageHeader.type);
-      const dataModule = readEncryptedModule(encryptedPages, offset);
+      const dataModule = readParquetEncryptedModule(encryptedPages, offset);
       offset = dataModule.nextOffset;
       const dataAad = createParquetModuleAad(
         this.encryptionContext.aadPrefix,
@@ -658,7 +792,8 @@ export class ParquetReader {
   private getColumnKeyMetadata(columnChunk: ColumnChunk): Uint8Array | undefined {
     return (
       columnChunk.crypto_metadata?.ENCRYPTION_WITH_COLUMN_KEY?.key_metadata ??
-      this.encryptionContext?.footerKeyMetadata
+      this.encryptionContext?.footerKeyMetadata ??
+      this.encryptionContext?.footerSigningKeyMetadata
     );
   }
 
@@ -680,31 +815,7 @@ export class ParquetReader {
     if (!columnMetadata) {
       throw new Error('Parquet column metadata is missing');
     }
-    if (columnChunk.crypto_metadata) {
-      const fullColumnChunk = await this.readColumnChunk(
-        schema,
-        columnChunk,
-        signal,
-        rowGroupOrdinal,
-        columnOrdinal,
-        columnMetadata
-      );
-      const field = schema.findField(columnMetadata.path_in_schema);
-      if (field.rLevelMax !== 0) {
-        return sliceRepeatedColumnChunk(
-          fullColumnChunk,
-          rowRange.start,
-          rowRange.end - rowRange.start,
-          field.dLevelMax
-        );
-      }
-      return sliceNonRepeatedColumnChunk(
-        fullColumnChunk,
-        field.dLevelMax,
-        rowRange.start,
-        rowRange.end
-      );
-    }
+    const encrypted = Boolean(columnChunk.crypto_metadata);
     const field = schema.findField(columnMetadata.path_in_schema);
     const type: PrimitiveType = getThriftEnum(Type, columnMetadata.type) as any;
     if (type !== field.primitiveType) {
@@ -749,7 +860,17 @@ export class ParquetReader {
       const dictionaryBuffer = toUint8Array(
         await this.file.read(dictionaryPageOffset, dictionaryLength, signal ?? this.props.signal)
       );
-      dictionary = await decodeDictionaryBuffer(dictionaryBuffer, context);
+      const decodedDictionaryBuffer = encrypted
+        ? await this.decryptColumnPages(
+            dictionaryBuffer,
+            context,
+            rowGroupOrdinal,
+            columnOrdinal,
+            this.getColumnKeyMetadata(columnChunk),
+            true
+          )
+        : dictionaryBuffer;
+      dictionary = await decodeDictionaryBuffer(decodedDictionaryBuffer, context);
     }
 
     if (field.rLevelMax !== 0) {
@@ -763,7 +884,18 @@ export class ParquetReader {
             signal ?? this.props.signal
           )
         );
-        const probe = await decodeDataPages(probeBuffer, {...context, dictionary});
+        const decodedProbeBuffer = encrypted
+          ? await this.decryptColumnPages(
+              probeBuffer,
+              context,
+              rowGroupOrdinal,
+              columnOrdinal,
+              this.getColumnKeyMetadata(columnChunk),
+              false,
+              firstPageIndex
+            )
+          : probeBuffer;
+        const probe = await decodeDataPages(decodedProbeBuffer, {...context, dictionary});
         if (probe.rlevels[0] === 0) {
           break;
         }
@@ -774,7 +906,18 @@ export class ParquetReader {
     const dataBuffer = toUint8Array(
       await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
     );
-    const decoded = await decodeDataPages(dataBuffer, {...context, dictionary});
+    const decodedDataBuffer = encrypted
+      ? await this.decryptColumnPages(
+          dataBuffer,
+          context,
+          rowGroupOrdinal,
+          columnOrdinal,
+          this.getColumnKeyMetadata(columnChunk),
+          false,
+          firstPageIndex
+        )
+      : dataBuffer;
+    const decoded = await decodeDataPages(decodedDataBuffer, {...context, dictionary});
     if (field.rLevelMax !== 0) {
       const rowStart = rowRange.start - firstPage.firstRowIndex;
       return sliceRepeatedColumnChunk(
@@ -836,23 +979,6 @@ async function decodeDictionaryBuffer(
   const cursor = {buffer: dictionaryBuffer, offset: 0, size: dictionaryBuffer.length};
   const decodedPage = await decodePage(cursor, context);
   return decodedPage.dictionary!;
-}
-
-/** Reads one length-prefixed encrypted module from a page stream. */
-function readEncryptedModule(
-  buffer: Uint8Array,
-  offset: number
-): {bytes: Uint8Array; nextOffset: number} {
-  if (offset + 4 > buffer.length) {
-    throw new Error('Invalid encrypted Parquet page: missing module length');
-  }
-  const length = readUInt32LE(buffer, offset);
-  const moduleStart = offset + 4;
-  const moduleEnd = moduleStart + length;
-  if (length < 12 || moduleEnd > buffer.length) {
-    throw new Error('Invalid encrypted Parquet page: truncated module');
-  }
-  return {bytes: buffer.subarray(moduleStart, moduleEnd), nextOffset: moduleEnd};
 }
 
 /** Slices one decoded non-repeated column chunk while preserving optional-value alignment. */

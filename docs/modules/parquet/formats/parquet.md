@@ -253,9 +253,10 @@ returned in the projected Arrow schema. Candidate rows are still filtered exactl
 thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page boundaries,
 including pages that continue one logical row; files with incompatible boundaries conservatively use full
 column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting
-pruning remains future format-completeness work. The TypeScript reader supports full reads of AES-GCM and
-AES-GCM-CTR encrypted column metadata and page modules when a key retriever is provided. Encrypted
-page-index reads and writer-side encryption remain future work.
+pruning remains future format-completeness work. The TypeScript reader supports AES-GCM and
+AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when a key retriever
+is provided. Encrypted sources conservatively stay on the caller thread because worker key-transfer
+protocols are not yet part of the public API; writer-side encryption remains future work.
 
 ## Integrity and Encryption
 
@@ -263,7 +264,7 @@ page-index reads and writer-side encryption remain future work.
 | ------- | ------- | -------- | ----- |
 | Footer and page-bound validation | ✅ | ✅ | Invalid magic, lengths, indexes, and truncated payloads are rejected |
 | Page CRC verification | ✅ (opt-in) | ✅ (opt-in) | CRC-32 covers the compressed page body; enable verification or emission explicitly to avoid a default throughput cost |
-| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ❌ | Encrypted footers, column metadata, and full AES-GCM/AES-GCM-CTR page reads are supported; encrypted page-index reads and writer-side encryption remain in progress |
+| [Parquet modular encryption](https://github.com/apache/parquet-format/blob/master/Encryption.md) | ⚠️ | ❌ | Encrypted footers, column metadata, page indexes, Bloom filters, and AES-GCM/AES-GCM-CTR page reads are supported; writer-side encryption remains future work |
 | External column chunks | ❌ | ❌ | `file_path` column references are rejected |
 
 ## Parquet and Arrow

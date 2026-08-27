@@ -114,7 +114,10 @@ export {
   type ParquetPageStatistics
 } from './lib/parquet-page-index';
 export {
+  createParquetModuleAad,
   decryptParquetModule,
+  readParquetEncryptedModule,
+  verifyParquetFooterSignature,
   type ParquetDecryptModuleOptions,
   type ParquetEncryptionAlgorithm,
   type ParquetKeyRetriever

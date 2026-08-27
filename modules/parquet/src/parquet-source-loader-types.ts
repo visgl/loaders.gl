@@ -48,6 +48,7 @@ export const ParquetSourceLoader = {
       headers: undefined,
       preserveBinary: false,
       verifyPageChecksums: false,
+      verifyFooterSignature: true,
       onTelemetry: undefined,
       workerUrl: undefined,
       wasmUrl: undefined
@@ -71,6 +72,7 @@ export const ParquetSourceLoader = {
       headers: undefined!,
       preserveBinary: false,
       verifyPageChecksums: false,
+      verifyFooterSignature: true,
       onTelemetry: undefined!,
       workerUrl: undefined!,
       wasmUrl: undefined!

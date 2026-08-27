@@ -479,6 +479,8 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     keyRetriever?: ParquetKeyRetriever;
     /** AAD prefix for encrypted files that intentionally omit it from metadata. */
     aadPrefix?: Uint8Array;
+    /** Verify plaintext-footer signatures when present. Enabled by default. */
+    verifyFooterSignature?: boolean;
     /** Receives cumulative transport, pruning, decode, and batch telemetry events. */
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Overrides the package-local worker used for selective source decoding. */

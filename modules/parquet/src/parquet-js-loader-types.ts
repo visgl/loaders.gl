@@ -21,6 +21,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const DEFAULT_PARQUET_JS_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
+  verifyFooterSignature: true,
   shape: 'object-row-table' as const
 };
 

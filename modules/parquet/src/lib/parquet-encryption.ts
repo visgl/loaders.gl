@@ -38,6 +38,23 @@ export type ParquetDecryptModuleOptions = {
   page?: boolean;
 };
 
+/** Reads one length-prefixed encrypted Parquet module from a serialized range. */
+export function readParquetEncryptedModule(
+  buffer: Uint8Array,
+  offset = 0
+): {bytes: Uint8Array; nextOffset: number} {
+  if (offset + 4 > buffer.length) {
+    throw new Error('Invalid encrypted Parquet module: missing module length');
+  }
+  const length = new DataView(buffer.buffer, buffer.byteOffset + offset, 4).getUint32(0, true);
+  const moduleStart = offset + 4;
+  const moduleEnd = moduleStart + length;
+  if (length < 12 || moduleEnd > buffer.length) {
+    throw new Error('Invalid encrypted Parquet module: truncated module');
+  }
+  return {bytes: buffer.subarray(moduleStart, moduleEnd), nextOffset: moduleEnd};
+}
+
 /** Builds the AAD required by the Parquet modular-encryption specification. */
 export function createParquetModuleAad(
   aadPrefix: Uint8Array | undefined,
@@ -116,6 +133,46 @@ export async function decryptParquetModule(
   return new Uint8Array(plaintext);
 }
 
+/** Verifies a plaintext-footer signature by authenticating the serialized footer bytes. */
+export async function verifyParquetFooterSignature(
+  footerBytes: Uint8Array,
+  signature: Uint8Array,
+  options: {
+    algorithm: ParquetEncryptionAlgorithm;
+    aad: Uint8Array;
+    keyMetadata?: Uint8Array;
+    keyRetriever: ParquetKeyRetriever;
+  }
+): Promise<void> {
+  if (signature.byteLength !== 28) {
+    throw new Error(
+      `Invalid Parquet plaintext-footer signature length ${signature.byteLength}; expected 28`
+    );
+  }
+  const keyMaterial = await options.keyRetriever(options.keyMetadata, {
+    algorithm: options.algorithm,
+    aad: options.aad
+  });
+  const cryptoKey = await getCryptoKey(keyMaterial, options.algorithm, false, ['encrypt']);
+  const encryptedFooter = new Uint8Array(
+    await getCryptoProvider().encrypt(
+      {
+        name: 'AES-GCM',
+        iv: signature.subarray(0, 12) as unknown as BufferSource,
+        additionalData: options.aad as unknown as BufferSource
+      },
+      cryptoKey,
+      footerBytes as unknown as BufferSource
+    )
+  );
+  const calculatedTag = encryptedFooter.subarray(encryptedFooter.byteLength - 16);
+  for (let index = 0; index < 16; index++) {
+    if (calculatedTag[index] !== signature[12 + index]) {
+      throw new Error('Parquet plaintext-footer signature verification failed');
+    }
+  }
+}
+
 function hasLengthPrefix(bytes: Uint8Array): boolean {
   if (bytes.length < 4) return false;
   const length = new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, true);
@@ -132,7 +189,8 @@ function makeCounter(nonce: Uint8Array): Uint8Array {
 async function getCryptoKey(
   keyMaterial: ArrayBuffer | ArrayBufferView,
   algorithm: ParquetEncryptionAlgorithm,
-  page?: boolean
+  page?: boolean,
+  usages: KeyUsage[] = ['decrypt']
 ): Promise<CryptoKey> {
   const keyBytes = toUint8Array(keyMaterial);
   if (keyBytes.byteLength !== 16 && keyBytes.byteLength !== 24 && keyBytes.byteLength !== 32) {
@@ -143,7 +201,7 @@ async function getCryptoKey(
     keyBytes as unknown as BufferSource,
     page && algorithm === 'AES_GCM_CTR_V1' ? {name: 'AES-CTR'} : {name: 'AES-GCM'},
     false,
-    ['decrypt']
+    usages
   );
 }
 
