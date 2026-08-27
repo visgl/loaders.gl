@@ -7,6 +7,7 @@ import {I3SNodePageLoader} from '@loaders.gl/i3s';
 import {I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
+import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
 
 const SCENE_LAYER_FIXTURES = [
   {
@@ -18,6 +19,11 @@ const SCENE_LAYER_FIXTURES = [
     name: 'I3S 1.8 3D Object',
     url: '@loaders.gl/i3s/test/data/conformance/i3s-1.8-3d-object.json',
     expectedVersion: '1.8'
+  },
+  {
+    name: 'I3S 1.9 3D Object',
+    url: '@loaders.gl/i3s/test/data/conformance/i3s-1.9-3d-object.json',
+    expectedVersion: '1.9'
   },
   {
     name: 'I3S 1.10 3D Object with forward fields',
@@ -105,5 +111,82 @@ describe('I3S conformance fixtures', () => {
       featureId,
       featureId
     ]);
+  });
+
+  it('preserves legacy mesh-segmentation bytes after schema-defined attributes', async () => {
+    const buffer = new ArrayBuffer(48);
+    const dataView = new DataView(buffer);
+    dataView.setUint32(0, 3, true);
+    dataView.setUint32(4, 0, true);
+    for (let index = 0; index < 9; index++) {
+      dataView.setFloat32(8 + index * 4, index % 3, true);
+    }
+    new Uint8Array(buffer, 44).set([0x53, 0x45, 0x47, 0x01]);
+
+    const content = await parseI3STileContent(
+      buffer,
+      {mbs: [0, 0, 0]} as any,
+      {
+        store: {
+          defaultGeometrySchema: {
+            header: [
+              {property: 'vertexCount', type: 'UInt32'},
+              {property: 'featureCount', type: 'UInt32'}
+            ],
+            ordering: ['position'],
+            vertexAttributes: {
+              position: {valueType: 'Float32', valuesPerElement: 3}
+            },
+            featureAttributeOrder: [],
+            featureAttributes: {}
+          }
+        }
+      } as any
+    );
+
+    expect(content.meshSegmentation).toBeInstanceOf(ArrayBuffer);
+    expect(Array.from(new Uint8Array(content.meshSegmentation!))).toEqual([0x53, 0x45, 0x47, 0x01]);
+  });
+
+  it('loads and normalizes a legacy shared-resource material', async () => {
+    const sharedResources = {
+      materialDefinitions: {
+        '0': {
+          params: {
+            diffuse: [0.2, 0.4, 0.6],
+            transparency: 0.25,
+            renderMode: 'textured',
+            cullFace: 'none'
+          }
+        }
+      },
+      textureDefinitions: {
+        '0': {encoding: ['image/png'], images: []}
+      }
+    };
+    const tile = await normalizeTileData(
+      {
+        id: 'legacy',
+        mbs: [0, 0, 0, 1],
+        sharedResource: {href: './shared'}
+      },
+      {
+        url: '/layers/0/nodes/legacy',
+        baseUrl: '/layers/0/nodes',
+        queryString: '',
+        fetch: async () => new Response(JSON.stringify(sharedResources)),
+        coreApi: {} as any,
+        _parse: async () => null
+      }
+    );
+
+    expect(tile.textureFormat).toBe('png');
+    expect(tile.sharedResources).toEqual(sharedResources);
+    expect(tile.materialDefinition?.alphaMode).toBe('blend');
+    expect(tile.materialDefinition?.doubleSided).toBe(true);
+    expect(tile.materialDefinition?.pbrMetallicRoughness.baseColorFactor).toEqual([
+      51, 102, 153, 191.25
+    ]);
+    expect(getLegacyMaterialDefinition(undefined)).toBeUndefined();
   });
 });

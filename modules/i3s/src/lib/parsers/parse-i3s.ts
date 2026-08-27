@@ -15,12 +15,18 @@ import {
   I3SMinimalNodeData,
   Node3DIndexDocument,
   SceneLayer3D,
-  I3SParseOptions
+  I3SParseOptions,
+  I3SMaterialDefinition,
+  I3STextureFormat,
+  SharedResources
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
 
-export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderContext): I3STileHeader {
+export async function normalizeTileData(
+  tile: Node3DIndexDocument,
+  context: LoaderContext
+): Promise<I3STileHeader> {
   const url: string = context.url || '';
   let contentUrl: string | undefined;
   if (tile.geometryData) {
@@ -39,16 +45,144 @@ export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderCon
 
   const children = tile.children || [];
 
+  const sharedResources = await loadSharedResources(tile, context);
+  const sharedMaterial = getLegacyMaterialDefinition(sharedResources);
+  const sharedTextureFormat = getLegacyTextureFormat(sharedResources);
+
   return normalizeTileNonUrlData({
     ...tile,
     children,
     url,
     contentUrl,
     textureUrl,
-    textureFormat: 'jpg', // `jpg` format selects bitmap image loading that can also handle `png`
+    textureFormat: sharedTextureFormat || 'jpg', // `jpg` format selects bitmap image loading that can also handle `png`
     attributeUrls,
+    materialDefinition: sharedMaterial,
+    sharedResources,
     isDracoGeometry: false
   });
+}
+
+/**
+ * Load the legacy shared-resource bundle referenced by a 1.6 node document.
+ * @param tile - legacy node document
+ * @param context - loader context used for relative resource access
+ * @returns decoded shared resources, or undefined when the optional resource is unavailable
+ */
+async function loadSharedResources(
+  tile: Node3DIndexDocument,
+  context: LoaderContext
+): Promise<SharedResources | undefined> {
+  const sharedResource = tile.sharedResource;
+  if (!sharedResource?.href || !context.fetch) {
+    return undefined;
+  }
+
+  const baseUrl = context.baseUrl || context.url?.replace(/\/[^/]*$/, '') || '';
+  const sharedResourceUrl = resolveRelativeResourceUrl(baseUrl, sharedResource.href);
+  const requestUrl = `${sharedResourceUrl}${context.queryString || ''}`;
+
+  try {
+    const response = await context.fetch(requestUrl);
+    if (!response.ok) {
+      return undefined;
+    }
+    return (await response.json()) as SharedResources;
+  } catch (_error) {
+    // Shared resources are optional in some 1.6 services. Keep loading the node
+    // when the service does not expose the optional material bundle.
+    return undefined;
+  }
+}
+
+/**
+ * Resolve a resource href relative to the node document's directory.
+ * @param baseUrl - node document directory
+ * @param href - resource href from the node document
+ * @returns resolved resource URL
+ */
+function resolveRelativeResourceUrl(baseUrl: string, href: string): string {
+  if (/^(?:[a-z]+:)?\/\//i.test(href) || href.startsWith('data:') || href.startsWith('blob:')) {
+    return href;
+  }
+  return `${baseUrl.replace(/\/$/, '')}/${href.replace(/^\.\//, '')}`;
+}
+
+/**
+ * Convert the first legacy material definition into the PBR shape used by the renderer.
+ * @param sharedResources - legacy shared-resource bundle
+ * @returns normalized material definition
+ */
+export function getLegacyMaterialDefinition(
+  sharedResources?: SharedResources
+): I3SMaterialDefinition | undefined {
+  const materialDefinitions = sharedResources?.materialDefinitions;
+  const materialDefinition = materialDefinitions
+    ? materialDefinitions[Object.keys(materialDefinitions)[0]]
+    : undefined;
+  if (!materialDefinition) {
+    return undefined;
+  }
+
+  const params = materialDefinition.params;
+  const diffuse = params.diffuse || [];
+  const color: [number, number, number] = [
+    normalizeLegacyColorComponent(diffuse[0]),
+    normalizeLegacyColorComponent(diffuse[1]),
+    normalizeLegacyColorComponent(diffuse[2])
+  ];
+  const transparency = Math.max(0, Math.min(1, params.transparency || 0));
+  const textureDefinitions = sharedResources?.textureDefinitions;
+  const textureDefinitionId = textureDefinitions ? Object.keys(textureDefinitions)[0] : undefined;
+
+  return {
+    pbrMetallicRoughness: {
+      baseColorFactor: [color[0], color[1], color[2], (1 - transparency) * 255],
+      metallicFactor: 0,
+      roughnessFactor: params.shininess === undefined ? 1 : 1 - Math.min(1, params.shininess / 128),
+      ...(textureDefinitionId !== undefined
+        ? {baseColorTexture: {textureSetDefinitionId: Number(textureDefinitionId) || 0}}
+        : {})
+    },
+    alphaMode: transparency > 0 ? 'blend' : 'opaque',
+    doubleSided: params.cullFace === 'none',
+    cullFace: params.cullFace as I3SMaterialDefinition['cullFace'] | undefined
+  };
+}
+
+/**
+ * Normalize a legacy diffuse-color component to the byte range used by the PBR material path.
+ * @param value - legacy color component
+ * @returns color component in the range 0..255
+ */
+function normalizeLegacyColorComponent(value: number | undefined): number {
+  if (value === undefined) {
+    return 255;
+  }
+  return value <= 1 ? value * 255 : value;
+}
+
+/**
+ * Select the first texture encoding advertised by a legacy shared-resource bundle.
+ * @param sharedResources - legacy shared-resource bundle
+ * @returns loaders.gl texture format
+ */
+function getLegacyTextureFormat(sharedResources?: SharedResources): I3STextureFormat | undefined {
+  const encoding = Object.values(sharedResources?.textureDefinitions || {})[0]?.encoding?.[0];
+  switch (encoding) {
+    case 'image/png':
+      return 'png';
+    case 'image/vnd-ms.dds':
+      return 'dds';
+    case 'image/ktx2':
+      return 'ktx2';
+    case 'image/ktx':
+      return 'ktx-etc2';
+    case 'image/jpeg':
+      return 'jpg';
+    default:
+      return undefined;
+  }
 }
 
 export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeader {
