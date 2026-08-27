@@ -391,6 +391,12 @@
       "@loaders.gl/wms/test": [
         "modules/wms/test"
       ],
+      "@loaders.gl/arcgis": [
+        "modules/arcgis/src"
+      ],
+      "@loaders.gl/arcgis/test": [
+        "modules/arcgis/test"
+      ],
       "@loaders.gl/xml": [
         "modules/xml/src"
       ],
