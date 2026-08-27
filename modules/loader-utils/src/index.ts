@@ -145,6 +145,11 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {RequestCache} from './lib/request-utils/request-cache';
+export type {
+  RequestCacheProps,
+  RequestCacheRemovalReason
+} from './lib/request-utils/request-cache';
 export {parseContentType} from './lib/request-utils/parse-content-type';
 export {
   RangeRequestScheduler,
@@ -160,6 +165,12 @@ export type {
   RangeRequestTransportResult,
   RangeStats
 } from './lib/request-utils/range-request-scheduler';
+export {RangeRequestCache} from './lib/request-utils/range-request-cache';
+export type {
+  CachedRangeRequest,
+  RangeRequestCacheEvent,
+  RangeRequestCacheProps
+} from './lib/request-utils/range-request-cache';
 
 // LAZ DECODER UTILS
 export {

@@ -26,6 +26,23 @@ The scheduler:
 - issues the merged HTTP `Range` request
 - slices the merged response back into one promise per original tile
 
+## Caching
+
+Scheduling and caching are separate layers. `RangeRequestScheduler` combines compatible transport
+work, while `RangeRequestCache` retains completed bytes and deduplicates exact requests that are
+already in flight. Keeping those responsibilities separate lets Sources choose a memory budget
+without changing request batching behavior.
+
+`RangeRequestCache` follows the same insertion-order LRU model used by loaders.gl tile caches. It
+supports entry and byte limits, protects pending requests from eviction, and serves a requested
+range from a larger cached interval. Every cache hit returns standalone bytes so application code
+cannot mutate or detach cache-owned storage. Large ranges that exceed the byte budget bypass the
+cache rather than being copied and immediately evicted.
+
+Use `RequestCache` for ordinary keyed asynchronous resources such as parsed 3D Tiles subtrees, and
+`RangeRequestCache` for random-access file bytes. Frame-aware tile content caches remain specialized
+because they must protect visible tiles and coordinate resource unloading.
+
 This is automatic for PMTiles URL Sources. Callers can keep using `getTile()` or
 `getTileData()`.
 

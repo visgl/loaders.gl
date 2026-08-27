@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path} from '@loaders.gl/loader-utils';
+import {path, RequestCache} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
 import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
@@ -92,12 +92,8 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
-  /** Parsed subtree promises keyed by final source URL for request deduplication and LRU reuse. */
-  private readonly implicitSubtreeCache: Map<string, Promise<ParsedImplicitSubtree>> = new Map();
-  /** URLs whose subtree resource requests have not settled. */
-  private readonly pendingImplicitSubtreeUrls: Set<string> = new Set();
-  /** Maximum number of settled parsed subtrees retained by this source. */
-  private readonly maximumCachedSubtrees: number;
+  /** Parsed subtree requests keyed by final source URL for deduplication and LRU reuse. */
+  private readonly implicitSubtreeCache: RequestCache<ParsedImplicitSubtree>;
   /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
   private readonly implicitTilingStats: Omit<
     ImplicitTilingStats,
@@ -132,9 +128,10 @@ export class Tiles3DSource implements Tileset3DSource {
     const maximumCachedSubtrees = Number(
       (loadOptions['3d-tiles'] as Record<string, unknown> | undefined)?.maximumCachedSubtrees
     );
-    this.maximumCachedSubtrees = Number.isFinite(maximumCachedSubtrees)
+    const maximumCacheEntries = Number.isFinite(maximumCachedSubtrees)
       ? Math.max(0, Math.floor(maximumCachedSubtrees))
       : DEFAULT_MAXIMUM_CACHED_SUBTREES;
+    this.implicitSubtreeCache = new RequestCache({maxEntries: maximumCacheEntries});
   }
 
   /**
@@ -147,7 +144,6 @@ export class Tiles3DSource implements Tileset3DSource {
     this.destroyed = true;
     this.tileUrlCache.clear();
     this.implicitSubtreeCache.clear();
-    this.pendingImplicitSubtreeUrls.clear();
   }
 
   /**
@@ -356,8 +352,8 @@ export class Tiles3DSource implements Tileset3DSource {
   getImplicitTilingStats(): ImplicitTilingStats {
     return {
       ...this.implicitTilingStats,
-      cachedSubtrees: this.implicitSubtreeCache.size - this.pendingImplicitSubtreeUrls.size,
-      pendingSubtrees: this.pendingImplicitSubtreeUrls.size
+      cachedSubtrees: this.implicitSubtreeCache.size - this.implicitSubtreeCache.pendingSize,
+      pendingSubtrees: this.implicitSubtreeCache.pendingSize
     };
   }
 
@@ -534,33 +530,21 @@ export class Tiles3DSource implements Tileset3DSource {
     const cachedSubtree = this.implicitSubtreeCache.get(subtreeUrl);
     if (cachedSubtree) {
       this.implicitTilingStats.cacheHits++;
-      this.implicitSubtreeCache.delete(subtreeUrl);
-      this.implicitSubtreeCache.set(subtreeUrl, cachedSubtree);
       return await cachedSubtree;
     }
 
     this.implicitTilingStats.requestedSubtrees++;
-    this.pendingImplicitSubtreeUrls.add(subtreeUrl);
     const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
-    const subtreePromise = this.loadResourceData(subtreeUrl, {
-      ...this.loadOptions,
-      [this.loader.id]: {
-        ...loaderOptions,
-        isTileset: false,
-        isSubtree: true
-      }
-    }) as Promise<ParsedImplicitSubtree>;
-    this.implicitSubtreeCache.set(subtreeUrl, subtreePromise);
-
-    try {
-      return await subtreePromise;
-    } catch (error) {
-      this.implicitSubtreeCache.delete(subtreeUrl);
-      throw error;
-    } finally {
-      this.pendingImplicitSubtreeUrls.delete(subtreeUrl);
-      this.trimImplicitSubtreeCache();
-    }
+    return await this.implicitSubtreeCache.getOrLoad(subtreeUrl, async () => {
+      return (await this.loadResourceData(subtreeUrl, {
+        ...this.loadOptions,
+        [this.loader.id]: {
+          ...loaderOptions,
+          isTileset: false,
+          isSubtree: true
+        }
+      })) as ParsedImplicitSubtree;
+    });
   }
 
   /**
@@ -594,21 +578,6 @@ export class Tiles3DSource implements Tileset3DSource {
       }
     }
     return materializedTileCount;
-  }
-
-  /** Evicts least-recently-used settled subtree entries until the configured bound is met. */
-  private trimImplicitSubtreeCache(): void {
-    if (this.implicitSubtreeCache.size <= this.maximumCachedSubtrees) {
-      return;
-    }
-    for (const subtreeUrl of this.implicitSubtreeCache.keys()) {
-      if (!this.pendingImplicitSubtreeUrls.has(subtreeUrl)) {
-        this.implicitSubtreeCache.delete(subtreeUrl);
-      }
-      if (this.implicitSubtreeCache.size <= this.maximumCachedSubtrees) {
-        break;
-      }
-    }
   }
 }
 

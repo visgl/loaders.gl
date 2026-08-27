@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile, Stat} from '@loaders.gl/loader-utils';
-import {RangeRequestScheduler} from '@loaders.gl/loader-utils';
+import {RangeRequestCache, RangeRequestScheduler} from '@loaders.gl/loader-utils';
 
 import type {ParquetObjectVersion, ParquetRangeRequestOptions} from '../../parquet-source-types';
 
@@ -47,6 +47,8 @@ type ContentRange = {
   total: number;
 };
 
+const DEFAULT_RANGE_CACHE_BYTES = 65536;
+
 /** Strict HTTP range-backed file with Parquet object-version validation. */
 export class ParquetRangeFile implements ReadableFile {
   /** URL used as the file handle. */
@@ -64,8 +66,8 @@ export class ParquetRangeFile implements ReadableFile {
   private readonly scheduler: RangeRequestScheduler;
   /** Aborts all active requests when the file is closed. */
   private readonly closeController = new AbortController();
-  /** Exact ranges already loaded during initialization. */
-  private readonly cache = new Map<string, ArrayBuffer>();
+  /** Bounded cache for repeated metadata and small range reads. */
+  private readonly cache: RangeRequestCache;
   /** Remote object byte length discovered from `Content-Range`. */
   private fileByteLength = 0;
   /** Object validators captured by the opening range request. */
@@ -80,6 +82,14 @@ export class ParquetRangeFile implements ReadableFile {
     this.fetch = options.fetch;
     this.headers = options.headers;
     this.onTelemetry = options.onTelemetry;
+    this.cache = new RangeRequestCache({
+      maxBytes: DEFAULT_RANGE_CACHE_BYTES,
+      onEvent: event => {
+        if (event.type === 'hit') {
+          this.onTelemetry?.({type: 'cache-hit', cacheHits: 1});
+        }
+      }
+    });
     this.scheduler =
       options.rangeRequests?.scheduler ||
       new RangeRequestScheduler({
@@ -113,7 +123,7 @@ export class ParquetRangeFile implements ReadableFile {
     const result = await this.fetchExactRange(0, 4, signal, false);
     this.fileByteLength = result.contentRange.total;
     this.version = getObjectVersion(result.response.headers);
-    this.cache.set(getRangeKey(0, 4), result.arrayBuffer);
+    this.cache.set(getVersionedSourceId(this.url, this.version), 0, result.arrayBuffer);
     return this;
   }
 
@@ -130,32 +140,33 @@ export class ParquetRangeFile implements ReadableFile {
       return new ArrayBuffer(0);
     }
 
-    const cached = this.cache.get(getRangeKey(offset, length));
-    if (cached) {
-      this.onTelemetry?.({type: 'cache-hit', cacheHits: 1});
-      return cached.slice(0);
-    }
-
     const abortContext = createCombinedAbortSignal(signal, this.closeController.signal);
     try {
-      return await this.scheduler.scheduleRequest({
+      return await this.cache.read({
         sourceId: getVersionedSourceId(this.url, this.version),
         offset,
         length,
         signal: abortContext.signal,
-        fetchRange: async (transportOffset, transportLength, transportSignal) => {
-          const result = await this.fetchExactRange(
-            transportOffset,
-            transportLength,
-            transportSignal,
-            true
-          );
-          return {
-            arrayBuffer: result.arrayBuffer,
-            status: result.response.status,
-            transportBytes: result.arrayBuffer.byteLength
-          };
-        }
+        fetchRange: async (rangeOffset, rangeLength, cacheSignal) =>
+          await this.scheduler.scheduleRequest({
+            sourceId: getVersionedSourceId(this.url, this.version),
+            offset: rangeOffset,
+            length: rangeLength,
+            signal: cacheSignal,
+            fetchRange: async (transportOffset, transportLength, transportSignal) => {
+              const result = await this.fetchExactRange(
+                transportOffset,
+                transportLength,
+                transportSignal,
+                true
+              );
+              return {
+                arrayBuffer: result.arrayBuffer,
+                status: result.response.status,
+                transportBytes: result.arrayBuffer.byteLength
+              };
+            }
+          })
       });
     } finally {
       abortContext.dispose();
@@ -321,11 +332,6 @@ function assertObjectVersion(expected: ParquetObjectVersion, actual: ParquetObje
   ) {
     throw new Error('Parquet object Last-Modified changed while it was being read');
   }
-}
-
-/** Creates a cache key for one exact range. */
-function getRangeKey(offset: number, length: number): string {
-  return `${offset}:${length}`;
 }
 
 /** Creates a scheduler identity that isolates object versions. */
