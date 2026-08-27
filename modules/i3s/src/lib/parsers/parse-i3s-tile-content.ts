@@ -93,7 +93,9 @@ export async function parseI3STileContent(
     : tileOptions.textureUrl
       ? [
           {
-            textureSetDefinitionId: 0,
+            textureSetDefinitionId: getMaterialTextureSetDefinitionId(
+              tileOptions.materialDefinition
+            ),
             textureUrl: tileOptions.textureUrl,
             textureFormat: tileOptions.textureFormat || 'jpg'
           }
@@ -610,8 +612,26 @@ function makePbrMaterial(
   if (materialDefinition) {
     pbrMaterial = {
       ...materialDefinition,
+      normalTexture: materialDefinition.normalTexture
+        ? {...materialDefinition.normalTexture}
+        : undefined,
+      occlusionTexture: materialDefinition.occlusionTexture
+        ? {...materialDefinition.occlusionTexture}
+        : undefined,
+      emissiveTexture: materialDefinition.emissiveTexture
+        ? {...materialDefinition.emissiveTexture}
+        : undefined,
       pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-        ? {...materialDefinition.pbrMetallicRoughness}
+        ? {
+            ...materialDefinition.pbrMetallicRoughness,
+            baseColorTexture: materialDefinition.pbrMetallicRoughness.baseColorTexture
+              ? {...materialDefinition.pbrMetallicRoughness.baseColorTexture}
+              : undefined,
+            metallicRoughnessTexture: materialDefinition.pbrMetallicRoughness
+              .metallicRoughnessTexture
+              ? {...materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture}
+              : undefined
+          }
         : {baseColorFactor: [255, 255, 255, 255]}
     };
   } else {
@@ -718,6 +738,22 @@ function setMaterialTextures(material, textures: Record<string, TileContentTextu
       textureSlot.texture = {source: {image: texture}};
     }
   }
+}
+
+/**
+ * Get the texture-set definition id used by the legacy singleton texture URL.
+ * @param materialDefinition - optional material definition containing texture references
+ * @returns referenced texture-set definition id, or zero when no reference is available
+ */
+function getMaterialTextureSetDefinitionId(materialDefinition?: I3SMaterialDefinition): number {
+  return (
+    materialDefinition?.pbrMetallicRoughness?.baseColorTexture?.textureSetDefinitionId ??
+    materialDefinition?.pbrMetallicRoughness?.metallicRoughnessTexture?.textureSetDefinitionId ??
+    materialDefinition?.normalTexture?.textureSetDefinitionId ??
+    materialDefinition?.occlusionTexture?.textureSetDefinitionId ??
+    materialDefinition?.emissiveTexture?.textureSetDefinitionId ??
+    0
+  );
 }
 
 /**
