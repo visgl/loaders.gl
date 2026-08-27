@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tile3D} from './tile-3d';
+import {CullingVolume} from '@math.gl/culling';
 import {ManagedArray} from '../../utils/managed-array';
 import {TILE_REFINEMENT} from '../../constants';
 import {FrameState} from '../helpers/frame-state';
