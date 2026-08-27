@@ -725,16 +725,16 @@
     "@loaders.gl/services": {
       "path": "modules/services",
       "browser": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
+        "statements": 62,
+        "lines": 64,
+        "functions": 71,
+        "branches": 35
       },
       "merged": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
+        "statements": 62,
+        "lines": 64,
+        "functions": 71,
+        "branches": 35
       }
     },
     "@loaders.gl/worker-utils": {

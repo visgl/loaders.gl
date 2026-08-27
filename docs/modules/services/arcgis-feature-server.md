@@ -1,14 +1,10 @@
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
-
 # ArcGIS Feature Server
-
-<WmsDocsTabs active="arcgis-feature-server" />
 
 ArcGIS Feature Server endpoints expose vector feature layers through the ArcGIS REST API.
 
 ## loaders.gl Support
 
-loaders.gl provides `_ArcGISFeatureServerSourceLoader` as an experimental vector source loader for
+loaders.gl provides `ArcGISFeatureServerSourceLoader` as an experimental vector source loader for
 ArcGIS `FeatureServer` layer endpoints. It can load layer metadata and query GeoJSON features for a
 viewport.
 
@@ -16,9 +12,9 @@ viewport.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {_ArcGISFeatureServerSourceLoader} from '@loaders.gl/wms';
+import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/services';
 
-const source = createDataSource(url, [_ArcGISFeatureServerSourceLoader], {
+const source = createDataSource(url, [ArcGISFeatureServerSourceLoader], {
   core: {type: 'arcgis-feature-server'}
 });
 

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/services",
   "version": "5.0.0-alpha.2",
-  "description": "Framework-independent loaders and sources for geospatial services",
+  "description": "Framework-independent loaders and sources for ArcGIS services",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -45,7 +45,11 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/wms": "5.0.0-alpha.2"
+    "@loaders.gl/gis": "5.0.0-alpha.2",
+    "@loaders.gl/images": "5.0.0-alpha.2",
+    "@loaders.gl/lerc": "5.0.0-alpha.2",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

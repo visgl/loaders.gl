@@ -6,11 +6,11 @@ import test from 'test/utils/vitest-tape';
 import {expect, test as vitestTest} from 'vitest';
 
 import {
-  _ArcGISFeatureServerSourceLoader as ArcGISFeatureServerSourceLoader,
-  _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader,
+  ArcGISFeatureServerSourceLoader,
+  ArcGISImageServerSourceLoader,
   ArcGISImageTileSource,
   ArcGISMapTileSource
-} from '@loaders.gl/wms';
+} from '@loaders.gl/services';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';

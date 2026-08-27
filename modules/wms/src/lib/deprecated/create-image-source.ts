@@ -9,11 +9,10 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {WMSSourceLoaderOptions} from '../../wms-source-loader';
 import {WMSSourceLoader} from '../../wms-source-loader';
-import {ArcGISImageServerSourceLoader} from '../../arcgis/arcgis-image-server-source-loader';
 
-export type ImageSourceType = 'wms' | 'arcgis-image-server' | 'template';
+export type ImageSourceType = 'wms' | 'template';
 
-const SOURCES = [WMSSourceLoader, ArcGISImageServerSourceLoader] as const;
+const SOURCES = [WMSSourceLoader] as const;
 
 /**
  * * @deprecated Use createDataSource from @loaders.gl/core

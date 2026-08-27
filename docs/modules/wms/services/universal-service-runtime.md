@@ -1,6 +1,6 @@
 # Universal service runtime
 
-`ServiceRuntime` provides one entry point for OGC and ArcGIS sources. It detects a source from its
+`ServiceRuntime` provides one entry point for the OGC sources implemented by `@loaders.gl/wms`. It detects a source from its
 URL, preserves a cached source instance, and offers shared request retries, cancellation, headers,
 and telemetry.
 

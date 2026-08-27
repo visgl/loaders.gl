@@ -70,16 +70,18 @@
     "type": "category",
     "label": "Services",
     "items": [
+      "modules/services/README",
       "modules/wms/formats/wcs",
       "modules/wms/formats/wfs",
       "modules/wms/formats/wmc",
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
-      "modules/wms/services/arcgis-map-server",
-      "modules/wms/services/arcgis-image-server",
-      "modules/wms/services/arcgis-feature-server",
       "modules/wms/services/ogc-api",
-      "modules/wms/services/arcgis-vector-tile-server"
+      "modules/services/arcgis-map-server",
+      "modules/services/arcgis-image-server",
+      "modules/services/arcgis-feature-server",
+      "modules/services/arcgis-vector-tile-server",
+      "modules/services/api-reference/arcgis"
     ]
   },
   {

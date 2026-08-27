@@ -37,7 +37,7 @@ const sourceTabs = [
       'FlatGeobufSourceLoader',
       'GeoPackageSourceLoader',
       'WFSSourceLoader',
-      '_ArcGISFeatureServerSourceLoader'
+      'ArcGISFeatureServerSourceLoader'
     ],
     dataSource: 'VectorSource',
     methods: ['getMetadata()', 'getFeatures()'],
@@ -49,7 +49,7 @@ const sourceTabs = [
   {
     id: 'image-source',
     label: 'Images',
-    sourceLoaders: ['WMSSourceLoader', 'OMETiffSourceLoader', '_ArcGISImageServerSourceLoader'],
+    sourceLoaders: ['WMSSourceLoader', 'OMETiffSourceLoader', 'ArcGISImageServerSourceLoader'],
     dataSource: 'ImageSource',
     methods: ['getMetadata()', 'getImage()'],
     outputCategory: 'ImageSourceData',
@@ -104,8 +104,8 @@ const sourceTabs = [
 ];
 
 const sourceTags = {
-  _ArcGISFeatureServerSourceLoader: 'Experimental',
-  _ArcGISImageServerSourceLoader: 'Experimental',
+  ArcGISFeatureServerSourceLoader: 'Experimental',
+  ArcGISImageServerSourceLoader: 'Experimental',
   COPCSourceLoader: 'Cloud Archive',
   CSWSourceLoader: 'Web Service',
   DuckDBSQLSource: 'Database',
@@ -126,8 +126,8 @@ const sourceTags = {
 };
 
 const sourceDocumentationLinks = {
-  _ArcGISFeatureServerSourceLoader: '/docs/modules/wms/services/arcgis-feature-server',
-  _ArcGISImageServerSourceLoader: '/docs/modules/wms/services/arcgis-image-server',
+  ArcGISFeatureServerSourceLoader: '/docs/modules/services/arcgis-feature-server',
+  ArcGISImageServerSourceLoader: '/docs/modules/services/arcgis-image-server',
   COPCSourceLoader: '/docs/modules/copc/api-reference/copc-source-loader',
   CSWSourceLoader: '/docs/modules/wms/api-reference/csw-source-loader',
   DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',

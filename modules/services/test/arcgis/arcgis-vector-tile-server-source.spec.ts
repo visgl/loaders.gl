@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/wms';
+import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/services';
 
 const VECTOR_TILE_SERVER_URL = 'https://example.com/arcgis/rest/services/World/VectorTileServer';
 

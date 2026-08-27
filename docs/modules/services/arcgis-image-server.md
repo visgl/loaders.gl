@@ -1,14 +1,10 @@
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
-
 # ArcGIS Image Server
-
-<WmsDocsTabs active="arcgis-image-server" />
 
 ArcGIS Image Server endpoints expose raster imagery and image services through the ArcGIS REST API.
 
 ## loaders.gl Support
 
-loaders.gl provides `_ArcGISImageServerSourceLoader` as an experimental image source loader for
+loaders.gl provides `ArcGISImageServerSourceLoader` as an experimental image source loader for
 ArcGIS `ImageServer` endpoints. It can load service metadata and request exported images for a
 viewport. `ArcGISImageTileSourceLoader` provides a deck.gl-compatible tile source backed by the
 `/exportImage` endpoint.
@@ -17,9 +13,9 @@ viewport. `ArcGISImageTileSourceLoader` provides a deck.gl-compatible tile sourc
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {_ArcGISImageServerSourceLoader} from '@loaders.gl/wms';
+import {ArcGISImageServerSourceLoader} from '@loaders.gl/services';
 
-const source = createDataSource(url, [_ArcGISImageServerSourceLoader], {
+const source = createDataSource(url, [ArcGISImageServerSourceLoader], {
   core: {type: 'arcgis-image-server'}
 });
 
@@ -39,7 +35,7 @@ For deck.gl tile rendering, use `ArcGISImageTileSourceLoader`. It requests one `
 image per tile and supports ImageServer rendering parameters.
 
 ```ts
-import {ArcGISImageTileSourceLoader} from '@loaders.gl/wms';
+import {ArcGISImageTileSourceLoader} from '@loaders.gl/services';
 
 const tileSource = createDataSource(url, [ArcGISImageTileSourceLoader], {
   type: 'arcgis-image-server-tiles',
