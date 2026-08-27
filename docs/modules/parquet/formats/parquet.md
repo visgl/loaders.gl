@@ -88,7 +88,7 @@ as a compatibility fallback.
 | `BOOLEAN` | One bit per value in plain encoding | ✅ | ✅ | Nulls are represented by definition levels, not value bits |
 | `INT32` | 32-bit little-endian signed integer | ✅ | ✅ | Also carries dates, narrow integers, and some decimals |
 | `INT64` | 64-bit little-endian signed integer | ✅ | ✅ | Preserved as exact `bigint` when required |
-| `INT96` | 12-byte legacy integer | ⚠️ | ⚠️ | Deprecated; no complete portable logical interpretation |
+| `INT96` | 12-byte legacy timestamp | ✅ (Arrow) | ⚠️ | TypeScript Arrow output can decode the canonical Julian-day plus nanoseconds representation as `timestamp-nanosecond`; object-row compatibility remains opt-in via `int96AsTimestamp` |
 | `FLOAT` | IEEE-754 binary32, little endian | ✅ | ✅ | Maps to Arrow Float32 |
 | `DOUBLE` | IEEE-754 binary64, little endian | ✅ | ✅ | Maps to Arrow Float64 |
 | `BYTE_ARRAY` | 32-bit length followed by bytes | ✅ | ✅ | Used for binary, strings, JSON, BSON, and arbitrary precision decimals |
@@ -299,7 +299,7 @@ rather than by individual missing methods.
 | Selective scan and physical planning | ✅ foundation | Footer statistics, Bloom filters, page/offset indexes, nested-leaf pruning, late materialization, and explainable range plans | Sorting-column semantics drive safe page/row-group pruning, and estimates describe the physical late-materialization plan |
 | Cloud-native table sources | ✅ read-only slice | Iceberg metadata/manifest planning and Delta snapshot replay dispatch selected files through `ParquetDatasetSource` | Checkpoints, CDC, deletion vectors, catalog discovery, and consistent snapshot/error semantics |
 | Modular encryption | ✅ opt-in | Encrypted footer/column metadata, page/index/Bloom-filter reads, AES-GCM/AES-GCM-CTR pages, worker scans, footer-key and per-column-key encrypted-column writing, and plaintext-footer signatures | Broader encrypted-file interoperability and external key-management guidance |
-| Logical and legacy parity | ⚠️ expanding | Logical Arrow mappings, nested LIST/MAP/VARIANT/geo types, legacy `BIT_PACKED` reads, and explicit `PLAIN_DICTIONARY` writes | Defined INT96 conversion, legacy nested/shredding variants, and exact Arrow fidelity across the stable logical-type matrix |
+| Logical and legacy parity | ✅ core Arrow path | Logical Arrow mappings, canonical INT96 timestamp decoding, nested LIST/MAP/VARIANT/geo types, legacy `BIT_PACKED` reads, and explicit `PLAIN_DICTIONARY` writes | Legacy nested/shredding variants, object-row compatibility policy, and exact Arrow fidelity across the remaining stable logical-type matrix |
 | Conformance and scale gate | ⚠️ ongoing | Hermetic feature tests, differential checks, and representative browser benchmarks | Apache corpus plus nested/repeated cases, every stable codec/encoding, differential validation, and large-file/selective-range benchmarks pass in CI |
 | Emerging-format lab | 🧪 experimental | Tracking links and isolated capability flags | ALP, PFOR, VECTOR, and format-versioning experiments remain opt-in until an upstream format and interoperability fixtures stabilize |
 

@@ -24,6 +24,11 @@ import {
   writeUInt32LE
 } from '../utils/binary-utils';
 
+const JULIAN_DAY_UNIX_EPOCH = 2440588n;
+const NANOSECONDS_PER_DAY = 86_400_000_000_000n;
+const INT64_MIN = -(1n << 63n);
+const INT64_MAX = (1n << 63n) - 1n;
+
 export function encodeValues(
   type: PrimitiveType,
   values: any[],
@@ -166,12 +171,26 @@ function decodeValues_INT96(
   const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    const low = Number(dataView.getBigInt64(cursor.offset, true));
-    const high = dataView.getUint32(cursor.offset + 8, true);
-    if (high === 0xffffffff) {
-      output[outputOffset + i] = ~-low + 1; // truncate to 64 actual precision
+    if (options.int96AsTimestamp) {
+      const nanosecondsOfDay = dataView.getBigUint64(cursor.offset, true);
+      if (nanosecondsOfDay >= NANOSECONDS_PER_DAY) {
+        throw new Error(`Invalid INT96 nanoseconds of day: ${nanosecondsOfDay}`);
+      }
+      const julianDay = BigInt(dataView.getInt32(cursor.offset + 8, true));
+      const epochNanoseconds =
+        (julianDay - JULIAN_DAY_UNIX_EPOCH) * NANOSECONDS_PER_DAY + nanosecondsOfDay;
+      if (epochNanoseconds < INT64_MIN || epochNanoseconds > INT64_MAX) {
+        throw new Error(`INT96 timestamp is outside the signed 64-bit range: ${epochNanoseconds}`);
+      }
+      output[outputOffset + i] = epochNanoseconds;
     } else {
-      output[outputOffset + i] = low; // truncate to 64 actual precision
+      const low = Number(dataView.getBigInt64(cursor.offset, true));
+      const high = dataView.getUint32(cursor.offset + 8, true);
+      if (high === 0xffffffff) {
+        output[outputOffset + i] = ~-low + 1; // truncate to 64 actual precision
+      } else {
+        output[outputOffset + i] = low; // truncate to 64 actual precision
+      }
     }
     cursor.offset += 12;
   }

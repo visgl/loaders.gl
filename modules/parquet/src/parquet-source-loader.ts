@@ -707,6 +707,7 @@ export class ParquetSource
               signal,
               {
                 rowGroupOrdinal: rowGroupIndex,
+                int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
                 decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
                   initialization.reader.decryptIndexModule(
                     bytes,
@@ -876,6 +877,7 @@ export class ParquetSource
           signal,
           {
             rowGroupOrdinal: rowGroupIndex,
+            int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
             decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
               initialization.reader.decryptIndexModule(
                 bytes,
@@ -1044,6 +1046,7 @@ export class ParquetSource
               }
             : undefined,
           preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+          int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
           verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },
         workerOptions
@@ -1164,6 +1167,7 @@ export class ParquetSource
     try {
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
+        int96AsTimestamp: this.options.parquet?.int96AsTimestamp,
         verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
         verifyFooterSignature: this.options.parquet?.verifyFooterSignature,
         keyRetriever: this.options.parquet?.keyRetriever,

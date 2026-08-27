@@ -12,7 +12,9 @@ import {applyGeoParquetToFieldMetadata} from '../geo/geospatial-metadata';
 export async function getSchemaFromParquetReader(reader: ParquetReader): Promise<Schema> {
   const parquetSchema = await reader.getSchema();
   const parquetMetadata = await reader.getFileMetadata();
-  const schema = convertParquetSchema(parquetSchema, parquetMetadata);
+  const schema = convertParquetSchema(parquetSchema, parquetMetadata, {
+    int96AsTimestamp: reader.int96AsTimestamp
+  });
   applyGeoParquetToFieldMetadata(schema);
   unpackGeoMetadata(schema.metadata);
   unpackJSONStringMetadata(schema.metadata, 'pandas');

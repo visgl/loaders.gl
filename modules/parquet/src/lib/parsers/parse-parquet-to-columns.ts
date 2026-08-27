@@ -40,7 +40,9 @@ export async function* parseParquetFileInColumnarBatches(
 ): AsyncIterable<ColumnarTableBatch> {
   await preloadCompressions(options);
 
-  const reader = new ParquetReader(file);
+  const reader = new ParquetReader(file, {
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp
+  });
 
   // Extract schema and geo metadata
   const schema = await getSchemaFromParquetReader(reader);

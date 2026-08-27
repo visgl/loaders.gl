@@ -37,6 +37,8 @@ export interface ParquetCodecOptions {
   dictionary?: readonly unknown[];
   /** Preserve decoded INT64 values as bigint instead of converting them to number. */
   int64AsBigInt?: boolean;
+  /** Decode legacy INT96 physical values as epoch nanoseconds instead of raw numbers. */
+  int96AsTimestamp?: boolean;
 }
 
 export interface ParquetCodecKit {

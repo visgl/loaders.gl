@@ -128,6 +128,7 @@ async function readProjectedSchema(
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
     verifyFooterSignature: options?.parquet?.verifyFooterSignature,
     keyRetriever: options?.parquet?.keyRetriever,
     aadPrefix: options?.parquet?.aadPrefix
@@ -150,6 +151,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
 
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
     retainByteArrayViews: true,
     useTypedValueBuffers: true,
     useTypedLevelBuffers: true,
@@ -667,6 +669,13 @@ function createRawPrimitiveArrowArrayView(
   ) {
     return values.subarray(start, end);
   }
+  if (
+    parquetField.primitiveType === 'INT96' &&
+    arrowType instanceof arrow.TimestampNanosecond &&
+    values instanceof BigInt64Array
+  ) {
+    return values.subarray(start, end);
+  }
   return undefined;
 }
 
@@ -714,6 +723,9 @@ function createRawPrimitiveArrowArray(
       arrowType instanceof arrow.TimestampMicrosecond ||
       arrowType instanceof arrow.TimestampNanosecond)
   ) {
+    return new BigInt64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT96' && arrowType instanceof arrow.TimestampNanosecond) {
     return new BigInt64Array(rowCount);
   }
   if (parquetField.primitiveType === 'INT64' && arrowType instanceof arrow.Uint64) {

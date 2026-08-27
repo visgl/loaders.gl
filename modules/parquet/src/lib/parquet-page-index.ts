@@ -90,6 +90,8 @@ export type ParquetPageIndexDecryptor = (
 export type ParquetPagePruningOptions = {
   /** Row-group ordinal used when constructing encrypted-module AAD. */
   rowGroupOrdinal?: number;
+  /** Decode legacy INT96 page statistics as epoch nanoseconds. */
+  int96AsTimestamp?: boolean;
   /** Decrypts encrypted index modules; omitted for plaintext files. */
   decryptModule?: ParquetPageIndexDecryptor;
 };
@@ -203,7 +205,7 @@ export async function createParquetPagePruningPlan(
           : toUint8Array(columnIndexBytes);
         pageStatistics[pathKey] = {
           pages,
-          statistics: decodeParquetColumnIndex(decryptedBytes, pages, field)
+          statistics: decodeParquetColumnIndex(decryptedBytes, pages, field, options)
         };
       } catch {
         return;
@@ -404,7 +406,8 @@ function getPredicateRowRanges(
 export function decodeParquetColumnIndex(
   bytes: Uint8Array,
   pages: readonly ParquetDataPageLocation[],
-  field: ParquetField
+  field: ParquetField,
+  options?: Pick<ParquetPagePruningOptions, 'int96AsTimestamp'>
 ): ParquetPageStatistics[] {
   const protocol = new Uint8ArrayCompactProtocol(new Uint8ArrayTransport(bytes));
   const columnIndex = ColumnIndex.read(protocol as any);
@@ -419,10 +422,10 @@ export function decodeParquetColumnIndex(
   return pages.map((_page, pageIndex) => ({
     min: columnIndex.null_pages[pageIndex]
       ? undefined
-      : decodeParquetPageStatisticsValue(columnIndex.min_values[pageIndex], field),
+      : decodeParquetPageStatisticsValue(columnIndex.min_values[pageIndex], field, options),
     max: columnIndex.null_pages[pageIndex]
       ? undefined
-      : decodeParquetPageStatisticsValue(columnIndex.max_values[pageIndex], field),
+      : decodeParquetPageStatisticsValue(columnIndex.max_values[pageIndex], field, options),
     nullCount:
       columnIndex.null_counts?.[pageIndex] !== undefined
         ? Number(columnIndex.null_counts[pageIndex])
@@ -435,7 +438,11 @@ export function decodeParquetColumnIndex(
 }
 
 /** Decodes one physical page-index statistic and applies its Parquet logical annotation. */
-export function decodeParquetPageStatisticsValue(bytes: Uint8Array, field: ParquetField): unknown {
+export function decodeParquetPageStatisticsValue(
+  bytes: Uint8Array,
+  field: ParquetField,
+  options?: Pick<ParquetPagePruningOptions, 'int96AsTimestamp'>
+): unknown {
   let primitiveValue: unknown;
   switch (field.primitiveType) {
     case 'BOOLEAN':
@@ -456,6 +463,18 @@ export function decodeParquetPageStatisticsValue(bytes: Uint8Array, field: Parqu
       primitiveValue = readDoubleLE(bytes, 0);
       break;
     case 'INT96':
+      if (options?.int96AsTimestamp && bytes.byteLength >= 12) {
+        const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const nanosecondsOfDay = dataView.getBigUint64(0, true);
+        if (nanosecondsOfDay < 86_400_000_000_000n) {
+          primitiveValue =
+            (BigInt(dataView.getInt32(8, true)) - 2440588n) * 86_400_000_000_000n +
+            nanosecondsOfDay;
+          break;
+        }
+      }
+      primitiveValue = copyUint8Array(bytes);
+      break;
     case 'BYTE_ARRAY':
     case 'FIXED_LEN_BYTE_ARRAY':
       primitiveValue = copyUint8Array(bytes);

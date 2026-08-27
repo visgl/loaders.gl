@@ -36,6 +36,7 @@ export async function decodeParquetSourceWorkerInput(
     : undefined;
   const reader = new ParquetReader(file, {
     preserveBinary: input.preserveBinary,
+    int96AsTimestamp: input.int96AsTimestamp,
     verifyPageChecksums: input.verifyPageChecksums,
     encryptionContext: input.encryption
       ? {

@@ -12,6 +12,8 @@ type ParquetCommonLoaderOptions = {
   batchSize?: number;
   columns?: string[];
   preserveBinary?: boolean;
+  /** Decode legacy INT96 values as Arrow timestamp-nanosecond values. */
+  int96AsTimestamp?: boolean;
 };
 
 /** Additional options supported by the wasm-backed Parquet reader. */

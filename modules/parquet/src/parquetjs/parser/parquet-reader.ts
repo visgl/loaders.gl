@@ -79,6 +79,8 @@ export type ParquetReaderProps = {
   useTypedLevelBuffers?: boolean;
   /** Verify page-header CRC values when present. Disabled by default for throughput. */
   verifyPageChecksums?: boolean;
+  /** Decode legacy INT96 values as epoch nanoseconds for Arrow timestamp columns. */
+  int96AsTimestamp?: boolean;
   /** Verify plaintext-footer signatures when present. Enabled by default. */
   verifyFooterSignature?: boolean;
   /** Abort signal forwarded to every underlying random-access read. */
@@ -136,6 +138,7 @@ export class ParquetReader {
     useTypedValueBuffers: false,
     useTypedLevelBuffers: false,
     verifyPageChecksums: false,
+    int96AsTimestamp: false,
     verifyFooterSignature: true,
     signal: undefined,
     keyRetriever: undefined,
@@ -162,6 +165,11 @@ export class ParquetReader {
   /** Whether the decoded footer describes an encrypted Parquet file. */
   get encrypted(): boolean {
     return Boolean(this.encryptionContext);
+  }
+
+  /** Whether this reader decodes legacy INT96 values as epoch nanoseconds. */
+  get int96AsTimestamp(): boolean {
+    return this.props.int96AsTimestamp;
   }
 
   /** Returns a cloneable snapshot of the file encryption context for worker decoding. */
@@ -787,7 +795,8 @@ export class ParquetReader {
       retainByteArrayViews: this.props.retainByteArrayViews,
       useTypedValueBuffers: this.props.useTypedValueBuffers,
       useTypedLevelBuffers: this.props.useTypedLevelBuffers,
-      verifyPageChecksums: this.props.verifyPageChecksums
+      verifyPageChecksums: this.props.verifyPageChecksums,
+      int96AsTimestamp: this.props.int96AsTimestamp
     };
 
     let dictionary: any[] | undefined;
@@ -962,7 +971,8 @@ export class ParquetReader {
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
       useTypedValueBuffers: this.props.useTypedValueBuffers,
-      verifyPageChecksums: this.props.verifyPageChecksums
+      verifyPageChecksums: this.props.verifyPageChecksums,
+      int96AsTimestamp: this.props.int96AsTimestamp
     };
 
     let dictionary: any[] | undefined;
