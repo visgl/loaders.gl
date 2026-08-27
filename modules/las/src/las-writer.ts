@@ -239,7 +239,9 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     returnCounts,
     maxGpsTime: gpsTimeRange.maximum,
     minGpsTime: gpsTimeRange.minimum,
-    timeOffset: options.las?.timeOffset || 0
+    timeOffset: options.las?.timeOffset || 0,
+    hasGpsTime: Boolean(gpsTimeAttribute),
+    hasWkt: Boolean(options.las?.wkt)
   };
   if (format === 'laz') {
     return encodeLAZFile(
@@ -342,6 +344,10 @@ type LASWriteParameters = {
   minGpsTime: number;
   /** LAS 1.5 GPS time offset. */
   timeOffset: number;
+  /** Whether the input contained a GPS time attribute. */
+  hasGpsTime: boolean;
+  /** Whether a WKT coordinate-system VLR is emitted. */
+  hasWkt: boolean;
 };
 
 /** Internal description of one encoded LAS Extra Bytes field. */
@@ -546,7 +552,7 @@ function encodeMetadataVLRs(
 
 /** Encode one LAS WKT projection VLR. */
 function encodeProjectionVLR(recordId: 2111 | 2112, description: string, wkt: string): Uint8Array {
-  const payload = new TextEncoder().encode(wkt);
+  const payload = new TextEncoder().encode(`${wkt}\0`);
   if (payload.byteLength > 0xffff) {
     throw new Error(`LASWriter: WKT VLR ${recordId} exceeds the LAS VLR size limit`);
   }
@@ -910,11 +916,11 @@ function writeHeader(
     // LAS 1.5 requires WKT and stores the time range in the extended header.
     dataView.setUint16(
       6,
-      0x10 |
-        (parameters.maxGpsTime !== 0 || parameters.minGpsTime !== 0 ? 1 : 0) |
-        (parameters.timeOffset !== 0 ? 0x40 : 0),
+      0x10 | (parameters.hasGpsTime ? 1 : 0) | (parameters.timeOffset ? 0x40 : 0),
       true
     );
+  } else if (parameters.version === '1.4' && parameters.hasWkt) {
+    dataView.setUint16(6, 0x10, true);
   }
 
   dataView.setFloat64(131, parameters.scale[0], true);
