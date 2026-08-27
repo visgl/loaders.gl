@@ -760,6 +760,7 @@ export class ParquetSource
     }
     await this.readableFile?.close();
     const initialization = await this.initializationPromise?.catch(() => null);
+    initialization?.reader.close();
     if (initialization?.file !== this.readableFile) {
       await initialization?.file.close();
     }
