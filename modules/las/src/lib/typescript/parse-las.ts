@@ -68,6 +68,7 @@ const LASZIP_USER_ID = 'laszip encoded';
 const LASZIP_RECORD_ID = 22204;
 const VARIABLE_CHUNK_SIZE = 0xffffffff;
 const LAZ_CHUNK_TABLE_POINTER_LENGTH = 8;
+/** Read-ahead block that amortizes legacy cursor feeds while keeping retained input bounded. */
 const LEGACY_LAZ_FEED_BLOCK_SIZE = 64 * 1024;
 
 /** One compressed field item declared by the LASzip VLR. */
@@ -667,7 +668,14 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
   }
 }
 
-/** Return a bounded legacy decoder prefix that amortizes feed and reader bookkeeping. */
+/**
+ * Return the queued prefix length to expose to a legacy LAZ cursor.
+ *
+ * Legacy arithmetic decoding can request input one point at a time. Feeding only that minimum
+ * makes the streaming path repeat reader checkpoints and tiny copies for every point. Growing
+ * the exposed prefix in fixed blocks amortizes that work while limiting speculative read-ahead
+ * to one block beyond the cursor requirement.
+ */
 function getLegacyLAZFeedByteLength(
   availableByteLength: number,
   fedByteLength: number,
@@ -713,7 +721,13 @@ async function* parseLAZInBatches(
   }
 }
 
-/** Decode fixed-size PDRF 3 LAZ chunks directly into streaming Arrow batches. */
+/**
+ * Decode fixed-size PDRF 3 LAZ chunks directly into streaming Arrow batches.
+ *
+ * This path intentionally parallels the raw legacy stream loop. Writing into Arrow-owned arrays
+ * avoids allocating and reparsing an intermediate raw LAS point-record batch, while the cursor
+ * still provides point-atomic suspension when more compressed input is required.
+ */
 async function* parsePendingFixedPDRF3LAZFileInArrowBatches(
   initialPending: Uint8Array<ArrayBufferLike>,
   inputIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView>,
