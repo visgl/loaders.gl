@@ -156,10 +156,10 @@ export function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback
 
   const parentCounts = hierarchy.parentCounts;
   const parentIds = hierarchy.parentIds;
-  if (parentIds) {
+  if (!parentIds) {
     return endConditionCallback(hierarchy, instanceIndex);
   }
-  if (parentCounts > 0) {
+  if (parentCounts) {
     return traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback);
   }
   return traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback);

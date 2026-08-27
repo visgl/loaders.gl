@@ -190,6 +190,32 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents', () => {
         '3DTILES_batch_table_hierarchy': true
     })).not.toThrow();
 });
+
+test('Tile3DBatchTableParser#traverses multiple parents for inherited properties', () => {
+    const batchTable = new Tile3DBatchTableParser(
+        {
+            HIERARCHY: {
+                instancesLength: 4,
+                classIds: [0, 1, 1, 2],
+                parentCounts: [2, 1, 1, 0],
+                parentIds: [1, 2, 3, 3],
+                classes: [
+                    {name: 'window', length: 1, instances: {window_name: ['window0']}},
+                    {name: 'door', length: 2, instances: {door_name: ['door0', 'door1']}},
+                    {name: 'building', length: 1, instances: {building_name: ['building0']}}
+                ]
+            }
+        },
+        null,
+        4,
+        {'3DTILES_batch_table_hierarchy': true}
+    );
+
+    expect(batchTable.isClass(0, 'building')).toBe(true);
+    expect(batchTable.hasProperty(0, 'building_name')).toBe(true);
+    expect(batchTable.getProperty(0, 'building_name')).toBe('building0');
+    expect(batchTable.isClass(0, 'missing')).toBe(false);
+});
 test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', () => {
     //             zone
     //             / |  \
