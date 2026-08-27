@@ -682,9 +682,10 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
    Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
    keep tile addressing and rendering controls outside `TableQuery`.
-7. **Portable relational growth.** Promote ordering, scalar expressions, aggregates, unions, and
-   equi-joins from logical planning to execution only after at least two real backends pass identical
-   conformance tests. Arrow and DuckDB are the first pair; Parquet/Iceberg and GPU are follow-ons.
+7. **Portable relational growth — first slice landed.** Arrow and DuckDB now execute the shared
+   ordering, scalar-expression, and grouped-aggregate request shape. The next slice is unions and
+   equi-joins, which must retain source ordering, duplicate-column rules, and explicit join semantics
+   across at least two backends before they become part of the default panel.
 8. **GPU and acceleration.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
    materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest
    neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
@@ -723,6 +724,31 @@ the primary progress report for the roadmap.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
+
+### Relational first slice
+
+The first relational tranche deliberately stays small enough to run without a database ingest. An
+in-memory Arrow table can evaluate computed numeric columns, stable multi-key ordering (including
+explicit null placement), and `count`, `sum`, `min`, `max`, and `avg` aggregates. DuckDB receives the
+same immutable options through the SQL compiler, with identifiers quoted and arithmetic guarded
+against division by zero. Both executors apply filtering before expressions, ordering before the
+global limit, and projection after computed or aggregate columns are available.
+
+```ts
+const query = {
+  predicate: parseSQLPredicate("status = 'active'"),
+  expressions: [{name: 'revenue', expression: {op: 'multiply', left: 'price', right: 'quantity'}}],
+  columns: ['category', 'revenue'],
+  orderBy: [{column: 'revenue', direction: 'desc', nulls: 'last'}],
+  limit: 100
+};
+```
+
+The Arrow executor remains intentionally row-oriented for this proof of concept: it materializes
+only the rows needed by the relational operators and returns a bounded Arrow table. This gives
+format adapters and the GPU executor a conformance target without committing them to the same
+physical implementation. Union and join planning remains metadata-only until child-source
+resolution and duplicate-column naming are standardized.
 
 ## Point-cloud participation
 

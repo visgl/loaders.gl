@@ -22,7 +22,10 @@ test('Arrow executor advertises portable query capabilities', () => {
     predicate: 'residual',
     limit: 'residual',
     streaming: false,
-    cancellation: true
+    cancellation: true,
+    expressions: 'residual',
+    orderBy: 'residual',
+    aggregates: 'residual'
   });
   expect(Object.isFrozen(ARROW_TABLE_QUERY_CAPABILITIES)).toBe(true);
 });
@@ -164,6 +167,78 @@ test('queryArrowTable retains zero-copy Arrow views for projection and limit wit
   expect(result.data.numRows).toBe(2);
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['second']);
   expect(toRows(result)).toEqual([{second: 'a'}, {second: 'b'}]);
+});
+
+test('queryArrowTable evaluates expressions, ordering, and global limits', () => {
+  const result = queryArrowTable(makeArrowTable({id: [1, 2, 3], value: [4, 1, 3]}), {
+    expressions: [{name: 'score', expression: {op: 'multiply', left: 'value', right: 'value'}}],
+    columns: ['id', 'score'],
+    orderBy: [{column: 'score', direction: 'desc'}],
+    limit: 2
+  });
+
+  expect(toRows(result)).toEqual([
+    {id: 1, score: 16},
+    {id: 3, score: 9}
+  ]);
+});
+
+test('queryArrowTable performs SQL-like grouped aggregates and null handling', () => {
+  const result = queryArrowTable(makeArrowTable({group: ['a', 'a', 'b'], value: [2, null, 5]}), {
+    groupBy: ['group'],
+    aggregates: [
+      {name: 'countValues', function: 'count', column: 'value'},
+      {name: 'total', function: 'sum', column: 'value'},
+      {name: 'average', function: 'avg', column: 'value'}
+    ],
+    columns: ['group', 'countValues', 'total', 'average'],
+    orderBy: [{column: 'total', direction: 'desc'}]
+  });
+
+  expect(toRows(result)).toEqual([
+    {group: 'b', countValues: 1, total: 5, average: 5},
+    {group: 'a', countValues: 1, total: 2, average: 2}
+  ]);
+});
+
+test('queryArrowTable keeps explicit null placement independent of descending order', () => {
+  const result = queryArrowTable(makeArrowTable({value: [null, 3, 1]}), {
+    columns: ['value'],
+    orderBy: [{column: 'value', direction: 'desc', nulls: 'last'}]
+  });
+
+  expect(toRows(result)).toEqual([{value: 3}, {value: 1}, {value: null}]);
+});
+
+test('queryArrowTable preserves output schema for empty relational results', () => {
+  const result = queryArrowTable(makeArrowTable({value: [1, 2]}), {
+    columns: ['value', 'total'],
+    groupBy: ['value'],
+    aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+    limit: 0
+  });
+
+  expect(result.data.numRows).toBe(0);
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value', 'total']);
+});
+
+test('queryArrowTable groups bigint keys and rejects incomplete aggregates', () => {
+  const result = queryArrowTable(makeArrowTable({group: [1n, 1n, 2n], value: [2, 3, 4]}), {
+    groupBy: ['group'],
+    aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+    columns: ['group', 'total'],
+    orderBy: [{column: 'group'}]
+  });
+
+  expect(toRows(result)).toEqual([
+    {group: 1n, total: 5},
+    {group: 2n, total: 4}
+  ]);
+  expect(() =>
+    queryArrowTable(makeArrowTable({value: [1]}), {
+      aggregates: [{name: 'invalid', function: 'sum'}]
+    })
+  ).toThrow(/requires a column/);
 });
 
 test.each([
