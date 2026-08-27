@@ -78,8 +78,8 @@ async function loadSharedResources(
     return undefined;
   }
 
-  const baseUrl = context.baseUrl || context.url?.replace(/\/[^/]*$/, '') || '';
-  const sharedResourceUrl = resolveRelativeResourceUrl(baseUrl, sharedResource.href);
+  const nodeUrl = getUrlWithoutParams(context.url || context.baseUrl || '');
+  const sharedResourceUrl = resolveRelativeResourceUrl(nodeUrl, sharedResource.href);
   const requestUrl = `${sharedResourceUrl}${context.queryString || ''}`;
 
   try {

@@ -6,8 +6,10 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {I3SNodePageLoader} from '@loaders.gl/i3s';
 import {I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
+import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
 import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i3s-tile-content';
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
+import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
   {
@@ -164,6 +166,7 @@ describe('I3S conformance fixtures', () => {
         '0': {encoding: ['image/png'], images: []}
       }
     };
+    let requestedUrl = '';
     const tile = await normalizeTileData(
       {
         id: 'legacy',
@@ -174,13 +177,17 @@ describe('I3S conformance fixtures', () => {
         url: '/layers/0/nodes/legacy',
         baseUrl: '/layers/0/nodes',
         queryString: '',
-        fetch: async () => new Response(JSON.stringify(sharedResources)),
+        fetch: async url => {
+          requestedUrl = String(url);
+          return new Response(JSON.stringify(sharedResources));
+        },
         coreApi: {} as any,
         _parse: async () => null
       }
     );
 
     expect(tile.textureFormat).toBe('png');
+    expect(requestedUrl).toBe('/layers/0/nodes/legacy/shared');
     expect(tile.sharedResources).toEqual(sharedResources);
     expect(tile.materialDefinition?.alphaMode).toBe('blend');
     expect(tile.materialDefinition?.doubleSided).toBe(true);
@@ -188,5 +195,15 @@ describe('I3S conformance fixtures', () => {
       51, 102, 153, 191.25
     ]);
     expect(getLegacyMaterialDefinition(undefined)).toBeUndefined();
+  });
+
+  it('expands raw archive shared-resource requests to the stored bundle path', async () => {
+    const response = await fetchFile('@loaders.gl/i3s/test/data/DA12_subset.slpk');
+    const archive = await parseSLPKArchive(
+      await createReadableFileFromBuffer(await response.arrayBuffer())
+    );
+    const sharedResources = await archive.getFile('nodes/3/shared');
+
+    expect(sharedResources.byteLength).toBe(333);
   });
 });

@@ -76,6 +76,13 @@ export class SLPKArchive extends IndexedArchive {
    * @returns buffer with ready to use file
    */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<ArrayBuffer> {
+    // Shared resources use a logical node-relative path but are stored under
+    // `shared/sharedResource.json.gz`, so archive-backed I3S fetches need the
+    // same expansion as HTTP-mode resource requests.
+    if (mode === 'raw' && /nodes\/(?:\d+|root)\/shared$/.test(path)) {
+      return await this.getFile(path, 'http');
+    }
+
     if (mode === 'http') {
       const extensions = PATH_DESCRIPTIONS.find(val => val.test.test(path))?.extensions;
       if (extensions) {
