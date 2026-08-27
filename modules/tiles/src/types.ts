@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
+import type {Plane} from '@math.gl/culling';
 
 export type BoundingRectangle = {
   width: number;
@@ -26,6 +27,8 @@ export type Viewport = {
    * Orthographic 3D Tiles traversal requires a positive, finite value to calculate SSE.
    */
   metersPerPixel?: number;
+  /** Optional world-space clipping planes used to cull renderable tile content. */
+  clippingPlanes?: Plane[];
   distanceScales: {
     unitsPerMeter: number[];
     metersPerUnit: number[];
