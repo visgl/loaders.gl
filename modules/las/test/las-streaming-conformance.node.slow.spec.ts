@@ -101,6 +101,22 @@ describe('TypeScript LAZ streaming conformance', () => {
     const invalidHeader = source.slice(0, 375);
     new DataView(invalidHeader).setUint16(94, 375, true);
     expect(() => parseLASHeader(invalidHeader)).toThrow(/LAS 1.5 header must be at least 393/);
+
+    const invalidFlags = source.slice(0);
+    new DataView(invalidFlags).setUint16(6, 0x30, true);
+    expect(() => parseLASHeader(invalidFlags)).toThrow(/Global Encoding contains reserved bits/);
+
+    const invalidTimeFlags = source.slice(0);
+    new DataView(invalidTimeFlags).setUint16(6, 0x50, true);
+    expect(() => parseLASHeader(invalidTimeFlags)).toThrow(
+      /Time Offset Flag requires GPS Time Type/
+    );
+
+    const invalidTimeRange = source.slice(0);
+    const invalidTimeRangeView = new DataView(invalidTimeRange);
+    invalidTimeRangeView.setFloat64(375, 1, true);
+    invalidTimeRangeView.setFloat64(383, 2, true);
+    expect(() => parseLASHeader(invalidTimeRange)).toThrow(/GPS time range is invalid/);
   });
 
   test.each(

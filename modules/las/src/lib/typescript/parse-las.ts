@@ -1091,6 +1091,21 @@ export function parseLASHeader(arrayBuffer: ArrayBufferLike): LASHeader {
     if ((globalEncoding & 0x10) === 0) {
       throw new Error('LASLoader: LAS 1.5 requires the WKT global encoding flag');
     }
+    if ((globalEncoding & 0xffa0) !== 0) {
+      throw new Error('LASLoader: LAS 1.5 Global Encoding contains reserved bits');
+    }
+    if ((globalEncoding & 0x40) !== 0 && (globalEncoding & 0x01) === 0) {
+      throw new Error('LASLoader: LAS 1.5 Time Offset Flag requires GPS Time Type');
+    }
+    const maxGpsTime = dataView.getFloat64(375, true);
+    const minGpsTime = dataView.getFloat64(383, true);
+    if (
+      !Number.isFinite(maxGpsTime) ||
+      !Number.isFinite(minGpsTime) ||
+      (maxGpsTime !== 0 && minGpsTime !== 0 && maxGpsTime < minGpsTime)
+    ) {
+      throw new Error('LASLoader: LAS 1.5 GPS time range is invalid');
+    }
   }
   const scale: [number, number, number] = [
     dataView.getFloat64(131, true),
