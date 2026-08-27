@@ -7,6 +7,7 @@
 
 import { expect, test } from "vitest";
 import Tile3DBatchTableParser from '../../../src/lib/classes/tile-3d-batch-table';
+import {traverseHierarchy} from '../../../src/lib/classes/tile-3d-batch-table-hierarchy';
 import {loadRootTile} from '../utils/load-utils';
 const BATCH_TABLE_HIERARCHY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchy/tileset.json';
 const BATCH_TABLE_HIERARCHY_BINARY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyBinary/tileset.json';
@@ -191,30 +192,21 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents', () => {
     })).not.toThrow();
 });
 
-test('Tile3DBatchTableParser#traverses multiple parents for inherited properties', () => {
-    const batchTable = new Tile3DBatchTableParser(
-        {
-            HIERARCHY: {
-                instancesLength: 4,
-                classIds: [0, 1, 1, 2],
-                parentCounts: [2, 1, 1, 0],
-                parentIds: [1, 2, 3, 3],
-                classes: [
-                    {name: 'window', length: 1, instances: {window_name: ['window0']}},
-                    {name: 'door', length: 2, instances: {door_name: ['door0', 'door1']}},
-                    {name: 'building', length: 1, instances: {building_name: ['building0']}}
-                ]
-            }
-        },
-        null,
-        4,
-        {'3DTILES_batch_table_hierarchy': true}
-    );
+test('traverseHierarchy#walks multiple parents until a match', () => {
+    const hierarchy = {
+        classIds: [0, 1, 1, 2],
+        parentCounts: [2, 1, 1, 0],
+        parentIndexes: [0, 2, 3, 4],
+        parentIds: [1, 2, 3, 3]
+    };
+    const visitedInstances = [];
+    const result = traverseHierarchy(hierarchy, 0, (currentHierarchy, instanceIndex) => {
+        visitedInstances.push(instanceIndex);
+        return currentHierarchy.classIds[instanceIndex] === 2 ? true : undefined;
+    });
 
-    expect(batchTable.isClass(0, 'building')).toBe(true);
-    expect(batchTable.hasProperty(0, 'building_name')).toBe(true);
-    expect(batchTable.getProperty(0, 'building_name')).toBe('building0');
-    expect(batchTable.isClass(0, 'missing')).toBe(false);
+    expect(result).toBe(true);
+    expect(visitedInstances).toEqual([0, 2, 3]);
 });
 test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', () => {
     //             zone
