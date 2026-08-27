@@ -167,6 +167,7 @@ const config = {
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),
             '@loaders.gl/wms': resolve('../modules/wms/src'),
+            '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),

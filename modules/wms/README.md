@@ -6,12 +6,12 @@ This module contains loaders for the WMS format.
 
 For documentation please visit the [website](https://loaders.gl).
 
-## WMTS and ArcGIS map tiles
+## WMTS tile sources
 
-WMTS and cached ArcGIS MapServer services are available through the shared `TileSource` API:
+WMTS services are available through the shared `TileSource` API:
 
 ```ts
-import {ArcGISMapTileSource, WMTSImageTileSource} from '@loaders.gl/wms';
+import {WMTSImageTileSource} from '@loaders.gl/wms';
 
 const wmts = new WMTSImageTileSource('https://example.com/wmts', {
   wmts: {
@@ -21,10 +21,7 @@ const wmts = new WMTSImageTileSource('https://example.com/wmts', {
   }
 });
 
-const arcgis = new ArcGISMapTileSource(
-  'https://example.com/arcgis/rest/services/Basemap/MapServer'
-);
 ```
 
-Both sources provide `getTile`, `getTileData`, and `getTileURL`. WMTS supports REST templates and
-KVP `GetTile` requests; ArcGIS uses the cached `/tile/{z}/{y}/{x}` endpoint by default.
+The source provides `getTile`, `getTileData`, and `getTileURL`, and supports REST templates and KVP
+`GetTile` requests. ArcGIS tile sources are provided by `@loaders.gl/services`.

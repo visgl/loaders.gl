@@ -1,9 +1,6 @@
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ClientExample} from '@site/src/components';
 
 # ArcGIS MapServer
-
-<WmsDocsTabs active="arcgis-map-server" />
 
 ArcGIS MapServer services can expose cached map tiles through the REST `/tile/{z}/{y}/{x}`
 endpoint or render dynamic tiles through `/export`. loaders.gl provides an image `TileSource` that
@@ -14,7 +11,7 @@ with runtime parameters.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISMapTileSourceLoader} from '@loaders.gl/wms';
+import {ArcGISMapTileSourceLoader} from '@loaders.gl/services';
 
 const source = createDataSource(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',

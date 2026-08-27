@@ -5,43 +5,52 @@
 /**
  * Returns services discovered from an ArcGIS REST services directory.
  */
-export {getArcGISServices} from '@loaders.gl/wms';
-export type {Service as ArcGISService} from '@loaders.gl/wms';
+export {getArcGISServices} from './arcgis/arcgis-server';
+export type {Service as ArcGISService} from './arcgis/arcgis-server';
 
 /** ArcGIS FeatureServer source and loader. */
 export {
   ArcGISFeatureServerSourceLoader,
   ArcGISVectorSource
-} from '@loaders.gl/wms';
+} from './arcgis/arcgis-feature-server-source-loader';
 export type {
   ArcGISFeatureServiceQueryOptions,
   ArcGISFeatureServerSourceLoaderOptions
-} from '@loaders.gl/wms';
+} from './arcgis/arcgis-feature-server-source-loader';
 
 /** ArcGIS ImageServer source and loader. */
 export {
   ArcGISImageServerSourceLoader,
   ArcGISImageSource
-} from '@loaders.gl/wms';
+} from './arcgis/arcgis-image-server-source-loader';
 export type {
   ArcGISExportImageParameters,
   ArcGISImageSourceLoaderProps
-} from '@loaders.gl/wms';
+} from './arcgis/arcgis-image-server-source-loader';
 
 /** ArcGIS cached MapServer tile source and loader. */
-export {ArcGISMapTileSourceLoader, ArcGISMapTileSource} from '@loaders.gl/wms';
-export type {ArcGISMapTileSourceLoaderOptions} from '@loaders.gl/wms';
+export {
+  ArcGISMapTileSourceLoader,
+  ArcGISMapTileSource
+} from './arcgis/arcgis-map-tile-source-loader';
+export type {ArcGISMapTileSourceLoaderOptions} from './arcgis/arcgis-map-tile-source-loader';
 
 /** ArcGIS ImageServer export tile source and loader. */
-export {ArcGISImageTileSourceLoader, ArcGISImageTileSource} from '@loaders.gl/wms';
-export type {ArcGISImageTileSourceLoaderOptions} from '@loaders.gl/wms';
+export {
+  ArcGISImageTileSourceLoader,
+  ArcGISImageTileSource
+} from './arcgis/arcgis-image-tile-source-loader';
+export type {ArcGISImageTileSourceLoaderOptions} from './arcgis/arcgis-image-tile-source-loader';
 
 /** ArcGIS vector tile service source and loader. */
 export {
   ArcGISVectorTileServerSourceLoader,
   ArcGISVectorTileServerSource
-} from '@loaders.gl/wms';
-export type {ArcGISVectorTileServerSourceLoaderOptions} from '@loaders.gl/wms';
+} from './arcgis/arcgis-vector-tile-server-source-loader';
+export type {
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerSourceLoaderOptions
+} from './arcgis/arcgis-vector-tile-server-source-loader';
 
 export type {ServiceLoader} from './service-registry';
 export {getServiceLoader} from './service-registry';

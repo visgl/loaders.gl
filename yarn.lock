@@ -5742,11 +5742,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/services@workspace:modules/services":
+"@loaders.gl/services@workspace:*, @loaders.gl/services@workspace:modules/services":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/services@workspace:modules/services"
   dependencies:
-    "@loaders.gl/wms": "npm:5.0.0-alpha.2"
+    "@loaders.gl/gis": "npm:5.0.0-alpha.2"
+    "@loaders.gl/images": "npm:5.0.0-alpha.2"
+    "@loaders.gl/lerc": "npm:5.0.0-alpha.2"
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.2"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -27973,6 +27977,7 @@ __metadata:
     "@loaders.gl/scene": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"
+    "@loaders.gl/services": "workspace:*"
     "@loaders.gl/splats": "workspace:*"
     "@loaders.gl/traces": "workspace:*"
     "@loaders.gl/xml": "workspace:*"
@@ -33806,6 +33811,7 @@ __metadata:
     "@deck.gl/react": "npm:^9.3.0"
     "@deck.gl/widgets": "npm:^9.3.0"
     "@loaders.gl/core": "workspace:*"
+    "@loaders.gl/services": "workspace:*"
     "@loaders.gl/wms": "workspace:*"
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"

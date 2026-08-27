@@ -5,7 +5,7 @@ It loads service metadata, exposes the ArcGIS tile grid, constructs PBF tile URL
 published Mapbox style and sprite resources.
 
 ```js
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/wms';
+import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/services';
 import {createDataSource} from '@loaders.gl/core';
 
 const source = createDataSource(
