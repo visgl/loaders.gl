@@ -19,14 +19,9 @@ test('getContentVisibility treats multiple content volumes as a visible union', 
   const secondVolume = new BoundingSphere([10, 0, 0], 1);
   const cullingVolume = createCullingVolume(new Set([10]));
 
-  expect(
-    getContentVisibility(
-      [firstVolume, secondVolume],
-      firstVolume,
-      cullingVolume,
-      0
-    )
-  ).toBe(INTERSECTION.INSIDE);
+  expect(getContentVisibility([firstVolume, secondVolume], firstVolume, cullingVolume, 0)).toBe(
+    INTERSECTION.INSIDE
+  );
 });
 
 test('getContentVisibility applies clipping planes to content without pruning traversal', () => {
@@ -49,7 +44,7 @@ test('getContentVisibility falls back to the tile volume for contentless tiles',
   const tileVolume = new BoundingSphere([0, 0, 0], 1);
   const cullingVolume = createCullingVolume(new Set([0]));
 
-  expect(
-    getContentVisibility([], tileVolume, cullingVolume, CullingVolume.MASK_OUTSIDE)
-  ).toBe(INTERSECTION.INSIDE);
+  expect(getContentVisibility([], tileVolume, cullingVolume, CullingVolume.MASK_OUTSIDE)).toBe(
+    INTERSECTION.INSIDE
+  );
 });
