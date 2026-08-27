@@ -155,10 +155,18 @@ export class Tile3D {
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
 
+  private _contentBoundingVolume: any;
   private _contentBoundingVolumes: any[] = [];
+  /** Source content-volume headers retained after render content is unloaded. */
+  private _contentBoundingVolumeHeaders: any[] = [];
   private _viewerRequestVolume: any;
 
-  /** Transformed bounding volumes for all content entries that declare one. */
+  /** Bounding volume used to cull the tile's first renderable content entry. */
+  get contentBoundingVolume(): any {
+    return this._contentBoundingVolume;
+  }
+
+  /** All transformed render-content bounding volumes, including tile-volume fallbacks. */
   get contentBoundingVolumes(): any[] {
     return this._contentBoundingVolumes;
   }
@@ -777,30 +785,44 @@ export class Tile3D {
   }
 
   /**
-   * Determines whether renderable content intersects the current culling volume.
-   * Traversal continues to use the tile volume; content volumes only constrain rendering.
-   * @param frameState Current camera and culling state.
-   * @returns Content visibility classification.
+   * Determines whether renderable content intersects the view and configured clipping planes.
+   *
+   * Clipping planes are render-only constraints; traversal continues to use the tile volume.
+   *
+   * @param frameState Current camera, culling, and optional clipping-plane state.
+   * @returns The content visibility classification.
    */
   contentVisibility(frameState: FrameState): number {
-    const contentVolumes = this.contentBoundingVolumes.length
-      ? this.contentBoundingVolumes
+    const contentVolumes = this._contentBoundingVolumes.length
+      ? this._contentBoundingVolumes
       : [this.boundingVolume];
-    let intersecting = false;
+    let visibleVolume = false;
+    let intersectingVolume = false;
     for (const contentVolume of contentVolumes) {
-      const visibility =
-        this._visibilityPlaneMask === CullingVolume.MASK_INSIDE
-          ? INTERSECTION.INSIDE
-          : frameState.cullingVolume.computeVisibility(contentVolume);
-      if (visibility === INTERSECTION.OUTSIDE) {
-        continue;
+      let visibility = INTERSECTION.INSIDE;
+      if (this._visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
+        visibility = frameState.cullingVolume.computeVisibility(contentVolume);
+        if (visibility === INTERSECTION.OUTSIDE) {
+          continue;
+        }
       }
-      intersecting = intersecting || visibility === INTERSECTION.INTERSECTING;
-      if (!intersecting) {
-        return INTERSECTION.INSIDE;
+      let clipped = false;
+      for (const clippingPlane of frameState.clippingPlanes || []) {
+        if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+          clipped = true;
+          break;
+        }
+      }
+      if (!clipped) {
+        visibleVolume = true;
+        intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
       }
     }
-    return intersecting ? INTERSECTION.INTERSECTING : INTERSECTION.OUTSIDE;
+    if (!visibleVolume) {
+      return INTERSECTION.OUTSIDE;
+    }
+    return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
+  }
   }
 
   /**
@@ -925,7 +947,8 @@ export class Tile3D {
   }
 
   _initializeBoundingVolumes(tileHeader) {
-    this._contentBoundingVolumes = [];
+    this._contentBoundingVolume = null;
+    this._contentBoundingVolumeHeaders = [];
     this._viewerRequestVolume = null;
 
     this._updateBoundingVolume(tileHeader);
@@ -1036,11 +1059,25 @@ export class Tile3D {
       );
     }
 
-    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
-    const contentVolumes = contentHeaders.filter(contentHeader => contentHeader?.boundingVolume);
-    this._contentBoundingVolumes = contentVolumes.map(contentHeader =>
-      createBoundingVolume(contentHeader.boundingVolume, this.computedTransform)
-    );
+    const content = header.content;
+    if (content) {
+      this._contentBoundingVolumeHeaders = Array.isArray(content) ? content : [content];
+    }
+    const contentHeaders = content
+      ? Array.isArray(content)
+        ? content
+        : [content]
+      : this._contentBoundingVolumeHeaders;
+    this._contentBoundingVolumes = contentHeaders
+      .filter(headerEntry => headerEntry?.boundingVolume)
+      .map(headerEntry => createBoundingVolume(headerEntry.boundingVolume, this.computedTransform));
+    if (
+      !contentHeaders.length ||
+      contentHeaders.some(headerEntry => !headerEntry?.boundingVolume)
+    ) {
+      this._contentBoundingVolumes.push(this.boundingVolume);
+    }
+    this._contentBoundingVolume = this._contentBoundingVolumes[0] || null;
   }
 
   /**
