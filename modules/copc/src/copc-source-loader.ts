@@ -24,6 +24,7 @@ import {
   isBrowser,
   NodeFile,
   parseWithWorker,
+  RangeRequestCache,
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
@@ -1777,20 +1778,24 @@ class AsyncSemaphore {
 
 /** Cache the metadata prefix while retaining exact reads for hierarchy and node ranges. */
 function createCachedCOPCRangeReader(readableFile: ReadableFile): COPCRangeReader {
+  const cache = new RangeRequestCache({maxEntries: 1, maxBytes: COPC_PREFIX_CACHE_LENGTH});
+  const sourceId = 'copc-metadata-prefix';
   const prefixPromise = Promise.resolve(readableFile.stat?.()).then(async stat => {
     const prefixLength = Math.min(stat?.size || COPC_PREFIX_CACHE_LENGTH, COPC_PREFIX_CACHE_LENGTH);
-    return new Uint8Array(await readableFile.read(0, prefixLength));
+    const prefix = await readableFile.read(0, prefixLength);
+    cache.set(sourceId, 0, prefix);
   });
   return async (begin, end, signal) => {
     if (signal?.aborted) {
       throw createCOPCAbortError();
     }
-    const prefix = await prefixPromise;
+    await prefixPromise;
     if (signal?.aborted) {
       throw createCOPCAbortError();
     }
-    if (begin >= 0 && end <= prefix.byteLength) {
-      return prefix.subarray(begin, end);
+    const cached = await cache.get(sourceId, begin, end - begin, signal);
+    if (cached) {
+      return new Uint8Array(cached);
     }
     return new Uint8Array(await readableFile.read(begin, end - begin, signal));
   };

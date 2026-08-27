@@ -9,4 +9,6 @@ The `@loaders.gl/loader-utils` contains utilities for creating loaders.
 - [`HttpFile`](/docs/modules/loader-utils/api-reference/http-file) validates random-access HTTP reads and remote object identity.
 - [`RequestScheduler`](/docs/modules/loader-utils/api-reference/request-scheduler) limits asynchronous request concurrency.
 - [`RangeRequestScheduler`](/docs/modules/loader-utils/api-reference/range-request-scheduler) coalesces compatible byte ranges.
+- [`RequestCache`](/docs/modules/loader-utils/api-reference/request-cache) deduplicates and bounds ordinary asynchronous request results.
+- [`RangeRequestCache`](/docs/modules/loader-utils/api-reference/range-request-cache) caches exact and contained byte ranges.
 - [`CachedUriResolver`](/docs/modules/loader-utils/api-reference/cached-uri-resolver) resolves resource references against one stable base and memoizes repeated derivations for a caller-controlled lifetime.
