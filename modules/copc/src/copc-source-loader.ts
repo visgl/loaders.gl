@@ -78,6 +78,27 @@ type GetNodeParameters = {
   limit?: number;
 };
 
+type COPCPointColumn =
+  | 'POSITION'
+  | 'COLOR_0'
+  | 'NIR'
+  | 'intensity'
+  | 'classification'
+  | 'synthetic'
+  | 'keyPoint'
+  | 'withheld'
+  | 'overlap'
+  | 'GPS_TIME'
+  | 'scanAngle'
+  | 'userData'
+  | 'pointSourceId'
+  | 'returnNumber'
+  | 'numberOfReturns'
+  | 'scannerChannel'
+  | 'scanDirectionFlag'
+  | 'edgeOfFlightLine'
+  | 'EXTRA_BYTES';
+
 type COPCPointSelection = {
   colors: boolean;
   nir: boolean;
@@ -150,6 +171,8 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
 export type COPCTileContentLoadOptions = {
   /** Cancel a queued range request or active worker decode. */
   signal?: AbortSignal;
+  /** Arrow attributes to populate. POSITION is always included. */
+  columns?: readonly COPCPointColumn[];
 };
 
 /** Options for progressive COPC point batches. */
@@ -427,7 +450,7 @@ export class COPCTileSource
   }
 
   async getTileData(parameters: GetTileDataParameters): Promise<unknown | null> {
-    throw new Error('Not implemented');
+    return await this.loadTileContent({id: parameters.id}, {signal: parameters.signal});
   }
 
   async getPoints(parameters: GetNodeParameters) {
@@ -469,7 +492,8 @@ export class COPCTileSource
         node,
         nativeOrigin,
         cartographicOrigin,
-        options.signal
+        options.signal,
+        options.columns
       );
     } finally {
       release();
@@ -503,28 +527,7 @@ export class COPCTileSource
     }
     const nativeOrigin = this.getNativeTileCenter(tile.id);
     const cartographicOrigin = this.projectPoint(nativeOrigin);
-    const selection: COPCPointSelection = {
-      colors:
-        pointFormatHasColor(copc.header.pointDataRecordFormat) &&
-        (options.columns ? options.columns.includes('COLOR_0') : true),
-      nir: copc.header.pointDataRecordFormat === 8 && Boolean(options.columns?.includes('NIR')),
-      intensity: Boolean(options.columns?.includes('intensity')),
-      classification: Boolean(options.columns?.includes('classification')),
-      synthetic: Boolean(options.columns?.includes('synthetic')),
-      keyPoint: Boolean(options.columns?.includes('keyPoint')),
-      withheld: Boolean(options.columns?.includes('withheld')),
-      overlap: Boolean(options.columns?.includes('overlap')),
-      gpsTime: Boolean(options.columns?.includes('GPS_TIME')),
-      scanAngle: Boolean(options.columns?.includes('scanAngle')),
-      userData: Boolean(options.columns?.includes('userData')),
-      pointSourceId: Boolean(options.columns?.includes('pointSourceId')),
-      returnNumber: Boolean(options.columns?.includes('returnNumber')),
-      numberOfReturns: Boolean(options.columns?.includes('numberOfReturns')),
-      scannerChannel: Boolean(options.columns?.includes('scannerChannel')),
-      scanDirectionFlag: Boolean(options.columns?.includes('scanDirectionFlag')),
-      edgeOfFlightLine: Boolean(options.columns?.includes('edgeOfFlightLine')),
-      extraBytes: Boolean(options.columns?.includes('EXTRA_BYTES'))
-    };
+    const selection = getCOPCPointSelection(copc, options.columns);
     const rangeChunkSize = options.rangeChunkSize ?? this.options.copc?.rangeChunkSize ?? 65536;
     if (!Number.isSafeInteger(rangeChunkSize) || rangeChunkSize < 1) {
       throw new Error('COPC progressive rangeChunkSize must be a positive integer');
@@ -810,11 +813,12 @@ export class COPCTileSource
     node: COPCHierarchyNode,
     nativeOrigin: number[],
     cartographicOrigin: number[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    columns?: readonly COPCPointColumn[]
   ) {
     const pointCount = node.pointCount;
     const compressed = await loadCOPCNodeData(this._readRange, node, signal);
-    const workerPointData = await this.decodeNodeOnWorker(copc, node, compressed, signal);
+    const workerPointData = await this.decodeNodeOnWorker(copc, node, compressed, signal, columns);
     if (workerPointData) {
       this.transformTilePositions(
         workerPointData.nativePositions,
@@ -830,20 +834,60 @@ export class COPCTileSource
       );
     }
 
+    if (columns?.includes('NIR') && copc.header.pointDataRecordFormat !== 8) {
+      throw new Error('COPC NIR output requires PDRF 8');
+    }
+    if (columns?.includes('EXTRA_BYTES') && !copc.extraBytes) {
+      throw new Error('COPC typed Extra Bytes output requires an Extra Bytes VLR');
+    }
+    const selection = getCOPCPointSelection(copc, columns);
     const nativePositions = new Float64Array(pointCount * 3);
     const positions = new Float32Array(pointCount * 3);
-    const colors = pointFormatHasColor(copc.header.pointDataRecordFormat)
-      ? new Uint16Array(pointCount * 3)
+    const colors = selection.colors ? new Uint16Array(pointCount * 3) : null;
+    const nir = selection.nir ? new Uint16Array(pointCount) : null;
+    const batchIntensities = selection.intensity ? new Uint16Array(pointCount) : null;
+    const batchClassifications = selection.classification ? new Uint8Array(pointCount) : null;
+    const batchSyntheticFlags = selection.synthetic ? new Uint8Array(pointCount) : null;
+    const batchKeyPointFlags = selection.keyPoint ? new Uint8Array(pointCount) : null;
+    const batchWithheldFlags = selection.withheld ? new Uint8Array(pointCount) : null;
+    const batchOverlapFlags = selection.overlap ? new Uint8Array(pointCount) : null;
+    const batchGpsTimes = selection.gpsTime ? new Float64Array(pointCount) : null;
+    const batchScanAngles = selection.scanAngle ? new Int16Array(pointCount) : null;
+    const batchUserData = selection.userData ? new Uint8Array(pointCount) : null;
+    const batchPointSourceIds = selection.pointSourceId ? new Uint16Array(pointCount) : null;
+    const batchReturnNumbers = selection.returnNumber ? new Uint8Array(pointCount) : null;
+    const batchNumberOfReturns = selection.numberOfReturns ? new Uint8Array(pointCount) : null;
+    const batchScannerChannels = selection.scannerChannel ? new Uint8Array(pointCount) : null;
+    const batchScanDirectionFlags = selection.scanDirectionFlag ? new Uint8Array(pointCount) : null;
+    const batchEdgeOfFlightLines = selection.edgeOfFlightLine ? new Uint8Array(pointCount) : null;
+    const extraByteCount = getCOPCExtraByteCount(copc.header);
+    const batchExtraBytes = selection.extraBytes
+      ? new Uint8Array(pointCount * extraByteCount)
       : null;
-    const cursor = createLAZChunkDecoderCursor(
-      compressed,
-      getCOPCLAZChunkMetadata(copc, pointCount)
-    );
-
-    const decodedPointCount = cursor.decodeIntoPointData(
+    const decoder = createLAZChunkDecoder(getCOPCLAZChunkMetadata(copc, pointCount));
+    decoder.feed(compressed);
+    decoder.close();
+    const decodedPointCount = decoder.readPointDataBatch(
       {
         positions: nativePositions,
         rawColors: colors,
+        nir,
+        intensities: batchIntensities,
+        classifications: batchClassifications,
+        syntheticFlags: batchSyntheticFlags,
+        keyPointFlags: batchKeyPointFlags,
+        withheldFlags: batchWithheldFlags,
+        overlapFlags: batchOverlapFlags,
+        gpsTimes: batchGpsTimes,
+        scanAngles: batchScanAngles,
+        userData: batchUserData,
+        pointSourceIds: batchPointSourceIds,
+        returnNumbers: batchReturnNumbers,
+        numberOfReturns: batchNumberOfReturns,
+        scannerChannels: batchScannerChannels,
+        scanDirectionFlags: batchScanDirectionFlags,
+        edgeOfFlightLines: batchEdgeOfFlightLines,
+        extraBytes: batchExtraBytes,
         pointOffset: 0,
         scale: copc.header.scale,
         offset: copc.header.offset
@@ -856,8 +900,31 @@ export class COPCTileSource
       );
     }
 
+    const typedExtraBytes = batchExtraBytes
+      ? createLASTypedExtraBytesAttributes(pointCount, copc.extraBytesDescriptors, extraByteCount)
+      : [];
+    if (batchExtraBytes) {
+      populateLASTypedExtraBytes(batchExtraBytes, pointCount, extraByteCount, typedExtraBytes);
+    }
     this.transformTilePositions(nativePositions, positions, nativeOrigin, cartographicOrigin);
-    return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
+    return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin, nir, {
+      batchIntensities,
+      batchClassifications,
+      batchSyntheticFlags,
+      batchKeyPointFlags,
+      batchWithheldFlags,
+      batchOverlapFlags,
+      batchGpsTimes,
+      batchScanAngles,
+      batchUserData,
+      batchPointSourceIds,
+      batchReturnNumbers,
+      batchNumberOfReturns,
+      batchScannerChannels,
+      batchScanDirectionFlags,
+      batchEdgeOfFlightLines,
+      typedExtraBytes
+    });
   }
 
   /** Decode one complete node in the shared LAS worker pool when workers are available. */
@@ -865,13 +932,17 @@ export class COPCTileSource
     copc: COPCFile,
     node: COPCHierarchyNode,
     compressed: Uint8Array,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    columns?: readonly COPCPointColumn[]
   ): Promise<{
     nativePositions: Float64Array;
     positions: Float32Array;
     colors: Uint16Array | null;
   } | null> {
-    const workerOptions = this.getNodeWorkerOptions(copc, node);
+    if (columns?.some(column => column !== 'POSITION' && column !== 'COLOR_0')) {
+      return null;
+    }
+    const workerOptions = this.getNodeWorkerOptions(copc, node, columns);
     if (!this.hasCoreApi || !canParseWithWorker(LASLoader, workerOptions)) {
       return null;
     }
@@ -906,10 +977,16 @@ export class COPCTileSource
   }
 
   /** Build the serializable standalone-chunk request consumed by the LAS worker. */
-  protected getNodeWorkerOptions(copc: COPCFile, node: COPCHierarchyNode): StrictLoaderOptions {
-    const columns = pointFormatHasColor(copc.header.pointDataRecordFormat)
-      ? ['POSITION', 'COLOR_0']
-      : ['POSITION'];
+  protected getNodeWorkerOptions(
+    copc: COPCFile,
+    node: COPCHierarchyNode,
+    requestedColumns?: readonly COPCPointColumn[]
+  ): StrictLoaderOptions {
+    const columns = requestedColumns
+      ? [...requestedColumns]
+      : pointFormatHasColor(copc.header.pointDataRecordFormat)
+        ? ['POSITION', 'COLOR_0']
+        : ['POSITION'];
     return {
       ...this.loadOptions,
       core: {
@@ -1513,6 +1590,36 @@ function normalizeProjectionDefinition(projectionData: Proj4CRSDefinition): Proj
 /** Return whether a LAS point format contains RGB channels. */
 function pointFormatHasColor(pointDataRecordFormat: number): boolean {
   return pointDataRecordFormat === 7 || pointDataRecordFormat === 8;
+}
+
+/** Resolve the shared default and explicit Arrow column selection for a COPC node. */
+function getCOPCPointSelection(
+  copc: COPCFile,
+  columns?: readonly COPCPointColumn[]
+): COPCPointSelection {
+  const hasColumn = (column: COPCPointColumn): boolean => Boolean(columns?.includes(column));
+  return {
+    colors:
+      pointFormatHasColor(copc.header.pointDataRecordFormat) &&
+      (columns ? hasColumn('COLOR_0') : true),
+    nir: copc.header.pointDataRecordFormat === 8 && hasColumn('NIR'),
+    intensity: hasColumn('intensity'),
+    classification: hasColumn('classification'),
+    synthetic: hasColumn('synthetic'),
+    keyPoint: hasColumn('keyPoint'),
+    withheld: hasColumn('withheld'),
+    overlap: hasColumn('overlap'),
+    gpsTime: hasColumn('GPS_TIME'),
+    scanAngle: hasColumn('scanAngle'),
+    userData: hasColumn('userData'),
+    pointSourceId: hasColumn('pointSourceId'),
+    returnNumber: hasColumn('returnNumber'),
+    numberOfReturns: hasColumn('numberOfReturns'),
+    scannerChannel: hasColumn('scannerChannel'),
+    scanDirectionFlag: hasColumn('scanDirectionFlag'),
+    edgeOfFlightLine: hasColumn('edgeOfFlightLine'),
+    extraBytes: hasColumn('EXTRA_BYTES')
+  };
 }
 
 /** Return the packed Extra Bytes width in a COPC point record. */

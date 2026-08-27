@@ -118,6 +118,41 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t 
   t.end();
 });
 
+vitestTest('COPCSourceLoader#implements the TileSource getTileData contract', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.getTileData({
+    id: rootTile.id,
+    index: {x: rootTile.x, y: rootTile.y, z: rootTile.level},
+    bbox: {left: 0, top: 0, right: 0, bottom: 0}
+  });
+
+  expect(content).toBeTruthy();
+  expect((content as any)?.data.shape).toBe('arrow-table');
+  expect((content as any)?.pointCount).toBe(rootTile.pointCount);
+});
+
+vitestTest('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.loadTileContent(rootTile, {
+    columns: ['POSITION', 'COLOR_0', 'intensity', 'classification']
+  });
+
+  expect(content?.data.data.getChild('POSITION')).toBeTruthy();
+  expect(content?.data.data.getChild('COLOR_0')).toBeTruthy();
+  expect(content?.data.data.getChild('intensity')).toBeTruthy();
+  expect(content?.data.data.getChild('classification')).toBeTruthy();
+  expect(content?.data.data.getChild('GPS_TIME')).toBeFalsy();
+  expect(content?.data.data.getChild('scanAngle')).toBeFalsy();
+});
+
 vitestTest('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
   const blob = await createEllipsoidBlob();
   const workerSource = createDataSource(blob, [COPCSourceLoader], {
