@@ -323,6 +323,16 @@ export class Tileset3D {
   root: Tile3D | null = null;
   roots: Record<string, Tile3D> = {};
   asset: Record<string, any> = {};
+  /** Inline metadata schema declared by the source tileset, when present. */
+  schema: Record<string, any> | null = null;
+  /** External metadata schema URI declared by the source tileset, when present. */
+  schemaUri: string | null = null;
+  /** Metadata groups declared by the source tileset, in source order. */
+  groups: Array<Record<string, any>> = [];
+  /** Tileset-wide metadata entity, preserved without property-table decoding. */
+  metadata: Record<string, any> | null = null;
+  /** Tileset statistics metadata, preserved for application-level inspection. */
+  statistics: unknown = null;
 
   description = '';
   properties: any;
@@ -1061,6 +1071,12 @@ export class Tileset3D {
     this.refine = metadata.refine;
     this.contentFormats = this.source.contentFormats;
     this.asset = this.source.asset || this.asset;
+    const tileset = metadata.tileset as Record<string, any>;
+    this.schema = tileset.schema || null;
+    this.schemaUri = tileset.schemaUri || null;
+    this.groups = tileset.groups || [];
+    this.metadata = tileset.metadata || null;
+    this.statistics = tileset.statistics ?? null;
     this.properties = this.source.properties ?? this.properties;
     this.extras = this.source.extras ?? this.extras;
     if (this.options.attributions?.length) {
