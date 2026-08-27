@@ -46,6 +46,18 @@ test('GeoPackageSource#getMetadata returns tables and default selection', async 
   t.end();
 });
 
+test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds', async t => {
+  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+    core: {type: 'geopackage'},
+    geopackage: {}
+  }) as GeoPackageDataSource;
+  const metadata = await dataSource.getQueryMetadata();
+  t.equal(metadata.sourceType, 'geopackage', 'uses the shared source identifier');
+  t.ok(metadata.columns.length > 0, 'publishes the selected table schema');
+  t.ok(metadata.spatial?.bounds, 'publishes feature bounds');
+  t.end();
+});
+
 test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async t => {
   const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
   const fixtureArrayBuffer = await fixtureResponse.arrayBuffer();

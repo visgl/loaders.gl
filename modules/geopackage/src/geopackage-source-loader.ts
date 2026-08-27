@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  DataSourceOptions,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  SourceLoader
+} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader';
@@ -99,6 +105,49 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
     return this.metadataPromise;
   }
 
+  /** Discovers the selected feature table schema and spatial bounds for the shared scan panel. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    throwIfAborted(options.signal);
+    const metadata = await this.getMetadata();
+    throwIfAborted(options.signal);
+    const selectedTable = metadata.tables.find(table => table.isDefault) || metadata.tables[0];
+    if (!selectedTable) throw new Error('GeoPackage contains no vector feature tables');
+    const table = await this.getTable(selectedTable.name);
+    throwIfAborted(options.signal);
+    const fieldNames = new Set(table.data.schema.fields.map(field => field.name));
+    const geometryColumnName = fieldNames.has('geometry')
+      ? 'geometry'
+      : fieldNames.has(selectedTable.geometryColumnName)
+        ? selectedTable.geometryColumnName
+        : undefined;
+    const schemaMetadata = table.data.schema.metadata
+      ? Object.fromEntries(table.data.schema.metadata)
+      : {};
+    return createScanQueryMetadata({
+      sourceType: 'geopackage',
+      queryType: 'table',
+      name: selectedTable.identifier || selectedTable.name,
+      description: selectedTable.description,
+      schema: {fields: table.data.schema.fields as never, metadata: schemaMetadata},
+      columnRoles: geometryColumnName ? {[geometryColumnName]: 'geometry'} : undefined,
+      capabilities: {
+        table: {
+          projection: 'residual',
+          predicate: 'unsupported',
+          limit: 'residual',
+          streaming: false,
+          cancellation: false
+        }
+      },
+      spatial: selectedTable.bounds
+        ? {
+            bounds: {minimum: selectedTable.bounds[0], maximum: selectedTable.bounds[1]}
+          }
+        : undefined,
+      statistics: {byteLength: undefined}
+    });
+  }
+
   /** Loads one GeoPackage vector table as an Arrow table. */
   async getTable(tableName?: string): Promise<ArrowTable> {
     const arrayBuffer = await this.getArrayBuffer();
@@ -177,4 +226,8 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
       }
     };
   }
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
 }
