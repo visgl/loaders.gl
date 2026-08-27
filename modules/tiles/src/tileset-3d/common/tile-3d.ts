@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, INTERSECTION} from '@math.gl/culling';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -776,47 +776,31 @@ export class Tile3D {
     return cullingVolume.computeVisibilityWithPlaneMask(boundingVolume, parentVisibilityPlaneMask);
   }
 
-  // Assuming the tile's bounding volume intersects the culling volume, determines
-  // whether the tile's content's bounding volume intersects the culling volume.
-  // @param {FrameState} frameState The frame state.
-  // @returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
-  contentVisibility() {
-    return true;
-
-    // TODO restore
-    /*
-    // Assumes the tile's bounding volume intersects the culling volume already, so
-    // just return Intersect.INSIDE if there is no content bounding volume.
-    if (!defined(this.contentBoundingVolume)) {
-      return Intersect.INSIDE;
-    }
-
-    if (this._visibilityPlaneMask === CullingVolume.MASK_INSIDE) {
-      // The tile's bounding volume is completely inside the culling volume so
-      // the content bounding volume must also be inside.
-      return Intersect.INSIDE;
-    }
-
-    // PERFORMANCE_IDEA: is it possible to burn less CPU on this test since we know the
-    // tile's (not the content's) bounding volume intersects the culling volume?
-    const cullingVolume = frameState.cullingVolume;
-    const boundingVolume = tile.contentBoundingVolume;
-
-    const tileset = this.tileset;
-    const clippingPlanes = tileset.clippingPlanes;
-    if (defined(clippingPlanes) && clippingPlanes.enabled) {
-      const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
-        boundingVolume,
-        tileset.clippingPlanesOriginMatrix
-      );
-      this._isClipped = intersection !== Intersect.INSIDE;
-      if (intersection === Intersect.OUTSIDE) {
-        return Intersect.OUTSIDE;
+  /**
+   * Determines whether renderable content intersects the current culling volume.
+   * Traversal continues to use the tile volume; content volumes only constrain rendering.
+   * @param frameState Current camera and culling state.
+   * @returns Content visibility classification.
+   */
+  contentVisibility(frameState: FrameState): number {
+    const contentVolumes = this.contentBoundingVolumes.length
+      ? this.contentBoundingVolumes
+      : [this.boundingVolume];
+    let intersecting = false;
+    for (const contentVolume of contentVolumes) {
+      const visibility =
+        this._visibilityPlaneMask === CullingVolume.MASK_INSIDE
+          ? INTERSECTION.INSIDE
+          : frameState.cullingVolume.computeVisibility(contentVolume);
+      if (visibility === INTERSECTION.OUTSIDE) {
+        continue;
+      }
+      intersecting = intersecting || visibility === INTERSECTION.INTERSECTING;
+      if (!intersecting) {
+        return INTERSECTION.INSIDE;
       }
     }
-
-    return cullingVolume.computeVisibility(boundingVolume);
-    */
+    return intersecting ? INTERSECTION.INTERSECTING : INTERSECTION.OUTSIDE;
   }
 
   /**
