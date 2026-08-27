@@ -143,18 +143,23 @@ export function validateBuilder(
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
  */
-export function validateMeshCategoryData(t, data) {
+export function validateMeshCategoryData(assertionTargetOrData, data?) {
+  const {assertionTarget, value} = resolveAssertionsAndValue(assertionTargetOrData, data);
+  data = value;
   // t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
-  t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');
-  t.ok(
+  assertionTarget.ok(
+    data.header && Number.isFinite(data.header.vertexCount),
+    'data has normalized header'
+  );
+  assertionTarget.ok(
     data.header.boundingBox &&
       data.header.boundingBox.length === 2 &&
       data.header.boundingBox.every(p => p.length === 3 && p.every(Number.isFinite)),
     'data header has boundingBox'
   );
 
-  t.ok(Number.isFinite(data.mode), 'data has draw mode');
+  assertionTarget.ok(Number.isFinite(data.mode), 'data has draw mode');
 
   let attributesError = data.attributes ? null : 'data does not have attributes';
   if (data.indices) {
@@ -164,7 +169,7 @@ export function validateMeshCategoryData(t, data) {
     attributesError =
       attributesError || validateAttribute(attributeName, data.attributes[attributeName]);
   }
-  t.notOk(attributesError, 'data has valid attributes');
+  assertionTarget.notOk(attributesError, 'data has valid attributes');
 }
 
 /**

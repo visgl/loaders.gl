@@ -1,22 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-// Copyright (c) 2015 Matthew Holt
-
-// This is a fork of papaparse v5.0.0-beta.0 under MIT license
-// https://github.com/mholt/PapaParse
-
-/* eslint-disable quotes, no-var, prefer-template, curly */
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import Papa from '../../src/papaparse/papaparse';
 import {CORE_PARSER_TESTS, PARSE_TESTS, PARSE_ASYNC_TESTS} from './csv-test-cases';
-
 const __dirname = import.meta.dirname;
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const FILES_ENABLED = false;
 const XHR_ENABLED = false;
-
 const CUSTOM_TESTS = [
   {
     description: 'Complete is called with all results if neither step nor chunk is defined',
@@ -518,312 +506,58 @@ const CUSTOM_TESTS = [
     }
   }
 ];
-
-test('papaparse#Core Parser Tests', t => {
+test('papaparse#Core Parser Tests', () => {
   for (const testCase of CORE_PARSER_TESTS) {
     if (!testCase.disabled) {
       // @ts-ignore
       var actual = new Papa.Parser(testCase.config).parse(testCase.input);
-      t.deepEqual(
-        JSON.stringify(actual.errors),
-        JSON.stringify(testCase.expected.errors),
-        testCase.description
+      expect(JSON.stringify(actual.errors), testCase.description).toEqual(
+        JSON.stringify(testCase.expected.errors)
       );
-      t.deepEqual(actual.data, testCase.expected.data, testCase.description);
+      expect(actual.data, testCase.description).toEqual(testCase.expected.data);
     }
   }
-  t.end();
 });
-
-test('papaparse#Parse Tests', t => {
+test('papaparse#Parse Tests', () => {
   for (const testCase of PARSE_TESTS) {
     if (!testCase.disabled) {
       const actual = Papa.parse(testCase.input, testCase.config);
       // allows for testing the meta object if present in the test
       if (testCase.expected.meta) {
-        t.deepEqual(actual.meta, testCase.expected.meta, testCase.description);
+        expect(actual.meta, testCase.description).toEqual(testCase.expected.meta);
       }
-      t.deepEqual(
-        JSON.stringify(actual.errors),
-        JSON.stringify(testCase.expected.errors),
-        testCase.description
+      expect(JSON.stringify(actual.errors), testCase.description).toEqual(
+        JSON.stringify(testCase.expected.errors)
       );
-      t.deepEqual(actual.data, testCase.expected.data, testCase.description);
+      expect(actual.data, testCase.description).toEqual(testCase.expected.data);
     }
   }
-  t.end();
 });
-
-test('Parse Async Tests', t => {
+test('Parse Async Tests', () => {
   for (const testCase of PARSE_ASYNC_TESTS) {
     if (!testCase.disabled) {
       const config: any = testCase.config;
-
       config.complete = function (actual) {
-        t.deepEqual(
-          JSON.stringify(actual.errors),
-          JSON.stringify(testCase.expected.errors),
-          testCase.description
+        expect(JSON.stringify(actual.errors), testCase.description).toEqual(
+          JSON.stringify(testCase.expected.errors)
         );
-        t.deepEqual(actual.data, testCase.expected.data, testCase.description);
-        t.end();
+        expect(actual.data, testCase.description).toEqual(testCase.expected.data);
       };
-
       config.error = function (err) {
-        t.end();
         throw err;
       };
-
       Papa.parse(testCase.input, config);
     }
   }
 });
-
-test('papaparse#Custom Tests', t => {
+test('papaparse#Custom Tests', () => {
   for (const testCase of CUSTOM_TESTS) {
     if (!testCase.disabled) {
       testCase.run(function (actual) {
-        t.deepEqual(
-          JSON.stringify(actual),
-          JSON.stringify(testCase.expected),
-          testCase.description
+        expect(JSON.stringify(actual), testCase.description).toEqual(
+          JSON.stringify(testCase.expected)
         );
-        t.end();
       });
     }
   }
 });
-
-/*
-function assertLongSampleParsedCorrectly(parsedCsv) {
-  assert.equal(8, parsedCsv.data.length);
-  assert.deepEqual(parsedCsv.data[0], [
-    'Grant',
-    'Dyer',
-    'Donec.elementum@orciluctuset.example',
-    '2013-11-23T02:30:31-08:00',
-    '2014-05-31T01:06:56-07:00',
-    'Magna Ut Associates',
-    'ljenkins'
-  ]);
-  assert.deepEqual(parsedCsv.data[7], [
-    'Talon',
-    'Salinas',
-    'posuere.vulputate.lacus@Donecsollicitudin.example',
-    '2015-01-31T09:19:02-08:00',
-    '2014-12-17T04:59:18-08:00',
-    'Aliquam Iaculis Incorporate',
-    'Phasellus@Quisquetincidunt.example'
-  ]);
-  assert.deepEqual(parsedCsv.meta, {
-    delimiter: ",",
-    linebreak: "\n",
-    aborted: false,
-    truncated: false,
-    cursor: 1209
-  });
-  assert.equal(parsedCsv.errors.length, 0);
-}
-
-test('CSVLoader#PapaParse', t => {
-  it('synchronously parsed CSV should be correctly parsed', () => {
-    assertLongSampleParsedCorrectly(Papa.parse(longSampleRawCsv));
-  });
-
-  it('asynchronously parsed CSV should be correctly parsed', function(done) {
-    Papa.parse(longSampleRawCsv, {
-      complete(parsedCsv) {
-        assertLongSampleParsedCorrectly(parsedCsv);
-        done();
-      },
-    });
-  });
-
-  it('asynchronously parsed streaming CSV should be correctly parsed', function(done) {
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      complete(parsedCsv) {
-        assertLongSampleParsedCorrectly(parsedCsv);
-        done();
-      },
-    });
-  });
-
-  it('reports the correct row number on FieldMismatch errors', function(done) {
-    Papa.parse(fs.createReadStream(__dirname + '/verylong-sample.csv'), {
-      header: true,
-      fastMode: true,
-      complete(parsedCsv) {
-        assert.deepEqual(parsedCsv.errors, [
-          {
-            type: "FieldMismatch",
-            code: "TooFewFields",
-            message: "Too few fields: expected 3 fields but parsed 2",
-            row: 498
-          },
-          {
-            type: "FieldMismatch",
-            code: "TooFewFields",
-            message: "Too few fields: expected 3 fields but parsed 2",
-            row: 998
-          },
-          {
-            type: "FieldMismatch",
-            code: "TooFewFields",
-            message: "Too few fields: expected 3 fields but parsed 2",
-            row: 1498
-          },
-          {
-            type: "FieldMismatch",
-            code: "TooFewFields",
-            message: "Too few fields: expected 3 fields but parsed 2",
-            row: 1998
-          }
-        ]);
-        assert.strictEqual(2000, parsedCsv.data.length);
-        done();
-      },
-    });
-  });
-
-  it('piped streaming CSV should be correctly parsed', function(done) {
-    const data: any[] = [];
-    var readStream = fs.createReadStream(__dirname + '/long-sample.csv', 'utf8');
-    var csvStream = readStream.pipe(Papa.parse(Papa.NODE_STREAM_INPUT));
-    csvStream.on('data', function(item) {
-      data.push(item);
-    });
-    csvStream.on('end', () => {
-      assert.deepEqual(data[0], [
-        'Grant',
-        'Dyer',
-        'Donec.elementum@orciluctuset.example',
-        '2013-11-23T02:30:31-08:00',
-        '2014-05-31T01:06:56-07:00',
-        'Magna Ut Associates',
-        'ljenkins'
-      ]);
-      assert.deepEqual(data[7], [
-        'Talon',
-        'Salinas',
-        'posuere.vulputate.lacus@Donecsollicitudin.example',
-        '2015-01-31T09:19:02-08:00',
-        '2014-12-17T04:59:18-08:00',
-        'Aliquam Iaculis Incorporate',
-        'Phasellus@Quisquetincidunt.example'
-      ]);
-      done();
-    });
-  });
-
-  it('should support pausing and resuming on same tick when streaming', function(done) {
-    var rows = [];
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      chunk(results, parser) {
-        rows = rows.concat(results.data);
-        parser.pause();
-        parser.resume();
-      },
-      error(err) {
-        done(new Error(err));
-      },
-      complete() {
-        assert.deepEqual(rows[0], [
-          'Grant',
-          'Dyer',
-          'Donec.elementum@orciluctuset.example',
-          '2013-11-23T02:30:31-08:00',
-          '2014-05-31T01:06:56-07:00',
-          'Magna Ut Associates',
-          'ljenkins'
-        ]);
-        assert.deepEqual(rows[7], [
-          'Talon',
-          'Salinas',
-          'posuere.vulputate.lacus@Donecsollicitudin.example',
-          '2015-01-31T09:19:02-08:00',
-          '2014-12-17T04:59:18-08:00',
-          'Aliquam Iaculis Incorporate',
-          'Phasellus@Quisquetincidunt.example'
-        ]);
-        done();
-      }
-    });
-  });
-
-  it('should support pausing and resuming asynchronously when streaming', function(done) {
-    var rows = [];
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      chunk(results, parser) {
-        rows = rows.concat(results.data);
-        parser.pause();
-        setTimeout(() => {
-          parser.resume();
-        }, 200);
-      },
-      error(err) {
-        done(new Error(err));
-      },
-      complete() {
-        assert.deepEqual(rows[0], [
-          'Grant',
-          'Dyer',
-          'Donec.elementum@orciluctuset.example',
-          '2013-11-23T02:30:31-08:00',
-          '2014-05-31T01:06:56-07:00',
-          'Magna Ut Associates',
-          'ljenkins'
-        ]);
-        assert.deepEqual(rows[7], [
-          'Talon',
-          'Salinas',
-          'posuere.vulputate.lacus@Donecsollicitudin.example',
-          '2015-01-31T09:19:02-08:00',
-          '2014-12-17T04:59:18-08:00',
-          'Aliquam Iaculis Incorporate',
-          'Phasellus@Quisquetincidunt.example'
-        ]);
-        done();
-      }
-    });
-  });
-
-  it('handles errors in beforeFirstChunk', function(done) {
-    var expectedError = new Error('test');
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      beforeFirstChunk() {
-        throw expectedError;
-      },
-      error(err) {
-        assert.deepEqual(err, expectedError);
-        done();
-      }
-    });
-  });
-
-  it('handles errors in chunk', function(done) {
-    var expectedError = new Error('test');
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      chunk() {
-        throw expectedError;
-      },
-      error(err) {
-        assert.deepEqual(err, expectedError);
-        done();
-      }
-    });
-  });
-
-  it('handles errors in step', function(done) {
-    var expectedError = new Error('test');
-    Papa.parse(fs.createReadStream(__dirname + '/long-sample.csv', 'utf8'), {
-      step() {
-        throw expectedError;
-      },
-      error(err) {
-        assert.deepEqual(err, expectedError);
-        done();
-      }
-    });
-  });
-});
-*/

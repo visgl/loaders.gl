@@ -1,53 +1,45 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {SPLATLoader} from '@loaders.gl/splats';
 import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat-loader';
-
-test('SPLATLoader parses raw Gaussian splats', async t => {
+test('SPLATLoader parses raw Gaussian splats', async () => {
   const data = makeSPLATFixture();
   const table = await parse(data, SPLATLoader);
-
-  t.equal(table.shape, 'arrow-table', 'returns MeshArrowTable');
-  t.equal(table.topology, 'point-list', 'returns point-list topology');
-  t.equal(table.data.numRows, 2, 'parses row count');
-  t.equal(
+  expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
+  expect(table.topology, 'returns point-list topology').toBe('point-list');
+  expect(table.data.numRows, 'parses row count').toBe(2);
+  expect(
     table.data.schema.metadata.get('loaders_gl.semantic_type'),
-    'gaussian-splats',
     'adds Gaussian splat semantic metadata'
-  );
-  t.deepEqual(table.data.getChild('POSITION')?.get(0)?.toArray(), [1, 2, 3], 'parses position');
-  t.equal(table.data.getChild('scale_0')?.get(1), 4, 'parses linear scale');
-  t.ok(
+  ).toBe('gaussian-splats');
+  expect(
+    Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
+    'parses position'
+  ).toEqual([1, 2, 3]);
+  expect(table.data.getChild('scale_0')?.get(1), 'parses linear scale').toBe(4);
+  expect(
     Math.abs(Number(table.data.getChild('opacity')?.get(0)) - 128 / 255) < 1e-6,
     'parses linear opacity'
-  );
-  t.equal(
+  ).toBeTruthy();
+  expect(
     table.data.schema.fields
       .find(field => field.name === 'opacity')
       ?.metadata.get('loaders_gl.gaussian_splats.encoding'),
-    'linear',
     'marks opacity as linear'
-  );
-  t.ok(Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6, 'normalizes rotation');
-
+  ).toBe('linear');
+  expect(
+    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    'normalizes rotation'
+  ).toBeTruthy();
   const syncTable = parseSync(data, SPLATLoaderWithParser);
-  t.equal(syncTable.data.numRows, 2, 'parser subpath supports parseSync');
-  t.end();
+  expect(syncTable.data.numRows, 'parser subpath supports parseSync').toBe(2);
 });
-
-test('SPLATLoader rejects invalid byte length', t => {
-  t.throws(
+test('SPLATLoader rejects invalid byte length', () => {
+  expect(
     () => SPLATLoaderWithParser.parseSync(new ArrayBuffer(31)),
-    /multiple of 32/,
     'rejects partial rows'
-  );
-  t.end();
+  ).toThrow(/multiple of 32/);
 });
-
 /** Builds a deterministic two-row `.splat` fixture. */
 function makeSPLATFixture(): ArrayBuffer {
   const data = new ArrayBuffer(64);
@@ -55,7 +47,6 @@ function makeSPLATFixture(): ArrayBuffer {
   writeSPLATRow(data, 1, [-1, -2, -3], [4, 5, 6], [0, 255, 64, 255], [128, 255, 128, 128]);
   return data;
 }
-
 /** Writes one `.splat` fixture row. */
 function writeSPLATRow(
   data: ArrayBuffer,

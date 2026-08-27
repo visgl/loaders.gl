@@ -1,124 +1,96 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {I3SLoader, SLPKLoader, SLPKSource} from '../src';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';
-
 const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
-
-test('SLPKLoader#slpk load', async t => {
+test('SLPKLoader#slpk load', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/0.json'}});
-  t.deepEqual(uncompressedFile.byteLength, 16153, 'SLPK nodepage has the correct length');
-  t.end();
+  expect(uncompressedFile.byteLength, 'SLPK nodepage has the correct length').toEqual(16153);
 });
-
-test('SLPKLoader#parseFile reads from ReadableFile', async t => {
+test('SLPKLoader#parseFile reads from ReadableFile', async () => {
   const arrayBuffer = await loadArrayBufferFromFile(SLPKUrl);
   const readableFile = await createReadableFileFromBuffer(arrayBuffer);
   const uncompressedFile = await parseFile(readableFile, SLPKLoader, {
     slpk: {path: 'nodepages/0.json'}
   });
-
-  t.deepEqual(uncompressedFile.byteLength, 16153, 'SLPK nodepage has the correct length');
-  t.end();
+  expect(uncompressedFile.byteLength, 'SLPK nodepage has the correct length').toEqual(16153);
 });
-
-test('SLPKSource#initialize reads archive through I3SSource contract', async t => {
+test('SLPKSource#initialize reads archive through I3SSource contract', async () => {
   const source = new SLPKSource({
     url: SLPKUrl,
     loader: I3SLoader,
     coreApi
   });
-
   await source.initialize();
   const tileset = await source.getRootTileset();
-
-  t.equal(source.type, 'I3S', 'uses the I3S source type');
-  t.ok(tileset.store, 'loads root I3S metadata from the archive');
-  t.end();
+  expect(source.type, 'uses the I3S source type').toBe('I3S');
+  expect(tileset.store, 'loads root I3S metadata from the archive').toBeTruthy();
 });
-
-test('SLPKLoader#slpk load error', async t => {
+test('SLPKLoader#slpk load error', async () => {
   try {
     await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/5.json'}});
-    t.fail('error should be thrown');
+    (() => {
+      throw new Error('error should be thrown');
+    })();
   } catch (e) {
-    if (e) t.pass('correct error thrown');
+    if (e) expect(true, 'correct error thrown').toBe(true);
   }
-  t.end();
 });
-
-test('SLPKLoader#slpk load http nodepage', async t => {
+test('SLPKLoader#slpk load http nodepage', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodepages/0',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 16153);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(16153);
 });
-
-test('SLPKLoader#slpk load http layer', async t => {
+test('SLPKLoader#slpk load http layer', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {slpk: {path: '', pathMode: 'http'}});
-  t.deepEqual(uncompressedFile.byteLength, 4780);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(4780);
 });
-
-test('SLPKLoader#slpk load http node', async t => {
+test('SLPKLoader#slpk load http node', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/0',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 1171);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(1171);
 });
-
-test('SLPKLoader#slpk load http geometry', async t => {
+test('SLPKLoader#slpk load http geometry', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/0/geometries/0',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 156280);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(156280);
 });
-
-test('SLPKLoader#slpk load http attributes', async t => {
+test('SLPKLoader#slpk load http attributes', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/2/attributes/f_2/0',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 8);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(8);
 });
-
-test('SLPKLoader#slpk load http statistics', async t => {
+test('SLPKLoader#slpk load http statistics', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'statistics/f_3/0',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 735);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(735);
 });
-
-test('SLPKLoader#slpk load http shared', async t => {
+test('SLPKLoader#slpk load http shared', async () => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/2/shared',
       pathMode: 'http'
     }
   });
-  t.deepEqual(uncompressedFile.byteLength, 333);
-  t.end();
+  expect(uncompressedFile.byteLength).toEqual(333);
 });

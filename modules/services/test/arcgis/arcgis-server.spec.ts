@@ -1,39 +1,27 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
-import {expect, test as vitestTest} from 'vitest';
+import {expect, test} from 'vitest';
 import {LERCLoader} from '@loaders.gl/lerc';
-
 import {
   ArcGISFeatureServerSourceLoader,
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSource,
   ArcGISMapTileSource
 } from '@loaders.gl/services';
-
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
-
-test('ArcGISImageServerSourceLoader#testURL', t => {
-  t.ok(ArcGISImageServerSourceLoader);
-  t.ok(
+test('ArcGISImageServerSourceLoader#testURL', () => {
+  expect(ArcGISImageServerSourceLoader).toBeTruthy();
+  expect(
     ArcGISImageServerSourceLoader.testURL(IMAGE_SERVER_URL),
     'identifies ArcGIS ImageServer URLs'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', t => {
+test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer?token=abc');
   const url = new URL(source.getTileURL({x: 3, y: 4, z: 5}));
-  t.equal(url.pathname, '/MapServer/tile/5/4/3');
-  t.equal(url.searchParams.get('token'), 'abc');
-  t.end();
+  expect(url.pathname).toBe('/MapServer/tile/5/4/3');
+  expect(url.searchParams.get('token')).toBe('abc');
 });
-
-vitestTest('ArcGISMapTileSource builds dynamic export tiles and updates parameters', () => {
+test('ArcGISMapTileSource builds dynamic export tiles and updates parameters', () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer', {
     'arcgis-map-server': {mode: 'dynamic', tileSize: 512}
   });
@@ -44,8 +32,7 @@ vitestTest('ArcGISMapTileSource builds dynamic export tiles and updates paramete
   expect(url.searchParams.get('layers')).toBe('show:0');
   expect(url.searchParams.get('format')).toBe('jpgpng');
 });
-
-vitestTest('ArcGISMapTileSource distributes requests across configured service URLs', () => {
+test('ArcGISMapTileSource distributes requests across configured service URLs', () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer', {
     'arcgis-map-server': {
       urls: ['https://tiles-a.example.com/MapServer', 'https://tiles-b.example.com/MapServer']
@@ -54,8 +41,7 @@ vitestTest('ArcGISMapTileSource distributes requests across configured service U
   const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
   expect(url.origin).toBe('https://tiles-b.example.com');
 });
-
-vitestTest('ArcGISMapTileSource fetches and decodes cached tiles', async () => {
+test('ArcGISMapTileSource fetches and decodes cached tiles', async () => {
   let parseCount = 0;
   const source = new ArcGISMapTileSource(
     'https://example.com/MapServer',
@@ -68,12 +54,10 @@ vitestTest('ArcGISMapTileSource fetches and decodes cached tiles', async () => {
     } as never
   );
   source.fetch = async () => new Response(new Uint8Array([1, 2, 3]));
-
   expect(await source.getTile({x: 1, y: 2, z: 3})).toEqual({width: 1, height: 1});
   expect(parseCount).toBe(1);
 });
-
-vitestTest('ArcGISMapTileSource falls back to dynamic export for incompatible caches', async () => {
+test('ArcGISMapTileSource falls back to dynamic export for incompatible caches', async () => {
   const source = new ArcGISMapTileSource(
     'https://example.com/MapServer',
     {
@@ -89,19 +73,16 @@ vitestTest('ArcGISMapTileSource falls back to dynamic export for incompatible ca
     requestedURL = url;
     return new Response(new Uint8Array([1]));
   };
-
   await source.getTile({x: 0, y: 0, z: 0});
   expect(new URL(requestedURL).pathname).toBe('/MapServer/export');
 });
-
-vitestTest('ArcGISMapTileSource expands custom tile URL templates', () => {
+test('ArcGISMapTileSource expands custom tile URL templates', () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer', {
     'arcgis-map-server': {urlTemplate: 'https://tiles.example/{z}/{y}/{x}.png?token=abc'}
   });
   expect(source.getTileURL({x: 3, y: 4, z: 5})).toBe('https://tiles.example/5/4/3.png?token=abc');
 });
-
-vitestTest('ArcGISMapTileSource exposes its cached tile grid', async () => {
+test('ArcGISMapTileSource exposes its cached tile grid', async () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer', {
     'arcgis-map-server': {
       metadata: {
@@ -117,7 +98,6 @@ vitestTest('ArcGISMapTileSource exposes its cached tile grid', async () => {
       }
     }
   });
-
   expect(await source.getMetadata()).toMatchObject({
     tileGrid: {
       crs: 'EPSG:3857',
@@ -127,8 +107,7 @@ vitestTest('ArcGISMapTileSource exposes its cached tile grid', async () => {
     }
   });
 });
-
-vitestTest('ArcGISImageTileSource builds exportImage tile requests', () => {
+test('ArcGISImageTileSource builds exportImage tile requests', () => {
   const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
     'arcgis-image-server-tiles': {tileSize: 512, parameters: {time: '2020-01-01'}}
   });
@@ -139,8 +118,7 @@ vitestTest('ArcGISImageTileSource builds exportImage tile requests', () => {
   expect(url.searchParams.get('time')).toBe('2020-01-01');
   expect(url.searchParams.get('renderingRule')).toBe('{"rasterFunction":"Hillshade"}');
 });
-
-vitestTest('ArcGISImageTileSource distributes requests across configured service URLs', () => {
+test('ArcGISImageTileSource distributes requests across configured service URLs', () => {
   const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
     'arcgis-image-server-tiles': {
       urls: [
@@ -152,8 +130,7 @@ vitestTest('ArcGISImageTileSource distributes requests across configured service
   const url = new URL(source.getTileURL({x: 1, y: 0, z: 0}));
   expect(url.origin).toBe('https://imagery-b.example.com');
 });
-
-vitestTest('ArcGISImageTileSource parses the effective response format', () => {
+test('ArcGISImageTileSource parses the effective response format', () => {
   const source = new ArcGISImageTileSource('https://example.com/ImageServer', {
     'arcgis-image-server-tiles': {format: 'lerc', parameters: {format: 'png32'}}
   });
@@ -162,19 +139,14 @@ vitestTest('ArcGISImageTileSource parses the effective response format', () => {
   source.updateParameters({format: 'png32'});
   expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
 });
-
-test('ArcGISImageSource#metadataURL', t => {
+test('ArcGISImageSource#metadataURL', () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
-
   const metadataUrl = new URL(source.metadataURL());
-  t.equal(metadataUrl.origin + metadataUrl.pathname, IMAGE_SERVER_URL, 'metadata base URL');
-  t.equal(metadataUrl.searchParams.get('f'), 'pjson', 'metadata format');
-  t.end();
+  expect(metadataUrl.origin + metadataUrl.pathname, 'metadata base URL').toBe(IMAGE_SERVER_URL);
+  expect(metadataUrl.searchParams.get('f'), 'metadata format').toBe('pjson');
 });
-
-test('ArcGISImageSource#exportImageURL', t => {
+test('ArcGISImageSource#exportImageURL', () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
-
   const exportImageUrl = new URL(
     source.exportImageURL({
       bbox: [1, 2, 3, 4],
@@ -185,18 +157,15 @@ test('ArcGISImageSource#exportImageURL', t => {
       format: 'png'
     })
   );
-
-  t.equal(exportImageUrl.origin + exportImageUrl.pathname, `${IMAGE_SERVER_URL}/exportImage`);
-  t.equal(exportImageUrl.searchParams.get('bbox'), '1,2,3,4');
-  t.equal(exportImageUrl.searchParams.get('bboxSR'), '4326');
-  t.equal(exportImageUrl.searchParams.get('size'), '512,256');
-  t.equal(exportImageUrl.searchParams.get('imageSR'), '3857');
-  t.equal(exportImageUrl.searchParams.get('format'), 'png');
-  t.equal(exportImageUrl.searchParams.get('f'), 'image');
-  t.end();
+  expect(exportImageUrl.origin + exportImageUrl.pathname).toBe(`${IMAGE_SERVER_URL}/exportImage`);
+  expect(exportImageUrl.searchParams.get('bbox')).toBe('1,2,3,4');
+  expect(exportImageUrl.searchParams.get('bboxSR')).toBe('4326');
+  expect(exportImageUrl.searchParams.get('size')).toBe('512,256');
+  expect(exportImageUrl.searchParams.get('imageSR')).toBe('3857');
+  expect(exportImageUrl.searchParams.get('format')).toBe('png');
+  expect(exportImageUrl.searchParams.get('f')).toBe('image');
 });
-
-vitestTest('ArcGISImageSource#exportImageURL supports LERC analytical rasters', () => {
+test('ArcGISImageSource#exportImageURL supports LERC analytical rasters', () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   const exportRasterUrl = new URL(
     source.exportImageURL({
@@ -210,8 +179,7 @@ vitestTest('ArcGISImageSource#exportImageURL supports LERC analytical rasters', 
   expect(exportRasterUrl.searchParams.get('format')).toBe('lerc');
   expect(exportRasterUrl.searchParams.get('pixelType')).toBe('F32');
 });
-
-vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster data', async () => {
+test('ArcGISImageSource#exportRaster requests and returns typed raster data', async () => {
   const raster = {
     width: 2,
     height: 1,
@@ -245,13 +213,11 @@ vitestTest('ArcGISImageSource#exportRaster requests and returns typed raster dat
     height: 1,
     pixelType: 'F32'
   });
-
   expect(parsedLoader).toBe(LERCLoader);
   expect(result).toBe(raster);
   expect(result.pixels[0]).toBeInstanceOf(Float32Array);
 });
-
-test('ArcGISImageSource#getMetadata', async t => {
+test('ArcGISImageSource#getMetadata', async () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
@@ -261,22 +227,18 @@ test('ArcGISImageSource#getMetadata', async t => {
         keywords: ['raster', 'imagery']
       })
     );
-
   const metadata = await source.getMetadata();
-  t.equal(metadata.name, 'Imagery');
-  t.equal(metadata.abstract, 'Image service description');
-  t.deepEqual(metadata.keywords, ['raster', 'imagery']);
-  t.end();
+  expect(metadata.name).toBe('Imagery');
+  expect(metadata.abstract).toBe('Image service description');
+  expect(metadata.keywords).toEqual(['raster', 'imagery']);
 });
-
-test('ArcGISImageSource#getImage maps generic parameters', async t => {
+test('ArcGISImageSource#getImage maps generic parameters', async () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   let exportImageParameters;
   source.exportImage = async parameters => {
     exportImageParameters = parameters;
     return {} as never;
   };
-
   await source.getImage({
     boundingBox: [
       [1, 2],
@@ -288,8 +250,7 @@ test('ArcGISImageSource#getImage maps generic parameters', async t => {
     format: 'image/png',
     layers: []
   });
-
-  t.deepEqual(exportImageParameters, {
+  expect(exportImageParameters).toEqual({
     bbox: [1, 2, 3, 4],
     bboxSR: '3857',
     imageSR: '3857',
@@ -297,17 +258,14 @@ test('ArcGISImageSource#getImage maps generic parameters', async t => {
     height: 256,
     format: 'png'
   });
-  t.end();
 });
-
-test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', async t => {
+test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', async () => {
   const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   let exportImageParameters;
   source.exportImage = async parameters => {
     exportImageParameters = parameters;
     return {} as never;
   };
-
   await source.getImage({
     boundingBox: [
       [1, 2],
@@ -319,8 +277,7 @@ test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', a
     format: 'image/png',
     layers: []
   });
-
-  t.deepEqual(exportImageParameters, {
+  expect(exportImageParameters).toEqual({
     bbox: [1, 2, 3, 4],
     bboxSR: '3857',
     imageSR: '3857',
@@ -328,28 +285,21 @@ test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', a
     height: 256,
     format: 'png'
   });
-  t.end();
 });
-
-test('ArcGISFeatureServerSourceLoader#testURL', t => {
-  t.ok(ArcGISFeatureServerSourceLoader);
-  t.ok(
+test('ArcGISFeatureServerSourceLoader#testURL', () => {
+  expect(ArcGISFeatureServerSourceLoader).toBeTruthy();
+  expect(
     ArcGISFeatureServerSourceLoader.testURL(FEATURE_SERVER_URL),
     'identifies ArcGIS FeatureServer URLs'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('ArcGISVectorSource#metadataURL', t => {
+test('ArcGISVectorSource#metadataURL', () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
-
   const metadataUrl = new URL(source.metadataURL());
-  t.equal(metadataUrl.origin + metadataUrl.pathname, FEATURE_SERVER_URL, 'metadata base URL');
-  t.equal(metadataUrl.searchParams.get('f'), 'pjson', 'metadata format');
-  t.end();
+  expect(metadataUrl.origin + metadataUrl.pathname, 'metadata base URL').toBe(FEATURE_SERVER_URL);
+  expect(metadataUrl.searchParams.get('f'), 'metadata format').toBe('pjson');
 });
-
-test('ArcGISVectorSource#getFeaturesURL', t => {
+test('ArcGISVectorSource#getFeaturesURL', () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
@@ -361,21 +311,18 @@ test('ArcGISVectorSource#getFeaturesURL', t => {
       crs: '3857'
     })
   );
-
-  t.equal(featuresUrl.origin + featuresUrl.pathname, `${FEATURE_SERVER_URL}/query`);
-  t.equal(featuresUrl.searchParams.get('returnGeometry'), 'true');
-  t.equal(featuresUrl.searchParams.get('where'), '1=1');
-  t.equal(featuresUrl.searchParams.get('outFields'), '*');
-  t.equal(featuresUrl.searchParams.get('outSR'), '3857');
-  t.equal(featuresUrl.searchParams.get('inSR'), '3857');
-  t.equal(featuresUrl.searchParams.get('geometry'), '1,2,3,4');
-  t.equal(featuresUrl.searchParams.get('geometryType'), 'esriGeometryEnvelope');
-  t.equal(featuresUrl.searchParams.get('spatialRel'), 'esriSpatialRelIntersects');
-  t.equal(featuresUrl.searchParams.get('f'), 'geojson');
-  t.end();
+  expect(featuresUrl.origin + featuresUrl.pathname).toBe(`${FEATURE_SERVER_URL}/query`);
+  expect(featuresUrl.searchParams.get('returnGeometry')).toBe('true');
+  expect(featuresUrl.searchParams.get('where')).toBe('1=1');
+  expect(featuresUrl.searchParams.get('outFields')).toBe('*');
+  expect(featuresUrl.searchParams.get('outSR')).toBe('3857');
+  expect(featuresUrl.searchParams.get('inSR')).toBe('3857');
+  expect(featuresUrl.searchParams.get('geometry')).toBe('1,2,3,4');
+  expect(featuresUrl.searchParams.get('geometryType')).toBe('esriGeometryEnvelope');
+  expect(featuresUrl.searchParams.get('spatialRel')).toBe('esriSpatialRelIntersects');
+  expect(featuresUrl.searchParams.get('f')).toBe('geojson');
 });
-
-test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial references', t => {
+test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial references', () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
@@ -387,13 +334,10 @@ test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial referen
       crs: 'EPSG:3857'
     })
   );
-
-  t.equal(featuresUrl.searchParams.get('outSR'), '3857');
-  t.equal(featuresUrl.searchParams.get('inSR'), '3857');
-  t.end();
+  expect(featuresUrl.searchParams.get('outSR')).toBe('3857');
+  expect(featuresUrl.searchParams.get('inSR')).toBe('3857');
 });
-
-test('ArcGISVectorSource#getMetadata and getSchema', async t => {
+test('ArcGISVectorSource#getMetadata and getSchema', async () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
@@ -408,23 +352,22 @@ test('ArcGISVectorSource#getMetadata and getSchema', async t => {
         ]
       })
     );
-
   const metadata = await source.getMetadata({formatSpecificMetadata: true});
-  t.equal(metadata.name, 'Roads');
-  t.equal(metadata.abstract, 'Road centerlines');
-  t.deepEqual(metadata.layers, [{name: 'Road centerlines'}]);
-  t.ok(metadata.formatSpecificMetadata, 'preserves format-specific metadata when requested');
-
+  expect(metadata.name).toBe('Roads');
+  expect(metadata.abstract).toBe('Road centerlines');
+  expect(metadata.layers).toEqual([{name: 'Road centerlines'}]);
+  expect(
+    metadata.formatSpecificMetadata,
+    'preserves format-specific metadata when requested'
+  ).toBeTruthy();
   const schema = await source.getSchema();
-  t.deepEqual(schema.fields, [
+  expect(schema.fields).toEqual([
     {name: 'OBJECTID', type: 'int32', nullable: false},
     {name: 'NAME', type: 'utf8', nullable: true},
     {name: 'LENGTH', type: 'float64', nullable: true}
   ]);
-  t.end();
 });
-
-test('ArcGISVectorSource#getFeatures defaults to Arrow', async t => {
+test('ArcGISVectorSource#getFeatures defaults to Arrow', async () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
@@ -437,7 +380,6 @@ test('ArcGISVectorSource#getFeatures defaults to Arrow', async t => {
     ]
   };
   source.fetch = async () => new Response(JSON.stringify(featureCollection));
-
   const table = await source.getFeatures({
     boundingBox: [
       [1, 2],
@@ -446,14 +388,11 @@ test('ArcGISVectorSource#getFeatures defaults to Arrow', async t => {
     layers: [],
     crs: '4326'
   });
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow tables by default');
-  t.equal(table.data.numRows, 1, 'preserves feature rows');
-  t.ok(table.schema?.metadata?.geo, 'adds GeoArrow metadata');
-  t.end();
+  expect(table.shape, 'returns Arrow tables by default').toBe('arrow-table');
+  expect(table.data.numRows, 'preserves feature rows').toBe(1);
+  expect(table.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
 });
-
-test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async t => {
+test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
@@ -466,7 +405,6 @@ test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async t => {
     ]
   };
   source.fetch = async () => new Response(JSON.stringify(featureCollection));
-
   const table = await source.getFeatures({
     boundingBox: [
       [1, 2],
@@ -476,7 +414,5 @@ test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async t => {
     crs: '4326',
     format: 'geojson'
   });
-
-  t.deepEqual(table, {shape: 'geojson-table', ...featureCollection});
-  t.end();
+  expect(table).toEqual({shape: 'geojson-table', ...featureCollection});
 });

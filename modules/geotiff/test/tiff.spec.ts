@@ -1,81 +1,64 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fromFile} from 'geotiff';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
-
 import {loadGeoTiff} from '@loaders.gl/geotiff';
-
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
-
-test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
+test('Creates correct TiffPixelSource for OME-TIFF.', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   const tiff = await fromFile(TIFF_URL);
   const {data} = await loadGeoTiff(tiff);
-  t.equal(data.length, 1, 'image should not be pyramidal.');
+  expect(data.length, 'image should not be pyramidal.').toBe(1);
   const [base] = data;
-  t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
-  t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
-  t.equal(base.meta?.photometricInterpretation, 1, 'Photometric interpretation is 1.');
-  t.equal(base.meta?.physicalSizes, undefined, 'No physical sizes.');
-  t.end();
+  expect(base.labels, 'should have DimensionOrder "XYZCT".').toEqual(['t', 'c', 'z', 'y', 'x']);
+  expect(base.shape, 'shape should match dimensions.').toEqual([1, 3, 1, 167, 439]);
+  expect(base.meta?.photometricInterpretation, 'Photometric interpretation is 1.').toBe(1);
+  expect(base.meta?.physicalSizes, 'No physical sizes.').toBe(undefined);
 });
-
-test('Get raster data.', async t => {
+test('Get raster data.', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   const tiff = await fromFile(TIFF_URL);
   const {data} = await loadGeoTiff(tiff);
   const [base] = data;
-
   for (let c = 0; c < 3; c += 1) {
     const selection = {c, z: 0, t: 0};
     const pixelData = await base.getRaster({selection}); // eslint-disable-line no-await-in-loop
-    t.equal(pixelData.width, 439);
-    t.equal(pixelData.height, 167);
-    t.equal(pixelData.data.length, 439 * 167);
-    t.equal(pixelData.data.constructor.name, 'Int8Array');
+    expect(pixelData.width).toBe(439);
+    expect(pixelData.height).toBe(167);
+    expect(pixelData.data.length).toBe(439 * 167);
+    expect(pixelData.data.constructor.name).toBe('Int8Array');
   }
-
   try {
     await base.getRaster({selection: {c: 3, z: 0, t: 0}});
   } catch (e) {
-    t.ok(e instanceof Error, 'index should be out of bounds.');
+    expect(e instanceof Error, 'index should be out of bounds.').toBeTruthy();
   }
-  t.end();
 });
-
-test('Correct OME-XML.', async t => {
+test('Correct OME-XML.', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   const tiff = await fromFile(TIFF_URL);
   const {metadata} = await loadGeoTiff(tiff);
   const {Name, Pixels} = metadata;
-  t.equal(Name, 'multi-channel.ome.tif', 'Name should be "multi-channel.ome.tif".');
+  expect(Name, 'Name should be "multi-channel.ome.tif".').toBe('multi-channel.ome.tif');
   // @ts-ignore
-  t.equal(Pixels.SizeC, 3, 'Should have three channels.');
+  expect(Pixels.SizeC, 'Should have three channels.').toBe(3);
   // @ts-ignore
-  t.equal(Pixels.SizeT, 1, 'Should have one time index.');
+  expect(Pixels.SizeT, 'Should have one time index.').toBe(1);
   // @ts-ignore
-  t.equal(Pixels.SizeX, 439, 'Should have SizeX of 429.');
+  expect(Pixels.SizeX, 'Should have SizeX of 429.').toBe(439);
   // @ts-ignore
-  t.equal(Pixels.SizeY, 167, 'Should have SizeY of 167.');
+  expect(Pixels.SizeY, 'Should have SizeY of 167.').toBe(167);
   // @ts-ignore
-  t.equal(Pixels.SizeZ, 1, 'Should have one z index.');
+  expect(Pixels.SizeZ, 'Should have one z index.').toBe(1);
   // @ts-ignore
-  t.equal(Pixels.Type, 'int8', 'Should be int8 pixel type.');
+  expect(Pixels.Type, 'Should be int8 pixel type.').toBe('int8');
   // @ts-ignore
-  t.equal(Pixels.Channels.length, 3);
+  expect(Pixels.Channels.length).toBe(3);
   // @ts-ignore
-  t.equal(Pixels.Channels[0].SamplesPerPixel, 1);
-  t.end();
+  expect(Pixels.Channels[0].SamplesPerPixel).toBe(1);
 });

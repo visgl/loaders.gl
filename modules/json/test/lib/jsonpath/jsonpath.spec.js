@@ -1,10 +1,5 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {_JSONPath} from '@loaders.gl/json';
-
 const VALID_JSONPATHS = [
   {jsonpath: '$', expected: [], canonical: '$'},
   {jsonpath: '$.features', expected: ['features'], canonical: '$.features'},
@@ -21,7 +16,6 @@ const VALID_JSONPATHS = [
   //   canonical: "$['nested \\'quote\\' key']"
   // }
 ];
-
 const INVALID_JSONPATHS = [
   {jsonpath: 'features', message: /JSONPath must start with \$/},
   {jsonpath: '$.trailing.', message: /JSONPath cannot end with a period/},
@@ -40,54 +34,43 @@ const INVALID_JSONPATHS = [
     message: /JSONPath string in bracket property selector is unterminated/
   }
 ];
-
-test('JSONPath#parsing', async t => {
+test('JSONPath#parsing', async () => {
   for (const testCase of VALID_JSONPATHS) {
     const jsonpath = new _JSONPath(testCase.jsonpath);
     const expected = new _JSONPath(testCase.expected);
-    t.ok(jsonpath.equals(expected), `${testCase.jsonpath} parses correctly`);
-    t.equals(
-      jsonpath.toString(),
-      testCase.canonical,
-      `${testCase.jsonpath} normalizes to ${testCase.canonical}`
+    expect(jsonpath.equals(expected), `${testCase.jsonpath} parses correctly`).toBeTruthy();
+    expect(jsonpath.toString(), `${testCase.jsonpath} normalizes to ${testCase.canonical}`).toBe(
+      testCase.canonical
     );
-
     const jsonpathCopy = new _JSONPath(jsonpath);
-    t.ok(jsonpathCopy.equals(expected), `${testCase.jsonpath} copy parses correctly`);
-    t.equals(
-      jsonpathCopy.toString(),
-      testCase.canonical,
-      `${testCase.jsonpath} copy normalizes correctly`
+    expect(
+      jsonpathCopy.equals(expected),
+      `${testCase.jsonpath} copy parses correctly`
+    ).toBeTruthy();
+    expect(jsonpathCopy.toString(), `${testCase.jsonpath} copy normalizes correctly`).toBe(
+      testCase.canonical
     );
-
     const jsonpathClone = jsonpath.clone();
-    t.ok(jsonpathClone.equals(expected), `${testCase.jsonpath} clone parses correctly`);
-    t.equals(
-      jsonpathClone.toString(),
-      testCase.canonical,
-      `${testCase.jsonpath} clone normalizes correctly`
+    expect(
+      jsonpathClone.equals(expected),
+      `${testCase.jsonpath} clone parses correctly`
+    ).toBeTruthy();
+    expect(jsonpathClone.toString(), `${testCase.jsonpath} clone normalizes correctly`).toBe(
+      testCase.canonical
     );
   }
-
-  t.end();
 });
-
-test('JSONPath#validation', async t => {
+test('JSONPath#validation', async () => {
   for (const testCase of INVALID_JSONPATHS) {
-    t.throws(
-      () => new _JSONPath(testCase.jsonpath),
-      testCase.message,
-      `${testCase.jsonpath} is rejected`
+    expect(() => new _JSONPath(testCase.jsonpath), `${testCase.jsonpath} is rejected`).toThrow(
+      testCase.message
     );
   }
-  t.end();
 });
-
-test('JSONPath#deep set', async t => {
+test('JSONPath#deep set', async () => {
   const jsonpath = new _JSONPath('$.a.b');
   const deepValue = {a: {b: 1}};
-  t.equal(jsonpath.getFieldAtPath(deepValue), 1, 'JSONPath.getFieldAtPath');
+  expect(jsonpath.getFieldAtPath(deepValue), 'JSONPath.getFieldAtPath').toBe(1);
   jsonpath.setFieldAtPath(deepValue, 2);
-  t.equal(jsonpath.getFieldAtPath(deepValue), 2, 'JSONPath.setFieldAtPath');
-  t.end();
+  expect(jsonpath.getFieldAtPath(deepValue), 'JSONPath.setFieldAtPath').toBe(2);
 });

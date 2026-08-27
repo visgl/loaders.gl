@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
-
 import {HTMLLoader} from '@loaders.gl/xml';
 import {parse} from '@loaders.gl/core';
-
 const HTML = `
 <HTML>
 <HEAD>
@@ -29,11 +23,8 @@ support@yourcompany.com</a>.
 </BODY>
 </HTML>
 `;
-
-test('HTMLLoader#forecasts.xml', async t => {
+test('HTMLLoader#forecasts.xml', async () => {
   const html = await parse(HTML, HTMLLoader);
-
-  t.ok(html, 'got result');
-  t.equal(html.HTML.BODY.CENTER.IMG.SRC, 'clouds.jpg', 'HTML image tag src correct');
-  t.end();
+  expect(html, 'got result').toBeTruthy();
+  expect(html.HTML.BODY.CENTER.IMG.SRC, 'HTML image tag src correct').toBe('clouds.jpg');
 });

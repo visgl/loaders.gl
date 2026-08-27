@@ -1,10 +1,5 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {RasterSet} from '@loaders.gl/tiles';
-
 function createRasterSource() {
   return {
     async getMetadata() {
@@ -27,7 +22,6 @@ function createRasterSource() {
     }
   };
 }
-
 function createViewport(width = 2, height = 1) {
   return {
     id: `${width}x${height}`,
@@ -43,21 +37,15 @@ function createViewport(width = 2, height = 1) {
     unprojectPosition: (position: number[]) => [position[0], position[1], position[2] || 0]
   };
 }
-
-test('RasterSet#loads metadata from RasterSource', async t => {
+test('RasterSet#loads metadata from RasterSource', async () => {
   const rasterSet = RasterSet.fromRasterSource(createRasterSource() as any);
-
   const metadata = await rasterSet.loadMetadata();
-
-  t.equal(metadata.name, 'test');
-  t.equal(metadata.dtype, 'uint16');
-  t.equal(rasterSet.metadata?.bandCount, 1);
-
+  expect(metadata.name).toBe('test');
+  expect(metadata.dtype).toBe('uint16');
+  expect(rasterSet.metadata?.bandCount).toBe(1);
   rasterSet.finalize();
-  t.end();
 });
-
-test('RasterSet#accepts the latest completed request', async t => {
+test('RasterSet#accepts the latest completed request', async () => {
   let resolveFirst;
   let resolveSecond;
   const rasterSet = new RasterSet({
@@ -88,23 +76,17 @@ test('RasterSet#accepts the latest completed request', async t => {
       }) as Promise<any>;
     }
   });
-
   rasterSet.requestRaster({viewport: createViewport(1, 1)});
   rasterSet.requestRaster({viewport: createViewport(2, 2)});
-
   resolveSecond?.();
   await new Promise(resolve => setTimeout(resolve, 0));
   resolveFirst?.();
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.equal(rasterSet.raster?.width, 2);
-  t.equal(rasterSet.currentRequest?.requestId, 1);
-
+  expect(rasterSet.raster?.width).toBe(2);
+  expect(rasterSet.currentRequest?.requestId).toBe(1);
   rasterSet.finalize();
-  t.end();
 });
-
-test('RasterSet#emits metadata and raster errors', async t => {
+test('RasterSet#emits metadata and raster errors', async () => {
   const metadataErrors: string[] = [];
   const rasterErrors: string[] = [];
   let metadataFailed = true;
@@ -129,32 +111,25 @@ test('RasterSet#emits metadata and raster errors', async t => {
       } as any;
     }
   });
-
   rasterSet.subscribe({
     onMetadataLoadError: error => metadataErrors.push(error.message),
     onRasterLoadError: (_requestId, error) => rasterErrors.push(error.message)
   });
-
   await rasterSet.loadMetadata().catch(() => {});
   rasterSet.requestRaster({viewport: createViewport(1, 1)});
   await new Promise(resolve => setTimeout(resolve, 0));
-
   metadataFailed = false;
   rasterFailed = false;
   await rasterSet.loadMetadata();
   rasterSet.requestRaster({viewport: createViewport(2, 2)});
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.deepEqual(metadataErrors, ['metadata boom']);
-  t.deepEqual(rasterErrors, ['raster boom']);
-  t.equal(rasterSet.metadata?.dtype, 'uint8');
-  t.equal(rasterSet.raster?.width, 2);
-
+  expect(metadataErrors).toEqual(['metadata boom']);
+  expect(rasterErrors).toEqual(['raster boom']);
+  expect(rasterSet.metadata?.dtype).toBe('uint8');
+  expect(rasterSet.raster?.width).toBe(2);
   rasterSet.finalize();
-  t.end();
 });
-
-test('RasterSet#debounces raster requests', async t => {
+test('RasterSet#debounces raster requests', async () => {
   const calls: number[] = [];
   const rasterSet = new RasterSet({
     debounceTime: 5,
@@ -172,20 +147,14 @@ test('RasterSet#debounces raster requests', async t => {
       } as any;
     }
   });
-
   rasterSet.requestRaster({viewport: createViewport(1, 1)});
   rasterSet.requestRaster({viewport: createViewport(2, 2)});
-
   await new Promise(resolve => setTimeout(resolve, 20));
-
-  t.deepEqual(calls, [2]);
-  t.equal(rasterSet.raster?.width, 2);
-
+  expect(calls).toEqual([2]);
+  expect(rasterSet.raster?.width).toBe(2);
   rasterSet.finalize();
-  t.end();
 });
-
-test('RasterSet#emits loading state changes', async t => {
+test('RasterSet#emits loading state changes', async () => {
   let resolveRaster;
   const loadingStates: boolean[] = [];
   const rasterSet = new RasterSet({
@@ -205,23 +174,17 @@ test('RasterSet#emits loading state changes', async t => {
       }) as Promise<any>;
     }
   });
-
   rasterSet.subscribe({
     onLoadingStateChange: isLoading => loadingStates.push(isLoading)
   });
-
   rasterSet.requestRaster({viewport: createViewport(1, 1)});
   await new Promise(resolve => setTimeout(resolve, 0));
   resolveRaster?.();
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.deepEqual(loadingStates, [true, false]);
-
+  expect(loadingStates).toEqual([true, false]);
   rasterSet.finalize();
-  t.end();
 });
-
-test('RasterSet#supports custom refetch policies', async t => {
+test('RasterSet#supports custom refetch policies', async () => {
   const calls: number[] = [];
   const rasterSet = new RasterSet({
     shouldRefetch: ({currentRequest, nextParameters}) =>
@@ -240,19 +203,13 @@ test('RasterSet#supports custom refetch policies', async t => {
       } as any;
     }
   });
-
   rasterSet.requestRaster({viewport: createViewport(2, 2)});
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.equal(rasterSet.shouldRefetchRaster({viewport: createViewport(2, 2)}), false);
+  expect(rasterSet.shouldRefetchRaster({viewport: createViewport(2, 2)})).toBe(false);
   rasterSet.requestRaster({viewport: createViewport(2, 2)});
   rasterSet.requestRaster({viewport: createViewport(3, 2)});
-
   await new Promise(resolve => setTimeout(resolve, 0));
-
-  t.deepEqual(calls, [2, 3]);
-  t.equal(rasterSet.currentRequest?.parameters.viewport.width, 3);
-
+  expect(calls).toEqual([2, 3]);
+  expect(rasterSet.currentRequest?.parameters.viewport.width).toBe(3);
   rasterSet.finalize();
-  t.end();
 });

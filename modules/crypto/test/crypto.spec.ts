@@ -1,18 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile, loadInBatches, NullLoader, isBrowser} from '@loaders.gl/core';
 import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, NodeHash} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
-
 import CryptoJS from 'crypto-js';
-
 const modules = {CryptoJS};
-
 const {binaryData, repeatedData} = getBinaryData();
-
 const TEST_CASES = [
   {
     title: 'streaming CSV',
@@ -46,34 +38,26 @@ const TEST_CASES = [
     }
   }
 ];
-
 const HASHES = [new CRC32Hash(), new CRC32CHash(), new MD5Hash(), new SHA256Hash({modules})];
-
-test('crypto#atomic hashes', async t => {
+test('crypto#atomic hashes', async () => {
   await loadTestCaseData();
-
   for (const tc of TEST_CASES) {
     // test each test case against all precomputed digests/hashes
     for (const algorithm in tc.digests) {
       const cryptoHash = getHash(algorithm);
-
       const hash = await cryptoHash.hash(tc.data, 'base64');
       const expectedHash = tc.digests[algorithm];
-      t.equal(hash, expectedHash, `${algorithm} hash is correct for ${tc.title}`);
+      expect(hash, `${algorithm} hash is correct for ${tc.title}`).toBe(expectedHash);
     }
   }
-
-  t.end();
 });
-
-test('crypto#streaming hashes', async t => {
+test('crypto#streaming hashes', async () => {
   for (const tc of TEST_CASES) {
     // test each test case against all precomputed digests/hashes
     for (const algorithm in tc.digests) {
       if (tc.url) {
         const cryptoHash1 = getHash(algorithm);
         const Hash = cryptoHash1.constructor;
-
         let hash;
         // @ts-expect-error
         const cryptoHash = new Hash({
@@ -83,50 +67,33 @@ test('crypto#streaming hashes', async t => {
             }
           }
         });
-
         const nullIterator = await loadInBatches(tc.url, NullLoader, {
           transforms: [cryptoHash.hashBatches]
         });
-
         // @ts-ignore
         // eslint-disable-next-line no-unused-vars, no-empty, max-depth, @typescript-eslint/no-unused-vars
         for await (const _batch of nullIterator) {
         }
-
-        t.equal(hash, tc.digests[algorithm], `${algorithm} hash is correct for ${tc.title}`);
+        expect(hash, `${algorithm} hash is correct for ${tc.title}`).toBe(tc.digests[algorithm]);
       }
     }
   }
-
-  t.end();
 });
-
 // EXTRA TESTS NOT COVERED BY TEST CASES
-
-test('NodeHash#hash', async t => {
+test('NodeHash#hash', async () => {
   if (!isBrowser) {
     const cryptoHash = new NodeHash({crypto: {algorithm: 'SHA256'}});
-
     let hash = await cryptoHash.hash(binaryData, 'base64');
-    t.equal(
-      hash,
-      'gsoMi29gqdIBCEdTdRJW8VPFx5PQyFPTF4Lv7TJ4eQw=',
-      'binary data SHA256 hash is correct'
+    expect(hash, 'binary data SHA256 hash is correct').toBe(
+      'gsoMi29gqdIBCEdTdRJW8VPFx5PQyFPTF4Lv7TJ4eQw='
     );
-
     hash = await cryptoHash.hash(repeatedData, 'base64');
-    t.equal(
-      hash,
-      'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
-      'repeated data SHA256 hash is correct'
+    expect(hash, 'repeated data SHA256 hash is correct').toBe(
+      'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s='
     );
   }
-
-  t.end();
 });
-
 // HELPERS
-
 function getHash(algorithm) {
   const hash = HASHES.find(hash_ => hash_.name === algorithm);
   if (!hash) {
@@ -134,7 +101,6 @@ function getHash(algorithm) {
   }
   return hash;
 }
-
 async function loadTestCaseData() {
   for (const tc of TEST_CASES) {
     if (tc.url) {
