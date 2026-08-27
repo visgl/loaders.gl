@@ -107,6 +107,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | `.gltf` JSON and external resources | 1.0 / 2.0 / 2.1 | Complete | Complete | URI and data-URI resolution |
 | GLB v1 and v2 | 1.0 / 2.0 | Complete | Complete | GLB loader and writer tests |
 | GLB v3 / multiple binary chunks | 2.1 draft | Complete | Partial | Draft parsing support; format may evolve |
+| GLB v3 writing and round-trip serialization | 2.1 draft | Complete | Complete | Opt-in `GLBWriter` path with 64-bit lengths and multiple BIN chunks |
 | glTF v1 to v2 normalization | 1.0 → 2.0 | Complete | Partial | Best-effort conversion via `gltf.normalize` |
 | Sparse accessors and normalized component values | 2.0 | Complete | Complete | Typed-array extraction and accessor utilities |
 | Draft 2.1 accessor component types | 2.1 draft | Complete | Partial | Includes 32-bit, 16-bit float words, and 64-bit integer representations |
@@ -114,6 +115,10 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | External asset composition | 2.1 draft | Complete | Complete | Recursive loading, caching, and cycle rejection |
 | Asset thumbnails | 2.1 draft | Complete | Complete | Thumbnail image loading and post-processing |
 | Implicit shapes and node bounding volumes | 2.1 draft | Complete | Partial | Box, capsule, cylinder, plane, and sphere adapters via `@math.gl/culling` |
+| WebGPU accessor transforms | 2.0 / 2.1 | Complete | Partial | GPU-oriented derived views are available without rewriting accessor JSON |
+| WebGPU texture format mapping | 2.0 / 2.1 | Complete | Planned | Raw image MIME and texture metadata are preserved; normalized GPU descriptors are the next tranche |
+| WebGPU sampler constants | 2.0 / 2.1 | Complete | Planned | Sampler JSON is preserved; WebGPU address/filter enum mapping is not yet a public helper |
+| WebGPU upload descriptors | 2.0 / 2.1 | Complete | Planned | Future non-mutating descriptors will combine image data, format, dimensions, and sampler state |
 | Mesh and buffer compression (Draco) | 2.0 extension | Complete | Complete | `KHR_draco_mesh_compression` |
 | Mesh compression (meshopt) | 2.0 extension | Complete | Complete | `KHR_meshopt_compression` and `EXT_meshopt_compression` |
 | KTX2 / Basis Universal textures | 2.0 extension | Complete | Complete | `KHR_texture_basisu` |

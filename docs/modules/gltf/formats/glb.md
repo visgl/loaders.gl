@@ -42,3 +42,19 @@ a `uri`. GLB versions 1 and 2 retain their existing implicit buffer behavior.
 
 This support follows the Khronos [Multiple Binary Chunks in GLB draft](https://github.com/KhronosGroup/glTF/issues/2611)
 and may evolve while glTF 2.1 is finalized.
+
+## Writing GLB v3
+
+`GLBWriter` continues to emit GLB v2 by default. Pass `glb: {version: 3}` to opt into the draft
+v3 container. The input can provide multiple `binChunks` and optional generic `chunks`; each
+buffer's `chunk` index in the JSON remains the application's responsibility and is preserved
+unchanged.
+
+```typescript
+import {GLBWriter} from '@loaders.gl/gltf';
+
+const encoded = GLBWriter.encodeSync(glb, {glb: {version: 3}});
+```
+
+The v3 writer emits 64-bit lengths and currently supports the defined zero chunk encoding only.
+It rejects unsupported encodings and lengths outside JavaScript's safe integer range.

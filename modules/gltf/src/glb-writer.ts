@@ -9,6 +9,8 @@ import {encodeGLBSync} from './lib/encoders/encode-glb';
 import {VERSION} from './lib/utils/version';
 import {GLBFormat} from './gltf-format';
 
+export type {GLBChunk} from './lib/types/glb-types';
+
 export type GLBWriterOptions = WriterOptions & {
   glb?: GLBEncodeOptions;
 };
@@ -30,14 +32,15 @@ export const GLBWriter = {
 
 function encodeSync(glb, options) {
   const {byteOffset = 0} = options ?? {};
+  const glbOptions = options?.glb ?? {};
 
   // Calculate length and allocate buffer
-  const byteLength = encodeGLBSync(glb, null, byteOffset, options);
+  const byteLength = encodeGLBSync(glb, null, byteOffset, glbOptions);
   const arrayBuffer = new ArrayBuffer(byteLength);
 
   // Encode into buffer
   const dataView = new DataView(arrayBuffer);
-  encodeGLBSync(glb, dataView, byteOffset, options);
+  encodeGLBSync(glb, dataView, byteOffset, glbOptions);
 
   return arrayBuffer;
 }
