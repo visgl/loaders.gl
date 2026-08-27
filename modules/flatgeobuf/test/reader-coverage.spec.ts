@@ -4,7 +4,12 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {FlatGeobufColumnType, FlatGeobufGeometryType} from '../src/lib/flatgeobuf-reader';
+import {
+  decodeFlatGeobufGeometry,
+  FlatGeobufColumnType,
+  FlatGeobufGeometryType,
+  readFlatGeobufHeader
+} from '../src/lib/flatgeobuf-reader';
 import {getProjection, makeArrowSchema} from '../src/lib/parse-flatgeobuf';
 
 const COLUMN_TYPES = [
@@ -26,6 +31,31 @@ const COLUMN_TYPES = [
 ] as const;
 
 describe('FlatGeobuf reader metadata branches', () => {
+  test.each([
+    [new ArrayBuffer(0), 'Invalid or truncated FlatGeobuf buffer'],
+    [new Uint8Array([0x66, 0x67, 0x78, 3, 0, 0, 0, 0, 0, 0, 0, 0]).buffer, 'Not a FlatGeobuf file'],
+    [
+      new Uint8Array([0x66, 0x67, 0x62, 2, 0, 0, 0, 0, 0, 0, 0, 0]).buffer,
+      'Unsupported FlatGeobuf version 2'
+    ]
+  ])('rejects invalid header: %s', (arrayBuffer, message) => {
+    expect(() => readFlatGeobufHeader(arrayBuffer)).toThrow(message);
+  });
+
+  test('decodes absent geometry as null without touching the buffer', () => {
+    expect(
+      decodeFlatGeobufGeometry(new ArrayBuffer(0), undefined, {
+        geometryType: FlatGeobufGeometryType.Point,
+        hasZ: false,
+        columns: [],
+        featuresCount: 0,
+        indexNodeSize: 16,
+        headerLength: 0,
+        featureOffset: 0
+      })
+    ).toBeNull();
+  });
+
   test.each(COLUMN_TYPES)('maps %s column type to Arrow', (_name, type, expectedType) => {
     const schema = makeArrowSchema({
       columns: [
