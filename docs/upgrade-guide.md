@@ -222,6 +222,13 @@ This unifies top-level loading behavior:
 
 **@loaders.gl/textures**
 
+- `BasisLoader` now uses the v2.50 transcoder for both `.basis` and KTX2 data. Remove
+  `basis.module`; decoder selection is automatic. `modules.basis` must provide both `BasisFile` and
+  `KTX2File` when KTX2 decoding is required.
+- Replace the removed `bc7-m5` and `bc7-m6-opaque-only` Basis targets with `bc7`.
+- `KTX2BasisWriter` replaces `encodeUASTC`, `qualityLevel`, and `useSRGB` with `format`, `quality`,
+  `effort`, and `contentType`. For example, `{encodeUASTC: true, useSRGB: true}` becomes
+  `{format: 'uastc-ldr-4x4', contentType: 'srgb'}`.
 - `@loaders.gl/textures` no longer depends on the deprecated `texture-compressor` package, which pulled in vulnerable versions of `image-size`. The package was only ever used as a command line tool by the experimental `CompressedTextureWriter`, and was installed for every consumer whether or not that writer was used.
 - Applications that use `CompressedTextureWriter` must now install the package themselves, for example with `npm install --save-dev texture-compressor`. It is resolved as an optional peer dependency and called directly, without invoking `npx` or accessing the npm registry. If it cannot be resolved locally, `encodeURLtoURL()` rejects. All other `@loaders.gl/textures` loaders and writers are unaffected.
 

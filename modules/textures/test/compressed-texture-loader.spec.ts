@@ -9,7 +9,8 @@ import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,
   GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+  GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
 } from '../src/lib/gl-extensions';
 
 const KTX_URL = '@loaders.gl/textures/test/data/test_etc1s.ktx2';
@@ -34,11 +35,12 @@ test('CompressedTextureLoader#KTX', async t => {
 
 test('CompressedTextureLoader#KTX2 with BasisLoader', async t => {
   const texture = await load(KTX2_URL, CompressedTextureLoader, {
-    'compressed-texture': {useBasis: true}
+    'compressed-texture': {useBasis: true},
+    basis: {format: 'bc1'}
   });
   t.ok(texture, 'KTX2 container loaded OK');
-  t.equals(texture[0].format, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 'KTX2 WebGL format is set');
-  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-webgl', 'KTX2 texture format is set');
+  t.equals(texture[0].format, GL_COMPRESSED_SRGB_S3TC_DXT1_EXT, 'KTX2 WebGL format is set');
+  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-srgb-webgl', 'KTX2 texture format is set');
   t.end();
 });
 
@@ -58,7 +60,7 @@ test('CompressedTextureLoader#PVR', async t => {
   t.end();
 });
 
-test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textures', async t => {
+test('CompressedTextureLoader#uses injected transcoder modules for KTX2 Basis textures', async t => {
   if (isBrowser) {
     t.comment('Skipping injected KTX2 Basis transcoder test in browser');
     t.end();
@@ -71,6 +73,46 @@ test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textu
 
     startTranscoding() {
       return true;
+    }
+
+    isValid() {
+      return true;
+    }
+
+    getHeader() {
+      return {pixelDepth: 0};
+    }
+
+    getLayers() {
+      return 0;
+    }
+
+    getFaces() {
+      return 1;
+    }
+
+    getBasisTexFormat() {
+      return 0;
+    }
+
+    isHDR() {
+      return false;
+    }
+
+    isSRGB() {
+      return false;
+    }
+
+    getHasAlpha() {
+      return false;
+    }
+
+    getBlockWidth() {
+      return 4;
+    }
+
+    getBlockHeight() {
+      return 4;
     }
 
     getLevels() {
@@ -101,8 +143,9 @@ test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textu
 
   const texture = await load(new Uint8Array([1, 2, 3, 4]).buffer, CompressedTextureLoader, {
     'compressed-texture': {useBasis: true},
+    basis: {format: 'bc1'},
     modules: {
-      basisEncoder: {KTX2File: FakeKTX2File}
+      basis: {KTX2File: FakeKTX2File}
     }
   });
 

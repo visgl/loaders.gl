@@ -5840,7 +5840,6 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.2"
     "@math.gl/types": "npm:4.2.0-alpha.5"
-    ktx-parse: "npm:^0.7.0"
     zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -22422,13 +22421,6 @@ __metadata:
   version: 3.0.3
   resolution: "kleur@npm:3.0.3"
   checksum: 10c0/cd3a0b8878e7d6d3799e54340efe3591ca787d9f95f109f28129bdd2915e37807bf8918bb295ab86afb8c82196beec5a1adcaf29042ce3f2bd932b038fe3aa4b
-  languageName: node
-  linkType: hard
-
-"ktx-parse@npm:^0.7.0":
-  version: 0.7.1
-  resolution: "ktx-parse@npm:0.7.1"
-  checksum: 10c0/07c0870a0d0fe0bd412b430ac58afd721136a1ca76db83a066b6d20810878822822cbe3b8c8507c15ae8680be0988675b4f5c3d1243262284f161b52c59d09e9
   languageName: node
   linkType: hard
 
