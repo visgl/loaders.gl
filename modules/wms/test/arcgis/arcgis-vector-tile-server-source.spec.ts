@@ -28,7 +28,7 @@ test('ArcGISVectorTileServerSource exposes tile metadata and resources', async (
   expect(metadata.layer?.srs).toEqual(['EPSG:3857']);
   expect(metadata.formatHeader).toMatchObject({
     styleURL: `${VECTOR_TILE_SERVER_URL}/resources/styles/root.json`,
-    spriteURL: `${VECTOR_TILE_SERVER_URL}/resources/styles/sprites`
+    spriteURL: `${VECTOR_TILE_SERVER_URL}/resources/sprites/sprite`
   });
 });
 
@@ -36,7 +36,19 @@ test('ArcGISVectorTileServerSource builds standard resource URLs', () => {
   const source = ArcGISVectorTileServerSourceLoader.createDataSource(VECTOR_TILE_SERVER_URL, {});
   expect(source.getMetadataURL()).toBe(`${VECTOR_TILE_SERVER_URL}?f=pjson`);
   expect(source.getStyleURL()).toBe(`${VECTOR_TILE_SERVER_URL}/resources/styles/root.json`);
+  expect(source.getSpriteURL()).toBe(`${VECTOR_TILE_SERVER_URL}/resources/sprites/sprite`);
   expect(source.getTileURL({z: 4, x: 6, y: 7})).toBe(`${VECTOR_TILE_SERVER_URL}/tile/4/7/6.pbf`);
+});
+
+test('ArcGISVectorTileServerSource preserves service query parameters', () => {
+  const source = ArcGISVectorTileServerSourceLoader.createDataSource(
+    `${VECTOR_TILE_SERVER_URL}?token=abc`,
+    {}
+  );
+  expect(source.getMetadataURL()).toBe(`${VECTOR_TILE_SERVER_URL}?token=abc&f=pjson`);
+  expect(source.getTileURL({z: 4, x: 6, y: 7})).toBe(
+    `${VECTOR_TILE_SERVER_URL}/tile/4/7/6.pbf?token=abc`
+  );
 });
 
 test('ArcGISVectorTileServerSource fetches raw PBF tiles', async () => {
@@ -47,8 +59,9 @@ test('ArcGISVectorTileServerSource fetches raw PBF tiles', async () => {
     expect(new Headers(options?.headers).get('accept')).toContain(
       'application/vnd.mapbox-vector-tile'
     );
+    expect(options?.signal).toBeDefined();
     return new Response(tileBytes);
   };
-  const result = await source.getTile({z: 2, x: 4, y: 5});
+  const result = await source.getTile({z: 2, x: 4, y: 5}, new AbortController().signal);
   expect(new Uint8Array(result!)).toEqual(tileBytes);
 });

@@ -55,6 +55,8 @@ export class ArcGISVectorTileServerSource
 {
   /** Cached service metadata request. */
   private serviceMetadata: Promise<ArcGISVectorTileServiceMetadata> | null = null;
+  /** Query parameters supplied with the service URL, such as an access token. */
+  private readonly serviceQueryParameters: URLSearchParams;
 
   /** Creates an ArcGIS VectorTileServer source. */
   constructor(
@@ -62,12 +64,15 @@ export class ArcGISVectorTileServerSource
     options: ArcGISVectorTileServerSourceLoaderOptions = {},
     coreApi?: CoreAPI
   ) {
+    const serviceURL = new URL(url);
+    serviceURL.pathname = serviceURL.pathname.replace(/\/$/, '');
     super(
-      url.replace(/\/$/, ''),
+      `${serviceURL.origin}${serviceURL.pathname}`,
       options,
       ArcGISVectorTileServerSourceLoader.defaultOptions,
       coreApi
     );
+    this.serviceQueryParameters = new URLSearchParams(serviceURL.search);
   }
 
   /** Returns normalized service and tile-grid metadata. */
@@ -103,8 +108,9 @@ export class ArcGISVectorTileServerSource
   }
 
   /** Fetches one raw PBF tile from the ArcGIS tile endpoint. */
-  async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ArrayBuffer | null> {
     const response = await this.fetch(this.getTileURL(parameters), {
+      signal,
       headers: {Accept: 'application/vnd.mapbox-vector-tile, application/x-protobuf'}
     });
     if (!response.ok) return null;
@@ -113,29 +119,32 @@ export class ArcGISVectorTileServerSource
 
   /** Provides raw PBF tiles through the deck.gl source interface. */
   async getTileData(parameters: GetTileDataParameters): Promise<ArrayBuffer | null> {
-    return this.getTile(parameters.index);
+    return this.getTile(parameters.index, parameters.signal);
   }
 
   /** Builds the ArcGIS cached vector tile URL. */
   getTileURL(parameters: GetTileParameters): string {
-    return `${this.url}/tile/${parameters.z}/${parameters.y}/${parameters.x}.pbf`;
+    return this.getResourceURL(`/tile/${parameters.z}/${parameters.y}/${parameters.x}.pbf`);
   }
 
   /** Returns the service metadata URL. */
   getMetadataURL(): string {
-    return `${this.url}?f=pjson`;
+    const url = new URL(this.getResourceURL(''));
+    url.searchParams.set('f', 'pjson');
+    return url.toString();
   }
 
   /** Returns the ArcGIS Mapbox style resource URL. */
   getStyleURL(): string {
-    return `${this.url}/resources/styles/root.json`;
+    return this.getResourceURL('/resources/styles/root.json');
   }
 
   /** Returns the ArcGIS sprite resource base URL. */
   getSpriteURL(): string {
-    return `${this.url}/resources/styles/sprites`;
+    return this.getResourceURL('/resources/sprites/sprite');
   }
 
+  /** Loads and caches the ArcGIS VectorTileServer metadata document. */
   private async getServiceMetadata(): Promise<ArcGISVectorTileServiceMetadata> {
     this.serviceMetadata ||= this.fetch(this.getMetadataURL()).then(async response => {
       if (!response.ok)
@@ -143,6 +152,16 @@ export class ArcGISVectorTileServerSource
       return (await response.json()) as ArcGISVectorTileServiceMetadata;
     });
     return this.serviceMetadata;
+  }
+
+  /** Builds a resource URL while retaining service query parameters. */
+  private getResourceURL(resourcePath: string): string {
+    const url = new URL(this.url);
+    url.pathname = `${url.pathname.replace(/\/$/, '')}${resourcePath}`;
+    for (const [key, value] of this.serviceQueryParameters) {
+      url.searchParams.set(key, value);
+    }
+    return url.toString();
   }
 }
 
@@ -169,6 +188,7 @@ export const ArcGISVectorTileServerSourceLoader = {
   ) => new ArcGISVectorTileServerSource(url, options, coreApi)
 } as const satisfies SourceLoader<ArcGISVectorTileServerSource>;
 
+/** Converts an ArcGIS spatial reference to an EPSG identifier. */
 function getSpatialReference(spatialReference: {wkid?: number; latestWkid?: number}): string {
   return `EPSG:${spatialReference.latestWkid || spatialReference.wkid}`;
 }
