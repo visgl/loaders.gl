@@ -163,6 +163,7 @@ export class I3SSource implements Tileset3DSource {
         _tileOptions: {
           attributeUrls: tile.header.attributeUrls,
           textureUrl: tile.header.textureUrl,
+          textureUrls: tile.header.textureUrls,
           textureFormat: tile.header.textureFormat,
           textureLoaderOptions: tile.header.textureLoaderOptions,
           materialDefinition: tile.header.materialDefinition,

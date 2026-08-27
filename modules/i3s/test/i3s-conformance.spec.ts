@@ -163,7 +163,7 @@ describe('I3S conformance fixtures', () => {
         }
       },
       textureDefinitions: {
-        '0': {encoding: ['image/png'], images: []}
+        '0': {encoding: ['image/png'], wrap: ['repeat', 'mirror'], images: []}
       }
     };
     let requestedUrl = '';
@@ -191,6 +191,8 @@ describe('I3S conformance fixtures', () => {
     expect(tile.sharedResources).toEqual(sharedResources);
     expect(tile.materialDefinition?.alphaMode).toBe('blend');
     expect(tile.materialDefinition?.doubleSided).toBe(true);
+    expect(tile.materialDefinition?.pbrMetallicRoughness.baseColorTexture?.wrapS).toBe('repeat');
+    expect(tile.materialDefinition?.pbrMetallicRoughness.baseColorTexture?.wrapT).toBe('mirror');
     expect(tile.materialDefinition?.pbrMetallicRoughness.baseColorFactor).toEqual([
       51, 102, 153, 191.25
     ]);
@@ -205,5 +207,65 @@ describe('I3S conformance fixtures', () => {
     const sharedResources = await archive.getFile('nodes/3/shared');
 
     expect(sharedResources.byteLength).toBe(333);
+  });
+
+  it('loads all texture sets referenced by a PBR material', async () => {
+    const buffer = new ArrayBuffer(44);
+    const dataView = new DataView(buffer);
+    dataView.setUint32(0, 3, true);
+    dataView.setUint32(4, 0, true);
+    for (let index = 0; index < 9; index++) {
+      dataView.setFloat32(8 + index * 4, index % 3, true);
+    }
+
+    const content = await parseI3STileContent(
+      buffer,
+      {
+        isDracoGeometry: false,
+        attributeUrls: [],
+        mbs: [0, 0, 0],
+        textureUrls: [
+          {textureSetDefinitionId: 0, textureUrl: '/textures/base', textureFormat: 'png'},
+          {textureSetDefinitionId: 1, textureUrl: '/textures/normal', textureFormat: 'png'}
+        ],
+        materialDefinition: {
+          pbrMetallicRoughness: {
+            metallicFactor: 0,
+            roughnessFactor: 1,
+            baseColorTexture: {textureSetDefinitionId: 0}
+          },
+          normalTexture: {textureSetDefinitionId: 1},
+          alphaMode: 'opaque'
+        }
+      },
+      {
+        store: {
+          defaultGeometrySchema: {
+            header: [
+              {property: 'vertexCount', type: 'UInt32'},
+              {property: 'featureCount', type: 'UInt32'}
+            ],
+            ordering: ['position'],
+            vertexAttributes: {
+              position: {valueType: 'Float32', valuesPerElement: 3}
+            },
+            featureAttributeOrder: [],
+            featureAttributes: {}
+          }
+        }
+      } as any,
+      {i3s: {decodeTextures: false}} as any,
+      {
+        fetch: async url => new Response(new TextEncoder().encode(url).buffer),
+        coreApi: {} as any,
+        _parse: async () => null
+      } as any
+    );
+
+    expect(Object.keys(content.textures || {})).toEqual(['0', '1']);
+    expect(
+      content.material?.pbrMetallicRoughness.baseColorTexture.texture.source.image
+    ).toBeInstanceOf(ArrayBuffer);
+    expect(content.material?.normalTexture.texture.source.image).toBeInstanceOf(ArrayBuffer);
   });
 });

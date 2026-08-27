@@ -134,6 +134,10 @@ export function getLegacyMaterialDefinition(
   const transparency = Math.max(0, Math.min(1, params.transparency || 0));
   const textureDefinitions = sharedResources?.textureDefinitions;
   const textureDefinitionId = textureDefinitions ? Object.keys(textureDefinitions)[0] : undefined;
+  const textureDefinition = textureDefinitionId
+    ? textureDefinitions?.[textureDefinitionId]
+    : undefined;
+  const wrap = textureDefinition?.wrap || [];
 
   return {
     pbrMetallicRoughness: {
@@ -141,13 +145,28 @@ export function getLegacyMaterialDefinition(
       metallicFactor: 0,
       roughnessFactor: params.shininess === undefined ? 1 : 1 - Math.min(1, params.shininess / 128),
       ...(textureDefinitionId !== undefined
-        ? {baseColorTexture: {textureSetDefinitionId: Number(textureDefinitionId) || 0}}
+        ? {
+            baseColorTexture: {
+              textureSetDefinitionId: Number(textureDefinitionId) || 0,
+              ...(normalizeLegacyWrap(wrap[0]) ? {wrapS: normalizeLegacyWrap(wrap[0])} : {}),
+              ...(normalizeLegacyWrap(wrap[1]) ? {wrapT: normalizeLegacyWrap(wrap[1])} : {})
+            }
+          }
         : {})
     },
     alphaMode: transparency > 0 ? 'blend' : 'opaque',
     doubleSided: params.cullFace === 'none',
     cullFace: params.cullFace as I3SMaterialDefinition['cullFace'] | undefined
   };
+}
+
+/**
+ * Normalize a legacy texture wrap value while preserving unknown values as unset.
+ * @param value - legacy wrap value
+ * @returns supported wrap mode
+ */
+function normalizeLegacyWrap(value: string | undefined): 'none' | 'repeat' | 'mirror' | undefined {
+  return value === 'none' || value === 'repeat' || value === 'mirror' ? value : undefined;
 }
 
 /**

@@ -28,8 +28,8 @@ visual effect. The [`I3SLoader`](../api-reference/i3s-loader) parses I3S resourc
 caching.
 
 The main **v5.0** I3S additions are the formal `I3SSource` API, archive-backed `SLPKSource`
-traversal, lightweight metadata loaders with parser preloading, and forward-compatible metadata
-schemas. The underlying mesh parser and most rendering capabilities predate v5.0 and retain their
+traversal, lightweight metadata loaders with parser preloading, forward-compatible metadata
+schemas, and complete PBR texture-set loading. The underlying mesh parser and most rendering capabilities predate v5.0 and retain their
 original introduction versions below.
 
 ### Scene layer profiles
@@ -118,9 +118,9 @@ those versions.
 | Texture atlases | **Supported** | v3.0 | Primary atlas texture plus UV-region attributes are exposed. |
 | PBR base color | **Supported** | v3.0 | Base-color factors and the base-color texture are normalized to a glTF-style material. |
 | Alpha and basic material state | **Supported** | v3.0 | Alpha mode/cutoff, emissive factor, double-sided state, and other declared material fields are preserved or normalized. |
-| Metallic, roughness, normal, occlusion, and emissive textures | **Partial** | v3.0 | Material metadata is preserved, but the tile loader fetches and attaches only one texture resource. Complete multi-texture PBR material loading is a gap. |
-| Multiple texture atlases or UV sets per mesh | **Not supported** | — | The rendering path selects one texture-set resource and one UV set for a node. |
-| Texture wrap semantics | **Partial** | v3.2 | UVs and regions are exposed, but I3S `repeat` and `mirror` policy is not explicitly normalized into sampler state. |
+| Metallic, roughness, normal, occlusion, and emissive textures | **Supported** | **v5.0** | Every declared material texture slot is resolved to its selected texture-set resource and attached independently when that resource is available. |
+| Multiple texture atlases or UV sets per mesh | **Partial** | **v5.0** | Multiple referenced texture sets can be loaded, but only the primary `uv0` attribute is exposed; additional UV attribute streams remain a gap. |
+| Texture wrap semantics | **Partial** | **v5.0** | Legacy `none`, `repeat`, and `mirror` declarations are preserved on material texture metadata. They are not yet converted into renderer-specific sampler constants. |
 
 ### Features, attributes, and styling
 
@@ -173,7 +173,7 @@ current v5.0 development line; the remaining tranches close the largest unsuppor
 | 0. Conformance foundation | Freeze the matrix, keep representative 1.6–1.10 fixtures, and run automated support-status checks. | **Complete** |
 | 1. Correctness hardening | Make root authentication, node metadata passthrough, UInt64 precision, and WebScene CRS validation match the documented boundaries. | **Complete** |
 | 2. 1.10 mesh parity | Add legacy shared-resource material interpretation and mesh-segmentation preservation, then expand 1.9/1.10 conformance fixtures. | **Complete** |
-| 3. Material fidelity | Load complete PBR texture sets, multiple atlases/UV sets, and sampler wrap semantics. | Planned |
+| 3. Material fidelity | Load complete PBR texture sets, preserve multiple referenced atlases, and carry sampler wrap semantics into material metadata. | **Complete** |
 | 4. Feature intelligence | Add typed scalar/date/GUID/null-mask attributes, statistics, drawing metadata evaluation, and query APIs. | Planned |
 | 5. Profile coverage | Add Point, then I3S 2.1 Point Cloud (LEPCC and density-based traversal). | Planned |
 | 6. Spatial semantics | Add projected and vertical CRS transforms plus `elevationInfo` placement modes. | Planned |
