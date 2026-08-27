@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tile3D} from './tile-3d';
-import {CullingVolume} from '@math.gl/culling';
+import {CullingVolume, INTERSECTION} from '@math.gl/culling';
 import {ManagedArray} from '../../utils/managed-array';
 import {TILE_REFINEMENT} from '../../constants';
 import {FrameState} from '../helpers/frame-state';
@@ -306,7 +306,7 @@ export class TilesetTraverser {
    * @param frameState - Current camera and culling state.
    */
   shouldSelectTile(tile: Tile3D, frameState: FrameState): boolean {
-    return tile.contentAvailable && tile.contentVisibility(frameState) !== CullingVolume.MASK_OUTSIDE;
+    return tile.contentAvailable && tile.contentVisibility(frameState) !== INTERSECTION.OUTSIDE;
   }
 
   /** Decide if tile LoD (level of detail) is not sufficient under current viewport */
