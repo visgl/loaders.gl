@@ -427,4 +427,159 @@ describe('I3SSpatialTransformer', () => {
         })
     ).toThrow('must implement sampleElevations() and getElevationRange()');
   });
+
+  test('covers individual position and alternate bound transformation APIs', async () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:3857'}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference);
+
+    expect(transformer.transformPosition([10, 20, 30])[0]).toBeCloseTo(1113194.9, 0);
+    expect((await transformer.transformPositionAsync([10, 20, 30]))[1]).toBeGreaterThan(2_000_000);
+    expect(transformer.transformSourcePositionToGeographic([10, 20, 30])).toEqual([10, 20, 30]);
+    expect(await transformer.transformSourcePositionToGeographicAsync([10, 20, 30])).toEqual([
+      10, 20, 30
+    ]);
+
+    const bounds = {mbs: [10, 20, 30, 10]};
+    expect((await transformer.transformBoundingVolumeAsync(bounds)).box).toHaveLength(12);
+    expect(
+      (await transformer.transformBoundingVolumeToGeographicAsync(bounds)).region
+    ).toHaveLength(6);
+    expect(transformer.transformBoundingVolumeToGeocentric(bounds).box).toHaveLength(12);
+    expect((await transformer.transformBoundingVolumeToGeocentricAsync(bounds)).box).toHaveLength(
+      12
+    );
+    const pointCloudBounds = await transformer.transformPointCloudBoundsAsync(bounds);
+    expect(pointCloudBounds.boundingVolume.region).toHaveLength(6);
+    expect(pointCloudBounds.spatialBoundingVolume.box).toHaveLength(12);
+  });
+
+  test('samples geographic and projected oriented boxes', async () => {
+    const geographicReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+    const geographicTransformer = new I3SSpatialTransformer(geographicReference);
+    const orientedBounds = {
+      obb: {center: [10, 20, 30], halfSize: [10, 20, 30], quaternion: [0, 0, 0, 1]},
+      normalReferenceFrame: 'vertex-reference-frame' as const
+    };
+    expect(geographicTransformer.transformBoundingVolume(orientedBounds).region).toHaveLength(6);
+    const geographicSphere =
+      geographicTransformer.transformBoundingSphereToGeographic(orientedBounds);
+    expect(geographicSphere[3]).toBeCloseTo(Math.hypot(10, 20, 30));
+    expect(
+      (await geographicTransformer.transformBoundingSphereToGeographicAsync(orientedBounds))[3]
+    ).toBeGreaterThan(0);
+
+    const projectedReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:3857',
+        coordinateFrame: 'projected',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+    const projectedTransformer = new I3SSpatialTransformer(projectedReference);
+    expect(
+      projectedTransformer.transformBoundingVolume({
+        obb: {center: [0, 0, 0], halfSize: [10, 20, 30], quaternion: [0, 0, 0, 1]}
+      }).region
+    ).toHaveLength(6);
+  });
+
+  test('reports invalid spatial setup and malformed position inputs', async () => {
+    expect(() => new I3SSpatialTransformer({status: 'unresolved'} as any)).toThrow(
+      /requires a requested, transformable spatial output/
+    );
+    expect(
+      () =>
+        new I3SSpatialTransformer({
+          status: 'transformable',
+          sourceCrs: null,
+          targetCrs: null
+        } as any)
+    ).toThrow(/requires a target CRS/);
+
+    const baseInput = {
+      sourceCrs: 'EPSG:4326',
+      coordinateFrame: 'geographic' as const,
+      axisOrder: 'xyz' as const,
+      heightReference: 'ellipsoidal' as const,
+      provenance: 'metadata' as const
+    };
+    const ordinaryReference = createTilesetSpatialReference(baseInput, {targetCrs: 'EPSG:4326'});
+    const ordinaryTransformer = new I3SSpatialTransformer(ordinaryReference);
+    expect(() => ordinaryTransformer.transformBoundingVolume({})).toThrow(/requires an MBS or OBB/);
+    expect(() => ordinaryTransformer.transformBoundingSphereToGeographic({})).toThrow(
+      /requires an MBS or OBB/
+    );
+
+    const terrainElevationProvider = {
+      unit: 'furlong',
+      sampleElevations: (positions: readonly unknown[]) => positions.map(() => 0),
+      getElevationRange: () => ({minimum: 0, maximum: 0})
+    };
+    const surfaceReference = createTilesetSpatialReference(
+      {...baseInput, elevationMode: 'onTheGround'},
+      {targetCrs: 'EPSG:4326', terrainElevationProvider: terrainElevationProvider as any}
+    );
+    expect(
+      () =>
+        new I3SSpatialTransformer(surfaceReference, {
+          terrainElevationProvider: terrainElevationProvider as any
+        })
+    ).toThrow(/Unsupported elevation-provider unit/);
+
+    const missingProviderReference = createTilesetSpatialReference(
+      {...baseInput, elevationMode: 'onTheGround'},
+      {
+        targetCrs: 'EPSG:4326',
+        terrainElevationProvider: {
+          sampleElevations: () => [],
+          getElevationRange: () => ({minimum: 0, maximum: 0})
+        }
+      }
+    );
+    expect(() => new I3SSpatialTransformer(missingProviderReference)).toThrow(
+      /requires a terrain elevation provider/
+    );
+
+    const nonFiniteProvider = {
+      sampleElevations: (positions: readonly unknown[]) => positions.map(() => Number.NaN),
+      getElevationRange: () => ({minimum: 0, maximum: 0})
+    };
+    const nonFiniteReference = createTilesetSpatialReference(
+      {...baseInput, elevationMode: 'onTheGround'},
+      {targetCrs: 'EPSG:4326', terrainElevationProvider: nonFiniteProvider}
+    );
+    const nonFiniteTransformer = new I3SSpatialTransformer(nonFiniteReference, {
+      terrainElevationProvider: nonFiniteProvider
+    });
+    await expect(nonFiniteTransformer.transformPositionsAsync([1, 2], [1, 2, 3])).rejects.toThrow(
+      /complete XYZ tuples/
+    );
+    await expect(nonFiniteTransformer.transformPositionAsync([10, 20, 0])).rejects.toThrow(
+      /non-finite height/
+    );
+    expect(() => nonFiniteTransformer.transformPosition([10, 20, 0])).toThrow(
+      /requires asynchronous surface placement/
+    );
+  });
 });
