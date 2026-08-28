@@ -166,7 +166,7 @@ transformation boundary.
 | Normalized CRS discovery metadata | **Supported** | **v5.0** | WKID aliases, WKT, VCS, height model, axis order, provenance, and placement qualifications are exposed on loader, source, service, and tileset results. |
 | Cartesian meter-offset output | **Supported** | v2.0 | This is the default geometry representation for deck.gl-compatible rendering. |
 | Longitude/latitude-offset output | **Supported** | v3.1 | Select with `i3s.coordinateSystem: 'lnglat-offsets'`. |
-| Projected or custom horizontal CRS | **Supported** | **v5.0** | Mesh and Point Cloud sources transform vertices, stable origins, normals, and bounds into supported Proj4 target definitions. EPSG:4978 uses the WGS84 geocentric path. Custom definitions must be registered explicitly. The WebScene loader retains its WGS84 boundary. |
+| Projected or custom horizontal CRS | **Supported** | **v5.0** | Mesh and Point Cloud sources transform vertices, stable origins, normals, and parallel `spatialBoundingVolume` metadata into supported Proj4 target definitions while retaining WGS84 traversal bounds. EPSG:4978 uses the WGS84 geocentric path. Custom definitions must be registered explicitly. The WebScene loader retains its WGS84 boundary. |
 | Vertical CRS and height models | **Partial** | **v5.0** | Height models and VCS are normalized, geoid resources can be registered, and conversion follows `h = H + N`; profile unit/placement integration remains tranche 6b. |
 | `elevationInfo` placement modes | **Not supported** | — | Ground-relative and scene-relative placement policies are not applied by the loader. |
 

@@ -226,7 +226,10 @@ test('I3SSource transforms traversal bounds and preserves a geographic view cent
     status: 'transformed'
   });
   expect(tileset.root?.header.boundingVolume.box).toHaveLength(12);
-  expect(tileset.root?.boundingVolume.center[0]).toBeCloseTo(1113194.9079, 2);
+  expect(tileset.root?.header.spatialBoundingVolume.box).toHaveLength(12);
+  expect(tileset.root?.header.spatialBoundingVolume.box[0]).toBeCloseTo(1113194.9079, 2);
+  expect(tileset.root?.boundingVolume.center[0]).toBeGreaterThan(6_000_000);
+  expect(tileset.root?.header.i3sLodMbs.slice(0, 3)).toEqual([10, 0, 12]);
   expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
   expect(tileset.cartographicCenter[1]).toBeCloseTo(0, 8);
 });

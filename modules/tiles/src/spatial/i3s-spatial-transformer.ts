@@ -114,18 +114,20 @@ export class I3SSpatialTransformer {
     const geographicToTargetReference = createTilesetSpatialReference(
       {
         sourceCrs: 'EPSG:4326',
-        heightReference:
-          spatialReference.targetHeightReference === 'native'
-            ? spatialReference.heightReference
-            : spatialReference.targetHeightReference,
+        heightReference: spatialReference.heightReference,
         coordinateFrame: 'geographic',
         axisOrder: 'xyz',
         provenance: 'format-default'
       },
-      {targetCrs}
+      {
+        targetCrs,
+        targetHeightReference: spatialReference.targetHeightReference,
+        geoidModel: options.geoidModel
+      }
     );
     this.geographicToTargetTransformer = new SpatialCoordinateTransformer(
-      geographicToTargetReference
+      geographicToTargetReference,
+      options
     );
   }
 
@@ -230,6 +232,47 @@ export class I3SSpatialTransformer {
    * @returns A generic tile `region` for geographic output or axis-aligned `box` otherwise.
    */
   transformBoundingVolume(bounds: I3SSpatialBounds): {box?: number[]; region?: number[]} {
+    const geographicSamples = this.getGeographicBoundSamples(bounds);
+    const targetSamples = geographicSamples.map(position =>
+      this.geographicToTargetTransformer.transformPosition(position)
+    );
+    return this.targetCoordinateFrame === 'geographic'
+      ? {region: getGeographicRegion(targetSamples)}
+      : {box: getAxisAlignedBox(targetSamples)};
+  }
+
+  /** Rebuild an I3S bound as a WGS84 geographic region for geographic traversal algorithms. */
+  transformBoundingVolumeToGeographic(bounds: I3SSpatialBounds): {region: number[]} {
+    return {region: getGeographicRegion(this.getGeographicBoundSamples(bounds))};
+  }
+
+  /** Rebuild an I3S bound as a WGS84 ECEF box for generic `Tileset3D` traversal. */
+  transformBoundingVolumeToGeocentric(bounds: I3SSpatialBounds): {box: number[]} {
+    const cartesianSamples = this.getGeographicBoundSamples(bounds).map(position =>
+      Array.from(Ellipsoid.WGS84.cartographicToCartesian(new Vector3(position)))
+    );
+    return {box: getAxisAlignedBox(cartesianSamples)};
+  }
+
+  /** Return a WGS84 geographic MBS used by the I3S screen-threshold calculation. */
+  transformBoundingSphereToGeographic(bounds: I3SSpatialBounds): [number, number, number, number] {
+    const sourceCenter = bounds.mbs?.length
+      ? Array.from(bounds.mbs).slice(0, 3)
+      : bounds.obb
+        ? Array.from(bounds.obb.center).slice(0, 3)
+        : null;
+    if (!sourceCenter) {
+      throw new Error('I3S spatial transformation requires an MBS or OBB bound');
+    }
+    const geographicCenter = this.sourceToGeographicTransformer.transformPosition(sourceCenter);
+    const radius = bounds.mbs?.length
+      ? bounds.mbs[3]
+      : Math.hypot(...Array.from(bounds.obb!.halfSize).slice(0, 3));
+    return [geographicCenter[0], geographicCenter[1], geographicCenter[2], radius];
+  }
+
+  /** Sample a source I3S bound and normalize every sample to WGS84 geographic coordinates. */
+  private getGeographicBoundSamples(bounds: I3SSpatialBounds): number[][] {
     const sourceSamples = getSourceBoundSamples(
       bounds,
       this.sourceCoordinateFrame,
@@ -238,14 +281,11 @@ export class I3SSpatialTransformer {
     if (!sourceSamples.length) {
       throw new Error('I3S spatial transformation requires an MBS or OBB bound');
     }
-    const targetSamples = sourceSamples.map(position =>
-      this.sourceCoordinateFrame === 'geographic'
-        ? this.geographicToTargetTransformer.transformPosition(position)
-        : this.transformPosition(position)
-    );
-    return this.targetCoordinateFrame === 'geographic'
-      ? {region: getGeographicRegion(targetSamples)}
-      : {box: getAxisAlignedBox(targetSamples)};
+    return this.sourceCoordinateFrame === 'geographic'
+      ? sourceSamples
+      : sourceSamples.map(position =>
+          this.sourceToGeographicTransformer.transformPosition(position)
+        );
   }
 
   /** Transform one earth-centered normal to the selected target basis. */

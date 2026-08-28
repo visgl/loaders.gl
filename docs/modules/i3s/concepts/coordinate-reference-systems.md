@@ -102,7 +102,10 @@ affine across a tile. Normals use local inverse-transpose/Jacobian information; 
 through the position function.
 
 At the antimeridian, geographic bounds use wrapped intervals rather than expanding across nearly
-the entire globe. Cartesian bounds are rebuilt from samples so culling and LOD remain continuous.
+the entire globe. Target-frame Cartesian bounds are rebuilt from samples and exposed as
+`spatialBoundingVolume`. Mesh traversal retains a WGS84 ECEF bound and Point Cloud traversal
+retains a WGS84 geographic bound, because generic traversal operates in those common frames
+independently of the renderer's requested output CRS.
 
 ## Current v5 boundary
 
@@ -123,7 +126,8 @@ falls back to coordinates in a different CRS.
 Renderer-facing positions remain `Float32` offsets around a double-precision target origin.
 Projected and geocentric outputs include that origin in `modelMatrix`; geographic output uses
 `lnglat-offsets`. Returned content and source metadata report `status: 'transformed'` only after
-geometry and traversal bounds have both moved into the requested frame.
+geometry and the parallel `spatialBoundingVolume` have moved into the requested frame. Traversal
+bounds are normalized separately into their documented ECEF or geographic common frame.
 
 ## Authoring requirements
 

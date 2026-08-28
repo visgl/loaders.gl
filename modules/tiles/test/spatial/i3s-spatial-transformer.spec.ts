@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import type {Geoid} from '@math.gl/geoid';
 import {createTilesetSpatialReference, I3SSpatialTransformer} from '@loaders.gl/tiles';
 
 describe('I3SSpatialTransformer', () => {
@@ -87,5 +88,29 @@ describe('I3SSpatialTransformer', () => {
     expect(transformed.region).toHaveLength(6);
     expect(transformed.region![0]).toBeGreaterThan(transformed.region![2]);
     expect(transformed.region!.every(Number.isFinite)).toBe(true);
+  });
+
+  test('applies requested geoid conversion to target-space bounds', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'orthometric',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', targetHeightReference: 'ellipsoidal'}
+    );
+    const geoid = {getHeight: () => 30} as Geoid;
+    const transformer = new I3SSpatialTransformer(spatialReference, {geoidModel: geoid});
+    const targetBounds = transformer.transformBoundingVolume({mbs: [10, 20, 100, 0]});
+    const traversalBounds = transformer.transformBoundingVolumeToGeographic({
+      mbs: [10, 20, 100, 0]
+    });
+
+    expect(targetBounds.region?.[4]).toBeCloseTo(130, 8);
+    expect(targetBounds.region?.[5]).toBeCloseTo(130, 8);
+    expect(traversalBounds.region[4]).toBeCloseTo(100, 8);
+    expect(traversalBounds.region[5]).toBeCloseTo(100, 8);
   });
 });

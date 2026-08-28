@@ -405,13 +405,18 @@ export class I3SSource implements Tileset3DSource {
       tileset.options.spatial
     );
     tileset.spatialReference = this.spatialTransformer.spatialReference;
+    const sourceBounds = {
+      mbs: header.mbs,
+      obb: header.obb,
+      normalReferenceFrame: this.getMetadata().tileset.store?.normalReferenceFrame
+    };
     return {
       ...header,
-      boundingVolume: this.spatialTransformer.transformBoundingVolume({
-        mbs: header.mbs,
-        obb: header.obb,
-        normalReferenceFrame: this.getMetadata().tileset.store?.normalReferenceFrame
-      })
+      // Tileset3D traversal and culling operate in WGS84 ECEF independently of content output.
+      boundingVolume: this.spatialTransformer.transformBoundingVolumeToGeocentric(sourceBounds),
+      // Preserve the renderer/output-frame bound for applications and content coordination.
+      spatialBoundingVolume: this.spatialTransformer.transformBoundingVolume(sourceBounds),
+      i3sLodMbs: this.spatialTransformer.transformBoundingSphereToGeographic(sourceBounds)
     };
   }
 }

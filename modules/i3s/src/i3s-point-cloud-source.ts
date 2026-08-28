@@ -9,6 +9,7 @@ import type {MeshAttributes} from '@loaders.gl/schema';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {
+  PointCloudBoundingVolume,
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource,
@@ -225,7 +226,7 @@ export class I3SPointCloudSource
       })
     );
 
-    const volume = tile.boundingVolume;
+    const volume = tile.spatialBoundingVolume || tile.boundingVolume;
     const table = makeMeshArrowTable(attributes, {
       topology: 'point-list',
       boundingBox: volume.cartographicBounds
@@ -236,7 +237,8 @@ export class I3SPointCloudSource
       cartographicOrigin: normalizedPositions.cartographicOrigin,
       coordinateSystem: normalizedPositions.coordinateSystem,
       modelMatrix: normalizedPositions.modelMatrix,
-      spatialReference: this.spatialTransformer?.spatialReference
+      spatialReference: this.spatialTransformer?.spatialReference,
+      spatialBoundingVolume: tile.spatialBoundingVolume
     };
   }
 
@@ -306,33 +308,35 @@ export class I3SPointCloudSource
     const center = Array.from(node.obb.center as number[]);
     const halfSize = Array.from(node.obb.halfSize as number[]);
     const radius = Math.hypot(...halfSize);
+    const commonHeader = {
+      id: String(nodeId),
+      level,
+      pointCount: node.vertexCount,
+      geometricError: node.lodThreshold || 0,
+      lodSelectionMetricType:
+        (this.metadata?.nodePages?.lodSelectionMetricType as
+          | 'maxScreenThresholdSQ'
+          | 'density-threshold'
+          | undefined) || 'maxScreenThresholdSQ',
+      lodThreshold: node.lodThreshold
+    };
     if (this.spatialTransformer) {
-      const boundingVolume = this.spatialTransformer.transformBoundingVolume({
+      const sourceBounds = {
         obb: node.obb,
         normalReferenceFrame: this.metadata?.store.normalReferenceFrame
-      });
-      const [minimum, maximum, transformedCenter, transformedRadius] =
-        getTransformedPointCloudBounds(boundingVolume);
+      };
+      const boundingVolume = getTransformedPointCloudBounds(
+        this.spatialTransformer.transformBoundingVolumeToGeographic(sourceBounds),
+        'geographic'
+      );
+      const spatialBoundingVolume = getTransformedPointCloudBounds(
+        this.spatialTransformer.transformBoundingVolume(sourceBounds),
+        this.spatialTransformer.targetCoordinateFrame === 'geographic' ? 'geographic' : 'cartesian'
+      );
       return {
-        id: String(nodeId),
-        level,
-        pointCount: node.vertexCount,
-        geometricError: node.lodThreshold || 0,
-        lodSelectionMetricType:
-          (this.metadata?.nodePages?.lodSelectionMetricType as
-            | 'maxScreenThresholdSQ'
-            | 'density-threshold'
-            | undefined) || 'maxScreenThresholdSQ',
-        lodThreshold: node.lodThreshold,
-        boundingVolume: {
-          cartographicBounds: [minimum, maximum],
-          center: transformedCenter,
-          radius: transformedRadius,
-          coordinateFrame:
-            this.spatialTransformer.targetCoordinateFrame === 'geographic'
-              ? 'geographic'
-              : 'cartesian'
-        }
+        ...commonHeader,
+        boundingVolume,
+        spatialBoundingVolume
       };
     }
     const latitudeRadians = (center[1] * Math.PI) / 180;
@@ -353,16 +357,7 @@ export class I3SPointCloudSource
       center[2] + radius
     ];
     return {
-      id: String(nodeId),
-      level,
-      pointCount: node.vertexCount,
-      geometricError: node.lodThreshold || 0,
-      lodSelectionMetricType:
-        (this.metadata?.nodePages?.lodSelectionMetricType as
-          | 'maxScreenThresholdSQ'
-          | 'density-threshold'
-          | undefined) || 'maxScreenThresholdSQ',
-      lodThreshold: node.lodThreshold,
+      ...commonHeader,
       boundingVolume: {
         cartographicBounds: [minimum, maximum],
         wrapsDateline: !coversFullLongitude && minimum[0] > maximum[0],
@@ -550,10 +545,13 @@ function normalizePointPositions(
 }
 
 /** Convert a generic transformed tile bound into the point-cloud source contract. */
-function getTransformedPointCloudBounds(boundingVolume: {
-  box?: number[];
-  region?: number[];
-}): [number[], number[], number[], number] {
+function getTransformedPointCloudBounds(
+  boundingVolume: {
+    box?: number[];
+    region?: number[];
+  },
+  coordinateFrame: 'geographic' | 'cartesian'
+): PointCloudBoundingVolume {
   if (boundingVolume.region) {
     const [west, south, east, north, minimumHeight, maximumHeight] = boundingVolume.region;
     const minimum = [(west * 180) / Math.PI, (south * 180) / Math.PI, minimumHeight];
@@ -564,12 +562,21 @@ function getTransformedPointCloudBounds(boundingVolume: {
     }
     const centerLongitude = normalizeLongitude((minimum[0] + eastUnwrapped) / 2);
     const center = [centerLongitude, (minimum[1] + maximum[1]) / 2, (minimum[2] + maximum[2]) / 2];
+    const longitudeSpan = eastUnwrapped - minimum[0];
+    const coversFullLongitude = longitudeSpan >= 360 - 1e-9;
     const radius = Math.hypot(
-      (eastUnwrapped - minimum[0]) / 2,
+      longitudeSpan / 2,
       (maximum[1] - minimum[1]) / 2,
       (maximum[2] - minimum[2]) / 2
     );
-    return [minimum, maximum, center, radius];
+    return {
+      cartographicBounds: [minimum, maximum],
+      wrapsDateline: !coversFullLongitude && minimum[0] > maximum[0],
+      coversFullLongitude,
+      center,
+      radius,
+      coordinateFrame
+    };
   }
 
   const box = boundingVolume.box;
@@ -584,5 +591,10 @@ function getTransformedPointCloudBounds(boundingVolume: {
   ];
   const minimum = center.map((value, index) => value - halfSize[index]);
   const maximum = center.map((value, index) => value + halfSize[index]);
-  return [minimum, maximum, center, Math.hypot(...halfSize)];
+  return {
+    cartographicBounds: [minimum, maximum],
+    center,
+    radius: Math.hypot(...halfSize),
+    coordinateFrame
+  };
 }

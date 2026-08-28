@@ -37,6 +37,8 @@ export type PointCloudTileContent = {
   modelMatrix?: number[] | Float32Array;
   /** Spatial descriptor for returned points, origins, and bounds. */
   spatialReference?: TilesetSpatialReference;
+  /** Content bound expressed in the selected spatial output frame. */
+  spatialBoundingVolume?: PointCloudBoundingVolume;
 };
 
 /**
@@ -63,6 +65,8 @@ export type PointCloudTileHeader = {
   pointCount: number;
   geometricError: number;
   boundingVolume: PointCloudBoundingVolume;
+  /** Bound expressed in the selected content/output frame; traversal retains geographic bounds. */
+  spatialBoundingVolume?: PointCloudBoundingVolume;
   /** I3S LOD metric used to decide whether this node refines. */
   lodSelectionMetricType?: 'maxScreenThresholdSQ' | 'density-threshold';
   /** Source-provided LOD threshold for density or screen metrics. */

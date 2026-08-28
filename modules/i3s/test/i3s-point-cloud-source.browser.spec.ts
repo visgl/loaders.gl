@@ -131,14 +131,25 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
     | Iterable<number>
     | undefined;
 
-  expect(transformedRoot.boundingVolume.coordinateFrame).toBe('cartesian');
+  expect(transformedRoot.boundingVolume.coordinateFrame).toBe('geographic');
+  expect(transformedRoot.spatialBoundingVolume?.coordinateFrame).toBe('cartesian');
   expect(transformedContent?.coordinateSystem).toBe('cartesian');
   expect(transformedContent?.spatialReference).toMatchObject({
     targetCrs: 'EPSG:3857',
     status: 'transformed'
   });
   expect(transformedFirstPosition ? Array.from(transformedFirstPosition) : []).toEqual([0, 0, 0]);
+  expect(transformedContent?.spatialBoundingVolume).toBe(transformedRoot.spatialBoundingVolume);
   expect(Array.from(transformedContent?.modelMatrix || []).slice(12, 13)[0]).toBeGreaterThan(
     20_000_000
   );
+
+  const geographicTransformedSource = new I3SPointCloudSource('https://example.com/layer', {
+    spatial: {targetCrs: 'EPSG:4326'},
+    core: {loadOptions: {core: {fetch: fetchResource}}}
+  });
+  const geographicTransformedRoot = await geographicTransformedSource.getRootTile();
+  expect(geographicTransformedRoot.spatialBoundingVolume?.coordinateFrame).toBe('geographic');
+  expect(geographicTransformedRoot.spatialBoundingVolume?.wrapsDateline).toBe(true);
+  expect(geographicTransformedRoot.spatialBoundingVolume?.coversFullLongitude).toBe(false);
 });

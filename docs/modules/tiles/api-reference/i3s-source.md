@@ -48,7 +48,7 @@ Parameters:
 - derives view state from `fullExtent` or `store.extent`
 - tracks observed content formats such as Draco, DDS, and KTX2
 - applies requested horizontal CRS transforms consistently to vertices, normals, origins, and
-  traversal bounds
+  target-space `spatialBoundingVolume` metadata while retaining WGS84 ECEF traversal bounds
 
 Set `Tileset3D`'s `spatial.targetCrs` to request geographic, projected, or WGS84 geocentric output.
 Common Proj4 definitions work directly; custom definitions and datum grids must be registered

@@ -23,6 +23,7 @@ encodings and authoring are intentionally outside this read-only source.
 
 `spatial.targetCrs` requests geographic, projected, or WGS84 geocentric output. The source
 reprojects absolute `Float64` points, then returns renderer-ready `Float32` offsets around a stable
-target origin. Node bounds and view metadata are rebuilt in the same target frame. See
-[Coordinate reference systems in I3S](../concepts/coordinate-reference-systems) for supported
-definitions and registration rules.
+target origin. Each tile retains a WGS84 geographic `boundingVolume` for generic traversal and
+exposes the content/output-frame bound separately as `spatialBoundingVolume`. See [Coordinate
+reference systems in I3S](../concepts/coordinate-reference-systems) for supported definitions and
+registration rules.

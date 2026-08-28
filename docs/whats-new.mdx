@@ -45,8 +45,9 @@ Release Date: 2026
 - GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected
   table CRS through source, scan, and GeoArrow field metadata.
 - I3S mesh and Point Cloud sources now apply requested horizontal CRS transforms to vertices,
-  stable origins, normals, traversal bounds, and spatial metadata, with Proj4-backed geographic and
-  projected targets plus direct WGS84 geocentric support.
+  stable origins, normals, and parallel target-space bounds, with Proj4-backed geographic and
+  projected targets plus direct WGS84 geocentric support. Traversal retains normalized WGS84
+  ECEF/geographic bounds so culling and LOD remain compatible with existing runtimes.
 
 **@loaders.gl/arrow**
 
