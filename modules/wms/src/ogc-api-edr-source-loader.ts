@@ -112,7 +112,10 @@ export const OGCAPIEDRSourceLoader = {
   fromBlob: false,
   options: {'ogc-api-edr': {}},
   defaultOptions: {'ogc-api-edr': {}},
-  testURL: (url: string): boolean => /(?:\/edr(?:\/|$)|ogc[/-]?api[/-]?edr)/i.test(url),
+  testURL: (url: string): boolean =>
+    /(?:\/edr(?:\/|$)|ogc[/-]?api[/-]?edr|\/collections\/[^/]+\/(?:position|radius|area|cube|trajectory|corridor|locations)(?:\/|$))/i.test(
+      url
+    ),
   createDataSource: (url: string, options: OGCAPIEDRSourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPIEDRSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPIEDRSource>;

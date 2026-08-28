@@ -1,105 +1,171 @@
-# OGC API
+# OGC API services
 
-The `@loaders.gl/wms` module provides a deliberately small compatibility layer for modern OGC
-APIs. It supports the common discovery shape and the two most useful data paths for applications:
-feature collections, tiled resources, coverages, and environmental observations.
+The OGC API family replaces monolithic XML web-service protocols with linked JSON resources and
+focused HTTP APIs. `@loaders.gl/wms` provides deliberately small, interoperable adapters for the
+common read paths. They are useful compatibility clients, not claims of complete conformance to
+every optional OGC API building block.
 
-## Features
+## Family overview
 
-```js
-import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/wms';
+| API | Source loader | Discovery | Data path | Output | Scope |
+| --- | --- | --- | --- | --- | --- |
+| OGC API Features | `OGCAPIFeaturesSourceLoader` | Landing page and collections | Collection items with bbox and CRS | GeoJSON, binary, Arrow | Minimal read client |
+| OGC API Tiles | `OGCAPITilesSourceLoader` | Landing-page tile link | Explicit tile template | Raw tile bytes | Minimal template client |
+| OGC API Coverages | `OGCAPICoveragesSourceLoader` | Landing page and collections | Collection coverage with subsets | JSON object or binary bytes | Minimal read client |
+| OGC API EDR | `OGCAPIEDRSourceLoader` | Landing page and collections | Six spatiotemporal query shapes | JSON object or binary bytes | Focused query client |
+
+All four sources support standard loaders.gl fetch options for headers, credentials, proxies,
+cancellation, and custom transports.
+
+## OGC API Features
+
+| Capability | Support | Behavior |
+| --- | --- | --- |
+| Landing page | Supported | `getLandingPage()` returns linked service metadata |
+| Collections | Supported | `getCollections()` returns advertised collection descriptions |
+| Collection metadata | Supported | Normalizes title, description, CRS, and first spatial extent |
+| Items request | Supported | Requests `/collections/{id}/items` |
+| Bounding box | Supported | Sends the standard `bbox` parameter |
+| Output CRS | Supported | Sends the requested `crs` parameter |
+| GeoJSON | Supported | Validates a FeatureCollection response |
+| Binary and Arrow | Supported | Converts through standard vector-source outputs |
+| Paging links | Application controlled | Returned pages are not traversed automatically |
+| CQL2 and advanced filters | Not normalized | Use service parameters or a custom request |
+| Transactions | Not supported | Read-only source |
+| deck.gl | First class | Implements `VectorSource` and works with `SourceLayer` |
+
+```ts
 import {createDataSource} from '@loaders.gl/core';
+import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/wms';
 
-const source = createDataSource('https://demo.ldproxy.net/daraa', [OGCAPIFeaturesSourceLoader], {
-  'ogc-api': {collectionId: 'VegetationSrf'}
-});
+const source = createDataSource(
+  'https://demo.ldproxy.net/daraa',
+  [OGCAPIFeaturesSourceLoader],
+  {'ogc-api': {collectionId: 'VegetationSrf'}}
+);
 
-const metadata = await source.getMetadata();
-const page = await source.getFeatures({
-  layers: 'VegetationSrf',
-  boundingBox: [
-    [12.4, 41.8],
-    [12.6, 42.0]
-  ]
+const features = await source.getFeatures({
+  layers: ['VegetationSrf'],
+  boundingBox: [[36.0, 32.5], [36.2, 32.7]],
+  format: 'arrow'
 });
 ```
 
-The result is a loaders.gl GeoJSON table. The adapter sends the standard `bbox` and optional `crs`
-query parameters. Paging links and advanced filters can be followed directly using the underlying
-fetch function when needed.
+## OGC API Tiles
 
-## Tiles
+| Capability | Support | Behavior |
+| --- | --- | --- |
+| Landing-page metadata | Supported | Reads title and advertised tileset media type |
+| Explicit tile template | Required | Configure `ogc-api.tileTemplate` |
+| OGC placeholders | Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}` |
+| XYZ placeholders | Supported | `{z}`, `{y}`, `{x}` |
+| Tile retrieval | Supported | `getTile()` returns the original `ArrayBuffer` |
+| Matrix-set negotiation | Not implemented | Use WMTS for capability-driven grid selection |
+| Tile decoding | Not automatic | Parse bytes with the loader matching the advertised media type |
+| deck.gl | Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
 
-The tiles adapter expands a server-advertised template. Both OGC API names and conventional XYZ
-placeholders are accepted:
-
-```js
+```ts
+import {createDataSource} from '@loaders.gl/core';
 import {OGCAPITilesSourceLoader} from '@loaders.gl/wms';
 
-const source = OGCAPITilesSourceLoader.createDataSource('https://example.com/api', {
+const source = createDataSource(landingPageUrl, [OGCAPITilesSourceLoader], {
   'ogc-api': {
-    tileTemplate: 'https://example.com/api/tiles/{tileMatrix}/{tileRow}/{tileCol}.png'
+    tileTemplate: 'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}.png'
   }
 });
 
 const tileBytes = await source.getTile({z: 3, x: 4, y: 5});
 ```
 
-This is intentionally a minimal adapter. It does not attempt to implement every OGC API extension,
-server-side filter language, or conformance class.
+## OGC API Coverages
 
-## Coverages
+| Capability | Support | Behavior |
+| --- | --- | --- |
+| Landing page | Supported | `getLandingPage()` |
+| Collections | Supported | `getCollections()` |
+| Collection coverage | Supported | Requests `/collections/{id}/coverage` |
+| Bounding box | Supported | Sends `bbox` |
+| Dimension subsets | Supported | Sends repeated `subset` parameters |
+| Time selection | Supported | Sends `datetime` |
+| Format negotiation | Supported | Sends `f` and an `Accept` header |
+| JSON representations | Supported | Returned as parsed objects |
+| Binary representations | Preserved | Returned as `ArrayBuffer` |
+| Coverage decoding | Application controlled | Pass binary output to GeoTIFF, LERC, or another appropriate loader |
+| Processing and visualization | Not provided | Values are not resampled or colorized implicitly |
 
-The coverage adapter supports collection discovery and the standard collection coverage endpoint.
-It returns JSON coverage representations as objects and binary representations as `ArrayBuffer`
-values, leaving decoding to the appropriate loaders.
-
-```js
+```ts
+import {createDataSource} from '@loaders.gl/core';
 import {OGCAPICoveragesSourceLoader} from '@loaders.gl/wms';
 
-const source = OGCAPICoveragesSourceLoader.createDataSource('https://example.com/ogcapi', {
+const source = createDataSource(landingPageUrl, [OGCAPICoveragesSourceLoader], {
   'ogc-api-coverages': {collectionId: 'temperature'}
 });
+
 const coverage = await source.getCoverage({
   bbox: [-10, 40, 10, 50],
   subset: ['Lat(40,50)'],
+  datetime: '2025-01-01/2025-01-31',
   format: 'application/json'
 });
 ```
 
-## Environmental data
+## OGC API EDR
 
-OGC API EDR provides a small query client for position, area, radius, cube, trajectory, and
-corridor endpoints. The response is returned in the representation selected by the server,
-including GeoJSON and CoverageJSON.
+EDR—Environmental Data Retrieval—queries multidimensional observations by space, time, vertical
+level, and parameter.
 
-```js
+| Capability | Support | Behavior |
+| --- | --- | --- |
+| Landing page and collections | Supported | Common OGC API discovery methods |
+| Position query | Supported | Point observations |
+| Radius query | Supported | Observations around a position |
+| Area query | Supported | Polygon or bounding-area observations |
+| Cube query | Supported | Multidimensional bounding volume |
+| Trajectory query | Supported | Observations along a path |
+| Corridor query | Supported | Observations in a buffered path |
+| Time, vertical, parameter, and CRS controls | Supported | Standard query parameters are generated |
+| GeoJSON and CoverageJSON | Supported | JSON media types are returned as objects |
+| Binary representations | Preserved | Non-JSON responses are returned as `ArrayBuffer` |
+| Domain-specific interpretation | Application controlled | Unit conversion and scientific analysis remain explicit |
+| deck.gl | Not direct | Convert the selected response representation into a visual source first |
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
 import {OGCAPIEDRSourceLoader} from '@loaders.gl/wms';
 
-const source = OGCAPIEDRSourceLoader.createDataSource('https://example.com/edr');
+const source = createDataSource(edrUrl, [OGCAPIEDRSourceLoader], {
+  'ogc-api-edr': {collectionId: 'weather'}
+});
+
 const observations = await source.query({
-  collectionId: 'weather',
   queryType: 'position',
   coords: 'POINT(10 20)',
   datetime: '2025-01-01',
-  parameterName: ['temperature', 'wind']
+  parameterName: ['temperature', 'wind'],
+  format: 'application/geo+json'
 });
 ```
 
-## WCS
+## Choosing OGC API or classic OGC Web Services
 
-`WCSCoverageSource` handles WCS `GetCapabilities` and `GetCoverage` requests. It preserves
-binary coverage responses and routes LERC responses through `@loaders.gl/lerc` when a Core API is
-available.
+| Need | Prefer |
+| --- | --- |
+| Broad server compatibility and mature map rendering | WMS or WMTS |
+| High-volume GML feature streaming | WFS |
+| A straightforward GeoJSON collection endpoint | OGC API Features |
+| Capability-driven tiled imagery with complex matrix sets | WMTS |
+| A known modern tile template | OGC API Tiles |
+| Established coverage servers and LERC decoding | WCS |
+| A modern JSON coverage endpoint | OGC API Coverages |
+| Environmental position, area, trajectory, or corridor queries | OGC API EDR |
 
-```js
-import {WCSCoverageSourceLoader} from '@loaders.gl/wms';
+## Scope boundary
 
-const source = WCSCoverageSourceLoader.createDataSource('https://example.com/wcs', {
-  wcs: {coverageId: 'elevation', format: 'image/tiff'}
-});
-const bytes = await source.getCoverage({bbox: [-10, 40, 10, 50]});
-```
+The adapters intentionally avoid implementing optional conformance classes merely to check boxes.
+Advanced CQL2 filters, transactions, schema extensions, process execution, and provider-specific
+extensions should be added only when real service interoperability requires them. Standard fetch
+APIs remain available for those escape hatches.
 
-For a live feature-service example, see the [ldproxy demo](https://demo.ldproxy.net/daraa). Live
-services are not used by the test suite; repository fixtures remain the source of truth for CI.
+For a live Features endpoint, see the [ldproxy Daraa demonstration](https://demo.ldproxy.net/daraa).
+Live services are not used by CI; deterministic repository fixtures remain the conformance source
+of truth.

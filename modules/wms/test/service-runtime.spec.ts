@@ -1,6 +1,11 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {
   CapabilityGraph,
+  DEFAULT_SERVICE_LOADERS,
+  OGCAPICoveragesSource,
+  OGCAPIEDRSource,
+  OGCAPIFeaturesSource,
+  OGCAPITilesSource,
   ServiceRequestError,
   ServiceRuntime,
   discoverServiceGraph
@@ -9,6 +14,30 @@ import {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('ServiceRuntime', () => {
+  test('registers every implemented OGC service source family', () => {
+    expect(DEFAULT_SERVICE_LOADERS.map(loader => loader.type)).toEqual([
+      'wmts',
+      'wms',
+      'wfs',
+      'wcs-coverage',
+      'ogc-api-tiles',
+      'ogc-api-coverages',
+      'ogc-api-edr',
+      'ogc-api-features',
+      'csw'
+    ]);
+  });
+
+  test.each([
+    ['https://example.com/collections/world/tiles', OGCAPITilesSource],
+    ['https://example.com/collections/temperature/coverage', OGCAPICoveragesSource],
+    ['https://example.com/collections/weather/position', OGCAPIEDRSource],
+    ['https://example.com/collections/roads/items', OGCAPIFeaturesSource]
+  ])('selects the specific OGC API source for %s', (url, Source) => {
+    const runtime = new ServiceRuntime();
+    expect(runtime.getSource(url)).toBeInstanceOf(Source);
+  });
+
   test('retries transient responses and emits lifecycle telemetry', async () => {
     const telemetry: string[] = [];
     let attempts = 0;

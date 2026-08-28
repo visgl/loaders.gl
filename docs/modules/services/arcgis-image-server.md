@@ -1,81 +1,144 @@
-# ArcGIS Image Server
+import {ClientExample} from '@site/src/components';
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
-ArcGIS Image Server endpoints expose raster imagery and image services through the ArcGIS REST API.
+# ArcGIS ImageServer
 
-## loaders.gl Support
+<WmsDocsTabs active="arcgis-image-server" />
 
-loaders.gl provides `ArcGISImageServerSourceLoader` as an experimental image source loader for
-ArcGIS `ImageServer` endpoints. It can load service metadata and request exported images for a
-viewport. `ArcGISImageTileSourceLoader` provides a deck.gl-compatible tile source backed by the
-`/exportImage` endpoint.
+ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data. loaders.gl offers
+an `ImageSource` for viewport exports and a `TileSource` for tiled visualization or analysis.
 
-## Usage
+## Feature support
+
+| Capability | Image source | Tile source | API and behavior |
+| --- | --- | --- | --- |
+| Service metadata | Supported | Supported | Normalizes title, description, extent, CRS, and attribution |
+| Rendered imagery | `getImage()` / `exportImage()` | `getTile()` | Decodes PNG, JPEG, and other browser image formats |
+| Analytical LERC | `exportRaster()` | `getTile()` with `format: 'lerc'` | Returns typed bands, mask, dimensions, statistics, and NoData metadata |
+| Bounding box and output CRS | Supported | Web Mercator tiles | Viewport exports accept `bboxSR` and `imageSR` |
+| Pixel type | Supported | Forwarded parameter | ArcGIS integer and floating-point pixel types are preserved by LERC |
+| Band selection | Supported | Forwarded parameter | Use `bandIds` or tile request parameters |
+| Rendering and mosaic rules | Supported | Supported | Pass ArcGIS JSON objects or serialized rules |
+| Runtime parameter updates | Per request | Supported | Tile source `updateParameters()` affects subsequent requests |
+| URL pools | Not applicable | Supported | Optional URL pool distributes tile exports deterministically |
+| Authentication | Supported | Supported | URL tokens and standard fetch options are preserved |
+| deck.gl rendering | First class for images | First class for image tiles | Analytical LERC requires an application-selected visualization |
+
+## Viewport images
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {ArcGISImageServerSourceLoader} from '@loaders.gl/services';
 
-const source = createDataSource(url, [ArcGISImageServerSourceLoader], {
-  core: {type: 'arcgis-image-server'}
-});
+const source = createDataSource(imageServerUrl, [ArcGISImageServerSourceLoader]);
 
 const metadata = await source.getMetadata();
 const image = await source.getImage({
-  layers: '0',
-  boundingBox: [
-    [-124, 32],
-    [-114, 42]
-  ],
+  layers: [],
+  boundingBox: [[-124, 32], [-114, 42]],
+  crs: 'EPSG:4326',
   width: 1024,
-  height: 768
+  height: 768,
+  format: 'image/png'
 });
 ```
 
-For deck.gl tile rendering, use `ArcGISImageTileSourceLoader`. It requests one `/exportImage`
-image per tile and supports ImageServer rendering parameters.
+`getImage()` uses the generic `ImageSource` request shape. `exportImage()` exposes ArcGIS-specific
+controls when an application needs exact pixel, band, mosaic, or rendering behavior:
+
+```ts
+const image = await source.exportImage({
+  bbox: [-124, 32, -114, 42],
+  bboxSR: 4326,
+  imageSR: 3857,
+  width: 1024,
+  height: 768,
+  format: 'png32',
+  renderingRule: {rasterFunction: 'Hillshade'}
+});
+```
+
+Defaults can be supplied under `arcgis-image-server.exportImageParameters` and overridden by each
+request.
+
+## Image tiles
+
+`ArcGISImageTileSourceLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```ts
 import {ArcGISImageTileSourceLoader} from '@loaders.gl/services';
 
-const tileSource = createDataSource(url, [ArcGISImageTileSourceLoader], {
-  type: 'arcgis-image-server-tiles',
+const tileSource = createDataSource(imageServerUrl, [ArcGISImageTileSourceLoader], {
   'arcgis-image-server-tiles': {
     tileSize: 512,
-    parameters: {format: 'png32', transparent: true}
+    format: 'png32',
+    parameters: {transparent: true}
   }
 });
 
-tileSource.updateParameters({renderingRule: JSON.stringify({rasterFunction: 'Hillshade'})});
+tileSource.updateParameters({
+  renderingRule: JSON.stringify({rasterFunction: 'Hillshade'})
+});
 ```
+
+The tile source is useful even when the server does not publish a cached tile endpoint. Requests
+are generated from the visible XYZ tile bounds.
 
 ## Analytical LERC rasters
 
-ArcGIS ImageServer can return [LERC](https://esri.github.io/lerc/) instead of a display image.
-Use `exportRaster` when the result should remain a typed, analysis-ready raster:
+Use `exportRaster()` when pixel values must remain analysis-ready:
 
-```js
+```ts
 const raster = await source.exportRaster({
   bbox: [-122.5, 37.7, -122.3, 37.85],
   bboxSR: 'EPSG:4326',
   imageSR: 'EPSG:4326',
   width: 512,
   height: 512,
-  format: 'lerc',
-  pixelType: 'F32'
+  pixelType: 'F32',
+  bandIds: [0]
 });
 
-// raster.pixels contains one typed array per band; raster.mask carries validity.
+const firstBand = raster.pixels[0];
+const validMask = raster.mask;
 ```
 
-For tile workflows, set `format: 'lerc'` under `arcgis-image-server-tiles`. The tile source then
-returns decoded `LERCData` values without an image round trip.
+For tiled analysis, set `format: 'lerc'` under `arcgis-image-server-tiles`. The source decodes each
+tile directly with `@loaders.gl/lerc`; it does not convert values through an 8-bit display image.
 
-## Example
+LERC data is deliberately not colorized automatically. Applications should choose a band, value
+domain, color ramp, and NoData policy appropriate to the dataset before uploading values to the GPU.
 
-- [ArcGIS Image Server example](/examples/tiles/arcgis-image-server)
-- [ArcGIS ImageServer analytical LERC example](/examples/tiles/arcgis-image-server-lerc)
-- [ArcGIS ImageServer tiles example](/examples/tiles/arcgis-image-server-tiles)
+## deck.gl integration
+
+```ts
+import {SourceLayer} from '@loaders.gl/deck-layers';
+import {SERVICE_LOADERS} from '@loaders.gl/services';
+
+const layer = new SourceLayer({
+  id: 'land-cover',
+  data: imageServerUrl,
+  loaders: SERVICE_LOADERS,
+  opacity: 0.8
+});
+```
+
+Use `core.type: 'arcgis-image-server-tiles'` in `sourceOptions` when tiled export is preferred over
+one viewport-sized image.
+
+## Live examples
+
+### Viewport image
+
+<div style={{height: '520px'}}>
+  <ClientExample kind="wms" format="ArcGIS Image Server" />
+</div>
+
+- [ImageServer export tiles](/examples/tiles/arcgis-image-server-tiles)
+- [Analytical ImageServer LERC](/examples/tiles/arcgis-image-server-lerc)
 
 ## References
 
-- [ArcGIS REST API Image Service](https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm)
+- [ArcGIS REST API Image Service](https://developers.arcgis.com/rest/services-reference/enterprise/image-service/)
+- [ArcGIS REST API Export Image](https://developers.arcgis.com/rest/services-reference/enterprise/export-image/)
+- [LERC codec](https://esri.github.io/lerc/)

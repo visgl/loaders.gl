@@ -2,37 +2,50 @@
 
 Framework-independent sources for geospatial service APIs.
 
-This package is the home for ArcGIS REST service integrations including FeatureServer, ImageServer, MapServer, and VectorTileServer sources. OGC protocol implementations remain in `@loaders.gl/wms`; STAC and other catalog services are intentionally out of scope for this initial package.
+This package is the home for ArcGIS REST service integrations including FeatureServer, ImageServer,
+MapServer, and VectorTileServer sources. OGC protocol implementations remain in `@loaders.gl/wms`.
 
 ArcGIS sources are owned and exported exclusively by this package. OGC protocol implementations, including WMS, WMTS, WFS, GML, and CSW, are exported by `@loaders.gl/wms`.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {
-  ArcGISFeatureServerSourceLoader,
-  ArcGISImageServerSourceLoader,
-  ArcGISMapTileSourceLoader
-} from '@loaders.gl/services';
+import {createDataSource, load} from '@loaders.gl/core';
+import {SERVICE_LOADERS} from '@loaders.gl/services';
 
-const features = await createDataSource(
+const featureSource = createDataSource(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-  [ArcGISFeatureServerSourceLoader],
+  SERVICE_LOADERS,
   {}
 );
 
-const imagery = await createDataSource(
+const imageSource = createDataSource(
   'https://example.com/arcgis/rest/services/Elevation/ImageServer',
-  [ArcGISImageServerSourceLoader],
+  SERVICE_LOADERS,
   {}
 );
 
-const mapTiles = await createDataSource(
+const mapTileSource = createDataSource(
   'https://example.com/arcgis/rest/services/World/MapServer',
-  [ArcGISMapTileSourceLoader],
+  SERVICE_LOADERS,
   {}
 );
+
+// `load` accepts the same registry and returns the selected runtime source.
+const source = await load(serviceUrl, SERVICE_LOADERS, {
+  core: {type: 'arcgis-feature-server'}
+});
 ```
 
-The same source adapters provide normalized metadata and the generic vector, image, and tile APIs used by loaders.gl and deck.gl integrations.
+| Service | Generic contract | Output |
+| --- | --- | --- |
+| FeatureServer | `VectorSource` | GeoJSON, binary, or Arrow features |
+| ImageServer | `ImageSource` | Rendered images or decoded LERC rasters |
+| ImageServer tiles | `TileSource` | Image or LERC tiles |
+| MapServer | `TileSource` | Cached or dynamically exported image tiles |
+| VectorTileServer | `VectorTileSource` | Raw MVT or decoded WGS84 features |
 
-For documentation, visit the [loaders.gl website](https://loaders.gl/docs).
+The same source adapters provide normalized metadata and the generic vector, image, and tile APIs
+used by loaders.gl and deck.gl integrations. `SourceLayer` from `@loaders.gl/deck-layers` accepts
+`SERVICE_LOADERS` directly.
+
+See the [complete service guide](https://loaders.gl/docs/modules/services) and the feature table on
+each service page.

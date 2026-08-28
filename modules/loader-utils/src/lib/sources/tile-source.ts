@@ -15,6 +15,10 @@ export type TileSourceProps = {};
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
 export interface TileSource {
+  /** MIME type of decoded tile payloads, when known. */
+  readonly mimeType?: string | null;
+  /** Whether decoded vector coordinates are local to each tile. */
+  readonly localCoordinates?: boolean;
   // extends DataSource {
   getMetadata(): Promise<TileSourceMetadata>;
   /** Flat parameters */

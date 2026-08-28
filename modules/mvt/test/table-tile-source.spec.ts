@@ -25,6 +25,18 @@ const square = [
     id: '42'
   }
 ];
+test('TableTileSourceLoader reports the configured output coordinate mode', () => {
+  const table = makeGeoJSONTable({type: 'Point', coordinates: [0, 0]});
+  const localSource = TableTileSourceLoader.createDataSource(table, {
+    table: {coordinates: 'local'}
+  });
+  const wgs84Source = TableTileSourceLoader.createDataSource(table, {
+    table: {coordinates: 'wgs84'}
+  });
+
+  expect(localSource.localCoordinates).toBe(true);
+  expect(wgs84Source.localCoordinates).toBe(false);
+});
 test('TableTileSourceLoader#getTile#us-states.json', async () => {
   const geojson = await loadGeoJSONTable('us-states.json');
   const source = TableTileSourceLoader.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});

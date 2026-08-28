@@ -10,7 +10,8 @@ const sourceTabs = [
       'PMTilesSourceLoader',
       'MVTSourceLoader',
       'MLTSourceLoader',
-      'TableTileSourceLoader'
+      'TableTileSourceLoader',
+      'ArcGISVectorTileServerSourceLoader'
     ],
     dataSource: 'VectorTileDataSource',
     methods: ['getMetadata()', 'getTile()'],
@@ -22,7 +23,12 @@ const sourceTabs = [
   {
     id: 'image-tile-source',
     label: 'Image Tiles',
-    sourceLoaders: ['PMTilesSourceLoader', 'MVTSourceLoader'],
+    sourceLoaders: [
+      'PMTilesSourceLoader',
+      'WMTSSourceLoader',
+      'ArcGISMapTileSourceLoader',
+      'ArcGISImageTileSourceLoader'
+    ],
     dataSource: 'ImageTileDataSource',
     methods: ['getMetadata()', 'getImageTile()'],
     outputCategory: 'ImageTile',
@@ -104,8 +110,11 @@ const sourceTabs = [
 ];
 
 const sourceTags = {
-  ArcGISFeatureServerSourceLoader: 'Experimental',
-  ArcGISImageServerSourceLoader: 'Experimental',
+  ArcGISFeatureServerSourceLoader: 'Web Service',
+  ArcGISImageServerSourceLoader: 'Web Service',
+  ArcGISImageTileSourceLoader: 'Web Service',
+  ArcGISMapTileSourceLoader: 'Web Service',
+  ArcGISVectorTileServerSourceLoader: 'Web Service',
   COPCSourceLoader: 'Cloud Archive',
   CSWSourceLoader: 'Web Service',
   DuckDBSQLSource: 'Database',
@@ -122,12 +131,16 @@ const sourceTags = {
   TableTileSourceLoader: 'Generated',
   Tiles3DSource: 'Tileset',
   WFSSourceLoader: 'Web Service',
-  WMSSourceLoader: 'Web Service'
+  WMSSourceLoader: 'Web Service',
+  WMTSSourceLoader: 'Web Service'
 };
 
 const sourceDocumentationLinks = {
   ArcGISFeatureServerSourceLoader: '/docs/modules/services/arcgis-feature-server',
   ArcGISImageServerSourceLoader: '/docs/modules/services/arcgis-image-server',
+  ArcGISImageTileSourceLoader: '/docs/modules/services/arcgis-image-server#image-tiles',
+  ArcGISMapTileSourceLoader: '/docs/modules/services/arcgis-map-server',
+  ArcGISVectorTileServerSourceLoader: '/docs/modules/services/arcgis-vector-tile-server',
   COPCSourceLoader: '/docs/modules/copc/api-reference/copc-source-loader',
   CSWSourceLoader: '/docs/modules/wms/api-reference/csw-source-loader',
   DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',
@@ -143,8 +156,9 @@ const sourceDocumentationLinks = {
   SnowflakeSQLSource: '/docs/modules/sql/api-reference/sql-source',
   TableTileSourceLoader: '/docs/modules/mvt/api-reference/table-tile-source-loader',
   Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
-  WFSSourceLoader: '/docs/modules/wms/api-reference/wfs-source-loader',
-  WMSSourceLoader: '/docs/modules/wms/api-reference/wms-source-loader'
+  WFSSourceLoader: '/docs/modules/wms/formats/wfs',
+  WMSSourceLoader: '/docs/modules/wms/api-reference/wms-source-loader',
+  WMTSSourceLoader: '/docs/modules/wms/formats/wmts'
 };
 
 const loadingManagerDocumentationLinks = {

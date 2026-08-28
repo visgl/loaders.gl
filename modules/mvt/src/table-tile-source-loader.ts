@@ -150,7 +150,8 @@ export class TableVectorTileSource
 
   /** MIME type of the tiles emitted by this tile source */
   readonly mimeType = 'application/vnd.mapbox-vector-tile';
-  readonly localCoordinates = true;
+  /** Whether emitted tile geometries use tile-local coordinates. */
+  readonly localCoordinates: boolean;
   readonly tableOptions: Required<Required<TableTileSourceLoaderOptions>['table']>;
 
   /* Schema of the data */
@@ -169,6 +170,7 @@ export class TableVectorTileSource
   constructor(table: GeoJSONTable | Promise<GeoJSONTable>, options: TableTileSourceLoaderOptions) {
     super(table, options, TableTileSourceLoader.defaultOptions);
     this.tableOptions = getRequiredOptions(this.options).table;
+    this.localCoordinates = this.tableOptions.coordinates === 'local';
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(table);
     this.metadata = this.getMetadata();

@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {LERCLoader} from '@loaders.gl/lerc';
 import {
   ArcGISFeatureServerSourceLoader,
+  ArcGISVectorSource,
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSource,
   ArcGISMapTileSource
@@ -15,6 +16,36 @@ test('ArcGISImageServerSourceLoader#testURL', () => {
     'identifies ArcGIS ImageServer URLs'
   ).toBeTruthy();
 });
+test('ArcGIS feature requests preserve tokens and select root-service layers', () => {
+  const source = new ArcGISVectorSource(
+    'https://example.com/arcgis/rest/services/Roads/FeatureServer?token=abc',
+    {}
+  );
+  const url = new URL(
+    source.getFeaturesURL({
+      layers: '3',
+      boundingBox: [
+        [-10, -5],
+        [10, 5]
+      ]
+    })
+  );
+  expect(url.pathname).toBe('/arcgis/rest/services/Roads/FeatureServer/3/query');
+  expect(url.searchParams.get('token')).toBe('abc');
+  expect(url.searchParams.get('geometry')).toBe('-10,-5,10,5');
+});
+
+test('ArcGIS ImageServer requests preserve authentication parameters', () => {
+  const source = ArcGISImageServerSourceLoader.createDataSource(
+    `${IMAGE_SERVER_URL}?token=abc`,
+    {}
+  );
+  const url = new URL(source.exportImageURL({bbox: [1, 2, 3, 4], width: 32, height: 16}));
+  expect(url.pathname).toBe('/arcgis/rest/services/Imagery/ImageServer/exportImage');
+  expect(url.searchParams.get('token')).toBe('abc');
+  expect(url.searchParams.get('size')).toBe('32,16');
+});
+
 test('ArcGISMapTileSource#getTileURL preserves endpoint parameters', () => {
   const source = new ArcGISMapTileSource('https://example.com/MapServer?token=abc');
   const url = new URL(source.getTileURL({x: 3, y: 4, z: 5}));
@@ -355,7 +386,7 @@ test('ArcGISVectorSource#getMetadata and getSchema', async () => {
   const metadata = await source.getMetadata({formatSpecificMetadata: true});
   expect(metadata.name).toBe('Roads');
   expect(metadata.abstract).toBe('Road centerlines');
-  expect(metadata.layers).toEqual([{name: 'Road centerlines'}]);
+  expect(metadata.layers).toEqual([{name: '0', title: 'Road centerlines'}]);
   expect(
     metadata.formatSpecificMetadata,
     'preserves format-specific metadata when requested'

@@ -14,6 +14,7 @@ import type {
 import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
 import type {LERCData} from '@loaders.gl/lerc';
 import {LERCLoader} from '@loaders.gl/lerc';
+import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Options for the ArcGIS ImageServer source. */
 export type ArcGISImageSourceLoaderProps = DataSourceOptions & {
@@ -183,8 +184,7 @@ export class ArcGISImageSource
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    const baseUrl = path ? `${this.url}/${path}` : this.url;
-    return `${baseUrl}?${encodeArcGISParameters({...options, ...extra})}`;
+    return buildArcGISResourceURL(this.url, path, {...options, ...extra});
   }
 
   /** Checks an ArcGIS ImageServer response. */
@@ -195,24 +195,6 @@ export class ArcGISImageSource
       );
     }
   }
-}
-
-/** Encodes ArcGIS REST query parameters. */
-function encodeArcGISParameters(parameters: Record<string, unknown>): string {
-  const searchParameters = new URLSearchParams();
-  for (const [key, value] of Object.entries(parameters)) {
-    if (value === undefined || value === null) {
-      continue;
-    }
-    const encodedValue = Array.isArray(value) ? value.join(',') : getArcGISParameterValue(value);
-    searchParameters.set(key, encodedValue);
-  }
-  return searchParameters.toString();
-}
-
-/** Converts an ArcGIS REST parameter value to a query string value. */
-function getArcGISParameterValue(value: unknown): string {
-  return typeof value === 'object' ? JSON.stringify(value) : String(value);
 }
 
 /** Normalizes EPSG-prefixed CRS strings to ArcGIS WKID values. */
@@ -231,11 +213,29 @@ function normalizeArcGISSpatialReference(
 /** Normalizes ArcGIS ImageServer metadata to the generic ImageSource metadata shape. */
 function normalizeArcGISImageServerMetadata(metadata: unknown): ImageSourceMetadata {
   const arcgisMetadata = metadata as any;
+  const extent = arcgisMetadata.fullExtent || arcgisMetadata.extent;
+  const spatialReference = arcgisMetadata.spatialReference || extent?.spatialReference;
+  const wellKnownIdentifier = spatialReference?.latestWkid || spatialReference?.wkid;
+  const boundingBox =
+    extent && [extent.xmin, extent.ymin, extent.xmax, extent.ymax].every(Number.isFinite)
+      ? ([
+          [extent.xmin, extent.ymin],
+          [extent.xmax, extent.ymax]
+        ] as [[number, number], [number, number]])
+      : undefined;
+  const name = arcgisMetadata.name || arcgisMetadata.serviceDescription || '';
   return {
-    name: arcgisMetadata.name || arcgisMetadata.serviceDescription || '',
-    title: arcgisMetadata.name || arcgisMetadata.serviceDescription || '',
+    name,
+    title: name,
     abstract: arcgisMetadata.description || arcgisMetadata.serviceDescription || '',
     keywords: Array.isArray(arcgisMetadata.keywords) ? arcgisMetadata.keywords : [],
-    layers: []
+    layers: [
+      {
+        name,
+        title: name,
+        crs: wellKnownIdentifier ? [`EPSG:${wellKnownIdentifier}`] : undefined,
+        boundingBox
+      }
+    ]
   };
 }

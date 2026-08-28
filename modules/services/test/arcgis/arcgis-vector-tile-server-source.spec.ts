@@ -65,3 +65,30 @@ test('ArcGISVectorTileServerSource fetches raw PBF tiles', async () => {
   const result = await source.getTile({z: 2, x: 4, y: 5}, new AbortController().signal);
   expect(new Uint8Array(result!)).toEqual(tileBytes);
 });
+
+test('ArcGISVectorTileServerSource decodes deck.gl tile data to WGS84', async () => {
+  const parseCalls: Array<{options: any}> = [];
+  const decodedTile = {shape: 'geojson-table', type: 'FeatureCollection', features: []};
+  const source = ArcGISVectorTileServerSourceLoader.createDataSource(
+    VECTOR_TILE_SERVER_URL,
+    {'arcgis-vector-tile-server': {mvt: {shape: 'geojson-table'}}},
+    {
+      parse: async (_data: unknown, _loader: unknown, options: unknown) => {
+        parseCalls.push({options});
+        return decodedTile;
+      }
+    } as never
+  );
+  source.fetch = async () => new Response(new Uint8Array([1, 2, 3]));
+
+  await expect(
+    source.getTileData({index: {z: 2, x: 4, y: 5}, signal: new AbortController().signal})
+  ).resolves.toBe(decodedTile);
+  expect(source.mimeType).toBe('application/vnd.mapbox-vector-tile');
+  expect(source.localCoordinates).toBe(false);
+  expect(parseCalls[0].options.mvt).toMatchObject({
+    shape: 'geojson-table',
+    coordinates: 'wgs84',
+    tileIndex: {z: 2, x: 4, y: 5}
+  });
+});

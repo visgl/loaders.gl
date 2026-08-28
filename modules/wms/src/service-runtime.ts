@@ -9,6 +9,7 @@ import {WMTSSourceLoader} from './wmts-source-loader';
 import {WFSSourceLoader} from './wfs-source-loader';
 import {OGCAPIEDRSourceLoader} from './ogc-api-edr-source-loader';
 import {OGCAPICoveragesSourceLoader} from './ogc-api-coverages-source-loader';
+import {OGCAPIFeaturesSourceLoader, OGCAPITilesSourceLoader} from './ogc-api-source-loader';
 import {WCSCoverageSourceLoader} from './wcs-source-loader';
 
 /** A source loader that can be selected by the universal service runtime. */
@@ -74,8 +75,10 @@ export const DEFAULT_SERVICE_LOADERS: readonly ServiceSourceLoader[] = [
   WMSSourceLoader,
   WFSSourceLoader,
   WCSCoverageSourceLoader,
+  OGCAPITilesSourceLoader,
   OGCAPICoveragesSourceLoader,
   OGCAPIEDRSourceLoader,
+  OGCAPIFeaturesSourceLoader,
   CSWSourceLoader
 ];
 
