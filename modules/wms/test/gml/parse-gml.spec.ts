@@ -9,6 +9,7 @@ import {
   parseCurveSegments,
   parseGMLFeature,
   parseGMLFeatureCollection,
+  parseGML,
   parseGMLToGeometry,
   parseLinearRingOrLineString,
   parseMultiLineString,
@@ -36,6 +37,69 @@ const POLYGON = {
 };
 
 describe('GML geometry helpers', () => {
+  test('parses XML feature collections and typed properties', () => {
+    const result = parseGML(
+      `<gml:FeatureCollection xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app">
+        <gml:featureMembers>
+          <app:place gml:id="place.2">
+            <app:name>Harbor</app:name>
+            <app:active>true</app:active>
+            <app:count>7</app:count>
+            <app:score>2.5</app:score>
+            <app:when>2026-08-28</app:when>
+            <app:shape><gml:Point srsDimension="3"><gml:pos>1 2 3</gml:pos></gml:Point></app:shape>
+          </app:place>
+        </gml:featureMembers>
+      </gml:FeatureCollection>`,
+      {
+        propertyTypes: {
+          active: 'boolean',
+          count: 'integer',
+          score: 'number',
+          when: 'date'
+        }
+      }
+    ) as any;
+
+    expect(result.type).toBe('FeatureCollection');
+    expect(result.features[0]).toMatchObject({
+      id: 'place.2',
+      properties: {
+        name: 'Harbor',
+        active: true,
+        count: 7,
+        score: 2.5
+      },
+      geometry: {type: 'Point', coordinates: [1, 2, 3]}
+    });
+    expect(result.features[0].properties.when).toBe('2026-08-28');
+  });
+
+  test('parses bare XML geometries and four-dimensional coordinates', () => {
+    expect(
+      parseGML(
+        '<gml:Point xmlns:gml="http://www.opengis.net/gml"><gml:pos>1 2</gml:pos></gml:Point>',
+        {}
+      )
+    ).toEqual({
+      type: 'Point',
+      coordinates: [1, 2]
+    });
+    expect(
+      parseGMLToGeometry(
+        {'gml:LineString': {'gml:posList': '1 2 3 4 5 6 7 8'}},
+        {stride: 4},
+        CONTEXT
+      )
+    ).toMatchObject({
+      type: 'LineString',
+      coordinates: [
+        [1, 2, 3, 4],
+        [5, 6, 7, 8]
+      ]
+    });
+  });
+
   test('parses point and line coordinate encodings', () => {
     expect(parsePos({value: '1 2'}, OPTIONS, CONTEXT)).toEqual([1, 2]);
     expect(parsePosList({value: '1 2 3 4'}, OPTIONS, CONTEXT)).toEqual([
