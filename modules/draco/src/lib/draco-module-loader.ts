@@ -8,8 +8,9 @@ import {isBrowser, loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worke
 import type {Draco3D} from '../draco3d/draco3d-types';
 
 const DRACO_VERSION = '1.5.7';
+const DRACO_RELEASE_COMMIT = '8786740086a9f4d83f44aa83badfbea4dce7a1b5';
 const STATIC_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}`;
-const STATIC_ENCODER_URL = `https://cdn.jsdelivr.net/gh/google/draco@${DRACO_VERSION}/javascript`;
+const STATIC_ENCODER_URL = `https://cdn.jsdelivr.net/gh/google/draco@${DRACO_RELEASE_COMMIT}/javascript`;
 
 /** External Draco runtime assets understood by `loadLibrary`. */
 export const DRACO_EXTERNAL_LIBRARIES = {

@@ -86,6 +86,13 @@ module.
 the worker. Communicate streaming progress by yielding output batches or including progress
 metadata in those batches.
 
+Codec workers can use this same session contract. For example,
+`encodeDracoInBatches` keeps one Draco WebAssembly encoder alive while it consumes a sequence of
+geometry batches, and only releases it when the iterator completes. Worker options are cloned for
+each session: URL strings, booleans, and other structured-clone-safe values are supported, while
+function-valued module injections such as a live `draco3d` object must be loaded on the worker or
+replaced with URL-based library overrides.
+
 ## `preloadWorker`
 
 Warms one or more workers in the same pool used by the processing APIs:
@@ -112,4 +119,3 @@ WorkerFarm.getWorkerFarm().destroy();
 Set concurrency according to CPU and memory cost, particularly for WebAssembly codecs that create
 one heap per worker. A stateful batch session occupies one concurrency slot until its output
 iterator completes, is closed, fails, or is aborted.
-

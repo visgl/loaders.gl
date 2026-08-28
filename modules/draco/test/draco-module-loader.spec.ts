@@ -74,13 +74,14 @@ test('draco-module-loader#loads vendored 1.5.7 WASM runtimes in browsers', async
 });
 
 test('draco-module-loader#pins all default runtimes to Draco 1.5.7', () => {
+  const dracoReleaseCommit = '8786740086a9f4d83f44aa83badfbea4dce7a1b5';
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER]).toContain('/1.5.7/');
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM]).toContain('/1.5.7/');
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER]).toContain(
-    'cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.js'
+    `cdn.jsdelivr.net/gh/google/draco@${dracoReleaseCommit}/javascript/draco_encoder.js`
   );
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM]).toContain(
-    'cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.wasm'
+    `cdn.jsdelivr.net/gh/google/draco@${dracoReleaseCommit}/javascript/draco_encoder.wasm`
   );
 });
 

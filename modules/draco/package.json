@@ -53,7 +53,12 @@
       "import": "./dist/draco-writer-worker.js"
     },
     "./draco-writer-worker-node.js": {
-      "import": "./dist/draco-writer-worker-node.js"
+      "import": "./dist/draco-writer-worker-node.cjs",
+      "require": "./dist/draco-writer-worker-node.cjs"
+    },
+    "./draco-writer-worker-node.cjs": {
+      "require": "./dist/draco-writer-worker-node.cjs",
+      "default": "./dist/draco-writer-worker-node.cjs"
     }
   },
   "sideEffects": false,
@@ -74,7 +79,7 @@
     "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-loader-worker-node": "esbuild src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
@@ -82,9 +87,6 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
     "draco3d": "1.5.7"
-  },
-  "devDependencies": {
-    "@types/draco3d": "^1.4.9"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

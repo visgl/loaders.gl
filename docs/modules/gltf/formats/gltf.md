@@ -119,7 +119,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | WebGPU texture format mapping | 2.0 / 2.1 | Complete | Planned | Raw image MIME and texture metadata are preserved; normalized GPU descriptors are the next tranche |
 | WebGPU sampler constants | 2.0 / 2.1 | Complete | Planned | Sampler JSON is preserved; WebGPU address/filter enum mapping is not yet a public helper |
 | WebGPU upload descriptors | 2.0 / 2.1 | Complete | Planned | Future non-mutating descriptors will combine image data, format, dimensions, and sampler state |
-| Mesh and buffer compression (Draco) | 2.0 extension | Complete | Complete | `KHR_draco_mesh_compression` |
+| Mesh and buffer compression (Draco) | 2.0 extension | Complete | Partial | Decode plus opt-in async writer for single-buffer triangle meshes |
 | Mesh compression (meshopt) | 2.0 extension | Complete | Complete | `KHR_meshopt_compression` and `EXT_meshopt_compression` |
 | KTX2 / Basis Universal textures | 2.0 extension | Complete | Complete | `KHR_texture_basisu` |
 | WebP and AVIF textures | 2.0 extensions | Complete | Complete | Optional decoder support; required-extension failures preserved |
@@ -178,7 +178,9 @@ Parsing Support:
 
 Encoding Support:
 
-- Meshes can be compressed as they are added to the `GLTFBuilder`.
+- `GLTFWriter.encode` can opt into Draco compression with
+  `{gltf: {draco: {enabled: true}}}`. It appends extension payloads without
+  mutating the input and currently targets single-buffer triangle primitives.
 
 ### KHR_lights_punctual
 
@@ -287,7 +289,8 @@ partially transformed result.
 Meshopt and Draco are separate compression paths. Meshopt compresses individual buffer views while
 preserving the parent accessor and buffer-view layout; Draco represents the attributes and indices
 of an entire mesh primitive in one extension object. The `gltf.decompressMeshes` option controls
-both paths. loaders.gl currently decodes, but does not encode, either meshopt extension.
+both paths. loaders.gl decodes both extensions; only the Draco writer currently has an opt-in
+encoding path.
 
 #### KHR_meshopt_compression
 

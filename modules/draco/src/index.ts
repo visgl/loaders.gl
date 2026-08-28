@@ -18,9 +18,10 @@ export type {
   DracoBatchProgress,
   DracoWriterAttributes,
   DracoWriterInput,
+  DracoWriterInputBatch,
   DracoWriterOptions
 } from './draco-writer';
-export {encodeDraco, encodeDracoBatch} from './draco-writer';
+export {encodeDraco, encodeDracoBatch, encodeDracoInBatches} from './draco-writer';
 export type {
   DracoAttributeQuantization,
   DracoAttributeType,
