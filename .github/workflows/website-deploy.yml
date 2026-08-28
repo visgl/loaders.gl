@@ -63,7 +63,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+          token: ${{ github.token }}
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
@@ -95,7 +95,7 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # 4.8.0
         with:
-          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+          token: ${{ github.token }}
           branch: gh-pages
           folder: website/build
           target-folder: ${{ needs.check_branch.outputs.target_folder }}
