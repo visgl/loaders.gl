@@ -343,6 +343,60 @@ test('queryArrowTable reports cancellation before scanning', () => {
   );
 });
 
+test.each([
+  ['=', [{value: 2}]],
+  ['<>', [{value: 1}, {value: 3}]],
+  ['<', [{value: 1}]],
+  ['<=', [{value: 1}, {value: 2}]],
+  ['>', [{value: 3}]],
+  ['>=', [{value: 2}, {value: 3}]]
+])('queryArrowTable evaluates comparison operator %s', (operator, expected) => {
+  const result = queryArrowTable(makeArrowTable({value: [1, 2, 3]}), {
+    predicate: parseSQLPredicate(`value ${operator} 2`)
+  });
+  expect(toRows(result)).toEqual(expected);
+});
+
+test('queryArrowTable handles IN, NOT, null predicates, and empty matches', () => {
+  const table = makeArrowTable({value: [1, 2, null, 4], label: ['a', 'b', 'c', 'd']});
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value IN (1, 4)')}))).toEqual(
+    [
+      {value: 1, label: 'a'},
+      {value: 4, label: 'd'}
+    ]
+  );
+  expect(
+    toRows(queryArrowTable(table, {predicate: parseSQLPredicate('NOT (value IN (1, 4))')}))
+  ).toEqual([{value: 2, label: 'b'}]);
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value = 99')}))).toEqual([]);
+});
+
+test('queryArrowTable computes min, max, count-all, and empty aggregates', () => {
+  const result = queryArrowTable(makeArrowTable({group: ['a', 'a', 'b'], value: [2, null, 5]}), {
+    groupBy: ['group'],
+    aggregates: [
+      {name: 'rows', function: 'count'},
+      {name: 'minimum', function: 'min', column: 'value'},
+      {name: 'maximum', function: 'max', column: 'value'}
+    ],
+    columns: ['group', 'rows', 'minimum', 'maximum'],
+    orderBy: [{column: 'group'}]
+  });
+  expect(toRows(result)).toEqual([
+    {group: 'a', rows: 2, minimum: 2, maximum: 2},
+    {group: 'b', rows: 1, minimum: 5, maximum: 5}
+  ]);
+  expect(
+    toRows(
+      queryArrowTable(makeArrowTable({value: [1]}), {
+        groupBy: ['value'],
+        aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+        predicate: parseSQLPredicate('value > 10')
+      })
+    )
+  ).toEqual([]);
+});
+
 /** Wraps simple test columns in the loaders.gl Arrow table shape. */
 function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
   const data = arrow.tableFromArrays(columns);

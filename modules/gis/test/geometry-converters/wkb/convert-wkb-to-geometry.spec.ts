@@ -219,6 +219,24 @@ test('triangulateWKB#handles empty and degenerate polygons', () => {
   expect(triangulateWKB(degeneratePolygon)).toEqual([]);
 });
 
+test('triangulateWKB#handles EWKB SRID metadata without changing indices', () => {
+  const polygon = {
+    type: 'Polygon' as const,
+    coordinates: [
+      [
+        [0, 0],
+        [4, 0],
+        [4, 4],
+        [0, 4],
+        [0, 0]
+      ]
+    ]
+  };
+  const plain = triangulateWKB(convertGeometryToWKB(polygon));
+  const withSrid = triangulateWKB(convertGeometryToWKB(polygon, {wkb: {srid: 4326}}));
+  expect(withSrid).toEqual(plain);
+});
+
 test('triangulateWKB#rejects invalid multipolygon children', () => {
   const bytes = new Uint8Array(
     convertGeometryToWKB({
