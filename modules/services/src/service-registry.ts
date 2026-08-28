@@ -6,6 +6,7 @@ import {ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-so
 import {ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
 import {ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader';
 import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader';
+import {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader';
 import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
 
 /** A source loader currently exposed through the services package. */
@@ -14,7 +15,8 @@ export type ServiceLoader =
   | typeof ArcGISImageServerSourceLoader
   | typeof ArcGISImageTileSourceLoader
   | typeof ArcGISMapTileSourceLoader
-  | typeof ArcGISVectorTileServerSourceLoader;
+  | typeof ArcGISVectorTileServerSourceLoader
+  | typeof ArcGISSceneServerSourceLoader;
 
 /** All source loaders owned by `@loaders.gl/services`, in URL-selection order. */
 export const SERVICE_LOADERS: ServiceLoader[] = [
@@ -22,7 +24,8 @@ export const SERVICE_LOADERS: ServiceLoader[] = [
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
-  ArcGISVectorTileServerSourceLoader
+  ArcGISVectorTileServerSourceLoader,
+  ArcGISSceneServerSourceLoader
 ];
 
 /**

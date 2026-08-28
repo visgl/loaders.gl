@@ -5760,6 +5760,7 @@ __metadata:
   resolution: "@loaders.gl/services@workspace:modules/services"
   dependencies:
     "@loaders.gl/gis": "npm:5.0.0-alpha.2"
+    "@loaders.gl/i3s": "npm:5.0.0-alpha.2"
     "@loaders.gl/images": "npm:5.0.0-alpha.2"
     "@loaders.gl/lerc": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"

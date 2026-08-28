@@ -76,6 +76,22 @@ test('ShapefileLoader#reprojects points', async () => {
   );
 });
 
+test.each([
+  'v3',
+  'arrow-table'
+] as const)('ShapefileLoader#rejects %s reprojection without a .prj sidecar', async shape => {
+  const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/points.shp`);
+  const arrayBuffer = await response.arrayBuffer();
+
+  await expect(
+    load(arrayBuffer, ShapefileLoader, {
+      core: {worker: false},
+      shapefile: {shape},
+      gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    })
+  ).rejects.toThrow('Shapefile reprojection requires a source CRS from the .prj sidecar file');
+});
+
 test('ShapefileLoader#selects from its magic number', async () => {
   const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/boolean-property.shp`);
   const loader = await selectLoader(await response.arrayBuffer(), [ShapefileLoader]);

@@ -86,6 +86,7 @@
       "modules/services/arcgis-image-server",
       "modules/services/arcgis-feature-server",
       "modules/services/arcgis-vector-tile-server",
+      "modules/services/arcgis-scene-server",
       "modules/services/api-reference/arcgis"
     ]
   },

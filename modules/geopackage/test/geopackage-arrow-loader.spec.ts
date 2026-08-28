@@ -44,6 +44,15 @@ test('GeoPackageLoader#load file as Arrow table', async () => {
   expect(geoMetadata?.columns.geometry.encoding, 'geo metadata identifies WKB encoding').toBe(
     'wkb'
   );
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry');
+  const extensionMetadata = JSON.parse(
+    geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
+  );
+  expect(extensionMetadata.crs, 'GeoArrow field preserves the source CRS').toBeTruthy();
+  expect(
+    extensionMetadata.crs_type,
+    'GeoPackage WKT is not mislabeled as a specific GeoArrow WKT revision'
+  ).toBeUndefined();
   const rows = getRowsFromArrowTable(table);
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: table.schema, data: rows},
@@ -101,6 +110,11 @@ test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async (
   expect(normalizeFeatures(roundTripped.features), 'reprojected features match').toEqual(
     normalizeFeatures(geojsonTable.features)
   );
+  const geometryField = arrowTable.schema.fields.find(field => field.name === 'geometry');
+  expect(
+    JSON.parse(geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'),
+    'Arrow metadata reports the transformed output CRS'
+  ).toEqual({crs: 'WGS84'});
 });
 test('GeoPackageLoader#load missing table errors clearly', async () => {
   try {

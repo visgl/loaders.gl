@@ -1,9 +1,41 @@
 import {expect, test} from 'vitest';
 import {load, fetchFile} from '@loaders.gl/core';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {getProjection, getSpatialReferenceSystemDefinition} from '../src/lib/parse-geopackage';
+import type {GeoPackageVectorTableInfo, SpatialRefSysRow} from '../src/lib/types';
 // import type {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
+
+test('GeoPackage reprojection requires a declared source CRS', () => {
+  const vectorTable = {name: 'roads'} as GeoPackageVectorTableInfo;
+  const options = {reproject: true, targetCrs: 'WGS84' as const};
+
+  expect(() => getProjection(vectorTable, {}, options)).toThrow(
+    'GeoPackage reprojection requires a source CRS identifier for table "roads"'
+  );
+  expect(() => getProjection({...vectorTable, srsId: 999}, {}, options)).toThrow(
+    'GeoPackage reprojection requires a defined source CRS for SRS 999'
+  );
+  expect(getProjection({...vectorTable, srsId: 4326}, {4326: 'WGS84'}, options)).toBeDefined();
+});
+
+test('GeoPackage prefers extension WKT2 and preserves undefined SRS semantics', () => {
+  const spatialReferenceSystem = {
+    definition: 'GEOGCS["WKT1"]',
+    definition_12_063: 'GEOGCRS["WKT2"]'
+  } as SpatialRefSysRow;
+
+  expect(getSpatialReferenceSystemDefinition(spatialReferenceSystem)).toBe('GEOGCRS["WKT2"]');
+  expect(
+    getSpatialReferenceSystemDefinition({
+      ...spatialReferenceSystem,
+      definition: 'undefined',
+      definition_12_063: null
+    })
+  ).toBeUndefined();
+});
+
 test('GeoPackageLoader#load file as tables', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {
