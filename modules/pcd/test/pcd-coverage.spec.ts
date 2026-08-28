@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {decompressLZF} from '../src/lib/decompress-lzf';
 import {getPCDSchema} from '../src/lib/get-pcd-schema';
 import {parsePCD, parsePCDHeader} from '../src/lib/parse-pcd';
 
@@ -80,4 +81,13 @@ DATA binary
   const result = parsePCD(buffer);
   expect(Array.from(result.attributes.POSITION.value)).toEqual([1.5, -2.5, 3.5]);
   expect(result.header.vertexCount).toBe(1);
+});
+
+test('decompressLZF handles literal and back-reference blocks', () => {
+  expect(Array.from(decompressLZF(new Uint8Array([2, 97, 98, 99]), 3))).toEqual([97, 98, 99]);
+  expect(Array.from(decompressLZF(new Uint8Array([2, 97, 98, 99, 32, 2]), 6))).toEqual([
+    97, 98, 99, 97, 98, 99
+  ]);
+  expect(() => decompressLZF(new Uint8Array([2, 97]), 3)).toThrow('Invalid compressed data');
+  expect(() => decompressLZF(new Uint8Array([32, 2]), 3)).toThrow('Invalid compressed data');
 });
