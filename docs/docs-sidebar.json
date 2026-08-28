@@ -283,6 +283,14 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/worker-utils",
+        "items": [
+          "modules/worker-utils/README",
+          "modules/worker-utils/api-reference/worker-processing"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/3d-tiles",
         "items": [
           "modules/3d-tiles/README",
