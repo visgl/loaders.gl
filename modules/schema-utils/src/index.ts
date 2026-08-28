@@ -53,6 +53,11 @@ export {
   makeArrowTableBatchIterator,
   makeArrowRecordBatchIterator
 } from './lib/table/batches/make-arrow-batch-iterator';
+export {
+  queryArrowTable,
+  type ArrowTableQueryOptions,
+  type ArrowTableRowFilter
+} from './lib/table/query-arrow-table';
 export {convertBatch, convertBatches} from './lib/table/batches/convert-batches';
 
 export {

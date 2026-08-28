@@ -5,7 +5,10 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 
+import {ArrowTableSource} from '@loaders.gl/arrow';
 import {encode} from '@loaders.gl/core';
+import {DataSourceManager} from '@loaders.gl/loader-utils';
+import {FederatedTableScanSource} from '@loaders.gl/scan';
 import {IcebergTableSource} from '../src/iceberg-table-source';
 import {AvroWriter} from '../src/avro-writer';
 import {ParquetJSWriter} from '../src/parquet-js-writer';
@@ -458,11 +461,51 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
   };
   try {
     const batches = [];
-    for await (const batch of source.scan({applyDeletes: true, batchSize: 3})) batches.push(batch);
+    let telemetry;
+    for await (const batch of source.scan({
+      applyDeletes: true,
+      batchSize: 3,
+      onTelemetry: value => {
+        telemetry = value;
+      }
+    }))
+      batches.push(batch);
     expect(batches).toHaveLength(1);
     expect([...batches[0].data.getChild('id')!.toArray()]).toEqual([1, 3]);
     expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['one', 'three']);
     expect(batches[0].rowIndices).toEqual([0, 2]);
+    expect(telemetry).toMatchObject({status: 'completed', rowsReturned: 2});
+
+    const liveTable = new arrow.Table({
+      id: arrow.vectorFromArray([4], new arrow.Int32()),
+      value: arrow.vectorFromArray(['four'], new arrow.Utf8())
+    });
+    const dataSourceManager = new DataSourceManager();
+    dataSourceManager.add({dataSourceId: 'snapshot', dataSource: source});
+    dataSourceManager.add({
+      dataSourceId: 'live',
+      dataSource: new ArrowTableSource(new Blob([arrow.tableToIPC(liveTable)]))
+    });
+    const history = new FederatedTableScanSource(dataSourceManager, {
+      outputSchema: {
+        fields: [
+          {name: 'id', type: 'int32', nullable: true},
+          {name: 'value', type: 'utf8', nullable: true}
+        ],
+        metadata: {}
+      },
+      sources: [{dataSourceId: 'snapshot'}, {dataSourceId: 'live'}]
+    });
+    const historyBatches = [];
+    for await (const batch of history.read({limit: 4})) historyBatches.push(batch);
+    expect(historyBatches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([
+      1, 2, 3, 4
+    ]);
+    expect(historyBatches.map(batch => batch.sourceId)).toEqual(['snapshot', 'live']);
+    expect((await history.explain()).sources.map(entry => entry.sourceType)).toEqual([
+      'iceberg',
+      'arrow'
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
     await source.close();

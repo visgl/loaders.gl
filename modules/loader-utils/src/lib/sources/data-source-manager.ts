@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataSource, DataSourceOptions} from './data-source';
+import type {ScanQueryMetadata, ScanQueryMetadataProvider} from '../scan-utils/scan-query-metadata';
 
 /** DataSource instances that can be owned by a DataSourceManager. */
 export type ManageableDataSource = DataSource<unknown, DataSourceOptions> & {
@@ -13,6 +14,44 @@ export type ManageableDataSource = DataSource<unknown, DataSourceOptions> & {
   /** Releases source-owned resources. */
   destroy?: () => Promise<void> | void;
 };
+
+/** Lifecycle state reported for one managed DataSource registration. */
+export type DataSourceManagerEntryStatus = 'ready' | 'pending' | 'placeholder' | 'error';
+
+/** Read-only discovery information for one managed DataSource registration. */
+export type DataSourceManagerEntryInfo = Readonly<{
+  /** Stable id used to retrieve or subscribe to the DataSource. */
+  dataSourceId: string;
+  /** Current lifecycle state without exposing the owned DataSource instance. */
+  status: DataSourceManagerEntryStatus;
+  /** Whether the manager keeps the entry after its last consumer and retain are released. */
+  persistent: boolean;
+  /** Number of consumers currently subscribed to this entry. */
+  subscriberCount: number;
+  /** Number of callers currently retaining this entry through getOrCreate(). */
+  retainCount: number;
+  /** Resolution failure when status is `error`. */
+  error?: Error;
+}>;
+
+/** Filters and cancellation accepted by read-only DataSource discovery. */
+export type DataSourceManagerDiscoveryOptions = Readonly<{
+  /** Limits compatible results to one common scan family. */
+  queryType?: ScanQueryMetadata['queryType'];
+  /** Aborts metadata discovery without modifying manager registrations. */
+  signal?: AbortSignal;
+}>;
+
+/** Picker-ready metadata for one managed registration. */
+export type DataSourceManagerDiscoveryInfo = DataSourceManagerEntryInfo &
+  Readonly<{
+    /** Whether the ready source implements the requested executable scan contract. */
+    compatible: boolean;
+    /** Common scan metadata returned by a compatible or metadata-only source. */
+    queryMetadata?: ScanQueryMetadata;
+    /** Metadata discovery failure without changing the registration lifecycle state. */
+    discoveryError?: unknown;
+  }>;
 
 /** Callback notified whenever a managed DataSource is replaced or resolves. */
 export type DataSourceSubscriber<DataSourceT extends ManageableDataSource = ManageableDataSource> =
@@ -95,6 +134,51 @@ export class DataSourceManager {
       return true;
     }
     return dataSourceId in this.dataSources;
+  }
+
+  /** Lists managed registrations in insertion order for source discovery and diagnostics. */
+  listDataSources(): readonly DataSourceManagerEntryInfo[] {
+    return Object.freeze(
+      Object.values(this.dataSources).map(dataSourceEntry => dataSourceEntry.getInfo())
+    );
+  }
+
+  /** Discovers picker-ready scan metadata without exposing or retaining owned source instances. */
+  async discoverDataSources(
+    options: DataSourceManagerDiscoveryOptions = {}
+  ): Promise<readonly DataSourceManagerDiscoveryInfo[]> {
+    const discoveries = await Promise.all(
+      Object.values(this.dataSources).map(async dataSourceEntry => {
+        const info = dataSourceEntry.getInfo();
+        if (info.status !== 'ready') {
+          return Object.freeze({...info, compatible: false});
+        }
+        const dataSource = dataSourceEntry.getDataSource() as ManageableDataSource &
+          Partial<ScanQueryMetadataProvider> & {read?: unknown};
+        if (typeof dataSource.getQueryMetadata !== 'function') {
+          return Object.freeze({...info, compatible: false});
+        }
+        try {
+          const queryMetadata = await dataSource.getQueryMetadata({signal: options.signal});
+          const executionMethod =
+            queryMetadata.execution.status === 'supported'
+              ? queryMetadata.execution.method
+              : undefined;
+          const compatible =
+            (!options.queryType || queryMetadata.queryType === options.queryType) &&
+            executionMethod !== undefined &&
+            typeof (dataSource as unknown as Record<string, unknown>)[executionMethod] ===
+              'function';
+          return Object.freeze({...info, compatible, queryMetadata});
+        } catch (discoveryError) {
+          if (options.signal?.aborted) {
+            throw options.signal.reason || new DOMException('Aborted', 'AbortError');
+          }
+          return Object.freeze({...info, compatible: false, discoveryError});
+        }
+      })
+    );
+    return Object.freeze(discoveries);
   }
 
   /** Adds or replaces a managed DataSource. */
@@ -365,6 +449,25 @@ class ManagedDataSourceEntry {
   /** Returns true when at least one caller retained this DataSource. */
   isRetained(): boolean {
     return this.retainCount > 0;
+  }
+
+  /** Returns an immutable public snapshot of this entry's lifecycle state. */
+  getInfo(): DataSourceManagerEntryInfo {
+    const status: DataSourceManagerEntryStatus = !this.isLoaded
+      ? 'pending'
+      : this.error
+        ? 'error'
+        : this.isPlaceholder()
+          ? 'placeholder'
+          : 'ready';
+    return Object.freeze({
+      dataSourceId: this.id,
+      status,
+      persistent: this.persistent !== false,
+      subscriberCount: this.subscribers.size,
+      retainCount: this.retainCount,
+      ...(this.error ? {error: this.error} : {})
+    });
   }
 
   /** Releases this DataSource and clears its subscribers. */

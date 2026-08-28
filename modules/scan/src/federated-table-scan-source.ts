@@ -5,6 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -12,6 +13,9 @@ import {
   type ManageableDataSource,
   type ScanQueryMetadata,
   type ScanQueryMetadataOptions,
+  type ScanExecutionTelemetry,
+  type ScanExecutionTelemetryStatus,
+  type ScanSourceExecutionTelemetry,
   type TableQueryCapabilities,
   type TableQueryExplain,
   type TableScanReadOptions,
@@ -36,7 +40,7 @@ export type FederatedTableSourceEntry = Readonly<{
   /** Stable id resolved through the shared {@link DataSourceManager}. */
   dataSourceId: string;
   /** Source-local predicate, projection, and limit applied before schema reconciliation. */
-  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal'>;
+  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal' | 'onTelemetry'>;
   /** Source-column to federated-column renames applied before compatibility checks. */
   columnMapping?: Readonly<Record<string, string>>;
 }>;
@@ -47,6 +51,8 @@ export type FederatedTableScanSourceOptions = Readonly<{
   sources: readonly FederatedTableSourceEntry[];
   /** Strict requires matching columns; union null-fills missing columns. Defaults to strict. */
   schemaPolicy?: FederatedTableSchemaPolicy;
+  /** Explicit federated schema used to validate, order, and safely normalize physical columns. */
+  outputSchema?: Schema;
   /** Optional display name reported through scan metadata. */
   name?: string;
   /** Optional description reported through scan metadata. */
@@ -90,6 +96,8 @@ export type FederatedTableSourceExplain = Readonly<{
   outputColumns: readonly string[];
   /** Explicit source-column to federated-column mappings. */
   columnMapping: Readonly<Record<string, string>>;
+  /** Output types that require an explicit lossless normalization for this source. */
+  normalizedTypes: Readonly<Record<string, DataType>>;
 }>;
 
 /** Serializable logical explanation for an ordered federated table scan. */
@@ -132,6 +140,25 @@ type FederatedTablePlan = Readonly<{
   sources: readonly ResolvedFederatedSource[];
 }>;
 
+type MutableScanExecutionTelemetry = {
+  status: ScanExecutionTelemetryStatus;
+  sourcesPlanned: number;
+  sourcesRead: number;
+  batchesRead: number;
+  rowsRead: number;
+  rowsTested: number;
+  rowsRetained: number;
+  rowsReturned: number;
+  bytesFetched: number;
+  filesOpened: number;
+  tasksOpened: number;
+  rowsPruned: number;
+  durationMilliseconds: number;
+  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'];
+  sources: ScanSourceExecutionTelemetry[];
+  error?: unknown;
+};
+
 let nextFederatedSourceId = 0;
 
 /**
@@ -150,6 +177,8 @@ export class FederatedTableScanSource
   readonly sources: readonly FederatedTableSourceEntry[];
   /** Schema reconciliation policy. */
   readonly schemaPolicy: FederatedTableSchemaPolicy;
+  /** Optional caller-declared normalized output schema. */
+  readonly outputSchema?: Schema;
   /** Optional display name reported through scan metadata. */
   readonly name?: string;
   /** Human-readable description reported through scan metadata. */
@@ -175,6 +204,7 @@ export class FederatedTableScanSource
     this.dataSourceManager = dataSourceManager;
     this.sources = Object.freeze(options.sources.map(cloneSourceEntry));
     this.schemaPolicy = options.schemaPolicy || 'strict';
+    this.outputSchema = options.outputSchema ? cloneSchema(options.outputSchema) : undefined;
     this.name = options.name;
     this.description = options.description || `${this.sources.length} ordered table sources`;
   }
@@ -214,7 +244,9 @@ export class FederatedTableScanSource
       return Object.freeze({
         ...explanation,
         schemaPolicy: this.schemaPolicy,
-        sources: Object.freeze(plan.sources.map(createSourceExplanation))
+        sources: Object.freeze(
+          plan.sources.map(source => createSourceExplanation(source, plan.schema))
+        )
       });
     } finally {
       this.dataSourceManager.unsubscribe({consumerId});
@@ -231,6 +263,23 @@ export class FederatedTableScanSource
     options: TableScanReadOptions<SQLPredicate> = {}
   ): AsyncIterableIterator<FederatedTableBatch> {
     const consumerId = this.createConsumerId('read');
+    const startedAt = Date.now();
+    const telemetry: MutableScanExecutionTelemetry = {
+      status: 'early-terminated',
+      sourcesPlanned: this.sources.length,
+      sourcesRead: 0,
+      batchesRead: 0,
+      rowsRead: 0,
+      rowsTested: 0,
+      rowsRetained: 0,
+      rowsReturned: 0,
+      bytesFetched: 0,
+      filesOpened: 0,
+      tasksOpened: 0,
+      rowsPruned: 0,
+      durationMilliseconds: 0,
+      sources: []
+    };
     try {
       const plan = await this.resolvePlan(consumerId, options.signal);
       const scanStep = planTableQuery(
@@ -238,69 +287,151 @@ export class FederatedTableScanSource
         options
       )[0] as Readonly<{columns: readonly string[]}>;
       let remaining = options.limit ?? Number.POSITIVE_INFINITY;
-      if (remaining <= 0) return;
+      if (remaining <= 0) {
+        telemetry.earlyTerminationReason = 'limit';
+        return;
+      }
 
       for (const resolvedSource of plan.sources) {
         throwIfAborted(options.signal);
-        if (remaining <= 0) return;
+        if (remaining <= 0) {
+          telemetry.earlyTerminationReason = 'limit';
+          return;
+        }
+        const sourceStartedAt = Date.now();
+        let childTelemetry: ScanExecutionTelemetry | undefined;
+        let sourceCompleted = false;
+        let sourceError: unknown;
+        let sourceBatchesDecoded = 0;
+        let sourceRowsRead = 0;
+        let sourceRowsTested = 0;
+        let sourceRowsRetained = 0;
+        let sourceRowsReturned = 0;
         const sourceReadOptions = createSourceReadOptions(
           resolvedSource,
           scanStep.columns,
           remaining,
-          options
+          options,
+          value => {
+            childTelemetry = value;
+          }
         );
         const sourceResidualPredicate = getSourceResidualPredicate(resolvedSource);
         let sourceRemaining = resolvedSource.entry.query?.limit ?? Number.POSITIVE_INFINITY;
+        telemetry.sourcesRead++;
         let sourceBatchIndex = 0;
-        for await (const batch of resolvedSource.source.read(sourceReadOptions)) {
-          throwIfAborted(options.signal);
-          if (remaining <= 0) return;
-          if (sourceRemaining <= 0) break;
-          if (batch.batchType !== 'data' || batch.length <= 0) continue;
-          const physicalTable = convertBatch(batch, 'arrow-table');
-          const sourceResult = queryArrowTable(physicalTable, {
-            predicate: sourceResidualPredicate,
-            limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
-            signal: options.signal
-          });
-          sourceRemaining -= sourceResult.data.numRows;
-          const currentSourceBatchIndex = sourceBatchIndex++;
-          if (!sourceResult.data.numRows) continue;
-          const canonicalTable = createCanonicalArrowTable(
-            plan.schema,
+        try {
+          for await (const batch of resolvedSource.source.read(sourceReadOptions)) {
+            throwIfAborted(options.signal);
+            if (remaining <= 0) {
+              telemetry.earlyTerminationReason = 'limit';
+              return;
+            }
+            if (sourceRemaining <= 0) break;
+            if (batch.batchType !== 'data') continue;
+            telemetry.batchesRead++;
+            telemetry.rowsRead += batch.length;
+            sourceBatchesDecoded++;
+            sourceRowsRead += batch.length;
+            if (batch.length <= 0) continue;
+            const physicalTable = convertBatch(
+              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema},
+              'arrow-table'
+            );
+            const sourceResult = queryArrowTable(physicalTable, {
+              predicate: sourceResidualPredicate,
+              limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
+              signal: options.signal
+            });
+            if (sourceResidualPredicate) {
+              sourceRowsTested += physicalTable.data.numRows;
+              sourceRowsRetained += sourceResult.data.numRows;
+            }
+            sourceRemaining -= sourceResult.data.numRows;
+            const currentSourceBatchIndex = sourceBatchIndex++;
+            if (!sourceResult.data.numRows) continue;
+            const canonicalTable = createCanonicalArrowTable(
+              plan.schema,
+              resolvedSource,
+              sourceResult
+            );
+            const result = queryArrowTable(canonicalTable, {
+              predicate: options.predicate,
+              columns: options.columns,
+              limit: Number.isFinite(remaining) ? remaining : undefined,
+              signal: options.signal
+            });
+            if (options.predicate) {
+              telemetry.rowsTested += canonicalTable.data.numRows;
+              telemetry.rowsRetained += result.data.numRows;
+            }
+            const resultLength = result.data.numRows;
+            if (!resultLength) continue;
+            const provenance: FederatedTableBatchProvenance = Object.freeze({
+              sourceId: resolvedSource.entry.dataSourceId,
+              sourceIndex: resolvedSource.sourceIndex,
+              sourceBatchIndex: currentSourceBatchIndex,
+              sourceMetadata: batch.metadata
+            });
+            telemetry.rowsReturned += resultLength;
+            sourceRowsReturned += resultLength;
+            yield {
+              batchType: 'data',
+              shape: 'arrow-table',
+              schema: convertArrowToSchema(result.data.schema),
+              data: result.data,
+              length: resultLength,
+              metadata: provenance,
+              sourceId: provenance.sourceId,
+              sourceIndex: provenance.sourceIndex,
+              sourceBatchIndex: provenance.sourceBatchIndex
+            };
+            remaining -= resultLength;
+          }
+          sourceCompleted = true;
+        } catch (error) {
+          sourceError = error;
+          throw error;
+        } finally {
+          const sourceTelemetry = createSourceTelemetry({
             resolvedSource,
-            sourceResult
-          );
-          const result = queryArrowTable(canonicalTable, {
-            predicate: options.predicate,
-            columns: options.columns,
-            limit: Number.isFinite(remaining) ? remaining : undefined,
-            signal: options.signal
+            childTelemetry,
+            sourceStartedAt,
+            sourceCompleted,
+            sourceError,
+            signal: options.signal,
+            batchesDecoded: sourceBatchesDecoded,
+            rowsRead: sourceRowsRead,
+            rowsTested: sourceRowsTested,
+            rowsRetained: sourceRowsRetained,
+            rowsReturned: sourceRowsReturned
           });
-          const resultLength = result.data.numRows;
-          if (!resultLength) continue;
-          const provenance: FederatedTableBatchProvenance = Object.freeze({
-            sourceId: resolvedSource.entry.dataSourceId,
-            sourceIndex: resolvedSource.sourceIndex,
-            sourceBatchIndex: currentSourceBatchIndex,
-            sourceMetadata: batch.metadata
-          });
-          yield {
-            batchType: 'data',
-            shape: 'arrow-table',
-            schema: convertArrowToSchema(result.data.schema),
-            data: result.data,
-            length: resultLength,
-            metadata: provenance,
-            sourceId: provenance.sourceId,
-            sourceIndex: provenance.sourceIndex,
-            sourceBatchIndex: provenance.sourceBatchIndex
-          };
-          remaining -= resultLength;
+          telemetry.sources.push(sourceTelemetry);
+          telemetry.bytesFetched += sourceTelemetry.bytesFetched || 0;
+          telemetry.filesOpened += sourceTelemetry.filesOpened || 0;
+          telemetry.tasksOpened += sourceTelemetry.tasksOpened || 0;
+          telemetry.rowsPruned += sourceTelemetry.rowsPruned || 0;
         }
       }
+      telemetry.status = 'completed';
+    } catch (error) {
+      telemetry.status = options.signal?.aborted ? 'cancelled' : 'failed';
+      telemetry.error = error;
+      throw error;
     } finally {
       this.dataSourceManager.unsubscribe({consumerId});
+      telemetry.durationMilliseconds = Date.now() - startedAt;
+      if (telemetry.status === 'early-terminated' && !telemetry.earlyTerminationReason) {
+        telemetry.earlyTerminationReason = 'consumer-return';
+      }
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
+        Object.freeze({
+          ...telemetry,
+          batchesDecoded: telemetry.batchesRead,
+          sources: Object.freeze([...telemetry.sources])
+        }) satisfies ScanExecutionTelemetry
+      );
     }
   }
 
@@ -338,7 +469,7 @@ export class FederatedTableScanSource
       });
     }
     return Object.freeze({
-      schema: reconcileSchemas(sources, this.schemaPolicy),
+      schema: reconcileSchemas(sources, this.schemaPolicy, this.outputSchema),
       sources: Object.freeze(sources)
     });
   }
@@ -410,7 +541,8 @@ function resolveMappedFields(
 /** Reconciles mapped fields using strict equality or first-seen union ordering. */
 function reconcileSchemas(
   sources: readonly ResolvedFederatedSource[],
-  schemaPolicy: FederatedTableSchemaPolicy
+  schemaPolicy: FederatedTableSchemaPolicy,
+  outputSchema?: Schema
 ): Schema {
   const outputFields = new Map<string, Field & {presentCount: number}>();
   const firstSourceNames = sources[0].fields.map(field => field.outputName);
@@ -430,7 +562,7 @@ function reconcileSchemas(
     for (const mappedField of source.fields) {
       const current = outputFields.get(mappedField.outputName);
       if (current) {
-        if (!areDataTypesEqual(current.type, mappedField.field.type)) {
+        if (!outputSchema && !areDataTypesEqual(current.type, mappedField.field.type)) {
           throw new Error(
             `Federated column type mismatch for ${mappedField.outputName}: ${formatDataType(current.type)} versus ${formatDataType(mappedField.field.type)} in ${source.entry.dataSourceId}`
           );
@@ -451,7 +583,71 @@ function reconcileSchemas(
     ...field,
     nullable: Boolean(field.nullable || presentCount < sources.length)
   }));
-  return {fields, metadata: {}};
+  const inferredSchema = {fields, metadata: {}};
+  return outputSchema
+    ? validateAndCloneOutputSchema(outputSchema, sources, inferredSchema, schemaPolicy)
+    : inferredSchema;
+}
+
+/** Validates an explicit output contract and permits only deterministic lossless casts. */
+function validateAndCloneOutputSchema(
+  outputSchema: Schema,
+  sources: readonly ResolvedFederatedSource[],
+  inferredSchema: Schema,
+  schemaPolicy: FederatedTableSchemaPolicy
+): Schema {
+  const outputFields = new Map<string, Field>();
+  for (const field of outputSchema.fields) {
+    if (!field.name || outputFields.has(field.name)) {
+      throw new Error(
+        `Federated output schema contains an invalid or duplicate field: ${field.name}`
+      );
+    }
+    outputFields.set(field.name, field);
+  }
+  const inferredNames = new Set(inferredSchema.fields.map(field => field.name));
+  const missingFromContract = [...inferredNames].filter(name => !outputFields.has(name));
+  const absentFromSources = outputSchema.fields
+    .map(field => field.name)
+    .filter(name => !inferredNames.has(name));
+  if (missingFromContract.length || (schemaPolicy === 'strict' && absentFromSources.length)) {
+    throw new Error(
+      `Federated output schema mismatch: missing [${missingFromContract.join(', ')}], absent [${absentFromSources.join(', ')}]`
+    );
+  }
+  for (const outputField of outputSchema.fields) {
+    const presentFields = sources.flatMap(source =>
+      source.fields
+        .filter(field => field.outputName === outputField.name)
+        .map(field => ({sourceId: source.entry.dataSourceId, field: field.field}))
+    );
+    if (!presentFields.length) {
+      if (!outputField.nullable) {
+        throw new Error(
+          `Federated output field is absent from every source and must be nullable: ${outputField.name}`
+        );
+      }
+      continue;
+    }
+    for (const presentField of presentFields) {
+      if (presentField.field.nullable && !outputField.nullable) {
+        throw new Error(
+          `Federated output field cannot remove nullability for ${outputField.name} in ${presentField.sourceId}`
+        );
+      }
+      if (!isLosslessDataTypeCast(presentField.field.type, outputField.type)) {
+        throw new Error(
+          `Unsupported federated normalization for ${outputField.name}: ${formatDataType(presentField.field.type)} to ${formatDataType(outputField.type)} in ${presentField.sourceId}`
+        );
+      }
+    }
+    if (presentFields.length < sources.length && !outputField.nullable) {
+      throw new Error(
+        `Federated union field must be nullable when absent from a source: ${outputField.name}`
+      );
+    }
+  }
+  return cloneSchema(outputSchema);
 }
 
 /** Creates the source-local query required by the global canonical scan step. */
@@ -459,7 +655,8 @@ function createSourceReadOptions(
   source: ResolvedFederatedSource,
   requiredOutputColumns: readonly string[],
   remaining: number,
-  options: TableScanReadOptions<SQLPredicate>
+  options: TableScanReadOptions<SQLPredicate>,
+  onTelemetry: (telemetry: ScanExecutionTelemetry) => void
 ): TableScanReadOptions<SQLPredicate> {
   const sourceResidualPredicate = getSourceResidualPredicate(source);
   const requiredSourceColumns = requiredOutputColumns
@@ -481,7 +678,8 @@ function createSourceReadOptions(
     columns: Object.freeze([...new Set(requiredSourceColumns)]),
     predicate: sourceResidualPredicate ? undefined : source.entry.query?.predicate,
     limit: sourceResidualPredicate ? undefined : Number.isFinite(limit) ? limit : undefined,
-    signal: options.signal
+    signal: options.signal,
+    onTelemetry
   };
 }
 
@@ -503,18 +701,101 @@ function createCanonicalArrowTable(
   for (const field of arrowSchema.fields) {
     const sourceName = source.sourceNameByOutputName.get(field.name);
     const vector = sourceName ? physicalTable.data.getChild(sourceName) : null;
-    columns[field.name] =
-      vector ||
-      arrow.vectorFromArray(
-        Array.from({length: physicalTable.data.numRows}, () => null),
-        field.type
-      );
+    const mappedField = source.fields.find(sourceField => sourceField.outputName === field.name);
+    columns[field.name] = vector
+      ? mappedField &&
+        !areDataTypesEqual(
+          mappedField.field.type,
+          schema.fields.find(schemaField => schemaField.name === field.name)!.type
+        )
+        ? arrow.vectorFromArray(Array.from(vector), field.type)
+        : vector
+      : arrow.vectorFromArray(
+          Array.from({length: physicalTable.data.numRows}, () => null),
+          field.type
+        );
   }
   return {
     shape: 'arrow-table',
     schema,
     data: new arrow.Table(arrowSchema, columns)
   };
+}
+
+/** Creates one portable per-source telemetry record and preserves source-specific counters. */
+function createSourceTelemetry(
+  options: Readonly<{
+    resolvedSource: ResolvedFederatedSource;
+    childTelemetry?: ScanExecutionTelemetry;
+    sourceStartedAt: number;
+    sourceCompleted: boolean;
+    sourceError?: unknown;
+    signal?: AbortSignal;
+    batchesDecoded: number;
+    rowsRead: number;
+    rowsTested: number;
+    rowsRetained: number;
+    rowsReturned: number;
+  }>
+): ScanSourceExecutionTelemetry {
+  const {resolvedSource, childTelemetry} = options;
+  const status: ScanExecutionTelemetryStatus =
+    childTelemetry?.status ||
+    (options.signal?.aborted
+      ? 'cancelled'
+      : options.sourceError
+        ? 'failed'
+        : options.sourceCompleted
+          ? 'completed'
+          : 'early-terminated');
+  const details = childTelemetry
+    ? Object.freeze(
+        Object.fromEntries(
+          Object.entries(childTelemetry).filter(
+            ([key]) =>
+              ![
+                'status',
+                'sourcesPlanned',
+                'sourcesRead',
+                'batchesRead',
+                'batchesDecoded',
+                'rowsRead',
+                'rowsTested',
+                'rowsRetained',
+                'rowsReturned',
+                'bytesRead',
+                'bytesFetched',
+                'filesOpened',
+                'tasksOpened',
+                'rowsPruned',
+                'durationMilliseconds',
+                'sources',
+                'details',
+                'error'
+              ].includes(key)
+          )
+        )
+      )
+    : undefined;
+  return Object.freeze({
+    sourceId: resolvedSource.entry.dataSourceId,
+    sourceType: resolvedSource.metadata.sourceType,
+    sourceIndex: resolvedSource.sourceIndex,
+    status,
+    filesOpened: childTelemetry?.filesOpened,
+    tasksOpened: childTelemetry?.tasksOpened,
+    bytesFetched: childTelemetry?.bytesFetched ?? childTelemetry?.bytesRead,
+    batchesDecoded: childTelemetry?.batchesDecoded ?? options.batchesDecoded,
+    rowsRead: childTelemetry?.rowsRead ?? options.rowsRead,
+    rowsTested: childTelemetry?.rowsTested || options.rowsTested || undefined,
+    rowsRetained: childTelemetry?.rowsRetained || options.rowsRetained || undefined,
+    rowsReturned: options.rowsReturned,
+    rowsPruned: childTelemetry?.rowsPruned,
+    durationMilliseconds: Date.now() - options.sourceStartedAt,
+    details:
+      childTelemetry?.details ?? (details && Object.keys(details).length ? details : undefined),
+    error: childTelemetry?.error ?? options.sourceError
+  });
 }
 
 /** Returns exact aggregate row count only when child-local filters and limits cannot change it. */
@@ -540,15 +821,81 @@ function getFederatedStatistics(
 }
 
 /** Creates serializable per-source explanation details. */
-function createSourceExplanation(source: ResolvedFederatedSource): FederatedTableSourceExplain {
+function createSourceExplanation(
+  source: ResolvedFederatedSource,
+  outputSchema: Schema
+): FederatedTableSourceExplain {
+  const normalizedTypes = Object.fromEntries(
+    source.fields
+      .filter(field => {
+        const outputField = outputSchema.fields.find(
+          schemaField => schemaField.name === field.outputName
+        );
+        return outputField && !areDataTypesEqual(outputField.type, field.field.type);
+      })
+      .map(field => [
+        field.outputName,
+        outputSchema.fields.find(schemaField => schemaField.name === field.outputName)!.type
+      ])
+  );
   return Object.freeze({
     sourceId: source.entry.dataSourceId,
     sourceIndex: source.sourceIndex,
     sourceType: source.metadata.sourceType,
     sourceColumns: Object.freeze(source.fields.map(field => field.sourceName)),
     outputColumns: Object.freeze(source.fields.map(field => field.outputName)),
-    columnMapping: Object.freeze({...source.entry.columnMapping})
+    columnMapping: Object.freeze({...source.entry.columnMapping}),
+    normalizedTypes: Object.freeze(normalizedTypes)
   });
+}
+
+/** Returns true when Arrow can normalize values without narrowing or changing their domain. */
+function isLosslessDataTypeCast(sourceType: DataType, outputType: DataType): boolean {
+  if (areDataTypesEqual(sourceType, outputType) || sourceType === 'null') return true;
+  if (typeof sourceType === 'object' && sourceType.type === 'dictionary') {
+    return isLosslessDataTypeCast(sourceType.dictionary, outputType);
+  }
+  if (sourceType === 'utf8-view' && outputType === 'utf8') return true;
+  if (sourceType === 'binary-view' && outputType === 'binary') return true;
+  const sourceInteger = getIntegerType(sourceType);
+  const outputInteger = getIntegerType(outputType);
+  if (sourceInteger && outputInteger) {
+    return (
+      (sourceInteger.signed === outputInteger.signed && sourceInteger.bits <= outputInteger.bits) ||
+      (!sourceInteger.signed && outputInteger.signed && sourceInteger.bits < outputInteger.bits)
+    );
+  }
+  const sourceFloatBits = getFloatBits(sourceType);
+  const outputFloatBits = getFloatBits(outputType);
+  if (sourceFloatBits && outputFloatBits) return sourceFloatBits <= outputFloatBits;
+  return Boolean(sourceInteger && sourceInteger.bits <= 32 && outputFloatBits === 64);
+}
+
+/** Returns the signedness and width for portable integer aliases. */
+function getIntegerType(dataType: DataType): {signed: boolean; bits: number} | null {
+  const types: Partial<Record<string, {signed: boolean; bits: number}>> = {
+    int: {signed: true, bits: 32},
+    int8: {signed: true, bits: 8},
+    int16: {signed: true, bits: 16},
+    int32: {signed: true, bits: 32},
+    int64: {signed: true, bits: 64},
+    uint8: {signed: false, bits: 8},
+    uint16: {signed: false, bits: 16},
+    uint32: {signed: false, bits: 32},
+    uint64: {signed: false, bits: 64}
+  };
+  return typeof dataType === 'string' ? types[dataType] || null : null;
+}
+
+/** Returns the width for portable floating-point aliases. */
+function getFloatBits(dataType: DataType): number | null {
+  const types: Partial<Record<string, number>> = {float: 32, float16: 16, float32: 32, float64: 64};
+  return typeof dataType === 'string' ? types[dataType] || null : null;
+}
+
+/** Clones a portable schema through the canonical Arrow serializer. */
+function cloneSchema(schema: Schema): Schema {
+  return convertArrowToSchema(convertSchemaToArrow(schema));
 }
 
 /** Compares portable data types, including nested types and typed union identifiers. */

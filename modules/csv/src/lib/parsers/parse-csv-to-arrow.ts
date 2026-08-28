@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffersAsync,
+  makeTableScanBatch,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {
   AsyncQueue,
@@ -407,11 +411,7 @@ async function* parseRawArrowCSVInSingleBatch(
     (await parseRawArrowCSVText(csvText || new TextDecoder().decode(arrayBuffer), options));
 
   yield {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: arrowTable.schema,
-    data: arrowTable.data,
-    length: arrowTable.data.numRows,
+    ...makeTableScanBatch(arrowTable),
     count: 0,
     bytesUsed: arrayBuffer.byteLength
   };

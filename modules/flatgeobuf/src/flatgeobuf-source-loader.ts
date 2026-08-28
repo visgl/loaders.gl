@@ -17,7 +17,12 @@ import type {
   VectorSourceLayer,
   VectorSourceMetadata
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource, explainTableQuery} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  explainTableQuery,
+  makeTableScanBatch
+} from '@loaders.gl/loader-utils';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,
@@ -177,13 +182,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
   /** Streams one stable-schema Arrow batch for a portable FlatGeobuf query. */
   async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<ArrowTableBatch> {
     const table = await this.query(options);
-    yield {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: table.data.numRows,
-      schema: table.schema,
-      data: table.data
-    };
+    yield makeTableScanBatch(table);
   }
 
   protected getHeaderInfo(): Promise<HeaderInfo> { this.headerInfoPromise ||= loadHeaderInfo(this.url, this.fetch); return this.headerInfoPromise; }

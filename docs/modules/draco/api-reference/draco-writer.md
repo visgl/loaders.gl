@@ -41,6 +41,7 @@ const data = await encode(mesh, DracoWriter, options);
 | `draco.speed`              | `[number, number]`                                           | Draco   | Encoding and decoding speed, from `0` (slowest) to `10` (fastest).                          |
 | `draco.method`             | `'MESH_EDGEBREAKER_ENCODING' \| 'MESH_SEQUENTIAL_ENCODING'` | Draco   | Triangle mesh encoding method.                                                              |
 | `draco.quantization`       | `Partial<Record<DracoAttributeType, number>>`                | Draco   | Quantization bits keyed by Draco attribute type, such as `POSITION: 14`.                    |
+| `draco.attributeQuantization` | `Record<string, number \| DracoExplicitQuantization>`      | `{}`    | Quantization keyed by exact application attribute name.                                     |
 | `draco.attributeTypes`     | `Record<string, DracoAttributeType>`                         | `{}`    | Overrides the Draco compression category for application attributes such as `coordinates`. |
 | `draco.attributeNameEntry` | `string`                                                     | `name`  | Metadata key used to preserve each original application attribute name.                     |
 | `draco.metadata`           | `DracoMetadata`                                              | `{}`    | Geometry metadata containing strings, numbers, or `Int32Array` values.                      |
@@ -56,6 +57,24 @@ await encode(mesh, DracoWriter, {
   }
 });
 ```
+
+Use `attributeQuantization` when attributes in the same Draco category need different settings.
+An exact attribute setting overrides `quantization` for that attribute. A number selects only the
+bit depth; an object also supplies the quantization origin and range.
+
+```typescript
+await encode(mesh, DracoWriter, {
+  draco: {
+    quantization: {TEX_COORD: 10},
+    attributeQuantization: {
+      TEXCOORD_1: {bits: 14, origin: [-1, -1], range: 2}
+    }
+  }
+});
+```
+
+Quantization bits must be integers from `1` through `30`. Explicit origins must have one finite
+value per attribute component, and explicit ranges must be positive and finite.
 
 ## Dependencies
 

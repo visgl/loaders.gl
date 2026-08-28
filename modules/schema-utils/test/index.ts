@@ -5,6 +5,7 @@
 import './lib/utils/async-queue.spec';
 
 import './lib/table/table-accessors.spec';
+import './lib/table/query-arrow-table.cross.spec';
 import './lib/table/make-table.spec';
 import './lib/table/make-table-from-batches.spec';
 
