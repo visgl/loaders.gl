@@ -4,6 +4,7 @@ import {
   processOnWorker,
   preloadWorker,
   NullWorker,
+  WorkerBody,
   isBrowser
 } from '@loaders.gl/worker-utils';
 test('canProcessOnWorker#custom worker URL', () => {
@@ -76,4 +77,30 @@ test('preloadWorker handles count above maxConcurrency', async () => {
     reuseWorkers: true
   });
   expect(nullData, 'preloaded constrained worker pool can process later jobs').toBe('abc');
+});
+
+test('WorkerBody filters browser messages and manages listeners', async () => {
+  const receivedMessages: Array<{type: string; payload: unknown}> = [];
+  const onMessage = (type: string, payload: unknown): void => {
+    receivedMessages.push({type, payload});
+  };
+
+  await WorkerBody.removeEventListener(onMessage);
+  await WorkerBody.addEventListener(onMessage);
+  await WorkerBody.addEventListener(onMessage);
+
+  globalThis.dispatchEvent(
+    new MessageEvent('message', {
+      data: {source: 'unrelated', type: 'done', payload: {result: 'ignored'}}
+    })
+  );
+  globalThis.dispatchEvent(
+    new MessageEvent('message', {
+      data: {source: 'loaders.gl', type: 'done', payload: {result: 'accepted'}}
+    })
+  );
+
+  expect(receivedMessages).toEqual([{type: 'done', payload: {result: 'accepted'}}]);
+  await WorkerBody.removeEventListener(onMessage);
+  await WorkerBody.removeEventListener(onMessage);
 });
