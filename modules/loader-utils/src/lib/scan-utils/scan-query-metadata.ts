@@ -11,6 +11,7 @@ import type {
 } from './table-query';
 import type {PointCloudQueryOptions} from './point-cloud-query';
 import type {RasterQueryCapabilities} from './raster-query';
+import type {TableQueryExplain} from './table-query-explain';
 
 /** Semantic role used by query editors to choose appropriate controls for a column. */
 export type ScanColumnRole =
@@ -270,6 +271,8 @@ export type TableScanSource<
     ColumnarPredicateProperty
   >
 > = ScanQueryMetadataProvider & {
+  /** Explains the logical plan and physical support without decoding result rows. */
+  explain?(options?: TableScanReadOptions<PredicateT>): Promise<TableQueryExplain<PredicateT>>;
   /** Reads the query result as ordered batches without changing the logical query semantics. */
   read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
 };

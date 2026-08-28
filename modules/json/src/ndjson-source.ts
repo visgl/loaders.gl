@@ -1,5 +1,6 @@
 import {
   createScanQueryMetadata,
+  explainTableQuery,
   filterColumnarRowIndices,
   validateColumnarPredicate,
   validateTableQueryLimit
@@ -17,6 +18,14 @@ import type {TableBatch} from '@loaders.gl/schema';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {NDJSONFormat} from './json-format';
 import type {NDJSONLoaderOptions} from './ndjson-loader-with-parser';
+
+const NDJSON_TABLE_QUERY_CAPABILITIES = Object.freeze({
+  predicate: 'residual',
+  projection: 'pushdown',
+  limit: 'pushdown',
+  streaming: true,
+  cancellation: true
+} as const);
 
 /** Streams newline-delimited JSON through the common table scan contract. */
 export type NDJSONSourceOptions = NDJSONLoaderOptions & DataSourceOptions;
@@ -36,6 +45,16 @@ export class NDJSONTableSource
   async getQueryMetadata(options: TableScanReadOptions = {}): Promise<ScanQueryMetadata> {
     this.metadataPromise ||= this.discoverMetadata(options.signal);
     return await this.metadataPromise;
+  }
+
+  /** Explains the portable NDJSON query without reading result batches. */
+  async explain(options: TableScanReadOptions = {}) {
+    const metadata = await this.getQueryMetadata(options);
+    return explainTableQuery(
+      metadata.columns.map(column => column.name),
+      options,
+      NDJSON_TABLE_QUERY_CAPABILITIES
+    );
   }
 
   /** Streams NDJSON batches in source order with an optional global limit. */
@@ -110,6 +129,8 @@ export class NDJSONTableSource
           rowsReturned,
           bytesRead: bytesFetched,
           bytesFetched,
+          filesOpened: sourcesRead,
+          tasksOpened: sourcesRead,
           durationMilliseconds: Date.now() - startedAt,
           earlyTerminationReason,
           ...(executionError === undefined ? {} : {error: executionError})
@@ -127,13 +148,7 @@ export class NDJSONTableSource
           execution: {status: 'supported', method: 'read'},
           schema: batch.schema,
           capabilities: {
-            table: {
-              predicate: 'residual',
-              projection: 'pushdown',
-              limit: 'pushdown',
-              streaming: true,
-              cancellation: true
-            }
+            table: NDJSON_TABLE_QUERY_CAPABILITIES
           }
         });
     throw new Error('NDJSON source is empty and has no discoverable schema');
@@ -227,18 +242,35 @@ function truncateBatch(batch: TableBatch, length: number): TableBatch {
 
 function projectBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
   if (columns === undefined) return batch;
+  const schema = projectSchema(batch, columns);
   if (batch.shape === 'object-row-table')
     return {
       ...batch,
+      schema,
       data: batch.data.map(row => Object.fromEntries(columns.map(column => [column, row[column]])))
     } as TableBatch;
   if (batch.shape === 'columnar-table')
     return {
       ...batch,
+      schema,
       data: Object.fromEntries(columns.map(column => [column, batch.data[column]]))
     } as TableBatch;
-  if (batch.shape === 'arrow-table') return {...batch, data: batch.data.select([...columns])};
+  if (batch.shape === 'arrow-table')
+    return {...batch, schema, data: batch.data.select([...columns])};
   return batch;
+}
+
+/** Retains portable schema fields in the caller-requested projection order. */
+function projectSchema(batch: TableBatch, columns: readonly string[]): TableBatch['schema'] {
+  if (!batch.schema) return undefined;
+  const fieldsByName = new Map(batch.schema.fields.map(field => [field.name, field]));
+  return {
+    ...batch.schema,
+    fields: columns.flatMap(column => {
+      const field = fieldsByName.get(column);
+      return field ? [field] : [];
+    })
+  };
 }
 
 function filterBatch(batch: TableBatch, predicate: TableScanReadOptions['predicate']): TableBatch {

@@ -160,11 +160,15 @@ export class DataSourceManager {
         }
         try {
           const queryMetadata = await dataSource.getQueryMetadata({signal: options.signal});
+          const executionMethod =
+            queryMetadata.execution.status === 'supported'
+              ? queryMetadata.execution.method
+              : undefined;
           const compatible =
             (!options.queryType || queryMetadata.queryType === options.queryType) &&
-            queryMetadata.execution.status === 'supported' &&
-            queryMetadata.execution.method === 'read' &&
-            typeof dataSource.read === 'function';
+            executionMethod !== undefined &&
+            typeof (dataSource as unknown as Record<string, unknown>)[executionMethod] ===
+              'function';
           return Object.freeze({...info, compatible, queryMetadata});
         } catch (discoveryError) {
           if (options.signal?.aborted) {

@@ -1,6 +1,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
+  explainTableQuery,
   filterColumnarRowIndices,
   validateColumnarPredicate,
   validateTableQueryLimit
@@ -15,8 +16,17 @@ import type {
   TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
+
+const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
+  predicate: 'residual',
+  projection: 'pushdown',
+  limit: 'pushdown',
+  streaming: true,
+  cancellation: true
+} as const);
 
 /** Streams Arrow IPC record batches through the common table scan contract. */
 export class ArrowTableSource
@@ -34,6 +44,16 @@ export class ArrowTableSource
   async getQueryMetadata(options: TableScanReadOptions = {}): Promise<ScanQueryMetadata> {
     this.metadataPromise ||= this.discoverMetadata(options.signal);
     return await this.metadataPromise;
+  }
+
+  /** Explains the portable Arrow IPC query without decoding result rows. */
+  async explain(options: TableScanReadOptions = {}) {
+    const metadata = await this.getQueryMetadata(options);
+    return explainTableQuery(
+      metadata.columns.map(column => column.name),
+      options,
+      ARROW_TABLE_QUERY_CAPABILITIES
+    );
   }
 
   /** Streams Arrow record batches in source order with an optional global limit. */
@@ -85,6 +105,7 @@ export class ArrowTableSource
             outputLength === projectedData.numRows
               ? projectedData
               : projectedData.slice(0, outputLength),
+          schema: convertArrowToSchema(projectedData.schema),
           length: outputLength
         } as TableBatch;
         remaining -= outputLength;
@@ -111,6 +132,8 @@ export class ArrowTableSource
           rowsReturned,
           bytesRead: bytesFetched,
           bytesFetched,
+          filesOpened: sourcesRead,
+          tasksOpened: sourcesRead,
           earlyTerminationReason,
           durationMilliseconds: Date.now() - startedAt,
           ...(executionError === undefined ? {} : {error: executionError})
@@ -126,15 +149,9 @@ export class ArrowTableSource
         sourceType: 'arrow',
         queryType: 'table',
         execution: {status: 'supported', method: 'read'},
-        schema: {fields: arrowSchema.fields as never, metadata: {}},
+        schema: convertArrowToSchema(arrowSchema),
         capabilities: {
-          table: {
-            predicate: 'residual',
-            projection: 'pushdown',
-            limit: 'pushdown',
-            streaming: true,
-            cancellation: true
-          }
+          table: ARROW_TABLE_QUERY_CAPABILITIES
         }
       });
     }
@@ -164,7 +181,7 @@ function filterArrowData(
   const columnNames = new Set(data.schema.fields.map(field => field.name));
   validateColumnarPredicate(predicate, columnNames);
   const columns = Object.fromEntries(
-    data.schema.fields.map(field => [field.name, data.getChild(field.name)!])
+    data.schema.fields.map(field => [field.name, Array.from(data.getChild(field.name)!)])
   );
   const rowIndices = filterColumnarRowIndices(predicate as never, columns as never, data.numRows);
   if (rowIndices.length === data.numRows) return data;

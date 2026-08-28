@@ -333,7 +333,10 @@ export class FederatedTableScanSource
             sourceBatchesDecoded++;
             sourceRowsRead += batch.length;
             if (batch.length <= 0) continue;
-            const physicalTable = convertBatch(batch, 'arrow-table');
+            const physicalTable = convertBatch(
+              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema},
+              'arrow-table'
+            );
             const sourceResult = queryArrowTable(physicalTable, {
               predicate: sourceResidualPredicate,
               limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
