@@ -15,6 +15,7 @@ import {
 } from '../src/orc-source-loader';
 import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
 import {ORCWriter} from '../src/orc-writer';
+import {encodeORC} from '../src/lib/encoders/encode-orc';
 import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
 
 test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
@@ -282,6 +283,125 @@ test('ORCWriter#encode writes dictionary-encoded repeated binary values', async 
       [1, 2]
     ]);
   }
+});
+
+test('ORC writer round-trips primitive columns, nulls, and multiple stripes', async () => {
+  const schema = {
+    fields: [
+      {name: 'enabled', type: 'bool'},
+      {name: 'tiny', type: 'int8'},
+      {name: 'small', type: 'int16'},
+      {name: 'count', type: 'int32'},
+      {name: 'large', type: 'int64'},
+      {name: 'ratio', type: 'float32'},
+      {name: 'score', type: 'float64'},
+      {name: 'payload', type: 'binary'},
+      {name: 'day', type: 'date-day'},
+      {name: 'label', type: 'utf8'}
+    ]
+  };
+  const table = {
+    shape: 'object-row-table' as const,
+    schema,
+    data: [
+      {
+        enabled: true,
+        tiny: -2,
+        small: 300,
+        count: -50_000,
+        large: 123_456,
+        ratio: 1.25,
+        score: -2.5,
+        payload: new Uint8Array([1, 2]),
+        day: 20_000,
+        label: 'repeat'
+      },
+      {
+        enabled: false,
+        tiny: 3,
+        small: -400,
+        count: 75_000,
+        large: -654_321,
+        ratio: -3.5,
+        score: 4.75,
+        payload: new Uint8Array([3]),
+        day: 20_001,
+        label: 'repeat'
+      },
+      {
+        enabled: null,
+        tiny: null,
+        small: null,
+        count: null,
+        large: null,
+        ratio: null,
+        score: null,
+        payload: null,
+        day: null,
+        label: null
+      }
+    ]
+  } as any;
+
+  const encoded = encodeORC(table, {orc: {stripeSize: 2}});
+  const result = await ORCLoaderWithParser.parse(encoded);
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape !== 'arrow-table') return;
+  expect(result.data.numRows).toBe(3);
+  expect(result.data.getChild('enabled')?.toArray()).toEqual([true, false, null]);
+  expect(Array.from(result.data.getChild('count')?.toArray() || [])).toEqual([-50_000, 75_000, 0]);
+  expect(result.data.getChild('label')?.toArray()).toEqual(['repeat', 'repeat', null]);
+  expect(
+    result.data
+      .getChild('payload')
+      ?.toArray()
+      .slice(0, 2)
+      .map(value => Array.from(value as Uint8Array))
+  ).toEqual([[1, 2], [3]]);
+});
+
+test('ORC writer supports columnar and explicitly typed empty tables', async () => {
+  const columnar = {
+    shape: 'columnar-table' as const,
+    schema: {fields: [{name: 'value', type: 'int32'}]},
+    data: {value: [1, 2, 3]}
+  } as any;
+  const columnarResult = await ORCLoaderWithParser.parse(encodeORC(columnar));
+  expect(columnarResult.shape).toBe('arrow-table');
+  if (columnarResult.shape === 'arrow-table') {
+    expect(Array.from(columnarResult.data.getChild('value')?.toArray() || [])).toEqual([1, 2, 3]);
+  }
+
+  const empty = encodeORC({shape: 'object-row-table', data: []} as any, {
+    orc: {schema: [{name: 'name', type: 'string'}]}
+  });
+  const emptyResult = await ORCLoaderWithParser.parse(empty);
+  expect(emptyResult.shape).toBe('arrow-table');
+  if (emptyResult.shape === 'arrow-table') {
+    expect(emptyResult.data.numRows).toBe(0);
+    expect(emptyResult.data.schema.fields[0].name).toBe('name');
+  }
+});
+
+test('ORC writer rejects invalid shapes, stripe sizes, and unsupported types', () => {
+  expect(() =>
+    encodeORC(
+      {
+        shape: 'object-row-table',
+        schema: {fields: [{name: 'value', type: 'int32'}]},
+        data: [{value: 1}]
+      } as any,
+      {orc: {stripeSize: 0}}
+    )
+  ).toThrow('positive integer');
+  expect(() => encodeORC({shape: 'unknown-table'} as any)).toThrow('supports Arrow, columnar');
+  expect(() =>
+    encodeORC({
+      shape: 'object-row-table',
+      schema: {fields: [{name: 'value', type: 'duration'}]},
+      data: [{value: 1}]
+    } as any)
+  ).toThrow('Unsupported ORC writer type');
 });
 
 test('ORCLoader#parse decodes patched-base RLEv2 integers', async () => {

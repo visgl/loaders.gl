@@ -3,9 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
-import {describe, expect, test} from 'vitest';
+import {describe, expect, test, vi} from 'vitest';
 import type {RasterData, RasterSourceMetadata} from '@loaders.gl/loader-utils';
 import {
+  RasterSourceLayer,
   colorizeRasterData,
   createDefaultRasterRenderResult,
   createRasterRenderResult,
@@ -203,3 +204,136 @@ describe('raster viewport and placement', () => {
     expect(Array.from(image.data.slice(4, 8))).toEqual([0, 0, 0, 0]);
   });
 });
+
+describe('RasterSourceLayer lifecycle', () => {
+  test('initializes, updates, and renders accepted raster results', () => {
+    const layer = createRasterLayer();
+    layer.initializeState();
+    expect(layer.shouldUpdateState()).toBe(true);
+    expect(layer.renderLayers()).toBeNull();
+    expect(layer.isLoaded).toBe(false);
+
+    const requestRaster = vi.fn();
+    layer.context = {viewport: createViewport([-10, -5, 20, 15])};
+    layer.state.rasterSet = {requestRaster, isLoaded: true};
+    layer.state.metadata = GEOGRAPHIC_METADATA;
+    layer.updateState({
+      props: layer.props,
+      oldProps: layer.props,
+      changeFlags: {dataChanged: false, viewportChanged: true}
+    });
+    expect(requestRaster).toHaveBeenCalledTimes(1);
+
+    layer.getSubLayerProps = (props: any) => props;
+    layer.state.renderResult = {
+      image: {data: new Uint8ClampedArray(4), width: 1, height: 1},
+      bounds: [-10, -5, 20, 15],
+      coordinateSystem: COORDINATE_SYSTEM.LNGLAT
+    };
+    const bitmapLayer = layer.renderLayers();
+    expect(bitmapLayer.props.bounds).toEqual([-10, -5, 20, 15]);
+    expect(bitmapLayer.props.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+  });
+
+  test('requests default and custom raster bands from viewport metadata', () => {
+    const getRasterParameters = vi.fn(viewport => ({viewport, bands: [2], custom: true}));
+    const layer = createRasterLayer({
+      rasterParameters: {bands: [1]},
+      getRasterParameters,
+      debounceTime: 15
+    });
+    const requestRaster = vi.fn();
+    layer.state = {
+      resolvedSource: null,
+      rasterSet: {requestRaster},
+      unsubscribeRasterSetEvents: null,
+      metadata: {...GEOGRAPHIC_METADATA, bandCount: 4},
+      renderResult: null
+    };
+    layer.requestRaster(createViewport([-10, -5, 20, 15]));
+    expect(getRasterParameters).toHaveBeenCalled();
+    expect(requestRaster).toHaveBeenCalledWith(
+      expect.objectContaining({bands: [2], custom: true}),
+      15
+    );
+
+    layer.state.metadata = null;
+    layer.requestRaster(createViewport([-10, -5, 20, 15]));
+    expect(requestRaster).toHaveBeenCalledTimes(1);
+  });
+
+  test('handles metadata and raster events and releases request managers', () => {
+    const onMetadataLoad = vi.fn();
+    const onRasterLoad = vi.fn();
+    const layer = createRasterLayer({onMetadataLoad, onRasterLoad});
+    const requestRaster = vi.fn();
+    const unsubscribe = vi.fn();
+    const finalize = vi.fn();
+    layer.context = {viewport: createViewport([-10, -5, 20, 15])};
+    layer.setState = (update: any) => Object.assign(layer.state, update);
+    layer.state = {
+      resolvedSource: null,
+      rasterSet: {requestRaster, finalize},
+      unsubscribeRasterSetEvents: unsubscribe,
+      metadata: null,
+      renderResult: null
+    };
+    layer.handleRasterLoad({} as any);
+    expect(onRasterLoad).not.toHaveBeenCalled();
+
+    layer.handleMetadataLoad(GEOGRAPHIC_METADATA);
+    expect(onMetadataLoad).toHaveBeenCalledWith(GEOGRAPHIC_METADATA);
+    expect(requestRaster).toHaveBeenCalled();
+    layer.handleRasterLoad({
+      requestId: 1,
+      raster: createRaster(new Float32Array([0, 1, 2, 3])),
+      parameters: {
+        viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), GEOGRAPHIC_METADATA),
+        bands: [0]
+      }
+    });
+    expect(layer.state.renderResult).toBeTruthy();
+    expect(onRasterLoad).toHaveBeenCalled();
+
+    layer.releaseRasterSet();
+    expect(unsubscribe).toHaveBeenCalled();
+    expect(finalize).toHaveBeenCalled();
+    expect(layer.state.rasterSet).toBeNull();
+  });
+
+  test('resolves direct raster sources with supplied metadata', async () => {
+    const rasterSource = {
+      async getMetadata() {
+        return GEOGRAPHIC_METADATA;
+      },
+      async getRaster() {
+        return createRaster(new Float32Array([0, 1, 2, 3]));
+      }
+    };
+    const layer = createRasterLayer({data: rasterSource as any, metadata: GEOGRAPHIC_METADATA});
+    layer.context = {viewport: createViewport([-10, -5, 20, 15])};
+    layer.setState = (update: any) => Object.assign(layer.state, update);
+    layer.raiseError = vi.fn();
+    layer.initializeState();
+    await layer.resolveSource(layer.props);
+    expect(layer.state.resolvedSource?.source).toBe(rasterSource);
+    expect(layer.state.metadata).toBe(GEOGRAPHIC_METADATA);
+    expect(layer.state.rasterSet).toBeTruthy();
+    layer.releaseRasterSet();
+  });
+});
+
+function createRasterLayer(overrides: Record<string, unknown> = {}) {
+  return new RasterSourceLayer({
+    id: 'raster-test',
+    data: {
+      async getMetadata() {
+        return GEOGRAPHIC_METADATA;
+      },
+      async getRaster() {
+        return createRaster(new Float32Array([0, 1, 2, 3]));
+      }
+    } as any,
+    ...overrides
+  } as any) as any;
+}

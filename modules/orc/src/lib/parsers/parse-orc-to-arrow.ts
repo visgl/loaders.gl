@@ -423,7 +423,7 @@ function readBytesColumn(
   typeKind: number
 ): unknown[] {
   const encoding = stripe.encodings?.find(encoding => encoding.column === typeId);
-  if (encoding?.kind === 1 || encoding?.kind === 2 || encoding?.kind === 3) {
+  if (encoding?.kind === 1 || encoding?.kind === 3) {
     return readDictionaryColumn(
       bytes,
       streams,

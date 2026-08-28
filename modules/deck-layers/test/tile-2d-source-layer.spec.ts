@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
@@ -127,6 +127,212 @@ test('Tile2DSourceLayer#default render path creates BitmapLayer for raster tiles
   });
   expect(renderedLayers[0].constructor.layerName).toBe('BitmapLayer');
 });
+
+test('Tile2DSourceLayer initializes state and reports loaded tile sublayers', () => {
+  const layer = createLayer();
+  layer.context = {viewport: {id: 'main'}, device: createDevice()} as any;
+  layer.initializeState();
+  expect(layer.state.tilesetViews.size).toBe(0);
+  expect(layer.isLoaded).toBe(false);
+  expect(layer.shouldUpdateState({changeFlags: {somethingChanged: true}})).toBe(true);
+
+  const selectedTile = {id: 'tile', isLoaded: true, content: {}};
+  layer.state.tilesetViews.set('main', {selectedTiles: [selectedTile], isLoaded: true});
+  layer.state.tileLayers.set('tile', [{isLoaded: true}]);
+  expect(layer.isLoaded).toBe(true);
+  layer.state.tileLayers.set('tile', [{isLoaded: false}]);
+  expect(layer.isLoaded).toBe(false);
+});
+
+test('Tile2DSourceLayer enriches picking and forwards highlighting', () => {
+  const layer = createLayer();
+  const updateAutoHighlight = vi.fn();
+  const sourceLayer = {props: {tile: {id: 'tile'}}, updateAutoHighlight} as any;
+  expect(() => layer.getPickingInfo({info: {}, sourceLayer: null} as any)).toThrow('source layer');
+
+  const unpicked = layer.getPickingInfo({info: {picked: false}, sourceLayer} as any);
+  expect(unpicked.sourceTile.id).toBe('tile');
+  expect(unpicked.tile).toBeUndefined();
+  const picked = layer.getPickingInfo({info: {picked: true}, sourceLayer} as any);
+  expect(picked.tile.id).toBe('tile');
+  layer._updateAutoHighlight(picked);
+  expect(updateAutoHighlight).toHaveBeenCalledWith(picked);
+});
+
+test('Tile2DSourceLayer renders and caches shared tile layers', () => {
+  const layer = createLayer({
+    id: 'shared',
+    data: TEST_TILE_SOURCE as any,
+    renderSubLayers: props => [null, {id: props.id} as any, [[{id: 'nested'} as any]] as any]
+  });
+  const tile = {id: '0-0-0', isLoaded: true, content: {value: 1}, index: {x: 0, y: 0, z: 0}};
+  layer.state = {
+    resolvedData: TEST_TILE_SOURCE,
+    resolvedSource: null,
+    tileset: {tiles: [tile]},
+    tilesetViews: new Map(),
+    isLoaded: false,
+    frameNumbers: new Map(),
+    tileLayers: new Map(),
+    unsubscribeTilesetEvents: null
+  };
+  layer.getSubLayerProps = (props: any) => props;
+  const firstRender = layer.renderLayers();
+  expect(firstRender[0]).toHaveLength(2);
+  expect(layer.state.tileLayers.get(tile.id)).toHaveLength(2);
+  expect(layer.renderLayers()[0]).toBe(firstRender[0]);
+
+  tile.isLoaded = false;
+  tile.content = null as any;
+  expect(layer.renderLayers()[0]).toBe(firstRender[0]);
+  layer.state.resolvedData = null;
+  expect(layer.renderLayers()).toBeNull();
+});
+
+test('Tile2DSourceLayer renders local MVT sources and forwards tile errors', async () => {
+  const onTileError = vi.fn();
+  const source = {
+    ...TEST_TILE_SOURCE,
+    mimeType: 'application/vnd.mapbox-vector-tile',
+    localCoordinates: true,
+    getTileData: vi.fn(async () => {
+      throw new Error('tile failed');
+    })
+  };
+  const layer = createLayer({
+    id: 'mvt',
+    data: source as any,
+    metadata: {minZoom: 2, maxZoom: 8},
+    onTileError
+  });
+  layer.context = {device: createDevice(2)} as any;
+  layer.state = {resolvedData: source};
+  const [mvtLayer] = layer.renderLayers();
+  expect(mvtLayer.props.minZoom).toBe(2);
+  expect(mvtLayer.props.maxZoom).toBe(8);
+  expect(mvtLayer.props.zoomOffset).toBe(0);
+  mvtLayer.state = {vectorTileSource: source};
+  await expect(mvtLayer.getTileData({index: {x: 0, y: 0, z: 0}})).resolves.toBeNull();
+  expect(onTileError).toHaveBeenCalledTimes(1);
+
+  mvtLayer.state = {vectorTileSource: null};
+  await expect(mvtLayer.getTileData({})).resolves.toBeNull();
+  mvtLayer.setState = vi.fn();
+  mvtLayer.updateState({
+    props: {...mvtLayer.props, data: source},
+    oldProps: mvtLayer.props,
+    changeFlags: {dataChanged: true}
+  });
+  expect(mvtLayer.setState).toHaveBeenCalledWith({vectorTileSource: source, binary: false});
+});
+
+test('Tile2DSourceLayer derives explicit tileset options and metadata bounds', () => {
+  const layer = createLayer({
+    id: 'options',
+    data: TEST_TILE_SOURCE as any,
+    maxCacheSize: 12,
+    maxCacheByteSize: 4096,
+    maxRequests: 3,
+    debounceTime: 25,
+    metadata: {
+      minZoom: 1,
+      maxZoom: 9,
+      boundingBox: [
+        [-10, -5],
+        [10, 5]
+      ]
+    }
+  });
+  layer.context = {device: createDevice(1)} as any;
+  const options = layer._getTilesetOptions(TEST_TILE_SOURCE);
+  expect(options).toMatchObject({
+    maxCacheSize: 12,
+    maxCacheByteSize: 4096,
+    maxRequests: 3,
+    debounceTime: 25,
+    minZoom: 1,
+    maxZoom: 9,
+    extent: [-10, -5, 10, 5],
+    zoomOffset: -1
+  });
+  expect(layer._isDefaultOptionValue([1, 2], [1, 2])).toBe(true);
+  expect(layer._isDefaultOptionValue([1, 3], [1, 2])).toBe(false);
+});
+
+test('Tile2DSourceLayer manages tile events, views, filtering, and release', () => {
+  const layer = createLayer({id: 'events', data: TEST_TILE_SOURCE as any, onTileError: vi.fn()});
+  const setNeedsUpdate = vi.fn();
+  const unsubscribe = vi.fn();
+  const finalize = vi.fn();
+  layer.setNeedsUpdate = setNeedsUpdate;
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.state = {
+    resolvedData: TEST_TILE_SOURCE,
+    resolvedSource: null,
+    tileset: {} as any,
+    tilesetViews: new Map([['main', {finalize}]]),
+    isLoaded: false,
+    frameNumbers: new Map(),
+    tileLayers: new Map([['tile', [{}]]]),
+    unsubscribeTilesetEvents: unsubscribe
+  };
+  const tile = {id: 'tile'};
+  layer._onTileLoad(tile);
+  expect(setNeedsUpdate).toHaveBeenCalledTimes(1);
+  layer.state.tileLayers.set('tile', [{}]);
+  layer._onTileError(new Error('failed'), tile);
+  expect(layer.props.onTileError).toHaveBeenCalled();
+  layer.state.tileLayers.set('tile', [{}]);
+  layer._onTileUnload(tile);
+  expect(layer.state.tileLayers.has('tile')).toBe(false);
+
+  layer.state.tileset = null;
+  expect(layer.filterSubLayer({layer: {}})).toBe(true);
+  expect(() => layer._getOrCreateTilesetView('missing')).toThrow('not initialized');
+  layer._releaseTileset();
+  expect(unsubscribe).toHaveBeenCalled();
+  expect(finalize).toHaveBeenCalled();
+  expect(layer.state.tileset).toBeNull();
+});
+
+test('Tile2DSourceLayer updates existing tilesets and viewport callbacks', () => {
+  const onTilesLoad = vi.fn();
+  const layer = createLayer({id: 'update', data: TEST_TILE_SOURCE as any, onTilesLoad});
+  const selectedTiles = [{id: 'tile', isLoaded: true, content: null}];
+  const view = {
+    selectedTiles,
+    isLoaded: true,
+    update: vi.fn(() => 2),
+    isTileVisible: vi.fn(() => true)
+  };
+  const tileset = {setOptions: vi.fn(), reloadAll: vi.fn()};
+  layer.context = {viewport: {id: 'main'}, device: createDevice()} as any;
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.state = {
+    resolvedData: TEST_TILE_SOURCE,
+    resolvedSource: null,
+    tileset,
+    tilesetViews: new Map([['main', view]]),
+    isLoaded: false,
+    frameNumbers: new Map([['main', 1]]),
+    tileLayers: new Map(),
+    unsubscribeTilesetEvents: null
+  };
+  layer._knownViewports = new Map([['main', layer.context.viewport]]);
+  layer.updateTilesetForProps(TEST_TILE_SOURCE, false, {propsOrDataChanged: true});
+  expect(tileset.setOptions).toHaveBeenCalled();
+  expect(onTilesLoad).toHaveBeenCalledWith(selectedTiles);
+  expect(layer.state.frameNumbers.get('main')).toBe(2);
+
+  expect(layer.filterSubLayer({layer: {props: {tile: selectedTiles[0]}}, cullRect: {}})).toBe(true);
+  expect(view.isTileVisible).toHaveBeenCalled();
+});
+
+function createDevice(devicePixelRatio = 1) {
+  return {
+    getCanvasContext: () => ({getDevicePixelRatio: () => devicePixelRatio})
+  };
+}
 function createArrowTile() {
   const schema = {
     fields: [
