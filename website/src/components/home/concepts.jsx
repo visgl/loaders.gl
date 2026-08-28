@@ -288,9 +288,9 @@ const streamingOutputs = ['Table batches', 'GeoJSON batches', 'Arrow batches'];
 
 const ConceptsSection = styled.section`
   background:
-    linear-gradient(180deg, var(--ifm-color-white) 0%, var(--ifm-color-gray-200) 100%),
-    var(--ifm-color-gray-200);
-  color: var(--ifm-color-gray-900);
+    linear-gradient(180deg, var(--docs-surface-raised) 0%, var(--docs-surface-muted) 100%),
+    var(--docs-surface-muted);
+  color: var(--docs-text-strong);
   padding: 88px 64px 96px;
 
   @media screen and (max-width: 996px) {
@@ -321,7 +321,7 @@ const Intro = styled.div`
 `;
 
 const Eyebrow = styled.p`
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
@@ -330,7 +330,7 @@ const Eyebrow = styled.p`
 `;
 
 const Title = styled.h2`
-  color: var(--ifm-color-black);
+  color: var(--docs-text-strong);
   font-size: 42px;
   font-weight: 800;
   line-height: 1.08;
@@ -342,7 +342,7 @@ const Title = styled.h2`
 `;
 
 const Lead = styled.p`
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-text-muted);
   font-size: 18px;
   line-height: 1.65;
   margin: 0;
@@ -357,10 +357,10 @@ const LinkBar = styled.div`
 
 const GuideLink = styled(Link)`
   align-items: center;
-  background: var(--ifm-color-white);
-  border: 1px solid var(--ifm-color-gray-400);
+  background: var(--docs-surface-raised);
+  border: 1px solid var(--docs-border-subtle);
   border-radius: 8px;
-  color: var(--ifm-color-gray-900);
+  color: var(--docs-text-strong);
   display: inline-flex;
   font-size: 13px;
   font-weight: 700;
@@ -392,8 +392,8 @@ const PanelGrid = styled.div`
 `;
 
 const Panel = styled.article`
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--ifm-color-gray-400);
+  background: var(--docs-surface);
+  border: 1px solid var(--docs-border-subtle);
   border-radius: 8px;
   box-shadow: 0 24px 70px rgba(43, 56, 72, 0.14);
   overflow: hidden;
@@ -404,14 +404,14 @@ const WidePanel = styled(Panel)`
 `;
 
 const PanelHeader = styled.div`
-  border-bottom: 1px solid var(--ifm-color-gray-300);
+  border-bottom: 1px solid var(--docs-border-subtle);
   display: grid;
   gap: 8px;
   padding: 24px 26px 18px;
 `;
 
 const PanelLabel = styled.p`
-  color: ${(props) => props.$color || 'var(--ifm-color-primary-darkest)'};
+  color: ${(props) => props.$color || 'var(--docs-accent-text)'};
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
@@ -421,7 +421,7 @@ const PanelLabel = styled.p`
 `;
 
 const PanelTitle = styled.h3`
-  color: var(--ifm-color-black);
+  color: var(--docs-text-strong);
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
@@ -429,7 +429,7 @@ const PanelTitle = styled.h3`
 `;
 
 const PanelText = styled.p`
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-text-muted);
   font-size: 15px;
   line-height: 1.6;
   margin: 0;
@@ -461,11 +461,11 @@ const RepresentationTabs = styled(TabList)`
 
 const TabButton = styled.button`
   background: ${(props) =>
-    props.$active ? 'rgba(0, 173, 230, 0.12)' : 'var(--ifm-color-white)'};
+    props.$active ? 'rgba(0, 173, 230, 0.12)' : 'var(--docs-surface-raised)'};
   border: 1px solid
-    ${(props) => (props.$active ? 'rgba(0, 173, 230, 0.7)' : 'var(--ifm-color-gray-400)')};
+    ${(props) => (props.$active ? 'rgba(0, 173, 230, 0.7)' : 'var(--docs-border-subtle)')};
   border-radius: 8px;
-  color: ${(props) => (props.$active ? 'var(--ifm-color-primary-darkest)' : 'var(--ifm-color-gray-800)')};
+  color: ${(props) => (props.$active ? 'var(--ifm-color-primary)' : 'var(--docs-text-muted)')};
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
@@ -527,7 +527,7 @@ const ConceptColumn = styled.div`
 `;
 
 const StageLabel = styled.p`
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
@@ -549,10 +549,10 @@ const LoaderGrid = styled.div`
 
 const Node = styled.div`
   align-items: center;
-  background: ${(props) => props.$background || 'var(--ifm-color-white)'};
-  border: 1px solid ${(props) => props.$border || 'var(--ifm-color-gray-400)'};
+  background: ${(props) => props.$background || 'var(--docs-surface-raised)'};
+  border: 1px solid ${(props) => props.$border || 'var(--docs-border-subtle)'};
   border-radius: 8px;
-  color: var(--ifm-color-gray-900);
+  color: var(--docs-text-strong);
   display: flex;
   font-size: ${(props) => (props.$compactText ? '12px' : '14px')};
   font-weight: 750;
@@ -591,15 +591,15 @@ const CompactNode = styled(Node)`
 `;
 
 const EmptyNode = styled(Node)`
-  background: var(--ifm-color-gray-200);
+  background: var(--docs-surface-muted);
   border-style: dashed;
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
 `;
 
 const CategoryNode = styled(Node)`
   background: ${(props) => props.$background};
   border-color: ${(props) => props.$border};
-  color: var(--ifm-color-black);
+  color: var(--docs-text-strong);
   font-weight: 800;
 `;
 
@@ -649,8 +649,13 @@ const MethodGrid = styled.div`
   }
 `;
 
+const NaturalLabel = styled.span`
+  overflow-wrap: normal;
+  white-space: nowrap;
+`;
+
 const TinyLabel = styled.span`
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
@@ -665,9 +670,9 @@ const NodeMeta = styled.span`
 
 const SourceTag = styled.span`
   background: transparent;
-  border: 1px solid var(--ifm-color-gray-400);
+  border: 1px solid var(--docs-border-subtle);
   border-radius: 999px;
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
   flex: 0 0 auto;
   font-size: 8px;
   font-weight: 500;
@@ -677,7 +682,7 @@ const SourceTag = styled.span`
 `;
 
 const LinkMark = styled.span`
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   flex: 0 0 auto;
   font-size: 11px;
   font-weight: 800;
@@ -686,7 +691,7 @@ const LinkMark = styled.span`
 
 const Connector = styled.div`
   align-items: center;
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   display: flex;
   font-size: 18px;
   font-weight: 800;
@@ -695,7 +700,7 @@ const Connector = styled.div`
 
   &::before {
     border-bottom: 9px solid transparent;
-    border-left: 15px solid var(--ifm-color-primary-darkest);
+    border-left: 15px solid var(--docs-accent-text);
     border-top: 9px solid transparent;
     content: '';
     height: 0;
@@ -744,10 +749,10 @@ const SplitPanel = styled.div`
 `;
 
 const Note = styled.div`
-  background: var(--ifm-color-gray-200);
+  background: var(--docs-surface-muted);
   border-left: 4px solid ${(props) => props.$color || 'var(--ifm-color-primary)'};
   border-radius: 8px;
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-text-muted);
   font-size: 14px;
   line-height: 1.55;
   padding: 14px 16px;
@@ -892,8 +897,12 @@ export function StreamingConcept() {
             <StageLabel>Streaming loaders</StageLabel>
             <LoaderGrid>
               {streamingLoaders.map((loader) => (
-                <LinkedNode key={loader} to={loaderDocumentationLinks[loader]}>
-                  <span>{loader}</span>
+                <LinkedNode
+                  key={loader}
+                  to={loaderDocumentationLinks[loader]}
+                  $compactText={loader.length > 10}
+                >
+                  <NaturalLabel>{loader}</NaturalLabel>
                   <LinkMark aria-hidden="true">↗</LinkMark>
                 </LinkedNode>
               ))}
@@ -906,7 +915,9 @@ export function StreamingConcept() {
               <span>Process while loading</span>
               <MethodGrid>
                 {streamingProcessingBlocks.map((block) => (
-                  <CompactNode key={block}>{block}</CompactNode>
+                  <CompactNode key={block} $compactText={block.length > 12}>
+                    <NaturalLabel>{block}</NaturalLabel>
+                  </CompactNode>
                 ))}
               </MethodGrid>
             </DataSourceNode>

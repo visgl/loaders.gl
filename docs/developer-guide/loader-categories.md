@@ -1,11 +1,30 @@
+---
+title: Loader categories
+description: Keep one application path while accepting multiple related data formats.
+hide_title: true
+page_style: designed
+---
+
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
-
-# Loader Categories
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="categories" />
 
 <CategoryDataConcept />
+
+<DocOrientation
+  eyebrow="Category data"
+  title="Change the input format without changing the app."
+  description="A loader category defines a compatible result shape. Your application can register another loader in the same category without growing another rendering, analysis, or export path."
+  tone="yellow"
+  items={[
+    {label: 'Common result', value: 'A documented shape shared by related loaders'},
+    {label: 'Typical groups', value: 'Tables, GIS, images, textures, meshes, and scenes'},
+    {label: 'Writers follow', value: 'Writers accept the category shape as input'},
+    {label: 'Format-specific data', value: 'Use loaderData when the common shape is not enough'}
+  ]}
+/>
 
 ## Start here
 
@@ -18,6 +37,12 @@ To simplify working with multiple similar formats, loaders and writers in loader
 The idea is that many loaders return very similar data (e.g. point clouds loaders), which makes it possible to represent the loaded data in the same data structure, letting applications handle the output from multiple loaders without
 
 When a loader is documented as belonging to a specifc category, it converts the parsed data into the common format for that category. This allows an application to support multiple formats with a single code path, since all the loaders will return similar data structures.
+
+<ReferenceBoundary
+  title="The category contract"
+  description="The detailed sections explain registration, returned data formats, writers, and the escape hatch for format-specific fields."
+  tone="yellow"
+/>
 
 ## Categories and Loader Registration
 

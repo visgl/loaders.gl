@@ -1,3 +1,7 @@
+@import '@fontsource-variable/source-sans-3';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource/ibm-plex-mono';
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -6,6 +10,13 @@
 
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: 'Source Sans 3 Variable', 'Avenir Next', system-ui, sans-serif;
+  --ifm-heading-font-family: 'Space Grotesk Variable', 'Avenir Next', system-ui, sans-serif;
+  --ifm-font-family-monospace: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  --ifm-font-size-base: 100%;
+  --ifm-line-height-base: 1.68;
+  --ifm-heading-font-weight: 680;
+  --ifm-navbar-height: 4.25rem;
   --ifm-color-primary: #00ade6;
   --ifm-color-primary-dark: #009ccf;
   --ifm-color-primary-darker: #0093c4;
@@ -24,6 +35,13 @@
   --ifm-color-gray-900: #2B3848;
   --ifm-color-black: #19202C;
   --code-font-size: 95%;
+  --docs-surface: rgba(255, 255, 255, 0.94);
+  --docs-surface-raised: #FFFFFF;
+  --docs-surface-muted: #F7FAFC;
+  --docs-border-subtle: rgba(72, 86, 104, 0.18);
+  --docs-accent-text: var(--ifm-color-primary-darkest);
+  --docs-text-strong: #19202C;
+  --docs-text-muted: #5B6B7D;
   --docs-table-background: rgba(255, 255, 255, 0.92);
   --docs-table-shell-background: rgba(247, 250, 252, 0.92);
   --docs-table-header-background: var(--ifm-color-gray-200);
@@ -38,6 +56,28 @@
 }
 
 html[data-theme='dark'] {
+  --ifm-background-color: #08111F;
+  --ifm-background-surface-color: #0C1728;
+  --ifm-navbar-background-color: rgba(8, 17, 31, 0.9);
+  --ifm-footer-background-color: #070E19;
+  --ifm-font-color-base: #CFDAE8;
+  --ifm-font-color-secondary: #9FB0C4;
+  --ifm-heading-color: #F5F8FC;
+  --ifm-link-color: #5FD5FF;
+  --ifm-menu-color: #B7C5D5;
+  --ifm-menu-color-active: #62D5FF;
+  --ifm-color-emphasis-100: #101C2E;
+  --ifm-color-emphasis-200: #17263A;
+  --ifm-color-emphasis-300: #22344A;
+  --ifm-code-background: rgba(112, 199, 255, 0.1);
+  --ifm-toc-border-color: rgba(159, 176, 196, 0.16);
+  --docs-surface: rgba(16, 28, 46, 0.94);
+  --docs-surface-raised: #111F33;
+  --docs-surface-muted: #0D192A;
+  --docs-border-subtle: rgba(159, 176, 196, 0.18);
+  --docs-accent-text: #62D5FF;
+  --docs-text-strong: #F5F8FC;
+  --docs-text-muted: #9FB0C4;
   --docs-table-background: rgba(36, 46, 58, 0.92);
   --docs-table-shell-background: rgba(29, 38, 49, 0.94);
   --docs-table-header-background: rgba(72, 86, 104, 0.72);
@@ -49,6 +89,103 @@ html[data-theme='dark'] {
   --docs-table-text: rgba(255, 255, 255, 0.92);
   --docs-table-link: #66d6ff;
   --docs-table-link-hover: #8ae0ff;
+}
+
+html[data-theme='dark'] .navbar {
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(159, 176, 196, 0.12);
+}
+
+html[data-theme='dark'] .theme-doc-sidebar-container {
+  background: rgba(7, 15, 27, 0.64);
+  border-right-color: rgba(159, 176, 196, 0.12);
+}
+
+html.docs-designed-page main {
+  background:
+    radial-gradient(circle at 52% -8rem, rgba(0, 173, 230, 0.1), transparent 34rem),
+    var(--ifm-background-color);
+}
+
+.docs-designed-page .theme-doc-markdown {
+  font-size: 1.075rem;
+  line-height: 1.72;
+}
+
+.docs-designed-page .theme-doc-markdown > h1,
+.docs-designed-page .theme-doc-markdown > h2,
+.docs-designed-page .theme-doc-markdown > h3,
+.docs-designed-page .theme-doc-markdown > p,
+.docs-designed-page .theme-doc-markdown > ul,
+.docs-designed-page .theme-doc-markdown > ol,
+.docs-designed-page .theme-doc-markdown > blockquote,
+.docs-designed-page .theme-doc-markdown > details,
+.docs-designed-page .theme-doc-markdown > .theme-code-block {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 72ch;
+}
+
+.docs-designed-page .theme-doc-markdown > h2 {
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  letter-spacing: -0.045em;
+  line-height: 1.06;
+  margin-top: 4.5rem;
+}
+
+.docs-designed-page .theme-doc-markdown > h3 {
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+  margin-top: 3rem;
+}
+
+.docs-designed-page .theme-doc-markdown > h2 + p,
+.docs-designed-page .theme-doc-markdown > h3 + p {
+  color: var(--ifm-font-color-secondary);
+  font-size: 1.08em;
+}
+
+.docs-designed-page .theme-doc-markdown strong {
+  color: var(--ifm-heading-color);
+}
+
+.docs-designed-page .theme-code-block {
+  border: 1px solid var(--docs-border-subtle);
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.docs-designed-page .table-of-contents__link {
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.docs-designed-page .table-of-contents__link--active {
+  color: #75E0BA;
+}
+
+@media (min-width: 997px) and (max-width: 1440px) {
+  .docs-designed-page .col:has(> .theme-doc-toc-desktop) {
+    display: none;
+  }
+
+  /* Docusaurus protects this width with ID-level specificity, so the opt-in needs to exceed it. */
+  .docs-designed-page
+    [class*='docItemCol_']:not(#designed-doc-width):not(#designed-doc-width):not(#designed-doc-width) {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .docs-designed-page .theme-doc-markdown {
+    font-size: 1rem;
+  }
+
+  .docs-designed-page .theme-doc-markdown > h2 {
+    margin-top: 3.5rem;
+  }
 }
 main .container {
   position: relative;

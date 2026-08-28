@@ -1,0 +1,194 @@
+.orientation {
+  --orientation-accent: #75e0ba;
+  --orientation-glow: rgba(117, 224, 186, 0.16);
+  background:
+    radial-gradient(circle at 88% 10%, var(--orientation-glow), transparent 24rem),
+    linear-gradient(145deg, rgba(16, 30, 49, 0.96), rgba(10, 22, 38, 0.98));
+  border: 1px solid rgba(117, 224, 186, 0.24);
+  border-radius: 22px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  margin: 2rem 0 3.5rem;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.4rem);
+  position: relative;
+}
+
+.orientation[data-tone='blue'],
+.referenceBoundary[data-tone='blue'] {
+  --orientation-accent: #70c7ff;
+  --orientation-glow: rgba(37, 137, 255, 0.18);
+}
+
+.orientation[data-tone='cyan'],
+.referenceBoundary[data-tone='cyan'] {
+  --orientation-accent: #51e2f4;
+  --orientation-glow: rgba(0, 192, 230, 0.18);
+}
+
+.orientation[data-tone='mint'],
+.referenceBoundary[data-tone='mint'] {
+  --orientation-accent: #75e0ba;
+  --orientation-glow: rgba(48, 198, 143, 0.17);
+}
+
+.orientation[data-tone='orange'],
+.referenceBoundary[data-tone='orange'] {
+  --orientation-accent: #ffb36b;
+  --orientation-glow: rgba(255, 133, 74, 0.18);
+}
+
+.orientation[data-tone='pink'],
+.referenceBoundary[data-tone='pink'] {
+  --orientation-accent: #f693c6;
+  --orientation-glow: rgba(236, 86, 161, 0.18);
+}
+
+.orientation[data-tone='violet'],
+.referenceBoundary[data-tone='violet'] {
+  --orientation-accent: #9b8cff;
+  --orientation-glow: rgba(117, 95, 255, 0.19);
+}
+
+.orientation[data-tone='yellow'],
+.referenceBoundary[data-tone='yellow'] {
+  --orientation-accent: #f0d877;
+  --orientation-glow: rgba(231, 177, 38, 0.18);
+}
+
+.orientationIntro {
+  max-width: 46rem;
+}
+
+.eyebrow {
+  color: var(--orientation-accent);
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.72rem;
+  font-weight: 720;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  margin: 0 0 0.8rem;
+  text-transform: uppercase;
+}
+
+.orientationTitle,
+.referenceTitle {
+  color: #f6f9fc;
+  font-family: var(--ifm-heading-font-family);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+}
+
+.orientationTitle {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+  margin: 0;
+  max-width: 42rem;
+}
+
+.description {
+  color: rgba(219, 231, 244, 0.72);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  margin: 1.2rem 0 0;
+  max-width: 42rem;
+}
+
+.factGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2.25rem;
+}
+
+.fact {
+  background: rgba(6, 15, 27, 0.48);
+  border: 1px solid rgba(173, 200, 219, 0.15);
+  border-radius: 14px;
+  min-height: 9.5rem;
+  padding: 1rem;
+}
+
+.factNumber {
+  color: color-mix(in srgb, var(--orientation-accent) 62%, transparent);
+  display: block;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.68rem;
+  margin-bottom: 1.35rem;
+}
+
+.factLabel {
+  color: var(--orientation-accent);
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  margin: 0 0 0.55rem;
+  text-transform: uppercase;
+}
+
+.factValue {
+  color: #e2ebf4;
+  font-size: 0.92rem;
+  font-weight: 560;
+  line-height: 1.42;
+  margin: 0;
+}
+
+.referenceBoundary {
+  --orientation-accent: #75e0ba;
+  align-items: center;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(3rem, 0.22fr) minmax(0, 1fr);
+  margin: 5.5rem auto 3rem;
+  max-width: 72ch;
+}
+
+.referenceRule {
+  background: linear-gradient(90deg, var(--orientation-accent), transparent);
+  display: block;
+  height: 1px;
+  width: 100%;
+}
+
+.referenceTitle {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.referenceDescription {
+  color: var(--ifm-font-color-secondary);
+  line-height: 1.65;
+  margin: 0.8rem 0 0;
+  max-width: 42rem;
+}
+
+@media (max-width: 900px) {
+  .factGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .orientation {
+    border-radius: 16px;
+  }
+
+  .factGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .fact {
+    min-height: 0;
+  }
+
+  .factNumber {
+    margin-bottom: 0.8rem;
+  }
+
+  .referenceBoundary {
+    gap: 0.8rem;
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+}

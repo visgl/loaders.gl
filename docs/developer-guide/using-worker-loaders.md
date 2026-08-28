@@ -1,8 +1,30 @@
-import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+---
+title: Using worker loaders
+description: Move expensive parsing and decompression away from the browser interaction path.
+hide_title: true
+page_style: designed
+---
 
-# Using Worker Loaders
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {WorkerFlowGraphic} from '@site/src/components/docs/capability-flow-graphics';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="workers" />
+
+<WorkerFlowGraphic />
+
+<DocOrientation
+  eyebrow="Worker execution"
+  title="Keep parsing off the interaction path."
+  description="Worker-enabled loaders move parsing, decompression, and transforms into reusable worker bundles while the main thread continues to render, respond, and coordinate the application."
+  tone="blue"
+  items={[
+    {label: 'Use it when', value: 'Parsing or decompression competes with interaction'},
+    {label: 'Moves off thread', value: 'Binary parsing, compression, and format transforms'},
+    {label: 'Works best for', value: 'Binary inputs that can be transferred efficiently'},
+    {label: 'Control when needed', value: 'Worker, reuse, concurrency, and script URL options'}
+  ]}
+/>
 
 ## Start here
 
@@ -31,6 +53,12 @@ application.
 
 More details on advantages and complications with worker thread based loading the
 [Worker Threads](./concepts/worker-threads) article in the concepts section.
+
+<ReferenceBoundary
+  title="The worker runtime"
+  description="The detailed guide covers worker processing, parallel loading, reuse, transfer semantics, custom scripts, composite loaders, and debugging."
+  tone="blue"
+/>
 
 ## Processing Data on Workers
 
