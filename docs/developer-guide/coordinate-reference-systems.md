@@ -64,7 +64,7 @@ mean coordinate transformation.
 | GeoParquet 1.1 / 2.0 | Per-column PROJJSON, `null`, omitted default, and coordinate `epoch` | Original `geo` JSON is retained; compatible GeoArrow field metadata is added | None |
 | Shapefile | `.prj` WKT sidecar | `.prj` is returned by legacy output; Arrow metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
 | FlatGeobuf | Header authority code and WKT | Header metadata is retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
-| GeoPackage | Spatial reference system tables | Format metadata is available while geometry output metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
+| GeoPackage | Spatial reference system tables, preferring extension WKT2 over fallback WKT1 | Source and scan metadata retain the table CRS; Arrow geometry fields report the native or transformed output CRS | Opt-in through `gis.reproject` and `_targetCrs` |
 | GeoJSON | Deprecated GeoJSON `crs` member when present; otherwise WGS84 semantics | Original legacy value is retained; recognized CRS84/EPSG:4326 values map to GeoArrow/GeoParquet metadata | None in the GeoJSON loader |
 | CSV WKT / WKB | Geometry values can contain EWKT/EWKB SRIDs, but CSV has no dataset CRS convention | Geometry-level SRID support is partial; no common table CRS descriptor | None |
 | GML | `srsName` on geometry/envelope elements | Parsed format data retains identifiers inconsistently across output shapes | Service/server dependent; no general client transform |
