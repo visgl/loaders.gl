@@ -36,8 +36,8 @@ export type ORCQueryOptions = TableQueryOptions & Readonly<{signal?: AbortSignal
  * Lightweight ORC scan source.
  *
  * Footer parsing is metadata-only and exposes a shared query schema. The current decoder reads the
- * complete file before applying residual Arrow projection, predicates, and limits; stripe-level
- * pruning remains the next ORC-specific tranche.
+ * complete file before applying residual Arrow projection, predicates, and limits. Stripe-level
+ * pruning is not currently implemented.
  */
 export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   private arrayBufferPromise: Promise<ArrayBuffer> | null = null;

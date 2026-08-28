@@ -4,6 +4,12 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 <ParquetDocsTabs active="geoparquet" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 ![parquet-logo](../images/parquet-logo-small.png)
 &emsp;
 ![apache-logo](../../../images/logos/apache-logo.png)
