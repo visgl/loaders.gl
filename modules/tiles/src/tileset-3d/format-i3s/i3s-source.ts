@@ -25,6 +25,7 @@ import type {
 import {getZoomFromExtent, getZoomFromFullExtent} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
+import {getI3SSpatialReference} from '../../spatial/format-spatial-reference';
 
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
@@ -103,7 +104,8 @@ export class I3SSource implements Tileset3DSource {
       tileset: this.rootTileset,
       lodMetricType: this.rootTileset.lodMetricType,
       lodMetricValue: this.rootTileset.lodMetricValue,
-      refine: this.rootTileset.root?.refine
+      refine: this.rootTileset.root?.refine,
+      spatialReference: getI3SSpatialReference(this.rootTileset)
     };
   }
 

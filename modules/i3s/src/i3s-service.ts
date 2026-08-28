@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, DataSourceOptions, LoaderOptions} from '@loaders.gl/loader-utils';
-import {I3SSource} from '@loaders.gl/tiles';
+import {getI3SSpatialReference, I3SSource} from '@loaders.gl/tiles';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import {I3SLoaderWithParser} from './i3s-loader-with-parser';
 import {I3SPointCloudSource} from './i3s-point-cloud-source';
 import {I3SPointCloudSceneLayerSchema, I3SSceneLayerSchema} from './i3s-zod-schema';
@@ -26,6 +27,8 @@ export type I3SServiceMetadata = {
   capabilities: string[];
   /** Horizontal and vertical spatial reference metadata. */
   spatialReference?: SpatialReference;
+  /** Normalized horizontal, vertical, axis, and height-reference metadata. */
+  spatialMetadata: TilesetSpatialReference;
   /** Layer extent, when advertised. */
   fullExtent?: FullExtent;
   /** Human-readable layer name. */
@@ -73,6 +76,7 @@ export function normalizeI3SServiceMetadata(url: string, layer: SceneLayer3D): I
     profile: layer.store.profile,
     capabilities: [...layer.capabilities],
     spatialReference: layer.spatialReference,
+    spatialMetadata: getI3SSpatialReference(layer),
     fullExtent: layer.fullExtent,
     name: layer.name,
     description: layer.description,
