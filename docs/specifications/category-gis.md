@@ -1,4 +1,26 @@
-# Geospatial Loaders
+---
+title: Geospatial Loaders
+description: Read geospatial formats into shared feature, geometry, and table shapes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Geospatial loaders"
+  description="Keep coordinates, attributes, and geometry together while moving between file formats, services, and rendering-oriented data shapes."
+  tone="orange"
+  meta={['Features and geometry', 'CRS-aware', 'GIS and tile formats']}
+  links={[
+    {label: 'Coordinate reference systems', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: 'Converting data', to: '/docs/developer-guide/converting-data'}
+  ]}
+/>
+
+<CategoryDataConcept initialCategoryId="gis" initialRepresentationId="plain" />
 
 > The Geospatial category is experimental
 

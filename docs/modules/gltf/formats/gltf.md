@@ -1,6 +1,25 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: glTF format
+description: A compact, interoperable scene format for delivering geometry, materials, and animation.
+hide_title: true
+page_style: designed
+---
 
-# glTF - gl Transfer Format
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Scenegraph format"
+  title="glTF"
+  description="A delivery-focused scene format for geometry, materials, hierarchy, animation, and the linked binary or image assets that make a model complete."
+  tone="pink"
+  meta={['.gltf and .glb', 'Scenegraph data', 'Khronos standard']}
+  links={[
+    {label: 'glTF module', to: '/docs/modules/gltf'},
+    {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
+    {label: 'Try glTF', to: '/examples/gltf'}
+  ]}
+/>
 
 <GltfDocsTabs active="format" />
 

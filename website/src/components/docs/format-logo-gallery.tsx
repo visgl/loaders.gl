@@ -41,7 +41,6 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'chrome-trace', label: 'Chrome Trace', logo: 'format-logo.svg', tags: []},
   {slug: 'compressed-textures', label: 'Compressed Textures', logo: 'format-logo.svg', tags: ['textures']},
   {slug: 'copc', label: 'COPC', logo: copcLogo, tags: ['geospatial', 'pointclouds']},
-  {slug: '3d-tiles', label: '3D Tiles', logo: '3d-tiles-logo.png', tags: ['geospatial', 'meshes']},
   {slug: 'crunch', label: 'Crunch', logo: 'format-logo.svg', tags: ['textures']},
   {slug: 'csv', label: 'CSV', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'csw', label: 'CSW', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
@@ -71,7 +70,6 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'mvt', label: 'MVT', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'netcdf', label: 'NetCDF', logo: 'format-logo.svg', tags: ['geospatial', 'tables']},
   {slug: 'obj', label: 'OBJ', logo: 'format-logo.svg', tags: ['meshes']},
-  {slug: 'orc', label: 'ORC', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'ogc-api', label: 'OGC API Services', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'ows-context', label: 'OWS Context', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'orc', label: 'ORC', logo: 'format-logo.svg', tags: ['tables']},
@@ -167,6 +165,13 @@ const Label = styled.span`
   text-align: center;
 `;
 
+/** Resolves a gallery logo from either the static gallery directory or a bundled asset import. */
+function getLogoUrl(logo: string, logoBaseUrl: string): string {
+  return logo.startsWith('/') || logo.startsWith('data:') || logo.includes('://')
+    ? logo
+    : `${logoBaseUrl}/${logo}`;
+}
+
 /** Returns the gallery entries in the sidebar's Formats and Services order. */
 function getFormatGallery(): Array<FormatMetadata & {path: string}> {
   const metadataBySlug = new Map(FORMAT_METADATA.map(format => [format.slug, format]));
@@ -231,7 +236,7 @@ export function FormatLogoGallery() {
             <Logo
               alt={`${format.label} logo`}
               loading="lazy"
-              src={format.logo.startsWith('/') ? format.logo : `${logoBaseUrl}/${format.logo}`}
+              src={getLogoUrl(format.logo, logoBaseUrl)}
             />
             <Label>{format.label}</Label>
           </Card>

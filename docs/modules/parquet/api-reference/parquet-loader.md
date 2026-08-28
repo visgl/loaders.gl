@@ -1,7 +1,25 @@
+---
+title: ParquetLoader
+description: Read Parquet files with object rows, Arrow tables, and streaming batches.
+hide_title: true
+page_style: designed
+---
+
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
-# ParquetLoader
+<DocPageHeader
+  eyebrow="Parquet module / loader"
+  title="ParquetLoader"
+  description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
+  tone="mint"
+  meta={['WASM-backed default', 'Arrow table option', 'Streaming batches']}
+  links={[
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
+  ]}
+/>
 
 <ParquetDocsTabs active="parquetloader" />
 

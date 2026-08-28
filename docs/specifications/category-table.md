@@ -1,4 +1,26 @@
-# Table Loaders
+---
+title: Table Loaders
+description: Load row-based and columnar data through a shared table-oriented API.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Table loaders"
+  description="Choose a table shape for your application, then let the input format vary behind the same processing path."
+  tone="cyan"
+  meta={['Rows and columns', 'Arrow-compatible', 'Streaming batches']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
 
 The _table_ category loaders supports loading tables in _row-based_, _columnar_ or _batched columnar_ formats.
 

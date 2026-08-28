@@ -1,4 +1,23 @@
-# Get Started
+---
+title: Get Started
+description: Install the core package, choose a loader, and load your first file.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="First steps"
+  title="Get started with loaders.gl"
+  description="Install the small core package, add only the format modules you need, and use one familiar API for local files, URLs, streams, and workers."
+  tone="blue"
+  meta={['Install by format', 'load() and parse()', 'Browser and Node.js']}
+  links={[
+    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
+    {label: 'Browse modules', to: '/docs'}
+  ]}
+/>
 
 ## Installing
 

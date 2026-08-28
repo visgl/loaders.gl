@@ -1,4 +1,23 @@
-# Using Loaders
+---
+title: Using loaders
+description: Choose, configure, and run format loaders through the shared loaders.gl core API.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Core API"
+  title="Using loaders"
+  description="Keep application code focused on the result: choose a loader explicitly, or let loaders.gl select one from the formats your app supports."
+  tone="pink"
+  meta={['load() and parse()', 'TypeScript-aware', 'Explicit or automatic selection']}
+  links={[
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Loader object format', to: '/docs/specifications/loader-object-format'}
+  ]}
+/>
 
 loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
 

@@ -1,6 +1,25 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: '@loaders.gl/gltf'
+description: Load, inspect, transform, and write glTF and GLB scene assets.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Scenegraph module"
+  title="@loaders.gl/gltf"
+  description="Bring glTF and GLB scenes into an application with linked assets, compressed meshes, typed traversal, and a standards-shaped result."
+  tone="pink"
+  meta={['glTF and GLB', 'Scenegraph data', 'Draco and meshopt']}
+  links={[
+    {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
+    {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
+    {label: 'Try glTF', to: '/examples/gltf'}
+  ]}
+/>
 
 <GltfDocsTabs active="overview" />
 

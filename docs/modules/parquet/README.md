@@ -1,4 +1,24 @@
-# @loaders.gl/parquet 🚧
+---
+title: '@loaders.gl/parquet'
+description: Read and write Parquet with selective scans, Arrow output, and cloud-friendly ranges.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/parquet"
+  description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
+  tone="mint"
+  meta={['Parquet and GeoParquet', 'Arrow output', 'Selective reads']}
+  links={[
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'ParquetLoader', to: '/docs/modules/parquet/api-reference/parquet-loader'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

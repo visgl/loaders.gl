@@ -1,4 +1,23 @@
-# Using Range Requests
+---
+title: Using range requests
+description: Read only the byte ranges needed from large cloud-hosted assets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Cloud-native I/O"
+  title="Use range requests"
+  description="Let a source map a logical request to a small set of byte ranges, so a browser can work with large remote assets without downloading the whole object."
+  tone="violet"
+  meta={['HTTP Range', 'Request scheduling', 'Cloud object storage']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />

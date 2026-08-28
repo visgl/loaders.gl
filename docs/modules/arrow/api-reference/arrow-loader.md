@@ -1,6 +1,24 @@
-import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+---
+title: ArrowLoader
+description: Parse Arrow IPC files and streams into typed loaders.gl table shapes.
+hide_title: true
+page_style: designed
+---
 
-# ArrowLoader
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Arrow module / loader"
+  title="ArrowLoader"
+  description="Read Arrow IPC data and keep its typed, columnar structure as it enters your application."
+  tone="cyan"
+  meta={['Input: .arrow / .feather', 'Output: ArrowTable', 'Supports batches']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
+  ]}
+/>
 
 <ArrowDocsTabs active="arrowloader" />
 

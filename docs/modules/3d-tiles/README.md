@@ -1,6 +1,25 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: '@loaders.gl/3d-tiles'
+description: Load and traverse large 3D Tiles datasets with standards-aware tile and content handling.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Tiled scene module"
+  title="@loaders.gl/3d-tiles"
+  description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
+  tone="violet"
+  meta={['3D Tiles', 'Tileset traversal', 'glTF and point clouds']}
+  links={[
+    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
+    {label: 'Tiles3DLoader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
 
 <Tiles3DDocsTabs active="module" />
 

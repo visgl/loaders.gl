@@ -1,6 +1,24 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: 3D Tiles format
+description: A hierarchical, streamable format for rendering large geospatial datasets.
+hide_title: true
+page_style: designed
+---
 
-# 3D Tiles
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Tiled scene format"
+  title="3D Tiles"
+  description="Describe a large scene as a hierarchy of bounded, streamable pieces so a renderer can request the detail that matters for the current view."
+  tone="violet"
+  meta={['Hierarchical', 'Streamable', 'Level-of-detail aware']}
+  links={[
+    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
+    {label: 'Tiles3DLoader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'}
+  ]}
+/>
 
 <Tiles3DDocsTabs active="module" />
 

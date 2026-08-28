@@ -1,4 +1,24 @@
-# Overview
+---
+title: '@loaders.gl/i3s'
+description: Load and traverse Indexed 3D Scene Layers with profile-aware scene and point-cloud support.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Tiled scene module"
+  title="@loaders.gl/i3s"
+  description="Read ArcGIS Indexed 3D Scene Layers through the same source and traversal building blocks used for large browser-rendered scenes."
+  tone="orange"
+  meta={['I3S profiles', 'Scene and point cloud', 'ArcGIS services']}
+  links={[
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3SLoader', to: '/docs/modules/i3s/api-reference/i3s-loader'},
+    {label: 'I3S examples', to: '/examples/i3s-arcgis'}
+  ]}
+/>
 
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 

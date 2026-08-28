@@ -52,7 +52,7 @@ function insertLoaderLiveExample(children: ReactNode, syntheticTitle: string | n
     if (!exampleInserted) {
       if (!sawRenderedTitle) {
         beforeExample.push(node)
-        if (isHeadingNode(node, 'h1')) {
+        if (isHeadingNode(node, 'h1') || isDocPageHeader(node)) {
           sawRenderedTitle = true
         }
         continue
@@ -88,7 +88,11 @@ function isDocsPageTabs(node: ReactNode): boolean {
   if (!React.isValidElement(node) || typeof node.type !== 'function') {
     return false
   }
-  return node.type.name === 'JsonDocsTabs'
+  return node.type.name.endsWith('DocsTabs')
+}
+
+function isDocPageHeader(node: ReactNode): boolean {
+  return React.isValidElement(node) && typeof node.type === 'function' && node.type.name === 'DocPageHeader'
 }
 
 function isParagraphNode(node: ReactNode): boolean {

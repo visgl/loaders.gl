@@ -1,4 +1,24 @@
-# Overview
+---
+title: '@loaders.gl/arrow'
+description: Arrow and GeoArrow loaders, writers, and utilities for typed columnar data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/arrow"
+  description="Use Apache Arrow as the common table shape between format loaders, workers, transforms, and writers."
+  tone="cyan"
+  meta={['Apache Arrow', 'GeoArrow', 'Tables and transport']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'ArrowLoader', to: '/docs/modules/arrow/api-reference/arrow-loader'},
+    {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
+  ]}
+/>
 
 ![arrow-logo](./images/apache-arrow-small.png)
 &emsp;

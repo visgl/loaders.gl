@@ -1,4 +1,23 @@
-# @loaders.gl/scan
+---
+title: '@loaders.gl/scan'
+description: A portable query runtime for bounded, selective reads across local and cloud data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/scan"
+  description="Describe the rows, columns, bounds, and limits you need once, then let each source plan the most useful reads it can perform."
+  tone="violet"
+  meta={['Arrow results', 'Range-aware sources', 'Portable query contract']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Get started', to: '/docs/developer-guide/get-started'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />

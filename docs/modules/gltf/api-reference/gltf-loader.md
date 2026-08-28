@@ -1,6 +1,25 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: GLTFLoader
+description: Parse glTF and GLB scenes, resolve linked assets, and optionally process compressed content.
+hide_title: true
+page_style: designed
+---
 
-# GLTFLoader
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="glTF module / loader"
+  title="GLTFLoader"
+  description="Load a standards-shaped scene while the loader resolves buffers, images, compressed meshes, and other linked resources around it."
+  tone="pink"
+  meta={['.gltf and .glb', 'Linked assets', 'Draco and meshopt']}
+  links={[
+    {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
+    {label: 'glTF module', to: '/docs/modules/gltf'},
+    {label: 'Try glTF', to: '/examples/gltf'}
+  ]}
+/>
 
 <GltfDocsTabs active="gltf-loader" />
 

@@ -1,4 +1,23 @@
-# Converting Data
+---
+title: Converting data
+description: Move between loaders.gl data shapes with explicit, composable converters.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Data conversion"
+  title="Move between data shapes"
+  description="Compose small, explicit converters when the next stage needs a different table, geometry, or rendering representation."
+  tone="yellow"
+  meta={['Explicit paths', 'Table and geometry shapes', 'Render-ready output']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
 
 The loaders.gl converter system is a graph of small, explicit converter objects. You pass the converters you want, `convert()` finds a path, and each leaf module handles one direct step.
 

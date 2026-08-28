@@ -1,6 +1,24 @@
-import SourceLoaderGraphic from '@site/src/components/source-loader-graphic';
+---
+title: Using sources
+description: Work with multi-step, multi-resource, and cloud-backed data sources.
+hide_title: true
+page_style: designed
+---
 
-# Using SourceLoaders
+import SourceLoaderGraphic from '@site/src/components/source-loader-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Multi-resource data"
+  title="Using sources"
+  description="Sources model datasets that need discovery, metadata, tiles, ranges, or repeated requests rather than a single parse call."
+  tone="orange"
+  meta={['Cloud datasets', 'Services and tiles', 'Metadata-aware reads']}
+  links={[
+    {label: 'Range requests', to: '/docs/developer-guide/using-range-requests'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
 loaders.gl provides a number of `SourceLoader` exports that support multi-step data loading. **SourceLoaders** are different from parser **loaders**:
 

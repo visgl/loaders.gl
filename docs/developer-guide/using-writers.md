@@ -1,4 +1,23 @@
-# Using Writers
+---
+title: Using writers
+description: Encode application data into the formats supported by loaders.gl writers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Core API"
+  title="Using writers"
+  description="Turn tables, geometry, images, and other application data back into portable files with the same explicit module boundaries used for loading."
+  tone="yellow"
+  meta={['encode() and encodeSync()', 'Format-specific writers', 'Browser and Node.js']}
+  links={[
+    {label: 'Writer object format', to: '/docs/specifications/writer-object-format'},
+    {label: 'Converting data', to: '/docs/developer-guide/converting-data'}
+  ]}
+/>
 
 Writers allow applications to encoded data for a number of the formats supported by loaders.gl.
 

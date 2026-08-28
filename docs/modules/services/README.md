@@ -1,4 +1,23 @@
-# Geospatial Services
+---
+title: '@loaders.gl/services'
+description: Framework-independent sources for ArcGIS REST services and cloud-hosted geographic data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<DocPageHeader
+  eyebrow="Service sources"
+  title="@loaders.gl/services"
+  description="Treat remote service endpoints like other loaders.gl sources: discover capabilities, request only what is needed, and hand results to the application or renderer."
+  tone="orange"
+  meta={['ArcGIS REST', 'Vector, raster, and tiles', 'Source contracts']}
+  links={[
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'Service catalog', to: '/docs'}
+  ]}
+/>
 
 The `@loaders.gl/services` module provides framework-independent sources for ArcGIS REST services.
 The sources use the same loaders.gl contracts as file loaders: they can be selected by `load`,
