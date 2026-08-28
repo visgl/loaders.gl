@@ -267,3 +267,115 @@ test('WFSSourceLoader#getFeaturesInBatches rejects successful WFS exception resp
     })()
   ).rejects.toThrow('exception document');
 });
+
+test('WFSSourceLoader exposes schema, metadata, and binary feature output', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  await expect(source.getSchema()).resolves.toEqual({metadata: {}, fields: []});
+  source.getCapabilities = async () => ({title: 'WFS service'}) as any;
+  await expect(source.getMetadata()).resolves.toEqual({title: 'WFS service'});
+
+  source.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {name: 'road'},
+            geometry: {type: 'Point', coordinates: [1, 2]}
+          }
+        ]
+      }),
+      {headers: {'content-type': 'application/json'}}
+    );
+  const result = await source.getFeatures({
+    boundingBox: [
+      [0, 0],
+      [2, 3]
+    ],
+    layers: ['roads'],
+    format: 'binary'
+  } as any);
+  expect(result.shape).toBe('binary-feature-collection');
+});
+
+test('WFSSourceLoader builds auxiliary service URLs and normalizes aliases', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+    wfs: {vendorParameters: {token: 'base'}}
+  }) as any;
+  expect(source._parseWFSUrl('https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature')).toEqual({
+    url: 'https://example.com/wfs',
+    parameters: {SERVICE: 'WFS', REQUEST: 'GetFeature'}
+  });
+  expect(source._getWFS130Parameters({srs: 'EPSG:3857'})).toEqual({crs: 'EPSG:3857'});
+  expect(source._getWFS130Parameters({srs: 'EPSG:3857', crs: 'CRS:84'})).toEqual({crs: 'CRS:84'});
+
+  const featureInfo = new URL(
+    source.getFeatureInfoURL(
+      {
+        version: '2.0.0',
+        x: 4,
+        y: 5,
+        width: 100,
+        height: 50,
+        boundingBox: [
+          [1, 2],
+          [3, 4]
+        ],
+        crs: 'EPSG:4326'
+      },
+      {token: 'request'}
+    )
+  );
+  expect(featureInfo.searchParams.get('I')).toBe('4');
+  expect(featureInfo.searchParams.get('J')).toBe('5');
+  expect(featureInfo.searchParams.get('TOKEN')).toBe('request');
+  expect(new URL(source.describeLayerURL({version: '2.0.0'})).searchParams.get('REQUEST')).toBe(
+    'DescribeLayer'
+  );
+  expect(new URL(source.getLegendGraphicURL({version: '2.0.0'})).searchParams.get('REQUEST')).toBe(
+    'GetLegendGraphic'
+  );
+});
+
+test('WFSSourceLoader handles axis ordering, paging aliases, and malformed bounds', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {}) as any;
+  expect(source._flipBoundingBox('invalid', {version: '2.0.0', crs: 'EPSG:4326'})).toBeNull();
+  expect(source._flipBoundingBox([1, 2, 3], {version: '2.0.0', crs: 'EPSG:4326'})).toBeNull();
+  expect(
+    source._flipBoundingBox([1, 2, 3, 4, 'EPSG:4326'], {version: '2.0.0', crs: 'EPSG:4326'})
+  ).toEqual([2, 1, 4, 3, 'EPSG:4326']);
+  expect(source._getURLParameter('count', 10, {version: '1.1.0'})).toBe('MAXFEATURES=10');
+  expect(source._getURLParameter('maxFeatures', 10, {version: '2.0.0'})).toBe('COUNT=10');
+  expect(source._getURLParameter('srs', 'EPSG:3857', {version: '2.0.0'})).toBe('CRS=EPSG%3A3857');
+  expect(source._getURLParameter('crs', 'EPSG:3857', {version: '1.1.0'})).toBe('SRS=EPSG%3A3857');
+});
+
+test('WFSSourceLoader rejects non-feature JSON and service errors', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {}) as any;
+  source.fetch = async () =>
+    new Response(JSON.stringify({type: 'NotAFeatureCollection'}), {
+      headers: {'content-type': 'application/json'}
+    });
+  await expect(
+    source.getFeatures({
+      boundingBox: [
+        [0, 0],
+        [1, 1]
+      ],
+      layers: ['roads']
+    } as any)
+  ).rejects.toThrow('GeoJSON FeatureCollection');
+
+  const errorBytes = new TextEncoder().encode(
+    '<ServiceExceptionReport><ServiceException code="InvalidRequest">bad request</ServiceException></ServiceExceptionReport>'
+  );
+  const response = new Response(errorBytes, {
+    status: 200,
+    headers: {'content-type': 'application/xml'}
+  });
+  expect(() => source._checkResponse(response, errorBytes.buffer)).toThrow();
+  expect(source._parseError(errorBytes.buffer)).toBeInstanceOf(Error);
+  source.fetch = async () => response;
+  await expect(source._fetchArrayBuffer('https://example.com/error')).rejects.toThrow();
+});

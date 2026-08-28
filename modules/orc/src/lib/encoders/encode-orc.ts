@@ -290,13 +290,7 @@ function encodeStripeFooter(columns: EncodedColumn[], fieldCount: number): Uint8
       fields.push([1, encodeStream(stream.kind, index + 1, stream.bytes.length)]);
   }
   for (let index = 0; index <= fieldCount; index++)
-    fields.push([
-      2,
-      encodeColumnEncoding(
-        index === 0 ? ORC_TYPE.STRUCT : columns[index - 1].typeKind,
-        index === 0 ? undefined : columns[index - 1]
-      )
-    ]);
+    fields.push([2, encodeColumnEncoding(index === 0 ? undefined : columns[index - 1])]);
   return encodeMessages(fields);
 }
 
@@ -308,13 +302,8 @@ function encodeStream(kind: number, column: number, length: number): Uint8Array 
   ]);
 }
 
-function encodeColumnEncoding(typeKind: number, column?: EncodedColumn): Uint8Array {
-  const fields: Array<[number, number]> = [
-    [
-      1,
-      column?.encodingKind ?? (typeKind === ORC_TYPE.STRING || typeKind === ORC_TYPE.BINARY ? 0 : 2)
-    ]
-  ];
+function encodeColumnEncoding(column?: EncodedColumn): Uint8Array {
+  const fields: Array<[number, number]> = [[1, column?.encodingKind ?? 2]];
   if (column?.dictionarySize) fields.push([2, column.dictionarySize]);
   return encodeMessages(fields);
 }

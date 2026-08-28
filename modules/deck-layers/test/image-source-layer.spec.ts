@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {COORDINATE_SYSTEM} from '@deck.gl/core';
+import {expect, test, vi} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
 const TEST_IMAGE_SOURCE = {
   async getMetadata() {
@@ -163,3 +164,149 @@ test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', (
     [3, 4]
   ]);
 });
+
+test('ImageSourceLayer initializes state and tracks image loading', () => {
+  const layer = createLayer();
+  layer.initializeState();
+  expect(layer.state).toMatchObject({resolvedData: null, resolvedLayers: [], imageSet: null});
+  expect(layer.shouldUpdateState()).toBe(true);
+  expect(layer.isLoaded).toBe(false);
+  layer.state.imageSet = {isLoaded: true};
+  expect(typeof layer.isLoaded).toBe('boolean');
+});
+
+test('ImageSourceLayer updates image options and viewport requests', () => {
+  const layer = createLayer({
+    id: 'update',
+    data: TEST_IMAGE_SOURCE as any,
+    layers: ['roads'],
+    debounceTime: 10,
+    srs: 'EPSG:4326'
+  });
+  const setOptions = vi.fn();
+  const requestImage = vi.fn();
+  layer.context = {viewport: createViewport()} as any;
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.state = {
+    resolvedData: TEST_IMAGE_SOURCE,
+    resolvedSource: null,
+    resolvedLayers: ['roads'],
+    imageSet: {setOptions, requestImage},
+    unsubscribeImageSetEvents: null
+  };
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, layers: ['buildings'], debounceTime: 0},
+    changeFlags: {dataChanged: false, propsChanged: false, viewportChanged: false}
+  });
+  expect(setOptions).toHaveBeenCalledWith({imageSource: TEST_IMAGE_SOURCE, debounceTime: 10});
+  expect(requestImage).toHaveBeenCalledTimes(1);
+
+  layer.updateState({
+    props: layer.props,
+    oldProps: layer.props,
+    changeFlags: {dataChanged: false, propsChanged: false, viewportChanged: true}
+  });
+  expect(requestImage).toHaveBeenCalledTimes(2);
+});
+
+test('ImageSourceLayer renders accepted images in geographic and Cartesian coordinates', () => {
+  const layer = createLayer();
+  layer.getSubLayerProps = (props: any) => props;
+  layer.state = {imageSet: null};
+  expect(layer.renderLayers()).toBeNull();
+
+  layer.state.imageSet = {
+    currentRequest: {
+      image: {width: 1, height: 1},
+      parameters: {
+        boundingBox: [
+          [1, 2],
+          [3, 4]
+        ],
+        crs: 'EPSG:4326'
+      }
+    }
+  };
+  const geographic = layer.renderLayers();
+  expect(geographic.props.bounds).toEqual([1, 2, 3, 4]);
+  expect(geographic.props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+
+  layer.state.imageSet.currentRequest.parameters.crs = 'EPSG:3857';
+  expect(layer.renderLayers().props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+});
+
+test('ImageSourceLayer skips incomplete requests and WMS requests without layers', async () => {
+  const layer = createLayer({id: 'wms', data: TEST_IMAGE_SOURCE as any, serviceType: 'wms'});
+  const requestImage = vi.fn();
+  layer.state = {resolvedLayers: [], imageSet: {requestImage}};
+  layer.loadImage(createViewport());
+  expect(requestImage).not.toHaveBeenCalled();
+  await expect(layer.getFeatureInfoText(1, 2)).resolves.toBe('');
+
+  layer.state.imageSet = null;
+  layer.loadImage(createViewport());
+  expect(requestImage).not.toHaveBeenCalled();
+});
+
+test('ImageSourceLayer releases and reuses image managers', () => {
+  const layer = createLayer();
+  const unsubscribe = vi.fn();
+  const finalize = vi.fn();
+  const existingImageSet = {finalize};
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.state = {
+    resolvedData: TEST_IMAGE_SOURCE,
+    resolvedSource: null,
+    resolvedLayers: ['roads'],
+    imageSet: existingImageSet,
+    unsubscribeImageSetEvents: unsubscribe
+  };
+  expect(layer._getOrCreateImageSet(TEST_IMAGE_SOURCE, false)).toBe(existingImageSet);
+  layer._releaseImageSet();
+  expect(unsubscribe).toHaveBeenCalled();
+  expect(finalize).toHaveBeenCalled();
+  expect(layer.state).toMatchObject({imageSet: null, resolvedLayers: []});
+});
+
+test('ImageSourceLayer resolves direct sources and reports invalid source inputs', async () => {
+  const onSourceError = vi.fn();
+  const layer = createLayer({id: 'resolve', data: TEST_IMAGE_SOURCE as any, onSourceError});
+  const loadMetadata = vi.fn(async () => ({layers: [{name: 'first-layer'}]}));
+  const setOptions = vi.fn();
+  const requestImage = vi.fn();
+  const imageSet = {loadMetadata, setOptions, requestImage};
+  layer.context = {viewport: createViewport()} as any;
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.raiseError = vi.fn();
+  layer.state = {
+    resolvedData: null,
+    resolvedSource: null,
+    resolvedLayers: [],
+    imageSet: null,
+    unsubscribeImageSetEvents: null
+  };
+  layer._getOrCreateImageSet = vi.fn(() => imageSet);
+  await layer.resolveImageSource(layer.props);
+  await Promise.resolve();
+  expect(layer.state.resolvedData).toBe(TEST_IMAGE_SOURCE);
+  expect(setOptions).toHaveBeenCalledWith({imageSource: TEST_IMAGE_SOURCE});
+  expect(loadMetadata).toHaveBeenCalled();
+
+  const invalidLayer = createLayer({id: 'invalid', data: {} as any, onSourceError});
+  invalidLayer.state = {...layer.state, resolvedData: null, resolvedSource: null};
+  invalidLayer.raiseError = vi.fn();
+  await invalidLayer.resolveImageSource(invalidLayer.props);
+  expect(onSourceError).toHaveBeenCalled();
+  expect(invalidLayer.raiseError).toHaveBeenCalled();
+});
+
+function createViewport() {
+  return {
+    id: 'viewport',
+    width: 256,
+    height: 128,
+    resolution: 1,
+    getBounds: () => [1, 2, 3, 4]
+  } as any;
+}

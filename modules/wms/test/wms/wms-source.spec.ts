@@ -39,6 +39,32 @@ test('WMSSourceLoader#getMapURL', async () => {
   );
 });
 test('WMSSourceLoader#getFeatureInfoURL', async () => {});
+test('WMSSourceLoader#getFeatureInfoURL maps WMS 1.3 coordinates and vendor parameters', () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+    wms: {vendorParameters: {token: 'base'}},
+    wmsParameters: {layers: ['roads'], query_layers: ['roads'], crs: 'EPSG:4326'}
+  });
+  const url = new URL(
+    source.getFeatureInfoURL(
+      {
+        x: 12,
+        y: 34,
+        width: 800,
+        height: 600,
+        boundingBox: [
+          [30, 70],
+          [35, 75]
+        ]
+      } as any,
+      {token: 'request', empty: 0}
+    )
+  );
+  expect(url.searchParams.get('I')).toBe('12');
+  expect(url.searchParams.get('J')).toBe('34');
+  expect(url.searchParams.get('BBOX')).toBe('70,30,75,35');
+  expect(url.searchParams.get('TOKEN')).toBe('request');
+  expect(url.searchParams.get('EMPTY')).toBe('');
+});
 test('WMSSourceLoader#describeLayerURL', async () => {
   const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {url: WMS_SERVICE_URL});
   const describeLayerUrl = wmsImageSource.describeLayerURL({});
@@ -142,4 +168,83 @@ test('WMSSourceLoader#getImage', async () => {
     bbox: [30, 70, 35, 75],
     layers: ['oms']
   });
+});
+
+test('WMSSourceLoader parses base URLs and normalizes metadata', async () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+  expect(source._parseWMSUrl('https://example.com/wms?SERVICE=WMS&request=GetMap')).toEqual({
+    url: 'https://example.com/wms',
+    parameters: {SERVICE: 'WMS', request: 'GetMap'}
+  });
+  expect(source.normalizeMetadata({title: 'service'} as any)).toEqual({title: 'service'});
+  source.getCapabilities = async () => ({title: 'service'}) as any;
+  await expect(source.getMetadata()).resolves.toEqual({title: 'service'});
+});
+
+test('WMSSourceLoader forwards text responses and abort signals', async () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+    wmsParameters: {layers: ['roads'], query_layers: ['roads']}
+  });
+  let requestInit: RequestInit | undefined;
+  source.fetch = async (_url, init) => {
+    requestInit = init;
+    return new Response('feature text', {headers: {'content-type': 'text/plain'}});
+  };
+  await expect(
+    source.getFeatureInfoText({
+      x: 1,
+      y: 2,
+      width: 10,
+      height: 20,
+      bbox: [0, 0, 1, 1],
+      layers: ['roads'],
+      query_layers: ['roads']
+    })
+  ).resolves.toBe('feature text');
+
+  const controller = new AbortController();
+  source.coreApi.parse = async () => ({width: 1, height: 1}) as any;
+  await source.getMap(
+    {width: 1, height: 1, bbox: [0, 0, 1, 1], layers: ['roads']},
+    undefined,
+    controller.signal
+  );
+  expect(requestInit?.signal).toBe(controller.signal);
+});
+
+test('WMSSourceLoader validates bounding boxes and parses service errors', async () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {}) as any;
+  expect(source._flipBoundingBox('invalid', source.wmsParameters)).toBeNull();
+  expect(source._flipBoundingBox([1, 2, 3], source.wmsParameters)).toBeNull();
+  expect(
+    source._flipBoundingBox([1, 2, 3, 4], {...source.wmsParameters, version: '1.1.1'})
+  ).toEqual([1, 2, 3, 4]);
+
+  const errorXML = new TextEncoder().encode(
+    '<ServiceExceptionReport><ServiceException code="InvalidRequest">bad request</ServiceException></ServiceExceptionReport>'
+  );
+  const errorResponse = new Response(errorXML, {
+    status: 400,
+    headers: {'content-type': 'application/vnd.ogc.se_xml'}
+  });
+  expect(() => source._checkResponse(errorResponse, errorXML.buffer)).toThrow();
+  expect(source._parseError(errorXML.buffer)).toBeInstanceOf(Error);
+
+  source.fetch = async () => errorResponse;
+  await expect(source._fetchArrayBuffer('https://example.com/error')).rejects.toThrow();
+});
+
+test('WMSSourceLoader reports image parse failures as WMS errors', async () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+    wmsParameters: {layers: ['roads']}
+  });
+  const errorXML = new TextEncoder().encode(
+    '<ServiceExceptionReport><ServiceException>not an image</ServiceException></ServiceExceptionReport>'
+  );
+  source.fetch = async () =>
+    new Response(errorXML, {status: 200, headers: {'content-type': 'application/octet-stream'}});
+  source.coreApi.parse = async () => {
+    throw new Error('image decode failed');
+  };
+  await expect(source.getLegendGraphic({}, {layer: 'roads'})).rejects.toThrow();
 });
