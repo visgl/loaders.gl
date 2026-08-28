@@ -1,9 +1,18 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {GeoPackageDataSource} from '../src/geopackage-source-loader';
+import {GeoPackageDataSource, GeoPackageSource} from '../src/geopackage-source-loader';
 
 const GEOPACKAGE_FIXTURE = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
+
+test('GeoPackage source loader exposes URL detection and a data source factory', () => {
+  expect(GeoPackageSource.testURL('rivers.gpkg')).toBe(true);
+  expect(GeoPackageSource.testURL('rivers.gpkg?table=features')).toBe(true);
+  expect(GeoPackageSource.testURL('rivers.sqlite')).toBe(false);
+
+  const source = GeoPackageSource.createDataSource(new Blob([]), {geopackage: {}});
+  expect(source).toBeInstanceOf(GeoPackageDataSource);
+});
 
 test.runIf(isBrowser)(
   'GeoPackage source exposes shared scan metadata for the default table',
