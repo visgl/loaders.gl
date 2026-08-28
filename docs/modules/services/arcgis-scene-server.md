@@ -51,3 +51,26 @@ Returns an `I3SSource` for mesh and Point layers or an `I3SPointCloudSource` for
 
 Returns the normalized `/SceneServer/layers/{id}` URL. A `layerId` option is required when the
 constructor receives a service URL without a layer segment.
+
+### `query(options)`
+
+Runs a read-only ArcGIS SceneServer layer query. `where`, `objectIds`, geometry filters,
+`outFields`, `inSR`, `outSR`, `resultOffset`, and `resultRecordCount` are forwarded using ArcGIS
+REST syntax. Authentication, custom fetch, and `AbortSignal` options are preserved. The result
+contains `features`, optional `fields`, `exceededTransferLimit`, and the raw response metadata.
+
+`getFeatures(options)` is an alias for applications that use a generic feature-source interface.
+
+```ts
+const result = await source.query({
+  where: "CATEGORY = 'Building'",
+  outFields: ['OBJECTID', 'CATEGORY'],
+  returnGeometry: true,
+  resultRecordCount: 500,
+  signal: abortController.signal
+});
+```
+
+Renderer, visual-variable, label, and popup expressions are returned as typed metadata and are
+not evaluated by the loader. Use `aggregateArcGISSceneFeatures` for deterministic client-side
+count, sum, min, max, average, and group-by operations.

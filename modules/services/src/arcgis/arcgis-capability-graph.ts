@@ -11,7 +11,7 @@ export type ArcGISServiceCapabilities = ArcGISService & {
   /** Stable identifier for the discovered service. */
   id: string;
   /** Broad service family used for selection. */
-  kind: 'vector' | 'image' | 'tile' | 'unknown';
+  kind: 'vector' | 'image' | 'tile' | 'scene' | 'unknown';
   /** Shared normalized service capability contract. */
   capabilities: ServiceCapabilities;
   /** Raw service metadata for provider-specific consumers. */
@@ -34,6 +34,10 @@ export type ArcGISServiceSelection = {
   format?: string;
   /** Preferred coordinate system. */
   crs?: string;
+  /** Required I3S layer profile for SceneServer nodes. */
+  profile?: string;
+  /** Required layer identifier for SceneServer nodes. */
+  layerId?: string | number;
 };
 
 /** Options controlling ArcGIS capability discovery. */
@@ -58,7 +62,10 @@ export async function discoverArcGISCapabilities(
 
   const nodes = await Promise.all(
     services.map(async service => {
-      const metadata = await fetchServiceMetadata(service.url, fetchFile);
+      let metadata = await fetchServiceMetadata(service.url, fetchFile);
+      if (service.type.toLowerCase().includes('scene')) {
+        metadata = await enrichSceneServerMetadata(service.url, metadata, fetchFile);
+      }
       return normalizeServiceCapabilities(service, metadata);
     })
   );
@@ -79,6 +86,20 @@ export function selectArcGISService(
     )
       return false;
     if (requirements.crs && !node.capabilities.crs.includes(requirements.crs)) return false;
+    if (
+      requirements.profile &&
+      node.metadata.profile !== requirements.profile &&
+      !node.capabilities.layers.some(layer => layer.profile === requirements.profile)
+    )
+      return false;
+    if (
+      requirements.layerId !== undefined &&
+      !node.capabilities.layers.some(
+        layer =>
+          layer.id === String(requirements.layerId) || layer.name === String(requirements.layerId)
+      )
+    )
+      return false;
     return true;
   });
 }
@@ -97,6 +118,32 @@ async function fetchServiceMetadata(
   return (await response.json()) as Record<string, unknown>;
 }
 
+/** Fetches layer documents so SceneServer profile selection uses authoritative store metadata. */
+async function enrichSceneServerMetadata(
+  serviceUrl: string,
+  metadata: Record<string, unknown>,
+  fetchFile: typeof fetch
+): Promise<Record<string, unknown>> {
+  const layers = Array.isArray(metadata.layers) ? metadata.layers : [];
+  if (!layers.length) return metadata;
+  const enrichedLayers = await Promise.all(
+    layers.map(async value => {
+      if (!value || typeof value !== 'object') return value;
+      const layer = value as Record<string, unknown>;
+      if (layer.id === undefined) return value;
+      const layerURL = `${serviceUrl.replace(/\/$/, '')}/layers/${encodeURIComponent(String(layer.id))}`;
+      try {
+        const layerMetadata = await fetchServiceMetadata(layerURL, fetchFile);
+        return {...layer, ...layerMetadata, id: layer.id, name: layer.name ?? layerMetadata.name};
+      } catch {
+        // Keep directory metadata when an individual layer is unavailable.
+        return value;
+      }
+    })
+  );
+  return {...metadata, layers: enrichedLayers};
+}
+
 /** Combines directory information and metadata into a normalized capability node. */
 function normalizeServiceCapabilities(
   service: ArcGISService,
@@ -106,6 +153,14 @@ function normalizeServiceCapabilities(
   const kind = getServiceKind(serviceType);
   const formats = getServiceFormats(metadata);
   const crs = getServiceCrs(metadata);
+  const layers = getServiceLayers(metadata).map(layer => ({
+    ...layer,
+    url:
+      layer.url ||
+      (serviceType.includes('scene') && layer.id
+        ? `${service.url.replace(/\/$/, '')}/layers/${encodeURIComponent(layer.id)}`
+        : undefined)
+  }));
   const capabilities: ServiceCapabilities = {
     url: service.url,
     type: getServiceCapabilityType(serviceType),
@@ -114,8 +169,8 @@ function normalizeServiceCapabilities(
     abstract: typeof metadata.description === 'string' ? metadata.description : undefined,
     crs,
     formats,
-    layers: [],
-    operations: [],
+    layers,
+    operations: getServiceOperations(metadata),
     formatSpecificMetadata: metadata
   };
   return {
@@ -127,6 +182,64 @@ function normalizeServiceCapabilities(
   };
 }
 
+/** Extracts normalized layer entries from SceneServer and other service metadata. */
+function getServiceLayers(metadata: Record<string, unknown>): ServiceCapabilities['layers'] {
+  const layerValues = Array.isArray(metadata.layers) ? metadata.layers : [];
+  return layerValues.flatMap(value => {
+    if (!value || typeof value !== 'object') return [];
+    const layer = value as Record<string, unknown>;
+    const spatialReference = layer.spatialReference as
+      | {wkid?: number; latestWkid?: number}
+      | undefined;
+    const wkid = spatialReference?.latestWkid || spatialReference?.wkid;
+    const extent = layer.extent as
+      | {xmin?: number; ymin?: number; xmax?: number; ymax?: number}
+      | undefined;
+    const bounds =
+      extent && [extent.xmin, extent.ymin, extent.xmax, extent.ymax].every(Number.isFinite)
+        ? [extent.xmin!, extent.ymin!, extent.xmax!, extent.ymax!]
+        : undefined;
+    return [
+      {
+        name: layer.id === undefined ? String(layer.name || '') : String(layer.id),
+        id: layer.id === undefined ? undefined : String(layer.id),
+        url: typeof layer.url === 'string' ? layer.url : undefined,
+        title: typeof layer.name === 'string' ? layer.name : undefined,
+        crs: wkid ? [`EPSG:${wkid}`] : undefined,
+        bounds,
+        profile:
+          typeof layer.profile === 'string'
+            ? layer.profile
+            : layer.store &&
+                typeof layer.store === 'object' &&
+                typeof (layer.store as Record<string, unknown>).profile === 'string'
+              ? ((layer.store as Record<string, unknown>).profile as string)
+              : undefined,
+        layerType: typeof layer.layerType === 'string' ? layer.layerType : undefined,
+        version:
+          typeof layer.version === 'string'
+            ? layer.version
+            : layer.store &&
+                typeof layer.store === 'object' &&
+                typeof (layer.store as Record<string, unknown>).version === 'string'
+              ? ((layer.store as Record<string, unknown>).version as string)
+              : undefined
+      }
+    ];
+  });
+}
+
+/** Extracts operation names when a service advertises them. */
+function getServiceOperations(metadata: Record<string, unknown>): string[] {
+  const capabilities = metadata.capabilities;
+  return typeof capabilities === 'string'
+    ? capabilities
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean)
+    : [];
+}
+
 /** Maps a discovered ArcGIS family to the shared service capability type. */
 function getServiceCapabilityType(serviceType: string): ServiceCapabilities['type'] {
   if (serviceType.includes('vectortile') || serviceType.includes('vector-tile')) {
@@ -134,6 +247,7 @@ function getServiceCapabilityType(serviceType: string): ServiceCapabilities['typ
   }
   if (serviceType.includes('feature')) return 'arcgis-feature-server';
   if (serviceType.includes('image')) return 'arcgis-image-server';
+  if (serviceType.includes('scene')) return 'arcgis-scene-server';
   if (serviceType.includes('map')) return 'arcgis-map-server';
   return 'unknown';
 }
@@ -142,6 +256,7 @@ function getServiceCapabilityType(serviceType: string): ServiceCapabilities['typ
 function getServiceKind(serviceType: string): ArcGISServiceCapabilities['kind'] {
   if (serviceType.includes('feature')) return 'vector';
   if (serviceType.includes('image')) return 'image';
+  if (serviceType.includes('scene')) return 'scene';
   if (
     serviceType.includes('map') ||
     serviceType.includes('vectortile') ||

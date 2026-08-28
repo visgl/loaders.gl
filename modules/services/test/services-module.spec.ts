@@ -105,6 +105,64 @@ describe('@loaders.gl/services', () => {
     expect(await getArcGISServices('https://example.com/not-an-arcgis-service')).toBeNull();
   });
 
+  test('normalizes SceneServer capability nodes and selects a requested profile', async () => {
+    const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services', {
+      fetch: async url => {
+        const requestURL = new URL(url);
+        if (requestURL.pathname.endsWith('/services')) {
+          return new Response(
+            JSON.stringify({services: [{name: 'City', type: 'SceneServer'}], folders: []})
+          );
+        }
+        if (requestURL.pathname.endsWith('/layers/0')) {
+          return new Response(
+            JSON.stringify({
+              id: 0,
+              name: 'Buildings',
+              layerType: '3DObject',
+              version: '1.8',
+              store: {profile: 'meshpyramids', version: '1.8'},
+              spatialReference: {wkid: 4326}
+            })
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            name: 'City',
+            layers: [
+              {
+                id: 0,
+                name: 'Buildings',
+                layerType: '3DObject'
+              }
+            ],
+            spatialReference: {wkid: 4326}
+          })
+        );
+      }
+    });
+
+    expect(graph?.nodes[0]).toMatchObject({
+      kind: 'scene',
+      capabilities: {
+        type: 'arcgis-scene-server',
+        layers: [
+          {
+            name: '0',
+            title: 'Buildings',
+            crs: ['EPSG:4326'],
+            url: 'https://example.com/arcgis/rest/services/City/SceneServer/layers/0'
+          }
+        ]
+      },
+      metadata: {name: 'City'}
+    });
+    expect(graph?.nodes[0].capabilities.layers[0].profile).toBe('meshpyramids');
+    expect(selectArcGISService(graph!, {kind: 'scene', profile: 'meshpyramids'})).toBe(
+      graph?.nodes[0]
+    );
+  });
+
   test('resolves qualified service names from ArcGIS folder directories', async () => {
     const services = await getArcGISServices(
       'https://example.com/arcgis/rest/services',
