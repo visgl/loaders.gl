@@ -11,22 +11,24 @@ const featureCards = [
       'Cloud-native scanning supports range reads, bounding-box filtering, projection, and predicates across most data formats, directly in the browser.',
     href: '/docs/developer-guide/common-scan-architecture',
     linkLabel: 'Explore scan architecture',
+    badge: 'New in v5.0',
     tags: ['projection', 'predicates', 'range reads'],
     visual: 'scan',
     wide: true,
     tone: 'violet'
   },
   {
-    id: 'crs',
-    eyebrow: 'Geospatial foundations',
-    title: 'Coordinates with context.',
+    id: 'loaders',
+    eyebrow: 'Format coverage',
+    title: 'Optimized, feature-rich parsers',
     description:
-      'Preserve CRS metadata across GeoParquet, GeoArrow, WKT, and more—so location data stays meaningful from file to map.',
-    href: '/docs/developer-guide/coordinate-reference-systems',
-    linkLabel: 'Understand CRS support',
-    tags: ['GeoParquet', 'GeoArrow', 'WKT'],
-    visual: 'crs',
-    tone: 'orange'
+      'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
+    href: '/docs',
+    linkLabel: 'Browse loader docs',
+    tags: ['tables', 'GIS', '3D', 'point clouds'],
+    visual: 'loaders',
+    wide: true,
+    tone: 'pink'
   },
   {
     id: 'streaming',
@@ -65,19 +67,6 @@ const featureCards = [
     tone: 'cyan'
   },
   {
-    id: 'loaders',
-    eyebrow: 'Format coverage',
-    title: 'Optimized, feature-rich parsers',
-    description:
-      'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
-    href: '/docs',
-    linkLabel: 'Browse loader docs',
-    tags: ['tables', 'GIS', '3D', 'point clouds'],
-    visual: 'loaders',
-    wide: true,
-    tone: 'pink'
-  },
-  {
     id: 'categories',
     eyebrow: 'Composable APIs',
     title: 'Design apps around your data, not data formats.',
@@ -88,6 +77,19 @@ const featureCards = [
     tags: ['mesh', 'table', 'GIS', 'scenegraph'],
     visual: 'categories',
     tone: 'yellow'
+  },
+  {
+    id: 'crs',
+    eyebrow: 'Geospatial foundations',
+    title: 'Coordinates with context.',
+    description:
+      'Preserve CRS metadata across GeoParquet, GeoArrow, WKT, and more—so location data stays meaningful from file to map.',
+    href: '/docs/developer-guide/coordinate-reference-systems',
+    linkLabel: 'Understand CRS support',
+    badge: 'New in v5.0',
+    tags: ['GeoParquet', 'GeoArrow', 'WKT'],
+    visual: 'crs',
+    tone: 'orange'
   }
 ];
 
@@ -234,13 +236,28 @@ const CardBody = styled.div`
 `;
 
 const CardEyebrow = styled.p`
+  align-items: center;
   color: var(--card-accent);
+  display: flex;
+  flex-wrap: wrap;
   font-size: 11px;
   font-weight: 800;
+  gap: 9px;
   letter-spacing: 0.13em;
   line-height: 1.3;
   margin: 0 0 14px;
   text-transform: uppercase;
+`;
+
+const CardBadge = styled.span`
+  background: color-mix(in srgb, var(--card-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-accent) 54%, transparent);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 4px 6px;
 `;
 
 const CardTitle = styled.h3`
@@ -336,38 +353,65 @@ const CardVisual = styled.div`
 `;
 
 const ScanVisual = styled(CardVisual)`
-  align-items: end;
-  bottom: 34px;
-  display: flex;
-  gap: 8px;
-  height: 106px;
+  bottom: 14px;
+  height: 150px;
+  width: 48%;
 
-  &::before {
-    border: 1px solid rgba(155, 140, 255, 0.58);
-    border-radius: 10px;
-    box-shadow: inset 0 0 30px rgba(117, 95, 255, 0.12);
-    content: '';
-    inset: 0;
-    position: absolute;
+  svg {
+    height: 100%;
+    overflow: visible;
+    width: 100%;
   }
-`;
 
-const ScanBar = styled.span`
-  background: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(155, 140, 255, 0.25)')};
-  border-radius: 4px 4px 0 0;
-  display: block;
-  height: ${(props) => props.$height};
-  margin: 0 0 14px 12px;
-  width: 12px;
-`;
+  .scan-cloud {
+    fill: rgba(155, 140, 255, 0.12);
+    stroke: rgba(181, 170, 255, 0.72);
+    stroke-width: 1.5;
+  }
 
-const ScanLabel = styled.span`
-  color: rgba(255, 255, 255, 0.54);
-  font-family: monospace;
-  font-size: 9px;
-  position: absolute;
-  right: 12px;
-  top: 10px;
+  .scan-data {
+    fill: rgba(181, 170, 255, 0.3);
+  }
+
+  .scan-path {
+    fill: none;
+    stroke: rgba(155, 140, 255, 0.24);
+    stroke-linecap: round;
+    stroke-width: 1.5;
+  }
+
+  .scan-selected-path {
+    fill: none;
+    stroke: var(--card-accent);
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
+  .scan-lens-glow {
+    fill: rgba(117, 95, 255, 0.1);
+    stroke: rgba(155, 140, 255, 0.15);
+    stroke-width: 12;
+  }
+
+  .scan-lens {
+    fill: rgba(13, 21, 33, 0.38);
+    stroke: var(--card-accent);
+    stroke-width: 2;
+  }
+
+  .scan-handle {
+    stroke: var(--card-accent);
+    stroke-linecap: round;
+    stroke-width: 7;
+  }
+
+  .scan-selected {
+    fill: var(--card-accent);
+  }
+
+  .scan-rejected {
+    fill: rgba(155, 140, 255, 0.18);
+  }
 `;
 
 const CrsVisual = styled(CardVisual)`
@@ -547,13 +591,55 @@ function RenderFeatureVisual({type, wide}) {
   if (type === 'scan') {
     return (
       <ScanVisual $wide={wide} aria-hidden="true">
-        <ScanLabel>SELECT / WHERE / LIMIT</ScanLabel>
-        <ScanBar $height="38%" />
-        <ScanBar $height="62%" $active />
-        <ScanBar $height="48%" />
-        <ScanBar $height="82%" $active />
-        <ScanBar $height="54%" />
-        <ScanBar $height="70%" $active />
+        <svg viewBox="0 0 280 150">
+          <path
+            className="scan-cloud"
+            d="M17 65c-8 0-14-6-14-14s6-14 14-14h2c2-14 14-25 29-25 13 0 24 8 28 20 10 0 18 7 18 17s-8 16-18 16H17z"
+          />
+
+          <path className="scan-path" d="M71 48 C95 48 104 50 121 54" />
+          <path className="scan-path" d="M76 58 C97 58 108 60 119 62" />
+          <path className="scan-path" d="M76 69 C98 69 108 69 117 69" />
+          <path className="scan-path" d="M74 80 C98 80 108 78 119 76" />
+          <path className="scan-path" d="M66 90 C94 90 105 86 121 83" />
+
+          <g className="scan-data">
+            <rect x="72" y="44" width="12" height="7" rx="3" />
+            <rect x="88" y="44" width="8" height="7" rx="3" />
+            <rect x="78" y="55" width="7" height="7" rx="3" />
+            <rect x="89" y="55" width="14" height="7" rx="3" />
+            <rect x="78" y="66" width="11" height="7" rx="3" />
+            <rect x="93" y="66" width="7" height="7" rx="3" />
+            <rect x="76" y="77" width="9" height="7" rx="3" />
+            <rect x="89" y="77" width="13" height="7" rx="3" />
+            <rect x="68" y="87" width="13" height="7" rx="3" />
+            <rect x="85" y="87" width="8" height="7" rx="3" />
+          </g>
+
+          <circle className="scan-lens-glow" cx="151" cy="69" r="42" />
+          <circle className="scan-lens" cx="151" cy="69" r="42" />
+          <line className="scan-handle" x1="181" y1="99" x2="211" y2="129" />
+
+          <path className="scan-selected-path" d="M124 57 C145 57 161 46 184 43 C207 40 226 40 254 40" />
+          <path className="scan-selected-path" d="M124 76 C147 76 161 86 184 92 C207 98 226 99 258 99" />
+          <path className="scan-path" d="M123 66 C148 66 166 67 191 68 C212 69 227 65 248 60" />
+          <path className="scan-path" d="M126 84 C147 88 158 101 174 111 C190 121 207 126 229 130" />
+
+          <g className="scan-selected">
+            <rect x="207" y="35" width="13" height="9" rx="4" />
+            <rect x="225" y="35" width="8" height="9" rx="4" />
+            <rect x="238" y="35" width="16" height="9" rx="4" />
+            <rect x="209" y="94" width="9" height="9" rx="4" />
+            <rect x="223" y="94" width="15" height="9" rx="4" />
+            <rect x="243" y="94" width="10" height="9" rx="4" />
+          </g>
+          <g className="scan-rejected">
+            <rect x="205" y="64" width="10" height="7" rx="3" />
+            <rect x="220" y="60" width="7" height="7" rx="3" />
+            <rect x="189" y="116" width="9" height="7" rx="3" />
+            <rect x="203" y="122" width="13" height="7" rx="3" />
+          </g>
+        </svg>
       </ScanVisual>
     );
   }
@@ -650,7 +736,10 @@ export default function Features() {
           {featureCards.map((feature) => (
             <FeatureCard key={feature.id} $tone={feature.tone} $wide={feature.wide}>
               <CardBody $wide={feature.wide}>
-                <CardEyebrow>{feature.eyebrow}</CardEyebrow>
+                <CardEyebrow>
+                  {feature.eyebrow}
+                  {feature.badge && <CardBadge>{feature.badge}</CardBadge>}
+                </CardEyebrow>
                 <CardTitle>{feature.title}</CardTitle>
                 <CardDescription>{feature.description}</CardDescription>
               </CardBody>
