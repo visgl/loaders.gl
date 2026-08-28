@@ -1012,7 +1012,9 @@ function flattenFeatureIdsByFeatureIndices(
   featureIds: Int32Array
 ): void {
   const featureIndices = attributes.id.value;
-  const result = new Float32Array(featureIndices.length);
+  // Feature IDs are object identifiers, not render coordinates. Float32 cannot represent
+  // every valid 32-bit ID (values above 2^24 are rounded), so retain them in a precise array.
+  const result = new Float64Array(featureIndices.length);
 
   for (let index = 0; index < featureIndices.length; index++) {
     result[index] = featureIds[featureIndices[index]];

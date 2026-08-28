@@ -73,17 +73,17 @@ describe('I3S Point profile', () => {
     expect(content!.topology).toBe('point-list');
     expect(content!.vertexCount).toBe(2);
     expect(content!.attributes.positions.value).toHaveLength(6);
-    expect(Array.from(content!.featureIds)).toEqual([317494, 319150]);
+    expect(Array.from(content!.featureIds)).toEqual([33554433, 33554435]);
     expect(content!.drawRanges).toEqual([
       {
-        featureId: 317494,
+        featureId: 33554433,
         firstPrimitive: 0,
         primitiveCount: 1,
         firstVertex: 0,
         vertexCount: 1
       },
       {
-        featureId: 319150,
+        featureId: 33554435,
         firstPrimitive: 1,
         primitiveCount: 1,
         firstVertex: 1,
@@ -97,11 +97,11 @@ describe('I3S Point profile', () => {
         tileset: {tileset},
         header: tileset.root
       },
-      319150,
+      33554435,
       {
         fetch: async () => new Response(decodeBase64(fixture.testResources.attributeBase64))
       }
     );
-    expect(attributes).toEqual({FID: '319150'});
+    expect(attributes).toEqual({FID: '33554435'});
   });
 });
