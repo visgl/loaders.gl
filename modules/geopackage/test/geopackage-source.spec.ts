@@ -29,6 +29,10 @@ test('GeoPackageSource#getMetadata returns tables and default selection', async 
     metadata.tables.find(table => table.name === 'preferred_rivers')?.identifier,
     'includes GeoPackage table metadata'
   ).toBe('default');
+  expect(
+    metadata.tables.find(table => table.name === 'preferred_rivers')?.crs,
+    'includes the table CRS definition'
+  ).toBeTruthy();
 });
 test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds', async () => {
   const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
@@ -39,6 +43,10 @@ test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds',
   expect(metadata.sourceType, 'uses the shared source identifier').toBe('geopackage');
   expect(metadata.columns.length > 0, 'publishes the selected table schema').toBeTruthy();
   expect(metadata.spatial?.bounds, 'publishes feature bounds').toBeTruthy();
+  expect(
+    metadata.spatial?.coordinateReferenceSystems?.length,
+    'publishes the selected table CRS'
+  ).toBe(1);
 });
 test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async () => {
   const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
