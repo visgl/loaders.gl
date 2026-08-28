@@ -10,6 +10,7 @@ import type {
   ScanColumnRole,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
+  SpatialReference,
   SourceLoader,
   TableQueryExplain,
   VectorSource,
@@ -17,7 +18,12 @@ import type {
   VectorSourceLayer,
   VectorSourceMetadata
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource, explainTableQuery} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  createSpatialReference,
+  DataSource,
+  explainTableQuery
+} from '@loaders.gl/loader-utils';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,
@@ -123,7 +129,8 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
       capabilities: {table: this.tableQueryCapabilities, bounds: 'pushdown'},
       spatial: {
         bounds: getScanBoundsFromHeader(info.header),
-        coordinateReferenceSystems: getLayerCrs(info.header)
+        coordinateReferenceSystems: getLayerCrs(info.header),
+        spatialReference: getFlatGeobufSpatialReference(info.header)
       },
       statistics: {rowCount: info.header.featuresCount}
     });
@@ -200,12 +207,55 @@ async function loadHeaderInfo(url: string, fetch: FetchLike): Promise<HeaderInfo
 }
 
 function buildMetadata(layerName: string, header: FlatGeobufHeader): VectorSourceMetadata {
-  const layer: VectorSourceLayer = {name: layerName, title: header.title || layerName, crs: getLayerCrs(header), boundingBox: getBoundingBoxFromHeader(header)};
+  const layer: VectorSourceLayer = {
+    name: layerName,
+    title: header.title || layerName,
+    crs: getLayerCrs(header),
+    spatialReference: getFlatGeobufSpatialReference(header),
+    boundingBox: getBoundingBoxFromHeader(header)
+  };
   return {name: layerName, title: header.title || layerName, abstract: header.description, keywords: [], layers: [layer]};
 }
 
 function inferLayerName(url: string, header: FlatGeobufHeader): string { if (header.title) return header.title; const fileName = url.split(/[?#]/)[0].split('/').pop() || 'flatgeobuf'; return fileName.replace(/\.fgb$/i, '') || 'flatgeobuf'; }
 function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [getFlatGeobufCRSIdentifier(header.crs), header.crs?.wkt].filter(Boolean).map(String); return values.length ? values : undefined; }
+/** Normalize FlatGeobuf header CRS fields without discarding their original representations. */
+function getFlatGeobufSpatialReference(header: FlatGeobufHeader): SpatialReference {
+  const identifier = getFlatGeobufCRSIdentifier(header.crs);
+  const wkt = header.crs?.wkt;
+  if (wkt) {
+    return createSpatialReference({
+      crs: {
+        state: 'explicit',
+        definition: wkt,
+        representation: 'wkt',
+        provenance: 'metadata',
+        alternatives: identifier
+          ? [{definition: identifier, representation: 'identifier'}]
+          : undefined
+      },
+      coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+    });
+  }
+  if (identifier) {
+    return createSpatialReference({
+      crs: {
+        state: 'explicit',
+        definition: identifier,
+        representation: 'identifier',
+        provenance: 'metadata'
+      },
+      coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+    });
+  }
+  return createSpatialReference({
+    crs: {
+      state: header.crs ? 'unknown' : 'absent',
+      provenance: header.crs ? 'metadata' : 'unknown'
+    },
+    coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+  });
+}
 function getBoundingBoxFromHeader(header: FlatGeobufHeader): [[number, number], [number, number]] | undefined { const envelope = header.envelope; return envelope && envelope.length >= 4 ? [[envelope[0], envelope[1]], [envelope[2], envelope[3]]] : undefined; }
 function getScanBoundsFromHeader(header: FlatGeobufHeader): {minimum: [number, number]; maximum: [number, number]} | undefined { const boundingBox = getBoundingBoxFromHeader(header); return boundingBox ? {minimum: boundingBox[0], maximum: boundingBox[1]} : undefined; }
 function getColumnRoles(header: FlatGeobufHeader): Record<string, ScanColumnRole> { const roles: Record<string, ScanColumnRole> = {geometry: 'geometry'}; for (const column of header.columns) if (column.primaryKey) roles[column.name] = 'identifier'; return roles; }

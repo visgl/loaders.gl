@@ -51,6 +51,37 @@ The `WKTCRSLoader` and `WKTCRSWriter` remain loaders.gl adapters, but their v5 d
 `WKTCRSAst` exported by `@math.gl/crs`. The old hybrid array/object result and the `raw`, `sort`,
 and `debug` options have been removed.
 
+## Experimental cross-source descriptor
+
+`@loaders.gl/loader-utils` exports an experimental `SpatialReference` descriptor for reporting
+CRS discovery consistently across source families. It records a preferred definition and its
+representation, alternate source representations, provenance, coordinate epoch, stored component
+order, coordinate frame, height interpretation, and warnings. Its discriminated `crs.state`
+preserves four cases that applications must not collapse:
+
+- `explicit`: the format or caller supplied a usable definition;
+- `default`: the format specification establishes a usable definition;
+- `unknown`: the source explicitly says that its CRS is unknown;
+- `absent`: the source did not supply CRS metadata.
+
+The initial proof of concept is exposed by I3S/3D Tiles spatial metadata and by FlatGeobuf vector
+source and scan metadata. Existing format-specific fields remain available for compatibility and
+lossless preservation. The descriptor reports source discovery only: its presence never claims
+that coordinates, bounds, or heights were transformed.
+
+```ts
+const metadata = await flatGeobufSource.getMetadata();
+const spatialReference = metadata.layers[0].spatialReference;
+
+if (spatialReference?.crs.state === 'explicit') {
+  console.log(spatialReference.crs.definition, spatialReference.crs.representation);
+}
+```
+
+GeoArrow and GeoParquet need column-specific descriptors rather than one table-wide value. Raster,
+point-cloud, and service adoption will likewise retain format-specific details until the common
+shape can represent them without loss.
+
 ## 3D spatial API
 
 I3S and 3D Tiles share a normalized spatial descriptor in `@loaders.gl/tiles`. Normal loading does
@@ -173,7 +204,7 @@ mean coordinate transformation.
 | GeoArrow | Field `crs` plus `crs_type`: PROJJSON, WKT2:2019, authority code, opaque-string SRID, or another opaque string | Typed field metadata; partial across converters that rebuild Arrow schemas | None |
 | GeoParquet 1.1 / 2.0 | Per-column PROJJSON, `null`, omitted default, and coordinate `epoch` | Original `geo` JSON is retained; compatible GeoArrow field metadata is added | None |
 | Shapefile | `.prj` WKT sidecar | `.prj` is returned by legacy output; Arrow metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
-| FlatGeobuf | Header authority code and WKT | Header metadata is retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
+| FlatGeobuf | Header authority code and WKT; common vector/scan `spatialReference` descriptor | Header metadata and alternate CRS representations are retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
 | GeoPackage | Spatial reference system tables, preferring extension WKT2 over fallback WKT1 | Source and scan metadata retain the table CRS; Arrow geometry fields report the native or transformed output CRS | Opt-in through `gis.reproject` and `_targetCrs` |
 | GeoJSON | Deprecated GeoJSON `crs` member when present; otherwise WGS84 semantics | Original legacy value is retained; recognized CRS84/EPSG:4326 values map to GeoArrow/GeoParquet metadata | None in the GeoJSON loader |
 | CSV WKT / WKB | Geometry values can contain EWKT/EWKB SRIDs, but CSV has no dataset CRS convention | Geometry-level SRID support is partial; no common table CRS descriptor | None |
@@ -226,8 +257,8 @@ future normalized table descriptor must not collapse them into one table-wide va
   request.
 - Some service parsers and format-specific structures still expose unclassified strings.
 - GeoParquet CRS metadata is preserved, but GeoParquet coordinates are not reprojected.
-- The unified 3D descriptor covers I3S and 3D Tiles; table, raster, and service APIs do not yet all
-  expose the same result shape.
+- The experimental common descriptor covers I3S, 3D Tiles, and FlatGeobuf source discovery;
+  column-specific table metadata, rasters, point clouds, and services do not yet all expose it.
 
 Applications should not infer transformation from metadata presence or compare serialized
 definitions for semantic equality. They should also account for each loader's documented axis
@@ -235,8 +266,8 @@ convention and failure behavior until the shared reprojection contract makes bot
 
 ## Roadmap
 
-1. Normalize discovery into a descriptor containing definition, representation, coordinate epoch,
-   provenance, and explicit unknown/default state.
+1. Extend the experimental discovery descriptor from tiles and FlatGeobuf to all source families,
+   including representation, coordinate epoch, provenance, and explicit unknown/default state.
 2. Introduce one public reprojection contract; update output CRS and bounds after transformation,
    and reject unsupported transformations explicitly.
 3. Complete vector and table formats, including column-specific GeoArrow and GeoParquet CRS.

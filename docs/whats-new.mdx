@@ -40,6 +40,9 @@ Release Date: 2026
 - Adds a cross-format [CRS support guide](/docs/developer-guide/coordinate-reference-systems) that
   separates metadata preservation from coordinate transformation and records the reprojection
   roadmap.
+- Adds an experimental `SpatialReference` discovery descriptor in `@loaders.gl/loader-utils`,
+  adopted by I3S/3D Tiles and FlatGeobuf source metadata without removing their compatibility
+  fields or implying that coordinates were transformed.
 - Shapefile, FlatGeobuf, and GeoPackage reprojection now rejects missing or invalid source CRS
   metadata instead of returning untransformed coordinates or assuming WGS84.
 - GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected

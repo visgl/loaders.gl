@@ -4,6 +4,16 @@
 
 import type {CRSDefinition} from '@math.gl/crs';
 import type {Geoid} from '@math.gl/geoid';
+import {
+  createSpatialReference,
+  inferSpatialReferenceRepresentation,
+  type SpatialReference,
+  type SpatialReferenceAlternative,
+  type SpatialReferenceCoordinateFrame,
+  type SpatialReferenceProvenance,
+  type SpatialReferenceRepresentation,
+  type SpatialReferenceState
+} from '@loaders.gl/loader-utils';
 
 /** How height values in a 3D dataset relate to the earth. */
 export type TilesetHeightReference = 'native' | 'ellipsoidal' | 'orthometric' | 'unknown';
@@ -15,20 +25,10 @@ export type TilesetTargetHeightReference = 'native' | 'ellipsoidal' | 'orthometr
 export type TilesetOutputCoordinates = 'auto' | 'ecef' | 'local-enu' | 'target-crs';
 
 /** Broad coordinate frame used by a 3D dataset. */
-export type TilesetCoordinateFrame =
-  | 'geographic'
-  | 'geocentric'
-  | 'projected'
-  | 'local'
-  | 'unknown';
+export type TilesetCoordinateFrame = SpatialReferenceCoordinateFrame;
 
 /** Origin of a normalized spatial-reference value. */
-export type TilesetSpatialReferenceProvenance =
-  | 'metadata'
-  | 'format-default'
-  | 'caller-override'
-  | 'legacy-assumption'
-  | 'unknown';
+export type TilesetSpatialReferenceProvenance = SpatialReferenceProvenance;
 
 /**
  * Simple application-facing spatial options shared by 3D Tiles and I3S.
@@ -56,7 +56,7 @@ export type TilesetSpatialOptions = {
  *
  * This is diagnostic output. Applications normally do not construct it.
  */
-export type TilesetSpatialReference = {
+export type TilesetSpatialReference = Omit<SpatialReference, 'heightReference'> & {
   /** Source horizontal or compound CRS, when it can be identified. */
   readonly sourceCrs?: CRSDefinition;
   /** Source vertical CRS, when independently identified. */
@@ -87,6 +87,12 @@ export type TilesetSpatialReference = {
 export type CreateTilesetSpatialReferenceOptions = {
   /** Discovered source CRS. */
   sourceCrs?: CRSDefinition;
+  /** Whether the source CRS was explicit, defaulted, unknown, or absent. */
+  sourceCrsState?: SpatialReferenceState;
+  /** Serialization or naming form used by the source CRS. */
+  sourceCrsRepresentation?: SpatialReferenceRepresentation;
+  /** Additional source CRS representations retained by the format. */
+  sourceCrsAlternatives?: readonly SpatialReferenceAlternative[];
   /** Discovered vertical CRS. */
   verticalCrs?: CRSDefinition;
   /** Discovered coordinate epoch. */
@@ -114,6 +120,7 @@ export function createTilesetSpatialReference(
   discovered: CreateTilesetSpatialReferenceOptions,
   options: TilesetSpatialOptions = {}
 ): TilesetSpatialReference {
+  const hasSourceCrsOverride = options.sourceCrs !== undefined;
   const sourceCrs = options.sourceCrs || discovered.sourceCrs;
   const outputCoordinates = options.outputCoordinates || 'auto';
   const targetCrs =
@@ -134,14 +141,50 @@ export function createTilesetSpatialReference(
     hasHeightMetadata &&
     outputCoordinates !== 'local-enu';
 
+  const provenance = hasSourceCrsOverride ? 'caller-override' : discovered.provenance || 'unknown';
+  const sourceCrsState = hasSourceCrsOverride
+    ? 'explicit'
+    : discovered.sourceCrsState ||
+      (sourceCrs ? (provenance === 'format-default' ? 'default' : 'explicit') : 'absent');
+  const spatialReference = createSpatialReference({
+    crs: sourceCrs
+      ? {
+          state: sourceCrsState === 'default' ? 'default' : 'explicit',
+          definition: sourceCrs,
+          representation:
+            (!hasSourceCrsOverride && discovered.sourceCrsRepresentation) ||
+            inferSpatialReferenceRepresentation(sourceCrs),
+          provenance,
+          alternatives: hasSourceCrsOverride ? undefined : discovered.sourceCrsAlternatives
+        }
+      : {
+          state: sourceCrsState === 'unknown' ? 'unknown' : 'absent',
+          provenance
+        },
+    vertical: discovered.verticalCrs
+      ? {
+          state: 'explicit',
+          definition: discovered.verticalCrs,
+          representation: inferSpatialReferenceRepresentation(discovered.verticalCrs),
+          provenance: discovered.provenance || 'metadata'
+        }
+      : undefined,
+    coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
+    coordinateFrame: discovered.coordinateFrame,
+    coordinateOrder: getCoordinateOrder(discovered.axisOrder),
+    heightReference: discovered.heightReference,
+    warnings: discovered.warnings
+  });
+
   return Object.freeze({
+    ...spatialReference,
     sourceCrs,
     verticalCrs: discovered.verticalCrs,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
     heightReference: discovered.heightReference || 'unknown',
     coordinateFrame: discovered.coordinateFrame || 'unknown',
     axisOrder: discovered.axisOrder || 'unknown',
-    provenance: options.sourceCrs ? 'caller-override' : discovered.provenance || 'unknown',
+    provenance,
     targetCrs,
     targetHeightReference,
     outputCoordinates,
@@ -164,6 +207,15 @@ export function applyTilesetSpatialOptions(
   return createTilesetSpatialReference(
     {
       sourceCrs: discovered?.sourceCrs,
+      sourceCrsState: discovered?.crs.state,
+      sourceCrsRepresentation:
+        discovered?.crs.state === 'explicit' || discovered?.crs.state === 'default'
+          ? discovered.crs.representation
+          : undefined,
+      sourceCrsAlternatives:
+        discovered?.crs.state === 'explicit' || discovered?.crs.state === 'default'
+          ? discovered.crs.alternatives
+          : undefined,
       verticalCrs: discovered?.verticalCrs,
       coordinateEpoch: discovered?.coordinateEpoch,
       heightReference: discovered?.heightReference,
@@ -174,4 +226,20 @@ export function applyTilesetSpatialOptions(
     },
     options
   );
+}
+
+/** Convert the legacy tileset axis label to the common stored-coordinate order. */
+function getCoordinateOrder(
+  axisOrder: CreateTilesetSpatialReferenceOptions['axisOrder']
+): readonly string[] {
+  switch (axisOrder) {
+    case 'xy':
+      return ['x', 'y'];
+    case 'yx':
+      return ['y', 'x'];
+    case 'xyz':
+      return ['x', 'y', 'z'];
+    default:
+      return [];
+  }
 }

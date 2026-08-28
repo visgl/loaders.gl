@@ -260,6 +260,23 @@ export {isSourceLoader} from './source-types';
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 export type {
+  CreateSpatialReferenceOptions,
+  KnownSpatialReferenceCRS,
+  SpatialReference,
+  SpatialReferenceAlternative,
+  SpatialReferenceCoordinateFrame,
+  SpatialReferenceCRS,
+  SpatialReferenceHeightReference,
+  SpatialReferenceProvenance,
+  SpatialReferenceRepresentation,
+  SpatialReferenceState,
+  UnresolvedSpatialReferenceCRS
+} from './lib/sources/spatial-reference';
+export {
+  createSpatialReference,
+  inferSpatialReferenceRepresentation
+} from './lib/sources/spatial-reference';
+export type {
   ManageableDataSource,
   DataSourceManagerAddParameters,
   DataSourceManagerGetOrCreateParameters,
