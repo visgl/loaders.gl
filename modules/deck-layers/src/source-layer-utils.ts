@@ -436,24 +436,30 @@ function getMetadataBounds(metadata: unknown): [[number, number], [number, numbe
   } | null;
   return (
     normalizeBounds(typedMetadata?.boundingBox) ||
-    findFirstLayerBounds(typedMetadata?.layers) ||
-    findFirstLayerBounds(typedMetadata?.layer ? [typedMetadata.layer] : undefined)
+    getFirstNamedLeafBounds(typedMetadata?.layers) ||
+    getFirstNamedLeafBounds(typedMetadata?.layer ? [typedMetadata.layer] : undefined)
   );
 }
 
-/** Finds the first available layer bounds in the same depth-first order as layer selection. */
-function findFirstLayerBounds(
+/** Finds bounds on the first named leaf using the same traversal as automatic layer selection. */
+function getFirstNamedLeafBounds(
   layers: unknown[] | undefined
 ): [[number, number], [number, number]] | undefined {
+  const firstNamedLeaf = findFirstNamedLeaf(layers);
+  return normalizeBounds((firstNamedLeaf as {boundingBox?: unknown} | undefined)?.boundingBox);
+}
+
+/** Finds the first named leaf in depth-first order, including leaves without bounds. */
+function findFirstNamedLeaf(layers: unknown[] | undefined): unknown | undefined {
   for (const layer of layers || []) {
-    const typedLayer = layer as {boundingBox?: unknown; layers?: unknown[]};
-    const childBounds = findFirstLayerBounds(typedLayer.layers);
-    if (childBounds) {
-      return childBounds;
-    }
-    const bounds = normalizeBounds(typedLayer.boundingBox);
-    if (bounds) {
-      return bounds;
+    const typedLayer = layer as {name?: unknown; layers?: unknown[]};
+    if (typedLayer.layers?.length) {
+      const childLayer = findFirstNamedLeaf(typedLayer.layers);
+      if (childLayer) {
+        return childLayer;
+      }
+    } else if (typeof typedLayer.name === 'string') {
+      return layer;
     }
   }
   return undefined;

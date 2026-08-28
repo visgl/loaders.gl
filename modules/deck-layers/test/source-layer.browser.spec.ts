@@ -51,8 +51,8 @@ test('source metadata discovery follows the first leaf and supports PROJJSON CRS
       {
         name: 'group',
         layers: [
-          {title: 'unnamed group', layers: [{name: 'first-leaf', boundingBox: [-20, -10, 20, 10]}]},
-          {name: 'second-leaf', boundingBox: [0, 0, 1, 1]}
+          {title: 'unnamed leaf', boundingBox: [-20, -10, 20, 10]},
+          {name: 'first-leaf', boundingBox: [0, 0, 1, 1]}
         ]
       }
     ],
@@ -64,11 +64,11 @@ test('source metadata discovery follows the first leaf and supports PROJJSON CRS
   expect(getSourceCoordinateReferenceSystem(metadata)).toBe('EPSG:3857');
   expect(viewState).toMatchObject({
     bounds: [
-      [-20, -10],
-      [20, 10]
+      [0, 0],
+      [1, 1]
     ],
-    longitude: 0,
-    latitude: 0,
+    longitude: 0.5,
+    latitude: 0.5,
     crs: 'EPSG:3857'
   });
 });
