@@ -2,6 +2,10 @@ import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
 
 # DracoWriter
 
+For applications encoding many independent geometries, `encodeDracoBatch` initializes the
+Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while
+avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input.
+
 <DracoDocsTabs active="dracowriter" />
 
 <p class="badges">

@@ -91,6 +91,29 @@ export async function encodeDraco(
   }
 }
 
+/**
+ * Encodes multiple geometries while loading and initializing the Draco runtime once.
+ *
+ * The input geometries are processed sequentially to keep peak native memory bounded.
+ * Each result is independent and uses the same writer options.
+ */
+export async function encodeDracoBatch(
+  data: DracoWriterInput[],
+  options: DracoWriterOptions = {}
+): Promise<DracoEncodingResult[]> {
+  const {draco} = await loadDracoEncoderModule(extractLoadLibraryOptions(options));
+  const dracoBuilder = new DRACOBuilder(draco);
+  const results: DracoEncodingResult[] = [];
+  try {
+    for (const geometry of data) {
+      results.push(dracoBuilder.encodeSyncWithReport(normalizeDracoMesh(geometry), options.draco));
+    }
+    return results;
+  } finally {
+    dracoBuilder.destroy();
+  }
+}
+
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
   if (isMeshArrowTable(data)) {
