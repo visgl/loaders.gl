@@ -160,6 +160,30 @@ describe('raw Arrow CSV parser', () => {
     expect(getArrowColumnValues(arrayBufferTable, 'label')).toEqual(['alpha', null, 'beta']);
   });
 
+  test.each([
+    ['true,false\nTRUE,false\n', ['bool', 'bool'], [{true: true, false: false}]],
+    ['integer,decimal\n-12,3.5\n', ['float64', 'float64'], [{integer: -12, decimal: 3.5}]],
+    [
+      'when\n2025-01-02T03:04:05Z\n',
+      ['date-millisecond'],
+      [{when: Date.parse('2025-01-02T03:04:05Z')}]
+    ]
+  ])('infers direct typed columns for %s', async (csvText, expectedTypes, expectedRows) => {
+    const table = await parseCSVTextAsArrow(csvText, {
+      csv: {header: true, dynamicTyping: true}
+    });
+    expect(table.schema.fields.map(field => field.type)).toEqual(expectedTypes);
+    expect(toRows(table)).toEqual(expectedRows);
+  });
+
+  test('falls back to UTF-8 when a typed column mixes scalar kinds', async () => {
+    const table = await parseCSVTextAsArrow('value\n1\ntrue\ntext\n', {
+      csv: {header: true, dynamicTyping: true}
+    });
+    expect(table.schema.fields[0].type).toBe('utf8');
+    expect(toRows(table)).toEqual([{value: '1'}, {value: 'true'}, {value: 'text'}]);
+  });
+
   test('freezes inferred types across Arrow batches', async () => {
     const chunks = [encode('value,name\n1,first\n'), encode('text,second\n3,third\n')];
     const batches = parseCSVInArrowBatches(chunks, {
