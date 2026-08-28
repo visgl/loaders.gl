@@ -1,10 +1,10 @@
-name: website-deploy
+name: website
 
 on:
   push:
     branches:
       - master
-      - 4.4-release
+      - '*-release'
   workflow_dispatch:
 
 concurrency: website-gh-pages
@@ -23,14 +23,24 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+      - name: Get latest release branch
+        id: get_version
+        run: |
+          package_file=modules/core/package.json
+          package_name=$(jq -r '.name' "$package_file")
+          latest=$(npm show "${package_name}@latest" version | grep -o -E "^[0-9]+\.[0-9]+")
+          echo "latest=${latest}-release" >> "$GITHUB_OUTPUT"
+
       - name: Resolve deploy config
         id: deploy_config
+        env:
+          LATEST_RELEASE_BRANCH: ${{ steps.get_version.outputs.latest }}
         run: |
           if [ "${GITHUB_REF_NAME}" = "master" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "target_folder=next" >> "$GITHUB_OUTPUT"
             echo "website_base_url=/next/" >> "$GITHUB_OUTPUT"
-          elif [ "${GITHUB_REF_NAME}" = "4.4-release" ]; then
+          elif [ "${GITHUB_REF_NAME}" = "${LATEST_RELEASE_BRANCH}" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "target_folder=" >> "$GITHUB_OUTPUT"
             echo "website_base_url=/" >> "$GITHUB_OUTPUT"

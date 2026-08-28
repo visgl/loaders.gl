@@ -13,13 +13,7 @@ export {DracoFormat} from './draco-format';
 
 // Draco Writer
 
-export type {
-  DracoBatchOptions,
-  DracoBatchProgress,
-  DracoWriterAttributes,
-  DracoWriterInput,
-  DracoWriterOptions
-} from './draco-writer';
+export type {DracoWriterAttributes, DracoWriterInput, DracoWriterOptions} from './draco-writer';
 export {encodeDraco, encodeDracoBatch} from './draco-writer';
 export type {
   DracoAttributeQuantization,
@@ -30,7 +24,6 @@ export type {
   DracoEncodingAttributeReport,
   DracoEncodingReport,
   DracoEncodingResult,
-  DracoEncodingPreset,
   DracoExplicitQuantization,
   DracoMetadata
 } from './lib/draco-builder';

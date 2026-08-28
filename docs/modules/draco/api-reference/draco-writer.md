@@ -5,9 +5,6 @@ import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
 For applications encoding many independent geometries, `encodeDracoBatch` initializes the
 Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while
 avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input.
-An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion
-count after each successful encode. This deliberately remains sequential; worker pooling is a
-separate integration planned for the shared loaders.gl worker framework.
 
 <DracoDocsTabs active="dracowriter" />
 
@@ -63,13 +60,6 @@ await encode(mesh, DracoWriter, {
     attributeNameEntry: 'semantic'
   }
 });
-```
-
-Named presets provide reproducible starting points for common workloads. Explicit options always
-override the preset, and the input options object is not mutated:
-
-```typescript
-await encode(mesh, DracoWriter, {draco: {preset: 'webgpu'}});
 ```
 
 Use `attributeQuantization` when attributes in the same Draco category need different settings.

@@ -2,6 +2,7 @@ import React from 'react';
 import {ClientExample, Home} from '../components';
 import Layout from '@theme/Layout';
 import Concepts from '../components/home/concepts';
+import Features from '../components/home/features';
 
 /** Renders the homepage example behind the shared client-only loading boundary. */
 function HeroExample() {
@@ -12,6 +13,7 @@ export default function IndexPage() {
   return (
     <Layout title="Home" description="deck.gl">
       <Home HeroExample={HeroExample}>
+        <Features />
         <Concepts />
       </Home>
     </Layout>
