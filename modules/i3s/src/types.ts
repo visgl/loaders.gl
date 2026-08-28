@@ -8,7 +8,7 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {ImageDataType} from '@loaders.gl/images';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
-import type {TilesetSpatialReference} from '@loaders.gl/tiles';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {CoordinateSystem} from './lib/parsers/constants';
@@ -220,6 +220,8 @@ export type I3SParseOptions = {
    * Supported coordinate systems: `meter-offsets`, `lnglat-offsets`
    */
   coordinateSystem?: CoordinateSystem;
+  /** Shared target CRS options used by direct I3S content parsing. */
+  spatial?: TilesetSpatialOptions;
   /** Options to colorize 3DObjects by attribute value */
   colorsByAttribute?: {
     /** Feature attribute name */
@@ -266,6 +268,10 @@ export type I3STilesetOptions = {
   store: Store;
   attributeStorageInfo: AttributeStorageInfo[];
   fields: Field[];
+  /** Normalized source and requested target CRS metadata. */
+  spatialReference?: TilesetSpatialReference;
+  /** Registered resources used by the requested spatial operation. */
+  spatialOptions?: TilesetSpatialOptions;
 };
 
 // TODO Replace "[key: string]: any" with actual defenition
@@ -276,6 +282,12 @@ export type I3STileContent = {
   vertexCount: number;
   modelMatrix: Matrix4;
   coordinateSystem: CoordinateSystem;
+  /** Stable target origin subtracted before Float32 conversion. */
+  origin?: [number, number, number];
+  /** Geographic target origin used with longitude/latitude offsets. */
+  cartographicOrigin?: [number, number, number];
+  /** Spatial descriptor for the returned positions, origins, normals, and bounds. */
+  spatialReference?: TilesetSpatialReference;
   byteLength: number;
   texture: TileContentTexture;
   /** Decoded texture-set resources keyed by texture-set definition id. */

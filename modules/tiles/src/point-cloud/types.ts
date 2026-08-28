@@ -4,6 +4,7 @@
 
 import type {DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {TilesetSpatialReference} from '../spatial/spatial-types';
 
 /**
  * An accessor-like description for point cloud attributes.
@@ -34,6 +35,8 @@ export type PointCloudTileContent = {
   coordinateSystem: PointCloudCoordinateSystem;
   constantRGBA?: number[];
   modelMatrix?: number[] | Float32Array;
+  /** Spatial descriptor for returned points, origins, and bounds. */
+  spatialReference?: TilesetSpatialReference;
 };
 
 /**
@@ -47,6 +50,8 @@ export type PointCloudBoundingVolume = {
   coversFullLongitude?: boolean;
   center: number[];
   radius: number;
+  /** Broad coordinate frame of `center` and `cartographicBounds`. */
+  coordinateFrame?: 'geographic' | 'cartesian';
 };
 
 /**

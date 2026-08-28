@@ -6,16 +6,21 @@ import type {DataSourceOptions, ReadableFile} from '@loaders.gl/loader-utils';
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {MeshAttributes} from '@loaders.gl/schema';
-import {Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource,
   PointCloudCoordinateSystem,
+  TilesetSpatialOptions,
   TilesetSpatialReference
 } from '@loaders.gl/tiles';
-import {getI3SSpatialReference} from '@loaders.gl/tiles';
+import {
+  applyTilesetSpatialOptions,
+  getI3SSpatialReference,
+  I3SSpatialTransformer
+} from '@loaders.gl/tiles';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
@@ -31,6 +36,8 @@ import {getUrlWithToken} from './lib/utils/url-utils';
 
 /** Options for an {@link I3SPointCloudSource}. */
 export type I3SPointCloudSourceOptions = DataSourceOptions & {
+  /** Shared target CRS options. */
+  spatial?: TilesetSpatialOptions;
   /** I3S point-cloud options. */
   i3s?: {
     /** ArcGIS access token. */
@@ -76,6 +83,10 @@ export class I3SPointCloudSource
   private nodesPerPage = 1;
   /** Global node id of the hierarchy root. */
   private rootIndex = 0;
+  /** Shared adapter used when a target CRS has been requested. */
+  private spatialTransformer: I3SSpatialTransformer | null = null;
+  /** Transformed root header cached for view-state initialization. */
+  private rootTileHeader: PointCloudTileHeader | null = null;
 
   /**
    * Creates an I3S Point Cloud source.
@@ -101,7 +112,17 @@ export class I3SPointCloudSource
     const layerJson = await this.readJson('');
     const pointCloudLayer = I3SPointCloudSceneLayerSchema.parse(layerJson);
     this.metadata = pointCloudLayer as SceneLayer3D;
-    this.spatialReference = getI3SSpatialReference(this.metadata);
+    this.spatialReference = applyTilesetSpatialOptions(
+      getI3SSpatialReference(this.metadata),
+      this.options.spatial
+    );
+    if (this.spatialReference.status === 'transformable') {
+      this.spatialTransformer = new I3SSpatialTransformer(
+        this.spatialReference,
+        this.options.spatial
+      );
+      this.spatialReference = this.spatialTransformer.spatialReference;
+    }
     this.baseUrl = this.url.replace(/\/+$/, '');
     this.nodesPerPage = Math.max(
       1,
@@ -121,7 +142,8 @@ export class I3SPointCloudSource
   async getRootTile(): Promise<PointCloudTileHeader> {
     await this.initialize();
     const node = await this.getNode(this.rootIndex);
-    return this.makeTileHeader(this.rootIndex, node, 0);
+    this.rootTileHeader ||= this.makeTileHeader(this.rootIndex, node, 0);
+    return this.rootTileHeader;
   }
 
   /** Return the children of a point-cloud tile. */
@@ -164,11 +186,14 @@ export class I3SPointCloudSource
     // MeshArrowTable's canonical POSITION field is Float32. Preserve the tile
     // origin separately in the returned content so renderers can reconstruct
     // full precision without widening the shared Arrow schema.
-    const normalizedPositions = normalizePointPositions(
-      positions,
-      tile.boundingVolume.center,
-      this.options.i3s?.coordinateSystem
-    );
+    const sourceCenter = Array.from(node.obb.center as number[]);
+    const normalizedPositions = this.spatialTransformer
+      ? this.spatialTransformer.transformPositions(positions, sourceCenter)
+      : normalizePointPositions(
+          positions,
+          tile.boundingVolume.center,
+          this.options.i3s?.coordinateSystem
+        );
     const attributes: MeshAttributes = {
       POSITION: {value: normalizedPositions.positions, size: 3}
     };
@@ -209,12 +234,25 @@ export class I3SPointCloudSource
       data: table,
       pointCount,
       cartographicOrigin: normalizedPositions.cartographicOrigin,
-      coordinateSystem: normalizedPositions.coordinateSystem
+      coordinateSystem: normalizedPositions.coordinateSystem,
+      modelMatrix: normalizedPositions.modelMatrix,
+      spatialReference: this.spatialTransformer?.spatialReference
     };
   }
 
   /** Return a view state suitable for PointCloudTileset initialization. */
   getViewState() {
+    if (this.spatialTransformer && this.rootTileHeader) {
+      const rootNode = this.nodes.get(String(this.rootIndex));
+      const cartographicCenter = rootNode
+        ? this.spatialTransformer.transformSourcePositionToGeographic(rootNode.obb.center)
+        : undefined;
+      return {
+        cartographicCenter,
+        boundingVolume: this.rootTileHeader.boundingVolume,
+        zoom: 1
+      };
+    }
     const extent = this.metadata?.fullExtent;
     const center = extent?.xmin !== undefined ? [extent.xmin, extent.ymin, 0] : undefined;
     return center ? {cartographicCenter: center} : {};
@@ -268,6 +306,35 @@ export class I3SPointCloudSource
     const center = Array.from(node.obb.center as number[]);
     const halfSize = Array.from(node.obb.halfSize as number[]);
     const radius = Math.hypot(...halfSize);
+    if (this.spatialTransformer) {
+      const boundingVolume = this.spatialTransformer.transformBoundingVolume({
+        obb: node.obb,
+        normalReferenceFrame: this.metadata?.store.normalReferenceFrame
+      });
+      const [minimum, maximum, transformedCenter, transformedRadius] =
+        getTransformedPointCloudBounds(boundingVolume);
+      return {
+        id: String(nodeId),
+        level,
+        pointCount: node.vertexCount,
+        geometricError: node.lodThreshold || 0,
+        lodSelectionMetricType:
+          (this.metadata?.nodePages?.lodSelectionMetricType as
+            | 'maxScreenThresholdSQ'
+            | 'density-threshold'
+            | undefined) || 'maxScreenThresholdSQ',
+        lodThreshold: node.lodThreshold,
+        boundingVolume: {
+          cartographicBounds: [minimum, maximum],
+          center: transformedCenter,
+          radius: transformedRadius,
+          coordinateFrame:
+            this.spatialTransformer.targetCoordinateFrame === 'geographic'
+              ? 'geographic'
+              : 'cartesian'
+        }
+      };
+    }
     const latitudeRadians = (center[1] * Math.PI) / 180;
     const latitudeDelta = (radius / EARTH_EQUATORIAL_RADIUS) * (180 / Math.PI);
     const longitudeDelta = Math.min(
@@ -429,6 +496,8 @@ type NormalizedPointPositions = Readonly<{
   cartographicOrigin: number[];
   /** Concrete renderer coordinate system after resolving `default`. */
   coordinateSystem: PointCloudCoordinateSystem;
+  /** Optional translation for Cartesian offsets. */
+  modelMatrix?: Matrix4;
 }>;
 
 /** Converts absolute geographic LEPCC positions to the requested renderer representation. */
@@ -478,4 +547,42 @@ function normalizePointPositions(
     cartographicOrigin: [...center],
     coordinateSystem: 'lnglat-offsets'
   };
+}
+
+/** Convert a generic transformed tile bound into the point-cloud source contract. */
+function getTransformedPointCloudBounds(boundingVolume: {
+  box?: number[];
+  region?: number[];
+}): [number[], number[], number[], number] {
+  if (boundingVolume.region) {
+    const [west, south, east, north, minimumHeight, maximumHeight] = boundingVolume.region;
+    const minimum = [(west * 180) / Math.PI, (south * 180) / Math.PI, minimumHeight];
+    const maximum = [(east * 180) / Math.PI, (north * 180) / Math.PI, maximumHeight];
+    let eastUnwrapped = maximum[0];
+    if (eastUnwrapped < minimum[0]) {
+      eastUnwrapped += 360;
+    }
+    const centerLongitude = normalizeLongitude((minimum[0] + eastUnwrapped) / 2);
+    const center = [centerLongitude, (minimum[1] + maximum[1]) / 2, (minimum[2] + maximum[2]) / 2];
+    const radius = Math.hypot(
+      (eastUnwrapped - minimum[0]) / 2,
+      (maximum[1] - minimum[1]) / 2,
+      (maximum[2] - minimum[2]) / 2
+    );
+    return [minimum, maximum, center, radius];
+  }
+
+  const box = boundingVolume.box;
+  if (!box) {
+    throw new Error('Transformed I3S Point Cloud bound must contain a box or region');
+  }
+  const center = box.slice(0, 3);
+  const halfSize = [
+    Math.hypot(box[3], box[4], box[5]),
+    Math.hypot(box[6], box[7], box[8]),
+    Math.hypot(box[9], box[10], box[11])
+  ];
+  const minimum = center.map((value, index) => value - halfSize[index]);
+  const maximum = center.map((value, index) => value + halfSize[index]);
+  return [minimum, maximum, center, Math.hypot(...halfSize)];
 }

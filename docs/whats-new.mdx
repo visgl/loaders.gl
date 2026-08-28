@@ -44,6 +44,9 @@ Release Date: 2026
   metadata instead of returning untransformed coordinates or assuming WGS84.
 - GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected
   table CRS through source, scan, and GeoArrow field metadata.
+- I3S mesh and Point Cloud sources now apply requested horizontal CRS transforms to vertices,
+  stable origins, normals, traversal bounds, and spatial metadata, with Proj4-backed geographic and
+  projected targets plus direct WGS84 geocentric support.
 
 **@loaders.gl/arrow**
 

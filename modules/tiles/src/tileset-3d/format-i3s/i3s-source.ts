@@ -26,6 +26,7 @@ import {getZoomFromExtent, getZoomFromFullExtent} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 import {getI3SSpatialReference} from '../../spatial/format-spatial-reference';
+import {I3SSpatialTransformer} from '../../spatial/i3s-spatial-transformer';
 
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
@@ -64,6 +65,8 @@ export class I3SSource implements Tileset3DSource {
   private readonly queryParams: Record<string, string> = {};
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
+  /** Spatial adapter created lazily after Tileset3D applies target options. */
+  private spatialTransformer?: I3SSpatialTransformer;
 
   /**
    * Creates an I3S source.
@@ -134,7 +137,8 @@ export class I3SSource implements Tileset3DSource {
     tilesetJson: TilesetJSON,
     parentTile?: Tile3D | null
   ): Tile3D {
-    const rootTile = new Tile3DNode(tileset, tilesetJson.root, parentTile || undefined);
+    const rootHeader = this.transformTileHeader(tilesetJson.root, tileset);
+    const rootTile = new Tile3DNode(tileset, rootHeader, parentTile || undefined);
     if (parentTile) {
       parentTile.children.push(rootTile);
       rootTile.depth = parentTile.depth + 1;
@@ -175,7 +179,9 @@ export class I3SSource implements Tileset3DSource {
         _tilesetOptions: {
           store: metadata.tileset.store,
           attributeStorageInfo: metadata.tileset.attributeStorageInfo,
-          fields: metadata.tileset.fields
+          fields: metadata.tileset.fields,
+          spatialReference: tile.tileset.spatialReference,
+          spatialOptions: tile.tileset.options.spatial
         },
         isTileHeader: false
       }
@@ -195,7 +201,8 @@ export class I3SSource implements Tileset3DSource {
   ): Promise<any> {
     const metadata = this.getMetadata();
     if (metadata.tileset.nodePages) {
-      return await metadata.tileset.nodePagesTile.formTileFromNodePages(childId);
+      const header = await metadata.tileset.nodePagesTile.formTileFromNodePages(childId);
+      return this.transformTileHeader(header, _parentTile.tileset);
     }
 
     const nodeUrl = this.getTileUrl(`${this.url}/nodes/${childId}`);
@@ -211,7 +218,8 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    return await this.loadResourceData(nodeUrl, options);
+    const header = await this.loadResourceData(nodeUrl, options);
+    return this.transformTileHeader(header, _parentTile.tileset);
   }
 
   /**
@@ -249,7 +257,28 @@ export class I3SSource implements Tileset3DSource {
   /**
    * Derives the default view state from full extent or store extent metadata.
    */
-  getViewState(_rootTile: Tile3D | null): TilesetSourceViewState {
+  getViewState(rootTile: Tile3D | null): TilesetSourceViewState {
+    if (this.spatialTransformer && rootTile) {
+      const center = new Vector3(rootTile.boundingVolume.center);
+      const sourceCenter = rootTile.header.obb?.center || rootTile.header.mbs;
+      const cartographicCenter = new Vector3(
+        this.spatialTransformer.transformSourcePositionToGeographic(sourceCenter)
+      );
+      if (this.spatialTransformer.targetCoordinateFrame === 'geographic') {
+        return {
+          boundingVolume: rootTile.boundingVolume,
+          cartographicCenter,
+          cartesianCenter: center,
+          zoom: 1
+        };
+      }
+      return {
+        boundingVolume: rootTile.boundingVolume,
+        cartographicCenter,
+        cartesianCenter: center,
+        zoom: 1
+      };
+    }
     const metadata = this.getMetadata();
     const fullExtent = metadata.tileset.fullExtent;
     if (fullExtent) {
@@ -360,6 +389,30 @@ export class I3SSource implements Tileset3DSource {
     }
 
     return await this.loadWithCoreApi(url, options);
+  }
+
+  /** Transform one I3S header bound after target options have been applied by Tileset3D. */
+  private transformTileHeader(header: any, tileset?: Tileset3D): any {
+    if (
+      !tileset?.spatialReference ||
+      (tileset.spatialReference.status !== 'transformable' &&
+        tileset.spatialReference.status !== 'transformed')
+    ) {
+      return header;
+    }
+    this.spatialTransformer ||= new I3SSpatialTransformer(
+      tileset.spatialReference,
+      tileset.options.spatial
+    );
+    tileset.spatialReference = this.spatialTransformer.spatialReference;
+    return {
+      ...header,
+      boundingVolume: this.spatialTransformer.transformBoundingVolume({
+        mbs: header.mbs,
+        obb: header.obb,
+        normalReferenceFrame: this.getMetadata().tileset.store?.normalReferenceFrame
+      })
+    };
   }
 }
 
