@@ -6,7 +6,11 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {
   getI3SFeatureSupportReport,
   I3S_CONFORMANCE_PROFILES,
-  I3SNodePageLoader
+  I3SNodePageLoader,
+  I3SUnsupportedProfileError,
+  normalizeI3SRendererMetadata,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
 } from '@loaders.gl/i3s';
 import {
   I3SPointCloudSceneLayerSchema,
@@ -165,6 +169,38 @@ describe('I3S conformance fixtures', () => {
     expect(report.features.rendererMetadata).toBe('partial');
     expect(report.features.popupMetadata).toBe('partial');
     expect(report.diagnostics).toHaveLength(2);
+  });
+
+  it('normalizes renderer extensions while preserving the original layer', async () => {
+    const response = await fetchFile('@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json');
+    const document = await response.json();
+    const sceneLayer = parseI3SSceneLayerMetadata({
+      ...document,
+      drawingInfo: {
+        renderer: {
+          type: 'uniqueValue',
+          field: 'category',
+          uniqueValueInfos: [{value: 'a'}],
+          visualVariables: [],
+          labelClasses: [],
+          producerExtension: true
+        }
+      }
+    });
+    const renderer = normalizeI3SRendererMetadata(sceneLayer);
+    expect(renderer?.classes).toEqual([{value: 'a'}]);
+    expect(renderer?.unsupportedProperties).toEqual(['producerExtension']);
+    expect(normalizeI3SRendererMetadata({...sceneLayer, drawingInfo: undefined})).toBeUndefined();
+    expect(
+      normalizeI3SServiceMetadata('https://example.com/layer', sceneLayer).diagnostics
+    ).toHaveLength(1);
+  });
+
+  it('constructs typed unsupported profile errors', () => {
+    const error = new I3SUnsupportedProfileError('custom-profile');
+    expect(error.name).toBe('I3SUnsupportedProfileError');
+    expect(error.profile).toBe('custom-profile');
+    expect(error.message).toContain('custom-profile');
   });
 
   it('preserves UInt64 values through Number.MAX_SAFE_INTEGER', () => {

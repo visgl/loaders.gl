@@ -209,3 +209,33 @@ test('aggregateArcGISSceneFeatures groups and ignores non-numeric values', () =>
     {group: 'b', values: {count: 1, sum: 0, average: 0}}
   ]);
 });
+
+test('aggregateArcGISSceneFeatures supports all numeric operations and plain records', () => {
+  const result = aggregateArcGISSceneFeatures({
+    features: [{kind: 'a', value: 2}, {kind: 'a', value: 6}, null, {kind: 'b'}],
+    aggregations: [
+      {name: 'count', operation: 'count'},
+      {name: 'min', field: 'value', operation: 'min'},
+      {name: 'max', field: 'value', operation: 'max'},
+      {name: 'sum', field: 'value', operation: 'sum'}
+    ]
+  });
+  expect(result).toEqual([{group: undefined, values: {count: 4, min: 2, max: 6, sum: 8}}]);
+});
+
+test('ArcGISSceneServerSource reports query and URL errors with typed details', async () => {
+  const source = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/0`);
+  source.fetch = async () => new Response('nope', {status: 503, statusText: 'Unavailable'});
+  await expect(source.query()).rejects.toMatchObject({
+    name: 'ArcGISSceneServerQueryError',
+    status: 503
+  });
+
+  source.fetch = async () => new Response(JSON.stringify({error: {code: 400, message: 'bad'}}));
+  await expect(source.getFeatures({f: 'pjson'})).rejects.toThrow('query returned an error');
+
+  expect(() =>
+    new ArcGISSceneServerSource('https://example.com/FeatureServer/0').getLayerURL()
+  ).toThrow(/requires a \/SceneServer/);
+  expect(() => new ArcGISSceneServerSource(SCENE_SERVER_URL).getLayerURL()).toThrow(/layerId/);
+});
