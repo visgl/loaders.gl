@@ -117,19 +117,13 @@ export async function encodeDracoBatch(
   data: DracoWriterInput[],
   options: DracoBatchOptions = {}
 ): Promise<DracoEncodingResult[]> {
+  throwIfAborted(options.signal);
   const {draco} = await loadDracoEncoderModule(extractLoadLibraryOptions(options));
   const dracoBuilder = new DRACOBuilder(draco);
   const results: DracoEncodingResult[] = [];
   try {
     for (const [index, geometry] of data.entries()) {
-      if (options.signal?.aborted) {
-        if (options.signal.reason !== undefined) {
-          throw options.signal.reason;
-        }
-        const error = new Error('Draco batch encoding aborted');
-        error.name = 'AbortError';
-        throw error;
-      }
+      throwIfAborted(options.signal);
       results.push(dracoBuilder.encodeSyncWithReport(normalizeDracoMesh(geometry), options.draco));
       options.onProgress?.({completed: index + 1, total: data.length});
     }
@@ -137,6 +131,19 @@ export async function encodeDracoBatch(
   } finally {
     dracoBuilder.destroy();
   }
+}
+
+/** Throws the signal's reason before starting or between native encodes. */
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (!signal?.aborted) {
+    return;
+  }
+  if (signal.reason !== undefined) {
+    throw signal.reason;
+  }
+  const error = new Error('Draco batch encoding aborted');
+  error.name = 'AbortError';
+  throw error;
 }
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */

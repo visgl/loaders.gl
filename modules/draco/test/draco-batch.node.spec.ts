@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
 import {encodeDracoBatch} from '@loaders.gl/draco';
+import draco3d from 'draco3d';
 
 const GEOMETRY = {
   attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
@@ -9,7 +10,7 @@ const GEOMETRY = {
 test('encodeDracoBatch reports progress for each geometry', async () => {
   const progress: Array<{completed: number; total: number}> = [];
   const results = await encodeDracoBatch([GEOMETRY, GEOMETRY], {
-    useLocalLibraries: true,
+    modules: {draco3d},
     onProgress: update => progress.push(update)
   });
 
