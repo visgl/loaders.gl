@@ -75,6 +75,7 @@ const sidebars = {
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',
+        'i3s-profile-gallery',
         'i3s-slpk',
         '3d-tiles',
         'pointclouds/potree-source',

@@ -17,6 +17,7 @@ export type ClientExampleKind =
   | 'fsq-places'
   | 'i3s-building-scene-layer'
   | 'i3s-colorization-by-attributes'
+  | 'i3s-profile-gallery'
   | 'i3s-picking'
   | 'ometiff'
   | 'overture-parquet'
@@ -51,6 +52,9 @@ const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponen
   ),
   'i3s-colorization-by-attributes': React.lazy(
     () => import('examples/website/i3s-colorization-by-attributes/src/app')
+  ),
+  'i3s-profile-gallery': React.lazy(
+    () => import('examples/website/i3s-profile-gallery/src/app')
   ),
   'i3s-picking': React.lazy(() => import('examples/website/i3s-picking/src/app')),
   ometiff: React.lazy(() => import('examples/website/ometiff/app')),

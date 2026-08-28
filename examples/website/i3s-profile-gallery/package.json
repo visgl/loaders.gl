@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "name": "i3s-profile-gallery-loaders-example",
+  "description": "Inspect I3S profile metadata and conformance capabilities.",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@loaders.gl/services": "workspace:*",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.6.0",
+    "vite": "^7.2.7"
+  }
+}

@@ -70,6 +70,7 @@ test('ArcGISSceneServerSource normalizes metadata and creates a mesh source', as
     version: '1.7',
     spatialReference: {wkid: 4326}
   });
+  expect(metadata.supportReport.features.geometry).toBe('supported');
   expect(await source.getTilesetSource()).toBeInstanceOf(I3SSource);
   expect(fetch).toHaveBeenCalledTimes(1);
 });
