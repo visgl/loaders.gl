@@ -556,3 +556,34 @@ test('encodeDracoBatch reuses the initialized runtime for multiple geometries', 
   expect(results[0].data.byteLength).toBeGreaterThan(0);
   expect(results[1].report.pointCount).toBe(3);
 });
+
+test('encodeDracoBatch reports progress without retaining native geometries', async () => {
+  if (skipBrowserDracoWasmTest()) {
+    return;
+  }
+  const geometry = {
+    attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
+    indices: new Uint16Array([0, 1, 2])
+  };
+  const progress: Array<{completed: number; total: number}> = [];
+  await encodeDracoBatch([geometry, geometry], {onProgress: update => progress.push(update)});
+  expect(progress).toEqual([
+    {completed: 1, total: 2},
+    {completed: 2, total: 2}
+  ]);
+});
+
+test('encodeDracoBatch observes cancellation between geometries', async () => {
+  if (skipBrowserDracoWasmTest()) {
+    return;
+  }
+  const geometry = {
+    attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
+    indices: new Uint16Array([0, 1, 2])
+  };
+  const controller = new AbortController();
+  controller.abort();
+  await expect(encodeDracoBatch([geometry], {signal: controller.signal})).rejects.toThrow(
+    'aborted'
+  );
+});

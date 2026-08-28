@@ -420,6 +420,23 @@ test('DracoBuilder uses ExpertEncoder for exact point-cloud quantization', () =>
   expect(state.encoderCalls).toEqual(['expert', 'expert-quantization:0:10', 'expert-encode:true']);
 });
 
+test('DracoBuilder applies named presets without mutating caller options', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+  const options = {preset: 'webgpu' as const};
+
+  builder.encodeSync(
+    {
+      attributes: {POSITION: new Float32Array([0, 0, 0, 1, 1, 1])},
+      indices: new Uint16Array([0, 1, 0])
+    },
+    options
+  );
+
+  expect(options).toEqual({preset: 'webgpu'});
+  expect(state.encoderCalls).toEqual(['speed:5:5', 'method:9', 'quantization:0:14', 'mesh']);
+});
+
 test.each([
   [{attributeQuantization: {missing: 8}}, 'quantized attribute "missing" does not exist'],
   [{attributeQuantization: {POSITION: 0}}, 'must be an integer from 1 to 30'],
