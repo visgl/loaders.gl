@@ -33,6 +33,67 @@ test('BrotliCompression uses the optional injected fallback decoder', async () =
   expect(new Uint8Array(output)).toEqual(new Uint8Array(NATIVE_DECOMPRESSION_TEST_DATA));
 });
 
+test('BrotliCompression exercises injected synchronous codec capabilities', async () => {
+  const calls: Array<{operation: string; options: unknown}> = [];
+  const restoreBrotli = replaceRegisteredModule('brotli', {
+    compress: (input: Uint8Array, options: unknown) => {
+      calls.push({operation: 'compress', options});
+      return input.slice().reverse();
+    },
+    decompress: (input: Uint8Array, options: unknown) => {
+      calls.push({operation: 'decompress', options});
+      return input.slice().reverse();
+    }
+  });
+  try {
+    const compression = new BrotliCompression({brotli: {quality: 4, mode: 1}});
+    const input = new Uint8Array([1, 2, 3, 4]);
+    const compressed = compression.compressSync(input.buffer);
+    expect(Array.from(new Uint8Array(compressed))).toEqual([4, 3, 2, 1]);
+    expect(Array.from(new Uint8Array(compression.decompressSync(compressed)))).toEqual([
+      1, 2, 3, 4
+    ]);
+    expect(calls).toEqual([
+      {operation: 'compress', options: {mode: 1, quality: 4, lgwin: 22}},
+      {operation: 'decompress', options: {mode: 1, quality: 4, lgwin: 22}}
+    ]);
+  } finally {
+    restoreBrotli();
+  }
+});
+
+test('BrotliCompression reports unavailable or failed synchronous codecs', () => {
+  const restoreBrotli = replaceRegisteredModule('brotli', undefined);
+  try {
+    expect(() => new BrotliCompression().decompressSync(new ArrayBuffer(0))).toThrow(
+      'synchronous fallback is unavailable'
+    );
+    replaceRegisteredModule('brotli', {compress: () => null, decompress: () => null});
+    expect(() => new BrotliCompression().compressSync(new ArrayBuffer(0))).toThrow(
+      'Brotli compression failed'
+    );
+  } finally {
+    restoreBrotli();
+  }
+});
+
+test('BrotliCompression fallback batches concatenate input before codec calls', async () => {
+  const restoreBrotli = replaceRegisteredModule('brotli', {
+    compress: (input: Uint8Array) => input,
+    decompress: (input: Uint8Array) => input
+  });
+  try {
+    const compression = new BrotliCompression();
+    const inputBatches = [new Uint8Array([1, 2]).buffer, new Uint8Array([3, 4]).buffer];
+    const compressed = await concatenateBatches(compression.compressBatches(inputBatches));
+    expect(Array.from(new Uint8Array(compressed))).toEqual([1, 2, 3, 4]);
+    const decompressed = await concatenateBatches(compression.decompressBatches(inputBatches));
+    expect(Array.from(new Uint8Array(decompressed))).toEqual([1, 2, 3, 4]);
+  } finally {
+    restoreBrotli();
+  }
+});
+
 test('DeflateCompression streaming fallback emits zlib-wrapped DEFLATE', async () => {
   const compression = new DeflateCompression({deflate: {useNative: false}});
   const input = new TextEncoder().encode('zlib-wrapped streaming fallback'.repeat(8));

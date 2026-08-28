@@ -146,7 +146,7 @@ function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: strin
     };
   }
 
-  if (attributes.label && attributes.label.length > 0) {
+  if (!normalizedAttributes.COLOR_0 && attributes.label && attributes.label.length > 0) {
     // TODO - RGBA
     normalizedAttributes.COLOR_0 = {
       value: new Uint8Array(attributes.label),
@@ -402,15 +402,9 @@ function parsePCDBinaryCompressed(pcdHeader: PCDHeader, data: ArrayBufferLike): 
     }
 
     if (offset.rgb !== undefined) {
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0) / 255.0
-      );
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1) / 255.0
-      );
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2) / 255.0
-      );
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0));
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1));
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2));
     }
 
     if (offset.normal_x !== undefined) {

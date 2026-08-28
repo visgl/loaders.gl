@@ -418,3 +418,130 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
     ['foo', 'bar']
   ]);
 });
+
+test('gltf#EXT_structural_metadata decodes fixed numeric and enum property variants', async () => {
+  const bytes = new Uint8Array([1, 2, 3, 4, 0, 0, 1, 0, 9, 0, 1, 0]);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 4},
+        {buffer: 0, byteOffset: 4, byteLength: 4},
+        {buffer: 0, byteOffset: 8, byteLength: 2},
+        {buffer: 0, byteOffset: 10, byteLength: 2}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  fixed: {type: 'SCALAR', componentType: 'UINT8', array: true, count: 2},
+                  raw: {type: 'SCALAR'},
+                  fixedEnum: {type: 'ENUM', enumType: 'Kind', array: true, count: 1},
+                  emptyArray: {type: 'SCALAR', componentType: 'UINT8', array: true}
+                }
+              },
+              Unused: {properties: {value: {type: 'SCALAR', componentType: 'UINT8'}}}
+            },
+            enums: {
+              Kind: {values: [{name: 'known', value: 1}]}
+            }
+          },
+          propertyTables: [
+            {
+              class: 'Sample',
+              count: 2,
+              properties: {
+                fixed: {values: 0},
+                raw: {values: 1},
+                fixedEnum: {values: 2},
+                emptyArray: {values: 3}
+              }
+            }
+          ]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+  const properties = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties;
+  expect(properties.fixed.data.map(value => Array.from(value))).toEqual([
+    [1, 2],
+    [3, 4]
+  ]);
+  expect(Array.from(properties.raw.data)).toEqual([0, 0, 1, 0]);
+  expect(properties.fixedEnum.data).toEqual([[''], ['']]);
+  expect(properties.emptyArray.data).toEqual([]);
+});
+
+test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
+  const makeGLTF = (property: any, schema: any = {}) => ({
+    buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
+    json: {
+      buffers: [{byteLength: 2}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: 2}],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {Sample: {properties: {value: property}}},
+            ...schema
+          },
+          propertyTables: [{class: 'Sample', count: 1, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  });
+
+  await expect(
+    decodeExtensions(makeGLTF({type: 'BOOLEAN'}) as any, {
+      gltf: {loadBuffers: true, loadImages: false}
+    })
+  ).rejects.toThrow(/Not implemented/);
+  await expect(
+    decodeExtensions(makeGLTF({type: 'FUTURE'}) as any, {
+      gltf: {loadBuffers: true, loadImages: false}
+    })
+  ).rejects.toThrow(/Unknown classProperty type/);
+  await expect(
+    decodeExtensions(makeGLTF({type: 'ENUM'}) as any, {
+      gltf: {loadBuffers: true, loadImages: false}
+    })
+  ).rejects.toThrow(/enumType is not set/);
+  await expect(
+    decodeExtensions(makeGLTF({type: 'ENUM', enumType: 'Missing'}) as any, {
+      gltf: {loadBuffers: true, loadImages: false}
+    })
+  ).rejects.toThrow(/does't contain Missing/);
+
+  const noSchema = makeGLTF({type: 'SCALAR'});
+  delete (noSchema.json.extensions.EXT_structural_metadata as any).schema;
+  await expect(
+    decodeExtensions(noSchema as any, {gltf: {loadBuffers: true, loadImages: false}})
+  ).resolves.toBeUndefined();
+  await expect(
+    decodeExtensions({buffers: [], json: {}} as any, {
+      gltf: {loadBuffers: true, loadImages: false}
+    })
+  ).resolves.toBeUndefined();
+});
+
+test('gltf#EXT_structural_metadata validates encoder attribute consistency', () => {
+  const scenegraph = new GLTFScenegraph();
+  expect(() =>
+    createExtStructuralMetadata(scenegraph, [
+      {name: 'first', elementType: 'SCALAR', componentType: 'UINT8', values: [1, 2]},
+      {name: 'second', elementType: 'SCALAR', componentType: 'UINT8', values: [1]}
+    ])
+  ).toThrow('Illegal values in attributes');
+
+  const invalidComponentScenegraph = new GLTFScenegraph();
+  createExtStructuralMetadata(invalidComponentScenegraph, [
+    {name: 'value', elementType: 'SCALAR', componentType: 'FUTURE', values: [1]}
+  ]);
+  expect(() => encodeExtensions(invalidComponentScenegraph.gltf, {})).toThrow(
+    'Illegal component type'
+  );
+});
