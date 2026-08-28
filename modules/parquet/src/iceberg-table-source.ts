@@ -2,8 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI} from '@loaders.gl/loader-utils';
-import {DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  TableScanSource
+} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -20,6 +25,7 @@ import type {
 } from './iceberg-types';
 import {parseAvro} from './lib/parsers/parse-avro';
 import {ParquetDatasetSource} from './parquet-dataset-source';
+import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
   ParquetDatasetBatch,
   ParquetComparisonPredicate,
@@ -27,6 +33,7 @@ import type {
   ParquetPredicate,
   ParquetInPredicate,
   ParquetDatasetReadOptions,
+  ParquetDatasetExplain,
   ParquetDatasetSourceOptions
 } from './parquet-source-types';
 
@@ -69,7 +76,10 @@ export type IcebergScanOptions = ParquetDatasetReadOptions & {
  * The source owns Iceberg metadata and manifest discovery, then delegates selected data files to
  * `ParquetDatasetSource` for projection, filtering, range access, workers, and Arrow materialization.
  */
-export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOptions> {
+export class IcebergTableSource
+  extends BaseDataSource<string, IcebergSourceOptions>
+  implements TableScanSource<ParquetDatasetBatch, ParquetPredicate>
+{
   private metadataPromise: Promise<IcebergTableMetadata> | null = null;
   private readonly closeController = new AbortController();
   private closed = false;
@@ -183,6 +193,52 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
     return (await this.getScanPlan(signal, snapshotId, snapshotRef)).deleteFiles;
   }
 
+  /** Discovers the current snapshot schema and aggregate file statistics without decoding rows. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    this.assertOpen();
+    const metadata = await this.getMetadata(options.signal);
+    const plan = await this.getScanPlan(options.signal);
+    if (!plan.dataFiles.length) {
+      throw new Error('Iceberg snapshot contains no active Parquet data files');
+    }
+    const parquetSource = this.createParquetDataset(plan, metadata, {});
+    try {
+      const schema = await parquetSource.getSchema({signal: options.signal});
+      return createScanQueryMetadata({
+        sourceType: 'iceberg',
+        queryType: 'table',
+        execution: {status: 'supported', method: 'read'},
+        name: this.data,
+        schema,
+        capabilities: {table: PARQUET_TABLE_QUERY_CAPABILITIES},
+        statistics: {
+          rowCount: plan.dataFiles.reduce((sum, file) => sum + Number(file.recordCount || 0), 0),
+          byteLength: plan.dataFiles.reduce((sum, file) => sum + Number(file.fileSize || 0), 0)
+        }
+      });
+    } finally {
+      await parquetSource.close();
+    }
+  }
+
+  /** Explains Iceberg manifest pruning and the delegated Parquet dataset plan. */
+  async explain(options: IcebergScanOptions = {}): Promise<ParquetDatasetExplain> {
+    this.assertOpen();
+    const metadata = await this.getMetadata(options.signal);
+    const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
+    const parquetSource = this.createParquetDataset(plan, metadata, options);
+    try {
+      return await parquetSource.getScanPlan(options);
+    } finally {
+      await parquetSource.close();
+    }
+  }
+
+  /** Common table-scan entry point for the selected Iceberg snapshot. */
+  read(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+    return this.scan(options);
+  }
+
   /** Reads the current snapshot as Arrow batches through the existing Parquet dataset source. */
   async *scan(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
@@ -196,7 +252,26 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
       : [];
     const equalityColumns = getEqualityDeleteColumns(equalityDeletes);
     const readOptions = addEqualityColumns(options, equalityColumns);
-    const parquetSource = new ParquetDatasetSource(
+    const parquetSource = this.createParquetDataset(plan, metadata, options);
+    try {
+      for await (const batch of parquetSource.read(readOptions)) {
+        const filteredBatch = options.applyDeletes
+          ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
+          : batch;
+        if (filteredBatch.length > 0) yield filteredBatch;
+      }
+    } finally {
+      await parquetSource.close();
+    }
+  }
+
+  /** Creates the delegated Parquet dataset after Iceberg metadata-level pruning. */
+  private createParquetDataset(
+    plan: IcebergScanPlan,
+    metadata: IcebergTableMetadata,
+    options: IcebergScanOptions
+  ): ParquetDatasetSource {
+    return new ParquetDatasetSource(
       plan.dataFiles
         .filter(
           file =>
@@ -226,16 +301,6 @@ export class IcebergTableSource extends BaseDataSource<string, IcebergSourceOpti
       this.options,
       this.coreApi
     );
-    try {
-      for await (const batch of parquetSource.read(readOptions)) {
-        const filteredBatch = options.applyDeletes
-          ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
-          : batch;
-        if (filteredBatch.length > 0) yield filteredBatch;
-      }
-    } finally {
-      await parquetSource.close();
-    }
   }
 
   /** Permanently closes the source and aborts an in-flight metadata request. */

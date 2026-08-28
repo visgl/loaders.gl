@@ -148,6 +148,94 @@ export type ScanQueryMetadataOptions = Readonly<{
   signal?: AbortSignal;
 }>;
 
+/** Terminal state of one observable scan execution. */
+export type ScanExecutionTelemetryStatus =
+  | 'completed'
+  | 'early-terminated'
+  | 'cancelled'
+  | 'failed';
+
+/** Portable execution counters for one physical source in a federated scan. */
+export type ScanSourceExecutionTelemetry = Readonly<{
+  /** Stable registry id when the source was resolved through a DataSourceManager. */
+  sourceId?: string;
+  /** Format or adapter type reported by scan metadata. */
+  sourceType: string;
+  /** Zero-based append position for a federated source. */
+  sourceIndex?: number;
+  /** Terminal state of this physical source iterator. */
+  status: ScanExecutionTelemetryStatus;
+  /** Physical files opened by this source, when measurable. */
+  filesOpened?: number;
+  /** Independently scheduled physical tasks opened by this source, when measurable. */
+  tasksOpened?: number;
+  /** Response bytes fetched from storage, excluding cache hits, when measurable. */
+  bytesFetched?: number;
+  /** Physical batches decoded before common residual execution. */
+  batchesDecoded: number;
+  /** Rows decoded or received from the physical source. */
+  rowsRead: number;
+  /** Rows evaluated by exact predicates in this source. */
+  rowsTested?: number;
+  /** Rows retained by exact predicates in this source. */
+  rowsRetained?: number;
+  /** Rows emitted by this source to its parent executor. */
+  rowsReturned: number;
+  /** Rows or row groups eliminated using metadata before decoding. */
+  rowsPruned?: number;
+  /** Wall-clock time spent consuming this source. */
+  durationMilliseconds: number;
+  /** Source-specific immutable counters retained for detailed diagnostics. */
+  details?: Readonly<Record<string, unknown>>;
+  /** Failure or cancellation reason when one terminated this source. */
+  error?: unknown;
+}>;
+
+/** Portable execution counters reported when a table scan terminates. */
+export type ScanExecutionTelemetry = Readonly<{
+  /** Terminal state distinguishing completion, early return, cancellation, and failure. */
+  status: ScanExecutionTelemetryStatus;
+  /** Number of physical sources included in the resolved plan. */
+  sourcesPlanned: number;
+  /** Number of physical source iterators that were opened. */
+  sourcesRead: number;
+  /** Number of physical data batches received from those sources. */
+  batchesRead: number;
+  /** Compatibility-neutral name for physical batches decoded by this execution. */
+  batchesDecoded?: number;
+  /** Number of rows received before residual filtering and the global limit. */
+  rowsRead: number;
+  /** Number of rows evaluated by the executor's residual predicate. */
+  rowsTested?: number;
+  /** Number of rows retained by the executor's residual predicate. */
+  rowsRetained?: number;
+  /** Number of rows emitted to the scan consumer. */
+  rowsReturned: number;
+  /** Physical bytes read when the source can measure them without estimation. */
+  bytesRead?: number;
+  /** Response bytes fetched from storage, excluding cache hits, when measurable. */
+  bytesFetched?: number;
+  /** Physical files opened by this execution, when measurable. */
+  filesOpened?: number;
+  /** Independently scheduled physical tasks opened by this execution, when measurable. */
+  tasksOpened?: number;
+  /** Rows or row groups eliminated using metadata before decoding. */
+  rowsPruned?: number;
+  /** Wall-clock execution time measured by the reporting source. */
+  durationMilliseconds: number;
+  /** Why a successfully shortened execution stopped before exhausting its plan. */
+  earlyTerminationReason?: 'limit' | 'consumer-return';
+  /** Per-source physical counters in deterministic append order. */
+  sources?: readonly ScanSourceExecutionTelemetry[];
+  /** Source-specific immutable counters retained for detailed diagnostics. */
+  details?: Readonly<Record<string, unknown>>;
+  /** Failure or cancellation reason when one terminated the scan. */
+  error?: unknown;
+}>;
+
+/** Receives the immutable final counters for one table scan execution. */
+export type ScanExecutionTelemetryCallback = (telemetry: ScanExecutionTelemetry) => void;
+
 /** Structural interface implemented by sources that support query-panel discovery. */
 export type ScanQueryMetadataProvider = {
   /** Discovers query-visible columns and capabilities without materializing result rows. */
@@ -160,7 +248,13 @@ export type TableScanReadOptions<
     unknown,
     ColumnarPredicateProperty
   >
-> = TableQueryOptions<PredicateT> & Readonly<{signal?: AbortSignal}>;
+> = TableQueryOptions<PredicateT> &
+  Readonly<{
+    /** Cooperatively cancels source discovery and execution. */
+    signal?: AbortSignal;
+    /** Receives one terminal execution snapshot without changing query semantics. */
+    onTelemetry?: ScanExecutionTelemetryCallback;
+  }>;
 
 /**
  * Shared table-scan contract implemented by format-specific executors.

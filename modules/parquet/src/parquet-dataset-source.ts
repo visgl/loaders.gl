@@ -9,7 +9,8 @@ import {
   type CoreAPI,
   type ScanFragment,
   type ScanFragmentProvider,
-  type ScanTask
+  type ScanTask,
+  type ScanExecutionTelemetry
 } from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
@@ -282,14 +283,30 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   async *read(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
     validateTableQueryLimit(options.limit);
+    const startedAt = Date.now();
+    const telemetryBefore = this.getTelemetry();
     let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
-    if (remainingRows === 0) return;
+    if (remainingRows === 0) {
+      options.onTelemetry?.(
+        createParquetDatasetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          'early-terminated',
+          'limit'
+        )
+      );
+      return;
+    }
     const readContext = createDatasetAbortContext(options.signal);
     this.activeReadControllers.add(readContext.abortController);
     const tasks = this.getReadTasks(options, readContext.abortController.signal);
     const fileConcurrency = normalizeFileConcurrency(
       options.fileConcurrency ?? this.options.parquetDataset?.fileConcurrency
     );
+    let completed = false;
+    let limitReached = false;
+    let readError: unknown;
 
     try {
       for await (const batch of executeScanTasks(tasks, {
@@ -301,12 +318,41 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         this.telemetry.rowsEmitted += outputBatch.length;
         yield outputBatch;
         remainingRows -= outputBatch.length;
-        if (remainingRows === 0) return;
+        if (remainingRows === 0) {
+          limitReached = true;
+          return;
+        }
       }
+      completed = true;
+    } catch (error) {
+      readError = error;
+      throw error;
     } finally {
+      const cancelled = readContext.abortController.signal.aborted || options.signal?.aborted;
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
+      const status: ScanExecutionTelemetry['status'] = readError
+        ? cancelled
+          ? 'cancelled'
+          : 'failed'
+        : limitReached || !completed
+          ? 'early-terminated'
+          : 'completed';
+      options.onTelemetry?.(
+        createParquetDatasetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          status,
+          limitReached
+            ? 'limit'
+            : !completed && readError === undefined
+              ? 'consumer-return'
+              : undefined,
+          readError
+        )
+      );
     }
   }
 
@@ -701,4 +747,51 @@ function createParquetDatasetTelemetry(): ParquetDatasetTelemetry {
       failedReadCount: 0
     }
   };
+}
+
+/** Converts cumulative dataset and child counters into one portable read-scoped snapshot. */
+function createParquetDatasetScanExecutionTelemetry(
+  before: ParquetDatasetTelemetry,
+  after: ParquetDatasetTelemetry,
+  startedAt: number,
+  status: ScanExecutionTelemetry['status'],
+  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  error?: unknown
+): ScanExecutionTelemetry {
+  const parquet = Object.fromEntries(
+    Object.keys(after.parquet).map(key => {
+      const telemetryKey = key as keyof ParquetTelemetry;
+      return [key, after.parquet[telemetryKey] - before.parquet[telemetryKey]];
+    })
+  ) as ParquetTelemetry;
+  const dataset = Object.freeze({
+    filesDiscovered: after.filesDiscovered - before.filesDiscovered,
+    filesSelected: after.filesSelected - before.filesSelected,
+    filesPrunedByBoundingBox: after.filesPrunedByBoundingBox - before.filesPrunedByBoundingBox,
+    filesPrunedByPartitions: after.filesPrunedByPartitions - before.filesPrunedByPartitions,
+    filesOpened: after.filesOpened - before.filesOpened,
+    batchesEmitted: after.batchesEmitted - before.batchesEmitted,
+    rowsEmitted: after.rowsEmitted - before.rowsEmitted
+  });
+  const rowsRead = Math.max(parquet.predicateRowsTested, parquet.rowsEmitted, dataset.rowsEmitted);
+  return Object.freeze({
+    status,
+    sourcesPlanned: Math.max(dataset.filesSelected, dataset.filesOpened),
+    sourcesRead: dataset.filesOpened,
+    batchesRead: dataset.batchesEmitted,
+    batchesDecoded: parquet.rowGroupsDecoded,
+    rowsRead,
+    rowsTested: parquet.predicateRowsTested || undefined,
+    rowsRetained: parquet.predicateRowsMatched || undefined,
+    rowsReturned: dataset.rowsEmitted,
+    bytesRead: parquet.downloadedBytes,
+    bytesFetched: parquet.downloadedBytes,
+    filesOpened: dataset.filesOpened,
+    tasksOpened: parquet.rowGroupsDecoded,
+    rowsPruned: parquet.rowsPrunedByPageIndex,
+    durationMilliseconds: Date.now() - startedAt,
+    earlyTerminationReason,
+    details: Object.freeze({dataset, parquet: Object.freeze({...parquet})}),
+    ...(error === undefined ? {} : {error})
+  });
 }

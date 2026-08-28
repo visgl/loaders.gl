@@ -9,6 +9,7 @@ import {
   DataSource,
   DataSourceManager,
   type DataSourceOptions,
+  type ScanExecutionTelemetry,
   type ScanQueryMetadata,
   type TableScanReadOptions,
   type TableScanSource
@@ -177,6 +178,95 @@ describe('FederatedTableScanSource', () => {
     ]);
   });
 
+  test('normalizes only explicitly declared lossless schema conversions', async () => {
+    const dataSourceManager = new DataSourceManager();
+    const dictionaryType = new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32());
+    const compactTable = makeTypedArrowTable({
+      id: arrow.vectorFromArray([1], new arrow.Int32()),
+      category: arrow.vectorFromArray(['compact'], dictionaryType)
+    });
+    const floatingTable = makeTypedArrowTable({
+      id: arrow.vectorFromArray([2], new arrow.Float32()),
+      category: arrow.vectorFromArray(['floating'], new arrow.Utf8())
+    });
+    dataSourceManager.add({
+      dataSourceId: 'compact',
+      dataSource: new TestTableScanSource('compact', [compactTable])
+    });
+    dataSourceManager.add({
+      dataSourceId: 'floating',
+      dataSource: new TestTableScanSource('floating', [floatingTable])
+    });
+    const outputSchema: Schema = {
+      fields: [
+        {name: 'category', type: 'utf8', nullable: true},
+        {name: 'id', type: 'float64', nullable: true}
+      ],
+      metadata: {contract: 'measurement-v1'}
+    };
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [{dataSourceId: 'compact'}, {dataSourceId: 'floating'}],
+      outputSchema
+    });
+
+    const metadata = await source.getQueryMetadata();
+    expect(metadata.schema).toMatchObject(outputSchema);
+    const batches = await collectBatches(source.read());
+    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+      {category: 'compact', id: 1},
+      {category: 'floating', id: 2}
+    ]);
+    const explanation = await source.explain();
+    expect(explanation.sources.map(child => child.normalizedTypes)).toEqual([
+      {id: 'float64', category: 'utf8'},
+      {id: 'float64'}
+    ]);
+
+    const lossyManager = new DataSourceManager();
+    const largeIntegerTable = makeTypedArrowTable({
+      id: arrow.vectorFromArray([1n], new arrow.Int64())
+    });
+    lossyManager.add({
+      dataSourceId: 'large-integer',
+      dataSource: new TestTableScanSource('large-integer', [largeIntegerTable])
+    });
+    await expect(
+      new FederatedTableScanSource(lossyManager, {
+        sources: [{dataSourceId: 'large-integer'}],
+        outputSchema: {
+          fields: [{name: 'id', type: 'float64', nullable: true}],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/Unsupported federated normalization.*int64 to float64/);
+  });
+
+  test('validates declared output fields and nullability', async () => {
+    const dataSourceManager = new DataSourceManager();
+    dataSourceManager.add({
+      dataSourceId: 'source',
+      dataSource: new TestTableScanSource('source', [makeArrowTable({id: [1], value: [2]})])
+    });
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        sources: [{dataSourceId: 'source'}],
+        outputSchema: {fields: [{name: 'id', type: 'float64', nullable: true}], metadata: {}}
+      }).getQueryMetadata()
+    ).rejects.toThrow(/output schema mismatch: missing \[value\]/);
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        sources: [{dataSourceId: 'source'}],
+        outputSchema: {
+          fields: [
+            {name: 'id', type: 'float64', nullable: false},
+            {name: 'value', type: 'float64', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/cannot remove nullability for id/);
+  });
+
   test('validates strict schemas, mapped fields, and compatible types', async () => {
     const missingManager = new DataSourceManager();
     missingManager.add({
@@ -324,6 +414,57 @@ describe('FederatedTableScanSource', () => {
     ]);
     expect(firstSource.iteratorCloseCount).toBe(1);
     expect(secondSource.readCount).toBe(0);
+  });
+
+  test('reports serializable aggregate and per-source execution telemetry', async () => {
+    const dataSourceManager = new DataSourceManager();
+    dataSourceManager.add({
+      dataSourceId: 'first',
+      dataSource: new TestTableScanSource('first', [makeArrowTable({id: [1, 2], score: [10, 20]})])
+    });
+    dataSourceManager.add({
+      dataSourceId: 'second',
+      dataSource: new TestTableScanSource('second', [makeArrowTable({id: [3], score: [30]})])
+    });
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [{dataSourceId: 'first'}, {dataSourceId: 'second'}]
+    });
+    let telemetry: ScanExecutionTelemetry | undefined;
+    await collectBatches(
+      source.read({
+        predicate: parseSQLPredicate('score >= 20'),
+        limit: 1,
+        onTelemetry: value => {
+          telemetry = value;
+        }
+      })
+    );
+
+    expect(telemetry).toMatchObject({
+      status: 'early-terminated',
+      earlyTerminationReason: 'limit',
+      sourcesPlanned: 2,
+      sourcesRead: 1,
+      batchesRead: 1,
+      rowsRead: 2,
+      rowsTested: 2,
+      rowsRetained: 1,
+      rowsReturned: 1,
+      sources: [
+        {
+          sourceId: 'first',
+          sourceType: 'first',
+          sourceIndex: 0,
+          status: 'completed',
+          batchesDecoded: 1,
+          rowsRead: 2,
+          rowsReturned: 1
+        }
+      ]
+    });
+    expect(() => JSON.stringify(telemetry)).not.toThrow();
+    const explanation = await source.explain({limit: 1});
+    expect(() => JSON.stringify(explanation)).not.toThrow();
   });
 
   test('skips empty batches and stops a child that ignores its pushed limit', async () => {
@@ -647,7 +788,8 @@ describe('FederatedTableScanSource', () => {
         sourceType: 'source',
         sourceColumns: ['sourceId', 'value'],
         outputColumns: ['id', 'value'],
-        columnMapping: {sourceId: 'id'}
+        columnMapping: {sourceId: 'id'},
+        normalizedTypes: {}
       }
     ]);
     expect(Object.isFrozen(source.sources[0].columnMapping)).toBe(true);
@@ -754,6 +896,12 @@ type TestTableScanSourceOptions = Readonly<{
 /** Wraps simple columns in the loaders.gl Arrow table shape. */
 function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
   const data = arrow.tableFromArrays(columns);
+  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+}
+
+/** Wraps pre-typed Arrow vectors without allowing Arrow to infer wider scalar types. */
+function makeTypedArrowTable(columns: Record<string, arrow.Vector>): ArrowTable {
+  const data = new arrow.Table(columns);
   return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
 }
 

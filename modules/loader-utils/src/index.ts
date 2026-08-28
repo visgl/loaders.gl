@@ -261,6 +261,10 @@ export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 export type {
   ManageableDataSource,
+  DataSourceManagerEntryInfo,
+  DataSourceManagerEntryStatus,
+  DataSourceManagerDiscoveryInfo,
+  DataSourceManagerDiscoveryOptions,
   DataSourceManagerAddParameters,
   DataSourceManagerGetOrCreateParameters,
   DataSourceManagerSubscribeParameters,
@@ -317,6 +321,10 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  ScanExecutionTelemetry,
+  ScanExecutionTelemetryCallback,
+  ScanExecutionTelemetryStatus,
+  ScanSourceExecutionTelemetry,
   PointCloudScanReadOptions,
   PointCloudScanSource,
   TableScanReadOptions,
