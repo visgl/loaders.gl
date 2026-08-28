@@ -10,6 +10,64 @@ import {
   parseI3SSceneLayerMetadata
 } from '@loaders.gl/i3s';
 import type {I3SLayerSource, I3SServiceMetadata, SceneLayer3D} from '@loaders.gl/i3s';
+import {buildArcGISResourceURL} from './arcgis-url-utils';
+
+/** Parameters accepted by the ArcGIS SceneServer query endpoint. */
+export type ArcGISSceneQueryOptions = {
+  /** SQL where clause. */
+  where?: string;
+  /** Object IDs to include. */
+  objectIds?: number[] | string;
+  /** Geometry filter encoded using ArcGIS REST geometry syntax. */
+  geometry?: unknown;
+  /** Geometry type for the geometry filter. */
+  geometryType?: string;
+  /** Spatial relationship for the geometry filter. */
+  spatialRel?: string;
+  /** Fields to return. */
+  outFields?: string | string[];
+  /** Whether feature geometry should be included. */
+  returnGeometry?: boolean;
+  /** Input spatial reference. */
+  inSR?: string | number | object;
+  /** Output spatial reference. */
+  outSR?: string | number | object;
+  /** ArcGIS result type. */
+  resultType?: string;
+  /** Result page offset. */
+  resultOffset?: number;
+  /** Maximum records in one page. */
+  resultRecordCount?: number;
+  /** Response format. */
+  f?: 'json' | 'pjson';
+  /** Abort signal for the request. */
+  signal?: AbortSignal;
+};
+
+/** Normalized result returned by a SceneServer query. */
+export type ArcGISSceneQueryResult = {
+  /** Returned SceneServer features. */
+  features: unknown[];
+  /** Field metadata advertised by the layer. */
+  fields?: unknown[];
+  /** Whether another page is available. */
+  exceededTransferLimit?: boolean;
+  /** Original response metadata for advanced consumers. */
+  rawMetadata?: unknown;
+};
+
+/** Error raised when a SceneServer query cannot be completed or decoded. */
+export class ArcGISSceneServerQueryError extends Error {
+  /** HTTP status code, when the failure came from a response. */
+  readonly status?: number;
+
+  /** Creates a typed SceneServer query error. */
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'ArcGISSceneServerQueryError';
+    this.status = status;
+  }
+}
 
 /** Options for an ArcGIS SceneServer source. */
 export type ArcGISSceneServerSourceOptions = DataSourceOptions & {
@@ -45,6 +103,46 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
   async getTilesetSource(): Promise<I3SLayerSource> {
     this.sourcePromise ||= this.createTilesetSource();
     return await this.sourcePromise;
+  }
+
+  /** Queries feature attributes and geometry from a SceneServer layer. */
+  async query(options: ArcGISSceneQueryOptions = {}): Promise<ArcGISSceneQueryResult> {
+    const {signal, f = 'json', ...queryParameters} = options;
+    const queryURL = buildArcGISResourceURL(this.getLayerURL(), 'query', {
+      where: '1=1',
+      outFields: '*',
+      returnGeometry: true,
+      f,
+      ...queryParameters,
+      token: this.getToken()
+    });
+    const response = await this.fetch(queryURL, signal ? {signal} : undefined);
+    if (!response.ok) {
+      throw new ArcGISSceneServerQueryError(
+        `ArcGIS SceneServer query failed: ${response.status} ${response.statusText}`,
+        response.status
+      );
+    }
+    const document = (await response.json()) as Record<string, unknown>;
+    if (document.error) {
+      throw new ArcGISSceneServerQueryError(
+        `ArcGIS SceneServer query returned an error: ${JSON.stringify(document.error)}`
+      );
+    }
+    return {
+      features: Array.isArray(document.features) ? document.features : [],
+      fields: Array.isArray(document.fields) ? document.fields : undefined,
+      exceededTransferLimit:
+        typeof document.exceededTransferLimit === 'boolean'
+          ? document.exceededTransferLimit
+          : undefined,
+      rawMetadata: document
+    };
+  }
+
+  /** Alias for query used by applications that consume generic feature sources. */
+  async getFeatures(options: ArcGISSceneQueryOptions = {}): Promise<ArcGISSceneQueryResult> {
+    return await this.query(options);
   }
 
   /** Returns the layer URL, resolving an explicit layer ID when needed. */

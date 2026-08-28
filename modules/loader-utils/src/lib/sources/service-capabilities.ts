@@ -12,6 +12,7 @@ export type GeoServiceType =
   | 'arcgis-vector-tile-server'
   | 'arcgis-image-server'
   | 'arcgis-feature-server'
+  | 'arcgis-scene-server'
   | 'unknown';
 
 /** A normalized description of a discoverable geospatial service. */
@@ -31,7 +32,17 @@ export type ServiceCapabilities = {
   /** Advertised response formats. */
   formats: string[];
   /** Named layers or feature types. */
-  layers: Array<{name: string; title?: string; crs?: string[]; bounds?: number[]}>;
+  layers: Array<{
+    name: string;
+    title?: string;
+    crs?: string[];
+    bounds?: number[];
+    id?: string;
+    url?: string;
+    profile?: string;
+    layerType?: string;
+    version?: string;
+  }>;
   /** Supported request names, when advertised. */
   operations: string[];
   /** Original protocol-specific capability document. */

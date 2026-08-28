@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {I3SNodePageLoader} from '@loaders.gl/i3s';
+import {
+  getI3SFeatureSupportReport,
+  I3S_CONFORMANCE_PROFILES,
+  I3SNodePageLoader
+} from '@loaders.gl/i3s';
 import {
   I3SPointCloudSceneLayerSchema,
   I3SPointSceneLayerSchema,
@@ -58,6 +62,16 @@ const SCENE_LAYER_FIXTURES = [
 ] as const;
 
 describe('I3S conformance fixtures', () => {
+  it('publishes an explicit Esri and OGC profile matrix', () => {
+    expect(I3S_CONFORMANCE_PROFILES.some(entry => entry.version === '1.6')).toBe(true);
+    expect(I3S_CONFORMANCE_PROFILES.some(entry => entry.version === '1.10')).toBe(true);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(
+        entry => entry.version === '2.1' && entry.profile === 'PointCloud'
+      )?.ogcVersion
+    ).toBe('1.3');
+  });
+
   it.each(SCENE_LAYER_FIXTURES)('accepts $name scene-layer metadata', async fixture => {
     const response = await fetchFile(fixture.url);
     const document = await response.json();
@@ -129,6 +143,28 @@ describe('I3S conformance fixtures', () => {
         }
       })
     ).toThrow(/profile/);
+  });
+
+  it('reports partial renderer and popup semantics without evaluating expressions', async () => {
+    const response = await fetchFile('@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json');
+    const document = await response.json();
+    const sceneLayer = I3SPointSceneLayerSchema.parse({
+      ...document,
+      drawingInfo: {
+        renderer: {
+          type: 'classBreaks',
+          field: 'height',
+          classBreakInfos: [],
+          visualVariables: [{type: 'sizeInfo', valueExpression: '$feature.height'}],
+          producerExtension: true
+        }
+      },
+      popupInfo: {expressionInfos: [{name: 'label', expression: '$feature.name'}]}
+    });
+    const report = getI3SFeatureSupportReport(sceneLayer);
+    expect(report.features.rendererMetadata).toBe('partial');
+    expect(report.features.popupMetadata).toBe('partial');
+    expect(report.diagnostics).toHaveLength(2);
   });
 
   it('preserves UInt64 values through Number.MAX_SAFE_INTEGER', () => {
