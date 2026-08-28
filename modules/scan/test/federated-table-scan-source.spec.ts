@@ -772,6 +772,25 @@ describe('FederatedTableScanSource', () => {
         }
       }).getQueryMetadata()
     ).rejects.toThrow(/Unsupported federated normalization.*utf8-view to int32/);
+
+    await expect(
+      new FederatedTableScanSource(viewManager, {
+        sources: [{dataSourceId: 'views'}],
+        outputSchema: {
+          fields: [
+            {name: 'text', type: 'utf8', nullable: true},
+            {name: 'payload', type: 'binary', nullable: true},
+            {
+              name: 'unsigned',
+              type: {type: 'decimal', bitWidth: 128, precision: 10, scale: 2},
+              nullable: true
+            },
+            {name: 'signed', type: 'int64', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/Unsupported federated normalization.*uint8 to/);
   });
 
   test('reports statistics only when every source count is exact', async () => {

@@ -86,3 +86,20 @@ test('ArrowTableSource reports failed URL responses', async () => {
   const batches = source.getQueryMetadata();
   await expect(batches).rejects.toThrow('status 503');
 });
+
+test('ArrowTableSource reads responses without a streaming body', async () => {
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: [7]}));
+  const source = new ArrowTableSource('data.arrow');
+  source.fetch = async () =>
+    ({
+      ok: true,
+      status: 200,
+      body: null,
+      arrayBuffer: async () => bytes
+    }) as Response;
+
+  const batches = [];
+  for await (const batch of source.read()) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0].data.getChild('value')?.get(0)).toBe(7);
+});
