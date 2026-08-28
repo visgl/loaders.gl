@@ -27,6 +27,10 @@ export async function parseParquetFile(
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp,
+    retainByteArrayViews: true,
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true,
+    useArrowByteArrayBuffers: true,
     verifyFooterSignature: options?.parquet?.verifyFooterSignature,
     keyRetriever: options?.parquet?.keyRetriever,
     aadPrefix: options?.parquet?.aadPrefix
@@ -84,6 +88,10 @@ export async function* parseParquetFileInBatches(
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp,
+    retainByteArrayViews: true,
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true,
+    useArrowByteArrayBuffers: true,
     verifyFooterSignature: options?.parquet?.verifyFooterSignature,
     keyRetriever: options?.parquet?.keyRetriever,
     aadPrefix: options?.parquet?.aadPrefix

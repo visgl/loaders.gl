@@ -108,6 +108,8 @@ const PARQUET_BENCHMARK_IMPLEMENTATION_IDS: ParquetBenchmarkImplementationId[] =
   'hyparquet'
 ];
 
+let parquetBenchmarkScenariosPromise: Promise<ParquetBenchmarkScenario[]> | undefined;
+
 /** Renders live comparative Parquet decode benchmarks in the visitor's browser. */
 export default function ParquetBenchmarksApp(): JSX.Element {
   const [rows, setRows] = useState<BenchmarkResultRow[]>([]);
@@ -165,7 +167,7 @@ export default function ParquetBenchmarksApp(): JSX.Element {
       try {
         const scenarios = await runBenchmarkPhase(
           'Fixture setup failed',
-          createParquetBenchmarkScenarios
+          loadParquetBenchmarkScenarios
         );
         if (isMounted) {
           setScenarios(
@@ -225,10 +227,6 @@ export default function ParquetBenchmarksApp(): JSX.Element {
 
   return (
     <div className="benchmark-page">
-      <p>
-        Live Parquet decode throughput, primarily to Arrow with one object-row control. Keep this tab
-        focused while it runs.
-      </p>
       <div className="benchmark-status-row" aria-live="polite">
         {isRunning ? <span className="benchmark-spinner" aria-hidden="true" /> : null}
         <p className="benchmark-status">Status: {status}</p>
@@ -337,6 +335,21 @@ export default function ParquetBenchmarksApp(): JSX.Element {
   );
 }
 
+/** Loads the immutable benchmark fixture set once for the lifetime of the page. */
+async function loadParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenario[]> {
+  if (!parquetBenchmarkScenariosPromise) {
+    const nextPromise = createParquetBenchmarkScenarios();
+    const cachedPromise = nextPromise.catch(error => {
+      if (parquetBenchmarkScenariosPromise === cachedPromise) {
+        parquetBenchmarkScenariosPromise = undefined;
+      }
+      throw error;
+    });
+    parquetBenchmarkScenariosPromise = cachedPromise;
+  }
+  return await parquetBenchmarkScenariosPromise;
+}
+
 /** Adds a stable phase label to browser benchmark setup failures. */
 async function runBenchmarkPhase<Result>(
   label: string,
@@ -402,8 +415,16 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
   );
   return [
     {
-      name: 'GeoParquet SNAPPY · 1K rows × 4 cols → Arrow',
-      arrayBuffer: geoParquetArrayBuffer,
+      name: 'PLAIN nullable primitives · 40K rows × 6 cols → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'PLAIN single-column projection · 40K rows × 1 col → Arrow',
+      arrayBuffer: fruitsArrayBuffer,
+      columns: ['quantity'],
       shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
@@ -412,29 +433,50 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger', 'stock', 'colour'],
       shape: 'arrow-table',
-      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
-      implementationIds: ['typescript', 'hyparquet']
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'PLAIN nullable primitives · 40K rows × 6 cols → Arrow',
+      name: 'PLAIN full table · 40K rows × 10 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
-      columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
       shape: 'arrow-table',
-      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
-      implementationIds: ['typescript', 'hyparquet']
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'RLE_DICTIONARY mixed table · 20K rows × 5 cols → Arrow Utf8',
+      arrayBuffer: dictionaryArrayBuffer,
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'PLAIN nested/repeated · 40K rows × 2 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['stock', 'colour'],
       shape: 'arrow-table',
-      // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
-      implementationIds: ['typescript', 'hyparquet']
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'RLE_DICTIONARY mixed table · 20K rows × 5 cols → Arrow',
-      arrayBuffer: dictionaryArrayBuffer,
+      name: 'DELTA_BINARY_PACKED wide integers · 200 rows × 66 cols → Arrow',
+      arrayBuffer: deltaBinaryPackedArrayBuffer,
       shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY strings · 1K rows × 9 cols → Arrow',
+      arrayBuffer: deltaByteArrayBuffer,
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY projection · 1K rows × 2 cols → Arrow',
+      arrayBuffer: deltaByteArrayBuffer,
+      columns: ['c_customer_id', 'c_email_address'],
+      shape: 'arrow-table',
+      implementationIds: ['typescript', 'wasm', 'hyparquet']
+    },
+    {
+      name: 'DELTA_BYTE_ARRAY control · 1K rows × 9 cols → object rows',
+      arrayBuffer: deltaByteArrayBuffer,
+      shape: 'object-row-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
@@ -446,12 +488,6 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
     {
       name: 'RLE_DICTIONARY + ZSTD · 20K rows × 5 cols → Arrow',
       arrayBuffer: compressedDictionaryFixtures.zstd,
-      shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
-    },
-    {
-      name: 'DELTA_BINARY_PACKED wide integers · 200 rows × 66 cols → Arrow',
-      arrayBuffer: deltaBinaryPackedArrayBuffer,
       shape: 'arrow-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
@@ -468,23 +504,9 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
-      name: 'DELTA_BYTE_ARRAY strings · 1K rows × 9 cols → Arrow',
-      arrayBuffer: deltaByteArrayBuffer,
+      name: 'GeoParquet SNAPPY · 1K rows × 4 cols → Arrow',
+      arrayBuffer: geoParquetArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
-    },
-    {
-      name: 'DELTA_BYTE_ARRAY projection · 1K rows × 2 cols → Arrow',
-      arrayBuffer: deltaByteArrayBuffer,
-      columns: ['c_customer_id', 'c_email_address'],
-      shape: 'arrow-table',
-      // parquet-wasm 0.7.2 returns mismatched IPC schema/vector counts for this projection.
-      implementationIds: ['typescript', 'hyparquet']
-    },
-    {
-      name: 'DELTA_BYTE_ARRAY control · 1K rows × 9 cols → object rows',
-      arrayBuffer: deltaByteArrayBuffer,
-      shape: 'object-row-table',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     }
   ];
@@ -496,18 +518,25 @@ async function createCompressedBenchmarkFixtures(
 ): Promise<{gzip: ArrayBuffer; zstd: ArrayBuffer}> {
   const {loadWasm} = await import('../../../modules/parquet/src/lib/utils/load-wasm');
   const parquetWasm = await loadWasm();
+
   const gzipTable = parquetWasm.readParquet(new Uint8Array(arrayBuffer));
-  const zstdTable = parquetWasm.readParquet(new Uint8Array(arrayBuffer));
   const gzipProperties = new parquetWasm.WriterPropertiesBuilder()
     .setCompression(parquetWasm.Compression.GZIP)
     .setMaxRowGroupSize(4000)
     .build();
+  const gzip = copyUint8ArrayToArrayBuffer(
+    parquetWasm.writeParquet(gzipTable, gzipProperties)
+  );
+
+  // Build the second fixture only after writeParquet has consumed and released the first table
+  // and its writer properties, keeping the WASM linear-memory high-water mark smaller.
+  const zstdTable = parquetWasm.readParquet(new Uint8Array(arrayBuffer));
   const zstdProperties = new parquetWasm.WriterPropertiesBuilder()
     .setCompression(parquetWasm.Compression.ZSTD)
     .setMaxRowGroupSize(4000)
     .build();
   return {
-    gzip: copyUint8ArrayToArrayBuffer(parquetWasm.writeParquet(gzipTable, gzipProperties)),
+    gzip,
     zstd: copyUint8ArrayToArrayBuffer(parquetWasm.writeParquet(zstdTable, zstdProperties))
   };
 }
@@ -531,24 +560,23 @@ async function createParquetBenchmarkImplementations(): Promise<
   ParquetBenchmarkImplementation[]
 > {
   const [
-    loadersGlLoaderUtils,
     loadersGlTypeScript,
-    loadersGlWasm,
+    loadersGlWasmRuntime,
     loadersGlTableConverters,
     loadersGlSchemaUtils,
+    arrowJs,
     hyparquet,
-    hyparquetCompressors,
-    zstdCodec
+    hyparquetCompressors
   ] = await Promise.all([
-    import('@loaders.gl/loader-utils'),
     import('../../../modules/parquet/src/parquet-js-loader'),
-    import('../../../modules/parquet/src/lib/parsers/parse-parquet-to-arrow'),
+    import('../../../modules/parquet/src/lib/utils/load-wasm'),
     import('../../../modules/parquet/src/lib/parsers/convert-parquet-tables'),
     import('@loaders.gl/schema-utils'),
+    import('apache-arrow'),
     import('hyparquet'),
-    import('hyparquet-compressors'),
-    import('zstd-codec')
+    import('hyparquet-compressors')
   ]);
+  const parquetWasm = await loadersGlWasmRuntime.loadWasm();
   return [
     {
       id: 'typescript',
@@ -558,8 +586,7 @@ async function createParquetBenchmarkImplementations(): Promise<
           scenario.arrayBuffer,
           {
             core: {worker: false},
-            parquet: {columns: scenario.columns, shape: scenario.shape},
-            modules: {'zstd-codec': zstdCodec.ZstdCodec}
+            parquet: {columns: scenario.columns, shape: scenario.shape}
           }
         )) as ArrowTable | ObjectRowTable;
         return getBenchmarkTableRowCount(table);
@@ -569,10 +596,16 @@ async function createParquetBenchmarkImplementations(): Promise<
       id: 'wasm',
       name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.wasm,
       decode: async scenario => {
-        const arrowTable = await loadersGlWasm.parseParquetFileToArrow(
-          new loadersGlLoaderUtils.BlobFile(scenario.arrayBuffer),
-          {columns: scenario.columns}
-        );
+        const wasmTable = parquetWasm.readParquet(new Uint8Array(scenario.arrayBuffer), {
+          columns: scenario.columns
+        });
+        const arrowTable: ArrowTable = {
+          shape: 'arrow-table',
+          data: expandArrowDictionaryColumns(
+            arrowJs.tableFromIPC(wasmTable.intoIPCStream()),
+            arrowJs
+          )
+        };
         if (scenario.shape === 'arrow-table') {
           return arrowTable.data.numRows;
         }
@@ -606,6 +639,28 @@ async function createParquetBenchmarkImplementations(): Promise<
       }
     }
   ];
+}
+
+/**
+ * Expands Arrow dictionary columns so the WASM comparison performs the same Utf8 materialization
+ * as the TypeScript and hyparquet cases.
+ */
+function expandArrowDictionaryColumns(
+  table: import('apache-arrow').Table,
+  arrowJs: typeof import('apache-arrow')
+): import('apache-arrow').Table {
+  const columns: Record<string, import('apache-arrow').Vector | unknown[]> = {};
+  let hasDictionaryColumn = false;
+  for (const field of table.schema.fields) {
+    const vector = table.getChild(field.name)!;
+    if (field.type instanceof arrowJs.Dictionary) {
+      columns[field.name] = Array.from(vector);
+      hasDictionaryColumn = true;
+    } else {
+      columns[field.name] = vector;
+    }
+  }
+  return hasDictionaryColumn ? arrowJs.tableFromArrays(columns) : table;
 }
 
 /** Returns the materialized row count for either benchmark table shape. */

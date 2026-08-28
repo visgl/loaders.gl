@@ -416,6 +416,16 @@ function createSelectedPrimitiveData(
   columnData: ParquetColumnChunk,
   selected: SelectedLeafValues
 ): arrow.Data | undefined {
+  const directData = createSelectedPrimitiveArrayView(
+    arrowType,
+    parquetField,
+    columnData,
+    selected
+  );
+  if (directData) {
+    return arrow.makeData({type: arrowType, data: directData, nullCount: 0} as any);
+  }
+
   const data = createNestedPrimitiveArray(arrowType, parquetField, selected.length);
   if (!data) {
     return undefined;
@@ -435,6 +445,75 @@ function createSelectedPrimitiveData(
     nullBitmap: selected.nullBitmap,
     nullCount: selected.nullCount
   } as any);
+}
+
+/** Reuses a contiguous decoded primitive range when nested selection needs no null expansion. */
+function createSelectedPrimitiveArrayView(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  selected: SelectedLeafValues
+): NestedPrimitiveArrowArray | undefined {
+  if (selected.nullCount || selected.length !== selected.valueCount) {
+    return undefined;
+  }
+  const values = getMatchingNestedPrimitiveArray(arrowType, parquetField, columnData.values);
+  return values?.subarray(
+    selected.firstValueIndex,
+    selected.firstValueIndex + selected.valueCount
+  ) as NestedPrimitiveArrowArray | undefined;
+}
+
+/** Returns decoded nested values when their physical array exactly matches the Arrow type. */
+function getMatchingNestedPrimitiveArray(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  values: ParquetColumnChunk['values']
+): NestedPrimitiveArrowArray | undefined {
+  if (
+    parquetField.primitiveType === 'FLOAT' &&
+    arrowType instanceof arrow.Float32 &&
+    values instanceof Float32Array
+  ) {
+    return values;
+  }
+  if (
+    parquetField.primitiveType === 'DOUBLE' &&
+    arrowType instanceof arrow.Float64 &&
+    values instanceof Float64Array
+  ) {
+    return values;
+  }
+  if (parquetField.primitiveType === 'INT32') {
+    if (arrowType instanceof arrow.Int8 && values instanceof Int8Array) return values;
+    if (arrowType instanceof arrow.Int16 && values instanceof Int16Array) return values;
+    if (
+      (arrowType instanceof arrow.Int32 ||
+        arrowType instanceof arrow.DateDay ||
+        arrowType instanceof arrow.TimeMillisecond) &&
+      values instanceof Int32Array
+    ) {
+      return values;
+    }
+    if (arrowType instanceof arrow.Uint8 && values instanceof Uint8Array) return values;
+    if (arrowType instanceof arrow.Uint16 && values instanceof Uint16Array) return values;
+    if (arrowType instanceof arrow.Uint32 && values instanceof Uint32Array) return values;
+  }
+  if (parquetField.primitiveType === 'INT64') {
+    if (
+      (arrowType instanceof arrow.Int64 ||
+        arrowType instanceof arrow.TimeMicrosecond ||
+        arrowType instanceof arrow.TimeNanosecond ||
+        arrowType instanceof arrow.TimestampMillisecond ||
+        arrowType instanceof arrow.TimestampMicrosecond ||
+        arrowType instanceof arrow.TimestampNanosecond) &&
+      values instanceof BigInt64Array
+    ) {
+      return values;
+    }
+    if (arrowType instanceof arrow.Uint64 && values instanceof BigUint64Array) return values;
+  }
+  return undefined;
 }
 
 /** Allocates the Arrow array matching an unconverted physical Parquet primitive. */
@@ -517,6 +596,9 @@ function createSelectedByteData(
   if (!supportsNestedByteData(arrowType, parquetField)) {
     return undefined;
   }
+  if (columnData.byteArrayData) {
+    return createSelectedBufferedByteData(arrowType, columnData, selected);
+  }
 
   const byteValues = columnData.values as Uint8Array[];
   const valueOffsets = new Int32Array(selected.length + 1);
@@ -556,6 +638,36 @@ function createSelectedByteData(
   } as any);
 }
 
+/** Creates selected nested Arrow bytes from the decoder's compact physical value buffer. */
+function createSelectedBufferedByteData(
+  arrowType: arrow.DataType,
+  columnData: ParquetColumnChunk,
+  selected: SelectedLeafValues
+): arrow.Data {
+  const byteArrayData = columnData.byteArrayData!;
+  const valueOffsets = new Int32Array(selected.length + 1);
+  let sourceValueIndex = selected.firstValueIndex;
+  let dataByteLength = 0;
+  for (let outputIndex = 0; outputIndex < selected.length; outputIndex++) {
+    if (!selected.nullBitmap || selected.nullBitmap[outputIndex >> 3] & (1 << (outputIndex & 7))) {
+      dataByteLength +=
+        byteArrayData.valueOffsets[sourceValueIndex + 1] -
+        byteArrayData.valueOffsets[sourceValueIndex];
+      sourceValueIndex++;
+    }
+    valueOffsets[outputIndex + 1] = dataByteLength;
+  }
+  const firstByteOffset = byteArrayData.valueOffsets[selected.firstValueIndex];
+  const lastByteOffset = byteArrayData.valueOffsets[selected.firstValueIndex + selected.valueCount];
+  return arrow.makeData({
+    type: arrowType,
+    valueOffsets,
+    data: byteArrayData.data.subarray(firstByteOffset, lastByteOffset),
+    nullBitmap: selected.nullBitmap,
+    nullCount: selected.nullCount
+  } as any);
+}
+
 /** Returns whether one Parquet byte leaf maps directly to Arrow Utf8 or Binary. */
 function supportsNestedByteData(arrowType: arrow.DataType, parquetField: ParquetField): boolean {
   if (arrowType instanceof arrow.Utf8) {
@@ -564,6 +676,10 @@ function supportsNestedByteData(arrowType: arrow.DataType, parquetField: Parquet
   return (
     arrowType instanceof arrow.Binary &&
     (!parquetField.originalType ||
+      parquetField.originalType === 'JSON' ||
+      parquetField.originalType === 'BSON' ||
+      parquetField.originalType === 'INTERVAL' ||
+      parquetField.originalType === 'VARIANT' ||
       parquetField.originalType === 'GEOMETRY' ||
       parquetField.originalType === 'GEOGRAPHY') &&
     (parquetField.primitiveType === 'BYTE_ARRAY' ||

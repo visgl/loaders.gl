@@ -9,6 +9,13 @@ setLoaderOptions({
   worker: false
 });
 test('GeoPackageSource#createDataSource selects GeoPackage source from URL', () => {
+  expect(GeoPackageSource.testURL?.('data.GPKG?download=1')).toBe(true);
+  expect(GeoPackageSource.testURL?.('data.parquet')).toBe(false);
+  expect(
+    GeoPackageSource.createDataSource(GPKG_RIVERS_MULTI, {geopackage: {}}) instanceof
+      GeoPackageDataSource
+  ).toBe(true);
+
   const dataSource = createDataSource(GPKG_RIVERS_MULTI, [GeoPackageSource], {
     geopackage: {}
   });

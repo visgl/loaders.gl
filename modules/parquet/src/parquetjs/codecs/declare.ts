@@ -17,6 +17,29 @@ export type ParquetValueBuffer =
   | Float32Array
   | Float64Array;
 
+/** Mutable Arrow-compatible destination for compact physical BYTE_ARRAY values. */
+export type ParquetByteArrayOutput = {
+  /** Contiguous bytes copied from decoded physical values. */
+  data: Uint8Array;
+  /** Arrow-compatible offsets for compact non-null physical values. */
+  valueOffsets: Int32Array;
+  /** Number of bytes written to `data`. */
+  byteLength: number;
+};
+
+/** Ensures a compact byte destination can accept an additional physical value. */
+export function reserveParquetByteArrayOutput(
+  output: ParquetByteArrayOutput,
+  additionalByteLength: number
+): void {
+  const requiredByteLength = output.byteLength + additionalByteLength;
+  if (requiredByteLength <= output.data.byteLength) return;
+  const nextByteLength = Math.max(requiredByteLength, output.data.byteLength * 2, 1024);
+  const data = new Uint8Array(nextByteLength);
+  data.set(output.data.subarray(0, output.byteLength));
+  output.data = data;
+}
+
 export interface CursorBuffer {
   buffer: Uint8Array;
   offset: number;
@@ -35,6 +58,8 @@ export interface ParquetCodecOptions {
   outputOffset?: number;
   /** Optional dictionary resolved while decoding dictionary indices. */
   dictionary?: readonly unknown[];
+  /** Optional compact destination used by PLAIN BYTE_ARRAY decoding. */
+  byteArrayOutput?: ParquetByteArrayOutput;
   /** Preserve decoded INT64 values as bigint instead of converting them to number. */
   int64AsBigInt?: boolean;
   /** Decode legacy INT96 physical values as epoch nanoseconds instead of raw numbers. */
