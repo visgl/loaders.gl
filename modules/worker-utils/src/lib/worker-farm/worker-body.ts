@@ -133,6 +133,9 @@ export default class WorkerBody {
 
 // Filter out noise messages sent to workers
 function getWorkerMessageData(message: WorkerMessageEvent): WorkerMessageData | null {
+  if (!message || typeof message !== 'object') {
+    return null;
+  }
   const messageData = 'data' in message && message.type === 'message' ? message.data : message;
   return messageData &&
     typeof messageData.source === 'string' &&
