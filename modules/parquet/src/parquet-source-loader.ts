@@ -11,6 +11,7 @@ import {
   emitScanExecutionTelemetry,
   explainTableQuery,
   isBrowser,
+  makeTableScanBatch,
   validateTableQueryLimit
 } from '@loaders.gl/loader-utils';
 import type {
@@ -1724,11 +1725,8 @@ function createParquetBatchFromArrow(
       : undefined
   });
   return {
-    batchType: 'data',
-    shape: 'arrow-table',
+    ...makeTableScanBatch({shape: 'arrow-table', schema, data}),
     schemaType: 'explicit',
-    schema,
-    data,
     length: rowCount,
     metadata: provenance,
     ...provenance
