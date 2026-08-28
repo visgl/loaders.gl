@@ -14,6 +14,7 @@ import {
   type SpatialReferenceState
 } from '@math.gl/crs';
 import type {Geoid} from '@math.gl/geoid';
+import {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
 
 /** How height values in a 3D dataset relate to the earth. */
 export type TilesetHeightReference = 'native' | 'ellipsoidal' | 'orthometric' | 'unknown';
@@ -30,6 +31,26 @@ export type TilesetElevationMode =
 
 /** One WGS84 longitude/latitude location requested from an elevation provider. */
 export type TilesetElevationSample = readonly [longitude: number, latitude: number];
+
+/** WGS84 geographic footprint passed to an elevation provider. */
+export type TilesetElevationBounds = {
+  /** Western longitude in degrees. Greater than `east` when crossing the antimeridian. */
+  readonly west: number;
+  /** Southern latitude in degrees. */
+  readonly south: number;
+  /** Eastern longitude in degrees. Less than `west` when crossing the antimeridian. */
+  readonly east: number;
+  /** Northern latitude in degrees. */
+  readonly north: number;
+};
+
+/** Conservative elevation extrema over one geographic footprint. */
+export type TilesetElevationRange = {
+  /** Minimum elevation anywhere inside the footprint. */
+  readonly minimum: number;
+  /** Maximum elevation anywhere inside the footprint. */
+  readonly maximum: number;
+};
 
 /**
  * Application-owned source of terrain or scene-surface heights.
@@ -51,6 +72,18 @@ export type TilesetElevationProvider = {
   sampleElevations(
     positions: readonly TilesetElevationSample[]
   ): readonly number[] | Promise<readonly number[]>;
+  /**
+   * Returns conservative elevation extrema over an entire geographic footprint.
+   *
+   * Bounds preparation requires this operation because point samples cannot detect an interior
+   * peak or depression and therefore cannot produce a culling-safe traversal volume.
+   *
+   * @param bounds - WGS84 geographic footprint in degrees.
+   * @returns Minimum and maximum elevations in this provider's declared unit and height reference.
+   */
+  getElevationRange(
+    bounds: TilesetElevationBounds
+  ): TilesetElevationRange | Promise<TilesetElevationRange>;
 };
 
 /** Coordinate representation requested from a 3D tileset. */
@@ -225,6 +258,10 @@ export function createTilesetSpatialReference(
     outputCoordinates !== 'local-enu';
 
   const provenance = hasSourceCrsOverride ? 'caller-override' : discovered.provenance || 'unknown';
+  const coordinateFrame =
+    hasSourceCrsOverride && sourceCrs
+      ? getSpatialCoordinateFrame(sourceCrs)
+      : discovered.coordinateFrame;
   const sourceCrsState = hasSourceCrsOverride
     ? 'explicit'
     : discovered.sourceCrsState ||
@@ -253,9 +290,9 @@ export function createTilesetSpatialReference(
         }
       : undefined,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
-    coordinateFrame: discovered.coordinateFrame,
+    coordinateFrame,
     coordinateOrder: getCoordinateOrder(discovered.axisOrder),
-    units: discovered.units
+    units: hasSourceCrsOverride ? undefined : discovered.units
   });
   const normalizedSourceCrs = getKnownCRSDefinition(spatialReference.crs);
   const normalizedVerticalCrs = spatialReference.vertical
@@ -274,7 +311,7 @@ export function createTilesetSpatialReference(
     elevationOffset: discovered.elevationOffset,
     elevationUnit: discovered.elevationUnit,
     elevationUnitScale,
-    coordinateFrame: discovered.coordinateFrame || 'unknown',
+    coordinateFrame: coordinateFrame || 'unknown',
     axisOrder: discovered.axisOrder || 'unknown',
     provenance,
     targetCrs: normalizedTargetCrs,

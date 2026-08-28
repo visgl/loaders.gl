@@ -93,6 +93,11 @@ application only supplies `terrainElevationProvider` for ground modes or
 and return one height per position. Provider units and height reference can be declared when they
 differ from meters and the layer's source reference.
 
+Providers also report a conservative minimum/maximum elevation over each WGS84 tile footprint.
+This range must include interior peaks and depressions; sampling only corners is not sufficient for
+a culling-safe bound. Dateline-crossing requests use `west > east`. See the framework vertical CRS
+guide for the complete provider interface.
+
 ## Geometry, origins, and bounds
 
 An I3S mesh normally stores vertex offsets from a node center. Correct transformation is:

@@ -93,6 +93,9 @@ const terrainElevationProvider: TilesetElevationProvider = {
   unit: 'meter',
   async sampleElevations(longitudeLatitudes) {
     return elevationService.sample(longitudeLatitudes);
+  },
+  async getElevationRange(bounds) {
+    return elevationService.getConservativeRange(bounds);
   }
 };
 
@@ -124,6 +127,12 @@ Use `terrainElevationProvider` for `onTheGround` and `relativeToGround`. Use
 `sceneElevationProvider` for `relativeToScene`. If `unit` is omitted, meters are assumed. If
 `heightReference` is omitted, the layer's source height reference is assumed. Declaring the
 provider reference is recommended when its service contract is known.
+
+`getElevationRange()` must return conservative minimum and maximum heights over the complete
+WGS84 footprint, including interior extrema. Bounds may cross the antimeridian, indicated by
+`west > east`. Point samples are used for actual geometry placement; the range operation is used
+for traversal bounds so an interior peak or depression cannot be culled. Invalid or
+non-conservative ranges violate the provider contract.
 
 loaders.gl never fetches terrain implicitly. This keeps loading deterministic and avoids coupling
 a format loader to one terrain vendor, credential scheme, resolution, or licensing model.
@@ -179,14 +188,16 @@ initialization. Child bounds and payload positions use the same provider and ope
 Mesh traversal retains WGS84 ECEF bounds, Point Cloud traversal retains geographic bounds, and
 both expose a parallel `spatialBoundingVolume` in the requested target frame.
 
-A curved or varying surface is sampled across the bound rather than represented by a single Z
-translation. The result is conservative for culling and remains dateline-aware.
+A curved or varying surface is represented with the provider's conservative elevation range over
+the complete bound footprint rather than corner samples or a single Z translation. The result is
+conservative for culling and remains dateline-aware.
 
 ## Failure behavior
 
 Initialization or loading rejects when:
 
 - a surface-relative mode has no matching terrain or scene provider;
+- a surface provider cannot report a conservative range for traversal bounds;
 - a provider returns the wrong number of values or a non-finite value;
 - a source, offset, or provider unit is unsupported;
 - provider and layer height references differ but cannot be converted;

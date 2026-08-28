@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Matrix4, Quaternion, Vector3} from '@math.gl/core';
+import {Matrix3, Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {
   getSpatialCoordinateFrame,
@@ -15,6 +15,7 @@ import {
 import {getI3SLinearUnitScale} from './i3s-elevation';
 import type {
   TilesetCoordinateFrame,
+  TilesetElevationBounds,
   TilesetElevationMode,
   TilesetElevationProvider,
   TilesetSpatialOptions,
@@ -120,6 +121,15 @@ export class I3SSpatialTransformer {
     this.elevationOffset =
       (spatialReference.elevationOffset || 0) * spatialReference.elevationUnitScale;
     this.elevationProvider = getElevationProvider(this.elevationMode, options);
+    if (
+      this.elevationProvider &&
+      (typeof this.elevationProvider.sampleElevations !== 'function' ||
+        typeof this.elevationProvider.getElevationRange !== 'function')
+    ) {
+      throw new Error(
+        'An I3S elevation provider must implement sampleElevations() and getElevationRange()'
+      );
+    }
     const providerUnitScale = getI3SLinearUnitScale(this.elevationProvider?.unit || 'meter');
     if (this.elevationProvider && providerUnitScale === undefined) {
       throw new Error(`Unsupported elevation-provider unit ${this.elevationProvider.unit}`);
@@ -537,6 +547,15 @@ export class I3SSpatialTransformer {
     if (!sourceSamples.length) {
       throw new Error('I3S spatial transformation requires an MBS or OBB bound');
     }
+    if (requiresElevationSurface(this.elevationMode)) {
+      const geographicSamples =
+        this.sourceCoordinateFrame === 'geographic'
+          ? sourceSamples
+          : sourceSamples.map(position =>
+              this.sourceToGeographicTransformer.transformPosition(position)
+            );
+      return await this.placeGeographicBoundSamples(geographicSamples);
+    }
     const placedSamples = toPositionArrays(
       await this.placeSourcePositions(sourceSamples.flat(), true)
     );
@@ -545,6 +564,61 @@ export class I3SSpatialTransformer {
       : placedSamples.map(position =>
           this.sourceToGeographicTransformer.transformPosition(position)
         );
+  }
+
+  /** Apply a provider's conservative surface range to an entire geographic bound footprint. */
+  private async placeGeographicBoundSamples(geographicSamples: number[][]): Promise<number[][]> {
+    const elevationProvider = this.elevationProvider!;
+    const elevationRange = await elevationProvider.getElevationRange(
+      getElevationBounds(geographicSamples)
+    );
+    const minimumProviderHeight = elevationRange.minimum * this.providerUnitScale;
+    const maximumProviderHeight = elevationRange.maximum * this.providerUnitScale;
+    if (
+      !Number.isFinite(minimumProviderHeight) ||
+      !Number.isFinite(maximumProviderHeight) ||
+      minimumProviderHeight > maximumProviderHeight
+    ) {
+      throw new Error(
+        'Elevation provider returned an invalid range; minimum and maximum must be finite and ordered'
+      );
+    }
+
+    const sourceHeights = geographicSamples.map(position => position[2]);
+    const minimumSourceHeight = Math.min(...sourceHeights);
+    const maximumSourceHeight = Math.max(...sourceHeights);
+    const placedSamples: number[][] = [];
+    for (const [longitude, latitude] of geographicSamples) {
+      const convertedMinimum = this.providerHeightTransformer
+        ? this.providerHeightTransformer.transformPosition([
+            longitude,
+            latitude,
+            minimumProviderHeight
+          ])[2]
+        : minimumProviderHeight;
+      const convertedMaximum = this.providerHeightTransformer
+        ? this.providerHeightTransformer.transformPosition([
+            longitude,
+            latitude,
+            maximumProviderHeight
+          ])[2]
+        : maximumProviderHeight;
+      const minimumSurfaceHeight = Math.min(convertedMinimum, convertedMaximum);
+      const maximumSurfaceHeight = Math.max(convertedMinimum, convertedMaximum);
+      const minimumHeight =
+        this.elevationMode === 'onTheGround'
+          ? minimumSurfaceHeight
+          : minimumSurfaceHeight + minimumSourceHeight + this.elevationOffset;
+      const maximumHeight =
+        this.elevationMode === 'onTheGround'
+          ? maximumSurfaceHeight
+          : maximumSurfaceHeight + maximumSourceHeight + this.elevationOffset;
+      placedSamples.push(
+        [longitude, latitude, minimumHeight],
+        [longitude, latitude, maximumHeight]
+      );
+    }
+    return placedSamples;
   }
 
   /** Apply source units and non-surface placement without awaiting external resources. */
@@ -619,12 +693,30 @@ export class I3SSpatialTransformer {
     }
 
     const cartesian = Ellipsoid.WGS84.cartographicToCartesian(new Vector3(geographic));
-    const displacedCartesian = new Vector3(cartesian).add(ecefNormal);
-    const displacedGeographic = Ellipsoid.WGS84.cartesianToCartographic(displacedCartesian);
-    const target = this.geographicToTargetTransformer.transformPosition(geographic);
-    const displacedTarget =
-      this.geographicToTargetTransformer.transformPosition(displacedGeographic);
-    return new Vector3(displacedTarget).subtract(target).normalize();
+    const jacobianColumns: number[] = [];
+    for (const direction of getPositiveAxisDirections()) {
+      const positiveGeographic = Ellipsoid.WGS84.cartesianToCartographic(
+        new Vector3(cartesian).add(direction)
+      );
+      const negativeGeographic = Ellipsoid.WGS84.cartesianToCartographic(
+        new Vector3(cartesian).subtract(direction)
+      );
+      const positiveTarget =
+        this.geographicToTargetTransformer.transformPosition(positiveGeographic);
+      const negativeTarget =
+        this.geographicToTargetTransformer.transformPosition(negativeGeographic);
+      jacobianColumns.push(
+        (positiveTarget[0] - negativeTarget[0]) / 2,
+        (positiveTarget[1] - negativeTarget[1]) / 2,
+        (positiveTarget[2] - negativeTarget[2]) / 2
+      );
+    }
+    const normalMatrix = new Matrix3(jacobianColumns);
+    if (Math.abs(normalMatrix.determinant()) < 1e-12) {
+      throw new Error('Cannot transform an I3S normal through a singular local projection');
+    }
+    normalMatrix.invert().transpose();
+    return new Vector3(ecefNormal).transformByMatrix3(normalMatrix).normalize();
   }
 }
 
@@ -655,6 +747,17 @@ function toPositionArrays(positions: ArrayLike<number>): number[][] {
     result.push([positions[index], positions[index + 1], positions[index + 2]]);
   }
   return result;
+}
+
+/** Return a dateline-aware WGS84 footprint in degrees for an elevation range request. */
+function getElevationBounds(geographicSamples: number[][]): TilesetElevationBounds {
+  const region = getGeographicRegion(geographicSamples);
+  return {
+    west: (region[0] * 180) / Math.PI,
+    south: (region[1] * 180) / Math.PI,
+    east: (region[2] * 180) / Math.PI,
+    north: (region[3] * 180) / Math.PI
+  };
 }
 
 /** Build a conservative WGS84 geographic sphere from placed geographic samples. */
@@ -762,6 +865,11 @@ function getAxisDirections(): number[][] {
     [0, 0, 1],
     [0, 0, -1]
   ];
+}
+
+/** Return the positive ECEF basis used to calculate a local projection Jacobian. */
+function getPositiveAxisDirections(): Vector3[] {
+  return [new Vector3([1, 0, 0]), new Vector3([0, 1, 0]), new Vector3([0, 0, 1])];
 }
 
 /** Convert a local east/north/up vector into an earth-centered vector. */

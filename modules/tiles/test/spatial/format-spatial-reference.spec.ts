@@ -118,7 +118,10 @@ describe('getI3SSpatialReference', () => {
     expect(discovered.status).toBe('unresolved');
 
     const spatialReference = applyTilesetSpatialOptions(discovered, {
-      sceneElevationProvider: {sampleElevations: positions => positions.map(() => 10)}
+      sceneElevationProvider: {
+        sampleElevations: positions => positions.map(() => 10),
+        getElevationRange: () => ({minimum: 10, maximum: 10})
+      }
     });
     expect(spatialReference.status).toBe('transformable');
     expect(spatialReference.crs).toEqual(discovered.crs);
@@ -172,6 +175,8 @@ describe('getI3SSpatialReference', () => {
       provenance: 'caller-override',
       alternatives: undefined
     });
+    expect(spatialReference.coordinateFrame).toBe('geographic');
+    expect(spatialReference.units).toBeUndefined();
   });
 });
 

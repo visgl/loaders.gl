@@ -134,10 +134,10 @@ export class I3SSource implements Tileset3DSource {
   /** Prepare option-dependent spatial state and the asynchronously placed root bound. */
   async prepareTileset(tileset: Tileset3D): Promise<void> {
     const spatialReference = tileset.spatialReference;
-    if (spatialReference.status === 'unresolved' && spatialReference.elevationMode) {
+    if (spatialReference.status === 'unresolved') {
       throw new Error(
         spatialReference.warnings[0] ||
-          `I3S elevation mode ${spatialReference.elevationMode} cannot be resolved from the supplied spatial options`
+          'I3S spatial operations cannot be resolved from the supplied metadata and options'
       );
     }
     if (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed') {

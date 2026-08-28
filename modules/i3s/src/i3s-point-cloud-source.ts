@@ -117,10 +117,10 @@ export class I3SPointCloudSource
       getI3SSpatialReference(this.metadata),
       this.options.spatial
     );
-    if (this.spatialReference.status === 'unresolved' && this.spatialReference.elevationMode) {
+    if (this.spatialReference.status === 'unresolved') {
       throw new Error(
         this.spatialReference.warnings[0] ||
-          `I3S elevation mode ${this.spatialReference.elevationMode} cannot be resolved from the supplied spatial options`
+          'I3S spatial operations cannot be resolved from the supplied metadata and options'
       );
     }
     if (this.spatialReference.status === 'transformable') {

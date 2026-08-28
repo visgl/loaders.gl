@@ -71,6 +71,32 @@ describe('I3SSpatialTransformer', () => {
     expect(normals[2]).toBeCloseTo(1, 5);
   });
 
+  test('uses the inverse-transpose projection Jacobian for mixed projected normals', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:3857'}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference);
+    const latitudeRadians = Math.PI / 3;
+    const ecefEastUpNormal = [
+      Math.cos(latitudeRadians) / Math.SQRT2,
+      1 / Math.SQRT2,
+      Math.sin(latitudeRadians) / Math.SQRT2
+    ];
+    const normals = transformer.transformNormals(ecefEastUpNormal, [0, 60, 0]);
+
+    expect(normals[0]).toBeCloseTo(1 / Math.sqrt(5), 2);
+    expect(normals[1]).toBeCloseTo(0, 4);
+    expect(normals[2]).toBeCloseTo(2 / Math.sqrt(5), 2);
+    expect(normals[2] / normals[0]).toBeGreaterThan(1.9);
+  });
+
   test('produces dateline-aware geographic bounds', () => {
     const spatialReference = createTilesetSpatialReference(
       {
@@ -169,7 +195,8 @@ describe('I3SSpatialTransformer', () => {
   ] as const)('applies %s terrain placement with the documented formula', async (elevationMode, surfaceHeight, sourceHeight, expectedHeight) => {
     const terrainElevationProvider = {
       sampleElevations: async (positions: readonly (readonly [number, number])[]) =>
-        positions.map(() => surfaceHeight)
+        positions.map(() => surfaceHeight),
+      getElevationRange: () => ({minimum: surfaceHeight, maximum: surfaceHeight})
     };
     const spatialReference = createTilesetSpatialReference(
       {
@@ -200,7 +227,8 @@ describe('I3SSpatialTransformer', () => {
     const sceneElevationProvider = {
       unit: 'foot',
       sampleElevations: (positions: readonly (readonly [number, number])[]) =>
-        positions.map(() => 100)
+        positions.map(() => 100),
+      getElevationRange: () => ({minimum: 100, maximum: 100})
     };
     const spatialReference = createTilesetSpatialReference(
       {
@@ -228,7 +256,8 @@ describe('I3SSpatialTransformer', () => {
     const terrainElevationProvider = {
       heightReference: 'ellipsoidal' as const,
       sampleElevations: (positions: readonly (readonly [number, number])[]) =>
-        positions.map(() => 100)
+        positions.map(() => 100),
+      getElevationRange: () => ({minimum: 100, maximum: 100})
     };
     const spatialReference = createTilesetSpatialReference(
       {
@@ -259,11 +288,13 @@ describe('I3SSpatialTransformer', () => {
   });
 
   test('applies placement to traversal and output bounds from one provider batch', async () => {
-    let callCount = 0;
+    let rangeCallCount = 0;
     const terrainElevationProvider = {
-      sampleElevations: (positions: readonly (readonly [number, number])[]) => {
-        callCount++;
-        return positions.map(() => 50);
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 50),
+      getElevationRange: () => {
+        rangeCallCount++;
+        return {minimum: 50, maximum: 50};
       }
     };
     const spatialReference = createTilesetSpatialReference(
@@ -284,14 +315,17 @@ describe('I3SSpatialTransformer', () => {
     });
     const bounds = await transformer.transformBoundsAsync({mbs: [10, 20, 5, 0]});
 
-    expect(callCount).toBe(1);
+    expect(rangeCallCount).toBe(1);
     expect(bounds.spatialBoundingVolume.region?.[4]).toBeCloseTo(57, 8);
     expect(bounds.spatialBoundingVolume.region?.[5]).toBeCloseTo(57, 8);
     expect(bounds.i3sLodMbs[2]).toBeCloseTo(57, 5);
   });
 
   test('rejects incomplete elevation-provider batches', async () => {
-    const terrainElevationProvider = {sampleElevations: () => []};
+    const terrainElevationProvider = {
+      sampleElevations: () => [],
+      getElevationRange: () => ({minimum: 0, maximum: 0})
+    };
     const spatialReference = createTilesetSpatialReference(
       {
         sourceCrs: 'EPSG:4326',
@@ -310,5 +344,87 @@ describe('I3SSpatialTransformer', () => {
     await expect(transformer.transformPositionsAsync([10, 20, 5], [10, 20, 5])).rejects.toThrow(
       'returned 0 heights for 2 positions'
     );
+  });
+
+  test('includes provider-reported interior surface extrema in transformed bounds', async () => {
+    let requestedBounds: unknown;
+    const terrainElevationProvider = {
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 0),
+      getElevationRange: (bounds: unknown) => {
+        requestedBounds = bounds;
+        return {minimum: -100, maximum: 1000};
+      }
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'onTheGround',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider
+    });
+    const bounds = await transformer.transformBoundsAsync({mbs: [10, 20, 0, 100]});
+
+    expect(requestedBounds).toMatchObject({west: expect.any(Number), east: expect.any(Number)});
+    expect(bounds.spatialBoundingVolume.region?.[4]).toBeCloseTo(-100, 8);
+    expect(bounds.spatialBoundingVolume.region?.[5]).toBeCloseTo(1000, 8);
+  });
+
+  test('rejects invalid provider ranges during conservative bound preparation', async () => {
+    const terrainElevationProvider = {
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 0),
+      getElevationRange: () => ({minimum: 10, maximum: -10})
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'onTheGround',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider
+    });
+
+    await expect(transformer.transformBoundsAsync({mbs: [10, 20, 0, 100]})).rejects.toThrow(
+      'returned an invalid range'
+    );
+  });
+
+  test('requires point and range operations on surface providers', () => {
+    const incompleteProvider = {
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 0)
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'onTheGround',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider: incompleteProvider as any}
+    );
+
+    expect(
+      () =>
+        new I3SSpatialTransformer(spatialReference, {
+          terrainElevationProvider: incompleteProvider as any
+        })
+    ).toThrow('must implement sampleElevations() and getElevationRange()');
   });
 });
