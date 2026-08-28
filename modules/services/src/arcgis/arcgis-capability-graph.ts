@@ -62,7 +62,10 @@ export async function discoverArcGISCapabilities(
 
   const nodes = await Promise.all(
     services.map(async service => {
-      const metadata = await fetchServiceMetadata(service.url, fetchFile);
+      let metadata = await fetchServiceMetadata(service.url, fetchFile);
+      if (service.type.toLowerCase().includes('scene')) {
+        metadata = await enrichSceneServerMetadata(service.url, metadata, fetchFile);
+      }
       return normalizeServiceCapabilities(service, metadata);
     })
   );
@@ -113,6 +116,32 @@ async function fetchServiceMetadata(
     throw new Error(`ArcGIS service metadata request failed: ${response.status}`);
   }
   return (await response.json()) as Record<string, unknown>;
+}
+
+/** Fetches layer documents so SceneServer profile selection uses authoritative store metadata. */
+async function enrichSceneServerMetadata(
+  serviceUrl: string,
+  metadata: Record<string, unknown>,
+  fetchFile: typeof fetch
+): Promise<Record<string, unknown>> {
+  const layers = Array.isArray(metadata.layers) ? metadata.layers : [];
+  if (!layers.length) return metadata;
+  const enrichedLayers = await Promise.all(
+    layers.map(async value => {
+      if (!value || typeof value !== 'object') return value;
+      const layer = value as Record<string, unknown>;
+      if (layer.id === undefined) return value;
+      const layerURL = `${serviceUrl.replace(/\/$/, '')}/layers/${encodeURIComponent(String(layer.id))}`;
+      try {
+        const layerMetadata = await fetchServiceMetadata(layerURL, fetchFile);
+        return {...layer, ...layerMetadata, id: layer.id, name: layer.name ?? layerMetadata.name};
+      } catch {
+        // Keep directory metadata when an individual layer is unavailable.
+        return value;
+      }
+    })
+  );
+  return {...metadata, layers: enrichedLayers};
 }
 
 /** Combines directory information and metadata into a normalized capability node. */
@@ -178,9 +207,23 @@ function getServiceLayers(metadata: Record<string, unknown>): ServiceCapabilitie
         title: typeof layer.name === 'string' ? layer.name : undefined,
         crs: wkid ? [`EPSG:${wkid}`] : undefined,
         bounds,
-        profile: typeof layer.profile === 'string' ? layer.profile : undefined,
+        profile:
+          typeof layer.profile === 'string'
+            ? layer.profile
+            : layer.store &&
+                typeof layer.store === 'object' &&
+                typeof (layer.store as Record<string, unknown>).profile === 'string'
+              ? ((layer.store as Record<string, unknown>).profile as string)
+              : undefined,
         layerType: typeof layer.layerType === 'string' ? layer.layerType : undefined,
-        version: typeof layer.version === 'string' ? layer.version : undefined
+        version:
+          typeof layer.version === 'string'
+            ? layer.version
+            : layer.store &&
+                typeof layer.store === 'object' &&
+                typeof (layer.store as Record<string, unknown>).version === 'string'
+              ? ((layer.store as Record<string, unknown>).version as string)
+              : undefined
       }
     ];
   });

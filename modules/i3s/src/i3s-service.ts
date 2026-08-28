@@ -84,9 +84,11 @@ export type I3SRendererMetadata = {
 
 /** Produces a profile-aware capability report for a parsed I3S layer. */
 export function getI3SFeatureSupportReport(layer: SceneLayer3D): I3SFeatureSupportReport {
+  const profile = layer.store.profile.toLowerCase();
+  const isPointCloud = layer.layerType === 'PointCloud' || profile.includes('pointcloud');
   const features: Record<string, I3SFeatureSupportStatus> = {
     geometry: 'supported',
-    attributes: 'supported',
+    attributes: isPointCloud ? 'partial' : 'supported',
     rendererMetadata: layer.drawingInfo ? 'partial' : 'unsupported',
     popupMetadata: layer.popupInfo ? 'partial' : 'unsupported',
     crsMetadata: layer.spatialReference ? 'supported' : 'partial',

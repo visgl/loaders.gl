@@ -62,6 +62,7 @@ function aggregateValues(features: unknown[], specification: ArcGISSceneAggregat
   if (specification.operation === 'count') return features.length;
   const values = features
     .map(feature => getFeatureAttributes(feature)[specification.field || ''])
+    .filter(value => value !== null && value !== undefined && value !== '')
     .map(value => (typeof value === 'number' ? value : Number(value)))
     .filter(Number.isFinite);
   if (!values.length) return 0;

@@ -30,7 +30,7 @@ export const I3S_CONFORMANCE_PROFILES: readonly I3SConformanceProfile[] = [
       version,
       ogcVersion: version === '1.7' || version === '1.8' ? '1.3' : undefined,
       profile: '3DObject' as const,
-      resources: ['rest', 'slpk', 'gzip'] as Array<'rest' | 'slpk' | 'gzip'>,
+      resources: ['rest'],
       capabilities: {
         geometry: version === '1.6' ? 'partial' : 'supported',
         attributes: version === '1.6' ? 'partial' : 'supported'
@@ -41,7 +41,7 @@ export const I3S_CONFORMANCE_PROFILES: readonly I3SConformanceProfile[] = [
       version,
       ogcVersion: version === '1.7' ? '1.3' : undefined,
       profile: 'Point' as const,
-      resources: ['rest', 'slpk'] as Array<'rest' | 'slpk' | 'gzip'>,
+      resources: version === '1.8' ? ['rest'] : [],
       capabilities: {
         geometry: version === '1.6' ? 'unsupported' : 'supported',
         attributes: version === '1.6' ? 'unsupported' : 'supported',
@@ -53,7 +53,7 @@ export const I3S_CONFORMANCE_PROFILES: readonly I3SConformanceProfile[] = [
       version,
       ogcVersion: version === '1.7' ? '1.3' : undefined,
       profile: 'Building' as const,
-      resources: ['rest', 'slpk'] as Array<'rest' | 'slpk' | 'gzip'>,
+      resources: [],
       capabilities: {
         sublayers: version === '1.6' ? 'unsupported' : 'supported',
         filters: version === '1.6' ? 'unsupported' : 'partial'
@@ -65,7 +65,7 @@ export const I3S_CONFORMANCE_PROFILES: readonly I3SConformanceProfile[] = [
     version: '2.0',
     ogcVersion: '1.3',
     profile: 'PointCloud',
-    resources: ['rest', 'slpk', 'gzip'] as Array<'rest' | 'slpk' | 'gzip'>,
+    resources: [],
     capabilities: {geometry: 'supported', attributes: 'partial', lepcc: 'supported'},
     since: '5.0'
   },
@@ -73,7 +73,7 @@ export const I3S_CONFORMANCE_PROFILES: readonly I3SConformanceProfile[] = [
     version: '2.1',
     ogcVersion: '1.3',
     profile: 'PointCloud',
-    resources: ['rest', 'slpk', 'gzip'] as Array<'rest' | 'slpk' | 'gzip'>,
+    resources: ['rest'],
     capabilities: {geometry: 'supported', attributes: 'partial', lepcc: 'supported'},
     since: '5.0'
   }

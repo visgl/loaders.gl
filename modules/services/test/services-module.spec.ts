@@ -114,17 +114,26 @@ describe('@loaders.gl/services', () => {
             JSON.stringify({services: [{name: 'City', type: 'SceneServer'}], folders: []})
           );
         }
+        if (requestURL.pathname.endsWith('/layers/0')) {
+          return new Response(
+            JSON.stringify({
+              id: 0,
+              name: 'Buildings',
+              layerType: '3DObject',
+              version: '1.8',
+              store: {profile: 'meshpyramids', version: '1.8'},
+              spatialReference: {wkid: 4326}
+            })
+          );
+        }
         return new Response(
           JSON.stringify({
             name: 'City',
-            version: '1.8',
-            profile: 'meshpyramids',
             layers: [
               {
                 id: 0,
                 name: 'Buildings',
-                layerType: '3DObject',
-                spatialReference: {wkid: 4326}
+                layerType: '3DObject'
               }
             ],
             spatialReference: {wkid: 4326}
@@ -146,8 +155,9 @@ describe('@loaders.gl/services', () => {
           }
         ]
       },
-      metadata: {profile: 'meshpyramids'}
+      metadata: {name: 'City'}
     });
+    expect(graph?.nodes[0].capabilities.layers[0].profile).toBe('meshpyramids');
     expect(selectArcGISService(graph!, {kind: 'scene', profile: 'meshpyramids'})).toBe(
       graph?.nodes[0]
     );

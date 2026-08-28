@@ -212,7 +212,7 @@ test('aggregateArcGISSceneFeatures groups and ignores non-numeric values', () =>
 
 test('aggregateArcGISSceneFeatures supports all numeric operations and plain records', () => {
   const result = aggregateArcGISSceneFeatures({
-    features: [{kind: 'a', value: 2}, {kind: 'a', value: 6}, null, {kind: 'b'}],
+    features: [{kind: 'a', value: 2}, {kind: 'a', value: 6}, {kind: 'a', value: null}, null],
     aggregations: [
       {name: 'count', operation: 'count'},
       {name: 'min', field: 'value', operation: 'min'},

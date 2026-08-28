@@ -169,6 +169,28 @@ describe('I3S conformance fixtures', () => {
     expect(report.features.rendererMetadata).toBe('partial');
     expect(report.features.popupMetadata).toBe('partial');
     expect(report.diagnostics).toHaveLength(2);
+
+    const pointCloudResponse = await fetchFile(
+      '@loaders.gl/i3s/test/data/conformance/i3s-2.1-point-cloud.json'
+    );
+    const pointCloudLayer = I3SPointCloudSceneLayerSchema.parse(await pointCloudResponse.json());
+    expect(getI3SFeatureSupportReport(pointCloudLayer).features.attributes).toBe('partial');
+  });
+
+  it('does not claim delivery forms without representative fixtures', () => {
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(entry => entry.profile === 'Point' && entry.version === '1.8')
+        ?.resources
+    ).toEqual(['rest']);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(entry => entry.profile === 'Point' && entry.version === '1.7')
+        ?.resources
+    ).toEqual([]);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(
+        entry => entry.profile === 'PointCloud' && entry.version === '2.1'
+      )?.resources
+    ).toEqual(['rest']);
   });
 
   it('normalizes renderer extensions while preserving the original layer', async () => {
