@@ -556,6 +556,7 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
   return output;
 }
 
+/** Materializes an Arrow column as row values while preserving null entries. */
 function getColumnValues(table: arrow.Table, columnName: string): unknown[] {
   const vector = table.getChild(columnName);
   return Array.from({length: table.numRows}, (_value, index) => vector?.get(index));
