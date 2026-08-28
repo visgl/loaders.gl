@@ -9,11 +9,10 @@ import type {DracoWriterOptions} from '@loaders.gl/draco';
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
-const OPTIONS: DracoWriterOptions[] = [
+const OPTIONS: Array<{name: string; draco: DracoWriterOptions['draco']}> = [
   {
     name: 'quantization=10',
-    quantization: {POSITION: 10},
-    priority: 0
+    draco: {quantization: {POSITION: 10}}
   }
   // We currently don't see meaningful difference in point cloud decoding performance by varying parameters
   // To keep benchmarks fast, leave this commented out for now
@@ -66,20 +65,31 @@ export default async function dracoBench(bench) {
     bench.addAsync(
       `DracoWriter#pointcloud#${options.name} - sequential`,
       benchOptions,
-      async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
+      async () =>
+        await encode(attributes, DracoWriter, {
+          draco: {pointcloud: true, ...options.draco},
+          worker: true
+        })
     );
 
     bench.addAsync(
       `DracoWriter#pointcloud#${options.name} - parallel`,
       {multiplier: pointCount, unit: 'points', _throughput: 5, minIterations: 1},
-      async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
+      async () =>
+        await encode(attributes, DracoWriter, {
+          draco: {pointcloud: true, ...options.draco},
+          worker: true
+        })
     );
 
     bench.addAsync(
       `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
-      {multiplier: pointCount, unit: 'points', minIterations: 1},
+      {multiplier: pointCount * 2, unit: 'points', minIterations: 1},
       async () =>
-        await encodeDracoBatch([attributes, attributes], {draco: {pointcloud: true}, worker: false})
+        await encodeDracoBatch([attributes, attributes], {
+          draco: {pointcloud: true, ...options.draco},
+          worker: false
+        })
     );
   }
 
