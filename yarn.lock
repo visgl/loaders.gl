@@ -20699,6 +20699,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"i3s-profile-gallery-loaders-example@workspace:examples/website/i3s-profile-gallery":
+  version: 0.0.0-use.local
+  resolution: "i3s-profile-gallery-loaders-example@workspace:examples/website/i3s-profile-gallery"
+  dependencies:
+    "@loaders.gl/services": "workspace:*"
+    "@types/react": "npm:^19.2.14"
+    "@types/react-dom": "npm:^19.2.3"
+    react: "npm:^19.2.5"
+    react-dom: "npm:^19.2.5"
+    typescript: "npm:^5.6.0"
+    vite: "npm:^7.2.7"
+  languageName: unknown
+  linkType: soft
+
 "i3s-slpk-loaders-example@workspace:examples/website/i3s-slpk":
   version: 0.0.0-use.local
   resolution: "i3s-slpk-loaders-example@workspace:examples/website/i3s-slpk"

@@ -16,6 +16,8 @@ import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
 import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';
 import {loadStatistics} from '../src/i3s-statistics';
+import {I3S_CONFORMANCE_MANIFEST} from '../src/i3s-conformance';
+import {getI3SFeatureSupportReport} from '../src/i3s-service';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
@@ -58,6 +60,45 @@ const SCENE_LAYER_FIXTURES = [
 ] as const;
 
 describe('I3S conformance fixtures', () => {
+  it('keeps version claims tied to representative fixtures', () => {
+    const point18 = I3S_CONFORMANCE_MANIFEST.find(
+      entry => entry.profile === 'Point' && entry.version === '1.8'
+    );
+    const point17 = I3S_CONFORMANCE_MANIFEST.find(
+      entry => entry.profile === 'Point' && entry.version === '1.7'
+    );
+    const pointCloud21 = I3S_CONFORMANCE_MANIFEST.find(
+      entry => entry.profile === 'PointCloud' && entry.version === '2.1'
+    );
+    const building = I3S_CONFORMANCE_MANIFEST.find(entry => entry.profile === 'Building');
+
+    expect(point18?.fixture).toContain('i3s-1.8-point.json');
+    expect(point17?.fixture).toBeUndefined();
+    expect(point17?.resources).toEqual([]);
+    expect(pointCloud21?.fixture).toContain('i3s-2.1-point-cloud.json');
+    expect(building?.fixture).toBeUndefined();
+  });
+
+  it('reports conservative metadata capabilities and diagnostics', () => {
+    const report = getI3SFeatureSupportReport({
+      id: 0,
+      layerType: '3DObject',
+      version: '1.10',
+      capabilities: ['View'],
+      disablePopup: false,
+      store: {profile: 'meshpyramids', version: '1.10', defaultGeometrySchema: {}},
+      drawingInfo: {renderer: {type: 'simple'}}
+    });
+
+    expect(report.features.metadata).toBe('supported');
+    expect(report.features.geometry).toBe('supported');
+    expect(report.features.rendererMetadata).toBe('partial');
+    expect(report.features.sceneServerQueries).toBe('unsupported');
+    expect(report.diagnostics.map(diagnostic => diagnostic.code)).toContain(
+      'renderer-not-evaluated'
+    );
+  });
+
   it.each(SCENE_LAYER_FIXTURES)('accepts $name scene-layer metadata', async fixture => {
     const response = await fetchFile(fixture.url);
     const document = await response.json();

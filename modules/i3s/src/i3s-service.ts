@@ -17,6 +17,31 @@ import type {SceneLayer3D, SpatialReference, FullExtent} from './types';
 /** A source created from an I3S SceneServer layer. */
 export type I3SLayerSource = I3SSource | I3SPointCloudSource;
 
+/** Capability state reported for an I3S feature. */
+export type I3SFeatureSupportStatus = 'supported' | 'partial' | 'unsupported';
+
+/** A non-fatal qualification attached to an I3S capability report. */
+export type I3SSupportDiagnostic = {
+  /** Stable diagnostic identifier. */
+  code: string;
+  /** Human-readable explanation of the qualification. */
+  message: string;
+  /** Diagnostic severity. */
+  severity: 'info' | 'warning';
+};
+
+/** Version- and profile-specific capabilities exposed by an I3S layer. */
+export type I3SFeatureSupportReport = {
+  /** I3S document version. */
+  version: string;
+  /** Layer profile or layer type. */
+  profile: string;
+  /** Capability states keyed by stable feature name. */
+  features: Record<string, I3SFeatureSupportStatus>;
+  /** Qualifications explaining partial and unsupported capabilities. */
+  diagnostics: I3SSupportDiagnostic[];
+};
+
 /** Normalized metadata exposed by a SceneServer layer service. */
 export type I3SServiceMetadata = {
   /** URL of the SceneServer layer resource. */
@@ -41,6 +66,8 @@ export type I3SServiceMetadata = {
   description?: string;
   /** Parsed layer document retained for source construction and advanced consumers. */
   layer: SceneLayer3D;
+  /** Capability report for the advertised version and profile. */
+  supportReport: I3SFeatureSupportReport;
 };
 
 /** Error raised when a SceneServer layer profile is not supported by loaders.gl. */
@@ -84,8 +111,49 @@ export function normalizeI3SServiceMetadata(url: string, layer: SceneLayer3D): I
     fullExtent: layer.fullExtent,
     name: layer.name,
     description: layer.description,
-    layer
+    layer,
+    supportReport: getI3SFeatureSupportReport(layer)
   };
+}
+
+/** Builds a conservative, metadata-only capability report for an I3S layer. */
+export function getI3SFeatureSupportReport(layer: SceneLayer3D): I3SFeatureSupportReport {
+  const hasGeometry = Boolean(
+    layer.store.defaultGeometrySchema || layer.geometryDefinitions?.length || layer.pointNodePages
+  );
+  const hasAttributes = Boolean(layer.fields?.length || layer.attributeStorageInfo?.length);
+  const features: Record<string, I3SFeatureSupportStatus> = {
+    metadata: 'supported',
+    geometry: hasGeometry ? 'supported' : 'partial',
+    attributes: hasAttributes ? 'supported' : 'partial',
+    rendererMetadata: layer.drawingInfo ? 'partial' : 'unsupported',
+    popupMetadata: layer.popupInfo ? 'partial' : 'unsupported',
+    spatialReference: layer.spatialReference ? 'supported' : 'partial',
+    sceneServerQueries: 'unsupported',
+    authoring: 'unsupported'
+  };
+  const diagnostics: I3SSupportDiagnostic[] = [
+    {
+      code: 'renderer-not-evaluated',
+      message:
+        'Renderer, visual-variable, label, and popup expressions are preserved as metadata; loaders do not evaluate them.',
+      severity: 'info'
+    },
+    {
+      code: 'authoring-not-supported',
+      message: 'I3S Point and Point Cloud authoring is not included in the loader support surface.',
+      severity: 'info'
+    }
+  ];
+  if (!layer.spatialReference) {
+    diagnostics.push({
+      code: 'missing-spatial-reference',
+      message:
+        'The layer does not advertise a spatial reference; coordinate transforms cannot be inferred safely.',
+      severity: 'warning'
+    });
+  }
+  return {version: layer.version, profile: layer.store.profile, features, diagnostics};
 }
 
 /** Creates the profile-specific source used to traverse an I3S layer. */

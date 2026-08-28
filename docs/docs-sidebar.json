@@ -769,6 +769,7 @@
         "label": "I3S",
         "items": [
           "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/profile-gallery",
           "modules/i3s/recipes/attribute-driven-colorization",
           "modules/i3s/recipes/picking"
         ]

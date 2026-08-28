@@ -52,6 +52,12 @@ The current community specification defines version 1.10 for mesh, Point, and Bu
 and version 2.1 for Point Cloud. loaders.gl does not claim blanket conformance to every feature in
 those versions.
 
+The checked-in [`I3S_CONFORMANCE_MANIFEST`](https://github.com/visgl/loaders.gl/blob/master/modules/i3s/src/i3s-conformance.ts)
+is the source of truth for version/profile claims. A missing fixture in that manifest means the
+schema is recognized but the corresponding version has not yet received representative end-to-end
+coverage. Applications can inspect the same boundary at runtime through
+`I3SServiceMetadata.supportReport`.
+
 | Generation | Status | Since | Notes |
 | --- | :---: | :---: | --- |
 | I3S 1.6 mesh resources | **Partial** | v2.0 | Legacy `/nodes/{id}` hierarchies and uncompressed `defaultGeometrySchema` buffers are supported. Shared-resource materials are normalized from the first legacy definition, and appended mesh-segmentation payloads are retained but not decoded into draw segments. |
@@ -212,7 +218,7 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 3. Material fidelity | Load complete PBR texture sets, preserve multiple referenced atlases, and carry sampler wrap semantics into material metadata. | **Complete** |
 | 4a. Feature attribute semantics | Decode declared numeric types, dates, GUIDs, coded domains, and null sentinels with deterministic output. | **Complete** |
 | 4b. Layer statistics | Load typed `StatsInfo` resources, preserve missing-field isolation, and expose stable keys to applications. | **Complete** (**v5.0**) |
-| 4c. Drawing and popup intelligence | Evaluate renderer, visual variables, labels, and popup expressions while preserving unsupported definitions. | Planned |
+| 4c. Drawing and popup intelligence | Normalize renderer, visual-variable, label, and popup definitions while preserving unsupported expressions for application evaluation. | **Partial** (**v5.0**) |
 | 4d. Query and aggregation | Add server-side attribute query/filter helpers and client-side statistics aggregation over loaded features. | Planned |
 | 5a. Point Cloud profile model | Add Point Cloud scene-layer schemas, node-page types, OBB bounds, and metadata preservation. | **Complete** (**v5.0**) |
 | 5b. LEPCC geometry | Decode `lepcc-xyz` with checksum validation and point-count checks. | **Complete** (**v5.0**) |
@@ -229,11 +235,11 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 7b. Cross-profile conformance | Build a fixture matrix for mesh and Point Cloud metadata, malformed profiles, LOD, attributes, and renderer metadata. | **Complete** (**v5.0**) |
 | 7c. Authoring parity | Add Point/Point Cloud converter output and make generated resources pass the same loader and conformance fixtures. | Planned |
 | 8a. ArcGIS SceneServer source | Provide a typed service facade and registry entry that selects the existing mesh or Point Cloud source for an explicit SceneServer layer. | **Complete** (**v5.0**) |
-| 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh/Point Cloud layers. | Planned |
+| 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh/Point Cloud layers. | **Partial** (**v5.0**) |
 
 | Mesh renderer fidelity | Decode mesh-segmentation draw ranges, expose additional UV sets, map sampler wrapping, and support all standard mesh/Point LOD policies. | **Complete** (**v5.0**) |
 
-The next high-value work is renderer styling, query helpers, service discovery, and Point/Point Cloud authoring.
+The next high-value work is renderer evaluation, SceneServer query helpers, SceneServer directory discovery, and Point/Point Cloud authoring.
 
 ### Remaining roadmap gaps
 
@@ -242,9 +248,9 @@ still visible in the matrix and should be treated as the open work list:
 
 | Priority | Remaining gap | Exit criteria |
 | --- | --- | --- |
-| P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
+| P0 | Drawing and popup intelligence (4c) | Add typed, loss-minimized renderer, visual-variable, label, and popup models; runtime expression evaluation remains an application responsibility. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
-| P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh or Point Cloud layer endpoints. |
+| P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh, Point, or Point Cloud layer endpoints. |
 | P2 | Authoring parity (7c) | Add Point/Point Cloud converter output and make generated resources pass the profile and semantic tests now covering the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 

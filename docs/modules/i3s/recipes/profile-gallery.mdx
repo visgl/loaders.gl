@@ -1,0 +1,25 @@
+# I3S profile gallery
+
+The [I3S profile gallery](/examples/i3s-profile-gallery) is a metadata-first example for checking
+SceneServer layers across the supported I3S families. It uses the same normalized service facade as
+applications and keeps the original layer document available for advanced consumers.
+
+```ts
+import {ArcGISSceneServerSource} from '@loaders.gl/services';
+
+const source = new ArcGISSceneServerSource(
+  'https://example.com/arcgis/rest/services/City/SceneServer/layers/0'
+);
+const metadata = await source.getMetadata();
+console.log(metadata.profile, metadata.version, metadata.supportReport);
+```
+
+The gallery presents 3D Object, Integrated Mesh, Building, Point, and Point Cloud as separate
+profiles. Enter a SceneServer layer URL to inspect its version, spatial reference, capabilities,
+and conservative feature report. Renderer, Arcade, label, and popup expressions are intentionally
+shown as metadata: evaluating them belongs in the application or rendering layer.
+
+For rendering examples, see [Building Scene Layer](./building-scene-layer), [I3S picking](./i3s-picking),
+and [attribute colorization](./i3s-colorization-by-attributes). The checked-in version/profile
+fixtures used by conformance tests are listed in the
+[I3S_CONFORMANCE_MANIFEST](https://github.com/visgl/loaders.gl/blob/master/modules/i3s/src/i3s-conformance.ts).
