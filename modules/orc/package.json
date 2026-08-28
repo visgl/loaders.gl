@@ -58,7 +58,8 @@
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2"
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",

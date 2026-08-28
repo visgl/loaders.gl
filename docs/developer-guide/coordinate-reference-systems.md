@@ -53,10 +53,11 @@ and `debug` options have been removed.
 
 ## Experimental cross-source descriptor
 
-`@loaders.gl/loader-utils` exports an experimental `SpatialReference` descriptor for reporting
-CRS discovery consistently across source families. It records a preferred definition and its
-representation, alternate source representations, provenance, coordinate epoch, stored component
-order, coordinate frame, height interpretation, and warnings. Its discriminated `crs.state`
+`@math.gl/crs` exports the canonical, immutable `SpatialReference` descriptor for reporting CRS
+discovery consistently across vis.gl libraries. loaders.gl source and scan metadata reference that
+type directly rather than maintaining a loaders.gl-specific copy. It records a preferred
+definition and its representation, alternate source representations, provenance, coordinate
+epoch, stored component order, coordinate frame, and units. Its discriminated `crs.state`
 preserves four cases that applications must not collapse:
 
 - `explicit`: the format or caller supplied a usable definition;
@@ -64,10 +65,15 @@ preserves four cases that applications must not collapse:
 - `unknown`: the source explicitly says that its CRS is unknown;
 - `absent`: the source did not supply CRS metadata.
 
-The initial proof of concept is exposed by I3S/3D Tiles spatial metadata and by FlatGeobuf vector
-source and scan metadata. Existing format-specific fields remain available for compatibility and
-lossless preservation. The descriptor reports source discovery only: its presence never claims
-that coordinates, bounds, or heights were transformed.
+The initial loaders.gl adoption is exposed by I3S/3D Tiles spatial metadata and by FlatGeobuf
+vector-source and scan metadata. Existing format-specific fields remain available for
+compatibility and lossless preservation. The descriptor reports source discovery only: its
+presence never claims that coordinates, bounds, or heights were transformed. Import the shared
+type and constructor from their owning module:
+
+```ts
+import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
+```
 
 ```ts
 const metadata = await flatGeobufSource.getMetadata();
@@ -80,7 +86,9 @@ if (spatialReference?.crs.state === 'explicit') {
 
 GeoArrow and GeoParquet need column-specific descriptors rather than one table-wide value. Raster,
 point-cloud, and service adoption will likewise retain format-specific details until the common
-shape can represent them without loss.
+shape can represent them without loss. Height placement modes, transformation status, warnings,
+and requested targets remain loaders.gl concerns; `TilesetSpatialReference` therefore extends the
+math.gl descriptor with those operational fields.
 
 ## 3D spatial API
 
@@ -218,7 +226,7 @@ mean coordinate transformation.
 | WFS | Capability/request identifiers and GML `srsName` | Identifier preservation is partial | Server-side output CRS request where supported |
 | WMTS | Tile-matrix-set supported CRS | Capability metadata | Server-selected tile matrix set; no client tile reprojection |
 | ArcGIS services | Spatial reference WKID/latestWKID fields | Service metadata and request fields are retained | Server-side `outSR`/image request behavior where implemented |
-| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Shared Proj4/geoid transformer available; complete mesh/Point Cloud bounds and elevation integration is in progress |
+| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Mesh and Point Cloud vertices, origins, normals, and bounds support requested geographic/projected output; vertical placement integration is in progress |
 | 3D Tiles | CRS/epoch metadata semantics and region-established global frames | Raw schema/entity metadata plus normalized `spatialMetadata`; local/unknown tilesets stay unknown | Shared transformer available; nonlinear content/bounds and nested-tileset integration is in progress |
 | MVT / TileJSON | Implicit tile coordinates; TileJSON bounds are longitude/latitude | Tile transform and metadata retained | Implicit Web Mercator tiling; no arbitrary CRS |
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |

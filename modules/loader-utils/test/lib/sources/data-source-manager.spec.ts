@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {waitForCondition} from '@loaders.gl/test-utils/vitest';
-import type {DataSourceOptions} from '../../../src';
-import {DataSource, DataSourceManager} from '../../../src';
+import type {DataSourceOptions, ScanQueryMetadata} from '../../../src';
+import {createScanQueryMetadata, DataSource, DataSourceManager} from '../../../src';
 
 /** Test DataSource that records lifecycle cleanup calls. */
 class TestDataSource extends DataSource<string, DataSourceOptions> {
@@ -16,6 +16,31 @@ class TestDataSource extends DataSource<string, DataSourceOptions> {
   async close(): Promise<void> {
     this.closeCount++;
   }
+}
+
+/** Executable test table source used by picker discovery tests. */
+class TestTableDataSource extends TestDataSource {
+  /** Returns deterministic table metadata without reading rows. */
+  async getQueryMetadata(): Promise<ScanQueryMetadata> {
+    return createScanQueryMetadata({
+      sourceType: 'test-table',
+      queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
+      schema: {fields: [{name: 'id', type: 'int32'}], metadata: {}},
+      capabilities: {
+        table: {
+          predicate: 'residual',
+          projection: 'pushdown',
+          limit: 'pushdown',
+          streaming: true,
+          cancellation: true
+        }
+      }
+    });
+  }
+
+  /** Provides the executable read method required by compatible table scans. */
+  async *read(): AsyncIterable<never> {}
 }
 
 test('DataSourceManager#add and subscribe manages DataSource instances', () => {
@@ -42,6 +67,104 @@ test('DataSourceManager#add and subscribe manages DataSource instances', () => {
 
   expect(changes, 'subscriber receives replacement DataSource').toEqual([replacementDataSource]);
   expect(dataSource.closeCount, 'old DataSource is closed after replacement').toBe(1);
+  expect(dataSourceManager.listDataSources(), 'lists ready subscribed registrations').toEqual([
+    {
+      dataSourceId: 'source-a',
+      status: 'ready',
+      persistent: true,
+      subscriberCount: 1,
+      retainCount: 0
+    }
+  ]);
+});
+
+test('DataSourceManager#listDataSources reports pending, placeholder, retained, and error states', async () => {
+  const dataSourceManager = new DataSourceManager();
+  let rejectDataSource: (error: Error) => void = () => {};
+  const failedDataSource = new Promise<TestDataSource>((_resolve, reject) => {
+    rejectDataSource = reject;
+  });
+
+  dataSourceManager.add({dataSourceId: 'placeholder', dataSource: null, persistent: false});
+  const pendingDataSource = dataSourceManager.getOrCreate({
+    dataSourceId: 'pending',
+    createDataSource: () => new Promise<TestDataSource>(() => {})
+  });
+  const failedDataSourceResult = dataSourceManager.getOrCreate({
+    dataSourceId: 'failed',
+    createDataSource: () => failedDataSource
+  });
+
+  expect(dataSourceManager.listDataSources()).toEqual([
+    {
+      dataSourceId: 'placeholder',
+      status: 'placeholder',
+      persistent: false,
+      subscriberCount: 0,
+      retainCount: 0
+    },
+    {
+      dataSourceId: 'pending',
+      status: 'pending',
+      persistent: true,
+      subscriberCount: 0,
+      retainCount: 1
+    },
+    {
+      dataSourceId: 'failed',
+      status: 'pending',
+      persistent: true,
+      subscriberCount: 0,
+      retainCount: 1
+    }
+  ]);
+
+  const failure = new Error('source failed');
+  rejectDataSource(failure);
+  await expect(failedDataSourceResult).rejects.toThrow('source failed');
+  expect(dataSourceManager.listDataSources()[2]).toEqual({
+    dataSourceId: 'failed',
+    status: 'error',
+    persistent: true,
+    subscriberCount: 0,
+    retainCount: 1,
+    error: failure
+  });
+
+  void pendingDataSource;
+  await dataSourceManager.finalize();
+});
+
+test('DataSourceManager#discoverDataSources returns picker-ready compatible metadata', async () => {
+  const dataSourceManager = new DataSourceManager();
+  dataSourceManager.add({
+    dataSourceId: 'table',
+    dataSource: new TestTableDataSource('table', {})
+  });
+  dataSourceManager.add({
+    dataSourceId: 'plain',
+    dataSource: new TestDataSource('plain', {})
+  });
+  const failingSource = new TestTableDataSource('failing', {});
+  failingSource.getQueryMetadata = async () => {
+    throw new Error('metadata failed');
+  };
+  dataSourceManager.add({dataSourceId: 'failing', dataSource: failingSource});
+
+  const discoveries = await dataSourceManager.discoverDataSources({queryType: 'table'});
+  expect(discoveries[0]).toMatchObject({
+    dataSourceId: 'table',
+    status: 'ready',
+    compatible: true,
+    queryMetadata: {sourceType: 'test-table', queryType: 'table'}
+  });
+  expect(discoveries[1]).toMatchObject({dataSourceId: 'plain', compatible: false});
+  expect(discoveries[2]).toMatchObject({
+    dataSourceId: 'failing',
+    compatible: false,
+    discoveryError: expect.objectContaining({message: 'metadata failed'})
+  });
+  expect('dataSource' in discoveries[0]).toBe(false);
 });
 
 test('DataSourceManager#subscribe creates deferred DataSource placeholders', () => {

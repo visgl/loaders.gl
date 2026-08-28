@@ -4,13 +4,13 @@
 
 import {expect, test} from 'vitest';
 import {Vector3} from '@math.gl/core';
-import {BoundingSphere, CullingVolume, INTERSECTION, Plane} from '@math.gl/culling';
+import {BoundingSphere, CullingVolume, Plane} from '@math.gl/culling';
 import {getContentVisibility} from '../../src/tileset-3d/common/tile-3d';
 
 function createCullingVolume(visibleCenters: Set<number>) {
   return {
     computeVisibility: (volume: BoundingSphere) =>
-      visibleCenters.has(volume.center[0]) ? INTERSECTION.INSIDE : INTERSECTION.OUTSIDE
+      visibleCenters.has(volume.center[0]) ? 'inside' : 'outside'
   } as unknown as CullingVolume;
 }
 
@@ -20,7 +20,7 @@ test('getContentVisibility treats multiple content volumes as a visible union', 
   const cullingVolume = createCullingVolume(new Set([10]));
 
   expect(getContentVisibility([firstVolume, secondVolume], firstVolume, cullingVolume, 0)).toBe(
-    INTERSECTION.INSIDE
+    'inside'
   );
 });
 
@@ -37,7 +37,7 @@ test('getContentVisibility applies clipping planes to content without pruning tr
       CullingVolume.MASK_OUTSIDE,
       [clippingPlane]
     )
-  ).toBe(INTERSECTION.OUTSIDE);
+  ).toBe('outside');
 });
 
 test('getContentVisibility falls back to the tile volume for contentless tiles', () => {
@@ -45,6 +45,6 @@ test('getContentVisibility falls back to the tile volume for contentless tiles',
   const cullingVolume = createCullingVolume(new Set([0]));
 
   expect(getContentVisibility([], tileVolume, cullingVolume, CullingVolume.MASK_OUTSIDE)).toBe(
-    INTERSECTION.INSIDE
+    'inside'
   );
 });

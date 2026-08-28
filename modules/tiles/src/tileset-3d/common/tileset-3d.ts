@@ -1096,9 +1096,13 @@ export class Tileset3D {
     this.groups = tileset.groups || [];
     this.metadata = tileset.metadata || null;
     this.statistics = tileset.statistics ?? null;
-    this.spatialReference = applyTilesetSpatialOptions(
+    const spatialReference = applyTilesetSpatialOptions(
       metadata.spatialReference,
       this.options.spatial
+    );
+    this.spatialReference = preserveTransformedSpatialReference(
+      this.spatialReference,
+      spatialReference
     );
     this.properties = this.source.properties ?? this.properties;
     this.extras = this.source.extras ?? this.extras;
@@ -1135,4 +1139,18 @@ export class Tileset3D {
       return null;
     }
   }
+}
+
+/** Preserve a completed runtime operation when asynchronous source metadata describes the same request. */
+function preserveTransformedSpatialReference(
+  current: TilesetSpatialReference,
+  next: TilesetSpatialReference
+): TilesetSpatialReference {
+  return current?.status === 'transformed' &&
+    current.sourceCrs === next.sourceCrs &&
+    current.targetCrs === next.targetCrs &&
+    current.targetHeightReference === next.targetHeightReference &&
+    current.outputCoordinates === next.outputCoordinates
+    ? current
+    : next;
 }

@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/schema';
-import * as arrow from 'apache-arrow';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
@@ -14,9 +13,11 @@ import type {
 import {
   createScanQueryMetadata,
   DataSource,
-  validateTableQueryOptions,
-  filterColumnarRowIndices
+  filterColumnarRowIndices,
+  makeTableScanBatch,
+  validateTableQueryOptions
 } from '@loaders.gl/loader-utils';
+import {queryArrowTable} from '@loaders.gl/schema-utils';
 import {parseORC, ORCTypeKind, type ORCTypeDescription} from './lib/parsers/parse-orc';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
 import {preloadORCCompression} from './lib/parsers/orc-compression';
@@ -89,55 +90,15 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
     const table = parseORCToArrow(arrayBuffer);
     const availableColumns = table.data.schema.fields.map(field => field.name);
     validateTableQueryOptions(availableColumns, options);
-    const selectedColumnNames = options.columns ? [...options.columns] : availableColumns;
-    let projectedData;
-    if (options.predicate) {
-      const columns: Record<string, unknown[]> = Object.fromEntries(
-        availableColumns.map(name => [name, [...(table.data.getChild(name) || [])]])
-      );
-      const rowIndices = filterColumnarRowIndices(
-        options.predicate,
-        columns as never,
-        table.data.numRows
-      );
-      const vectors = Object.fromEntries(
-        selectedColumnNames.map(name => {
-          const sourceVector = table.data.getChild(name);
-          return [
-            name,
-            arrow.vectorFromArray(
-              rowIndices.map(rowIndex => columns[name][rowIndex]),
-              sourceVector?.type
-            )
-          ];
-        })
-      );
-      const schema = new arrow.Schema(
-        selectedColumnNames.map(
-          name => table.data.schema.fields.find(field => field.name === name)!
-        )
-      );
-      projectedData = new arrow.Table(schema, vectors);
-    } else {
-      projectedData = table.data.select(selectedColumnNames);
-    }
-    const limitedData = projectedData.slice(0, options.limit ?? Number.POSITIVE_INFINITY);
-    return {
-      shape: 'arrow-table',
-      data: limitedData
-    };
+    return queryArrowTable(table, options, (predicate, columns, rowCount) =>
+      filterColumnarRowIndices(predicate as never, columns as never, rowCount)
+    );
   }
 
   /** Executes a query as one bounded Arrow batch. */
   async *read(options: ORCQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     const table = await this.query(options);
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: table.schema,
-      data: table.data,
-      length: table.data.numRows
-    };
+    yield makeTableScanBatch(table);
   }
 
   /** Returns the complete ORC bytes, fetching the source only once. */

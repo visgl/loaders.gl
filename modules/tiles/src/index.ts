@@ -114,13 +114,21 @@ export type {
 } from './spatial/spatial-types';
 export {
   applyTilesetSpatialOptions,
-  createTilesetSpatialReference
+  createTilesetSpatialReference,
+  markTilesetSpatialReferenceTransformed
 } from './spatial/spatial-types';
 export {
   get3DTilesSpatialReference,
   getI3SSpatialReference
 } from './spatial/format-spatial-reference';
 export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
+export {getSpatialCoordinateFrame} from './spatial/spatial-coordinate-transformer';
+export type {
+  I3SSpatialBounds,
+  I3SSpatialObb,
+  I3STransformedPositions
+} from './spatial/i3s-spatial-transformer';
+export {I3SSpatialTransformer} from './spatial/i3s-spatial-transformer';
 export {
   getGeoidModel,
   registerGeoidModel,

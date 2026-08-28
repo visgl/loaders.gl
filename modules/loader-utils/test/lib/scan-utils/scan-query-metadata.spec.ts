@@ -45,9 +45,7 @@ describe('createScanQueryMetadata', () => {
             provenance: 'metadata'
           },
           coordinateFrame: 'geographic',
-          coordinateOrder: ['x', 'y'],
-          heightReference: 'unknown',
-          warnings: []
+          coordinateOrder: ['x', 'y']
         }
       },
       statistics: {rowCount: 12n}

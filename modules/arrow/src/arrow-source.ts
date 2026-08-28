@@ -1,4 +1,11 @@
-import {createScanQueryMetadata, validateTableQueryLimit} from '@loaders.gl/loader-utils';
+import * as arrow from 'apache-arrow';
+import {
+  createScanQueryMetadata,
+  executeTableScanBatches,
+  explainTableQuery,
+  filterColumnarRowIndices,
+  validateColumnarPredicate
+} from '@loaders.gl/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -8,8 +15,17 @@ import type {
   TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
+
+const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
+  predicate: 'residual',
+  projection: 'pushdown',
+  limit: 'pushdown',
+  streaming: true,
+  cancellation: true
+} as const);
 
 /** Streams Arrow IPC record batches through the common table scan contract. */
 export class ArrowTableSource
@@ -29,31 +45,23 @@ export class ArrowTableSource
     return await this.metadataPromise;
   }
 
+  /** Explains the portable Arrow IPC query without decoding result rows. */
+  async explain(options: TableScanReadOptions = {}) {
+    const metadata = await this.getQueryMetadata(options);
+    return explainTableQuery(
+      metadata.columns.map(column => column.name),
+      options,
+      ARROW_TABLE_QUERY_CAPABILITIES
+    );
+  }
+
   /** Streams Arrow record batches in source order with an optional global limit. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
-    validateTableQueryLimit(options.limit);
-    let remaining =
-      options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
-    for await (const batch of this.parseBatches(options.signal)) {
-      if (remaining <= 0) return;
-      const arrowBatch = batch as ArrowTableBatch;
-      const projectedData =
-        options.columns !== undefined
-          ? arrowBatch.data.select([...options.columns])
-          : arrowBatch.data;
-      const projectedBatch = {...batch, data: projectedData, length: batch.length} as TableBatch;
-      if (batch.length <= remaining) {
-        remaining -= batch.length;
-        yield projectedBatch;
-      } else {
-        yield {
-          ...projectedBatch,
-          data: projectedData.slice(0, remaining),
-          length: remaining
-        } as TableBatch;
-        return;
-      }
-    }
+    yield* executeTableScanBatches(
+      (signal, onByteLength) => this.parseBatches(signal, onByteLength),
+      options,
+      {filter: filterArrowBatch, project: projectArrowBatch}
+    );
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
@@ -63,47 +71,103 @@ export class ArrowTableSource
         sourceType: 'arrow',
         queryType: 'table',
         execution: {status: 'supported', method: 'read'},
-        schema: {fields: arrowSchema.fields as never, metadata: {}},
+        schema: convertArrowToSchema(arrowSchema),
         capabilities: {
-          table: {
-            predicate: 'unsupported',
-            projection: 'pushdown',
-            limit: 'pushdown',
-            streaming: true,
-            cancellation: true
-          }
+          table: ARROW_TABLE_QUERY_CAPABILITIES
         }
       });
     }
     throw new Error('Arrow source is empty and has no discoverable schema');
   }
 
-  private async *parseBatches(signal?: AbortSignal): AsyncIterable<TableBatch> {
+  private async *parseBatches(
+    signal?: AbortSignal,
+    onByteLength?: (byteLength: number) => void
+  ): AsyncIterable<TableBatch> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
     const chunks =
       this.data instanceof Blob
-        ? readStreamChunks(this.data.stream(), signal)
-        : readResponseChunks(await this.fetch(this.url, {signal}), signal);
+        ? readStreamChunks(this.data.stream(), signal, onByteLength)
+        : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
     const {ArrowLoaderWithParser} = await import('./arrow-loader-with-parser');
     yield* ArrowLoaderWithParser.parseInBatches(chunks);
   }
 }
 
+/** Applies the portable three-valued predicate evaluator without changing Arrow field types. */
+function filterArrowData(
+  data: arrow.Table,
+  predicate: TableScanReadOptions['predicate']
+): arrow.Table {
+  if (!predicate) return data;
+  const columnNames = new Set(data.schema.fields.map(field => field.name));
+  validateColumnarPredicate(predicate, columnNames);
+  const columns = Object.fromEntries(
+    data.schema.fields.map(field => [field.name, Array.from(data.getChild(field.name)!)])
+  );
+  const rowIndices = filterColumnarRowIndices(predicate as never, columns as never, data.numRows);
+  if (rowIndices.length === data.numRows) return data;
+  const filteredColumns = Object.fromEntries(
+    data.schema.fields.map(field => {
+      const vector = data.getChild(field.name)!;
+      return [
+        field.name,
+        arrow.vectorFromArray(
+          rowIndices.map(rowIndex => vector.get(rowIndex)),
+          field.type
+        )
+      ];
+    })
+  );
+  return new arrow.Table(data.schema, filteredColumns);
+}
+
+/** Applies the Arrow-native residual predicate while retaining the table-batch envelope. */
+function filterArrowBatch(
+  batch: TableBatch,
+  predicate: TableScanReadOptions['predicate']
+): TableBatch {
+  const arrowBatch = batch as ArrowTableBatch;
+  const data = filterArrowData(arrowBatch.data, predicate);
+  return {
+    ...batch,
+    data,
+    length: data.numRows,
+    schema: convertArrowToSchema(data.schema)
+  } as TableBatch;
+}
+
+/** Projects Arrow columns and updates the portable schema in one format-specific kernel. */
+function projectArrowBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
+  const arrowBatch = batch as ArrowTableBatch;
+  const data = columns === undefined ? arrowBatch.data : arrowBatch.data.select([...columns]);
+  return {
+    ...batch,
+    data,
+    length: data.numRows,
+    schema: convertArrowToSchema(data.schema)
+  } as TableBatch;
+}
+
 async function* readResponseChunks(
   response: Response,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onByteLength?: (byteLength: number) => void
 ): AsyncIterable<Uint8Array> {
   if (!response.ok) throw new Error(`Arrow source request failed with status ${response.status}`);
   if (!response.body) {
-    yield new Uint8Array(await response.arrayBuffer());
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    onByteLength?.(bytes.byteLength);
+    yield bytes;
     return;
   }
-  yield* readStreamChunks(response.body, signal);
+  yield* readStreamChunks(response.body, signal, onByteLength);
 }
 
 async function* readStreamChunks(
   stream: ReadableStream<Uint8Array>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onByteLength?: (byteLength: number) => void
 ): AsyncIterable<Uint8Array> {
   const reader = stream.getReader();
   try {
@@ -111,6 +175,7 @@ async function* readStreamChunks(
       if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
       const result = await reader.read();
       if (result.done) return;
+      onByteLength?.(result.value.byteLength);
       yield result.value;
     }
   } finally {

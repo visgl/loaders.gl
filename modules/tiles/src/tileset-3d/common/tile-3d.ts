@@ -6,7 +6,8 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume, INTERSECTION} from '@math.gl/culling';
+import {CullingVolume} from '@math.gl/culling';
+import type {CullingResult} from '@math.gl/culling';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -54,34 +55,34 @@ export function getContentVisibility(
   cullingVolume: CullingVolume,
   visibilityPlaneMask: number | undefined,
   clippingPlanes: any[] = []
-): number {
+): CullingResult {
   const volumes = contentVolumes.length ? contentVolumes : [fallbackVolume];
   let visibleVolume = false;
   let intersectingVolume = false;
   for (const contentVolume of volumes) {
-    let visibility: number = INTERSECTION.INSIDE;
+    let visibility: CullingResult = 'inside';
     if (visibilityPlaneMask !== CullingVolume.MASK_INSIDE) {
       visibility = cullingVolume.computeVisibility(contentVolume);
-      if (visibility === INTERSECTION.OUTSIDE) {
+      if (visibility === 'outside') {
         continue;
       }
     }
     let clipped = false;
     for (const clippingPlane of clippingPlanes) {
-      if (contentVolume.intersectPlane(clippingPlane) === INTERSECTION.OUTSIDE) {
+      if (contentVolume.intersectPlane(clippingPlane) === 'outside') {
         clipped = true;
         break;
       }
     }
     if (!clipped) {
       visibleVolume = true;
-      intersectingVolume = intersectingVolume || visibility === INTERSECTION.INTERSECTING;
+      intersectingVolume = intersectingVolume || visibility === 'intersecting';
     }
   }
   if (!visibleVolume) {
-    return INTERSECTION.OUTSIDE;
+    return 'outside';
   }
-  return intersectingVolume ? INTERSECTION.INTERSECTING : INTERSECTION.INSIDE;
+  return intersectingVolume ? 'intersecting' : 'inside';
 }
 
 function defined(x) {
@@ -843,7 +844,7 @@ export class Tile3D {
    * @param frameState Current camera, culling, and optional clipping-plane state.
    * @returns The content visibility classification.
    */
-  contentVisibility(frameState: FrameState): number {
+  contentVisibility(frameState: FrameState): CullingResult {
     return getContentVisibility(
       this._contentBoundingVolumes,
       this.boundingVolume,

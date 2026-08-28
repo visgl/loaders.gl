@@ -17,7 +17,9 @@ const source = new I3SSource({
   loader: I3SLoader
 })
 
-const tileset = new Tileset3D(source)
+const tileset = new Tileset3D(source, {
+  spatial: {targetCrs: 'EPSG:3857'}
+})
 await tileset.tilesetInitializationPromise
 ```
 
@@ -45,6 +47,12 @@ Parameters:
 - assembles tile-loader `_tileOptions` and `_tilesetOptions`
 - derives view state from `fullExtent` or `store.extent`
 - tracks observed content formats such as Draco, DDS, and KTX2
+- applies requested horizontal CRS transforms consistently to vertices, normals, origins, and
+  target-space `spatialBoundingVolume` metadata while retaining WGS84 ECEF traversal bounds
+
+Set `Tileset3D`'s `spatial.targetCrs` to request geographic, projected, or WGS84 geocentric output.
+Common Proj4 definitions work directly; custom definitions and datum grids must be registered
+before tileset initialization. See [Coordinate reference systems in I3S](/docs/modules/i3s/concepts/coordinate-reference-systems).
 
 ## Key Methods
 

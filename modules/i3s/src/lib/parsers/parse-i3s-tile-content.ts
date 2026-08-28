@@ -9,6 +9,7 @@ import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
+import {I3SSpatialTransformer} from '@loaders.gl/tiles';
 
 import {
   FeatureAttribute,
@@ -307,7 +308,32 @@ async function parseI3SNodeGeometry(
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
-  if (
+  const spatialReference = tilesetOptions.spatialReference;
+  if (spatialReference?.status === 'transformable' || spatialReference?.status === 'transformed') {
+    const spatialTransformer = new I3SSpatialTransformer(
+      spatialReference,
+      tilesetOptions.spatialOptions || options?.i3s?.spatial
+    );
+    const sourcePositions = offsetsToSourcePositions(
+      attributes.position.value,
+      attributes.position.metadata,
+      tileOptions.mbs
+    );
+    const transformed = spatialTransformer.transformPositions(sourcePositions, tileOptions.mbs);
+    attributes.position.value = transformed.positions;
+    if (attributes.normal?.value) {
+      attributes.normal.value = spatialTransformer.transformNormals(
+        attributes.normal.value,
+        transformed.sourcePositions,
+        tilesetOptions.store.normalReferenceFrame
+      );
+    }
+    content.modelMatrix = transformed.modelMatrix;
+    content.coordinateSystem = transformed.coordinateSystem;
+    content.origin = transformed.origin;
+    content.cartographicOrigin = transformed.cartographicOrigin;
+    content.spatialReference = spatialTransformer.spatialReference;
+  } else if (
     !options?.i3s?.coordinateSystem ||
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
@@ -549,6 +575,30 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
 }
 
 /**
+ * Reconstruct absolute source positions from I3S node-relative vertex values.
+ *
+ * @param vertices - Relative I3S positions.
+ * @param metadata - Draco scale metadata.
+ * @param sourceOrigin - Node MBS center in source CRS coordinates.
+ * @returns Absolute positions retained as Float64.
+ */
+function offsetsToSourcePositions(
+  vertices: ArrayLike<number>,
+  metadata: any = {},
+  sourceOrigin: ArrayLike<number>
+): Float64Array {
+  const positions = new Float64Array(vertices.length);
+  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
+  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
+  for (let index = 0; index < positions.length; index += 3) {
+    positions[index] = vertices[index] * scaleX + sourceOrigin[0];
+    positions[index + 1] = vertices[index + 1] * scaleY + sourceOrigin[1];
+    positions[index + 2] = vertices[index + 2] + sourceOrigin[2];
+  }
+  return positions;
+}
+
+/**
  * Converts position coordinates to absolute cartesian coordinates
  * @param vertices - "position" attribute data
  * @param metadata - When the geometry is DRACO compressed, contain position attribute's metadata
@@ -561,14 +611,7 @@ function offsetsToCartesians(
   metadata: any = {},
   cartographicOrigin: Vector3
 ): Float64Array {
-  const positions = new Float64Array(vertices.length);
-  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
-  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = vertices[i] * scaleX + cartographicOrigin.x;
-    positions[i + 1] = vertices[i + 1] * scaleY + cartographicOrigin.y;
-    positions[i + 2] = vertices[i + 2] + cartographicOrigin.z;
-  }
+  const positions = offsetsToSourcePositions(vertices, metadata, cartographicOrigin);
 
   for (let i = 0; i < positions.length; i += 3) {
     // @ts-ignore

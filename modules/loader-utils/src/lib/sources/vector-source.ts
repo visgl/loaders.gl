@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
-import type {CRSIdentifier} from '@math.gl/crs';
-import type {SpatialReference} from './spatial-reference';
+import type {CRSIdentifier, SpatialReference} from '@math.gl/crs';
 
 export type VectorSourceProps = {};
 

@@ -47,6 +47,9 @@ General:
 Attributes:
 
 - Supports custom attributes.
+- Preserves multiple color, texture-coordinate, and other same-category attributes. When a Draco
+  file has no name metadata, inferred names are made unique with numeric suffixes such as
+  `COLOR_0`, `COLOR_1`, `TEXCOORD_0`, and `TEXCOORD_1`.
 - Ability to prevent decompression of specific attributes (returns quantization or octahedron transform parameters, if application wishes to perform decompression on GPU).
 
 Metadata Support:

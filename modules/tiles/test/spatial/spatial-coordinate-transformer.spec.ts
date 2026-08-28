@@ -6,11 +6,20 @@ import {describe, expect, test} from 'vitest';
 import type {Geoid} from '@math.gl/geoid';
 import {
   createTilesetSpatialReference,
+  getSpatialCoordinateFrame,
   registerGeoidModel,
   SpatialCoordinateTransformer
 } from '@loaders.gl/tiles';
 
 describe('SpatialCoordinateTransformer', () => {
+  test.each([
+    ['GEOGCRS["WGS 84"]', 'geographic'],
+    ['GEODCRS["WGS 84",CS[Cartesian,3]]', 'geocentric'],
+    ['PROJCRS["WGS 84 / Pseudo-Mercator"]', 'projected']
+  ] as const)('classifies WKT target frame %s', (definition, expectedFrame) => {
+    expect(getSpatialCoordinateFrame(definition)).toBe(expectedFrame);
+  });
+
   test('retains native coordinates and extra components', () => {
     const spatialReference = createTilesetSpatialReference({
       sourceCrs: 'EPSG:4326',
@@ -63,7 +72,7 @@ describe('SpatialCoordinateTransformer', () => {
     expect(transformer.transformPosition([10, 20, 100])).toEqual([10, 20, 130]);
   });
 
-  test('rejects geocentric height conversion instead of treating Cartesian z as height', () => {
+  test('converts geocentric heights in geographic space before projecting the output', () => {
     const constantGeoid = {getHeight: () => 30} as Geoid;
     const spatialReference = createTilesetSpatialReference(
       {
@@ -76,9 +85,33 @@ describe('SpatialCoordinateTransformer', () => {
       {targetCrs: 'EPSG:4326', targetHeightReference: 'orthometric'}
     );
 
-    expect(
-      () => new SpatialCoordinateTransformer(spatialReference, {geoidModel: constantGeoid})
-    ).toThrow('Geocentric height conversion is not supported');
+    const transformer = new SpatialCoordinateTransformer(spatialReference, {
+      geoidModel: constantGeoid
+    });
+    const transformed = transformer.transformPosition([6378237, 0, 0]);
+
+    expect(transformed[0]).toBeCloseTo(0, 8);
+    expect(transformed[1]).toBeCloseTo(0, 8);
+    expect(transformed[2]).toBeCloseTo(70, 6);
+  });
+
+  test('converts geographic coordinates to WGS84 geocentric output', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {outputCoordinates: 'ecef'}
+    );
+    const transformer = new SpatialCoordinateTransformer(spatialReference);
+    const transformed = transformer.transformPosition([0, 0, 100]);
+
+    expect(transformed[0]).toBeCloseTo(6378237, 6);
+    expect(transformed[1]).toBeCloseTo(0, 8);
+    expect(transformed[2]).toBeCloseTo(0, 8);
   });
 
   test('rejects requested conversion with unknown source metadata', () => {
@@ -86,6 +119,29 @@ describe('SpatialCoordinateTransformer', () => {
 
     expect(() => new SpatialCoordinateTransformer(spatialReference)).toThrow(
       'source CRS is unknown'
+    );
+  });
+
+  test('rejects PROJJSON object types unsupported by proj4js', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: {
+          type: 'VerticalCRS',
+          name: 'Example height',
+          datum: {type: 'VerticalReferenceFrame', name: 'Example datum'},
+          coordinate_system: {
+            subtype: 'vertical',
+            axis: [{name: 'Height', abbreviation: 'H', direction: 'up', unit: 'metre'}]
+          }
+        },
+        coordinateFrame: 'projected',
+        heightReference: 'native'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+
+    expect(() => new SpatialCoordinateTransformer(spatialReference)).toThrow(
+      'VerticalCRS is not supported by proj4js'
     );
   });
 

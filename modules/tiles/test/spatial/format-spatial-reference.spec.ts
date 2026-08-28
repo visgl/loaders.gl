@@ -5,9 +5,28 @@
 import {describe, expect, test} from 'vitest';
 import {
   applyTilesetSpatialOptions,
+  createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
 } from '@loaders.gl/tiles';
+
+test('createTilesetSpatialReference freezes PROJJSON compatibility aliases', () => {
+  const sourceCrs = {
+    type: 'VerticalCRS',
+    name: 'Example height',
+    datum: {type: 'VerticalReferenceFrame', name: 'Example datum'},
+    coordinate_system: {
+      subtype: 'vertical',
+      axis: [{name: 'Height', abbreviation: 'H', direction: 'up', unit: 'metre'}]
+    }
+  } as const;
+  const spatialReference = createTilesetSpatialReference({sourceCrs}, {targetCrs: sourceCrs});
+
+  expect(spatialReference.sourceCrs).not.toBe(sourceCrs);
+  expect(spatialReference.targetCrs).not.toBe(sourceCrs);
+  expect(Object.isFrozen(spatialReference.sourceCrs)).toBe(true);
+  expect(Object.isFrozen(spatialReference.targetCrs)).toBe(true);
+});
 
 describe('getI3SSpatialReference', () => {
   test('prefers current horizontal and vertical WKIDs and preserves I3S wire order', () => {

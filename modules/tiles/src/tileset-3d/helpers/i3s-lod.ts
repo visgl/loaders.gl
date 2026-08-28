@@ -49,10 +49,11 @@ export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT
 // eslint-disable-next-line max-statements
 export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number {
   const {topDownViewport: viewport} = frameState;
-  const mbsLat = tile.header.mbs[1];
-  const mbsLon = tile.header.mbs[0];
-  const mbsZ = tile.header.mbs[2];
-  const mbsR = tile.header.mbs[3];
+  const mbs = tile.header.i3sLodMbs || tile.header.mbs;
+  const mbsLat = mbs[1];
+  const mbsLon = mbs[0];
+  const mbsZ = mbs[2];
+  const mbsR = mbs[3];
   const mbsCenterCartesian = [...tile.boundingVolume.center];
   const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
   Ellipsoid.WGS84.cartographicToCartesian(cameraPositionCartographic, cameraPositionCartesian);

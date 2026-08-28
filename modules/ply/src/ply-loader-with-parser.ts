@@ -3,8 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 // PLY Loader
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
+import {
+  makeTableScanBatch,
+  type Loader,
+  type LoaderWithParser,
+  type LoaderOptions
+} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
@@ -90,7 +95,7 @@ export const PLYLoaderWithParser = {
       const convertedData = isMeshArrowTable(meshOrTable)
         ? convertPLYTable(meshOrTable, options)
         : convertPLYMesh(meshOrTable, options);
-      yield isMeshArrowTable(convertedData) ? makeArrowTableBatch(convertedData) : convertedData;
+      yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
     }
   }
 } as const satisfies LoaderWithParser<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
@@ -108,17 +113,6 @@ function convertPLYTable(
     ...(convertTableToMesh(table) as PLYMesh),
     loader: 'ply',
     loaderData: header || {comments: [], elements: []}
-  };
-}
-
-/** Wrap a Mesh Arrow table as a loaders.gl Arrow table batch. */
-function makeArrowTableBatch(table: MeshArrowTable): ArrowTableBatch {
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: table.schema,
-    data: table.data,
-    length: table.data.numRows
   };
 }
 
