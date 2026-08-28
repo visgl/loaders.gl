@@ -406,7 +406,7 @@ test('DracoWriter#attributes metadata', async () => {
     data.attributes.POSITION.value.length
   );
 });
-test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async () => {
+test('DracoWriter#attributeNameEntry preserves custom attribute names', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
@@ -418,11 +418,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   };
   const compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
-      attributesMetadata: {
-        featureId: {
-          'custom-attribute-name': 'featureId'
-        }
-      }
+      attributeNameEntry: 'custom-attribute-name'
     }
   });
   const data2 = await parse(compressedMesh, DracoLoader, {
@@ -436,6 +432,26 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   expect(data2.attributes.POSITION.value.length, 'decoded POSITION length matched').toBe(
     data.attributes.POSITION.value.length
   );
+});
+
+test('DracoWriter#preserves secondary glTF attribute semantics', async () => {
+  const compressedMesh = await encode(
+    {
+      attributes: {
+        POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        TEXCOORD_1: new Float32Array([0, 0, 1, 0, 0, 1])
+      },
+      indices: new Uint16Array([0, 1, 2])
+    },
+    DracoWriter,
+    {core: {worker: false}, useLocalLibraries: true}
+  );
+  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true
+  });
+
+  expect(decodedMesh.attributes.TEXCOORD_1.value).toHaveLength(6);
 });
 function validatePositionMetadata(data) {
   const POSITION = 0;

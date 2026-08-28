@@ -8,10 +8,12 @@ import DracoBuilder from '../../src/lib/draco-builder';
 
 type FakeDracoState = {
   attributeCalls: string[];
+  attributeTypes: number[];
   attributeValues: number[][];
   destroyed: unknown[];
   encoderCalls: string[];
   metadataCalls: string[];
+  metadataEntries: Array<{key: string; value: unknown}>;
   normalizedCalls: Array<{attributeId: number; normalized: boolean}>;
   encodeLength: number;
 };
@@ -20,10 +22,12 @@ type FakeDracoState = {
 function createFakeDraco(): {draco: any; state: FakeDracoState} {
   const state: FakeDracoState = {
     attributeCalls: [],
+    attributeTypes: [],
     attributeValues: [],
     destroyed: [],
     encoderCalls: [],
     metadataCalls: [],
+    metadataEntries: [],
     normalizedCalls: [],
     encodeLength: 3
   };
@@ -77,8 +81,8 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     }
 
     /** Produces deterministic point-cloud output. */
-    EncodePointCloudToDracoBuffer(): number {
-      state.encoderCalls.push('pointcloud');
+    EncodePointCloudToDracoBuffer(_pointCloud: unknown, deduplicateValues: boolean): number {
+      state.encoderCalls.push(`pointcloud:${deduplicateValues}`);
       return state.encodeLength;
     }
   }
@@ -95,78 +99,78 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     /** Records an Int8 attribute. */
     AddInt8Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Int8Array
     ): number {
-      return this.addAttribute('int8', values);
+      return this.addAttribute('int8', type, values);
     }
 
     /** Records an Int16 attribute. */
     AddInt16Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Int16Array
     ): number {
-      return this.addAttribute('int16', values);
+      return this.addAttribute('int16', type, values);
     }
 
     /** Records an Int32 attribute. */
     AddInt32Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Int32Array
     ): number {
-      return this.addAttribute('int32', values);
+      return this.addAttribute('int32', type, values);
     }
 
     /** Records a Uint8 attribute. */
     AddUInt8Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Uint8Array
     ): number {
-      return this.addAttribute('uint8', values);
+      return this.addAttribute('uint8', type, values);
     }
 
     /** Records a Uint16 attribute. */
     AddUInt16Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Uint16Array
     ): number {
-      return this.addAttribute('uint16', values);
+      return this.addAttribute('uint16', type, values);
     }
 
     /** Records a Uint32 attribute. */
     AddUInt32Attribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Uint32Array
     ): number {
-      return this.addAttribute('uint32', values);
+      return this.addAttribute('uint32', type, values);
     }
 
     /** Records a Float32 attribute. */
     AddFloatAttribute(
       _mesh: unknown,
-      _type: number,
+      type: number,
       _vertexCount: number,
       _size: number,
       values: Float32Array
     ): number {
-      return this.addAttribute('float32', values);
+      return this.addAttribute('float32', type, values);
     }
 
     /** Records geometry metadata attachment. */
@@ -190,8 +194,9 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     }
 
     /** Allocates a deterministic attribute identifier. */
-    private addAttribute(type: string, values: ArrayLike<number>): number {
-      state.attributeCalls.push(type);
+    private addAttribute(name: string, type: number, values: ArrayLike<number>): number {
+      state.attributeCalls.push(name);
+      state.attributeTypes.push(type);
       state.attributeValues.push(Array.from(values));
       return this.nextAttributeId++;
     }
@@ -199,23 +204,27 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
 
   class FakeMetadataBuilder {
     /** Records integer metadata. */
-    AddIntEntry(): void {
+    AddIntEntry(_metadata: unknown, key: string, value: number): void {
       state.metadataCalls.push('int');
+      state.metadataEntries.push({key, value});
     }
 
     /** Records floating-point metadata. */
-    AddDoubleEntry(): void {
+    AddDoubleEntry(_metadata: unknown, key: string, value: number): void {
       state.metadataCalls.push('double');
+      state.metadataEntries.push({key, value});
     }
 
     /** Records integer-array metadata. */
-    AddIntEntryArray(): void {
+    AddIntEntryArray(_metadata: unknown, key: string, value: Int32Array): void {
       state.metadataCalls.push('int-array');
+      state.metadataEntries.push({key, value});
     }
 
     /** Records string metadata. */
-    AddStringEntry(): void {
+    AddStringEntry(_metadata: unknown, key: string, value: string): void {
       state.metadataCalls.push('string');
+      state.metadataEntries.push({key, value});
     }
   }
 
@@ -248,7 +257,6 @@ beforeEach(() => {
 test('DracoBuilder encodes meshes with every supported attribute representation', () => {
   const {draco, state} = createFakeDraco();
   const builder = new DracoBuilder(draco);
-  const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const output = builder.encodeSync(
     {
       attributes: {
@@ -259,9 +267,7 @@ test('DracoBuilder encodes meshes with every supported attribute representation'
         customInt16: new Int16Array([1, 2]),
         customInt32: new Int32Array([1, 2]),
         customUint8: new Uint8Array([1, 2]),
-        customUint32: new Uint32Array([1, 2]),
-        unsupported: new Float64Array([1, 2]),
-        ignored: [1, 2]
+        customUint32: new Uint32Array([1, 2])
       },
       indices: new Uint32Array([0, 1, 0])
     } as any,
@@ -297,8 +303,6 @@ test('DracoBuilder encodes meshes with every supported attribute representation'
   expect(state.metadataCalls).toContain('double');
   expect(state.metadataCalls).toContain('int-array');
   expect(state.metadataCalls).toContain('string');
-  expect(warning).toHaveBeenCalledOnce();
-
   builder.destroy();
   expect(state.destroyed.length).toBeGreaterThan(4);
 });
@@ -310,6 +314,7 @@ test('DracoBuilder encodes point clouds and accepts Map metadata', () => {
     {attributes: {positions: new Float32Array([0, 0, 0, 1, 1, 1])}} as any,
     {
       pointcloud: true,
+      deduplicateValues: true,
       metadata: new Map<string, any>([
         ['name', 'points'],
         ['count', 2]
@@ -318,7 +323,7 @@ test('DracoBuilder encodes point clouds and accepts Map metadata', () => {
   );
 
   expect(Array.from(new Uint8Array(output))).toEqual([11, 22, 33]);
-  expect(state.encoderCalls).toEqual(['pointcloud']);
+  expect(state.encoderCalls).toEqual(['pointcloud:true']);
   expect(state.attributeCalls).toEqual(['float32']);
 });
 
@@ -327,12 +332,13 @@ test('DracoBuilder reports missing positions and encoder failures', () => {
   const meshBuilder = new DracoBuilder(meshDraco.draco);
   expect(() =>
     meshBuilder.encodeSync({attributes: {COLOR_0: new Uint8Array([1, 2])}} as any)
-  ).toThrow('positions');
+  ).toThrow('POSITION attribute is required');
 
   meshDraco.state.encodeLength = 0;
   expect(() =>
     meshBuilder.encodeSync({attributes: {POSITION: new Float32Array([0, 0, 0])}} as any)
   ).toThrow('Draco encoding failed');
+  expect(meshDraco.state.destroyed).toHaveLength(4);
 
   const pointDraco = createFakeDraco();
   pointDraco.state.encodeLength = 0;
@@ -344,6 +350,27 @@ test('DracoBuilder reports missing positions and encoder failures', () => {
   ).toThrow('Draco encoding failed');
 });
 
+test('DracoBuilder validates attribute arrays and triangle indices', () => {
+  const {draco} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+  const position = new Float32Array([0, 0, 0, 1, 1, 1]);
+
+  expect(() =>
+    builder.encodeSync({
+      attributes: {POSITION: position, NORMAL: {value: new Int8Array([1, 2, 3]), size: 3}}
+    })
+  ).toThrow('attribute "NORMAL" has 3 values, expected 6');
+  expect(() =>
+    builder.encodeSync({attributes: {POSITION: position}, indices: new Uint16Array([0, 1])})
+  ).toThrow('indices length must be divisible by 3');
+  expect(() =>
+    builder.encodeSync({attributes: {POSITION: position}, indices: new Uint16Array([0, 1, 2])})
+  ).toThrow('triangle index 2 is outside vertex range 0-1');
+  expect(() =>
+    builder.encodeSync({attributes: {POSITION: position, invalid: new Float64Array([1, 2])}})
+  ).toThrow('attribute "invalid" uses unsupported Float64Array');
+});
+
 test('DracoBuilder maps canonical attribute aliases', () => {
   const {draco} = createFakeDraco();
   const builder = new DracoBuilder(draco) as any;
@@ -352,9 +379,41 @@ test('DracoBuilder maps canonical attribute aliases', () => {
   expect(builder._getDracoAttributeType('normals')).toBe(draco.NORMAL);
   expect(builder._getDracoAttributeType('colors')).toBe(draco.COLOR);
   expect(builder._getDracoAttributeType('texcoords')).toBe(draco.TEX_COORD);
+  expect(builder._getDracoAttributeType('TEXCOORD_1')).toBe(draco.TEX_COORD);
+  expect(builder._getDracoAttributeType('COLOR_2')).toBe(draco.COLOR);
+  expect(builder._getDracoAttributeType('featureId', {featureId: 'COLOR'})).toBe(draco.COLOR);
   expect(builder._getDracoAttributeType('featureId')).toBe(draco.GENERIC);
   expect(builder._getPositionAttribute({colors: new Uint8Array([1])})).toBeNull();
   expect(() => builder.destroyEncodedObject(null)).not.toThrow();
+});
+
+test('DracoBuilder preserves application names with a configurable metadata key', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+
+  builder.encodeSync(
+    {
+      attributes: {
+        coordinates: new Float32Array([0, 0, 0, 1, 1, 1]),
+        TEXCOORD_1: new Uint16Array([0, 1, 2, 3])
+      },
+      indices: new Uint16Array([0, 1, 0])
+    },
+    {
+      attributeNameEntry: 'semantic',
+      attributeTypes: {coordinates: 'POSITION'},
+      attributesMetadata: {TEXCOORD_1: {set: 1}}
+    }
+  );
+
+  expect(state.attributeTypes).toEqual([draco.POSITION, draco.TEX_COORD]);
+  expect(state.metadataEntries).toEqual(
+    expect.arrayContaining([
+      {key: 'semantic', value: 'coordinates'},
+      {key: 'semantic', value: 'TEXCOORD_1'},
+      {key: 'set', value: 1}
+    ])
+  );
 });
 
 test('DracoBuilder preserves typed-array view bounds and normalized MeshAttribute metadata', () => {
