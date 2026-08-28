@@ -113,4 +113,202 @@ describe('I3SSpatialTransformer', () => {
     expect(traversalBounds.region[4]).toBeCloseTo(100, 8);
     expect(traversalBounds.region[5]).toBeCloseTo(100, 8);
   });
+
+  test('normalizes source units and absolute-height offsets before reprojection', async () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        verticalUnit: 'foot',
+        verticalUnitScale: 0.3048,
+        elevationMode: 'absoluteHeight',
+        elevationOffset: 10,
+        elevationUnit: 'foot',
+        elevationUnitScale: 0.3048,
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference);
+    const transformed = await transformer.transformPositionsAsync(
+      [10, 20, 100, 10, 20, 110],
+      [10, 20, 100]
+    );
+
+    expect(transformed.origin[2]).toBeCloseTo(33.528, 8);
+    expect(transformed.positions[5]).toBeCloseTo(3.048, 5);
+  });
+
+  test('normalizes bound center heights without scaling metric bound extents', async () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        verticalUnit: 'foot',
+        verticalUnitScale: 0.3048,
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference);
+    const transformed = await transformer.transformBoundsAsync({mbs: [10, 20, 100, 10]});
+
+    expect(transformed.i3sLodMbs).toEqual([10, 20, 30.48, 10]);
+    expect(
+      transformed.spatialBoundingVolume.region![5] - transformed.spatialBoundingVolume.region![4]
+    ).toBeGreaterThan(15);
+  });
+
+  test.each([
+    ['onTheGround', 100, 0, 100],
+    ['relativeToGround', 100, 5, 115]
+  ] as const)('applies %s terrain placement with the documented formula', async (elevationMode, surfaceHeight, sourceHeight, expectedHeight) => {
+    const terrainElevationProvider = {
+      sampleElevations: async (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => surfaceHeight)
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        verticalUnitScale: 1,
+        elevationMode,
+        elevationOffset: 10,
+        elevationUnitScale: 1,
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider
+    });
+    const transformed = await transformer.transformPositionsAsync(
+      [10, 20, sourceHeight],
+      [10, 20, sourceHeight]
+    );
+
+    expect(transformed.origin[2]).toBeCloseTo(expectedHeight, 8);
+  });
+
+  test('uses the scene provider for relativeToScene placement', async () => {
+    const sceneElevationProvider = {
+      unit: 'foot',
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 100)
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'relativeToScene',
+        elevationOffset: 2,
+        elevationUnitScale: 1,
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', sceneElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      sceneElevationProvider
+    });
+    const transformed = await transformer.transformPositionsAsync([10, 20, 5], [10, 20, 5]);
+
+    expect(transformed.origin[2]).toBeCloseTo(37.48, 8);
+  });
+
+  test('converts provider and output height references with one geoid model', async () => {
+    const geoid = {getHeight: () => 30} as Geoid;
+    const terrainElevationProvider = {
+      heightReference: 'ellipsoidal' as const,
+      sampleElevations: (positions: readonly (readonly [number, number])[]) =>
+        positions.map(() => 100)
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'orthometric',
+        elevationMode: 'relativeToGround',
+        elevationOffset: 0,
+        elevationUnitScale: 1,
+        provenance: 'metadata'
+      },
+      {
+        targetCrs: 'EPSG:4326',
+        targetHeightReference: 'ellipsoidal',
+        terrainElevationProvider,
+        geoidModel: geoid
+      }
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider,
+      geoidModel: geoid
+    });
+    const transformed = await transformer.transformPositionsAsync([10, 20, 5], [10, 20, 5]);
+
+    // Provider 100m ellipsoidal -> 70m orthometric; +5m relative; -> 105m ellipsoidal.
+    expect(transformed.origin[2]).toBeCloseTo(105, 8);
+  });
+
+  test('applies placement to traversal and output bounds from one provider batch', async () => {
+    let callCount = 0;
+    const terrainElevationProvider = {
+      sampleElevations: (positions: readonly (readonly [number, number])[]) => {
+        callCount++;
+        return positions.map(() => 50);
+      }
+    };
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'relativeToGround',
+        elevationOffset: 2,
+        elevationUnitScale: 1,
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider
+    });
+    const bounds = await transformer.transformBoundsAsync({mbs: [10, 20, 5, 0]});
+
+    expect(callCount).toBe(1);
+    expect(bounds.spatialBoundingVolume.region?.[4]).toBeCloseTo(57, 8);
+    expect(bounds.spatialBoundingVolume.region?.[5]).toBeCloseTo(57, 8);
+    expect(bounds.i3sLodMbs[2]).toBeCloseTo(57, 5);
+  });
+
+  test('rejects incomplete elevation-provider batches', async () => {
+    const terrainElevationProvider = {sampleElevations: () => []};
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        coordinateFrame: 'geographic',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'onTheGround',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', terrainElevationProvider}
+    );
+    const transformer = new I3SSpatialTransformer(spatialReference, {
+      terrainElevationProvider
+    });
+
+    await expect(transformer.transformPositionsAsync([10, 20, 5], [10, 20, 5])).rejects.toThrow(
+      'returned 0 heights for 2 positions'
+    );
+  });
 });

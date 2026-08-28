@@ -11,6 +11,38 @@ export type TilesetHeightReference = 'native' | 'ellipsoidal' | 'orthometric' | 
 /** Height reference that an application may request for transformed output. */
 export type TilesetTargetHeightReference = 'native' | 'ellipsoidal' | 'orthometric';
 
+/** I3S placement rule applied after source-height interpretation. */
+export type TilesetElevationMode =
+  | 'absoluteHeight'
+  | 'onTheGround'
+  | 'relativeToGround'
+  | 'relativeToScene';
+
+/** One WGS84 longitude/latitude location requested from an elevation provider. */
+export type TilesetElevationSample = readonly [longitude: number, latitude: number];
+
+/**
+ * Application-owned source of terrain or scene-surface heights.
+ *
+ * Providers receive WGS84 longitude/latitude locations and may batch asynchronous requests. They
+ * never need to transform horizontal coordinates. Returned heights default to meters in the
+ * layer's source height reference unless `unit` or `heightReference` says otherwise.
+ */
+export type TilesetElevationProvider = {
+  /** Height reference used by sampled values. Omit to use the layer's source height reference. */
+  readonly heightReference?: Exclude<TilesetHeightReference, 'native' | 'unknown'>;
+  /** Linear unit used by sampled values. Defaults to `meter`. */
+  readonly unit?: string;
+  /**
+   * Samples one height for every supplied location, preserving input order.
+   * @param positions - WGS84 longitude/latitude locations.
+   * @returns Finite heights with the same length and order as `positions`.
+   */
+  sampleElevations(
+    positions: readonly TilesetElevationSample[]
+  ): readonly number[] | Promise<readonly number[]>;
+};
+
 /** Coordinate representation requested from a 3D tileset. */
 export type TilesetOutputCoordinates = 'auto' | 'ecef' | 'local-enu' | 'target-crs';
 
@@ -49,6 +81,10 @@ export type TilesetSpatialOptions = {
   coordinateEpoch?: number;
   /** Registered geoid model name or an already parsed geoid model. */
   geoidModel?: string | Geoid;
+  /** Terrain heights used by I3S `onTheGround` and `relativeToGround` placement. */
+  terrainElevationProvider?: TilesetElevationProvider;
+  /** Scene-surface heights used by I3S `relativeToScene` placement. */
+  sceneElevationProvider?: TilesetElevationProvider;
 };
 
 /**
@@ -61,10 +97,22 @@ export type TilesetSpatialReference = {
   readonly sourceCrs?: CRSDefinition;
   /** Source vertical CRS, when independently identified. */
   readonly verticalCrs?: CRSDefinition;
+  /** Declared source vertical unit, preserved from format metadata. */
+  readonly verticalUnit?: string;
+  /** Number of meters represented by one source Z unit. */
+  readonly verticalUnitScale: number;
   /** Coordinate epoch attached to the source coordinates. */
   readonly coordinateEpoch?: number;
   /** Source height interpretation. */
   readonly heightReference: TilesetHeightReference;
+  /** I3S placement rule, when the source layer declares one. */
+  readonly elevationMode?: TilesetElevationMode;
+  /** Declared I3S elevation offset before unit normalization. */
+  readonly elevationOffset?: number;
+  /** Unit of the I3S elevation offset. Defaults to `meter` when a mode is declared. */
+  readonly elevationUnit?: string;
+  /** Number of meters represented by one elevation-offset unit. */
+  readonly elevationUnitScale: number;
   /** Broad frame in which source coordinates are encoded. */
   readonly coordinateFrame: TilesetCoordinateFrame;
   /** Coordinate component order used by the format wire representation. */
@@ -89,10 +137,22 @@ export type CreateTilesetSpatialReferenceOptions = {
   sourceCrs?: CRSDefinition;
   /** Discovered vertical CRS. */
   verticalCrs?: CRSDefinition;
+  /** Discovered source vertical unit. */
+  verticalUnit?: string;
+  /** Number of meters represented by one discovered source Z unit. */
+  verticalUnitScale?: number;
   /** Discovered coordinate epoch. */
   coordinateEpoch?: number;
   /** Discovered height interpretation. */
   heightReference?: TilesetHeightReference;
+  /** Format-specific elevation placement rule. */
+  elevationMode?: TilesetElevationMode;
+  /** Format-specific elevation offset before unit normalization. */
+  elevationOffset?: number;
+  /** Unit of the format-specific elevation offset. */
+  elevationUnit?: string;
+  /** Number of meters represented by one elevation-offset unit. */
+  elevationUnitScale?: number;
   /** Discovered broad coordinate frame. */
   coordinateFrame?: TilesetCoordinateFrame;
   /** Format wire-axis order. */
@@ -120,25 +180,58 @@ export function createTilesetSpatialReference(
     options.targetCrs ||
     (outputCoordinates === 'ecef' ? ('EPSG:4978' as CRSDefinition) : undefined);
   const targetHeightReference = options.targetHeightReference || 'native';
+  const verticalUnitScale = discovered.verticalUnitScale ?? 1;
+  const elevationUnitScale = discovered.elevationUnitScale ?? 1;
+  const elevationOffset = discovered.elevationOffset || 0;
+  const requiresSurface =
+    discovered.elevationMode === 'onTheGround' ||
+    discovered.elevationMode === 'relativeToGround' ||
+    discovered.elevationMode === 'relativeToScene';
+  const hasElevationProvider =
+    discovered.elevationMode === 'relativeToScene'
+      ? Boolean(options.sceneElevationProvider)
+      : !requiresSurface || Boolean(options.terrainElevationProvider);
+  const hasFormatVerticalOperation =
+    verticalUnitScale !== 1 ||
+    elevationUnitScale !== 1 ||
+    (discovered.elevationMode !== undefined &&
+      (requiresSurface ||
+        (discovered.elevationMode === 'absoluteHeight' && elevationOffset !== 0)));
   const needsHeightTransform =
     targetHeightReference !== 'native' && targetHeightReference !== discovered.heightReference;
   const hasRequestedTransform =
-    Boolean(targetCrs) || targetHeightReference !== 'native' || outputCoordinates !== 'auto';
+    Boolean(targetCrs) ||
+    targetHeightReference !== 'native' ||
+    outputCoordinates !== 'auto' ||
+    hasFormatVerticalOperation;
   const hasRequiredTarget = outputCoordinates !== 'target-crs' || Boolean(targetCrs);
   const hasHeightMetadata =
     !needsHeightTransform || (discovered.heightReference || 'unknown') !== 'unknown';
+  const hasVerticalUnits =
+    Number.isFinite(verticalUnitScale) &&
+    verticalUnitScale > 0 &&
+    Number.isFinite(elevationUnitScale) &&
+    elevationUnitScale > 0;
   const canTransform =
     Boolean(sourceCrs) &&
     hasRequestedTransform &&
     hasRequiredTarget &&
     hasHeightMetadata &&
+    hasVerticalUnits &&
+    hasElevationProvider &&
     outputCoordinates !== 'local-enu';
 
   return Object.freeze({
     sourceCrs,
     verticalCrs: discovered.verticalCrs,
+    verticalUnit: discovered.verticalUnit,
+    verticalUnitScale,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
     heightReference: discovered.heightReference || 'unknown',
+    elevationMode: discovered.elevationMode,
+    elevationOffset: discovered.elevationOffset,
+    elevationUnit: discovered.elevationUnit,
+    elevationUnitScale,
     coordinateFrame: discovered.coordinateFrame || 'unknown',
     axisOrder: discovered.axisOrder || 'unknown',
     provenance: options.sourceCrs ? 'caller-override' : discovered.provenance || 'unknown',
@@ -165,8 +258,14 @@ export function applyTilesetSpatialOptions(
     {
       sourceCrs: discovered?.sourceCrs,
       verticalCrs: discovered?.verticalCrs,
+      verticalUnit: discovered?.verticalUnit,
+      verticalUnitScale: discovered?.verticalUnitScale,
       coordinateEpoch: discovered?.coordinateEpoch,
       heightReference: discovered?.heightReference,
+      elevationMode: discovered?.elevationMode,
+      elevationOffset: discovered?.elevationOffset,
+      elevationUnit: discovered?.elevationUnit,
+      elevationUnitScale: discovered?.elevationUnitScale,
       coordinateFrame: discovered?.coordinateFrame,
       axisOrder: discovered?.axisOrder,
       provenance: discovered?.provenance,

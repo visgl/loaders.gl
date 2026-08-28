@@ -27,3 +27,10 @@ target origin. Each tile retains a WGS84 geographic `boundingVolume` for generic
 exposes the content/output-frame bound separately as `spatialBoundingVolume`. See [Coordinate
 reference systems in I3S](../concepts/coordinate-reference-systems) for supported definitions and
 registration rules.
+
+Source Z units, elevation offsets, and all `elevationInfo` placement modes are applied to points
+and bounds. Configure `spatial.terrainElevationProvider` for `onTheGround` and
+`relativeToGround`, or `spatial.sceneElevationProvider` for `relativeToScene`. The application
+does not need to repeat vertical metadata discovered from the layer. See [Vertical Coordinate
+Systems and Elevation Placement](/docs/developer-guide/vertical-coordinate-systems) for provider
+and geoid examples.

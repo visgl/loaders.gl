@@ -105,6 +105,9 @@ export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 export type {
   CreateTilesetSpatialReferenceOptions,
   TilesetCoordinateFrame,
+  TilesetElevationMode,
+  TilesetElevationProvider,
+  TilesetElevationSample,
   TilesetHeightReference,
   TilesetOutputCoordinates,
   TilesetSpatialOptions,

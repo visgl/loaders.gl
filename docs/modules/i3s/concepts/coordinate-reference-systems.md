@@ -5,7 +5,9 @@ These inputs answer different questions and must be handled separately. loaders.
 automatically and exposes both the original fields and normalized spatial metadata.
 
 For the framework model, resource registration, and transformation API, see
-[Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems).
+[Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems). For exact
+vertical operation order, formulas, provider contracts, and examples, see
+[Vertical Coordinate Systems and Elevation Placement](/docs/developer-guide/vertical-coordinate-systems).
 
 ## Discovery
 
@@ -85,6 +87,12 @@ ground elevation at that location.
 intermediate positions remain double precision. Renderer-facing `Float32` attributes are created
 only after subtracting the tile origin.
 
+The layer supplies these declarations; applications do not copy them into loader options. An
+application only supplies `terrainElevationProvider` for ground modes or
+`sceneElevationProvider` for `relativeToScene`. Providers receive WGS84 longitude/latitude pairs
+and return one height per position. Provider units and height reference can be declared when they
+differ from meters and the layer's source reference.
+
 ## Geometry, origins, and bounds
 
 An I3S mesh normally stores vertex offsets from a node center. Correct transformation is:
@@ -117,7 +125,9 @@ independently of the renderer's requested output CRS.
 | Deterministic Proj4 and geoid primitive | Implemented |
 | Existing WGS84 mesh and Point Cloud output | Implemented |
 | Supported geographic/projected vertices, normals, origins, and bounds | Implemented for mesh and Point Cloud sources |
-| All elevation placement modes | Requires terrain/scene provider integration |
+| Vertical source units and elevation-offset units | Implemented for common metric, international, US survey, and legacy ArcGIS units |
+| All elevation placement modes | Implemented for mesh and Point Cloud; ground/scene modes require an application provider |
+| Provider and output height-reference conversion | Implemented with an application-supplied `@math.gl/geoid` model |
 | Dynamic coordinate-epoch operations | Not yet executable |
 
 Missing metadata or registered resources cause an actionable error. A requested operation never

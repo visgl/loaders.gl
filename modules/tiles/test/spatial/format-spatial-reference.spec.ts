@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {get3DTilesSpatialReference, getI3SSpatialReference} from '@loaders.gl/tiles';
+import {
+  applyTilesetSpatialOptions,
+  get3DTilesSpatialReference,
+  getI3SSpatialReference
+} from '@loaders.gl/tiles';
 
 describe('getI3SSpatialReference', () => {
   test('prefers current horizontal and vertical WKIDs and preserves I3S wire order', () => {
@@ -41,6 +45,53 @@ describe('getI3SSpatialReference', () => {
     expect(spatialReference.warnings[0]).toContain(
       'requires a terrain or scene elevation provider'
     );
+  });
+
+  test('normalizes vertical units, legacy ZFactor, and elevation offsets', () => {
+    const spatialReference = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      ZFactor: 0.3048,
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        heightUnit: 'foot'
+      },
+      elevationInfo: {mode: 'absoluteHeight', offset: 2, unit: 'kilometer'}
+    });
+
+    expect(spatialReference).toMatchObject({
+      verticalUnit: 'foot',
+      verticalUnitScale: 0.3048,
+      heightReference: 'orthometric',
+      elevationMode: 'absoluteHeight',
+      elevationOffset: 2,
+      elevationUnit: 'kilometer',
+      elevationUnitScale: 1000,
+      status: 'transformable'
+    });
+  });
+
+  test('requires the provider selected by each surface placement mode', () => {
+    const discovered = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+      elevationInfo: {mode: 'relativeToScene', offset: 1, unit: 'meter'}
+    });
+    expect(discovered.status).toBe('unresolved');
+
+    const spatialReference = applyTilesetSpatialOptions(discovered, {
+      sceneElevationProvider: {sampleElevations: positions => positions.map(() => 10)}
+    });
+    expect(spatialReference.status).toBe('transformable');
+  });
+
+  test('keeps unsupported vertical units unresolved with an actionable warning', () => {
+    const spatialReference = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'furlong'}
+    });
+
+    expect(spatialReference.status).toBe('unresolved');
+    expect(spatialReference.warnings).toContain('Unsupported I3S vertical unit furlong');
   });
 
   test.each([
