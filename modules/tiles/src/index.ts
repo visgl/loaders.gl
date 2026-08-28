@@ -102,6 +102,33 @@ export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 
+export type {
+  CreateTilesetSpatialReferenceOptions,
+  TilesetCoordinateFrame,
+  TilesetHeightReference,
+  TilesetOutputCoordinates,
+  TilesetSpatialOptions,
+  TilesetSpatialReference,
+  TilesetSpatialReferenceProvenance,
+  TilesetTargetHeightReference
+} from './spatial/spatial-types';
+export {
+  applyTilesetSpatialOptions,
+  createTilesetSpatialReference
+} from './spatial/spatial-types';
+export {
+  get3DTilesSpatialReference,
+  getI3SSpatialReference
+} from './spatial/format-spatial-reference';
+export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
+export {
+  getGeoidModel,
+  registerGeoidModel,
+  registerGeoidModelFromPgm,
+  registerSpatialCrs,
+  registerSpatialDatumGrid
+} from './spatial/spatial-resource-registry';
+
 export {getFrameState} from './tileset-3d/helpers/frame-state';
 export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';

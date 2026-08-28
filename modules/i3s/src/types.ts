@@ -8,6 +8,7 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {ImageDataType} from '@loaders.gl/images';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {CoordinateSystem} from './lib/parsers/constants';
@@ -34,6 +35,8 @@ export interface I3STilesetHeader extends SceneLayer3D {
   lodMetricValue?: number;
   /** Loader that has to be used to load content */
   loader: LoaderWithParser;
+  /** Normalized CRS discovery metadata added by the loader. */
+  spatialMetadata?: TilesetSpatialReference;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md */
 export type NodePage = {

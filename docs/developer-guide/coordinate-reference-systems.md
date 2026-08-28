@@ -51,6 +51,116 @@ The `WKTCRSLoader` and `WKTCRSWriter` remain loaders.gl adapters, but their v5 d
 `WKTCRSAst` exported by `@math.gl/crs`. The old hybrid array/object result and the `raw`, `sort`,
 and `debug` options have been removed.
 
+## 3D spatial API
+
+I3S and 3D Tiles share a normalized spatial descriptor in `@loaders.gl/tiles`. Normal loading does
+not require an application to populate source CRS, axis, epoch, or height-model fields. The format
+adapter discovers them and exposes the result on `Tileset3D.spatialReference`:
+
+```ts
+const tileset = new Tileset3D(source);
+await tileset.tilesetInitializationPromise;
+
+console.log(tileset.spatialReference);
+// sourceCrs, coordinateFrame, heightReference, axisOrder,
+// provenance, status, and warnings
+```
+
+`provenance` distinguishes explicit metadata from a format default, caller recovery override,
+legacy assumption, or unknown value. `warnings` reports qualifications such as an unresolved
+external metadata schema or an I3S ground-relative mode that needs an elevation provider. These
+fields are diagnostic output, not configuration.
+
+The application-facing target contract is intentionally small:
+
+```ts
+type TilesetSpatialOptions = {
+  targetCrs?: CRSDefinition;
+  targetHeightReference?: 'native' | 'ellipsoidal' | 'orthometric';
+  outputCoordinates?: 'auto' | 'ecef' | 'local-enu' | 'target-crs';
+
+  // Expert recovery for missing or incorrect source metadata
+  sourceCrs?: CRSDefinition;
+  coordinateEpoch?: number;
+  geoidModel?: string | Geoid;
+};
+```
+
+The v5 foundation normalizes these options and provides `SpatialCoordinateTransformer` for
+format-owned transformation paths. A descriptor with status `transformable` says that the
+requested operation can be constructed; only `transformed` can claim returned positions, bounds,
+normals, and origins have all moved into the target frame. During staged I3S/3D Tiles integration,
+applications should check the status instead of assuming a target rewrites every tile payload.
+
+### Registering non-bundled resources
+
+Common EPSG definitions supported by Proj4 require no setup. Custom definitions, datum grids, and
+geoid models are application resources registered once during startup:
+
+```ts
+import {
+  registerGeoidModelFromPgm,
+  registerSpatialCrs,
+  registerSpatialDatumGrid
+} from '@loaders.gl/tiles';
+
+registerSpatialCrs('LOCAL:SURVEY_GRID', '+proj=tmerc +lat_0=... +lon_0=...');
+registerSpatialDatumGrid('regional.gsb', datumGridArrayBuffer);
+registerGeoidModelFromPgm('egm96-5', geoidPgmBytes, {cubic: true});
+```
+
+Registration is explicit. Loading a tileset never downloads an EPSG definition, NTv2 grid, or
+geoid model in the background. This keeps offline applications deterministic, avoids surprising
+network and licensing behavior, and lets each application choose its accuracy/resource tradeoff.
+
+### Division of responsibility
+
+| Module | Responsibility | Deliberate boundary |
+| --- | --- | --- |
+| `@math.gl/crs` | Typed identifiers, WKT/PROJ syntax, and PROJJSON definitions | Does not look up definitions or transform coordinates |
+| `@math.gl/proj4` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
+| `@math.gl/geoid` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
+| `@math.gl/geospatial` | Ellipsoid, cartographic/ECEF, and local-frame mathematics | Does not interpret format metadata |
+| loaders.gl adapters | Axis normalization, profile semantics, bounds, origins, normals, elevation placement, and diagnostics | Never silently invent missing metadata |
+
+### Vertical height conversion
+
+A geoid model returns undulation `N`, the signed separation between the ellipsoid and
+gravity-related height surface. loaders.gl follows the GeographicLib convention:
+
+```text
+ellipsoidal height h = orthometric height H + geoid undulation N
+orthometric height H = ellipsoidal height h - geoid undulation N
+```
+
+The geoid is sampled at longitude/latitude derived from the source horizontal CRS before the target
+horizontal projection. Conversion therefore needs a usable source CRS, known source height
+reference, finite Z value, and compatible registered model. Missing input is an error, not a reason
+to leave Z unchanged.
+
+A geoid is not terrain. I3S `onTheGround`, `relativeToGround`, and `relativeToScene` modes need a
+terrain or scene elevation provider in addition to vertical datum conversion.
+
+### Axis order, precision, and bounds
+
+Format wire order is normalized before Proj4. Authoritative `EPSG:4326` order is
+latitude/longitude, while I3S geometry and rendering arrays use longitude/latitude.
+`SpatialCoordinateTransformer` deliberately accepts conventional `[x, y, z]` arrays with Proj4
+authority-axis enforcement disabled; the descriptor records the adapter's normalized order.
+
+Positions remain `Float64` through reconstruction and transformation. Rendering paths may downcast
+only after subtracting a nearby origin. Bounds are sampled or rebuilt in the target frame; an
+arbitrary projection must not be approximated by transforming two corners or attaching one affine
+matrix to a large tile.
+
+### Failure model
+
+Requested transformations reject when the source CRS is unknown, a preserved definition is not
+executable by Proj4, a custom definition/grid is unregistered, vertical conversion lacks a height
+model or geoid, an epoch operation is unsupported, local ENU has no derived origin, or relative
+placement lacks an elevation provider. The error names the missing resource or operation. A loader
+must not catch it and continue in source coordinates after a different target was requested.
+
 ## Current support
 
 The table describes loaders.gl v5 behavior. “Partial” means some variants, output shapes, or
@@ -77,8 +187,8 @@ mean coordinate transformation.
 | WFS | Capability/request identifiers and GML `srsName` | Identifier preservation is partial | Server-side output CRS request where supported |
 | WMTS | Tile-matrix-set supported CRS | Capability metadata | Server-selected tile matrix set; no client tile reprojection |
 | ArcGIS services | Spatial reference WKID/latestWKID fields | Service metadata and request fields are retained | Server-side `outSR`/image request behavior where implemented |
-| I3S | Spatial reference metadata; commonly geocentric or WGS84-based | Format metadata retained | Format-specific processing only |
-| 3D Tiles | Implicit earth-fixed Cartesian coordinates with tileset transforms | Tileset transforms are preserved | Not a general CRS reprojection path |
+| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Shared Proj4/geoid transformer available; complete mesh/Point Cloud bounds and elevation integration is in progress |
+| 3D Tiles | CRS/epoch metadata semantics and region-established global frames | Raw schema/entity metadata plus normalized `spatialMetadata`; local/unknown tilesets stay unknown | Shared transformer available; nonlinear content/bounds and nested-tileset integration is in progress |
 | MVT / TileJSON | Implicit tile coordinates; TileJSON bounds are longitude/latitude | Tile transform and metadata retained | Implicit Web Mercator tiling; no arbitrary CRS |
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |
 | GPX / TCX | Implicit WGS84 latitude/longitude | Coordinate values retained | None |
@@ -116,7 +226,8 @@ future normalized table descriptor must not collapse them into one table-wide va
   request.
 - Some service parsers and format-specific structures still expose unclassified strings.
 - GeoParquet CRS metadata is preserved, but GeoParquet coordinates are not reprojected.
-- There is no unified CRS result descriptor shared by all loaders and source APIs.
+- The unified 3D descriptor covers I3S and 3D Tiles; table, raster, and service APIs do not yet all
+  expose the same result shape.
 
 Applications should not infer transformation from metadata presence or compare serialized
 definitions for semantic equality. They should also account for each loader's documented axis

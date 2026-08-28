@@ -12,8 +12,10 @@ import type {
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource,
-  PointCloudCoordinateSystem
+  PointCloudCoordinateSystem,
+  TilesetSpatialReference
 } from '@loaders.gl/tiles';
+import {getI3SSpatialReference} from '@loaders.gl/tiles';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
@@ -57,6 +59,9 @@ export class I3SPointCloudSource
   /** Parsed Point Cloud layer metadata. */
   metadata: SceneLayer3D | null = null;
 
+  /** Normalized source CRS metadata populated during initialization. */
+  spatialReference: TilesetSpatialReference | null = null;
+
   /** Random-access archive used for SLPK-backed resources. */
   private archive: SLPKArchive | null = null;
   /** Node pages cached by physical page index. */
@@ -96,6 +101,7 @@ export class I3SPointCloudSource
     const layerJson = await this.readJson('');
     const pointCloudLayer = I3SPointCloudSceneLayerSchema.parse(layerJson);
     this.metadata = pointCloudLayer as SceneLayer3D;
+    this.spatialReference = getI3SSpatialReference(this.metadata);
     this.baseUrl = this.url.replace(/\/+$/, '');
     this.nodesPerPage = Math.max(
       1,

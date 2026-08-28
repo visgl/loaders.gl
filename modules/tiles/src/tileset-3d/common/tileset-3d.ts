@@ -22,6 +22,11 @@ import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-pr
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
 import {TILESET_TYPE} from '../../constants';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../spatial/spatial-types';
+import {
+  applyTilesetSpatialOptions,
+  createTilesetSpatialReference
+} from '../../spatial/spatial-types';
 
 import {TilesetTraverser} from './tileset-traverser';
 import {
@@ -72,6 +77,8 @@ export type Tileset3DProps = {
 
   ellipsoid?: object;
   modelMatrix?: Matrix4;
+  /** Automatic CRS output options and expert source-metadata recovery overrides. */
+  spatial?: TilesetSpatialOptions;
 
   maximumScreenSpaceError?: number;
   /**
@@ -178,6 +185,8 @@ type Props = {
   basePath: string;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   i3s: Record<string, any>;
+  /** Automatic CRS output options and expert source-metadata recovery overrides. */
+  spatial: TilesetSpatialOptions;
 };
 
 const BYTES_PER_MEBIBYTE = 1024 * 1024;
@@ -284,7 +293,8 @@ const DEFAULT_PROPS: Props = {
   loadOptions: {fetch: {}},
   attributions: [],
   basePath: '',
-  i3s: {}
+  i3s: {},
+  spatial: {}
 };
 
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -333,6 +343,8 @@ export class Tileset3D {
   metadata: Record<string, any> | null = null;
   /** Tileset statistics metadata, preserved for application-level inspection. */
   statistics: unknown = null;
+  /** Normalized source and target coordinate reference system metadata. */
+  spatialReference: TilesetSpatialReference = createTilesetSpatialReference({});
 
   description = '';
   properties: any;
@@ -441,6 +453,13 @@ export class Tileset3D {
     this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
     this._cacheBytes = cacheBytes;
     this._maximumCacheOverflowBytes = maximumCacheOverflowBytes;
+    const metadata = this._getSourceMetadata();
+    if (metadata) {
+      this.spatialReference = applyTilesetSpatialOptions(
+        metadata.spatialReference,
+        this.options.spatial
+      );
+    }
 
     this.stats = new Stats({id: this.url});
     this._initializeStats();
@@ -1077,6 +1096,10 @@ export class Tileset3D {
     this.groups = tileset.groups || [];
     this.metadata = tileset.metadata || null;
     this.statistics = tileset.statistics ?? null;
+    this.spatialReference = applyTilesetSpatialOptions(
+      metadata.spatialReference,
+      this.options.spatial
+    );
     this.properties = this.source.properties ?? this.properties;
     this.extras = this.source.extras ?? this.extras;
     if (this.options.attributions?.length) {

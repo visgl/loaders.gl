@@ -8,7 +8,7 @@ import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 
 import {path} from '@loaders.gl/loader-utils';
-import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
+import {get3DTilesSpatialReference, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {
@@ -157,6 +157,7 @@ async function parseTileset(
     basePath,
     root: normalizedRoot || tilesetJson.root,
     type: TILESET_TYPE.TILES3D,
+    spatialMetadata: get3DTilesSpatialReference(tilesetJson),
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
     lodMetricValue: tilesetJson.root?.geometricError || 0
   };

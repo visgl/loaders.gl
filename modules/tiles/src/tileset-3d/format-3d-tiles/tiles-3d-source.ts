@@ -26,6 +26,7 @@ import {getZoomFromBoundingVolume} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 import type {FrameState} from '../helpers/frame-state';
+import {get3DTilesSpatialReference} from '../../spatial/format-spatial-reference';
 import {
   materializeImplicitSubtree,
   type ImplicitSubtreeReference,
@@ -201,7 +202,8 @@ export class Tiles3DSource implements Tileset3DSource {
       tileset: this.rootTileset,
       lodMetricType: this.rootTileset.lodMetricType,
       lodMetricValue: this.rootTileset.lodMetricValue,
-      refine: this.rootTileset.root?.refine
+      refine: this.rootTileset.root?.refine,
+      spatialReference: get3DTilesSpatialReference(this.rootTileset)
     };
   }
 
