@@ -63,6 +63,24 @@ describe('SpatialCoordinateTransformer', () => {
     expect(transformer.transformPosition([10, 20, 100])).toEqual([10, 20, 130]);
   });
 
+  test('rejects geocentric height conversion instead of treating Cartesian z as height', () => {
+    const constantGeoid = {getHeight: () => 30} as Geoid;
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4978',
+        coordinateFrame: 'geocentric',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326', targetHeightReference: 'orthometric'}
+    );
+
+    expect(
+      () => new SpatialCoordinateTransformer(spatialReference, {geoidModel: constantGeoid})
+    ).toThrow('Geocentric height conversion is not supported');
+  });
+
   test('rejects requested conversion with unknown source metadata', () => {
     const spatialReference = createTilesetSpatialReference({}, {targetCrs: 'EPSG:4326'});
 

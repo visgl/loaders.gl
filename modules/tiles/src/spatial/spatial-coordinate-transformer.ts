@@ -26,8 +26,16 @@ export class SpatialCoordinateTransformer {
   /** Normalized spatial metadata describing this transformation. */
   readonly spatialReference: TilesetSpatialReference;
 
+  /** Projection from the source CRS directly to the requested horizontal target CRS. */
   private readonly horizontalProjection?: Proj4Projection;
+
+  /** Projection from the source CRS to geographic longitude, latitude, and ellipsoidal height. */
   private readonly geographicProjection?: Proj4Projection;
+
+  /** Projection from adjusted geographic coordinates to the requested output CRS. */
+  private readonly heightOutputProjection?: Proj4Projection;
+
+  /** Geoid model used to convert between ellipsoidal and orthometric heights. */
   private readonly geoid?: Geoid;
 
   /**
@@ -62,6 +70,11 @@ export class SpatialCoordinateTransformer {
         to: GEOGRAPHIC_CRS,
         enforceAxis: false
       });
+      this.heightOutputProjection = new Proj4Projection({
+        from: GEOGRAPHIC_CRS,
+        to: (spatialReference.targetCrs || spatialReference.sourceCrs) as Proj4CRSDefinition,
+        enforceAxis: false
+      });
     }
   }
 
@@ -83,12 +96,15 @@ export class SpatialCoordinateTransformer {
       }
       const geographic = this.geographicProjection!.project([result[0], result[1], result[2]]);
       const geoidUndulation = this.geoid!.getHeight(geographic[1], geographic[0]);
-      result[2] = transformHeight(
-        result[2],
+      geographic[2] = transformHeight(
+        geographic[2],
         geoidUndulation,
         this.spatialReference.heightReference,
         this.spatialReference.targetHeightReference
       );
+      const projected = this.heightOutputProjection!.project(geographic);
+      result.splice(0, projected.length, ...projected);
+      return result;
     }
 
     if (this.horizontalProjection) {
@@ -117,6 +133,15 @@ function validateTransformRequest(spatialReference: TilesetSpatialReference): vo
     spatialReference.heightReference === 'unknown'
   ) {
     throw new Error('Cannot convert heights because the source height reference is unknown');
+  }
+  if (
+    requiresHeightTransformation(spatialReference) &&
+    spatialReference.coordinateFrame === 'geocentric'
+  ) {
+    throw new Error(
+      'Geocentric height conversion is not supported until the projection runtime can convert ' +
+        'between geocentric coordinates and geographic ellipsoidal heights'
+    );
   }
   if (spatialReference.status === 'unresolved') {
     throw new Error('The requested spatial output cannot be resolved from the available metadata');

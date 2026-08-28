@@ -62,11 +62,9 @@ export function getI3SSpatialReference(layer: I3SLayerLike): TilesetSpatialRefer
         : 'unknown';
   const sourceIdentifier = getCrsIdentifier(spatialReference);
   const coordinateFrame =
-    sourceIdentifier === 4326 || sourceIdentifier === 4490
-      ? 'geographic'
-      : sourceCrs
-        ? 'projected'
-        : 'unknown';
+    sourceIdentifier === undefined
+      ? getWktCoordinateFrame(spatialReference?.wkt)
+      : getIdentifierCoordinateFrame(sourceIdentifier);
   const warnings: string[] = [];
   const elevationMode = layer.elevationInfo?.mode;
   if (elevationMode && elevationMode !== 'absoluteHeight') {
@@ -158,6 +156,57 @@ function getI3SVerticalCrsDefinition(
 /** Return the preferred horizontal WKID. */
 function getCrsIdentifier(spatialReference?: I3SSpatialReferenceLike): number | undefined {
   return spatialReference?.latestWkid ?? spatialReference?.wkid;
+}
+
+/** Classify common EPSG identifiers used by I3S into their coordinate frames. */
+function getIdentifierCoordinateFrame(
+  identifier: number
+): TilesetSpatialReference['coordinateFrame'] {
+  if (identifier === 4978) {
+    return 'geocentric';
+  }
+  if (identifier === 4326 || identifier === 4490 || identifier === 4979) {
+    return 'geographic';
+  }
+  return 'projected';
+}
+
+/**
+ * Classify a WKT root coordinate system without guessing when the declaration is ambiguous.
+ *
+ * WKT2 uses `GEODCRS` for both geographic and geocentric systems, so its `CS` declaration is
+ * inspected before assigning a frame.
+ */
+function getWktCoordinateFrame(wkt?: string): TilesetSpatialReference['coordinateFrame'] {
+  if (!wkt) {
+    return 'unknown';
+  }
+
+  const normalizedWkt = wkt.trim().toUpperCase();
+  const rootKeyword = normalizedWkt.match(/^([A-Z][A-Z0-9_]*)\s*[\[(]/)?.[1];
+  if (rootKeyword === 'GEOCCS') {
+    return 'geocentric';
+  }
+  if (
+    rootKeyword === 'GEOGCS' ||
+    rootKeyword === 'GEOGRAPHICCRS' ||
+    rootKeyword === 'GEOGRAPHIC2DCRS' ||
+    rootKeyword === 'GEOGRAPHIC3DCRS'
+  ) {
+    return 'geographic';
+  }
+  if (rootKeyword === 'PROJCS' || rootKeyword === 'PROJCRS' || rootKeyword === 'PROJECTEDCRS') {
+    return 'projected';
+  }
+  if (rootKeyword === 'GEODCRS' || rootKeyword === 'GEODETICCRS') {
+    if (/\bCS\s*[\[(]\s*CARTESIAN\s*,\s*3\b/.test(normalizedWkt)) {
+      return 'geocentric';
+    }
+    if (/\bCS\s*[\[(]\s*ELLIPSOIDAL\s*,\s*[23]\b/.test(normalizedWkt)) {
+      return 'geographic';
+    }
+  }
+  return 'unknown';
 }
 
 /** Resolve a tileset-wide structured metadata property by its standard semantic. */

@@ -37,8 +37,30 @@ describe('getI3SSpatialReference', () => {
     });
 
     expect(spatialReference.sourceCrs).toBe('PROJCS["Custom"]');
+    expect(spatialReference.coordinateFrame).toBe('projected');
     expect(spatialReference.warnings[0]).toContain(
       'requires a terrain or scene elevation provider'
+    );
+  });
+
+  test.each([
+    ['GEOGCS["WGS 84"]', 'geographic'],
+    ['GEOCCS["WGS 84"]', 'geocentric'],
+    ['GEODCRS["WGS 84",DATUM["WGS 84"],CS[ellipsoidal,3]]', 'geographic'],
+    ['GEODCRS["WGS 84",DATUM["WGS 84"],CS[Cartesian,3]]', 'geocentric'],
+    ['COMPOUNDCRS["Unclassified"]', 'unknown']
+  ] as const)('classifies the WKT coordinate frame for %s', (wkt, coordinateFrame) => {
+    const spatialReference = getI3SSpatialReference({spatialReference: {wkt}});
+
+    expect(spatialReference.coordinateFrame).toBe(coordinateFrame);
+  });
+
+  test('classifies geocentric and three-dimensional geographic WKIDs', () => {
+    expect(getI3SSpatialReference({spatialReference: {wkid: 4978}}).coordinateFrame).toBe(
+      'geocentric'
+    );
+    expect(getI3SSpatialReference({spatialReference: {wkid: 4979}}).coordinateFrame).toBe(
+      'geographic'
     );
   });
 });
