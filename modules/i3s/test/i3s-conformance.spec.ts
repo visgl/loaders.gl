@@ -84,7 +84,25 @@ describe('I3S conformance fixtures', () => {
           defaultGeometrySchema: {geometryType: 'points'}
         }
       })
-    ).toThrow(/nodesPerPage|nodePerIndexBlock/);
+    ).toThrow(/Invalid input|nodesPerPage|nodePerIndexBlock/);
+  });
+
+  it('rejects a Point Cloud layer with a non-Point Cloud store profile', () => {
+    expect(() =>
+      I3SPointCloudSceneLayerSchema.parse({
+        id: 0,
+        layerType: 'PointCloud',
+        version: '2.1',
+        capabilities: ['View'],
+        disablePopup: false,
+        store: {
+          profile: 'meshpyramids',
+          version: '2.1',
+          index: {nodePerIndexBlock: 64},
+          defaultGeometrySchema: {geometryType: 'points'}
+        }
+      })
+    ).toThrow(/profile/);
   });
 
   it('preserves UInt64 values through Number.MAX_SAFE_INTEGER', () => {

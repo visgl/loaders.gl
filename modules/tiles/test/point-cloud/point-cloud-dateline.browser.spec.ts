@@ -19,5 +19,21 @@ test('PointCloudTileset splits dateline-crossing bounds for projection', () => {
 
   expect(corners).toHaveLength(16);
   expect(corners.some((corner: number[]) => corner[0] === 180)).toBe(true);
-  expect(corners.some((corner: number[]) => corner[0] === -180)).toBe(true);
+  expect(corners.some((corner: number[]) => corner[0] === 180.25)).toBe(true);
+  expect(corners.some((corner: number[]) => corner[0] === -180)).toBe(false);
+});
+
+test('PointCloudTileset preserves full-globe longitude bounds', () => {
+  const tileset = Object.create(PointCloudTileset.prototype) as PointCloudTileset;
+  const zoom = (tileset as any).estimateZoom({
+    cartographicBounds: [
+      [-170, -90, 0],
+      [-170, 90, 100]
+    ],
+    coversFullLongitude: true,
+    center: [10, 0, 50],
+    radius: 100
+  });
+
+  expect(zoom).toBe(1);
 });

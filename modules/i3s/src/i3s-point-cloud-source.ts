@@ -268,6 +268,7 @@ export class I3SPointCloudSource
       180,
       latitudeDelta / Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12)
     );
+    const coversFullLongitude = longitudeDelta >= 180;
     const minimum = [
       normalizeLongitude(center[0] - longitudeDelta),
       Math.max(-90, center[1] - latitudeDelta),
@@ -291,7 +292,8 @@ export class I3SPointCloudSource
       lodThreshold: node.lodThreshold,
       boundingVolume: {
         cartographicBounds: [minimum, maximum],
-        wrapsDateline: minimum[0] > maximum[0],
+        wrapsDateline: !coversFullLongitude && minimum[0] > maximum[0],
+        coversFullLongitude,
         center,
         radius
       }

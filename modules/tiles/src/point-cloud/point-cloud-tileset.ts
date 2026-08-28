@@ -616,9 +616,11 @@ export class PointCloudTileset {
     }
 
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
-    const longitudeSpan = boundingVolume.wrapsDateline
-      ? 360 - Math.abs(maxBounds[0] - minBounds[0])
-      : Math.abs(maxBounds[0] - minBounds[0]);
+    const longitudeSpan = boundingVolume.coversFullLongitude
+      ? 360
+      : boundingVolume.wrapsDateline
+        ? 360 - Math.abs(maxBounds[0] - minBounds[0])
+        : Math.abs(maxBounds[0] - minBounds[0]);
     const normalizedLongitudeSpan = Math.max(longitudeSpan, 0.000001);
     return Math.max(1, Math.round(Math.log2(360 / normalizedLongitudeSpan)));
   }
@@ -642,23 +644,42 @@ export class PointCloudTileset {
    */
   private getBoundingVolumeCorners(boundingVolume: PointCloudBoundingVolume): number[][] {
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
-    const longitudeIntervals = boundingVolume.wrapsDateline
-      ? [
-          [minBounds[0], 180],
-          [-180, maxBounds[0]]
-        ]
-      : [[minBounds[0], maxBounds[0]]];
+    const longitudeIntervals = boundingVolume.coversFullLongitude
+      ? [[-180, 180]]
+      : boundingVolume.wrapsDateline
+        ? [
+            [minBounds[0], 180],
+            [-180, maxBounds[0]]
+          ]
+        : [[minBounds[0], maxBounds[0]]];
     const corners: number[][] = [];
+    const wrappedLongitudeSpan = 360 - Math.abs(maxBounds[0] - minBounds[0]);
+    const longitudeReference = minBounds[0] + wrappedLongitudeSpan / 2;
     for (const [minimumLongitude, maximumLongitude] of longitudeIntervals) {
+      const normalizeLongitude = (longitude: number) => {
+        if (!boundingVolume.wrapsDateline) {
+          return longitude;
+        }
+        let normalizedLongitude = longitude;
+        while (normalizedLongitude - longitudeReference > 180) {
+          normalizedLongitude -= 360;
+        }
+        while (normalizedLongitude - longitudeReference < -180) {
+          normalizedLongitude += 360;
+        }
+        return normalizedLongitude;
+      };
+      const unwrappedMinimumLongitude = normalizeLongitude(minimumLongitude);
+      const unwrappedMaximumLongitude = normalizeLongitude(maximumLongitude);
       corners.push(
-        [minimumLongitude, minBounds[1], minBounds[2] || 0],
-        [minimumLongitude, minBounds[1], maxBounds[2] || 0],
-        [minimumLongitude, maxBounds[1], minBounds[2] || 0],
-        [minimumLongitude, maxBounds[1], maxBounds[2] || 0],
-        [maximumLongitude, minBounds[1], minBounds[2] || 0],
-        [maximumLongitude, minBounds[1], maxBounds[2] || 0],
-        [maximumLongitude, maxBounds[1], minBounds[2] || 0],
-        [maximumLongitude, maxBounds[1], maxBounds[2] || 0]
+        [unwrappedMinimumLongitude, minBounds[1], minBounds[2] || 0],
+        [unwrappedMinimumLongitude, minBounds[1], maxBounds[2] || 0],
+        [unwrappedMinimumLongitude, maxBounds[1], minBounds[2] || 0],
+        [unwrappedMinimumLongitude, maxBounds[1], maxBounds[2] || 0],
+        [unwrappedMaximumLongitude, minBounds[1], minBounds[2] || 0],
+        [unwrappedMaximumLongitude, minBounds[1], maxBounds[2] || 0],
+        [unwrappedMaximumLongitude, maxBounds[1], minBounds[2] || 0],
+        [unwrappedMaximumLongitude, maxBounds[1], maxBounds[2] || 0]
       );
     }
     return corners;

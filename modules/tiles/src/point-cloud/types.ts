@@ -43,6 +43,8 @@ export type PointCloudBoundingVolume = {
   cartographicBounds: [min: number[], max: number[]];
   /** True when the longitude interval crosses the antimeridian. */
   wrapsDateline?: boolean;
+  /** True when the longitude interval covers the full globe. */
+  coversFullLongitude?: boolean;
   center: number[];
   radius: number;
 };

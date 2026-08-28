@@ -88,6 +88,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   expect(root.id).toBe('0');
   expect(root.lodSelectionMetricType).toBe('density-threshold');
   expect(root.boundingVolume.wrapsDateline).toBe(true);
+  expect(root.boundingVolume.coversFullLongitude).toBe(false);
   expect(root.boundingVolume.cartographicBounds[1][0]).toBeLessThan(0.001);
   expect((await source.getChildren(root)).map(tile => tile.id)).toEqual(['1']);
   const content = await source.loadTileContent(root);
