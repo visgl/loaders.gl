@@ -151,6 +151,9 @@ function getPrimitiveMesh(gltf: GLTFWithBuffers, primitive: GLTFMeshPrimitive): 
     if (!accessor) {
       throw new Error(`GLTF Draco writer could not resolve index accessor ${primitive.indices}`);
     }
+    if (accessor.sparse) {
+      throw new Error(`GLTF Draco writer does not support sparse accessor ${primitive.indices}`);
+    }
     indices = getStandardTypedArray(gltf, primitive.indices, accessor.componentType);
   } else {
     const positionAccessor = gltf.json.accessors?.[primitive.attributes.POSITION];
@@ -205,7 +208,7 @@ function getBufferBytes(buffers: GLTFWithBuffers['buffers']): Uint8Array {
 
 /** Aligns a byte offset to the glTF-required four-byte boundary. */
 function alignTo4(value: number): number {
-  return (value + 3) & ~3;
+  return Math.ceil(value / 4) * 4;
 }
 
 /** Adds an extension name once while preserving the existing declaration order. */

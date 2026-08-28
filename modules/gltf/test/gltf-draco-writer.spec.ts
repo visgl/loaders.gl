@@ -6,7 +6,6 @@ import {
   GLTFWriter,
   type GLTFWithBuffers
 } from '@loaders.gl/gltf';
-import draco3d from 'draco3d';
 
 function createTriangleGLTF(): GLTFWithBuffers {
   const bytes = new Uint8Array(42);
@@ -36,7 +35,7 @@ test('compressGLTFWithDraco preserves input and adds a KHR buffer view', async (
   const inputBytes = new Uint8Array(gltf.buffers[0].arrayBuffer).slice();
   const compressed = await compressGLTFWithDraco(gltf, {
     gltf: {draco: {enabled: true}},
-    modules: {draco3d}
+    core: {useLocalLibraries: true}
   });
 
   expect(JSON.stringify(gltf.json)).toBe(inputJson);
@@ -52,15 +51,31 @@ test('GLTFWriter Draco compression round-trips through GLTFLoader', async () => 
   const gltf = createTriangleGLTF();
   const encoded = await GLTFWriter.encode(gltf, {
     gltf: {draco: {enabled: true}},
-    modules: {draco3d}
+    core: {useLocalLibraries: true}
   });
   const decoded = await parse(encoded, GLTFLoader, {
     gltf: {decompressMeshes: true},
-    modules: {draco3d}
+    core: {useLocalLibraries: true}
   });
 
   expect(decoded.json.meshes?.[0].primitives?.[0].attributes?.POSITION).toBeTruthy();
   expect(decoded.json.meshes?.[0].primitives?.[0].extensions).toEqual({});
+});
+
+test('compressGLTFWithDraco rejects sparse index accessors', async () => {
+  const gltf = createTriangleGLTF();
+  gltf.json.accessors![1].sparse = {
+    count: 1,
+    indices: {bufferView: 1, componentType: 5123},
+    values: {bufferView: 1}
+  };
+
+  await expect(
+    compressGLTFWithDraco(gltf, {
+      gltf: {draco: {enabled: true}},
+      core: {useLocalLibraries: true}
+    })
+  ).rejects.toThrow('does not support sparse accessor 1');
 });
 
 test('GLTFWriter rejects synchronous Draco compression', () => {
