@@ -174,6 +174,14 @@ export interface Tileset3DSource {
    */
   initialize(): Promise<void>;
 
+  /**
+   * Prepares option-dependent asynchronous source state before runtime headers are constructed.
+   *
+   * I3S uses this hook to sample elevation surfaces for its root bound after `Tileset3D` has
+   * applied spatial options. Sources without asynchronous header preparation omit the hook.
+   */
+  prepareTileset?(tileset: Tileset3D): Promise<void>;
+
   /** Releases source-local caches and prevents late asynchronous work from mutating runtime tiles. */
   destroy?(): void;
 

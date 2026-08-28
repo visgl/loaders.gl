@@ -38,6 +38,7 @@ import type {
   CRSIdentifier,
   PROJJSONCRS,
   PROJStringDefinition,
+  ReadonlyCRSDefinition,
   WKTCRSDefinition
 } from '@math.gl/crs';
 import {encodePROJString, encodeWKTCRS, parsePROJString, parseWKTCRS} from '@math.gl/crs';
@@ -114,16 +115,24 @@ The application-facing target contract is intentionally small:
 
 ```ts
 type TilesetSpatialOptions = {
-  targetCrs?: CRSDefinition;
+  targetCrs?: ReadonlyCRSDefinition;
   targetHeightReference?: 'native' | 'ellipsoidal' | 'orthometric';
   outputCoordinates?: 'auto' | 'ecef' | 'local-enu' | 'target-crs';
 
   // Expert recovery for missing or incorrect source metadata
-  sourceCrs?: CRSDefinition;
+  sourceCrs?: ReadonlyCRSDefinition;
   coordinateEpoch?: number;
   geoidModel?: string | Geoid;
+
+  // Only needed when I3S metadata requests surface-relative placement
+  terrainElevationProvider?: TilesetElevationProvider;
+  sceneElevationProvider?: TilesetElevationProvider;
 };
 ```
+
+Source vertical units, height references, and I3S placement modes are discovered automatically.
+See [Vertical Coordinate Systems and Elevation Placement](./vertical-coordinate-systems) for the
+operation order, provider contract, formulas, and failure behavior.
 
 The v5 foundation normalizes these options and provides `SpatialCoordinateTransformer` for
 format-owned transformation paths. A descriptor with status `transformable` says that the
@@ -226,7 +235,7 @@ mean coordinate transformation.
 | WFS | Capability/request identifiers and GML `srsName` | Identifier preservation is partial | Server-side output CRS request where supported |
 | WMTS | Tile-matrix-set supported CRS | Capability metadata | Server-selected tile matrix set; no client tile reprojection |
 | ArcGIS services | Spatial reference WKID/latestWKID fields | Service metadata and request fields are retained | Server-side `outSR`/image request behavior where implemented |
-| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Mesh and Point Cloud vertices, origins, normals, and bounds support requested geographic/projected output; vertical placement integration is in progress |
+| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, `ZFactor`, `elevationInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order, vertical units, height references, and placement are explicit | Mesh and Point Cloud vertices, origins, normals, and bounds support requested geographic/projected output, geoid conversion, and all elevation placement modes with application providers |
 | 3D Tiles | CRS/epoch metadata semantics and region-established global frames | Raw schema/entity metadata plus normalized `spatialMetadata`; local/unknown tilesets stay unknown | Shared transformer available; nonlinear content/bounds and nested-tileset integration is in progress |
 | MVT / TileJSON | Implicit tile coordinates; TileJSON bounds are longitude/latitude | Tile transform and metadata retained | Implicit Web Mercator tiling; no arbitrary CRS |
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |

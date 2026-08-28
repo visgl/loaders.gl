@@ -319,7 +319,10 @@ async function parseI3SNodeGeometry(
       attributes.position.metadata,
       tileOptions.mbs
     );
-    const transformed = spatialTransformer.transformPositions(sourcePositions, tileOptions.mbs);
+    const transformed = await spatialTransformer.transformPositionsAsync(
+      sourcePositions,
+      tileOptions.mbs
+    );
     attributes.position.value = transformed.positions;
     if (attributes.normal?.value) {
       attributes.normal.value = spatialTransformer.transformNormals(

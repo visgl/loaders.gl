@@ -14,12 +14,77 @@ import {
   type SpatialReferenceState
 } from '@math.gl/crs';
 import type {Geoid} from '@math.gl/geoid';
+import {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
 
 /** How height values in a 3D dataset relate to the earth. */
 export type TilesetHeightReference = 'native' | 'ellipsoidal' | 'orthometric' | 'unknown';
 
 /** Height reference that an application may request for transformed output. */
 export type TilesetTargetHeightReference = 'native' | 'ellipsoidal' | 'orthometric';
+
+/** I3S placement rule applied after source-height interpretation. */
+export type TilesetElevationMode =
+  | 'absoluteHeight'
+  | 'onTheGround'
+  | 'relativeToGround'
+  | 'relativeToScene';
+
+/** One WGS84 longitude/latitude location requested from an elevation provider. */
+export type TilesetElevationSample = readonly [longitude: number, latitude: number];
+
+/** WGS84 geographic footprint passed to an elevation provider. */
+export type TilesetElevationBounds = {
+  /** Western longitude in degrees. Greater than `east` when crossing the antimeridian. */
+  readonly west: number;
+  /** Southern latitude in degrees. */
+  readonly south: number;
+  /** Eastern longitude in degrees. Less than `west` when crossing the antimeridian. */
+  readonly east: number;
+  /** Northern latitude in degrees. */
+  readonly north: number;
+};
+
+/** Conservative elevation extrema over one geographic footprint. */
+export type TilesetElevationRange = {
+  /** Minimum elevation anywhere inside the footprint. */
+  readonly minimum: number;
+  /** Maximum elevation anywhere inside the footprint. */
+  readonly maximum: number;
+};
+
+/**
+ * Application-owned source of terrain or scene-surface heights.
+ *
+ * Providers receive WGS84 longitude/latitude locations and may batch asynchronous requests. They
+ * never need to transform horizontal coordinates. Returned heights default to meters in the
+ * layer's source height reference unless `unit` or `heightReference` says otherwise.
+ */
+export type TilesetElevationProvider = {
+  /** Height reference used by sampled values. Omit to use the layer's source height reference. */
+  readonly heightReference?: Exclude<TilesetHeightReference, 'native' | 'unknown'>;
+  /** Linear unit used by sampled values. Defaults to `meter`. */
+  readonly unit?: string;
+  /**
+   * Samples one height for every supplied location, preserving input order.
+   * @param positions - WGS84 longitude/latitude locations.
+   * @returns Finite heights with the same length and order as `positions`.
+   */
+  sampleElevations(
+    positions: readonly TilesetElevationSample[]
+  ): readonly number[] | Promise<readonly number[]>;
+  /**
+   * Returns conservative elevation extrema over an entire geographic footprint.
+   *
+   * Bounds preparation requires this operation because point samples cannot detect an interior
+   * peak or depression and therefore cannot produce a culling-safe traversal volume.
+   *
+   * @param bounds - WGS84 geographic footprint in degrees.
+   * @returns Minimum and maximum elevations in this provider's declared unit and height reference.
+   */
+  getElevationRange(
+    bounds: TilesetElevationBounds
+  ): TilesetElevationRange | Promise<TilesetElevationRange>;
+};
 
 /** Coordinate representation requested from a 3D tileset. */
 export type TilesetOutputCoordinates = 'auto' | 'ecef' | 'local-enu' | 'target-crs';
@@ -49,6 +114,10 @@ export type TilesetSpatialOptions = {
   coordinateEpoch?: number;
   /** Registered geoid model name or an already parsed geoid model. */
   geoidModel?: string | Geoid;
+  /** Terrain heights used by I3S `onTheGround` and `relativeToGround` placement. */
+  terrainElevationProvider?: TilesetElevationProvider;
+  /** Scene-surface heights used by I3S `relativeToScene` placement. */
+  sceneElevationProvider?: TilesetElevationProvider;
 };
 
 /**
@@ -61,10 +130,20 @@ export type TilesetSpatialReference = SpatialReference & {
   readonly sourceCrs?: ReadonlyCRSDefinition;
   /** Source vertical CRS, when independently identified. */
   readonly verticalCrs?: ReadonlyCRSDefinition;
+  /** Number of meters represented by one source Z unit. */
+  readonly verticalUnitScale: number;
   /** Coordinate epoch attached to the source coordinates. */
   readonly coordinateEpoch?: number;
   /** Source height interpretation. */
   readonly heightReference: TilesetHeightReference;
+  /** I3S placement rule, when the source layer declares one. */
+  readonly elevationMode?: TilesetElevationMode;
+  /** Declared I3S elevation offset before unit normalization. */
+  readonly elevationOffset?: number;
+  /** Unit of the I3S elevation offset. Defaults to `meter` when a mode is declared. */
+  readonly elevationUnit?: string;
+  /** Number of meters represented by one elevation-offset unit. */
+  readonly elevationUnitScale: number;
   /** Broad frame in which source coordinates are encoded. */
   readonly coordinateFrame: TilesetCoordinateFrame;
   /** Coordinate component order used by the format wire representation. */
@@ -95,10 +174,22 @@ export type CreateTilesetSpatialReferenceOptions = {
   sourceCrsAlternatives?: readonly SpatialReferenceAlternative[];
   /** Discovered vertical CRS. */
   verticalCrs?: ReadonlyCRSDefinition;
+  /** Per-component source units, aligned with the stored coordinate order. */
+  units?: readonly string[];
+  /** Number of meters represented by one discovered source Z unit. */
+  verticalUnitScale?: number;
   /** Discovered coordinate epoch. */
   coordinateEpoch?: number;
   /** Discovered height interpretation. */
   heightReference?: TilesetHeightReference;
+  /** Format-specific elevation placement rule. */
+  elevationMode?: TilesetElevationMode;
+  /** Format-specific elevation offset before unit normalization. */
+  elevationOffset?: number;
+  /** Unit of the format-specific elevation offset. */
+  elevationUnit?: string;
+  /** Number of meters represented by one elevation-offset unit. */
+  elevationUnitScale?: number;
   /** Discovered broad coordinate frame. */
   coordinateFrame?: TilesetCoordinateFrame;
   /** Format wire-axis order. */
@@ -125,21 +216,52 @@ export function createTilesetSpatialReference(
   const outputCoordinates = options.outputCoordinates || 'auto';
   const targetCrs = options.targetCrs || (outputCoordinates === 'ecef' ? 'EPSG:4978' : undefined);
   const targetHeightReference = options.targetHeightReference || 'native';
+  const verticalUnitScale = discovered.verticalUnitScale ?? 1;
+  const elevationUnitScale = discovered.elevationUnitScale ?? 1;
+  const elevationOffset = discovered.elevationOffset || 0;
+  const requiresSurface =
+    discovered.elevationMode === 'onTheGround' ||
+    discovered.elevationMode === 'relativeToGround' ||
+    discovered.elevationMode === 'relativeToScene';
+  const hasElevationProvider =
+    discovered.elevationMode === 'relativeToScene'
+      ? Boolean(options.sceneElevationProvider)
+      : !requiresSurface || Boolean(options.terrainElevationProvider);
+  const hasFormatVerticalOperation =
+    verticalUnitScale !== 1 ||
+    elevationUnitScale !== 1 ||
+    (discovered.elevationMode !== undefined &&
+      (requiresSurface ||
+        (discovered.elevationMode === 'absoluteHeight' && elevationOffset !== 0)));
   const needsHeightTransform =
     targetHeightReference !== 'native' && targetHeightReference !== discovered.heightReference;
   const hasRequestedTransform =
-    Boolean(targetCrs) || targetHeightReference !== 'native' || outputCoordinates !== 'auto';
+    Boolean(targetCrs) ||
+    targetHeightReference !== 'native' ||
+    outputCoordinates !== 'auto' ||
+    hasFormatVerticalOperation;
   const hasRequiredTarget = outputCoordinates !== 'target-crs' || Boolean(targetCrs);
   const hasHeightMetadata =
     !needsHeightTransform || (discovered.heightReference || 'unknown') !== 'unknown';
+  const hasVerticalUnits =
+    Number.isFinite(verticalUnitScale) &&
+    verticalUnitScale > 0 &&
+    Number.isFinite(elevationUnitScale) &&
+    elevationUnitScale > 0;
   const canTransform =
     Boolean(sourceCrs) &&
     hasRequestedTransform &&
     hasRequiredTarget &&
     hasHeightMetadata &&
+    hasVerticalUnits &&
+    hasElevationProvider &&
     outputCoordinates !== 'local-enu';
 
   const provenance = hasSourceCrsOverride ? 'caller-override' : discovered.provenance || 'unknown';
+  const coordinateFrame =
+    hasSourceCrsOverride && sourceCrs
+      ? getSpatialCoordinateFrame(sourceCrs)
+      : discovered.coordinateFrame;
   const sourceCrsState = hasSourceCrsOverride
     ? 'explicit'
     : discovered.sourceCrsState ||
@@ -168,8 +290,9 @@ export function createTilesetSpatialReference(
         }
       : undefined,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
-    coordinateFrame: discovered.coordinateFrame,
-    coordinateOrder: getCoordinateOrder(discovered.axisOrder)
+    coordinateFrame,
+    coordinateOrder: getCoordinateOrder(discovered.axisOrder),
+    units: hasSourceCrsOverride ? undefined : discovered.units
   });
   const normalizedSourceCrs = getKnownCRSDefinition(spatialReference.crs);
   const normalizedVerticalCrs = spatialReference.vertical
@@ -181,9 +304,14 @@ export function createTilesetSpatialReference(
     ...spatialReference,
     sourceCrs: normalizedSourceCrs,
     verticalCrs: normalizedVerticalCrs,
+    verticalUnitScale,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
     heightReference: discovered.heightReference || 'unknown',
-    coordinateFrame: discovered.coordinateFrame || 'unknown',
+    elevationMode: discovered.elevationMode,
+    elevationOffset: discovered.elevationOffset,
+    elevationUnit: discovered.elevationUnit,
+    elevationUnitScale,
+    coordinateFrame: coordinateFrame || 'unknown',
     axisOrder: discovered.axisOrder || 'unknown',
     provenance,
     targetCrs: normalizedTargetCrs,
@@ -218,8 +346,14 @@ export function applyTilesetSpatialOptions(
           ? discovered.crs.alternatives
           : undefined,
       verticalCrs: discovered?.verticalCrs,
+      units: discovered?.units,
+      verticalUnitScale: discovered?.verticalUnitScale,
       coordinateEpoch: discovered?.coordinateEpoch,
       heightReference: discovered?.heightReference,
+      elevationMode: discovered?.elevationMode,
+      elevationOffset: discovered?.elevationOffset,
+      elevationUnit: discovered?.elevationUnit,
+      elevationUnitScale: discovered?.elevationUnitScale,
       coordinateFrame: discovered?.coordinateFrame,
       axisOrder: discovered?.axisOrder,
       provenance: discovered?.provenance,

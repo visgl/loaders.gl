@@ -117,6 +117,12 @@ export class I3SPointCloudSource
       getI3SSpatialReference(this.metadata),
       this.options.spatial
     );
+    if (this.spatialReference.status === 'unresolved') {
+      throw new Error(
+        this.spatialReference.warnings[0] ||
+          'I3S spatial operations cannot be resolved from the supplied metadata and options'
+      );
+    }
     if (this.spatialReference.status === 'transformable') {
       this.spatialTransformer = new I3SSpatialTransformer(
         this.spatialReference,
@@ -143,7 +149,7 @@ export class I3SPointCloudSource
   async getRootTile(): Promise<PointCloudTileHeader> {
     await this.initialize();
     const node = await this.getNode(this.rootIndex);
-    this.rootTileHeader ||= this.makeTileHeader(this.rootIndex, node, 0);
+    this.rootTileHeader ||= await this.makeTileHeader(this.rootIndex, node, 0);
     return this.rootTileHeader;
   }
 
@@ -158,7 +164,7 @@ export class I3SPointCloudSource
     for (let index = 0; index < node.childCount; index++) {
       const childId = node.firstChild + index;
       const child = await this.getNode(childId);
-      children.push(this.makeTileHeader(childId, child, tile.level + 1));
+      children.push(await this.makeTileHeader(childId, child, tile.level + 1));
     }
     return children;
   }
@@ -189,7 +195,7 @@ export class I3SPointCloudSource
     // full precision without widening the shared Arrow schema.
     const sourceCenter = Array.from(node.obb.center as number[]);
     const normalizedPositions = this.spatialTransformer
-      ? this.spatialTransformer.transformPositions(positions, sourceCenter)
+      ? await this.spatialTransformer.transformPositionsAsync(positions, sourceCenter)
       : normalizePointPositions(
           positions,
           tile.boundingVolume.center,
@@ -245,10 +251,7 @@ export class I3SPointCloudSource
   /** Return a view state suitable for PointCloudTileset initialization. */
   getViewState() {
     if (this.spatialTransformer && this.rootTileHeader) {
-      const rootNode = this.nodes.get(String(this.rootIndex));
-      const cartographicCenter = rootNode
-        ? this.spatialTransformer.transformSourcePositionToGeographic(rootNode.obb.center)
-        : undefined;
+      const cartographicCenter = this.rootTileHeader.boundingVolume.center;
       return {
         cartographicCenter,
         boundingVolume: this.rootTileHeader.boundingVolume,
@@ -300,11 +303,11 @@ export class I3SPointCloudSource
     return page;
   }
 
-  private makeTileHeader(
+  private async makeTileHeader(
     nodeId: number,
     node: I3SPointCloudNode,
     level: number
-  ): PointCloudTileHeader {
+  ): Promise<PointCloudTileHeader> {
     const center = Array.from(node.obb.center as number[]);
     const halfSize = Array.from(node.obb.halfSize as number[]);
     const radius = Math.hypot(...halfSize);
@@ -325,12 +328,14 @@ export class I3SPointCloudSource
         obb: node.obb,
         normalReferenceFrame: this.metadata?.store.normalReferenceFrame
       };
+      const transformedBounds =
+        await this.spatialTransformer.transformPointCloudBoundsAsync(sourceBounds);
       const boundingVolume = getTransformedPointCloudBounds(
-        this.spatialTransformer.transformBoundingVolumeToGeographic(sourceBounds),
+        transformedBounds.boundingVolume,
         'geographic'
       );
       const spatialBoundingVolume = getTransformedPointCloudBounds(
-        this.spatialTransformer.transformBoundingVolume(sourceBounds),
+        transformedBounds.spatialBoundingVolume,
         this.spatialTransformer.targetCoordinateFrame === 'geographic' ? 'geographic' : 'cartesian'
       );
       return {

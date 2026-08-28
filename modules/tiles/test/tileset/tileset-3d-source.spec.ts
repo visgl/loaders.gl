@@ -294,6 +294,75 @@ test('I3SSource transforms traversal bounds and preserves a geographic view cent
   expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
   expect(tileset.cartographicCenter[1]).toBeCloseTo(0, 8);
 });
+test('I3SSource prepares terrain-relative root bounds before tile initialization', async () => {
+  let rangeCallCount = 0;
+  const terrainElevationProvider = {
+    sampleElevations(positions: readonly (readonly [number, number])[]) {
+      return Promise.resolve(positions.map(() => 50));
+    },
+    getElevationRange() {
+      rangeCallCount++;
+      return Promise.resolve({minimum: 50, maximum: 50});
+    }
+  };
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 20, 5, 0],
+      boundingVolume: {sphere: [10, 20, 5, 0]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+    elevationInfo: {mode: 'relativeToGround', offset: 2, unit: 'meter'},
+    store: {normalReferenceFrame: 'earth-centered'}
+  } as any);
+  const tileset = new Tileset3D(source, {
+    spatial: {targetCrs: 'EPSG:4326', terrainElevationProvider}
+  });
+  await tileset.tilesetInitializationPromise;
+
+  expect(rangeCallCount).toBe(1);
+  expect(tileset.root?.header.i3sLodMbs[0]).toBeCloseTo(10, 8);
+  expect(tileset.root?.header.i3sLodMbs[1]).toBeCloseTo(20, 8);
+  expect(tileset.root?.header.i3sLodMbs[2]).toBeCloseTo(57, 8);
+  expect(tileset.root?.header.spatialBoundingVolume.region[4]).toBeCloseTo(57, 8);
+  expect(tileset.root?.header.spatialBoundingVolume.region[5]).toBeCloseTo(57, 8);
+  expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
+  expect(tileset.cartographicCenter[1]).toBeCloseTo(20, 8);
+  expect(tileset.cartographicCenter[2]).toBeCloseTo(57, 8);
+});
+test('I3SSource rejects unresolved format-owned vertical operations', async () => {
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 20, 5, 0],
+      boundingVolume: {sphere: [10, 20, 5, 0]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'furlong'}
+  } as any);
+  const tileset = new Tileset3D(source);
+
+  await expect(tileset.tilesetInitializationPromise).rejects.toThrow(
+    'Unsupported I3S vertical unit furlong'
+  );
+});
 test('I3SSource appends auth tokens before loading URL-backed root metadata', async () => {
   const requestedUrls: string[] = [];
   const resolver: TilesetSourceResolver = {
