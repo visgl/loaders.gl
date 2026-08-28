@@ -6,7 +6,7 @@ node scripts/validate-token.js
 # Build the worker bundle imported by the cloud-native Parquet examples.
 (
   cd ..
-  npm run build-source-worker --prefix modules/parquet
+  npm run --silent build-source-worker --prefix modules/parquet -- --log-level=error
 )
 
 # staging or prod
@@ -14,15 +14,21 @@ MODE=$1
 WEBSITE_DIR=`pwd`
 OUTPUT_DIR=build
 
+# Docusaurus' HTML minifier reports known, non-fatal diagnostics for generated
+# documentation markup. Rendering failures still fail the build.
+export DOCUSAURUS_IGNORE_SSG_WARNINGS=true
+export DOCUSAURUS_NO_PERSISTENT_CACHE=1
+export NO_UPDATE_NOTIFIER=1
+
 # clean up cache
 # docusaurus clear
 
 case $MODE in
   "prod")
-    DOCUSAURUS_NO_PERSISTENT_CACHE=1 docusaurus build
+    docusaurus build
     ;;
   "staging")
-    DOCUSAURUS_NO_PERSISTENT_CACHE=1 STAGING=true docusaurus build
+    STAGING=true docusaurus build
     ;;
 esac
 

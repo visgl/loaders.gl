@@ -28,5 +28,5 @@ encodings, predicate pushdown, and writes are not yet supported.
   subpath. They read selected primitive or two-dimensional coordinate columns
   with HTTP ranges.
 
-See the [Lance browser example](/examples/lance) for a curated Hugging Face
-picker, LAION scalar table, and PushT deck.gl coordinate view.
+See the [Lance browser example](https://github.com/visgl/loaders.gl/tree/master/examples/lance/browser)
+for a curated Hugging Face picker, LAION scalar table, and PushT deck.gl coordinate view.
