@@ -17,7 +17,7 @@ BSL doesn't have content resources. It is a composite layer that consists of mul
 
 `group` sublayer is also just a composite layer. It contains further levels of sublayers and provides a nested structure for BSL. As a result, BSL has a tree-like sublayers structure with `3DObject` and `Point` layers;
 
-`3DObject` and `Point` sublayers are content layers. Those layer types are separated types of layers in I3S spec and can be used independently. Loaders.gl supports both content profiles through the standard I3S source; this example renders the `3DObject` sublayers, while Point metadata and geometry can be inspected with the [I3S profile gallery](./profile-gallery).
+`3DObject` and `Point` sublayers are content layers. Those layer types are separated types of layers in I3S spec and can be used independently. Loaders.gl supports both profiles through the standard I3S source.
 
 ## BSL visualization with deck.gl
 
@@ -38,7 +38,7 @@ import {I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
 const {header, sublayers} = await load(tilesetData.url, I3SBuildingSceneLayerLoader);
 ```
 
-The loader returns a flattened array called `sublayers` that contains only `3DObject` layers from the BSL sublayers tree.
+The loader returns a flattened array called `sublayers` that contains renderable `3DObject` and `Point` layers from the BSL sublayers tree.
 
 ### Show sublayers in deck.gl
 

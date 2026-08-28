@@ -3,8 +3,8 @@
 // Copyright vis.gl contributors
 
 export type {I3SLoaderOptions} from './i3s-loader';
-export {I3S_CONFORMANCE_MANIFEST} from './i3s-conformance';
-export type {I3SConformanceManifestEntry, I3SConformanceProfile} from './i3s-conformance';
+export {I3S_CONFORMANCE_PROFILES} from './i3s-conformance';
+export type {I3SConformanceProfile} from './i3s-conformance';
 export {
   I3SPointCloudNodePageSchema,
   I3SPointCloudNodeSchema,
@@ -30,16 +30,18 @@ export {
 export {I3SPointCloudSource} from './i3s-point-cloud-source';
 export {
   createI3SLayerSource,
-  getI3SFeatureSupportReport,
   I3SUnsupportedProfileError,
   normalizeI3SServiceMetadata,
+  normalizeI3SRendererMetadata,
+  getI3SFeatureSupportReport,
   parseI3SSceneLayerMetadata
 } from './i3s-service';
 export type {
-  I3SFeatureSupportReport,
-  I3SFeatureSupportStatus,
   I3SLayerSource,
   I3SServiceMetadata,
-  I3SSupportDiagnostic
+  I3SFeatureSupportStatus,
+  I3SSupportDiagnostic,
+  I3SRendererMetadata,
+  I3SFeatureSupportReport
 } from './i3s-service';
 export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';

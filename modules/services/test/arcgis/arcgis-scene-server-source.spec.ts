@@ -1,7 +1,11 @@
 import {fetchFile} from '@loaders.gl/core';
 import {I3SPointCloudSource} from '@loaders.gl/i3s';
 import {I3SSource} from '@loaders.gl/tiles';
-import {ArcGISSceneServerSource, ArcGISSceneServerSourceLoader} from '@loaders.gl/services';
+import {
+  ArcGISSceneServerSource,
+  ArcGISSceneServerSourceLoader,
+  aggregateArcGISSceneFeatures
+} from '@loaders.gl/services';
 import {expect, test, vi} from 'vitest';
 
 const SCENE_SERVER_URL = 'https://example.com/arcgis/rest/services/City/SceneServer';
@@ -67,7 +71,6 @@ test('ArcGISSceneServerSource normalizes metadata and creates a mesh source', as
     spatialReference: {wkid: 4326}
   });
   expect(metadata.supportReport.features.geometry).toBe('supported');
-  expect(metadata.supportReport.features.sceneServerQueries).toBe('unsupported');
   expect(await source.getTilesetSource()).toBeInstanceOf(I3SSource);
   expect(fetch).toHaveBeenCalledTimes(1);
 });
@@ -155,4 +158,85 @@ test('ArcGISSceneServerSource normalizes a trailing slash before query parameter
 
   expect(source.getLayerURL()).toBe(`${SCENE_SERVER_URL}/layers/0`);
   expect(source.metadataURL()).toBe(`${SCENE_SERVER_URL}/layers/0?f=pjson&token=url-secret`);
+});
+
+test('ArcGISSceneServerSource queries features with authentication and cancellation', async () => {
+  const source = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/0`, {
+    'arcgis-scene-server': {token: 'query-secret'}
+  });
+  let requestedURL = '';
+  let requestOptions: RequestInit | undefined;
+  source.fetch = async (url, options) => {
+    requestedURL = url;
+    requestOptions = options;
+    return new Response(
+      JSON.stringify({
+        features: [{attributes: {kind: 'building', height: 10}}],
+        exceededTransferLimit: false
+      })
+    );
+  };
+  const controller = new AbortController();
+  const result = await source.query({
+    where: "kind = 'building'",
+    outFields: ['kind', 'height'],
+    resultRecordCount: 1,
+    signal: controller.signal
+  });
+  const url = new URL(requestedURL);
+  expect(url.pathname).toBe('/arcgis/rest/services/City/SceneServer/layers/0/query');
+  expect(url.searchParams.get('token')).toBe('query-secret');
+  expect(url.searchParams.get('where')).toBe("kind = 'building'");
+  expect(result.features).toHaveLength(1);
+  expect(requestOptions?.signal).toBe(controller.signal);
+});
+
+test('aggregateArcGISSceneFeatures groups and ignores non-numeric values', () => {
+  const result = aggregateArcGISSceneFeatures({
+    features: [
+      {attributes: {kind: 'a', value: 2}},
+      {attributes: {kind: 'a', value: '3'}},
+      {attributes: {kind: 'b', value: 'invalid'}}
+    ],
+    groupBy: 'kind',
+    aggregations: [
+      {name: 'count', operation: 'count'},
+      {name: 'sum', field: 'value', operation: 'sum'},
+      {name: 'average', field: 'value', operation: 'average'}
+    ]
+  });
+  expect(result).toEqual([
+    {group: 'a', values: {count: 2, sum: 5, average: 2.5}},
+    {group: 'b', values: {count: 1, sum: 0, average: 0}}
+  ]);
+});
+
+test('aggregateArcGISSceneFeatures supports all numeric operations and plain records', () => {
+  const result = aggregateArcGISSceneFeatures({
+    features: [{kind: 'a', value: 2}, {kind: 'a', value: 6}, {kind: 'a', value: null}, null],
+    aggregations: [
+      {name: 'count', operation: 'count'},
+      {name: 'min', field: 'value', operation: 'min'},
+      {name: 'max', field: 'value', operation: 'max'},
+      {name: 'sum', field: 'value', operation: 'sum'}
+    ]
+  });
+  expect(result).toEqual([{group: undefined, values: {count: 4, min: 2, max: 6, sum: 8}}]);
+});
+
+test('ArcGISSceneServerSource reports query and URL errors with typed details', async () => {
+  const source = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/0`);
+  source.fetch = async () => new Response('nope', {status: 503, statusText: 'Unavailable'});
+  await expect(source.query()).rejects.toMatchObject({
+    name: 'ArcGISSceneServerQueryError',
+    status: 503
+  });
+
+  source.fetch = async () => new Response(JSON.stringify({error: {code: 400, message: 'bad'}}));
+  await expect(source.getFeatures({f: 'pjson'})).rejects.toThrow('query returned an error');
+
+  expect(() =>
+    new ArcGISSceneServerSource('https://example.com/FeatureServer/0').getLayerURL()
+  ).toThrow(/requires a \/SceneServer/);
+  expect(() => new ArcGISSceneServerSource(SCENE_SERVER_URL).getLayerURL()).toThrow(/layerId/);
 });

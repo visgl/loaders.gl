@@ -3,7 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {I3SNodePageLoader} from '@loaders.gl/i3s';
+import {
+  getI3SFeatureSupportReport,
+  I3S_CONFORMANCE_PROFILES,
+  I3SNodePageLoader,
+  I3SUnsupportedProfileError,
+  normalizeI3SRendererMetadata,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
+} from '@loaders.gl/i3s';
 import {
   I3SPointCloudSceneLayerSchema,
   I3SPointSceneLayerSchema,
@@ -16,8 +24,6 @@ import {parseI3STileContent, parseUint64Values} from '../src/lib/parsers/parse-i
 import {getLegacyMaterialDefinition, normalizeTileData} from '../src/lib/parsers/parse-i3s';
 import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';
 import {loadStatistics} from '../src/i3s-statistics';
-import {I3S_CONFORMANCE_MANIFEST} from '../src/i3s-conformance';
-import {getI3SFeatureSupportReport} from '../src/i3s-service';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
@@ -60,43 +66,14 @@ const SCENE_LAYER_FIXTURES = [
 ] as const;
 
 describe('I3S conformance fixtures', () => {
-  it('keeps version claims tied to representative fixtures', () => {
-    const point18 = I3S_CONFORMANCE_MANIFEST.find(
-      entry => entry.profile === 'Point' && entry.version === '1.8'
-    );
-    const point17 = I3S_CONFORMANCE_MANIFEST.find(
-      entry => entry.profile === 'Point' && entry.version === '1.7'
-    );
-    const pointCloud21 = I3S_CONFORMANCE_MANIFEST.find(
-      entry => entry.profile === 'PointCloud' && entry.version === '2.1'
-    );
-    const building = I3S_CONFORMANCE_MANIFEST.find(entry => entry.profile === 'Building');
-
-    expect(point18?.fixture).toContain('i3s-1.8-point.json');
-    expect(point17?.fixture).toBeUndefined();
-    expect(point17?.resources).toEqual([]);
-    expect(pointCloud21?.fixture).toContain('i3s-2.1-point-cloud.json');
-    expect(building?.fixture).toBeUndefined();
-  });
-
-  it('reports conservative metadata capabilities and diagnostics', () => {
-    const report = getI3SFeatureSupportReport({
-      id: 0,
-      layerType: '3DObject',
-      version: '1.10',
-      capabilities: ['View'],
-      disablePopup: false,
-      store: {profile: 'meshpyramids', version: '1.10', defaultGeometrySchema: {}},
-      drawingInfo: {renderer: {type: 'simple'}}
-    });
-
-    expect(report.features.metadata).toBe('supported');
-    expect(report.features.geometry).toBe('supported');
-    expect(report.features.rendererMetadata).toBe('partial');
-    expect(report.features.sceneServerQueries).toBe('unsupported');
-    expect(report.diagnostics.map(diagnostic => diagnostic.code)).toContain(
-      'renderer-not-evaluated'
-    );
+  it('publishes an explicit Esri and OGC profile matrix', () => {
+    expect(I3S_CONFORMANCE_PROFILES.some(entry => entry.version === '1.6')).toBe(true);
+    expect(I3S_CONFORMANCE_PROFILES.some(entry => entry.version === '1.10')).toBe(true);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(
+        entry => entry.version === '2.1' && entry.profile === 'PointCloud'
+      )?.ogcVersion
+    ).toBe('1.3');
   });
 
   it.each(SCENE_LAYER_FIXTURES)('accepts $name scene-layer metadata', async fixture => {
@@ -170,6 +147,82 @@ describe('I3S conformance fixtures', () => {
         }
       })
     ).toThrow(/profile/);
+  });
+
+  it('reports partial renderer and popup semantics without evaluating expressions', async () => {
+    const response = await fetchFile('@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json');
+    const document = await response.json();
+    const sceneLayer = I3SPointSceneLayerSchema.parse({
+      ...document,
+      drawingInfo: {
+        renderer: {
+          type: 'classBreaks',
+          field: 'height',
+          classBreakInfos: [],
+          visualVariables: [{type: 'sizeInfo', valueExpression: '$feature.height'}],
+          producerExtension: true
+        }
+      },
+      popupInfo: {expressionInfos: [{name: 'label', expression: '$feature.name'}]}
+    });
+    const report = getI3SFeatureSupportReport(sceneLayer);
+    expect(report.features.rendererMetadata).toBe('partial');
+    expect(report.features.popupMetadata).toBe('partial');
+    expect(report.diagnostics).toHaveLength(2);
+
+    const pointCloudResponse = await fetchFile(
+      '@loaders.gl/i3s/test/data/conformance/i3s-2.1-point-cloud.json'
+    );
+    const pointCloudLayer = I3SPointCloudSceneLayerSchema.parse(await pointCloudResponse.json());
+    expect(getI3SFeatureSupportReport(pointCloudLayer).features.attributes).toBe('partial');
+  });
+
+  it('does not claim delivery forms without representative fixtures', () => {
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(entry => entry.profile === 'Point' && entry.version === '1.8')
+        ?.resources
+    ).toEqual(['rest']);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(entry => entry.profile === 'Point' && entry.version === '1.7')
+        ?.resources
+    ).toEqual([]);
+    expect(
+      I3S_CONFORMANCE_PROFILES.find(
+        entry => entry.profile === 'PointCloud' && entry.version === '2.1'
+      )?.resources
+    ).toEqual(['rest']);
+  });
+
+  it('normalizes renderer extensions while preserving the original layer', async () => {
+    const response = await fetchFile('@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json');
+    const document = await response.json();
+    const sceneLayer = parseI3SSceneLayerMetadata({
+      ...document,
+      drawingInfo: {
+        renderer: {
+          type: 'uniqueValue',
+          field: 'category',
+          uniqueValueInfos: [{value: 'a'}],
+          visualVariables: [],
+          labelClasses: [],
+          producerExtension: true
+        }
+      }
+    });
+    const renderer = normalizeI3SRendererMetadata(sceneLayer);
+    expect(renderer?.classes).toEqual([{value: 'a'}]);
+    expect(renderer?.unsupportedProperties).toEqual(['producerExtension']);
+    expect(normalizeI3SRendererMetadata({...sceneLayer, drawingInfo: undefined})).toBeUndefined();
+    expect(
+      normalizeI3SServiceMetadata('https://example.com/layer', sceneLayer).diagnostics
+    ).toHaveLength(1);
+  });
+
+  it('constructs typed unsupported profile errors', () => {
+    const error = new I3SUnsupportedProfileError('custom-profile');
+    expect(error.name).toBe('I3SUnsupportedProfileError');
+    expect(error.profile).toBe('custom-profile');
+    expect(error.message).toContain('custom-profile');
   });
 
   it('preserves UInt64 values through Number.MAX_SAFE_INTEGER', () => {

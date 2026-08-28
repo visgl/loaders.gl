@@ -65,9 +65,21 @@ export type {
 /** ArcGIS SceneServer I3S source and loader. */
 export {
   ArcGISSceneServerSourceLoader,
-  ArcGISSceneServerSource
+  ArcGISSceneServerSource,
+  ArcGISSceneServerQueryError
 } from './arcgis/arcgis-scene-server-source-loader';
-export type {ArcGISSceneServerSourceOptions} from './arcgis/arcgis-scene-server-source-loader';
+export {aggregateArcGISSceneFeatures} from './arcgis/arcgis-scene-aggregation';
+export type {
+  ArcGISSceneAggregationOperation,
+  ArcGISSceneAggregationSpec,
+  ArcGISSceneAggregationOptions,
+  ArcGISSceneAggregationGroup
+} from './arcgis/arcgis-scene-aggregation';
+export type {
+  ArcGISSceneServerSourceOptions,
+  ArcGISSceneQueryOptions,
+  ArcGISSceneQueryResult
+} from './arcgis/arcgis-scene-server-source-loader';
 
 export type {ServiceLoader} from './service-registry';
 export {SERVICE_LOADERS, getServiceLoader} from './service-registry';

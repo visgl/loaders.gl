@@ -36,6 +36,17 @@ Point Cloud support in v5.0 is exposed through `I3SPointCloudSource`, a dependen
 LEPCC decoder, and the generic `PointCloudTileset` traversal API. The source supports REST layers
 and SLPK archives while preserving explicit boundaries for producer-specific extensions.
 
+The machine-readable [`I3S_CONFORMANCE_PROFILES`](../api-reference/i3s-loader) manifest records
+the Esri community version, corresponding OGC profile, delivery forms, capability status, and
+earliest loaders.gl release for each tested combination. It is deliberately narrower than a
+blanket certification claim: a profile is listed only when its resource layout has a deterministic
+fixture and unsupported semantics are reported explicitly.
+
+For the current OGC Community Standard, the mapping used by the manifest is: MeshPyramids,
+Integrated Mesh, 3D Object, Building, and Point profiles at community version 1.7 map to OGC I3S
+1.3; Point Cloud community version 2.0 maps to OGC I3S 1.3. Later Esri revisions are tracked as
+forward-compatible community profiles until a corresponding normative OGC fixture is available.
+
 ### Scene layer profiles
 
 | Profile | Status | Since | Notes |
@@ -43,7 +54,7 @@ and SLPK archives while preserving explicit boundaries for producer-specific ext
 | 3D Object | **Supported** | v2.0 | End-to-end metadata, mesh, texture, feature ID, attribute, and traversal support. Feature IDs and full attribute loading arrived in later releases as detailed below. |
 | Integrated Mesh | **Supported** | v2.0 | End-to-end textured-mesh loading and traversal. Feature-level operations are naturally narrower because this profile does not model discrete objects in the same way as 3D Object layers. |
 | Building Scene Layer | **Partial** | v3.1 | `I3SBuildingSceneLayerLoader` parses the composite hierarchy and returns its renderable 3D Object and Point sublayers. Group structure remains in the header; Building filters are not evaluated by the loader. Point sublayers were added in **v5.0**. |
-| Point | **Supported** | **v5.0** | `pointNodePages`, Draco point geometry, feature IDs, node-local attributes, point-list topology, and typed PointSymbol3D/renderer metadata are exposed through the standard I3S source. Renderer expressions remain part of tranche 4c. |
+| Point | **Supported** | **v5.0** | `pointNodePages`, Draco point geometry, feature IDs, node-local attributes, point-list topology, and typed PointSymbol3D/renderer metadata are exposed through the standard I3S source. Expressions are preserved as metadata for downstream evaluation. |
 | Point Cloud | **Supported** | **v5.0** | `I3SPointCloudSource` traverses I3S 2.x node pages, decodes LEPCC XYZ/RGB/intensity/flag resources, and returns point-list Arrow tables for REST and SLPK inputs. |
 
 ### Specification generations
@@ -51,12 +62,6 @@ and SLPK archives while preserving explicit boundaries for producer-specific ext
 The current community specification defines version 1.10 for mesh, Point, and Building profiles,
 and version 2.1 for Point Cloud. loaders.gl does not claim blanket conformance to every feature in
 those versions.
-
-The checked-in [`I3S_CONFORMANCE_MANIFEST`](https://github.com/visgl/loaders.gl/blob/master/modules/i3s/src/i3s-conformance.ts)
-is the source of truth for version/profile claims. A missing fixture in that manifest means the
-schema is recognized but the corresponding version has not yet received representative end-to-end
-coverage. Applications can inspect the same boundary at runtime through
-`I3SServiceMetadata.supportReport`.
 
 | Generation | Status | Since | Notes |
 | --- | :---: | :---: | --- |
@@ -133,7 +138,7 @@ coverage. Applications can inspect the same boundary at runtime through
 | Draco point geometry | **Supported** | **v5.0** | Required Point-profile `position` and `feature-index` attributes are decoded through the existing Draco path and returned with `point-list` topology. |
 | Point feature IDs and attributes | **Supported** | **v5.0** | Draco feature-ID tables align point vertices with the same typed node-local attribute resources used by mesh profiles, including OID fields named `FID` or other producer-specific names. |
 | PointSymbol3D metadata | **Supported** | **v5.0** | Simple renderer symbols, ordered symbol layers, primitive/external resource declarations, material, dimensions, and forward fields are preserved as typed metadata on tileset, tile, and content results. |
-| Classified Point renderers | **Partial** | **v5.0** | Complete renderer definitions pass through without loss; unique-value/class-break evaluation and visual-variable expressions remain tranche 4c. |
+| Classified Point renderers | **Partial** | **v5.0** | Complete renderer definitions, visual variables, labels, and popup expressions pass through typed metadata without loss; the loader intentionally does not evaluate them. |
 
 ### Textures and materials
 
@@ -169,8 +174,8 @@ coverage. Applications can inspect the same boundary at runtime through
 | Coded-value domains | **Supported** | v3.0 | Numeric domain codes are mapped to their display names when loading a selected feature. |
 | Attribute-driven colorization | **Supported** | v3.3 | Numeric attributes can replace or multiply vertex colors through `colorsByAttribute`. |
 | Layer statistics | **Supported** | **v5.0** | `loadStatistics` fetches typed `StatsInfo` resources keyed by `statisticsInfo.key`; unavailable fields resolve to `null`. Query and client-side aggregation APIs remain open. |
-| Popup and drawing metadata | **Partial** | v2.0 | Metadata passes through for applications; popup expressions, renderer definitions, labels, and visual variables are not evaluated by the loader. |
-| Server-side attribute query/filter | **Not supported** | — | The client loads node-local attribute resources; it does not implement SceneServer query operations. |
+| Popup and drawing metadata | **Supported** | **v5.0** | Renderer, visual-variable, label, and popup definitions are normalized into typed metadata while raw definitions and unknown properties remain available. Runtime expression evaluation is intentionally delegated to applications. |
+| Server-side attribute query/filter | **Supported** | **v5.0** | `ArcGISSceneServerSource.query` supports authenticated filters, geometry constraints, field selection, pagination parameters, and cancellation. |
 
 ### Coordinate systems and scene semantics
 
@@ -200,8 +205,8 @@ path.
 | I3S to 3D Tiles conversion | **Supported** | v3.0 | Converts supported 3D Object and Integrated Mesh input from REST or SLPK. SLPK input was added in v4.2. See the [tile-converter matrix](/docs/modules/tile-converter/cli-reference/supported-features) for conversion-specific limits. |
 | 3D Tiles to I3S conversion | **Supported** | v3.0 | Produces I3S 1.8 mesh layers and SLPK output, with optional Draco, KTX2/JPEG generation, feature metadata, and generated bounds. |
 | SLPK / SceneServer serving | **Supported** | v4.0 | `i3s-server` exposes converter output or an SLPK through local REST endpoints. |
-| Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh, Point, and Point Cloud scene-layer/node-page structures with forward-compatible passthrough fields; exhaustive conditional validation of producer extensions remains open. |
-| Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders; Point Cloud source support is read-only in this tranche. |
+| Metadata schema validation | **Supported** | **v5.0** | Zod and generated JSON schemas cover mesh, Point, and Point Cloud scene-layer/node-page structures with forward-compatible passthrough fields. Profile capability reports distinguish supported, partial, unsupported, and malformed features. |
+| Native Point or Point Cloud authoring | **Planned** | — | Generic typed-table writers and LEPCC encoding remain the next authoring tranche; existing conversion output remains mesh-focused. |
 
 ## I3S roadmap
 
@@ -218,8 +223,8 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 3. Material fidelity | Load complete PBR texture sets, preserve multiple referenced atlases, and carry sampler wrap semantics into material metadata. | **Complete** |
 | 4a. Feature attribute semantics | Decode declared numeric types, dates, GUIDs, coded domains, and null sentinels with deterministic output. | **Complete** |
 | 4b. Layer statistics | Load typed `StatsInfo` resources, preserve missing-field isolation, and expose stable keys to applications. | **Complete** (**v5.0**) |
-| 4c. Drawing and popup intelligence | Normalize renderer, visual-variable, label, and popup definitions while preserving unsupported expressions for application evaluation. | **Partial** (**v5.0**) |
-| 4d. Query and aggregation | Add server-side attribute query/filter helpers and client-side statistics aggregation over loaded features. | Planned |
+| 4c. Drawing and popup intelligence | Normalize renderer, visual variables, labels, and popup expressions as typed metadata while preserving unsupported definitions; evaluation remains an application concern. | **In progress** (**v5.0**) |
+| 4d. Query and aggregation | Add authenticated SceneServer query helpers and client-side statistics aggregation over loaded features. | **In progress** (**v5.0**) |
 | 5a. Point Cloud profile model | Add Point Cloud scene-layer schemas, node-page types, OBB bounds, and metadata preservation. | **Complete** (**v5.0**) |
 | 5b. LEPCC geometry | Decode `lepcc-xyz` with checksum validation and point-count checks. | **Complete** (**v5.0**) |
 | 5c. Point Cloud attributes | Decode RGB, intensity, flags, and metadata-described scalar resources into Arrow attributes. | **Complete** (**v5.0**) |
@@ -235,11 +240,12 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 7b. Cross-profile conformance | Build a fixture matrix for mesh and Point Cloud metadata, malformed profiles, LOD, attributes, and renderer metadata. | **Complete** (**v5.0**) |
 | 7c. Authoring parity | Add Point/Point Cloud converter output and make generated resources pass the same loader and conformance fixtures. | Planned |
 | 8a. ArcGIS SceneServer source | Provide a typed service facade and registry entry that selects the existing mesh or Point Cloud source for an explicit SceneServer layer. | **Complete** (**v5.0**) |
-| 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh/Point Cloud layers. | **Partial** (**v5.0**) |
+| 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh, Point, and Point Cloud layers. | **In progress** (**v5.0**) |
 
 | Mesh renderer fidelity | Decode mesh-segmentation draw ranges, expose additional UV sets, map sampler wrapping, and support all standard mesh/Point LOD policies. | **Complete** (**v5.0**) |
 
-The next high-value work is renderer evaluation, SceneServer query helpers, SceneServer directory discovery, and Point/Point Cloud authoring.
+The next high-value work is conformance-matrix expansion, Point/Point Cloud authoring, and delivery
+edge-case hardening. Renderer expression evaluation remains outside the loader contract.
 
 ### Remaining roadmap gaps
 
@@ -248,16 +254,17 @@ still visible in the matrix and should be treated as the open work list:
 
 | Priority | Remaining gap | Exit criteria |
 | --- | --- | --- |
-| P0 | Drawing and popup intelligence (4c) | Add typed, loss-minimized renderer, visual-variable, label, and popup models; runtime expression evaluation remains an application responsibility. |
+| P0 | Drawing and popup metadata (4c) | Normalize supported renderers, visual variables, labels, and popup expressions while retaining raw definitions and documenting the downstream evaluation boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
-| P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh, Point, or Point Cloud layer endpoints. |
+| P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh, Point, and Point Cloud layer endpoints. |
+| P0 | Version/profile conformance diagnostics | Add a table-driven Esri 1.6–1.10 / Point Cloud 2.0–2.1 and OGC-mapping fixture manifest with capability reports and CI assertions. |
 | P2 | Authoring parity (7c) | Add Point/Point Cloud converter output and make generated resources pass the profile and semantic tests now covering the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 
 The roadmap is considered substantially complete when every P0 and P1 row is complete and the P2
-rows have either landed or an explicit, versioned compatibility boundary. The v5.0 service facade
-is intentionally limited to explicit SceneServer layer URLs; directory discovery and service
-selection remain tranche 8b.
+rows have either landed or an explicit, versioned compatibility boundary. Renderer expression
+evaluation is intentionally outside the loader contract; loaders.gl guarantees typed metadata and
+loss-minimized preservation for downstream rendering systems.
 
 ## Related specifications and documentation
 

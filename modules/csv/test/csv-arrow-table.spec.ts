@@ -644,6 +644,130 @@ test('CSVLoader#parseInBatches freezes schema after first typed batch', async ()
   expect(secondBatchValue).toBe(null);
 });
 
+test('CSVLoader#arrow-table dynamic typing covers booleans, dates, exponents, nulls, and mixed columns', async () => {
+  const csvText = [
+    'boolean,number,date,mixed,empty',
+    'TRUE,-1.25e+2,2024-01-02T03:04:05Z,1,',
+    'false,6E-1,2024-02-03T04:05:06.789+01:00,text,',
+    'true,not-a-number,not-a-date,3,'
+  ].join('\n');
+  const table = await parse(csvText, CSVLoader, {
+    core: {worker: false},
+    csv: {shape: 'arrow-table', header: true, dynamicTyping: true, skipEmptyLines: false}
+  });
+
+  expect(table.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Bool',
+    'Utf8',
+    'Utf8',
+    'Utf8',
+    'Utf8'
+  ]);
+  expect(table.data.getChild('boolean')?.toArray()).toEqual([true, false, true]);
+  expect(table.data.getChild('number')?.toArray()).toEqual(['-125', '0.6', 'not-a-number']);
+  expect(table.data.getChild('empty')?.toArray()).toEqual([null, null, null]);
+});
+
+test('CSVLoader#arrow-table types homogeneous temporal and numeric edge columns', async () => {
+  const csvText = [
+    'integer,decimal,exponent,date',
+    '-1,.5,1e2,2024-01-02T03:04:05Z',
+    '0,2.,-3E-2,2024-02-03T04:05:06.789+01:00',
+    '42,4.25,+5e3,2024-03-04T05:06:07-02:00'
+  ].join('\n');
+  const table = await parse(csvText, CSVLoader, {
+    core: {worker: false},
+    csv: {shape: 'arrow-table', header: true, dynamicTyping: true}
+  });
+
+  expect(table.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Float64',
+    'Float64',
+    'Utf8',
+    'Utf8'
+  ]);
+  expect(Array.from(table.data.getChild('integer')?.toArray() || [])).toEqual([-1, 0, 42]);
+  expect(Array.from(table.data.getChild('decimal')?.toArray() || [])).toEqual([0.5, 2, 4.25]);
+  expect(new Date(table.data.getChild('date')?.get(0)).toISOString()).toBe(
+    '2024-01-02T03:04:05.000Z'
+  );
+});
+
+test('CSVLoader#arrow-table fallback handles quoted cells, comments, and custom delimiters', async () => {
+  const csvText = [
+    '# ignored comment',
+    'name;value;flag',
+    '"comma, quote ""inside""";1;TRUE',
+    'plain;;false'
+  ].join('\n');
+  const table = await parse(csvText, CSVLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      delimiter: ';',
+      comments: '#',
+      dynamicTyping: true,
+      skipEmptyLines: true
+    }
+  });
+
+  expect(table.data.getChild('name')?.toArray()).toEqual(['comma, quote "inside"', 'plain']);
+  expect(table.data.getChild('value')?.get(0)).toBe(1);
+  expect(table.data.getChild('value')?.get(1)).toBe(null);
+  expect(table.data.getChild('flag')?.toArray()).toEqual([true, false]);
+});
+
+test('CSVLoader#arrow-table geometry detection uses the row-table compatibility path', async () => {
+  const table = await parse('longitude,latitude,name\n10,20,point', CSVLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      dynamicTyping: true,
+      detectGeometryColumns: true
+    }
+  });
+  expect(table.data.numRows).toBe(1);
+  expect(table.data.getChild('longitude')?.get(0)).toBe(10);
+  expect(table.data.getChild('latitude')?.get(0)).toBe(20);
+});
+
+test('CSVLoader#arrow-table geometry detection supports byte and streaming inputs', async () => {
+  const bytes = new TextEncoder().encode('longitude,latitude,name\n10,20,first\n11,21,second');
+  const preloadedLoader = await preload(CSVLoader);
+  const table = await parse(bytes.buffer, preloadedLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      dynamicTyping: true,
+      detectGeometryColumns: true
+    }
+  });
+  expect(table.data.numRows).toBe(2);
+
+  const batches: ArrowTableBatch[] = [];
+  const iterator = await parseInBatches(
+    [bytes.subarray(0, 30), bytes.subarray(30)],
+    preloadedLoader,
+    {
+      core: {worker: false, batchSize: 1},
+      csv: {
+        shape: 'arrow-table',
+        header: true,
+        dynamicTyping: true,
+        detectGeometryColumns: true
+      }
+    }
+  );
+  for await (const batch of iterator) {
+    batches.push(batch);
+  }
+  expect(batches.reduce((sum, batch) => sum + batch.length, 0)).toBe(2);
+  expect(batches.every(batch => batch.shape === 'arrow-table')).toBe(true);
+});
+
 test('CSVLoader#worker transport serializes and hydrates Arrow table results', async () => {
   const table = await parse('city,population\nParis,2148000', CSVLoader, {
     core: {worker: false},

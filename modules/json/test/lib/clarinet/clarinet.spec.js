@@ -812,3 +812,52 @@ test('#pre-chunked', () => {
     }
   }
 });
+
+test('clarinet reports malformed structural, literal, and numeric states', () => {
+  const malformedDocuments = [
+    ['x', 'Non-whitespace before {[.'],
+    ['{x', 'Malformed object key'],
+    ['{"a" x', 'Bad object'],
+    ['{"a":x', 'Bad value'],
+    ['[1x', 'Bad array'],
+    ['[tx', 'Invalid true started with t'],
+    ['[trx', 'Invalid true started with tr'],
+    ['[trux', 'Invalid true started with tru'],
+    ['[fx', 'Invalid false started with f'],
+    ['[fax', 'Invalid false started with fa'],
+    ['[falx', 'Invalid false started with fal'],
+    ['[falsx', 'Invalid false started with fals'],
+    ['[nx', 'Invalid null started with n'],
+    ['[nux', 'Invalid null started with nu'],
+    ['[nulx', 'Invalid null started with nul'],
+    ['[1.2.3]', 'Invalid number has two dots'],
+    ['[1e2e3]', 'Invalid number has two exponential'],
+    ['[1+2]', 'Invalid symbol in number']
+  ];
+
+  for (const [document, expectedMessage] of malformedDocuments) {
+    const errors = [];
+    const parser = new ClarinetParser({onerror: error => errors.push(error)});
+    parser.write(document);
+    expect(errors[0]?.message).toContain(expectedMessage);
+    expect(errors[0]?.message).toContain('Line: 1');
+  }
+});
+
+test('clarinet resume and close lifecycle exposes parser misuse', () => {
+  const errors = [];
+  const parser = new ClarinetParser({onerror: error => errors.push(error)});
+  parser.write('x');
+  expect(() => parser.write('[]')).toThrow(/Non-whitespace/);
+  expect(parser.resume()).toBe(parser);
+
+  const closedParser = new ClarinetParser();
+  closedParser.write('[]').close();
+  closedParser.write('x');
+  expect(closedParser.error?.message).toContain('Cannot write after close');
+
+  const unknownStateParser = new ClarinetParser({onerror: error => errors.push(error)});
+  unknownStateParser.state = 999;
+  unknownStateParser.write('x');
+  expect(unknownStateParser.error?.message).toContain('Unknown state: 999');
+});

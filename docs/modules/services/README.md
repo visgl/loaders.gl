@@ -155,6 +155,11 @@ const tilesetSource = await service.getTilesetSource();
 For a URL ending at `/SceneServer`, provide `arcgis-scene-server.layerId`. Mesh, Point, and Point
 Cloud profiles are selected automatically.
 
+The facade also exposes `query(options)` / `getFeatures(options)` for read-only SceneServer layer
+queries and preserves the raw response metadata. Use `aggregateArcGISSceneFeatures` for local
+group-by and numeric aggregation. Renderer and popup expressions are preserved as metadata and
+remain the responsibility of the consuming renderer.
+
 ## Choosing a service
 
 | Need | Recommended source |

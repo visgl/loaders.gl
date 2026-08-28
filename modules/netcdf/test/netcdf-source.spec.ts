@@ -1,6 +1,6 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {NetCDFSource} from '../src/netcdf-source-loader';
+import {NetCDFSource, NetCDFSourceLoader} from '../src/netcdf-source-loader';
 
 const NETCDF_FIXTURE = '@loaders.gl/netcdf/test/data/madis-sao.nc';
 
@@ -98,4 +98,120 @@ test.runIf(isBrowser)('NetCDF source reports remote failures and honors cancella
   const controller = new AbortController();
   controller.abort();
   await expect(source.getQueryMetadata({signal: controller.signal})).rejects.toThrow();
+});
+
+test('NetCDF source validates cheap query options before loading data', async () => {
+  const source = new NetCDFSource(new Blob());
+  await expect(
+    source.getRaster({
+      bounds: [
+        [0, 0],
+        [1, 1]
+      ]
+    })
+  ).rejects.toThrow('bounds are not supported');
+  await expect(source.getRaster({level: 1})).rejects.toThrow('levels are not supported');
+  await expect(source.getRaster({width: 1})).rejects.toThrow('resampling is not supported');
+  await expect(source.getRaster({channels: [0]})).rejects.toThrow('named variables');
+  expect(NetCDFSourceLoader.testURL('data/file.nc?download=1')).toBe(true);
+  expect(NetCDFSourceLoader.testURL('data/file.bin')).toBe(false);
+  expect(NetCDFSourceLoader.createDataSource(new Blob(), {})).toBeInstanceOf(NetCDFSource);
+});
+
+test('NetCDF source materializes every supported numeric type and slice form', async () => {
+  const dimensions = [
+    {name: 'row', size: 2, recordId: -1, recordName: ''},
+    {name: 'column', size: 2, recordId: -1, recordName: ''},
+    {name: 'single', size: 4, recordId: -1, recordName: ''}
+  ];
+  const typeNames = ['byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'float', 'double'];
+  const variables = [
+    ...typeNames.map(type => ({
+      name: type,
+      dimensions: [0, 1],
+      attributes: type === 'int' ? [{name: '_FillValue', type: 'int', value: '-999'}] : [],
+      type,
+      size: 4,
+      offset: 0,
+      record: false
+    })),
+    {
+      name: 'intFlat',
+      dimensions: [2],
+      attributes: [],
+      type: 'int',
+      size: 4,
+      offset: 0,
+      record: false
+    },
+    {
+      name: 'text',
+      dimensions: [0],
+      attributes: [],
+      type: 'char',
+      size: 2,
+      offset: 0,
+      record: false
+    }
+  ];
+  const header = {
+    version: 1,
+    recordDimension: {length: 0, id: -1, name: '', recordStep: 0},
+    dimensions,
+    attributes: [],
+    variables
+  } as any;
+  const source = new NetCDFSource(new Blob());
+  (source as any).loadReader = async () => ({
+    header,
+    getDataVariable: variable =>
+      variable.name === 'text' ? ['a', 'b'] : new Float64Array([1, 2, 3, 4])
+  });
+
+  const expectedConstructors = [
+    Int8Array,
+    Uint8Array,
+    Int16Array,
+    Uint16Array,
+    Int32Array,
+    Uint32Array,
+    Float32Array,
+    Float64Array
+  ];
+  for (let index = 0; index < typeNames.length; index++) {
+    const raster = await source.getRaster({
+      variables: [typeNames[index]],
+      slices: {row: 1, column: [0, 2]}
+    });
+    expect(raster.data).toBeInstanceOf(expectedConstructors[index]);
+    expect(raster.width).toBe(2);
+    expect(raster.height).toBe(1);
+    expect(raster.metadata.dimensions).toEqual(['column']);
+  }
+  expect((await source.getRaster({variables: ['int']})).noData).toBe(-999);
+  await expect(source.getRaster({variables: ['int', 'float']})).rejects.toThrow(
+    /same shape and numeric type/
+  );
+  await expect(source.getRaster({variables: ['int', 'intFlat']})).rejects.toThrow(
+    /same shape and numeric type/
+  );
+  await expect(source.getRaster({variables: ['int', 'int']})).rejects.toThrow(/duplicates/);
+  await expect(source.getRaster({variables: ['text']})).rejects.toThrow(/not supported as raster/);
+  await expect(source.getRaster({variables: ['int'], slices: {row: -1}})).rejects.toThrow(
+    /must be an index/
+  );
+  await expect(source.getRaster({variables: ['int'], slices: {row: [0, 3]}})).rejects.toThrow(
+    /half-open range/
+  );
+
+  (source as any).loadReader = async () => ({
+    header,
+    getDataVariable: () => [
+      ['not numeric', 'values'],
+      ['at', 'all']
+    ]
+  });
+  await expect(source.getRaster({variables: ['int']})).rejects.toThrow(
+    /must contain numeric values/
+  );
 });
