@@ -4,7 +4,11 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {FlatGeobufColumnType, FlatGeobufGeometryType} from '../src/lib/flatgeobuf-reader';
+import {
+  FlatGeobufColumnType,
+  FlatGeobufGeometryType,
+  getFlatGeobufCRSIdentifier
+} from '../src/lib/flatgeobuf-reader';
 import {getProjection, makeArrowSchema} from '../src/lib/parse-flatgeobuf';
 
 const COLUMN_TYPES = [
@@ -99,6 +103,15 @@ describe('FlatGeobuf reader metadata branches', () => {
       'FlatGeobuf reprojection failed'
     );
     expect(getProjection({crs: {codeString: 'EPSG:4326'}}, true)).toBeDefined();
-    expect(getProjection({crs: {code: 4326}}, true)).toBeDefined();
+    expect(getProjection({crs: {org: 'EPSG', code: 4326}}, true)).toBeDefined();
+    expect(() => getProjection({crs: {code: 4326}}, true)).toThrow(
+      'FlatGeobuf reprojection requires a source CRS in the file header'
+    );
+  });
+
+  test('preserves the authority for numeric CRS codes', () => {
+    expect(getFlatGeobufCRSIdentifier({org: 'ESRI', code: 102100})).toBe('ESRI:102100');
+    expect(getFlatGeobufCRSIdentifier({org: 'CUSTOM', code: 4326})).toBe('CUSTOM:4326');
+    expect(getFlatGeobufCRSIdentifier({code: 4326})).toBeUndefined();
   });
 });

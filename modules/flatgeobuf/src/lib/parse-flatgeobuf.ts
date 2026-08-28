@@ -26,6 +26,7 @@ import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
   FlatGeobufGeometryType,
+  getFlatGeobufCRSIdentifier,
   readFlatGeobufFeatures,
   readFlatGeobufHeader,
   writeFlatGeobufGeometry,
@@ -371,10 +372,7 @@ export function getProjection(
   crs: Proj4CRSDefinition = 'WGS84'
 ): Proj4Projection | undefined {
   if (!reproject) return undefined;
-  const sourceCrs =
-    header.crs?.wkt ||
-    header.crs?.codeString ||
-    (Number.isFinite(header.crs?.code) ? `EPSG:${header.crs.code}` : undefined);
+  const sourceCrs = header.crs?.wkt || getFlatGeobufCRSIdentifier(header.crs);
   if (!sourceCrs) {
     throw new Error('FlatGeobuf reprojection requires a source CRS in the file header');
   }
