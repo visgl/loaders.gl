@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {parseLanceManifest} from '../src/lance-manifest';
 import {LanceSourceLoader} from '../src/lance-source-loader';
+import {LanceDecoderUnavailableError} from '../src/lance-errors';
 
 function varint(value: number): number[] {
   const bytes: number[] = [];
@@ -134,4 +135,34 @@ test('LanceSource reports manifest discovery and HTTP failures', async () => {
     }
   } as any);
   await expect(invalidHintSource.getMetadata()).rejects.toThrow('does not contain a version');
+});
+
+test('LanceSource reads manifest metadata from a Blob and caches its schema', async () => {
+  const source = LanceSourceLoader.createDataSource(new Blob([createManifest()]), {});
+
+  const metadata = await source.getMetadata();
+  expect(metadata.manifestURL).toBeUndefined();
+  expect(await source.getSchema()).toEqual(metadata.fields);
+  await expect(source.getMetadata()).resolves.toBe(metadata);
+});
+
+test('LanceSource reports unavailable decoding and malformed data files', async () => {
+  const source = LanceSourceLoader.createDataSource(new Blob([createManifest()]), {});
+
+  await expect(async () => {
+    for await (const _batch of source.readBatches()) {
+      // The decoder is intentionally unavailable in this MVP.
+    }
+  }).rejects.toBeInstanceOf(LanceDecoderUnavailableError);
+  await expect(source.getFileMetadata()).rejects.toThrow('Invalid Lance file magic');
+  const shortSource = LanceSourceLoader.createDataSource(new Blob([new Uint8Array(8)]), {});
+  await expect(shortSource.getFileMetadata()).rejects.toThrow('smaller than its footer');
+});
+
+test('LanceSourceLoader recognizes dataset and data-file URLs', () => {
+  expect(LanceSourceLoader.testURL('https://example.com/table.lance')).toBe(true);
+  expect(LanceSourceLoader.testURL('https://example.com/table.lance/_versions/4.manifest')).toBe(
+    true
+  );
+  expect(LanceSourceLoader.testURL('https://example.com/table.parquet')).toBe(false);
 });
