@@ -449,7 +449,15 @@ export default class DracoParser {
     // Prefer the application name preserved by a Draco writer.
     const entryName = options.attributeNameEntry || 'name';
     if (attribute.metadata[entryName]) {
-      return attribute.metadata[entryName].string;
+      const attributeName = attribute.metadata[entryName].string;
+      // DracoWriter versions before v5 stored these category names instead of glTF semantics.
+      if (attributeName === 'COLOR') {
+        return 'COLOR_0';
+      }
+      if (attributeName === 'TEX_COORD') {
+        return 'TEXCOORD_0';
+      }
+      return attributeName;
     }
 
     // Deduce name based on attribute type

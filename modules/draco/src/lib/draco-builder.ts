@@ -381,6 +381,7 @@ export default class DracoBuilder {
     }
   }
 
+  /** Returns the common vertex count after validating the required position attribute. */
   _getVertexCount(
     attributes: Record<string, TypedArray | MeshAttribute>,
     options: DracoBuildOptions
