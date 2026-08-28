@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import styled from 'styled-components';
+import {NaturalBreaks} from '../natural-breaks';
 import SourceLoaderGraphic from '../source-loader-graphic';
 
 const categoryTabs = [
@@ -559,9 +560,11 @@ const Node = styled.div`
   justify-content: space-between;
   line-height: 1.25;
   min-height: 44px;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow-wrap: normal;
   padding: 12px 14px;
   position: relative;
+  word-break: normal;
 `;
 
 const LinkedNode = styled(Node).attrs({as: Link})`
@@ -647,11 +650,6 @@ const MethodGrid = styled.div`
   @media screen and (max-width: 420px) {
     grid-template-columns: 1fr;
   }
-`;
-
-const NaturalLabel = styled.span`
-  overflow-wrap: normal;
-  white-space: nowrap;
 `;
 
 const TinyLabel = styled.span`
@@ -823,7 +821,7 @@ export function CategoryDataConcept({
                     to={loaderDocumentationLinks[loader]}
                     $compactText={loader.length > 20}
                   >
-                    <span>{loader}</span>
+                    <NaturalBreaks>{loader}</NaturalBreaks>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedNode>
                 ))
@@ -862,7 +860,7 @@ export function CategoryDataConcept({
                     $background="rgba(53, 173, 107, 0.12)"
                     $border="rgba(53, 173, 107, 0.55)"
                   >
-                    <span>{writer}</span>
+                    <NaturalBreaks>{writer}</NaturalBreaks>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedCategoryNode>
                 ))
@@ -902,7 +900,7 @@ export function StreamingConcept() {
                   to={loaderDocumentationLinks[loader]}
                   $compactText={loader.length > 10}
                 >
-                  <NaturalLabel>{loader}</NaturalLabel>
+                  <NaturalBreaks>{loader}</NaturalBreaks>
                   <LinkMark aria-hidden="true">↗</LinkMark>
                 </LinkedNode>
               ))}
@@ -916,7 +914,7 @@ export function StreamingConcept() {
               <MethodGrid>
                 {streamingProcessingBlocks.map((block) => (
                   <CompactNode key={block} $compactText={block.length > 12}>
-                    <NaturalLabel>{block}</NaturalLabel>
+                    <NaturalBreaks>{block}</NaturalBreaks>
                   </CompactNode>
                 ))}
               </MethodGrid>
@@ -1000,11 +998,11 @@ export default function Concepts() {
                 <CompactFlow>
                   <Stack>
                     <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
-                      <span>GLTFLoader</span>
+                      <NaturalBreaks>GLTFLoader</NaturalBreaks>
                       <LinkMark aria-hidden="true">↗</LinkMark>
                     </LinkedNode>
                     <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
-                      <span>Tiles3DLoader</span>
+                      <NaturalBreaks>Tiles3DLoader</NaturalBreaks>
                       <LinkMark aria-hidden="true">↗</LinkMark>
                     </LinkedNode>
                   </Stack>
@@ -1016,7 +1014,7 @@ export default function Concepts() {
                         to={loaderDocumentationLinks[subloader]}
                         $compactText={subloader.length > 20}
                       >
-                        <span>{subloader}</span>
+                        <NaturalBreaks>{subloader}</NaturalBreaks>
                         <LinkMark aria-hidden="true">↗</LinkMark>
                       </LinkedNode>
                     ))}

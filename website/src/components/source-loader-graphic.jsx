@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import styled from 'styled-components';
+import {NaturalBreaks} from './natural-breaks';
 
 const sourceTabs = [
   {
@@ -269,9 +270,11 @@ const Node = styled.div`
   justify-content: space-between;
   line-height: 1.25;
   min-height: 44px;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow-wrap: normal;
   padding: 12px 14px;
   position: relative;
+  word-break: normal;
 `;
 
 const CompactNode = styled(Node)`
@@ -495,7 +498,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
                   to={sourceDocumentationLinks[sourceLoader]}
                   $compactText={sourceLoader.length > 20}
                 >
-                  <span>{sourceLoader}</span>
+                  <NaturalBreaks>{sourceLoader}</NaturalBreaks>
                   <NodeMeta>
                     <SourceTag>{sourceTags[sourceLoader]}</SourceTag>
                     <LinkMark aria-hidden="true">↗</LinkMark>
@@ -510,7 +513,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
           $background="rgba(53, 173, 107, 0.12)"
           $border="rgba(53, 173, 107, 0.55)"
         >
-          <span>{selectedSourceTab.dataSource}</span>
+          <NaturalBreaks>{selectedSourceTab.dataSource}</NaturalBreaks>
         </CenteredDataSourceNode>
         <StageLabel>Runtime API</StageLabel>
         <DataSourceNode
@@ -520,7 +523,9 @@ export default function SourceLoaderGraphic({standalone = false}) {
           <span>Metadata and incremental reads</span>
           <MethodGrid>
             {selectedSourceTab.methods.map((method) => (
-              <CompactNode key={method}>{method}</CompactNode>
+              <CompactNode key={method}>
+                <NaturalBreaks>{method}</NaturalBreaks>
+              </CompactNode>
             ))}
           </MethodGrid>
         </DataSourceNode>
@@ -532,7 +537,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
           <CenteredNodeContent>
             {loadingManagerDocumentationLinks[selectedSourceTab.loadingManager] ? (
               <LinkedCompactNode to={loadingManagerDocumentationLinks[selectedSourceTab.loadingManager]}>
-                <span>{selectedSourceTab.loadingManager}</span>
+                <NaturalBreaks>{selectedSourceTab.loadingManager}</NaturalBreaks>
                 <LinkMark aria-hidden="true">↗</LinkMark>
               </LinkedCompactNode>
             ) : (
@@ -565,7 +570,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
               <LayerPreviewStack>
                 <LayerPreviewParentRow>
                   <LayerPreviewNode>
-                    <span>{previewLayer}</span>
+                    <NaturalBreaks>{previewLayer}</NaturalBreaks>
                     <NodeMeta>
                       <SourceTag>Preview</SourceTag>
                     </NodeMeta>
@@ -578,7 +583,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
                   <LayerPreviewChildren>
                     {renderedDeckLayers.map((layer) => (
                       <LinkedCompactNode key={layer} to={deckLayerDocumentationLinks[layer]}>
-                        <span>{layer}</span>
+                        <NaturalBreaks>{layer}</NaturalBreaks>
                         <LinkMark aria-hidden="true">↗</LinkMark>
                       </LinkedCompactNode>
                     ))}
@@ -589,7 +594,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
               <MethodGrid>
                 {renderedDeckLayers.map((layer) => (
                   <LinkedCompactNode key={layer} to={deckLayerDocumentationLinks[layer]}>
-                    <span>{layer}</span>
+                    <NaturalBreaks>{layer}</NaturalBreaks>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedCompactNode>
                 ))}
