@@ -348,9 +348,15 @@ test('ORC writer round-trips primitive columns, nulls, and multiple stripes', as
   expect(result.shape).toBe('arrow-table');
   if (result.shape !== 'arrow-table') return;
   expect(result.data.numRows).toBe(3);
-  expect(result.data.getChild('enabled')?.toArray()).toEqual([true, false, null]);
-  expect(Array.from(result.data.getChild('count')?.toArray() || [])).toEqual([-50_000, 75_000, 0]);
-  expect(result.data.getChild('label')?.toArray()).toEqual(['repeat', 'repeat', null]);
+  expect(getColumnValues(result.data, 'enabled')).toEqual([true, false, null]);
+  expect(getColumnValues(result.data, 'tiny')).toEqual([-2, 3, null]);
+  expect(getColumnValues(result.data, 'small')).toEqual([300, -400, null]);
+  expect(getColumnValues(result.data, 'count')).toEqual([-50_000, 75_000, null]);
+  expect(getColumnValues(result.data, 'large')).toEqual([123_456, -654_321, null]);
+  expect(getColumnValues(result.data, 'ratio')).toEqual([1.25, -3.5, null]);
+  expect(getColumnValues(result.data, 'score')).toEqual([-2.5, 4.75, null]);
+  expect(getColumnValues(result.data, 'day')).toEqual([20_000, 20_001, null]);
+  expect(getColumnValues(result.data, 'label')).toEqual(['repeat', 'repeat', null]);
   expect(
     result.data
       .getChild('payload')
@@ -548,6 +554,12 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
     offset += array.length;
   }
   return output;
+}
+
+/** Materializes an Arrow column as row values while preserving null entries. */
+function getColumnValues(table: arrow.Table, columnName: string): unknown[] {
+  const vector = table.getChild(columnName);
+  return Array.from({length: table.numRows}, (_value, index) => vector?.get(index));
 }
 
 function encodeMessage(fields: Array<[number, number | string | Uint8Array]>): Uint8Array {
