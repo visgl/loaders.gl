@@ -75,10 +75,10 @@ export const DEFAULT_SERVICE_LOADERS: readonly ServiceSourceLoader[] = [
   WMSSourceLoader,
   WFSSourceLoader,
   WCSCoverageSourceLoader,
-  OGCAPIFeaturesSourceLoader,
   OGCAPITilesSourceLoader,
   OGCAPICoveragesSourceLoader,
   OGCAPIEDRSourceLoader,
+  OGCAPIFeaturesSourceLoader,
   CSWSourceLoader
 ];
 
