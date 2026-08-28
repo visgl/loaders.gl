@@ -462,7 +462,9 @@ export default class DracoBuilder {
       faceCount: trackEncodedProperties
         ? encoder.GetNumberOfEncodedFaces()
         : geometryType === 'mesh'
-          ? (geometry as Mesh).num_faces()
+          ? typeof (geometry as Mesh).num_faces === 'function'
+            ? (geometry as Mesh).num_faces()
+            : 0
           : 0,
       attributeCount: geometry.num_attributes(),
       ...(options.method ? {method: options.method} : {}),
