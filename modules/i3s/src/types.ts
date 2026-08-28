@@ -406,11 +406,16 @@ export type DrawingInfo = {
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/elevationInfo.cmn.md */
 export type ElevationInfo = {
+  /** Rule used to place feature Z values relative to the earth, terrain, or scene surface. */
   mode: 'relativeToGround' | 'absoluteHeight' | 'onTheGround' | 'relativeToScene';
   /** Offset is always added to the result of the above logic except for onTheGround where offset is ignored. */
-  offset: number;
-  /** A string value indicating the unit for the values in elevationInfo */
-  unit: string;
+  offset?: number;
+  /** Linear unit used by `offset` and feature-expression results. Defaults to meters. */
+  unit?: string;
+  /** Optional constant feature-expression value retained from Web Scene metadata. */
+  featureExpression?: {value?: number};
+  /** Optional Arcade expression retained for renderer-aware clients. */
+  featureExpressionInfo?: {expression: string; title?: string};
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/statisticsInfo.cmn.md */
 export type StatisticsInfo = {

@@ -58,6 +58,13 @@ describe('getI3SSpatialReference', () => {
       representation: 'identifier',
       alternatives: [{definition: 'PROJCS["Web Mercator Auxiliary Sphere"]', representation: 'wkt'}]
     });
+    expect(spatialReference.vertical).toMatchObject({
+      state: 'explicit',
+      definition: 'EPSG:5703',
+      representation: 'identifier',
+      provenance: 'metadata'
+    });
+    expect(spatialReference.coordinateOrder).toEqual(['x', 'y', 'z']);
   });
 
   test('uses custom WKT and reports terrain-dependent elevation placement', () => {
@@ -76,6 +83,60 @@ describe('getI3SSpatialReference', () => {
     expect(spatialReference.warnings[0]).toContain(
       'requires a terrain or scene elevation provider'
     );
+  });
+
+  test('normalizes vertical units, legacy ZFactor, and elevation offsets', () => {
+    const spatialReference = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      ZFactor: 0.3048,
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        heightUnit: 'foot'
+      },
+      elevationInfo: {mode: 'absoluteHeight', offset: 2, unit: 'kilometer'}
+    });
+
+    expect(spatialReference).toMatchObject({
+      verticalUnitScale: 0.3048,
+      heightReference: 'orthometric',
+      elevationMode: 'absoluteHeight',
+      elevationOffset: 2,
+      elevationUnit: 'kilometer',
+      elevationUnitScale: 1000,
+      status: 'transformable'
+    });
+    expect(spatialReference.units).toEqual(['degree', 'degree', 'foot']);
+    expect(Object.isFrozen(spatialReference.units)).toBe(true);
+  });
+
+  test('requires the provider selected by each surface placement mode', () => {
+    const discovered = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+      elevationInfo: {mode: 'relativeToScene', offset: 1, unit: 'meter'}
+    });
+    expect(discovered.status).toBe('unresolved');
+
+    const spatialReference = applyTilesetSpatialOptions(discovered, {
+      sceneElevationProvider: {
+        sampleElevations: positions => positions.map(() => 10),
+        getElevationRange: () => ({minimum: 10, maximum: 10})
+      }
+    });
+    expect(spatialReference.status).toBe('transformable');
+    expect(spatialReference.crs).toEqual(discovered.crs);
+    expect(spatialReference.units).toEqual(['degree', 'degree', 'meter']);
+    expect(Object.isFrozen(spatialReference.units)).toBe(true);
+  });
+
+  test('keeps unsupported vertical units unresolved with an actionable warning', () => {
+    const spatialReference = getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'furlong'}
+    });
+
+    expect(spatialReference.status).toBe('unresolved');
+    expect(spatialReference.warnings).toContain('Unsupported I3S vertical unit furlong');
   });
 
   test.each([
@@ -114,6 +175,8 @@ describe('getI3SSpatialReference', () => {
       provenance: 'caller-override',
       alternatives: undefined
     });
+    expect(spatialReference.coordinateFrame).toBe('geographic');
+    expect(spatialReference.units).toBeUndefined();
   });
 });
 

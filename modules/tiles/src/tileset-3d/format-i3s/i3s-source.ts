@@ -67,6 +67,8 @@ export class I3SSource implements Tileset3DSource {
   private rootTileset: TilesetJSON;
   /** Spatial adapter created lazily after Tileset3D applies target options. */
   private spatialTransformer?: I3SSpatialTransformer;
+  /** Root header prepared after asynchronous elevation sampling. */
+  private preparedRootHeader?: any;
 
   /**
    * Creates an I3S source.
@@ -129,6 +131,26 @@ export class I3SSource implements Tileset3DSource {
     return this.getMetadata().tileset;
   }
 
+  /** Prepare option-dependent spatial state and the asynchronously placed root bound. */
+  async prepareTileset(tileset: Tileset3D): Promise<void> {
+    const spatialReference = tileset.spatialReference;
+    if (spatialReference.status === 'unresolved') {
+      throw new Error(
+        spatialReference.warnings[0] ||
+          'I3S spatial operations cannot be resolved from the supplied metadata and options'
+      );
+    }
+    if (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed') {
+      return;
+    }
+    this.spatialTransformer ||= new I3SSpatialTransformer(
+      spatialReference,
+      tileset.options.spatial
+    );
+    tileset.spatialReference = this.spatialTransformer.spatialReference;
+    this.preparedRootHeader = await this.transformTileHeader(this.getMetadata().tileset.root);
+  }
+
   /**
    * Creates the runtime root tile for an I3S subtree.
    */
@@ -137,7 +159,10 @@ export class I3SSource implements Tileset3DSource {
     tilesetJson: TilesetJSON,
     parentTile?: Tile3D | null
   ): Tile3D {
-    const rootHeader = this.transformTileHeader(tilesetJson.root, tileset);
+    const rootHeader = parentTile ? tilesetJson.root : this.preparedRootHeader || tilesetJson.root;
+    if (this.spatialTransformer && !this.preparedRootHeader) {
+      throw new Error('I3S spatial root header was not prepared before tile initialization');
+    }
     const rootTile = new Tile3DNode(tileset, rootHeader, parentTile || undefined);
     if (parentTile) {
       parentTile.children.push(rootTile);
@@ -202,7 +227,7 @@ export class I3SSource implements Tileset3DSource {
     const metadata = this.getMetadata();
     if (metadata.tileset.nodePages) {
       const header = await metadata.tileset.nodePagesTile.formTileFromNodePages(childId);
-      return this.transformTileHeader(header, _parentTile.tileset);
+      return await this.transformTileHeader(header);
     }
 
     const nodeUrl = this.getTileUrl(`${this.url}/nodes/${childId}`);
@@ -219,7 +244,7 @@ export class I3SSource implements Tileset3DSource {
     };
 
     const header = await this.loadResourceData(nodeUrl, options);
-    return this.transformTileHeader(header, _parentTile.tileset);
+    return await this.transformTileHeader(header);
   }
 
   /**
@@ -260,10 +285,7 @@ export class I3SSource implements Tileset3DSource {
   getViewState(rootTile: Tile3D | null): TilesetSourceViewState {
     if (this.spatialTransformer && rootTile) {
       const center = new Vector3(rootTile.boundingVolume.center);
-      const sourceCenter = rootTile.header.obb?.center || rootTile.header.mbs;
-      const cartographicCenter = new Vector3(
-        this.spatialTransformer.transformSourcePositionToGeographic(sourceCenter)
-      );
+      const cartographicCenter = new Vector3(rootTile.header.i3sLodMbs.slice(0, 3));
       if (this.spatialTransformer.targetCoordinateFrame === 'geographic') {
         return {
           boundingVolume: rootTile.boundingVolume,
@@ -391,32 +413,24 @@ export class I3SSource implements Tileset3DSource {
     return await this.loadWithCoreApi(url, options);
   }
 
-  /** Transform one I3S header bound after target options have been applied by Tileset3D. */
-  private transformTileHeader(header: any, tileset?: Tileset3D): any {
-    if (
-      !tileset?.spatialReference ||
-      (tileset.spatialReference.status !== 'transformable' &&
-        tileset.spatialReference.status !== 'transformed')
-    ) {
+  /** Transform one I3S header bound after target options and elevation providers are available. */
+  private async transformTileHeader(header: any): Promise<any> {
+    if (!this.spatialTransformer) {
       return header;
     }
-    this.spatialTransformer ||= new I3SSpatialTransformer(
-      tileset.spatialReference,
-      tileset.options.spatial
-    );
-    tileset.spatialReference = this.spatialTransformer.spatialReference;
     const sourceBounds = {
       mbs: header.mbs,
       obb: header.obb,
       normalReferenceFrame: this.getMetadata().tileset.store?.normalReferenceFrame
     };
+    const transformedBounds = await this.spatialTransformer.transformBoundsAsync(sourceBounds);
     return {
       ...header,
       // Tileset3D traversal and culling operate in WGS84 ECEF independently of content output.
-      boundingVolume: this.spatialTransformer.transformBoundingVolumeToGeocentric(sourceBounds),
+      boundingVolume: transformedBounds.boundingVolume,
       // Preserve the renderer/output-frame bound for applications and content coordination.
-      spatialBoundingVolume: this.spatialTransformer.transformBoundingVolume(sourceBounds),
-      i3sLodMbs: this.spatialTransformer.transformBoundingSphereToGeographic(sourceBounds)
+      spatialBoundingVolume: transformedBounds.spatialBoundingVolume,
+      i3sLodMbs: transformedBounds.i3sLodMbs
     };
   }
 }

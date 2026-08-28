@@ -56,6 +56,11 @@ Release Date: 2026
   stable origins, normals, and parallel target-space bounds, with Proj4-backed geographic and
   projected targets plus direct WGS84 geocentric support. Traversal retains normalized WGS84
   ECEF/geographic bounds so culling and LOD remain compatible with existing runtimes.
+- I3S mesh and Point Cloud sources normalize vertical units and offsets, apply all
+  `elevationInfo` placement modes with application terrain or scene providers, and use registered
+  `@math.gl/geoid` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
+  guide](/docs/developer-guide/vertical-coordinate-systems) documents formulas, provider
+  contracts, and deterministic failure behavior.
 
 **@loaders.gl/arrow**
 

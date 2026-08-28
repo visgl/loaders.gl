@@ -152,4 +152,86 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   expect(geographicTransformedRoot.spatialBoundingVolume?.coordinateFrame).toBe('geographic');
   expect(geographicTransformedRoot.spatialBoundingVolume?.wrapsDateline).toBe(true);
   expect(geographicTransformedRoot.spatialBoundingVolume?.coversFullLongitude).toBe(false);
+
+  resources.set(
+    'https://example.com/layer',
+    new TextEncoder().encode(
+      JSON.stringify({
+        id: 1,
+        layerType: 'PointCloud',
+        version: '2.1',
+        spatialReference: {wkid: 4326},
+        heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+        elevationInfo: {mode: 'relativeToGround', offset: 2, unit: 'meter'},
+        capabilities: [],
+        disablePopup: false,
+        store: {
+          profile: 'pointcloud',
+          version: '2.1',
+          index: {nodePerIndexBlock: 2},
+          defaultGeometrySchema: {geometryType: 'points', encoding: 'lepcc-xyz'}
+        },
+        nodePages: {rootIndex: 0, lodSelectionMetricType: 'density-threshold'},
+        attributeStorageInfo: []
+      })
+    ).buffer
+  );
+  let sampledPositionCount = 0;
+  const terrainElevationProvider = {
+    sampleElevations(positions: readonly (readonly [number, number])[]) {
+      sampledPositionCount += positions.length;
+      return Promise.resolve(positions.map(() => 50));
+    },
+    getElevationRange() {
+      return Promise.resolve({minimum: 50, maximum: 50});
+    }
+  };
+  const placedSource = new I3SPointCloudSource('https://example.com/layer', {
+    spatial: {targetCrs: 'EPSG:4326', terrainElevationProvider},
+    core: {loadOptions: {core: {fetch: fetchResource}}}
+  });
+  const placedRoot = await placedSource.getRootTile();
+  const placedPositions = new Float64Array(106 * 3);
+  for (let index = 0; index < placedPositions.length; index += 3) {
+    placedPositions.set([179.999, 0, 5], index);
+  }
+  (placedSource as any).decoder.decodeXyz = () => placedPositions;
+  const placedContent = await placedSource.loadTileContent(placedRoot);
+  const placedFirstPosition = placedContent?.data.data.getChild('POSITION')?.get(0) as
+    | Iterable<number>
+    | undefined;
+
+  expect(sampledPositionCount).toBeGreaterThan(8);
+  expect(placedContent?.cartographicOrigin[2]).toBeCloseTo(52, 8);
+  expect(placedFirstPosition ? Array.from(placedFirstPosition)[2] : undefined).toBeCloseTo(5, 5);
+
+  resources.set(
+    'https://example.com/layer',
+    new TextEncoder().encode(
+      JSON.stringify({
+        id: 1,
+        layerType: 'PointCloud',
+        version: '2.1',
+        spatialReference: {wkid: 4326},
+        heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'furlong'},
+        capabilities: [],
+        disablePopup: false,
+        store: {
+          profile: 'pointcloud',
+          version: '2.1',
+          index: {nodePerIndexBlock: 2},
+          defaultGeometrySchema: {geometryType: 'points', encoding: 'lepcc-xyz'}
+        },
+        nodePages: {rootIndex: 0, lodSelectionMetricType: 'density-threshold'},
+        attributeStorageInfo: []
+      })
+    ).buffer
+  );
+  const invalidVerticalSource = new I3SPointCloudSource('https://example.com/layer', {
+    core: {loadOptions: {core: {fetch: fetchResource}}}
+  });
+
+  await expect(invalidVerticalSource.initialize()).rejects.toThrow(
+    'Unsupported I3S vertical unit furlong'
+  );
 });

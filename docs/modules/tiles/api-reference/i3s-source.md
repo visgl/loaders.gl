@@ -49,10 +49,15 @@ Parameters:
 - tracks observed content formats such as Draco, DDS, and KTX2
 - applies requested horizontal CRS transforms consistently to vertices, normals, origins, and
   target-space `spatialBoundingVolume` metadata while retaining WGS84 ECEF traversal bounds
+- normalizes source vertical units, offsets, and height references and applies every I3S
+  `elevationInfo` placement mode to content and bounds
 
 Set `Tileset3D`'s `spatial.targetCrs` to request geographic, projected, or WGS84 geocentric output.
 Common Proj4 definitions work directly; custom definitions and datum grids must be registered
-before tileset initialization. See [Coordinate reference systems in I3S](/docs/modules/i3s/concepts/coordinate-reference-systems).
+before tileset initialization. Ground-relative modes require `spatial.terrainElevationProvider`;
+`relativeToScene` requires `spatial.sceneElevationProvider`. See [Coordinate reference systems in
+I3S](/docs/modules/i3s/concepts/coordinate-reference-systems) and [Vertical Coordinate Systems and
+Elevation Placement](/docs/developer-guide/vertical-coordinate-systems).
 
 ## Key Methods
 

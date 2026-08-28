@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Matrix4, Quaternion, Vector3} from '@math.gl/core';
+import {Matrix3, Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {
   getSpatialCoordinateFrame,
@@ -12,8 +12,12 @@ import {
   createTilesetSpatialReference,
   markTilesetSpatialReferenceTransformed
 } from './spatial-types';
+import {getI3SLinearUnitScale} from './i3s-elevation';
 import type {
   TilesetCoordinateFrame,
+  TilesetElevationBounds,
+  TilesetElevationMode,
+  TilesetElevationProvider,
   TilesetSpatialOptions,
   TilesetSpatialReference
 } from './spatial-types';
@@ -77,6 +81,24 @@ export class I3SSpatialTransformer {
   /** Source frame recorded by I3S metadata. */
   private readonly sourceCoordinateFrame: TilesetCoordinateFrame;
 
+  /** Source Z multiplier that normalizes stored elevation values to meters. */
+  private readonly sourceVerticalUnitScale: number;
+
+  /** I3S elevation placement mode. */
+  private readonly elevationMode?: TilesetElevationMode;
+
+  /** I3S elevation offset normalized to meters. */
+  private readonly elevationOffset: number;
+
+  /** Terrain or scene provider selected for the declared placement mode. */
+  private readonly elevationProvider?: TilesetElevationProvider;
+
+  /** Provider height multiplier that normalizes returned values to meters. */
+  private readonly providerUnitScale: number;
+
+  /** Optional provider-height to layer-height datum operation. */
+  private readonly providerHeightTransformer?: SpatialCoordinateTransformer;
+
   /**
    * Creates an I3S spatial adapter.
    *
@@ -94,6 +116,25 @@ export class I3SSpatialTransformer {
 
     this.positionTransformer = new SpatialCoordinateTransformer(spatialReference, options);
     this.sourceCoordinateFrame = spatialReference.coordinateFrame;
+    this.sourceVerticalUnitScale = spatialReference.verticalUnitScale;
+    this.elevationMode = spatialReference.elevationMode;
+    this.elevationOffset =
+      (spatialReference.elevationOffset || 0) * spatialReference.elevationUnitScale;
+    this.elevationProvider = getElevationProvider(this.elevationMode, options);
+    if (
+      this.elevationProvider &&
+      (typeof this.elevationProvider.sampleElevations !== 'function' ||
+        typeof this.elevationProvider.getElevationRange !== 'function')
+    ) {
+      throw new Error(
+        'An I3S elevation provider must implement sampleElevations() and getElevationRange()'
+      );
+    }
+    const providerUnitScale = getI3SLinearUnitScale(this.elevationProvider?.unit || 'meter');
+    if (this.elevationProvider && providerUnitScale === undefined) {
+      throw new Error(`Unsupported elevation-provider unit ${this.elevationProvider.unit}`);
+    }
+    this.providerUnitScale = providerUnitScale || 1;
     this.targetCoordinateFrame = getSpatialCoordinateFrame(targetCrs);
     this.spatialReference = markTilesetSpatialReferenceTransformed(spatialReference);
 
@@ -110,6 +151,50 @@ export class I3SSpatialTransformer {
     this.sourceToGeographicTransformer = new SpatialCoordinateTransformer(
       sourceToGeographicReference
     );
+
+    if (requiresElevationSurface(this.elevationMode)) {
+      if (!this.elevationProvider) {
+        const providerName = this.elevationMode === 'relativeToScene' ? 'scene' : 'terrain';
+        throw new Error(
+          `I3S elevation mode ${this.elevationMode} requires a ${providerName} elevation provider`
+        );
+      }
+      if (spatialReference.heightReference === 'unknown') {
+        throw new Error(
+          `I3S elevation mode ${this.elevationMode} requires a known source height reference`
+        );
+      }
+      const providerHeightReference =
+        this.elevationProvider.heightReference || spatialReference.heightReference;
+      if (providerHeightReference !== spatialReference.heightReference) {
+        if (
+          spatialReference.heightReference !== 'ellipsoidal' &&
+          spatialReference.heightReference !== 'orthometric'
+        ) {
+          throw new Error(
+            'Converting elevation-provider heights requires an ellipsoidal or orthometric source height reference'
+          );
+        }
+        const providerHeightSpatialReference = createTilesetSpatialReference(
+          {
+            sourceCrs: 'EPSG:4326',
+            heightReference: providerHeightReference,
+            coordinateFrame: 'geographic',
+            axisOrder: 'xyz',
+            provenance: 'caller-override'
+          },
+          {
+            targetCrs: 'EPSG:4326',
+            targetHeightReference: spatialReference.heightReference,
+            geoidModel: options.geoidModel
+          }
+        );
+        this.providerHeightTransformer = new SpatialCoordinateTransformer(
+          providerHeightSpatialReference,
+          options
+        );
+      }
+    }
 
     const geographicToTargetReference = createTilesetSpatialReference(
       {
@@ -133,6 +218,28 @@ export class I3SSpatialTransformer {
 
   /** Transform one absolute I3S source position. */
   transformPosition(position: ArrayLike<number>): [number, number, number] {
+    const placedPosition = this.placeSourcePositionsSync(position);
+    const transformed = this.positionTransformer.transformPosition([
+      placedPosition[0],
+      placedPosition[1],
+      placedPosition[2]
+    ]);
+    return [transformed[0], transformed[1], transformed[2]];
+  }
+
+  /** Transform one absolute I3S source position after asynchronous surface placement. */
+  async transformPositionAsync(position: ArrayLike<number>): Promise<[number, number, number]> {
+    const placedPosition = await this.placeSourcePositions(position);
+    const transformed = this.positionTransformer.transformPosition([
+      placedPosition[0],
+      placedPosition[1],
+      placedPosition[2]
+    ]);
+    return [transformed[0], transformed[1], transformed[2]];
+  }
+
+  /** Transform an already placed, meter-normalized position to the requested target. */
+  private transformPlacedPosition(position: ArrayLike<number>): [number, number, number] {
     const transformed = this.positionTransformer.transformPosition([
       position[0],
       position[1],
@@ -143,10 +250,24 @@ export class I3SSpatialTransformer {
 
   /** Transform one absolute I3S source position to WGS84 longitude, latitude, and height. */
   transformSourcePositionToGeographic(position: ArrayLike<number>): [number, number, number] {
+    const placedPosition = this.placeSourcePositionsSync(position);
     const transformed = this.sourceToGeographicTransformer.transformPosition([
-      position[0],
-      position[1],
-      position[2]
+      placedPosition[0],
+      placedPosition[1],
+      placedPosition[2]
+    ]);
+    return [transformed[0], transformed[1], transformed[2]];
+  }
+
+  /** Transform one source position to WGS84 after asynchronous elevation placement. */
+  async transformSourcePositionToGeographicAsync(
+    position: ArrayLike<number>
+  ): Promise<[number, number, number]> {
+    const placedPosition = await this.placeSourcePositions(position);
+    const transformed = this.sourceToGeographicTransformer.transformPosition([
+      placedPosition[0],
+      placedPosition[1],
+      placedPosition[2]
     ]);
     return [transformed[0], transformed[1], transformed[2]];
   }
@@ -161,12 +282,43 @@ export class I3SSpatialTransformer {
     sourcePositions: ArrayLike<number>,
     sourceOrigin: ArrayLike<number>
   ): I3STransformedPositions {
-    const origin = this.transformPosition(sourceOrigin);
+    const placedSourcePositions = this.placeSourcePositionsSync(sourcePositions);
+    const placedSourceOrigin = this.placeSourcePositionsSync(sourceOrigin);
+    return this.transformPlacedPositions(placedSourcePositions, placedSourceOrigin);
+  }
+
+  /**
+   * Transform positions after asynchronously sampling any requested terrain or scene surface.
+   *
+   * @param sourcePositions - Absolute positions in source CRS order.
+   * @param sourceOrigin - Stable source origin, normally the node MBS or OBB center.
+   * @returns Renderer-ready target-frame offsets and stable origin metadata.
+   */
+  async transformPositionsAsync(
+    sourcePositions: ArrayLike<number>,
+    sourceOrigin: ArrayLike<number>
+  ): Promise<I3STransformedPositions> {
+    const combinedPositions = new Float64Array(sourcePositions.length + 3);
+    combinedPositions.set(Array.from(sourcePositions), 0);
+    combinedPositions.set(Array.from(sourceOrigin).slice(0, 3), sourcePositions.length);
+    const placedPositions = await this.placeSourcePositions(combinedPositions);
+    return this.transformPlacedPositions(
+      placedPositions.subarray(0, sourcePositions.length),
+      placedPositions.subarray(sourcePositions.length)
+    );
+  }
+
+  /** Transform already placed positions into renderer-relative target coordinates. */
+  private transformPlacedPositions(
+    sourcePositions: ArrayLike<number>,
+    sourceOrigin: ArrayLike<number>
+  ): I3STransformedPositions {
+    const origin = this.transformPlacedPosition(sourceOrigin);
     const positions = new Float32Array(sourcePositions.length);
     const absoluteSourcePositions = Float64Array.from(sourcePositions);
 
     for (let index = 0; index < sourcePositions.length; index += 3) {
-      const transformed = this.transformPosition([
+      const transformed = this.transformPlacedPosition([
         sourcePositions[index],
         sourcePositions[index + 1],
         sourcePositions[index + 2]
@@ -241,14 +393,44 @@ export class I3SSpatialTransformer {
       : {box: getAxisAlignedBox(targetSamples)};
   }
 
+  /** Rebuild an I3S bound in the target frame after asynchronous elevation placement. */
+  async transformBoundingVolumeAsync(
+    bounds: I3SSpatialBounds
+  ): Promise<{box?: number[]; region?: number[]}> {
+    const geographicSamples = await this.getGeographicBoundSamplesAsync(bounds);
+    const targetSamples = geographicSamples.map(position =>
+      this.geographicToTargetTransformer.transformPosition(position)
+    );
+    return this.targetCoordinateFrame === 'geographic'
+      ? {region: getGeographicRegion(targetSamples)}
+      : {box: getAxisAlignedBox(targetSamples)};
+  }
+
   /** Rebuild an I3S bound as a WGS84 geographic region for geographic traversal algorithms. */
   transformBoundingVolumeToGeographic(bounds: I3SSpatialBounds): {region: number[]} {
     return {region: getGeographicRegion(this.getGeographicBoundSamples(bounds))};
   }
 
+  /** Rebuild an I3S bound as WGS84 geographic after asynchronous elevation placement. */
+  async transformBoundingVolumeToGeographicAsync(
+    bounds: I3SSpatialBounds
+  ): Promise<{region: number[]}> {
+    return {region: getGeographicRegion(await this.getGeographicBoundSamplesAsync(bounds))};
+  }
+
   /** Rebuild an I3S bound as a WGS84 ECEF box for generic `Tileset3D` traversal. */
   transformBoundingVolumeToGeocentric(bounds: I3SSpatialBounds): {box: number[]} {
     const cartesianSamples = this.getGeographicBoundSamples(bounds).map(position =>
+      Array.from(Ellipsoid.WGS84.cartographicToCartesian(new Vector3(position)))
+    );
+    return {box: getAxisAlignedBox(cartesianSamples)};
+  }
+
+  /** Rebuild an I3S bound as WGS84 ECEF after asynchronous elevation placement. */
+  async transformBoundingVolumeToGeocentricAsync(
+    bounds: I3SSpatialBounds
+  ): Promise<{box: number[]}> {
+    const cartesianSamples = (await this.getGeographicBoundSamplesAsync(bounds)).map(position =>
       Array.from(Ellipsoid.WGS84.cartographicToCartesian(new Vector3(position)))
     );
     return {box: getAxisAlignedBox(cartesianSamples)};
@@ -264,11 +446,74 @@ export class I3SSpatialTransformer {
     if (!sourceCenter) {
       throw new Error('I3S spatial transformation requires an MBS or OBB bound');
     }
-    const geographicCenter = this.sourceToGeographicTransformer.transformPosition(sourceCenter);
+    const placedCenter = this.placeSourcePositionsSync(sourceCenter);
+    const geographicCenter = this.sourceToGeographicTransformer.transformPosition(
+      Array.from(placedCenter)
+    );
     const radius = bounds.mbs?.length
       ? bounds.mbs[3]
       : Math.hypot(...Array.from(bounds.obb!.halfSize).slice(0, 3));
     return [geographicCenter[0], geographicCenter[1], geographicCenter[2], radius];
+  }
+
+  /** Return a placed WGS84 MBS used by the I3S screen-threshold calculation. */
+  async transformBoundingSphereToGeographicAsync(
+    bounds: I3SSpatialBounds
+  ): Promise<[number, number, number, number]> {
+    return getGeographicBoundingSphere(await this.getGeographicBoundSamplesAsync(bounds));
+  }
+
+  /**
+   * Rebuild traversal, target-output, and I3S LOD bounds from one elevation-sampling batch.
+   *
+   * @param bounds - Source MBS/OBB fields.
+   * @returns Parallel bounds in WGS84 ECEF, the selected output frame, and WGS84 geographic.
+   */
+  async transformBoundsAsync(bounds: I3SSpatialBounds): Promise<{
+    boundingVolume: {box: number[]};
+    spatialBoundingVolume: {box?: number[]; region?: number[]};
+    i3sLodMbs: [number, number, number, number];
+  }> {
+    const geographicSamples = await this.getGeographicBoundSamplesAsync(bounds);
+    const cartesianSamples = geographicSamples.map(position =>
+      Array.from(Ellipsoid.WGS84.cartographicToCartesian(new Vector3(position)))
+    );
+    const targetSamples = geographicSamples.map(position =>
+      this.geographicToTargetTransformer.transformPosition(position)
+    );
+    return {
+      boundingVolume: {box: getAxisAlignedBox(cartesianSamples)},
+      spatialBoundingVolume:
+        this.targetCoordinateFrame === 'geographic'
+          ? {region: getGeographicRegion(targetSamples)}
+          : {box: getAxisAlignedBox(targetSamples)},
+      i3sLodMbs: requiresElevationSurface(this.elevationMode)
+        ? getGeographicBoundingSphere(geographicSamples)
+        : this.transformBoundingSphereToGeographic(bounds)
+    };
+  }
+
+  /**
+   * Rebuild Point Cloud traversal and target-output bounds from one elevation-sampling batch.
+   *
+   * @param bounds - Source OBB fields.
+   * @returns WGS84 geographic traversal bound plus the selected output-frame bound.
+   */
+  async transformPointCloudBoundsAsync(bounds: I3SSpatialBounds): Promise<{
+    boundingVolume: {region: number[]};
+    spatialBoundingVolume: {box?: number[]; region?: number[]};
+  }> {
+    const geographicSamples = await this.getGeographicBoundSamplesAsync(bounds);
+    const targetSamples = geographicSamples.map(position =>
+      this.geographicToTargetTransformer.transformPosition(position)
+    );
+    return {
+      boundingVolume: {region: getGeographicRegion(geographicSamples)},
+      spatialBoundingVolume:
+        this.targetCoordinateFrame === 'geographic'
+          ? {region: getGeographicRegion(targetSamples)}
+          : {box: getAxisAlignedBox(targetSamples)}
+    };
   }
 
   /** Sample a source I3S bound and normalize every sample to WGS84 geographic coordinates. */
@@ -276,16 +521,166 @@ export class I3SSpatialTransformer {
     const sourceSamples = getSourceBoundSamples(
       bounds,
       this.sourceCoordinateFrame,
-      this.sourceToGeographicTransformer
+      this.sourceToGeographicTransformer,
+      this.sourceVerticalUnitScale
     );
     if (!sourceSamples.length) {
       throw new Error('I3S spatial transformation requires an MBS or OBB bound');
     }
+    const placedSourceSamples = this.placeSourcePositionsSync(sourceSamples.flat(), true);
+    const placedSamples = toPositionArrays(placedSourceSamples);
     return this.sourceCoordinateFrame === 'geographic'
-      ? sourceSamples
-      : sourceSamples.map(position =>
+      ? placedSamples
+      : placedSamples.map(position =>
           this.sourceToGeographicTransformer.transformPosition(position)
         );
+  }
+
+  /** Sample, place, and normalize one source bound to WGS84 geographic coordinates. */
+  private async getGeographicBoundSamplesAsync(bounds: I3SSpatialBounds): Promise<number[][]> {
+    const sourceSamples = getSourceBoundSamples(
+      bounds,
+      this.sourceCoordinateFrame,
+      this.sourceToGeographicTransformer,
+      this.sourceVerticalUnitScale
+    );
+    if (!sourceSamples.length) {
+      throw new Error('I3S spatial transformation requires an MBS or OBB bound');
+    }
+    if (requiresElevationSurface(this.elevationMode)) {
+      const geographicSamples =
+        this.sourceCoordinateFrame === 'geographic'
+          ? sourceSamples
+          : sourceSamples.map(position =>
+              this.sourceToGeographicTransformer.transformPosition(position)
+            );
+      return await this.placeGeographicBoundSamples(geographicSamples);
+    }
+    const placedSamples = toPositionArrays(
+      await this.placeSourcePositions(sourceSamples.flat(), true)
+    );
+    return this.sourceCoordinateFrame === 'geographic'
+      ? placedSamples
+      : placedSamples.map(position =>
+          this.sourceToGeographicTransformer.transformPosition(position)
+        );
+  }
+
+  /** Apply a provider's conservative surface range to an entire geographic bound footprint. */
+  private async placeGeographicBoundSamples(geographicSamples: number[][]): Promise<number[][]> {
+    const elevationProvider = this.elevationProvider!;
+    const elevationRange = await elevationProvider.getElevationRange(
+      getElevationBounds(geographicSamples)
+    );
+    const minimumProviderHeight = elevationRange.minimum * this.providerUnitScale;
+    const maximumProviderHeight = elevationRange.maximum * this.providerUnitScale;
+    if (
+      !Number.isFinite(minimumProviderHeight) ||
+      !Number.isFinite(maximumProviderHeight) ||
+      minimumProviderHeight > maximumProviderHeight
+    ) {
+      throw new Error(
+        'Elevation provider returned an invalid range; minimum and maximum must be finite and ordered'
+      );
+    }
+
+    const sourceHeights = geographicSamples.map(position => position[2]);
+    const minimumSourceHeight = Math.min(...sourceHeights);
+    const maximumSourceHeight = Math.max(...sourceHeights);
+    const placedSamples: number[][] = [];
+    for (const [longitude, latitude] of geographicSamples) {
+      const convertedMinimum = this.providerHeightTransformer
+        ? this.providerHeightTransformer.transformPosition([
+            longitude,
+            latitude,
+            minimumProviderHeight
+          ])[2]
+        : minimumProviderHeight;
+      const convertedMaximum = this.providerHeightTransformer
+        ? this.providerHeightTransformer.transformPosition([
+            longitude,
+            latitude,
+            maximumProviderHeight
+          ])[2]
+        : maximumProviderHeight;
+      const minimumSurfaceHeight = Math.min(convertedMinimum, convertedMaximum);
+      const maximumSurfaceHeight = Math.max(convertedMinimum, convertedMaximum);
+      const minimumHeight =
+        this.elevationMode === 'onTheGround'
+          ? minimumSurfaceHeight
+          : minimumSurfaceHeight + minimumSourceHeight + this.elevationOffset;
+      const maximumHeight =
+        this.elevationMode === 'onTheGround'
+          ? maximumSurfaceHeight
+          : maximumSurfaceHeight + maximumSourceHeight + this.elevationOffset;
+      placedSamples.push(
+        [longitude, latitude, minimumHeight],
+        [longitude, latitude, maximumHeight]
+      );
+    }
+    return placedSamples;
+  }
+
+  /** Apply source units and non-surface placement without awaiting external resources. */
+  private placeSourcePositionsSync(
+    sourcePositions: ArrayLike<number>,
+    sourceHeightsAreMeters = false
+  ): Float64Array {
+    if (requiresElevationSurface(this.elevationMode)) {
+      throw new Error(
+        `I3S elevation mode ${this.elevationMode} requires asynchronous surface placement`
+      );
+    }
+    const positions = Float64Array.from(sourcePositions);
+    const offset = this.elevationMode === 'absoluteHeight' ? this.elevationOffset : 0;
+    for (let index = 2; index < positions.length; index += 3) {
+      positions[index] =
+        positions[index] * (sourceHeightsAreMeters ? 1 : this.sourceVerticalUnitScale) + offset;
+    }
+    return positions;
+  }
+
+  /** Apply source units and all I3S elevation-placement modes. */
+  private async placeSourcePositions(
+    sourcePositions: ArrayLike<number>,
+    sourceHeightsAreMeters = false
+  ): Promise<Float64Array> {
+    if (!requiresElevationSurface(this.elevationMode)) {
+      return this.placeSourcePositionsSync(sourcePositions, sourceHeightsAreMeters);
+    }
+
+    const positions = Float64Array.from(sourcePositions);
+    const geographicLocations = toPositionArrays(positions).map(position => {
+      const geographic = this.sourceToGeographicTransformer.transformPosition(position);
+      return [geographic[0], geographic[1]] as const;
+    });
+    const sampledHeights = await this.elevationProvider!.sampleElevations(geographicLocations);
+    if (sampledHeights.length !== geographicLocations.length) {
+      throw new Error(
+        `Elevation provider returned ${sampledHeights.length} heights for ${geographicLocations.length} positions`
+      );
+    }
+
+    for (let positionIndex = 0; positionIndex < geographicLocations.length; positionIndex++) {
+      const sampledHeight = sampledHeights[positionIndex] * this.providerUnitScale;
+      if (!Number.isFinite(sampledHeight)) {
+        throw new Error(
+          `Elevation provider returned a non-finite height at index ${positionIndex}`
+        );
+      }
+      const [longitude, latitude] = geographicLocations[positionIndex];
+      const surfaceHeight = this.providerHeightTransformer
+        ? this.providerHeightTransformer.transformPosition([longitude, latitude, sampledHeight])[2]
+        : sampledHeight;
+      const sourceHeight =
+        positions[positionIndex * 3 + 2] *
+        (sourceHeightsAreMeters ? 1 : this.sourceVerticalUnitScale);
+      positions[positionIndex * 3 + 2] =
+        this.elevationMode === 'onTheGround'
+          ? surfaceHeight
+          : surfaceHeight + sourceHeight + this.elevationOffset;
+    }
+    return positions;
   }
 
   /** Transform one earth-centered normal to the selected target basis. */
@@ -298,24 +693,107 @@ export class I3SSpatialTransformer {
     }
 
     const cartesian = Ellipsoid.WGS84.cartographicToCartesian(new Vector3(geographic));
-    const displacedCartesian = new Vector3(cartesian).add(ecefNormal);
-    const displacedGeographic = Ellipsoid.WGS84.cartesianToCartographic(displacedCartesian);
-    const target = this.geographicToTargetTransformer.transformPosition(geographic);
-    const displacedTarget =
-      this.geographicToTargetTransformer.transformPosition(displacedGeographic);
-    return new Vector3(displacedTarget).subtract(target).normalize();
+    const jacobianColumns: number[] = [];
+    for (const direction of getPositiveAxisDirections()) {
+      const positiveGeographic = Ellipsoid.WGS84.cartesianToCartographic(
+        new Vector3(cartesian).add(direction)
+      );
+      const negativeGeographic = Ellipsoid.WGS84.cartesianToCartographic(
+        new Vector3(cartesian).subtract(direction)
+      );
+      const positiveTarget =
+        this.geographicToTargetTransformer.transformPosition(positiveGeographic);
+      const negativeTarget =
+        this.geographicToTargetTransformer.transformPosition(negativeGeographic);
+      jacobianColumns.push(
+        (positiveTarget[0] - negativeTarget[0]) / 2,
+        (positiveTarget[1] - negativeTarget[1]) / 2,
+        (positiveTarget[2] - negativeTarget[2]) / 2
+      );
+    }
+    const normalMatrix = new Matrix3(jacobianColumns);
+    if (Math.abs(normalMatrix.determinant()) < 1e-12) {
+      throw new Error('Cannot transform an I3S normal through a singular local projection');
+    }
+    normalMatrix.invert().transpose();
+    return new Vector3(ecefNormal).transformByMatrix3(normalMatrix).normalize();
   }
+}
+
+/** Select the application-owned surface required by one I3S elevation mode. */
+function getElevationProvider(
+  mode: TilesetElevationMode | undefined,
+  options: TilesetSpatialOptions
+): TilesetElevationProvider | undefined {
+  return mode === 'relativeToScene'
+    ? options.sceneElevationProvider
+    : requiresElevationSurface(mode)
+      ? options.terrainElevationProvider
+      : undefined;
+}
+
+/** Return whether one placement mode requires external surface samples. */
+function requiresElevationSurface(mode: TilesetElevationMode | undefined): boolean {
+  return mode === 'onTheGround' || mode === 'relativeToGround' || mode === 'relativeToScene';
+}
+
+/** Split one packed XYZ sequence into position arrays without losing Float64 precision. */
+function toPositionArrays(positions: ArrayLike<number>): number[][] {
+  if (positions.length % 3 !== 0) {
+    throw new Error('I3S position arrays must contain complete XYZ tuples');
+  }
+  const result: number[][] = [];
+  for (let index = 0; index < positions.length; index += 3) {
+    result.push([positions[index], positions[index + 1], positions[index + 2]]);
+  }
+  return result;
+}
+
+/** Return a dateline-aware WGS84 footprint in degrees for an elevation range request. */
+function getElevationBounds(geographicSamples: number[][]): TilesetElevationBounds {
+  const region = getGeographicRegion(geographicSamples);
+  return {
+    west: (region[0] * 180) / Math.PI,
+    south: (region[1] * 180) / Math.PI,
+    east: (region[2] * 180) / Math.PI,
+    north: (region[3] * 180) / Math.PI
+  };
+}
+
+/** Build a conservative WGS84 geographic sphere from placed geographic samples. */
+function getGeographicBoundingSphere(
+  geographicSamples: number[][]
+): [number, number, number, number] {
+  if (!geographicSamples.length) {
+    throw new Error('I3S spatial transformation requires at least one bound sample');
+  }
+  const cartesianSamples = geographicSamples.map(position =>
+    Ellipsoid.WGS84.cartographicToCartesian(new Vector3(position))
+  );
+  const cartesianCenter = new Vector3();
+  for (const sample of cartesianSamples) {
+    cartesianCenter.add(sample);
+  }
+  cartesianCenter.scale(1 / cartesianSamples.length);
+  let radius = 0;
+  for (const sample of cartesianSamples) {
+    radius = Math.max(radius, new Vector3(sample).subtract(cartesianCenter).magnitude());
+  }
+  const geographicCenter = Ellipsoid.WGS84.cartesianToCartographic(cartesianCenter);
+  return [geographicCenter[0], geographicCenter[1], geographicCenter[2], radius];
 }
 
 /** Generate source-frame samples that conservatively cover an I3S MBS or OBB. */
 function getSourceBoundSamples(
   bounds: I3SSpatialBounds,
   sourceFrame: TilesetCoordinateFrame,
-  sourceToGeographicTransformer: SpatialCoordinateTransformer
+  sourceToGeographicTransformer: SpatialCoordinateTransformer,
+  sourceVerticalUnitScale: number
 ): number[][] {
   const obb = bounds.obb;
   if (obb) {
     const center = Array.from(obb.center).slice(0, 3);
+    center[2] *= sourceVerticalUnitScale;
     const halfSize = Array.from(obb.halfSize).slice(0, 3);
     const quaternion = new Quaternion().fromArray(Array.from(obb.quaternion));
     const axes = [
@@ -354,6 +832,7 @@ function getSourceBoundSamples(
     return [];
   }
   const center = mbs.slice(0, 3);
+  center[2] *= sourceVerticalUnitScale;
   const radius = mbs[3];
   if (sourceFrame === 'geographic') {
     const geographicCenter = sourceToGeographicTransformer.transformPosition(center);
@@ -386,6 +865,11 @@ function getAxisDirections(): number[][] {
     [0, 0, 1],
     [0, 0, -1]
   ];
+}
+
+/** Return the positive ECEF basis used to calculate a local projection Jacobian. */
+function getPositiveAxisDirections(): Vector3[] {
+  return [new Vector3([1, 0, 0]), new Vector3([0, 1, 0]), new Vector3([0, 0, 1])];
 }
 
 /** Convert a local east/north/up vector into an earth-centered vector. */

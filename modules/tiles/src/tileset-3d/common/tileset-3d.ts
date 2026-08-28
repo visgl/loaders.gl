@@ -876,7 +876,8 @@ export class Tileset3D {
       }
       if (
         initialMetadata?.tileset?.root &&
-        typeof initialMetadata.tileset.root.then !== 'function'
+        typeof initialMetadata.tileset.root.then !== 'function' &&
+        !this.source.prepareTileset
       ) {
         this.root = this._initializeTileHeaders(initialMetadata.tileset, null);
         this._applyViewState();
@@ -885,6 +886,7 @@ export class Tileset3D {
       await initializePromise;
       const metadata = this.source.getMetadata();
       this._syncSourceState(metadata);
+      await this.source.prepareTileset?.(this);
       if (!this.root) {
         this.root = this._initializeTileHeaders(metadata.tileset, null);
       }
