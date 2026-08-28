@@ -129,14 +129,16 @@ test('convertTableToMesh#honors FixedSizeList chunk offsets', () => {
 });
 
 test('convertTableToMesh#restores quantized position metadata and logical bounds', () => {
+  const attributes = {
+    POSITION: {
+      value: new Uint16Array([0, 0, 0, 10, 10, 10]),
+      size: 3,
+      transform: {type: 'quantization', bits: 8, origin: [50, -100, 150], range: 2}
+    }
+  };
   const mesh: Mesh = {
-    attributes: {
-      POSITION: {
-        value: new Uint16Array([0, 0, 0, 10, 10, 10]),
-        size: 3,
-        transform: {type: 'quantization', bits: 8, origin: [50, -100, 150], range: 2}
-      }
-    },
+    attributes,
+    schema: deduceMeshSchema(attributes),
     topology: 'point-list',
     mode: 0,
     header: {
