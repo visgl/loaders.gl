@@ -1,5 +1,11 @@
 # Loader Categories
 
+:::info Start here
+Choose a loader category when your application should accept several formats without separate code
+paths for each one. The category defines the common result shape, while each loader handles its own
+file format.
+:::
+
 To simplify working with multiple similar formats, loaders and writers in loaders.gl are grouped into _categories_.
 
 The idea is that many loaders return very similar data (e.g. point clouds loaders), which makes it possible to represent the loaded data in the same data structure, letting applications handle the output from multiple loaders without

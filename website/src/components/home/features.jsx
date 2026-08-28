@@ -8,7 +8,7 @@ const featureCards = [
     eyebrow: 'Query architecture',
     title: 'Read less. Query sooner.',
     description:
-      'A portable scan model brings projection, predicates, range reads, and bounded execution to columnar data in the browser.',
+      'Cloud-native scanning supports range reads, bounding-box filtering, projection, and predicates across most data formats, directly in the browser.',
     href: '/docs/developer-guide/common-scan-architecture',
     linkLabel: 'Explore scan architecture',
     tags: ['projection', 'predicates', 'range reads'],
