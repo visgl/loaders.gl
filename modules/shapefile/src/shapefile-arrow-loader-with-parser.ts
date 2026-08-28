@@ -4,6 +4,7 @@
 
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {
+  makeTableScanBatch,
   parseFromContext,
   parseInBatchesFromContext,
   toArrayBufferIterator
@@ -213,13 +214,7 @@ export async function* parseShapefileToArrowInBatches(
         outputSchema
       );
       yieldedDataBatch = true;
-      yield {
-        shape: 'arrow-table',
-        batchType: 'data',
-        length: batch.data.numRows,
-        schema: batch.schema,
-        data: batch.data
-      };
+      yield makeTableScanBatch(batch);
     }
     if (!yieldedDataBatch) {
       yield makeEmptyArrowBatch(outputSchema);
@@ -245,13 +240,7 @@ export async function* parseShapefileToArrowInBatches(
       transform
     );
     yieldedDataBatch = true;
-    yield {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowTable.data.numRows,
-      schema: outputSchema,
-      data: arrowTable.data
-    };
+    yield makeTableScanBatch({...arrowTable, schema: outputSchema});
   }
   if (!yieldedDataBatch) {
     yield makeEmptyArrowBatch(outputSchema);
@@ -410,11 +399,5 @@ function takeRowsFromQueue(queue: arrow.Table[], rowCount: number): arrow.Table 
 /** Creates an explicit empty Arrow batch so zero-row shapefiles still expose schema in batch mode. */
 function makeEmptyArrowBatch(schema: TableSchema): ArrowTableBatch {
   const table = new ArrowTableBuilder(schema).finishTable();
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 0,
-    schema,
-    data: table.data
-  };
+  return makeTableScanBatch({...table, schema});
 }

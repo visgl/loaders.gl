@@ -1,17 +1,15 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
-  emitScanExecutionTelemetry,
+  executeTableScanBatches,
   explainTableQuery,
   filterColumnarRowIndices,
-  validateColumnarPredicate,
-  validateTableQueryLimit
+  validateColumnarPredicate
 } from '@loaders.gl/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  ScanExecutionTelemetry,
   SourceLoader,
   TableScanReadOptions,
   TableScanSource
@@ -59,89 +57,11 @@ export class ArrowTableSource
 
   /** Streams Arrow record batches in source order with an optional global limit. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
-    validateTableQueryLimit(options.limit);
-    const startedAt = Date.now();
-    let sourcesRead = 0;
-    let batchesRead = 0;
-    let rowsRead = 0;
-    let rowsTested = 0;
-    let rowsRetained = 0;
-    let rowsReturned = 0;
-    let bytesFetched = 0;
-    let status: ScanExecutionTelemetry['status'] = 'early-terminated';
-    let earlyTerminationReason: ScanExecutionTelemetry['earlyTerminationReason'];
-    let executionError: unknown;
-    let remaining =
-      options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
-    try {
-      if (remaining <= 0) {
-        earlyTerminationReason = 'limit';
-        return;
-      }
-      sourcesRead = 1;
-      for await (const batch of this.parseBatches(
-        options.signal,
-        byteLength => (bytesFetched += byteLength)
-      )) {
-        if (remaining <= 0) {
-          earlyTerminationReason = 'limit';
-          return;
-        }
-        const arrowBatch = batch as ArrowTableBatch;
-        batchesRead++;
-        rowsRead += batch.length;
-        const filteredData = filterArrowData(arrowBatch.data, options.predicate);
-        if (options.predicate) {
-          rowsTested += batch.length;
-          rowsRetained += filteredData.numRows;
-        }
-        const projectedData =
-          options.columns !== undefined ? filteredData.select([...options.columns]) : filteredData;
-        const outputLength = Math.min(projectedData.numRows, remaining);
-        if (outputLength <= 0) continue;
-        rowsReturned += outputLength;
-        yield {
-          ...batch,
-          data:
-            outputLength === projectedData.numRows
-              ? projectedData
-              : projectedData.slice(0, outputLength),
-          schema: convertArrowToSchema(projectedData.schema),
-          length: outputLength
-        } as TableBatch;
-        remaining -= outputLength;
-      }
-      status = 'completed';
-    } catch (error) {
-      status = options.signal?.aborted ? 'cancelled' : 'failed';
-      executionError = error;
-      throw error;
-    } finally {
-      if (status === 'early-terminated' && !earlyTerminationReason) {
-        earlyTerminationReason = 'consumer-return';
-      }
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        Object.freeze({
-          status,
-          sourcesPlanned: 1,
-          sourcesRead,
-          batchesRead,
-          batchesDecoded: batchesRead,
-          rowsRead,
-          rowsTested: rowsTested || undefined,
-          rowsRetained: rowsRetained || undefined,
-          rowsReturned,
-          bytesRead: bytesFetched,
-          bytesFetched,
-          filesOpened: sourcesRead,
-          tasksOpened: sourcesRead,
-          earlyTerminationReason,
-          durationMilliseconds: Date.now() - startedAt,
-          ...(executionError === undefined ? {} : {error: executionError})
-        })
-      );
-    }
+    yield* executeTableScanBatches(
+      (signal, onByteLength) => this.parseBatches(signal, onByteLength),
+      options,
+      {filter: filterArrowBatch, project: projectArrowBatch}
+    );
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
@@ -200,6 +120,33 @@ function filterArrowData(
     })
   );
   return new arrow.Table(data.schema, filteredColumns);
+}
+
+/** Applies the Arrow-native residual predicate while retaining the table-batch envelope. */
+function filterArrowBatch(
+  batch: TableBatch,
+  predicate: TableScanReadOptions['predicate']
+): TableBatch {
+  const arrowBatch = batch as ArrowTableBatch;
+  const data = filterArrowData(arrowBatch.data, predicate);
+  return {
+    ...batch,
+    data,
+    length: data.numRows,
+    schema: convertArrowToSchema(data.schema)
+  } as TableBatch;
+}
+
+/** Projects Arrow columns and updates the portable schema in one format-specific kernel. */
+function projectArrowBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
+  const arrowBatch = batch as ArrowTableBatch;
+  const data = columns === undefined ? arrowBatch.data : arrowBatch.data.select([...columns]);
+  return {
+    ...batch,
+    data,
+    length: data.numRows,
+    schema: convertArrowToSchema(data.schema)
+  } as TableBatch;
 }
 
 async function* readResponseChunks(

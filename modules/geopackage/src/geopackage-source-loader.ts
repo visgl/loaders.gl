@@ -15,11 +15,11 @@ import {
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
+  makeTableScanBatch,
   validateTableQueryOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import * as arrow from 'apache-arrow';
+import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/schema-utils';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader';
 import {
@@ -176,13 +176,7 @@ export class GeoPackageDataSource
   /** Executes a common table scan as one bounded Arrow batch. */
   async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     const table = await this.query(options);
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: table.schema,
-      data: table.data,
-      length: table.data.numRows
-    };
+    yield makeTableScanBatch(table);
   }
 
   private async loadMetadata(): Promise<GeoPackageSourceMetadata> {
@@ -264,40 +258,10 @@ export class GeoPackageDataSource
 function queryGeoPackageTable(table: ArrowTable, options: TableScanReadOptions): ArrowTable {
   const availableColumns = table.data.schema.fields.map(field => field.name);
   validateTableQueryOptions(availableColumns, options);
-  const selectedColumns = options.columns ? [...options.columns] : availableColumns;
-  let data: arrow.Table;
-
-  if (options.predicate) {
-    const columns = Object.fromEntries(
-      availableColumns.map(name => [name, [...(table.data.getChild(name) || [])]])
-    );
-    const rowIndices = filterColumnarRowIndices(
-      options.predicate as never,
-      columns as never,
-      table.data.numRows
-    );
-    const vectors = Object.fromEntries(
-      selectedColumns.map(name => {
-        const sourceVector = table.data.getChild(name);
-        return [
-          name,
-          arrow.vectorFromArray(
-            rowIndices.map(rowIndex => columns[name][rowIndex]),
-            sourceVector?.type
-          )
-        ];
-      })
-    );
-    const schema = new arrow.Schema(
-      selectedColumns.map(name => table.data.schema.fields.find(field => field.name === name)!)
-    );
-    data = new arrow.Table(schema, vectors);
-  } else {
-    data = table.data.select(selectedColumns);
-  }
-
-  data = data.slice(0, options.limit ?? Number.POSITIVE_INFINITY);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  const queriedTable = queryArrowTable(table, options, (predicate, columns, rowCount) =>
+    filterColumnarRowIndices(predicate as never, columns as never, rowCount)
+  );
+  return {...queriedTable, schema: convertArrowToSchema(queriedTable.data.schema)};
 }
 
 function throwIfAborted(signal?: AbortSignal): void {

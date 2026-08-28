@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
+import {DataSource as BaseDataSource, makeTableScanBatch} from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 
 import {LanceFormat} from './lance-format';
@@ -100,7 +100,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
             columnNames: lanceOptions.columnNames,
             limit: lanceOptions.limit
           });
-    yield {batchType: 'data', shape: 'arrow-table', data: table.data, length: table.data.numRows};
+    yield makeTableScanBatch(table);
   }
 
   /** Reads the first remote data file through HTTP range requests. */

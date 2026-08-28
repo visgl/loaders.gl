@@ -34,6 +34,29 @@ Format packages should depend on the lightweight scan contracts in `@loaders.gl/
 should not import this package merely to expose metadata or a native scan adapter. Applications opt
 into this package when they want the shared planner or Arrow executor.
 
+The same boundary applies to table execution. `executeTableScanBatches()` is the reusable residual
+executor for object-row, columnar, GeoJSON, and Arrow-shaped batches. It owns filtering, projection,
+global limits, cancellation, and terminal telemetry; a format adapter only supplies its parser's
+batch reader. The helper is re-exported from `@loaders.gl/scan` for applications building custom
+adapters, while format packages import it from `@loaders.gl/loader-utils`. This keeps the common
+implementation in one place without making a CSV, JSON, or other format root import the optional
+scan runtime (and therefore preserves tree-shaking for users who never scan).
+
+Arrow-backed formats use the same layering for materialized queries. `queryArrowTable()` lives in
+`@loaders.gl/schema-utils`, which already owns Arrow schema and vector utilities. ORC, GeoPackage,
+and FlatGeobuf provide only their predicate evaluator and source-specific pruning; projection,
+row-index gathering, vector reconstruction, and limits are shared. This keeps format adapters
+small while avoiding a dependency from those packages on the optional scan runtime.
+
+```typescript
+import {executeTableScanBatches} from '@loaders.gl/scan';
+
+const result = executeTableScanBatches(
+  (signal, onByteLength) => parser.readBatches({signal, onByteLength}),
+  {columns: ['id'], limit: 100}
+);
+```
+
 The package also provides the application-facing query state and metadata vocabulary used by
 metadata-driven controls. These are deliberately framework-neutral:
 

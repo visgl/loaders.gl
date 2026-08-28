@@ -14,7 +14,7 @@ import type {
   VectorSource,
   VectorTileSource
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/loader-utils';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
@@ -120,13 +120,7 @@ export abstract class AddressedVectorTableScanSource {
   /** Emits the portable query result as one bounded Arrow batch. */
   async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     const result = await this.query(options);
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: result.schema,
-      data: result.data,
-      length: result.data.numRows
-    };
+    yield makeTableScanBatch(result);
   }
 
   /** Resolves and caches the addressed table while allowing failed loads to be retried. */
