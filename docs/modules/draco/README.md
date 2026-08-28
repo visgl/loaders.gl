@@ -79,3 +79,7 @@ tracked as compatibility and lifecycle improvements rather than a worker-pool ab
 | Interoperability | Preserve names, normalized flags, transforms, and metadata across Arrow/Draco round trips. |
 | Memory | Reuse initialized runtimes and process batches sequentially; worker pooling is tracked separately. |
 | Compatibility | Retain legacy writer/loader entry points while steering new code to `encodeDraco` and typed reports. |
+
+The browser encoder uses the versioned Draco 1.5.7 wrapper and WebAssembly pair. This keeps the
+default writer path independent of the Node-only `draco3d` package entry point; applications that
+need offline or worker-local loading can opt into the checked-in assets with `useLocalLibraries`.
