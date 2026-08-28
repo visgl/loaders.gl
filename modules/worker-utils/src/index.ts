@@ -9,6 +9,10 @@ import {VERSION} from './lib/env-utils/version';
 export type {
   WorkerObject,
   WorkerOptions,
+  WorkerContext,
+  WorkerJobContext,
+  Process,
+  ProcessInBatches,
   // Protocol
   WorkerMessage,
   WorkerMessageType,
@@ -34,6 +38,7 @@ export type {ProcessOnWorkerOptions} from './lib/worker-api/process-on-worker';
 export type {PreloadWorkerOptions} from './lib/worker-api/process-on-worker';
 export {
   processOnWorker,
+  processOnWorkerInBatches,
   preloadWorker,
   canProcessOnWorker
 } from './lib/worker-api/process-on-worker';

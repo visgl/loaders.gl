@@ -11,6 +11,7 @@ import type {
   WorkerMessagePayload
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
+import AsyncQueue from '../async-queue/async-queue';
 import WorkerFarm from '../worker-farm/worker-farm';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
 import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
@@ -75,7 +76,7 @@ export async function processOnWorker(
     onMessage.bind(null, context)
   );
 
-  const abortJob = (): void => job.abort();
+  const abortJob = (): void => job.abort(getAbortReason(options.signal));
   options.signal?.addEventListener('abort', abortJob, {once: true});
   if (options.signal?.aborted) {
     abortJob();
@@ -101,14 +102,182 @@ export async function processOnWorker(
   }
 }
 
+/**
+ * Processes an input iterator on one leased worker and streams output batches back.
+ *
+ * The worker remains assigned to this job for the complete iterator lifetime, allowing
+ * `processInBatches` implementations to retain parser or encoder state between input batches.
+ * Input is demand-driven: the main thread advances the source only when that worker requests the
+ * next batch.
+ */
+export function processOnWorkerInBatches<InputBatch = any, OutputBatch = any>(
+  worker: WorkerObject,
+  input: AsyncIterable<InputBatch> | Iterable<InputBatch>,
+  options: ProcessOnWorkerOptions = {},
+  context: WorkerContext = {},
+  jobContext: WorkerJobContext = {}
+): AsyncIterable<OutputBatch> {
+  return processOnWorkerInBatchesIterator(worker, input, options, context, jobContext);
+}
+
+/** Implements stateful worker batch processing as an async generator. */
+async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
+  worker: WorkerObject,
+  input: AsyncIterable<InputBatch> | Iterable<InputBatch>,
+  options: ProcessOnWorkerOptions,
+  context: WorkerContext,
+  jobContext: WorkerJobContext
+): AsyncIterable<OutputBatch> {
+  throwIfAborted(options.signal);
+  const name = getWorkerName(worker);
+  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const {source} = options;
+  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  if (!source) {
+    workerPoolProps.url = getWorkerURL(worker, options);
+  }
+  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const outputBatches = new AsyncQueue<OutputBatch>();
+  const inputIterator = getAsyncIterator(input);
+  let outputFinished = false;
+  let inputFinished = false;
+  let inputRequest = Promise.resolve();
+  const batchJobFailed = new Error('Worker batch job failed');
+
+  const finishOutput = (): void => {
+    if (!outputFinished) {
+      outputFinished = true;
+      outputBatches.close();
+    }
+  };
+  const failOutput = (_error: unknown): void => {
+    if (!outputFinished) {
+      outputFinished = true;
+      outputBatches.enqueue(batchJobFailed);
+      outputBatches.close();
+    }
+  };
+
+  const job = await workerPool.startJob(
+    options.jobName || worker.name,
+    (activeJob, type, payload) => {
+      switch (type) {
+        case 'input-request':
+          inputRequest = inputRequest
+            .then(async () => {
+              const nextBatch = await inputIterator.next();
+              if (!activeJob.isRunning) {
+                return;
+              }
+              if (nextBatch.done) {
+                inputFinished = true;
+                activeJob.postMessage('input-done', {});
+              } else {
+                activeJob.postMessage('input-batch', {input: nextBatch.value});
+              }
+            })
+            .catch(error => activeJob.abort(error));
+          break;
+
+        case 'output-batch':
+          outputBatches.push(payload.result as OutputBatch);
+          break;
+
+        case 'done':
+          activeJob.done(payload);
+          finishOutput();
+          break;
+
+        case 'error': {
+          const error = new Error(payload.error || 'Worker batch processing failed');
+          activeJob.error(error);
+          failOutput(error);
+          break;
+        }
+
+        case 'process':
+          void onMessage(context, activeJob, type, payload);
+          break;
+
+        default: {
+          const error = new Error(`Unexpected worker batch message: ${type}`);
+          activeJob.error(error);
+          failOutput(error);
+          break;
+        }
+      }
+    }
+  );
+
+  const abortJob = (): void => job.abort(getAbortReason(options.signal));
+  options.signal?.addEventListener('abort', abortJob, {once: true});
+  if (options.signal?.aborted) {
+    abortJob();
+  }
+  void job.result.catch(failOutput);
+
+  try {
+    const {signal: _signal, ...workerOptions} = options;
+    if (job.isRunning) {
+      job.postMessage('process-in-batches', {
+        options: getTransferListForWriter(workerOptions),
+        context: getTransferListForWriter(jobContext)
+      });
+    }
+
+    try {
+      for await (const outputBatch of outputBatches) {
+        yield outputBatch;
+        if (job.isRunning) {
+          job.postMessage('output-ack', {});
+        }
+      }
+    } catch (error) {
+      if (error === batchJobFailed) {
+        await job.result;
+      }
+      throw error;
+    }
+    await job.result;
+  } finally {
+    options.signal?.removeEventListener('abort', abortJob);
+    if (job.isRunning) {
+      job.abort(createAbortError('Worker batch iterator was closed'));
+    }
+    if (!inputFinished) {
+      await inputIterator.return?.();
+    }
+  }
+}
+
 /** Throws a cross-runtime abort error when a signal is already aborted. */
 function throwIfAborted(signal?: AbortSignal): void {
   if (!signal?.aborted) {
     return;
   }
-  const error = new Error('Worker job was aborted');
+  throw getAbortReason(signal);
+}
+
+/** Returns a caller-provided abort reason or a cross-runtime `AbortError`. */
+function getAbortReason(signal?: AbortSignal): unknown {
+  return signal?.reason ?? createAbortError('Worker job was aborted');
+}
+
+/** Creates an abort error without requiring the DOMException global. */
+function createAbortError(message: string): Error {
+  const error = new Error(message);
   error.name = 'AbortError';
-  throw error;
+  return error;
+}
+
+/** Returns an asynchronous iterator for either accepted source kind. */
+function getAsyncIterator<T>(input: AsyncIterable<T> | Iterable<T>): AsyncIterator<T> {
+  if (Symbol.asyncIterator in input) {
+    return input[Symbol.asyncIterator]();
+  }
+  return (async function* iterateSynchronously() {
+    yield* input;
+  })();
 }
 
 /**

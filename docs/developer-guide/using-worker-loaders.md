@@ -28,6 +28,11 @@ The `processOnWorker` function in `@loaders.gl/worker-utils` is used with worker
 exported by modules like `@loaders.gl/compression` and `@loaders.gl/crypto` to move
 processing intensive tasks to workers.
 
+`processOnWorkerInBatches` leases one worker for an entire input iterator. This lets streaming
+parsers and encoders retain state across chunks while applying input and output backpressure.
+See the [worker processing API](/docs/modules/worker-utils/api-reference/worker-processing) for
+worker implementation, cancellation, transfer, and lifecycle guidance.
+
 ## Parsing data on Workers
 
 ## Loading Files in Parallel using Worker Loaders

@@ -53,7 +53,7 @@ export default class WorkerJob {
   /**
    * Call to reject the `result` Promise with the supplied error
    */
-  error(error: Error): void {
+  error(error: unknown): void {
     if (!this.isRunning) {
       return;
     }
@@ -61,14 +61,23 @@ export default class WorkerJob {
     this._reject(error);
   }
 
-  /** Terminates the worker executing this job and rejects its result with an abort error. */
-  abort(): void {
+  /**
+   * Terminates the worker executing this job and rejects its result.
+   * @param reason Abort reason supplied by the caller, or a cross-runtime `AbortError`.
+   */
+  abort(reason?: unknown): void {
     if (!this.isRunning) {
       return;
     }
-    const error = new Error(`Worker job "${this.name}" was aborted`);
-    error.name = 'AbortError';
+    const error = reason ?? createAbortError(`Worker job "${this.name}" was aborted`);
     this.workerThread.destroy();
     this.error(error);
   }
+}
+
+/** Creates an abort error without requiring the DOMException global. */
+function createAbortError(message: string): Error {
+  const error = new Error(message);
+  error.name = 'AbortError';
+  return error;
 }

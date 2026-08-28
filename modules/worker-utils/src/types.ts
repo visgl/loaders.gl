@@ -61,18 +61,20 @@ export type WorkerObject = {
   PROTOCOL
 
   Main thread                                     worker
-               => process-batches-start
+               => process-in-batches
 
-               => process-batches-input-batch
-               <= process-batches-output-batch
+               <= input-request
+               => input-batch
+               <= output-batch
+               => output-ack
                   ... // repeat
 
-              => process-batches-input-done
-              <= process-batches-result
+              => input-done
+              <= done
 
                  // or
 
-              <= process-batches-error
+              <= error
  */
 export type WorkerMessageType =
   | 'preload'
@@ -80,9 +82,11 @@ export type WorkerMessageType =
   | 'done'
   | 'error'
   | 'process-in-batches'
+  | 'input-request'
   | 'input-batch'
   | 'input-done'
-  | 'output-batch';
+  | 'output-batch'
+  | 'output-ack';
 
 export type WorkerMessagePayload = {
   id?: number;

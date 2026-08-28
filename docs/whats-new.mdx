@@ -116,6 +116,13 @@ Release Date: 2026
 - [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 - Handwritten RAD and RADC metadata types are paired with runtime validators from `@loaders.gl/splats/rad-zod-schema`, plus published draft-07 JSON Schema assets.
 
+**@loaders.gl/worker-utils**
+
+- `processOnWorkerInBatches()` streams input and output through one leased worker, preserving
+  parser or encoder state across batches with demand-driven backpressure and transferable data.
+- Worker cancellation preserves `AbortSignal.reason`; closing a batch iterator terminates its
+  leased worker so later jobs receive a clean replacement.
+
 **@loaders.gl/terrain**
 
 - [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) NEW - writes quantized mesh terrain data.

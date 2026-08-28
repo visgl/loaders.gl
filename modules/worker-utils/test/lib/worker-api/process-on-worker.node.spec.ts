@@ -91,20 +91,22 @@ test('processOnWorker#jobContext', async () => {
 });
 test('processOnWorker#AbortSignal terminates and replaces an active worker', async () => {
   const abortController = new AbortController();
+  const abortReason = new Error('cancel worker job');
+  abortReason.name = 'AbortError';
   const abortedResult = processOnWorker(AbortWorker, 'aborted', {
     worker: true,
     source: abortWorkerSource,
     delay: 1000,
     signal: abortController.signal
   });
-  setTimeout(() => abortController.abort(), 10);
+  setTimeout(() => abortController.abort(abortReason), 10);
   let abortError: unknown;
   try {
     await abortedResult;
   } catch (error) {
     abortError = error;
   }
-  expect((abortError as Error | undefined)?.name, 'rejects with an abort error').toBe('AbortError');
+  expect(abortError, 'preserves the signal abort reason').toBe(abortReason);
   const nextResult = await processOnWorker(AbortWorker, 'replacement', {
     worker: true,
     source: abortWorkerSource,

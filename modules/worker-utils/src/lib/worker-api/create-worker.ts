@@ -16,8 +16,8 @@ import WorkerBody from '../worker-farm/worker-body';
 
 /** Counter for jobs */
 let requestId = 0;
-let inputBatches: AsyncQueue<any>;
-let options: {[key: string]: any};
+let activeInputBatches: AsyncQueue<any> | null = null;
+let activeOutputAcknowledgements: AsyncQueue<void> | null = null;
 
 export type ProcessOnMainThread = (
   data: any,
@@ -65,26 +65,47 @@ export async function createWorker(
           if (!processInBatches) {
             throw new Error('Worker does not support batched processing');
           }
-          inputBatches = new AsyncQueue<any>();
-          options = payload.options || {};
-          const resultIterator = processInBatches(
-            inputBatches,
-            options,
-            context,
-            payload.context || {}
-          );
-          for await (const batch of resultIterator) {
-            WorkerBody.postMessage('output-batch', {result: batch});
+          const inputBatches = new AsyncQueue<any>();
+          const outputAcknowledgements = new AsyncQueue<void>();
+          activeInputBatches = inputBatches;
+          activeOutputAcknowledgements = outputAcknowledgements;
+          try {
+            const resultIterator = processInBatches(
+              createDemandDrivenIterator(inputBatches),
+              payload.options || {},
+              context,
+              payload.context || {}
+            );
+            for await (const batch of resultIterator) {
+              await WorkerBody.postMessage('output-batch', {result: batch});
+              await outputAcknowledgements.next();
+            }
+            await WorkerBody.postMessage('done', {});
+          } finally {
+            activeInputBatches = null;
+            activeOutputAcknowledgements = null;
           }
-          WorkerBody.postMessage('done', {});
           break;
 
         case 'input-batch':
-          inputBatches.push(payload.input);
+          if (!activeInputBatches) {
+            throw new Error('Worker has no active batched processing session');
+          }
+          activeInputBatches.push(payload.input);
           break;
 
         case 'input-done':
-          inputBatches.close();
+          if (!activeInputBatches) {
+            throw new Error('Worker has no active batched processing session');
+          }
+          activeInputBatches.close();
+          break;
+
+        case 'output-ack':
+          if (!activeOutputAcknowledgements) {
+            throw new Error('Worker has no active batched processing session');
+          }
+          activeOutputAcknowledgements.push(undefined);
           break;
 
         default:
@@ -94,6 +115,18 @@ export async function createWorker(
       WorkerBody.postMessage('error', {error: message});
     }
   };
+}
+
+/** Requests exactly one input batch whenever the worker-side processor advances its iterator. */
+async function* createDemandDrivenIterator(inputBatches: AsyncQueue<any>): AsyncIterable<any> {
+  while (true) {
+    await WorkerBody.postMessage('input-request', {});
+    const nextBatch = await inputBatches.next();
+    if (nextBatch.done) {
+      return;
+    }
+    yield nextBatch.value;
+  }
 }
 
 function processOnMainThread(arrayBuffer: ArrayBuffer, options = {}, jobContext = {}) {
