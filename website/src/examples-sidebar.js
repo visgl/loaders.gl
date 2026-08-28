@@ -26,6 +26,7 @@ const sidebars = {
       items: [
         'table/arrow',
         'table/arrow-scan',
+        'table/federated-scan',
         'table/parquet',
         'table/avro',
         'table/orc',

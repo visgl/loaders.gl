@@ -232,26 +232,67 @@ export function FederatedScanPanel({
 
 /** Renders planned and actual execution data without hiding source-specific fields. */
 function ExecutionResults({results}: {results: FederatedScanPanelResults}): JSX.Element {
+  const telemetry = results.telemetry;
   return (
-    <ResultsGrid>
-      <ResultCard>
-        <strong>Explain</strong>
-        <Code>{formatJson(results.explanation || {})}</Code>
-      </ResultCard>
-      <ResultCard>
-        <strong>Actual telemetry</strong>
-        <Code>{formatJson(results.telemetry || {})}</Code>
-      </ResultCard>
-      <ResultCard>
-        <strong>Batch provenance</strong>
-        <Provenance>
-          {results.provenance?.map((sourceId, index) => (
-            <span key={`${sourceId}-${index}`}>{sourceId}</span>
-          )) || 'No batches yet'}
-        </Provenance>
-      </ResultCard>
-    </ResultsGrid>
+    <ExecutionSection aria-label="Scan execution results">
+      <ExecutionSummary>
+        <SummaryMetric>
+          <MetricLabel>Result rows</MetricLabel>
+          <MetricValue>{telemetry ? telemetry.rowsReturned : '—'}</MetricValue>
+        </SummaryMetric>
+        <SummaryMetric>
+          <MetricLabel>Sources read</MetricLabel>
+          <MetricValue>
+            {telemetry ? `${telemetry.sourcesRead}/${telemetry.sourcesPlanned}` : '—'}
+          </MetricValue>
+        </SummaryMetric>
+        <SummaryMetric>
+          <MetricLabel>Batches</MetricLabel>
+          <MetricValue>{telemetry ? telemetry.batchesRead : '—'}</MetricValue>
+        </SummaryMetric>
+        <SummaryMetric>
+          <MetricLabel>Execution</MetricLabel>
+          <MetricValue>{telemetry ? formatStatus(telemetry.status) : '—'}</MetricValue>
+        </SummaryMetric>
+      </ExecutionSummary>
+      <ResultsGrid>
+        <ResultCard>
+          <CardHeading>Explain plan</CardHeading>
+          <CardHint>Schema reconciliation and physical source capabilities.</CardHint>
+          <Details>
+            <summary>View plan JSON</summary>
+            <Code>{formatJson(results.explanation || {})}</Code>
+          </Details>
+        </ResultCard>
+        <ResultCard>
+          <CardHeading>Execution telemetry</CardHeading>
+          <CardHint>
+            {telemetry
+              ? `${telemetry.rowsRead} rows read · ${telemetry.rowsTested || 0} tested · ${telemetry.durationMilliseconds} ms`
+              : 'No execution yet.'}
+          </CardHint>
+          <Details>
+            <summary>View telemetry JSON</summary>
+            <Code>{formatJson(telemetry || {})}</Code>
+          </Details>
+        </ResultCard>
+        <ResultCard>
+          <CardHeading>Batch provenance</CardHeading>
+          <CardHint>Source order is preserved in every emitted Arrow batch.</CardHint>
+          <Provenance>
+            {results.provenance?.map((sourceId, index) => (
+              <span key={`${sourceId}-${index}`}>{sourceId}</span>
+            )) || 'No batches yet'}
+          </Provenance>
+        </ResultCard>
+      </ResultsGrid>
+    </ExecutionSection>
   );
+}
+
+/** Formats an execution status for the compact results summary. */
+function formatStatus(status: ScanExecutionTelemetry['status']): string {
+  return status.replace('-', ' ');
 }
 
 /** Parses a JSON object and reports a panel-specific validation error. */
@@ -405,12 +446,55 @@ const ResultsGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 10px;
 `;
+const ExecutionSection = styled.section`
+  display: grid;
+  gap: 10px;
+`;
+const ExecutionSummary = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+`;
+const SummaryMetric = styled.div`
+  border: 1px solid #b2ddff;
+  border-radius: 6px;
+  padding: 9px;
+  background: #f0f9ff;
+`;
+const MetricLabel = styled.div`
+  color: #475467;
+  font-size: 0.72rem;
+`;
+const MetricValue = styled.div`
+  margin-top: 2px;
+  color: #175cd3;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: capitalize;
+`;
 const ResultCard = styled.div`
   min-width: 0;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
   padding: 10px;
   background: white;
+`;
+const CardHeading = styled.strong`
+  display: block;
+`;
+const CardHint = styled.div`
+  margin-top: 4px;
+  color: #667085;
+  font-size: 0.72rem;
+`;
+const Details = styled.details`
+  margin-top: 8px;
+  color: #475467;
+  font-size: 0.72rem;
+
+  summary {
+    cursor: pointer;
+  }
 `;
 const Code = styled.pre`
   max-height: 260px;

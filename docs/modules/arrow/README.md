@@ -4,7 +4,17 @@
 &emsp;
 ![apache-logo](../../images/logos/apache-logo.png)
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
+
+Arrow IPC sources expose schema discovery, residual predicates, projection, global limits,
+cancellation, explain output, telemetry, and streaming Arrow batches through the common scan
+contract.
 
 ## Installation
 

@@ -160,12 +160,38 @@ export function FederatedScanLiveExample(): JSX.Element {
 
   return (
     <ExampleFrame>
+      <ExampleIntro>
+        <IntroEyebrow>Website-first scan walkthrough</IntroEyebrow>
+        <IntroTitle>One query, three source formats</IntroTitle>
+        <IntroText>
+          Discover schemas, reconcile names, and stream a bounded Arrow result without loading a
+          database or handing application code a format-specific query API.
+        </IntroText>
+        <Pipeline aria-label="Federated scan pipeline">
+          <PipelineStep>Discover</PipelineStep>
+          <PipelineArrow>→</PipelineArrow>
+          <PipelineStep>Map + validate</PipelineStep>
+          <PipelineArrow>→</PipelineArrow>
+          <PipelineStep>Append in order</PipelineStep>
+          <PipelineArrow>→</PipelineArrow>
+          <PipelineStep>Arrow batches</PipelineStep>
+        </Pipeline>
+      </ExampleIntro>
       <ExampleHeader>
         <div>
           <strong>Heterogeneous weather history</strong>
-          <div>CSV + NDJSON + Arrow IPC → ordered Arrow batches</div>
+          <div>CSV + NDJSON + Arrow IPC · local fixtures · no server query engine</div>
         </div>
-        <Status $failed={Boolean(results.error)}>
+        <ResetButton
+          type="button"
+          onClick={() => {
+            setValue(DEFAULT_STATE);
+            setSubmittedValue(DEFAULT_STATE);
+          }}
+        >
+          Reset example
+        </ResetButton>
+        <Status $failed={Boolean(results.error)} aria-live="polite">
           {results.error ? 'Failed' : loading ? 'Planning…' : `${results.rows?.length || 0} rows`}
         </Status>
       </ExampleHeader>
@@ -184,8 +210,8 @@ export function FederatedScanLiveExample(): JSX.Element {
           setSubmittedValue(nextValue);
         }}
       />
-      {results.error ? <ErrorMessage>{results.error}</ErrorMessage> : null}
-      {results.rows?.length ? <RowsPreview rows={results.rows} /> : null}
+      {results.error ? <ErrorMessage role="alert">{results.error}</ErrorMessage> : null}
+      {results.rows ? <RowsPreview rows={results.rows} /> : null}
     </ExampleFrame>
   );
 }
@@ -196,18 +222,22 @@ function RowsPreview({rows}: {rows: readonly Record<string, unknown>[]}): JSX.El
   return (
     <Preview>
       <strong>Bounded Arrow result</strong>
-      <table>
-        <thead>
-          <tr>{columns.map(column => <th key={column}>{column}</th>)}</tr>
-        </thead>
-        <tbody>
-          {rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {columns.map(column => <td key={column}>{String(row[column] ?? 'null')}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {rows.length ? (
+        <table>
+          <thead>
+            <tr>{columns.map(column => <th key={column}>{column}</th>)}</tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {columns.map(column => <td key={column}>{String(row[column] ?? 'null')}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <EmptyResult>No rows matched this query. The scan completed successfully.</EmptyResult>
+      )}
     </Preview>
   );
 }
@@ -240,15 +270,67 @@ function getSourceTitle(sourceId: string): string {
 const ExampleFrame = styled.section`
   margin: 18px 0;
 `;
+const ExampleIntro = styled.div`
+  border: 1px solid #b2ddff;
+  border-radius: 10px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f9ff, #ffffff 70%);
+`;
+const IntroEyebrow = styled.div`
+  color: #175cd3;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+`;
+const IntroTitle = styled.h3`
+  margin: 5px 0 4px;
+  color: #101828;
+`;
+const IntroText = styled.p`
+  max-width: 760px;
+  margin: 0;
+  color: #475467;
+`;
+const Pipeline = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 13px;
+`;
+const PipelineStep = styled.span`
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #175cd3;
+  background: #dff3ff;
+  font-size: 0.74rem;
+  font-weight: 600;
+`;
+const PipelineArrow = styled.span`
+  color: #98a2b3;
+`;
 const ExampleHeader = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin: 14px 0 8px;
   color: #475467;
 
   strong {
     color: #101828;
   }
+`;
+const ResetButton = styled.button`
+  margin-left: auto;
+  border: 1px solid #b2ddff;
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: #175cd3;
+  background: white;
+  cursor: pointer;
+  font-size: 0.74rem;
 `;
 const Status = styled.span<{$failed: boolean}>`
   align-self: flex-start;
@@ -284,4 +366,9 @@ const Preview = styled.div`
     text-align: left;
     font-size: 0.78rem;
   }
+`;
+const EmptyResult = styled.p`
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: 0.82rem;
 `;

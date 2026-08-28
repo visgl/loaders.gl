@@ -910,6 +910,8 @@ exposing the managed source objects, applies explicit mappings and a named predi
 and shows both the plan and terminal execution telemetry. Source badges below the panel are the
 provenance attached to emitted Arrow batches.
 
+For a guided, end-user version of the same workflow, open the [Federated scan example](/examples/table/federated-scan).
+
 <FederatedScanLiveExample />
 
 ## Point-cloud participation
