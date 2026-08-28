@@ -46,6 +46,12 @@ export type {
   Store
 } from './types';
 export type {I3SLoaderOptions} from './i3s-loader';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from './i3s-zod-schema';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 export {

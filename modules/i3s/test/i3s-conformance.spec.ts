@@ -4,7 +4,7 @@
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {I3SNodePageLoader} from '@loaders.gl/i3s';
-import {I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
+import {I3SPointCloudSceneLayerSchema, I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
 import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
@@ -18,22 +18,32 @@ const SCENE_LAYER_FIXTURES = [
   {
     name: 'I3S 1.6 3D Object',
     url: '@loaders.gl/i3s/test/data/SanFrancisco_Bldgs/SceneServer/layers/0',
-    expectedVersion: '1.6'
+    expectedVersion: '1.6',
+    expectedLayerType: '3DObject'
   },
   {
     name: 'I3S 1.8 3D Object',
     url: '@loaders.gl/i3s/test/data/conformance/i3s-1.8-3d-object.json',
-    expectedVersion: '1.8'
+    expectedVersion: '1.8',
+    expectedLayerType: '3DObject'
   },
   {
     name: 'I3S 1.9 3D Object',
     url: '@loaders.gl/i3s/test/data/conformance/i3s-1.9-3d-object.json',
-    expectedVersion: '1.9'
+    expectedVersion: '1.9',
+    expectedLayerType: '3DObject'
   },
   {
     name: 'I3S 1.10 3D Object with forward fields',
     url: '@loaders.gl/i3s/test/data/conformance/i3s-1.10-3d-object.json',
-    expectedVersion: '1.10'
+    expectedVersion: '1.10',
+    expectedLayerType: '3DObject'
+  },
+  {
+    name: 'I3S 2.1 Point Cloud',
+    url: '@loaders.gl/i3s/test/data/conformance/i3s-2.1-point-cloud.json',
+    expectedVersion: '2.1',
+    expectedLayerType: 'PointCloud'
   }
 ] as const;
 
@@ -41,9 +51,12 @@ describe('I3S conformance fixtures', () => {
   it.each(SCENE_LAYER_FIXTURES)('accepts $name scene-layer metadata', async fixture => {
     const response = await fetchFile(fixture.url);
     const document = await response.json();
-    const sceneLayer = I3SSceneLayerSchema.parse(document);
+    const sceneLayer =
+      fixture.expectedLayerType === 'PointCloud'
+        ? I3SPointCloudSceneLayerSchema.parse(document)
+        : I3SSceneLayerSchema.parse(document);
 
-    expect(sceneLayer.layerType).toBe('3DObject');
+    expect(sceneLayer.layerType).toBe(fixture.expectedLayerType || '3DObject');
     expect(sceneLayer.store.version).toBe(fixture.expectedVersion);
   });
 
@@ -55,6 +68,23 @@ describe('I3S conformance fixtures', () => {
 
     expect(nodePage.nodes).toHaveLength(16);
     expect(nodePage.nodes[2].lodThreshold).toBe(870638.071285568);
+  });
+
+  it('rejects an incomplete Point Cloud profile without an index block size', () => {
+    expect(() =>
+      I3SPointCloudSceneLayerSchema.parse({
+        id: 0,
+        layerType: 'PointCloud',
+        version: '2.1',
+        capabilities: ['View'],
+        disablePopup: false,
+        store: {
+          profile: 'pointcloud',
+          version: '2.1',
+          defaultGeometrySchema: {geometryType: 'points'}
+        }
+      })
+    ).toThrow(/nodesPerPage|nodePerIndexBlock/);
   });
 
   it('preserves UInt64 values through Number.MAX_SAFE_INTEGER', () => {

@@ -41,6 +41,8 @@ export type PointCloudTileContent = {
  */
 export type PointCloudBoundingVolume = {
   cartographicBounds: [min: number[], max: number[]];
+  /** True when the longitude interval crosses the antimeridian. */
+  wrapsDateline?: boolean;
   center: number[];
   radius: number;
 };

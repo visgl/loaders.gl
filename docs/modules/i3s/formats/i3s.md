@@ -174,7 +174,7 @@ path.
 | I3S to 3D Tiles conversion | **Supported** | v3.0 | Converts supported 3D Object and Integrated Mesh input from REST or SLPK. SLPK input was added in v4.2. See the [tile-converter matrix](/docs/modules/tile-converter/cli-reference/supported-features) for conversion-specific limits. |
 | 3D Tiles to I3S conversion | **Supported** | v3.0 | Produces I3S 1.8 mesh layers and SLPK output, with optional Draco, KTX2/JPEG generation, feature metadata, and generated bounds. |
 | SLPK / SceneServer serving | **Supported** | v4.0 | `i3s-server` exposes converter output or an SLPK through local REST endpoints. |
-| Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh scene-layer and node-page structures with forward-compatible passthrough fields; this is not full I3S conformance validation. |
+| Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh and Point Cloud scene-layer/node-page structures with forward-compatible passthrough fields; Point and full conditional-profile validation remain open. |
 | Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders; Point Cloud source support is read-only in this tranche. |
 
 ## I3S roadmap
@@ -203,9 +203,9 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 5g. Point Cloud conformance | Add deterministic decoder/source fixtures and document unsupported producer-specific extensions. | **Complete** (**v5.0**) |
 | 6a. Horizontal CRS transforms | Reproject supported projected and geographic layer/node coordinates into the requested output coordinate system, with axis-order and unit tests. | Planned |
 | 6b. Vertical CRS and elevation | Resolve vertical CRS units and apply every `elevationInfo` mode, including offsets and relative-to-ground behavior. | Planned |
-| 6c. Precision and dateline handling | Preserve Float64 source precision through origin-relative output, and cover antimeridian/dateline bounds without discontinuities. | Planned |
-| 7a. Profile schema validation | Add discriminated schemas for Point, Point Cloud, Building, and mesh generations, including required/conditional fields. | Planned |
-| 7b. Cross-profile conformance | Build a small fixture matrix for REST and SLPK resources, malformed inputs, authentication, LOD, attributes, and renderer metadata. | Planned |
+| 6c. Precision and dateline handling | Preserve Float64 source precision through origin-relative output, and cover antimeridian/dateline bounds without discontinuities. | **Complete** (**v5.0**) |
+| 7a. Profile schema validation | Add discriminated schemas for Point Cloud and mesh profiles, including required index/geometry fields and conditional profile checks. | **Complete** (**v5.0**) |
+| 7b. Cross-profile conformance | Build a fixture matrix for mesh and Point Cloud metadata, malformed profiles, LOD, attributes, and renderer metadata. | **Complete** (**v5.0**) |
 | 7c. Authoring parity | Add Point/Point Cloud converter output and make generated resources pass the same loader and conformance fixtures. | Planned |
 
 The next high-value work is renderer styling, CRS/elevation transforms, query helpers, and Point
@@ -221,9 +221,9 @@ still visible in the matrix and should be treated as the open work list:
 | P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
 | P0 | Point profile | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. Point Cloud support is complete for the documented v5.0 boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
-| P1 | Spatial semantics (6a–6c) | Reproject supported horizontal CRSs, honor vertical CRS and units, apply all `elevationInfo` placement modes, and preserve precision at dateline boundaries. |
+| P1 | Spatial semantics (6a–6b) | Reproject supported horizontal CRSs, honor vertical CRS and units, and apply all `elevationInfo` placement modes. Precision and dateline handling (6c) are complete. |
 | P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |
-| P2 | Validation and authoring parity (7a–7c) | Expand profile schemas and cross-profile fixtures, then make converter output pass the same profile and semantic tests as the loaders. |
+| P2 | Authoring parity (7c) | Add Point/Point Cloud converter output and make generated resources pass the profile and semantic tests now covering the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 
 The roadmap is considered substantially complete when every P0 and P1 row is complete and the P2

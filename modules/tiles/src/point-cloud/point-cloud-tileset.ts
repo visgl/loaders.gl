@@ -616,8 +616,11 @@ export class PointCloudTileset {
     }
 
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
-    const longitudeSpan = Math.max(Math.abs(maxBounds[0] - minBounds[0]), 0.000001);
-    return Math.max(1, Math.round(Math.log2(360 / longitudeSpan)));
+    const longitudeSpan = boundingVolume.wrapsDateline
+      ? 360 - Math.abs(maxBounds[0] - minBounds[0])
+      : Math.abs(maxBounds[0] - minBounds[0]);
+    const normalizedLongitudeSpan = Math.max(longitudeSpan, 0.000001);
+    return Math.max(1, Math.round(Math.log2(360 / normalizedLongitudeSpan)));
   }
 
   private haveSameIds(idsA: Set<string>, idsB: Set<string>): boolean {
@@ -639,16 +642,26 @@ export class PointCloudTileset {
    */
   private getBoundingVolumeCorners(boundingVolume: PointCloudBoundingVolume): number[][] {
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
-    return [
-      [minBounds[0], minBounds[1], minBounds[2] || 0],
-      [minBounds[0], minBounds[1], maxBounds[2] || 0],
-      [minBounds[0], maxBounds[1], minBounds[2] || 0],
-      [minBounds[0], maxBounds[1], maxBounds[2] || 0],
-      [maxBounds[0], minBounds[1], minBounds[2] || 0],
-      [maxBounds[0], minBounds[1], maxBounds[2] || 0],
-      [maxBounds[0], maxBounds[1], minBounds[2] || 0],
-      [maxBounds[0], maxBounds[1], maxBounds[2] || 0]
-    ];
+    const longitudeIntervals = boundingVolume.wrapsDateline
+      ? [
+          [minBounds[0], 180],
+          [-180, maxBounds[0]]
+        ]
+      : [[minBounds[0], maxBounds[0]]];
+    const corners: number[][] = [];
+    for (const [minimumLongitude, maximumLongitude] of longitudeIntervals) {
+      corners.push(
+        [minimumLongitude, minBounds[1], minBounds[2] || 0],
+        [minimumLongitude, minBounds[1], maxBounds[2] || 0],
+        [minimumLongitude, maxBounds[1], minBounds[2] || 0],
+        [minimumLongitude, maxBounds[1], maxBounds[2] || 0],
+        [maximumLongitude, minBounds[1], minBounds[2] || 0],
+        [maximumLongitude, minBounds[1], maxBounds[2] || 0],
+        [maximumLongitude, maxBounds[1], minBounds[2] || 0],
+        [maximumLongitude, maxBounds[1], maxBounds[2] || 0]
+      );
+    }
+    return corners;
   }
 
   /**
