@@ -139,6 +139,10 @@ export {GLTFFormat, GLBFormat} from './gltf-format';
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';
 export {GLTFWriter} from './gltf-writer';
+export {
+  compressGLTFWithDraco,
+  type GLTFDracoWriterOptions
+} from './lib/encoders/encode-gltf-draco';
 
 // GLB Loader & Writer (for custom formats that want to leverage the GLB binary "envelope")
 export {GLBLoader} from './glb-loader';

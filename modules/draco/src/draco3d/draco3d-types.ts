@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// A set of typescript types manually adapted from the Draco web IDL
+// A set of typescript types manually adapted from the Draco 1.5.7 web IDL.
 // Draco JS is a bit tricky to work with due to the C++ emscripten code base
 // sparse documentation, so these types provide an extra safety net.
 
-// Typescript defs adapted from draco3d emscripten IDL
-// https://raw.githubusercontent.com/google/draco/master/src/draco/javascript/emscripten/draco_web_decoder.idl
+// Typescript defs adapted from the release-pinned draco3d emscripten IDL:
+// https://raw.githubusercontent.com/google/draco/8786740086a9f4d83f44aa83badfbea4dce7a1b5/src/draco/javascript/emscripten/draco_web_decoder.idl
+// https://raw.githubusercontent.com/google/draco/8786740086a9f4d83f44aa83badfbea4dce7a1b5/src/draco/javascript/emscripten/draco_web_encoder.idl
 // Interface exposed to emscripten's WebIDL Binder.
 // http://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/WebIDL-Binder.html
 

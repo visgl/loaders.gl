@@ -18,6 +18,17 @@ npm install @loaders.gl/core @loaders.gl/draco
 | [`DracoWorkerLoader`](/docs/modules/draco/api-reference/draco-loader) | Loads Draco meshes and point clouds in a worker. |
 | [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 
+`encodeDracoInBatches` accepts an async or synchronous iterator of geometry
+batches. With `worker: true` it leases one worker for the full iterator and
+keeps one Draco encoder alive, which is useful for large exports and stateful
+batch pipelines. With `worker: false` it uses the same lifecycle locally.
+
+The glTF writer exposes the same capability through
+`{gltf: {draco: {enabled: true}}}`. This is asynchronous because the official
+Draco encoder is WebAssembly-backed; use `GLTFWriter.encode` rather than
+`encodeSync`. The writer appends `KHR_draco_mesh_compression` payloads to a
+single buffer and leaves the original accessors in place for compatibility.
+
 ## Additional APIs
 
 See the [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) and point cloud / mesh category documentation.
@@ -65,7 +76,9 @@ Remarks
 
 ## Attributions
 
-Based on Draco examples, under the Apache 2.0 license.
+Based on the Google Draco 1.5.7 release under the Apache 2.0 license. Every
+vendored runtime asset is recorded with its upstream URL and SHA-256 checksum
+in [`src/libs/README.md`](https://github.com/visgl/loaders.gl/blob/master/modules/draco/src/libs/README.md).
 # Draco roadmap
 
 The Draco module now supports glTF-optimized decoding, retained quantization metadata,

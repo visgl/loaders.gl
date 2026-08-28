@@ -50,6 +50,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Optional Node.js-specific worker filename (for example a `.cjs` asset). */
+  workerNode?: string;
   options: {[key: string]: any};
   deprecatedOptions?: object;
 

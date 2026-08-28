@@ -22,6 +22,13 @@ While possible to use independently, Draco compression is primarily used to comp
 | `MESH`        | ✅        |
 | `POINT_CLOUD` | ✅        |
 
+The official 1.5.7 JavaScript binding does not expose `AddInt64Attribute`,
+`AddUInt64Attribute`, or `AddFloat64Attribute`, and it has no corresponding
+typed-array classes for decoder extraction. loaders.gl therefore rejects
+64-bit attributes explicitly rather than narrowing them silently. A future
+Draco binding that exposes those APIs can be adopted after adding matching
+typed output and conformance coverage.
+
 ## Draco Attribute Support
 
 | Attribute Type    | `DracoLoader` | `DracoWriter` | JS Type        |

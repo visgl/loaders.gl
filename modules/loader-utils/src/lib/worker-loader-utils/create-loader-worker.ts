@@ -149,10 +149,15 @@ async function parseData({
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  // TODO - proper merge in of loader options...
+  // Preserve worker-supplied module overrides (for example a caller-provided
+  // Draco URL) while still applying the loader's defaults. Functions cannot be
+  // structured-cloned, but URL strings and other serializable options can.
   options = {
     ...options,
-    modules: (loader && loader.options && loader.options.modules) || {},
+    modules: {
+      ...((loader && loader.options && loader.options.modules) || {}),
+      ...(options.modules || {})
+    },
     core: {
       ...options.core,
       worker: false

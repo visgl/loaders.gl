@@ -8,11 +8,11 @@ import {
   DRACO_EXTERNAL_LIBRARY_URLS
 } from '../src/lib/draco-module-loader';
 
-test('Draco encoder assets use browser-compatible 1.5.7 URLs', () => {
+test('Draco encoder assets use browser-compatible release-pinned URLs', () => {
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER]).toBe(
-    'https://cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.js'
+    'https://cdn.jsdelivr.net/gh/google/draco@8786740086a9f4d83f44aa83badfbea4dce7a1b5/javascript/draco_encoder.js'
   );
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM]).toBe(
-    'https://cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.wasm'
+    'https://cdn.jsdelivr.net/gh/google/draco@8786740086a9f4d83f44aa83badfbea4dce7a1b5/javascript/draco_encoder.wasm'
   );
 });
