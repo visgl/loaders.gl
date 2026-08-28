@@ -1,5 +1,11 @@
 # Coordinate Reference Systems
 
+:::info Start here
+CRS support keeps the meaning of coordinates attached to loaded data and makes coordinate
+transformations explicit. Most applications can preserve the source metadata first and add
+reprojection only where it is needed.
+:::
+
 Coordinate reference system (CRS) metadata tells an application how coordinates relate to the
 earth. Preserving that metadata is different from transforming coordinates. loaders.gl aims to
 make both explicit: loaders should first discover and retain the source CRS; reprojection only

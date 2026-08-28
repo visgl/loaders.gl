@@ -2,6 +2,12 @@ import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan
 
 # Common Scan Architecture
 
+:::info Start here
+Describe the data you need with bounds, selected columns, predicates, and limits. loaders.gl applies
+that request across supported local and cloud data sources; the planning details below matter only
+when you need to inspect or optimize execution.
+:::
+
 The loaders.gl common scan architecture is a portable query and execution model for columnar data.
 It allows an application to describe a small relational query once and execute it against an
 in-memory Arrow table, a remote Parquet dataset, a versioned table format, a SQL database, or a GPU
