@@ -128,7 +128,7 @@ DATA binary
   const result = parsePCD(buffer);
   expect(Array.from(result.attributes.POSITION.value)).toEqual([1, 2, 3]);
   expect(Array.from(result.attributes.NORMAL.value)).toEqual([0, 1, 0]);
-  expect(Array.from(result.attributes.COLOR_0.value)).toEqual([7]);
+  expect(Array.from(result.attributes.COLOR_0.value)).toEqual([10, 20, 30]);
 });
 
 test('parsePCD decodes binary_compressed point attributes', () => {
@@ -166,7 +166,7 @@ DATA binary_compressed
   const result = parsePCD(buffer);
   expect(Array.from(result.attributes.POSITION.value)).toEqual([1, 2, 3]);
   expect(Array.from(result.attributes.NORMAL.value)).toEqual([0, 1, 0]);
-  expect(Array.from(result.attributes.COLOR_0.value)).toEqual([7]);
+  expect(Array.from(result.attributes.COLOR_0.value)).toEqual([10, 20, 30]);
 });
 
 test('parsePCD rejects unsupported encodings and preserves unorganized bounds', () => {
