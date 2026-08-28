@@ -34,6 +34,15 @@ test('DracoLoader#draco3d npm package', async () => {
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
 });
+test('DracoLoader#JavaScript fallback decoder', async () => {
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true,
+    draco: {backend: 'javascript'}
+  });
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
+});
 test('DracoLoader#parse custom attributes(mainthread)', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;

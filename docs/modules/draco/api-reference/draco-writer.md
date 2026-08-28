@@ -30,20 +30,20 @@ const data = await encode(mesh, DracoWriter, options);
 
 ## Data Format
 
-`DracoWriter` accepts Mesh Arrow tables and legacy Mesh objects. Legacy Mesh input is normalized through the Mesh Arrow table conversion path before Draco data is encoded.
+`DracoWriter` accepts Mesh Arrow tables, Mesh objects, and legacy flat attribute maps. Mesh attributes are passed directly to Draco without an intermediate Arrow conversion. Typed-array subviews retain their `byteOffset` and length, and the `normalized` flag on Mesh attributes is preserved in the encoded Draco attribute.
 
 ## Options
 
-| Option               | Type               | Default | Description                                                                         |
-| -------------------- | ------------------ | ------- | ----------------------------------------------------------------------------------- |
-| `draco.pointcloud`   | `Boolean`          | `false` | Whether to compress as point cloud (GL.POINTS)                                      |
-| `draco.speed`        | `Number`           |         | Speed vs Quality, see [Draco](https://google.github.io/draco/) documentation        |
-| `draco.method`       | `String`           |         | Compression method, see [Draco](https://google.github.io/draco/) documentation      |
-| `draco.quantization` | `[Number, Number]` |         | Quantization parameters, see [Draco](https://google.github.io/draco/) documentation |
+| Option               | Type                                                                     | Default | Description                                                                  |
+| -------------------- | ------------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------- |
+| `draco.pointcloud`   | `boolean`                                                                | `false` | Whether to encode a point cloud instead of an indexed triangle mesh.          |
+| `draco.speed`        | `[number, number]`                                                       | Draco   | Encoding and decoding speed, from `0` (slowest) to `10` (fastest).            |
+| `draco.method`       | `'MESH_EDGEBREAKER_ENCODING' \| 'MESH_SEQUENTIAL_ENCODING'`             | Draco   | Triangle mesh encoding method.                                                |
+| `draco.quantization` | `Record<string, number>`                                                 | Draco   | Quantization bit count keyed by Draco attribute type, such as `POSITION: 14`. |
 
 ## Dependencies
 
-Draco libraries by default are loaded from CDN, but can be bundled and injected. See [modules/draco/docs] for details.
+The default encoder is the official Draco 1.5.7 WebAssembly runtime. It can be loaded dynamically, resolved from the package-local assets with `useLocalLibraries`, or injected as a module.
 
 ## Module Overrides
 
@@ -51,3 +51,4 @@ Use `options.modules` to override the Draco encoder runtime used by `DracoWriter
 
 - `modules.draco3d`: supply the bundled `draco3d` package. `DracoWriter` uses `createEncoderModule()` from this object.
 - `'draco_encoder.js'`: override the URL used for the Draco encoder runtime.
+- `'draco_encoder.wasm'`: override the URL used for the Draco encoder WebAssembly binary.

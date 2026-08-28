@@ -41,7 +41,7 @@ For detailed information
 General:
 
 - Supports meshes and point clouds.
-- Loads draco decoders dynamically from CDN (can optionally be bundled).
+- Loads the Draco 1.5.7 decoder dynamically or from package-local assets.
 - Supports meshes and point clouds.
 
 Attributes:
@@ -77,3 +77,5 @@ Use `options.modules` to override the Draco decoder runtime used by `DracoLoader
 - `'draco_wasm_wrapper.js'`: override the URL used for the Draco WASM decoder wrapper.
 - `'draco_decoder.wasm'`: override the URL used for the Draco WASM decoder binary.
 - `'draco_decoder.js'`: override the URL used for the Draco JavaScript fallback decoder.
+
+When the default WebAssembly backend cannot be initialized, `DracoLoader` attempts the JavaScript decoder before reporting a load failure. Set `draco.backend: 'javascript'` to select that implementation explicitly.

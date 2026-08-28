@@ -69,13 +69,11 @@ export default async function dracoBench(bench) {
       async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
     );
 
-    /* TODO - enable this case once worker writer is implemented
     bench.addAsync(
-      {...benchOptions, _throughput: 5},
+      `DracoWriter#pointcloud#${options.name} - parallel`,
       {multiplier: pointCount, unit: 'points', _throughput: 5, minIterations: 1},
       async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
     );
-    */
   }
 
   return bench;

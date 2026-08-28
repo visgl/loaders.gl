@@ -1,218 +1,335 @@
 // SPDX-License-Identifier: MIT
 
 // Dynamic DRACO module loading inspired by THREE.DRACOLoader
-// https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
+// https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
 import {isBrowser, loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 import type {Draco3D} from '../draco3d/draco3d-types';
 
-const DRACO_DECODER_VERSION = '1.5.6';
-const DRACO_ENCODER_VERSION = '1.4.1';
+const DRACO_VERSION = '1.5.7';
+const STATIC_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}`;
+const STATIC_ENCODER_URL = `https://unpkg.com/draco3d@${DRACO_VERSION}`;
 
-const STATIC_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_DECODER_VERSION}`;
-
+/** External Draco runtime assets understood by `loadLibrary`. */
 export const DRACO_EXTERNAL_LIBRARIES = {
-  /** The primary Draco3D encoder, javascript wrapper part */
+  /** WebAssembly decoder JavaScript wrapper. */
   DECODER: 'draco_wasm_wrapper.js',
-  /** The primary draco decoder, compiled web assembly part */
+  /** WebAssembly decoder binary. */
   DECODER_WASM: 'draco_decoder.wasm',
-  /** Fallback decoder for non-webassebly environments. Very big bundle, lower performance */
+  /** JavaScript decoder fallback. */
   FALLBACK_DECODER: 'draco_decoder.js',
-  /** Draco encoder */
-  ENCODER: 'draco_encoder.js'
-};
+  /** WebAssembly encoder JavaScript wrapper. */
+  ENCODER: 'draco_encoder.js',
+  /** WebAssembly encoder binary. */
+  ENCODER_WASM: 'draco_encoder.wasm'
+} as const;
 
+/** Default versioned URLs for external Draco runtime assets. */
 export const DRACO_EXTERNAL_LIBRARY_URLS = {
   [DRACO_EXTERNAL_LIBRARIES.DECODER]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.DECODER}`,
   [DRACO_EXTERNAL_LIBRARIES.DECODER_WASM]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.DECODER_WASM}`,
   [DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER}`,
-  [DRACO_EXTERNAL_LIBRARIES.ENCODER]: `https://raw.githubusercontent.com/google/draco/${DRACO_ENCODER_VERSION}/javascript/${DRACO_EXTERNAL_LIBRARIES.ENCODER}`
+  [DRACO_EXTERNAL_LIBRARIES.ENCODER]: `${STATIC_ENCODER_URL}/draco_encoder_nodejs.js`,
+  [DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM]: `${STATIC_ENCODER_URL}/${DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM}`
+} as const;
+
+/** Initialized Draco module returned to the parser or builder. */
+export type LoadedDracoModule = {draco: Draco3D};
+
+/** Subset of the `draco3d` npm package accepted through `options.modules`. */
+export type Draco3DModule = {
+  /** Creates an initialized decoder module. */
+  createDecoderModule?: (options?: Record<string, unknown>) => Promise<Draco3D>;
+  /** Creates an initialized encoder module. */
+  createEncoderModule?: (options?: Record<string, unknown>) => Promise<Draco3D>;
 };
 
-let loadLibraryDecoderPromises: Partial<Record<'wasm' | 'javascript', Promise<{draco: Draco3D}>>> =
-  {};
-let loadInjectedDecoderPromise;
-let loadEncoderPromise;
+type DracoDecoderModule = Required<Pick<Draco3DModule, 'createDecoderModule'>>;
+type DracoEncoderModule = Required<Pick<Draco3DModule, 'createEncoderModule'>>;
 
-/** Loads a Draco decoder from either an injected `draco3d` package or external decoder libraries. */
+type DracoModuleInitializerOptions = {
+  wasmBinary?: ArrayBuffer;
+  onModuleLoaded?: (draco: Draco3D) => void;
+};
+
+type DracoModuleInitializer = (
+  options: DracoModuleInitializerOptions
+) => Promise<Draco3D> | undefined;
+
+type DracoGlobal = typeof globalThis & {
+  DracoDecoderModule?: DracoModuleInitializer;
+  DracoEncoderModule?: DracoModuleInitializer;
+};
+
+const libraryDecoderPromises = new Map<string, Promise<LoadedDracoModule>>();
+const libraryEncoderPromises = new Map<string, Promise<LoadedDracoModule>>();
+const injectedDecoderPromises = new WeakMap<DracoDecoderModule, Promise<LoadedDracoModule>>();
+const injectedEncoderPromises = new WeakMap<DracoEncoderModule, Promise<LoadedDracoModule>>();
+
+/** Loads a Draco decoder from either an injected `draco3d` package or external libraries. */
 export async function loadDracoDecoderModule(
   options: LoadLibraryOptions = {},
   type: 'wasm' | 'js'
-) {
-  const modules = options.modules || {};
-
-  // Check if a bundled draco3d library has been supplied by application
-  if (modules.draco3d) {
-    return await loadDracoDecoderModuleFromDraco3D(modules.draco3d);
+): Promise<LoadedDracoModule> {
+  const draco3DModule = getInjectedDraco3DModule(options);
+  if (draco3DModule) {
+    return await loadDracoDecoderModuleFromDraco3D(draco3DModule);
   }
 
   return await loadDracoDecoderModuleFromLibrary(options, type === 'js' ? 'javascript' : type);
 }
 
-/** Loads a Draco decoder from the external WASM or JavaScript fallback libraries. */
+/** Loads a Draco decoder from external WASM or JavaScript fallback libraries. */
 export async function loadDracoDecoderModuleFromLibrary(
   options: LoadLibraryOptions = {},
   type: 'wasm' | 'javascript'
-) {
-  loadLibraryDecoderPromises[type] ||= loadDracoDecoder(options, type);
-  return await loadLibraryDecoderPromises[type];
-}
-
-/** Loads a Draco decoder from an injected `draco3d` package. */
-export async function loadDracoDecoderModuleFromDraco3D(draco3d: any): Promise<{draco: Draco3D}> {
-  loadInjectedDecoderPromise ||= draco3d.createDecoderModule({}).then(draco => {
-    return {draco};
-  });
-  return await loadInjectedDecoderPromise;
-}
-
-export async function loadDracoEncoderModule(options: LoadLibraryOptions) {
-  const modules = options.modules || {};
-
-  // Check if a bundled draco3d library has been supplied by application
-  if (modules.draco3d) {
-    loadEncoderPromise ||= modules.draco3d.createEncoderModule({}).then(draco => {
-      return {draco};
-    });
-  } else {
-    // If not, dynamically load the WASM script from our CDN
-    loadEncoderPromise ||= loadDracoEncoder(options);
+): Promise<LoadedDracoModule> {
+  const cacheKey = getLibraryCacheKey(type, options);
+  let decoderPromise = libraryDecoderPromises.get(cacheKey);
+  if (!decoderPromise) {
+    decoderPromise = loadDracoDecoderWithFallback(options, type);
+    libraryDecoderPromises.set(cacheKey, decoderPromise);
   }
-  return await loadEncoderPromise;
+  return await decoderPromise;
 }
 
-function getLibraryExport(library: any, exportName: string): any {
-  if (library && typeof library === 'object') {
-    if (library.default) {
-      return library.default;
+/** Loads a decoder from an injected `draco3d` npm package. */
+export async function loadDracoDecoderModuleFromDraco3D(
+  draco3DModule: unknown
+): Promise<LoadedDracoModule> {
+  const typedDraco3DModule = validateDracoDecoderModule(draco3DModule);
+  let decoderPromise = injectedDecoderPromises.get(typedDraco3DModule);
+  if (!decoderPromise) {
+    decoderPromise = typedDraco3DModule.createDecoderModule({}).then(draco => ({draco}));
+    injectedDecoderPromises.set(typedDraco3DModule, decoderPromise);
+  }
+  return await decoderPromise;
+}
+
+/** Loads a Draco encoder from an injected `draco3d` package or external WASM libraries. */
+export async function loadDracoEncoderModule(
+  options: LoadLibraryOptions = {}
+): Promise<LoadedDracoModule> {
+  const draco3DModule = getInjectedDraco3DModule(options);
+  if (draco3DModule) {
+    const typedDraco3DModule = validateDracoEncoderModule(draco3DModule);
+    let encoderPromise = injectedEncoderPromises.get(typedDraco3DModule);
+    if (!encoderPromise) {
+      encoderPromise = typedDraco3DModule.createEncoderModule({}).then(draco => ({draco}));
+      injectedEncoderPromises.set(typedDraco3DModule, encoderPromise);
     }
-    if (library[exportName]) {
-      return library[exportName];
+    return await encoderPromise;
+  }
+
+  const cacheKey = getLibraryCacheKey('encoder', options);
+  let encoderPromise = libraryEncoderPromises.get(cacheKey);
+  if (!encoderPromise) {
+    encoderPromise = loadDracoEncoder(options);
+    libraryEncoderPromises.set(cacheKey, encoderPromise);
+  }
+  return await encoderPromise;
+}
+
+async function loadDracoDecoderWithFallback(
+  options: LoadLibraryOptions,
+  type: 'wasm' | 'javascript'
+): Promise<LoadedDracoModule> {
+  try {
+    return await loadDracoDecoder(options, type);
+  } catch (wasmError) {
+    if (type === 'javascript') {
+      throw wasmError;
+    }
+    try {
+      return await loadDracoDecoder(options, 'javascript');
+    } catch (javascriptError) {
+      throw new AggregateError(
+        [wasmError, javascriptError],
+        'Draco decoder could not load either the WebAssembly or JavaScript backend'
+      );
     }
   }
-  return library;
 }
 
-// DRACO DECODER LOADING
-/** @todo - type the options, they are inconsistent */
 async function loadDracoDecoder(
   options: LoadLibraryOptions,
   type: 'wasm' | 'javascript'
-): Promise<{draco: Draco3D}> {
-  let DracoDecoderModule;
-  let wasmBinary;
-  switch (type) {
-    case 'javascript':
-      DracoDecoderModule = await loadLibrary(
+): Promise<LoadedDracoModule> {
+  if (type === 'javascript') {
+    let decoderLibrary: unknown;
+    try {
+      decoderLibrary = await loadLibrary(
         DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],
         'draco',
         options,
         DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER
       );
-      break;
-
-    case 'wasm':
-    default:
-      try {
-        [DracoDecoderModule, wasmBinary] = await Promise.all([
-          await loadLibrary(
-            DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER],
-            'draco',
-            options,
-            DRACO_EXTERNAL_LIBRARIES.DECODER
-          ),
-          await loadLibrary(
-            DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM],
-            'draco',
-            options,
-            DRACO_EXTERNAL_LIBRARIES.DECODER_WASM
-          )
-        ]);
-      } catch {
-        DracoDecoderModule = null;
-        wasmBinary = null;
+    } catch (error) {
+      if (isBrowser || options.useLocalLibraries) {
+        throw error;
       }
-  }
-  DracoDecoderModule = getLibraryExport(DracoDecoderModule, 'DracoDecoderModule');
-  // @ts-ignore
-  DracoDecoderModule = DracoDecoderModule || globalThis.DracoDecoderModule;
-
-  // In Node environments without network access, fall back to local copies in the repo.
-  if (!DracoDecoderModule && !isBrowser) {
-    [DracoDecoderModule, wasmBinary] = await Promise.all([
-      await loadLibrary(
-        DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER],
+      decoderLibrary = await loadLibrary(
+        DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],
         'draco',
         {...options, useLocalLibraries: true},
-        DRACO_EXTERNAL_LIBRARIES.DECODER
-      ),
-      await loadLibrary(
-        DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM],
-        'draco',
-        {...options, useLocalLibraries: true},
-        DRACO_EXTERNAL_LIBRARIES.DECODER_WASM
-      )
-    ]);
-    DracoDecoderModule = getLibraryExport(DracoDecoderModule, 'DracoDecoderModule');
-    // @ts-ignore
-    DracoDecoderModule = DracoDecoderModule || globalThis.DracoDecoderModule;
+        DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER
+      );
+    }
+    const decoderInitializer =
+      getLibraryExport(decoderLibrary, 'DracoDecoderModule') ||
+      (globalThis as DracoGlobal).DracoDecoderModule;
+    return await initializeDracoModule(decoderInitializer);
   }
 
-  return await initializeDracoDecoder(DracoDecoderModule, wasmBinary);
-}
-
-function initializeDracoDecoder(DracoDecoderModule, wasmBinary): Promise<{draco: Draco3D}> {
-  if (typeof DracoDecoderModule !== 'function') {
-    throw new Error('DracoDecoderModule could not be loaded');
-  }
-
-  const options: {wasmBinary?: any} = {};
-  if (wasmBinary) {
-    options.wasmBinary = wasmBinary;
-  }
-
-  return new Promise(resolve => {
-    DracoDecoderModule({
+  let decoderLibrary: unknown;
+  let wasmBinary: ArrayBuffer;
+  try {
+    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets(options);
+  } catch (error) {
+    if (isBrowser || options.useLocalLibraries) {
+      throw error;
+    }
+    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets({
       ...options,
-      onModuleLoaded: draco => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
+      useLocalLibraries: true
     });
-  });
+  }
+  const decoderInitializer =
+    getLibraryExport(decoderLibrary, 'DracoDecoderModule') ||
+    (globalThis as DracoGlobal).DracoDecoderModule;
+  return await initializeDracoModule(decoderInitializer, wasmBinary);
 }
 
-// ENCODER
+async function loadDecoderWasmAssets(options: LoadLibraryOptions): Promise<[unknown, ArrayBuffer]> {
+  return await Promise.all([
+    loadLibrary(
+      DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER],
+      'draco',
+      options,
+      DRACO_EXTERNAL_LIBRARIES.DECODER
+    ),
+    loadLibrary(
+      DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM],
+      'draco',
+      options,
+      DRACO_EXTERNAL_LIBRARIES.DECODER_WASM
+    ) as Promise<ArrayBuffer>
+  ]);
+}
 
-async function loadDracoEncoder(options: LoadLibraryOptions) {
-  let DracoEncoderModule = await loadLibrary(
-    DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
-    'draco',
-    options,
-    DRACO_EXTERNAL_LIBRARIES.ENCODER
-  );
-  DracoEncoderModule = getLibraryExport(DracoEncoderModule, 'DracoEncoderModule');
-  // @ts-ignore
-  DracoEncoderModule = DracoEncoderModule || globalThis.DracoEncoderModule;
+async function loadDracoEncoder(options: LoadLibraryOptions): Promise<LoadedDracoModule> {
+  let encoderLibrary: unknown;
+  let wasmBinary: ArrayBuffer;
+  try {
+    [encoderLibrary, wasmBinary] = await loadEncoderWasmAssets(options);
+  } catch (error) {
+    if (isBrowser || options.useLocalLibraries) {
+      throw error;
+    }
+    [encoderLibrary, wasmBinary] = await loadEncoderWasmAssets({
+      ...options,
+      useLocalLibraries: true
+    });
+  }
+  const encoderInitializer =
+    getLibraryExport(encoderLibrary, 'DracoEncoderModule') ||
+    (globalThis as DracoGlobal).DracoEncoderModule;
+  return await initializeDracoModule(encoderInitializer, wasmBinary);
+}
 
-  // In Node environments without network access, fall back to local copies in the repo.
-  if (!DracoEncoderModule && !isBrowser) {
-    DracoEncoderModule = await loadLibrary(
+async function loadEncoderWasmAssets(options: LoadLibraryOptions): Promise<[unknown, ArrayBuffer]> {
+  return await Promise.all([
+    loadLibrary(
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
       'draco',
-      {...options, useLocalLibraries: true},
+      options,
       DRACO_EXTERNAL_LIBRARIES.ENCODER
-    );
-    DracoEncoderModule = getLibraryExport(DracoEncoderModule, 'DracoEncoderModule');
-    // @ts-ignore
-    DracoEncoderModule = DracoEncoderModule || globalThis.DracoEncoderModule;
+    ),
+    loadLibrary(
+      DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM],
+      'draco',
+      options,
+      DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM
+    ) as Promise<ArrayBuffer>
+  ]);
+}
+
+function initializeDracoModule(
+  initializer: DracoModuleInitializer | undefined,
+  wasmBinary?: ArrayBuffer
+): Promise<LoadedDracoModule> {
+  if (typeof initializer !== 'function') {
+    throw new Error('Draco module initializer could not be loaded');
   }
 
-  if (typeof DracoEncoderModule !== 'function') {
-    throw new Error('DracoEncoderModule could not be loaded');
-  }
-
-  return new Promise(resolve => {
-    DracoEncoderModule({
-      onModuleLoaded: draco => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
-    });
+  return new Promise((resolve, reject) => {
+    try {
+      const modulePromise = initializer({
+        ...(wasmBinary ? {wasmBinary} : {}),
+        onModuleLoaded: draco => resolve({draco})
+      });
+      modulePromise?.then(draco => resolve({draco}), reject);
+    } catch (error) {
+      reject(error);
+    }
   });
+}
+
+function getLibraryExport(
+  library: unknown,
+  exportName: 'DracoDecoderModule' | 'DracoEncoderModule'
+): DracoModuleInitializer | undefined {
+  if (typeof library === 'function') {
+    return library as DracoModuleInitializer;
+  }
+  if (library && typeof library === 'object') {
+    const exports = library as Record<string, unknown>;
+    const exportedInitializer = exports[exportName] || exports.default;
+    return typeof exportedInitializer === 'function'
+      ? (exportedInitializer as DracoModuleInitializer)
+      : undefined;
+  }
+  return undefined;
+}
+
+function getInjectedDraco3DModule(options: LoadLibraryOptions): Draco3DModule | undefined {
+  const module = options.modules?.draco3d;
+  if (!module) {
+    return undefined;
+  }
+  if (typeof module !== 'object' && typeof module !== 'function') {
+    throw new Error('Invalid draco3d module');
+  }
+  return module as Draco3DModule;
+}
+
+function validateDracoDecoderModule(module: unknown): DracoDecoderModule {
+  const typedModule = module as Draco3DModule;
+  if (typeof typedModule?.createDecoderModule !== 'function') {
+    throw new Error('Invalid draco3d decoder module');
+  }
+  return typedModule as DracoDecoderModule;
+}
+
+function validateDracoEncoderModule(module: unknown): DracoEncoderModule {
+  const typedModule = module as Draco3DModule;
+  if (typeof typedModule?.createEncoderModule !== 'function') {
+    throw new Error('Invalid draco3d encoder module');
+  }
+  return typedModule as DracoEncoderModule;
+}
+
+function getLibraryCacheKey(type: string, options: LoadLibraryOptions): string {
+  const libraryOverrides = Object.entries(options.modules || {})
+    .filter(([name]) => name !== 'draco3d')
+    .map(([name, value]) => `${name}:${String(value)}`)
+    .sort()
+    .join('|');
+  return [
+    type,
+    options.useLocalLibraries ? 'local' : 'remote',
+    options.CDN || '',
+    libraryOverrides
+  ].join('|');
 }

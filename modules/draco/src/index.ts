@@ -12,7 +12,7 @@ export {DracoFormat} from './draco-format';
 
 // Draco Writer
 
-export type {DracoWriterOptions} from './draco-writer';
+export type {DracoWriterAttributes, DracoWriterInput, DracoWriterOptions} from './draco-writer';
 export {DracoWriterWorker, DracoWriter} from './draco-writer';
 
 // Draco Loader

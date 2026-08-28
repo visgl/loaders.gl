@@ -64,6 +64,9 @@ function createParser(): DracoParser {
     GetTrianglesUInt32Array: (_geometry: unknown, _length: number, pointer: number) => {
       new Uint32Array(heap, pointer, 3).set([0, 1, 2]);
     },
+    GetTrianglesUInt16Array: (_geometry: unknown, _length: number, pointer: number) => {
+      new Uint16Array(heap, pointer, 3).set([0, 1, 2]);
+    },
     GetTriangleStripsFromMesh: (_geometry: unknown, array: FakeIntArray) => {
       array.values = [0, 1, 2, 2, 1, 3];
     },
@@ -85,8 +88,10 @@ function createParser(): DracoParser {
         return 0;
       }
     },
+    Mesh: class {},
+    PointCloud: class {},
     DracoInt32Array: FakeIntArray,
-    HEAPF32: {buffer: heap},
+    HEAPU8: {buffer: heap},
     DT_FLOAT32: 9,
     AttributeQuantizationTransform: class {
       /** Initializes the fake transform. */
@@ -104,6 +109,16 @@ function createParser(): DracoParser {
       /** Returns one minimum value. */
       min_value(value: number): number {
         return value;
+      }
+    },
+    AttributeOctahedronTransform: class {
+      /** Initializes the fake transform. */
+      InitFromAttribute(): boolean {
+        return true;
+      }
+      /** Returns quantization bits. */
+      quantization_bits(): number {
+        return 12;
       }
     },
     destroy: () => {}
@@ -132,14 +147,15 @@ test('DracoParser handles attribute naming, values, indices, and transforms', ()
     Float32Array
   );
   const pointAttribute = {
-    attribute_type: () => 4
+    attribute_type: () => 4,
+    num_components: () => 3
   } as any;
   expect(
     parser._getQuantizationTransform(pointAttribute, {quantizedAttributes: ['GENERIC']})
   ).toEqual({
     quantization_bits: 12,
     range: 2,
-    min_values: new Float32Array([1, 2, 3])
+    min_values: new Float32Array([0, 1, 2])
   });
   expect(
     parser._getOctahedronTransform(pointAttribute, {octahedronAttributes: ['GENERIC']})
@@ -150,9 +166,27 @@ test('DracoParser handles attribute naming, values, indices, and transforms', ()
 
 test('DracoParser copies mesh indices and handles metadata absence', () => {
   const parser = createParser();
-  const geometry = {num_faces: () => 1} as any;
+  const geometry = {num_faces: () => 1, num_points: () => 3} as any;
   expect(Array.from(parser._getTriangleListIndices(geometry))).toEqual([0, 1, 2]);
+  expect(parser._getTriangleListIndices(geometry)).toBeInstanceOf(Uint16Array);
+  expect(
+    parser._getTriangleListIndices({num_faces: () => 1, num_points: () => 65535} as any)
+  ).toBeInstanceOf(Uint32Array);
   expect(Array.from(parser._getTriangleStripIndices(geometry))).toEqual([0, 1, 2, 2, 1, 3]);
   expect(parser._getDracoMetadata({ptr: 0} as any)).toEqual({});
   parser.destroy();
+});
+
+test('DracoParser reports matching topology and glTF primitive modes', () => {
+  const parser = createParser();
+  const attributes = {
+    POSITION: {value: new Float32Array([0, 0, 0]), size: 3}
+  };
+  (parser as any)._getMeshAttributes = () => attributes;
+  (parser as any)._getTriangleListIndices = () => new Uint16Array([0, 1, 2]);
+  (parser as any)._getTriangleStripIndices = () => new Uint32Array([0, 1, 2]);
+  const geometry = new (parser.draco.Mesh as any)();
+
+  expect(parser._getMeshData(geometry, {} as any, {topology: 'triangle-list'}).mode).toBe(4);
+  expect(parser._getMeshData(geometry, {} as any, {topology: 'triangle-strip'}).mode).toBe(5);
 });

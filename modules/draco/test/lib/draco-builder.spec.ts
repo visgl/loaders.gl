@@ -8,9 +8,11 @@ import DracoBuilder from '../../src/lib/draco-builder';
 
 type FakeDracoState = {
   attributeCalls: string[];
+  attributeValues: number[][];
   destroyed: unknown[];
   encoderCalls: string[];
   metadataCalls: string[];
+  normalizedCalls: Array<{attributeId: number; normalized: boolean}>;
   encodeLength: number;
 };
 
@@ -18,9 +20,11 @@ type FakeDracoState = {
 function createFakeDraco(): {draco: any; state: FakeDracoState} {
   const state: FakeDracoState = {
     attributeCalls: [],
+    attributeValues: [],
     destroyed: [],
     encoderCalls: [],
     metadataCalls: [],
+    normalizedCalls: [],
     encodeLength: 3
   };
 
@@ -83,43 +87,86 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     private nextAttributeId = 0;
 
     /** Records indexed faces. */
-    AddFacesToMesh(): void {
+    AddFacesToMesh(_mesh: unknown, _faceCount: number, values: Uint16Array | Uint32Array): void {
       state.attributeCalls.push('indices');
+      state.attributeValues.push(Array.from(values));
     }
 
     /** Records an Int8 attribute. */
-    AddInt8Attribute(): number {
-      return this.addAttribute('int8');
+    AddInt8Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Int8Array
+    ): number {
+      return this.addAttribute('int8', values);
     }
 
     /** Records an Int16 attribute. */
-    AddInt16Attribute(): number {
-      return this.addAttribute('int16');
+    AddInt16Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Int16Array
+    ): number {
+      return this.addAttribute('int16', values);
     }
 
     /** Records an Int32 attribute. */
-    AddInt32Attribute(): number {
-      return this.addAttribute('int32');
+    AddInt32Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Int32Array
+    ): number {
+      return this.addAttribute('int32', values);
     }
 
     /** Records a Uint8 attribute. */
-    AddUInt8Attribute(): number {
-      return this.addAttribute('uint8');
+    AddUInt8Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Uint8Array
+    ): number {
+      return this.addAttribute('uint8', values);
     }
 
     /** Records a Uint16 attribute. */
-    AddUInt16Attribute(): number {
-      return this.addAttribute('uint16');
+    AddUInt16Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Uint16Array
+    ): number {
+      return this.addAttribute('uint16', values);
     }
 
     /** Records a Uint32 attribute. */
-    AddUInt32Attribute(): number {
-      return this.addAttribute('uint32');
+    AddUInt32Attribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Uint32Array
+    ): number {
+      return this.addAttribute('uint32', values);
     }
 
     /** Records a Float32 attribute. */
-    AddFloatAttribute(): number {
-      return this.addAttribute('float32');
+    AddFloatAttribute(
+      _mesh: unknown,
+      _type: number,
+      _vertexCount: number,
+      _size: number,
+      values: Float32Array
+    ): number {
+      return this.addAttribute('float32', values);
     }
 
     /** Records geometry metadata attachment. */
@@ -132,9 +179,20 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
       state.metadataCalls.push('attribute');
     }
 
+    /** Records normalized attribute declarations. */
+    SetNormalizedFlagForAttribute(
+      _mesh: unknown,
+      attributeId: number,
+      normalized: boolean
+    ): boolean {
+      state.normalizedCalls.push({attributeId, normalized});
+      return true;
+    }
+
     /** Allocates a deterministic attribute identifier. */
-    private addAttribute(type: string): number {
+    private addAttribute(type: string, values: ArrayLike<number>): number {
       state.attributeCalls.push(type);
+      state.attributeValues.push(Array.from(values));
       return this.nextAttributeId++;
     }
   }
@@ -297,4 +355,26 @@ test('DracoBuilder maps canonical attribute aliases', () => {
   expect(builder._getDracoAttributeType('featureId')).toBe(draco.GENERIC);
   expect(builder._getPositionAttribute({colors: new Uint8Array([1])})).toBeNull();
   expect(() => builder.destroyEncodedObject(null)).not.toThrow();
+});
+
+test('DracoBuilder preserves typed-array view bounds and normalized MeshAttribute metadata', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+  const positionBacking = new Float32Array([99, 99, 99, 0, 0, 0, 1, 1, 1, 88, 88, 88]);
+  const normalBacking = new Int8Array([99, 0, 1, 2, 3, 4, 5, 88]);
+
+  builder.encodeSync({
+    attributes: {
+      POSITION: {value: positionBacking.subarray(3, 9), size: 3},
+      NORMAL: {value: normalBacking.subarray(1, 7), size: 3, normalized: true}
+    },
+    indices: new Uint16Array([0, 1, 0])
+  });
+
+  expect(state.attributeValues).toEqual([
+    [0, 1, 0],
+    [0, 0, 0, 1, 1, 1],
+    [0, 1, 2, 3, 4, 5]
+  ]);
+  expect(state.normalizedCalls).toEqual([{attributeId: 1, normalized: true}]);
 });

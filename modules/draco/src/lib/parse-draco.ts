@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {DracoMesh} from './draco-types';
 import DracoParser from './draco-parser';
 import type {DracoLoaderOptions} from '../draco-loader-options';
@@ -26,7 +26,7 @@ export type LoadDracoDecoderModule = () => Promise<LoadedDracoDecoderModule>;
  * @returns Decoded mesh or Arrow table
  */
 export async function parseDraco(
-  arrayBuffer: ArrayBuffer,
+  arrayBuffer: ArrayBuffer | ArrayBufferView,
   options: DracoLoaderOptions | undefined,
   loadDecoderModule: LoadDracoDecoderModule
 ): Promise<DracoMesh | ArrowTable> {
@@ -34,15 +34,10 @@ export async function parseDraco(
   const dracoParser = new DracoParser(draco);
   try {
     const mesh = dracoParser.parseSync(arrayBuffer, options?.draco);
-    const table = convertMeshToTable(mesh, 'arrow-table');
     if (options?.draco?.shape === 'arrow-table') {
-      return table;
+      return convertMeshToTable(mesh, 'arrow-table');
     }
-    return {
-      ...(convertTableToMesh(table) as DracoMesh),
-      loader: mesh.loader,
-      loaderData: mesh.loaderData
-    };
+    return mesh;
   } finally {
     dracoParser.destroy();
   }
