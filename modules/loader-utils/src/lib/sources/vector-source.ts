@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier, SpatialReference} from '@math.gl/crs';
 
 export type VectorSourceProps = {};
 
@@ -53,6 +53,8 @@ export type VectorSourceLayer = {
   title?: string;
   /** Coordinate systems supported by this layer */
   crs?: CRSIdentifier[];
+  /** Normalized source CRS discovery, including representation and unknown/default state. */
+  spatialReference?: SpatialReference;
   /** layer limits in unspecified CRS:84-like lng/lat, for quick access w/o CRS calculations. */
   boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Sub layers of this layer */

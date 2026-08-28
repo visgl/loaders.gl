@@ -48,6 +48,16 @@ test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', 
     metadata.layers[0]?.crs,
     'metadata combines the declared CRS authority and code'
   ).toContain('EPSG:4326');
+  expect(metadata.layers[0]?.spatialReference?.crs).toMatchObject({
+    state: 'explicit',
+    representation: 'wkt',
+    provenance: 'metadata'
+  });
+  expect(
+    metadata.layers[0]?.spatialReference?.crs.state === 'explicit'
+      ? metadata.layers[0].spatialReference.crs.alternatives
+      : undefined
+  ).toContainEqual({definition: 'EPSG:4326', representation: 'identifier'});
   expect(metadata.formatSpecificMetadata, 'raw metadata is opt-in').toBe(undefined);
   expect(
     metadataWithFormatSpecific.formatSpecificMetadata,
@@ -73,6 +83,11 @@ test('FlatGeobufVectorSource#getQueryMetadata discovers panel controls from the 
   expect(queryMetadata.columns[2]?.role, 'identifies the geometry control').toBe('geometry');
   expect(queryMetadata.capabilities.bounds, 'advertises packed R-tree pruning').toBe('pushdown');
   expect(queryMetadata.spatial?.bounds, 'discovers dataset bounds').toBeTruthy();
+  expect(queryMetadata.spatial?.spatialReference?.crs).toMatchObject({
+    state: 'explicit',
+    representation: 'wkt',
+    provenance: 'metadata'
+  });
   expect(queryMetadata.statistics?.rowCount, 'discovers feature count').toBe(179);
 });
 test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across formats', async () => {

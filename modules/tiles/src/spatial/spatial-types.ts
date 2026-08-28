@@ -2,7 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSDefinition} from '@math.gl/crs';
+import {
+  createSpatialReference,
+  inferCRSRepresentation,
+  type ReadonlyCRSDefinition,
+  type SpatialReference,
+  type SpatialReferenceAlternative,
+  type SpatialReferenceCoordinateFrame,
+  type SpatialReferenceProvenance,
+  type SpatialReferenceRepresentation,
+  type SpatialReferenceState
+} from '@math.gl/crs';
 import type {Geoid} from '@math.gl/geoid';
 
 /** How height values in a 3D dataset relate to the earth. */
@@ -15,20 +25,10 @@ export type TilesetTargetHeightReference = 'native' | 'ellipsoidal' | 'orthometr
 export type TilesetOutputCoordinates = 'auto' | 'ecef' | 'local-enu' | 'target-crs';
 
 /** Broad coordinate frame used by a 3D dataset. */
-export type TilesetCoordinateFrame =
-  | 'geographic'
-  | 'geocentric'
-  | 'projected'
-  | 'local'
-  | 'unknown';
+export type TilesetCoordinateFrame = SpatialReferenceCoordinateFrame;
 
 /** Origin of a normalized spatial-reference value. */
-export type TilesetSpatialReferenceProvenance =
-  | 'metadata'
-  | 'format-default'
-  | 'caller-override'
-  | 'legacy-assumption'
-  | 'unknown';
+export type TilesetSpatialReferenceProvenance = SpatialReferenceProvenance;
 
 /**
  * Simple application-facing spatial options shared by 3D Tiles and I3S.
@@ -38,13 +38,13 @@ export type TilesetSpatialReferenceProvenance =
  */
 export type TilesetSpatialOptions = {
   /** CRS of transformed output coordinates. Omit to retain the format's natural world frame. */
-  targetCrs?: CRSDefinition;
+  targetCrs?: ReadonlyCRSDefinition;
   /** Height reference of transformed output coordinates. Defaults to `native`. */
   targetHeightReference?: TilesetTargetHeightReference;
   /** Output coordinate representation. Defaults to `auto`. */
   outputCoordinates?: TilesetOutputCoordinates;
   /** Expert override used when source metadata is absent or incorrect. */
-  sourceCrs?: CRSDefinition;
+  sourceCrs?: ReadonlyCRSDefinition;
   /** Expert override for a dynamic coordinate reference epoch. */
   coordinateEpoch?: number;
   /** Registered geoid model name or an already parsed geoid model. */
@@ -56,11 +56,11 @@ export type TilesetSpatialOptions = {
  *
  * This is diagnostic output. Applications normally do not construct it.
  */
-export type TilesetSpatialReference = {
+export type TilesetSpatialReference = SpatialReference & {
   /** Source horizontal or compound CRS, when it can be identified. */
-  readonly sourceCrs?: CRSDefinition;
+  readonly sourceCrs?: ReadonlyCRSDefinition;
   /** Source vertical CRS, when independently identified. */
-  readonly verticalCrs?: CRSDefinition;
+  readonly verticalCrs?: ReadonlyCRSDefinition;
   /** Coordinate epoch attached to the source coordinates. */
   readonly coordinateEpoch?: number;
   /** Source height interpretation. */
@@ -72,7 +72,7 @@ export type TilesetSpatialReference = {
   /** How the source CRS was established. */
   readonly provenance: TilesetSpatialReferenceProvenance;
   /** Target CRS selected by application options, if any. */
-  readonly targetCrs?: CRSDefinition;
+  readonly targetCrs?: ReadonlyCRSDefinition;
   /** Target height interpretation selected by application options. */
   readonly targetHeightReference: TilesetTargetHeightReference;
   /** Output representation selected by application options. */
@@ -86,9 +86,15 @@ export type TilesetSpatialReference = {
 /** Input used by format adapters to create normalized spatial metadata. */
 export type CreateTilesetSpatialReferenceOptions = {
   /** Discovered source CRS. */
-  sourceCrs?: CRSDefinition;
+  sourceCrs?: ReadonlyCRSDefinition;
+  /** Whether the source CRS was explicit, defaulted, unknown, or absent. */
+  sourceCrsState?: SpatialReferenceState;
+  /** Serialization or naming form used by the source CRS. */
+  sourceCrsRepresentation?: SpatialReferenceRepresentation;
+  /** Additional source CRS representations retained by the format. */
+  sourceCrsAlternatives?: readonly SpatialReferenceAlternative[];
   /** Discovered vertical CRS. */
-  verticalCrs?: CRSDefinition;
+  verticalCrs?: ReadonlyCRSDefinition;
   /** Discovered coordinate epoch. */
   coordinateEpoch?: number;
   /** Discovered height interpretation. */
@@ -114,11 +120,10 @@ export function createTilesetSpatialReference(
   discovered: CreateTilesetSpatialReferenceOptions,
   options: TilesetSpatialOptions = {}
 ): TilesetSpatialReference {
+  const hasSourceCrsOverride = options.sourceCrs !== undefined;
   const sourceCrs = options.sourceCrs || discovered.sourceCrs;
   const outputCoordinates = options.outputCoordinates || 'auto';
-  const targetCrs =
-    options.targetCrs ||
-    (outputCoordinates === 'ecef' ? ('EPSG:4978' as CRSDefinition) : undefined);
+  const targetCrs = options.targetCrs || (outputCoordinates === 'ecef' ? 'EPSG:4978' : undefined);
   const targetHeightReference = options.targetHeightReference || 'native';
   const needsHeightTransform =
     targetHeightReference !== 'native' && targetHeightReference !== discovered.heightReference;
@@ -134,15 +139,54 @@ export function createTilesetSpatialReference(
     hasHeightMetadata &&
     outputCoordinates !== 'local-enu';
 
+  const provenance = hasSourceCrsOverride ? 'caller-override' : discovered.provenance || 'unknown';
+  const sourceCrsState = hasSourceCrsOverride
+    ? 'explicit'
+    : discovered.sourceCrsState ||
+      (sourceCrs ? (provenance === 'format-default' ? 'default' : 'explicit') : 'absent');
+  const spatialReference = createSpatialReference({
+    crs: sourceCrs
+      ? {
+          state: sourceCrsState === 'default' ? 'default' : 'explicit',
+          definition: sourceCrs,
+          representation:
+            (!hasSourceCrsOverride && discovered.sourceCrsRepresentation) ||
+            inferCRSRepresentation(sourceCrs),
+          provenance,
+          alternatives: hasSourceCrsOverride ? undefined : discovered.sourceCrsAlternatives
+        }
+      : {
+          state: sourceCrsState === 'unknown' ? 'unknown' : 'absent',
+          provenance
+        },
+    vertical: discovered.verticalCrs
+      ? {
+          state: 'explicit',
+          definition: discovered.verticalCrs,
+          representation: inferCRSRepresentation(discovered.verticalCrs),
+          provenance: discovered.provenance || 'metadata'
+        }
+      : undefined,
+    coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
+    coordinateFrame: discovered.coordinateFrame,
+    coordinateOrder: getCoordinateOrder(discovered.axisOrder)
+  });
+  const normalizedSourceCrs = getKnownCRSDefinition(spatialReference.crs);
+  const normalizedVerticalCrs = spatialReference.vertical
+    ? getKnownCRSDefinition(spatialReference.vertical)
+    : undefined;
+  const normalizedTargetCrs = targetCrs ? cloneReadonlyCRSDefinition(targetCrs) : undefined;
+
   return Object.freeze({
-    sourceCrs,
-    verticalCrs: discovered.verticalCrs,
+    ...spatialReference,
+    sourceCrs: normalizedSourceCrs,
+    verticalCrs: normalizedVerticalCrs,
     coordinateEpoch: options.coordinateEpoch ?? discovered.coordinateEpoch,
     heightReference: discovered.heightReference || 'unknown',
     coordinateFrame: discovered.coordinateFrame || 'unknown',
     axisOrder: discovered.axisOrder || 'unknown',
-    provenance: options.sourceCrs ? 'caller-override' : discovered.provenance || 'unknown',
-    targetCrs,
+    provenance,
+    targetCrs: normalizedTargetCrs,
     targetHeightReference,
     outputCoordinates,
     status: hasRequestedTransform ? (canTransform ? 'transformable' : 'unresolved') : 'native',
@@ -164,6 +208,15 @@ export function applyTilesetSpatialOptions(
   return createTilesetSpatialReference(
     {
       sourceCrs: discovered?.sourceCrs,
+      sourceCrsState: discovered?.crs.state,
+      sourceCrsRepresentation:
+        discovered?.crs.state === 'explicit' || discovered?.crs.state === 'default'
+          ? discovered.crs.representation
+          : undefined,
+      sourceCrsAlternatives:
+        discovered?.crs.state === 'explicit' || discovered?.crs.state === 'default'
+          ? discovered.crs.alternatives
+          : undefined,
       verticalCrs: discovered?.verticalCrs,
       coordinateEpoch: discovered?.coordinateEpoch,
       heightReference: discovered?.heightReference,
@@ -174,6 +227,48 @@ export function applyTilesetSpatialOptions(
     },
     options
   );
+}
+
+/** Return a known definition from a canonical CRS reference. */
+function getKnownCRSDefinition(
+  reference: SpatialReference['crs']
+): ReadonlyCRSDefinition | undefined {
+  return reference.state === 'explicit' || reference.state === 'default'
+    ? reference.definition
+    : undefined;
+}
+
+/** Clone and deeply freeze a target CRS through the canonical math.gl constructor. */
+function cloneReadonlyCRSDefinition(definition: ReadonlyCRSDefinition): ReadonlyCRSDefinition {
+  const spatialReference = createSpatialReference({
+    crs: {
+      state: 'explicit',
+      definition,
+      representation: inferCRSRepresentation(definition),
+      provenance: 'caller-override'
+    }
+  });
+  const clonedDefinition = getKnownCRSDefinition(spatialReference.crs);
+  if (!clonedDefinition) {
+    throw new Error('Failed to normalize a known target CRS definition');
+  }
+  return clonedDefinition;
+}
+
+/** Convert the legacy tileset axis label to the common stored-coordinate order. */
+function getCoordinateOrder(
+  axisOrder: CreateTilesetSpatialReferenceOptions['axisOrder']
+): readonly string[] {
+  switch (axisOrder) {
+    case 'xy':
+      return ['x', 'y'];
+    case 'yx':
+      return ['y', 'x'];
+    case 'xyz':
+      return ['x', 'y', 'z'];
+    default:
+      return [];
+  }
 }
 
 /**

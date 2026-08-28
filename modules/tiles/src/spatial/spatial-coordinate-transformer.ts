@@ -5,9 +5,8 @@
 import type {Geoid} from '@math.gl/geoid';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import type {CRSDefinition} from '@math.gl/crs';
-import {Proj4Projection} from '@math.gl/proj4';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
+import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {getGeoidModel} from './spatial-resource-registry';
 import type {
   TilesetHeightReference,
@@ -77,8 +76,8 @@ export class SpatialCoordinateTransformer {
       !this.outputIsGeocentric
     ) {
       this.horizontalProjection = new Proj4Projection({
-        from: spatialReference.sourceCrs as Proj4CRSDefinition,
-        to: spatialReference.targetCrs as Proj4CRSDefinition,
+        from: getHorizontalProj4Definition(spatialReference.sourceCrs),
+        to: getHorizontalProj4Definition(spatialReference.targetCrs),
         enforceAxis: false
       });
     }
@@ -90,7 +89,7 @@ export class SpatialCoordinateTransformer {
     ) {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
         this.geographicProjection = new Proj4Projection({
-          from: spatialReference.sourceCrs as Proj4CRSDefinition,
+          from: getHorizontalProj4Definition(spatialReference.sourceCrs),
           to: GEOGRAPHIC_CRS,
           enforceAxis: false
         });
@@ -98,7 +97,7 @@ export class SpatialCoordinateTransformer {
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
         this.heightOutputProjection = new Proj4Projection({
           from: GEOGRAPHIC_CRS,
-          to: outputCrs as Proj4CRSDefinition,
+          to: getHorizontalProj4Definition(outputCrs),
           enforceAxis: false
         });
       }
@@ -181,6 +180,16 @@ export class SpatialCoordinateTransformer {
   }
 }
 
+/** Select the horizontal component that the proj4js runtime can execute. */
+function getHorizontalProj4Definition(
+  definition: ReadonlyCRSDefinition | undefined
+): Proj4CRSDefinition {
+  if (!definition) {
+    throw new Error('Cannot construct a projection because the CRS is unknown');
+  }
+  return toProj4CRSDefinition(definition, {mode: 'horizontal'});
+}
+
 /** Validate that all requested operations can be represented by the current runtime. */
 function validateTransformRequest(spatialReference: TilesetSpatialReference): void {
   if (spatialReference.outputCoordinates === 'local-enu') {
@@ -237,7 +246,9 @@ function normalizeCrsIdentifier(identifier: string): string {
 }
 
 /** Classify a CRS definition into the broad frame needed by 3D render adapters. */
-export function getSpatialCoordinateFrame(definition: CRSDefinition): TilesetCoordinateFrame {
+export function getSpatialCoordinateFrame(
+  definition: ReadonlyCRSDefinition
+): TilesetCoordinateFrame {
   if (typeof definition === 'string') {
     const normalized = normalizeCrsIdentifier(definition);
     if (normalized === GEOCENTRIC_CRS || /^GEOCCS\s*[\[(]/.test(normalized)) {
@@ -262,8 +273,8 @@ export function getSpatialCoordinateFrame(definition: CRSDefinition): TilesetCoo
 
   const projJsonDefinition = definition as {
     type?: string;
-    source_crs?: CRSDefinition;
-    components?: CRSDefinition[];
+    source_crs?: ReadonlyCRSDefinition;
+    components?: readonly ReadonlyCRSDefinition[];
     coordinate_system?: {subtype?: string};
   };
   if (projJsonDefinition.type === 'BoundCRS' && projJsonDefinition.source_crs) {

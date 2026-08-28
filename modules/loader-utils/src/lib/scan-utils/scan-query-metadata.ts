@@ -12,6 +12,7 @@ import type {
 import type {PointCloudQueryOptions} from './point-cloud-query';
 import type {RasterQueryCapabilities} from './raster-query';
 import type {TableQueryExplain} from './table-query-explain';
+import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
 
 /** Semantic role used by query editors to choose appropriate controls for a column. */
 export type ScanColumnRole =
@@ -60,6 +61,8 @@ export type ScanSpatialMetadata = Readonly<{
   bounds?: ScanBounds;
   /** Coordinate reference system identifiers or definitions advertised by the source. */
   coordinateReferenceSystems?: readonly string[];
+  /** Normalized source CRS discovery for bounds and coordinate columns. */
+  spatialReference?: SpatialReference;
 }>;
 
 /** One raster resolution level exposed to a scan query editor. */
@@ -381,6 +384,9 @@ export function createScanQueryMetadata(
             : undefined,
           coordinateReferenceSystems: options.spatial.coordinateReferenceSystems
             ? Object.freeze([...options.spatial.coordinateReferenceSystems])
+            : undefined,
+          spatialReference: options.spatial.spatialReference
+            ? createSpatialReference(options.spatial.spatialReference)
             : undefined
         })
       : undefined,

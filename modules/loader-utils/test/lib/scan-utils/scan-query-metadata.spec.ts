@@ -36,7 +36,17 @@ describe('createScanQueryMetadata', () => {
       },
       spatial: {
         bounds: {minimum: [-180, -90], maximum: [180, 90]},
-        coordinateReferenceSystems: ['EPSG:4326']
+        coordinateReferenceSystems: ['EPSG:4326'],
+        spatialReference: {
+          crs: {
+            state: 'explicit',
+            definition: 'EPSG:4326',
+            representation: 'identifier',
+            provenance: 'metadata'
+          },
+          coordinateFrame: 'geographic',
+          coordinateOrder: ['x', 'y']
+        }
       },
       statistics: {rowCount: 12n}
     });
@@ -65,11 +75,18 @@ describe('createScanQueryMetadata', () => {
       minimum: [-180, -90],
       maximum: [180, 90]
     });
+    expect(metadata.spatial?.spatialReference?.crs).toEqual({
+      state: 'explicit',
+      definition: 'EPSG:4326',
+      representation: 'identifier',
+      provenance: 'metadata'
+    });
     expect(Object.isFrozen(metadata)).toBe(true);
     expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
     expect(Object.isFrozen(metadata.execution)).toBe(true);
     expect(Object.isFrozen(metadata.columns)).toBe(true);
     expect(Object.isFrozen(metadata.schema.fields)).toBe(true);
+    expect(Object.isFrozen(metadata.spatial?.spatialReference)).toBe(true);
   });
 
   test('normalizes multiscale raster levels', () => {
