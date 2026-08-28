@@ -5,7 +5,8 @@
 import { expect, test } from "vitest";
 import { ZstdCodec } from 'zstd-codec';
 import { ZstdCompression } from '@loaders.gl/compression/zstd-compression';
-import { decompress } from '../src/parquetjs/compression';
+import { SnappyJSCompressor } from '@loaders.gl/compression/snappy-compressor-snappyjs';
+import { createParquetPageDecompressor, decompress } from '../src/parquetjs/compression';
 test('Parquet compression#native streams avoid codec fallbacks', async () => {
     const formats: string[] = [];
     const restoreDecompressionStream = installMockDecompressionStream(formats, [
@@ -74,6 +75,29 @@ test('Parquet compression#unsupported native gzip lazily falls back to fflate', 
     }
     finally {
         restoreDecompressionStream();
+    }
+});
+test('Parquet compression#Snappy falls back when WebAssembly is unavailable', async () => {
+    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'WebAssembly');
+    const input = new TextEncoder().encode('Snappy fallback for a Parquet page');
+    const compressor = new SnappyJSCompressor();
+    const compressed = await compressor.compress(input.buffer);
+    try {
+        Object.defineProperty(globalThis, 'WebAssembly', {
+            configurable: true,
+            writable: true,
+            value: undefined
+        });
+        const decompressPage = createParquetPageDecompressor('SNAPPY');
+        expect(await decompressPage(new Uint8Array(compressed), input.byteLength)).toEqual(input);
+    }
+    finally {
+        if (originalDescriptor) {
+            Object.defineProperty(globalThis, 'WebAssembly', originalDescriptor);
+        }
+        else {
+            delete (globalThis as any).WebAssembly;
+        }
     }
 });
 /**

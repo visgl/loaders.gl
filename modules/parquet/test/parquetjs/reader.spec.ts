@@ -67,6 +67,21 @@ test('ParquetReader#uses zero-copy ranges for in-memory files', async () => {
     expect(file.readCount).toBe(0);
     reader.close();
 });
+test('ParquetReader#rejects external columns before using the in-memory fast path', async () => {
+    const response = await fetchFile(FRUITS_URL);
+    const reader = new ParquetReader(new ArrayBufferFile(await response.arrayBuffer()), {
+        useTypedLevelBuffers: true,
+        useTypedValueBuffers: true
+    });
+    const metadata = await reader.getFileMetadata();
+    const schema = await reader.getSchema();
+    metadata.row_groups[0].columns[0].file_path = 'external.parquet';
+
+    await expect(reader.readRowGroup(schema, metadata.row_groups[0], [])).rejects.toThrow(
+        'external references are not supported'
+    );
+    reader.close();
+});
 // eslint-disable-next-line
 test('ParquetReader#fruits.parquet', async () => {
     const response = await fetchFile(FRUITS_URL);

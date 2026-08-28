@@ -701,6 +701,7 @@ export class ParquetReader {
       this.file.handle instanceof ArrayBuffer &&
       selectedColumnChunks.every(
         ({columnChunk, metadata}) =>
+          (columnChunk.file_path === undefined || columnChunk.file_path === null) &&
           !columnChunk.crypto_metadata &&
           getThriftEnum(CompressionCodec, metadata.codec) === 'UNCOMPRESSED'
       )
@@ -731,6 +732,7 @@ export class ParquetReader {
             const columnKey = metadata.path_in_schema.join();
             if (
               this.file.handle instanceof ArrayBuffer &&
+              (columnChunk.file_path === undefined || columnChunk.file_path === null) &&
               !columnChunk.crypto_metadata &&
               getThriftEnum(CompressionCodec, metadata.codec) === 'UNCOMPRESSED'
             ) {
