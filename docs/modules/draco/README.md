@@ -66,3 +66,16 @@ Remarks
 ## Attributions
 
 Based on Draco examples, under the Apache 2.0 license.
+# Draco roadmap
+
+The Draco module now supports glTF-optimized decoding, retained quantization metadata,
+selective extraction, encoding diagnostics, and batch encoding. The remaining planned work is
+tracked as compatibility and lifecycle improvements rather than a worker-pool abstraction.
+
+| Area | Current direction |
+| --- | --- |
+| Presets | `gltf`, `webgpu`, and `balanced` profiles provide explicit, reproducible defaults. |
+| Conformance | Keep cross-runtime fixtures for full and glTF decoder builds. |
+| Interoperability | Preserve names, normalized flags, transforms, and metadata across Arrow/Draco round trips. |
+| Memory | Reuse initialized runtimes and process batches sequentially; worker pooling is tracked separately. |
+| Compatibility | Retain legacy writer/loader entry points while steering new code to `encodeDraco` and typed reports. |

@@ -24,6 +24,7 @@ export type {
   DracoEncodingAttributeReport,
   DracoEncodingReport,
   DracoEncodingResult,
+  DracoEncodingPreset,
   DracoExplicitQuantization,
   DracoMetadata
 } from './lib/draco-builder';
