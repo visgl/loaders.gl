@@ -22,6 +22,80 @@ function encode(text: string): ArrayBuffer {
 }
 
 describe('raw Arrow CSV parser', () => {
+  test('covers direct byte parser boundaries with quoted data and uneven rows', () => {
+    const quoted = parseRawArrowCSVBytes(
+      encode(
+        'a,b,c\r\n"one","two ""quoted""",three\r\n"line\nwrapped",last\r\ntail,,extra,ignored'
+      ),
+      {header: true, delimiter: ','}
+    );
+    expect(toRows(quoted!)).toEqual([
+      {a: 'one', b: 'two "quoted"', c: 'three'},
+      {a: 'line\nwrapped', b: 'last', c: null},
+      {a: 'tail', b: '', c: 'extra'}
+    ]);
+
+    const quotedHeader = parseRawArrowCSVBytes(encode('"a","a"\n1,2'), {
+      header: true,
+      delimiter: ',',
+      skipEmptyLines: true
+    });
+    expect(toRows(quotedHeader!)).toEqual([{a: '1', 'a.1': '2'}]);
+  });
+
+  test('covers auto headers, custom quote characters, delimiter guesses, and greedy rows', () => {
+    const autoHeader = parseRawArrowCSVBytes(encode('name;value\nalpha;1\nbeta'), {
+      header: 'auto',
+      dynamicTyping: true,
+      delimitersToGuess: ['xx', 'é', ',', ';']
+    });
+    expect(toRows(autoHeader!)).toEqual([
+      {name: 'alpha', value: '1'},
+      {name: 'beta', value: null}
+    ]);
+
+    const numericFirstRow = parseRawArrowCSVBytes(encode('1|2\n3|4'), {
+      header: 'auto',
+      dynamicTyping: true,
+      delimiter: '|',
+      columnPrefix: 'field'
+    });
+    expect(toRows(numericFirstRow!)).toEqual([{'1': '3', '2': '4'}]);
+
+    const customQuote = parseRawArrowCSVBytes(encode("a,b\n'one,two',three\n  ,  \n"), {
+      header: true,
+      delimiter: ',',
+      quoteChar: "'",
+      escapeChar: "'",
+      skipEmptyLines: 'greedy'
+    });
+    expect(toRows(customQuote!)).toEqual([{a: 'one,two', b: 'three'}]);
+  });
+
+  test('covers direct ASCII validation after the probe and capacity growth', () => {
+    const longPrefix = 'x'.repeat(300);
+    expect(
+      parseRawArrowCSVASCIIText(`a,b\n${longPrefix},café`, {
+        header: true,
+        delimiter: ','
+      })
+    ).toBeNull();
+    expect(
+      parseRawArrowCSVASCIIText(`a,b\n${longPrefix},"late quote"`, {
+        header: true,
+        delimiter: ','
+      })
+    ).toBeNull();
+
+    const rows = Array.from({length: 1030}, (_, index) => `${index},${'v'.repeat(8)}`).join('\n');
+    const table = parseRawArrowCSVASCIIText(`a,b\n${rows}`, {
+      header: true,
+      delimiter: ','
+    });
+    expect(table?.data.numRows).toBe(1030);
+    expect(table?.data.getChild('b')?.get(1029)).toBe('vvvvvvvv');
+  });
+
   test('matches d3-dsv string contents on the unquoted ASCII text fast path', async () => {
     const csvRows = ['id,value,name'];
     for (let rowIndex = 0; rowIndex < 2000; rowIndex++) {

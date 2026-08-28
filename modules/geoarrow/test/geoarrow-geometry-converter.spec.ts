@@ -241,3 +241,158 @@ test('GeoArrowGeometryConverter converts geometry collections to geoarrow.geomet
     'round-trips geometry collections through the collection encoding'
   ).toEqual(features);
 });
+
+test('GeoArrowGeometryConverter round-trips every union geometry kind and null', () => {
+  const features: Feature[] = [
+    {
+      type: 'Feature',
+      properties: {kind: 'point'},
+      geometry: {type: 'Point', coordinates: [1, 2, 3, 4]}
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'line'},
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [0, 0, 1, 2],
+          [1, 1, 2, 3]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'polygon'},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0, 1, 2],
+            [2, 0, 1, 2],
+            [0, 2, 1, 2],
+            [0, 0, 1, 2]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'multipoint'},
+      geometry: {
+        type: 'MultiPoint',
+        coordinates: [
+          [1, 2, 3, 4],
+          [5, 6, 7, 8]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'multiline'},
+      geometry: {
+        type: 'MultiLineString',
+        coordinates: [
+          [
+            [0, 0, 1, 2],
+            [1, 1, 2, 3]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'multipolygon'},
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [0, 0, 1, 2],
+              [2, 0, 1, 2],
+              [0, 2, 1, 2],
+              [0, 0, 1, 2]
+            ]
+          ]
+        ]
+      }
+    }
+  ];
+  const source = setGeometryFieldEncoding(
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}).data,
+    'geoarrow.wkt'
+  );
+  const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
+  const roundTrip = convertGeoArrowGeometry(union, 'geoarrow.wkt');
+
+  expect(union.getChild('geometry')?.type.toString()).toContain('Union<');
+  expect(convertGeoArrowToTable(roundTrip, 'geojson-table').features).toEqual(features);
+});
+
+test('GeoArrowGeometryConverter handles null and empty geometry collections', () => {
+  const features: Feature[] = [
+    {
+      type: 'Feature',
+      properties: {kind: 'empty'},
+      geometry: {type: 'GeometryCollection', geometries: []}
+    },
+    {
+      type: 'Feature',
+      properties: {kind: 'nested'},
+      geometry: {
+        type: 'GeometryCollection',
+        geometries: [
+          {type: 'Point', coordinates: [1, 2, 3]},
+          {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 0]
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ];
+  const source = setGeometryFieldEncoding(
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}).data,
+    'geoarrow.wkt'
+  );
+  const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
+  const union = convertGeoArrowGeometry(collection, 'geoarrow.geometry');
+  const roundTrip = convertGeoArrowGeometry(union, 'geoarrow.wkb');
+
+  expect(convertGeoArrowToTable(roundTrip, 'geojson-table').features).toEqual(features);
+
+  const nullableWKT = setGeometryFieldEncoding(
+    arrow.tableFromArrays({geometry: [null, 'POINT (1 2)']}),
+    'geoarrow.wkt'
+  );
+  const nullableUnion = convertGeoArrowGeometry(nullableWKT, 'geoarrow.geometry');
+  expect(nullableUnion.numRows).toBe(2);
+  expect(nullableUnion.getChild('geometry')?.get(0)).toBeNull();
+});
+
+test('GeoArrowGeometryConverter validates column selection and collection targets', async () => {
+  const plainTable = arrow.tableFromArrays({value: [1]});
+  expect(() => convertGeoArrowGeometry(plainTable, 'geoarrow.wkt')).toThrow(
+    /requires at least one geometry column/
+  );
+
+  const pointTable = await loadArrowTable(GEOARROW_POINT_FILE);
+  expect(() =>
+    convertGeoArrowGeometry(pointTable, 'geoarrow.wkt', {geometryColumn: 'missing'})
+  ).toThrow(/could not find geometry column/);
+  expect(() =>
+    convertGeoArrowGeometry(pointTable, 'geoarrow.wkt', {
+      geometryColumn: 'geometry',
+      geometryColumns: ['geometry']
+    })
+  ).toThrow(/Specify only one/);
+  expect(() => convertGeoArrowGeometry(pointTable, 'geoarrow.geometrycollection')).toThrow(
+    /cannot encode Point as geoarrow.geometrycollection/
+  );
+});

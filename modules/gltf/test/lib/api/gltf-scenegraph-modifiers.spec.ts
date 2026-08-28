@@ -83,3 +83,105 @@ test('GLTFScenegraph#Nodes should store `matrix` transformation data', async () 
   expect(gltfBuilder.gltf.json.nodes?.[nodeIndex2]).toBeTruthy();
   expect(gltfBuilder.gltf.json.nodes?.[nodeIndex2].matrix).toBeFalsy();
 });
+
+test('GLTFScenegraph covers metadata, extension, and object accessors', () => {
+  const json: any = {
+    asset: {version: '2.0'},
+    custom: {enabled: true},
+    extras: {owner: 'loaders.gl'},
+    scenes: [{nodes: [0]}],
+    nodes: [{mesh: 0}],
+    skins: [{joints: [0]}],
+    meshes: [{primitives: []}],
+    materials: [{name: 'material'}],
+    accessors: [{bufferView: 0, componentType: 5121, count: 4, type: 'SCALAR'}],
+    textures: [{source: 0}],
+    samplers: [{magFilter: 9729}],
+    images: [{bufferView: 0, mimeType: 'image/png'}],
+    bufferViews: [{buffer: 0, byteOffset: 1, byteLength: 2}],
+    buffers: [{byteLength: 4}],
+    extensions: {EXT_used: {value: 1}, EXT_required: {value: 2}},
+    extensionsUsed: ['EXT_used', 'EXT_required'],
+    extensionsRequired: ['EXT_required']
+  };
+  const arrayBuffer = new Uint8Array([0, 10, 20, 30]).buffer;
+  const scenegraph = new GLTFScenegraph({
+    json,
+    buffers: [{arrayBuffer, byteOffset: 0, byteLength: 4}]
+  });
+
+  expect(scenegraph.getApplicationData('custom')).toEqual({enabled: true});
+  expect(scenegraph.getExtraData('owner')).toBe('loaders.gl');
+  expect(scenegraph.hasExtension('EXT_used')).toBe(true);
+  expect(scenegraph.hasExtension('EXT_missing')).toBe(false);
+  expect(scenegraph.getExtension('EXT_used')).toEqual({value: 1});
+  expect(scenegraph.getRequiredExtension('EXT_required')).toEqual({value: 2});
+  expect(scenegraph.getRequiredExtension('EXT_used')).toBeNull();
+  expect(scenegraph.getScene(0)).toBe(json.scenes[0]);
+  expect(scenegraph.getNode(0)).toBe(json.nodes[0]);
+  expect(scenegraph.getSkin(0)).toBe(json.skins[0]);
+  expect(scenegraph.getMesh(0)).toBe(json.meshes[0]);
+  expect(scenegraph.getMaterial(0)).toBe(json.materials[0]);
+  expect(scenegraph.getAccessor(0)).toBe(json.accessors[0]);
+  expect(scenegraph.getTexture(0)).toBe(json.textures[0]);
+  expect(scenegraph.getSampler(0)).toBe(json.samplers[0]);
+  expect(scenegraph.getImage(0)).toBe(json.images[0]);
+  expect(scenegraph.getBufferView(0)).toBe(json.bufferViews[0]);
+  expect(scenegraph.getBuffer(0)).toBe(json.buffers[0]);
+  expect(scenegraph.getObject('nodes', json.nodes[0])).toBe(json.nodes[0]);
+  expect(Array.from(scenegraph.getTypedArrayForBufferView(0))).toEqual([10, 20]);
+  expect(() => scenegraph.getNode(10)).toThrow(/Could not find nodes\[10\]/);
+});
+
+test('GLTFScenegraph covers extension mutation and compact scene construction', () => {
+  const scenegraph = new GLTFScenegraph();
+  const object: any = {};
+
+  scenegraph.addApplicationData('application', {value: 1});
+  scenegraph.addExtraData('extra', {value: 2});
+  scenegraph.addObjectExtension(object, 'EXT_object', {enabled: true});
+  expect(scenegraph.getObjectExtension(object, 'EXT_object')).toEqual({enabled: true});
+  scenegraph.setObjectExtension(object, 'EXT_set', {value: 3});
+  scenegraph.removeObjectExtension(object, 'EXT_set');
+  scenegraph.removeObjectExtension(object, 'EXT_set');
+  expect(scenegraph.getRemovedExtensions()).toContain('EXT_set');
+
+  expect(scenegraph.addExtension('EXT_optional', {value: 4})).toEqual({value: 4});
+  scenegraph.addRequiredExtension('EXT_required', {value: 5});
+  scenegraph.registerUsedExtension('EXT_optional');
+  scenegraph.registerRequiredExtension('EXT_required');
+  expect(scenegraph.getUsedExtensions()).toEqual(['EXT_object', 'EXT_optional', 'EXT_required']);
+  scenegraph.removeExtension('EXT_required');
+  scenegraph.removeExtension('EXT_required');
+  expect(scenegraph.getRemovedExtensions()).toEqual(
+    expect.arrayContaining(['EXT_set', 'EXT_required'])
+  );
+
+  const position = {value: new Float32Array([0, 1, 2, 3, 4, 5]), size: 3};
+  const indices = new Uint16Array([0, 1]);
+  const meshIndex = scenegraph.addMesh({
+    attributes: {
+      vertices: position,
+      normals: position,
+      colors: {value: new Uint8Array([1, 2, 3, 4, 5, 6]), size: 3},
+      texcoords: {value: new Float32Array([0, 0, 1, 1]), size: 2},
+      custom: {value: new Float32Array([7, 8]), size: 1}
+    },
+    indices: indices as any,
+    material: 0,
+    mode: 1
+  });
+  expect(scenegraph.addPointCloud({POSITION: position})).toBe(1);
+  expect(scenegraph.addNode({meshIndex})).toBe(0);
+  expect(scenegraph.addScene({nodeIndices: [0]})).toBe(0);
+  scenegraph.setDefaultScene(0);
+  expect(scenegraph.addTexture({imageIndex: 0})).toBe(0);
+  expect(scenegraph.addMaterial({name: 'material'})).toBe(0);
+  expect(scenegraph.json.meshes?.[0].primitives[0]).toMatchObject({mode: 1, material: 0});
+  expect(scenegraph.json.accessors?.[0].min).toEqual([0, 1, 2]);
+  expect(scenegraph.json.accessors?.[0].max).toEqual([3, 4, 5]);
+
+  scenegraph.createBinaryChunk();
+  expect(scenegraph.gltf.binary?.byteLength).toBe(scenegraph.byteLength);
+  expect(scenegraph.gltf.buffers[0].byteLength).toBe(scenegraph.byteLength);
+});

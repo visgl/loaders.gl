@@ -267,6 +267,82 @@ test('triangulateWKB#rejects non-polygon geometry', async () => {
   );
 });
 
+test.each([
+  [
+    'self intersection',
+    [
+      [0, 0],
+      [4, 4],
+      [0, 4],
+      [4, 0],
+      [0, 0]
+    ]
+  ],
+  [
+    'duplicate and collinear vertices',
+    [
+      [0, 0],
+      [2, 0],
+      [2, 0],
+      [4, 0],
+      [4, 4],
+      [0, 4],
+      [0, 0]
+    ]
+  ],
+  [
+    'narrow concave corridor',
+    [
+      [0, 0],
+      [6, 0],
+      [6, 6],
+      [4, 6],
+      [4, 1],
+      [2, 1],
+      [2, 6],
+      [0, 6],
+      [0, 0]
+    ]
+  ]
+])('triangulateWKB#handles difficult %s polygons', (_name, ring) => {
+  const triangles = triangulateWKB(
+    convertGeometryToWKB({type: 'Polygon', coordinates: [ring as Position[]]})
+  );
+  expect(triangles.every(Number.isInteger)).toBe(true);
+});
+
+test('triangulateWKB#handles touching, single-point, and multiple holes', () => {
+  const polygon: Geometry = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0]
+      ],
+      [
+        [0, 5],
+        [2, 4],
+        [2, 6],
+        [0, 5]
+      ],
+      [[5, 5]],
+      [
+        [7, 7],
+        [8, 7],
+        [8, 8],
+        [7, 8],
+        [7, 7]
+      ]
+    ]
+  };
+  const triangles = triangulateWKB(convertGeometryToWKB(polygon));
+  expect(triangles.length).toBeGreaterThan(0);
+  expect(triangles.every(Number.isInteger)).toBe(true);
+});
+
 /**
  * Verifies direct WKB triangulation against the existing GeoJSON-to-earcut path.
  * @param wkb WKB input.
