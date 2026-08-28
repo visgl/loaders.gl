@@ -1,12 +1,19 @@
 import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan-live-example';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 
 # Common Scan Architecture
 
-:::info Start here
+<CapabilityHero capability="scan" />
+
+## Try a scan
+
+<FederatedScanLiveExample />
+
+## Start here
+
 Describe the data you need with bounds, selected columns, predicates, and limits. loaders.gl applies
 that request across supported local and cloud data sources; the planning details below matter only
 when you need to inspect or optimize execution.
-:::
 
 The loaders.gl common scan architecture is a portable query and execution model for columnar data.
 It allows an application to describe a small relational query once and execute it against an
@@ -911,12 +918,10 @@ Parallel scheduling, managed-source joins, optimizer-selected source order, sche
 distributed aggregation are explicit non-goals. The in-memory relational executor can still join
 or union already supplied Arrow tables; that is a separate materialized execution path.
 
-The browser example below registers real CSV, NDJSON, and Arrow IPC sources, discovers them without
+The interactive example near the top of this page registers real CSV, NDJSON, and Arrow IPC sources, discovers them without
 exposing the managed source objects, applies explicit mappings and a named predicate parameter,
 and shows both the plan and terminal execution telemetry. Source badges below the panel are the
 provenance attached to emitted Arrow batches.
-
-<FederatedScanLiveExample />
 
 ## Point-cloud participation
 

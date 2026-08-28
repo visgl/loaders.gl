@@ -753,13 +753,187 @@ const Note = styled.div`
   padding: 14px 16px;
 `;
 
-/** Renders the homepage section that explains loaders.gl concept flows. */
-export default function Concepts() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(categoryTabs[0].id);
-  const [selectedRepresentationId, setSelectedRepresentationId] = useState(representationTabs[0].id);
+/**
+ * Renders the interactive loader-category decode/data/encode explorer.
+ * @param {{initialCategoryId?: string, initialRepresentationId?: string}} props Component properties.
+ */
+export function CategoryDataConcept({
+  initialCategoryId = categoryTabs[0].id,
+  initialRepresentationId = representationTabs[0].id
+} = {}) {
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId);
+  const [selectedRepresentationId, setSelectedRepresentationId] = useState(initialRepresentationId);
   const selectedCategory = categoryTabs.find((category) => category.id === selectedCategoryId);
   const selectedRepresentation = selectedCategory.representations[selectedRepresentationId];
 
+  return (
+    <WidePanel>
+      <PanelHeader>
+        <PanelLabel>Category data</PanelLabel>
+        <PanelTitle>Load many formats into one application path.</PanelTitle>
+        <PanelText>
+          Category data lets related loaders return compatible structures, so rendering, analysis,
+          and export code can be shared.
+        </PanelText>
+      </PanelHeader>
+      <Diagram>
+        <TabRow>
+          <TabList role="tablist" aria-label="Loader category tabs">
+            {categoryTabs.map((category) => (
+              <TabButton
+                key={category.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedCategory.id === category.id}
+                $active={selectedCategory.id === category.id}
+                onClick={() => setSelectedCategoryId(category.id)}
+              >
+                {category.label}
+              </TabButton>
+            ))}
+          </TabList>
+          <RepresentationTabs role="tablist" aria-label="Data representation tabs">
+            {representationTabs.map((representation) => (
+              <TabButton
+                key={representation.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedRepresentationId === representation.id}
+                $active={selectedRepresentationId === representation.id}
+                onClick={() => setSelectedRepresentationId(representation.id)}
+              >
+                {representation.label}
+              </TabButton>
+            ))}
+          </RepresentationTabs>
+        </TabRow>
+        <Flow>
+          <ConceptColumn>
+            <StageLabel>Decode</StageLabel>
+            <LoaderGrid>
+              {selectedRepresentation.loaders.length > 0 ? (
+                selectedRepresentation.loaders.map((loader) => (
+                  <LinkedNode
+                    key={loader}
+                    to={loaderDocumentationLinks[loader]}
+                    $compactText={loader.length > 20}
+                  >
+                    <span>{loader}</span>
+                    <LinkMark aria-hidden="true">↗</LinkMark>
+                  </LinkedNode>
+                ))
+              ) : (
+                <EmptyNode>
+                  No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} loaders
+                </EmptyNode>
+              )}
+            </LoaderGrid>
+          </ConceptColumn>
+          <Connector />
+          <ConceptColumn>
+            <StageLabel>Data</StageLabel>
+            <DataCategoryNode
+              to={categoryDocumentationLinks[selectedCategory.id]}
+              $background="rgba(0, 173, 230, 0.12)"
+              $border="rgba(0, 173, 230, 0.55)"
+            >
+              <span>{selectedRepresentation.data}</span>
+              <NodeMeta>
+                <TinyLabel>{selectedRepresentation.detail}</TinyLabel>
+                <LinkMark aria-hidden="true">↗</LinkMark>
+              </NodeMeta>
+            </DataCategoryNode>
+          </ConceptColumn>
+          <Connector />
+          <ConceptColumn>
+            <StageLabel>Encode</StageLabel>
+            <WriterStack>
+              {selectedRepresentation.writers.length > 0 ? (
+                selectedRepresentation.writers.map((writer) => (
+                  <LinkedCategoryNode
+                    key={writer}
+                    to={writerDocumentationLinks[writer]}
+                    $compactText={writer.length > 20}
+                    $background="rgba(53, 173, 107, 0.12)"
+                    $border="rgba(53, 173, 107, 0.55)"
+                  >
+                    <span>{writer}</span>
+                    <LinkMark aria-hidden="true">↗</LinkMark>
+                  </LinkedCategoryNode>
+                ))
+              ) : (
+                <EmptyNode>
+                  No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} writers
+                </EmptyNode>
+              )}
+            </WriterStack>
+          </ConceptColumn>
+        </Flow>
+      </Diagram>
+    </WidePanel>
+  );
+}
+
+/** Renders the streaming loader pipeline used on the homepage and streaming guide. */
+export function StreamingConcept() {
+  return (
+    <WidePanel>
+      <PanelHeader>
+        <PanelLabel>Streaming loaders</PanelLabel>
+        <PanelTitle>Stream data in batches.</PanelTitle>
+        <PanelText>
+          Batched loaders let applications process results as bytes arrive, without holding a large
+          file in one string or ArrayBuffer.
+        </PanelText>
+      </PanelHeader>
+      <Diagram>
+        <StreamingFlow>
+          <ConceptColumn>
+            <StageLabel>Streaming loaders</StageLabel>
+            <LoaderGrid>
+              {streamingLoaders.map((loader) => (
+                <LinkedNode key={loader} to={loaderDocumentationLinks[loader]}>
+                  <span>{loader}</span>
+                  <LinkMark aria-hidden="true">↗</LinkMark>
+                </LinkedNode>
+              ))}
+            </LoaderGrid>
+          </ConceptColumn>
+          <Connector />
+          <ConceptColumn>
+            <StageLabel>Incremental processing</StageLabel>
+            <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
+              <span>Process while loading</span>
+              <MethodGrid>
+                {streamingProcessingBlocks.map((block) => (
+                  <CompactNode key={block}>{block}</CompactNode>
+                ))}
+              </MethodGrid>
+            </DataSourceNode>
+          </ConceptColumn>
+          <Connector />
+          <ConceptColumn>
+            <StageLabel>Batches</StageLabel>
+            <Stack>
+              {streamingOutputs.map((output) => (
+                <CategoryNode
+                  key={output}
+                  $background="rgba(53, 173, 107, 0.12)"
+                  $border="rgba(53, 173, 107, 0.55)"
+                >
+                  {output}
+                </CategoryNode>
+              ))}
+            </Stack>
+          </ConceptColumn>
+        </StreamingFlow>
+      </Diagram>
+    </WidePanel>
+  );
+}
+
+/** Renders the homepage section that explains loaders.gl concept flows. */
+export default function Concepts() {
   return (
     <ConceptsSection>
       <Content>
@@ -785,110 +959,7 @@ export default function Concepts() {
         </LinkBar>
 
         <PanelGrid>
-          <WidePanel>
-            <PanelHeader>
-              <PanelLabel>Category data</PanelLabel>
-              <PanelTitle>Load many formats into one application path.</PanelTitle>
-              <PanelText>
-                Category data lets related loaders return compatible structures, so rendering,
-                analysis, and export code can be shared.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <TabRow>
-                <TabList role="tablist" aria-label="Loader category tabs">
-                  {categoryTabs.map((category) => (
-                    <TabButton
-                      key={category.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={selectedCategory.id === category.id}
-                      $active={selectedCategory.id === category.id}
-                      onClick={() => setSelectedCategoryId(category.id)}
-                    >
-                      {category.label}
-                    </TabButton>
-                  ))}
-                </TabList>
-                <RepresentationTabs role="tablist" aria-label="Data representation tabs">
-                  {representationTabs.map((representation) => (
-                    <TabButton
-                      key={representation.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={selectedRepresentationId === representation.id}
-                      $active={selectedRepresentationId === representation.id}
-                      onClick={() => setSelectedRepresentationId(representation.id)}
-                    >
-                      {representation.label}
-                    </TabButton>
-                  ))}
-                </RepresentationTabs>
-              </TabRow>
-              <Flow>
-                <ConceptColumn>
-                  <StageLabel>Decode</StageLabel>
-                  <LoaderGrid>
-                    {selectedRepresentation.loaders.length > 0 ? (
-                      selectedRepresentation.loaders.map((loader) => (
-                        <LinkedNode
-                          key={loader}
-                          to={loaderDocumentationLinks[loader]}
-                          $compactText={loader.length > 20}
-                        >
-                          <span>{loader}</span>
-                          <LinkMark aria-hidden="true">↗</LinkMark>
-                        </LinkedNode>
-                      ))
-                    ) : (
-                      <EmptyNode>
-                        No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} loaders
-                      </EmptyNode>
-                    )}
-                  </LoaderGrid>
-                </ConceptColumn>
-                <Connector />
-                <ConceptColumn>
-                  <StageLabel>Data</StageLabel>
-                  <DataCategoryNode
-                    to={categoryDocumentationLinks[selectedCategory.id]}
-                    $background="rgba(0, 173, 230, 0.12)"
-                    $border="rgba(0, 173, 230, 0.55)"
-                  >
-                    <span>{selectedRepresentation.data}</span>
-                    <NodeMeta>
-                      <TinyLabel>{selectedRepresentation.detail}</TinyLabel>
-                      <LinkMark aria-hidden="true">↗</LinkMark>
-                    </NodeMeta>
-                  </DataCategoryNode>
-                </ConceptColumn>
-                <Connector />
-                <ConceptColumn>
-                  <StageLabel>Encode</StageLabel>
-                  <WriterStack>
-                    {selectedRepresentation.writers.length > 0 ? (
-                      selectedRepresentation.writers.map((writer) => (
-                        <LinkedCategoryNode
-                          key={writer}
-                          to={writerDocumentationLinks[writer]}
-                          $compactText={writer.length > 20}
-                          $background="rgba(53, 173, 107, 0.12)"
-                          $border="rgba(53, 173, 107, 0.55)"
-                        >
-                          <span>{writer}</span>
-                          <LinkMark aria-hidden="true">↗</LinkMark>
-                        </LinkedCategoryNode>
-                      ))
-                    ) : (
-                      <EmptyNode>
-                        No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} writers
-                      </EmptyNode>
-                    )}
-                  </WriterStack>
-                </ConceptColumn>
-              </Flow>
-            </Diagram>
-          </WidePanel>
+          <CategoryDataConcept />
 
           <Panel>
             <PanelHeader>
@@ -952,58 +1023,7 @@ export default function Concepts() {
             </Diagram>
           </Panel>
 
-          <WidePanel>
-            <PanelHeader>
-              <PanelLabel>Streaming loaders</PanelLabel>
-              <PanelTitle>Stream data in batches.</PanelTitle>
-              <PanelText>
-                Batched loaders let applications process results as bytes arrive, without holding a
-                large file in one string or ArrayBuffer.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <StreamingFlow>
-                <ConceptColumn>
-                  <StageLabel>Streaming loaders</StageLabel>
-                  <LoaderGrid>
-                    {streamingLoaders.map((loader) => (
-                      <LinkedNode key={loader} to={loaderDocumentationLinks[loader]}>
-                        <span>{loader}</span>
-                        <LinkMark aria-hidden="true">↗</LinkMark>
-                      </LinkedNode>
-                    ))}
-                  </LoaderGrid>
-                </ConceptColumn>
-                <Connector />
-                <ConceptColumn>
-                  <StageLabel>Incremental processing</StageLabel>
-                  <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
-                    <span>Process while loading</span>
-                    <MethodGrid>
-                      {streamingProcessingBlocks.map((block) => (
-                        <CompactNode key={block}>{block}</CompactNode>
-                      ))}
-                    </MethodGrid>
-                  </DataSourceNode>
-                </ConceptColumn>
-                <Connector />
-                <ConceptColumn>
-                  <StageLabel>Batches</StageLabel>
-                  <Stack>
-                    {streamingOutputs.map((output) => (
-                      <CategoryNode
-                        key={output}
-                        $background="rgba(53, 173, 107, 0.12)"
-                        $border="rgba(53, 173, 107, 0.55)"
-                      >
-                        {output}
-                      </CategoryNode>
-                    ))}
-                  </Stack>
-                </ConceptColumn>
-              </StreamingFlow>
-            </Diagram>
-          </WidePanel>
+          <StreamingConcept />
         </PanelGrid>
       </Content>
     </ConceptsSection>

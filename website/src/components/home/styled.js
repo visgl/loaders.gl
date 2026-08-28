@@ -89,36 +89,54 @@ export const TagLine = styled.p`
 `;
 
 export const GetStartedLink = styled.a`
-  pointer-events: all;
+  align-items: center;
   background: var(--ifm-color-primary);
   border: 1px solid var(--ifm-color-primary);
   border-radius: 999px;
-  color: var(--ifm-color-white);
-  font-size: 12px;
-  line-height: 1;
-  letter-spacing: 0.12em;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 13px;
   font-weight: bold;
-  margin: 24px 0;
-  padding: 15px 22px;
+  gap: 10px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin: 24px 0 0;
+  min-height: 44px;
+  padding: 0 20px;
   pointer-events: all;
-  display: inline-block;
+  position: relative;
   text-decoration: none;
+  text-shadow: none;
+  width: fit-content;
+  z-index: 1;
   transition:
     background-color 180ms ease-in,
     border-color 180ms ease-in,
     color 180ms ease-in,
     transform 180ms ease-in;
+
+  && {
+    color: #ffffff;
+  }
+
   &:visited {
-    color: var(--ifm-color-white);
+    color: #ffffff;
   }
   &:active {
-    color: var(--ifm-color-white);
+    color: #ffffff;
   }
   &:hover {
-    color: var(--ifm-color-white);
+    color: #ffffff;
     background-color: transparent;
     border-color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     transform: translateY(-2px);
+  }
+
+  > span {
+    color: #ffffff;
+    display: block;
+    position: relative;
   }
 `;

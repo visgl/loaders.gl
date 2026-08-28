@@ -1,10 +1,17 @@
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
 # Apache Arrow
 
-:::info Start here
+<CapabilityHero capability="arrow" />
+
+<CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+## Start here
+
 Apache Arrow gives different tabular formats a shared, typed columnar shape. Use it when you want
 efficient transfer or the same processing code across formats; loaders that return other shapes do
 not require it.
-:::
 
 loaders.gl is adding support for Apache Arrow as its standard in-memory representation of tables.
 

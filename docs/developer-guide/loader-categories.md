@@ -1,10 +1,17 @@
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
 # Loader Categories
 
-:::info Start here
+<CapabilityHero capability="categories" />
+
+<CategoryDataConcept />
+
+## Start here
+
 Choose a loader category when your application should accept several formats without separate code
 paths for each one. The category defines the common result shape, while each loader handles its own
 file format.
-:::
 
 To simplify working with multiple similar formats, loaders and writers in loaders.gl are grouped into _categories_.
 

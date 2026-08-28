@@ -107,9 +107,9 @@ export function FederatedScanLiveExample(): JSX.Element {
           sources: selectedSources,
           outputSchema: {
             fields: [
-              {name: 'stationId', type: 'utf8', nullable: false},
-              {name: 'temperature', type: 'float64', nullable: false},
-              {name: 'period', type: 'utf8', nullable: false}
+              {name: 'stationId', type: 'utf8', nullable: true},
+              {name: 'temperature', type: 'float64', nullable: true},
+              {name: 'period', type: 'utf8', nullable: true}
             ],
             metadata: {}
           }
