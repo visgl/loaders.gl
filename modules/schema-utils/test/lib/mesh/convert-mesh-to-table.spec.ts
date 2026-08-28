@@ -127,6 +127,30 @@ test('convertTableToMesh#honors FixedSizeList chunk offsets', () => {
   ).toEqual([1, 0, 0, 0, 1, 0]);
   expect(roundTripMesh.attributes.POSITION.size, 'round trip preserves position size').toBe(3);
 });
+
+test('convertTableToMesh#restores quantized position metadata and logical bounds', () => {
+  const mesh: Mesh = {
+    attributes: {
+      POSITION: {
+        value: new Uint16Array([0, 0, 0, 10, 10, 10]),
+        size: 3,
+        transform: {type: 'quantization', bits: 8, origin: [50, -100, 150], range: 2}
+      }
+    },
+    topology: 'point-list',
+    mode: 0,
+    header: {
+      vertexCount: 2,
+      boundingBox: [
+        [50, -100, 150],
+        [52, -98, 152]
+      ]
+    }
+  };
+  const roundTripMesh = convertTableToMesh(convertMeshToTable(mesh, 'arrow-table'));
+  expect(roundTripMesh.attributes.POSITION.transform).toEqual(mesh.attributes.POSITION.transform);
+  expect(roundTripMesh.header?.boundingBox).toEqual(mesh.header?.boundingBox);
+});
 function makeMesh(indices?: Uint16Array): Mesh {
   const attributes = {
     POSITION: {
