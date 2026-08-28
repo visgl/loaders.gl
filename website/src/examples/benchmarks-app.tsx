@@ -20,9 +20,12 @@ const SAMPLE_CSV_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/csv/test/data/sample-very-long.csv';
 const ROW_COUNT = 2000;
 const WIDE_COLUMN_COUNT = 40;
+// More samples and a longer measurement window reduce JIT/startup noise in the browser table.
+// These settings apply equally to every implementation; they are not a warmup or result filter.
 const BENCHMARK_OPTIONS = {minIterations: 5, time: 100, unit: 'rows'};
 
-// Keep these labels synchronized with the exact versions resolved in yarn.lock.
+// Keep these labels synchronized with the exact versions resolved in yarn.lock. The workspace
+// package can report "latest" during local development, which is not useful benchmark metadata.
 const CSV_LOADER_DISPLAY_NAME = 'CSVLoader v5.0.0-alpha.2 (arrow-table)';
 const D3_DSV_DISPLAY_NAME = 'd3-dsv v1.2.0';
 const UDSV_DISPLAY_NAME = 'uDSV v0.7.3';
@@ -504,6 +507,8 @@ function addLoaderParseBenchmark(
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
+    // Arrow's public parseText API is asynchronous; time its complete Arrow-table result without
+    // adding a conversion step to the synchronous competitors' benchmark bodies.
     async () => await parseText(scenario.text, loaderBenchmark.options)
   );
 }
@@ -526,6 +531,7 @@ function addD3ParseBenchmark(
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
+    // d3-dsv exposes a synchronous parser, so measure that API directly without Promise overhead.
     () =>
       scenario.delimiter === '\t'
         ? tsvParse(scenario.text, dynamicTyping ? autoType : undefined)
@@ -551,6 +557,7 @@ function addPapaParseNPMBenchmark(
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
+    // PapaParse is synchronous for a string input; keep its native return path in the timed body.
     () =>
       PapaParseNPM.parse(scenario.text, {
         header: true,
@@ -579,6 +586,7 @@ function addUDSVParseBenchmark(
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
     () => {
+      // uDSV's schema inference and native row materialization are part of its parse operation.
       const schema = inferSchema(scenario.text, {col: scenario.delimiter});
       const parser = initParser(schema);
       return dynamicTyping ? parser.typedObjs(scenario.text) : parser.stringObjs(scenario.text);

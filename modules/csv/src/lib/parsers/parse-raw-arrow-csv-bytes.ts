@@ -35,6 +35,8 @@ const CARRIAGE_RETURN = 13;
 const LINE_FEED = 10;
 const SPACE = 32;
 const TAB = 9;
+// A bounded probe rejects the common quoted/UTF-8 cases before allocating Arrow builders. The
+// complete scan below remains authoritative, so late non-ASCII or quote characters still fall back.
 const ASCII_TEXT_PROBE_LENGTH = 256;
 
 const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
@@ -62,6 +64,8 @@ export function parseRawArrowCSVBytes(
 
   const bytes = new Uint8Array(arrayBuffer);
   if (!parserOptions.skipEmptyLines && bytes.indexOf(parserOptions.quote) === -1) {
+    // An unquoted file needs no row objects or quote-state machine. Write each field directly to
+    // its column's Arrow buffers after this one cheap quote probe.
     const parser = new RawArrowUnquotedCSVByteParser(bytes, parserOptions);
     return parser.parseTable();
   }
@@ -94,6 +98,8 @@ export function parseRawArrowCSVASCIIText(
     return null;
   }
 
+  // This is only an inexpensive admission test. The parser must still validate every field while
+  // scanning because a quote or non-ASCII code unit can occur after the probe window.
   const probeLength = Math.min(csvText.length, ASCII_TEXT_PROBE_LENGTH);
   for (let characterIndex = 0; characterIndex < probeLength; characterIndex++) {
     const characterCode = csvText.charCodeAt(characterIndex);
@@ -111,6 +117,8 @@ function getCSVASCIITextParserOptions(csvOptions: CSVRawArrowOptions): CSVBytePa
   const shouldUseUtf8View =
     csvOptions.viewTypes === 'require' ||
     (csvOptions.viewTypes === 'prefer' && getArrowViewTypeSupport().utf8View);
+  // The direct scanner intentionally supports a small, explicit option set. Falling back here is
+  // cheaper and safer than adding branches to the hot loop for comments, skipped rows, or views.
   if (shouldUseUtf8View || csvOptions.comments || csvOptions.skipEmptyLines) {
     return null;
   }
@@ -959,6 +967,8 @@ class RawArrowUnquotedCSVTextParser {
       );
     }
 
+    // Builders own the final Arrow offsets/data buffers. Parsing directly into them avoids the
+    // row arrays and per-cell strings normally needed by a row-oriented CSV representation.
     const columnBuilders = createRawArrowColumnBuilders(headerRow, this.csvText.length);
     if (!this.appendDataRows(dataStart, columnBuilders)) {
       return null;
@@ -978,6 +988,8 @@ class RawArrowUnquotedCSVTextParser {
     let fieldStart = start;
     let columnIndex = 0;
 
+    // Scan once over the source string. Delimiters and line endings are the only boundaries needed
+    // for this proven-unquoted path; CRLF is consumed as one row terminator below.
     for (let characterIndex = start; characterIndex <= this.csvText.length; characterIndex++) {
       const characterCode = this.csvText.charCodeAt(characterIndex);
       if (characterCode === quote || characterCode >= 128) {
@@ -1172,6 +1184,8 @@ class RawArrowUtf8ColumnBuilder {
 
   /** Appends a non-null value from a previously validated ASCII text range. */
   appendASCIITextRange(source: string, start: number, end: number): void {
+    // For validated ASCII, each UTF-16 code unit is already the corresponding UTF-8 byte. Copying
+    // directly into the Arrow data buffer avoids TextEncoder calls and temporary cell strings.
     const characterLength = end - start;
     this.reserveData(characterLength);
     for (let characterIndex = start; characterIndex < end; characterIndex++) {

@@ -621,8 +621,9 @@ function tryParseTypedUnquotedCSVBytes(
   }
   const headerEnd = findDirectRowEnd(bytes, 0);
   const headerRow = decodeDirectHeaderRow(bytes, 0, headerEnd.end, delimiterByte);
-  // Keep aggregate speculative typed storage proportional to input size. A large per-column
-  // minimum can exhaust memory for valid CSV files with tens of thousands of shallow columns.
+  // Keep aggregate speculative typed storage proportional to input size. The old fixed minimum
+  // multiplied by column count, so a valid wide file with shallow columns could reserve far more
+  // memory than its contents. This estimate is only initial capacity; builders still grow safely.
   const initialColumnCapacity = calculateInitialTypedColumnCapacity(bytes.length, headerRow.length);
   const columns: DirectTypedColumn[] = headerRow.map(() => ({
     values: [],
@@ -681,6 +682,8 @@ function tryParseTypedUnquotedCSVBytes(
 
 /**
  * Calculates per-column speculative storage for the direct typed parser.
+ * The aggregate initial allocation is bounded by roughly the input byte length divided by eight,
+ * while retaining at least one slot per column for empty or very small inputs.
  * @internal
  */
 export function calculateInitialTypedColumnCapacity(
