@@ -31,7 +31,7 @@ const featureCards = [
   {
     id: 'streaming',
     eyebrow: 'Progressive data',
-    title: 'Move data as it arrives.',
+    title: 'No waiting. Process data as it arrives.',
     description:
       'Process large files incrementally with async iterators, batched loaders, transforms, and backpressure-friendly flows.',
     href: '/docs/developer-guide/using-streaming-loaders',
@@ -55,7 +55,7 @@ const featureCards = [
   {
     id: 'arrow',
     eyebrow: 'Common data plane',
-    title: 'One table shape. Many formats.',
+    title: 'Many data formats. One table shape.',
     description:
       'Use Apache Arrow as a fast, typed in-memory representation between loaders, applications, workers, and writers.',
     href: '/docs/developer-guide/apache-arrow',
@@ -67,9 +67,9 @@ const featureCards = [
   {
     id: 'loaders',
     eyebrow: 'Format coverage',
-    title: 'More formats. Less glue.',
+    title: 'Optimized, feature-rich parsers',
     description:
-      'Hyper-complete and optimized loaders for tables, GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
+      'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
     href: '/docs',
     linkLabel: 'Browse loader docs',
     tags: ['tables', 'GIS', '3D', 'point clouds'],
@@ -80,7 +80,7 @@ const featureCards = [
   {
     id: 'categories',
     eyebrow: 'Composable APIs',
-    title: 'Design around data, not formats.',
+    title: 'Design apps around your data, not data formats.',
     description:
       'Loader categories normalize related formats into shared structures, so your application code can stay focused on the data.',
     href: '/docs/developer-guide/loader-categories',
@@ -268,9 +268,17 @@ const CardFooter = styled.div`
   gap: 16px;
   justify-content: space-between;
   margin-top: auto;
+  max-width: ${(props) => (props.$wide ? '58%' : '56%')};
   padding-top: 34px;
   position: relative;
   z-index: 1;
+
+  @media screen and (max-width: 560px) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 100%;
+  }
 `;
 
 const TagList = styled.div`
@@ -297,7 +305,9 @@ const CardLink = styled(Link)`
   font-size: 12px;
   font-weight: 800;
   gap: 8px;
+  line-height: 1.35;
   text-decoration: none;
+  white-space: normal;
 
   &:hover {
     color: #ffffff;
@@ -528,6 +538,11 @@ const CategoryNode = styled.span`
   top: ${(props) => props.$top};
 `;
 
+/**
+ * Renders the decorative visualization selected for a feature card.
+ * @param {{type: string, wide?: boolean}} props Component properties.
+ * @returns {React.ReactElement} The selected feature visualization.
+ */
 function RenderFeatureVisual({type, wide}) {
   if (type === 'scan') {
     return (
@@ -640,7 +655,7 @@ export default function Features() {
                 <CardDescription>{feature.description}</CardDescription>
               </CardBody>
               <RenderFeatureVisual type={feature.visual} wide={feature.wide} />
-              <CardFooter>
+              <CardFooter $wide={feature.wide}>
                 <TagList>
                   {feature.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>

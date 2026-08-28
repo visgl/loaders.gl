@@ -5,6 +5,11 @@ on:
     branches:
       - master
       - '*-release'
+  workflow_run:
+    workflows:
+      - release
+    types:
+      - completed
   workflow_dispatch:
 
 concurrency: website-gh-pages
@@ -17,6 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       should_deploy: ${{ steps.deploy_config.outputs.should_deploy }}
+      checkout_ref: ${{ steps.deploy_config.outputs.checkout_ref }}
       target_folder: ${{ steps.deploy_config.outputs.target_folder }}
       website_base_url: ${{ steps.deploy_config.outputs.website_base_url }}
 
@@ -34,18 +40,33 @@ jobs:
       - name: Resolve deploy config
         id: deploy_config
         env:
+          EVENT_NAME: ${{ github.event_name }}
           LATEST_RELEASE_BRANCH: ${{ steps.get_version.outputs.latest }}
+          RELEASE_WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          if [ "${GITHUB_REF_NAME}" = "master" ]; then
+          if [ "${EVENT_NAME}" = "workflow_run" ] && [ "${RELEASE_WORKFLOW_CONCLUSION}" = "success" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=${LATEST_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
+            echo "target_folder=" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/" >> "$GITHUB_OUTPUT"
+          elif [ "${EVENT_NAME}" = "workflow_run" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=master" >> "$GITHUB_OUTPUT"
+            echo "target_folder=" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/" >> "$GITHUB_OUTPUT"
+          elif [ "${GITHUB_REF_NAME}" = "master" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=master" >> "$GITHUB_OUTPUT"
             echo "target_folder=next" >> "$GITHUB_OUTPUT"
             echo "website_base_url=/next/" >> "$GITHUB_OUTPUT"
           elif [ "${GITHUB_REF_NAME}" = "${LATEST_RELEASE_BRANCH}" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=${LATEST_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
             echo "target_folder=" >> "$GITHUB_OUTPUT"
             echo "website_base_url=/" >> "$GITHUB_OUTPUT"
           else
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
             echo "target_folder=" >> "$GITHUB_OUTPUT"
             echo "website_base_url=/" >> "$GITHUB_OUTPUT"
           fi
@@ -63,6 +84,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ needs.check_branch.outputs.checkout_ref }}
           token: ${{ github.token }}
 
       - name: Setup Node (with Corepack)
