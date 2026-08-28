@@ -275,6 +275,7 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     COLOR: 2,
     TEX_COORD: 3,
     GENERIC: 4,
+    MESH_SEQUENTIAL_ENCODING: 8,
     MESH_EDGEBREAKER_ENCODING: 9,
     Encoder: FakeEncoder,
     ExpertEncoder: FakeExpertEncoder,
@@ -434,7 +435,7 @@ test('DracoBuilder applies named presets without mutating caller options', () =>
   );
 
   expect(options).toEqual({preset: 'webgpu'});
-  expect(state.encoderCalls).toEqual(['speed:5:5', 'method:9', 'quantization:0:14', 'mesh']);
+  expect(state.encoderCalls).toEqual(['speed:5:5', 'method:8', 'quantization:0:14', 'mesh']);
 });
 
 test.each([
