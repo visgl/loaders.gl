@@ -8,6 +8,11 @@ setLoaderOptions({
   _workerType: 'test',
   worker: false
 });
+test('GeoPackageSource#testURL recognizes GeoPackage URLs', () => {
+  expect(GeoPackageSource.testURL('data.gpkg')).toBe(true);
+  expect(GeoPackageSource.testURL('data.gpkg?download=1')).toBe(true);
+  expect(GeoPackageSource.testURL('data.sqlite')).toBe(false);
+});
 test('GeoPackageSource#createDataSource selects GeoPackage source from URL', () => {
   const dataSource = createDataSource(GPKG_RIVERS_MULTI, [GeoPackageSource], {
     geopackage: {}
