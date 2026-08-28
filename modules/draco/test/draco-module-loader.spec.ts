@@ -76,9 +76,11 @@ test('draco-module-loader#loads vendored 1.5.7 WASM runtimes in browsers', async
 test('draco-module-loader#pins all default runtimes to Draco 1.5.7', () => {
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER]).toContain('/1.5.7/');
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM]).toContain('/1.5.7/');
-  expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER]).toContain('draco3d@1.5.7/');
+  expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER]).toContain(
+    'cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.js'
+  );
   expect(DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM]).toContain(
-    'draco3d@1.5.7/'
+    'cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.wasm'
   );
 });
 
