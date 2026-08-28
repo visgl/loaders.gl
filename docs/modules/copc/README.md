@@ -11,6 +11,9 @@ current COPC/LAS projection-record support and vertical/compound CRS roadmap.
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
   <img src="https://img.shields.io/badge/source_loader-Work--In--Progress-orange.svg?style=flat-square" alt="source loader work in progress" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
 </p>
 
 <CopcDocsTabs active="overview" />

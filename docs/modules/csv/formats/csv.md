@@ -4,6 +4,12 @@ import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
 
 <CsvDocsTabs active="overview" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 Comma-separated values, and more generally delimiter-separated values, is a common text encoding for tabular data.
 
 - _[`@loaders.gl/csv`](/docs/modules/csv)_
@@ -23,6 +29,24 @@ The common CSV syntax uses commas between fields and line breaks between records
 ## Variants
 
 CSV files often vary in delimiter, quoting, header rows, empty-line handling, comments, character encoding, and type conventions. TSV uses tabs as delimiters, and DSV is the general name for delimiter-separated values with other separators such as semicolons or pipes.
+
+## Scan support
+
+`CSVSource` provides a lightweight sequential scan. It does not ingest the file into a database:
+records are parsed in source order and emitted as bounded Arrow batches.
+
+| Capability | Support | Execution |
+| --- | --- | --- |
+| Entry point | `read()` | Streaming Arrow batches |
+| Schema discovery | Supported | Columns are discovered from the CSV source |
+| Predicate | Supported | Residual, after record parsing |
+| Projection | Supported | Applied while producing result batches |
+| Limit | Supported | One global limit after filtering |
+| Cancellation | Supported | Stops parsing and batch production |
+| Random access or byte-range pruning | Not supported | The current adapter is a linear scan |
+
+For a large CSV, projection reduces the result width and a limit can stop the scan early. A
+predicate is correct but does not avoid parsing preceding records.
 
 ## Geospatial
 

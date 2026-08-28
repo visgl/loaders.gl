@@ -5,6 +5,12 @@ import {ClientExample} from '@site/src/components';
 
 <WmsDocsTabs active="wfs" />
 
+<p class="badges">
+  <a href="/docs/modules/scan#vector-table-views">
+    <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
+  </a>
+</p>
+
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides a read-only
@@ -30,6 +36,24 @@ WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides 
 | Schema type hints | Supported | GML property types can be supplied from application schema knowledge |
 | Transactions and locking | Not supported | WFS-T mutation APIs are outside the read-only source |
 | deck.gl rendering | First class | Pass `WFSSourceLoader` to `SourceLayer` |
+
+## Optional scan table view
+
+WFS remains a service protocol. Layers, request bounds, CRS, paging, and output format stay in the
+WFS request. `VectorFeatureTableScanSource` can bind one bounded request that returns an Arrow table
+and apply portable relational operations to the returned feature rows.
+
+| Capability | Support |
+| --- | --- |
+| Layer, bounds, CRS, paging, and service filters | WFS source parameters |
+| Table schema | Discovered from the bounded result |
+| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution |
+| Cancellation | Covers the service request and table query |
+| Automatic `DescribeFeatureType` planning | Not provided by the table-view adapter |
+| Automatic translation of portable predicates to OGC filters | Not provided |
+
+Prefer native WFS filters and paging when the service can reduce a large response. The table view is
+most useful for normalizing and refining an already-bounded result.
 
 ## Query features
 

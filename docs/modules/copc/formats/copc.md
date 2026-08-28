@@ -4,12 +4,37 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 <CopcDocsTabs active="format" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 - _[Specification at COPC.io](https://copc.io/)_
 - _[Video Overview](https://www.youtube.com/watch?v=rWkKKZYN86A)_
 
 COPC, short for Cloud Optimized Point Cloud, is a range-readable LAZ 1.4 file whose point data is organized as a clustered octree. A COPC reader can select spatial nodes and fetch only their compressed byte ranges instead of downloading the complete point cloud.
 
 Data organization is modeled after the [EPT data format](https://entwine.io/en/latest/entwine-point-tile.html), but COPC stores the octree as variably chunked LAZ data in one file. The same file can therefore be consumed sequentially by a variable-chunk LAZ reader or spatially by a COPC hierarchy reader.
+
+## Scan support
+
+`COPCSource` exposes point-cloud scan semantics directly. Bounds and level-of-detail select hierarchy
+nodes before LAZ decoding; exact bounds and attribute predicates are then applied to decoded points.
+
+| Capability | Support | Execution |
+| --- | --- | --- |
+| Entry point | `scan()` | Ordered Arrow point batches |
+| Schema, bounds, CRS, and point count | Supported | Header, VLR, and hierarchy metadata |
+| Bounds, minimum/maximum level, target spacing | Supported | Hierarchy pushdown followed by exact point filtering |
+| Attribute predicate | Supported | Residual after point decoding |
+| Projection | Supported | Requested LAZ fields are decoded selectively where possible |
+| Global limit | Supported | Counts points after bounds and predicates across nodes |
+| Cancellation and early return | Supported | Covers hierarchy ranges, node ranges, workers, and decoding |
+| Explainable hierarchy plan | Supported | Selected and pruned nodes remain visible |
+
+Coordinates and query bounds use the source coordinate system unless the documented COPC CRS path
+is configured to transform them. A global limit is never applied independently to each octree node.
 
 ## Feature Matrix
 

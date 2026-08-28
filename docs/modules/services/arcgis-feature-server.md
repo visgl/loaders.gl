@@ -5,6 +5,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 <WmsDocsTabs active="arcgis-feature-server" />
 
+<p class="badges">
+  <a href="/docs/modules/scan#vector-table-views">
+    <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
+  </a>
+</p>
+
 ArcGIS FeatureServer endpoints expose queryable vector feature layers through the ArcGIS REST API.
 `ArcGISFeatureServerSourceLoader` adapts a service or layer endpoint to the loaders.gl
 `VectorSource` contract.
@@ -25,6 +31,24 @@ ArcGIS FeatureServer endpoints expose queryable vector feature layers through th
 | Pagination | Not automated | The source performs one ArcGIS query per `getFeatures()` call |
 | Editing and attachments | Not supported | The source is a read-only query client |
 | deck.gl rendering | First class | Pass the source loader or `SERVICE_LOADERS` to `SourceLayer` |
+
+## Optional scan table view
+
+`VectorFeatureTableScanSource` can bind one bounded FeatureServer request that returns Arrow data.
+The ArcGIS source continues to own service discovery, layer ids, bounds, CRS, paging, and request
+parameters; the table view owns the relational operations over the returned feature rows.
+
+| Capability | Support |
+| --- | --- |
+| Layer metadata and service request | ArcGIS source |
+| Bound request schema | Discovered from the Arrow result |
+| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution |
+| Cancellation | Covers the service request and table query |
+| Automatic ArcGIS SQL translation | Not provided by the table-view adapter |
+| Multi-layer or unbounded service federation | Not provided |
+
+Use ArcGIS request parameters for server-side reduction whenever possible. The table view provides a
+common client-side query contract after the service has returned the bounded feature set.
 
 ## Create and query a source
 

@@ -7,6 +7,12 @@ GeoArrow CRS representations, column-specific metadata, and current preservation
 
 <ArrowDocsTabs active="geoarrow" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
 - _[GeoArrow Specification](https://github.com/geoarrow/geoarrow)_
 - _[Apache Arrow](https://arrow.apache.org/)_ - A specification for large in-memory columnar data.
@@ -23,6 +29,21 @@ Aside from geometry, simple features can also have additional standard Arrow col
 Geospatial tabular data where one or more columns contains feature geometries and remaining columns define feature attributes. The GeoArrow specification defines how such vector features (geometries) can be stored in Arrow (and Arrow-compatible) data structures.
 
 Note that GeoArrow is not a separate format from Apache Arrow rather, the GeoArrow specification simply describes additional conventions for metadata and layout of geospatial data. This means that a valid GeoArrow file is always a valid Arrow file. This is done through [Arrow extension type](https://arrow.apache.org/docs/format/Columnar.html#extension-types) definitions that ensure type-level metadata (e.g., CRS) is propagated when used in Arrow implementations.
+
+## Scan support
+
+GeoArrow tables use the same portable table query as ordinary Arrow tables. Geometry extension
+metadata remains attached to the projected fields; scanning does not imply coordinate
+transformation or a spatial index.
+
+| Capability | Support |
+| --- | --- |
+| Schema and geometry-role discovery | Supported |
+| Attribute predicates, projection, and limit | Supported |
+| Expressions, ordering, aggregates, unions, and joins | Supported for in-memory tables |
+| Geometry representation | Preserved when the selected columns retain it |
+| Spatial predicate or spatial-index pushdown | Not provided by the generic Arrow executor |
+| CRS transformation | Not performed |
 
 ## Geometry Types
 
