@@ -55,7 +55,7 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const topology = schema.metadata.topology as any;
   const mode = getMeshMode(schema);
   const indices = getIndices(arrowTable);
-  const boundingBox = getMeshBoundingBox(attributes);
+  const boundingBox = getMeshBoundingBoxFromSchema(schema) || getMeshBoundingBox(attributes);
 
   return {
     schema,
@@ -68,6 +68,34 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
       boundingBox
     }
   };
+}
+
+/** Restores a serialized logical bounding box when one is available. */
+function getMeshBoundingBoxFromSchema(
+  schema: Schema
+): [[number, number, number], [number, number, number]] | null {
+  const serializedBoundingBox = schema.metadata?.boundingBox;
+  if (!serializedBoundingBox) {
+    return null;
+  }
+  try {
+    const boundingBox = JSON.parse(serializedBoundingBox);
+    if (
+      Array.isArray(boundingBox) &&
+      boundingBox.length === 2 &&
+      boundingBox.every(
+        (corner: unknown) =>
+          Array.isArray(corner) &&
+          corner.length === 3 &&
+          corner.every(value => typeof value === 'number')
+      )
+    ) {
+      return boundingBox as [[number, number, number], [number, number, number]];
+    }
+  } catch {
+    // Ignore malformed optional metadata and recompute from decoded values.
+  }
+  return null;
 }
 
 /** Restores Mesh attribute properties serialized into Arrow field metadata. */
