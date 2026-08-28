@@ -61,6 +61,7 @@ Release Date: 2026
 - `DracoLoader` and `DracoWriter` now use the Draco 1.5.7 WebAssembly decoder and encoder, including browser writer-worker support. Mesh decoding avoids an unnecessary Arrow round trip, compact meshes use 16-bit indices, and normalized attributes and typed-array view bounds survive encoding.
 - glTF Draco decompression now honors the extension's semantic-to-unique-ID mapping, including multiple texture-coordinate, color, and custom attributes.
 - `DracoWriter` preserves original application attribute names, supports explicit Draco attribute categories and point-cloud deduplication, and rejects inconsistent geometry before invoking the native encoder.
+- `DracoLoader` preserves unnamed same-category attributes with collision-free semantic names, validates native attribute and index extraction, and releases native decode status objects promptly.
 
 **@loaders.gl/gltf**
 
