@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/schema';
+import type {Mesh, MeshAttribute, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
 import {getMeshBoundingBox} from './mesh-utils';
-// import {makeMeshAttributeMetadata} from './deduce-mesh-schema';
 
 /**
  * Convert a table to a mesh.
@@ -45,14 +44,21 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
     const attributeData = arrowTable.getChild(name)!;
     const size = getFixedSizeListSize(attributeData);
     const typedArray = getAttributeTypedArray(attributeData, size);
-    attributes[name] = {value: typedArray, size};
+    attributes[name] = {
+      value: typedArray,
+      size,
+      ...getMeshAttributeMetadata(field.metadata)
+    };
   }
 
   fixMetadata(schema);
   const topology = schema.metadata.topology as any;
   const mode = getMeshMode(schema);
   const indices = getIndices(arrowTable);
-  const boundingBox = getMeshBoundingBox(attributes);
+  const boundingBox =
+    attributes.POSITION?.transform?.type === 'quantization'
+      ? getMeshBoundingBoxFromSchema(schema) || getMeshBoundingBox(attributes)
+      : getMeshBoundingBox(attributes);
 
   return {
     schema,
@@ -65,6 +71,83 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
       boundingBox
     }
   };
+}
+
+/** Restores a serialized logical bounding box when one is available. */
+function getMeshBoundingBoxFromSchema(
+  schema: Schema
+): [[number, number, number], [number, number, number]] | null {
+  const serializedBoundingBox = schema.metadata?.boundingBox;
+  if (!serializedBoundingBox) {
+    return null;
+  }
+  try {
+    const boundingBox = JSON.parse(serializedBoundingBox);
+    if (
+      Array.isArray(boundingBox) &&
+      boundingBox.length === 2 &&
+      boundingBox.every(
+        (corner: unknown) =>
+          Array.isArray(corner) &&
+          corner.length === 3 &&
+          corner.every(value => typeof value === 'number')
+      )
+    ) {
+      return boundingBox as [[number, number, number], [number, number, number]];
+    }
+  } catch {
+    // Ignore malformed optional metadata and recompute from decoded values.
+  }
+  return null;
+}
+
+/** Restores Mesh attribute properties serialized into Arrow field metadata. */
+function getMeshAttributeMetadata(metadata: Record<string, string> = {}): Partial<MeshAttribute> {
+  const result: Partial<MeshAttribute> = {};
+  if (metadata.byteOffset !== undefined) {
+    result.byteOffset = Number(metadata.byteOffset);
+  }
+  if (metadata.byteStride !== undefined) {
+    result.byteStride = Number(metadata.byteStride);
+  }
+  if (metadata.normalized !== undefined) {
+    result.normalized = metadata.normalized === 'true';
+  }
+  if (metadata['loaders.gl.transform']) {
+    try {
+      const transform = JSON.parse(metadata['loaders.gl.transform']);
+      if (isMeshAttributeTransform(transform)) {
+        result.transform = transform;
+      }
+    } catch {
+      // Ignore malformed optional metadata and preserve the decoded values.
+    }
+  }
+  return result;
+}
+
+/** Validates the compact transform representation stored in Arrow metadata. */
+function isMeshAttributeTransform(value: unknown): value is MeshAttribute['transform'] {
+  if (!value || typeof value !== 'object' || !('type' in value)) {
+    return false;
+  }
+  const transform = value as Record<string, unknown>;
+  if (transform.type === 'octahedron') {
+    return (
+      Number.isInteger(transform.bits) &&
+      (transform.bits as number) >= 1 &&
+      (transform.bits as number) <= 30
+    );
+  }
+  return (
+    transform.type === 'quantization' &&
+    Number.isInteger(transform.bits) &&
+    (transform.bits as number) >= 1 &&
+    (transform.bits as number) <= 30 &&
+    Array.isArray(transform.origin) &&
+    transform.origin.every((component: unknown) => typeof component === 'number') &&
+    typeof transform.range === 'number'
+  );
 }
 
 /** Ensure required mesh metadata defaults are present on a schema. */

@@ -7,7 +7,7 @@ import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
-import type {DracoBuilderMesh, DracoBuildOptions} from './lib/draco-builder';
+import type {DracoBuilderMesh, DracoBuildOptions, DracoEncodingResult} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
@@ -72,12 +72,20 @@ async function encode(
   data: DracoWriterInput,
   options: DracoWriterOptions = {}
 ): Promise<ArrayBuffer> {
+  return (await encodeDraco(data, options)).data;
+}
+
+/** Encodes Draco geometry and returns bytes together with native encoding diagnostics. */
+export async function encodeDraco(
+  data: DracoWriterInput,
+  options: DracoWriterOptions = {}
+): Promise<DracoEncodingResult> {
   // Dynamically load draco
   const {draco} = await loadDracoEncoderModule(extractLoadLibraryOptions(options));
   const dracoBuilder = new DRACOBuilder(draco);
 
   try {
-    return dracoBuilder.encodeSync(normalizeDracoMesh(data), options.draco);
+    return dracoBuilder.encodeSyncWithReport(normalizeDracoMesh(data), options.draco);
   } finally {
     dracoBuilder.destroy();
   }

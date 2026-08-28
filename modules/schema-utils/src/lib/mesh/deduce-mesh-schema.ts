@@ -75,5 +75,8 @@ export function makeMeshAttributeMetadata(attribute: MeshAttribute): Record<stri
   if ('normalized' in attribute) {
     result.normalized = attribute.normalized!.toString();
   }
+  if (attribute.transform) {
+    result['loaders.gl.transform'] = JSON.stringify(attribute.transform);
+  }
   return result;
 }
