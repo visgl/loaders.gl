@@ -4,6 +4,7 @@
 
 // Module constants
 export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco-module-loader';
+export type {DracoDecoderProfile} from './lib/draco-module-loader';
 
 // Draco data types
 
@@ -13,12 +14,16 @@ export {DracoFormat} from './draco-format';
 // Draco Writer
 
 export type {DracoWriterAttributes, DracoWriterInput, DracoWriterOptions} from './draco-writer';
+export {encodeDraco} from './draco-writer';
 export type {
   DracoAttributeQuantization,
   DracoAttributeType,
   DracoBuilderMesh,
   DracoBuildOptions,
   DracoEncodingMethod,
+  DracoEncodingAttributeReport,
+  DracoEncodingReport,
+  DracoEncodingResult,
   DracoExplicitQuantization,
   DracoMetadata
 } from './lib/draco-builder';

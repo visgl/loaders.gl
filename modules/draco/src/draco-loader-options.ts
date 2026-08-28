@@ -4,6 +4,7 @@
 
 import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoParseOptions} from './lib/draco-parser';
+import type {DracoDecoderProfile} from './lib/draco-module-loader';
 
 /** Draco decoder backend selected by the metadata loader. */
 export type DracoDecoderBackend = 'wasm' | 'javascript' | 'draco3d';
@@ -15,6 +16,8 @@ export type DracoLoaderOptions = StrictLoaderOptions & {
     backend?: DracoDecoderBackend | 'js';
     /** Selects mesh output or Apache Arrow output. */
     shape?: 'mesh' | 'arrow-table';
+    /** Selects the full decoder or the smaller glTF-compatible decoder build. */
+    decoderProfile?: DracoDecoderProfile;
     /** @deprecated Use `backend: 'wasm'` or `backend: 'javascript'`. */
     decoderType?: 'wasm' | 'js';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -28,5 +31,6 @@ export const DRACO_LOADER_DEFAULT_OPTIONS = {
   decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js',
   extraAttributes: {},
   attributeNameEntry: undefined,
-  shape: 'mesh'
+  shape: 'mesh',
+  decoderProfile: 'full'
 } as const;

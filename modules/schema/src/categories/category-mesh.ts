@@ -93,6 +93,31 @@ export type Mesh = MeshGeometry & {
   schema: Schema;
 };
 
+/** Quantization transform required to reconstruct floating-point attribute values. */
+export type MeshAttributeQuantizationTransform = {
+  /** Transform discriminator. */
+  type: 'quantization';
+  /** Number of quantization bits. */
+  bits: number;
+  /** Per-component quantization origin. */
+  origin: number[];
+  /** Quantization range shared by every component. */
+  range: number;
+};
+
+/** Octahedral transform required to reconstruct directional attribute values. */
+export type MeshAttributeOctahedronTransform = {
+  /** Transform discriminator. */
+  type: 'octahedron';
+  /** Number of quantization bits. */
+  bits: number;
+};
+
+/** Encoded transform retained on an attribute for deferred CPU or GPU reconstruction. */
+export type MeshAttributeTransform =
+  | MeshAttributeQuantizationTransform
+  | MeshAttributeOctahedronTransform;
+
 /**
  * luma.gl compatible attribute descriptors
  * Can be mapped to any WebGL framework
@@ -103,6 +128,8 @@ export type MeshAttribute = {
   byteOffset?: number;
   byteStride?: number;
   normalized?: boolean;
+  /** Transform required to reconstruct the logical attribute values. */
+  transform?: MeshAttributeTransform;
 };
 
 /** A map of mesh attributes keyed by attribute names */

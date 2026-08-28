@@ -49,6 +49,9 @@ export type {
   Mesh,
   MeshGeometry,
   MeshAttribute,
+  MeshAttributeOctahedronTransform,
+  MeshAttributeQuantizationTransform,
+  MeshAttributeTransform,
   MeshAttributes,
   MeshTopology
 } from './categories/category-mesh';

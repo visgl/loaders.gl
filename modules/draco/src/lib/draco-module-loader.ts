@@ -17,6 +17,10 @@ export const DRACO_EXTERNAL_LIBRARIES = {
   DECODER: 'draco_wasm_wrapper.js',
   /** WebAssembly decoder binary. */
   DECODER_WASM: 'draco_decoder.wasm',
+  /** glTF-profile WebAssembly decoder JavaScript wrapper. */
+  GLTF_DECODER: 'draco_wasm_wrapper_gltf.js',
+  /** glTF-profile WebAssembly decoder binary. */
+  GLTF_DECODER_WASM: 'draco_decoder_gltf.wasm',
   /** JavaScript decoder fallback. */
   FALLBACK_DECODER: 'draco_decoder.js',
   /** WebAssembly encoder JavaScript wrapper. */
@@ -29,6 +33,8 @@ export const DRACO_EXTERNAL_LIBRARIES = {
 export const DRACO_EXTERNAL_LIBRARY_URLS = {
   [DRACO_EXTERNAL_LIBRARIES.DECODER]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.DECODER}`,
   [DRACO_EXTERNAL_LIBRARIES.DECODER_WASM]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.DECODER_WASM}`,
+  [DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER}`,
+  [DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER_WASM]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER_WASM}`,
   [DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER]: `${STATIC_DECODER_URL}/${DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER}`,
   [DRACO_EXTERNAL_LIBRARIES.ENCODER]: `${STATIC_ENCODER_URL}/draco_encoder_nodejs.js`,
   [DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM]: `${STATIC_ENCODER_URL}/${DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM}`
@@ -36,6 +42,9 @@ export const DRACO_EXTERNAL_LIBRARY_URLS = {
 
 /** Initialized Draco module returned to the parser or builder. */
 export type LoadedDracoModule = {draco: Draco3D};
+
+/** Draco decoder build selected for general data or glTF-compatible bitstreams. */
+export type DracoDecoderProfile = 'full' | 'gltf';
 
 /** Subset of the `draco3d` npm package accepted through `options.modules`. */
 export type Draco3DModule = {
@@ -70,25 +79,31 @@ const injectedEncoderPromises = new WeakMap<DracoEncoderModule, Promise<LoadedDr
 /** Loads a Draco decoder from either an injected `draco3d` package or external libraries. */
 export async function loadDracoDecoderModule(
   options: LoadLibraryOptions = {},
-  type: 'wasm' | 'js'
+  type: 'wasm' | 'js',
+  profile: DracoDecoderProfile = 'full'
 ): Promise<LoadedDracoModule> {
   const draco3DModule = getInjectedDraco3DModule(options);
   if (draco3DModule) {
     return await loadDracoDecoderModuleFromDraco3D(draco3DModule);
   }
 
-  return await loadDracoDecoderModuleFromLibrary(options, type === 'js' ? 'javascript' : type);
+  return await loadDracoDecoderModuleFromLibrary(
+    options,
+    type === 'js' ? 'javascript' : type,
+    profile
+  );
 }
 
 /** Loads a Draco decoder from external WASM or JavaScript fallback libraries. */
 export async function loadDracoDecoderModuleFromLibrary(
   options: LoadLibraryOptions = {},
-  type: 'wasm' | 'javascript'
+  type: 'wasm' | 'javascript',
+  profile: DracoDecoderProfile = 'full'
 ): Promise<LoadedDracoModule> {
-  const cacheKey = getLibraryCacheKey(type, options);
+  const cacheKey = getLibraryCacheKey(`${type}:${profile}`, options);
   let decoderPromise = libraryDecoderPromises.get(cacheKey);
   if (!decoderPromise) {
-    decoderPromise = loadDracoDecoderWithFallback(options, type);
+    decoderPromise = loadDracoDecoderWithFallback(options, type, profile);
     libraryDecoderPromises.set(cacheKey, decoderPromise);
   }
   return await decoderPromise;
@@ -134,16 +149,17 @@ export async function loadDracoEncoderModule(
 /** Loads the selected decoder and retries with the JavaScript backend after a WASM failure. */
 async function loadDracoDecoderWithFallback(
   options: LoadLibraryOptions,
-  type: 'wasm' | 'javascript'
+  type: 'wasm' | 'javascript',
+  profile: DracoDecoderProfile
 ): Promise<LoadedDracoModule> {
   try {
-    return await loadDracoDecoder(options, type);
+    return await loadDracoDecoder(options, type, profile);
   } catch (wasmError) {
     if (type === 'javascript') {
       throw wasmError;
     }
     try {
-      return await loadDracoDecoder(options, 'javascript');
+      return await loadDracoDecoder(options, 'javascript', 'full');
     } catch (javascriptError) {
       throw new AggregateError(
         [wasmError, javascriptError],
@@ -156,7 +172,8 @@ async function loadDracoDecoderWithFallback(
 /** Loads and initializes one external Draco decoder backend. */
 async function loadDracoDecoder(
   options: LoadLibraryOptions,
-  type: 'wasm' | 'javascript'
+  type: 'wasm' | 'javascript',
+  profile: DracoDecoderProfile
 ): Promise<LoadedDracoModule> {
   if (type === 'javascript') {
     let decoderLibrary: unknown;
@@ -187,15 +204,15 @@ async function loadDracoDecoder(
   let decoderLibrary: unknown;
   let wasmBinary: ArrayBuffer;
   try {
-    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets(options);
+    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets(options, profile);
   } catch (error) {
     if (isBrowser || options.useLocalLibraries) {
       throw error;
     }
-    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets({
-      ...options,
-      useLocalLibraries: true
-    });
+    [decoderLibrary, wasmBinary] = await loadDecoderWasmAssets(
+      {...options, useLocalLibraries: true},
+      profile
+    );
   }
   const decoderInitializer =
     getLibraryExport(decoderLibrary, 'DracoDecoderModule') ||
@@ -204,19 +221,23 @@ async function loadDracoDecoder(
 }
 
 /** Loads the decoder wrapper and WASM binary concurrently. */
-async function loadDecoderWasmAssets(options: LoadLibraryOptions): Promise<[unknown, ArrayBuffer]> {
+async function loadDecoderWasmAssets(
+  options: LoadLibraryOptions,
+  profile: DracoDecoderProfile
+): Promise<[unknown, ArrayBuffer]> {
+  const decoderLibrary =
+    profile === 'gltf' ? DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER : DRACO_EXTERNAL_LIBRARIES.DECODER;
+  const decoderWasm =
+    profile === 'gltf'
+      ? DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER_WASM
+      : DRACO_EXTERNAL_LIBRARIES.DECODER_WASM;
   return await Promise.all([
+    loadLibrary(DRACO_EXTERNAL_LIBRARY_URLS[decoderLibrary], 'draco', options, decoderLibrary),
     loadLibrary(
-      DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER],
+      DRACO_EXTERNAL_LIBRARY_URLS[decoderWasm],
       'draco',
       options,
-      DRACO_EXTERNAL_LIBRARIES.DECODER
-    ),
-    loadLibrary(
-      DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM],
-      'draco',
-      options,
-      DRACO_EXTERNAL_LIBRARIES.DECODER_WASM
+      decoderWasm
     ) as Promise<ArrayBuffer>
   ]);
 }

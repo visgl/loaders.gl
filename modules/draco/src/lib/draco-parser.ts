@@ -8,6 +8,7 @@ import type {
   TypedArray,
   TypedArrayConstructor,
   MeshAttribute,
+  MeshAttributeTransform,
   MeshGeometry
 } from '@loaders.gl/schema';
 
@@ -50,6 +51,10 @@ export type DracoParseOptions = {
   quantizedAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
   /** Skip transforms specific octahedron encoded  attributes */
   octahedronAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
+  /** Application attribute names to extract in addition to the required position attribute. */
+  includeAttributes?: string[];
+  /** Application attribute names to omit. The position attribute cannot be omitted. */
+  excludeAttributes?: string[];
 };
 
 // Native Draco attribute names to GLTF attribute names.
@@ -106,6 +111,7 @@ export default class DracoParser {
     arrayBuffer: ArrayBuffer | ArrayBufferView,
     options: DracoParseOptions = {}
   ): DracoMesh {
+    validateAttributeSelection(options);
     const encodedData = ArrayBuffer.isView(arrayBuffer)
       ? new Int8Array(arrayBuffer.buffer, arrayBuffer.byteOffset, arrayBuffer.byteLength)
       : new Int8Array(arrayBuffer);
@@ -151,7 +157,7 @@ export default class DracoParser {
 
       const geometry = this._getMeshData(dracoGeometry, loaderData, options);
 
-      const boundingBox = getMeshBoundingBox(geometry.attributes);
+      const boundingBox = getTransformedMeshBoundingBox(geometry.attributes);
 
       const schema = getDracoSchema(geometry.attributes, loaderData, geometry.indices);
 
@@ -310,14 +316,24 @@ export default class DracoParser {
     options: DracoParseOptions
   ): {[attributeName: string]: MeshAttribute} {
     const attributes: {[key: string]: MeshAttribute} = {};
+    const usedAttributeNames: Record<string, unknown> = {};
 
     const loaderAttributes = Object.values(loaderData.attributes).sort(
       (left, right) => left.attribute_index - right.attribute_index
     );
-    for (const loaderAttribute of loaderAttributes) {
+    const namedAttributes = loaderAttributes.map(loaderAttribute => {
       const deducedAttributeName = this._deduceAttributeName(loaderAttribute, options);
-      const attributeName = getUniqueAttributeName(deducedAttributeName, attributes);
+      const attributeName = getUniqueAttributeName(deducedAttributeName, usedAttributeNames);
+      usedAttributeNames[attributeName] = true;
       loaderAttribute.name = attributeName;
+      return {attributeName, loaderAttribute};
+    });
+    validateSelectedAttributeNames(options, Object.keys(usedAttributeNames));
+
+    for (const {attributeName, loaderAttribute} of namedAttributes) {
+      if (!this._shouldExtractAttribute(attributeName, loaderAttribute, options)) {
+        continue;
+      }
       const values = this._getAttributeValues(dracoGeometry, loaderAttribute);
       if (values) {
         const {value, size} = values;
@@ -326,12 +342,31 @@ export default class DracoParser {
           size,
           byteOffset: loaderAttribute.byte_offset,
           byteStride: loaderAttribute.byte_stride,
-          normalized: loaderAttribute.normalized
+          normalized: loaderAttribute.normalized,
+          transform: getMeshAttributeTransform(loaderAttribute)
         };
       }
     }
 
     return attributes;
+  }
+
+  /** Returns true when an attribute should be copied from WASM into the requested output. */
+  _shouldExtractAttribute(
+    attributeName: string,
+    attribute: DracoAttribute,
+    options: DracoParseOptions
+  ): boolean {
+    if (attribute.attribute_type === this.draco.POSITION) {
+      if (options.excludeAttributes?.includes(attributeName)) {
+        throw new Error(`DracoLoader: position attribute "${attributeName}" cannot be excluded`);
+      }
+      return true;
+    }
+    if (options.includeAttributes && !options.includeAttributes.includes(attributeName)) {
+      return false;
+    }
+    return !options.excludeAttributes?.includes(attributeName);
   }
 
   // MESH INDICES EXTRACTION
@@ -667,7 +702,7 @@ function getUint32Array(dracoArray: DracoInt32Array): Uint32Array {
 /** Returns a collision-free output name without discarding an earlier decoded attribute. */
 function getUniqueAttributeName(
   attributeName: string,
-  attributes: Record<string, MeshAttribute>
+  attributes: Record<string, unknown>
 ): string {
   if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) {
     return attributeName;
@@ -680,4 +715,61 @@ function getUniqueAttributeName(
     suffix++;
   }
   return `${baseName}_${suffix}`;
+}
+
+/** Converts Draco-specific transform metadata into the shared Mesh attribute representation. */
+function getMeshAttributeTransform(attribute: DracoAttribute): MeshAttributeTransform | undefined {
+  if (attribute.quantization_transform) {
+    const {quantization_bits, min_values, range} = attribute.quantization_transform;
+    if (quantization_bits !== undefined && min_values && range !== undefined) {
+      return {
+        type: 'quantization',
+        bits: quantization_bits,
+        origin: Array.from(min_values),
+        range
+      };
+    }
+  }
+  if (attribute.octahedron_transform?.quantization_bits !== undefined) {
+    return {
+      type: 'octahedron',
+      bits: attribute.octahedron_transform.quantization_bits
+    };
+  }
+  return undefined;
+}
+
+/** Validates mutually exclusive attribute selection options. */
+function validateAttributeSelection(options: DracoParseOptions): void {
+  if (options.includeAttributes && options.excludeAttributes) {
+    throw new Error('DracoLoader: includeAttributes and excludeAttributes cannot be combined');
+  }
+}
+
+/** Rejects selection entries that do not match decoded application attribute names. */
+function validateSelectedAttributeNames(
+  options: DracoParseOptions,
+  attributeNames: string[]
+): void {
+  for (const attributeName of options.includeAttributes || options.excludeAttributes || []) {
+    if (!attributeNames.includes(attributeName)) {
+      throw new Error(`DracoLoader: selected attribute "${attributeName}" does not exist`);
+    }
+  }
+}
+
+/** Returns a logical bounding box when quantized positions remain encoded. */
+function getTransformedMeshBoundingBox(
+  attributes: Record<string, MeshAttribute>
+): [number[], number[]] {
+  const boundingBox = getMeshBoundingBox(attributes);
+  const position = attributes.POSITION;
+  if (position?.transform?.type !== 'quantization') {
+    return boundingBox;
+  }
+  const {bits, origin, range} = position.transform;
+  const scale = range / (2 ** bits - 1);
+  return boundingBox.map(bounds =>
+    bounds.map((value, componentIndex) => origin[componentIndex] + value * scale)
+  ) as [number[], number[]];
 }
