@@ -92,6 +92,9 @@ jobs:
           cd website
           yarn build
 
+      - name: Disable repository hooks for deployment
+        run: git config --global core.hooksPath /dev/null
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # 4.8.0
         with:
