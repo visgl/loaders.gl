@@ -245,7 +245,7 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
       job.abort(createAbortError('Worker batch iterator was closed'));
     }
     if (!inputFinished) {
-      await inputIterator.return?.();
+      closeInputIterator(inputIterator);
     }
   }
 }
@@ -278,6 +278,15 @@ function getAsyncIterator<T>(input: AsyncIterable<T> | Iterable<T>): AsyncIterat
   return (async function* iterateSynchronously() {
     yield* input;
   })();
+}
+
+/** Closes an input iterator without allowing a blocked return to delay cancellation. */
+function closeInputIterator<InputBatch>(inputIterator: AsyncIterator<InputBatch>): void {
+  try {
+    void Promise.resolve(inputIterator.return?.()).catch(() => undefined);
+  } catch {
+    // The worker job has already been aborted; iterator cleanup is best effort.
+  }
 }
 
 /**

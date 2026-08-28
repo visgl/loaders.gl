@@ -90,3 +90,33 @@ test('processOnWorkerInBatches preserves an active AbortSignal reason', async ()
   controller.abort(reason);
   await expect(outputIterator.next()).rejects.toBe(reason);
 });
+
+test('processOnWorkerInBatches does not wait for blocked input cleanup after abort', async () => {
+  let inputStartedResolve: () => void = () => {};
+  const inputStarted = new Promise<void>(resolve => {
+    inputStartedResolve = resolve;
+  });
+  const input = {
+    [Symbol.asyncIterator]() {
+      return {
+        next: () => {
+          inputStartedResolve();
+          return new Promise<IteratorResult<string>>(() => {});
+        },
+        return: () => new Promise<IteratorResult<string>>(() => {})
+      };
+    }
+  };
+  const controller = new AbortController();
+  const reason = new Error('cancel while input is pending');
+  const outputIterator = processOnWorkerInBatches(StatefulBatchWorker, input, {
+    worker: true,
+    source: statefulBatchWorkerSource,
+    signal: controller.signal
+  })[Symbol.asyncIterator]();
+  const outputPromise = outputIterator.next();
+
+  await inputStarted;
+  controller.abort(reason);
+  await expect(outputPromise).rejects.toBe(reason);
+});
