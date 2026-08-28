@@ -65,6 +65,57 @@ function createTestDevice() {
     }
   } as any;
 }
+
+/** Creates a deterministic WebGPU compute device double and records dispatches. */
+function createComputeTestDevice() {
+  const dispatches: string[] = [];
+  const destroyedResources: string[] = [];
+  let activePipeline = '';
+  const device = {
+    type: 'webgpu',
+    createBuffer: (props: {id?: string; data?: ArrayBufferView; byteLength?: number}) => {
+      const buffer = {
+        id: props.id || 'buffer',
+        data: props.data,
+        byteLength: props.byteLength ?? props.data?.byteLength ?? 0,
+        write(data: ArrayBufferView): void {
+          buffer.data = data;
+        },
+        async readAsync(): Promise<Uint8Array> {
+          return new Uint8Array(new Uint32Array([2, 1]).buffer);
+        },
+        destroy(): void {
+          destroyedResources.push(buffer.id);
+        }
+      };
+      return buffer;
+    },
+    createShader: (props: {id: string}) => ({
+      ...props,
+      destroy: () => destroyedResources.push(props.id)
+    }),
+    createComputePipeline: (props: {id: string}) => ({
+      ...props,
+      setBindings: () => {},
+      destroy: () => destroyedResources.push(props.id)
+    }),
+    createCommandEncoder: () => ({
+      beginComputePass: () => ({
+        setPipeline(pipeline: {id: string}): void {
+          activePipeline = pipeline.id;
+        },
+        dispatch(workgroups: number): void {
+          dispatches.push(`${activePipeline}:${workgroups}`);
+        },
+        end(): void {}
+      }),
+      copyBufferToBuffer: () => {},
+      finish: () => ({id: 'commands'})
+    }),
+    submit: () => {}
+  } as any;
+  return {device, dispatches, destroyedResources};
+}
 test('splat-data extracts shared Gaussian splat columns', () => {
   const data = getGaussianSplatDataFromArrowTable(createGaussianSplatTable());
   expect(data.length, 'extracts row count').toBe(2);
@@ -234,6 +285,87 @@ test('SplatEngine supports tile-local visible index ordering', () => {
   engine.update({viewportSize: [100, 100], radiusScale: 1});
   expect(engine.getRenderSplatCount(), 'keeps visible tile-binned splats').toBe(2);
   expect(engine.getSortedIndicesForTesting().length, 'stores compact tile-binned indices').toBe(2);
+  engine.destroy();
+});
+
+test('SplatEngine executes and reuses the WebGPU tile compute path', async () => {
+  const {device, dispatches, destroyedResources} = createComputeTestDevice();
+  const engine = new SplatEngine(device, {
+    sortMode: 'tile',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 3,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1024
+  });
+  expect(engine.getRenderBindings()).toEqual({});
+  expect(engine.getUsesComputeTilePathForTesting()).toBe(true);
+
+  engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
+  const cullingVolume = {
+    planes: Array.from({length: 6}, (_, index) => ({
+      normal: [index, index + 1, index + 2],
+      distance: index + 3
+    })),
+    computeVisibility: () => 'inside'
+  } as any;
+  engine.update({viewportSize: [32, 16], radiusScale: 2, cullingVolume});
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(engine.getComputeTileGridForTesting()).toMatchObject({columns: 2, rows: 1});
+  expect(dispatches.map(dispatch => dispatch.split(':')[0])).toEqual([
+    'splat-compute-clear',
+    'splat-compute-project',
+    'splat-compute-scanTiles',
+    'splat-compute-scatterTiles',
+    'splat-compute-tileSort',
+    'splat-compute-copySorted'
+  ]);
+  expect(Object.keys(engine.getRenderBindings())).toEqual([
+    'splatPositions',
+    'splatColors',
+    'splatIndices',
+    'splatProjected'
+  ]);
+  expect(engine.getRenderSplatCount()).toBe(2);
+  expect(engine.getOverflowSplatCountForTesting()).toBe(1);
+
+  const dispatchCount = dispatches.length;
+  engine.update({viewportSize: [32, 16], radiusScale: 2, cullingVolume});
+  expect(dispatches).toHaveLength(dispatchCount);
+
+  engine.setProps({sortMode: 'none'});
+  engine.update({viewportSize: [32, 16], radiusScale: 1});
+  expect(dispatches.slice(dispatchCount).some(dispatch => dispatch.includes('tileSort'))).toBe(
+    false
+  );
+  engine.destroy();
+  expect(destroyedResources).toContain('splat-compute-shader');
+  expect(destroyedResources).toContain('splat-compute-clear');
+});
+
+test('SplatEngine exposes empty state and culls all CPU splats', () => {
+  const engine = new SplatEngine(createTestDevice(), {
+    sortMode: 'none',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 3,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1024
+  });
+  expect(engine.getSplatCount()).toBe(0);
+  expect(engine.getWebGLAttributes().length).toBe(0);
+  engine.update();
+
+  engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
+  engine.update({
+    viewportSize: [32, 32],
+    cullingVolume: {planes: [], computeVisibility: () => 'outside'} as any
+  });
+  expect(engine.getRenderSplatCount()).toBe(0);
+  expect(engine.getSortedIndicesForTesting()).toEqual(new Uint32Array());
+  expect(engine.getKeysForTesting()).toHaveLength(2);
   engine.destroy();
 });
 test('splat-sort calculates tile grid and buffer sizes', () => {

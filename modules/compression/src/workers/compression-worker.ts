@@ -10,7 +10,8 @@ type CompressionTransform = {
   decompress?(data: ArrayBuffer): Promise<ArrayBuffer>;
 };
 
-createWorker(async (data, options = {}) => {
+/** Processes one compression worker request. */
+export async function processCompressionWorkerRequest(data: ArrayBuffer, options: any = {}) {
   const operation = getOperation(String(options?.operation));
   const compression = await getCompression(
     String(options?.compression),
@@ -23,7 +24,9 @@ createWorker(async (data, options = {}) => {
     case 'decompress':
       return await compression.decompress!(data);
   }
-});
+}
+
+createWorker(processCompressionWorkerRequest);
 
 function getOperation(operation: string): CompressionOperation {
   switch (operation) {
