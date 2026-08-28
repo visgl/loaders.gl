@@ -104,6 +104,16 @@ describe('raster viewport and placement', () => {
     expect(viewport.width).toBeGreaterThanOrEqual(400);
   });
 
+  test('accepts an authority-coded CRS object from current RasterSource metadata', () => {
+    const metadata = {
+      ...GEOGRAPHIC_METADATA,
+      crs: {id: {authority: 'EPSG', code: 4326}}
+    } as RasterSourceMetadata;
+    const viewport = createRasterViewport(createViewport([-10, -5, 20, 15]), metadata);
+
+    expect(viewport.crs).toBe('EPSG:4326');
+  });
+
   test('projects viewport bounds for EPSG:3857', () => {
     const viewport = createRasterViewport(
       createViewport([0, 0, 1, 1]),
@@ -178,5 +188,18 @@ describe('raster viewport and placement', () => {
     expect(result.image).toBe(customImage);
     expect(result.bounds).toEqual([-10, -5, 20, 15]);
     expect(result.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+  });
+
+  test('uses metadata no-data values when a response omits the repeated field', () => {
+    const raster = createRaster(new Float32Array([0, 10, 20, 30]));
+    const metadata = {...GEOGRAPHIC_METADATA, noData: 10};
+    const result = createDefaultRasterRenderResult(
+      raster,
+      {viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), metadata), bands: [0]},
+      metadata
+    );
+
+    const image = result.image as {data: Uint8ClampedArray};
+    expect(Array.from(image.data.slice(4, 8))).toEqual([0, 0, 0, 0]);
   });
 });

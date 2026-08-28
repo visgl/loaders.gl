@@ -29,6 +29,7 @@ import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
   finalizeOwnedSource,
+  getCoordinateReferenceSystemIdentifier,
   resolveVisualSource,
   type ResolvedVisualSource
 } from './source-layer-utils';
@@ -357,9 +358,13 @@ export function createDefaultRasterRenderResult(
   parameters: GetRasterParameters,
   metadata: RasterSourceMetadata
 ): RasterRenderResult {
+  const rasterWithMetadataNoData =
+    raster.noData === undefined && metadata.noData !== undefined
+      ? {...raster, noData: metadata.noData}
+      : raster;
   if (!raster.boundingBox && !metadata.boundingBox && !metadata.crs) {
     return {
-      image: colorizeRasterData(raster),
+      image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, metadata.height, metadata.width, 0],
       coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
     };
@@ -367,18 +372,20 @@ export function createDefaultRasterRenderResult(
   const rasterBounds = raster.boundingBox || parameters.viewport.bounds || metadata.boundingBox;
   if (!rasterBounds) {
     return {
-      image: colorizeRasterData(raster),
+      image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, raster.height, raster.width, 0],
       coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
     };
   }
-  const rasterCoordinateReferenceSystem = getRasterCRSIdentifier(raster.crs || metadata.crs);
+  const rasterCoordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(
+    raster.crs || metadata.crs
+  );
   const bounds =
     rasterCoordinateReferenceSystem === 'EPSG:3857'
       ? unprojectPseudoMercatorBounds(rasterBounds)
       : flattenBounds(rasterBounds);
   return {
-    image: colorizeRasterData(raster),
+    image: colorizeRasterData(rasterWithMetadataNoData),
     bounds,
     coordinateSystem: COORDINATE_SYSTEM.LNGLAT
   };
@@ -421,7 +428,7 @@ export function createRasterViewport(
     Math.min(maxTextureSize, Math.round(viewport.height * devicePixelRatio))
   );
   const viewportBounds = viewport.getBounds?.();
-  const coordinateReferenceSystem = getRasterCRSIdentifier(metadata.crs);
+  const coordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(metadata.crs);
   let bounds: RasterBoundingBox | undefined;
   if (!metadata.boundingBox && !metadata.crs) {
     bounds = [
@@ -441,7 +448,9 @@ export function createRasterViewport(
       !allowCustomProjection
     ) {
       throw new Error(
-        `RasterSourceLayer cannot infer viewport reprojection for ${metadata.crs}. Provide getRasterParameters().`
+        `RasterSourceLayer cannot infer viewport reprojection for ${
+          coordinateReferenceSystem || 'the declared CRS'
+        }. Provide getRasterParameters().`
       );
     }
   }
@@ -464,25 +473,6 @@ export function createRasterViewport(
     unprojectPosition: position =>
       viewport.unprojectPosition(position as any) as [number, number, number]
   };
-}
-
-/** Extracts an authority code from a serialized or PROJJSON CRS definition. */
-function getRasterCRSIdentifier(crs: RasterSourceMetadata['crs']): string | undefined {
-  if (typeof crs === 'string') {
-    return crs;
-  }
-  if (!crs || typeof crs !== 'object') {
-    return undefined;
-  }
-  const identifier = (crs as {id?: {authority?: string; code?: string | number}}).id;
-  if (identifier?.authority && identifier.code !== undefined) {
-    return `${identifier.authority}:${identifier.code}`;
-  }
-  const identifiers = (crs as {ids?: Array<{authority?: string; code?: string | number}>}).ids;
-  const firstIdentifier = identifiers?.[0];
-  return firstIdentifier?.authority && firstIdentifier.code !== undefined
-    ? `${firstIdentifier.authority}:${firstIdentifier.code}`
-    : undefined;
 }
 
 function writeSingleBand(
