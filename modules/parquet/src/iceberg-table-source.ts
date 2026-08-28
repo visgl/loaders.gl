@@ -97,7 +97,10 @@ export class IcebergTableSource
   async getMetadata(signal?: AbortSignal): Promise<IcebergTableMetadata> {
     this.assertOpen();
     if (!this.metadataPromise) {
-      this.metadataPromise = this.loadMetadata(signal);
+      this.metadataPromise = this.loadMetadata(signal).catch(error => {
+        this.metadataPromise = null;
+        throw error;
+      });
     }
     return this.metadataPromise;
   }
