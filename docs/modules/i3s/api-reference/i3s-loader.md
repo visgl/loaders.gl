@@ -21,6 +21,11 @@ See the [I3S format support matrix](../formats/i3s) for detailed coverage of sce
 specification generations, delivery modes, hierarchy and LOD, mesh geometry, textures, materials,
 feature attributes, coordinate systems, conversion, and known gaps.
 
+Point scene layers use the same `I3SLoader` and `I3SSource` path as mesh layers. Their content has
+`topology: 'point-list'`; `pointRenderer` and `pointSymbol` retain the typed ArcGIS renderer
+metadata, while `featureIds` align vertices with the standard node-local attribute resources.
+Point Cloud layers remain available through the separate `I3SPointCloudSource` API.
+
 ## Terms
 
 The terms and concepts used in `i3s` module have the corresponding parts [I3S Spec](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).

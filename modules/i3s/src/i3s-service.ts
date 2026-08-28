@@ -7,7 +7,11 @@ import {getI3SSpatialReference, I3SSource} from '@loaders.gl/tiles';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import {I3SLoaderWithParser} from './i3s-loader-with-parser';
 import {I3SPointCloudSource} from './i3s-point-cloud-source';
-import {I3SPointCloudSceneLayerSchema, I3SSceneLayerSchema} from './i3s-zod-schema';
+import {
+  I3SPointCloudSceneLayerSchema,
+  I3SPointSceneLayerSchema,
+  I3SSceneLayerSchema
+} from './i3s-zod-schema';
 import type {SceneLayer3D, SpatialReference, FullExtent} from './types';
 
 /** A source created from an I3S SceneServer layer. */
@@ -52,14 +56,14 @@ export class I3SUnsupportedProfileError extends Error {
   }
 }
 
-/** Parses and validates a mesh or Point Cloud I3S scene-layer document. */
+/** Parses and validates a mesh, Point, or Point Cloud I3S scene-layer document. */
 export function parseI3SSceneLayerMetadata(document: unknown): SceneLayer3D {
   const layerType =
     document && typeof document === 'object' && 'layerType' in document
       ? (document as {layerType?: unknown}).layerType
       : undefined;
   if (layerType === 'Point') {
-    throw new I3SUnsupportedProfileError('Point');
+    return I3SPointSceneLayerSchema.parse(document);
   }
   if (layerType === 'PointCloud') {
     return I3SPointCloudSceneLayerSchema.parse(document) as SceneLayer3D;

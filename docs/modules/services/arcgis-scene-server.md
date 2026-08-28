@@ -2,7 +2,8 @@
 
 `ArcGISSceneServerSource` provides a thin service facade for I3S layers published through an ArcGIS
 `SceneServer` endpoint. It fetches and normalizes layer metadata, then delegates traversal and
-content decoding to the existing `I3SSource` or `I3SPointCloudSource` implementation.
+content decoding to the existing `I3SSource` (mesh and Point) or `I3SPointCloudSource`
+implementation.
 
 ## Usage
 
@@ -32,8 +33,8 @@ The source accepts custom fetch implementations through the normal `core.loadOpt
 For new integrations, configure `createArcGISCredential` in
 `core.loadOptions.core.credentials`; it follows metadata and I3S resource requests without being
 sent to unrelated origins. The existing `arcgis-scene-server.token` and `i3s.token` options remain
-supported. See [authentication](/docs/developer-guide/authentication). Point profiles are reported
-as unsupported; mesh and Point Cloud profiles are selected automatically.
+supported. See [authentication](/docs/developer-guide/authentication). Mesh, Point, and Point Cloud
+profiles are selected automatically.
 
 ## API
 
@@ -44,7 +45,7 @@ extent, and parsed I3S layer document.
 
 ### `getTilesetSource()`
 
-Returns an `I3SSource` for mesh layers or an `I3SPointCloudSource` for Point Cloud layers.
+Returns an `I3SSource` for mesh and Point layers or an `I3SPointCloudSource` for Point Cloud layers.
 
 ### `getLayerURL()`
 

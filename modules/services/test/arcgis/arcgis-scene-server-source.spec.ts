@@ -6,6 +6,7 @@ import {expect, test, vi} from 'vitest';
 
 const SCENE_SERVER_URL = 'https://example.com/arcgis/rest/services/City/SceneServer';
 const MESH_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-1.8-3d-object.json';
+const POINT_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json';
 const POINT_CLOUD_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-2.1-point-cloud.json';
 
 const MESH_LAYER = {
@@ -79,9 +80,10 @@ test('ArcGISSceneServerSource selects Point Cloud sources', async () => {
   expect(await source.getTilesetSource()).toBeInstanceOf(I3SPointCloudSource);
 });
 
-test('ArcGISSceneServerSource accepts the mesh and Point Cloud conformance fixtures', async () => {
-  const [meshLayer, pointCloudLayer] = await Promise.all([
+test('ArcGISSceneServerSource accepts mesh, Point, and Point Cloud conformance fixtures', async () => {
+  const [meshLayer, pointLayer, pointCloudLayer] = await Promise.all([
     loadJSONFixture(MESH_FIXTURE),
+    loadJSONFixture(POINT_FIXTURE),
     loadJSONFixture(POINT_CLOUD_FIXTURE)
   ]);
 
@@ -91,9 +93,14 @@ test('ArcGISSceneServerSource accepts the mesh and Point Cloud conformance fixtu
   const pointCloudSource = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/1`, {
     'arcgis-scene-server': {metadata: pointCloudLayer}
   });
+  const pointSource = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/2`, {
+    'arcgis-scene-server': {metadata: pointLayer}
+  });
 
   expect((await meshSource.getMetadata()).version).toBe('1.8');
   expect(await meshSource.getTilesetSource()).toBeInstanceOf(I3SSource);
+  expect((await pointSource.getMetadata()).version).toBe('1.8');
+  expect(await pointSource.getTilesetSource()).toBeInstanceOf(I3SSource);
   expect((await pointCloudSource.getMetadata()).version).toBe('2.1');
   expect(await pointCloudSource.getTilesetSource()).toBeInstanceOf(I3SPointCloudSource);
 });
@@ -116,17 +123,24 @@ test('ArcGISSceneServerSource resolves a layer ID and preserves source tokens', 
   );
 });
 
-test('ArcGISSceneServerSource rejects unsupported Point layers with a typed error', async () => {
+test('ArcGISSceneServerSource selects I3SSource for Point layers', async () => {
   const source = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/0`, {
     'arcgis-scene-server': {
-      metadata: {...MESH_LAYER, layerType: 'Point'}
+      metadata: {
+        ...MESH_LAYER,
+        layerType: 'Point',
+        store: {profile: 'points', version: '1.8'},
+        pointNodePages: {
+          nodesPerPage: 64,
+          lodSelectionMetricType: 'maxScreenThresholdSQ'
+        },
+        geometryDefinitions: [{geometryBuffers: []}]
+      }
     }
   });
 
-  await expect(source.getMetadata()).rejects.toMatchObject({
-    name: 'I3SUnsupportedProfileError',
-    profile: 'Point'
-  });
+  expect((await source.getMetadata()).layerType).toBe('Point');
+  expect(await source.getTilesetSource()).toBeInstanceOf(I3SSource);
 });
 
 test('ArcGISSceneServerSourceLoader detects SceneServer URLs', () => {

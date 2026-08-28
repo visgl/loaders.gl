@@ -18,7 +18,9 @@ import {
   I3STileHeader,
   SceneLayer3D,
   I3STextureResource,
-  I3SMaterialTexture
+  I3SMaterialTexture,
+  I3SPointRenderer,
+  I3SPointSymbol
 } from '../../types';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
@@ -60,8 +62,9 @@ export default class I3SNodePagesTiles {
   constructor(tileset: SceneLayer3D, url: string = '', options: LoaderOptions) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
     this.url = url;
-    this.nodesPerPage = tileset.nodePages?.nodesPerPage || 64;
-    this.lodSelectionMetricType = tileset.nodePages?.lodSelectionMetricType;
+    const nodePageDefinition = tileset.nodePages || tileset.pointNodePages;
+    this.nodesPerPage = nodePageDefinition?.nodesPerPage || 64;
+    this.lodSelectionMetricType = nodePageDefinition?.lodSelectionMetricType;
     this.options = options;
     this.nodesInNodePages = 0;
 
@@ -123,6 +126,8 @@ export default class I3SNodePagesTiles {
     let textureFormat: I3STextureFormat = 'jpg';
     let attributeUrls: string[] = [];
     let isDracoGeometry: boolean = false;
+    const pointRenderer = getPointRenderer(this.tileset);
+    const pointSymbol = getPointSymbol(pointRenderer);
 
     if (node && node.mesh) {
       // Get geometry resource URL and type (compressed / non-compressed)
@@ -131,16 +136,18 @@ export default class I3SNodePagesTiles {
       contentUrl = url;
       isDracoGeometry = isDracoGeometryResult;
 
-      const {
-        textureData,
-        textureResources,
-        materialDefinition: nodeMaterialDefinition
-      } = this.getInformationFromMaterial(node.mesh.material);
-      materialDefinition = nodeMaterialDefinition;
-      textureUrls = textureResources;
-      textureFormat = textureData.format || textureFormat;
-      if (textureData.name) {
-        textureUrl = `${this.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
+      if (node.mesh.material) {
+        const {
+          textureData,
+          textureResources,
+          materialDefinition: nodeMaterialDefinition
+        } = this.getInformationFromMaterial(node.mesh.material);
+        materialDefinition = nodeMaterialDefinition;
+        textureUrls = textureResources;
+        textureFormat = textureData.format || textureFormat;
+        if (textureData.name && node.mesh.material.resource !== undefined) {
+          textureUrl = `${this.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
+        }
       }
 
       if (this.tileset.attributeStorageInfo) {
@@ -164,6 +171,9 @@ export default class I3SNodePagesTiles {
       textureUrls,
       attributeUrls,
       materialDefinition,
+      layerType: this.tileset.layerType,
+      pointRenderer,
+      pointSymbol,
       textureFormat,
       textureLoaderOptions: this.textureLoaderOptions,
       children,
@@ -180,8 +190,10 @@ export default class I3SNodePagesTiles {
    */
   private getContentUrl(meshGeometryData: MeshGeometry) {
     let result: {url: string; isDracoGeometry: boolean} | null = null;
-    // @ts-ignore
-    const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
+    const geometryDefinition = this.tileset.geometryDefinitions?.[meshGeometryData.definition];
+    if (!geometryDefinition) {
+      return null;
+    }
     let geometryIndex = -1;
     // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
     const i3sOptions = this.options.i3s as Record<string, any> | undefined;
@@ -194,6 +206,13 @@ export default class I3SNodePagesTiles {
     if (geometryIndex === -1) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
         buffer => !buffer.compressedAttributes
+      );
+    }
+    // Point profile geometry is required to be Draco-compressed. More generally,
+    // a compressed buffer remains a valid fallback when no raw representation exists.
+    if (geometryIndex === -1) {
+      geometryIndex = geometryDefinition.geometryBuffers.findIndex(
+        buffer => buffer.compressedAttributes?.encoding === 'draco'
       );
     }
     if (geometryIndex !== -1) {
@@ -411,4 +430,27 @@ function getWebGLContext() {
   } catch {
     return null;
   }
+}
+
+/**
+ * Return the renderer metadata for a Point scene layer without evaluating renderer expressions.
+ * @param tileset - I3S scene-layer document
+ * @returns typed Point renderer metadata when present
+ */
+function getPointRenderer(tileset: SceneLayer3D): I3SPointRenderer | undefined {
+  if (tileset.layerType !== 'Point') {
+    return undefined;
+  }
+  const renderer = tileset.drawingInfo?.renderer;
+  return renderer && typeof renderer.type === 'string' ? (renderer as I3SPointRenderer) : undefined;
+}
+
+/**
+ * Select a PointSymbol3D definition from Point renderer metadata.
+ * @param renderer - Point renderer metadata
+ * @returns point symbol when the renderer declares one
+ */
+function getPointSymbol(renderer?: I3SPointRenderer): I3SPointSymbol | undefined {
+  const symbol = renderer?.symbol;
+  return symbol && typeof symbol.type === 'string' ? symbol : undefined;
 }

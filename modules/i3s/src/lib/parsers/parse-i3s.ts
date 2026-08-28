@@ -18,7 +18,8 @@ import {
   I3SParseOptions,
   I3SMaterialDefinition,
   I3STextureFormat,
-  SharedResources
+  SharedResources,
+  I3SPointRenderer
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
@@ -245,9 +246,10 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
   const url = getUrlWithoutParams(context.url || '');
   let nodePagesTile: I3SNodePagesTiles | undefined;
   let root: I3STileHeader | I3STilesetHeader;
-  if (tileset.nodePages) {
+  const nodePageDefinition = tileset.nodePages || tileset.pointNodePages;
+  if (nodePageDefinition) {
     nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
-    root = await nodePagesTile.formTileFromNodePages(0);
+    root = await nodePagesTile.formTileFromNodePages(nodePageDefinition.rootIndex || 0);
   } else {
     const parseOptions =
       (options.i3s && typeof options.i3s === 'object' ? options.i3s : {}) as I3SParseOptions;
@@ -264,6 +266,12 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     })) as I3STileHeader | I3STilesetHeader;
   }
 
+  const pointRenderer =
+    tileset.layerType === 'Point'
+      ? (tileset.drawingInfo?.renderer as I3SPointRenderer | undefined)
+      : undefined;
+  const pointSymbol = pointRenderer?.symbol;
+
   return {
     ...tileset,
     loader: I3SLoaderWithParser,
@@ -272,6 +280,8 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     type: TILESET_TYPE.I3S,
     spatialMetadata: getI3SSpatialReference(tileset),
     nodePagesTile,
+    pointRenderer,
+    pointSymbol,
     // @ts-expect-error
     root,
     lodMetricType: root.lodMetricType,

@@ -42,8 +42,8 @@ and SLPK archives while preserving explicit boundaries for producer-specific ext
 | --- | :---: | :---: | --- |
 | 3D Object | **Supported** | v2.0 | End-to-end metadata, mesh, texture, feature ID, attribute, and traversal support. Feature IDs and full attribute loading arrived in later releases as detailed below. |
 | Integrated Mesh | **Supported** | v2.0 | End-to-end textured-mesh loading and traversal. Feature-level operations are naturally narrower because this profile does not model discrete objects in the same way as 3D Object layers. |
-| Building Scene Layer | **Partial** | v3.1 | `I3SBuildingSceneLayerLoader` parses the composite hierarchy and returns its 3D Object sublayers. Group structure remains in the header; Point sublayers and Building filters are not evaluated by the loader. |
-| Point | **Not supported** | — | Point geometry, symbols, and point renderers are not decoded. |
+| Building Scene Layer | **Partial** | v3.1 | `I3SBuildingSceneLayerLoader` parses the composite hierarchy and returns its renderable 3D Object and Point sublayers. Group structure remains in the header; Building filters are not evaluated by the loader. Point sublayers were added in **v5.0**. |
+| Point | **Supported** | **v5.0** | `pointNodePages`, Draco point geometry, feature IDs, node-local attributes, point-list topology, and typed PointSymbol3D/renderer metadata are exposed through the standard I3S source. Renderer expressions remain part of tranche 4c. |
 | Point Cloud | **Supported** | **v5.0** | `I3SPointCloudSource` traverses I3S 2.x node pages, decodes LEPCC XYZ/RGB/intensity/flag resources, and returns point-list Arrow tables for REST and SLPK inputs. |
 
 ### Specification generations
@@ -58,6 +58,7 @@ those versions.
 | I3S 1.7 mesh resources | **Supported** | v2.3 | Node pages, OBBs, and geometry definitions arrived in v2.3; Draco geometry, material definitions, and texture-set selection followed in v3.0. |
 | I3S 1.8 mesh additions | **Supported** | v3.1 | KTX2/Basis textures and PBR material fields used by the rendering path are supported, subject to the material limitations below. |
 | I3S 1.9-1.10 mesh documents | **Partial** | **v5.0** | Forward fields are preserved by v5.0 metadata schemas, dedicated 1.9/1.10 fixtures cover the scene-layer envelope, and established mesh resource layouts are consumed. Newer semantics remain bounded by the feature rows below. |
+| I3S 1.7-1.10 Point | **Supported** | **v5.0** | Point-profile schemas, `pointNodePages`, required Draco geometry, feature-index metadata, symbols, and attributes are covered by a representative two-feature conformance fixture. |
 | I3S 2.0-2.1 Point Cloud | **Partial** | **v5.0** | The Point Cloud source covers node pages, OBB bounds, LEPCC resources, standard attributes, and density thresholds. Producer-specific encodings and full renderer styling remain explicit follow-up work. |
 
 ### Delivery and resource access
@@ -65,7 +66,7 @@ those versions.
 | Capability | Status | Since | Notes |
 | --- | :---: | :---: | --- |
 | SceneServer / i3sREST resources | **Supported** | v2.0 | Loads a layer document and resolves node pages, nodes, geometries, textures, and attributes on demand. The formal `I3SSource` interface was added in **v5.0**. |
-| ArcGIS SceneServer source facade | **Supported** | **v5.0** | `ArcGISSceneServerSource` normalizes a SceneServer layer and creates the existing mesh or Point Cloud source, preserving authentication and custom fetch options. |
+| ArcGIS SceneServer source facade | **Supported** | **v5.0** | `ArcGISSceneServerSource` normalizes a SceneServer layer and creates the existing mesh, Point, or Point Cloud source, preserving authentication and custom fetch options. |
 | Cloud/object-store REST layouts | **Supported** | v2.0 | Relative resources are resolved from the layer URL; custom fetch support was added in v3.2 for application-specific transport. |
 | ArcGIS token propagation | **Partial** | v3.1 | `I3SSource` appends `i3s.token` to the initial layer request as well as node, geometry, texture, and attribute requests. A direct `load(url, I3SLoader, ...)` call still needs the token in the input URL or authenticated fetch handling because core fetches the root before the parser runs. |
 | Lightweight metadata loaders and preloading | **Supported** | **v5.0** | Root exports carry loader metadata and dynamically preload parser-bearing implementations, reducing eager imports without changing async `load` behavior. |
@@ -85,7 +86,9 @@ those versions.
 | Oriented bounding box (OBB) | **Supported** | v2.0 | OBBs are converted to Cartesian boxes and conservative spheres. |
 | `maxScreenThreshold` LOD | **Supported** | v2.0 | Projected node size drives refinement for legacy node documents. |
 | `maxScreenThresholdSQ` LOD | **Supported** | v2.3 | Node-page thresholds are normalized for the same projected-size traversal. |
-| Density-threshold LOD | **Supported** | **v5.0** | Point Cloud node thresholds can drive projected point-density refinement through `PointCloudTileset`. Feature-count, distance-range, and texel-resolution policies remain unsupported. |
+| `screenSpaceRelative` LOD | **Supported** | **v5.0** | Point-profile scale thresholds are evaluated against the projected node diameter relative to viewport height. |
+| `distanceRangeFromDefaultCamera` LOD | **Supported** | **v5.0** | Point-profile distance thresholds refine nodes as the camera approaches the bounding volume. |
+| Density-threshold LOD | **Supported** | **v5.0** | Point Cloud node thresholds can drive projected point-density refinement through `PointCloudTileset`. Feature-count and texel-resolution resource-cost heuristics remain application-managed. |
 | `REPLACE` refinement | **Supported** | v2.1 | I3S mesh ancestors are replaced as higher-detail children become renderable. |
 | Lazy child metadata | **Supported** | v2.1 | Child headers are requested only when traversal reaches them. |
 | Multiple viewports | **Supported** | v3.2.6 | Pending child-header requests are tracked independently by viewport and frame. |
@@ -102,12 +105,12 @@ those versions.
 | Positions | **Supported** | v2.0 | Converts geographic offsets to WGS84 Cartesian meter offsets, or exposes longitude/latitude offsets when selected. |
 | Normals | **Supported** | v2.0 | Preserved when present in uncompressed or Draco geometry. |
 | Vertex colors | **Supported** | v2.0 | RGB/RGBA byte colors are exposed as normalized attributes. |
-| Texture coordinates | **Supported** | v2.0 | The primary `uv0` set is exposed. |
+| Texture coordinates | **Supported** | v2.0 | The primary `uv0` set is exposed as `texCoords`. |
 | Texture-atlas regions | **Supported** | v3.0 | `uv-region` / `region` values are exposed as normalized attributes for atlas-aware rendering. |
 | Feature IDs | **Supported** | v3.0 | Expands uncompressed face ranges and Draco feature-index metadata into per-vertex feature IDs. |
 | Mesh indices | **Supported** | v3.0 | Draco indices are preserved; uncompressed I3S face order is represented by the expanded vertex stream. |
-| Multiple UV sets | **Not supported** | — | Only the primary UV set is exposed. |
-| Legacy mesh segmentation | **Partial** | **v5.0** | Bytes appended after schema-defined legacy geometry attributes are retained as `meshSegmentation`; the service-specific segment record is not yet decoded into renderer draw ranges. |
+| Multiple UV sets | **Supported** | **v5.0** | Uncompressed `uv1` and Draco `TEXCOORD_n` attributes are exposed as `texCoords1`, `texCoords2`, and so on. |
+| Legacy mesh segmentation | **Supported** | **v5.0** | Feature ID and inclusive face ranges are decoded into `drawRanges` with primitive and draw-element offsets. Unknown trailing producer bytes remain available as `meshSegmentation`. |
 | 64-bit geometry attributes | **Partial** | **v5.0** | UInt64 values are returned in a `Float64Array` and preserved exactly through `Number.MAX_SAFE_INTEGER`; larger values cannot be represented exactly. Signed 64-bit geometry attributes are not decoded. |
 
 ### Point-cloud geometry and attributes
@@ -116,6 +119,15 @@ those versions.
 | --- | :---: | --- | --- |
 | LEPCC point-cloud attribute blobs | **Supported** | **v5.0** | `I3SLEPCCDecoder` decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. `I3SPointCloudSource` maps them to Arrow point attributes. |
 | Point Cloud standard attributes | **Partial** | **v5.0** | RGB, intensity, flags, and metadata-described scalar arrays are normalized. Classification, returns, and producer-defined bit fields are preserved as raw attributes when no canonical mapping is declared. |
+
+### Point geometry and styling metadata
+
+| Capability | Status | Since | Notes |
+| --- | :---: | :---: | --- |
+| Draco point geometry | **Supported** | **v5.0** | Required Point-profile `position` and `feature-index` attributes are decoded through the existing Draco path and returned with `point-list` topology. |
+| Point feature IDs and attributes | **Supported** | **v5.0** | Draco feature-ID tables align point vertices with the same typed node-local attribute resources used by mesh profiles, including OID fields named `FID` or other producer-specific names. |
+| PointSymbol3D metadata | **Supported** | **v5.0** | Simple renderer symbols, ordered symbol layers, primitive/external resource declarations, material, dimensions, and forward fields are preserved as typed metadata on tileset, tile, and content results. |
+| Classified Point renderers | **Partial** | **v5.0** | Complete renderer definitions pass through without loss; unique-value/class-break evaluation and visual-variable expressions remain tranche 4c. |
 
 ### Textures and materials
 
@@ -131,8 +143,8 @@ those versions.
 | PBR base color | **Supported** | v3.0 | Base-color factors and the base-color texture are normalized to a glTF-style material. |
 | Alpha and basic material state | **Supported** | v3.0 | Alpha mode/cutoff, emissive factor, double-sided state, and other declared material fields are preserved or normalized. |
 | Metallic, roughness, normal, occlusion, and emissive textures | **Supported** | **v5.0** | Every declared material texture slot is resolved to its selected texture-set resource and attached independently when that resource is available. |
-| Multiple texture atlases or UV sets per mesh | **Partial** | **v5.0** | Multiple referenced texture sets can be loaded, but only the primary `uv0` attribute is exposed; additional UV attribute streams remain a gap. |
-| Texture wrap semantics | **Partial** | **v5.0** | Legacy `none`, `repeat`, and `mirror` declarations are preserved on material texture metadata. They are not yet converted into renderer-specific sampler constants. |
+| Multiple texture atlases or UV sets per mesh | **Supported** | **v5.0** | Multiple referenced texture sets can be loaded and every available UV attribute stream is exposed with a stable set index. |
+| Texture wrap semantics | **Supported** | **v5.0** | Legacy `none`, `repeat`, and `mirror` declarations are preserved and mapped to glTF/WebGL `CLAMP_TO_EDGE` (33071), `REPEAT` (10497), and `MIRRORED_REPEAT` (33648) sampler constants. |
 
 ### Features, attributes, and styling
 
@@ -182,7 +194,7 @@ path.
 | I3S to 3D Tiles conversion | **Supported** | v3.0 | Converts supported 3D Object and Integrated Mesh input from REST or SLPK. SLPK input was added in v4.2. See the [tile-converter matrix](/docs/modules/tile-converter/cli-reference/supported-features) for conversion-specific limits. |
 | 3D Tiles to I3S conversion | **Supported** | v3.0 | Produces I3S 1.8 mesh layers and SLPK output, with optional Draco, KTX2/JPEG generation, feature metadata, and generated bounds. |
 | SLPK / SceneServer serving | **Supported** | v4.0 | `i3s-server` exposes converter output or an SLPK through local REST endpoints. |
-| Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh and Point Cloud scene-layer/node-page structures with forward-compatible passthrough fields; Point and full conditional-profile validation remain open. |
+| Metadata schema validation | **Partial** | **v5.0** | Zod and generated JSON schemas cover mesh, Point, and Point Cloud scene-layer/node-page structures with forward-compatible passthrough fields; exhaustive conditional validation of producer extensions remains open. |
 | Native Point or Point Cloud authoring | **Not supported** | — | The converter shares the mesh profile limits of the loaders; Point Cloud source support is read-only in this tranche. |
 
 ## I3S roadmap
@@ -209,7 +221,7 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 5e. REST and SLPK access | Resolve Point Cloud node pages and resources from SceneServer URLs and indexed SLPK archives. | **Complete** (**v5.0**) |
 | 5f. Renderer metadata | Return point-list tables, coordinate-system/origin metadata, bounds, and stable canonical attribute names. | **Complete** (**v5.0**) |
 | 5g. Point Cloud conformance | Add deterministic decoder/source fixtures and document unsupported producer-specific extensions. | **Complete** (**v5.0**) |
-| 5h. Point profile support | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. | Planned |
+| 5h. Point profile support | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. | **Complete** (**v5.0**) |
 | 6a. Horizontal CRS transforms | Reproject supported projected and geographic layer/node coordinates into the requested output coordinate system, with axis-order and unit tests. | **Complete** (**v5.0**) |
 | 6b. Vertical CRS and elevation | Resolve vertical CRS units and apply every `elevationInfo` mode, including offsets, terrain, scene surfaces, and geoid conversion. | **Complete** (**v5.0**) |
 | 6c. Precision and dateline handling | Preserve Float64 source precision through origin-relative output, and cover antimeridian/dateline bounds without discontinuities. | **Complete** (**v5.0**) |
@@ -219,8 +231,9 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 8a. ArcGIS SceneServer source | Provide a typed service facade and registry entry that selects the existing mesh or Point Cloud source for an explicit SceneServer layer. | **Complete** (**v5.0**) |
 | 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh/Point Cloud layers. | Planned |
 
-The next high-value work is renderer styling, Point profile support, query helpers, service
-discovery, and Point Cloud authoring.
+| Mesh renderer fidelity | Decode mesh-segmentation draw ranges, expose additional UV sets, map sampler wrapping, and support all standard mesh/Point LOD policies. | **Complete** (**v5.0**) |
+
+The next high-value work is renderer styling, query helpers, service discovery, and Point/Point Cloud authoring.
 
 ### Remaining roadmap gaps
 
@@ -230,10 +243,8 @@ still visible in the matrix and should be treated as the open work list:
 | Priority | Remaining gap | Exit criteria |
 | --- | --- | --- |
 | P0 | Drawing and popup intelligence (4c) | Evaluate supported renderers, visual variables, labels, and popup expressions while retaining a tested passthrough path for unsupported definitions. |
-| P0 | Point profile (5h) | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. Point Cloud support is complete for the documented v5.0 boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
 | P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh or Point Cloud layer endpoints. |
-| P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |
 | P2 | Authoring parity (7c) | Add Point/Point Cloud converter output and make generated resources pass the profile and semantic tests now covering the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |
 

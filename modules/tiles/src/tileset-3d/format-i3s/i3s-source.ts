@@ -198,6 +198,9 @@ export class I3SSource implements Tileset3DSource {
           textureFormat: tile.header.textureFormat,
           textureLoaderOptions: tile.header.textureLoaderOptions,
           materialDefinition: tile.header.materialDefinition,
+          layerType: tile.header.layerType,
+          pointRenderer: tile.header.pointRenderer,
+          pointSymbol: tile.header.pointSymbol,
           isDracoGeometry: tile.header.isDracoGeometry,
           mbs: tile.header.mbs
         },
@@ -225,7 +228,7 @@ export class I3SSource implements Tileset3DSource {
     _frameState: FrameState
   ): Promise<any> {
     const metadata = this.getMetadata();
-    if (metadata.tileset.nodePages) {
+    if (metadata.tileset.nodePages || metadata.tileset.pointNodePages) {
       const header = await metadata.tileset.nodePagesTile.formTileFromNodePages(childId);
       return await this.transformTileHeader(header);
     }

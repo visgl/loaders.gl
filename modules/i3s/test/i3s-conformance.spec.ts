@@ -4,7 +4,11 @@
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {I3SNodePageLoader} from '@loaders.gl/i3s';
-import {I3SPointCloudSceneLayerSchema, I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
+import {
+  I3SPointCloudSceneLayerSchema,
+  I3SPointSceneLayerSchema,
+  I3SSceneLayerSchema
+} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {parseSLPKArchive} from '../src/lib/parsers/parse-slpk/parse-slpk';
 import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
@@ -15,6 +19,12 @@ import {loadStatistics} from '../src/i3s-statistics';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
 
 const SCENE_LAYER_FIXTURES = [
+  {
+    name: 'I3S 1.8 Point',
+    url: '@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json',
+    expectedVersion: '1.8',
+    expectedLayerType: 'Point'
+  },
   {
     name: 'I3S 1.6 3D Object',
     url: '@loaders.gl/i3s/test/data/SanFrancisco_Bldgs/SceneServer/layers/0',
@@ -54,7 +64,9 @@ describe('I3S conformance fixtures', () => {
     const sceneLayer =
       fixture.expectedLayerType === 'PointCloud'
         ? I3SPointCloudSceneLayerSchema.parse(document)
-        : I3SSceneLayerSchema.parse(document);
+        : fixture.expectedLayerType === 'Point'
+          ? I3SPointSceneLayerSchema.parse(document)
+          : I3SSceneLayerSchema.parse(document);
 
     expect(sceneLayer.layerType).toBe(fixture.expectedLayerType || '3DObject');
     expect(sceneLayer.store.version).toBe(fixture.expectedVersion);
@@ -85,6 +97,20 @@ describe('I3S conformance fixtures', () => {
         }
       })
     ).toThrow(/Invalid input|nodesPerPage|nodePerIndexBlock/);
+  });
+
+  it('rejects an incomplete Point profile without point node pages', () => {
+    expect(() =>
+      I3SPointSceneLayerSchema.parse({
+        id: 0,
+        layerType: 'Point',
+        version: '1.8',
+        capabilities: ['View'],
+        disablePopup: false,
+        store: {profile: 'points', version: '1.8'},
+        geometryDefinitions: [{geometryBuffers: []}]
+      })
+    ).toThrow(/pointNodePages/);
   });
 
   it('rejects a Point Cloud layer with a non-Point Cloud store profile', () => {
@@ -343,6 +369,15 @@ describe('I3S conformance fixtures', () => {
       featureId,
       featureId
     ]);
+    expect(content.drawRanges).toEqual([
+      {
+        featureId,
+        firstPrimitive: 0,
+        primitiveCount: 1,
+        firstVertex: 0,
+        vertexCount: 3
+      }
+    ]);
   });
 
   it('preserves legacy mesh-segmentation bytes after schema-defined attributes', async () => {
@@ -462,7 +497,11 @@ describe('I3S conformance fixtures', () => {
           pbrMetallicRoughness: {
             metallicFactor: 0,
             roughnessFactor: 1,
-            baseColorTexture: {textureSetDefinitionId: 0}
+            baseColorTexture: {
+              textureSetDefinitionId: 0,
+              wrapS: 'repeat',
+              wrapT: 'mirror'
+            }
           },
           normalTexture: {textureSetDefinitionId: 1},
           alphaMode: 'opaque'
@@ -496,6 +535,54 @@ describe('I3S conformance fixtures', () => {
     expect(
       content.material?.pbrMetallicRoughness.baseColorTexture.texture.source.image
     ).toBeInstanceOf(ArrayBuffer);
+    expect(content.material?.pbrMetallicRoughness.baseColorTexture.texture.sampler).toEqual({
+      wrapS: 10497,
+      wrapT: 33648
+    });
     expect(content.material?.normalTexture.texture.source.image).toBeInstanceOf(ArrayBuffer);
+  });
+
+  it('exposes additional uncompressed UV sets', async () => {
+    const buffer = new ArrayBuffer(92);
+    const dataView = new DataView(buffer);
+    dataView.setUint32(0, 3, true);
+    dataView.setUint32(4, 0, true);
+    for (let index = 0; index < 9; index++) {
+      dataView.setFloat32(8 + index * 4, index % 3, true);
+    }
+    for (let index = 0; index < 6; index++) {
+      dataView.setFloat32(44 + index * 4, index / 10, true);
+      dataView.setFloat32(68 + index * 4, index / 20, true);
+    }
+
+    const content = await parseI3STileContent(
+      buffer,
+      {isDracoGeometry: false, attributeUrls: [], mbs: [0, 0, 0]},
+      {
+        store: {
+          defaultGeometrySchema: {
+            header: [
+              {property: 'vertexCount', type: 'UInt32'},
+              {property: 'featureCount', type: 'UInt32'}
+            ],
+            ordering: ['position', 'uv0', 'uv1'],
+            vertexAttributes: {
+              position: {valueType: 'Float32', valuesPerElement: 3},
+              uv0: {valueType: 'Float32', valuesPerElement: 2},
+              uv1: {valueType: 'Float32', valuesPerElement: 2}
+            },
+            featureAttributeOrder: [],
+            featureAttributes: {}
+          }
+        }
+      } as any
+    );
+
+    expect(content.attributes.texCoords.value).toEqual(
+      new Float32Array([0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    );
+    expect(content.attributes.texCoords1.value).toEqual(
+      new Float32Array([0, 0.05, 0.1, 0.15, 0.2, 0.25])
+    );
   });
 });
