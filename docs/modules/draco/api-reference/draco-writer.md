@@ -85,7 +85,10 @@ value per attribute component, and explicit ranges must be positive and finite.
 
 ## Dependencies
 
-The default encoder is the official Draco 1.5.7 WebAssembly runtime. It can be loaded dynamically, resolved from the package-local assets with `useLocalLibraries`, or injected as a module.
+The default encoder is the official Draco 1.5.7 WebAssembly runtime. In browsers it is loaded from
+the versioned browser-compatible Draco assets on jsDelivr; in workers and offline builds, set
+`useLocalLibraries: true` to use the package-local wrapper and WebAssembly binary. An application
+can also inject a `draco3d` module through `options.modules`.
 
 ## Module Overrides
 
