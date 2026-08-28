@@ -21,7 +21,8 @@ import type {
   Metadata,
   MetadataQuerier,
   DracoInt32Array,
-  draco_DataType
+  draco_DataType,
+  Status
 } from '../draco3d/draco3d-types';
 
 // Parsed data types (output)
@@ -117,8 +118,8 @@ export default class DracoParser {
         ? new this.draco.Mesh()
         : new this.draco.PointCloud();
 
+    let dracoStatus: Status | null = null;
     try {
-      let dracoStatus;
       switch (geometry_type) {
         case this.draco.TRIANGULAR_MESH:
           dracoStatus = this.decoder.DecodeArrayToMesh(
@@ -166,6 +167,9 @@ export default class DracoParser {
       };
       return data;
     } finally {
+      if (dracoStatus) {
+        this.draco.destroy(dracoStatus);
+      }
       if (dracoGeometry) {
         this.draco.destroy(dracoGeometry);
       }
@@ -307,8 +311,12 @@ export default class DracoParser {
   ): {[attributeName: string]: MeshAttribute} {
     const attributes: {[key: string]: MeshAttribute} = {};
 
-    for (const loaderAttribute of Object.values(loaderData.attributes)) {
-      const attributeName = this._deduceAttributeName(loaderAttribute, options);
+    const loaderAttributes = Object.values(loaderData.attributes).sort(
+      (left, right) => left.attribute_index - right.attribute_index
+    );
+    for (const loaderAttribute of loaderAttributes) {
+      const deducedAttributeName = this._deduceAttributeName(loaderAttribute, options);
+      const attributeName = getUniqueAttributeName(deducedAttributeName, attributes);
       loaderAttribute.name = attributeName;
       const values = this._getAttributeValues(dracoGeometry, loaderAttribute);
       if (values) {
@@ -336,16 +344,22 @@ export default class DracoParser {
     // Example on how to retrieve mesh and attributes.
     const numFaces = dracoGeometry.num_faces();
     const numIndices = numFaces * 3;
-    const useUint16 = dracoGeometry.num_points() < 65535;
+    const useUint16 = dracoGeometry.num_points() <= 65536;
     const byteLength = numIndices * (useUint16 ? UINT16_INDEX_ITEM_SIZE : UINT32_INDEX_ITEM_SIZE);
 
     const ptr = this.draco._malloc(byteLength);
     try {
       if (useUint16) {
-        this.decoder.GetTrianglesUInt16Array(dracoGeometry, byteLength, ptr);
+        const decoded = this.decoder.GetTrianglesUInt16Array(dracoGeometry, byteLength, ptr);
+        if (!decoded) {
+          throw new Error('DRACO: Failed to decode triangle indices.');
+        }
         return new Uint16Array(this.draco.HEAPU8.buffer, ptr, numIndices).slice();
       }
-      this.decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
+      const decoded = this.decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
+      if (!decoded) {
+        throw new Error('DRACO: Failed to decode triangle indices.');
+      }
       return new Uint32Array(this.draco.HEAPU8.buffer, ptr, numIndices).slice();
     } finally {
       this.draco._free(ptr);
@@ -394,13 +408,16 @@ export default class DracoParser {
     const ptr = this.draco._malloc(byteLength);
     try {
       const dracoAttribute = this.decoder.GetAttribute(dracoGeometry, attribute.attribute_index);
-      this.decoder.GetAttributeDataArrayForAllPoints(
+      const decoded = this.decoder.GetAttributeDataArrayForAllPoints(
         dracoGeometry,
         dracoAttribute,
         dataType,
         byteLength,
         ptr
       );
+      if (!decoded) {
+        throw new Error(`DRACO: Failed to decode attribute ${attribute.unique_id}.`);
+      }
       value = new TypedArrayCtor(this.draco.HEAPU8.buffer, ptr, numValues).slice();
     } finally {
       this.draco._free(ptr);
@@ -645,4 +662,22 @@ function getUint32Array(dracoArray: DracoInt32Array): Uint32Array {
     intArray[i] = dracoArray.GetValue(i);
   }
   return intArray;
+}
+
+/** Returns a collision-free output name without discarding an earlier decoded attribute. */
+function getUniqueAttributeName(
+  attributeName: string,
+  attributes: Record<string, MeshAttribute>
+): string {
+  if (!(attributeName in attributes)) {
+    return attributeName;
+  }
+
+  const suffixMatch = /^(.*)_([0-9]+)$/.exec(attributeName);
+  const baseName = suffixMatch?.[1] || attributeName;
+  let suffix = suffixMatch ? Number(suffixMatch[2]) + 1 : 1;
+  while (`${baseName}_${suffix}` in attributes) {
+    suffix++;
+  }
+  return `${baseName}_${suffix}`;
 }
