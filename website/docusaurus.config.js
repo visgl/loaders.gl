@@ -18,6 +18,16 @@ function createBundlerPlugin() {
     configureWebpack(_config, _isServer, {currentBundler}) {
       const bundler = currentBundler.instance;
       return {
+        // These modules intentionally use Node fallbacks or dynamic WASM paths that are replaced
+        // in browser builds. Keep unrelated bundler warnings visible.
+        ignoreWarnings: [
+          {module: /zstd-codec[\\/]lib[\\/]zstd-codec-binding(?:-wasm)?\.js$/, message: /__dirname/},
+          {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-perf[\\/]laz-perf\.ts$/, message: /__dirname/},
+          {module: /modules[\\/]lerc[\\/]src[\\/]lerc-wasm-url\.ts$/, message: /__dirname/},
+          {module: /modules[\\/]parquet[\\/]src[\\/]lib[\\/]utils[\\/]load-wasm-node\.ts$/, message: /__filename/},
+          {module: /modules[\\/]parquet[\\/]src[\\/]parquet-source-worker-url\.ts$/, message: /Critical dependency/},
+          {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-rs-wasm[\\/]laz_rs_wasm\.js$/, message: /Critical dependency/}
+        ],
         plugins: [
           new bundler.DefinePlugin({
             __VERSION__: JSON.stringify(version)
@@ -151,12 +161,14 @@ const config = {
             '@loaders.gl/pmtiles': resolve('../modules/pmtiles/src'),
             '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
             '@loaders.gl/potree': resolve('../modules/potree/src'),
+            '@loaders.gl/scan': resolve('../modules/scan/src'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/scene': resolve('../modules/scene/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
             '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
+            '@loaders.gl/sql': resolve('../modules/sql/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
