@@ -405,8 +405,7 @@ export declare class Encoder {
 
 /** Draco3D expert encoder */
 export declare class ExpertEncoder {
-  constructor();
-  ExpertEncoder(pc: PointCloud): void;
+  constructor(pointCloud: PointCloud);
   SetEncodingMethod(method: number): void;
   SetAttributeQuantization(att_id: number, quantization_bits: number);
   SetAttributeExplicitQuantization(
@@ -467,6 +466,7 @@ export interface Draco3D {
   readonly Metadata: typeof Metadata;
 
   readonly Encoder: typeof Encoder;
+  readonly ExpertEncoder: typeof ExpertEncoder;
   readonly MeshBuilder: typeof MeshBuilder;
   readonly MetadataBuilder: typeof MetadataBuilder;
 
