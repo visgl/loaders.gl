@@ -468,6 +468,159 @@ test('queryArrowTable reports missing UNION and JOIN sources', () => {
   ).toThrow(/more than once/);
 });
 
+test('queryArrowTable evaluates every relational expression and aggregate boundary', () => {
+  const table = makeArrowTable({
+    group: ['a', 'a', 'b'],
+    left: [8, 4, null],
+    right: [2, 0, 3]
+  });
+  const expressions = [
+    {name: 'literal', expression: {op: 'literal' as const, value: true}},
+    {name: 'copy', expression: {op: 'column' as const, column: 'left'}},
+    {name: 'add', expression: {op: 'add' as const, left: 'left', right: 'right'}},
+    {name: 'subtract', expression: {op: 'subtract' as const, left: 'left', right: 'right'}},
+    {name: 'divide', expression: {op: 'divide' as const, left: 'left', right: 'right'}}
+  ];
+  const result = queryArrowTable(table, {
+    expressions,
+    columns: ['group', 'literal', 'copy', 'add', 'subtract', 'divide']
+  });
+  expect(toRows(result)).toEqual([
+    {group: 'a', literal: true, copy: 8, add: 10, subtract: 6, divide: 4},
+    {group: 'a', literal: true, copy: 4, add: 4, subtract: 4, divide: null},
+    {group: 'b', literal: true, copy: null, add: null, subtract: null, divide: null}
+  ]);
+
+  const aggregates = queryArrowTable(table, {
+    aggregates: [
+      {name: 'rows', function: 'count'},
+      {name: 'values', function: 'count', column: 'left'},
+      {name: 'minimum', function: 'min', column: 'left'},
+      {name: 'maximum', function: 'max', column: 'left'}
+    ]
+  });
+  expect(toRows(aggregates)).toEqual([{rows: 3, values: 2, minimum: 4, maximum: 8}]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
+      expressions: [{name: 'bad', expression: {op: 'add', left: 'left', right: 'right'}}]
+    })
+  ).toThrow(/requires numeric operands/);
+  expect(() =>
+    queryArrowTable(makeArrowTable({value: ['x']}), {
+      aggregates: [{name: 'bad', function: 'sum', column: 'value'}]
+    })
+  ).toThrow(/requires numeric values/);
+});
+
+test('queryArrowTable covers empty-result schemas for computed values', () => {
+  const source = makeArrowTable({number: [1], label: ['x']});
+  const result = queryArrowTable(source, {
+    expressions: [
+      {name: 'flag', expression: {op: 'literal', value: true}},
+      {name: 'constant', expression: {op: 'literal', value: 2}},
+      {name: 'text', expression: {op: 'literal', value: 'x'}},
+      {name: 'copy', expression: {op: 'column', column: 'label'}},
+      {name: 'sum', expression: {op: 'add', left: 'number', right: 'number'}}
+    ],
+    columns: ['flag', 'constant', 'text', 'copy', 'sum'],
+    limit: 0
+  });
+  expect(result.data.numRows).toBe(0);
+  expect(result.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Bool',
+    'Float64',
+    'Utf8',
+    'Dictionary<Int32, Utf8>',
+    'Float64'
+  ]);
+
+  const aggregateResult = queryArrowTable(source, {
+    aggregates: [
+      {name: 'count', function: 'count'},
+      {name: 'knownTotal', function: 'sum', column: 'number'}
+    ],
+    columns: ['count', 'knownTotal'],
+    limit: 0
+  });
+  expect(aggregateResult.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Int32',
+    'Float64'
+  ]);
+});
+
+test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
+  const dates = [new Date(2), new Date(1)];
+  const orderedDates = queryArrowTable(makeArrowTable({date: dates}), {
+    orderBy: [{column: 'date'}]
+  });
+  expect(toRows(orderedDates).map(row => Number(row.date))).toEqual([1, 2]);
+
+  const orderedBigints = queryArrowTable(makeArrowTable({value: [2n, 1n, 2n]}), {
+    orderBy: [{column: 'value'}]
+  });
+  expect(toRows(orderedBigints).map(row => row.value)).toEqual([1n, 2n, 2n]);
+
+  const grouped = queryArrowTable(
+    makeArrowTable({
+      date: [new Date(1), new Date(1)],
+      bytes: [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
+      nullable: [null, null]
+    }),
+    {
+      groupBy: ['date', 'bytes', 'nullable'],
+      aggregates: [{name: 'rows', function: 'count'}]
+    }
+  );
+  expect(toRows(grouped)).toHaveLength(1);
+  expect(toRows(grouped)[0].rows).toBe(2);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: [Number.POSITIVE_INFINITY]}), {
+      predicate: {op: '>', args: [{property: 'left'}, 1]}
+    })
+  ).toThrow(/non-finite/);
+});
+
+test('queryArrowTable validates all join projection boundaries', () => {
+  const source = makeArrowTable({id: [1], value: [10]});
+  const child = makeArrowTable({key: [1], label: ['one']});
+  const baseJoin = {child: {source: 'child'}, left: 'id', right: 'key'} as const;
+
+  expect(() =>
+    queryArrowTable(source, {
+      join: {...baseJoin, left: 'missing'},
+      tables: {child}
+    })
+  ).toThrow(/join column not found: missing/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {...baseJoin, right: 'missing'},
+      tables: {child}
+    })
+  ).toThrow(/join column not found: missing/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {child: {source: 'child', query: {columns: ['label']}}, left: 'id', right: 'key'},
+      tables: {child}
+    })
+  ).toThrow(/child projection must include/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: baseJoin,
+      tables: {child},
+      columns: ['id', 'child.missing']
+    })
+  ).toThrow(/join column not found/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {child: {source: 'child', query: {columns: ['key']}}, left: 'id', right: 'key'},
+      tables: {child},
+      columns: ['id', 'child.label']
+    })
+  ).toThrow(/child projection does not include/);
+});
+
 /** Wraps simple test columns in the loaders.gl Arrow table shape. */
 function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
   const data = arrow.tableFromArrays(columns);
