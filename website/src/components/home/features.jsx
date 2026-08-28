@@ -31,7 +31,7 @@ const featureCards = [
   {
     id: 'streaming',
     eyebrow: 'Progressive data',
-    title: 'Move data as it arrives.',
+    title: 'No waiting. Process data as it arrives.',
     description:
       'Process large files incrementally with async iterators, batched loaders, transforms, and backpressure-friendly flows.',
     href: '/docs/developer-guide/using-streaming-loaders',
@@ -55,7 +55,7 @@ const featureCards = [
   {
     id: 'arrow',
     eyebrow: 'Common data plane',
-    title: 'One table shape. Many formats.',
+    title: 'Many data formats. One table shape.',
     description:
       'Use Apache Arrow as a fast, typed in-memory representation between loaders, applications, workers, and writers.',
     href: '/docs/developer-guide/apache-arrow',
@@ -268,9 +268,17 @@ const CardFooter = styled.div`
   gap: 16px;
   justify-content: space-between;
   margin-top: auto;
+  max-width: ${(props) => (props.$wide ? '58%' : '56%')};
   padding-top: 34px;
   position: relative;
   z-index: 1;
+
+  @media screen and (max-width: 560px) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 100%;
+  }
 `;
 
 const TagList = styled.div`
@@ -297,7 +305,9 @@ const CardLink = styled(Link)`
   font-size: 12px;
   font-weight: 800;
   gap: 8px;
+  line-height: 1.35;
   text-decoration: none;
+  white-space: normal;
 
   &:hover {
     color: #ffffff;
@@ -640,7 +650,7 @@ export default function Features() {
                 <CardDescription>{feature.description}</CardDescription>
               </CardBody>
               <RenderFeatureVisual type={feature.visual} wide={feature.wide} />
-              <CardFooter>
+              <CardFooter $wide={feature.wide}>
                 <TagList>
                   {feature.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>
