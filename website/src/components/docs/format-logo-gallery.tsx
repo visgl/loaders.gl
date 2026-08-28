@@ -50,12 +50,14 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'geopackage', label: 'GeoPackage', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'geoparquet', label: 'GeoParquet', logo: 'parquet-logo.png', tags: ['tables', 'geospatial']},
   {slug: 'geotiff', label: 'GeoTIFF', logo: 'ogc-logo.png', tags: ['geospatial']},
+  {slug: '3d-tiles', label: '3D Tiles', logo: '3d-tiles-logo.png', tags: ['geospatial', 'meshes']},
   {slug: 'glb', label: 'GLB', logo: 'gltf-logo.png', tags: ['meshes']},
   {slug: 'gltf', label: 'glTF', logo: 'gltf-logo.png', tags: ['meshes']},
   {slug: 'gml', label: 'GML', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'gpx', label: 'GPX', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'hdr', label: 'Radiance HDR', logo: 'format-logo.svg', tags: ['textures']},
   {slug: 'html', label: 'HTML', logo: 'format-logo.svg', tags: []},
+  {slug: 'i3s', label: 'I3S', logo: 'format-logo.svg', tags: ['geospatial', 'meshes']},
   {slug: 'json', label: 'JSON', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'kml', label: 'KML', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'ktx', label: 'KTX / KTX2', logo: 'format-logo.svg', tags: ['textures']},
@@ -64,9 +66,11 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'map-style', label: 'Map Style', logo: 'format-logo.svg', tags: ['geospatial', 'services']},
   {slug: 'mlt', label: 'MapLibre Tile', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'mvt', label: 'MVT', logo: 'format-logo.svg', tags: ['geospatial']},
+  {slug: 'netcdf', label: 'NetCDF', logo: 'format-logo.svg', tags: ['geospatial', 'tables']},
   {slug: 'obj', label: 'OBJ', logo: 'format-logo.svg', tags: ['meshes']},
   {slug: 'ogc-api', label: 'OGC API Services', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'ows-context', label: 'OWS Context', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
+  {slug: 'orc', label: 'ORC', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'parquet', label: 'Parquet', logo: 'parquet-logo.png', tags: ['tables']},
   {slug: 'pcd', label: 'PCD', logo: 'format-logo.svg', tags: ['pointclouds']},
   {slug: 'perfetto-trace', label: 'Perfetto Trace', logo: 'format-logo.svg', tags: []},
@@ -74,6 +78,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'pmtiles', label: 'PMTiles', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'pvr', label: 'PVR', logo: 'format-logo.svg', tags: ['textures']},
   {slug: 'shapefile', label: 'Shapefile', logo: 'esri-logo.png', tags: ['geospatial']},
+  {slug: 'stac', label: 'STAC', logo: 'format-logo.svg', tags: ['geospatial', 'services']},
   {slug: 'tcx', label: 'TCX', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'tilejson', label: 'TileJSON', logo: 'format-logo.svg', tags: ['geospatial', 'services']},
   {slug: 'usd', label: 'OpenUSD', logo: 'format-logo.svg', tags: ['meshes']},
@@ -81,6 +86,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'wkt', label: 'WKT', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'wkt-crs', label: 'WKT-CRS', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'xml', label: 'XML', logo: 'format-logo.svg', tags: []},
+  {slug: 'zarr', label: 'Zarr', logo: 'format-logo.svg', tags: ['geospatial', 'tables']},
   {slug: 'zip', label: 'ZIP', logo: 'format-logo.svg', tags: []},
   {slug: 'wcs', label: 'WCS', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'wfs', label: 'WFS', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
@@ -90,7 +96,9 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'arcgis-image-server', label: 'ArcGIS Image Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
   {slug: 'arcgis-feature-server', label: 'ArcGIS Feature Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
   {slug: 'arcgis-map-server', label: 'ArcGIS MapServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-vector-tile-server', label: 'ArcGIS VectorTileServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
+  {slug: 'arcgis-vector-tile-server', label: 'ArcGIS VectorTileServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-scene-server', label: 'ArcGIS Scene Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis', label: 'ArcGIS API Reference', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
 ];
 
 const Gallery = styled.section`
@@ -158,6 +166,7 @@ const Label = styled.span`
 /** Returns the gallery entries in the sidebar's Formats and Services order. */
 function getFormatGallery(): Array<FormatMetadata & {path: string}> {
   const metadataBySlug = new Map(FORMAT_METADATA.map(format => [format.slug, format]));
+  const seenSlugs = new Set<string>();
   const categories = docsSidebar.filter(
     category => category.type === 'category' && (category.label === 'Formats' || category.label === 'Services')
   );
@@ -166,7 +175,11 @@ function getFormatGallery(): Array<FormatMetadata & {path: string}> {
     (category.items ?? []).flatMap(path => {
       const slug = path.split('/').pop() ?? path;
       const metadata = metadataBySlug.get(slug);
-      return metadata ? [{...metadata, path}] : [];
+      if (!metadata || seenSlugs.has(slug)) {
+        return [];
+      }
+      seenSlugs.add(slug);
+      return [{...metadata, path}];
     })
   );
 }
@@ -183,7 +196,11 @@ export function FormatLogoGallery() {
 
   return (
     <Gallery>
-      <p>loaders.gl supports tabular, geospatial, 3D, texture, archive, and interchange formats.</p>
+      <p>
+        loaders.gl supports tabular, geospatial, 3D, texture, archive, and interchange formats.
+        Dedicated format or ecosystem marks are used where available; the neutral badge identifies
+        formats without a maintained logo.
+      </p>
       <TabList aria-label="Format filters" role="tablist">
         {FILTERS.map(filter => (
           <Tab

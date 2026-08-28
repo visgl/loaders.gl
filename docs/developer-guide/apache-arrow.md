@@ -1,11 +1,30 @@
+---
+title: Apache Arrow
+description: Use a typed, columnar table shape between loaders, applications, workers, and writers.
+hide_title: true
+page_style: designed
+---
+
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
-
-# Apache Arrow
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="arrow" />
 
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+<DocOrientation
+  eyebrow="A common data plane"
+  title="Use one typed table shape between formats."
+  description="Arrow keeps columns typed and contiguous as data moves between loaders, workers, applications, and writers. It is useful when the next step should not care which file format came first."
+  tone="cyan"
+  items={[
+    {label: 'Use it when', value: 'Several formats feed the same table processing path'},
+    {label: 'Core representation', value: 'Typed columns, record batches, and tables'},
+    {label: 'Useful properties', value: 'Binary layout, zero-copy views, and shared schemas'},
+    {label: 'Packages', value: '@loaders.gl/arrow, @loaders.gl/geoarrow, and @loaders.gl/parquet'}
+  ]}
+/>
 
 ## Start here
 
@@ -18,6 +37,12 @@ loaders.gl is adding support for Apache Arrow as its standard in-memory represen
 loaders.gl provides an `ArrowLoader` and an `ArrowWriter` that load and write Arrow files.
 
 An increasing subset of tabular loaders can parse various formats directly into in-memory Arrow tables, and writers can write in-memory Arrow tables to those formats.
+
+<ReferenceBoundary
+  title="The representation details"
+  description="The sections below cover the Arrow JS dependency, supported versions, installation, and compatibility troubleshooting."
+  tone="cyan"
+/>
 
 ## Apache Arrow JS library
 

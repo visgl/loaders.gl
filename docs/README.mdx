@@ -1,13 +1,32 @@
+---
+title: Loaders.gl
+description: Load, scan, transform, and write the data formats used by modern web applications.
+hide_title: true
+page_style: designed
+---
+
 import {FormatLogoGallery} from '@site/src/components/docs/format-logo-gallery';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-
-# Introduction
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="loaders" />
 
 ## Explore formats
 
 <FormatLogoGallery />
+
+<DocOrientation
+  eyebrow="The loaders.gl model"
+  title="Choose the format. Keep the application path."
+  description="Independent modules turn files, streams, services, and datasets into predictable data for JavaScript applications. Start with one format and add capabilities as the application grows."
+  tone="cyan"
+  items={[
+    {label: 'Start with', value: 'load() for one complete result'},
+    {label: 'Scale up with', value: 'loadInBatches() for incremental work'},
+    {label: 'Common shapes', value: 'Tables, geometry, images, textures, and scenes'},
+    {label: 'Install only', value: 'The format modules and runtimes the application needs'}
+  ]}
+/>
 
 ## Start here
 
@@ -42,6 +61,12 @@ Docs for older versions are available on github:
     <i>loaders.gl is an OpenJS Foundation / Linux Foundation project.</i>
   </div>
 </div>
+
+<ReferenceBoundary
+  title="The full library map"
+  description="The guide below covers categories, packages, file formats, service sources, and the details behind the common APIs."
+  tone="cyan"
+/>
 
 ## Overview
 

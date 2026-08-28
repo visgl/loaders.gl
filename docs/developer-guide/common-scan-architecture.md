@@ -1,13 +1,32 @@
+---
+title: Common scan architecture
+description: Query large local and cloud datasets with one portable scan contract.
+hide_title: true
+page_style: designed
+---
+
 import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan-live-example';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-
-# Common Scan Architecture
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="scan" />
 
 ## Try a scan
 
 <FederatedScanLiveExample />
+
+<DocOrientation
+  eyebrow="Scan in one minute"
+  title="Ask for the data you need, not the whole file."
+  description="Describe a bounded table or raster request once. The source can push useful parts of that request into cloud reads, metadata indexes, or format-specific planners before decoding."
+  tone="violet"
+  items={[
+    {label: 'Use it when', value: 'Datasets are remote, large, or assembled from many files'},
+    {label: 'Query controls', value: 'Bounds, columns, predicates, limits, and cancellation'},
+    {label: 'Returns', value: 'Arrow batches for tables, or typed raster results'},
+    {label: 'Sources', value: 'Parquet, Iceberg, FlatGeobuf, GeoTIFF, GeoZarr, and more'}
+  ]}
+/>
 
 ## Start here
 
@@ -26,6 +45,12 @@ they share is the logical meaning of a query and a small set of execution invari
 
 > The portable query is a contract between planners and executors. It is not intended to become a
 > second implementation of the complete SQL language.
+
+<ReferenceBoundary
+  title="The execution contract"
+  description="The rest of this guide spells out planning, pushdown, result forms, cancellation, and conformance for source and format authors."
+  tone="violet"
+/>
 
 ## Format-family support at a glance
 
