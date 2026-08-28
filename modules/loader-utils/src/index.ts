@@ -296,7 +296,10 @@ export type {
   RelationalPlanStep,
   RelationalQueryOptions
 } from './lib/scan-utils/relational-query';
-export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
+export {
+  createScanQueryMetadata,
+  emitScanExecutionTelemetry
+} from './lib/scan-utils/scan-query-metadata';
 export {
   intersectPointCloudBounds,
   selectPointCloudScanTiles,

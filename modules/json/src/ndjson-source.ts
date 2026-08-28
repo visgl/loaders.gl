@@ -1,5 +1,6 @@
 import {
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   filterColumnarRowIndices,
   validateColumnarPredicate,
@@ -116,7 +117,8 @@ export class NDJSONTableSource
       if (status === 'early-terminated' && !earlyTerminationReason) {
         earlyTerminationReason = 'consumer-return';
       }
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         Object.freeze({
           status,
           sourcesPlanned: 1,

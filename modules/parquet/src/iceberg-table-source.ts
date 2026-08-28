@@ -8,7 +8,11 @@ import type {
   ScanQueryMetadataOptions,
   TableScanSource
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource as BaseDataSource} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource as BaseDataSource,
+  emitScanExecutionTelemetry
+} from '@loaders.gl/loader-utils';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -36,6 +40,7 @@ import type {
   ParquetDatasetExplain,
   ParquetDatasetSourceOptions
 } from './parquet-source-types';
+import type {ScanExecutionTelemetry} from '@loaders.gl/loader-utils';
 
 type IcebergEqualityDelete = {
   /** Top-level data-column names covered by the delete. */
@@ -251,17 +256,49 @@ export class IcebergTableSource
       ? await this.loadEqualityDeletes(plan.deleteFiles, metadata, options.signal)
       : [];
     const equalityColumns = getEqualityDeleteColumns(equalityDeletes);
-    const readOptions = addEqualityColumns(options, equalityColumns);
+    let childTelemetry: ScanExecutionTelemetry | undefined;
+    const readOptions = {
+      ...addEqualityColumns(options, equalityColumns),
+      onTelemetry: (telemetry: ScanExecutionTelemetry) => {
+        childTelemetry = telemetry;
+      }
+    };
     const parquetSource = this.createParquetDataset(plan, metadata, options);
+    let completed = false;
+    let readError: unknown;
+    let rowsReturned = 0;
     try {
       for await (const batch of parquetSource.read(readOptions)) {
         const filteredBatch = options.applyDeletes
           ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
           : batch;
-        if (filteredBatch.length > 0) yield filteredBatch;
+        if (filteredBatch.length > 0) {
+          rowsReturned += filteredBatch.length;
+          yield filteredBatch;
+        }
       }
+      completed = true;
+    } catch (error) {
+      readError = error;
+      throw error;
     } finally {
       await parquetSource.close();
+      if (childTelemetry) {
+        const cancelled = options.signal?.aborted === true;
+        const status: ScanExecutionTelemetry['status'] = readError
+          ? cancelled
+            ? 'cancelled'
+            : 'failed'
+          : completed
+            ? childTelemetry.status
+            : 'early-terminated';
+        emitScanExecutionTelemetry(options.onTelemetry, {
+          ...childTelemetry,
+          status,
+          rowsReturned,
+          ...(readError === undefined ? {} : {error: readError})
+        });
+      }
     }
   }
 

@@ -104,7 +104,15 @@ export function FederatedScanLiveExample(): JSX.Element {
         const source = new scanModule.FederatedTableScanSource(dataSourceManager, {
           name: 'weather-history',
           schemaPolicy: submittedValue.schemaPolicy,
-          sources: selectedSources
+          sources: selectedSources,
+          outputSchema: {
+            fields: [
+              {name: 'stationId', type: 'utf8', nullable: false},
+              {name: 'temperature', type: 'float64', nullable: false},
+              {name: 'period', type: 'utf8', nullable: false}
+            ],
+            metadata: {}
+          }
         });
         const predicate = submittedValue.predicateSql
           ? scanModule.parseSQLPredicate(submittedValue.predicateSql, {

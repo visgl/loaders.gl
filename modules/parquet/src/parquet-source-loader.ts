@@ -8,6 +8,7 @@ import {
   BlobFile,
   DataSource,
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   isBrowser,
   validateTableQueryLimit
@@ -387,7 +388,8 @@ export class ParquetSource
     const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);
     if (readOptions.limit === 0) {
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         createParquetScanExecutionTelemetry(
           telemetryBefore,
           this.getTelemetry(),
@@ -592,18 +594,20 @@ export class ParquetSource
       if (!completed && readError === undefined) {
         this.recordTelemetry('cancel', {cancellationCount: 1}, {});
       }
+      const cancelled = readContext.abortController.signal.aborted || readOptions.signal?.aborted;
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
       await Promise.allSettled([...inFlightReads]);
       const status: ScanExecutionTelemetry['status'] = readError
-        ? readContext.abortController.signal.aborted
+        ? cancelled
           ? 'cancelled'
           : 'failed'
         : limitReached || !completed
           ? 'early-terminated'
           : 'completed';
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         createParquetScanExecutionTelemetry(
           telemetryBefore,
           this.getTelemetry(),

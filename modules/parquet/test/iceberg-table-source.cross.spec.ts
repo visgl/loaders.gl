@@ -461,11 +461,20 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
   };
   try {
     const batches = [];
-    for await (const batch of source.scan({applyDeletes: true, batchSize: 3})) batches.push(batch);
+    let telemetry;
+    for await (const batch of source.scan({
+      applyDeletes: true,
+      batchSize: 3,
+      onTelemetry: value => {
+        telemetry = value;
+      }
+    }))
+      batches.push(batch);
     expect(batches).toHaveLength(1);
     expect([...batches[0].data.getChild('id')!.toArray()]).toEqual([1, 3]);
     expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['one', 'three']);
     expect(batches[0].rowIndices).toEqual([0, 2]);
+    expect(telemetry).toMatchObject({status: 'completed', rowsReturned: 2});
 
     const liveTable = new arrow.Table({
       id: arrow.vectorFromArray([4], new arrow.Int32()),

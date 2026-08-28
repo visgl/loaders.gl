@@ -1,6 +1,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   filterColumnarRowIndices,
   validateColumnarPredicate,
@@ -119,7 +120,8 @@ export class ArrowTableSource
       if (status === 'early-terminated' && !earlyTerminationReason) {
         earlyTerminationReason = 'consumer-return';
       }
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         Object.freeze({
           status,
           sourcesPlanned: 1,

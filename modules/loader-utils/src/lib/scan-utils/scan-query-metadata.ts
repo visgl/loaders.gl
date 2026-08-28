@@ -237,6 +237,22 @@ export type ScanExecutionTelemetry = Readonly<{
 /** Receives the immutable final counters for one table scan execution. */
 export type ScanExecutionTelemetryCallback = (telemetry: ScanExecutionTelemetry) => void;
 
+/**
+ * Delivers a scan telemetry snapshot without allowing an observer failure to alter scan results.
+ * Telemetry is best-effort by design: exporters and diagnostics must not become query failures.
+ */
+export function emitScanExecutionTelemetry(
+  callback: ScanExecutionTelemetryCallback | undefined,
+  telemetry: ScanExecutionTelemetry
+): void {
+  if (!callback) return;
+  try {
+    callback(telemetry);
+  } catch {
+    // Telemetry observers must never change scan behavior.
+  }
+}
+
 /** Structural interface implemented by sources that support query-panel discovery. */
 export type ScanQueryMetadataProvider = {
   /** Discovers query-visible columns and capabilities without materializing result rows. */

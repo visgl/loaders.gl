@@ -90,6 +90,22 @@ export function describeTableScanSourceConformance(options: TableScanConformance
       });
     });
 
+    test('isolates telemetry observer failures from scan results', async () => {
+      await withFixture(options, async ({source}) => {
+        await expect(
+          collectRows(source, {
+            onTelemetry: () => {
+              throw new Error('telemetry exporter unavailable');
+            }
+          })
+        ).resolves.toEqual([
+          {name: 'one', score: 1},
+          {name: 'two', score: 2},
+          {name: 'three', score: 3}
+        ]);
+      });
+    });
+
     test('honors cancellation before physical work begins', async () => {
       await withFixture(options, async ({source}) => {
         const abortController = new AbortController();

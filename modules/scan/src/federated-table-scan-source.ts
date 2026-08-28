@@ -5,6 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -423,7 +424,8 @@ export class FederatedTableScanSource
       if (telemetry.status === 'early-terminated' && !telemetry.earlyTerminationReason) {
         telemetry.earlyTerminationReason = 'consumer-return';
       }
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         Object.freeze({
           ...telemetry,
           batchesDecoded: telemetry.batchesRead,

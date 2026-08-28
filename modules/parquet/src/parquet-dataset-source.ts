@@ -4,6 +4,7 @@
 
 import {
   executeScanTasks,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   validateTableQueryLimit,
   type CoreAPI,
@@ -287,7 +288,8 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     const telemetryBefore = this.getTelemetry();
     let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
     if (remainingRows === 0) {
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         createParquetDatasetScanExecutionTelemetry(
           telemetryBefore,
           this.getTelemetry(),
@@ -339,7 +341,8 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         : limitReached || !completed
           ? 'early-terminated'
           : 'completed';
-      options.onTelemetry?.(
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
         createParquetDatasetScanExecutionTelemetry(
           telemetryBefore,
           this.getTelemetry(),
