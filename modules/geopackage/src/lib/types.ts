@@ -74,6 +74,9 @@ export interface SpatialRefSysRow {
    */
   definition: WKTCRSDefinition;
 
+  /** WKT2 definition supplied by the GeoPackage CRS WKT extension. */
+  definition_12_063?: WKTCRSDefinition | null;
+
   /**
    * Human readable description of this SRS
    */

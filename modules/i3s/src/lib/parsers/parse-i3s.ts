@@ -22,6 +22,7 @@ import {
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
+import {getI3SSpatialReference} from '@loaders.gl/tiles';
 
 export async function normalizeTileData(
   tile: Node3DIndexDocument,
@@ -269,6 +270,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     url,
     basePath: url,
     type: TILESET_TYPE.I3S,
+    spatialMetadata: getI3SSpatialReference(tileset),
     nodePagesTile,
     // @ts-expect-error
     root,

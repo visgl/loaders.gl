@@ -4,7 +4,12 @@
 
 /* eslint-disable camelcase */
 
-import type {TypedArray, MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
+import type {
+  TypedArray,
+  TypedArrayConstructor,
+  MeshAttribute,
+  MeshGeometry
+} from '@loaders.gl/schema';
 
 // Draco types (input)
 import type {
@@ -16,7 +21,8 @@ import type {
   Metadata,
   MetadataQuerier,
   DracoInt32Array,
-  draco_DataType
+  draco_DataType,
+  Status
 } from '../draco3d/draco3d-types';
 
 // Parsed data types (output)
@@ -46,13 +52,6 @@ export type DracoParseOptions = {
   octahedronAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
 };
 
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _GEOMETRY_TYPE = {
-  TRIANGULAR_MESH: 0,
-  POINT_CLOUD: 1
-};
-
 // Native Draco attribute names to GLTF attribute names.
 const DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP = {
   POSITION: 'POSITION',
@@ -75,7 +74,8 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   // 11: BOOL - What array type do we use for this?
 };
 
-const INDEX_ITEM_SIZE = 4;
+const UINT16_INDEX_ITEM_SIZE = 2;
+const UINT32_INDEX_ITEM_SIZE = 4;
 
 export default class DracoParser {
   draco: Draco3D;
@@ -102,27 +102,39 @@ export default class DracoParser {
    * @param arrayBuffer
    * @param options
    */
-  parseSync(arrayBuffer: ArrayBuffer, options: DracoParseOptions = {}): DracoMesh {
-    const buffer = new this.draco.DecoderBuffer();
-    buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
+  parseSync(
+    arrayBuffer: ArrayBuffer | ArrayBufferView,
+    options: DracoParseOptions = {}
+  ): DracoMesh {
+    const encodedData = ArrayBuffer.isView(arrayBuffer)
+      ? new Int8Array(arrayBuffer.buffer, arrayBuffer.byteOffset, arrayBuffer.byteLength)
+      : new Int8Array(arrayBuffer);
 
     this._disableAttributeTransforms(options);
 
-    const geometry_type = this.decoder.GetEncodedGeometryType(buffer);
+    const geometry_type = this.decoder.GetEncodedGeometryType(encodedData);
     const dracoGeometry =
       geometry_type === this.draco.TRIANGULAR_MESH
         ? new this.draco.Mesh()
         : new this.draco.PointCloud();
 
+    let dracoStatus: Status | null = null;
     try {
-      let dracoStatus;
       switch (geometry_type) {
         case this.draco.TRIANGULAR_MESH:
-          dracoStatus = this.decoder.DecodeBufferToMesh(buffer, dracoGeometry as Mesh);
+          dracoStatus = this.decoder.DecodeArrayToMesh(
+            encodedData,
+            encodedData.byteLength,
+            dracoGeometry as Mesh
+          );
           break;
 
         case this.draco.POINT_CLOUD:
-          dracoStatus = this.decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
+          dracoStatus = this.decoder.DecodeArrayToPointCloud(
+            encodedData,
+            encodedData.byteLength,
+            dracoGeometry
+          );
           break;
 
         default:
@@ -155,7 +167,9 @@ export default class DracoParser {
       };
       return data;
     } finally {
-      this.draco.destroy(buffer);
+      if (dracoStatus) {
+        this.draco.destroy(dracoStatus);
+      }
       if (dracoGeometry) {
         this.draco.destroy(dracoGeometry);
       }
@@ -261,8 +275,7 @@ export default class DracoParser {
         case 'triangle-strip':
           return {
             topology: 'triangle-strip',
-            // TODO - mode is wrong?
-            mode: 4, // GL.TRIANGLES
+            mode: 5, // GL.TRIANGLE_STRIP
             attributes,
             indices: {
               value: this._getTriangleStripIndices(dracoGeometry),
@@ -273,8 +286,7 @@ export default class DracoParser {
         default:
           return {
             topology: 'triangle-list',
-            // TODO - mode is wrong?
-            mode: 5, // GL.TRIANGLE_STRIP
+            mode: 4, // GL.TRIANGLES
             attributes,
             indices: {
               value: this._getTriangleListIndices(dracoGeometry),
@@ -299,8 +311,12 @@ export default class DracoParser {
   ): {[attributeName: string]: MeshAttribute} {
     const attributes: {[key: string]: MeshAttribute} = {};
 
-    for (const loaderAttribute of Object.values(loaderData.attributes)) {
-      const attributeName = this._deduceAttributeName(loaderAttribute, options);
+    const loaderAttributes = Object.values(loaderData.attributes).sort(
+      (left, right) => left.attribute_index - right.attribute_index
+    );
+    for (const loaderAttribute of loaderAttributes) {
+      const deducedAttributeName = this._deduceAttributeName(loaderAttribute, options);
+      const attributeName = getUniqueAttributeName(deducedAttributeName, attributes);
       loaderAttribute.name = attributeName;
       const values = this._getAttributeValues(dracoGeometry, loaderAttribute);
       if (values) {
@@ -324,16 +340,27 @@ export default class DracoParser {
    * For meshes, we need indices to define the faces.
    * @param dracoGeometry
    */
-  _getTriangleListIndices(dracoGeometry: Mesh) {
+  _getTriangleListIndices(dracoGeometry: Mesh): Uint16Array | Uint32Array {
     // Example on how to retrieve mesh and attributes.
     const numFaces = dracoGeometry.num_faces();
     const numIndices = numFaces * 3;
-    const byteLength = numIndices * INDEX_ITEM_SIZE;
+    const useUint16 = dracoGeometry.num_points() <= 65536;
+    const byteLength = numIndices * (useUint16 ? UINT16_INDEX_ITEM_SIZE : UINT32_INDEX_ITEM_SIZE);
 
     const ptr = this.draco._malloc(byteLength);
     try {
-      this.decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
-      return new Uint32Array(this.draco.HEAPF32.buffer, ptr, numIndices).slice();
+      if (useUint16) {
+        const decoded = this.decoder.GetTrianglesUInt16Array(dracoGeometry, byteLength, ptr);
+        if (!decoded) {
+          throw new Error('DRACO: Failed to decode triangle indices.');
+        }
+        return new Uint16Array(this.draco.HEAPU8.buffer, ptr, numIndices).slice();
+      }
+      const decoded = this.decoder.GetTrianglesUInt32Array(dracoGeometry, byteLength, ptr);
+      if (!decoded) {
+        throw new Error('DRACO: Failed to decode triangle indices.');
+      }
+      return new Uint32Array(this.draco.HEAPU8.buffer, ptr, numIndices).slice();
     } finally {
       this.draco._free(ptr);
     }
@@ -381,14 +408,17 @@ export default class DracoParser {
     const ptr = this.draco._malloc(byteLength);
     try {
       const dracoAttribute = this.decoder.GetAttribute(dracoGeometry, attribute.attribute_index);
-      this.decoder.GetAttributeDataArrayForAllPoints(
+      const decoded = this.decoder.GetAttributeDataArrayForAllPoints(
         dracoGeometry,
         dracoAttribute,
         dataType,
         byteLength,
         ptr
       );
-      value = new TypedArrayCtor(this.draco.HEAPF32.buffer, ptr, numValues).slice();
+      if (!decoded) {
+        throw new Error(`DRACO: Failed to decode attribute ${attribute.unique_id}.`);
+      }
+      value = new TypedArrayCtor(this.draco.HEAPU8.buffer, ptr, numValues).slice();
     } finally {
       this.draco._free(ptr);
     }
@@ -433,6 +463,20 @@ export default class DracoParser {
       }
     }
 
+    // Prefer the application name preserved by a Draco writer.
+    const entryName = options.attributeNameEntry || 'name';
+    if (attribute.metadata[entryName]) {
+      const attributeName = attribute.metadata[entryName].string;
+      // DracoWriter versions before v5 stored these category names instead of glTF semantics.
+      if (attributeName === 'COLOR') {
+        return 'COLOR_0';
+      }
+      if (attributeName === 'TEX_COORD') {
+        return 'TEXCOORD_0';
+      }
+      return attributeName;
+    }
+
     // Deduce name based on attribute type
     const thisAttributeType = attribute.attribute_type;
     for (const dracoAttributeConstant in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
@@ -442,13 +486,6 @@ export default class DracoParser {
         // (e.g. multiple TEX_COORDS or COLORS)
         return DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[dracoAttributeConstant];
       }
-    }
-
-    // Look up in metadata
-    // TODO - shouldn't this have priority?
-    const entryName = options.attributeNameEntry || 'name';
-    if (attribute.metadata[entryName]) {
-      return attribute.metadata[entryName].string;
     }
 
     // Attribute of "GENERIC" type, we need to assign some name
@@ -531,7 +568,7 @@ export default class DracoParser {
   ): DracoQuantizationTransform | null {
     const {quantizedAttributes = []} = options;
     const attribute_type = dracoAttribute.attribute_type();
-    const skip = quantizedAttributes.map(type => this.decoder[type]).includes(attribute_type);
+    const skip = quantizedAttributes.map(type => this.draco[type]).includes(attribute_type);
     if (skip) {
       const transform = new this.draco.AttributeQuantizationTransform();
       try {
@@ -539,7 +576,10 @@ export default class DracoParser {
           return {
             quantization_bits: transform.quantization_bits(),
             range: transform.range(),
-            min_values: new Float32Array([1, 2, 3]).map(i => transform.min_value(i))
+            min_values: Float32Array.from(
+              {length: dracoAttribute.num_components()},
+              (_, componentIndex) => transform.min_value(componentIndex)
+            )
           };
         }
       } finally {
@@ -555,11 +595,9 @@ export default class DracoParser {
   ): DracoOctahedronTransform | null {
     const {octahedronAttributes = []} = options;
     const attribute_type = dracoAttribute.attribute_type();
-    const octahedron = octahedronAttributes
-      .map(type => this.decoder[type])
-      .includes(attribute_type);
+    const octahedron = octahedronAttributes.map(type => this.draco[type]).includes(attribute_type);
     if (octahedron) {
-      const transform = new this.draco.AttributeQuantizationTransform();
+      const transform = new this.draco.AttributeOctahedronTransform();
       try {
         if (transform.InitFromAttribute(dracoAttribute)) {
           return {
@@ -581,7 +619,7 @@ export default class DracoParser {
  * @param attributeType
  * @returns draco specific data type
  */
-function getDracoDataType(draco: Draco3D, attributeType: any): draco_DataType {
+function getDracoDataType(draco: Draco3D, attributeType: TypedArrayConstructor): draco_DataType {
   switch (attributeType) {
     case Float32Array:
       return draco.DT_FLOAT32;
@@ -617,11 +655,29 @@ function getInt32Array(dracoArray: DracoInt32Array): Int32Array {
 /**
  * Copy a Draco int32 array into a JS typed array
  */
-function getUint32Array(dracoArray: DracoInt32Array): Int32Array {
+function getUint32Array(dracoArray: DracoInt32Array): Uint32Array {
   const numValues = dracoArray.size();
-  const intArray = new Int32Array(numValues);
+  const intArray = new Uint32Array(numValues);
   for (let i = 0; i < numValues; i++) {
     intArray[i] = dracoArray.GetValue(i);
   }
   return intArray;
+}
+
+/** Returns a collision-free output name without discarding an earlier decoded attribute. */
+function getUniqueAttributeName(
+  attributeName: string,
+  attributes: Record<string, MeshAttribute>
+): string {
+  if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) {
+    return attributeName;
+  }
+
+  const suffixMatch = /^(.*)_([0-9]+)$/.exec(attributeName);
+  const baseName = suffixMatch ? suffixMatch[1] : attributeName;
+  let suffix = suffixMatch ? BigInt(suffixMatch[2]) + 1n : 1n;
+  while (Object.prototype.hasOwnProperty.call(attributes, `${baseName}_${suffix}`)) {
+    suffix++;
+  }
+  return `${baseName}_${suffix}`;
 }

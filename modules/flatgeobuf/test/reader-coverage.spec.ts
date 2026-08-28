@@ -8,6 +8,7 @@ import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
   FlatGeobufGeometryType,
+  getFlatGeobufCRSIdentifier,
   readFlatGeobufHeader
 } from '../src/lib/flatgeobuf-reader';
 import {getProjection, makeArrowSchema} from '../src/lib/parse-flatgeobuf';
@@ -120,9 +121,24 @@ describe('FlatGeobuf reader metadata branches', () => {
     expect(schema.fields[1].metadata?.['ARROW:extension:name']).toBe('geoarrow.linestring');
   });
 
-  test('returns no projection unless requested and handles invalid CRS definitions', () => {
+  test('creates projections only from declared source CRS definitions', () => {
     expect(getProjection({}, false)).toBeUndefined();
-    expect(getProjection({crs: {}}, true)).toBeUndefined();
-    expect(getProjection({crs: {wkt: 'not a CRS'}}, true)).toBeUndefined();
+    expect(() => getProjection({crs: {}}, true)).toThrow(
+      'FlatGeobuf reprojection requires a source CRS in the file header'
+    );
+    expect(() => getProjection({crs: {wkt: 'not a CRS'}}, true)).toThrow(
+      'FlatGeobuf reprojection failed'
+    );
+    expect(getProjection({crs: {codeString: 'EPSG:4326'}}, true)).toBeDefined();
+    expect(getProjection({crs: {org: 'EPSG', code: 4326}}, true)).toBeDefined();
+    expect(() => getProjection({crs: {code: 4326}}, true)).toThrow(
+      'FlatGeobuf reprojection requires a source CRS in the file header'
+    );
+  });
+
+  test('preserves the authority for numeric CRS codes', () => {
+    expect(getFlatGeobufCRSIdentifier({org: 'ESRI', code: 102100})).toBe('ESRI:102100');
+    expect(getFlatGeobufCRSIdentifier({org: 'CUSTOM', code: 4326})).toBe('CUSTOM:4326');
+    expect(getFlatGeobufCRSIdentifier({code: 4326})).toBeUndefined();
   });
 });

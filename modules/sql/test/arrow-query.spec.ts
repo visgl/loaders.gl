@@ -343,6 +343,131 @@ test('queryArrowTable reports cancellation before scanning', () => {
   );
 });
 
+test.each([
+  ['=', [{value: 2}]],
+  ['<>', [{value: 1}, {value: 3}]],
+  ['<', [{value: 1}]],
+  ['<=', [{value: 1}, {value: 2}]],
+  ['>', [{value: 3}]],
+  ['>=', [{value: 2}, {value: 3}]]
+])('queryArrowTable evaluates comparison operator %s', (operator, expected) => {
+  const result = queryArrowTable(makeArrowTable({value: [1, 2, 3]}), {
+    predicate: parseSQLPredicate(`value ${operator} 2`)
+  });
+  expect(toRows(result)).toEqual(expected);
+});
+
+test('queryArrowTable handles IN, NOT, null predicates, and empty matches', () => {
+  const table = makeArrowTable({value: [1, 2, null, 4], label: ['a', 'b', 'c', 'd']});
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value IN (1, 4)')}))).toEqual(
+    [
+      {value: 1, label: 'a'},
+      {value: 4, label: 'd'}
+    ]
+  );
+  expect(
+    toRows(queryArrowTable(table, {predicate: parseSQLPredicate('NOT (value IN (1, 4))')}))
+  ).toEqual([{value: 2, label: 'b'}]);
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value = 99')}))).toEqual([]);
+});
+
+test('queryArrowTable computes min, max, count-all, and empty aggregates', () => {
+  const result = queryArrowTable(makeArrowTable({group: ['a', 'a', 'b'], value: [2, null, 5]}), {
+    groupBy: ['group'],
+    aggregates: [
+      {name: 'rows', function: 'count'},
+      {name: 'minimum', function: 'min', column: 'value'},
+      {name: 'maximum', function: 'max', column: 'value'}
+    ],
+    columns: ['group', 'rows', 'minimum', 'maximum'],
+    orderBy: [{column: 'group'}]
+  });
+  expect(toRows(result)).toEqual([
+    {group: 'a', rows: 2, minimum: 2, maximum: 2},
+    {group: 'b', rows: 1, minimum: 5, maximum: 5}
+  ]);
+  expect(
+    toRows(
+      queryArrowTable(makeArrowTable({value: [1]}), {
+        groupBy: ['value'],
+        aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+        predicate: parseSQLPredicate('value > 10')
+      })
+    )
+  ).toEqual([]);
+});
+
+test('queryArrowTable evaluates scalar expression edge cases', () => {
+  const result = queryArrowTable(
+    makeArrowTable({left: [8, null], right: [2, 0], label: ['x', 'y']}),
+    {
+      expressions: [
+        {name: 'difference', expression: {op: 'subtract', left: 'left', right: 'right'}},
+        {name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}},
+        {name: 'literal', expression: {op: 'literal', value: 'constant'}},
+        {name: 'copied', expression: {op: 'column', column: 'label'}}
+      ],
+      columns: ['difference', 'ratio', 'literal', 'copied']
+    }
+  );
+
+  expect(toRows(result)).toEqual([
+    {difference: 6, ratio: 4, literal: 'constant', copied: 'x'},
+    {difference: null, ratio: null, literal: 'constant', copied: 'y'}
+  ]);
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
+      expressions: [{name: 'invalid', expression: {op: 'add', left: 'left', right: 'right'}}]
+    })
+  ).toThrow(/numeric operands/);
+});
+
+test('queryArrowTable orders supported scalar types and rejects unsupported types', () => {
+  const result = queryArrowTable(
+    makeArrowTable({
+      date: [new Date(2), new Date(1)],
+      bytes: [new Uint8Array([2]), new Uint8Array([1])],
+      flag: [false, true]
+    }),
+    {columns: ['date'], orderBy: [{column: 'date'}]}
+  );
+  expect(toRows(result).map(row => row.date)).toEqual([1, 2]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({bytes: [new Uint8Array([1]), new Uint8Array([2])]}), {
+      orderBy: [{column: 'bytes'}]
+    })
+  ).toThrow(/cannot compare/);
+  expect(
+    toRows(
+      queryArrowTable(makeArrowTable({flag: [false, true]}), {
+        columns: ['flag'],
+        orderBy: [{column: 'flag', direction: 'desc'}]
+      })
+    )
+  ).toEqual([{flag: true}, {flag: false}]);
+});
+
+test('queryArrowTable reports missing UNION and JOIN sources', () => {
+  const table = makeArrowTable({id: [1]});
+  expect(() => queryArrowTable(table, {union: [{source: 'missing'}], tables: {}})).toThrow(
+    /union source not found/
+  );
+  expect(() =>
+    queryArrowTable(table, {
+      join: {child: {source: 'missing'}, left: 'id', right: 'id'},
+      tables: {}
+    })
+  ).toThrow(/join source not found/);
+  expect(() =>
+    queryArrowTable(table, {
+      join: {child: {source: 'child'}, left: 'id', right: 'id'},
+      tables: {child: makeArrowTable({id: [1]})},
+      columns: ['id', 'child.id', 'child.id']
+    })
+  ).toThrow(/more than once/);
+});
+
 /** Wraps simple test columns in the loaders.gl Arrow table shape. */
 function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
   const data = arrow.tableFromArrays(columns);

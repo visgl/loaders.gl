@@ -40,6 +40,9 @@ While possible to use independently, Draco compression is primarily used to comp
 
 Notes:
 
+- Multiple attributes of the same Draco category are preserved. If an attribute has no explicit
+  metadata name, the loader assigns collision-free names such as `COLOR_0`, `COLOR_1`,
+  `TEXCOORD_0`, and `TEXCOORD_1`.
 - `Float64` and other 64 bit formats are not valid for glTF geometry attributes, These are normally only used for "extra" attributes. 64 bit attributes can appear when converting LAS files with metadata to glTF or 3D Tiles, see [CesiumJS blog](https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/)
 - loaders.gl ignores unsupported attributes.
 

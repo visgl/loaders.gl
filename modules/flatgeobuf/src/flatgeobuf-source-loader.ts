@@ -30,7 +30,11 @@ import {
   queryFlatGeobufArrowTable,
   type FlatGeobufQueryOptions
 } from './lib/parse-flatgeobuf';
-import {readFlatGeobufHeader, type FlatGeobufHeader} from './lib/flatgeobuf-reader';
+import {
+  getFlatGeobufCRSIdentifier,
+  readFlatGeobufHeader,
+  type FlatGeobufHeader
+} from './lib/flatgeobuf-reader';
 import {FLATGEOBUF_TABLE_QUERY_CAPABILITIES} from './flatgeobuf-table-query-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -164,7 +168,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     const info = await this.getHeaderInfo();
     assertNotAborted(parameters.signal);
     const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
-    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs && parameters.crs !== info.header.crs?.wkt)}) as VectorSourceData;
+    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs)}) as VectorSourceData;
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */
@@ -200,7 +204,7 @@ function buildMetadata(layerName: string, header: FlatGeobufHeader): VectorSourc
 }
 
 function inferLayerName(url: string, header: FlatGeobufHeader): string { if (header.title) return header.title; const fileName = url.split(/[?#]/)[0].split('/').pop() || 'flatgeobuf'; return fileName.replace(/\.fgb$/i, '') || 'flatgeobuf'; }
-function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [header.crs?.codeString, header.crs?.wkt, Number.isFinite(header.crs?.code) ? `EPSG:${header.crs?.code}` : undefined].filter(Boolean).map(String); return values.length ? values : undefined; }
+function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [getFlatGeobufCRSIdentifier(header.crs), header.crs?.wkt].filter(Boolean).map(String); return values.length ? values : undefined; }
 function getBoundingBoxFromHeader(header: FlatGeobufHeader): [[number, number], [number, number]] | undefined { const envelope = header.envelope; return envelope && envelope.length >= 4 ? [[envelope[0], envelope[1]], [envelope[2], envelope[3]]] : undefined; }
 function getScanBoundsFromHeader(header: FlatGeobufHeader): {minimum: [number, number]; maximum: [number, number]} | undefined { const boundingBox = getBoundingBoxFromHeader(header); return boundingBox ? {minimum: boundingBox[0], maximum: boundingBox[1]} : undefined; }
 function getColumnRoles(header: FlatGeobufHeader): Record<string, ScanColumnRole> { const roles: Record<string, ScanColumnRole> = {geometry: 'geometry'}; for (const column of header.columns) if (column.primaryKey) roles[column.name] = 'identifier'; return roles; }

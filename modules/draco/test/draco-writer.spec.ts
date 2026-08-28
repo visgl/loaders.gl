@@ -39,10 +39,39 @@ async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
   // Decode Loaded Mesh to use as input data for encoders
-  return await parse(arrayBuffer, DracoLoader);
+  return await parse(arrayBuffer, DracoLoader, {useLocalLibraries: true});
 }
 test('DracoWriter#loader conformance', () => {
   validateWriter(DracoWriter, 'DracoWriter');
+});
+test('DracoWriter#preserves normalized MeshAttribute descriptors', async () => {
+  const compressedMesh = await encode(
+    {
+      attributes: {
+        POSITION: {
+          value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+          size: 3
+        },
+        COLOR_0: {
+          value: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255]),
+          size: 4,
+          normalized: true
+        }
+      },
+      indices: {value: new Uint16Array([0, 1, 2]), size: 1}
+    },
+    DracoWriter,
+    {useLocalLibraries: true}
+  );
+  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true
+  });
+
+  expect(decodedMesh.attributes.COLOR_0.normalized).toBe(true);
+  expect(decodedMesh.attributes.COLOR_0.value).toEqual(
+    new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255])
+  );
 });
 test('DracoWriter#encode(bunny.drc)', async () => {
   if (skipBrowserDracoWasmTest()) {
@@ -93,32 +122,26 @@ test('DracoWriter#encode(bunny.drc)', async () => {
     `Edgebreaker mesh encoding (${edgebreakerMeshByteLength}) is smaller than sequential mesh encoding (${sequentialMeshByteLength})`
   ).toBeTruthy();
 });
-/**
- * Cannot import draco_encoder module:
- * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
- * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
- */
-test.skip('DracoWriter#Worker$encode(bunny.drc)', async () => {
+test('DracoWriter#Worker$encode(bunny.drc)', async () => {
   if (!isBrowser) {
     return;
   }
   const data = await loadBunny();
-  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
-  const MESH = {
-    attributes: {
-      POSITION: data.attributes.POSITION.value
-    },
-    indices: data.indices?.value
-  };
-  const POINTCLOUD = {
-    attributes: {
-      POSITION: data.attributes.POSITION.value
-    }
-  };
+  const positionValueLength = data.attributes.POSITION.value.length;
+  expect(positionValueLength, 'POSITION attribute was found').toBe(104502);
   for (const tc of TEST_CASES) {
-    const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
+    const mesh: {
+      attributes: {POSITION: typeof data.attributes.POSITION.value};
+      indices?: typeof data.indices.value;
+    } = {
+      attributes: {POSITION: cloneTypeArray(data.attributes.POSITION.value)}
+    };
+    if (!tc.options.draco?.pointcloud && data.indices) {
+      mesh.indices = cloneTypeArray(data.indices.value);
+    }
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
+      useLocalLibraries: true,
       _workerType: 'test'
     });
     // const meshSize = getMeshSize(mesh.attributes);
@@ -126,13 +149,13 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parse(compressedMesh, DracoLoader, {useLocalLibraries: true});
       validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
       expect(
         data2.attributes.POSITION.value.length,
         `${tc.title} decoded POSITION length matched`
-      ).toBe(data.attributes.POSITION.value.length);
+      ).toBe(positionValueLength);
     }
   }
 });
@@ -383,7 +406,7 @@ test('DracoWriter#attributes metadata', async () => {
     data.attributes.POSITION.value.length
   );
 });
-test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async () => {
+test('DracoWriter#attributeNameEntry preserves custom attribute names', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
@@ -395,11 +418,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   };
   const compressedMesh = await encode(attributes, DracoWriter, {
     draco: {
-      attributesMetadata: {
-        featureId: {
-          'custom-attribute-name': 'featureId'
-        }
-      }
+      attributeNameEntry: 'custom-attribute-name'
     }
   });
   const data2 = await parse(compressedMesh, DracoLoader, {
@@ -413,6 +432,26 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   expect(data2.attributes.POSITION.value.length, 'decoded POSITION length matched').toBe(
     data.attributes.POSITION.value.length
   );
+});
+
+test('DracoWriter#preserves secondary glTF attribute semantics', async () => {
+  const compressedMesh = await encode(
+    {
+      attributes: {
+        POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        TEXCOORD_1: new Float32Array([0, 0, 1, 0, 0, 1])
+      },
+      indices: new Uint16Array([0, 1, 2])
+    },
+    DracoWriter,
+    {core: {worker: false}, useLocalLibraries: true}
+  );
+  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true
+  });
+
+  expect(decodedMesh.attributes.TEXCOORD_1.value).toHaveLength(6);
 });
 function validatePositionMetadata(data) {
   const POSITION = 0;

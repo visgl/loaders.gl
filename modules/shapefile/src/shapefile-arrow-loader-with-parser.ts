@@ -311,7 +311,10 @@ function getReprojectionTransform(
   if (!reproject) {
     return undefined;
   }
-  const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: _targetCrs || 'WGS84'});
+  if (!sourceCrs) {
+    throw new Error('Shapefile reprojection requires a source CRS from the .prj sidecar file');
+  }
+  const projection = new Proj4Projection({from: sourceCrs, to: _targetCrs || 'WGS84'});
   return coordinate => projection.project(coordinate);
 }
 

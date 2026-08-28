@@ -6,6 +6,7 @@ import {describe, expect, test, vi} from 'vitest';
 
 import {getOmeLegacyIndexer, getOmeSubIFDIndexer} from '../src/lib/ome/ome-indexers';
 import {getOmePixelSourceMeta} from '../src/lib/ome/ome-utils';
+import {getDims, getLabels} from '../src/lib/ome/utils';
 
 const PIXELS = {
   SizeT: 2,
@@ -18,6 +19,14 @@ const PIXELS = {
 };
 
 describe('OME-TIFF helpers', () => {
+  test('maps dimension orders and rejects duplicate or unknown dimensions', () => {
+    expect(getLabels('XYZCT')).toEqual(['t', 'c', 'z', 'y', 'x']);
+    const dimensions = getDims(['t', 'c', 'z', 'y', 'x']);
+    expect(dimensions('x')).toBe(4);
+    expect(() => getDims(['x', 'y', 'x'])).toThrow('duplicated label');
+    expect(() => dimensions('missing' as any)).toThrow('Invalid dimension');
+  });
+
   test.each([
     ['XYZCT', 6],
     ['XYZTC', 2],

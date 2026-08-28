@@ -61,6 +61,22 @@ provides a visual implementation for that feature.
 | Metadata-derived bounding volumes | [x] | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
 | Styling expressions | [ ] | Rendering-side style evaluation is not provided by this module. |
 
+### Coordinate reference systems
+
+See [Coordinate reference systems in 3D Tiles](../concepts/coordinate-reference-systems) for CRS
+semantic discovery, regions, affine versus nonlinear transforms, nested tilesets, epochs, local
+frames, and precision rules.
+
+| Capability | Status | Notes |
+| --- | :---: | --- |
+| `TILESET_CRS_GEOCENTRIC` | [x] | Resolved from inline schema and tileset metadata; explicit `UNKNOWN` remains unknown. |
+| `TILESET_CRS_COORDINATE_EPOCH` | [x] | Finite epoch values are preserved in normalized metadata. |
+| Region-established global frame | [x] | A root region establishes the specification frame without coordinate-magnitude guessing. |
+| Local or ambiguous frames | [x] | Stay unknown unless metadata or an expert override resolves them. |
+| Horizontal/geocentric transform primitive | [x] | Shared Proj4 pipeline and custom definition/grid registration are available. |
+| Complete nonlinear content reprojection | [~] | Per-vertex content, nested placement, normals, bounds, and SSE integration are the next tranche. |
+| Dynamic cross-epoch transformation | [ ] | Epoch is preserved; current Proj4 bindings do not execute epoch operations. |
+
 ## How to read the matrix
 
 The loader and runtime have separate responsibilities. `Tiles3DLoader` parses tileset and tile
@@ -109,6 +125,8 @@ called out explicitly rather than being counted as parser support.
 | Metadata | `EXT_mesh_features` | [x] | Parse + preserve | Feature identifiers are retained for supported glTF payloads. |
 | Metadata | `EXT_structural_metadata` | [x] | Parse + preserve | Schema, property tables, groups, and entity links are exposed; value decoding is application-side. |
 | Metadata | Metadata-derived bounding volumes | [x] | Culling | Direct numeric semantic arrays are normalized into tile/content volumes; property-table decoding remains application-owned. |
+| Spatial | CRS and coordinate-epoch semantics | [x] | Parse + normalize | Inline semantics produce readonly `spatialMetadata`; explicit unknown and invalid epochs retain diagnostics. |
+| Spatial | End-to-end nonlinear reprojection | [~] | Runtime | Shared operations are implemented; content, hierarchy, bound, and orientation integration remains staged. |
 | Renderer | Styling expressions | [ ] | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | [ ] | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |
 

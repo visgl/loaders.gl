@@ -22,6 +22,7 @@ test.runIf(isBrowser)(
     expect(metadata.columns.map(column => column.name)).toContain('geometry');
     expect(metadata.columns.find(column => column.name === 'geometry')?.role).toBe('geometry');
     expect(metadata.capabilities.table?.projection).toBe('residual');
+    expect(metadata.spatial?.coordinateReferenceSystems?.length).toBe(1);
   }
 );
 

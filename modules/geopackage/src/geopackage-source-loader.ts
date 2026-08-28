@@ -20,11 +20,13 @@ import {
 } from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/schema-utils';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader';
 import {
   DEFAULT_SQLJS_CDN,
   getGeoPackageArrowSchema,
+  getProjections,
   listGeoPackageVectorTables,
   loadGeoPackageDatabase,
   parseGeoPackageToArrow,
@@ -43,6 +45,8 @@ export type GeoPackageSourceTableMetadata = {
   identifier?: string;
   description?: string;
   srsId?: number;
+  /** Preferred WKT2 or fallback WKT1 definition for the table SRS. */
+  crs?: WKTCRSDefinition;
   geometryColumnName: string;
   geometryTypeName: string;
   bounds?: [[number, number], [number, number]];
@@ -150,11 +154,15 @@ export class GeoPackageDataSource
           cancellation: false
         }
       },
-      spatial: selectedTable.bounds
-        ? {
-            bounds: {minimum: selectedTable.bounds[0], maximum: selectedTable.bounds[1]}
-          }
-        : undefined,
+      spatial:
+        selectedTable.bounds || selectedTable.crs
+          ? {
+              bounds: selectedTable.bounds
+                ? {minimum: selectedTable.bounds[0], maximum: selectedTable.bounds[1]}
+                : undefined,
+              coordinateReferenceSystems: selectedTable.crs ? [selectedTable.crs] : undefined
+            }
+          : undefined,
       statistics: {byteLength: undefined}
     });
   }
@@ -186,28 +194,33 @@ export class GeoPackageDataSource
       this.options.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
     );
     const vectorTables = listGeoPackageVectorTables(database);
+    const projections = getProjections(database);
     const defaultTable = selectGeoPackageVectorTable(
       vectorTables,
       this.options.geopackage?.table || undefined
     );
 
     return {
-      tables: vectorTables.map(vectorTable => ({
-        schema: getGeoPackageArrowSchema(database, vectorTable),
-        name: vectorTable.name,
-        identifier: vectorTable.identifier,
-        description: vectorTable.description,
-        srsId: vectorTable.srsId,
-        geometryColumnName: vectorTable.geometryColumnName,
-        geometryTypeName: vectorTable.geometryTypeName,
-        bounds: vectorTable.bounds
-          ? [
-              [vectorTable.bounds.minX, vectorTable.bounds.minY],
-              [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
-            ]
-          : undefined,
-        isDefault: vectorTable.name === defaultTable.name
-      }))
+      tables: vectorTables.map(vectorTable => {
+        const crs = vectorTable.srsId === undefined ? undefined : projections[vectorTable.srsId];
+        return {
+          schema: getGeoPackageArrowSchema(database, vectorTable, crs),
+          name: vectorTable.name,
+          identifier: vectorTable.identifier,
+          description: vectorTable.description,
+          srsId: vectorTable.srsId,
+          crs,
+          geometryColumnName: vectorTable.geometryColumnName,
+          geometryTypeName: vectorTable.geometryTypeName,
+          bounds: vectorTable.bounds
+            ? [
+                [vectorTable.bounds.minX, vectorTable.bounds.minY],
+                [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
+              ]
+            : undefined,
+          isDefault: vectorTable.name === defaultTable.name
+        };
+      })
     };
   }
 

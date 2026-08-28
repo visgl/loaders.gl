@@ -71,6 +71,34 @@ test('Tiles3DLoader#detects extensionless tileset JSON from structure', async ()
   expect(tileset.asset.version).toBe('1.1');
   expect(tileset.root.lodMetricValue).toBe(0);
 });
+test('Tiles3DLoader#exposes normalized CRS semantics', async () => {
+  const tileset = await parse(
+    encodeTilesetJson({
+      schema: {
+        classes: {
+          tileset: {
+            properties: {
+              crs: {semantic: 'TILESET_CRS_GEOCENTRIC'},
+              epoch: {semantic: 'TILESET_CRS_COORDINATE_EPOCH'}
+            }
+          }
+        }
+      },
+      metadata: {
+        class: 'tileset',
+        properties: {crs: 'EPSG:4978', epoch: 2021.5}
+      }
+    }),
+    Tiles3DLoader,
+    {worker: false}
+  );
+
+  expect(tileset.spatialMetadata).toMatchObject({
+    sourceCrs: 'EPSG:4978',
+    coordinateEpoch: 2021.5,
+    coordinateFrame: 'geocentric'
+  });
+});
 test('Tiles3DLoader#detects JSON glTF tile content from structure', async () => {
   const gltfJson = new TextEncoder().encode(
     JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})

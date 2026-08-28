@@ -63,4 +63,15 @@ describe('NetCDF type helpers', () => {
     expect(num2bytes(99)).toBe(-1);
     expect(str2num('unknown')).toBe(-1);
   });
+
+  test('reads numeric arrays with their native scalar readers', () => {
+    const buffer = createBuffer();
+
+    expect(readType(buffer, TYPES.SHORT, 2)).toEqual([-16, -16]);
+    expect(readType(buffer, TYPES.FLOAT, 2)).toEqual([32.5, 32.5]);
+    expect(readType(buffer, TYPES.DOUBLE, 2)).toEqual([64.5, 64.5]);
+    expect(buffer.readInt16).toHaveBeenCalledTimes(2);
+    expect(buffer.readFloat32).toHaveBeenCalledTimes(2);
+    expect(buffer.readFloat64).toHaveBeenCalledTimes(2);
+  });
 });

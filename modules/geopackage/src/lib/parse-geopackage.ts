@@ -24,6 +24,7 @@ import {
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
@@ -285,7 +286,12 @@ export function getGeoPackageArrowTable(
   const columns = queryResult?.columns || [];
   const values = queryResult?.values || [];
   const projection = getProjection(vectorTable, projections, options);
-  const schema = getGeoPackageArrowSchema(database, vectorTable);
+  const outputCrs = options.reproject
+    ? options.targetCrs
+    : vectorTable.srsId === undefined
+      ? undefined
+      : projections[vectorTable.srsId];
+  const schema = getGeoPackageArrowSchema(database, vectorTable, outputCrs);
   const tableBuilder = new ArrowTableBuilder(schema);
 
   for (const row of values) {
@@ -304,10 +310,21 @@ export function getProjections(database: Database): ProjectionMapping {
 
   while (statement.step()) {
     const projectionRow = statement.getAsObject() as unknown as SpatialRefSysRow;
-    projectionMapping[projectionRow.srs_id] = projectionRow.definition;
+    const definition = getSpatialReferenceSystemDefinition(projectionRow);
+    if (definition) {
+      projectionMapping[projectionRow.srs_id] = definition;
+    }
   }
 
   return projectionMapping;
+}
+
+/** Selects the preferred usable CRS definition from one GeoPackage SRS row. */
+export function getSpatialReferenceSystemDefinition(
+  spatialReferenceSystem: SpatialRefSysRow
+): WKTCRSDefinition | undefined {
+  const definition = spatialReferenceSystem.definition_12_063 || spatialReferenceSystem.definition;
+  return definition && definition.trim().toLowerCase() !== 'undefined' ? definition : undefined;
 }
 
 function constructGeoJsonFeature(
@@ -378,18 +395,26 @@ function constructArrowRow(
   return arrowRow;
 }
 
-function getProjection(
+/** Creates the requested GeoPackage projection or rejects missing source CRS metadata. */
+export function getProjection(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
   options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
 ): Proj4Projection | null {
-  if (!options.reproject || vectorTable.srsId === undefined) {
+  if (!options.reproject) {
     return null;
+  }
+  if (vectorTable.srsId === undefined) {
+    throw new Error(
+      `GeoPackage reprojection requires a source CRS identifier for table "${vectorTable.name}"`
+    );
   }
 
   const sourceProjection = projections[vectorTable.srsId];
   if (!sourceProjection) {
-    return null;
+    throw new Error(
+      `GeoPackage reprojection requires a defined source CRS for SRS ${vectorTable.srsId}`
+    );
   }
 
   return new Proj4Projection({
@@ -505,7 +530,8 @@ function getSchema(database: Database, tableName: string): Schema {
 /** Reads a selected GeoPackage feature-table schema without materializing its rows. */
 export function getGeoPackageArrowSchema(
   database: Database,
-  vectorTable: GeoPackageVectorTableInfo
+  vectorTable: GeoPackageVectorTableInfo,
+  crs?: Proj4CRSDefinition
 ): Schema {
   const statement = database.prepare(`PRAGMA table_info(\`${vectorTable.name}\`)`);
   const fields: Field[] = [];
@@ -522,7 +548,13 @@ export function getGeoPackageArrowSchema(
     });
   }
 
-  fields.push(makeWKBGeometryField(GEOMETRY_OUTPUT_COLUMN_NAME));
+  const geometryField = makeWKBGeometryField(GEOMETRY_OUTPUT_COLUMN_NAME);
+  if (crs) {
+    geometryField.metadata!['ARROW:extension:metadata'] = JSON.stringify(
+      getGeoArrowCrsMetadata(crs)
+    );
+  }
+  fields.push(geometryField);
 
   const schema: Schema = {fields, metadata: {}};
   setWKBGeometrySchemaMetadata(schema, {
@@ -530,6 +562,17 @@ export function getGeoPackageArrowSchema(
     geometryTypes: [getGeoMetadataGeometryType(vectorTable)]
   });
   return schema;
+}
+
+/** Preserves a GeoPackage output CRS using the matching GeoArrow metadata representation. */
+function getGeoArrowCrsMetadata(crs: Proj4CRSDefinition): Record<string, unknown> {
+  if (typeof crs !== 'string') {
+    return {crs, crs_type: 'projjson'};
+  }
+  if (/^[A-Za-z][A-Za-z0-9_.-]*:[^\s]+$/.test(crs)) {
+    return {crs, crs_type: 'authority_code'};
+  }
+  return {crs};
 }
 
 function getGeoMetadataGeometryType(

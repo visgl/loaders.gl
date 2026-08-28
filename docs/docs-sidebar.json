@@ -86,6 +86,7 @@
       "modules/services/arcgis-image-server",
       "modules/services/arcgis-feature-server",
       "modules/services/arcgis-vector-tile-server",
+      "modules/services/arcgis-scene-server",
       "modules/services/api-reference/arcgis"
     ]
   },
@@ -288,7 +289,8 @@
             "label": "Runtime Concepts",
             "items": [
               "modules/3d-tiles/concepts/README",
-      "modules/3d-tiles/concepts/correctness-and-conformance",
+              "modules/3d-tiles/concepts/correctness-and-conformance",
+              "modules/3d-tiles/concepts/coordinate-reference-systems",
               "modules/3d-tiles/concepts/resource-resolution-and-content-detection",
               "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
               "modules/3d-tiles/concepts/implicit-tiling-and-subtrees",
@@ -420,7 +422,8 @@
         "type": "category",
         "label": "@loaders.gl/i3s",
         "items": [
-          "modules/i3s/README"
+          "modules/i3s/README",
+          "modules/i3s/concepts/coordinate-reference-systems"
         ]
       },
       {

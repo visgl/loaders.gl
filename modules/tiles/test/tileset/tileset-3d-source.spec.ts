@@ -142,13 +142,22 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     lodMetricType: 'geometricError',
     lodMetricValue: 16,
     queryString: 'session=abc123',
-    extensionsUsed: ['KHR_texture_basisu']
+    extensionsUsed: ['KHR_texture_basisu'],
+    schema: {
+      classes: {
+        tileset: {
+          properties: {crs: {semantic: 'TILESET_CRS_GEOCENTRIC'}}
+        }
+      }
+    },
+    metadata: {class: 'tileset', properties: {crs: 'EPSG:4978'}}
   };
   const source = new Tiles3DSource({...tilesetJson, coreApi});
   await source.initialize();
   const metadata = source.getMetadata();
   expect(metadata.basePath).toBe('https://example.com/root');
   expect(metadata.refine).toBe('ADD');
+  expect(metadata.spatialReference?.sourceCrs).toBe('EPSG:4978');
   expect(source.hasExtension('KHR_texture_basisu')).toBeTruthy();
   expect(source.getTileUrl('https://example.com/root/tile.b3dm?existing=1')).toBe(
     'https://example.com/root/tile.b3dm?existing=1&session=abc123&v=42'
@@ -167,6 +176,11 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
       lodMetricType: 'maxScreenThresholdSQ',
       lodMetricValue: 4,
       nodePagesTile: {nodesInNodePages: 7},
+      spatialReference: {wkid: 4326, vcsWkid: 5703},
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        vertCRS: 'EPSG:5703'
+      },
       store: {extent: [0, 0, 1, 1]}
     } as any,
     {i3s: {token: 'secret-token'}}
@@ -176,6 +190,11 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
   expect(metadata.tileset.root.id, 'promised roots are awaited during initialization').toBe(
     'root-node'
   );
+  expect(metadata.spatialReference).toMatchObject({
+    sourceCrs: 'EPSG:4326',
+    verticalCrs: 'EPSG:5703',
+    heightReference: 'orthometric'
+  });
   expect(source.getTileUrl('https://example.com/SceneServer/layers/0/nodes/1')).toBe(
     'https://example.com/SceneServer/layers/0/nodes/1?token=secret-token'
   );

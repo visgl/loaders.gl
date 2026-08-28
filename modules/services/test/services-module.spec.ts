@@ -3,6 +3,7 @@ import {
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
+  ArcGISSceneServerSourceLoader,
   ArcGISVectorTileServerSourceLoader,
   ArcGISVectorSource,
   SERVICE_LOADERS,
@@ -23,6 +24,7 @@ describe('@loaders.gl/services', () => {
     expect(ArcGISMapTileSourceLoader.id).toBe('arcgis-map-server');
     expect(ArcGISImageTileSourceLoader.id).toBe('arcgis-image-server-tiles');
     expect(ArcGISVectorTileServerSourceLoader.id).toBe('arcgis-vector-tile-server');
+    expect(ArcGISSceneServerSourceLoader.id).toBe('arcgis-scene-server');
   });
 
   test('identifies services-owned loaders', () => {
@@ -36,6 +38,7 @@ describe('@loaders.gl/services', () => {
   test('finds service loaders by id or type', () => {
     expect(getServiceLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
     expect(getServiceLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);
+    expect(getServiceLoader('arcgis-scene-server')).toBe(ArcGISSceneServerSourceLoader);
     expect(getServiceLoader('unknown-service')).toBeUndefined();
   });
 
@@ -45,7 +48,8 @@ describe('@loaders.gl/services', () => {
       ArcGISImageServerSourceLoader,
       ArcGISImageTileSourceLoader,
       ArcGISMapTileSourceLoader,
-      ArcGISVectorTileServerSourceLoader
+      ArcGISVectorTileServerSourceLoader,
+      ArcGISSceneServerSourceLoader
     ]);
   });
 
@@ -62,6 +66,8 @@ describe('@loaders.gl/services', () => {
   test('keeps the package entrypoints wired to the public exports', () => {
     expect(bundledServices.ArcGISFeatureServerSourceLoader).toBe(ArcGISFeatureServerSourceLoader);
     expect(unbundledServices.ArcGISFeatureServerSourceLoader).toBe(ArcGISFeatureServerSourceLoader);
+    expect(bundledServices.ArcGISSceneServerSourceLoader).toBe(ArcGISSceneServerSourceLoader);
+    expect(unbundledServices.ArcGISSceneServerSourceLoader).toBe(ArcGISSceneServerSourceLoader);
   });
 
   test('discovers services from ArcGIS server directories', async () => {
