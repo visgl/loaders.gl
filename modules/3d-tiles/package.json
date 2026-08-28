@@ -43,6 +43,11 @@
       "import": "./dist/subtree-zod-schema.js",
       "require": "./dist/subtree-zod-schema.cjs"
     },
+    "./cesium-ion-loader-with-parser": {
+      "types": "./dist/cesium-ion-loader-with-parser.d.ts",
+      "import": "./dist/cesium-ion-loader-with-parser.js",
+      "require": "./dist/cesium-ion-loader-with-parser.cjs"
+    },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"

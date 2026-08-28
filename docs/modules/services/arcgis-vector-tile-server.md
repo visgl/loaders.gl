@@ -25,6 +25,12 @@ loaders.gl `VectorTileSource` contract.
 | Authentication | Supported | URL tokens and standard fetch options are preserved for all resources |
 | deck.gl rendering | First class | `SourceLayer` consumes decoded vector tiles directly |
 
+## Authentication
+
+`createArcGISCredential` applies one exact-origin token to service metadata, styles, sprites, raw
+tiles, and decoded tile requests. Explicit URL tokens take precedence. See the
+[authentication guide](/docs/developer-guide/authentication).
+
 ## Raw and decoded tiles
 
 ```ts

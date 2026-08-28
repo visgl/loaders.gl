@@ -84,17 +84,26 @@ objects until the application chooses a record, band, color ramp, and NoData tre
 
 ## Authentication and request customization
 
-ArcGIS tokens already present in a service URL are preserved on metadata and data requests.
-Headers, credentials, cancellation, proxies, and custom transports use standard loaders.gl fetch
-options:
+Use `createArcGISCredential` to scope a token to the exact ArcGIS Online, Enterprise, or proxy
+origin. The credential follows metadata, feature, image, tile, and deck.gl requests:
 
 ```ts
+import {createArcGISCredential} from '@loaders.gl/services';
+
 const source = await load(serviceUrl, SERVICE_LOADERS, {
-  fetch: {
-    headers: {Authorization: `Bearer ${token}`}
+  core: {
+    credentials: [
+      createArcGISCredential({origins: [new URL(serviceUrl).origin], token})
+    ]
   }
 });
 ```
+
+ArcGIS tokens already present in a service URL are preserved and take precedence. Bearer headers,
+cookies, cancellation, proxies, and custom transports continue to use standard loaders.gl fetch
+options. Async token callbacks support one deduplicated refresh after 401, 403, 498, or 499.
+See the [authentication guide](/docs/developer-guide/authentication) for the common model and
+security boundaries.
 
 Service-specific options can add ArcGIS request parameters without bypassing the source API. See
 the individual service pages for the supported option names.

@@ -74,6 +74,11 @@ This cache stores strings only. It does not cache response bodies, decoded conte
 
 The invalidation rule is important for rotating tokens and session changes: a derived URL must never survive after its source query value changes. Applications should still avoid embedding long-lived secrets in logs or diagnostics.
 
+For Google Photorealistic 3D Tiles, configure the API `key` with
+`createGoogleMapsCredential`. The credential pipeline scopes it to `tile.googleapis.com`, while
+the resource resolver independently preserves the server-issued `session` parameter on child
+tiles. See [authentication](/docs/developer-guide/authentication#google-3d-tiles).
+
 ## Nested and archived tilesets
 
 A loaded resource is considered a nested tileset when its parsed result has the normalized `tileset3d` shape. The URL no longer needs to contain `.json`. Nested roots therefore work through signed endpoints and content-addressed storage.

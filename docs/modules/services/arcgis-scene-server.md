@@ -29,8 +29,11 @@ const source = new ArcGISSceneServerSource(SCENE_SERVER_URL, {
 ```
 
 The source accepts custom fetch implementations through the normal `core.loadOptions` mechanism.
-Tokens can be supplied through `arcgis-scene-server.token` or `i3s.token`. Point profiles are
-reported as unsupported; mesh and Point Cloud profiles are selected automatically.
+For new integrations, configure `createArcGISCredential` in
+`core.loadOptions.core.credentials`; it follows metadata and I3S resource requests without being
+sent to unrelated origins. The existing `arcgis-scene-server.token` and `i3s.token` options remain
+supported. See [authentication](/docs/developer-guide/authentication). Point profiles are reported
+as unsupported; mesh and Point Cloud profiles are selected automatically.
 
 ## API
 

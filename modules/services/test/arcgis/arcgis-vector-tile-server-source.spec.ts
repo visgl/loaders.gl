@@ -1,5 +1,5 @@
-import {expect, test} from 'vitest';
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/services';
+import {afterEach, expect, test, vi} from 'vitest';
+import {ArcGISVectorTileServerSourceLoader, createArcGISCredential} from '@loaders.gl/services';
 
 const VECTOR_TILE_SERVER_URL = 'https://example.com/arcgis/rest/services/World/VectorTileServer';
 
@@ -16,6 +16,8 @@ const SERVICE_METADATA = {
   },
   fullExtent: {xmin: -20037508, ymin: -20037508, xmax: 20037508, ymax: 20037508}
 };
+
+afterEach(() => vi.unstubAllGlobals());
 
 test('ArcGISVectorTileServerSource exposes tile metadata and resources', async () => {
   const source = ArcGISVectorTileServerSourceLoader.createDataSource(VECTOR_TILE_SERVER_URL, {});
@@ -64,6 +66,36 @@ test('ArcGISVectorTileServerSource fetches raw PBF tiles', async () => {
   };
   const result = await source.getTile({z: 2, x: 4, y: 5}, new AbortController().signal);
   expect(new Uint8Array(result!)).toEqual(tileBytes);
+});
+
+test('ArcGISVectorTileServerSource applies core credentials to metadata and tiles', async () => {
+  const requestedURLs: string[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async url => {
+      requestedURLs.push(String(url));
+      return String(url).includes('f=pjson')
+        ? new Response(JSON.stringify(SERVICE_METADATA))
+        : new Response(new Uint8Array([1, 2, 3]));
+    })
+  );
+  const source = ArcGISVectorTileServerSourceLoader.createDataSource(VECTOR_TILE_SERVER_URL, {
+    core: {
+      loadOptions: {
+        core: {
+          credentials: [createArcGISCredential({token: 'secret', origins: ['https://example.com']})]
+        }
+      }
+    }
+  });
+
+  await source.getMetadata();
+  await source.getTile({z: 2, x: 4, y: 5});
+
+  expect(requestedURLs).toEqual([
+    `${VECTOR_TILE_SERVER_URL}?f=pjson&token=secret`,
+    `${VECTOR_TILE_SERVER_URL}/tile/2/5/4.pbf?token=secret`
+  ]);
 });
 
 test('ArcGISVectorTileServerSource decodes deck.gl tile data to WGS84', async () => {

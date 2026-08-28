@@ -24,6 +24,12 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 | Feature queries | Not provided | Use FeatureServer for vector queries or WMS `GetFeatureInfo` when available |
 | deck.gl rendering | First class | `SourceLayer` consumes the `TileSource` directly |
 
+## Authentication
+
+`createArcGISCredential` applies one exact-origin token to metadata, cached tiles, and dynamic
+exports, including requests issued through `SourceLayer`. Explicit URL tokens take precedence. See
+the [authentication guide](/docs/developer-guide/authentication).
+
 ## Cached tiles
 
 ```ts
