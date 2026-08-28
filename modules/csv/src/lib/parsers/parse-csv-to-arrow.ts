@@ -79,6 +79,10 @@ export async function parseRawArrowCSVText(
     return parseRawArrowCSVTextWithPapa(csvText, options, csvOptions);
   }
 
+  // Keep the common text case in the string domain: encoding the entire input before parsing
+  // duplicates the input and makes the parser pay a UTF-16-to-UTF-8 conversion that ASCII does
+  // not need. The direct parser is deliberately conservative and returns null for any case it
+  // cannot prove equivalent, allowing the general byte/Papa-compatible paths to preserve behavior.
   const rawASCIIArrowTable = parseRawArrowCSVASCIIText(csvText, csvOptions);
   if (rawASCIIArrowTable) {
     return rawASCIIArrowTable;
