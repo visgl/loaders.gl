@@ -361,7 +361,7 @@ describe('FederatedTableScanSource', () => {
       }).getQueryMetadata()
     ).rejects.toThrow('does not implement TableScanSource: plain');
 
-    const table = makeArrowTable({id: [1]});
+    const table = makeTypedArrowTable({id: arrow.vectorFromArray([1], new arrow.Int32())});
     const supportedMetadata = createTestMetadata('compatible', table);
     dataSourceManager.add({
       dataSourceId: 'metadata-only',
@@ -482,6 +482,39 @@ describe('FederatedTableScanSource', () => {
     const batches = await collectBatches(source.read({limit: 1}));
     expect(batches.map(batch => batch.data.toArray()[0]?.toJSON())).toEqual([{id: 1}]);
     expect(physicalSource.iteratorCloseCount).toBe(1);
+  });
+
+  test('handles non-data batches and physical batches without schemas', async () => {
+    const dataSourceManager = new DataSourceManager();
+    const physicalSource = new TestTableScanSource('physical', [makeArrowTable({id: [1]})], {
+      prependNonDataBatch: true,
+      omitBatchSchema: true
+    });
+    dataSourceManager.add({dataSourceId: 'physical', dataSource: physicalSource});
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [{dataSourceId: 'physical'}]
+    });
+
+    const batches = await collectBatches(source.read());
+    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+      {id: 1}
+    ]);
+  });
+
+  test('reports failed child scans through aggregate telemetry', async () => {
+    const dataSourceManager = new DataSourceManager();
+    const physicalSource = new TestTableScanSource('broken', [makeArrowTable({id: [1]})], {
+      throwError: new Error('broken child')
+    });
+    dataSourceManager.add({dataSourceId: 'broken', dataSource: physicalSource});
+    const source = new FederatedTableScanSource(dataSourceManager, {
+      sources: [{dataSourceId: 'broken'}]
+    });
+    let telemetry: ScanExecutionTelemetry | undefined;
+    await expect(
+      collectBatches(source.read({onTelemetry: value => (telemetry = value)}))
+    ).rejects.toThrow('broken child');
+    expect(telemetry).toMatchObject({status: 'failed', sources: [{status: 'failed'}]});
   });
 
   test('requests a row-count column when a union source lacks all global columns', async () => {
@@ -612,6 +645,133 @@ describe('FederatedTableScanSource', () => {
         sources: [{dataSourceId: 'first-decimal'}, {dataSourceId: 'second-decimal'}]
       }).getQueryMetadata()
     ).resolves.toMatchObject({columns: [{name: 'amount'}]});
+  });
+
+  test('validates explicit nullable union fields and lossless primitive casts', async () => {
+    const table = makeTypedArrowTable({id: arrow.vectorFromArray([1], new arrow.Int32())});
+    const dataSourceManager = new DataSourceManager();
+    dataSourceManager.add({
+      dataSourceId: 'present',
+      dataSource: new TestTableScanSource('present', [table], {
+        metadata: createTestMetadata('present', table, {
+          fields: [{name: 'id', type: 'int32', nullable: false}],
+          metadata: {}
+        })
+      })
+    });
+    dataSourceManager.add({
+      dataSourceId: 'missing',
+      dataSource: new TestTableScanSource('missing', [table], {
+        metadata: createTestMetadata('missing', table, {
+          fields: [{name: 'other', type: 'int32', nullable: false}],
+          metadata: {}
+        })
+      })
+    });
+
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        schemaPolicy: 'union',
+        sources: [{dataSourceId: 'present'}, {dataSourceId: 'missing'}],
+        outputSchema: {
+          fields: [
+            {name: 'id', type: 'int64', nullable: true},
+            {name: 'other', type: 'int32', nullable: true},
+            {name: 'extra', type: 'utf8', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).resolves.toMatchObject({columns: [{name: 'id'}, {name: 'other'}, {name: 'extra'}]});
+
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        schemaPolicy: 'union',
+        sources: [{dataSourceId: 'present'}, {dataSourceId: 'missing'}],
+        outputSchema: {
+          fields: [
+            {name: 'id', type: 'int64', nullable: true},
+            {name: 'other', type: 'int32', nullable: true},
+            {name: 'extra', type: 'utf8', nullable: false}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/absent from every source and must be nullable/);
+
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        schemaPolicy: 'union',
+        sources: [{dataSourceId: 'present'}, {dataSourceId: 'missing'}],
+        outputSchema: {
+          fields: [
+            {name: 'id', type: 'int32', nullable: false},
+            {name: 'other', type: 'int32', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/must be nullable when absent/);
+
+    await expect(
+      new FederatedTableScanSource(dataSourceManager, {
+        schemaPolicy: 'union',
+        sources: [{dataSourceId: 'present'}],
+        outputSchema: {
+          fields: [
+            {name: 'id', type: 'int32', nullable: true},
+            {name: 'id', type: 'int64', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/invalid or duplicate field/);
+
+    const viewManager = new DataSourceManager();
+    const viewSchema: Schema = {
+      fields: [
+        {name: 'text', type: 'utf8-view' as DataType, nullable: false},
+        {name: 'payload', type: 'binary-view' as DataType, nullable: false},
+        {name: 'unsigned', type: 'uint8', nullable: false},
+        {name: 'signed', type: 'int32', nullable: false}
+      ],
+      metadata: {}
+    };
+    viewManager.add({
+      dataSourceId: 'views',
+      dataSource: new TestTableScanSource('views', [table], {
+        metadata: createTestMetadata('views', table, viewSchema)
+      })
+    });
+    await expect(
+      new FederatedTableScanSource(viewManager, {
+        sources: [{dataSourceId: 'views'}],
+        outputSchema: {
+          fields: [
+            {name: 'text', type: 'utf8', nullable: true},
+            {name: 'payload', type: 'binary', nullable: true},
+            {name: 'unsigned', type: 'int16', nullable: true},
+            {name: 'signed', type: 'int8', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/Unsupported federated normalization.*int32 to int8/);
+
+    await expect(
+      new FederatedTableScanSource(viewManager, {
+        sources: [{dataSourceId: 'views'}],
+        outputSchema: {
+          fields: [
+            {name: 'text', type: 'int32', nullable: true},
+            {name: 'payload', type: 'binary', nullable: true},
+            {name: 'unsigned', type: 'int16', nullable: true},
+            {name: 'signed', type: 'int64', nullable: true}
+          ],
+          metadata: {}
+        }
+      }).getQueryMetadata()
+    ).rejects.toThrow(/Unsupported federated normalization.*utf8-view to int32/);
   });
 
   test('reports statistics only when every source count is exact', async () => {
@@ -845,6 +1005,15 @@ class TestTableScanSource
       ? Number.POSITIVE_INFINITY
       : (options.limit ?? Number.POSITIVE_INFINITY);
     try {
+      if (this.testOptions.throwError) throw this.testOptions.throwError;
+      if (this.testOptions.prependNonDataBatch) {
+        yield {
+          batchType: 'metadata',
+          shape: 'arrow-table',
+          length: 0,
+          metadata: {partition: -2}
+        } as unknown as ArrowTableBatch;
+      }
       if (this.testOptions.prependEmptyBatch) {
         const data = arrow.tableFromArrays({id: []});
         yield {
@@ -871,7 +1040,7 @@ class TestTableScanSource
         yield {
           batchType: 'data',
           shape: 'arrow-table',
-          schema: result.schema,
+          ...(this.testOptions.omitBatchSchema ? {} : {schema: result.schema}),
           data: result.data,
           length: result.data.numRows,
           metadata: {partition: batchIndex}
@@ -891,6 +1060,12 @@ type TestTableScanSourceOptions = Readonly<{
   ignoreLimit?: boolean;
   /** Emits an empty physical batch before data batches. */
   prependEmptyBatch?: boolean;
+  /** Emits a non-data batch before data batches. */
+  prependNonDataBatch?: boolean;
+  /** Omits the schema on data batches to exercise metadata fallback. */
+  omitBatchSchema?: boolean;
+  /** Throws from the physical iterator before producing a batch. */
+  throwError?: Error;
 }>;
 
 /** Wraps simple columns in the loaders.gl Arrow table shape. */

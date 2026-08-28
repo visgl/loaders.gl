@@ -1,5 +1,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
+import {parseSQLPredicate} from '@loaders.gl/sql';
 import {ArrowSourceLoader, ArrowTableSource} from '../src/arrow-source';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {
@@ -12,6 +13,24 @@ test('ArrowTableSource discovers schema and applies projection and limit', async
   for await (const batch of source.read({columns: ['value'], limit: 1})) batches.push(batch);
   expect(batches[0]?.length).toBe(1);
   expect(batches[0]?.data.getChild('value')?.get(0)).toBe(1);
+});
+
+test('ArrowTableSource applies residual predicates and stops after a batch limit', async () => {
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({id: [1, 2, 3], value: [10, 20, 30]}));
+  const source = new ArrowTableSource(new Blob([bytes]));
+  const batches = [];
+  const telemetry = [];
+  for await (const batch of source.read({
+    predicate: parseSQLPredicate('value >= 20'),
+    columns: ['id'],
+    limit: 1,
+    onTelemetry: value => telemetry.push(value)
+  }))
+    batches.push(batch);
+  expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    {id: 2}
+  ]);
+  expect(telemetry[0]).toMatchObject({rowsTested: 3, rowsRetained: 2, rowsReturned: 1});
 });
 
 test('ArrowTableSource handles zero limits and empty projections', async () => {
