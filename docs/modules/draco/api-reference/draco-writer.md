@@ -30,16 +30,32 @@ const data = await encode(mesh, DracoWriter, options);
 
 ## Data Format
 
-`DracoWriter` accepts Mesh Arrow tables, Mesh objects, and legacy flat attribute maps. Mesh attributes are passed directly to Draco without an intermediate Arrow conversion. Typed-array subviews retain their `byteOffset` and length, and the `normalized` flag on Mesh attributes is preserved in the encoded Draco attribute.
+`DracoWriter` accepts Mesh Arrow tables, Mesh objects, and legacy flat attribute maps. Mesh attributes are passed directly to Draco without an intermediate Arrow conversion. Typed-array subviews retain their `byteOffset` and length, and the `normalized` flag on Mesh attributes is preserved in the encoded Draco attribute. Invalid component counts, mismatched attribute lengths, out-of-range triangle indices, and unsupported typed arrays are rejected before encoding.
 
 ## Options
 
-| Option               | Type                                                                     | Default | Description                                                                  |
-| -------------------- | ------------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------- |
-| `draco.pointcloud`   | `boolean`                                                                | `false` | Whether to encode a point cloud instead of an indexed triangle mesh.          |
-| `draco.speed`        | `[number, number]`                                                       | Draco   | Encoding and decoding speed, from `0` (slowest) to `10` (fastest).            |
-| `draco.method`       | `'MESH_EDGEBREAKER_ENCODING' \| 'MESH_SEQUENTIAL_ENCODING'`             | Draco   | Triangle mesh encoding method.                                                |
-| `draco.quantization` | `Record<string, number>`                                                 | Draco   | Quantization bit count keyed by Draco attribute type, such as `POSITION: 14`. |
+| Option                     | Type                                                         | Default | Description                                                                                |
+| -------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------ |
+| `draco.pointcloud`         | `boolean`                                                    | `false` | Whether to encode a point cloud instead of an indexed triangle mesh.                        |
+| `draco.deduplicateValues`  | `boolean`                                                    | `false` | Whether Draco should deduplicate identical point-cloud attribute tuples.                    |
+| `draco.speed`              | `[number, number]`                                           | Draco   | Encoding and decoding speed, from `0` (slowest) to `10` (fastest).                          |
+| `draco.method`             | `'MESH_EDGEBREAKER_ENCODING' \| 'MESH_SEQUENTIAL_ENCODING'` | Draco   | Triangle mesh encoding method.                                                              |
+| `draco.quantization`       | `Partial<Record<DracoAttributeType, number>>`                | Draco   | Quantization bits keyed by Draco attribute type, such as `POSITION: 14`.                    |
+| `draco.attributeTypes`     | `Record<string, DracoAttributeType>`                         | `{}`    | Overrides the Draco compression category for application attributes such as `coordinates`. |
+| `draco.attributeNameEntry` | `string`                                                     | `name`  | Metadata key used to preserve each original application attribute name.                     |
+| `draco.metadata`           | `DracoMetadata`                                              | `{}`    | Geometry metadata containing strings, numbers, or `Int32Array` values.                      |
+| `draco.attributesMetadata` | `Record<string, DracoMetadata>`                              | `{}`    | Per-attribute metadata keyed by the original application attribute name.                    |
+
+`POSITION`, `NORMAL`, `COLOR_n`, and `TEXCOORD_n` semantics are categorized automatically. Use `attributeTypes` when an application uses different names:
+
+```typescript
+await encode(mesh, DracoWriter, {
+  draco: {
+    attributeTypes: {coordinates: 'POSITION', uv1: 'TEX_COORD'},
+    attributeNameEntry: 'semantic'
+  }
+});
+```
 
 ## Dependencies
 

@@ -131,6 +131,7 @@ export async function loadDracoEncoderModule(
   return await encoderPromise;
 }
 
+/** Loads the selected decoder and retries with the JavaScript backend after a WASM failure. */
 async function loadDracoDecoderWithFallback(
   options: LoadLibraryOptions,
   type: 'wasm' | 'javascript'
@@ -152,6 +153,7 @@ async function loadDracoDecoderWithFallback(
   }
 }
 
+/** Loads and initializes one external Draco decoder backend. */
 async function loadDracoDecoder(
   options: LoadLibraryOptions,
   type: 'wasm' | 'javascript'
@@ -201,6 +203,7 @@ async function loadDracoDecoder(
   return await initializeDracoModule(decoderInitializer, wasmBinary);
 }
 
+/** Loads the decoder wrapper and WASM binary concurrently. */
 async function loadDecoderWasmAssets(options: LoadLibraryOptions): Promise<[unknown, ArrayBuffer]> {
   return await Promise.all([
     loadLibrary(
@@ -218,6 +221,7 @@ async function loadDecoderWasmAssets(options: LoadLibraryOptions): Promise<[unkn
   ]);
 }
 
+/** Loads and initializes the external Draco WASM encoder. */
 async function loadDracoEncoder(options: LoadLibraryOptions): Promise<LoadedDracoModule> {
   let encoderLibrary: unknown;
   let wasmBinary: ArrayBuffer;
@@ -238,6 +242,7 @@ async function loadDracoEncoder(options: LoadLibraryOptions): Promise<LoadedDrac
   return await initializeDracoModule(encoderInitializer, wasmBinary);
 }
 
+/** Loads the encoder wrapper and WASM binary concurrently. */
 async function loadEncoderWasmAssets(options: LoadLibraryOptions): Promise<[unknown, ArrayBuffer]> {
   return await Promise.all([
     loadLibrary(
@@ -255,6 +260,7 @@ async function loadEncoderWasmAssets(options: LoadLibraryOptions): Promise<[unkn
   ]);
 }
 
+/** Initializes an Emscripten Draco factory that may use callbacks, promises, or both. */
 function initializeDracoModule(
   initializer: DracoModuleInitializer | undefined,
   wasmBinary?: ArrayBuffer
@@ -276,6 +282,7 @@ function initializeDracoModule(
   });
 }
 
+/** Resolves a Draco initializer from a direct, named, or default library export. */
 function getLibraryExport(
   library: unknown,
   exportName: 'DracoDecoderModule' | 'DracoEncoderModule'
@@ -293,6 +300,7 @@ function getLibraryExport(
   return undefined;
 }
 
+/** Returns and validates the optional injected `draco3d` package reference. */
 function getInjectedDraco3DModule(options: LoadLibraryOptions): Draco3DModule | undefined {
   const module = options.modules?.draco3d;
   if (!module) {
@@ -304,6 +312,7 @@ function getInjectedDraco3DModule(options: LoadLibraryOptions): Draco3DModule | 
   return module as Draco3DModule;
 }
 
+/** Narrows an injected package to the decoder factory interface. */
 function validateDracoDecoderModule(module: unknown): DracoDecoderModule {
   const typedModule = module as Draco3DModule;
   if (typeof typedModule?.createDecoderModule !== 'function') {
@@ -312,6 +321,7 @@ function validateDracoDecoderModule(module: unknown): DracoDecoderModule {
   return typedModule as DracoDecoderModule;
 }
 
+/** Narrows an injected package to the encoder factory interface. */
 function validateDracoEncoderModule(module: unknown): DracoEncoderModule {
   const typedModule = module as Draco3DModule;
   if (typeof typedModule?.createEncoderModule !== 'function') {
@@ -320,6 +330,7 @@ function validateDracoEncoderModule(module: unknown): DracoEncoderModule {
   return typedModule as DracoEncoderModule;
 }
 
+/** Builds a stable cache key from the backend and external-library configuration. */
 function getLibraryCacheKey(type: string, options: LoadLibraryOptions): string {
   const libraryOverrides = Object.entries(options.modules || {})
     .filter(([name]) => name !== 'draco3d')

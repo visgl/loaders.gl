@@ -446,6 +446,20 @@ export default class DracoParser {
       }
     }
 
+    // Prefer the application name preserved by a Draco writer.
+    const entryName = options.attributeNameEntry || 'name';
+    if (attribute.metadata[entryName]) {
+      const attributeName = attribute.metadata[entryName].string;
+      // DracoWriter versions before v5 stored these category names instead of glTF semantics.
+      if (attributeName === 'COLOR') {
+        return 'COLOR_0';
+      }
+      if (attributeName === 'TEX_COORD') {
+        return 'TEXCOORD_0';
+      }
+      return attributeName;
+    }
+
     // Deduce name based on attribute type
     const thisAttributeType = attribute.attribute_type;
     for (const dracoAttributeConstant in DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP) {
@@ -455,13 +469,6 @@ export default class DracoParser {
         // (e.g. multiple TEX_COORDS or COLORS)
         return DRACO_TO_GLTF_ATTRIBUTE_NAME_MAP[dracoAttributeConstant];
       }
-    }
-
-    // Look up in metadata
-    // TODO - shouldn't this have priority?
-    const entryName = options.attributeNameEntry || 'name';
-    if (attribute.metadata[entryName]) {
-      return attribute.metadata[entryName].string;
     }
 
     // Attribute of "GENERIC" type, we need to assign some name

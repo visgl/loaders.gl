@@ -140,6 +140,12 @@ test('DracoParser handles attribute naming, values, indices, and transforms', ()
     metadata: {name: {string: 'from-metadata'}}
   };
   expect(parser._deduceAttributeName(attribute, {extraAttributes: {custom: 7}})).toBe('custom');
+  expect(parser._deduceAttributeName({...attribute, metadata: {name: {string: 'COLOR'}}}, {})).toBe(
+    'COLOR_0'
+  );
+  expect(
+    parser._deduceAttributeName({...attribute, metadata: {name: {string: 'TEX_COORD'}}}, {})
+  ).toBe('TEXCOORD_0');
   expect(parser._deduceAttributeName({...attribute, unique_id: 8, metadata: {}}, {})).toBe(
     'CUSTOM_ATTRIBUTE_8'
   );

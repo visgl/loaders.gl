@@ -27,10 +27,7 @@ export type DracoWriterInput =
 /** Options for `DracoWriter`. */
 export type DracoWriterOptions = WriterOptions & {
   /** Draco-specific writer options. */
-  draco?: DracoBuildOptions & {
-    /** Draco metadata entry used to store the original attribute name. */
-    attributeNameEntry?: string;
-  };
+  draco?: DracoBuildOptions;
 };
 
 const DEFAULT_DRACO_WRITER_OPTIONS = {
