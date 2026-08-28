@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   &nbsp;
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
 </p>
 
 Experimental loader and writer for the Apache Parquet format.

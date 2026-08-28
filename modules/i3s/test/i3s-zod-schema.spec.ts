@@ -4,7 +4,11 @@
 
 import {parse} from '@loaders.gl/core';
 import {I3SLoader, I3SNodePageLoader} from '@loaders.gl/i3s';
-import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-schema';
+import {
+  I3SNodePageSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SSceneLayerSchema
+} from '@loaders.gl/i3s/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 
@@ -83,6 +87,12 @@ describe('I3S metadata schemas', () => {
       expect.arrayContaining(['id', 'layerType', 'version', 'capabilities', 'store'])
     );
     expect(nodePageJsonSchema.required).toContain('nodes');
+  });
+
+  it('represents the Point Cloud index alternative in JSON Schema', () => {
+    const pointCloudJsonSchema = z.toJSONSchema(I3SPointCloudSceneLayerSchema, {target: 'draft-7'});
+    expect(JSON.stringify(pointCloudJsonSchema)).toContain('nodePerIndexBlock');
+    expect(JSON.stringify(pointCloudJsonSchema)).toContain('anyOf');
   });
 });
 

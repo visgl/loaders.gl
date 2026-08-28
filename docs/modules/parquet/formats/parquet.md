@@ -4,6 +4,12 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 <ParquetDocsTabs active="overview" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 ![parquet-logo](../images/parquet-logo-small.png)
 &emsp;
 ![apache-logo](../../../images/logos/apache-logo.png)
@@ -29,6 +35,26 @@ The support tables use these symbols:
 `ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation;
 their coverage can differ from the TypeScript `ParquetJSLoader`, `ParquetSourceLoader`, and
 `ParquetJSWriter` described in the matrices below.
+
+## Scan support
+
+`ParquetSourceLoader` is the selective scan API. It reads and caches the footer, plans physical
+ranges, emits Arrow batches, and explains which layers rejected work.
+
+| Capability | Support | Execution |
+| --- | --- | --- |
+| Entry point | `read()` | Streaming Arrow batches |
+| Schema and statistics discovery | Supported | Footer metadata |
+| Projection | Supported | Column-chunk pushdown |
+| Predicate | Supported | Row-group/page/statistics/Bloom pruning plus exact residual evaluation |
+| Global limit | Supported | Counts rows after filtering across all batches and files |
+| Cancellation and early return | Supported | Stops pending ranges, decoding, and later files |
+| Multi-file datasets | Supported | Bounded concurrency with catalog-selected fragments |
+| Explain output | Supported | Logical, file, row-group, page, and range decisions |
+
+`IcebergTableSource` and `DeltaTableSource` select active Parquet files before delegating to this
+same executor. Iceberg supports snapshot and manifest planning. Delta supports read-only log replay;
+tables with deletion vectors are rejected until deletion-vector decoding is available.
 
 ## File Layout
 

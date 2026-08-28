@@ -175,4 +175,35 @@ describe('compileSQLTableQuery', () => {
       )
     ).toThrow(/requires a column/);
   });
+
+  test('compiles arithmetic expressions and child join queries', () => {
+    const compiled = compileSQLTableQuery(
+      {
+        tableName: 'measurements',
+        columns: ['sumValue', 'difference', 'product', 'ratio', 'other.value'],
+        expressions: [
+          {name: 'sumValue', expression: {op: 'add', left: 'a', right: 'b'}},
+          {name: 'difference', expression: {op: 'subtract', left: 'a', right: 'b'}},
+          {name: 'product', expression: {op: 'multiply', left: 'a', right: 'b'}},
+          {name: 'ratio', expression: {op: 'divide', left: 'a', right: 'b'}}
+        ],
+        join: {
+          child: {
+            source: 'other',
+            query: {columns: ['value'], orderBy: [{column: 'value', direction: 'asc'}]}
+          },
+          left: 'id',
+          right: 'measurement_id'
+        }
+      },
+      {dialect: 'snowflake'}
+    );
+
+    expect(compiled.sql).toContain('("a" + "b") AS "sumValue"');
+    expect(compiled.sql).toContain('("a" - "b") AS "difference"');
+    expect(compiled.sql).toContain('("a" * "b") AS "product"');
+    expect(compiled.sql).toContain('("a" / NULLIF("b", 0)) AS "ratio"');
+    expect(compiled.sql).toContain('JOIN (SELECT "value"');
+    expect(compiled.sql).toContain('ORDER BY "value" ASC');
+  });
 });

@@ -14,7 +14,7 @@ import type {TableQueryExplain} from '@loaders.gl/loader-utils';
 /** Names accepted by the optional scan engine factory. */
 export type ScanBackendName = 'arrow' | (string & {});
 
-/** A backend implementation for the proof-of-concept Arrow table surface. */
+/** A backend implementation for the Arrow table query surface. */
 export type ScanBackend = Readonly<{
   /** Stable backend name reported by the engine. */
   name: ScanBackendName;
@@ -71,7 +71,7 @@ export async function createScanEngine(options: ScanEngineOptions = {}): Promise
   const loader = scanBackendLoaders.get(backendName);
   if (!loader) {
     throw new Error(
-      `Scan backend "${backendName}" is not registered. The proof of concept includes "arrow".`
+      `Scan backend "${backendName}" is not registered. The built-in backend is "arrow".`
     );
   }
   const backend = await loader();

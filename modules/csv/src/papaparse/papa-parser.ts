@@ -148,6 +148,7 @@ export class ChunkStreamer {
 
 class StringStreamer extends ChunkStreamer {
   remaining;
+  _isParsing = false;
 
   constructor(config = {}) {
     super(config);
@@ -159,13 +160,23 @@ class StringStreamer extends ChunkStreamer {
   }
 
   _nextChunk() {
-    if (this._finished) return;
-    const size = this._config.chunkSize;
-    const chunk = size ? this.remaining.substr(0, size) : this.remaining;
-    this.remaining = size ? this.remaining.substr(size) : '';
-    this._finished = !this.remaining;
-    // eslint-disable-next-line consistent-return
-    return this.parseChunk(chunk);
+    if (this._finished || this._isParsing) return;
+
+    this._isParsing = true;
+    let results;
+    try {
+      while (!this._finished) {
+        const size = this._config.chunkSize;
+        const chunk = size ? this.remaining.substr(0, size) : this.remaining;
+        this.remaining = size ? this.remaining.substr(size) : '';
+        this._finished = !this.remaining;
+        results = this.parseChunk(chunk);
+        if (this._handle.paused() || this._handle.aborted()) break;
+      }
+    } finally {
+      this._isParsing = false;
+    }
+    return results;
   }
 }
 
@@ -289,7 +300,9 @@ export class ParserHandle {
     this._paused = true;
     this._parser.abort();
     this._input = this._input.substr(this._parser.getCharIndex());
-    this.streamer._partialLine = '';
+    const quoteChar = this._config.quoteChar || '"';
+    const quoteCount = this.streamer._partialLine.split(quoteChar).length - 1;
+    if (quoteCount % 2 === 0) this.streamer._partialLine = '';
     this._parser = null;
     this._parserConfig = null;
   }

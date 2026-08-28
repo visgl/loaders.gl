@@ -62,5 +62,12 @@ export type {
   ArcGISVectorTileServerSourceLoaderOptions
 } from './arcgis/arcgis-vector-tile-server-source-loader';
 
+/** ArcGIS SceneServer I3S source and loader. */
+export {
+  ArcGISSceneServerSourceLoader,
+  ArcGISSceneServerSource
+} from './arcgis/arcgis-scene-server-source-loader';
+export type {ArcGISSceneServerSourceOptions} from './arcgis/arcgis-scene-server-source-loader';
+
 export type {ServiceLoader} from './service-registry';
 export {SERVICE_LOADERS, getServiceLoader} from './service-registry';

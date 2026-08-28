@@ -100,6 +100,71 @@ export const I3SSpatialReferenceSchema = z
     }
   ) satisfies z.ZodType<SpatialReference>;
 
+/** Zod schema for the Point Cloud store/index envelope. */
+export const I3SPointCloudStoreSchema = z
+  .object({
+    profile: z.enum(['pointcloud', 'PointCloud']),
+    version: z.union([z.number(), z.string().min(1)]),
+    defaultGeometrySchema: z
+      .object({
+        geometryType: z.string().min(1).optional(),
+        topology: z.string().min(1).optional(),
+        encoding: z.string().min(1).optional()
+      })
+      .passthrough(),
+    index: z
+      .object({nodePerIndexBlock: z.number().int().positive().max(4096)})
+      .passthrough()
+      .optional()
+  })
+  .passthrough();
+
+/** Zod schema for an I3S 2.x Point Cloud scene-layer document. */
+const I3SPointCloudSceneLayerBaseSchema = z
+  .object({
+    id: z.number().int().nonnegative(),
+    href: z.string().optional(),
+    layerType: z.literal('PointCloud'),
+    spatialReference: I3SSpatialReferenceSchema.optional(),
+    version: z.string().min(1),
+    capabilities: z.array(z.string()),
+    disablePopup: z.boolean(),
+    store: I3SPointCloudStoreSchema,
+    nodePages: z
+      .object({
+        nodesPerPage: z.number().int().positive().max(4096).optional(),
+        rootIndex: z.number().int().nonnegative().optional(),
+        lodSelectionMetricType: z.enum(['maxScreenThresholdSQ', 'density-threshold']).optional()
+      })
+      .passthrough()
+      .optional(),
+    attributeStorageInfo: z.array(z.record(z.string(), z.unknown())).optional(),
+    attributeInfo: z.array(z.record(z.string(), z.unknown())).optional()
+  })
+  .passthrough();
+
+const I3SPointCloudNodePagesRequirementSchema = z.union([
+  z
+    .object({
+      nodePages: z.object({nodesPerPage: z.number().int().positive().max(4096)}).passthrough()
+    })
+    .passthrough(),
+  z
+    .object({
+      store: z
+        .object({
+          index: z.object({nodePerIndexBlock: z.number().int().positive().max(4096)}).passthrough()
+        })
+        .passthrough()
+    })
+    .passthrough()
+]);
+
+/** Zod schema for an I3S 2.x Point Cloud scene-layer document. */
+export const I3SPointCloudSceneLayerSchema = I3SPointCloudSceneLayerBaseSchema.and(
+  I3SPointCloudNodePagesRequirementSchema
+);
+
 /** Zod schema for raw I3S 3D Object and Integrated Mesh scene-layer metadata. */
 export const I3SSceneLayerSchema = z
   .object({

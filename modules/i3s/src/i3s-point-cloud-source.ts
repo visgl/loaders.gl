@@ -18,7 +18,7 @@ import {DataSource} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 import {I3SLEPCCDecoder} from './i3s-lepcc';
-import {I3SPointCloudNodePageSchema} from './i3s-zod-schema';
+import {I3SPointCloudNodePageSchema, I3SPointCloudSceneLayerSchema} from './i3s-zod-schema';
 import type {
   I3SPointCloudAttributeInfo,
   I3SPointCloudNode,
@@ -94,10 +94,8 @@ export class I3SPointCloudSource
     }
 
     const layerJson = await this.readJson('');
-    if (layerJson?.layerType !== 'PointCloud') {
-      throw new Error('I3SPointCloudSource requires an I3S PointCloud layer');
-    }
-    this.metadata = layerJson as SceneLayer3D;
+    const pointCloudLayer = I3SPointCloudSceneLayerSchema.parse(layerJson);
+    this.metadata = pointCloudLayer as SceneLayer3D;
     this.baseUrl = this.url.replace(/\/+$/, '');
     this.nodesPerPage = Math.max(
       1,
@@ -270,13 +268,14 @@ export class I3SPointCloudSource
       180,
       latitudeDelta / Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12)
     );
+    const coversFullLongitude = longitudeDelta >= 180;
     const minimum = [
-      center[0] - longitudeDelta,
+      normalizeLongitude(center[0] - longitudeDelta),
       Math.max(-90, center[1] - latitudeDelta),
       center[2] - radius
     ];
     const maximum = [
-      center[0] + longitudeDelta,
+      normalizeLongitude(center[0] + longitudeDelta),
       Math.min(90, center[1] + latitudeDelta),
       center[2] + radius
     ];
@@ -293,6 +292,8 @@ export class I3SPointCloudSource
       lodThreshold: node.lodThreshold,
       boundingVolume: {
         cartographicBounds: [minimum, maximum],
+        wrapsDateline: !coversFullLongitude && minimum[0] > maximum[0],
+        coversFullLongitude,
         center,
         radius
       }
@@ -407,6 +408,12 @@ export class I3SPointCloudSource
 }
 
 const EARTH_EQUATORIAL_RADIUS = 6378137;
+
+/** Normalize a longitude into the conventional [-180, 180] interval. */
+function normalizeLongitude(longitude: number): number {
+  const normalizedLongitude = ((((longitude + 180) % 360) + 360) % 360) - 180;
+  return normalizedLongitude === -180 && longitude > 0 ? 180 : normalizedLongitude;
+}
 
 /** Normalized point positions and renderer metadata for one coordinate-system request. */
 type NormalizedPointPositions = Readonly<{

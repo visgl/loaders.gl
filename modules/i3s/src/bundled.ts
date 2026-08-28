@@ -3,6 +3,12 @@
 // Copyright vis.gl contributors
 
 export type {I3SLoaderOptions} from './i3s-loader';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from './i3s-zod-schema';
 export {I3SLoaderWithParser as I3SLoader} from './i3s-loader-with-parser';
 export {SLPKLoaderWithParser as SLPKLoader} from './i3s-slpk-loader-with-parser';
 export type {SLPKSourceInput} from './i3s-slpk-source';
@@ -22,4 +28,11 @@ export {
   type I3SLEPCCDecoderOptions
 } from './i3s-lepcc';
 export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export {
+  createI3SLayerSource,
+  I3SUnsupportedProfileError,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
+} from './i3s-service';
+export type {I3SLayerSource, I3SServiceMetadata} from './i3s-service';
 export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';

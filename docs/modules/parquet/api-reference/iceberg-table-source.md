@@ -1,5 +1,11 @@
 # Iceberg table source
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 `IcebergTableSource` reads an Apache Iceberg table's metadata and manifest files, selects Parquet
 data files, and delegates the actual file reads to `ParquetDatasetSource`.
 
@@ -44,6 +50,21 @@ metadata-only bundle.
 
 The source accepts an explicit metadata JSON URL. It does not perform catalog lookup, refresh a
 catalog pointer, commit snapshots, or write Iceberg metadata.
+
+## Scan behavior at a glance
+
+| Layer | Current behavior |
+| --- | --- |
+| Entry point | `scan()` emits Arrow batches |
+| Snapshot selection | Current snapshot, explicit snapshot id, or named branch/tag |
+| Catalog pruning | Manifest status, partitions, scalar bounds, and optional spatial envelopes |
+| Data-file execution | Selected Parquet files use the shared projection, predicate, range, worker, limit, and cancellation paths |
+| Delete files | Discovered by default; position and equality deletes can be applied explicitly |
+| Ordering | Manifest and data-file order is preserved |
+| Writes and catalog refresh | Not provided |
+
+Iceberg planning selects files; Parquet remains responsible for row groups, pages, byte ranges, and
+exact residual filtering. The badge does not imply write support or a catalog-wide client.
 
 ## What is supported
 

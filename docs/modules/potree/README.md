@@ -8,6 +8,9 @@ point-cloud CRS support matrix and reprojection roadmap.
 <p class="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported_versions-2f855a.svg?style=flat-square" alt="Scan supported for compatible Potree versions" />
+  </a>
 </p>
 
 <PotreeDocsTabs active="overview" />
@@ -24,6 +27,24 @@ Support for loading and traversing [potree](http://potree.org/) format point clo
 | 1.7 | ✅ | Supports hierarchy chunk files and nested `octreeDir/r/r*.bin` node payloads. |
 | 1.8 | ✅ | Supports hierarchy chunk files and `LAS`, `LAZ`, or Potree binary point payloads. |
 | 2.x | ❌ | Potree 2.x metadata and octree layouts are not supported. |
+
+## Scan support
+
+For supported Potree versions and layouts, `PotreeNodeSource` exposes the same point-cloud query
+shape as COPC. Unsupported versions publish metadata with a reason and do not claim an executor.
+
+| Capability | Support | Execution |
+| --- | --- | --- |
+| Entry point | `scan()` for compatible sources | Ordered Arrow point batches |
+| Schema, bounds, CRS, and hierarchy | Supported | Potree metadata and hierarchy files |
+| Bounds, minimum/maximum level, target spacing | Supported | Hierarchy pushdown followed by exact point filtering |
+| Attribute predicate | Supported | Residual after node decoding |
+| Projection and global limit | Supported | Applied in caller column order across all nodes |
+| Cancellation and early return | Supported | Stops hierarchy, payload, and result work |
+| Unsupported layouts | Metadata only | Execution metadata contains the concrete reason |
+
+Potree currently decodes complete point records before projection. The capability metadata reports
+that distinction so applications do not confuse correct results with selective decoder pushdown.
 
 ## Installation
 

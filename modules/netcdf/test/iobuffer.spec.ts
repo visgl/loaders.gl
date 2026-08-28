@@ -54,3 +54,16 @@ test('IOBuffer supports endianness, seeking, marks, views, and byte aliases', ()
   expect(view.byteOffset).toBe(source.byteOffset + 2);
   expect(view.readUint8()).toBe(7);
 });
+
+test('IOBuffer grows storage and handles UTF-8 and default byte reads', () => {
+  const buffer = new IOBuffer(1);
+  buffer.writeUtf8('東京');
+  expect(buffer.toArray().length).toBeGreaterThan(1);
+  buffer.rewind();
+  expect(buffer.readUtf8(new TextEncoder().encode('東京').length)).toBe('東京');
+
+  const bytes = new IOBuffer(new Uint8Array([1, 2, 3]));
+  expect(bytes.readBytes()).toEqual(new Uint8Array([1]));
+  expect(bytes.available(2)).toBe(true);
+  expect(bytes.available(3)).toBe(false);
+});

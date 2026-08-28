@@ -203,17 +203,41 @@ export function getFirstSourceLayerName(metadata: unknown): string | null {
 /** Returns a CRS advertised by the selected layer or source metadata. */
 export function getSourceCoordinateReferenceSystem(metadata: unknown): string | undefined {
   const firstLayer = findFirstLeaf(getMetadataLayers(metadata)) as
-    | {crs?: string[]; srs?: string[]}
+    | {crs?: unknown[]; srs?: unknown[]}
     | undefined;
-  const coordinateReferenceSystems = firstLayer?.crs || firstLayer?.srs;
-  const preferredCoordinateReferenceSystem = coordinateReferenceSystems?.find(value =>
+  const coordinateReferenceSystems = firstLayer?.crs?.length ? firstLayer.crs : firstLayer?.srs;
+  const normalizedCoordinateReferenceSystems = coordinateReferenceSystems
+    ?.map(getCoordinateReferenceSystemIdentifier)
+    .filter((value): value is string => Boolean(value));
+  const preferredCoordinateReferenceSystem = normalizedCoordinateReferenceSystems?.find(value =>
     /EPSG:(3857|4326)|CRS:84/i.test(value)
   );
   return (
     preferredCoordinateReferenceSystem ||
-    coordinateReferenceSystems?.[0] ||
+    normalizedCoordinateReferenceSystems?.[0] ||
     getMetadataCrs(metadata)
   );
+}
+
+/** Converts a CRS identifier or PROJJSON authority object into a stable identifier. */
+export function getCoordinateReferenceSystemIdentifier(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const coordinateReferenceSystem = value as {
+    id?: {authority?: string; code?: string | number};
+    ids?: Array<{authority?: string; code?: string | number}>;
+  };
+  const identifier = [coordinateReferenceSystem.id, ...(coordinateReferenceSystem.ids || [])].find(
+    candidate => candidate?.authority && candidate.code !== undefined
+  );
+  return identifier?.authority && identifier.code !== undefined
+    ? `${identifier.authority}:${identifier.code}`
+    : undefined;
 }
 
 /** Creates a common view-state hint from normalized metadata and source view state. */
@@ -384,6 +408,7 @@ function getFirstLeafName(layer: unknown): string | null {
         return childName;
       }
     }
+    return null;
   }
   return typedLayer.name || null;
 }
@@ -406,15 +431,38 @@ function findFirstLeaf(layers: unknown[]): unknown | undefined {
 function getMetadataBounds(metadata: unknown): [[number, number], [number, number]] | undefined {
   const typedMetadata = metadata as {
     boundingBox?: unknown;
-    layers?: Array<{boundingBox?: unknown}>;
-    layer?: {boundingBox?: unknown; layers?: Array<{boundingBox?: unknown}>};
+    layers?: unknown[];
+    layer?: unknown;
   } | null;
   return (
     normalizeBounds(typedMetadata?.boundingBox) ||
-    normalizeBounds(typedMetadata?.layers?.[0]?.boundingBox) ||
-    normalizeBounds(typedMetadata?.layer?.boundingBox) ||
-    normalizeBounds(typedMetadata?.layer?.layers?.[0]?.boundingBox)
+    getFirstNamedLeafBounds(typedMetadata?.layers) ||
+    getFirstNamedLeafBounds(typedMetadata?.layer ? [typedMetadata.layer] : undefined)
   );
+}
+
+/** Finds bounds on the first named leaf using the same traversal as automatic layer selection. */
+function getFirstNamedLeafBounds(
+  layers: unknown[] | undefined
+): [[number, number], [number, number]] | undefined {
+  const firstNamedLeaf = findFirstNamedLeaf(layers);
+  return normalizeBounds((firstNamedLeaf as {boundingBox?: unknown} | undefined)?.boundingBox);
+}
+
+/** Finds the first named leaf in depth-first order, including leaves without bounds. */
+function findFirstNamedLeaf(layers: unknown[] | undefined): unknown | undefined {
+  for (const layer of layers || []) {
+    const typedLayer = layer as {name?: unknown; layers?: unknown[]};
+    if (typedLayer.layers?.length) {
+      const childLayer = findFirstNamedLeaf(typedLayer.layers);
+      if (childLayer) {
+        return childLayer;
+      }
+    } else if (typeof typedLayer.name === 'string') {
+      return layer;
+    }
+  }
+  return undefined;
 }
 
 function normalizeBounds(value: unknown): [[number, number], [number, number]] | undefined {
@@ -437,8 +485,8 @@ function normalizeBounds(value: unknown): [[number, number], [number, number]] |
 }
 
 function getMetadataCrs(metadata: unknown): string | undefined {
-  const typedMetadata = metadata as {crs?: string} | null;
-  return typedMetadata?.crs;
+  const typedMetadata = metadata as {crs?: unknown} | null;
+  return getCoordinateReferenceSystemIdentifier(typedMetadata?.crs);
 }
 
 function estimateZoom(bounds: [[number, number], [number, number]]): number {

@@ -47,7 +47,9 @@
       "modules/mvt/formats/map-style",
       "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
+      "modules/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
+      "modules/orc/formats/orc",
       "modules/wms/formats/ows-context",
       "modules/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
@@ -64,6 +66,7 @@
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
+      "modules/zarr/formats/zarr",
       "modules/zip/formats/zip"
     ]
   },
@@ -83,6 +86,7 @@
       "modules/services/arcgis-image-server",
       "modules/services/arcgis-feature-server",
       "modules/services/arcgis-vector-tile-server",
+      "modules/services/arcgis-scene-server",
       "modules/services/api-reference/arcgis"
     ]
   },
@@ -211,6 +215,8 @@
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/zarr/api-reference/ome-zarr-source-loader",
+          "modules/parquet/api-reference/delta-table-source",
+          "modules/parquet/api-reference/iceberg-table-source",
           "modules/parquet/api-reference/parquet-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
@@ -471,6 +477,13 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/netcdf",
+        "items": [
+          "modules/netcdf/api-reference/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/mlt",
         "items": [
           "modules/mlt/README"
@@ -485,9 +498,19 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/orc",
+        "items": [
+          "modules/orc/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/parquet",
         "items": [
-          "modules/parquet/README"
+          "modules/parquet/README",
+          "modules/parquet/api-reference/parquet-source-loader",
+          "modules/parquet/api-reference/iceberg-table-source",
+          "modules/parquet/api-reference/delta-table-source"
         ]
       },
       {
@@ -527,6 +550,13 @@
           "modules/schema/api-reference/schema",
           "modules/schema/api-reference/table",
           "modules/schema/api-reference/table-batch"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/scan",
+        "items": [
+          "modules/scan/README"
         ]
       },
       {
