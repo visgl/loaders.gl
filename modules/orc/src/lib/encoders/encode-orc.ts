@@ -198,7 +198,7 @@ function encodeColumn(type: string, values: unknown[]): EncodedColumn {
     );
     return {
       typeKind,
-      streams: addPresentStream([{kind: 1, column: 0, bytes: encodeByteRLE(bytes)}])
+      streams: addPresentStream([{kind: 1, column: 0, bytes}])
     };
   }
   if (typeKind === ORC_TYPE.BOOLEAN) {
