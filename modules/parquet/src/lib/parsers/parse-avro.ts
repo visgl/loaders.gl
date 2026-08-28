@@ -221,12 +221,13 @@ export async function* parseAvroInBatchesFromUrl(
         throw new Error('Invalid Avro OCF sync marker');
     const selected = !options?.blockIndices || options.blockIndices.includes(blockIndex);
     if (selected) {
-      for await (const row of decodeAvroBlockRows(
+      const rows = await decodeAvroBlockRows(
         blockBytes.subarray(0, sizeResult.value),
         countResult.value,
         header,
         options
-      )) {
+      );
+      for (const row of rows) {
         batch.push(row);
         if (batch.length >= batchSize) {
           yield createAvroBatch(batch);
@@ -296,12 +297,13 @@ export async function* parseAvroInBatchesFromFile(
       if (blockBytes[sizeResult.value + index] !== header.syncMarker[index])
         throw new Error('Invalid Avro OCF sync marker');
     if (!options?.blockIndices || options.blockIndices.includes(blockIndex)) {
-      for await (const row of decodeAvroBlockRows(
+      const rows = await decodeAvroBlockRows(
         blockBytes.subarray(0, sizeResult.value),
         countResult.value,
         header,
         options
-      )) {
+      );
+      for (const row of rows) {
         batch.push(row);
         if (batch.length >= batchSize) {
           yield createAvroBatch(batch);
@@ -316,24 +318,28 @@ export async function* parseAvroInBatchesFromFile(
 }
 
 /** Decodes one Avro OCF block and applies the optional reader schema. */
-async function* decodeAvroBlockRows(
+async function decodeAvroBlockRows(
   compressedBytes: Uint8Array,
   rowCount: number,
   header: AvroOCFHeader,
   options?: AvroParseOptions
-): AsyncIterable<Record<string, unknown>> {
+): Promise<Record<string, unknown>[]> {
   const reader = new AvroReader(
     await decompressAvro(header.codec, compressedBytes),
     header.schema,
     options
   );
+  const rows: Record<string, unknown>[] = [];
   for (let index = 0; index < rowCount; index++) {
     const value = reader.readValue(header.schema);
     if (!isRecord(value)) throw new Error('Avro root schema must be a record');
-    yield options?.readerSchema
-      ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
-      : value;
+    rows.push(
+      options?.readerSchema
+        ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
+        : value
+    );
   }
+  return rows;
 }
 
 /** Reads a byte range and detects servers that ignore the Range header. */
@@ -501,7 +507,7 @@ async function* readAvroRows(
       })
     : ocf.blocks;
   for (const blockInfo of blocks) {
-    const rows = decodeAvroBlockRows(
+    const rows = await decodeAvroBlockRows(
       bytes.subarray(blockInfo.dataOffset, blockInfo.dataOffset + blockInfo.compressedSize),
       blockInfo.count,
       {

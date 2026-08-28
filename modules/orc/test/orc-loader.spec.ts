@@ -65,6 +65,20 @@ test('ORC metadata preserves nested map and struct types', () => {
   ).toMatchObject({type: 'list'});
 });
 
+test.each([
+  [ORCTypeKind.BOOLEAN, 'bool'],
+  [ORCTypeKind.BYTE, 'int8'],
+  [ORCTypeKind.SHORT, 'int16'],
+  [ORCTypeKind.INT, 'int32'],
+  [ORCTypeKind.LONG, 'int64'],
+  [ORCTypeKind.FLOAT, 'float32'],
+  [ORCTypeKind.DOUBLE, 'float64'],
+  [ORCTypeKind.BINARY, 'binary'],
+  [ORCTypeKind.TIMESTAMP, 'timestamp-millisecond']
+])('ORC schema maps primitive kind %s to %s', (typeId, expectedType) => {
+  expect(getORCDataType(typeId)).toBe(expectedType);
+});
+
 test('ORCSource applies residual predicates with three-valued semantics', async () => {
   const input = {
     shape: 'arrow-table' as const,
