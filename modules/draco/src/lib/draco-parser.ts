@@ -669,14 +669,14 @@ function getUniqueAttributeName(
   attributeName: string,
   attributes: Record<string, MeshAttribute>
 ): string {
-  if (!(attributeName in attributes)) {
+  if (!Object.prototype.hasOwnProperty.call(attributes, attributeName)) {
     return attributeName;
   }
 
   const suffixMatch = /^(.*)_([0-9]+)$/.exec(attributeName);
-  const baseName = suffixMatch?.[1] || attributeName;
-  let suffix = suffixMatch ? Number(suffixMatch[2]) + 1 : 1;
-  while (`${baseName}_${suffix}` in attributes) {
+  const baseName = suffixMatch ? suffixMatch[1] : attributeName;
+  let suffix = suffixMatch ? BigInt(suffixMatch[2]) + 1n : 1n;
+  while (Object.prototype.hasOwnProperty.call(attributes, `${baseName}_${suffix}`)) {
     suffix++;
   }
   return `${baseName}_${suffix}`;

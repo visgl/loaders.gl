@@ -228,6 +228,38 @@ test('DracoParser preserves attributes with colliding inferred names', () => {
   expect(attributes.TEXCOORD_1.value[0]).toBe(13);
 });
 
+test('DracoParser safely preserves adversarial metadata names', () => {
+  const parser = createParser();
+  const unsafeSuffixName = 'CUSTOM_9007199254740992';
+  const loaderAttributes = [
+    {unique_id: 1, attribute_index: 0, metadata: {name: {string: unsafeSuffixName}}},
+    {unique_id: 2, attribute_index: 1, metadata: {name: {string: unsafeSuffixName}}},
+    {unique_id: 3, attribute_index: 2, metadata: {name: {string: 'constructor'}}}
+  ].map(attribute => ({
+    ...attribute,
+    attribute_type: 4,
+    data_type: 9,
+    num_components: 1,
+    byte_offset: 0,
+    byte_stride: 4,
+    normalized: false
+  }));
+  const loaderData = {
+    attributes: Object.fromEntries(
+      loaderAttributes.map(attribute => [attribute.unique_id, attribute])
+    )
+  } as any;
+  (parser as any)._getAttributeValues = () => ({value: new Float32Array([1]), size: 1});
+
+  const attributes = parser._getMeshAttributes(loaderData, {} as any, {});
+
+  expect(Object.keys(attributes)).toEqual([
+    unsafeSuffixName,
+    'CUSTOM_9007199254740993',
+    'constructor'
+  ]);
+});
+
 test('DracoParser reports native extraction failures', () => {
   const parser = createParser();
   const geometry = {num_faces: () => 1, num_points: () => 3} as any;
