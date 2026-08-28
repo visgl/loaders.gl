@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import * as arrow from 'apache-arrow';
 import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';
@@ -13,6 +14,26 @@ test('GeoPackageSource#createDataSource selects GeoPackage source from URL', () 
     geopackage: {}
   });
   expect(dataSource instanceof GeoPackageDataSource, 'returns GeoPackageDataSource').toBeTruthy();
+});
+
+test('GeoPackageSource exposes URL matching and executes residual queries', async () => {
+  expect(GeoPackageSource.testURL('https://example.com/data.gpkg')).toBe(true);
+  expect(GeoPackageSource.testURL('https://example.com/data.gpkg?table=rivers')).toBe(true);
+  expect(GeoPackageSource.testURL('https://example.com/data.json')).toBe(false);
+
+  const source = GeoPackageSource.createDataSource(new Blob([]), {geopackage: {}});
+  source.getTable = async () => ({
+    shape: 'arrow-table',
+    data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
+  });
+  const result = await source.query({
+    predicate: {op: '=', args: [{property: 'name'}, 'a']},
+    columns: ['value'],
+    limit: 1
+  });
+
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
 });
 test('GeoPackageSource#getMetadata returns tables and default selection', async () => {
   const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
