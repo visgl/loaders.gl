@@ -8,6 +8,7 @@ import type {
   Draco3D,
   DracoInt8Array,
   Encoder,
+  ExpertEncoder,
   Mesh,
   MeshBuilder,
   PointCloud,
@@ -35,6 +36,19 @@ export type DracoEncodingMethod = 'MESH_EDGEBREAKER_ENCODING' | 'MESH_SEQUENTIAL
 /** Draco attribute categories used to select compression transforms. */
 export type DracoAttributeType = 'POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC';
 
+/** Explicit quantization transform for one Draco attribute. */
+export type DracoExplicitQuantization = {
+  /** Number of quantization bits, from 1 through 30. */
+  bits: number;
+  /** Quantization origin, with one finite value per attribute component. */
+  origin: number[];
+  /** Positive finite quantization range shared by every component. */
+  range: number;
+};
+
+/** Per-attribute quantization, expressed as a bit count or an explicit transform. */
+export type DracoAttributeQuantization = number | DracoExplicitQuantization;
+
 export type DracoBuildOptions = {
   pointcloud?: boolean;
   /** Deduplicate identical point-cloud attribute tuples before encoding. */
@@ -50,7 +64,19 @@ export type DracoBuildOptions = {
   // draco encoding options
   speed?: [number, number];
   method?: DracoEncodingMethod;
+  /** Quantization bits keyed by Draco attribute category. */
   quantization?: Partial<Record<DracoAttributeType, number>>;
+  /** Quantization keyed by application attribute name, overriding category settings. */
+  attributeQuantization?: Record<string, DracoAttributeQuantization>;
+};
+
+type DracoBuilderAttributeInfo = {
+  /** Unique attribute identifier assigned by Draco's geometry builder. */
+  attributeId: number;
+  /** Draco compression category for the attribute. */
+  attributeType: draco_GeometryAttribute_Type;
+  /** Number of scalar components in each attribute value. */
+  componentCount: number;
 };
 
 // Native Draco attribute names to GLTF attribute names.
@@ -98,7 +124,6 @@ export default class DracoBuilder {
    */
   encodeSync(mesh: DracoBuilderMesh, options: DracoBuildOptions = {}): ArrayBuffer {
     this.log = options.log || noop;
-    this._setOptions(options);
 
     return options.pointcloud
       ? this._encodePointCloud(mesh, options)
@@ -117,18 +142,31 @@ export default class DracoBuilder {
   _encodePointCloud(pointcloud: DracoBuilderMesh, options: DracoBuildOptions): ArrayBuffer {
     const dracoPointCloud = new this.draco.PointCloud();
     const dracoData = new this.draco.DracoInt8Array();
+    let expertEncoder: ExpertEncoder | null = null;
 
     try {
       if (options.metadata) {
         this._addGeometryMetadata(dracoPointCloud, options.metadata);
       }
       const attributes = this._getAttributesFromMesh(pointcloud);
-      this._createDracoPointCloud(dracoPointCloud, attributes, options);
-      const encodedLen = this.dracoEncoder.EncodePointCloudToDracoBuffer(
-        dracoPointCloud,
-        options.deduplicateValues ?? false,
-        dracoData
-      );
+      const attributeInfo = this._createDracoPointCloud(dracoPointCloud, attributes, options);
+      const useExpertEncoder = hasAttributeQuantization(options);
+      let encodedLen: number;
+      if (useExpertEncoder) {
+        expertEncoder = new this.draco.ExpertEncoder(dracoPointCloud);
+        this._setExpertOptions(expertEncoder, attributeInfo, options);
+        encodedLen = expertEncoder.EncodeToDracoBuffer(
+          options.deduplicateValues ?? false,
+          dracoData
+        );
+      } else {
+        this._setOptions(options);
+        encodedLen = this.dracoEncoder.EncodePointCloudToDracoBuffer(
+          dracoPointCloud,
+          options.deduplicateValues ?? false,
+          dracoData
+        );
+      }
 
       if (!(encodedLen > 0)) {
         throw new Error('Draco encoding failed.');
@@ -139,6 +177,7 @@ export default class DracoBuilder {
 
       return dracoInt8ArrayToArrayBuffer(dracoData);
     } finally {
+      this.destroyEncodedObject(expertEncoder);
       this.destroyEncodedObject(dracoData);
       this.destroyEncodedObject(dracoPointCloud);
     }
@@ -147,14 +186,24 @@ export default class DracoBuilder {
   _encodeMesh(mesh: DracoBuilderMesh, options: DracoBuildOptions): ArrayBuffer {
     const dracoMesh = new this.draco.Mesh();
     const dracoData = new this.draco.DracoInt8Array();
+    let expertEncoder: ExpertEncoder | null = null;
 
     try {
       if (options.metadata) {
         this._addGeometryMetadata(dracoMesh, options.metadata);
       }
       const attributes = this._getAttributesFromMesh(mesh);
-      this._createDracoMesh(dracoMesh, attributes, options);
-      const encodedLen = this.dracoEncoder.EncodeMeshToDracoBuffer(dracoMesh, dracoData);
+      const attributeInfo = this._createDracoMesh(dracoMesh, attributes, options);
+      const useExpertEncoder = hasAttributeQuantization(options);
+      let encodedLen: number;
+      if (useExpertEncoder) {
+        expertEncoder = new this.draco.ExpertEncoder(dracoMesh);
+        this._setExpertOptions(expertEncoder, attributeInfo, options);
+        encodedLen = expertEncoder.EncodeToDracoBuffer(false, dracoData);
+      } else {
+        this._setOptions(options);
+        encodedLen = this.dracoEncoder.EncodeMeshToDracoBuffer(dracoMesh, dracoData);
+      }
       if (encodedLen <= 0) {
         throw new Error('Draco encoding failed.');
       }
@@ -164,6 +213,7 @@ export default class DracoBuilder {
 
       return dracoInt8ArrayToArrayBuffer(dracoData);
     } finally {
+      this.destroyEncodedObject(expertEncoder);
       this.destroyEncodedObject(dracoData);
       this.destroyEncodedObject(dracoMesh);
     }
@@ -183,8 +233,63 @@ export default class DracoBuilder {
         const attributeType = attribute as DracoAttributeType;
         const bits = options.quantization[attributeType];
         if (bits !== undefined) {
+          validateQuantizationBits(attributeType, bits);
           this.dracoEncoder.SetAttributeQuantization(this.draco[attributeType], bits);
         }
+      }
+    }
+  }
+
+  /** Applies common options and per-attribute quantization to an expert encoder. */
+  _setExpertOptions(
+    expertEncoder: ExpertEncoder,
+    attributes: Record<string, DracoBuilderAttributeInfo>,
+    options: DracoBuildOptions
+  ): void {
+    if (options.speed) {
+      expertEncoder.SetSpeedOptions(...options.speed);
+    }
+    if (options.method) {
+      expertEncoder.SetEncodingMethod(this.draco[options.method]);
+    }
+
+    const categoryQuantization = new Map<draco_GeometryAttribute_Type, number>();
+    for (const attributeType of Object.keys(options.quantization || {}) as DracoAttributeType[]) {
+      const bits = options.quantization?.[attributeType];
+      if (bits !== undefined) {
+        validateQuantizationBits(attributeType, bits);
+        categoryQuantization.set(this.draco[attributeType], bits);
+      }
+    }
+
+    const quantization = new Map<string, DracoAttributeQuantization>();
+    for (const [attributeName, attribute] of Object.entries(attributes)) {
+      const bits = categoryQuantization.get(attribute.attributeType);
+      if (bits !== undefined) {
+        quantization.set(attributeName, bits);
+      }
+    }
+    for (const [attributeName, setting] of Object.entries(options.attributeQuantization || {})) {
+      if (!attributes[attributeName]) {
+        throw new Error(`DracoWriter: quantized attribute "${attributeName}" does not exist`);
+      }
+      quantization.set(attributeName, setting);
+    }
+
+    for (const [attributeName, setting] of quantization) {
+      const attribute = attributes[attributeName];
+      if (typeof setting === 'number') {
+        validateQuantizationBits(attributeName, setting);
+        expertEncoder.SetAttributeQuantization(attribute.attributeId, setting);
+      } else {
+        validateExplicitQuantization(attributeName, attribute.componentCount, setting);
+        expertEncoder.SetAttributeExplicitQuantization(
+          attribute.attributeId,
+          setting.bits,
+          attribute.componentCount,
+          setting.origin,
+          setting.range
+        );
       }
     }
   }
@@ -198,8 +303,9 @@ export default class DracoBuilder {
     dracoMesh: Mesh,
     attributes: Record<string, TypedArray | MeshAttribute>,
     options: DracoBuildOptions
-  ): Mesh {
+  ): Record<string, DracoBuilderAttributeInfo> {
     const optionalMetadata = options.attributesMetadata || {};
+    const attributeInfo: Record<string, DracoBuilderAttributeInfo> = {};
 
     const vertexCount = this._getVertexCount(attributes, options);
     for (const [attributeName, attribute] of Object.entries(attributes)) {
@@ -212,6 +318,15 @@ export default class DracoBuilder {
       );
 
       if (uniqueId !== -1) {
+        const attributeValue = getAttributeValue(attribute);
+        attributeInfo[attributeName] = {
+          attributeId: uniqueId,
+          attributeType: this._getDracoAttributeType(
+            attributeName,
+            options.attributeTypes
+          ) as draco_GeometryAttribute_Type,
+          componentCount: getAttributeSize(attribute, attributeValue!.length / vertexCount)
+        };
         this._addAttributeMetadata(dracoMesh, uniqueId, {
           [options.attributeNameEntry || 'name']: attributeName,
           ...(optionalMetadata[attributeName] || {})
@@ -219,7 +334,7 @@ export default class DracoBuilder {
       }
     }
 
-    return dracoMesh;
+    return attributeInfo;
   }
 
   /**
@@ -230,8 +345,9 @@ export default class DracoBuilder {
     dracoPointCloud: PointCloud,
     attributes: Record<string, TypedArray | MeshAttribute>,
     options: DracoBuildOptions
-  ): PointCloud {
+  ): Record<string, DracoBuilderAttributeInfo> {
     const optionalMetadata = options.attributesMetadata || {};
+    const attributeInfo: Record<string, DracoBuilderAttributeInfo> = {};
 
     const vertexCount = this._getVertexCount(attributes, options);
     for (const [attributeName, attribute] of Object.entries(attributes)) {
@@ -243,6 +359,15 @@ export default class DracoBuilder {
         options
       );
       if (uniqueId !== -1) {
+        const attributeValue = getAttributeValue(attribute);
+        attributeInfo[attributeName] = {
+          attributeId: uniqueId,
+          attributeType: this._getDracoAttributeType(
+            attributeName,
+            options.attributeTypes
+          ) as draco_GeometryAttribute_Type,
+          componentCount: getAttributeSize(attribute, attributeValue!.length / vertexCount)
+        };
         this._addAttributeMetadata(dracoPointCloud, uniqueId, {
           [options.attributeNameEntry || 'name']: attributeName,
           ...(optionalMetadata[attributeName] || {})
@@ -250,7 +375,7 @@ export default class DracoBuilder {
       }
     }
 
-    return dracoPointCloud;
+    return attributeInfo;
   }
 
   /**
@@ -530,5 +655,41 @@ function validateIndices(indices: TypedArray, vertexCount: number): void {
         `DracoWriter: triangle index ${index} is outside vertex range 0-${vertexCount - 1}`
       );
     }
+  }
+}
+
+/** Returns true when exact application attributes require the expert encoder. */
+function hasAttributeQuantization(options: DracoBuildOptions): boolean {
+  return Boolean(
+    options.attributeQuantization && Object.keys(options.attributeQuantization).length
+  );
+}
+
+/** Validates a Draco quantization bit count. */
+function validateQuantizationBits(attributeName: string, bits: number): void {
+  if (!Number.isInteger(bits) || bits < 1 || bits > 30) {
+    throw new Error(
+      `DracoWriter: quantization bits for "${attributeName}" must be an integer from 1 to 30`
+    );
+  }
+}
+
+/** Validates an explicit per-attribute quantization transform. */
+function validateExplicitQuantization(
+  attributeName: string,
+  componentCount: number,
+  quantization: DracoExplicitQuantization
+): void {
+  validateQuantizationBits(attributeName, quantization.bits);
+  if (!Array.isArray(quantization.origin) || quantization.origin.length !== componentCount) {
+    throw new Error(
+      `DracoWriter: quantization origin for "${attributeName}" must contain ${componentCount} values`
+    );
+  }
+  if (!quantization.origin.every(Number.isFinite)) {
+    throw new Error(`DracoWriter: quantization origin for "${attributeName}" must be finite`);
+  }
+  if (!Number.isFinite(quantization.range) || quantization.range <= 0) {
+    throw new Error(`DracoWriter: quantization range for "${attributeName}" must be positive`);
   }
 }

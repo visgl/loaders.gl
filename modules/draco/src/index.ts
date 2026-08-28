@@ -14,10 +14,12 @@ export {DracoFormat} from './draco-format';
 
 export type {DracoWriterAttributes, DracoWriterInput, DracoWriterOptions} from './draco-writer';
 export type {
+  DracoAttributeQuantization,
   DracoAttributeType,
   DracoBuilderMesh,
   DracoBuildOptions,
   DracoEncodingMethod,
+  DracoExplicitQuantization,
   DracoMetadata
 } from './lib/draco-builder';
 export {DracoWriterWorker, DracoWriter} from './draco-writer';

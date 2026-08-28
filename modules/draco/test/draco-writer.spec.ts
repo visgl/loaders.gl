@@ -453,6 +453,53 @@ test('DracoWriter#preserves secondary glTF attribute semantics', async () => {
 
   expect(decodedMesh.attributes.TEXCOORD_1.value).toHaveLength(6);
 });
+
+test('DracoWriter#applies independent quantization to attributes in one category', async () => {
+  const compressedMesh = await encode(
+    {
+      attributes: {
+        POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        TEXCOORD_0: new Float32Array([0, 0, 1, 0, 0, 1]),
+        TEXCOORD_1: new Float32Array([-1, -1, 1, -1, -1, 1])
+      },
+      indices: new Uint16Array([0, 1, 2])
+    },
+    DracoWriter,
+    {
+      core: {worker: false},
+      useLocalLibraries: true,
+      draco: {
+        quantization: {TEX_COORD: 8},
+        attributeQuantization: {
+          TEXCOORD_1: {bits: 12, origin: [-1, -1], range: 2}
+        }
+      }
+    }
+  );
+  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true,
+    draco: {quantizedAttributes: ['TEX_COORD']}
+  });
+  const loaderAttributes = Object.values(decodedMesh.loaderData.attributes);
+  const texCoord0 = loaderAttributes.find(
+    attribute => attribute.metadata.name?.string === 'TEXCOORD_0'
+  );
+  const texCoord1 = loaderAttributes.find(
+    attribute => attribute.metadata.name?.string === 'TEXCOORD_1'
+  );
+
+  expect(texCoord0?.quantization_transform).toMatchObject({
+    quantization_bits: 8,
+    range: 1
+  });
+  expect(texCoord0?.quantization_transform?.min_values).toEqual(new Float32Array([0, 0]));
+  expect(texCoord1?.quantization_transform).toMatchObject({
+    quantization_bits: 12,
+    range: 2
+  });
+  expect(texCoord1?.quantization_transform?.min_values).toEqual(new Float32Array([-1, -1]));
+});
 function validatePositionMetadata(data) {
   const POSITION = 0;
   expect(data.loaderData.attributes[POSITION].metadata).toBeTruthy();

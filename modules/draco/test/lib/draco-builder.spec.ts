@@ -87,6 +87,47 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     }
   }
 
+  class FakeExpertEncoder {
+    /** Records construction against a completed Draco geometry. */
+    constructor(_pointCloud: unknown) {
+      state.encoderCalls.push('expert');
+    }
+
+    /** Records expert encoder speed configuration. */
+    SetSpeedOptions(encodeSpeed: number, decodeSpeed: number): void {
+      state.encoderCalls.push(`expert-speed:${encodeSpeed}:${decodeSpeed}`);
+    }
+
+    /** Records the selected expert mesh encoding method. */
+    SetEncodingMethod(method: number): void {
+      state.encoderCalls.push(`expert-method:${method}`);
+    }
+
+    /** Records per-attribute quantization configuration. */
+    SetAttributeQuantization(attributeId: number, bits: number): void {
+      state.encoderCalls.push(`expert-quantization:${attributeId}:${bits}`);
+    }
+
+    /** Records explicit per-attribute quantization configuration. */
+    SetAttributeExplicitQuantization(
+      attributeId: number,
+      bits: number,
+      componentCount: number,
+      origin: number[],
+      range: number
+    ): void {
+      state.encoderCalls.push(
+        `expert-explicit:${attributeId}:${bits}:${componentCount}:${origin.join(',')}:${range}`
+      );
+    }
+
+    /** Produces deterministic expert-encoder output. */
+    EncodeToDracoBuffer(deduplicateValues: boolean): number {
+      state.encoderCalls.push(`expert-encode:${deduplicateValues}`);
+      return state.encodeLength;
+    }
+  }
+
   class FakeMeshBuilder {
     private nextAttributeId = 0;
 
@@ -236,6 +277,7 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     GENERIC: 4,
     MESH_EDGEBREAKER_ENCODING: 9,
     Encoder: FakeEncoder,
+    ExpertEncoder: FakeExpertEncoder,
     MeshBuilder: FakeMeshBuilder,
     MetadataBuilder: FakeMetadataBuilder,
     Mesh: FakeGeometry,
@@ -325,6 +367,81 @@ test('DracoBuilder encodes point clouds and accepts Map metadata', () => {
   expect(Array.from(new Uint8Array(output))).toEqual([11, 22, 33]);
   expect(state.encoderCalls).toEqual(['pointcloud:true']);
   expect(state.attributeCalls).toEqual(['float32']);
+});
+
+test('DracoBuilder applies exact attribute quantization with ExpertEncoder', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+
+  builder.encodeSync(
+    {
+      attributes: {
+        POSITION: new Float32Array([0, 0, 0, 1, 1, 1]),
+        TEXCOORD_0: new Float32Array([0, 0, 1, 1]),
+        TEXCOORD_1: new Float32Array([-1, -1, 1, 1])
+      },
+      indices: new Uint16Array([0, 1, 0])
+    },
+    {
+      speed: [1, 3],
+      method: 'MESH_EDGEBREAKER_ENCODING',
+      quantization: {POSITION: 12, TEX_COORD: 8},
+      attributeQuantization: {
+        TEXCOORD_1: {bits: 14, origin: [-1, -1], range: 2}
+      }
+    }
+  );
+
+  expect(state.encoderCalls).toEqual([
+    'expert',
+    'expert-speed:1:3',
+    'expert-method:9',
+    'expert-quantization:0:12',
+    'expert-quantization:1:8',
+    'expert-explicit:2:14:2:-1,-1:2',
+    'expert-encode:false'
+  ]);
+  expect(state.destroyed).toHaveLength(3);
+});
+
+test('DracoBuilder uses ExpertEncoder for exact point-cloud quantization', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+
+  builder.encodeSync(
+    {attributes: {POSITION: new Float32Array([0, 0, 0, 1, 1, 1])}},
+    {
+      pointcloud: true,
+      deduplicateValues: true,
+      attributeQuantization: {POSITION: 10}
+    }
+  );
+
+  expect(state.encoderCalls).toEqual(['expert', 'expert-quantization:0:10', 'expert-encode:true']);
+});
+
+test.each([
+  [{attributeQuantization: {missing: 8}}, 'quantized attribute "missing" does not exist'],
+  [{attributeQuantization: {POSITION: 0}}, 'must be an integer from 1 to 30'],
+  [
+    {attributeQuantization: {POSITION: {bits: 8, origin: [0, 0], range: 1}}},
+    'must contain 3 values'
+  ],
+  [
+    {attributeQuantization: {POSITION: {bits: 8, origin: [0, 0, Infinity], range: 1}}},
+    'origin for "POSITION" must be finite'
+  ],
+  [
+    {attributeQuantization: {POSITION: {bits: 8, origin: [0, 0, 0], range: 0}}},
+    'range for "POSITION" must be positive'
+  ],
+  [{quantization: {POSITION: 31}}, 'must be an integer from 1 to 30']
+])('DracoBuilder validates quantization options', (options, message) => {
+  const {draco} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+  const mesh = {attributes: {POSITION: new Float32Array([0, 0, 0])}};
+
+  expect(() => builder.encodeSync(mesh, options as any)).toThrow(message);
 });
 
 test('DracoBuilder reports missing positions and encoder failures', () => {
