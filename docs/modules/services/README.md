@@ -17,6 +17,7 @@ modules lets applications install only the service families they use.
 | ArcGIS ImageServer tiles | `ArcGISImageTileSourceLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/services/arcgis-image-server) |
 | ArcGIS MapServer | `ArcGISMapTileSourceLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/services/arcgis-map-server) |
 | ArcGIS VectorTileServer | `ArcGISVectorTileServerSourceLoader` | `VectorTileSource` | Raw MVT or decoded WGS84 features | `SourceLayer` | [VectorTileServer](/docs/modules/services/arcgis-vector-tile-server) |
+| ArcGIS SceneServer | `ArcGISSceneServerSourceLoader` | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh or Point Cloud tiles | Application-specific 3D renderer | [SceneServer](/docs/modules/services/arcgis-scene-server) |
 | ArcGIS service directory | Capability graph utilities | Discovery graph | Ranked service endpoints | Not directly visual | [Capability discovery](#capability-discovery) |
 
 ## Installation
@@ -121,6 +122,29 @@ const source = imagery && createDataSource(imagery.url, SERVICE_LOADERS, {
 
 Discovery performs one metadata request per discovered service. Pass a custom `fetch` function
 when using authentication, a proxy, or a test transport.
+
+## SceneServer layers
+
+`ArcGISSceneServerSource` provides a thin service facade for explicit I3S SceneServer layer
+endpoints. It normalizes layer metadata and delegates traversal and decoding to the existing I3S
+mesh or Point Cloud source.
+
+```ts
+import {ArcGISSceneServerSource} from '@loaders.gl/services';
+import {coreApi} from '@loaders.gl/core';
+
+const service = new ArcGISSceneServerSource(
+  'https://example.com/arcgis/rest/services/City/SceneServer/layers/0',
+  {'arcgis-scene-server': {token: 'secret'}},
+  coreApi
+);
+
+const metadata = await service.getMetadata();
+const tilesetSource = await service.getTilesetSource();
+```
+
+For a URL ending at `/SceneServer`, provide `arcgis-scene-server.layerId`. Point profiles are
+rejected explicitly; mesh and Point Cloud profiles are selected automatically.
 
 ## Choosing a service
 
