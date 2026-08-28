@@ -3,6 +3,12 @@
 // Copyright vis.gl contributors
 
 export type {I3SLoaderOptions} from './i3s-loader';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from './i3s-zod-schema';
 export {I3SLoaderWithParser as I3SLoader} from './i3s-loader-with-parser';
 export {SLPKLoaderWithParser as SLPKLoader} from './i3s-slpk-loader-with-parser';
 export type {SLPKSourceInput} from './i3s-slpk-source';

@@ -1,0 +1,27 @@
+{
+  "id": 0,
+  "layerType": "PointCloud",
+  "version": "2.1",
+  "capabilities": ["View"],
+  "disablePopup": false,
+  "spatialReference": {"wkid": 4326},
+  "store": {
+    "profile": "pointcloud",
+    "version": "2.1",
+    "index": {"nodePerIndexBlock": 64},
+    "defaultGeometrySchema": {
+      "geometryType": "points",
+      "topology": "PerAttributeArray",
+      "encoding": "lepcc-xyz"
+    }
+  },
+  "nodePages": {
+    "rootIndex": 0,
+    "lodSelectionMetricType": "density-threshold"
+  },
+  "attributeStorageInfo": [
+    {"key": "rgb", "name": "rgb", "encoding": "lepcc-rgb", "resource": 0},
+    {"key": "intensity", "name": "intensity", "encoding": "lepcc-intensity", "resource": 0}
+  ],
+  "producerExtension": {"fixture": true}
+}
