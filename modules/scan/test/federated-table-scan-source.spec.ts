@@ -743,6 +743,23 @@ describe('FederatedTableScanSource', () => {
         metadata: createTestMetadata('views', table, viewSchema)
       })
     });
+    const unknownManager = new DataSourceManager();
+    unknownManager.add({
+      dataSourceId: 'unknown',
+      dataSource: new TestTableScanSource('unknown', [table], {
+        metadata: createTestMetadata('unknown', table, {
+          ...viewSchema,
+          fields: [
+            {
+              name: 'text',
+              type: {type: 'decimal', bitWidth: 128, precision: 10, scale: 2} as DataType,
+              nullable: false
+            },
+            ...viewSchema.fields.slice(1)
+          ]
+        })
+      })
+    });
     await expect(
       new FederatedTableScanSource(viewManager, {
         sources: [{dataSourceId: 'views'}],
@@ -759,8 +776,8 @@ describe('FederatedTableScanSource', () => {
     ).rejects.toThrow(/Unsupported federated normalization.*int32 to int8/);
 
     await expect(
-      new FederatedTableScanSource(viewManager, {
-        sources: [{dataSourceId: 'views'}],
+      new FederatedTableScanSource(unknownManager, {
+        sources: [{dataSourceId: 'unknown'}],
         outputSchema: {
           fields: [
             {name: 'text', type: 'int32', nullable: true},
@@ -771,7 +788,7 @@ describe('FederatedTableScanSource', () => {
           metadata: {}
         }
       }).getQueryMetadata()
-    ).rejects.toThrow(/Unsupported federated normalization.*utf8-view to int32/);
+    ).rejects.toThrow(/Unsupported federated normalization for text/);
 
     await expect(
       new FederatedTableScanSource(viewManager, {

@@ -33,6 +33,21 @@ test('ArrowTableSource applies residual predicates and stops after a batch limit
   expect(telemetry[0]).toMatchObject({rowsTested: 3, rowsRetained: 2, rowsReturned: 1});
 });
 
+test('ArrowTableSource handles a limit reached between physical batches', async () => {
+  const firstTable = arrow.tableFromArrays({id: [1]});
+  const secondTable = arrow.tableFromArrays({id: [2]});
+  const source = new ArrowTableSource(new Blob());
+  (source as unknown as {parseBatches: () => AsyncIterable<unknown>}).parseBatches =
+    async function* () {
+      yield {batchType: 'data', shape: 'arrow-table', data: firstTable, length: 1};
+      yield {batchType: 'data', shape: 'arrow-table', data: secondTable, length: 1};
+    };
+  const batches = [];
+  for await (const batch of source.read({limit: 1})) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.data.toArray().map(row => row?.toJSON())).toEqual([{id: 1}]);
+});
+
 test('ArrowTableSource handles zero limits and empty projections', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a', 'b'], value: [1, 2]}));
   const source = new ArrowTableSource(new Blob([bytes]));
