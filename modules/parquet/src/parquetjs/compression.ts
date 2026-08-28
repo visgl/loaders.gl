@@ -13,12 +13,12 @@ import {
   LZ4Compressor,
   LZ4Decompressor,
   SnappyCompressor,
-  SnappyDecompressor,
   ZstdCompressor,
   ZstdDecompressor,
   type Compressor,
   type Decompressor
 } from '@loaders.gl/compression';
+import {SnappyHysnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor-hysnappy';
 import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
@@ -37,6 +37,9 @@ export const PARQUET_COMPRESSION_METHODS: Partial<Record<ParquetCompression, tru
   LZ4_RAW: true,
   ZSTD: true
 };
+
+/** Reader-scoped function that decompresses one independently encoded Parquet page. */
+export type ParquetPageDecompressor = (value: Uint8Array, size: number) => Promise<Uint8Array>;
 
 /**
  * Registers optional codec modules without eagerly loading codec-backed implementations.
@@ -85,6 +88,24 @@ export async function decompress(
   return toUint8Array(compressedArrayBuffer);
 }
 
+/**
+ * Creates a reusable decoder for the independently compressed pages in one Parquet reader.
+ *
+ * Reusing the lazy codec preserves its selected backend and avoids repeating dynamic import and
+ * preload work for every page while keeping module injection scoped to a reader invocation.
+ */
+export function createParquetPageDecompressor(method: ParquetCompression): ParquetPageDecompressor {
+  const decompressor = method === 'UNCOMPRESSED' ? null : createParquetDecompressor(method);
+  return async (value: Uint8Array, size: number): Promise<Uint8Array> => {
+    const inputArrayBuffer = toArrayBuffer(value);
+    if (!decompressor) {
+      return toUint8Array(inputArrayBuffer);
+    }
+    const decompressedArrayBuffer = await decompressor.decompress(inputArrayBuffer, size);
+    return toUint8Array(decompressedArrayBuffer);
+  };
+}
+
 /** Returns a new lazily selecting compressor for one Parquet method. */
 async function getParquetCompressor(method: ParquetCompression): Promise<Compressor> {
   return createParquetCompressor(method);
@@ -120,7 +141,7 @@ function createParquetDecompressor(method: ParquetCompression): Decompressor {
     case 'GZIP':
       return new GZipDecompressor();
     case 'SNAPPY':
-      return new SnappyDecompressor();
+      return new SnappyHysnappyDecompressor();
     case 'BROTLI':
       return new BrotliDecompressor();
     case 'LZ4':

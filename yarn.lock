@@ -5179,6 +5179,7 @@ __metadata:
     compress-utils: "npm:^0.8.0"
     fflate: "npm:0.7.4"
     fzstd: "npm:0.1.1"
+    hysnappy: "npm:^1.1.1"
     lz4js: "npm:^0.2.0"
     pako: "npm:^2.1.0"
     snappyjs: "npm:^0.6.1"
@@ -20573,6 +20574,13 @@ __metadata:
   version: 1.0.0
   resolution: "hysnappy@npm:1.0.0"
   checksum: 10c0/f7d920290832b34d0582bd0e3fdac60df8399ceab740722311c7dbd845c69c38c8e448fbc50e58315c000bcad04365e3f461dc785432cb890540406040724ecc
+  languageName: node
+  linkType: hard
+
+"hysnappy@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "hysnappy@npm:1.1.1"
+  checksum: 10c0/d8e2f098ee0452992c13bf77e5d83fbc59247ad67f1310e0d880996e5eba4f26d5a620c9a2366415521c69e8dd38f2fec70fe22fcc5bfcb533b63764e21f5f04
   languageName: node
   linkType: hard
 

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { BlobFile } from '@loaders.gl/loader-utils';
+import { ArrayBufferFile, BlobFile } from '@loaders.gl/loader-utils';
 import { ParquetReader } from '@loaders.gl/parquet';
 import { fetchFile } from '@loaders.gl/core';
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
@@ -34,6 +34,39 @@ class TrackedBlobFile extends BlobFile {
         }
     }
 }
+
+/** In-memory file that records whether the reader requested copying range reads. */
+class TrackedArrayBufferFile extends ArrayBufferFile {
+    /** Number of copying reads requested from the file adapter. */
+    readCount = 0;
+
+    /** Records a fallback range read before delegating to the file adapter. */
+    override async read(
+        start?: number | bigint,
+        length?: number,
+        signal?: AbortSignal
+    ): Promise<ArrayBuffer> {
+        this.readCount++;
+        return await super.read(start, length, signal);
+    }
+}
+
+test('ParquetReader#uses zero-copy ranges for in-memory files', async () => {
+    const response = await fetchFile(DICTIONARY_URL);
+    const file = new TrackedArrayBufferFile(await response.arrayBuffer());
+    const reader = new ParquetReader(file, {
+        retainByteArrayViews: true,
+        useTypedLevelBuffers: true,
+        useTypedValueBuffers: true
+    });
+
+    const iterator = reader.rowGroupIterator({columnList: ['id']});
+    const firstRowGroup = await iterator.next();
+
+    expect(firstRowGroup.done).toBe(false);
+    expect(file.readCount).toBe(0);
+    reader.close();
+});
 // eslint-disable-next-line
 test('ParquetReader#fruits.parquet', async () => {
     const response = await fetchFile(FRUITS_URL);

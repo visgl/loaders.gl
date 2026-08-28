@@ -168,6 +168,7 @@ These imports bypass the default selection policy and pin one backend.
 | Zstandard | `ZstdFzstdDecompressor` | `zstd-decompressor-fzstd` | Compact synchronous JavaScript |
 | Zstandard | `ZstdCompressUtilsDecompressor` | `zstd-decompressor-compress-utils` | Incremental operation |
 | Snappy | `SnappyJSDecompressor` | `snappy-decompressor-snappyjs` | Compact JavaScript |
+| Snappy | `SnappyHysnappyDecompressor` | `snappy-decompressor-hysnappy` | Small synchronous embedded-WASM decoder |
 | Snappy | `SnappyCompressUtilsDecompressor` | `snappy-decompressor-compress-utils` | Snappy decoding |
 | LZ4 frame | `LZ4JSDecompressor` | `lz4-decompressor-lz4js` | Compact JavaScript |
 | LZ4 frame | `LZ4CompressUtilsDecompressor` | `lz4-decompressor-compress-utils` | LZ4 frame decoding |
@@ -185,6 +186,13 @@ streams, initialize optional modules, and work with WASM-backed implementations.
   synchronous codec. Some compatibility codecs require `await preload()` before a sync call.
 - A codec with genuine streaming support emits output incrementally. The base classes otherwise
   concatenate the input and yield one result.
+
+Built-in streams are not automatically the fastest choice for every workload. Creating a
+`CompressionStream` or `DecompressionStream` and scheduling its asynchronous reads has a fixed
+cost. That cost is usually amortized for large payloads and genuine streams, but it can dominate
+formats such as Parquet that process many small, independently compressed blocks. For block-based
+formats, benchmark a cached synchronous JavaScript codec as well as the built-in stream path;
+`useNative: false` selects that path on the balanced GZIP, DEFLATE, Brotli, and Zstandard classes.
 
 `compress-utils`, Pako, `lz4js`, and `zstd-codec` are optional peer dependencies. Only install an
 optional package when importing its adapter. `compress-utils` uses direction-specific algorithm

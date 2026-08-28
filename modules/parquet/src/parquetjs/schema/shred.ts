@@ -347,13 +347,20 @@ function materializeColumnAsRows(
   const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
   let vIndex = 0;
   for (let i = 0; i < columnData.count; i++) {
-    const dLevel = columnData.dlevels[i];
-    const rLevel = columnData.rlevels[i];
+    // Zero maximum levels are implicit and may use allocation-free empty buffers. Preserve both
+    // fallbacks: required nested scalars still need dLevel === 0 to materialize their leaf value.
+    const dLevel = columnData.dlevels[i] ?? 0;
+    const rLevel = columnData.rlevels[i] ?? 0;
     rLevels[rLevel]++;
     rLevels.fill(0, rLevel + 1);
 
     let rIndex = 0;
     let record = rows[rLevels[rIndex++] - 1];
+    if (!record) {
+      throw new Error(
+        `Parquet column ${key} referenced row ${rLevels[0] - 1} of ${rows.length} at value ${i} (rLevel ${rLevel}, dLevel ${dLevel})`
+      );
+    }
 
     // Internal nodes - Build a nested row object
     for (const step of branch) {
@@ -383,7 +390,7 @@ function materializeColumnAsRows(
 
     // Leaf node - Add the value
     if (dLevel === field.dLevelMax) {
-      const primitiveValue = columnData.values[vIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, vIndex);
       const value = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
       vIndex++;
 
@@ -421,14 +428,24 @@ function materializeFlatColumnAsRows(
 
   if (field.repetitionType === 'REQUIRED' && !fromPrimitive) {
     for (let rowIndex = 0; rowIndex < count; rowIndex++) {
-      rows[rowIndex][field.name] = columnData.values[rowIndex];
+      rows[rowIndex][field.name] = getDecodedColumnValue(columnData, rowIndex);
+    }
+    return;
+  }
+
+  if (field.repetitionType === 'REQUIRED') {
+    for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+      rows[rowIndex][field.name] = fromPrimitive!(
+        getDecodedColumnValue(columnData, rowIndex),
+        field
+      );
     }
     return;
   }
 
   for (let rowIndex = 0; rowIndex < count; rowIndex++) {
     if (columnData.dlevels[rowIndex] === field.dLevelMax) {
-      const primitiveValue = columnData.values[valueIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, valueIndex);
       rows[rowIndex][field.name] = fromPrimitive
         ? fromPrimitive(primitiveValue, field)
         : primitiveValue;
@@ -601,7 +618,7 @@ function materializeColumnAsColumnarArray(
       const value = Types.fromPrimitive(
         // @ts-ignore
         field.originalType || field.primitiveType,
-        columnData.values[vIndex],
+        getDecodedColumnValue(columnData, vIndex),
         field
       );
       vIndex++;
@@ -653,14 +670,34 @@ function materializeFlatColumn(
     return columnData.values;
   }
 
+  if (field.repetitionType === 'REQUIRED') {
+    const column = new Array(rowCount).fill(null);
+    for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+      column[rowIndex] = fromPrimitive
+        ? fromPrimitive(getDecodedColumnValue(columnData, rowIndex), field)
+        : getDecodedColumnValue(columnData, rowIndex);
+    }
+    return column;
+  }
+
   const column = new Array(rowCount).fill(null);
   let valueIndex = 0;
   for (let rowIndex = 0; rowIndex < count; rowIndex++) {
     if (columnData.dlevels[rowIndex] === field.dLevelMax) {
-      const primitiveValue = columnData.values[valueIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, valueIndex);
       column[rowIndex] = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
       valueIndex++;
     }
   }
   return column;
+}
+
+/** Returns one compact byte value or one value from the decoder's conventional destination. */
+function getDecodedColumnValue(columnData: ParquetColumnChunk, valueIndex: number): unknown {
+  const byteArrayData = columnData.byteArrayData;
+  if (!byteArrayData) return columnData.values[valueIndex];
+  return byteArrayData.data.subarray(
+    byteArrayData.valueOffsets[valueIndex],
+    byteArrayData.valueOffsets[valueIndex + 1]
+  );
 }
