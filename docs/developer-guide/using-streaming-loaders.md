@@ -1,10 +1,17 @@
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {StreamingConcept} from '@site/src/components/home/concepts';
+
 # Using Batched Loaders
 
-:::info Start here
+<CapabilityHero capability="streaming" />
+
+<StreamingConcept />
+
+## Start here
+
 Use a batched loader when data is too large to wait for or can be useful before the full download
 finishes. Process each batch with an ordinary `for await...of` loop; no separate streaming framework
 is required.
-:::
 
 A major feature of loaders.gl is the availability of a number of batched (or streaming) loaders.
 

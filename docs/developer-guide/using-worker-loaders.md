@@ -1,10 +1,14 @@
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+
 # Using Worker Loaders
 
-:::info Start here
+<CapabilityHero capability="workers" />
+
+## Start here
+
 Worker-enabled loaders keep expensive parsing and decompression away from the browser's UI thread.
 For most applications, choose the loader normally and let loaders.gl manage its worker; the options
 below are available when you need more control.
-:::
 
 Most loaders.gl loaders can perform parsing on JavaScript worker threads.
 This means that the main thread will not block during parsing and can continue

@@ -2,7 +2,8 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styled from 'styled-components';
 
-const featureCards = [
+/** Homepage capability metadata shared with the corresponding documentation heroes. */
+export const FEATURE_CARDS = [
   {
     id: 'scan',
     eyebrow: 'Query architecture',
@@ -587,7 +588,7 @@ const CategoryNode = styled.span`
  * @param {{type: string, wide?: boolean}} props Component properties.
  * @returns {React.ReactElement} The selected feature visualization.
  */
-function RenderFeatureVisual({type, wide}) {
+export function RenderFeatureVisual({type, wide}) {
   if (type === 'scan') {
     return (
       <ScanVisual $wide={wide} aria-hidden="true">
@@ -733,7 +734,7 @@ export default function Features() {
         </FeatureIntro>
 
         <FeatureGrid>
-          {featureCards.map((feature) => (
+          {FEATURE_CARDS.map((feature) => (
             <FeatureCard key={feature.id} $tone={feature.tone} $wide={feature.wide}>
               <CardBody $wide={feature.wide}>
                 <CardEyebrow>
