@@ -3,26 +3,31 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
-import type {DracoBuildOptions} from './lib/draco-builder';
+import type {DracoBuilderMesh, DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
 import {DracoFormat} from './draco-format';
 
+/** Legacy flat attribute map accepted by `DracoWriter`. */
+export type DracoWriterAttributes = Record<string, TypedArray>;
+
+/** Inputs accepted by `DracoWriter`. */
+export type DracoWriterInput =
+  | DracoMesh
+  | Mesh
+  | MeshArrowTable
+  | DracoBuilderMesh
+  | DracoWriterAttributes;
+
 /** Options for `DracoWriter`. */
 export type DracoWriterOptions = WriterOptions & {
   /** Draco-specific writer options. */
   draco?: DracoBuildOptions & {
-    /** Draco mesh encoding method. */
-    method?: 'MESH_EDGEBREAKER_ENCODING' | 'MESH_SEQUENTIAL_ENCODING';
-    /** Draco encoder speed options, as `[encodeSpeed, decodeSpeed]`. */
-    speed?: [number, number];
-    /** Draco quantization bit counts keyed by mesh attribute name. */
-    quantization?: Record<string, number>;
     /** Draco metadata entry used to store the original attribute name. */
     attributeNameEntry?: string;
   };
@@ -39,10 +44,7 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
   // }
 };
 
-/**
- * Browser worker doesn't work because of issue during "draco_encoder.js" loading.
- * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
- */
+/** Worker-enabled exporter for Draco3D compressed geometries. */
 export const DracoWriterWorker = {
   id: 'draco-writer',
   name: 'Draco compressed geometry writer',
@@ -66,15 +68,11 @@ export const DracoWriter = {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
   },
   encode
-} as const satisfies WriterWithEncoder<
-  DracoMesh | Mesh | MeshArrowTable | Record<string, unknown>,
-  unknown,
-  DracoWriterOptions
->;
+} as const satisfies WriterWithEncoder<DracoWriterInput, unknown, DracoWriterOptions>;
 
 /** Encode Draco mesh category data. */
 async function encode(
-  data: DracoMesh | Mesh | MeshArrowTable | Record<string, unknown>,
+  data: DracoWriterInput,
   options: DracoWriterOptions = {}
 ): Promise<ArrayBuffer> {
   // Dynamically load draco
@@ -88,19 +86,18 @@ async function encode(
   }
 }
 
-/** Return Draco-writable mesh data, normalizing Mesh category data through MeshArrowTable first. */
-function normalizeDracoMesh(
-  data: DracoMesh | Mesh | MeshArrowTable | Record<string, unknown>
-): DracoMesh {
+/** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
+function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
   if (isMeshArrowTable(data)) {
-    return convertTableToMesh(data) as DracoMesh;
+    return convertTableToMesh(data);
   }
 
-  if (isMesh(data)) {
-    return convertTableToMesh(convertMeshToTable(data, 'arrow-table')) as DracoMesh;
+  if (isDracoBuilderMesh(data)) {
+    return data;
   }
 
-  return data as DracoMesh;
+  const {indices, ...attributes} = data;
+  return {attributes, ...(indices ? {indices} : {})};
 }
 
 /** Return true when the input is MeshArrowTable category data. */
@@ -110,7 +107,14 @@ function isMeshArrowTable(data: unknown): data is MeshArrowTable {
   );
 }
 
-/** Return true when the input is plain Mesh category data. */
-function isMesh(data: unknown): data is Mesh {
-  return typeof data === 'object' && data !== null && 'attributes' in data && 'schema' in data;
+/** Returns true when input uses the nested Mesh attribute representation. */
+function isDracoBuilderMesh(data: DracoWriterInput): data is DracoBuilderMesh | Mesh | DracoMesh {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'attributes' in data &&
+    typeof data.attributes === 'object' &&
+    data.attributes !== null &&
+    !ArrayBuffer.isView(data.attributes)
+  );
 }
