@@ -12,6 +12,7 @@ import {expect, test} from 'vitest';
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
 // import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../src/lerc-loader';
+import {LERCFormat} from '../../src/lerc-format';
 import {parse} from '@loaders.gl/core';
 
 /***************
@@ -64,4 +65,26 @@ test('LERCLoader#4D interleaved output', async () => {
     lerc: {returnInterleaved: true}
   });
   expect(bipResult.pixels[0].slice(0, 6).join(',')).toBe('13,57,68,14,59,80');
+});
+
+test('LERCLoader exposes stable metadata and preloads its parser', async () => {
+  expect(LERCFormat).toMatchObject({id: 'lerc', format: 'lerc', binary: true});
+  expect(LERCLoader.options).toEqual({lerc: {}});
+  const parser = await LERCLoader.preload();
+  expect(parser.parse).toBeTypeOf('function');
+  expect(parser.id).toBe('lerc');
+});
+
+test('LERCLoader accepts an input offset before the LERC payload', async () => {
+  const prefix = new Uint8Array([11, 22, 33]);
+  const payload = new Uint8Array(LERC_DATA_4D);
+  const prefixed = new Uint8Array(prefix.length + payload.length);
+  prefixed.set(prefix);
+  prefixed.set(payload, prefix.length);
+
+  const result = await parse(prefixed.buffer, LERCLoader, {
+    lerc: {inputOffset: prefix.length}
+  });
+  expect(result.width).toBe(30);
+  expect(result.height).toBe(20);
 });

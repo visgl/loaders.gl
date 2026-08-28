@@ -183,3 +183,33 @@ test('MLTTileSource#supports Arrow table shape', async () => {
     MLTLoader.parse = originalParse;
   }
 });
+
+test('MLTTileSource supports XYZ URLs and inverted-y templates', () => {
+  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+    mlt: {extension: '.tile'}
+  });
+  source.schema = 'xyz';
+  expect(source.getTileURL(1, 2, 3)).toBe('https://example.com/tiles/1/2/3.tile');
+
+  expect(getURLFromTemplate('https://example.com/{z}/{x}/{-y}?v=1', 1, 2, 3, '.mlt')).toBe(
+    'https://example.com/3/1/5.mlt?v=1'
+  );
+});
+
+test('MLTTileSource returns null for failed tile data and preserves metadata defaults', async () => {
+  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
+  source.fetch = async () => new Response('missing', {status: 500, statusText: 'Server Error'});
+
+  await expect(
+    source.getTileData({
+      index: {x: 1, y: 2, z: 3},
+      id: '1/2/3',
+      bbox: {west: 0, north: 0, east: 0, south: 0}
+    })
+  ).resolves.toBeNull();
+  await expect(source.getMetadata()).resolves.toEqual({
+    minZoom: 0,
+    maxZoom: 30,
+    attributions: []
+  });
+});

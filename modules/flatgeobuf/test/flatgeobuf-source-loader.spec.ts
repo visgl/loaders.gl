@@ -208,6 +208,31 @@ test('FlatGeobufVectorSource#explain reports relational and spatial planning', a
   expect(explanation.spatial.enabled, 'reports requested bounds').toBe(true);
   expect(explanation.spatial.support, 'reports packed R-tree pushdown').toBe('pushdown');
 });
+
+test('FlatGeobufVectorSource#explain reports plans without spatial bounds', async () => {
+  const source = await createSource();
+  const explanation = await source.explain({});
+
+  expect(explanation.outputColumns).toEqual(['id', 'name', 'geometry']);
+  expect(explanation.requiredColumns).toEqual(['id', 'name', 'geometry']);
+  expect(explanation.spatial).toEqual({enabled: false, support: 'pushdown'});
+});
+
+test('FlatGeobufVectorSource#read emits one bounded Arrow batch', async () => {
+  const source = await createSource();
+  const batches = [];
+  for await (const batch of source.read({limit: 1})) batches.push(batch);
+
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.shape).toBe('arrow-table');
+  expect(batches[0]?.data.numRows).toBe(1);
+});
+
+test('FlatGeobufSourceLoader recognizes URL query and fragment suffixes', () => {
+  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.fgb?download=1')).toBe(true);
+  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.fgb#map')).toBe(true);
+  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.geojson')).toBe(false);
+});
 test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
   const abortController = new AbortController();
   const delayedSource = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
