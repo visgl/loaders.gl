@@ -32,12 +32,25 @@ export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT
   if (screenSize < 2) {
     return 'OUT';
   }
-  if (!tile.header.children || screenSize <= tile.lodMetricValue) {
+  if (!tile.header.children) {
     return 'DRAW';
-  } else if (tile.header.children) {
-    return 'DIG';
   }
-  return 'OUT';
+
+  switch (tile.lodMetricType) {
+    case 'screenSpaceRelative': {
+      const viewportHeight = frameState.topDownViewport.height || 1;
+      return screenSize / viewportHeight <= tile.lodMetricValue ? 'DRAW' : 'DIG';
+    }
+    case 'distanceRangeFromDefaultCamera':
+      return tile.distanceToTile(frameState) >= tile.lodMetricValue ? 'DRAW' : 'DIG';
+    case 'maxScreenThresholdSQ': {
+      const diameterThreshold = Math.sqrt(tile.lodMetricValue / (Math.PI * 0.25));
+      return screenSize <= diameterThreshold ? 'DRAW' : 'DIG';
+    }
+    case 'maxScreenThreshold':
+    default:
+      return screenSize <= tile.lodMetricValue ? 'DRAW' : 'DIG';
+  }
 }
 
 /**

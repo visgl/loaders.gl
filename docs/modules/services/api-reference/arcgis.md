@@ -10,7 +10,7 @@ source loader per visual data contract and a shared registry for automatic selec
 | `arcgis-image-server-tiles` | `ImageServer` | `TileSource` | `getMetadata`, `getTile`, `updateParameters` | Image or LERC tile |
 | `arcgis-map-server` | `MapServer` | `TileSource` | `getMetadata`, `getTile`, `updateParameters` | Cached or exported image tile |
 | `arcgis-vector-tile-server` | `VectorTileServer` | `VectorTileSource` | `getMetadata`, `getTile`, `getVectorTile` | PBF or decoded vector tile |
-| `arcgis-scene-server` | `SceneServer` | `Tileset3DSource` or `PointCloudTilesetSource` | `getMetadata`, `getTilesetSource` | I3S mesh or Point Cloud source |
+| `arcgis-scene-server` | `SceneServer` | `Tileset3DSource` or `PointCloudTilesetSource` | `getMetadata`, `getTilesetSource` | I3S mesh, Point, or Point Cloud source |
 
 `SERVICE_LOADERS` contains these loaders in deterministic selection order. Pass it to `load`,
 `createDataSource`, or deck.gl's `SourceLayer`:

@@ -27,6 +27,11 @@ export type {
   FeatureAttribute,
   FieldInfo,
   I3SMaterialDefinition,
+  I3SDrawRange,
+  I3SRenderer,
+  I3SPointRenderer,
+  I3SPointSymbol,
+  I3SPointSymbolLayer,
   TextureDefinitionInfo,
   MaterialDefinitionInfo,
   FullExtent,
@@ -50,6 +55,7 @@ export {
   I3SPointCloudNodePageSchema,
   I3SPointCloudNodeSchema,
   I3SPointCloudSceneLayerSchema,
+  I3SPointSceneLayerSchema,
   I3SPointCloudStoreSchema
 } from './i3s-zod-schema';
 

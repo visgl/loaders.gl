@@ -51,7 +51,7 @@ export const I3SNodeInPageSchema = z
     children: z.array(z.number().int().nonnegative()).optional(),
     mesh: z
       .object({
-        material: I3SMeshMaterialSchema,
+        material: I3SMeshMaterialSchema.optional(),
         geometry: I3SMeshGeometrySchema,
         attribute: z.object({resource: z.number().int().nonnegative()}).passthrough()
       })
@@ -165,12 +165,46 @@ export const I3SPointCloudSceneLayerSchema = I3SPointCloudSceneLayerBaseSchema.a
   I3SPointCloudNodePagesRequirementSchema
 );
 
+const I3SGeometryBufferItemSchema = z
+  .object({
+    type: z.string(),
+    component: z.number().int().positive(),
+    encoding: z.string().optional(),
+    binding: z.string().optional()
+  })
+  .passthrough();
+
+const I3SGeometryBufferSchema = z
+  .object({
+    offset: z.number().int().nonnegative().optional(),
+    position: I3SGeometryBufferItemSchema.optional(),
+    normal: I3SGeometryBufferItemSchema.optional(),
+    uv0: I3SGeometryBufferItemSchema.optional(),
+    uv1: I3SGeometryBufferItemSchema.optional(),
+    color: I3SGeometryBufferItemSchema.optional(),
+    uvRegion: I3SGeometryBufferItemSchema.optional(),
+    featureId: I3SGeometryBufferItemSchema.optional(),
+    faceRange: I3SGeometryBufferItemSchema.optional(),
+    compressedAttributes: z
+      .object({encoding: z.string(), attributes: z.array(z.string())})
+      .passthrough()
+      .optional()
+  })
+  .passthrough();
+
+const I3SGeometryDefinitionSchema = z
+  .object({
+    topology: z.enum(['triangle', 'point']).optional(),
+    geometryBuffers: z.array(I3SGeometryBufferSchema)
+  })
+  .passthrough();
+
 /** Zod schema for raw I3S 3D Object and Integrated Mesh scene-layer metadata. */
 export const I3SSceneLayerSchema = z
   .object({
     id: z.number().int().nonnegative(),
     href: z.string().optional(),
-    layerType: z.enum(['3DObject', 'IntegratedMesh', 'PointCloud']),
+    layerType: z.enum(['3DObject', 'IntegratedMesh', 'Point', 'PointCloud']),
     spatialReference: I3SSpatialReferenceSchema.optional(),
     version: z.string().min(1),
     name: z.string().optional(),
@@ -180,7 +214,7 @@ export const I3SSceneLayerSchema = z
       .object({
         profile: z.string().min(1),
         version: z.union([z.number(), z.string().min(1)]),
-        defaultGeometrySchema: z.any()
+        defaultGeometrySchema: z.any().optional()
       })
       .passthrough(),
     nodePages: z
@@ -193,6 +227,33 @@ export const I3SSceneLayerSchema = z
         ])
       })
       .passthrough()
-      .optional()
+      .optional(),
+    pointNodePages: z
+      .object({
+        nodesPerPage: z.number().int().positive().max(4096),
+        rootIndex: z.number().int().nonnegative().optional(),
+        lodSelectionMetricType: z.union([
+          z.literal('maxScreenThreshold'),
+          z.literal('maxScreenThresholdSQ'),
+          z.literal('screenSpaceRelative'),
+          z.literal('distanceRangeFromDefaultCamera')
+        ])
+      })
+      .passthrough()
+      .optional(),
+    geometryDefinitions: z.array(I3SGeometryDefinitionSchema).optional()
   })
   .passthrough() satisfies z.ZodType<SceneLayer3D>;
+
+/** Zod schema for an I3S Point scene-layer document. */
+export const I3SPointSceneLayerSchema = I3SSceneLayerSchema.refine(
+  layer =>
+    layer.layerType === 'Point' &&
+    layer.store.profile.toLowerCase() === 'points' &&
+    Boolean(layer.pointNodePages) &&
+    Boolean(layer.geometryDefinitions?.length),
+  {
+    message:
+      'I3S Point layers require store.profile "points", pointNodePages, and geometryDefinitions'
+  }
+);

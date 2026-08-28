@@ -136,9 +136,14 @@ export function getAttributeValueType(attribute) {
  * @param attributeStorageInfo
  * @returns Feature ids attribute name
  */
-function getFeatureIdsAttributeName(attributeStorageInfo) {
-  const objectIdsAttribute = attributeStorageInfo.find(attribute =>
-    attribute.name.includes('OBJECTID')
+function getFeatureIdsAttributeName(attributeStorageInfo, tilesetFields: Field[]) {
+  const objectIdField = tilesetFields.find(field => field.type === 'esriFieldTypeOID');
+  const objectIdsAttribute = attributeStorageInfo.find(
+    attribute =>
+      attribute.name === objectIdField?.name ||
+      attribute.name.includes('OBJECTID') ||
+      attribute.objectIds ||
+      attribute.attributeValues?.valueType === 'Oid32'
   );
 
   return objectIdsAttribute?.name;
@@ -152,7 +157,7 @@ function getFeatureIdsAttributeName(attributeStorageInfo) {
  * @returns {Object}
  */
 function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields) {
-  const objectIdsAttributeName = getFeatureIdsAttributeName(attributeStorageInfo);
+  const objectIdsAttributeName = getFeatureIdsAttributeName(attributeStorageInfo, tilesetFields);
   const objectIds = attributes.find(attribute => attribute.value[objectIdsAttributeName]);
 
   if (!objectIds) {

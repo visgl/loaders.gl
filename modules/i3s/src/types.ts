@@ -37,6 +37,10 @@ export interface I3STilesetHeader extends SceneLayer3D {
   loader: LoaderWithParser;
   /** Normalized CRS discovery metadata added by the loader. */
   spatialMetadata?: TilesetSpatialReference;
+  /** Point-profile renderer metadata retained for renderer integration. */
+  pointRenderer?: I3SPointRenderer;
+  /** Point-profile symbol selected by the layer renderer, when present. */
+  pointSymbol?: I3SPointSymbol;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md */
 export type NodePage = {
@@ -103,7 +107,7 @@ type NodeMesh = {
   /**
    * The material definition.
    */
-  material: MeshMaterial;
+  material?: MeshMaterial;
   /** The geometry definition. */
   geometry: MeshGeometry;
   /** The attribute set definition. */
@@ -185,6 +189,12 @@ export type I3SMinimalNodeData = {
   attributeUrls?: string[];
   /** Material definition from I3S layer metadata */
   materialDefinition?: I3SMaterialDefinition;
+  /** Scene-layer profile that produced this tile. */
+  layerType?: SceneLayer3D['layerType'];
+  /** Point-profile renderer metadata retained for renderer integration. */
+  pointRenderer?: I3SPointRenderer;
+  /** Point-profile symbol selected by the layer renderer, when present. */
+  pointSymbol?: I3SPointSymbol;
   /** Legacy shared-resource bundle loaded for this node, when present. */
   sharedResources?: SharedResources;
   /** Texture format per I3S spec */
@@ -253,6 +263,12 @@ export type I3STileOptions = {
   textureUrls?: I3STextureResource[];
   textureLoaderOptions?: any;
   materialDefinition?: I3SMaterialDefinition;
+  /** Scene-layer profile that produced the tile. */
+  layerType?: SceneLayer3D['layerType'];
+  /** Point-profile renderer metadata. */
+  pointRenderer?: I3SPointRenderer;
+  /** Point-profile symbol metadata. */
+  pointSymbol?: I3SPointSymbol;
   attributeUrls: string[];
   mbs: Mbs;
 };
@@ -294,6 +310,14 @@ export type I3STileContent = {
   textures?: Record<string, TileContentTexture>;
   /** Opaque mesh-segmentation payload appended to a legacy geometry buffer. */
   meshSegmentation?: ArrayBuffer;
+  /** Primitive topology required to draw this content. */
+  topology: 'triangle-list' | 'point-list';
+  /** Contiguous renderer draw ranges decoded from I3S feature segmentation. */
+  drawRanges?: I3SDrawRange[];
+  /** Point-profile renderer metadata preserved from the layer document. */
+  pointRenderer?: I3SPointRenderer;
+  /** Point-profile symbol selected by the renderer, when present. */
+  pointSymbol?: I3SPointSymbol;
   [key: string]: any;
 };
 
@@ -338,7 +362,7 @@ export type SceneLayer3D = {
   /** The relative URL to the 3DSceneLayerResource. Only present as part of the SceneServiceInfo resource. */
   href?: string;
   /** The user-visible layer type */
-  layerType: '3DObject' | 'IntegratedMesh' | 'PointCloud';
+  layerType: '3DObject' | 'IntegratedMesh' | 'Point' | 'PointCloud';
   /** The spatialReference of the layer including the vertical coordinate reference system (CRS). Well Known Text (WKT) for CRS is included to support custom CRS. */
   spatialReference?: SpatialReference;
   /** Enables consuming clients to quickly determine whether this layer is compatible (with respect to its horizontal and vertical coordinate system) with existing content. */
@@ -383,6 +407,8 @@ export type SceneLayer3D = {
   statisticsInfo?: StatisticsInfo[];
   /** The paged-access index description. */
   nodePages?: NodePageDefinition;
+  /** Paged index used by Point scene layers. */
+  pointNodePages?: NodePageDefinition;
   /** List of materials classes used in this layer. */
   materialDefinitions?: I3SMaterialDefinition[];
   /** Defines the set of textures that can be referenced by meshes. */
@@ -400,9 +426,52 @@ export type CachedDrawingInfo = {
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/drawingInfo.cmn.md */
 export type DrawingInfo = {
   /** An object defining the symbology for the layer. See more information about supported renderer types in ArcGIS clients. */
-  renderer: any;
+  renderer: I3SRenderer;
   /** Scale symbols for the layer. */
-  scaleSymbols: boolean;
+  scaleSymbols?: boolean;
+};
+
+/** Forward-compatible ArcGIS renderer metadata stored in an I3S layer. */
+export type I3SRenderer = {
+  /** Renderer discriminator such as `simple`, `uniqueValue`, or `classBreaks`. */
+  type: string;
+  /** Default symbol used by simple renderers and as a fallback by classified renderers. */
+  symbol?: I3SPointSymbol | Record<string, unknown>;
+  /** Additional renderer properties preserved for application-level evaluation. */
+  [key: string]: unknown;
+};
+
+/** PointSymbol3D metadata exposed by Point scene layers. */
+export type I3SPointSymbol = {
+  /** ArcGIS symbol discriminator, normally `PointSymbol3D`. */
+  type: string;
+  /** Ordered icon, object, text, or other point symbol layers. */
+  symbolLayers?: I3SPointSymbolLayer[];
+  /** Additional producer metadata preserved without interpretation. */
+  [key: string]: unknown;
+};
+
+/** One symbol layer in an I3S PointSymbol3D definition. */
+export type I3SPointSymbolLayer = {
+  /** Symbol-layer discriminator such as `Icon` or `Object`. */
+  type: string;
+  /** Primitive or external resource used by the symbol layer. */
+  resource?: {
+    /** Built-in ArcGIS primitive name. */
+    primitive?: string;
+    /** External symbol resource reference. */
+    href?: string;
+    /** Additional producer metadata preserved without interpretation. */
+    [key: string]: unknown;
+  };
+  /** Additional symbol-layer properties preserved without interpretation. */
+  [key: string]: unknown;
+};
+
+/** Renderer metadata specialized for an I3S Point scene layer. */
+export type I3SPointRenderer = I3SRenderer & {
+  /** PointSymbol3D used by a simple renderer, when present. */
+  symbol?: I3SPointSymbol;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/elevationInfo.cmn.md */
 export type ElevationInfo = {
@@ -433,7 +502,12 @@ export type NodePageDefinition = {
   /** Index of the root node. Default = 0. */
   rootIndex?: number;
   /** Defines the meaning of nodes[].lodThreshold for this layer. */
-  lodSelectionMetricType: 'maxScreenThresholdSQ' | 'density-threshold';
+  lodSelectionMetricType:
+    | 'maxScreenThreshold'
+    | 'maxScreenThresholdSQ'
+    | 'screenSpaceRelative'
+    | 'distanceRangeFromDefaultCamera'
+    | 'density-threshold';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitions.cmn.md */
 export type I3SMaterialDefinition = {
@@ -481,6 +555,20 @@ export type I3SMaterialTexture = {
   wrapS?: 'none' | 'repeat' | 'mirror';
   /** Legacy I3S texture wrapping mode for the T coordinate. */
   wrapT?: 'none' | 'repeat' | 'mirror';
+};
+
+/** A contiguous range of primitives that belongs to one I3S feature. */
+export type I3SDrawRange = {
+  /** Feature identifier associated with this range. */
+  featureId: number;
+  /** Zero-based primitive offset. */
+  firstPrimitive: number;
+  /** Number of primitives in the range. */
+  primitiveCount: number;
+  /** Zero-based index or vertex offset suitable for a draw call. */
+  firstVertex: number;
+  /** Number of indices or vertices suitable for a draw call. */
+  vertexCount: number;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md */
 export type AttributeStorageInfo = {
@@ -860,7 +948,7 @@ export type Store = {
   normalReferenceFrame?: string;
   lodType?: string;
   lodModel?: string;
-  defaultGeometrySchema: DefaultGeometrySchema;
+  defaultGeometrySchema?: DefaultGeometrySchema;
   nidEncoding?: string;
   textureEncoding?: string[];
   featureEncoding?: string;
@@ -920,11 +1008,14 @@ export enum HeaderAttributeProperty {
   featureCount = 'featureCount'
 }
 export type VertexAttribute = {
-  position: GeometryAttribute;
-  normal: GeometryAttribute;
-  uv0: GeometryAttribute;
-  color: GeometryAttribute;
+  position?: GeometryAttribute;
+  normal?: GeometryAttribute;
+  uv0?: GeometryAttribute;
+  uv1?: GeometryAttribute;
+  color?: GeometryAttribute;
   region?: GeometryAttribute;
+  /** Additional producer-defined vertex attributes. */
+  [attributeName: string]: GeometryAttribute | undefined;
 };
 export type GeometryAttribute = {
   byteOffset?: number;
@@ -976,7 +1067,7 @@ type TextureSetDefinition = {
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryDefinition.cmn.md */
 type GeometryDefinition = {
-  topology?: 'triangle';
+  topology?: 'triangle' | 'point';
   geometryBuffers: GeometryBuffer[];
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryBuffer.cmn.md */
@@ -985,6 +1076,7 @@ type GeometryBuffer = {
   position?: GeometryBufferItem;
   normal?: GeometryBufferItem;
   uv0?: GeometryBufferItem;
+  uv1?: GeometryBufferItem;
   color?: GeometryBufferItem;
   uvRegion?: GeometryBufferItem;
   featureId?: GeometryBufferItem;

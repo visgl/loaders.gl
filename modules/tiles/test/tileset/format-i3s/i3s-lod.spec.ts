@@ -80,3 +80,31 @@ test('I3S LOD#lodJudge - should return "DIG" in the large LOD metric value case'
   const lodResult = getLodStatus(tile, frameState);
   expect(lodResult).toBe('DIG');
 });
+
+test('I3S LOD#lodJudge supports Point screenSpaceRelative thresholds', async () => {
+  const tileset = await createI3STileset();
+  const viewport = new WebMercatorViewport(VIEWPORT_DEFAULT);
+  const frameState = getFrameState(viewport, 1);
+  const tileHeader = getTileHeader();
+  tileHeader.lodMetricType = 'screenSpaceRelative';
+  tileHeader.lodMetricValue = 10;
+  const tile = new Tile3D(tileset, tileHeader);
+
+  expect(getLodStatus(tile, frameState)).toBe('DRAW');
+  tile.lodMetricValue = Number.EPSILON;
+  expect(getLodStatus(tile, frameState)).toBe('DIG');
+});
+
+test('I3S LOD#lodJudge supports Point camera-distance thresholds', async () => {
+  const tileset = await createI3STileset();
+  const viewport = new WebMercatorViewport(VIEWPORT_DEFAULT);
+  const frameState = getFrameState(viewport, 1);
+  const tileHeader = getTileHeader();
+  tileHeader.lodMetricType = 'distanceRangeFromDefaultCamera';
+  tileHeader.lodMetricValue = 1;
+  const tile = new Tile3D(tileset, tileHeader);
+
+  expect(getLodStatus(tile, frameState)).toBe('DRAW');
+  tile.lodMetricValue = Number.MAX_SAFE_INTEGER;
+  expect(getLodStatus(tile, frameState)).toBe('DIG');
+});

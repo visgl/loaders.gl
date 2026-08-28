@@ -9,7 +9,7 @@ import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {I3SParseOptions} from './types';
 import {getUrlWithoutParams} from './lib/utils/url-utils';
 import {I3SLoader as I3SLoaderMetadata} from './i3s-loader';
-import {I3SSceneLayerSchema} from './i3s-zod-schema';
+import {I3SPointSceneLayerSchema, I3SSceneLayerSchema} from './i3s-zod-schema';
 
 const {preload: _I3SLoaderPreload, ...I3SLoaderMetadataWithoutPreload} = I3SLoaderMetadata;
 
@@ -18,6 +18,7 @@ const LOCAL_SLPK_REGEX = /\.slpk$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
+const POINT = 'Point';
 
 export type I3SLoaderOptions = StrictLoaderOptions & {
   i3s?: I3SParseOptions & {
@@ -85,7 +86,10 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
     throw new Error('Point Cloud layers currently are not supported by I3SLoader');
   }
 
-  const sceneLayer = I3SSceneLayerSchema.parse(tilesetJson);
+  const sceneLayer =
+    tilesetJson?.layerType === POINT
+      ? I3SPointSceneLayerSchema.parse(tilesetJson)
+      : I3SSceneLayerSchema.parse(tilesetJson);
   const tilesetPostprocessed = await normalizeTilesetData(sceneLayer, options, context);
   return tilesetPostprocessed;
 }

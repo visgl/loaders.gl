@@ -1,0 +1,91 @@
+{
+  "id": 0,
+  "version": "1.8",
+  "name": "Two point conformance layer",
+  "layerType": "Point",
+  "spatialReference": {"wkid": 4326, "latestWkid": 4326},
+  "capabilities": ["View", "Query"],
+  "disablePopup": false,
+  "store": {
+    "id": "point-conformance",
+    "profile": "points",
+    "version": "1.8",
+    "resourcePattern": ["Attributes", "Geometry"],
+    "rootNode": "./nodes/root",
+    "extent": [-74.151, 40.532, -74.15, 40.534],
+    "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+    "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+    "lodType": "AutoThinning",
+    "lodModel": "node-switching"
+  },
+  "fields": [{"name": "FID", "type": "esriFieldTypeOID", "alias": "FID"}],
+  "attributeStorageInfo": [
+    {
+      "key": "f_0",
+      "name": "FID",
+      "header": [{"property": "count", "valueType": "UInt32"}],
+      "ordering": ["attributeValues"],
+      "attributeValues": {"valueType": "Oid32", "valuesPerElement": 1}
+    }
+  ],
+  "drawingInfo": {
+    "renderer": {
+      "type": "simple",
+      "symbol": {
+        "type": "PointSymbol3D",
+        "symbolLayers": [
+          {
+            "type": "Icon",
+            "resource": {"primitive": "circle"},
+            "size": 4,
+            "material": {"color": [82, 125, 171], "transparency": 0}
+          }
+        ]
+      }
+    }
+  },
+  "pointNodePages": {
+    "nodesPerPage": 64,
+    "rootIndex": 0,
+    "lodSelectionMetricType": "maxScreenThresholdSQ"
+  },
+  "geometryDefinitions": [
+    {
+      "topology": "point",
+      "geometryBuffers": [
+        {
+          "compressedAttributes": {
+            "encoding": "draco",
+            "attributes": ["position", "feature-index"]
+          }
+        }
+      ]
+    }
+  ],
+  "testResources": {
+    "nodePage": {
+      "nodes": [
+        {
+          "index": 0,
+          "lodThreshold": 73.55277387706228,
+          "obb": {
+            "center": [-74.1508412736073, 40.532998096294, -0.0000202106311917305],
+            "halfSize": [1, 1, 1],
+            "quaternion": [
+              0.24848408029838404,
+              0.1623688566889623,
+              0.9539934076566386,
+              0.04229177654650866
+            ]
+          },
+          "mesh": {
+            "geometry": {"definition": 0, "resource": 62, "vertexCount": 2, "featureCount": 2},
+            "attribute": {"resource": 62}
+          }
+        }
+      ]
+    },
+    "geometryBase64": "RFJBQ08CAwAAAIACAAEEbmFtZQhQT1NJVElPTgABAxJpM3MtYXR0cmlidXRlLXR5cGUNZmVhdHVyZS1pbmRleA9pM3MtZmVhdHVyZS1pZHMINtgEAK7eBAAEbmFtZQ1mZWF0dXJlLWluZGV4AAAAAgAAAAECAAkDAAAEBgEAAQABAAAAAAAAAAAAAAAAAACAPwAAAEAAAEBAAAEBAAIDAUABAAIAAAAAAQAAAA==",
+    "attributeBase64": "AgAAADbYBACu3gQA"
+  }
+}

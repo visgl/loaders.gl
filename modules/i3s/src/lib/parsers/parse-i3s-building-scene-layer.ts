@@ -5,6 +5,7 @@
 import type {BuildingSceneLayerTileset, BuildingSceneSublayer} from '../../types';
 
 const OBJECT_3D_LAYER_TYPE = '3DObject';
+const POINT_LAYER_TYPE = 'Point';
 
 /**
  * Parses Builiding Scene Layer and creates tileset
@@ -40,8 +41,8 @@ function parseSublayersTree(
     const subLayer = sublayers[index];
     const {id, layerType, visibility = true, ...rest} = subLayer;
 
-    // Add support only for 3DObject layer type for I3S purposes.
-    if (layerType === OBJECT_3D_LAYER_TYPE) {
+    // Building Scene Layers can contain renderable 3D Object and Point sublayers.
+    if (layerType === OBJECT_3D_LAYER_TYPE || layerType === POINT_LAYER_TYPE) {
       const sublayerUrl = `${url}/sublayers/${id}`;
 
       layers.push({
