@@ -11,15 +11,27 @@ import path from 'node:path';
 import ts from 'typescript';
 
 const MAXIMUM_BUILD_CONCURRENCY = 4;
+const QUIET_BUILD =
+  process.env.LOADERS_GL_BUILD_QUIET === '1' || process.env.CI === 'true';
 const modulesDirectory = path.resolve('modules');
 const typeScriptCompilerPath = path.resolve(
   'node_modules/.bin',
   process.platform === 'win32' ? 'tspc.cmd' : 'tspc'
 );
+const lernaPath = path.resolve(
+  'node_modules/.bin',
+  process.platform === 'win32' ? 'lerna.cmd' : 'lerna'
+);
+const ocularCleanPath = path.resolve(
+  'node_modules/.bin',
+  process.platform === 'win32' ? 'ocular-clean.cmd' : 'ocular-clean'
+);
 const commonJsBuildPath = path.resolve('node_modules/@vis.gl/dev-tools/dist/build-cjs.js');
 const modules = discoverModules();
 const buildLevels = createBuildLevels(modules);
 const buildConcurrency = getBuildConcurrency();
+
+await runCommand(ocularCleanPath, [], process.cwd());
 
 console.log(
   `Building ${modules.size} modules in ${buildLevels.length} dependency levels ` +
@@ -27,10 +39,18 @@ console.log(
 );
 
 for (const [levelIndex, moduleNames] of buildLevels.entries()) {
-  console.log(
-    `Building dependency level ${levelIndex + 1}/${buildLevels.length}: ${moduleNames.join(', ')}`
-  );
+  if (!QUIET_BUILD) {
+    console.log(
+      `Building dependency level ${levelIndex + 1}/${buildLevels.length}: ${moduleNames.join(', ')}`
+    );
+  }
   await runModuleBuilds(moduleNames, buildConcurrency);
+}
+
+await runCommand(lernaPath, ['run', 'pre-build'], process.cwd());
+
+if (QUIET_BUILD) {
+  console.log(`Built ${modules.size} modules and package assets successfully.`);
 }
 
 /** Discovers TypeScript module projects and their intra-repository dependencies. */
@@ -153,7 +173,9 @@ async function runModuleBuilds(moduleNames, concurrency) {
 /** Runs the TypeScript and CommonJS build steps for one module. */
 async function runModuleBuild(moduleName) {
   const moduleDirectory = path.join(modulesDirectory, moduleName);
-  console.log(`Building modules/${moduleName}`);
+  if (!QUIET_BUILD) {
+    console.log(`Building modules/${moduleName}`);
+  }
   await runCommand(
     typeScriptCompilerPath,
     [
@@ -173,21 +195,34 @@ async function runModuleBuild(moduleName) {
 /** Runs one child command and rejects when it fails. */
 function runCommand(command, commandArguments, workingDirectory) {
   return new Promise((resolve, reject) => {
+    let output = '';
     const childProcess = spawn(command, commandArguments, {
       cwd: workingDirectory,
       env: process.env,
       shell: process.platform === 'win32',
-      stdio: 'inherit'
+      stdio: QUIET_BUILD ? ['ignore', 'pipe', 'pipe'] : 'inherit'
     });
+
+    if (QUIET_BUILD) {
+      childProcess.stdout.on('data', chunk => {
+        output += chunk;
+      });
+      childProcess.stderr.on('data', chunk => {
+        output += chunk;
+      });
+    }
 
     childProcess.on('exit', (exitCode, signal) => {
       if (exitCode === 0) {
         resolve();
         return;
       }
+      if (output) {
+        process.stderr.write(output);
+      }
       reject(
         new Error(
-          `${path.basename(command)} failed in ${path.relative(process.cwd(), workingDirectory)} ` +
+          `${path.basename(command)} failed in ${path.relative(process.cwd(), workingDirectory) || '.'} ` +
             `(exit ${exitCode ?? 'unknown'}, signal ${signal ?? 'none'})`
         )
       );

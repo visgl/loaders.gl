@@ -3,6 +3,8 @@ import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styled from 'styled-components';
 
+import copcLogo from '../../../../docs/images/logos/copc-logo-80.png';
+
 type FormatTag = 'tables' | 'geospatial' | 'services' | 'textures' | 'pointclouds' | 'meshes';
 type FormatFilter = 'all' | FormatTag;
 
@@ -38,7 +40,8 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'bson', label: 'BSON', logo: 'bson-logo.png', tags: []},
   {slug: 'chrome-trace', label: 'Chrome Trace', logo: 'format-logo.svg', tags: []},
   {slug: 'compressed-textures', label: 'Compressed Textures', logo: 'format-logo.svg', tags: ['textures']},
-  {slug: 'copc', label: 'COPC', logo: 'format-logo.svg', tags: ['geospatial', 'pointclouds']},
+  {slug: 'copc', label: 'COPC', logo: copcLogo, tags: ['geospatial', 'pointclouds']},
+  {slug: '3d-tiles', label: '3D Tiles', logo: '3d-tiles-logo.png', tags: ['geospatial', 'meshes']},
   {slug: 'crunch', label: 'Crunch', logo: 'format-logo.svg', tags: ['textures']},
   {slug: 'csv', label: 'CSV', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'csw', label: 'CSW', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
@@ -68,6 +71,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'mvt', label: 'MVT', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'netcdf', label: 'NetCDF', logo: 'format-logo.svg', tags: ['geospatial', 'tables']},
   {slug: 'obj', label: 'OBJ', logo: 'format-logo.svg', tags: ['meshes']},
+  {slug: 'orc', label: 'ORC', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'ogc-api', label: 'OGC API Services', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'ows-context', label: 'OWS Context', logo: 'ogc-logo.png', tags: ['geospatial', 'services']},
   {slug: 'orc', label: 'ORC', logo: 'format-logo.svg', tags: ['tables']},
@@ -175,7 +179,13 @@ function getFormatGallery(): Array<FormatMetadata & {path: string}> {
     (category.items ?? []).flatMap(path => {
       const slug = path.split('/').pop() ?? path;
       const metadata = metadataBySlug.get(slug);
-      if (!metadata || seenSlugs.has(slug)) {
+      if (seenSlugs.has(slug)) {
+        return [];
+      }
+      if (!metadata && !path.endsWith('/README') && !path.includes('developer-guide/') && !path.includes('api-reference/')) {
+        throw new Error(`Missing format gallery metadata for sidebar entry: ${path}`);
+      }
+      if (!metadata) {
         return [];
       }
       seenSlugs.add(slug);
@@ -218,7 +228,11 @@ export function FormatLogoGallery() {
       <Grid>
         {visibleFormats.map(format => (
           <Card key={format.slug} to={`/docs/${format.path}`} title={format.label}>
-            <Logo alt={`${format.label} logo`} loading="lazy" src={`${logoBaseUrl}/${format.logo}`} />
+            <Logo
+              alt={`${format.label} logo`}
+              loading="lazy"
+              src={format.logo.startsWith('/') ? format.logo : `${logoBaseUrl}/${format.logo}`}
+            />
             <Label>{format.label}</Label>
           </Card>
         ))}

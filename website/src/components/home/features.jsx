@@ -187,7 +187,7 @@ const toneColors = {
   yellow: {accent: '#f0d877', glow: 'rgba(231, 177, 38, 0.28)'}
 };
 
-const FeatureCard = styled.article`
+const FeatureCard = styled(Link)`
   --card-accent: ${(props) => toneColors[props.$tone].accent};
   --card-glow: ${(props) => toneColors[props.$tone].glow};
   background: linear-gradient(145deg, rgba(26, 39, 56, 0.98), rgba(17, 27, 41, 0.96));
@@ -201,6 +201,7 @@ const FeatureCard = styled.article`
   overflow: hidden;
   padding: 30px;
   position: relative;
+  text-decoration: none;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -220,7 +221,16 @@ const FeatureCard = styled.article`
   &:hover {
     border-color: color-mix(in srgb, var(--card-accent) 58%, transparent);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
     transform: translateY(-4px);
+  }
+
+  &:focus-visible {
+    border-color: var(--card-accent);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.3),
+      0 0 0 3px color-mix(in srgb, var(--card-accent) 45%, transparent);
+    outline: none;
   }
 
   @media screen and (max-width: 760px) {
@@ -315,7 +325,7 @@ const Tag = styled.span`
   padding: 7px 9px;
 `;
 
-const CardLink = styled(Link)`
+const CardLink = styled.span`
   align-items: center;
   color: var(--card-accent);
   display: inline-flex;
@@ -326,11 +336,6 @@ const CardLink = styled(Link)`
   line-height: 1.35;
   text-decoration: none;
   white-space: normal;
-
-  &:hover {
-    color: #ffffff;
-    text-decoration: none;
-  }
 
   &::after {
     content: '↗';
@@ -735,7 +740,13 @@ export default function Features() {
 
         <FeatureGrid>
           {FEATURE_CARDS.map((feature) => (
-            <FeatureCard key={feature.id} $tone={feature.tone} $wide={feature.wide}>
+            <FeatureCard
+              key={feature.id}
+              to={feature.href}
+              aria-label={`${feature.title} — ${feature.linkLabel}`}
+              $tone={feature.tone}
+              $wide={feature.wide}
+            >
               <CardBody $wide={feature.wide}>
                 <CardEyebrow>
                   {feature.eyebrow}
@@ -751,7 +762,7 @@ export default function Features() {
                     <Tag key={tag}>{tag}</Tag>
                   ))}
                 </TagList>
-                <CardLink to={feature.href}>{feature.linkLabel}</CardLink>
+                <CardLink>{feature.linkLabel}</CardLink>
               </CardFooter>
             </FeatureCard>
           ))}
