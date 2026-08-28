@@ -44,11 +44,19 @@ test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', 
   expect(metadata.layers.length, 'returns one dataset layer').toBe(1);
   expect(metadata.layers[0]?.name, 'layer name matches dataset').toBe('countries');
   expect(Array.isArray(metadata.layers[0]?.crs), 'metadata exposes CRS list').toBeTruthy();
+  expect(
+    metadata.layers[0]?.crs,
+    'metadata combines the declared CRS authority and code'
+  ).toContain('EPSG:4326');
   expect(metadata.formatSpecificMetadata, 'raw metadata is opt-in').toBe(undefined);
   expect(
     metadataWithFormatSpecific.formatSpecificMetadata,
     'returns raw metadata on request'
   ).toBeTruthy();
+  expect(
+    (metadataWithFormatSpecific.formatSpecificMetadata as {crs?: {org?: string}}).crs?.org,
+    'format-specific metadata preserves the declared CRS authority'
+  ).toBe('EPSG');
 });
 test('FlatGeobufVectorSource#getQueryMetadata discovers panel controls from the header', async () => {
   const source = await createSource();

@@ -64,7 +64,7 @@ mean coordinate transformation.
 | GeoParquet 1.1 / 2.0 | Per-column PROJJSON, `null`, omitted default, and coordinate `epoch` | Original `geo` JSON is retained; compatible GeoArrow field metadata is added | None |
 | Shapefile | `.prj` WKT sidecar | `.prj` is returned by legacy output; Arrow metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
 | FlatGeobuf | Header authority code and WKT | Header metadata is retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
-| GeoPackage | Spatial reference system tables | Format metadata is available while geometry output metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
+| GeoPackage | Spatial reference system tables, preferring extension WKT2 over fallback WKT1 | Source and scan metadata retain the table CRS; Arrow geometry fields report the native or transformed output CRS | Opt-in through `gis.reproject` and `_targetCrs` |
 | GeoJSON | Deprecated GeoJSON `crs` member when present; otherwise WGS84 semantics | Original legacy value is retained; recognized CRS84/EPSG:4326 values map to GeoArrow/GeoParquet metadata | None in the GeoJSON loader |
 | CSV WKT / WKB | Geometry values can contain EWKT/EWKB SRIDs, but CSV has no dataset CRS convention | Geometry-level SRID support is partial; no common table CRS descriptor | None |
 | GML | `srsName` on geometry/envelope elements | Parsed format data retains identifiers inconsistently across output shapes | Service/server dependent; no general client transform |
@@ -82,6 +82,11 @@ mean coordinate transformation.
 | MVT / TileJSON | Implicit tile coordinates; TileJSON bounds are longitude/latitude | Tile transform and metadata retained | Implicit Web Mercator tiling; no arbitrary CRS |
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |
 | GPX / TCX | Implicit WGS84 latitude/longitude | Coordinate values retained | None |
+
+When `gis.reproject` is enabled, Shapefile, FlatGeobuf, and GeoPackage require usable source CRS
+metadata. A Shapefile therefore needs its `.prj` sidecar, while FlatGeobuf and GeoPackage need a
+source definition in their format metadata. Missing or invalid definitions reject the request;
+loaders.gl does not assume that unlabelled coordinates are WGS84.
 
 ## GeoArrow and GeoParquet details
 
@@ -106,8 +111,9 @@ future normalized table descriptor must not collapse them into one table-wide va
   dynamic, and compound CRS definitions.
 - GeoTIFF and GeoZarr return native-CRS raster data and do not warp or resample into a target CRS.
 - Existing vector reprojection options use the inconsistent, experimental `_targetCrs` name.
-- Some source-specific transforms treat an unsupported or unparsable source definition as an
-  unavailable transform and continue with source coordinates instead of rejecting the request.
+- Some point-cloud-specific transforms still treat an unsupported or unparsable source definition
+  as an unavailable transform and continue with source coordinates instead of rejecting the
+  request.
 - Some service parsers and format-specific structures still expose unclassified strings.
 - GeoParquet CRS metadata is preserved, but GeoParquet coordinates are not reprojected.
 - There is no unified CRS result descriptor shared by all loaders and source APIs.
