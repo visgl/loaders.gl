@@ -3,17 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import type {Geoid} from '@math.gl/geoid';
+import {Vector3} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
+import type {CRSDefinition} from '@math.gl/crs';
 import {Proj4Projection} from '@math.gl/proj4';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {getGeoidModel} from './spatial-resource-registry';
 import type {
   TilesetHeightReference,
+  TilesetCoordinateFrame,
   TilesetSpatialOptions,
   TilesetSpatialReference,
   TilesetTargetHeightReference
 } from './spatial-types';
 
 const GEOGRAPHIC_CRS = 'EPSG:4326';
+const GEOCENTRIC_CRS = 'EPSG:4978';
 
 /**
  * Deterministic coordinate transformer used by 3D tile format adapters.
@@ -35,6 +40,18 @@ export class SpatialCoordinateTransformer {
   /** Projection from adjusted geographic coordinates to the requested output CRS. */
   private readonly heightOutputProjection?: Proj4Projection;
 
+  /** Whether source coordinates use the WGS84 geocentric frame handled by math.gl. */
+  private readonly sourceIsGeocentric: boolean;
+
+  /** Whether output coordinates use the WGS84 geocentric frame handled by math.gl. */
+  private readonly outputIsGeocentric: boolean;
+
+  /** Whether source coordinates already use conventional WGS84 longitude/latitude order. */
+  private readonly sourceIsGeographic: boolean;
+
+  /** Whether output coordinates use conventional WGS84 longitude/latitude order. */
+  private readonly outputIsGeographic: boolean;
+
   /** Geoid model used to convert between ellipsoidal and orthometric heights. */
   private readonly geoid?: Geoid;
 
@@ -47,13 +64,44 @@ export class SpatialCoordinateTransformer {
   constructor(spatialReference: TilesetSpatialReference, options: TilesetSpatialOptions = {}) {
     this.spatialReference = spatialReference;
     validateTransformRequest(spatialReference);
+    const outputCrs = spatialReference.targetCrs || spatialReference.sourceCrs;
+    this.sourceIsGeocentric = isWgs84Geocentric(spatialReference.sourceCrs);
+    this.outputIsGeocentric = isWgs84Geocentric(outputCrs);
+    this.sourceIsGeographic = isWgs84Geographic(spatialReference.sourceCrs);
+    this.outputIsGeographic = isWgs84Geographic(outputCrs);
 
-    if (spatialReference.sourceCrs && spatialReference.targetCrs) {
+    if (
+      spatialReference.sourceCrs &&
+      spatialReference.targetCrs &&
+      !this.sourceIsGeocentric &&
+      !this.outputIsGeocentric
+    ) {
       this.horizontalProjection = new Proj4Projection({
         from: spatialReference.sourceCrs as Proj4CRSDefinition,
         to: spatialReference.targetCrs as Proj4CRSDefinition,
         enforceAxis: false
       });
+    }
+
+    if (
+      requiresHeightTransformation(spatialReference) ||
+      this.sourceIsGeocentric ||
+      this.outputIsGeocentric
+    ) {
+      if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
+        this.geographicProjection = new Proj4Projection({
+          from: spatialReference.sourceCrs as Proj4CRSDefinition,
+          to: GEOGRAPHIC_CRS,
+          enforceAxis: false
+        });
+      }
+      if (!this.outputIsGeographic && !this.outputIsGeocentric) {
+        this.heightOutputProjection = new Proj4Projection({
+          from: GEOGRAPHIC_CRS,
+          to: outputCrs as Proj4CRSDefinition,
+          enforceAxis: false
+        });
+      }
     }
 
     if (requiresHeightTransformation(spatialReference)) {
@@ -65,16 +113,6 @@ export class SpatialCoordinateTransformer {
             'call registerGeoidModel() or pass a parsed Geoid instance'
         );
       }
-      this.geographicProjection = new Proj4Projection({
-        from: spatialReference.sourceCrs as Proj4CRSDefinition,
-        to: GEOGRAPHIC_CRS,
-        enforceAxis: false
-      });
-      this.heightOutputProjection = new Proj4Projection({
-        from: GEOGRAPHIC_CRS,
-        to: (spatialReference.targetCrs || spatialReference.sourceCrs) as Proj4CRSDefinition,
-        enforceAxis: false
-      });
     }
   }
 
@@ -90,19 +128,25 @@ export class SpatialCoordinateTransformer {
     }
 
     const result = [...coordinate];
-    if (requiresHeightTransformation(this.spatialReference)) {
+    if (
+      requiresHeightTransformation(this.spatialReference) ||
+      this.sourceIsGeocentric ||
+      this.outputIsGeocentric
+    ) {
       if (result.length < 3 || !Number.isFinite(result[2])) {
-        throw new Error('Height conversion requires a finite z coordinate');
+        throw new Error('Three-dimensional CRS conversion requires a finite z coordinate');
       }
-      const geographic = this.geographicProjection!.project([result[0], result[1], result[2]]);
-      const geoidUndulation = this.geoid!.getHeight(geographic[1], geographic[0]);
-      geographic[2] = transformHeight(
-        geographic[2],
-        geoidUndulation,
-        this.spatialReference.heightReference,
-        this.spatialReference.targetHeightReference
-      );
-      const projected = this.heightOutputProjection!.project(geographic);
+      const geographic = this.toGeographic(result);
+      if (requiresHeightTransformation(this.spatialReference)) {
+        const geoidUndulation = this.geoid!.getHeight(geographic[1], geographic[0]);
+        geographic[2] = transformHeight(
+          geographic[2],
+          geoidUndulation,
+          this.spatialReference.heightReference,
+          this.spatialReference.targetHeightReference
+        );
+      }
+      const projected = this.fromGeographic(geographic);
       result.splice(0, projected.length, ...projected);
       return result;
     }
@@ -112,6 +156,28 @@ export class SpatialCoordinateTransformer {
       result.splice(0, projected.length, ...projected);
     }
     return result;
+  }
+
+  /** Convert one source coordinate to conventional WGS84 longitude, latitude, and height. */
+  private toGeographic(coordinate: number[]): number[] {
+    if (this.sourceIsGeocentric) {
+      return Array.from(Ellipsoid.WGS84.cartesianToCartographic(new Vector3(coordinate)));
+    }
+    if (this.sourceIsGeographic) {
+      return coordinate.slice(0, 3);
+    }
+    return this.geographicProjection!.project(coordinate.slice(0, 3));
+  }
+
+  /** Convert one conventional WGS84 geographic coordinate to the selected output CRS. */
+  private fromGeographic(coordinate: number[]): number[] {
+    if (this.outputIsGeocentric) {
+      return Array.from(Ellipsoid.WGS84.cartographicToCartesian(new Vector3(coordinate)));
+    }
+    if (this.outputIsGeographic) {
+      return coordinate.slice(0, 3);
+    }
+    return this.heightOutputProjection!.project(coordinate.slice(0, 3));
   }
 }
 
@@ -135,17 +201,89 @@ function validateTransformRequest(spatialReference: TilesetSpatialReference): vo
     throw new Error('Cannot convert heights because the source height reference is unknown');
   }
   if (
-    requiresHeightTransformation(spatialReference) &&
-    spatialReference.coordinateFrame === 'geocentric'
+    spatialReference.coordinateFrame === 'geocentric' &&
+    !isWgs84Geocentric(spatialReference.sourceCrs)
   ) {
     throw new Error(
-      'Geocentric height conversion is not supported until the projection runtime can convert ' +
-        'between geocentric coordinates and geographic ellipsoidal heights'
+      'Only EPSG:4978 geocentric coordinates are supported by the current spatial transformer'
     );
   }
   if (spatialReference.status === 'unresolved') {
     throw new Error('The requested spatial output cannot be resolved from the available metadata');
   }
+}
+
+/** Return whether a CRS definition identifies the WGS84 geocentric frame. */
+function isWgs84Geocentric(definition: unknown): boolean {
+  return typeof definition === 'string' && normalizeCrsIdentifier(definition) === GEOCENTRIC_CRS;
+}
+
+/** Return whether a CRS definition uses conventional WGS84 longitude/latitude coordinates. */
+function isWgs84Geographic(definition: unknown): boolean {
+  if (typeof definition !== 'string') {
+    return false;
+  }
+  const identifier = normalizeCrsIdentifier(definition);
+  return identifier === GEOGRAPHIC_CRS || identifier === 'EPSG:4979' || identifier === 'OGC:CRS84';
+}
+
+/** Normalize common OGC URL and URN CRS spellings to authority identifiers. */
+function normalizeCrsIdentifier(identifier: string): string {
+  const normalizedIdentifier = identifier.trim().toUpperCase();
+  const ogcMatch = normalizedIdentifier.match(
+    /(?:\/DEF\/CRS\/|URN:OGC:DEF:CRS:)([A-Z0-9_-]+)(?:\/|::)(?:[^/:]*[/:])?([A-Z0-9_.-]+)$/
+  );
+  return ogcMatch ? `${ogcMatch[1]}:${ogcMatch[2]}` : normalizedIdentifier;
+}
+
+/** Classify a CRS definition into the broad frame needed by 3D render adapters. */
+export function getSpatialCoordinateFrame(definition: CRSDefinition): TilesetCoordinateFrame {
+  if (typeof definition === 'string') {
+    const normalized = normalizeCrsIdentifier(definition);
+    if (normalized === GEOCENTRIC_CRS || /^GEOCCS\s*[\[(]/.test(normalized)) {
+      return 'geocentric';
+    }
+    if (
+      normalized === GEOGRAPHIC_CRS ||
+      normalized === 'EPSG:4490' ||
+      normalized === 'EPSG:4979' ||
+      normalized === 'OGC:CRS84' ||
+      normalized.includes('+PROJ=LONGLAT') ||
+      normalized.includes('+PROJ=LATLONG') ||
+      /^(?:GEOGCS|GEOGCRS|GEOGRAPHICCRS|GEOGRAPHIC2DCRS|GEOGRAPHIC3DCRS)\s*[\[(]/.test(normalized)
+    ) {
+      return 'geographic';
+    }
+    if (/^(?:GEODCRS|GEODETICCRS)\s*[\[(]/.test(normalized)) {
+      return /CS\s*[\[(]\s*CARTESIAN/.test(normalized) ? 'geocentric' : 'geographic';
+    }
+    return 'projected';
+  }
+
+  const projJsonDefinition = definition as {
+    type?: string;
+    source_crs?: CRSDefinition;
+    components?: CRSDefinition[];
+    coordinate_system?: {subtype?: string};
+  };
+  if (projJsonDefinition.type === 'BoundCRS' && projJsonDefinition.source_crs) {
+    return getSpatialCoordinateFrame(projJsonDefinition.source_crs);
+  }
+  if (projJsonDefinition.type === 'CompoundCRS' && projJsonDefinition.components?.[0]) {
+    return getSpatialCoordinateFrame(projJsonDefinition.components[0]);
+  }
+  if (String(projJsonDefinition.type).includes('Projected')) {
+    return 'projected';
+  }
+  if (String(projJsonDefinition.type).includes('Geographic')) {
+    return 'geographic';
+  }
+  if (String(projJsonDefinition.type).includes('Geodetic')) {
+    return projJsonDefinition.coordinate_system?.subtype === 'Cartesian'
+      ? 'geocentric'
+      : 'geographic';
+  }
+  return 'projected';
 }
 
 /** Return whether source and target height interpretations differ. */

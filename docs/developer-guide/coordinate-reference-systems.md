@@ -187,7 +187,7 @@ mean coordinate transformation.
 | WFS | Capability/request identifiers and GML `srsName` | Identifier preservation is partial | Server-side output CRS request where supported |
 | WMTS | Tile-matrix-set supported CRS | Capability metadata | Server-selected tile matrix set; no client tile reprojection |
 | ArcGIS services | Spatial reference WKID/latestWKID fields | Service metadata and request fields are retained | Server-side `outSR`/image request behavior where implemented |
-| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Shared Proj4/geoid transformer available; complete mesh/Point Cloud bounds and elevation integration is in progress |
+| I3S | WKID/latestWKID, WKT, VCS WKIDs, `heightModelInfo`, and extent CRS | Raw fields plus normalized `spatialMetadata`; longitude/latitude wire order is explicit | Mesh and Point Cloud vertices, origins, normals, and bounds support requested geographic/projected output; vertical placement integration is in progress |
 | 3D Tiles | CRS/epoch metadata semantics and region-established global frames | Raw schema/entity metadata plus normalized `spatialMetadata`; local/unknown tilesets stay unknown | Shared transformer available; nonlinear content/bounds and nested-tileset integration is in progress |
 | MVT / TileJSON | Implicit tile coordinates; TileJSON bounds are longitude/latitude | Tile transform and metadata retained | Implicit Web Mercator tiling; no arbitrary CRS |
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |

@@ -175,3 +175,19 @@ export function applyTilesetSpatialOptions(
     options
   );
 }
+
+/**
+ * Marks a normalized descriptor after every returned coordinate and bound has entered its target
+ * frame.
+ *
+ * @param spatialReference - Transformable spatial descriptor.
+ * @returns An immutable descriptor with `status: 'transformed'`.
+ */
+export function markTilesetSpatialReferenceTransformed(
+  spatialReference: TilesetSpatialReference
+): TilesetSpatialReference {
+  if (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed') {
+    throw new Error('Only a transformable spatial reference can be marked as transformed');
+  }
+  return Object.freeze({...spatialReference, status: 'transformed'});
+}

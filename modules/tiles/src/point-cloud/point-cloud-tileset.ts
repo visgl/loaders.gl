@@ -614,6 +614,9 @@ export class PointCloudTileset {
     if (!boundingVolume) {
       return 1;
     }
+    if (boundingVolume.coordinateFrame === 'cartesian') {
+      return 1;
+    }
 
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
     const longitudeSpan = boundingVolume.coversFullLongitude

@@ -166,7 +166,7 @@ transformation boundary.
 | Normalized CRS discovery metadata | **Supported** | **v5.0** | WKID aliases, WKT, VCS, height model, axis order, provenance, and placement qualifications are exposed on loader, source, service, and tileset results. |
 | Cartesian meter-offset output | **Supported** | v2.0 | This is the default geometry representation for deck.gl-compatible rendering. |
 | Longitude/latitude-offset output | **Supported** | v3.1 | Select with `i3s.coordinateSystem: 'lnglat-offsets'`. |
-| Projected or custom horizontal CRS | **Partial** | **v5.0** | Definitions are normalized and the shared Proj4 path is implemented; complete per-profile vertex, origin, normal, and bound integration remains tranche 6a. The WebScene loader retains its WGS84 boundary. |
+| Projected or custom horizontal CRS | **Supported** | **v5.0** | Mesh and Point Cloud sources transform vertices, stable origins, normals, and parallel `spatialBoundingVolume` metadata into supported Proj4 target definitions while retaining WGS84 traversal bounds. EPSG:4978 uses the WGS84 geocentric path. Custom definitions must be registered explicitly. The WebScene loader retains its WGS84 boundary. |
 | Vertical CRS and height models | **Partial** | **v5.0** | Height models and VCS are normalized, geoid resources can be registered, and conversion follows `h = H + N`; profile unit/placement integration remains tranche 6b. |
 | `elevationInfo` placement modes | **Not supported** | — | Ground-relative and scene-relative placement policies are not applied by the loader. |
 
@@ -208,7 +208,7 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 5f. Renderer metadata | Return point-list tables, coordinate-system/origin metadata, bounds, and stable canonical attribute names. | **Complete** (**v5.0**) |
 | 5g. Point Cloud conformance | Add deterministic decoder/source fixtures and document unsupported producer-specific extensions. | **Complete** (**v5.0**) |
 | 5h. Point profile support | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. | Planned |
-| 6a. Horizontal CRS transforms | Reproject supported projected and geographic layer/node coordinates into the requested output coordinate system, with axis-order and unit tests. | **In progress**: discovery/Proj4 foundation complete |
+| 6a. Horizontal CRS transforms | Reproject supported projected and geographic layer/node coordinates into the requested output coordinate system, with axis-order and unit tests. | **Complete** (**v5.0**) |
 | 6b. Vertical CRS and elevation | Resolve vertical CRS units and apply every `elevationInfo` mode, including offsets and relative-to-ground behavior. | **In progress**: height/geoid foundation complete |
 | 6c. Precision and dateline handling | Preserve Float64 source precision through origin-relative output, and cover antimeridian/dateline bounds without discontinuities. | **Complete** (**v5.0**) |
 | 7a. Profile schema validation | Add discriminated schemas for Point Cloud and mesh profiles, including required index/geometry fields and conditional profile checks. | **Complete** (**v5.0**) |
@@ -217,7 +217,7 @@ the sub-tranches under feature intelligence keep the remaining gaps independentl
 | 8a. ArcGIS SceneServer source | Provide a typed service facade and registry entry that selects the existing mesh or Point Cloud source for an explicit SceneServer layer. | **Complete** (**v5.0**) |
 | 8b. Service discovery and selection | Extend ArcGIS capability discovery to recognize SceneServer metadata and select compatible mesh/Point Cloud layers. | Planned |
 
-The next high-value work is renderer styling, CRS/elevation transforms, query helpers, and Point
+The next high-value work is renderer styling, vertical CRS/elevation placement, query helpers, and Point
 Cloud authoring.
 
 ### Remaining roadmap gaps
@@ -231,7 +231,7 @@ still visible in the matrix and should be treated as the open work list:
 | P0 | Point profile (5h) | Decode Point geometry, symbols, attributes, and renderer metadata with representative fixtures. Point Cloud support is complete for the documented v5.0 boundary. |
 | P1 | Feature queries and aggregation (4d) | Add authenticated SceneServer attribute query/filter helpers and client-side aggregation over loaded feature batches. |
 | P1 | Service discovery and selection (8b) | Recognize SceneServer entries in ArcGIS service directories and select compatible mesh or Point Cloud layer endpoints. |
-| P1 | Spatial semantics (6a–6b) | Reproject supported horizontal CRSs, honor vertical CRS and units, and apply all `elevationInfo` placement modes. Precision and dateline handling (6c) are complete. |
+| P1 | Vertical spatial semantics (6b) | Honor vertical CRS and units, then apply all `elevationInfo` placement modes. Horizontal reprojection (6a) and precision/dateline handling (6c) are complete. |
 | P1 | Mesh renderer fidelity | Decode legacy mesh-segmentation draw ranges, expose additional UV sets, map sampler wrap values to renderer constants, and add non-screen-space LOD policies. |
 | P2 | Authoring parity (7c) | Add Point/Point Cloud converter output and make generated resources pass the profile and semantic tests now covering the loaders. |
 | P2 | Delivery edge cases | Resolve direct-load token propagation, provide a first-class extracted-SLPK source, and cover mixed REST/object-store authentication in tests. |

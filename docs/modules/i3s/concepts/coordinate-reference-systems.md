@@ -31,6 +31,32 @@ console.log(layer.spatialMetadata);  // normalized descriptor
 SceneServer metadata exposes the descriptor as `spatialMetadata`; mesh `Tileset3D` exposes it as
 `tileset.spatialReference`; `I3SPointCloudSource.spatialReference` is populated at initialization.
 
+## Requesting horizontal output
+
+Mesh and Point Cloud sources share the same `TilesetSpatialOptions` contract. Configure a mesh
+target on `Tileset3D`, after constructing its `I3SSource`:
+
+```ts
+const source = new I3SSource({url: layerUrl, loader: I3SLoader});
+const tileset = new Tileset3D(source, {
+  spatial: {targetCrs: 'EPSG:3857'}
+});
+await tileset.tilesetInitializationPromise;
+```
+
+Point Cloud layers receive the same option directly on their source:
+
+```ts
+const source = new I3SPointCloudSource(layerUrl, {
+  spatial: {targetCrs: 'EPSG:3857'}
+});
+await source.initialize();
+```
+
+Common definitions known to Proj4 can be used directly. Register application-owned WKT or PROJ
+definitions with `registerSpatialCrs()` before constructing the source. Resource lookup is always
+explicit and no EPSG definition, datum grid, or geoid is downloaded while loading a layer.
+
 ## Wire order
 
 I3S global geometry, node centers, spheres, boxes, and extents use longitude, latitude, height
@@ -76,7 +102,10 @@ affine across a tile. Normals use local inverse-transpose/Jacobian information; 
 through the position function.
 
 At the antimeridian, geographic bounds use wrapped intervals rather than expanding across nearly
-the entire globe. Cartesian bounds are rebuilt from samples so culling and LOD remain continuous.
+the entire globe. Target-frame Cartesian bounds are rebuilt from samples and exposed as
+`spatialBoundingVolume`. Mesh traversal retains a WGS84 ECEF bound and Point Cloud traversal
+retains a WGS84 geographic bound, because generic traversal operates in those common frames
+independently of the renderer's requested output CRS.
 
 ## Current v5 boundary
 
@@ -87,12 +116,18 @@ the entire globe. Cartesian bounds are rebuilt from samples so culling and LOD r
 | Normalized loader, source, service, and runtime metadata | Implemented |
 | Deterministic Proj4 and geoid primitive | Implemented |
 | Existing WGS84 mesh and Point Cloud output | Implemented |
-| Arbitrary projected vertices, normals, origins, and bounds | Integration in progress |
+| Supported geographic/projected vertices, normals, origins, and bounds | Implemented for mesh and Point Cloud sources |
 | All elevation placement modes | Requires terrain/scene provider integration |
 | Dynamic coordinate-epoch operations | Not yet executable |
 
 Missing metadata or registered resources cause an actionable error. A requested operation never
 falls back to coordinates in a different CRS.
+
+Renderer-facing positions remain `Float32` offsets around a double-precision target origin.
+Projected and geocentric outputs include that origin in `modelMatrix`; geographic output uses
+`lnglat-offsets`. Returned content and source metadata report `status: 'transformed'` only after
+geometry and the parallel `spatialBoundingVolume` have moved into the requested frame. Traversal
+bounds are normalized separately into their documented ECEF or geographic common frame.
 
 ## Authoring requirements
 

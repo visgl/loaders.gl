@@ -200,6 +200,39 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
   );
   expect(source.getTilesTotalCount()).toBe(7);
 });
+test('I3SSource transforms traversal bounds and preserves a geographic view center', async () => {
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 0, 12, 100],
+      boundingVolume: {sphere: [10, 0, 12, 100]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    store: {normalReferenceFrame: 'earth-centered'}
+  } as any);
+  const tileset = new Tileset3D(source, {spatial: {targetCrs: 'EPSG:3857'}});
+  await tileset.tilesetInitializationPromise;
+
+  expect(tileset.spatialReference).toMatchObject({
+    targetCrs: 'EPSG:3857',
+    status: 'transformed'
+  });
+  expect(tileset.root?.header.boundingVolume.box).toHaveLength(12);
+  expect(tileset.root?.header.spatialBoundingVolume.box).toHaveLength(12);
+  expect(tileset.root?.header.spatialBoundingVolume.box[0]).toBeCloseTo(1113194.9079, 2);
+  expect(tileset.root?.boundingVolume.center[0]).toBeGreaterThan(6_000_000);
+  expect(tileset.root?.header.i3sLodMbs.slice(0, 3)).toEqual([10, 0, 12]);
+  expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
+  expect(tileset.cartographicCenter[1]).toBeCloseTo(0, 8);
+});
 test('I3SSource appends auth tokens before loading URL-backed root metadata', async () => {
   const requestedUrls: string[] = [];
   const resolver: TilesetSourceResolver = {
