@@ -220,19 +220,13 @@ export async function* parseAvroInBatchesFromUrl(
         throw new Error('Invalid Avro OCF sync marker');
     const selected = !options?.blockIndices || options.blockIndices.includes(blockIndex);
     if (selected) {
-      const reader = new AvroReader(
-        await decompressAvro(header.codec, blockBytes.subarray(0, sizeResult.value)),
-        header.schema,
+      for await (const row of decodeAvroBlockRows(
+        blockBytes.subarray(0, sizeResult.value),
+        countResult.value,
+        header,
         options
-      );
-      for (let index = 0; index < countResult.value; index++) {
-        const value = reader.readValue(header.schema);
-        if (!isRecord(value)) throw new Error('Avro root schema must be a record');
-        batch.push(
-          options?.readerSchema
-            ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
-            : value
-        );
+      )) {
+        batch.push(row);
         if (batch.length >= batchSize) {
           yield createAvroBatch(batch);
           batch = [];
@@ -301,19 +295,13 @@ export async function* parseAvroInBatchesFromFile(
       if (blockBytes[sizeResult.value + index] !== header.syncMarker[index])
         throw new Error('Invalid Avro OCF sync marker');
     if (!options?.blockIndices || options.blockIndices.includes(blockIndex)) {
-      const reader = new AvroReader(
-        await decompressAvro(header.codec, blockBytes.subarray(0, sizeResult.value)),
-        header.schema,
+      for await (const row of decodeAvroBlockRows(
+        blockBytes.subarray(0, sizeResult.value),
+        countResult.value,
+        header,
         options
-      );
-      for (let index = 0; index < countResult.value; index++) {
-        const value = reader.readValue(header.schema);
-        if (!isRecord(value)) throw new Error('Avro root schema must be a record');
-        batch.push(
-          options?.readerSchema
-            ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
-            : value
-        );
+      )) {
+        batch.push(row);
         if (batch.length >= batchSize) {
           yield createAvroBatch(batch);
           batch = [];
@@ -324,6 +312,27 @@ export async function* parseAvroInBatchesFromFile(
     blockIndex++;
   }
   if (batch.length > 0) yield createAvroBatch(batch);
+}
+
+/** Decodes one Avro OCF block and applies the optional reader schema. */
+async function* decodeAvroBlockRows(
+  compressedBytes: Uint8Array,
+  rowCount: number,
+  header: AvroOCFHeader,
+  options?: AvroParseOptions
+): AsyncIterable<Record<string, unknown>> {
+  const reader = new AvroReader(
+    await decompressAvro(header.codec, compressedBytes),
+    header.schema,
+    options
+  );
+  for (let index = 0; index < rowCount; index++) {
+    const value = reader.readValue(header.schema);
+    if (!isRecord(value)) throw new Error('Avro root schema must be a record');
+    yield options?.readerSchema
+      ? resolveReaderRecord(value, header.schema, options.readerSchema as AvroSchema)
+      : value;
+  }
 }
 
 /** Reads a byte range and detects servers that ignore the Range header. */
@@ -473,7 +482,6 @@ async function* readAvroRows(
   const bytes = new Uint8Array(arrayBuffer);
   const ocf = parseAvroOCF(arrayBuffer);
   const {schema, codec} = ocf;
-  const readerSchema = options?.readerSchema as AvroSchema | undefined;
   if (
     codec !== 'null' &&
     codec !== 'deflate' &&
@@ -492,21 +500,19 @@ async function* readAvroRows(
       })
     : ocf.blocks;
   for (const blockInfo of blocks) {
-    const block = new AvroReader(
-      await decompressAvro(
+    const rows = decodeAvroBlockRows(
+      bytes.subarray(blockInfo.dataOffset, blockInfo.dataOffset + blockInfo.compressedSize),
+      blockInfo.count,
+      {
+        schema,
         codec,
-        bytes.subarray(blockInfo.dataOffset, blockInfo.dataOffset + blockInfo.compressedSize)
-      ),
-      schema,
+        syncMarker: ocf.syncMarker,
+        metadata: ocf.metadata,
+        dataOffset: 0
+      },
       options
     );
-    for (let index = 0; index < blockInfo.count; index++) {
-      const value = block.readValue(schema);
-      if (!isRecord(value)) {
-        throw new Error('Avro root schema must be a record to produce an object-row table');
-      }
-      yield readerSchema ? resolveReaderRecord(value, schema, readerSchema) : value;
-    }
+    yield* rows;
   }
 }
 
