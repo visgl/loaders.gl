@@ -435,7 +435,14 @@ test('DracoBuilder applies named presets without mutating caller options', () =>
   );
 
   expect(options).toEqual({preset: 'webgpu'});
-  expect(state.encoderCalls).toEqual(['speed:5:5', 'method:8', 'quantization:0:14', 'mesh']);
+  expect(state.encoderCalls).toEqual([
+    'speed:5:5',
+    'method:8',
+    'quantization:0:14',
+    'quantization:1:10',
+    'quantization:3:12',
+    'mesh'
+  ]);
 });
 
 test.each([
