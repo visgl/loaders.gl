@@ -305,10 +305,14 @@ test.each([
     ]
   ]
 ])('triangulateWKB#handles difficult %s polygons', (_name, ring) => {
-  const triangles = triangulateWKB(
-    convertGeometryToWKB({type: 'Polygon', coordinates: [ring as Position[]]})
-  );
-  expect(triangles.every(Number.isInteger)).toBe(true);
+  const wkb = convertGeometryToWKB({type: 'Polygon', coordinates: [ring as Position[]]});
+  if (_name === 'self intersection') {
+    const triangles = triangulateWKB(wkb);
+    expect(triangles.length).toBeGreaterThan(0);
+    expect(triangles.every(Number.isInteger)).toBe(true);
+  } else {
+    assertTriangulateWKBMatchesEarcutInputs(wkb, _name);
+  }
 });
 
 test('triangulateWKB#handles touching, single-point, and multiple holes', () => {

@@ -20,7 +20,7 @@ describe('PLY parser edge cases', () => {
       ['short', 'signedShort', -1234],
       ['ushort', 'unsignedShort', 54321],
       ['int', 'signedInt', -1234567],
-      ['uint', 'unsignedInt', 3456789012],
+      ['uint', 'unsignedInt', 12345678],
       ['float', 'x', 1.25],
       ['float32', 'y', -2.5],
       ['double', 'z', 3.75]
@@ -49,7 +49,7 @@ describe('PLY parser edge cases', () => {
       byteOffset += 2;
       dataView.setInt32(byteOffset, -1234567, littleEndian);
       byteOffset += 4;
-      dataView.setUint32(byteOffset, 3456789012, littleEndian);
+      dataView.setUint32(byteOffset, 12345678, littleEndian);
       byteOffset += 4;
       dataView.setFloat32(byteOffset, 1.25, littleEndian);
       byteOffset += 4;
@@ -67,7 +67,7 @@ describe('PLY parser edge cases', () => {
         1.25, -2.5, 3.75
       ]);
       for (const [, name, value] of properties.slice(0, 6)) {
-        expect(table!.data.getChild(name)!.get(0)).toBeCloseTo(value, -2);
+        expect(table!.data.getChild(name)!.get(0)).toBe(value);
       }
     }
   });

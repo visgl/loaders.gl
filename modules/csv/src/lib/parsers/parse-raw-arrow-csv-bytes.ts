@@ -826,7 +826,10 @@ class RawArrowUnquotedCSVByteParser {
 
     let dataStart = 0;
     const firstRow = this.findRowEnd(0);
-    const isHeader = this.options.header === 'auto' ? true : Boolean(this.options.header);
+    const isHeader =
+      this.options.header === 'auto'
+        ? this.isHeaderRow(0, firstRow.end)
+        : Boolean(this.options.header);
 
     if (isHeader) {
       this.headerRow = this.decodeHeaderRow(0, firstRow.end);
@@ -912,6 +915,20 @@ class RawArrowUnquotedCSVByteParser {
     return headerRow;
   }
 
+  private isHeaderRow(start: number, end: number): boolean {
+    let fieldStart = start;
+    for (let byteIndex = start; byteIndex <= end; byteIndex++) {
+      if (byteIndex === end || this.bytes[byteIndex] === this.options.delimiter) {
+        const value = textDecoder.decode(this.bytes.subarray(fieldStart, byteIndex));
+        if (!isHeaderValue(value, this.options.dynamicTyping)) {
+          return false;
+        }
+        fieldStart = byteIndex + 1;
+      }
+    }
+    return end >= start;
+  }
+
   private findRowEnd(start: number): {end: number; nextStart: number} {
     for (let byteIndex = start; byteIndex < this.bytes.length; byteIndex++) {
       const byte = this.bytes[byteIndex];
@@ -950,7 +967,10 @@ class RawArrowUnquotedCSVTextParser {
 
     let dataStart = 0;
     const firstRow = this.findRowEnd(0);
-    const isHeader = this.options.header === 'auto' ? true : Boolean(this.options.header);
+    const isHeader =
+      this.options.header === 'auto'
+        ? this.isHeaderRow(0, firstRow.end)
+        : Boolean(this.options.header);
     let headerRow: string[];
 
     if (isHeader) {
@@ -1051,6 +1071,25 @@ class RawArrowUnquotedCSVTextParser {
       }
     }
     return headerRow;
+  }
+
+  /** Returns whether every first-row field is a Papa-style header value. */
+  private isHeaderRow(start: number, end: number): boolean {
+    let fieldStart = start;
+    for (let characterIndex = start; characterIndex <= end; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === this.options.quote || characterCode >= 128) {
+        return false;
+      }
+      if (characterIndex === end || characterCode === this.options.delimiter) {
+        const value = this.csvText.slice(fieldStart, characterIndex);
+        if (!isHeaderValue(value, this.options.dynamicTyping)) {
+          return false;
+        }
+        fieldStart = characterIndex + 1;
+      }
+    }
+    return end >= start;
   }
 
   /** Locates the end of one row and the beginning of the next. */

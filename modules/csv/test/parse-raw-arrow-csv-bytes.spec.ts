@@ -60,7 +60,21 @@ describe('raw Arrow CSV parser', () => {
       delimiter: '|',
       columnPrefix: 'field'
     });
-    expect(toRows(numericFirstRow!)).toEqual([{'1': '3', '2': '4'}]);
+    expect(toRows(numericFirstRow!)).toEqual([
+      {field1: '1', field2: '2'},
+      {field1: '3', field2: '4'}
+    ]);
+
+    const numericASCII = parseRawArrowCSVASCIIText('1,2\n3,4', {
+      header: 'auto',
+      dynamicTyping: true,
+      delimiter: ',',
+      columnPrefix: 'field'
+    });
+    expect(toRows(numericASCII!)).toEqual([
+      {field1: '1', field2: '2'},
+      {field1: '3', field2: '4'}
+    ]);
 
     const customQuote = parseRawArrowCSVBytes(encode("a,b\n'one,two',three\n  ,  \n"), {
       header: true,
