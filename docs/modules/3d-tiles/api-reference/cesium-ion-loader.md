@@ -1,73 +1,54 @@
 # CesiumIonLoader
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
-
-> Extends from `Tiles3DLoader`, inherits all the options and share the same resolved `Tileset` and `Tile` format.
-> Along with the support of resolving tileset metadata and authorization from Cesium ion server.
-
-Parse [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles) fetched from Cesium ion server.
+`CesiumIonLoader` extends `Tiles3DLoader` with Cesium ion asset discovery and authentication. It
+uses an application access token to resolve an asset endpoint, then scopes the endpoint token
+returned by ion to the resolved asset origin. Nested tiles, external tilesets, and deck.gl
+`Tile3DSourceLayer` requests retain that credential.
 
 ## Usage
 
-Load a tileset file from Cesium ion server.
-
-```typescript
+```ts
 import {load} from '@loaders.gl/core';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
-import {WebMercatorViewport} from '@deck.gl/core';
-const tilesetUrl = 'https://assets.ion.cesium.com/69380/tileset.json';
-const ION_ACCESS_TOKEN = ''; // your own ion access token
 
-const options = {ion: {loadGLTF: true}};
-// resolve the authorizations used for requesting tiles from Cesium ion server
-const metadata = CesiumIonLoader.preload(tilesetUrl, {accessToken: ION_ACCESS_TOKEN});
-console.log(metadata);
-
-const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {...options, ...metadata});
-
-// If your tileset doesn't have .json extension, set options['cesium-ion'].isTileset to true
-const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {
-  ...options,
-  ...metadata,
-  isTileset: true
-});
-
-const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-tileset3d.selectTiles(viewport);
-
-// visible tiles
-const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
-// Note that visibleTiles will likely not immediately include all tiles
-// tiles will keep loading and file `onTileLoad` callbacks
+const tileset = await load(
+  'https://assets.cesium.com/123/tileset.json',
+  CesiumIonLoader,
+  {
+    'cesium-ion': {
+      assetId: 123,
+      accessToken: ionAccessToken
+    }
+  }
+);
 ```
+
+The URL identifies the asset after bootstrap; `assetId` identifies the ion API resource. If
+`assetId` is omitted, the loader can infer it from a conventional `/<id>/tileset.json` URL or use
+the first visible `3DTILES` asset.
+
+## Authentication lifecycle
+
+1. The application access token is sent as a bearer token only to `https://api.cesium.com`.
+2. The ion asset and endpoint documents are fetched.
+3. The returned endpoint URL becomes the tileset URL.
+4. The returned endpoint token is installed as an exact-origin credential for tileset and tile
+   requests.
+
+This prevents either token from leaking when a tileset contains a resource on another origin. To
+use an async account-token provider, create a `createCesiumIonCredential` preset and pass it via
+`core.credentials`. See the [authentication guide](/docs/developer-guide/authentication#cesium-ion).
 
 ## Options
 
-Inherit all the options from `Tiles3DLoader`.
+`CesiumIonLoader` inherits all [`Tiles3DLoader` options](./tiles-3d-loader).
 
-| Option                     | Type           | Default | Description                                                                                                                                                                                                               |
-| -------------------------- | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `['cesium-ion'].isTileset` | Bool or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                                                                           |
-| `['cesium-ion'].headers`   | Object         | `null`  | Used to load data from server                                                                                                                                                                                             |
-| `['cesium-ion'].tileset`   | `Object`       | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](/docs/modules/3d-tiles/api-reference/tiles-3d-loader#tileset-object). It is required when loading i3s geometry content |
-| `['cesium-ion'].tile`      | `Object`       | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](/docs/modules/3d-tiles/api-reference/tiles-3d-loader#tile-object). It is required when loading i3s geometry content                       |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `cesium-ion.accessToken` | `string` | `null` | Cesium ion application access token |
+| `cesium-ion.assetId` | `number \| string` | inferred | Asset resolved through the ion REST API |
+| `cesium-ion.onError` | `(error) => void` | `null` | Called when endpoint bootstrap fails; the error is still thrown |
+| `cesium-ion.isTileset` | `boolean \| 'auto'` | `'auto'` | Inherited content-category assertion |
+| `cesium-ion.loadGLTF` | `boolean` | `true` | Fetch and parse linked glTF resources |
 
-Point cloud tie options
-
-| Option                                   | Type      | Default | Description                          |
-| ---------------------------------------- | --------- | ------- | ------------------------------------ |
-| `['cesium-ion'].decodeQuantizedPosition` | `Boolean` | `false` | Pre-decode quantized position on CPU |
-
-For i3dm and b3dm tiles:
-
-| Option                    | Type    | Default | Description                           |
-| ------------------------- | ------- | ------- | ------------------------------------- |
-| `['cesium-ion'].loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
-
-If `options['cesium-ion'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options.
-
-## Data formats
-
-The same as `Tiles3DLoader`.
+The parsed data formats are identical to `Tiles3DLoader`.

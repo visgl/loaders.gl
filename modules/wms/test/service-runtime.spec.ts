@@ -10,6 +10,7 @@ import {
   ServiceRuntime,
   discoverServiceGraph
 } from '@loaders.gl/wms';
+import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -92,6 +93,63 @@ describe('ServiceRuntime', () => {
       })
     ).rejects.toBeInstanceOf(ServiceRequestError);
     expect(attempts).toBe(1);
+  });
+
+  test('applies credentials and redacts telemetry URLs', async () => {
+    const requestedURLs: string[] = [];
+    const telemetryURLs: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async url => {
+        requestedURLs.push(String(url));
+        return new Response('ok');
+      })
+    );
+    const credential = createQueryParameterCredential({
+      id: 'service-token',
+      origins: ['https://secure.example.com'],
+      parameterName: 'token',
+      token: 'secret'
+    });
+    const runtime = new ServiceRuntime({
+      credentials: [credential],
+      onTelemetry: event => telemetryURLs.push(event.url)
+    });
+
+    await runtime.request('https://secure.example.com/wms?token=legacy');
+
+    expect(requestedURLs).toEqual(['https://secure.example.com/wms?token=legacy']);
+    expect(telemetryURLs).toEqual([
+      'https://secure.example.com/wms?token=%5BREDACTED%5D',
+      'https://secure.example.com/wms?token=%5BREDACTED%5D'
+    ]);
+  });
+
+  test('propagates runtime credentials to created sources', async () => {
+    const requestedURLs: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async url => {
+        requestedURLs.push(String(url));
+        return new Response('ok');
+      })
+    );
+    const runtime = new ServiceRuntime({
+      credentials: [
+        createQueryParameterCredential({
+          id: 'source-token',
+          origins: ['https://secure.example.com'],
+          parameterName: 'token',
+          token: 'secret'
+        })
+      ]
+    });
+    const source = runtime.getSource('https://secure.example.com/wms?service=WMS');
+    const resourceURL = 'https://secure.example.com/resource';
+
+    await source.fetch(resourceURL);
+
+    expect(requestedURLs).toEqual(['https://secure.example.com/resource?token=secret']);
   });
 });
 

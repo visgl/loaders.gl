@@ -2,7 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSource, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  DataSource,
+  DataSourceOptions,
+  FetchLike,
+  RequestCredential,
+  SourceLoader
+} from '@loaders.gl/loader-utils';
+import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/loader-utils';
 import {CSWSourceLoader} from './csw-source-loader';
 import {WMSSourceLoader} from './wms-source-loader';
 import {WMTSSourceLoader} from './wmts-source-loader';
@@ -23,6 +31,8 @@ export type ServiceRuntimeOptions = {
   coreApi?: CoreAPI;
   /** Default request headers, including authorization headers. */
   headers?: HeadersInit;
+  /** Exact-origin credentials applied to service and source requests. */
+  credentials?: readonly RequestCredential[];
   /** Number of retries after retryable failures. */
   retries?: number;
   /** Delay between retries in milliseconds. */
@@ -90,6 +100,7 @@ export class ServiceRuntime {
   readonly options: ServiceRuntimeOptions &
     Required<Pick<ServiceRuntimeOptions, 'loaders' | 'retries' | 'retryDelay' | 'cacheTTL'>>;
   private readonly _sources = new Map<string, CachedSource>();
+  private readonly _fetch: FetchLike;
 
   /** Creates a universal service runtime. */
   constructor(options: ServiceRuntimeOptions = {}) {
@@ -100,6 +111,7 @@ export class ServiceRuntime {
       retryDelay: options.retryDelay ?? 100,
       cacheTTL: options.cacheTTL ?? 300_000
     };
+    this._fetch = createAuthenticatedFetch({credentials: options.credentials || []});
   }
 
   /** Detects a source type and creates a cached protocol source for a URL. */
@@ -117,17 +129,18 @@ export class ServiceRuntime {
   /** Requests a URL with shared headers, cancellation, retry, and telemetry behavior. */
   async request(url: string, requestInit: RequestInit = {}): Promise<Response> {
     const startedAt = Date.now();
+    const diagnosticURL = redactCredentialURL(url, this.options.credentials || []);
     for (let attempt = 1; attempt <= this.options.retries + 1; attempt++) {
-      this.options.onTelemetry?.({phase: 'start', url, attempt});
+      this.options.onTelemetry?.({phase: 'start', url: diagnosticURL, attempt});
       try {
-        const response = await fetch(url, {
+        const response = await this._fetch(url, {
           ...requestInit,
           headers: mergeHeaders(this.options.headers, requestInit.headers)
         });
-        if (!response.ok) throw new ServiceRequestError(url, attempt, response.status);
+        if (!response.ok) throw new ServiceRequestError(diagnosticURL, attempt, response.status);
         this.options.onTelemetry?.({
           phase: 'success',
-          url,
+          url: diagnosticURL,
           attempt,
           elapsed: Date.now() - startedAt
         });
@@ -137,7 +150,7 @@ export class ServiceRuntime {
         const normalizedError =
           error instanceof ServiceRequestError
             ? error
-            : new ServiceRequestError(url, attempt, undefined, error);
+            : new ServiceRequestError(diagnosticURL, attempt, undefined, error);
         if (
           attempt > this.options.retries ||
           !isRetryableError(normalizedError) ||
@@ -145,7 +158,7 @@ export class ServiceRuntime {
         ) {
           this.options.onTelemetry?.({
             phase: 'error',
-            url,
+            url: diagnosticURL,
             attempt,
             elapsed: Date.now() - startedAt,
             error: normalizedError
@@ -155,7 +168,7 @@ export class ServiceRuntime {
         await delay(this.options.retryDelay * 2 ** (attempt - 1));
       }
     }
-    throw new ServiceRequestError(url, this.options.retries + 1);
+    throw new ServiceRequestError(diagnosticURL, this.options.retries + 1);
   }
 
   /** Clears cached source instances, optionally limiting invalidation to one URL. */
@@ -165,12 +178,23 @@ export class ServiceRuntime {
   }
 
   private _getSourceOptions(options: DataSourceOptions): DataSourceOptions {
-    if (!this.options.headers) return options;
+    if (!this.options.headers && !this.options.credentials?.length) return options;
+    const loadOptions = options.core?.loadOptions || {};
     return {
       ...options,
       core: {
         ...options.core,
-        loadOptions: {...options.core?.loadOptions, fetch: {headers: this.options.headers}}
+        loadOptions: {
+          ...loadOptions,
+          core: {
+            ...loadOptions.core,
+            credentials: [
+              ...(loadOptions.core?.credentials || []),
+              ...(this.options.credentials || [])
+            ]
+          },
+          fetch: this.options.headers ? {headers: this.options.headers} : loadOptions.fetch
+        }
       }
     };
   }

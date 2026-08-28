@@ -122,6 +122,29 @@ describe('SpatialCoordinateTransformer', () => {
     );
   });
 
+  test('rejects PROJJSON object types unsupported by proj4js', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: {
+          type: 'VerticalCRS',
+          name: 'Example height',
+          datum: {type: 'VerticalReferenceFrame', name: 'Example datum'},
+          coordinate_system: {
+            subtype: 'vertical',
+            axis: [{name: 'Height', abbreviation: 'H', direction: 'up', unit: 'metre'}]
+          }
+        },
+        coordinateFrame: 'projected',
+        heightReference: 'native'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+
+    expect(() => new SpatialCoordinateTransformer(spatialReference)).toThrow(
+      'VerticalCRS is not supported by proj4js'
+    );
+  });
+
   test('rejects height conversion without a supplied geoid model', () => {
     const spatialReference = createTilesetSpatialReference(
       {

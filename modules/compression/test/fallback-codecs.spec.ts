@@ -8,6 +8,8 @@ import {BrotliDecode} from '@loaders.gl/compression/brotli-decode';
 import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
 import {LZ4Compression} from '@loaders.gl/compression/lz4-compression';
+import {SnappyHysnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor-hysnappy';
+import {SnappyJSCompressor} from '@loaders.gl/compression/snappy-compressor-snappyjs';
 import {
   NATIVE_DECOMPRESSION_FIXTURES,
   NATIVE_DECOMPRESSION_TEST_DATA
@@ -54,6 +56,25 @@ test('LZ4Compression decodes a raw block without loading lz4js', () => {
   } finally {
     restoreLz4();
   }
+});
+
+test('SnappyHysnappyDecompressor decodes Snappy with known and embedded output lengths', async () => {
+  const input = new TextEncoder().encode('small independently compressed parquet page '.repeat(64));
+  const compressor = new SnappyJSCompressor();
+  await compressor.preload();
+  const compressed = compressor.compressSync(input.buffer);
+  const decompressor = new SnappyHysnappyDecompressor();
+  await decompressor.preload();
+
+  expect(new Uint8Array(decompressor.decompressSync(compressed, input.byteLength))).toEqual(input);
+  expect(new Uint8Array(decompressor.decompressSync(compressed))).toEqual(input);
+});
+
+test('SnappyHysnappyDecompressor requires preload before synchronous decoding', () => {
+  const decompressor = new SnappyHysnappyDecompressor();
+  expect(() => decompressor.decompressSync(new Uint8Array([0]).buffer)).toThrow(
+    'snappy hysnappy decoder has not been preloaded'
+  );
 });
 
 /** Concatenates asynchronous output batches. */

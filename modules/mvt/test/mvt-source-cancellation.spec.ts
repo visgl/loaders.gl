@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
+import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
 import type {MVTLoaderOptions} from '../src/mvt-loader';
 import {MVTTileSource} from '../src/mvt-source-loader';
 
@@ -59,4 +60,39 @@ test('MVTTileSource#getVectorTile forwards requested layers to the decoder', asy
     layerProperty: 'sourceLayer',
     layers: ['roads']
   });
+});
+
+test('MVTTileSource applies credentials to TileJSON and descendant tile requests', async () => {
+  const requestedURLs: string[] = [];
+  const source = new MVTTileSource('https://api.mapbox.com/v4/example.tiles', {
+    mvt: {extension: '.mvt'},
+    core: {
+      loadOptions: {
+        core: {
+          credentials: [
+            createQueryParameterCredential({
+              id: 'mapbox-token',
+              origins: ['https://api.mapbox.com'],
+              parameterName: 'access_token',
+              token: 'public-token'
+            })
+          ],
+          fetch: async url => {
+            requestedURLs.push(String(url));
+            return String(url).includes('tilejson.json')
+              ? new Response(null, {status: 404})
+              : new Response(new Uint8Array([1]));
+          }
+        }
+      }
+    }
+  });
+
+  await source.metadata;
+  await source.getTile({x: 2, y: 1, z: 3});
+
+  expect(requestedURLs).toEqual([
+    'https://api.mapbox.com/v4/example.tiles/tilejson.json?access_token=public-token',
+    'https://api.mapbox.com/v4/example.tiles/3/2/1.mvt?access_token=public-token'
+  ]);
 });

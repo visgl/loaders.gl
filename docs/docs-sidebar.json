@@ -75,6 +75,7 @@
     "label": "Services",
     "items": [
       "modules/services/README",
+      "developer-guide/authentication",
       "modules/wms/formats/csw",
       "modules/wms/formats/wcs",
       "modules/wms/formats/wfs",
@@ -276,6 +277,7 @@
           "modules/loader-utils/api-reference/request-cache",
           "modules/loader-utils/api-reference/range-request-scheduler",
           "modules/loader-utils/api-reference/range-request-cache",
+          "modules/loader-utils/api-reference/request-credentials",
           "modules/loader-utils/api-reference/parse-with-context"
         ]
       },

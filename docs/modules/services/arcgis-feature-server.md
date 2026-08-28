@@ -93,8 +93,9 @@ const source = createDataSource(featureServerUrl, [ArcGISFeatureServerSourceLoad
 });
 ```
 
-Use the standard `fetch` option for bearer tokens or gateways. Tokens already encoded in the URL
-are forwarded to metadata and query requests.
+For a scoped query token, pass `createArcGISCredential` through `core.credentials`. Tokens already
+encoded in the URL win and are forwarded to metadata and query requests. Bearer gateways and
+cookies continue to use `core.fetch`. See [authentication](/docs/developer-guide/authentication).
 
 ## deck.gl integration
 

@@ -7,13 +7,21 @@
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {ParquetSchema} from '../schema/schema';
-import {decodeSchema, decodeDataPages, decodePage} from './decoders';
+import {
+  decodeSchema,
+  decodeDataPages,
+  decodePage,
+  decodeUncompressedDataPages,
+  decodeUncompressedDictionaryBuffer
+} from './decoders';
 import {materializeRows} from '../schema/shred';
+import {createParquetPageDecompressor, type ParquetPageDecompressor} from '../compression';
 
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
 import {
   ColumnChunk,
   CompressionCodec,
+  Encoding,
   FileMetaData,
   PageType,
   RowGroup,
@@ -56,6 +64,32 @@ import type {ParquetEncryptionModule} from '../../lib/parquet-encryption';
 /** Bounds concurrent range requests when a row group contains unusually many selected columns. */
 const MAXIMUM_CONCURRENT_COLUMN_READS = 16;
 
+/**
+ * Returns whether column metadata guarantees that every data page can decode directly into an
+ * Arrow-compatible byte buffer. Level encodings are included in the metadata encoding set and do
+ * not prevent the byte-array fast path.
+ */
+function hasOnlyArrowByteArrayDataPageEncodings(
+  encodings: Encoding[],
+  dictionaryPageOffset: number | undefined
+): boolean {
+  if (dictionaryPageOffset !== undefined || encodings.length === 0) {
+    return false;
+  }
+  for (const encoding of encodings) {
+    if (
+      encoding !== Encoding.PLAIN &&
+      encoding !== Encoding.DELTA_LENGTH_BYTE_ARRAY &&
+      encoding !== Encoding.DELTA_BYTE_ARRAY &&
+      encoding !== Encoding.RLE &&
+      encoding !== Encoding.BIT_PACKED
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Returns the algorithm name represented by the Thrift encryption union. */
 function getEncryptionAlgorithm(value: {
   AES_GCM_V1?: unknown;
@@ -77,6 +111,8 @@ export type ParquetReaderProps = {
   useTypedValueBuffers?: boolean;
   /** Decode repetition and definition levels into compact unsigned typed arrays. */
   useTypedLevelBuffers?: boolean;
+  /** Decode eligible PLAIN BYTE_ARRAY columns into Arrow-compatible contiguous buffers. */
+  useArrowByteArrayBuffers?: boolean;
   /** Verify page-header CRC values when present. Disabled by default for throughput. */
   verifyPageChecksums?: boolean;
   /** Decode legacy INT96 values as epoch nanoseconds for Arrow timestamp columns. */
@@ -137,6 +173,7 @@ export class ParquetReader {
     retainByteArrayViews: false,
     useTypedValueBuffers: false,
     useTypedLevelBuffers: false,
+    useArrowByteArrayBuffers: false,
     verifyPageChecksums: false,
     int96AsTimestamp: false,
     verifyFooterSignature: true,
@@ -155,6 +192,8 @@ export class ParquetReader {
   private encryptionContext?: ParquetEncryptionContext;
   /** Resolved keys shared by encrypted modules in this reader instance. */
   private readonly encryptionKeyCache = new Map<string, Promise<ArrayBuffer | ArrayBufferView>>();
+  /** Compression backends selected once and shared by every page in this reader. */
+  private readonly pageDecompressors = new Map<ParquetCompression, ParquetPageDecompressor>();
 
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
@@ -215,8 +254,35 @@ export class ParquetReader {
 
   close(): void {
     this.encryptionKeyCache.clear();
+    this.pageDecompressors.clear();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.file.close();
+  }
+
+  /** Returns the reader-scoped decoder for one Parquet compression method. */
+  private getPageDecompressor(compression: ParquetCompression): ParquetPageDecompressor {
+    let decompressor = this.pageDecompressors.get(compression);
+    if (!decompressor) {
+      decompressor = createParquetPageDecompressor(compression);
+      this.pageDecompressors.set(compression, decompressor);
+    }
+    return decompressor;
+  }
+
+  /** Reads a byte range, retaining a zero-copy view when the complete file is already in memory. */
+  private async readBytes(
+    start: number,
+    length: number,
+    signal?: AbortSignal
+  ): Promise<Uint8Array> {
+    const effectiveSignal = signal ?? this.props.signal;
+    if (effectiveSignal?.aborted) {
+      throw new Error('Request aborted');
+    }
+    if (this.file.handle instanceof ArrayBuffer) {
+      return new Uint8Array(this.file.handle, start, length);
+    }
+    return toUint8Array(await this.file.read(start, length, effectiveSignal));
   }
 
   /** Returns a reader-scoped key resolver that avoids repeating key-provider work per module. */
@@ -334,8 +400,7 @@ export class ParquetReader {
 
   /** Metadata is stored in the footer */
   async readHeader(signal?: AbortSignal): Promise<void> {
-    const arrayBuffer = await this.file.read(0, PARQUET_MAGIC.length, signal ?? this.props.signal);
-    const magic = decodeString(toUint8Array(arrayBuffer));
+    const magic = decodeString(await this.readBytes(0, PARQUET_MAGIC.length, signal));
     switch (magic) {
       case PARQUET_MAGIC:
         break;
@@ -349,12 +414,7 @@ export class ParquetReader {
   /** Metadata is stored in the footer */
   async readFooter(signal?: AbortSignal): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
-    const arrayBuffer = await this.file.read(
-      this.file.size - trailerLen,
-      trailerLen,
-      signal ?? this.props.signal
-    );
-    const trailer = toUint8Array(arrayBuffer);
+    const trailer = await this.readBytes(this.file.size - trailerLen, trailerLen, signal);
 
     const magic = decodeString(trailer, 4);
     const metadataSize = readUInt32LE(trailer, 0);
@@ -370,12 +430,7 @@ export class ParquetReader {
       throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
 
-    const arrayBuffer2 = await this.file.read(
-      metadataOffset,
-      metadataSize,
-      signal ?? this.props.signal
-    );
-    const metadataBuf = toUint8Array(arrayBuffer2);
+    const metadataBuf = await this.readBytes(metadataOffset, metadataSize, signal);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
 
@@ -419,9 +474,7 @@ export class ParquetReader {
     if (!this.props.keyRetriever) {
       throw new Error('Encrypted Parquet footer requires parquet.keyRetriever');
     }
-    const encryptedFooter = toUint8Array(
-      await this.file.read(metadataOffset, metadataSize, signal ?? this.props.signal)
-    );
+    const encryptedFooter = await this.readBytes(metadataOffset, metadataSize, signal);
     const cryptoMetadata = decodeFileCryptoMetadata(encryptedFooter);
     const algorithm = getEncryptionAlgorithm(cryptoMetadata.metadata.encryption_algorithm);
     const algorithmMetadata =
@@ -637,14 +690,31 @@ export class ParquetReader {
         continue;
       }
       const physicalColumnOrdinal = getPhysicalColumnOrdinal(columnChunk, columnOrdinal);
-      const metadata = await this.getColumnMetadata(
-        columnChunk,
-        rowGroupOrdinal,
-        physicalColumnOrdinal
-      );
+      const metadata =
+        columnChunk.meta_data ||
+        (await this.getColumnMetadata(columnChunk, rowGroupOrdinal, physicalColumnOrdinal));
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
         selectedColumnChunks.push({columnChunk, metadata, columnOrdinal: physicalColumnOrdinal});
       }
+    }
+    if (
+      this.file.handle instanceof ArrayBuffer &&
+      selectedColumnChunks.every(
+        ({columnChunk, metadata}) =>
+          (columnChunk.file_path === undefined || columnChunk.file_path === null) &&
+          !columnChunk.crypto_metadata &&
+          getThriftEnum(CompressionCodec, metadata.codec) === 'UNCOMPRESSED'
+      )
+    ) {
+      return {
+        rowCount: Number(rowGroup.num_rows),
+        columnData: Object.fromEntries(
+          selectedColumnChunks.map(({columnChunk, metadata}) => [
+            metadata.path_in_schema.join(),
+            this.readUncompressedColumnChunkFromMemory(schema, columnChunk, metadata)
+          ])
+        )
+      };
     }
     const columnEntries: Array<readonly [string, ParquetColumnChunk]> = [];
     for (
@@ -658,17 +728,27 @@ export class ParquetReader {
       );
       columnEntries.push(
         ...(await Promise.all(
-          columnBatch.map(async ({columnChunk, metadata, columnOrdinal}) => {
+          columnBatch.map(({columnChunk, metadata, columnOrdinal}) => {
             const columnKey = metadata.path_in_schema.join();
-            const columnData = await this.readColumnChunk(
+            if (
+              this.file.handle instanceof ArrayBuffer &&
+              (columnChunk.file_path === undefined || columnChunk.file_path === null) &&
+              !columnChunk.crypto_metadata &&
+              getThriftEnum(CompressionCodec, metadata.codec) === 'UNCOMPRESSED'
+            ) {
+              return [
+                columnKey,
+                this.readUncompressedColumnChunkFromMemory(schema, columnChunk, metadata)
+              ] as const;
+            }
+            return this.readColumnChunk(
               schema,
               columnChunk,
               signal,
               rowGroupOrdinal,
               columnOrdinal,
               metadata
-            );
-            return [columnKey, columnData] as const;
+            ).then(columnData => [columnKey, columnData] as const);
           })
         ))
       );
@@ -702,11 +782,9 @@ export class ParquetReader {
         continue;
       }
       const physicalColumnOrdinal = getPhysicalColumnOrdinal(columnChunk, columnOrdinal);
-      const metadata = await this.getColumnMetadata(
-        columnChunk,
-        rowGroupOrdinal,
-        physicalColumnOrdinal
-      );
+      const metadata =
+        columnChunk.meta_data ||
+        (await this.getColumnMetadata(columnChunk, rowGroupOrdinal, physicalColumnOrdinal));
       if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
         selectedColumnChunks.push({columnChunk, metadata, columnOrdinal: physicalColumnOrdinal});
       }
@@ -735,6 +813,80 @@ export class ParquetReader {
       rowCount: rowRange.end - rowRange.start,
       columnData: Object.fromEntries(columnEntries)
     };
+  }
+
+  /**
+   * Each row group contains column chunks for all the columns.
+   */
+  private readUncompressedColumnChunkFromMemory(
+    schema: ParquetSchema,
+    columnChunk: ColumnChunk,
+    metadata: NonNullable<ColumnChunk['meta_data']>
+  ): ParquetColumnChunk {
+    if (!(this.file.handle instanceof ArrayBuffer)) {
+      throw new Error('Synchronous Parquet column reads require an in-memory ArrayBuffer');
+    }
+    const field = schema.findField(metadata.path_in_schema);
+    const type: PrimitiveType = getThriftEnum(Type, metadata.type) as PrimitiveType;
+    if (type !== field.primitiveType) {
+      throw new Error(`chunk type not matching schema: ${type}`);
+    }
+
+    const pagesOffset = Number(metadata.data_page_offset);
+    const dictionaryPageOffset = metadata.dictionary_page_offset;
+    const validDictionaryPageOffset =
+      dictionaryPageOffset !== undefined && Number(dictionaryPageOffset) > 0
+        ? Number(dictionaryPageOffset)
+        : undefined;
+    const chunkOffset = Math.min(pagesOffset, validDictionaryPageOffset ?? pagesOffset);
+    const chunkEnd = chunkOffset + Number(metadata.total_compressed_size);
+    const chunkSize = Math.min(this.file.size - chunkOffset, Math.max(0, chunkEnd - chunkOffset));
+    const chunkBuffer = new Uint8Array(this.file.handle, chunkOffset, chunkSize);
+    const pagesRelativeOffset = pagesOffset - chunkOffset;
+    const pagesSize = Math.min(
+      chunkBuffer.length - pagesRelativeOffset,
+      Math.max(0, chunkEnd - pagesOffset)
+    );
+    const context: ParquetReaderContext = {
+      type,
+      rLevelMax: field.rLevelMax,
+      dLevelMax: field.dLevelMax,
+      compression: 'UNCOMPRESSED',
+      column: field,
+      numValues: metadata.num_values,
+      dictionary: [],
+      decompressPage: this.getPageDecompressor('UNCOMPRESSED'),
+      preserveBinary: this.props.preserveBinary,
+      retainByteArrayViews: this.props.retainByteArrayViews,
+      useTypedValueBuffers: this.props.useTypedValueBuffers,
+      useTypedLevelBuffers: this.props.useTypedLevelBuffers,
+      useArrowByteArrayBuffers: this.props.useArrowByteArrayBuffers,
+      // Metadata proves whether the decoder may skip its otherwise duplicated page-header scan.
+      // Keep the scan for mixed/unknown encodings: it is both a correctness guard and fallback.
+      hasOnlyArrowByteArrayDataPages: hasOnlyArrowByteArrayDataPageEncodings(
+        metadata.encodings,
+        validDictionaryPageOffset
+      ),
+      verifyPageChecksums: this.props.verifyPageChecksums,
+      int96AsTimestamp: this.props.int96AsTimestamp
+    };
+    let dictionary: unknown[] | undefined;
+    if (validDictionaryPageOffset !== undefined) {
+      const dictionaryRelativeOffset = validDictionaryPageOffset - chunkOffset;
+      const dictionarySize = Math.min(
+        Math.max(0, pagesOffset - validDictionaryPageOffset),
+        chunkBuffer.length - dictionaryRelativeOffset,
+        this.props.defaultDictionarySize
+      );
+      dictionary = decodeUncompressedDictionaryBuffer(
+        chunkBuffer.subarray(dictionaryRelativeOffset, dictionaryRelativeOffset + dictionarySize),
+        context
+      );
+    }
+    return decodeUncompressedDataPages(
+      chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize),
+      {...context, dictionary}
+    );
   }
 
   /**
@@ -774,8 +926,7 @@ export class ParquetReader {
     const chunkOffset = Math.min(pagesOffset, validDictionaryPageOffset ?? pagesOffset);
     const chunkEnd = chunkOffset + Number(metadata.total_compressed_size);
     const chunkSize = Math.min(this.file.size - chunkOffset, Math.max(0, chunkEnd - chunkOffset));
-    const arrayBuffer = await this.file.read(chunkOffset, chunkSize, signal ?? this.props.signal);
-    const chunkBuffer = toUint8Array(arrayBuffer);
+    const chunkBuffer = await this.readBytes(chunkOffset, chunkSize, signal);
     const pagesRelativeOffset = pagesOffset - chunkOffset;
     const pagesSize = Math.min(
       chunkBuffer.length - pagesRelativeOffset,
@@ -790,11 +941,19 @@ export class ParquetReader {
       column: field,
       numValues: metadata.num_values,
       dictionary: [],
+      decompressPage: this.getPageDecompressor(compression),
       // Options - TBD is this the right place for these?
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
       useTypedValueBuffers: this.props.useTypedValueBuffers,
       useTypedLevelBuffers: this.props.useTypedLevelBuffers,
+      useArrowByteArrayBuffers: this.props.useArrowByteArrayBuffers,
+      // Avoid parsing every page header twice when trusted column metadata already establishes the
+      // direct Arrow byte-array invariant. Unknown/mixed encodings retain the defensive scan.
+      hasOnlyArrowByteArrayDataPages: hasOnlyArrowByteArrayDataPageEncodings(
+        metadata.encodings,
+        validDictionaryPageOffset
+      ),
       verifyPageChecksums: this.props.verifyPageChecksums,
       int96AsTimestamp: this.props.int96AsTimestamp
     };
@@ -968,9 +1127,11 @@ export class ParquetReader {
           ? new CompactInt64(lastPage.endRowIndex - firstPage.firstRowIndex)
           : undefined,
       dictionary: [],
+      decompressPage: this.getPageDecompressor(compression),
       preserveBinary: this.props.preserveBinary,
       retainByteArrayViews: this.props.retainByteArrayViews,
       useTypedValueBuffers: this.props.useTypedValueBuffers,
+      useArrowByteArrayBuffers: this.props.useArrowByteArrayBuffers,
       verifyPageChecksums: this.props.verifyPageChecksums,
       int96AsTimestamp: this.props.int96AsTimestamp
     };
@@ -979,9 +1140,7 @@ export class ParquetReader {
     const dictionaryPageOffset = Number(columnMetadata.dictionary_page_offset);
     if (Number.isSafeInteger(dictionaryPageOffset) && dictionaryPageOffset > 0) {
       const dictionaryLength = Math.max(0, pages[0].offset - dictionaryPageOffset);
-      const dictionaryBuffer = toUint8Array(
-        await this.file.read(dictionaryPageOffset, dictionaryLength, signal ?? this.props.signal)
-      );
+      const dictionaryBuffer = await this.readBytes(dictionaryPageOffset, dictionaryLength, signal);
       const decodedDictionaryBuffer = encrypted
         ? await this.decryptColumnPages(
             dictionaryBuffer,
@@ -999,12 +1158,10 @@ export class ParquetReader {
       // Probe predecessor pages independently, then decode the final range once. This avoids
       // quadratic re-decoding when a large repeated row spans many pages.
       while (firstPageIndex > 0) {
-        const probeBuffer = toUint8Array(
-          await this.file.read(
-            firstPage.offset,
-            firstPage.compressedByteLength,
-            signal ?? this.props.signal
-          )
+        const probeBuffer = await this.readBytes(
+          firstPage.offset,
+          firstPage.compressedByteLength,
+          signal
         );
         const decodedProbeBuffer = encrypted
           ? await this.decryptColumnPages(
@@ -1025,9 +1182,7 @@ export class ParquetReader {
       }
     }
     const dataLength = lastPage.offset + lastPage.compressedByteLength - firstPage.offset;
-    const dataBuffer = toUint8Array(
-      await this.file.read(firstPage.offset, dataLength, signal ?? this.props.signal)
-    );
+    const dataBuffer = await this.readBytes(firstPage.offset, dataLength, signal);
     const decodedDataBuffer = encrypted
       ? await this.decryptColumnPages(
           dataBuffer,
@@ -1083,12 +1238,7 @@ export class ParquetReader {
       this.file.size - dictionaryPageOffset,
       this.props.defaultDictionarySize
     );
-    const arrayBuffer = await this.file.read(
-      dictionaryPageOffset,
-      dictionarySize,
-      signal ?? this.props.signal
-    );
-    const pagesBuf = toUint8Array(arrayBuffer);
+    const pagesBuf = await this.readBytes(dictionaryPageOffset, dictionarySize, signal);
     return await decodeDictionaryBuffer(pagesBuf, context);
   }
 }

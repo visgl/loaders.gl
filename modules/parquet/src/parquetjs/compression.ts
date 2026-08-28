@@ -16,9 +16,10 @@ import {
   SnappyDecompressor,
   ZstdCompressor,
   ZstdDecompressor,
-  type Compressor,
-  type Decompressor
+  Decompressor,
+  type Compressor
 } from '@loaders.gl/compression';
+import {SnappyHysnappyDecompressor} from '@loaders.gl/compression/snappy-decompressor-hysnappy';
 import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
@@ -37,6 +38,41 @@ export const PARQUET_COMPRESSION_METHODS: Partial<Record<ParquetCompression, tru
   LZ4_RAW: true,
   ZSTD: true
 };
+
+/** Reader-scoped function that decompresses one independently encoded Parquet page. */
+export type ParquetPageDecompressor = (value: Uint8Array, size: number) => Promise<Uint8Array>;
+
+/** Fast Snappy decoder that permanently falls back to snappyjs when WASM is unavailable. */
+class ParquetSnappyDecompressor extends Decompressor {
+  /** Compression format name. */
+  readonly name = 'snappy';
+  /** Snappy does not have a standard standalone file extension. */
+  readonly extensions: string[] = [];
+  /** Snappy does not have a standard HTTP content encoding. */
+  readonly contentEncodings: string[] = [];
+  /** snappyjs keeps this composite decoder available without WebAssembly. */
+  readonly isSupported = true;
+  /** Preferred compact WASM decoder for page-sized frames. */
+  private readonly hysnappy = new SnappyHysnappyDecompressor();
+  /** Always-supported JavaScript decoder. */
+  private readonly snappyjs = new SnappyDecompressor();
+  /** Whether this instance has selected the JavaScript fallback. */
+  private useSnappyjs = !this.hysnappy.isSupported;
+
+  /** Decodes with hysnappy, retaining snappyjs after the first WASM setup or runtime failure. */
+  override async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
+    if (!this.useSnappyjs) {
+      try {
+        return await this.hysnappy.decompress(input, size);
+      } catch {
+        // CSP can reject WebAssembly compilation even when the WebAssembly global exists. Once
+        // that happens, avoid paying the same rejected initialization cost for every Parquet page.
+        this.useSnappyjs = true;
+      }
+    }
+    return await this.snappyjs.decompress(input, size);
+  }
+}
 
 /**
  * Registers optional codec modules without eagerly loading codec-backed implementations.
@@ -85,6 +121,24 @@ export async function decompress(
   return toUint8Array(compressedArrayBuffer);
 }
 
+/**
+ * Creates a reusable decoder for the independently compressed pages in one Parquet reader.
+ *
+ * Reusing the lazy codec preserves its selected backend and avoids repeating dynamic import and
+ * preload work for every page while keeping module injection scoped to a reader invocation.
+ */
+export function createParquetPageDecompressor(method: ParquetCompression): ParquetPageDecompressor {
+  const decompressor = method === 'UNCOMPRESSED' ? null : createParquetDecompressor(method);
+  return async (value: Uint8Array, size: number): Promise<Uint8Array> => {
+    const inputArrayBuffer = toArrayBuffer(value);
+    if (!decompressor) {
+      return toUint8Array(inputArrayBuffer);
+    }
+    const decompressedArrayBuffer = await decompressor.decompress(inputArrayBuffer, size);
+    return toUint8Array(decompressedArrayBuffer);
+  };
+}
+
 /** Returns a new lazily selecting compressor for one Parquet method. */
 async function getParquetCompressor(method: ParquetCompression): Promise<Compressor> {
   return createParquetCompressor(method);
@@ -120,7 +174,7 @@ function createParquetDecompressor(method: ParquetCompression): Decompressor {
     case 'GZIP':
       return new GZipDecompressor();
     case 'SNAPPY':
-      return new SnappyDecompressor();
+      return new ParquetSnappyDecompressor();
     case 'BROTLI':
       return new BrotliDecompressor();
     case 'LZ4':

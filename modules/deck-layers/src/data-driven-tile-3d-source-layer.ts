@@ -4,7 +4,7 @@
 
 import {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser, RequestCredential} from '@loaders.gl/loader-utils';
 import {createSource} from './tile-3d-source-layer';
 
 /**
@@ -49,7 +49,13 @@ export class SourceDataDrivenTile3DLayer<
         actualTilesetUrl = preloadOptions.url;
       }
 
-      if (preloadOptions.headers) {
+      const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
+      if (credentials?.length) {
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+        };
+      } else if (preloadOptions.headers) {
         options.loadOptions.fetch = {
           ...options.loadOptions.fetch,
           headers: preloadOptions.headers
