@@ -50,6 +50,7 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
   /** Returns the layer URL, resolving an explicit layer ID when needed. */
   getLayerURL(): string {
     const url = new URL(this.url);
+    url.pathname = url.pathname.replace(/\/+$/, '');
     if (/\/SceneServer\/layers\/[^/]+$/i.test(url.pathname)) {
       url.search = '';
       url.hash = '';

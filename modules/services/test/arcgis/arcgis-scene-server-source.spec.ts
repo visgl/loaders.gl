@@ -133,3 +133,10 @@ test('ArcGISSceneServerSourceLoader detects SceneServer URLs', () => {
   expect(ArcGISSceneServerSourceLoader.testURL(`${SCENE_SERVER_URL}/layers/0`)).toBe(true);
   expect(ArcGISSceneServerSourceLoader.testURL('https://example.com/FeatureServer/0')).toBe(false);
 });
+
+test('ArcGISSceneServerSource normalizes a trailing slash before query parameters', () => {
+  const source = new ArcGISSceneServerSource(`${SCENE_SERVER_URL}/layers/0/?token=url-secret`);
+
+  expect(source.getLayerURL()).toBe(`${SCENE_SERVER_URL}/layers/0`);
+  expect(source.metadataURL()).toBe(`${SCENE_SERVER_URL}/layers/0?f=pjson&token=url-secret`);
+});
