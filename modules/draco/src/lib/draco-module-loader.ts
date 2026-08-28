@@ -169,8 +169,26 @@ async function loadDracoDecoderWithFallback(
   }
 }
 
+let decoderInitializationQueue = Promise.resolve();
+
 /** Loads and initializes one external Draco decoder backend. */
 async function loadDracoDecoder(
+  options: LoadLibraryOptions,
+  type: 'wasm' | 'javascript',
+  profile: DracoDecoderProfile
+): Promise<LoadedDracoModule> {
+  const initialization = decoderInitializationQueue.then(() =>
+    loadDracoDecoderInternal(options, type, profile)
+  );
+  decoderInitializationQueue = initialization.then(
+    () => undefined,
+    () => undefined
+  );
+  return await initialization;
+}
+
+/** Performs decoder loading after preceding global initializers have completed. */
+async function loadDracoDecoderInternal(
   options: LoadLibraryOptions,
   type: 'wasm' | 'javascript',
   profile: DracoDecoderProfile
