@@ -7,6 +7,24 @@ const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
+/** Creates the existing SWC loader with deterministic styled-components IDs. */
+function createJavaScriptLoader(isServer) {
+  const {getSwcLoaderOptions, swcLoader} = require('@docusaurus/faster');
+  const options = getSwcLoaderOptions({isServer, bundlerName: 'rspack'});
+  options.jsc.experimental = {
+    plugins: [
+      [
+        require.resolve('@swc/plugin-styled-components'),
+        {
+          displayName: true,
+          ssr: true
+        }
+      ]
+    ]
+  };
+  return {loader: swcLoader, options};
+}
+
 /** @type {import('@docusaurus/types').Config} */
 const siteUrl = process.env.DOCUSAURUS_URL || 'https://loaders.gl';
 const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
@@ -66,7 +84,15 @@ const config = {
   trailingSlash: false,
 
   future: {
-    v4: true
+    v4: true,
+    // Use a custom SWC loader below so styled-components receives stable SSR IDs.
+    faster: {
+      swcJsLoader: false
+    }
+  },
+
+  webpack: {
+    jsLoader: createJavaScriptLoader
   },
 
   markdown: {
