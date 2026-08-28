@@ -25,4 +25,11 @@ export {
   type I3SLEPCCDecoderOptions
 } from './i3s-lepcc';
 export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export {
+  createI3SLayerSource,
+  I3SUnsupportedProfileError,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
+} from './i3s-service';
+export type {I3SLayerSource, I3SServiceMetadata} from './i3s-service';
 export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';
