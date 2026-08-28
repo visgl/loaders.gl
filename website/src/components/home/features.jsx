@@ -67,9 +67,9 @@ const featureCards = [
   {
     id: 'loaders',
     eyebrow: 'Format coverage',
-    title: 'More formats. Less glue.',
+    title: 'Optimized, feature-rich parsers',
     description:
-      'Hyper-complete and optimized loaders for tables, GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
+      'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
     href: '/docs',
     linkLabel: 'Browse loader docs',
     tags: ['tables', 'GIS', '3D', 'point clouds'],
@@ -80,7 +80,7 @@ const featureCards = [
   {
     id: 'categories',
     eyebrow: 'Composable APIs',
-    title: 'Design around data, not formats.',
+    title: 'Design apps around your data, not data formats.',
     description:
       'Loader categories normalize related formats into shared structures, so your application code can stay focused on the data.',
     href: '/docs/developer-guide/loader-categories',
