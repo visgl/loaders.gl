@@ -285,11 +285,11 @@ function reprojectFeatures(
   sourceCrs?: WKTCRSDefinition,
   targetCrs?: Proj4CRSDefinition
 ): Feature[] {
-  if (!sourceCrs && !targetCrs) {
-    return features;
+  if (!sourceCrs) {
+    throw new Error('Shapefile reprojection requires a source CRS from the .prj sidecar file');
   }
 
-  const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
+  const projection = new Proj4Projection({from: sourceCrs, to: targetCrs || 'WGS84'});
   return transformGeoJsonCoords(features, coord => projection.project(coord));
 }
 

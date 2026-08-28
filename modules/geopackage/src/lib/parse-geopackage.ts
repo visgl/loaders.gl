@@ -378,18 +378,26 @@ function constructArrowRow(
   return arrowRow;
 }
 
-function getProjection(
+/** Creates the requested GeoPackage projection or rejects missing source CRS metadata. */
+export function getProjection(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
   options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
 ): Proj4Projection | null {
-  if (!options.reproject || vectorTable.srsId === undefined) {
+  if (!options.reproject) {
     return null;
+  }
+  if (vectorTable.srsId === undefined) {
+    throw new Error(
+      `GeoPackage reprojection requires a source CRS identifier for table "${vectorTable.name}"`
+    );
   }
 
   const sourceProjection = projections[vectorTable.srsId];
   if (!sourceProjection) {
-    return null;
+    throw new Error(
+      `GeoPackage reprojection requires a defined source CRS for SRS ${vectorTable.srsId}`
+    );
   }
 
   return new Proj4Projection({

@@ -159,7 +159,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     const info = await this.getHeaderInfo();
     assertNotAborted(parameters.signal);
     const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
-    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs && parameters.crs !== info.header.crs?.wkt)}) as VectorSourceData;
+    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs)}) as VectorSourceData;
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */

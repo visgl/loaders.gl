@@ -90,9 +90,15 @@ describe('FlatGeobuf reader metadata branches', () => {
     expect(schema.fields[1].metadata?.['ARROW:extension:name']).toBe('geoarrow.linestring');
   });
 
-  test('returns no projection unless requested and handles invalid CRS definitions', () => {
+  test('creates projections only from declared source CRS definitions', () => {
     expect(getProjection({}, false)).toBeUndefined();
-    expect(getProjection({crs: {}}, true)).toBeUndefined();
-    expect(getProjection({crs: {wkt: 'not a CRS'}}, true)).toBeUndefined();
+    expect(() => getProjection({crs: {}}, true)).toThrow(
+      'FlatGeobuf reprojection requires a source CRS in the file header'
+    );
+    expect(() => getProjection({crs: {wkt: 'not a CRS'}}, true)).toThrow(
+      'FlatGeobuf reprojection failed'
+    );
+    expect(getProjection({crs: {codeString: 'EPSG:4326'}}, true)).toBeDefined();
+    expect(getProjection({crs: {code: 4326}}, true)).toBeDefined();
   });
 });

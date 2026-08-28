@@ -370,11 +370,19 @@ export function getProjection(
   reproject = false,
   crs: Proj4CRSDefinition = 'WGS84'
 ): Proj4Projection | undefined {
-  if (!reproject || !header.crs?.wkt) return undefined;
+  if (!reproject) return undefined;
+  const sourceCrs =
+    header.crs?.wkt ||
+    header.crs?.codeString ||
+    (Number.isFinite(header.crs?.code) ? `EPSG:${header.crs.code}` : undefined);
+  if (!sourceCrs) {
+    throw new Error('FlatGeobuf reprojection requires a source CRS in the file header');
+  }
   try {
-    return new Proj4Projection({from: header.crs.wkt, to: crs});
-  } catch {
-    return undefined;
+    return new Proj4Projection({from: sourceCrs, to: crs});
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`FlatGeobuf reprojection failed: ${message}`);
   }
 }
 function intersectsBoundingBox(

@@ -83,6 +83,11 @@ mean coordinate transformation.
 | KML | Implicit WGS84 longitude/latitude/altitude | Coordinate values retained | None |
 | GPX / TCX | Implicit WGS84 latitude/longitude | Coordinate values retained | None |
 
+When `gis.reproject` is enabled, Shapefile, FlatGeobuf, and GeoPackage require usable source CRS
+metadata. A Shapefile therefore needs its `.prj` sidecar, while FlatGeobuf and GeoPackage need a
+source definition in their format metadata. Missing or invalid definitions reject the request;
+loaders.gl does not assume that unlabelled coordinates are WGS84.
+
 ## GeoArrow and GeoParquet details
 
 GeoParquet distinguishes three states:
@@ -106,8 +111,9 @@ future normalized table descriptor must not collapse them into one table-wide va
   dynamic, and compound CRS definitions.
 - GeoTIFF and GeoZarr return native-CRS raster data and do not warp or resample into a target CRS.
 - Existing vector reprojection options use the inconsistent, experimental `_targetCrs` name.
-- Some source-specific transforms treat an unsupported or unparsable source definition as an
-  unavailable transform and continue with source coordinates instead of rejecting the request.
+- Some point-cloud-specific transforms still treat an unsupported or unparsable source definition
+  as an unavailable transform and continue with source coordinates instead of rejecting the
+  request.
 - Some service parsers and format-specific structures still expose unclassified strings.
 - GeoParquet CRS metadata is preserved, but GeoParquet coordinates are not reprojected.
 - There is no unified CRS result descriptor shared by all loaders and source APIs.
