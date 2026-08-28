@@ -84,13 +84,14 @@ jobs:
             .yarn/install-state.gz
           key: ${{ runner.os }}-yarn4-${{ hashFiles('yarn.lock', '.yarnrc.yml', 'package.json') }}
 
-      - name: Install dependencies and build website
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build website
         env:
           DOCUSAURUS_BASE_URL: ${{ needs.check_branch.outputs.website_base_url }}
-        run: |
-          yarn install --immutable
-          cd website
-          yarn build
+        run: yarn build
+        working-directory: website
 
       - name: Disable repository hooks for deployment
         run: git config --global core.hooksPath /dev/null
