@@ -192,7 +192,7 @@ test('MLTTileSource supports XYZ URLs and inverted-y templates', () => {
   expect(source.getTileURL(1, 2, 3)).toBe('https://example.com/tiles/1/2/3.tile');
 
   expect(getURLFromTemplate('https://example.com/{z}/{x}/{-y}?v=1', 1, 2, 3, '.mlt')).toBe(
-    'https://example.com/3/1/5?v=1.mlt'
+    'https://example.com/3/1/5.mlt?v=1'
   );
 });
 
