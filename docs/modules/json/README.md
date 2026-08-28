@@ -1,5 +1,11 @@
 # Overview
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats that use JSON encoding. It includes:
 
 - `JSONLoader` for arbitrary JSON documents.
@@ -9,6 +15,9 @@ The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats 
 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
+
+NDJSON sources expose schema discovery, streaming projection and limits, and correct residual
+predicates through the common scan contract.
 
 `JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 

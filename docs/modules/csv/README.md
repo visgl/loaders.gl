@@ -1,7 +1,16 @@
 # Overview
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 The `@loaders.gl/csv` module handles tabular data stored in CSV and TSV format
 [CSV/DSV file format](https://en.wikipedia.org/wiki/Comma-separated_values).
+
+CSV sources support metadata discovery, streaming projection and limits, and correct residual
+predicates through the common scan contract.
 
 ## Installation
 

@@ -1,0 +1,52 @@
+---
+title: "Federated scan"
+hide_title: true
+---
+
+import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan-live-example';
+
+<p className="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Federation-2f855a.svg?style=flat-square" alt="Scan federation" />
+  </a>
+</p>
+
+# Federated scan
+
+This is the end-user path for combining compatible sources. The example registers CSV, NDJSON,
+and Arrow IPC sources with `DataSourceManager`, discovers their schemas, maps their physical names
+to one output schema, and executes one ordered `UNION ALL`-style scan.
+
+<FederatedScanLiveExample />
+
+## What to try
+
+- Move a source up or down to see that batch provenance follows the selected order.
+- Change the predicate parameter or projection and apply the query again.
+- Switch to the union schema policy to see how missing fields become typed nulls.
+- Expand the explain and telemetry panels to inspect planning and actual execution separately.
+
+The fixtures are intentionally tiny and local to the browser, so the example is deterministic and
+does not require a server, database ingestion, or credentials. The same immutable query shape is
+usable with remote Parquet, Iceberg, Delta, and application-owned sources.
+
+## The application pattern
+
+```ts
+const source = new FederatedTableScanSource(dataSourceManager, {
+  name: 'weather-history',
+  schemaPolicy: 'strict',
+  sources: [
+    {dataSourceId: 'recent', columnMapping: {station_id: 'stationId'}},
+    {dataSourceId: 'archive'}
+  ]
+});
+
+for await (const batch of source.read({columns: ['stationId', 'temperature'], limit: 100})) {
+  consumeArrowBatch(batch.data, batch.metadata);
+}
+```
+
+Use [the scan architecture guide](/docs/developer-guide/common-scan-architecture) for the
+portable semantics, support matrix, and format-specific pushdown behavior.
