@@ -151,6 +151,72 @@ describe('ServiceRuntime', () => {
 
     expect(requestedURLs).toEqual(['https://secure.example.com/resource?token=secret']);
   });
+
+  test('caches recognized sources and supports targeted or global invalidation', () => {
+    let created = 0;
+    const sourceLoader = {
+      testURL: (url: string) => url.endsWith('.service'),
+      createDataSource: () => {
+        created++;
+        return {created};
+      }
+    } as any;
+    const runtime = new ServiceRuntime({loaders: [sourceLoader], cacheTTL: 10_000});
+
+    const first = runtime.getSource('https://example.com/one.service');
+    expect(runtime.getSource('https://example.com/one.service')).toBe(first);
+    runtime.clearCache('https://example.com/one.service');
+    expect(runtime.getSource('https://example.com/one.service')).not.toBe(first);
+    runtime.clearCache();
+    expect(() => runtime.getSource('https://example.com/other.json')).toThrow(
+      'No geospatial service loader recognized URL'
+    );
+    expect(created).toBe(2);
+  });
+
+  test('retries explicitly enabled non-idempotent requests', async () => {
+    let attempts = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        attempts++;
+        return attempts === 1 ? new Response('', {status: 429}) : new Response('ok');
+      })
+    );
+    const runtime = new ServiceRuntime({retries: 1, retryDelay: 0, retryNonIdempotent: true});
+
+    await expect(
+      runtime.request('https://example.com/mutate', {method: 'POST'})
+    ).resolves.toMatchObject({
+      ok: true
+    });
+    expect(attempts).toBe(2);
+  });
+
+  test('retries network failures and preserves abort errors', async () => {
+    let attempts = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        attempts++;
+        if (attempts === 1) throw new Error('connection reset');
+        return new Response('ok');
+      })
+    );
+    const runtime = new ServiceRuntime({retries: 1, retryDelay: 0});
+    await expect(runtime.request('https://example.com/retry')).resolves.toMatchObject({ok: true});
+    expect(attempts).toBe(2);
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new DOMException('cancelled', 'AbortError');
+      })
+    );
+    await expect(runtime.request('https://example.com/cancel')).rejects.toMatchObject({
+      name: 'AbortError'
+    });
+  });
 });
 
 test('CapabilityGraph ranks preferred endpoints', () => {
