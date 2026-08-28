@@ -12,7 +12,7 @@ import {
   type Tileset3DSource
 } from '@loaders.gl/tiles';
 import {coreApi, preload, selectLoader} from '@loaders.gl/core';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser, RequestCredential} from '@loaders.gl/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
 /**
@@ -110,7 +110,13 @@ export class Tile3DSourceLayer<
         actualTilesetUrl = preloadOptions.url;
       }
 
-      if (preloadOptions.headers) {
+      const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
+      if (credentials?.length) {
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+        };
+      } else if (preloadOptions.headers) {
         options.loadOptions.fetch = {
           ...options.loadOptions.fetch,
           headers: preloadOptions.headers

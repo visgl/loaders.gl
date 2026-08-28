@@ -71,3 +71,17 @@ export type {ArcGISSceneServerSourceOptions} from './arcgis/arcgis-scene-server-
 
 export type {ServiceLoader} from './service-registry';
 export {SERVICE_LOADERS, getServiceLoader} from './service-registry';
+
+export {
+  createArcGISCredential,
+  createCesiumIonCredential,
+  createGoogleMapsCredential,
+  createMapboxCredential
+} from './authentication';
+export type {
+  ArcGISCredentialOptions,
+  CesiumIonCredentialOptions,
+  GoogleMapsCredentialOptions,
+  MapboxCredentialOptions,
+  ServiceCredentialOptions
+} from './authentication';

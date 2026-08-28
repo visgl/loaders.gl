@@ -24,6 +24,12 @@ an `ImageSource` for viewport exports and a `TileSource` for tiled visualization
 | Authentication | Supported | Supported | URL tokens and standard fetch options are preserved |
 | deck.gl rendering | First class for images | First class for image tiles | Analytical LERC requires an application-selected visualization |
 
+## Authentication
+
+`createArcGISCredential` applies one exact-origin token to metadata, exports, cached tiles, and
+LERC requests. Configure it in `core.credentials`; explicit URL tokens take precedence. See the
+[authentication guide](/docs/developer-guide/authentication).
+
 ## Viewport images
 
 ```ts

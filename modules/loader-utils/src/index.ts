@@ -152,6 +152,23 @@ export type {
 } from './lib/request-utils/request-cache';
 export {parseContentType} from './lib/request-utils/parse-content-type';
 export {
+  createAuthenticatedFetch,
+  createBearerTokenCredential,
+  createQueryParameterCredential,
+  redactCredentialURL
+} from './lib/request-utils/request-credentials';
+export type {
+  AuthenticatedFetchOptions,
+  BearerTokenCredentialOptions,
+  QueryParameterCredentialOptions,
+  RequestCredential,
+  TokenProvider,
+  TokenProviderContext,
+  TokenProviderReason,
+  TokenProviderResponse,
+  TokenValue
+} from './lib/request-utils/request-credentials';
+export {
   RangeRequestScheduler,
   createRangeStats,
   fetchHttpRange,
