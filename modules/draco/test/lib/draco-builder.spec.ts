@@ -275,6 +275,7 @@ function createFakeDraco(): {draco: any; state: FakeDracoState} {
     COLOR: 2,
     TEX_COORD: 3,
     GENERIC: 4,
+    MESH_SEQUENTIAL_ENCODING: 8,
     MESH_EDGEBREAKER_ENCODING: 9,
     Encoder: FakeEncoder,
     ExpertEncoder: FakeExpertEncoder,
@@ -418,6 +419,30 @@ test('DracoBuilder uses ExpertEncoder for exact point-cloud quantization', () =>
   );
 
   expect(state.encoderCalls).toEqual(['expert', 'expert-quantization:0:10', 'expert-encode:true']);
+});
+
+test('DracoBuilder applies named presets without mutating caller options', () => {
+  const {draco, state} = createFakeDraco();
+  const builder = new DracoBuilder(draco);
+  const options = {preset: 'webgpu' as const};
+
+  builder.encodeSync(
+    {
+      attributes: {POSITION: new Float32Array([0, 0, 0, 1, 1, 1])},
+      indices: new Uint16Array([0, 1, 0])
+    },
+    options
+  );
+
+  expect(options).toEqual({preset: 'webgpu'});
+  expect(state.encoderCalls).toEqual([
+    'speed:5:5',
+    'method:8',
+    'quantization:0:14',
+    'quantization:1:10',
+    'quantization:3:12',
+    'mesh'
+  ]);
 });
 
 test.each([

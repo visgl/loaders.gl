@@ -49,6 +49,9 @@ export type DracoExplicitQuantization = {
 /** Per-attribute quantization, expressed as a bit count or an explicit transform. */
 export type DracoAttributeQuantization = number | DracoExplicitQuantization;
 
+/** Named compression profile for common glTF and GPU workloads. */
+export type DracoEncodingPreset = 'gltf' | 'webgpu' | 'balanced';
+
 /** Per-attribute details captured after constructing a Draco geometry. */
 export type DracoEncodingAttributeReport = {
   /** Unique attribute identifier stored in the Draco geometry. */
@@ -108,6 +111,8 @@ export type DracoBuildOptions = {
   quantization?: Partial<Record<DracoAttributeType, number>>;
   /** Quantization keyed by application attribute name, overriding category settings. */
   attributeQuantization?: Record<string, DracoAttributeQuantization>;
+  /** Applies a documented set of compression defaults before explicit options. */
+  preset?: DracoEncodingPreset;
 };
 
 type DracoBuilderAttributeInfo = {
@@ -184,6 +189,7 @@ export default class DracoBuilder {
     options: DracoBuildOptions,
     trackEncodedProperties: boolean
   ): DracoEncodingResult {
+    options = applyDracoEncodingPreset(options);
     this.log = options.log || noop;
 
     return options.pointcloud
@@ -899,4 +905,31 @@ function getDracoAttributeTypeName(
     }
   }
   return 'GENERIC';
+}
+
+/** Resolves named presets without mutating the caller's options object. */
+function applyDracoEncodingPreset(options: DracoBuildOptions): DracoBuildOptions {
+  const presetOptions: Record<DracoEncodingPreset, DracoBuildOptions> = {
+    gltf: {
+      method: 'MESH_EDGEBREAKER_ENCODING',
+      speed: [5, 5],
+      quantization: {POSITION: 14, NORMAL: 10, TEX_COORD: 12}
+    },
+    webgpu: {
+      method: 'MESH_SEQUENTIAL_ENCODING',
+      speed: [5, 5],
+      quantization: {POSITION: 14, NORMAL: 10, TEX_COORD: 12}
+    },
+    balanced: {
+      method: 'MESH_EDGEBREAKER_ENCODING',
+      speed: [5, 5],
+      quantization: {POSITION: 12, NORMAL: 10, TEX_COORD: 10}
+    }
+  };
+  const preset = options.preset ? presetOptions[options.preset] : {};
+  return {
+    ...preset,
+    ...options,
+    quantization: {...preset.quantization, ...options.quantization}
+  };
 }

@@ -91,6 +91,13 @@ export default async function dracoBench(bench) {
           worker: false
         })
     );
+
+    bench.addAsync(
+      `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
+      {multiplier: pointCount, unit: 'points', minIterations: 1},
+      async () =>
+        await encodeDracoBatch([attributes, attributes], {draco: {pointcloud: true}, worker: false})
+    );
   }
 
   return bench;

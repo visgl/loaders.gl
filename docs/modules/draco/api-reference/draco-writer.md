@@ -5,6 +5,9 @@ import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
 For applications encoding many independent geometries, `encodeDracoBatch` initializes the
 Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while
 avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input.
+An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion
+count after each successful encode. Worker pooling is intentionally tracked separately for the
+shared loaders.gl worker framework.
 
 <DracoDocsTabs active="dracowriter" />
 

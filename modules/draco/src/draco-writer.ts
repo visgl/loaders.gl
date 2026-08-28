@@ -30,6 +30,22 @@ export type DracoWriterOptions = WriterOptions & {
   draco?: DracoBuildOptions;
 };
 
+/** Progress notification emitted after each geometry in a batch. */
+export type DracoBatchProgress = {
+  /** Number of geometries completed. */
+  completed: number;
+  /** Total number of geometries in the batch. */
+  total: number;
+};
+
+/** Options for cancellable, progress-reporting batch encoding. */
+export type DracoBatchOptions = DracoWriterOptions & {
+  /** Abort signal checked between native encoding operations. */
+  signal?: AbortSignal;
+  /** Called after each geometry is encoded. */
+  onProgress?: (progress: DracoBatchProgress) => void;
+};
+
 const DEFAULT_DRACO_WRITER_OPTIONS = {
   pointcloud: false, // Set to true if pointcloud (mode: 0, no indices)
   attributeNameEntry: 'name'
@@ -99,19 +115,35 @@ export async function encodeDraco(
  */
 export async function encodeDracoBatch(
   data: DracoWriterInput[],
-  options: DracoWriterOptions = {}
+  options: DracoBatchOptions = {}
 ): Promise<DracoEncodingResult[]> {
+  throwIfAborted(options.signal);
   const {draco} = await loadDracoEncoderModule(extractLoadLibraryOptions(options));
   const dracoBuilder = new DRACOBuilder(draco);
   const results: DracoEncodingResult[] = [];
   try {
-    for (const geometry of data) {
+    for (const [index, geometry] of data.entries()) {
+      throwIfAborted(options.signal);
       results.push(dracoBuilder.encodeSyncWithReport(normalizeDracoMesh(geometry), options.draco));
+      options.onProgress?.({completed: index + 1, total: data.length});
     }
     return results;
   } finally {
     dracoBuilder.destroy();
   }
+}
+
+/** Throws the signal's reason before starting or between native encodes. */
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (!signal?.aborted) {
+    return;
+  }
+  if (signal.reason !== undefined) {
+    throw signal.reason;
+  }
+  const error = new Error('Draco batch encoding aborted');
+  error.name = 'AbortError';
+  throw error;
 }
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
