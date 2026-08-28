@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
-import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {makeTableScanBatch, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
 
@@ -122,12 +122,10 @@ export function parseArrowInBatches(
         if (options?.arrow?.batchDebounceMs !== undefined && options?.arrow?.batchDebounceMs > 0) {
           await new Promise(resolve => setTimeout(resolve, options.arrow?.batchDebounceMs || 0));
         }
-        const arrowTabledBatch: ArrowTableBatch = {
+        const arrowTabledBatch: ArrowTableBatch = makeTableScanBatch({
           shape: 'arrow-table',
-          batchType: 'data',
-          data: new arrow.Table([recordBatch]),
-          length: recordBatch.data.length
-        };
+          data: new arrow.Table([recordBatch])
+        });
         // processBatch(recordBatch);
         yield arrowTabledBatch;
       }

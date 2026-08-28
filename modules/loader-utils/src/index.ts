@@ -261,6 +261,10 @@ export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 export type {
   ManageableDataSource,
+  DataSourceManagerEntryInfo,
+  DataSourceManagerEntryStatus,
+  DataSourceManagerDiscoveryInfo,
+  DataSourceManagerDiscoveryOptions,
   DataSourceManagerAddParameters,
   DataSourceManagerGetOrCreateParameters,
   DataSourceManagerSubscribeParameters,
@@ -281,6 +285,18 @@ export {
   validateColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
 export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export {
+  executeTableScanBatches,
+  filterTableBatch,
+  makeTableScanBatch,
+  projectTableBatch,
+  projectTableSchema,
+  truncateTableBatch
+} from './lib/scan-utils/table-scan-batch';
+export type {
+  TableScanBatchReader,
+  TableScanBatchOperators
+} from './lib/scan-utils/table-scan-batch';
 export {validateRasterQueryOptions} from './lib/scan-utils/raster-query';
 export type {RasterQueryOptions, RasterQueryCapabilities} from './lib/scan-utils/raster-query';
 export {planRelationalQuery} from './lib/scan-utils/relational-query';
@@ -292,7 +308,10 @@ export type {
   RelationalPlanStep,
   RelationalQueryOptions
 } from './lib/scan-utils/relational-query';
-export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
+export {
+  createScanQueryMetadata,
+  emitScanExecutionTelemetry
+} from './lib/scan-utils/scan-query-metadata';
 export {
   intersectPointCloudBounds,
   selectPointCloudScanTiles,
@@ -317,6 +336,10 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  ScanExecutionTelemetry,
+  ScanExecutionTelemetryCallback,
+  ScanExecutionTelemetryStatus,
+  ScanSourceExecutionTelemetry,
   PointCloudScanReadOptions,
   PointCloudScanSource,
   TableScanReadOptions,

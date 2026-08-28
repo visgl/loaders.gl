@@ -4,6 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {makeTableScanBatch} from '@loaders.gl/loader-utils';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {decompressAvro} from '../../avro-compression';
 
@@ -145,7 +146,7 @@ export async function* parseAvroInBatches(
   const bytes = new Uint8Array(arrayBuffer);
   if (options?.encoding === 'raw' || options?.encoding === 'single-object' || !hasMagic(bytes)) {
     const table = await parseAvro(arrayBuffer, options);
-    yield {batchType: 'data', shape: 'arrow-table', data: table.data, length: table.data.numRows};
+    yield makeTableScanBatch(table);
     return;
   }
   let data: Record<string, unknown>[] = [];
@@ -518,12 +519,7 @@ async function* readAvroRows(
 
 /** Wraps object rows in the loaders.gl Arrow batch shape. */
 function createAvroBatch(data: Record<string, unknown>[]): ArrowTableBatch {
-  return {
-    batchType: 'data',
-    shape: 'arrow-table',
-    data: arrow.tableFromJSON(data),
-    length: data.length
-  };
+  return makeTableScanBatch({shape: 'arrow-table', data: arrow.tableFromJSON(data)});
 }
 
 /** Decodes UTF-8 metadata values. */

@@ -4,6 +4,10 @@
 
 The manager is intentionally format-agnostic. It can hold any `DataSource` subclass created by a `SourceLoader`, including tile, image, raster, vector, SQL, archive-backed, and in-memory sources.
 
+Picker and diagnostics UI should use `listDataSources()` or `discoverDataSources()` rather than
+subscribing merely to inspect registrations. These read-only methods expose lifecycle information
+and common query metadata without returning the managed source object or changing retention.
+
 ## Usage
 
 ### Create and register a DataSource
@@ -375,6 +379,30 @@ subscribe<DataSourceT extends ManageableDataSource>({
 ```
 
 Subscribes one consumer request to a managed source. Returns the current source if available, `null` for a deferred placeholder, or `undefined` if the id is not registered and does not use the manager protocol.
+
+### listDataSources()
+
+```ts
+listDataSources(): readonly DataSourceManagerEntryInfo[];
+```
+
+Returns stable ids, lifecycle status, persistence, retain count, and subscription count for every
+registration. It does not resolve pending sources or expose source objects.
+
+### discoverDataSources()
+
+```ts
+discoverDataSources(options?: {
+  queryType?: 'table' | 'raster' | 'point-cloud';
+  signal?: AbortSignal;
+}): Promise<readonly DataSourceManagerDiscoveryInfo[]>;
+```
+
+Calls `getQueryMetadata()` only on ready metadata providers and reports whether each source has a
+supported common executor for the requested query family. Discovery errors are retained on the
+corresponding result so one broken source does not hide the remaining picker choices. Aborts are
+propagated immediately. The result contains metadata and lifecycle information, never the managed
+source instance.
 
 ### unsubscribe()
 

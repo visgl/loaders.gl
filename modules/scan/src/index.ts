@@ -3,6 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 export {createScanEngine, registerScanBackend} from './scan-engine';
+// The low-level executor lives in loader-utils so format packages can reuse it without importing
+// this optional module. It is re-exported here as the scan package's common batch adapter.
+export {
+  executeTableScanBatches,
+  filterTableBatch,
+  makeTableScanBatch,
+  projectTableBatch,
+  projectTableSchema,
+  truncateTableBatch
+} from '@loaders.gl/loader-utils';
+export type {TableScanBatchReader, TableScanBatchOperators} from '@loaders.gl/loader-utils';
 export type {
   ScanBackend,
   ScanBackendLoader,
@@ -43,6 +54,10 @@ export type {
   ScanColumnMetadata,
   ScanColumnRole,
   ScanExecutionMethod,
+  ScanExecutionTelemetry,
+  ScanExecutionTelemetryCallback,
+  ScanExecutionTelemetryStatus,
+  ScanSourceExecutionTelemetry,
   ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,

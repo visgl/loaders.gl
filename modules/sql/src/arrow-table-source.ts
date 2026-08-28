@@ -7,7 +7,12 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource, type ScanColumnRole} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  makeTableScanBatch,
+  type ScanColumnRole
+} from '@loaders.gl/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {
@@ -62,13 +67,7 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
   /** Executes a query as one bounded Arrow batch. */
   async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     const result = this.query(options);
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: result.schema,
-      data: result.data,
-      length: result.data.numRows
-    };
+    yield makeTableScanBatch(result);
   }
 }
 

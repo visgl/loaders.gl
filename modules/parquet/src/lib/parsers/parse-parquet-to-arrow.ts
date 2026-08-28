@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // eslint-disable
+import {makeTableScanBatch} from '@loaders.gl/loader-utils';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 
@@ -68,13 +69,11 @@ export async function* parseParquetFileToArrowInBatches(
         schemaMetadata
       );
       schema ||= normalizedArrowTable.schema;
-      yield {
-        batchType: 'data',
+      yield makeTableScanBatch({
         shape: 'arrow-table',
         schema,
-        data: normalizedArrowTable.data,
-        length: normalizedArrowTable.data.numRows
-      };
+        data: normalizedArrowTable.data
+      });
     }
   } finally {
     parquetFile.free();

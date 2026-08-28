@@ -7,6 +7,7 @@ import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
   filterColumnarRowIndices,
+  makeTableScanBatch,
   planTableQuery,
   type ColumnarPredicate,
   type TableQueryOptions
@@ -21,7 +22,7 @@ import {
   type GeoArrowBuilderEncoding,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
-import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
@@ -152,42 +153,18 @@ export function queryFlatGeobufArrowTable(
   if (!scanStep || scanStep.kind !== 'scan' || !projectStep || projectStep.kind !== 'project') {
     throw new Error('FlatGeobuf query planner produced an invalid plan.');
   }
-  const scannedColumns: Record<string, any[]> = {};
-  for (const columnName of scanStep.columns) {
-    const column = sourceTable.data.getChild(columnName);
-    if (!column) throw new Error(`FlatGeobuf query could not read column "${columnName}".`);
-    scannedColumns[columnName] = column.toArray();
-  }
+  if (!sourceTable.schema) throw new Error('FlatGeobuf query source is missing a schema.');
   const predicateStep = plan.find(step => step.kind === 'filter');
   const limitStep = plan.find(step => step.kind === 'limit');
-  const matchingRowIndices =
-    predicateStep?.kind === 'filter'
-      ? filterColumnarRowIndices(predicateStep.predicate, scannedColumns, sourceTable.data.numRows)
-      : Array.from({length: sourceTable.data.numRows}, (_, index) => index);
-  const limit = limitStep?.kind === 'limit' ? limitStep.limit : matchingRowIndices.length;
-  const rowIndices = matchingRowIndices.slice(0, limit);
-  const projectedSchema = sourceTable.data.select([...projectStep.columns]).schema;
-  const sourceSchema = sourceTable.schema;
-  if (!sourceSchema) throw new Error('FlatGeobuf query source is missing a schema.');
-  const outputColumns: Record<string, arrow.Vector> = {};
-  for (const field of projectedSchema.fields) {
-    const column = sourceTable.data.getChild(field.name);
-    if (!column) throw new Error(`FlatGeobuf query could not project column "${field.name}".`);
-    outputColumns[field.name] = arrow.vectorFromArray(
-      rowIndices.map(rowIndex => column.get(rowIndex)),
-      column.type
-    );
-  }
-  return {
-    shape: 'arrow-table',
-    schema: {
-      ...sourceSchema,
-      fields: projectStep.columns
-        .map(columnName => sourceSchema.fields.find(field => field.name === columnName))
-        .filter((field): field is Field => Boolean(field))
+  return queryArrowTable(
+    sourceTable,
+    {
+      predicate: predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined,
+      columns: projectStep.columns,
+      limit: limitStep?.kind === 'limit' ? limitStep.limit : undefined
     },
-    data: new arrow.Table(projectedSchema, outputColumns)
-  };
+    (predicate, columns, rowCount) => filterColumnarRowIndices(predicate, columns, rowCount)
+  );
 }
 
 /** Loads FlatGeobuf as small Arrow batches; each batch is a stable-schema table. */
@@ -197,13 +174,7 @@ export async function* parseFlatGeobufInBatches(
 ): AsyncGenerator<ArrowTableBatch> {
   const arrayBuffer = await new Response(stream).arrayBuffer();
   const table = parseFlatGeobufToArrowTable(arrayBuffer, options);
-  yield {
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: table.data.numRows,
-    schema: table.schema,
-    data: table.data
-  };
+  yield makeTableScanBatch(table);
 }
 
 /** Creates the public Arrow schema from FlatGeobuf header metadata. */

@@ -8,6 +8,7 @@ import type {
   DataSourceOptions,
   RangeRequestScheduler,
   RangeRequestSchedulerProps,
+  ScanExecutionTelemetryCallback,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
@@ -274,6 +275,8 @@ export type ParquetSourceReadOptions = {
   geometryColumn?: string;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
+  /** Receives one portable terminal execution snapshot for this read. */
+  onTelemetry?: ScanExecutionTelemetryCallback;
 };
 
 /** Explain result for a Parquet table query, including footer-level row-group pruning. */

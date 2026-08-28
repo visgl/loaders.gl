@@ -8,12 +8,15 @@ import {
   BlobFile,
   DataSource,
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   isBrowser,
+  makeTableScanBatch,
   validateTableQueryLimit
 } from '@loaders.gl/loader-utils';
 import type {
   ScanColumnRole,
+  ScanExecutionTelemetry,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   TableScanSource
@@ -382,13 +385,26 @@ export class ParquetSource
 
   /** Selectively fetches row groups and columns as ordered Arrow batches with source provenance. */
   async *read(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
+    const startedAt = Date.now();
+    const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);
     if (readOptions.limit === 0) {
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
+        createParquetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          'early-terminated',
+          'limit'
+        )
+      );
       return;
     }
     const readContext = createReadAbortContext(readOptions.signal);
     const inFlightReads = new Set<Promise<SettledParquetRowGroupRead>>();
     let completed = false;
+    let limitReached = false;
     let readError: unknown;
     this.activeReadControllers.add(readContext.abortController);
 
@@ -506,6 +522,7 @@ export class ParquetSource
             yield batch;
             remainingRows -= batch.length;
             if (remainingRows === 0) {
+              limitReached = true;
               completed = true;
               return;
             }
@@ -559,6 +576,7 @@ export class ParquetSource
           yield batch;
           remainingRows -= batch.length;
           if (remainingRows === 0) {
+            limitReached = true;
             completed = true;
             return;
           }
@@ -577,10 +595,33 @@ export class ParquetSource
       if (!completed && readError === undefined) {
         this.recordTelemetry('cancel', {cancellationCount: 1}, {});
       }
+      const cancelled = readContext.abortController.signal.aborted || readOptions.signal?.aborted;
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
       await Promise.allSettled([...inFlightReads]);
+      const status: ScanExecutionTelemetry['status'] = readError
+        ? cancelled
+          ? 'cancelled'
+          : 'failed'
+        : limitReached || !completed
+          ? 'early-terminated'
+          : 'completed';
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
+        createParquetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          status,
+          limitReached
+            ? 'limit'
+            : !completed && readError === undefined
+              ? 'consumer-return'
+              : undefined,
+          readError
+        )
+      );
     }
   }
 
@@ -1684,11 +1725,8 @@ function createParquetBatchFromArrow(
       : undefined
   });
   return {
-    batchType: 'data',
-    shape: 'arrow-table',
+    ...makeTableScanBatch({shape: 'arrow-table', schema, data}),
     schemaType: 'explicit',
-    schema,
-    data,
     length: rowCount,
     metadata: provenance,
     ...provenance
@@ -1825,6 +1863,45 @@ function createParquetTelemetry(): ParquetTelemetry {
     cancellationCount: 0,
     failedReadCount: 0
   };
+}
+
+/** Converts cumulative Parquet counters into one portable read-scoped execution snapshot. */
+function createParquetScanExecutionTelemetry(
+  before: ParquetTelemetry,
+  after: ParquetTelemetry,
+  startedAt: number,
+  status: ScanExecutionTelemetry['status'],
+  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  error?: unknown
+): ScanExecutionTelemetry {
+  const delta = Object.fromEntries(
+    Object.keys(after).map(key => {
+      const telemetryKey = key as keyof ParquetTelemetry;
+      return [key, after[telemetryKey] - before[telemetryKey]];
+    })
+  ) as ParquetTelemetry;
+  const rowsRead = Math.max(delta.predicateRowsTested, delta.rowsEmitted);
+  return Object.freeze({
+    status,
+    sourcesPlanned: 1,
+    sourcesRead:
+      status === 'early-terminated' && earlyTerminationReason === 'limit' && rowsRead === 0 ? 0 : 1,
+    batchesRead: delta.batchesEmitted,
+    batchesDecoded: delta.rowGroupsDecoded,
+    rowsRead,
+    rowsTested: delta.predicateRowsTested || undefined,
+    rowsRetained: delta.predicateRowsMatched || undefined,
+    rowsReturned: delta.rowsEmitted,
+    bytesRead: delta.downloadedBytes,
+    bytesFetched: delta.downloadedBytes,
+    filesOpened: rowsRead || delta.downloadedBytes ? 1 : 0,
+    tasksOpened: delta.rowGroupsDecoded,
+    rowsPruned: delta.rowsPrunedByPageIndex,
+    durationMilliseconds: Date.now() - startedAt,
+    earlyTerminationReason,
+    details: Object.freeze({...delta}),
+    ...(error === undefined ? {} : {error})
+  });
 }
 
 /** Returns a monotonic timestamp when available and falls back to wall-clock time. */

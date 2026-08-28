@@ -17,6 +17,7 @@ import {
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema
 } from '@loaders.gl/gis';
+import {makeTableScanBatch} from '@loaders.gl/loader-utils';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,
@@ -126,14 +127,7 @@ export async function* makeNDJSONArrowBatchIterator(
       frozenSchema = arrowTable.schema!;
     }
 
-    const arrowBatch: ArrowTableBatch = {
-      ...batch,
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: arrowTable.schema,
-      data: arrowTable.data,
-      length: arrowTable.data.numRows
-    };
+    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
     yield arrowBatch;
   }
 }
@@ -167,14 +161,7 @@ export async function* convertTableBatchesToArrow<TBatch extends {batchType?: st
       frozenSchema = arrowTable.schema!;
     }
 
-    const arrowBatch: ArrowTableBatch = {
-      ...batch,
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: arrowTable.schema,
-      data: arrowTable.data,
-      length: arrowTable.data.numRows
-    };
+    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
     yield arrowBatch;
   }
 }

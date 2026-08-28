@@ -1,5 +1,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
+import {parseSQLPredicate} from '@loaders.gl/sql';
 import {ArrowSourceLoader, ArrowTableSource} from '../src/arrow-source';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {
@@ -12,6 +13,39 @@ test('ArrowTableSource discovers schema and applies projection and limit', async
   for await (const batch of source.read({columns: ['value'], limit: 1})) batches.push(batch);
   expect(batches[0]?.length).toBe(1);
   expect(batches[0]?.data.getChild('value')?.get(0)).toBe(1);
+});
+
+test('ArrowTableSource applies residual predicates and stops after a batch limit', async () => {
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({id: [1, 2, 3], value: [10, 20, 30]}));
+  const source = new ArrowTableSource(new Blob([bytes]));
+  const batches = [];
+  const telemetry = [];
+  for await (const batch of source.read({
+    predicate: parseSQLPredicate('value >= 20'),
+    columns: ['id'],
+    limit: 1,
+    onTelemetry: value => telemetry.push(value)
+  }))
+    batches.push(batch);
+  expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    {id: 2}
+  ]);
+  expect(telemetry[0]).toMatchObject({rowsTested: 3, rowsRetained: 2, rowsReturned: 1});
+});
+
+test('ArrowTableSource handles a limit reached between physical batches', async () => {
+  const firstTable = arrow.tableFromArrays({id: [1]});
+  const secondTable = arrow.tableFromArrays({id: [2]});
+  const source = new ArrowTableSource(new Blob());
+  (source as unknown as {parseBatches: () => AsyncIterable<unknown>}).parseBatches =
+    async function* () {
+      yield {batchType: 'data', shape: 'arrow-table', data: firstTable, length: 1};
+      yield {batchType: 'data', shape: 'arrow-table', data: secondTable, length: 1};
+    };
+  const batches = [];
+  for await (const batch of source.read({limit: 1})) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0]?.data.toArray().map(row => row?.toJSON())).toEqual([{id: 1}]);
 });
 
 test('ArrowTableSource handles zero limits and empty projections', async () => {
@@ -66,4 +100,21 @@ test('ArrowTableSource reports failed URL responses', async () => {
   source.fetch = async () => new Response(null, {status: 503});
   const batches = source.getQueryMetadata();
   await expect(batches).rejects.toThrow('status 503');
+});
+
+test('ArrowTableSource reads responses without a streaming body', async () => {
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: [7]}));
+  const source = new ArrowTableSource('data.arrow');
+  source.fetch = async () =>
+    ({
+      ok: true,
+      status: 200,
+      body: null,
+      arrayBuffer: async () => bytes
+    }) as Response;
+
+  const batches = [];
+  for await (const batch of source.read()) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0].data.getChild('value')?.get(0)).toBe(7);
 });

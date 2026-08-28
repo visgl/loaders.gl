@@ -34,6 +34,29 @@ Format packages should depend on the lightweight scan contracts in `@loaders.gl/
 should not import this package merely to expose metadata or a native scan adapter. Applications opt
 into this package when they want the shared planner or Arrow executor.
 
+The same boundary applies to table execution. `executeTableScanBatches()` is the reusable residual
+executor for object-row, columnar, GeoJSON, and Arrow-shaped batches. It owns filtering, projection,
+global limits, cancellation, and terminal telemetry; a format adapter only supplies its parser's
+batch reader. The helper is re-exported from `@loaders.gl/scan` for applications building custom
+adapters, while format packages import it from `@loaders.gl/loader-utils`. This keeps the common
+implementation in one place without making a CSV, JSON, or other format root import the optional
+scan runtime (and therefore preserves tree-shaking for users who never scan).
+
+Arrow-backed formats use the same layering for materialized queries. `queryArrowTable()` lives in
+`@loaders.gl/schema-utils`, which already owns Arrow schema and vector utilities. ORC, GeoPackage,
+and FlatGeobuf provide only their predicate evaluator and source-specific pruning; projection,
+row-index gathering, vector reconstruction, and limits are shared. This keeps format adapters
+small while avoiding a dependency from those packages on the optional scan runtime.
+
+```typescript
+import {executeTableScanBatches} from '@loaders.gl/scan';
+
+const result = executeTableScanBatches(
+  (signal, onByteLength) => parser.readBatches({signal, onByteLength}),
+  {columns: ['id'], limit: 100}
+);
+```
+
 The package also provides the application-facing query state and metadata vocabulary used by
 metadata-driven controls. These are deliberately framework-neutral:
 
@@ -125,6 +148,11 @@ Two reconciliation policies are available:
 - `union` creates columns in first-seen order and supplies typed nulls where a source lacks a
   column. A column becomes nullable when it is absent from any source.
 
+Applications that require a stable output contract can provide `outputSchema`. The executor
+reorders fields and performs only declared lossless normalization: safe numeric widening,
+dictionary-to-value conversion, and Arrow view-to-value conversion. It rejects lossy casts,
+implicit string conversion, removal of nullability, and missing required fields during planning.
+
 The caller's limit is global, not per source. Once it is reached, the active iterator is closed and
 later sources are not opened. Cancellation is observed during asynchronous source resolution and
 between physical batches. Every emitted batch carries `sourceId`, `sourceIndex`, and
@@ -135,6 +163,12 @@ Metadata discovery, explanation, and reads subscribe to all referenced sources f
 the operation. Their `DataSourceManager` subscriptions are released on success, error,
 cancellation, a satisfied limit, or an early consumer return. This preserves the manager's existing
 replacement, deferred-id, non-persistent pruning, and lifecycle behavior.
+
+`DataSourceManager.discoverDataSources({queryType: 'table'})` provides picker-safe discovery. It
+returns ids, lifecycle state, compatibility, and query metadata, but never exposes the managed
+source object. `read({onTelemetry})` reports terminal aggregate and per-source counters including
+files and tasks opened, bytes fetched, batches decoded, rows tested and retained, pruning, source
+timings, early termination, and cancellation when the physical source can measure them.
 
 Append federation is deliberately not a distributed SQL engine. It does not reorder sources,
 parallelize reads, coerce incompatible data types, or join managed sources. It provides one

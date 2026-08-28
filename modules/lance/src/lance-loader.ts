@@ -4,7 +4,7 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync, makeTableScanBatch} from '@loaders.gl/loader-utils';
 
 import {LanceLoader as LanceLoaderMetadata, type LanceLoaderOptions} from './lance-loader-types';
 import {LanceDecoderUnavailableError} from './lance-errors';
@@ -36,6 +36,6 @@ export const LanceLoaderWithParser = {
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(_iterator);
     const table = (await LanceLoaderWithParser.parse(arrayBuffer, options)) as ArrowTable;
-    yield {batchType: 'data', shape: 'arrow-table', data: table.data, length: table.data.numRows};
+    yield makeTableScanBatch(table);
   }
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, LanceLoaderOptions>;
