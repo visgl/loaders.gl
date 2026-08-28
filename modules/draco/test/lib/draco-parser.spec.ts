@@ -156,3 +156,40 @@ test('DracoParser copies mesh indices and handles metadata absence', () => {
   expect(parser._getDracoMetadata({ptr: 0} as any)).toEqual({});
   parser.destroy();
 });
+
+test('DracoParser maps supported scalar data types and rejects unknown types', () => {
+  const parser = createParser();
+  const attribute = {
+    unique_id: 1,
+    attribute_type: 4,
+    num_components: 1,
+    byte_offset: 0,
+    byte_stride: 4,
+    normalized: false,
+    attribute_index: 0,
+    metadata: {}
+  } as any;
+  const constructors = [
+    Int8Array,
+    Uint8Array,
+    Int16Array,
+    Uint16Array,
+    Int32Array,
+    Uint32Array,
+    Float32Array
+  ];
+  const dataTypes = [1, 2, 3, 4, 5, 6, 9];
+
+  for (const [index, constructor] of constructors.entries()) {
+    expect(
+      parser._getAttributeValues({num_points: () => 2} as any, {
+        ...attribute,
+        data_type: dataTypes[index]
+      }).value
+    ).toBeInstanceOf(constructor);
+  }
+
+  expect(
+    parser._getAttributeValues({num_points: () => 2} as any, {...attribute, data_type: 99})
+  ).toBeNull();
+});
