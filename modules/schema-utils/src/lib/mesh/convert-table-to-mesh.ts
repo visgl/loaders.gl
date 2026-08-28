@@ -55,7 +55,10 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const topology = schema.metadata.topology as any;
   const mode = getMeshMode(schema);
   const indices = getIndices(arrowTable);
-  const boundingBox = getMeshBoundingBoxFromSchema(schema) || getMeshBoundingBox(attributes);
+  const boundingBox =
+    attributes.POSITION?.transform?.type === 'quantization'
+      ? getMeshBoundingBoxFromSchema(schema) || getMeshBoundingBox(attributes)
+      : getMeshBoundingBox(attributes);
 
   return {
     schema,
