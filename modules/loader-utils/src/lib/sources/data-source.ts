@@ -9,6 +9,7 @@ import type {RequiredOptions} from '../option-utils/merge-options';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
 import {log} from '../log-utils/log';
+import {createAuthenticatedFetch} from '../request-utils/request-credentials';
 
 /** Common properties for all data sources */
 export type DataSourceOptions = Partial<{
@@ -172,21 +173,23 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
  * @param context
  */
 export function getFetchFunction(options?: StrictLoaderOptions) {
-  const fetchFunction = options?.core?.fetch;
+  const fetchOption = options?.fetch ?? options?.core?.fetch;
+  let fetchFunction: (url: string, requestOptions?: RequestInit) => Promise<Response>;
 
   // options.fetch can be a function
-  if (fetchFunction && typeof fetchFunction === 'function') {
-    return (url: string, fetchOptions?: RequestInit) => fetchFunction(url, fetchOptions);
+  if (typeof fetchOption === 'function') {
+    fetchFunction = (url: string, fetchOptions?: RequestInit) => fetchOption(url, fetchOptions);
+  } else if (fetchOption) {
+    fetchFunction = (url, requestOptions) =>
+      fetch(url, mergeFetchOptions(fetchOption, requestOptions));
+  } else {
+    fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
   }
 
-  // options.fetch can be an options object, use global fetch with those options
-  const fetchOptions = options?.fetch;
-  if (fetchOptions && typeof fetchOptions !== 'function') {
-    return (url, requestOptions) => fetch(url, mergeFetchOptions(fetchOptions, requestOptions));
-  }
-
-  // else return the global fetch function
-  return (url, requestOptions) => fetch(url, requestOptions);
+  return createAuthenticatedFetch({
+    fetch: fetchFunction,
+    credentials: options?.core?.credentials || []
+  });
 }
 
 function mergeFetchOptions(fetchOptions: RequestInit, requestOptions?: RequestInit): RequestInit {

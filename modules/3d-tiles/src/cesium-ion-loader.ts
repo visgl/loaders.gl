@@ -12,10 +12,14 @@ export const CesiumIonLoader = {
   ...Tiles3DLoader,
   id: 'cesium-ion',
   name: 'Cesium Ion',
+  /** Loads the parser-bearing Cesium ion loader implementation. */
+  preload: async () =>
+    (await import('@loaders.gl/3d-tiles/cesium-ion-loader-with-parser')).CesiumIonLoaderWithParser,
   options: {
     'cesium-ion': {
       ...Tiles3DLoader.options['3d-tiles'],
       accessToken: null,
+      assetId: null,
       onError: null
     }
   }

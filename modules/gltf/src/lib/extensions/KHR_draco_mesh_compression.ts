@@ -102,6 +102,7 @@ async function decompressPrimitive(
     ...options,
     draco: {
       ...options.draco,
+      decoderProfile: options.draco?.decoderProfile || 'gltf',
       extraAttributes: dracoExtension.attributes
     }
   };

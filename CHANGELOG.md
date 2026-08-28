@@ -4,6 +4,8 @@
 
 ### v5.0.0-alpha.2
 
+- feat(crs): adopt the canonical `@math.gl/crs` spatial-reference descriptor and alpha.6 CRS/proj4 compatibility utilities
+- chore(math.gl): upgrade the monorepo to math.gl 4.2.0-alpha.6 and align culling result types
 - feat(draco): add validated per-attribute quantization and explicit quantization transforms to `DracoWriter`
 - feat(gltf): select AVIF texture sources when the active image decoder supports them, and support independent `KHR_texture_transform` transforms for textures that share UV data (#3611, #3632)
 - feat(parquet): expand the TypeScript Parquet backend with direct Arrow materialization, selective range reads, dataset discovery, browser worker decoding, and Parquet 2.13 logical-type support (#3539, #3556, #3570, #3606, #3623, #3626, #3631)

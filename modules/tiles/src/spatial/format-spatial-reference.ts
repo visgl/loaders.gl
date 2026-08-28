@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSDefinition} from '@math.gl/crs';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {getI3SLinearUnitScale, getI3SVerticalUnitScale} from './i3s-elevation';
 import {createTilesetSpatialReference} from './spatial-types';
 import type {TilesetElevationMode, TilesetSpatialReference} from './spatial-types';
@@ -22,7 +22,7 @@ type I3SLayerLike = {
   fullExtent?: {spatialReference?: I3SSpatialReferenceLike};
   heightModelInfo?: {
     heightModel?: string;
-    vertCRS?: CRSDefinition;
+    vertCRS?: ReadonlyCRSDefinition;
     heightUnit?: string;
   };
   ZFactor?: number;
@@ -70,6 +70,7 @@ export function getI3SSpatialReference(layer: I3SLayerLike): TilesetSpatialRefer
     sourceIdentifier === undefined
       ? getWktCoordinateFrame(spatialReference?.wkt)
       : getIdentifierCoordinateFrame(sourceIdentifier);
+  const units = getI3SCoordinateUnits(coordinateFrame, verticalUnit, layer.ZFactor);
   const warnings: string[] = [];
   const elevationMode = getI3SElevationMode(layer.elevationInfo?.mode);
   const elevationUnit = layer.elevationInfo ? layer.elevationInfo.unit || 'meter' : undefined;
@@ -95,8 +96,14 @@ export function getI3SSpatialReference(layer: I3SLayerLike): TilesetSpatialRefer
 
   return createTilesetSpatialReference({
     sourceCrs,
+    sourceCrsRepresentation:
+      sourceIdentifier !== undefined ? 'identifier' : sourceCrs ? 'wkt' : undefined,
+    sourceCrsAlternatives:
+      sourceIdentifier !== undefined && spatialReference?.wkt
+        ? [{definition: spatialReference.wkt, representation: 'wkt'}]
+        : undefined,
     verticalCrs,
-    verticalUnit,
+    units,
     verticalUnitScale: verticalUnitScale ?? Number.NaN,
     heightReference,
     elevationMode,
@@ -111,6 +118,21 @@ export function getI3SSpatialReference(layer: I3SLayerLike): TilesetSpatialRefer
     provenance: sourceCrs ? 'metadata' : 'unknown',
     warnings
   });
+}
+
+/** Return per-component I3S units only when their coordinate association is unambiguous. */
+function getI3SCoordinateUnits(
+  coordinateFrame: TilesetSpatialReference['coordinateFrame'],
+  verticalUnit: string | undefined,
+  zFactor: number | undefined
+): readonly string[] | undefined {
+  if (coordinateFrame === 'geocentric') {
+    return ['meter', 'meter', 'meter'];
+  }
+  if (coordinateFrame === 'geographic' && (verticalUnit || zFactor === undefined)) {
+    return ['degree', 'degree', verticalUnit || 'meter'];
+  }
+  return undefined;
 }
 
 /** Return a supported I3S elevation mode without widening the public descriptor. */
@@ -141,32 +163,36 @@ export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatial
   const coordinateEpoch = getTilesetSemanticValue(tileset, 'TILESET_CRS_COORDINATE_EPOCH');
   const warnings: string[] = [];
 
-  let sourceCrs: CRSDefinition | undefined;
+  let sourceCrs: ReadonlyCRSDefinition | undefined;
   let provenance: TilesetSpatialReference['provenance'] = 'unknown';
+  let sourceCrsState: 'explicit' | 'default' | 'unknown' | 'absent' | undefined;
   if (typeof geocentricCrs === 'string' && geocentricCrs.toUpperCase() !== 'UNKNOWN') {
     sourceCrs = geocentricCrs;
     provenance = 'metadata';
+    sourceCrsState = 'explicit';
   } else if (geocentricCrs !== undefined) {
     warnings.push('3D Tiles geocentric CRS is explicitly unknown');
+    provenance = 'metadata';
+    sourceCrsState = 'unknown';
   } else if (tileset.root?.boundingVolume?.region) {
     sourceCrs = 'EPSG:4978';
     provenance = 'format-default';
+    sourceCrsState = 'default';
   } else if (tileset.schemaUri && !tileset.schema) {
     warnings.push(
       'External 3D Tiles metadata schema must be loaded before CRS semantics can resolve'
     );
   }
 
-  const epoch =
-    typeof coordinateEpoch === 'number' && Number.isFinite(coordinateEpoch)
-      ? coordinateEpoch
-      : undefined;
+  const epoch = parseCoordinateEpoch(coordinateEpoch);
   if (coordinateEpoch !== undefined && epoch === undefined) {
-    warnings.push('3D Tiles coordinate epoch is not a finite number');
+    warnings.push('3D Tiles coordinate epoch is not a finite decimal year');
   }
 
   return createTilesetSpatialReference({
     sourceCrs,
+    sourceCrsState,
+    sourceCrsRepresentation: sourceCrs ? 'identifier' : undefined,
     coordinateEpoch: epoch,
     heightReference: sourceCrs ? 'ellipsoidal' : 'unknown',
     coordinateFrame: sourceCrs ? 'geocentric' : 'unknown',
@@ -176,10 +202,22 @@ export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatial
   });
 }
 
+/** Parse the 3D Tiles decimal-year string while tolerating legacy numeric producer output. */
+function parseCoordinateEpoch(value: unknown): number | undefined {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    return undefined;
+  }
+  if (typeof value === 'string' && !value.trim()) {
+    return undefined;
+  }
+  const epoch = Number(value);
+  return Number.isFinite(epoch) ? epoch : undefined;
+}
+
 /** Return an I3S horizontal CRS definition, preferring current WKID aliases over legacy values. */
 function getI3SCrsDefinition(
   spatialReference?: I3SSpatialReferenceLike
-): CRSDefinition | undefined {
+): ReadonlyCRSDefinition | undefined {
   const identifier = getCrsIdentifier(spatialReference);
   if (identifier !== undefined) {
     return `EPSG:${identifier}`;
@@ -190,7 +228,7 @@ function getI3SCrsDefinition(
 /** Return an I3S vertical CRS definition. */
 function getI3SVerticalCrsDefinition(
   spatialReference?: I3SSpatialReferenceLike
-): CRSDefinition | undefined {
+): ReadonlyCRSDefinition | undefined {
   const identifier = spatialReference?.latestVcsWkid ?? spatialReference?.vcsWkid;
   return identifier === undefined ? undefined : `EPSG:${identifier}`;
 }

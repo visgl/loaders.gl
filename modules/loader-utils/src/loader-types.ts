@@ -6,6 +6,7 @@ import type {Format} from './format-types';
 import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
+import type {RequestCredential} from './lib/request-utils/request-credentials';
 
 // LOADERS
 
@@ -18,6 +19,8 @@ export type StrictLoaderOptions = {
     baseUrl?: string;
     /** fetch options or a custom fetch function */
     fetch?: typeof fetch | FetchLike | RequestInit | null;
+    /** Exact-origin credentials applied to top-level and nested requests. */
+    credentials?: readonly RequestCredential[];
     /** Do not throw on errors */
     nothrow?: boolean;
     /** Shared default shape for loaders that support shape selection. Loader-scoped `shape` options override this default. */

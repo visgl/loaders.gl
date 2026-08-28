@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/loader-utils';
-import {isObject} from '@loaders.gl/loader-utils';
+import {createAuthenticatedFetch, isObject} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getGlobalLoaderOptions} from './option-utils';
 
@@ -21,22 +21,33 @@ export function getFetchFunction(
 
   const loaderOptions = options || globalOptions;
   const fetchOption = loaderOptions.fetch ?? loaderOptions.core?.fetch;
+  let fetchFunction: FetchLike;
 
   // options.fetch can be a function
   if (typeof fetchOption === 'function') {
-    return fetchOption;
+    fetchFunction = fetchOption;
+  } else if (isObject(fetchOption)) {
+    fetchFunction = (url, requestOptions) =>
+      fetchFile(url, mergeFetchOptions(fetchOption as RequestInit, requestOptions));
+  } else if (context?.fetch) {
+    fetchFunction = context.fetch;
+  } else {
+    fetchFunction = fetchFile;
   }
 
-  // options.fetch can be an options object
-  if (isObject(fetchOption)) {
-    return url => fetchFile(url, fetchOption as RequestInit);
-  }
+  return createAuthenticatedFetch({
+    fetch: fetchFunction,
+    credentials: loaderOptions.core?.credentials || []
+  });
+}
 
-  // else refer to context (from parent loader) if available
-  if (context?.fetch) {
-    return context?.fetch;
+/** Combines static and per-request fetch options without replacing either header collection. */
+function mergeFetchOptions(defaultOptions: RequestInit, requestOptions?: RequestInit): RequestInit {
+  const options = {...defaultOptions, ...requestOptions};
+  if (defaultOptions.headers || requestOptions?.headers) {
+    const headers = new Headers(defaultOptions.headers);
+    new Headers(requestOptions?.headers).forEach((value, key) => headers.set(key, value));
+    options.headers = headers;
   }
-
-  // else return the default fetch function
-  return fetchFile;
+  return options;
 }

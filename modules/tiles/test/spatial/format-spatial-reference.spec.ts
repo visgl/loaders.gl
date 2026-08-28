@@ -5,9 +5,28 @@
 import {describe, expect, test} from 'vitest';
 import {
   applyTilesetSpatialOptions,
+  createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
 } from '@loaders.gl/tiles';
+
+test('createTilesetSpatialReference freezes PROJJSON compatibility aliases', () => {
+  const sourceCrs = {
+    type: 'VerticalCRS',
+    name: 'Example height',
+    datum: {type: 'VerticalReferenceFrame', name: 'Example datum'},
+    coordinate_system: {
+      subtype: 'vertical',
+      axis: [{name: 'Height', abbreviation: 'H', direction: 'up', unit: 'metre'}]
+    }
+  } as const;
+  const spatialReference = createTilesetSpatialReference({sourceCrs}, {targetCrs: sourceCrs});
+
+  expect(spatialReference.sourceCrs).not.toBe(sourceCrs);
+  expect(spatialReference.targetCrs).not.toBe(sourceCrs);
+  expect(Object.isFrozen(spatialReference.sourceCrs)).toBe(true);
+  expect(Object.isFrozen(spatialReference.targetCrs)).toBe(true);
+});
 
 describe('getI3SSpatialReference', () => {
   test('prefers current horizontal and vertical WKIDs and preserves I3S wire order', () => {
@@ -16,7 +35,8 @@ describe('getI3SSpatialReference', () => {
         wkid: 102100,
         latestWkid: 3857,
         vcsWkid: 105703,
-        latestVcsWkid: 5703
+        latestVcsWkid: 5703,
+        wkt: 'PROJCS["Web Mercator Auxiliary Sphere"]'
       },
       heightModelInfo: {
         heightModel: 'gravity_related_height',
@@ -32,6 +52,19 @@ describe('getI3SSpatialReference', () => {
       axisOrder: 'xyz',
       provenance: 'metadata'
     });
+    expect(spatialReference.crs).toMatchObject({
+      state: 'explicit',
+      definition: 'EPSG:3857',
+      representation: 'identifier',
+      alternatives: [{definition: 'PROJCS["Web Mercator Auxiliary Sphere"]', representation: 'wkt'}]
+    });
+    expect(spatialReference.vertical).toMatchObject({
+      state: 'explicit',
+      definition: 'EPSG:5703',
+      representation: 'identifier',
+      provenance: 'metadata'
+    });
+    expect(spatialReference.coordinateOrder).toEqual(['x', 'y', 'z']);
   });
 
   test('uses custom WKT and reports terrain-dependent elevation placement', () => {
@@ -41,6 +74,11 @@ describe('getI3SSpatialReference', () => {
     });
 
     expect(spatialReference.sourceCrs).toBe('PROJCS["Custom"]');
+    expect(spatialReference.crs).toMatchObject({
+      state: 'explicit',
+      definition: 'PROJCS["Custom"]',
+      representation: 'wkt'
+    });
     expect(spatialReference.coordinateFrame).toBe('projected');
     expect(spatialReference.warnings[0]).toContain(
       'requires a terrain or scene elevation provider'
@@ -59,7 +97,6 @@ describe('getI3SSpatialReference', () => {
     });
 
     expect(spatialReference).toMatchObject({
-      verticalUnit: 'foot',
       verticalUnitScale: 0.3048,
       heightReference: 'orthometric',
       elevationMode: 'absoluteHeight',
@@ -68,6 +105,8 @@ describe('getI3SSpatialReference', () => {
       elevationUnitScale: 1000,
       status: 'transformable'
     });
+    expect(spatialReference.units).toEqual(['degree', 'degree', 'foot']);
+    expect(Object.isFrozen(spatialReference.units)).toBe(true);
   });
 
   test('requires the provider selected by each surface placement mode', () => {
@@ -82,6 +121,9 @@ describe('getI3SSpatialReference', () => {
       sceneElevationProvider: {sampleElevations: positions => positions.map(() => 10)}
     });
     expect(spatialReference.status).toBe('transformable');
+    expect(spatialReference.crs).toEqual(discovered.crs);
+    expect(spatialReference.units).toEqual(['degree', 'degree', 'meter']);
+    expect(Object.isFrozen(spatialReference.units)).toBe(true);
   });
 
   test('keeps unsupported vertical units unresolved with an actionable warning', () => {
@@ -114,6 +156,23 @@ describe('getI3SSpatialReference', () => {
       'geographic'
     );
   });
+
+  test('reclassifies a caller source override without retaining source alternatives', () => {
+    const discovered = getI3SSpatialReference({
+      spatialReference: {wkid: 3857, wkt: 'PROJCS["Web Mercator Auxiliary Sphere"]'}
+    });
+    const spatialReference = applyTilesetSpatialOptions(discovered, {
+      sourceCrs: '+proj=longlat +datum=WGS84'
+    });
+
+    expect(spatialReference.crs).toEqual({
+      state: 'explicit',
+      definition: '+proj=longlat +datum=WGS84',
+      representation: 'proj-string',
+      provenance: 'caller-override',
+      alternatives: undefined
+    });
+  });
 });
 
 describe('get3DTilesSpatialReference', () => {
@@ -131,7 +190,7 @@ describe('get3DTilesSpatialReference', () => {
       },
       metadata: {
         class: 'tileset',
-        properties: {crs: 'EPSG:4978', epoch: 2020.25}
+        properties: {crs: 'EPSG:4978', epoch: '2020.25'}
       }
     });
 
@@ -140,6 +199,12 @@ describe('get3DTilesSpatialReference', () => {
       coordinateEpoch: 2020.25,
       coordinateFrame: 'geocentric',
       heightReference: 'ellipsoidal',
+      provenance: 'metadata'
+    });
+    expect(spatialReference.crs).toMatchObject({
+      state: 'explicit',
+      definition: 'EPSG:4978',
+      representation: 'identifier',
       provenance: 'metadata'
     });
   });
@@ -158,7 +223,8 @@ describe('get3DTilesSpatialReference', () => {
     });
 
     expect(spatialReference.sourceCrs).toBeUndefined();
-    expect(spatialReference.provenance).toBe('unknown');
+    expect(spatialReference.crs).toEqual({state: 'unknown', provenance: 'metadata'});
+    expect(spatialReference.provenance).toBe('metadata');
     expect(spatialReference.warnings).toContain('3D Tiles geocentric CRS is explicitly unknown');
   });
 
@@ -169,6 +235,12 @@ describe('get3DTilesSpatialReference', () => {
 
     expect(spatialReference).toMatchObject({
       sourceCrs: 'EPSG:4978',
+      provenance: 'format-default'
+    });
+    expect(spatialReference.crs).toMatchObject({
+      state: 'default',
+      definition: 'EPSG:4978',
+      representation: 'identifier',
       provenance: 'format-default'
     });
   });

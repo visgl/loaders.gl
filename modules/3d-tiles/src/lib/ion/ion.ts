@@ -2,78 +2,134 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-// Minimal support to load tilsets from the Cesium ION services
-
-import {assert} from '@loaders.gl/loader-utils';
+import type {FetchLike, RequestCredential} from '@loaders.gl/loader-utils';
+import {
+  assert,
+  createAuthenticatedFetch,
+  createBearerTokenCredential
+} from '@loaders.gl/loader-utils';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
+const CESIUM_ION_ORIGIN = 'https://api.cesium.com';
 
-// Returns `{url, headers, type, attributions}` for an ion tileset
-export async function getIonTilesetMetadata(accessToken, assetId) {
-  // Step 1, if no asset id, look for first 3DTILES asset associated with this token.
-  if (!assetId) {
-    const assets = await getIonAssets(accessToken);
-    for (const item of assets.items) {
-      if (item.type === '3DTILES') {
-        assetId = item.id;
-      }
-    }
+/** Cesium ion asset summary returned by the assets endpoint. */
+export type CesiumIonAsset = {
+  /** Asset identifier. */
+  id: number;
+  /** Asset type, such as `3DTILES`. */
+  type: string;
+  /** Additional provider metadata. */
+  [key: string]: unknown;
+};
+
+/** Cesium ion asset listing. */
+export type CesiumIonAssets = {
+  /** Assets visible to the supplied credential. */
+  items: CesiumIonAsset[];
+};
+
+/** Resolved Cesium ion endpoint metadata. */
+export type CesiumIonTilesetMetadata = Record<string, unknown> & {
+  /** Resolved 3D Tiles endpoint URL. */
+  url: string;
+  /** Resolved asset type. */
+  type: string;
+  /** Legacy endpoint headers retained for direct integrations. */
+  headers: HeadersInit;
+  /** Exact-origin endpoint credential preferred by loaders.gl integrations. */
+  credentials: readonly RequestCredential[];
+};
+
+/** Optional transport for Cesium ion API requests. */
+export type CesiumIonRequestOptions = {
+  /** Credential-aware custom fetch implementation. */
+  fetch?: FetchLike;
+};
+
+/** Resolves a Cesium ion asset URL and its endpoint-scoped bearer credential. */
+export async function getIonTilesetMetadata(
+  accessToken: string | null | undefined,
+  assetId?: number | string | null,
+  options: CesiumIonRequestOptions = {}
+): Promise<CesiumIonTilesetMetadata> {
+  const ionFetch = getIonFetch(accessToken, options.fetch);
+  let resolvedAssetId = assetId;
+  if (!resolvedAssetId) {
+    const assets = await getIonAssets(accessToken, ionFetch);
+    resolvedAssetId = assets.items.find(item => item.type === '3DTILES')?.id;
   }
 
-  // Step 2: Query metdatadata for this asset.
-  const ionAssetMetadata = await getIonAssetMetadata(accessToken, assetId);
-  const type = ionAssetMetadata.type;
-  // As of Oct 2024 ion service now returns the resource URL in an options object
-  const url = ionAssetMetadata.options?.url || ionAssetMetadata.url;
+  if (resolvedAssetId === undefined || resolvedAssetId === null) {
+    throw new Error('Cesium ion did not return a 3D Tiles asset.');
+  }
+  const ionAssetMetadata = await getIonAssetMetadata(accessToken, resolvedAssetId, ionFetch);
+  const type = String(ionAssetMetadata.type || '');
+  const endpointOptions = ionAssetMetadata.options as {url?: string} | undefined;
+  const url = endpointOptions?.url || String(ionAssetMetadata.url || '');
   assert(type === '3DTILES' && url);
 
-  // Prepare a headers object for fetch
-  ionAssetMetadata.headers = {
-    // Use provided accessToken if a new token is not provided in the ion response
-    Authorization: `Bearer ${ionAssetMetadata.accessToken || accessToken}`
+  const endpointToken = String(ionAssetMetadata.accessToken || accessToken || '');
+  assert(endpointToken);
+  const endpointCredential = createBearerTokenCredential({
+    id: `cesium-ion-asset-${resolvedAssetId}`,
+    origins: [new URL(url).origin],
+    token: endpointToken
+  });
+
+  return {
+    ...ionAssetMetadata,
+    type,
+    url,
+    headers: {Authorization: `Bearer ${endpointToken}`},
+    credentials: [endpointCredential]
   };
-  return ionAssetMetadata;
 }
 
-// Return a list of all assets associated with accessToken
-export async function getIonAssets(accessToken) {
-  assert(accessToken);
-  const url = CESIUM_ION_URL;
-  const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetch(url, {headers});
+/** Returns the Cesium ion assets visible to an access token. */
+export async function getIonAssets(
+  accessToken: string | null | undefined,
+  fetchFunction?: FetchLike
+): Promise<CesiumIonAssets> {
+  const response = await (fetchFunction || getIonFetch(accessToken))(CESIUM_ION_URL);
   if (!response.ok) {
-    throw new Error(response.statusText);
+    throw new Error(response.statusText || `Cesium ion request failed: ${response.status}`);
   }
-  return await response.json();
+  return (await response.json()) as CesiumIonAssets;
 }
 
-// Return metadata for a specific asset associated with token
-export async function getIonAssetMetadata(accessToken, assetId) {
-  assert(accessToken, assetId);
-  const headers = {Authorization: `Bearer ${accessToken}`};
-
+/** Returns combined Cesium ion asset and endpoint metadata. */
+export async function getIonAssetMetadata(
+  accessToken: string | null | undefined,
+  assetId: number | string,
+  fetchFunction?: FetchLike
+): Promise<Record<string, unknown>> {
+  assert(assetId);
+  const ionFetch = fetchFunction || getIonFetch(accessToken);
   const url = `${CESIUM_ION_URL}/${assetId}`;
-  // https://cesium.com/docs/rest-api/#operation/getAsset
-  // Retrieves metadata information about a specific asset.
-  let response = await fetch(`${url}`, {headers});
+  let response = await ionFetch(url);
   if (!response.ok) {
-    throw new Error(response.statusText);
+    throw new Error(response.statusText || `Cesium ion request failed: ${response.status}`);
   }
-  let metadata = await response.json();
+  const metadata = (await response.json()) as Record<string, unknown>;
 
-  // https://cesium.com/docs/rest-api/#operation/getAssetEndpoint
-  // Retrieves information and credentials that allow you to access the tiled asset data for visualization and analysis.
-  response = await fetch(`${url}/endpoint`, {headers});
+  response = await ionFetch(`${url}/endpoint`);
   if (!response.ok) {
-    throw new Error(response.statusText);
+    throw new Error(response.statusText || `Cesium ion request failed: ${response.status}`);
   }
-  const tilesetInfo = await response.json();
+  const endpoint = (await response.json()) as Record<string, unknown>;
+  return {...metadata, ...endpoint};
+}
 
-  // extract dataset description
-  metadata = {
-    ...metadata,
-    ...tilesetInfo
-  };
-
-  return metadata;
+/** Creates an exact-origin transport for Cesium ion REST requests. */
+function getIonFetch(accessToken: string | null | undefined, fetchFunction?: FetchLike): FetchLike {
+  const credentials = accessToken
+    ? [
+        createBearerTokenCredential({
+          id: 'cesium-ion-access-token',
+          origins: [CESIUM_ION_ORIGIN],
+          token: accessToken
+        })
+      ]
+    : [];
+  return createAuthenticatedFetch({fetch: fetchFunction, credentials});
 }

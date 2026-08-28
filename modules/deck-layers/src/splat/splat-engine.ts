@@ -1048,7 +1048,7 @@ function isBoundingSphereVisible(
   }
 
   const boundingSphere = new BoundingSphere([x, y, z], Math.max(radius, 0));
-  return cullingVolume.computeVisibility(boundingSphere) !== CullingVolume.MASK_OUTSIDE;
+  return cullingVolume.computeVisibility(boundingSphere) !== 'outside';
 }
 
 /** Return a screen tile id for a projected splat center. */

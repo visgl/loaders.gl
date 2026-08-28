@@ -6,6 +6,7 @@ import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import type {DefaultProps, UpdateParameters, Viewport} from '@deck.gl/core';
 import {TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import {load} from '@loaders.gl/core';
+import type {RequestCredential} from '@loaders.gl/loader-utils';
 
 /** Color ramp configuration applied to tile content using a numeric feature attribute. */
 export type ColorsByAttribute = {
@@ -134,7 +135,13 @@ export class DataDrivenTile3DLayer<
     if (loader.preload) {
       const preloadOptions = await loader.preload(tilesetUrl, loadOptions);
 
-      if (preloadOptions.headers) {
+      const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
+      if (credentials?.length) {
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+        };
+      } else if (preloadOptions.headers) {
         options.loadOptions.fetch = {
           ...options.loadOptions.fetch,
           headers: preloadOptions.headers

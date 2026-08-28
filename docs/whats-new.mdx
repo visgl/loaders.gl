@@ -40,6 +40,14 @@ Release Date: 2026
 - Adds a cross-format [CRS support guide](/docs/developer-guide/coordinate-reference-systems) that
   separates metadata preservation from coordinate transformation and records the reprojection
   roadmap.
+- Upgrades all math.gl packages to `4.2.0-alpha.6` and adopts the canonical `SpatialReference`
+  descriptor from `@math.gl/crs` in I3S/3D Tiles and FlatGeobuf source metadata, without removing
+  format compatibility fields or implying that coordinates were transformed.
+- Uses math.gl's explicit horizontal-component conversion when a 3D transformation passes a broad
+  PROJJSON definition to proj4js, rejecting unsupported CRS object types instead of relying on
+  unchecked type casts.
+- Aligns tile and deck-layer culling with alpha.6's typed `outside`, `intersecting`, and `inside`
+  results.
 - Shapefile, FlatGeobuf, and GeoPackage reprojection now rejects missing or invalid source CRS
   metadata instead of returning untransformed coordinates or assuming WGS84.
 - GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected

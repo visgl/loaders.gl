@@ -121,7 +121,7 @@ describe('I3SSpatialTransformer', () => {
         coordinateFrame: 'geographic',
         axisOrder: 'xyz',
         heightReference: 'ellipsoidal',
-        verticalUnit: 'foot',
+        units: ['degree', 'degree', 'foot'],
         verticalUnitScale: 0.3048,
         elevationMode: 'absoluteHeight',
         elevationOffset: 10,
@@ -148,7 +148,7 @@ describe('I3SSpatialTransformer', () => {
         coordinateFrame: 'geographic',
         axisOrder: 'xyz',
         heightReference: 'ellipsoidal',
-        verticalUnit: 'foot',
+        units: ['degree', 'degree', 'foot'],
         verticalUnitScale: 0.3048,
         provenance: 'metadata'
       },

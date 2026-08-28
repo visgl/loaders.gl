@@ -23,6 +23,13 @@ const source = createDataSource(url, [MVTSourceLoader]);
 const tile = await source.getTile(...);
 ```
 
+## Authentication
+
+`core.credentials` applies to both the TileJSON request and every resolved tile URL. For Mapbox,
+use `createMapboxCredential` from `@loaders.gl/services`; explicit `access_token` values in a
+TileJSON URL or template take precedence. See the
+[authentication guide](/docs/developer-guide/authentication#mapbox-tiles).
+
 ## Options
 
 | Option                    | Type      | Default | Description                                                                                                                          |

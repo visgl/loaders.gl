@@ -108,6 +108,10 @@ All sources inherit loaders.gl fetch configuration. Applications can provide hea
 request middleware, proxies, and custom fetch functions without protocol-specific wrappers.
 Abort signals are accepted by data requests that may be long-running.
 
+Pass exact-origin query or bearer credentials through `core.credentials`, or configure them once
+on `ServiceRuntime`. They are propagated to the concrete source and redacted from runtime telemetry
+and normalized errors. See the [authentication guide](/docs/developer-guide/authentication).
+
 Protocol errors are checked before parsing. WMS and related XML service exceptions use dedicated
 error parsers; focused adapters report the operation and HTTP status.
 

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { BlobFile } from '@loaders.gl/loader-utils';
+import { ArrayBufferFile, BlobFile } from '@loaders.gl/loader-utils';
 import { ParquetReader } from '@loaders.gl/parquet';
 import { fetchFile } from '@loaders.gl/core';
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
@@ -34,6 +34,54 @@ class TrackedBlobFile extends BlobFile {
         }
     }
 }
+
+/** In-memory file that records whether the reader requested copying range reads. */
+class TrackedArrayBufferFile extends ArrayBufferFile {
+    /** Number of copying reads requested from the file adapter. */
+    readCount = 0;
+
+    /** Records a fallback range read before delegating to the file adapter. */
+    override async read(
+        start?: number | bigint,
+        length?: number,
+        signal?: AbortSignal
+    ): Promise<ArrayBuffer> {
+        this.readCount++;
+        return await super.read(start, length, signal);
+    }
+}
+
+test('ParquetReader#uses zero-copy ranges for in-memory files', async () => {
+    const response = await fetchFile(DICTIONARY_URL);
+    const file = new TrackedArrayBufferFile(await response.arrayBuffer());
+    const reader = new ParquetReader(file, {
+        retainByteArrayViews: true,
+        useTypedLevelBuffers: true,
+        useTypedValueBuffers: true
+    });
+
+    const iterator = reader.rowGroupIterator({columnList: ['id']});
+    const firstRowGroup = await iterator.next();
+
+    expect(firstRowGroup.done).toBe(false);
+    expect(file.readCount).toBe(0);
+    reader.close();
+});
+test('ParquetReader#rejects external columns before using the in-memory fast path', async () => {
+    const response = await fetchFile(FRUITS_URL);
+    const reader = new ParquetReader(new ArrayBufferFile(await response.arrayBuffer()), {
+        useTypedLevelBuffers: true,
+        useTypedValueBuffers: true
+    });
+    const metadata = await reader.getFileMetadata();
+    const schema = await reader.getSchema();
+    metadata.row_groups[0].columns[0].file_path = 'external.parquet';
+
+    await expect(reader.readRowGroup(schema, metadata.row_groups[0], [])).rejects.toThrow(
+        'external references are not supported'
+    );
+    reader.close();
+});
 // eslint-disable-next-line
 test('ParquetReader#fruits.parquet', async () => {
     const response = await fetchFile(FRUITS_URL);

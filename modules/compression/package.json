@@ -194,6 +194,10 @@
       "types": "./dist/snappy-decompressor-snappyjs.d.ts",
       "import": "./dist/snappy-decompressor-snappyjs.js"
     },
+    "./snappy-decompressor-hysnappy": {
+      "types": "./dist/snappy-decompressor-hysnappy.d.ts",
+      "import": "./dist/snappy-decompressor-hysnappy.js"
+    },
     "./lz4-lz4js": {
       "types": "./dist/lz4-lz4js.d.ts",
       "import": "./dist/lz4-lz4js.js"
@@ -303,6 +307,7 @@
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
     "fflate": "0.7.4",
     "fzstd": "0.1.1",
+    "hysnappy": "^1.1.1",
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {

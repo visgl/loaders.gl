@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
+import {createQueryParameterCredential, type LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
@@ -165,6 +166,66 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
   expect(source.getTileUrl('data:application/octet-stream;base64,AA==')).toBe(
     'data:application/octet-stream;base64,AA=='
   );
+});
+test('Tiles3DSource applies an API key while preserving Google 3D Tiles sessions', async () => {
+  const requestedURLs: string[] = [];
+  let parseCount = 0;
+  const loader = {
+    id: 'credential-tiles',
+    name: 'Credential test tiles',
+    module: 'tiles',
+    version: '0.0.0',
+    extensions: [],
+    mimeTypes: [],
+    options: {},
+    parse: async () => {
+      parseCount++;
+      return parseCount === 1
+        ? {
+            shape: 'tileset3d',
+            type: 'TILES3D',
+            asset: {version: '1.1'},
+            root: {refine: 'ADD'},
+            lodMetricType: 'geometricError',
+            lodMetricValue: 16
+          }
+        : {shape: 'tile3d'};
+    }
+  } as unknown as LoaderWithParser;
+  const source = new Tiles3DSource(
+    {
+      url: 'https://tile.googleapis.com/v1/3dtiles/root.json',
+      loader,
+      coreApi
+    },
+    {
+      core: {
+        credentials: [
+          createQueryParameterCredential({
+            id: 'google-maps-key',
+            origins: ['https://tile.googleapis.com'],
+            parameterName: 'key',
+            token: 'api-key'
+          })
+        ],
+        fetch: async url => {
+          requestedURLs.push(String(url));
+          return new Response(new Uint8Array([1]));
+        }
+      }
+    }
+  );
+
+  await source.initialize();
+  await source.loadTileContent({
+    contentUrl:
+      'https://tile.googleapis.com/v1/3dtiles/datasets/example/tile.glb?session=session-id'
+  } as Tile3D);
+
+  expect(requestedURLs).toEqual([
+    'https://tile.googleapis.com/v1/3dtiles/root.json?key=api-key',
+    'https://tile.googleapis.com/v1/3dtiles/datasets/example/tile.glb?session=session-id&key=api-key'
+  ]);
 });
 test('I3SSource initializes promised roots and appends auth tokens to tile urls', async () => {
   const source = new I3SSource(

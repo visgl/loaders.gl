@@ -17,6 +17,25 @@ fields. I3S discovers them from layer metadata. Applications supply only a reque
 geoid when datum conversion is needed, and a terrain or scene provider when the layer requests
 surface-relative placement.
 
+## Metadata and execution layers
+
+The spatial pipeline builds on the shared math.gl CRS modules instead of defining a second CRS
+system inside loaders.gl:
+
+| Layer | Responsibility |
+| --- | --- |
+| `@math.gl/crs` | Canonical immutable source CRS, vertical CRS, coordinate order, coordinate frame, epoch, and per-component units |
+| `@math.gl/proj4` | Executable geographic, projected, and geocentric coordinate transformations |
+| `@math.gl/geoid` | Ellipsoidal/orthometric height conversion using an application-supplied geoid model |
+| `@loaders.gl/tiles` | Transformation status, target selection, format diagnostics, and shared spatial orchestration |
+| I3S adapter | `ZFactor`, ArcGIS unit aliases, `elevationInfo`, surface providers, and geometry/bounds/origin placement |
+
+`TilesetSpatialReference` extends the math.gl `SpatialReference` descriptor. Its `crs`, `vertical`,
+`coordinateOrder`, and `units` fields are the canonical discovery result. Compatibility aliases
+such as `sourceCrs` and operational values such as `verticalUnitScale` do not replace those fields.
+All executable projection and geoid work flows through the shared tiles transformer; the I3S
+adapter does not implement a separate projection or datum-conversion engine.
+
 ## Order of operations
 
 loaders.gl applies vertical operations in a fixed order:
@@ -116,6 +135,11 @@ to meters. This includes meter, millimeter, centimeter, decimeter, kilometer, fo
 US survey variants, and the Clarke, Sears, Benoit, Indian, and Gold Coast units used by legacy CRS
 definitions. Common spellings and abbreviations such as `metre`, `m`, `ft`, and
 `us-survey-foot` are accepted.
+
+When the source association is unambiguous, the original per-component units are reported on the
+canonical `spatialReference.units` array in stored coordinate order. The I3S adapter additionally
+derives a meters-per-source-Z scale for placement math. That derived scale is operational metadata,
+not a competing CRS definition.
 
 An unknown unit is an unresolved spatial operation and rejects initialization. It is never treated
 as meters silently. This applies to source Z, elevation offsets, and provider results.
