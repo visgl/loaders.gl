@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse, encode} from '@loaders.gl/core';
-import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
+import {DracoLoader, DracoWriter, encodeDracoBatch} from '@loaders.gl/draco';
 import type {DracoWriterOptions} from '@loaders.gl/draco';
 
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
@@ -73,6 +73,13 @@ export default async function dracoBench(bench) {
       `DracoWriter#pointcloud#${options.name} - parallel`,
       {multiplier: pointCount, unit: 'points', _throughput: 5, minIterations: 1},
       async () => await encode(attributes, DracoWriter, {draco: {pointcloud: true}, worker: true})
+    );
+
+    bench.addAsync(
+      `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
+      {multiplier: pointCount, unit: 'points', minIterations: 1},
+      async () =>
+        await encodeDracoBatch([attributes, attributes], {draco: {pointcloud: true}, worker: false})
     );
   }
 

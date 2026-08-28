@@ -14,7 +14,7 @@ export {DracoFormat} from './draco-format';
 // Draco Writer
 
 export type {DracoWriterAttributes, DracoWriterInput, DracoWriterOptions} from './draco-writer';
-export {encodeDraco} from './draco-writer';
+export {encodeDraco, encodeDracoBatch} from './draco-writer';
 export type {
   DracoAttributeQuantization,
   DracoAttributeType,
