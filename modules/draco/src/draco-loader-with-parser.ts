@@ -43,7 +43,8 @@ async function parse(
     async () =>
       await loadDracoDecoderModule(
         extractLoadLibraryOptions(options),
-        options?.draco?.decoderType || 'wasm'
+        options?.draco?.decoderType || 'wasm',
+        options?.draco?.decoderProfile
       )
   );
 }

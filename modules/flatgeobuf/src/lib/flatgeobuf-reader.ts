@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/crs';
+
 /** The FlatGeobuf file signature has a stable prefix and a version byte. */
 const MAGIC_PREFIX = [0x66, 0x67, 0x62];
 const MAGIC_SIZE = 8;
@@ -60,13 +62,38 @@ export type FlatGeobufHeader = {
   columns: FlatGeobufColumn[];
   featuresCount: number;
   indexNodeSize: number;
-  crs?: {code?: number; codeString?: string; wkt?: string};
+  crs?: FlatGeobufCRS;
   title?: string;
   description?: string;
   metadata?: string;
   headerLength: number;
   featureOffset: number;
 };
+
+/** Coordinate reference system fields declared by a FlatGeobuf header. */
+export type FlatGeobufCRS = {
+  /** Authority that owns the numeric CRS code, such as `EPSG` or `ESRI`. */
+  org?: string;
+  /** Numeric code within the declared authority. */
+  code?: number;
+  /** Self-contained authority-code identifier supplied by the header. */
+  codeString?: CRSIdentifier;
+  /** WKT coordinate reference system definition supplied by the header. */
+  wkt?: WKTCRSDefinition;
+};
+
+/** Returns the most specific authority-code identifier declared by a FlatGeobuf CRS. */
+export function getFlatGeobufCRSIdentifier(
+  crs: FlatGeobufCRS | undefined
+): CRSIdentifier | undefined {
+  if (crs?.codeString) {
+    return crs.codeString;
+  }
+  if (crs?.org && typeof crs.code === 'number' && Number.isFinite(crs.code)) {
+    return `${crs.org}:${crs.code}`;
+  }
+  return undefined;
+}
 
 /** One decoded feature represented by its scalar properties and geometry table offset. */
 export type FlatGeobufFeature = {
@@ -413,7 +440,8 @@ function readColumns(view: FlatBufferView, fieldOffset: number | undefined): Fla
 function readCrs(view: FlatBufferView, table: number) {
   const code = view.tableField(table, 1);
   return {
-    code: code === undefined ? 0 : view.int32(code),
+    org: view.string(view.tableField(table, 0)),
+    code: code === undefined ? undefined : view.int32(code),
     codeString: view.string(view.tableField(table, 5)),
     wkt: view.string(view.tableField(table, 4))
   };

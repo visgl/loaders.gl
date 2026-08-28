@@ -18,7 +18,7 @@ export type RasterQueryOptions = Readonly<{
   variables?: readonly string[];
   /** Numeric channel indices to include in the result. */
   channels?: readonly number[];
-  /** Non-spatial dimension selections, such as time or elevation. */
+  /** Non-spatial dimension indices or half-open `[start, stop)` ranges. */
   slices?: Readonly<Record<string, number | readonly [number, number]>>;
 }>;
 

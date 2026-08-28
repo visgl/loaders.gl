@@ -22,6 +22,29 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 
 These deprecations and removals are being considered for v5.
 
+**@loaders.gl/math**
+
+- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`
+  and update imports for GL constants, typed-array, geometry, color, and attribute-compression
+  utilities.
+
+**CRS and @loaders.gl/wkt**
+
+- Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
+  `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
+  PROJ, and PROJJSON types directly from `@math.gl/crs`.
+- `WKTCRSLoader` now returns the discriminated, value-preserving `WKTCRSAst`. Code that indexed
+  the v4 hybrid nested array/object must traverse `ast.root.values` and discriminate each value by
+  its `type` field.
+- `WKTCRSWriter` accepts `WKTCRSAst`. The legacy `raw:` value convention and `raw`, `sort`,
+  `keywords`, and `debug` options have been removed. Numeric source lexemes and value order are
+  always retained by the AST.
+- GeoParquet `crs` is typed as PROJJSON or explicit `null`; omission still means the GeoParquet
+  default `OGC:CRS84`. `crs_type` is not a GeoParquet member. Coordinate `epoch` remains separate.
+- CRS metadata preservation does not reproject coordinates. See
+  [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for current
+  format support and the staged reprojection roadmap.
+
 **@loaders.gl/tiles**
 
 - `Tileset3D.maximumMemoryUsage` and the `maximumMemoryUsage` constructor option are deprecated. Use byte-native `cacheBytes`; convert MiB with `maximumMemoryUsage * 1024 * 1024`.
@@ -137,6 +160,8 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 
 `LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Import `LAZPerfLoader`, `LASCOPCLoader`, or `LAZRsLoader` explicitly when a compatibility loader is required.
 
+`COPCSourceLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
+
 ### SourceLoader migration examples
 
 Before, in 4.4:
@@ -197,6 +222,13 @@ This unifies top-level loading behavior:
 
 **@loaders.gl/textures**
 
+- `BasisLoader` now uses the v2.50 transcoder for both `.basis` and KTX2 data. Remove
+  `basis.module`; decoder selection is automatic. `modules.basis` must provide both `BasisFile` and
+  `KTX2File` when KTX2 decoding is required.
+- Replace the removed `bc7-m5` and `bc7-m6-opaque-only` Basis targets with `bc7`.
+- `KTX2BasisWriter` replaces `encodeUASTC`, `qualityLevel`, and `useSRGB` with `format`, `quality`,
+  `effort`, and `contentType`. For example, `{encodeUASTC: true, useSRGB: true}` becomes
+  `{format: 'uastc-ldr-4x4', contentType: 'srgb'}`.
 - `@loaders.gl/textures` no longer depends on the deprecated `texture-compressor` package, which pulled in vulnerable versions of `image-size`. The package was only ever used as a command line tool by the experimental `CompressedTextureWriter`, and was installed for every consumer whether or not that writer was used.
 - Applications that use `CompressedTextureWriter` must now install the package themselves, for example with `npm install --save-dev texture-compressor`. It is resolved as an optional peer dependency and called directly, without invoking `npx` or accessing the npm registry. If it cannot be resolved locally, `encodeURLtoURL()` rejects. All other `@loaders.gl/textures` loaders and writers are unaffected.
 

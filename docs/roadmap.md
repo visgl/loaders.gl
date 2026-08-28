@@ -46,3 +46,28 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 
 - The `shape` option that was introduced in loaders.gl v3 to allow loaders to return different data formats is now deprecated and will be removed in many places.
 - Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert for Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
+
+## Geospatial service roadmap
+
+The service roadmap favors protocol depth and useful normalized outputs over a large universal
+abstraction. Costs are relative engineering estimates; impact describes the user-facing result.
+
+| Tranche | Scope | Status | Cost | Impact |
+| --- | --- | --- | --- | --- |
+| 1 | Dedicated `@loaders.gl/services` module and ArcGIS source ownership | Complete | M | Clear package boundary for ArcGIS, Cesium ION, and future providers |
+| 2 | ArcGIS FeatureServer vector source and normalized Arrow/GeoJSON output | Complete | M | Production vector-service ingestion |
+| 3 | ArcGIS ImageServer imagery and analytical LERC output | Complete | M | Analysis-ready raster services |
+| 4 | ArcGIS MapServer and VectorTileServer tile sources | Complete | M | Cached, dynamic, and vector tile access |
+| 5 | WFS request normalization and GeoJSON/GML response handling | Complete | M | Reliable OGC feature-service access |
+| 6 | High-volume SAX GML parsing and streaming WFS batches | Complete | L | Large WFS responses without whole-document buffering |
+| 7 | WMTS matrix sets and ArcGIS tile-grid negotiation | Planned | L | Correct tile requests across heterogeneous grids |
+| 8 | CRS normalization, axis order, reprojection-aware requests, and edge cases | Planned | XL | Correct behavior across projections, antimeridian, and polar regions |
+| 9 | Shared service lifecycle for retries, cancellation, caching, auth, and telemetry | Planned | XL | Consistent operational behavior without protocol-specific duplication |
+| 10 | Deep GML/WFS conformance, paging, filtering, schema-aware properties, and fixtures | Complete | XL | Production-scale standards interoperability |
+| 11 | Capability-driven source configuration and endpoint negotiation | Planned | L | Better defaults when applications provide incomplete service information |
+| 12 | Analytical raster preservation: NoData, bands, statistics, and rendering rules | Complete | L | Faithful scientific imagery workflows |
+| 13 | ArcGIS capability graph and requirement-based service selection | Assumed complete | M | Discover, compare, and select service endpoints explicitly |
+
+The next high-leverage work is tranches 7–11. Tranche 9 remains deliberately deferred until the
+protocol-specific sources demonstrate a concrete shared lifecycle need; it should not become a
+second opaque framework layered over `DataSource`.

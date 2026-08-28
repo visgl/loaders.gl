@@ -1,78 +1,65 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {KSPLATLoader} from '@loaders.gl/splats';
 import {KSPLATLoaderWithParser} from '@loaders.gl/splats/ksplat-loader';
-
 const HEADER_BYTE_LENGTH = 4096;
 const SECTION_HEADER_BYTE_LENGTH = 1024;
 const BYTES_PER_SPLAT = 44;
 const COMPRESSED_BYTES_PER_SPLAT = 24;
-
-test('KSPLATLoader parses uncompressed GaussianSplats3D buffers', async t => {
+test('KSPLATLoader parses uncompressed GaussianSplats3D buffers', async () => {
   const data = makeKSPLATFixture();
   const table = await parse(data, KSPLATLoader);
-
-  t.equal(table.shape, 'arrow-table', 'returns MeshArrowTable');
-  t.equal(table.data.numRows, 2, 'parses row count');
-  t.equal(
+  expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
+  expect(table.data.numRows, 'parses row count').toBe(2);
+  expect(
     table.data.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
-    'ksplat',
     'adds source format metadata'
-  );
-  t.deepEqual(table.data.getChild('POSITION')?.get(1)?.toArray(), [4, 5, 6], 'parses position');
-  t.equal(table.data.getChild('scale_2')?.get(0), 3, 'parses linear scale');
-  t.ok(
+  ).toBe('ksplat');
+  expect(
+    Array.from(table.data.getChild('POSITION')?.get(1)?.toArray() || []),
+    'parses position'
+  ).toEqual([4, 5, 6]);
+  expect(table.data.getChild('scale_2')?.get(0), 'parses linear scale').toBe(3);
+  expect(
     Math.abs(Number(table.data.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
     'parses color alpha as opacity'
-  );
-  t.ok(Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6, 'parses rotation');
-
+  ).toBeTruthy();
+  expect(
+    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    'parses rotation'
+  ).toBeTruthy();
   const syncTable = parseSync(data, KSPLATLoaderWithParser);
-  t.equal(syncTable.data.numRows, 2, 'parser subpath supports parseSync');
-  t.end();
+  expect(syncTable.data.numRows, 'parser subpath supports parseSync').toBe(2);
 });
-
-test('KSPLATLoader validates header and version', t => {
-  t.throws(
+test('KSPLATLoader validates header and version', () => {
+  expect(
     () => KSPLATLoaderWithParser.parseSync(new ArrayBuffer(128)),
-    /4096-byte header/,
     'rejects missing header'
-  );
-
+  ).toThrow(/4096-byte header/);
   const data = makeKSPLATFixture();
   new DataView(data).setUint8(1, 0);
-  t.throws(
-    () => KSPLATLoaderWithParser.parseSync(data),
-    /version 0.0 is not supported/,
-    'rejects unsupported version'
+  expect(() => KSPLATLoaderWithParser.parseSync(data), 'rejects unsupported version').toThrow(
+    /version 0.0 is not supported/
   );
-  t.end();
 });
-
-test('KSPLATLoader decodes compressed bucket-relative centers', t => {
+test('KSPLATLoader decodes compressed bucket-relative centers', () => {
   const table = KSPLATLoaderWithParser.parseSync(makeCompressedKSPLATFixture());
-
-  t.deepEqual(
-    table.data.getChild('POSITION')?.get(0)?.toArray(),
-    [10, 20, 30],
+  expect(
+    Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
     'decodes uint16 bucket-relative center'
-  );
-  t.equal(table.data.getChild('scale_1')?.get(0), 2, 'decodes half-float scale');
-  t.ok(Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6, 'decodes rotation');
-  t.end();
+  ).toEqual([10, 20, 30]);
+  expect(table.data.getChild('scale_1')?.get(0), 'decodes half-float scale').toBe(2);
+  expect(
+    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    'decodes rotation'
+  ).toBeTruthy();
 });
-
 /** Builds a deterministic uncompressed two-row `.ksplat` fixture. */
 function makeKSPLATFixture(): ArrayBuffer {
   const data = new ArrayBuffer(
     HEADER_BYTE_LENGTH + SECTION_HEADER_BYTE_LENGTH + BYTES_PER_SPLAT * 2
   );
   const dataView = new DataView(data);
-
   dataView.setUint8(0, 0);
   dataView.setUint8(1, 1);
   dataView.setUint32(4, 1, true);
@@ -82,25 +69,21 @@ function makeKSPLATFixture(): ArrayBuffer {
   dataView.setUint16(20, 0, true);
   dataView.setFloat32(36, -1.5, true);
   dataView.setFloat32(40, 1.5, true);
-
   const sectionHeaderOffset = HEADER_BYTE_LENGTH;
   dataView.setUint32(sectionHeaderOffset + 0, 2, true);
   dataView.setUint32(sectionHeaderOffset + 4, 2, true);
   dataView.setUint16(sectionHeaderOffset + 40, 0, true);
-
   const splatDataOffset = HEADER_BYTE_LENGTH + SECTION_HEADER_BYTE_LENGTH;
   writeKSPLATRow(data, splatDataOffset, 0, [1, 2, 3], [1, 2, 3], [1, 0, 0, 0], [255, 128, 0, 255]);
   writeKSPLATRow(data, splatDataOffset, 1, [4, 5, 6], [4, 5, 6], [0, 1, 0, 0], [0, 64, 255, 64]);
   return data;
 }
-
 /** Builds a deterministic compressed one-row `.ksplat` fixture. */
 function makeCompressedKSPLATFixture(): ArrayBuffer {
   const data = new ArrayBuffer(
     HEADER_BYTE_LENGTH + SECTION_HEADER_BYTE_LENGTH + 12 + COMPRESSED_BYTES_PER_SPLAT
   );
   const dataView = new DataView(data);
-
   dataView.setUint8(0, 0);
   dataView.setUint8(1, 1);
   dataView.setUint32(4, 1, true);
@@ -110,7 +93,6 @@ function makeCompressedKSPLATFixture(): ArrayBuffer {
   dataView.setUint16(20, 1, true);
   dataView.setFloat32(36, -1.5, true);
   dataView.setFloat32(40, 1.5, true);
-
   const sectionHeaderOffset = HEADER_BYTE_LENGTH;
   dataView.setUint32(sectionHeaderOffset + 0, 1, true);
   dataView.setUint32(sectionHeaderOffset + 4, 1, true);
@@ -121,12 +103,10 @@ function makeCompressedKSPLATFixture(): ArrayBuffer {
   dataView.setUint32(sectionHeaderOffset + 24, 32767, true);
   dataView.setUint32(sectionHeaderOffset + 32, 1, true);
   dataView.setUint16(sectionHeaderOffset + 40, 0, true);
-
   const bucketOffset = HEADER_BYTE_LENGTH + SECTION_HEADER_BYTE_LENGTH;
   dataView.setFloat32(bucketOffset + 0, 10, true);
   dataView.setFloat32(bucketOffset + 4, 20, true);
   dataView.setFloat32(bucketOffset + 8, 30, true);
-
   const splatOffset = bucketOffset + 12;
   dataView.setUint16(splatOffset + 0, 32767, true);
   dataView.setUint16(splatOffset + 2, 32767, true);
@@ -144,7 +124,6 @@ function makeCompressedKSPLATFixture(): ArrayBuffer {
   dataView.setUint8(splatOffset + 23, 255);
   return data;
 }
-
 /** Writes one uncompressed `.ksplat` fixture row. */
 function writeKSPLATRow(
   data: ArrayBuffer,
@@ -166,7 +145,6 @@ function writeKSPLATRow(
     dataView.setUint8(byteOffset + 40 + component, color[component]);
   }
 }
-
 /** Encodes the finite fixture values needed by the compressed KSPLAT test as float16. */
 function encodeFloat16(value: number): number {
   if (value === 0) {

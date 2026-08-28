@@ -1,23 +1,17 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse3DTilesArchive} from '../src/3d-tiles-archive/3d-tiles-archive-parser';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';
-
 const TEST_URL = '@loaders.gl/3d-tiles/test/data/test.3tz';
-
-test('parse3DTilesArchive#ReadableFile - file extraction', async t => {
+test('parse3DTilesArchive#ReadableFile - file extraction', async () => {
   const arrayBuffer = await loadArrayBufferFromFile(TEST_URL);
   const archive = await parse3DTilesArchive(await createReadableFileFromBuffer(arrayBuffer));
-
   const tilesetJson = await archive.getFile('tileset.json');
-  t.equal(tilesetJson.byteLength, 2339, 'reads tileset.json content');
-
+  expect(tilesetJson.byteLength, 'reads tileset.json content').toBe(2339);
   const childTile = await archive.getFile('ll.b3dm');
-  t.equal(childTile.byteLength, 9700, 'extracts binary tiles through hash table');
-
-  await t.rejects(archive.getFile('missing.b3dm'));
-  t.end();
+  expect(childTile.byteLength, 'extracts binary tiles through hash table').toBe(9700);
+  await await expect(archive.getFile('missing.b3dm')).rejects.toBeDefined();
 });

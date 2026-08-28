@@ -41,4 +41,4 @@ Draco stores compressed mesh and point cloud geometry. It supports triangle mesh
 
 ## Runtime
 
-`DracoLoader` and `DracoWriter` use the Draco3D decoder and encoder runtimes. These runtimes are loaded dynamically by default and can be supplied through `options.modules`.
+`DracoLoader` and `DracoWriter` use the official Draco3D 1.5.7 decoder and encoder runtimes. The WebAssembly runtimes are loaded dynamically by default, are also published as package-local assets for workers and offline applications, and can be supplied through `options.modules`.

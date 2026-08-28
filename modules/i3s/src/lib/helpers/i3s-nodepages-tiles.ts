@@ -16,7 +16,9 @@ import {
   I3STextureFormat,
   MeshGeometry,
   I3STileHeader,
-  SceneLayer3D
+  SceneLayer3D,
+  I3STextureResource,
+  I3SMaterialTexture
 } from '../../types';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
@@ -116,6 +118,7 @@ export default class I3SNodePagesTiles {
 
     let contentUrl: string | undefined;
     let textureUrl: string | undefined;
+    let textureUrls: I3STextureResource[] | undefined;
     let materialDefinition: I3SMaterialDefinition | undefined;
     let textureFormat: I3STextureFormat = 'jpg';
     let attributeUrls: string[] = [];
@@ -128,9 +131,13 @@ export default class I3SNodePagesTiles {
       contentUrl = url;
       isDracoGeometry = isDracoGeometryResult;
 
-      const {textureData, materialDefinition: nodeMaterialDefinition} =
-        this.getInformationFromMaterial(node.mesh.material);
+      const {
+        textureData,
+        textureResources,
+        materialDefinition: nodeMaterialDefinition
+      } = this.getInformationFromMaterial(node.mesh.material);
       materialDefinition = nodeMaterialDefinition;
+      textureUrls = textureResources;
       textureFormat = textureData.format || textureFormat;
       if (textureData.name) {
         textureUrl = `${this.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
@@ -148,11 +155,13 @@ export default class I3SNodePagesTiles {
     const lodSelection = this.getLodSelection(node);
 
     return normalizeTileNonUrlData({
+      ...node,
       id: id.toString(),
       lodSelection,
       obb: node.obb,
       contentUrl,
       textureUrl,
+      textureUrls,
       attributeUrls,
       materialDefinition,
       textureFormat,
@@ -232,8 +241,9 @@ export default class I3SNodePagesTiles {
   private getInformationFromMaterial(material: MeshMaterial) {
     const informationFromMaterial: {
       textureData: {name: string | null; format?: I3STextureFormat};
+      textureResources: I3STextureResource[];
       materialDefinition?: I3SMaterialDefinition;
-    } = {textureData: {name: null}};
+    } = {textureData: {name: null}, textureResources: []};
 
     if (material) {
       const materialDefinition = this.tileset.materialDefinitions?.[material.definition];
@@ -247,9 +257,60 @@ export default class I3SNodePagesTiles {
             this.textureDefinitionsSelectedFormats[textureSetDefinitionIndex] ||
             informationFromMaterial.textureData;
         }
+        informationFromMaterial.textureResources = this.getTextureResources(
+          materialDefinition,
+          material.resource
+        );
       }
     }
     return informationFromMaterial;
+  }
+
+  /**
+   * Build URLs for every texture set referenced by an I3S material.
+   * @param materialDefinition - material with texture references
+   * @param resource - node resource id containing the texture files
+   * @returns selected texture resources
+   */
+  private getTextureResources(
+    materialDefinition: I3SMaterialDefinition,
+    resource?: number
+  ): I3STextureResource[] {
+    if (resource === undefined) {
+      return [];
+    }
+
+    const textureReferences: (I3SMaterialTexture | undefined)[] = [
+      materialDefinition.pbrMetallicRoughness?.baseColorTexture,
+      materialDefinition.pbrMetallicRoughness?.metallicRoughnessTexture,
+      materialDefinition.normalTexture,
+      materialDefinition.occlusionTexture,
+      materialDefinition.emissiveTexture
+    ];
+    const textureResources: I3STextureResource[] = [];
+    const textureSetDefinitionIds = new Set<number>();
+
+    for (const textureReference of textureReferences) {
+      const textureSetDefinitionId = textureReference?.textureSetDefinitionId;
+      if (
+        typeof textureSetDefinitionId !== 'number' ||
+        textureSetDefinitionIds.has(textureSetDefinitionId)
+      ) {
+        continue;
+      }
+      const textureData = this.textureDefinitionsSelectedFormats[textureSetDefinitionId];
+      if (!textureData) {
+        continue;
+      }
+      textureSetDefinitionIds.add(textureSetDefinitionId);
+      textureResources.push({
+        textureSetDefinitionId,
+        textureUrl: `${this.url}/nodes/${resource}/textures/${textureData.name}`,
+        textureFormat: textureData.format
+      });
+    }
+
+    return textureResources;
   }
 
   /**
@@ -274,8 +335,7 @@ export default class I3SNodePagesTiles {
       // For I3S 1.8 need to define basis target format to decode
       if (selectedFormat && selectedFormat.format === 'ktx2') {
         this.textureLoaderOptions.basis = {
-          containerFormat: 'ktx2',
-          module: 'encoder'
+          containerFormat: 'ktx2'
         };
       }
 

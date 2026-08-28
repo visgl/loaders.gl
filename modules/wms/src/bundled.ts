@@ -10,6 +10,9 @@ export type {CSWRecords} from './csw-records-loader-with-parser';
 export {CSWRecordsLoaderWithParser as CSWRecordsLoader} from './csw-records-loader-with-parser';
 
 export {WMSErrorLoaderWithParser as WMSErrorLoader} from './wms-error-loader-with-parser';
+export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
+export type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+export {WMTSCapabilitiesLoaderWithParser as WMTSCapabilitiesLoader} from './wmts-capabilities-loader-with-parser';
 export type {WMSCapabilitiesLoaderOptions} from './wms-capabilities-loader-with-parser';
 export {WMSCapabilitiesLoaderWithParser as WMSCapabilitiesLoader} from './wms-capabilities-loader-with-parser';
 

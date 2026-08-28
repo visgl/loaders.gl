@@ -1,8 +1,8 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   createImplicitSubtreeReference,
   LOD_METRIC_TYPE,
@@ -13,7 +13,6 @@ import {
   type ParsedImplicitSubtree
 } from '@loaders.gl/tiles';
 import {Tileset3DTraverser} from '../../src/tileset-3d/format-3d-tiles/tileset-3d-traverser';
-
 /** Creates a compact descriptor that individual tests can override. */
 function createDescriptor(
   overrides: Partial<ImplicitTilingDescriptor> = {}
@@ -31,35 +30,29 @@ function createDescriptor(
     ...overrides
   };
 }
-
-test('implicit tiling materializes one sparse subtree and leaves lazy boundaries', t => {
+test('implicit tiling materializes one sparse subtree and leaves lazy boundaries', () => {
   const descriptor = createDescriptor();
   const subtree: ParsedImplicitSubtree = {
     tileAvailability: {explicitBitstream: new Uint8Array([0b00010111])},
     contentAvailability: {explicitBitstream: new Uint8Array([0b00010101])},
     childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000001, 0b10000000])}
   };
-
   const result = materializeImplicitSubtree(
     subtree,
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   );
-
-  t.equal(result.tileCount, 4, 'counts only available tiles in the current subtree');
-  t.equal(result.childSubtreeCount, 2, 'creates references only for available child subtrees');
-  t.equal(result.root.children.length, 3, 'preserves sparse tile availability');
-  t.equal(result.root.contentUrl, 'https://example.com/content/0/0/0/0.b3dm');
-  t.notOk(result.root.children[0].contentUrl, 'supports contentless connector tiles');
-  t.equal(result.root.children[0].children[0].implicitSubtree?.coordinates.level, 2);
-  t.deepEqual(
+  expect(result.tileCount, 'counts only available tiles in the current subtree').toBe(4);
+  expect(result.childSubtreeCount, 'creates references only for available child subtrees').toBe(2);
+  expect(result.root.children.length, 'preserves sparse tile availability').toBe(3);
+  expect(result.root.contentUrl).toBe('https://example.com/content/0/0/0/0.b3dm');
+  expect(result.root.children[0].contentUrl, 'supports contentless connector tiles').toBeFalsy();
+  expect(result.root.children[0].children[0].implicitSubtree?.coordinates.level).toBe(2);
+  expect(
     result.root.children[2].children[0].implicitSubtree?.coordinates,
-    {level: 2, x: 3, y: 3, z: 0},
     'uses child-subtree Morton indexes without a breadth-first tile offset'
-  );
-  t.end();
+  ).toEqual({level: 2, x: 3, y: 3, z: 0});
 });
-
-test('implicit tiling materializes multiple content streams in source order', t => {
+test('implicit tiling materializes multiple content streams in source order', () => {
   const descriptor = createDescriptor({
     contentUrlTemplates: [
       'https://example.com/geometry/{level}/{x}/{y}/{z}.b3dm',
@@ -75,20 +68,17 @@ test('implicit tiling materializes multiple content streams in source order', t 
     },
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   );
-
-  t.equal(result.root.contentUrl, 'https://example.com/geometry/0/0/0/0.b3dm');
-  t.deepEqual(result.root.contentUrls, [
+  expect(result.root.contentUrl).toBe('https://example.com/geometry/0/0/0/0.b3dm');
+  expect(result.root.contentUrls).toEqual([
     'https://example.com/geometry/0/0/0/0.b3dm',
     'https://example.com/metadata/0/0/0/0.json'
   ]);
-  t.deepEqual(result.root.content, [
+  expect(result.root.content).toEqual([
     {group: 'geometry', uri: 'https://example.com/geometry/0/0/0/0.b3dm'},
     {group: 'metadata', uri: 'https://example.com/metadata/0/0/0/0.json'}
   ]);
-  t.end();
 });
-
-test('implicit tiling preserves content-header indexes for sparse streams', t => {
+test('implicit tiling preserves content-header indexes for sparse streams', () => {
   const descriptor = createDescriptor({
     contentUrlTemplates: [
       'https://example.com/a/{level}.b3dm',
@@ -104,33 +94,26 @@ test('implicit tiling preserves content-header indexes for sparse streams', t =>
     },
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   );
-
-  t.equal(result.root.contentUrl, 'https://example.com/b/0.json');
-  t.deepEqual(result.root.content, {group: 'b', uri: 'https://example.com/b/0.json'});
-  t.end();
+  expect(result.root.contentUrl).toBe('https://example.com/b/0.json');
+  expect(result.root.content).toEqual({group: 'b', uri: 'https://example.com/b/0.json'});
 });
-
-test('implicit tiling treats maximumLevel as the last zero-based available level', t => {
+test('implicit tiling treats maximumLevel as the last zero-based available level', () => {
   const descriptor = createDescriptor({maximumLevel: 1});
   const subtree: ParsedImplicitSubtree = {
     tileAvailability: {constant: 1},
     contentAvailability: {constant: 1},
     childSubtreeAvailability: {constant: 1}
   };
-
   const result = materializeImplicitSubtree(
     subtree,
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   );
-
-  t.equal(result.root.children.length, 4, 'materializes the final available level');
-  t.ok(result.root.children.every(child => child.children.length === 0));
-  t.ok(result.root.children.every(child => !child.implicitSubtree));
-  t.equal(result.childSubtreeCount, 0, 'does not create references beyond the last level');
-  t.end();
+  expect(result.root.children.length, 'materializes the final available level').toBe(4);
+  expect(result.root.children.every(child => child.children.length === 0)).toBeTruthy();
+  expect(result.root.children.every(child => !child.implicitSubtree)).toBeTruthy();
+  expect(result.childSubtreeCount, 'does not create references beyond the last level').toBe(0);
 });
-
-test('implicit octree boundary references preserve coordinates, error and region height', t => {
+test('implicit octree boundary references preserve coordinates, error and region height', () => {
   const descriptor = createDescriptor({
     subdivisionScheme: 'OCTREE',
     subtreeLevels: 1,
@@ -141,20 +124,16 @@ test('implicit octree boundary references preserve coordinates, error and region
     contentAvailability: {constant: 0},
     childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b10000000])}
   };
-
   const result = materializeImplicitSubtree(
     subtree,
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   );
   const child = result.root.children[0];
-
-  t.deepEqual(child.implicitSubtree?.coordinates, {level: 1, x: 1, y: 1, z: 1});
-  t.equal(child.lodMetricValue, 32, 'halves geometric error once per global level');
-  t.deepEqual(child.boundingVolume.region, [0.5, 0.5, 1, 1, 50, 100]);
-  t.end();
+  expect(child.implicitSubtree?.coordinates).toEqual({level: 1, x: 1, y: 1, z: 1});
+  expect(child.lodMetricValue, 'halves geometric error once per global level').toBe(32);
+  expect(child.boundingVolume.region).toEqual([0.5, 0.5, 1, 1, 50, 100]);
 });
-
-test('implicit quadtree boxes subdivide horizontal half axes and retain height', t => {
+test('implicit quadtree boxes subdivide horizontal half axes and retain height', () => {
   const descriptor = createDescriptor({
     subtreeLevels: 1,
     maximumLevel: 1,
@@ -165,21 +144,16 @@ test('implicit quadtree boxes subdivide horizontal half axes and retain height',
     contentAvailability: {constant: 0},
     childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000010])}
   };
-
   const child = materializeImplicitSubtree(
     subtree,
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   ).root.children[0];
-
-  t.deepEqual(
+  expect(
     child.boundingVolume.box,
-    [5, -10, 0, 5, 0, 0, 0, 10, 0, 0, 0, 30],
     'uses oriented half-axis vectors rather than axis-aligned assumptions'
-  );
-  t.end();
+  ).toEqual([5, -10, 0, 5, 0, 0, 0, 10, 0, 0, 0, 30]);
 });
-
-test('implicit region subdivision preserves antimeridian-crossing longitude intervals', t => {
+test('implicit region subdivision preserves antimeridian-crossing longitude intervals', () => {
   const descriptor = createDescriptor({
     subtreeLevels: 1,
     maximumLevel: 1,
@@ -193,12 +167,9 @@ test('implicit region subdivision preserves antimeridian-crossing longitude inte
     },
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
   ).root.children[0];
-
-  t.deepEqual(child.boundingVolume.region, [3, -0.5, 0, 0, 0, 20]);
-  t.end();
+  expect(child.boundingVolume.region).toEqual([3, -0.5, 0, 0, 0, 20]);
 });
-
-test('implicit octree materializes all eight child coordinates from one availability byte', t => {
+test('implicit octree materializes all eight child coordinates from one availability byte', () => {
   const descriptor = createDescriptor({
     subdivisionScheme: 'OCTREE',
     subtreeLevels: 1,
@@ -212,33 +183,24 @@ test('implicit octree materializes all eight child coordinates from one availabi
     },
     createImplicitSubtreeReference(descriptor, {level: 0, x: 4, y: 2, z: 1})
   );
-
-  t.equal(result.root.children.length, 8);
-  t.deepEqual(
-    result.root.children.map(child => child.implicitSubtree?.coordinates),
-    [
-      {level: 1, x: 8, y: 4, z: 2},
-      {level: 1, x: 9, y: 4, z: 2},
-      {level: 1, x: 8, y: 5, z: 2},
-      {level: 1, x: 9, y: 5, z: 2},
-      {level: 1, x: 8, y: 4, z: 3},
-      {level: 1, x: 9, y: 4, z: 3},
-      {level: 1, x: 8, y: 5, z: 3},
-      {level: 1, x: 9, y: 5, z: 3}
-    ]
-  );
-  t.end();
+  expect(result.root.children.length).toBe(8);
+  expect(result.root.children.map(child => child.implicitSubtree?.coordinates)).toEqual([
+    {level: 1, x: 8, y: 4, z: 2},
+    {level: 1, x: 9, y: 4, z: 2},
+    {level: 1, x: 8, y: 5, z: 2},
+    {level: 1, x: 9, y: 5, z: 2},
+    {level: 1, x: 8, y: 4, z: 3},
+    {level: 1, x: 9, y: 4, z: 3},
+    {level: 1, x: 8, y: 5, z: 3},
+    {level: 1, x: 9, y: 5, z: 3}
+  ]);
 });
-
-test('implicit URL templates replace coordinates case-insensitively', t => {
-  t.equal(
-    replaceImplicitUrlTemplate('/{LEVEL}/{X}/{y}/{z}', {level: 3, x: 4, y: 5, z: 6}),
+test('implicit URL templates replace coordinates case-insensitively', () => {
+  expect(replaceImplicitUrlTemplate('/{LEVEL}/{X}/{y}/{z}', {level: 3, x: 4, y: 5, z: 6})).toBe(
     '/3/4/5/6'
   );
-  t.end();
 });
-
-test('implicit subtree traversal requires visibility, request volume and SSE', async t => {
+test('implicit subtree traversal requires visibility, request volume and SSE', async () => {
   let requestCount = 0;
   const tile = {
     id: 'implicit-root',
@@ -254,24 +216,19 @@ test('implicit subtree traversal requires visibility, request volume and SSE', a
   const traverser = new Tileset3DTraverser({});
   traverser.shouldRefine = () => true;
   const frameState = {frameNumber: 1, viewport: {id: 'test'}} as any;
-
   traverser.updateChildTiles(tile, frameState);
-  t.equal(requestCount, 0, 'does not request an invisible or out-of-volume subtree');
-
+  expect(requestCount, 'does not request an invisible or out-of-volume subtree').toBe(0);
   tile.isVisibleAndInRequestVolume = true;
   traverser.shouldRefine = () => false;
   traverser.updateChildTiles(tile, frameState);
-  t.equal(requestCount, 0, 'does not request a subtree after the tile meets SSE');
-
+  expect(requestCount, 'does not request a subtree after the tile meets SSE').toBe(0);
   traverser.shouldRefine = () => true;
   traverser.updateChildTiles(tile, frameState);
   await Promise.resolve();
-  t.equal(requestCount, 1, 'requests one eligible subtree');
-  t.equal(tile.children.length, 0, 'retains the current traversal boundary while loading');
-  t.end();
+  expect(requestCount, 'requests one eligible subtree').toBe(1);
+  expect(tile.children.length, 'retains the current traversal boundary while loading').toBe(0);
 });
-
-test('implicit subtree traversal preserves REPLACE coverage while availability is pending', t => {
+test('implicit subtree traversal preserves REPLACE coverage while availability is pending', () => {
   const traverser = new Tileset3DTraverser({});
   traverser.canTraverse = () => true;
   traverser.updateTile = () => {};
@@ -285,15 +242,13 @@ test('implicit subtree traversal preserves REPLACE coverage while availability i
     header: {implicitSubtree: {}},
     isVisibleAndInRequestVolume: true
   } as any;
-
-  t.notOk(
+  expect(
     traverser.executeEmptyTraversal(root, {} as any),
     'does not classify an unresolved lazy boundary as complete empty coverage'
-  );
+  ).toBeFalsy();
   root.header.implicitSubtree = undefined;
-  t.ok(
+  expect(
     traverser.executeEmptyTraversal(root, {} as any),
     'retains the established explicit empty-leaf behavior after materialization'
-  );
-  t.end();
+  ).toBeTruthy();
 });

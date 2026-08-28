@@ -1,21 +1,13 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {extractLoadLibraryOptions, getLibraryUrl, isBrowser} from '@loaders.gl/worker-utils';
 import {VERSION} from '../../../src/lib/env-utils/version';
-
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
-
-test('getLibraryUrl # should return URL', t => {
+test('getLibraryUrl # should return URL', () => {
   const result = getLibraryUrl(DRACO_DECODER_URL);
-  t.equals(result, DRACO_DECODER_URL);
-  t.end();
+  expect(result).toBe(DRACO_DECODER_URL);
 });
-
-test('getLibraryUrl # should not return URL', t => {
+test('getLibraryUrl # should not return URL', () => {
   const result = getLibraryUrl(
     DRACO_DECODER_URL,
     'draco',
@@ -23,26 +15,20 @@ test('getLibraryUrl # should not return URL', t => {
     'draco_decoder.wasm'
   );
   if (isBrowser) {
-    t.equals(result, `https://c.d.n/draco@${VERSION}/dist/libs/draco_decoder.wasm`);
+    expect(result).toBe(`https://c.d.n/draco@${VERSION}/dist/libs/draco_decoder.wasm`);
   } else {
-    t.equals(result, 'modules/draco/dist/libs/draco_decoder.wasm');
+    expect(result).toBe('modules/draco/dist/libs/draco_decoder.wasm');
   }
-
-  t.end();
 });
-
-test('getLibraryUrl # should get url from modules option', t => {
+test('getLibraryUrl # should get url from modules option', () => {
   const result = getLibraryUrl('draco_decoder.wasm', 'draco', {
     modules: {
       'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
     }
   });
-  t.equals(result, 'https://c.d.n/draco_decoder.wasm');
-
-  t.end();
+  expect(result).toBe('https://c.d.n/draco_decoder.wasm');
 });
-
-test('extractLoadLibraryOptions # flattens core options and preserves modules', t => {
+test('extractLoadLibraryOptions # flattens core options and preserves modules', () => {
   const modules = {
     'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
   };
@@ -53,16 +39,10 @@ test('extractLoadLibraryOptions # flattens core options and preserves modules', 
     },
     modules
   });
-
-  t.deepEquals(result, {
+  expect(result).toEqual({
     CDN: 'https://c.d.n',
     useLocalLibraries: true,
     modules
   });
-  t.end();
 });
-
-test('loadLibrary', t => {
-  // loadLibrary({});
-  t.end();
-});
+test('loadLibrary', () => {});

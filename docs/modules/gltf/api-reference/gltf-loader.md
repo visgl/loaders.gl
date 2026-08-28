@@ -23,6 +23,12 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 
 \* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
 
+For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
+listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
+continuing with a best-effort conversion. `convertGLTFV1ToGLTF2()` performs the same conversion on
+a cloned JSON document and leaves the caller's asset untouched. Legacy techniques, programs, and
+shaders are preserved under `json.extras.gltf1Resources`; they are not guessed into PBR materials.
+
 ## Usage
 
 ```
@@ -60,6 +66,13 @@ import {convertGLTFToMeshArrow} from '@loaders.gl/gltf/mesh-arrow';
 const gltf = await load(url, GLTFLoader);
 const meshArrow = convertGLTFToMeshArrow(gltf);
 ```
+
+The result separates reusable source geometries from scene placements. Each geometry contains one
+Arrow table per mesh primitive plus the original attribute component types and normalization
+metadata; each placement identifies the source node and its world transform. All glTF primitive
+attributes are projected as columns, including normals, tangents, texture coordinates, colors,
+joints, and weights. Standard glTF point, line, and triangle modes are represented by the table's
+`topology` metadata. The converter does not modify the input JSON or buffers.
 
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 

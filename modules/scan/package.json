@@ -1,0 +1,48 @@
+{
+  "name": "@loaders.gl/scan",
+  "description": "Optional scan planning and execution for loaders.gl",
+  "version": "5.0.0-alpha.2",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "scan",
+    "arrow",
+    "query",
+    "columnar",
+    "geospatial"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
+    "@loaders.gl/sql": "5.0.0-alpha.2",
+    "apache-arrow": ">= 17.0.0"
+  }
+}

@@ -140,7 +140,9 @@ export class TilesetTraverser {
         // Always load tiles in the base traversal
         // Select tiles that can't refine further
         this.loadTile(tile, frameState);
-        if (stoppedRefining) {
+        // Skip-LOD keeps a ready ancestor selected while descendants stream in. This prevents
+        // replacement holes when traversal jumps over one or more hierarchy levels.
+        if (stoppedRefining || this.options.skipLevelOfDetail) {
           this.selectTile(tile, frameState);
         }
       }
@@ -228,7 +230,7 @@ export class TilesetTraverser {
 
   // tile to render in the browser
   selectTile(tile: Tile3D, frameState: FrameState): void {
-    if (this.shouldSelectTile(tile)) {
+    if (this.shouldSelectTile(tile, frameState)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
       this.selectedTiles[tile.id] = tile;
@@ -292,10 +294,13 @@ export class TilesetTraverser {
     return tile.hasUnloadedContent || tile.contentExpired;
   }
 
-  shouldSelectTile(tile: Tile3D): boolean {
-    // if select tile is in current frame
-    // and content available
-    return tile.contentAvailable && !this.options.skipLevelOfDetail;
+  /**
+   * Returns whether a tile's content is available and visible for rendering.
+   * @param tile Tile considered for rendering.
+   * @param frameState Current culling state.
+   */
+  shouldSelectTile(tile: Tile3D, frameState: FrameState): boolean {
+    return tile.contentAvailable && tile.contentVisibility(frameState) !== 'outside';
   }
 
   /** Decide if tile LoD (level of detail) is not sufficient under current viewport */

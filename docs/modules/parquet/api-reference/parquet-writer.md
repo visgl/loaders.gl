@@ -111,6 +111,7 @@ The selectable primary encodings are:
 | Encoding | Physical types | Typical data |
 | -------- | -------------- | ------------ |
 | `PLAIN` | All | Baseline or already-compressed values |
+| `PLAIN_DICTIONARY` | All | Legacy dictionary identifier for interoperability |
 | `BYTE_STREAM_SPLIT` | `INT32`, `INT64`, `FLOAT`, `DOUBLE`, `FIXED_LEN_BYTE_ARRAY` | Fixed-width numeric values followed by compression |
 | `DELTA_BINARY_PACKED` | `INT32`, `INT64` | Ordered counters, timestamps, and low-delta integers |
 | `DELTA_LENGTH_BYTE_ARRAY` | `BYTE_ARRAY` | Variable-width values with compressible lengths |
@@ -135,9 +136,49 @@ read/write encoding matrix.
 | `parquet.dictionaryPageSizeLimit` | `number` | `1048576` | Maximum uncompressed PLAIN dictionary payload in bytes; oversized dictionaries fall back for the complete chunk. |
 | `parquet.bloomFilter` | `boolean \| Record<string, boolean>` | `false` | Emits uncompressed split-block Bloom filters for supported scalar columns, globally or by top-level column name. |
 | `parquet.pageIndex` | `boolean \| Record<string, boolean>` | `false` | Emits column and offset indexes for supported non-repeated scalar columns, globally or by top-level column name. |
+| `parquet.writeStatistics` | `boolean \| Record<string, boolean>` | `false` | Emits standard min/max/null-count statistics for supported scalar column chunks and data pages, globally or by top-level column name. |
+| `parquet.sortingColumns` | `readonly {column: string; descending?: boolean; nullsFirst?: boolean}[]` | `undefined` | Declares the row-group sort order using top-level or dotted nested leaf names. The writer does not sort rows. |
+| `parquet.int96AsTimestamp` | `boolean` | `false` | Encodes INT96 input values as signed epoch-nanosecond timestamps using the canonical Julian-day representation. |
+| `parquet.writePageChecksums` | `boolean` | `false` | Emits CRC-32 checksums for TypeScript writer data and dictionary pages. |
+| `parquet.writeSizeStatistics` | `boolean` | `false` | Emits byte-array size totals and repetition/definition-level histograms for TypeScript writer column chunks. |
 | `parquet.rowGroupSize` | `number` | implementation default | Sets the target row count per row group for `ParquetJSWriter`. |
 | `parquet.pageSize` | `number` | `8192` | Sets the target shredded level-entry count per page. Boundaries remain aligned to top-level rows. |
 | `parquet.useDataPageV2` | `boolean` | `false` | Emits Data Page V2 from `ParquetJSWriter`. |
+
+### Writer encryption
+
+`ParquetJSWriter` can encrypt the footer and, optionally, selected column chunks with the same
+footer key. Column encryption covers column metadata, dictionary/data page headers and bodies,
+page indexes, and Bloom-filter modules. The existing `ParquetJSLoader` and `ParquetSourceLoader`
+can read these files, including selective range reads and worker decoding. Keys stay in the caller's
+`keyRetriever`; they are not serialized into the writer options.
+
+```typescript
+const parquetBuffer = await encode(table, ParquetJSWriter, {
+  core: {worker: false},
+  parquet: {
+    encryption: {
+      algorithm: 'AES_GCM_CTR_V1',
+      encryptColumns: {identifier: true},
+      keyRetriever: async () => encryptionKey
+    }
+  }
+});
+```
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `parquet.encryption.algorithm` | `'AES_GCM_V1' \| 'AES_GCM_CTR_V1'` | `'AES_GCM_V1'` | Parquet modular-encryption algorithm used for footer and column modules. |
+| `parquet.encryption.keyMetadata` | `Uint8Array` | `undefined` | Opaque metadata supplied to the key retriever and stored in the file crypto metadata. |
+| `parquet.encryption.aadPrefix` | `Uint8Array` | `undefined` | Optional AAD prefix shared by encrypted modules. |
+| `parquet.encryption.fileUnique` | `Uint8Array` | generated | Eight-byte file identifier used to construct module AAD. |
+| `parquet.encryption.encryptColumns` | `boolean \| Record<string, boolean>` | `false` | Encrypt all columns or only named top-level columns with the footer key. |
+| `parquet.encryption.columnKeyMetadata` | `Record<string, Uint8Array>` | `undefined` | Assigns opaque key metadata per top-level column; columns use `ENCRYPTION_WITH_COLUMN_KEY` and may rotate independently. |
+| `parquet.encryption.keyRetriever` | `ParquetKeyRetriever` | required | Resolves the footer key without placing key bytes in the options object. |
+| `parquet.footerSignature` | `ParquetWriterFooterSignatureOptions` | `undefined` | Authenticates a plaintext footer with a 28-byte Parquet signature; mutually exclusive with encrypted footers. |
+
+Per-column keys, key rotation, and plaintext-footer signatures are opt-in. The key retriever receives
+the corresponding footer or column metadata and key material is never serialized into writer options.
 
 ## Writer Variants
 
@@ -168,6 +209,8 @@ written without conversion through JavaScript `number`.
 
 ## Supported Files
 
-The Parquet format supports a large set of features (data types, encodings, compressions, encryptions etc) it require time and contributions for the loaders.gl implementation to provide support for all variations.
+The Parquet format supports a large set of data types, encodings, compressions, and encryption
+variants. The feature matrix tracks the stable combinations implemented by loaders.gl and the
+experimental or producer-specific combinations that still need interoperability coverage.
 
 Please refer to the detailed information about which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.

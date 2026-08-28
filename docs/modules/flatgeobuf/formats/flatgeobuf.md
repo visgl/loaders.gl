@@ -4,6 +4,12 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
 
 <FlatGeobufDocsTabs active="overview" />
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 ![flatgeobuf-logo](../images/flatgeobuf-logo.png)
 
 - _[`@loaders.gl/flatgeobuf`](/docs/modules/flatgeobuf)_
@@ -126,15 +132,29 @@ Each column also has a string that can hold arbitrary metadata.
 
 ## Spatial indexing
 
-:::caution
-loaders.gl currently does not support spatial filtering.
-:::
-
 FlatGeobuf files can optionally contain a spatial index. The spatial index is optional to allow the format to be efficiently written as a stream, support appending, and for use cases where spatial filtering is not needed.
 
 The spatial index clusters the data on a [packed Hilbert R-Tree](https://en.wikipedia.org/wiki/Hilbert_R-tree#Packed_Hilbert_R-trees) enabling fast bounding box spatial filtering.
 
 The Hilbert curve imposes a linear ordering on the data rectangles and then traverses the sorted list, assigning each set of C rectangles to a node in the R-tree. The final result is that the set of data rectangles on the same node will be close to each other in the linear order.
+
+## Scan support
+
+`FlatGeobufSource` uses the packed R-tree when a bounds query is supplied and applies the remaining
+portable table query to the selected features.
+
+| Capability | Support | Execution |
+| --- | --- | --- |
+| Entry point | `read()` | Arrow feature batches |
+| Schema and bounds discovery | Supported | Header metadata |
+| Bounding box | Supported | Packed R-tree pushdown when the file contains an index |
+| Attribute predicate | Supported | Residual after feature decoding |
+| Projection and global limit | Supported | Applied to surviving features |
+| Cancellation | Supported | Covers range reads and result production |
+| Explain output | Supported | Distinguishes R-tree pruning from residual work |
+
+Spatial bounds use the source coordinate reference system. The adapter does not reproject query
+bounds.
 
 ### Optimizing Remotely Hosted FlatGeobufs
 

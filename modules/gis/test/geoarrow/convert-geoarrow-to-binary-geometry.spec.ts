@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test, {Test} from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {
   getBinaryGeometryTemplate,
   getGeometryColumnsFromSchema,
@@ -12,7 +11,6 @@ import {
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {load} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
-
 import {
   GEOARROW_POINT_FILE,
   GEOARROW_MULTIPOINT_FILE,
@@ -22,7 +20,6 @@ import {
   GEOARROW_MULTIPOLYGON_FILE,
   GEOARROW_MULTIPOLYGON_HOLE_FILE
 } from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
-
 const expectedPointBinaryGeometry = {
   binaryGeometries: [
     {
@@ -55,7 +52,6 @@ const expectedPointBinaryGeometry = {
     [2, 2]
   ]
 };
-
 const expectedMultiPointBinaryGeometry = {
   binaryGeometries: [
     {
@@ -88,7 +84,6 @@ const expectedMultiPointBinaryGeometry = {
     [3.5, 3.5]
   ]
 };
-
 const expectedLineBinaryGeometry = {
   binaryGeometries: [
     {
@@ -121,7 +116,6 @@ const expectedLineBinaryGeometry = {
     [2.5, 2.5]
   ]
 };
-
 const expectedMultiLineBinaryGeometry = {
   binaryGeometries: [
     {
@@ -157,7 +151,6 @@ const expectedMultiLineBinaryGeometry = {
     [6.5, 6.5]
   ]
 };
-
 const expectedPolygonBinaryGeometry = {
   binaryGeometries: [
     {
@@ -199,7 +192,6 @@ const expectedPolygonBinaryGeometry = {
     [10.5, 10.5]
   ]
 };
-
 const expectedMultiPolygonBinaryGeometry = {
   binaryGeometries: [
     {
@@ -239,7 +231,6 @@ const expectedMultiPolygonBinaryGeometry = {
   featureTypes: {polygon: true, point: false, line: false},
   meanCenters: [[1.5, 1.5]]
 };
-
 const expectedMultiPolygonHolesBinaryGeometry = {
   binaryGeometries: [
     {
@@ -299,7 +290,6 @@ const expectedMultiPolygonHolesBinaryGeometry = {
     [11.166666666666666, 11.166666666666666]
   ]
 };
-
 const testCases = [
   [GEOARROW_POINT_FILE, expectedPointBinaryGeometry],
   [GEOARROW_MULTIPOINT_FILE, expectedMultiPointBinaryGeometry],
@@ -309,17 +299,12 @@ const testCases = [
   [GEOARROW_MULTIPOLYGON_FILE, expectedMultiPolygonBinaryGeometry],
   [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonHolesBinaryGeometry]
 ];
-
-test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async t => {
+test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async () => {
   for (const testCase of testCases) {
-    await testGetBinaryGeometriesFromArrow(t, testCase[0], testCase[1]);
+    await testGetBinaryGeometriesFromArrow(testCase[0], testCase[1]);
   }
-
-  t.end();
 });
-
 async function testGetBinaryGeometriesFromArrow(
-  t: Test,
   arrowFile,
   expectedBinaryGeometries
 ): Promise<void> {
@@ -327,25 +312,43 @@ async function testGetBinaryGeometriesFromArrow(
     core: {worker: false},
     arrow: {shape: 'arrow-table'}
   });
-
-  t.equal(arrowTable.shape, 'arrow-table');
-
+  expect(arrowTable.shape).toBe('arrow-table');
   if (arrowTable.shape === 'arrow-table') {
     const table = arrowTable.data;
     const geoColumn = table.getChild('geometry');
-    t.notEqual(geoColumn, null, 'geoColumn is not null');
-
+    expect(geoColumn, 'geoColumn is not null').not.toBe(null);
     const schema = convertArrowToSchema(table.schema);
     const geometryColumns = getGeometryColumnsFromSchema(schema);
     const encoding = geometryColumns.geometry.encoding;
-
-    t.notEqual(encoding, undefined, 'encoding is not undefined');
+    expect(encoding, 'encoding is not undefined').not.toBe(undefined);
     if (geoColumn && encoding) {
       const options = {calculateMeanCenters: true, triangulate: true};
       const binaryData = convertGeoArrowToBinaryFeatureCollection(geoColumn, encoding, options);
-      t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
+      expect(normalizeTypedArrays(binaryData), 'binary geometries are correct').toEqual(
+        normalizeTypedArrays(expectedBinaryGeometries)
+      );
     }
   }
-
   return Promise.resolve();
+}
+
+/**
+ * Converts typed arrays nested in a test result to regular arrays for value-only comparisons.
+ *
+ * @param value - A test result containing arrays, typed arrays, or plain objects.
+ * @returns A structurally equivalent value with typed arrays normalized to regular arrays.
+ */
+function normalizeTypedArrays(value: unknown): unknown {
+  if (ArrayBuffer.isView(value)) {
+    return Array.from(value as ArrayLike<unknown>);
+  }
+  if (Array.isArray(value)) {
+    return value.map(normalizeTypedArrays);
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [key, normalizeTypedArrays(nestedValue)])
+    );
+  }
+  return value;
 }

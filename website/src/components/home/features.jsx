@@ -538,6 +538,11 @@ const CategoryNode = styled.span`
   top: ${(props) => props.$top};
 `;
 
+/**
+ * Renders the decorative visualization selected for a feature card.
+ * @param {{type: string, wide?: boolean}} props Component properties.
+ * @returns {React.ReactElement} The selected feature visualization.
+ */
 function RenderFeatureVisual({type, wide}) {
   if (type === 'scan') {
     return (

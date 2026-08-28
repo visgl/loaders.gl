@@ -47,6 +47,8 @@ export const ParquetSourceLoader = {
       geometryColumn: undefined,
       headers: undefined,
       preserveBinary: false,
+      verifyPageChecksums: false,
+      verifyFooterSignature: true,
       onTelemetry: undefined,
       workerUrl: undefined,
       wasmUrl: undefined
@@ -69,6 +71,8 @@ export const ParquetSourceLoader = {
       geometryColumn: undefined!,
       headers: undefined!,
       preserveBinary: false,
+      verifyPageChecksums: false,
+      verifyFooterSignature: true,
       onTelemetry: undefined!,
       workerUrl: undefined!,
       wasmUrl: undefined!

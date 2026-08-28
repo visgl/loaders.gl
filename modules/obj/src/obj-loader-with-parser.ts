@@ -6,6 +6,7 @@ import {
   concatenateArrayBuffersAsync,
   makeLineIterator,
   makeTextDecoderIterator,
+  makeTableScanBatch,
   type Loader,
   type LoaderOptions,
   type LoaderWithParser
@@ -203,11 +204,5 @@ function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJParsedBatch {
     };
   }
 
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: table.schema,
-    data: table.data,
-    length: table.data.numRows
-  };
+  return makeTableScanBatch(table);
 }

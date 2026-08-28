@@ -43,9 +43,19 @@ export class ParquetSchema {
    */
   findField(path: string | string[]): ParquetField {
     if (typeof path === 'string') {
+      // Flat schemas dominate analytical Parquet. Avoid split/array allocation for every Arrow
+      // field lookup while retaining the existing traversal for genuinely nested paths.
+      if (!path.includes(',')) {
+        return this.fields[path];
+      }
       // tslint:disable-next-line:no-parameter-reassignment
       path = path.split(',');
     } else {
+      // Column metadata already stores paths as arrays; the one-segment case needs no defensive
+      // clone or shift and is exercised once per selected flat column.
+      if (path.length === 1) {
+        return this.fields[path[0]];
+      }
       // tslint:disable-next-line:no-parameter-reassignment
       path = path.slice(0); // clone array
     }

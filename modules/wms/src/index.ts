@@ -50,8 +50,9 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // WMTS - Web Map Tile Service
 
-// export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
-// export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
+export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
+export type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 
 // WFS - Web Feature Service
 
@@ -76,13 +77,67 @@ export type {
 } from './csw-source-loader';
 export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
+export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
+export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
+export type {ServiceCRS} from './crs-utils';
+export {
+  normalizeServiceCRS,
+  areServiceCRSEquivalent,
+  selectServiceCRS,
+  getServiceCRSAxisOrder
+} from './crs-utils';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
+export type {WFSVersion} from './wfs-source-loader';
+export type {
+  OGCAPICollection,
+  OGCAPILandingPage,
+  OGCAPILink,
+  OGCAPISourceOptions
+} from './ogc-api-source-loader';
+export {
+  OGCAPIFeaturesSource,
+  OGCAPIFeaturesSourceLoader,
+  OGCAPITilesSource,
+  OGCAPITilesSourceLoader
+} from './ogc-api-source-loader';
+export type {OGCAPIEDRQueryParameters, OGCAPIEDRSourceOptions} from './ogc-api-edr-source-loader';
+export {
+  OGCAPIEDRSource,
+  OGCAPIEDRSourceLoader
+} from './ogc-api-edr-source-loader';
+export type {
+  OGCAPICoveragesQueryParameters,
+  OGCAPICoveragesSourceOptions
+} from './ogc-api-coverages-source-loader';
+export {
+  OGCAPICoveragesSource,
+  OGCAPICoveragesSourceLoader
+} from './ogc-api-coverages-source-loader';
+export type {
+  WCSCoverage,
+  WCSCoverageMetadata,
+  WCSGetCoverageParameters,
+  WCSSourceOptions
+} from './wcs-source-loader';
+export {WCSCoverageSource, WCSCoverageSourceLoader} from './wcs-source-loader';
 
-// ArcGIS SourceLoaders
+export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
+export {
+  normalizeWMSCapabilities,
+  normalizeWMTSCapabilities,
+  normalizeWFSCapabilities,
+  normalizeTileServiceCapabilities,
+  normalizeVectorServiceCapabilities
+} from './service-capabilities';
 
-export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
-export {ArcGISFeatureServerSourceLoader as _ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
-export {ArcGISImageServerSourceLoader as _ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
+export type {
+  ServiceRuntimeOptions,
+  ServiceTelemetryEvent,
+  ServiceSourceLoader
+} from './service-runtime';
+export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './service-runtime';
+export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
+export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';

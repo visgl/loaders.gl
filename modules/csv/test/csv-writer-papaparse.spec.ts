@@ -16,14 +16,16 @@ License: MIT
 // @ts-nocheck
 
 /* eslint-disable quotes */
-import test from 'test/utils/vitest-tape';
+import {describe, expect, test} from 'vitest';
 import Papa from '@loaders.gl/csv/papaparse/papaparse';
 
 // import {isBrowser, load} from '@loaders.gl/core';
 // import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';
 
 // Tests for Papa.unparse() function (JSON to CSV)
-var UNPARSE_TESTS = [
+const RECORD_SEP = String.fromCharCode(30);
+
+const UNPARSE_TESTS = [
   {
     description: 'A simple row',
     notes: 'Comma should be default delimiter',
@@ -253,8 +255,8 @@ var UNPARSE_TESTS = [
   {
     description: 'Date objects are exported in its ISO representation',
     input: [
-      {date: new Date('2018-05-04T21:08:03.269Z'), 'not adate': 16},
-      {date: new Date('Tue May 08 2018 08:20:22 GMT-0700 (PDT)'), 'not adate': 32}
+      {date: new Date('2018-05-04T21:08:03.269Z'), 'not a date': 16},
+      {date: new Date('Tue May 08 2018 08:20:22 GMT-0700 (PDT)'), 'not a date': 32}
     ],
     expected: 'date,not a date\r\n2018-05-04T21:08:03.269Z,16\r\n2018-05-08T15:20:22.000Z,32'
   },
@@ -318,25 +320,8 @@ var UNPARSE_TESTS = [
   }
 ];
 
-test('Unparse Tests', t => {
-  function generateTest(test) {
-    (test.disabled ? test.skip : test)(test.description, () => {
-      var actual;
-
-      try {
-        actual = Papa.unparse(test.input, test.config);
-      } catch (e) {
-        if (e instanceof Error) {
-          throw e;
-        }
-        actual = e;
-      }
-
-      t.strictEqual(actual, test.expected);
-    });
-  }
-
-  for (var i = 0; i < UNPARSE_TESTS.length; i++) {
-    generateTest(UNPARSE_TESTS[i]);
-  }
+describe('Papa.unparse', () => {
+  test.each(UNPARSE_TESTS)('$description', ({input, config, expected}) => {
+    expect(Papa.unparse(input, config)).toBe(expected);
+  });
 });

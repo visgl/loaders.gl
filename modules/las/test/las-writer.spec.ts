@@ -2,53 +2,54 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-
 import {LASCOPCLoader, LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
-
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 1]), size: 3},
   intensity: {value: new Uint16Array([10, 20, 30]), size: 1},
   classification: {value: new Uint8Array([1, 2, 3]), size: 1}
 };
-
 const mesh = {
   attributes,
   topology: 'point-list' as const,
   mode: 0,
   schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'})
 };
-
 const exportedExtraBytesTypeCheck: LASExtraBytesWriter = {attribute: 'value'};
 void exportedExtraBytesTypeCheck;
-
-test('LASWriter#writer conformance', t => {
-  validateWriter(t, LASWriter, 'LASWriter');
-  t.end();
+const vitestAssertions = {
+  ok(value: unknown, message?: string) {
+    expect(value, message).toBeTruthy();
+  },
+  notOk(value: unknown, message?: string) {
+    expect(value, message).toBeFalsy();
+  },
+  equal(actual: unknown, expected: unknown, message?: string) {
+    expect(actual, message).toBe(expected);
+  }
+};
+test('LASWriter#writer conformance', () => {
+  validateWriter(LASWriter, 'LASWriter');
 });
-
-test('LASWriter#encode plain and Arrow mesh data', async t => {
+test('LASWriter#encode plain and Arrow mesh data', async () => {
   const arrayBuffer = await encode(mesh, LASWriter);
   const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
-
-  validateMeshCategoryData(t, data);
-  t.equal(data.mode, 0, 'mode is POINTS (0)');
-  t.equal(data.attributes.POSITION.value.length, 9, 'POSITION attribute roundtripped');
-
+  validateMeshCategoryData(vitestAssertions, data);
+  expect(data.mode, 'mode is POINTS (0)').toBe(0);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
   const arrowArrayBuffer = await encode(arrowTable, LASWriter);
   const arrowData = await parse(arrowArrayBuffer, LASLoader, {core: {worker: false}});
-
-  validateMeshCategoryData(t, arrowData);
-  t.equal(arrowData.attributes.POSITION.value.length, 9, 'Arrow POSITION attribute roundtripped');
-  t.end();
+  validateMeshCategoryData(vitestAssertions, arrowData);
+  expect(arrowData.attributes.POSITION.value.length, 'Arrow POSITION attribute roundtripped').toBe(
+    9
+  );
 });
-
-test('LASWriter#encode LAS 1.4 point format 7', async t => {
+test('LASWriter#encode LAS 1.4 point format 7', async () => {
   const arrayBuffer = await encode(mesh, LASWriter, {
     las: {version: '1.4', pointDataRecordFormat: 7}
   });
@@ -58,30 +59,69 @@ test('LASWriter#encode LAS 1.4 point format 7', async t => {
   const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
     core: {worker: false}
   });
-
-  t.equal(data.loaderData.versionAsString, '1.4', 'writes LAS 1.4 header');
-  t.equal(data.loaderData.pointsFormatId, 7, 'writes point format 7');
-  t.equal(data.header.vertexCount, attributes.POSITION.value.length / 3, 'round trips point count');
-  t.ok(data.attributes.COLOR_0, 'round trips color attribute');
-  t.deepEqual(
+  expect(data.loaderData.versionAsString, 'writes LAS 1.4 header').toBe('1.4');
+  expect(data.loaderData.pointsFormatId, 'writes point format 7').toBe(7);
+  expect(data.header.vertexCount, 'round trips point count').toBe(
+    attributes.POSITION.value.length / 3
+  );
+  expect(data.attributes.COLOR_0, 'round trips color attribute').toBeTruthy();
+  expect(
     Array.from(data.attributes.POSITION.value),
-    Array.from(wasmData.attributes.POSITION.value),
     'TypeScript parser matches WASM parser for written positions'
-  );
-  t.deepEqual(
+  ).toEqual(Array.from(wasmData.attributes.POSITION.value));
+  expect(
     Array.from(data.attributes.intensity.value),
-    Array.from(wasmData.attributes.intensity.value),
     'TypeScript parser matches WASM parser for written intensities'
-  );
-  t.deepEqual(
+  ).toEqual(Array.from(wasmData.attributes.intensity.value));
+  expect(
     Array.from(data.attributes.classification.value),
-    Array.from(wasmData.attributes.classification.value),
     'TypeScript parser matches WASM parser for written classifications'
-  );
-  t.end();
+  ).toEqual(Array.from(wasmData.attributes.classification.value));
 });
+test('LASWriter#encode LAS 1.5 point format 7 with WKT metadata', async () => {
+  const arrayBuffer = await encode(mesh, LASWriter, {
+    las: {
+      version: '1.5',
+      pointDataRecordFormat: 7,
+      wkt: 'GEOGCRS["WGS 84"]'
+    }
+  });
+  const dataView = new DataView(arrayBuffer);
+  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  expect(data.loaderData.versionAsString, 'writes LAS 1.5 header').toBe('1.5');
+  expect(data.loaderData.headerSize, 'writes the LAS 1.5 header size').toBe(393);
+  expect(data.loaderData.pointsFormatId, 'writes modern point format 7').toBe(7);
+  expect(dataView.getUint16(6, true) & 0x10, 'sets the LAS 1.5 WKT flag').toBe(0x10);
+  expect(data.loaderData.metadata?.wkt, 'round trips the WKT VLR').toBe('GEOGCRS["WGS 84"]');
+});
+test('LASWriter#sets WKT and GPS time flags independently', async () => {
+  const gpsMesh = {
+    ...mesh,
+    attributes: {
+      ...mesh.attributes,
+      gpsTime: {value: new Float64Array([0, 0, 0]), size: 1}
+    }
+  };
+  const arrayBuffer = await encode(gpsMesh, LASWriter, {
+    las: {
+      version: '1.5',
+      pointDataRecordFormat: 6,
+      wkt: 'GEOGCRS["WGS 84"]',
+      timeOffset: 10
+    }
+  });
+  const dataView = new DataView(arrayBuffer);
+  expect(dataView.getUint16(6, true) & 0x51, 'sets WKT, GPS time, and time offset flags').toBe(
+    0x51
+  );
+  expect(dataView.getUint16(391, true), 'writes the LAS 1.5 time offset').toBe(10);
 
-test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async t => {
+  const las14 = await encode(mesh, LASWriter, {
+    las: {version: '1.4', pointDataRecordFormat: 6, wkt: 'GEOGCRS["WGS 84"]'}
+  });
+  expect(new DataView(las14).getUint16(6, true) & 0x10, 'sets the LAS 1.4 WKT flag').toBe(0x10);
+});
+test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async () => {
   for (const pointDataRecordFormat of [6, 7, 8] as const) {
     const arrayBuffer = await encode(mesh, LASWriter, {
       las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}
@@ -100,64 +140,49 @@ test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async t => {
     const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
       core: {worker: false}
     });
-
-    t.equal(
+    expect(
       dataView.getUint8(104),
-      0x80 | pointDataRecordFormat,
       `PDRF ${pointDataRecordFormat} sets the compressed format flag`
-    );
-    t.equal(dataView.getUint32(100, true), 1, `PDRF ${pointDataRecordFormat} writes one VLR`);
-    t.equal(chunkCount, 2, `PDRF ${pointDataRecordFormat} writes two chunks`);
-    t.deepEqual(
+    ).toBe(0x80 | pointDataRecordFormat);
+    expect(dataView.getUint32(100, true), `PDRF ${pointDataRecordFormat} writes one VLR`).toBe(1);
+    expect(chunkCount, `PDRF ${pointDataRecordFormat} writes two chunks`).toBe(2);
+    expect(
       chunks.map(chunk => chunk.pointCount),
-      [2, 1],
       `PDRF ${pointDataRecordFormat} fixed chunk counts roundtrip`
-    );
-    t.equal(
+    ).toEqual([2, 1]);
+    expect(
       chunks.reduce((byteLength, chunk) => byteLength + chunk.byteLength, 0),
-      chunkTableOffset - pointDataOffset - 8,
       `PDRF ${pointDataRecordFormat} chunk sizes reach the table`
-    );
-    t.deepEqual(
+    ).toBe(chunkTableOffset - pointDataOffset - 8);
+    expect(
       Array.from(data.attributes.POSITION.value),
-      Array.from(wasmData.attributes.POSITION.value),
       `PDRF ${pointDataRecordFormat} TypeScript positions match WASM`
-    );
-    t.deepEqual(
+    ).toEqual(Array.from(wasmData.attributes.POSITION.value));
+    expect(
       Array.from(data.attributes.intensity.value),
-      Array.from(wasmData.attributes.intensity.value),
       `PDRF ${pointDataRecordFormat} TypeScript intensities match WASM`
-    );
-    t.deepEqual(
+    ).toEqual(Array.from(wasmData.attributes.intensity.value));
+    expect(
       Array.from(data.attributes.classification.value),
-      Array.from(wasmData.attributes.classification.value),
       `PDRF ${pointDataRecordFormat} TypeScript classifications match WASM`
-    );
+    ).toEqual(Array.from(wasmData.attributes.classification.value));
   }
-  t.end();
 });
-
-test('LASWriter#encodes legacy PDRF 0 LAZ', async t => {
+test('LASWriter#encodes legacy PDRF 0 LAZ', async () => {
   const arrayBuffer = await encode(mesh, LASWriter, {
     las: {format: 'laz', pointDataRecordFormat: 0, chunkSize: 2}
   });
   const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
-  t.equal(data.loaderData.pointsFormatId, 0, 'writes legacy point format 0');
-  t.equal(data.loaderData.versionAsString, '1.2', 'writes the default legacy LAS version');
-  t.deepEqual(
-    Array.from(data.attributes.POSITION.value),
-    Array.from(attributes.POSITION.value),
-    'legacy LAZ positions roundtrip'
+  expect(data.loaderData.pointsFormatId, 'writes legacy point format 0').toBe(0);
+  expect(data.loaderData.versionAsString, 'writes the default legacy LAS version').toBe('1.2');
+  expect(Array.from(data.attributes.POSITION.value), 'legacy LAZ positions roundtrip').toEqual(
+    Array.from(attributes.POSITION.value)
   );
-  t.deepEqual(
-    Array.from(data.attributes.intensity.value),
-    Array.from(attributes.intensity.value),
-    'legacy LAZ intensities roundtrip'
+  expect(Array.from(data.attributes.intensity.value), 'legacy LAZ intensities roundtrip').toEqual(
+    Array.from(attributes.intensity.value)
   );
-  t.end();
 });
-
-test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
+test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async () => {
   const legacyAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3, 2, 3, 4, 3, 4, 5]), size: 3},
     gpsTime: {value: new Float64Array([123.5, 123.500001, 123.500002]), size: 1},
@@ -169,7 +194,6 @@ test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
     mode: 0,
     schema: deduceMeshSchema(legacyAttributes, {topology: 'point-list', mode: '0'})
   };
-
   for (const pointDataRecordFormat of [1, 2, 3] as const) {
     const arrayBuffer = await encode(legacyMesh, LASWriter, {
       las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}
@@ -178,70 +202,60 @@ test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async t => {
     const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
       core: {worker: false}
     });
-    t.equal(
-      data.loaderData.pointsFormatId,
-      pointDataRecordFormat,
-      `writes PDRF ${pointDataRecordFormat}`
+    expect(data.loaderData.pointsFormatId, `writes PDRF ${pointDataRecordFormat}`).toBe(
+      pointDataRecordFormat
     );
-    t.deepEqual(
+    expect(
       Array.from(data.attributes.POSITION.value),
-      Array.from(legacyAttributes.POSITION.value),
       `PDRF ${pointDataRecordFormat} positions roundtrip`
-    );
-    t.deepEqual(
+    ).toEqual(Array.from(legacyAttributes.POSITION.value));
+    expect(
       Array.from(data.attributes.gpsTime?.value || []),
-      Array.from(wasmData.attributes.gpsTime?.value || []),
       `PDRF ${pointDataRecordFormat} GPS time matches WASM`
-    );
+    ).toEqual(Array.from(wasmData.attributes.gpsTime?.value || []));
     if (pointDataRecordFormat >= 2 && pointDataRecordFormat < 3) {
-      t.deepEqual(
+      expect(
         Array.from(data.attributes.COLOR_0?.value || []),
-        Array.from(wasmData.attributes.COLOR_0?.value || []),
         `PDRF ${pointDataRecordFormat} RGB matches WASM`
-      );
+      ).toEqual(Array.from(wasmData.attributes.COLOR_0?.value || []));
     }
     if (pointDataRecordFormat === 3) {
-      t.deepEqual(
+      expect(
         Array.from(data.attributes.COLOR_0?.value || []),
-        [10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 90, 255],
         'PDRF 3 RGB roundtrips through TypeScript decoder'
-      );
+      ).toEqual([10, 20, 30, 255, 40, 50, 60, 255, 70, 80, 90, 255]);
     }
   }
-  t.end();
 });
-
-test('LASWriter#validates compressed output options', t => {
-  t.throws(
+test('LASWriter#validates compressed output options', () => {
+  expect(
     () =>
       LASWriter.encodeSync?.(mesh, {
         las: {format: 'laz', version: '1.2', pointDataRecordFormat: 6}
       }),
-    /LAZ output requires LAS 1.4/,
     'LAZ writer rejects legacy LAS versions'
-  );
+  ).toThrow(/LAZ output requires LAS 1.4/);
   const waveform = LASWriter.encodeSync?.(mesh, {
     las: {format: 'laz', version: '1.4', pointDataRecordFormat: 5}
   });
-  t.equal(
+  expect(
     new DataView(waveform!).getUint8(104) & 0x7f,
-    5,
     'LAZ writer supports legacy waveform point formats'
-  );
-  t.throws(
+  ).toBe(5);
+  const las11 = LASWriter.encodeSync?.(mesh, {
+    las: {format: 'laz', version: '1.1', pointDataRecordFormat: 1}
+  });
+  expect(new DataView(las11!).getUint8(25), 'LAZ PDRF 1 supports LAS 1.1').toBe(1);
+  expect(
     () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz', chunkSize: 0}}),
-    /invalid LAZ chunk size/,
     'LAZ writer rejects empty chunks'
-  );
-  t.throws(
+  ).toThrow(/invalid LAZ chunk size/);
+  expect(
     () => LASWriter.encodeSync?.(mesh, {las: {version: '1.2', pointDataRecordFormat: 7}}),
-    /point data record format 7 requires LAS 1.4/,
     'LASWriter rejects modern point formats in legacy LAS headers'
-  );
-  t.end();
+  ).toThrow(/point data record format 7 requires LAS 1.4/);
 });
-
-test('LASWriter#encodes variable LAZ chunks', async t => {
+test('LASWriter#encodes variable LAZ chunks', async () => {
   const arrayBuffer = await encode(mesh, LASWriter, {
     las: {
       format: 'laz',
@@ -264,28 +278,22 @@ test('LASWriter#encodes variable LAZ chunks', async t => {
   const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
     core: {worker: false}
   });
-
-  t.equal(dataView.getUint32(100, true), 1, 'writes one LASzip VLR');
-  t.deepEqual(
+  expect(dataView.getUint32(100, true), 'writes one LASzip VLR').toBe(1);
+  expect(
     chunks.map(chunk => chunk.pointCount),
-    [2, 1],
     'variable chunk table preserves point counts'
-  );
-  t.equal(data.attributes.POSITION.value.length, 9, 'variable LAZ parses through LASLoader');
-  t.deepEqual(
+  ).toEqual([2, 1]);
+  expect(data.attributes.POSITION.value.length, 'variable LAZ parses through LASLoader').toBe(9);
+  expect(
     Array.from(data.attributes.POSITION.value),
-    Array.from(wasmData.attributes.POSITION.value),
     'variable LAZ positions match the independent WASM reader'
-  );
-  t.deepEqual(
+  ).toEqual(Array.from(wasmData.attributes.POSITION.value));
+  expect(
     Array.from(data.attributes.intensity.value),
-    Array.from(wasmData.attributes.intensity.value),
     'variable LAZ intensities match the independent WASM reader'
-  );
-  t.end();
+  ).toEqual(Array.from(wasmData.attributes.intensity.value));
 });
-
-test('LASWriter#preserves modern LAS point fields', t => {
+test('LASWriter#preserves modern LAS point fields', () => {
   const modernAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     gpsTime: {value: new Float64Array([123.5]), size: 1},
@@ -316,19 +324,16 @@ test('LASWriter#preserves modern LAS point fields', t => {
   }
   const dataView = new DataView(arrayBuffer);
   const pointOffset = 375;
-
-  t.equal(dataView.getUint8(pointOffset + 14), 0x32, 'writes return number and count');
-  t.equal(
+  expect(dataView.getUint8(pointOffset + 14), 'writes return number and count').toBe(0x32);
+  expect(
     dataView.getUint8(pointOffset + 15),
-    0xef,
     'writes classification, scanner, and flight-line flags'
-  );
-  t.equal(dataView.getUint32(263, true), 1, 'writes the extended second-return count');
-  t.equal(dataView.getUint8(pointOffset + 17), 7, 'writes user data');
-  t.equal(dataView.getInt16(pointOffset + 18, true), -12, 'writes scan angle');
-  t.equal(dataView.getUint16(pointOffset + 20, true), 99, 'writes point source id');
-  t.equal(dataView.getFloat64(pointOffset + 22, true), 123.5, 'writes GPS time');
-
+  ).toBe(0xef);
+  expect(dataView.getUint32(263, true), 'writes the extended second-return count').toBe(1);
+  expect(dataView.getUint8(pointOffset + 17), 'writes user data').toBe(7);
+  expect(dataView.getInt16(pointOffset + 18, true), 'writes scan angle').toBe(-12);
+  expect(dataView.getUint16(pointOffset + 20, true), 'writes point source id').toBe(99);
+  expect(dataView.getFloat64(pointOffset + 22, true), 'writes GPS time').toBe(123.5);
   const lazArrayBuffer = LASWriter.encodeSync?.(modernMesh, {
     las: {format: 'laz', pointDataRecordFormat: 7, chunkSize: 1}
   });
@@ -350,20 +355,17 @@ test('LASWriter#preserves modern LAS point fields', t => {
     }
   );
   const lazPointView = new DataView(lazChunk.buffer);
-  t.equal(lazPointView.getUint8(14), 0x32, 'LAZ preserves return number and count');
-  t.equal(
+  expect(lazPointView.getUint8(14), 'LAZ preserves return number and count').toBe(0x32);
+  expect(
     lazPointView.getUint8(15),
-    0xef,
     'LAZ preserves classification, scanner, and flight-line flags'
-  );
-  t.equal(lazPointView.getUint8(17), 7, 'LAZ preserves user data');
-  t.equal(lazPointView.getInt16(18, true), -12, 'LAZ preserves scan angle');
-  t.equal(lazPointView.getUint16(20, true), 99, 'LAZ preserves point source id');
-  t.equal(lazPointView.getFloat64(22, true), 123.5, 'LAZ preserves GPS time');
-  t.end();
+  ).toBe(0xef);
+  expect(lazPointView.getUint8(17), 'LAZ preserves user data').toBe(7);
+  expect(lazPointView.getInt16(18, true), 'LAZ preserves scan angle').toBe(-12);
+  expect(lazPointView.getUint16(20, true), 'LAZ preserves point source id').toBe(99);
+  expect(lazPointView.getFloat64(22, true), 'LAZ preserves GPS time').toBe(123.5);
 });
-
-test('LASWriter#encodes extended return histograms', t => {
+test('LASWriter#encodes extended return histograms', () => {
   const extendedReturnAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     returnNumber: {value: new Uint8Array([15]), size: 1},
@@ -382,12 +384,10 @@ test('LASWriter#encodes extended return histograms', t => {
     throw new Error('LASWriter did not return an ArrayBuffer');
   }
   const dataView = new DataView(arrayBuffer);
-  t.equal(dataView.getUint8(375 + 14), 0xff, 'encodes the fifteenth return number and count');
-  t.equal(dataView.getUint32(367, true), 1, 'writes the fifteenth extended return count');
-  t.end();
+  expect(dataView.getUint8(375 + 14), 'encodes the fifteenth return number and count').toBe(0xff);
+  expect(dataView.getUint32(367, true), 'writes the fifteenth extended return count').toBe(1);
 });
-
-test('LASWriter#encodes legacy return metadata', t => {
+test('LASWriter#encodes legacy return metadata', () => {
   const legacyReturnAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     returnNumber: {value: new Uint8Array([2]), size: 1},
@@ -406,12 +406,10 @@ test('LASWriter#encodes legacy return metadata', t => {
     throw new Error('LASWriter did not return an ArrayBuffer');
   }
   const dataView = new DataView(arrayBuffer);
-  t.equal(dataView.getUint8(227 + 14), 0x1a, 'encodes legacy return number and count');
-  t.equal(dataView.getUint32(115, true), 1, 'writes the legacy second-return count');
-  t.end();
+  expect(dataView.getUint8(227 + 14), 'encodes legacy return number and count').toBe(0x1a);
+  expect(dataView.getUint32(115, true), 'writes the legacy second-return count').toBe(1);
 });
-
-test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
+test('LASWriter#preserves NIR in PDRF 8 LAZ', () => {
   const nirAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3},
@@ -440,12 +438,82 @@ test('LASWriter#preserves NIR in PDRF 8 LAZ', t => {
     rgb14ItemVersion: 3,
     byte14ItemVersion: 3
   });
-
-  t.equal(new DataView(chunk.buffer).getUint16(36, true), 1234, 'LAZ preserves NIR');
-  t.end();
+  expect(new DataView(chunk.buffer).getUint16(36, true), 'LAZ preserves NIR').toBe(1234);
 });
-
-test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
+test('LASWriter#encodes waveform PDRF 9 and 10 LAZ containers', async () => {
+  const waveformAttributes = {
+    POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
+    COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3},
+    nir: {value: new Uint16Array([1234]), size: 1},
+    wavePacketDescriptorIndex: {value: new Uint8Array([7]), size: 1},
+    wavePacketOffset: {value: new Float64Array([123456]), size: 1},
+    wavePacketSize: {value: new Uint32Array([4096]), size: 1},
+    wavePacketReturnPoint: {value: new Float32Array([0.25]), size: 1},
+    wavePacketVector: {value: new Float32Array([1.5, -2.5, 3.5]), size: 3}
+  };
+  const waveformMesh = {
+    attributes: waveformAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(waveformAttributes, {topology: 'point-list', mode: '0'})
+  };
+  for (const pointDataRecordFormat of [9, 10] as const) {
+    const arrayBuffer = await encode(waveformMesh, LASWriter, {
+      las: {format: 'laz', pointDataRecordFormat, chunkSize: 1}
+    });
+    const dataView = new DataView(arrayBuffer);
+    const pointDataOffset = dataView.getUint32(96, true);
+    const chunkTableOffset = readUint64(dataView, pointDataOffset);
+    const pointDataRecordLength = pointDataRecordFormat === 9 ? 59 : 67;
+    const decoded = decodeLAZChunk(arrayBuffer.slice(pointDataOffset + 8, chunkTableOffset), {
+      pointDataRecordFormat,
+      pointDataRecordLength,
+      pointCount: 1,
+      point14ItemVersion: 3,
+      rgb14ItemVersion: 3,
+      wavePacketItemVersion: 3,
+      byte14ItemVersion: 3
+    });
+    const decodedView = new DataView(decoded.buffer, decoded.byteOffset, decoded.byteLength);
+    const waveformOffset = pointDataRecordFormat === 9 ? 30 : 38;
+    const uncompressed = await encode(waveformMesh, LASWriter, {
+      las: {format: 'las', pointDataRecordFormat}
+    });
+    const uncompressedDataView = new DataView(uncompressed);
+    const uncompressedPointOffset = uncompressedDataView.getUint32(96, true);
+    expect(dataView.getUint8(104), `writes PDRF ${pointDataRecordFormat}`).toBe(
+      0x80 | pointDataRecordFormat
+    );
+    expect(dataView.getUint16(105, true), 'writes the waveform record length').toBe(
+      pointDataRecordLength
+    );
+    expect(decodedView.getUint8(waveformOffset), 'preserves the waveform descriptor index').toBe(7);
+    expect(
+      decodedView.getBigUint64(waveformOffset + 1, true),
+      'preserves the waveform offset'
+    ).toBe(123456n);
+    expect(decodedView.getUint32(waveformOffset + 9, true), 'preserves the waveform size').toBe(
+      4096
+    );
+    expect(decodedView.getFloat32(waveformOffset + 13, true), 'preserves the return location').toBe(
+      0.25
+    );
+    expect(
+      [0, 1, 2].map(componentIndex =>
+        decodedView.getFloat32(waveformOffset + 17 + componentIndex * 4, true)
+      ),
+      'preserves the waveform vector'
+    ).toEqual([1.5, -2.5, 3.5]);
+    expect(
+      decoded,
+      `PDRF ${pointDataRecordFormat} compressed point bytes match uncompressed LAS`
+    ).toEqual(new Uint8Array(uncompressed, uncompressedPointOffset, pointDataRecordLength));
+    if (pointDataRecordFormat === 10) {
+      expect(decodedView.getUint16(36, true), 'PDRF 10 preserves NIR').toBe(1234);
+    }
+  }
+});
+test('LASWriter#writes Extra Bytes in LAS and LAZ', () => {
   const extraAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     extraIntensity: {value: new Uint16Array([1234]), size: 1}
@@ -485,7 +553,6 @@ test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
     }
   );
   const lazPointView = new DataView(lazChunk.buffer);
-
   const lasArrayBuffer = LASWriter.encodeSync?.(extraMesh, {
     las: {pointDataRecordFormat: 7, extraBytes: options.las.extraBytes}
   });
@@ -494,19 +561,22 @@ test('LASWriter#writes Extra Bytes in LAS and LAZ', t => {
   }
   const lasDataView = new DataView(lasArrayBuffer);
   const lasPointDataOffset = lasDataView.getUint32(96, true);
-
-  t.equal(lazDataView.getUint32(100, true), 2, 'writes Extra Bytes and LASzip VLRs');
-  t.equal(lazDataView.getUint16(105, true), 38, 'includes Extra Bytes in the LAZ record length');
-  t.equal(lazDataView.getUint16(375 + 20, true), 192, 'writes one Extra Bytes descriptor');
-  t.equal(lazDataView.getUint8(375 + 54 + 2), 3, 'declares the Uint16 Extra Bytes type');
-  t.equal(lazPointView.getUint16(36, true), 1234, 'LAZ preserves the Extra Bytes value');
-  t.equal(lasDataView.getUint32(100, true), 1, 'writes an Extra Bytes VLR for LAS');
-  t.equal(lasDataView.getUint16(105, true), 38, 'includes Extra Bytes in the LAS record length');
-  t.equal(lasDataView.getUint16(lasPointDataOffset + 36, true), 1234, 'LAS preserves Extra Bytes');
-  t.end();
+  expect(lazDataView.getUint32(100, true), 'writes Extra Bytes and LASzip VLRs').toBe(2);
+  expect(lazDataView.getUint16(105, true), 'includes Extra Bytes in the LAZ record length').toBe(
+    38
+  );
+  expect(lazDataView.getUint16(375 + 20, true), 'writes one Extra Bytes descriptor').toBe(192);
+  expect(lazDataView.getUint8(375 + 54 + 2), 'declares the Uint16 Extra Bytes type').toBe(3);
+  expect(lazPointView.getUint16(36, true), 'LAZ preserves the Extra Bytes value').toBe(1234);
+  expect(lasDataView.getUint32(100, true), 'writes an Extra Bytes VLR for LAS').toBe(1);
+  expect(lasDataView.getUint16(105, true), 'includes Extra Bytes in the LAS record length').toBe(
+    38
+  );
+  expect(lasDataView.getUint16(lasPointDataOffset + 36, true), 'LAS preserves Extra Bytes').toBe(
+    1234
+  );
 });
-
-test('LASWriter#preserves LAZ fields through encodeInBatches', async t => {
+test('LASWriter#preserves LAZ fields through encodeInBatches', async () => {
   const createBatch = (positions: number[], intensities: number[], extraValues: number[]) => {
     const batchAttributes = {
       POSITION: {value: new Float64Array(positions), size: 3},
@@ -559,13 +629,12 @@ test('LASWriter#preserves LAZ fields through encodeInBatches', async t => {
     rgb14ItemVersion: 3,
     byte14ItemVersion: 3
   });
-
-  t.deepEqual(Array.from(data.attributes.intensity.value), [10, 20, 30, 40], 'merges batches');
-  t.equal(new DataView(chunk.buffer).getUint16(36, true), 100, 'preserves first batch Extra Bytes');
-  t.end();
+  expect(Array.from(data.attributes.intensity.value), 'merges batches').toEqual([10, 20, 30, 40]);
+  expect(new DataView(chunk.buffer).getUint16(36, true), 'preserves first batch Extra Bytes').toBe(
+    100
+  );
 });
-
-test('LASWriter#validates batched attribute schemas', async t => {
+test('LASWriter#validates batched attribute schemas', async () => {
   const firstBatch = {
     attributes: {
       POSITION: {value: new Float64Array([0, 0, 0]), size: 3},
@@ -602,15 +671,11 @@ test('LASWriter#validates batched attribute schemas', async t => {
       void ignored;
     }
   };
-  await t.rejects(
-    consumeBatches(),
-    /consistent attribute names/,
-    'rejects batches with missing attributes'
+  await await expect(consumeBatches(), 'rejects batches with missing attributes').rejects.toThrow(
+    /consistent attribute names/
   );
-  t.end();
 });
-
-test('LASWriter#writes vector Extra Bytes fields', t => {
+test('LASWriter#writes vector Extra Bytes fields', () => {
   const vectorAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     extraVector: {value: new Float32Array([1.5, 2.5, 3.5]), size: 3}
@@ -644,16 +709,13 @@ test('LASWriter#writes vector Extra Bytes fields', t => {
     byte14ItemVersion: 3
   });
   const pointView = new DataView(chunk.buffer);
-
-  t.equal(dataView.getUint16(105, true), 48, 'includes vector Extra Bytes width');
-  t.equal(dataView.getUint8(375 + 54 + 2), 29, 'declares a three-component float type');
-  t.equal(pointView.getFloat32(36, true), 1.5, 'preserves vector component one');
-  t.equal(pointView.getFloat32(40, true), 2.5, 'preserves vector component two');
-  t.equal(pointView.getFloat32(44, true), 3.5, 'preserves vector component three');
-  t.end();
+  expect(dataView.getUint16(105, true), 'includes vector Extra Bytes width').toBe(48);
+  expect(dataView.getUint8(375 + 54 + 2), 'declares a three-component float type').toBe(29);
+  expect(pointView.getFloat32(36, true), 'preserves vector component one').toBe(1.5);
+  expect(pointView.getFloat32(40, true), 'preserves vector component two').toBe(2.5);
+  expect(pointView.getFloat32(44, true), 'preserves vector component three').toBe(3.5);
 });
-
-test('LASWriter#writes multiple Extra Bytes fields contiguously', t => {
+test('LASWriter#writes multiple Extra Bytes fields contiguously', () => {
   const extraAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     firstExtra: {value: new Uint8Array([11]), size: 1},
@@ -688,14 +750,13 @@ test('LASWriter#writes multiple Extra Bytes fields contiguously', t => {
     byte14ItemVersion: 3
   });
   const pointView = new DataView(chunk.buffer);
-
-  t.equal(dataView.getUint16(105, true), 39, 'includes both Extra Bytes widths');
-  t.equal(pointView.getUint8(36), 11, 'writes the first Extra Bytes field at the base offset');
-  t.equal(pointView.getUint16(37, true), 2233, 'writes the second Extra Bytes field contiguously');
-  t.end();
+  expect(dataView.getUint16(105, true), 'includes both Extra Bytes widths').toBe(39);
+  expect(pointView.getUint8(36), 'writes the first Extra Bytes field at the base offset').toBe(11);
+  expect(pointView.getUint16(37, true), 'writes the second Extra Bytes field contiguously').toBe(
+    2233
+  );
 });
-
-test('LASWriter#validates Extra Bytes declarations', t => {
+test('LASWriter#validates Extra Bytes declarations', () => {
   const scalarAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     value: {value: new Uint8Array([1]), size: 1}
@@ -706,17 +767,20 @@ test('LASWriter#validates Extra Bytes declarations', t => {
     mode: 0,
     schema: deduceMeshSchema(scalarAttributes, {topology: 'point-list', mode: '0'})
   };
-
-  t.throws(
+  expect(
     () =>
       LASWriter.encodeSync?.(scalarMesh, {
         las: {extraBytes: [{attribute: 'value'}, {attribute: 'value'}]}
       }),
-    /duplicate Extra Bytes attribute value/,
     'rejects duplicate Extra Bytes attributes'
-  );
-
-  const largeAttributes: Record<string, {value: Uint8Array | Float64Array; size: number}> = {
+  ).toThrow(/duplicate Extra Bytes attribute value/);
+  const largeAttributes: Record<
+    string,
+    {
+      value: Uint8Array | Float64Array;
+      size: number;
+    }
+  > = {
     POSITION: scalarAttributes.POSITION
   };
   for (let index = 0; index < 65536; index++) {
@@ -732,13 +796,17 @@ test('LASWriter#validates Extra Bytes declarations', t => {
     attribute: `value-${index}`,
     name: `field-${index}`
   }));
-  t.throws(
+  expect(
     () => LASWriter.encodeSync?.(largeMesh, {las: {extraBytes}}),
-    /point data record length .* exceeds the LAS limit/,
     'rejects an Extra Bytes record that exceeds the LAS limit'
-  );
-
-  const vlrAttributes: Record<string, {value: Uint8Array | Float64Array; size: number}> = {
+  ).toThrow(/point data record length .* exceeds the LAS limit/);
+  const vlrAttributes: Record<
+    string,
+    {
+      value: Uint8Array | Float64Array;
+      size: number;
+    }
+  > = {
     POSITION: scalarAttributes.POSITION
   };
   for (let index = 0; index < 342; index++) {
@@ -750,18 +818,15 @@ test('LASWriter#validates Extra Bytes declarations', t => {
     mode: 0,
     schema: deduceMeshSchema(vlrAttributes, {topology: 'point-list', mode: '0'})
   };
-  t.throws(
+  expect(
     () =>
       LASWriter.encodeSync?.(vlrMesh, {
         las: {extraBytes: Array.from({length: 342}, (_, index) => ({attribute: `value-${index}`}))}
       }),
-    /Extra Bytes VLR payload .* exceeds the LAS limit/,
     'rejects an Extra Bytes VLR that exceeds its length field'
-  );
-  t.end();
+  ).toThrow(/Extra Bytes VLR payload .* exceeds the LAS limit/);
 });
-
-test('LASWriter#validates point attribute shapes', t => {
+test('LASWriter#validates point attribute shapes', () => {
   const invalidPositionMesh = {
     ...mesh,
     attributes: {
@@ -769,12 +834,10 @@ test('LASWriter#validates point attribute shapes', t => {
       POSITION: {value: new Float32Array([0, 0]), size: 2}
     }
   };
-  t.throws(
+  expect(
     () => LASWriter.encodeSync?.(invalidPositionMesh),
-    /POSITION attribute must have size 3/,
     'rejects non-three-component positions'
-  );
-
+  ).toThrow(/POSITION attribute must have size 3/);
   const shortExtraMesh = {
     ...mesh,
     attributes: {
@@ -782,15 +845,13 @@ test('LASWriter#validates point attribute shapes', t => {
       shortExtra: {value: new Uint8Array([1]), size: 1}
     }
   };
-  t.throws(
+  expect(
     () =>
       LASWriter.encodeSync?.(shortExtraMesh, {
         las: {extraBytes: [{attribute: 'shortExtra'}]}
       }),
-    /Extra Bytes attribute shortExtra is too short/,
     'rejects Extra Bytes arrays shorter than the point count'
-  );
-
+  ).toThrow(/Extra Bytes attribute shortExtra is too short/);
   const shortIntensityMesh = {
     ...mesh,
     attributes: {
@@ -798,15 +859,12 @@ test('LASWriter#validates point attribute shapes', t => {
       intensity: {value: new Uint16Array([1]), size: 1}
     }
   };
-  t.throws(
+  expect(
     () => LASWriter.encodeSync?.(shortIntensityMesh),
-    /intensity attribute is too short/,
     'rejects mapped point attributes shorter than POSITION'
-  );
-  t.end();
+  ).toThrow(/intensity attribute is too short/);
 });
-
-test('LASWriter#rejects four-component Extra Bytes fields', t => {
+test('LASWriter#rejects four-component Extra Bytes fields', () => {
   const fourComponentAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     extraVector: {value: new Float32Array([1, 2, 3, 4]), size: 4}
@@ -817,28 +875,21 @@ test('LASWriter#rejects four-component Extra Bytes fields', t => {
     mode: 0,
     schema: deduceMeshSchema(fourComponentAttributes, {topology: 'point-list', mode: '0'})
   };
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(fourComponentMesh, {
-        las: {extraBytes: [{attribute: 'extraVector'}]}
-      }),
-    /Extra Bytes attribute extraVector must have size 1 or 3/
-  );
-  t.end();
+  expect(() =>
+    LASWriter.encodeSync?.(fourComponentMesh, {
+      las: {extraBytes: [{attribute: 'extraVector'}]}
+    })
+  ).toThrow(/Extra Bytes attribute extraVector must have size 1 or 3/);
 });
-
-test('LASWriter#validates coordinate quantization', t => {
-  t.throws(
-    () => LASWriter.encodeSync?.(mesh, {las: {scale: [0, 0.001, 0.001]}}),
+test('LASWriter#validates coordinate quantization', () => {
+  expect(() => LASWriter.encodeSync?.(mesh, {las: {scale: [0, 0.001, 0.001]}})).toThrow(
     /coordinate scale must be finite and positive/
   );
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(mesh, {
-        las: {scale: [0.001, 0.001, 0.001], offset: [Number.NaN, 0, 0]}
-      }),
-    /coordinate offset must be finite/
-  );
+  expect(() =>
+    LASWriter.encodeSync?.(mesh, {
+      las: {scale: [0.001, 0.001, 0.001], offset: [Number.NaN, 0, 0]}
+    })
+  ).toThrow(/coordinate offset must be finite/);
   const overflowingMesh = {
     ...mesh,
     attributes: {
@@ -846,13 +897,11 @@ test('LASWriter#validates coordinate quantization', t => {
       POSITION: {value: new Float64Array([5000000, 0, 0]), size: 3}
     }
   };
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(overflowingMesh, {
-        las: {scale: [0.001, 0.001, 0.001], offset: [0, 0, 0]}
-      }),
-    /encoded coordinate exceeds the signed 32-bit LAS range/
-  );
+  expect(() =>
+    LASWriter.encodeSync?.(overflowingMesh, {
+      las: {scale: [0.001, 0.001, 0.001], offset: [0, 0, 0]}
+    })
+  ).toThrow(/encoded coordinate exceeds the signed 32-bit LAS range/);
   const nonFiniteMesh = {
     ...mesh,
     attributes: {
@@ -860,11 +909,9 @@ test('LASWriter#validates coordinate quantization', t => {
       POSITION: {value: new Float64Array([Number.NaN, 0, 0]), size: 3}
     }
   };
-  t.throws(() => LASWriter.encodeSync?.(nonFiniteMesh), /POSITION values must be finite/);
-  t.end();
+  expect(() => LASWriter.encodeSync?.(nonFiniteMesh)).toThrow(/POSITION values must be finite/);
 });
-
-test('LASWriter#rejects non-finite mapped attributes', t => {
+test('LASWriter#rejects non-finite mapped attributes', () => {
   const nonFiniteGPSMesh = {
     ...mesh,
     attributes: {
@@ -872,8 +919,7 @@ test('LASWriter#rejects non-finite mapped attributes', t => {
       gpsTime: {value: new Float64Array([Number.NaN, 1, 2]), size: 1}
     }
   };
-  t.throws(
-    () => LASWriter.encodeSync?.(nonFiniteGPSMesh, {las: {pointDataRecordFormat: 7}}),
+  expect(() => LASWriter.encodeSync?.(nonFiniteGPSMesh, {las: {pointDataRecordFormat: 7}})).toThrow(
     /gpsTime attribute must contain finite values/
   );
   const nonFiniteExtraMesh = {
@@ -883,17 +929,13 @@ test('LASWriter#rejects non-finite mapped attributes', t => {
       extraValue: {value: new Float32Array([Number.POSITIVE_INFINITY, 1, 2]), size: 1}
     }
   };
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(nonFiniteExtraMesh, {
-        las: {extraBytes: [{attribute: 'extraValue'}]}
-      }),
-    /extraValue attribute must contain finite values/
-  );
-  t.end();
+  expect(() =>
+    LASWriter.encodeSync?.(nonFiniteExtraMesh, {
+      las: {extraBytes: [{attribute: 'extraValue'}]}
+    })
+  ).toThrow(/extraValue attribute must contain finite values/);
 });
-
-test('LASWriter#validates return relationships', t => {
+test('LASWriter#validates return relationships', () => {
   const invalidReturnAttributes = {
     POSITION: {value: new Float64Array([1, 2, 3]), size: 3},
     returnNumber: {value: new Uint8Array([3]), size: 1},
@@ -905,17 +947,13 @@ test('LASWriter#validates return relationships', t => {
     mode: 0,
     schema: deduceMeshSchema(invalidReturnAttributes, {topology: 'point-list', mode: '0'})
   };
-  t.throws(
-    () =>
-      LASWriter.encodeSync?.(invalidReturnMesh, {
-        las: {pointDataRecordFormat: 7}
-      }),
-    /returnNumber cannot exceed numberOfReturns/
-  );
-  t.end();
+  expect(() =>
+    LASWriter.encodeSync?.(invalidReturnMesh, {
+      las: {pointDataRecordFormat: 7}
+    })
+  ).toThrow(/returnNumber cannot exceed numberOfReturns/);
 });
-
-test('LASWriter#preserves normalized byte colors', async t => {
+test('LASWriter#preserves normalized byte colors', async () => {
   const colorAttributes = {
     POSITION: attributes.POSITION,
     COLOR_0: {value: new Uint8Array([128, 255, 0]), size: 3, normalized: true}
@@ -926,16 +964,14 @@ test('LASWriter#preserves normalized byte colors', async t => {
     mode: 0,
     schema: deduceMeshSchema(colorAttributes, {topology: 'point-list', mode: '0'})
   };
-
   const arrayBuffer = await encode(colorMesh, LASWriter);
   const dataView = new DataView(arrayBuffer);
-
-  t.equal(dataView.getUint16(227 + 20, true), 32896, 'red channel preserves normalized byte value');
-  t.equal(dataView.getUint16(227 + 22, true), 65535, 'green channel preserves max byte value');
-  t.equal(dataView.getUint16(227 + 24, true), 0, 'blue channel preserves zero byte value');
-  t.end();
+  expect(dataView.getUint16(227 + 20, true), 'red channel preserves normalized byte value').toBe(
+    32896
+  );
+  expect(dataView.getUint16(227 + 22, true), 'green channel preserves max byte value').toBe(65535);
+  expect(dataView.getUint16(227 + 24, true), 'blue channel preserves zero byte value').toBe(0);
 });
-
 /** Read a little-endian UInt64 that is known to fit in JavaScript's safe integer range. */
 function readUint64(dataView: DataView, byteOffset: number): number {
   return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;

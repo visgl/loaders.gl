@@ -66,6 +66,36 @@ describe('geospatial metadata', () => {
     });
   });
 
+  it('preserves explicit unknown CRS and coordinate epochs without inventing field CRS', () => {
+    const schema: Schema = {
+      fields: [{name: 'geometry', type: 'binary'}],
+      metadata: {
+        geo: JSON.stringify({
+          version: '1.1.0',
+          primary_column: 'geometry',
+          columns: {
+            geometry: {
+              encoding: 'WKB',
+              geometry_types: ['Point'],
+              crs: null,
+              epoch: 2022.5,
+              vendor: 'preserved'
+            }
+          }
+        })
+      }
+    };
+
+    applyGeoParquetToFieldMetadata(schema);
+
+    expect(JSON.parse(schema.metadata.geo).columns.geometry).toMatchObject({
+      crs: null,
+      epoch: 2022.5,
+      vendor: 'preserved'
+    });
+    expect(schema.fields[0].metadata).toEqual({'ARROW:extension:name': 'geoarrow.wkb'});
+  });
+
   it('does not misrepresent an unresolved GeoArrow authority CRS as GeoParquet CRS84', () => {
     const schema: Schema = {
       fields: [

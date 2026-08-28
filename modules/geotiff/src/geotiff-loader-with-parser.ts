@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSIdentifier} from '@math.gl/crs';
 import {fromArrayBuffer} from 'geotiff';
 import {GeoTIFFLoader as GeoTIFFLoaderMetadata} from './geotiff-loader';
 
@@ -11,7 +12,7 @@ const {preload: _GeoTIFFLoaderPreload, ...GeoTIFFLoaderMetadataWithoutPreload} =
 
 // Return type definition for GeoTIFF loader
 type GeoTIFFData = {
-  crs?: string;
+  crs?: CRSIdentifier;
   bounds: number[];
   metadata: Record<string, unknown>;
 
@@ -89,7 +90,7 @@ async function parseGeoTIFF(
   const metadata = image.getGeoKeys();
 
   // ProjectedCSTypeGeoKey is the only key we support for now, we assume it is an EPSG code
-  let crs: string | undefined;
+  let crs: CRSIdentifier | undefined;
   if (metadata?.ProjectedCSTypeGeoKey) {
     crs = `EPSG:${metadata.ProjectedCSTypeGeoKey}`;
   }

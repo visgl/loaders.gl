@@ -2,81 +2,69 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {load, setLoaderOptions} from '@loaders.gl/core';
 import {RadianceHDRLoader} from '@loaders.gl/textures';
 import {GL_RGBA32F} from '../src/lib/gl-extensions';
-
 const HDR_URL = '@loaders.gl/textures/test/data/simple-rle.hdr';
 const POLY_HAVEN_HDR_URL = '@loaders.gl/textures/test/data/venice_sunset_256.hdr';
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
-test('RadianceHDRLoader#imports', t => {
-  t.ok(RadianceHDRLoader, 'RadianceHDRLoader defined');
-  t.end();
+test('RadianceHDRLoader#imports', () => {
+  expect(RadianceHDRLoader, 'RadianceHDRLoader defined').toBeTruthy();
 });
-
-test('RadianceHDRLoader#load(URL)', async t => {
+test('RadianceHDRLoader#load(URL)', async () => {
   const texture = await load(HDR_URL, RadianceHDRLoader);
   const level = texture.data[0];
-
-  t.equal(texture.shape, 'texture', 'returns a texture payload');
-  t.equal(texture.type, '2d', 'texture type is correct');
-  t.equal(texture.format, 'rgba32float', 'texture format is correct');
-  t.equal(texture.data.length, 1, 'returns a single texture level');
-  t.equal(level.shape, 'texture-level', 'level shape is correct');
-  t.equal(level.width, 8, 'width is correct');
-  t.equal(level.height, 2, 'height is correct');
-  t.equal(level.compressed, false, 'decoded data is uncompressed');
-  t.ok(level.data instanceof Float32Array, 'decoded data is float32');
-  t.equal(level.levelSize, level.data.byteLength, 'level size matches float data size');
-  t.equal(level.textureFormat, 'rgba32float', 'texture format is correct');
-  t.equal(level.format, GL_RGBA32F, 'WebGL format is correct');
-
+  expect(texture.shape, 'returns a texture payload').toBe('texture');
+  expect(texture.type, 'texture type is correct').toBe('2d');
+  expect(texture.format, 'texture format is correct').toBe('rgba32float');
+  expect(texture.data.length, 'returns a single texture level').toBe(1);
+  expect(level.shape, 'level shape is correct').toBe('texture-level');
+  expect(level.width, 'width is correct').toBe(8);
+  expect(level.height, 'height is correct').toBe(2);
+  expect(level.compressed, 'decoded data is uncompressed').toBe(false);
+  expect(level.data instanceof Float32Array, 'decoded data is float32').toBeTruthy();
+  expect(level.levelSize, 'level size matches float data size').toBe(level.data.byteLength);
+  expect(level.textureFormat, 'texture format is correct').toBe('rgba32float');
+  expect(level.format, 'WebGL format is correct').toBe(GL_RGBA32F);
   const data = level.data as Float32Array;
-  t.equal(data[0], 2, 'first pixel preserves bright intensity');
-  t.equal(data[1], 0, 'first pixel green is correct');
-  t.equal(data[2], 0, 'first pixel blue is correct');
-  t.equal(data[3], 1, 'first pixel alpha is synthesized');
-  t.ok(data[0] > 1, 'decoded data contains HDR values above 1');
-
+  expect(data[0], 'first pixel preserves bright intensity').toBe(2);
+  expect(data[1], 'first pixel green is correct').toBe(0);
+  expect(data[2], 'first pixel blue is correct').toBe(0);
+  expect(data[3], 'first pixel alpha is synthesized').toBe(1);
+  expect(data[0] > 1, 'decoded data contains HDR values above 1').toBeTruthy();
   const secondRowPixelOffset = (8 + 3) * 4;
-  t.ok(Math.abs(data[secondRowPixelOffset] - 3 / 255) < 1e-6, 'literal run red channel is decoded');
-  t.ok(
+  expect(
+    Math.abs(data[secondRowPixelOffset] - 3 / 255) < 1e-6,
+    'literal run red channel is decoded'
+  ).toBeTruthy();
+  expect(
     Math.abs(data[secondRowPixelOffset + 1] - 10 / 255) < 1e-6,
     'literal run green channel is decoded'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     Math.abs(data[secondRowPixelOffset + 2] - 20 / 255) < 1e-6,
     'literal run blue channel is decoded'
-  );
-  t.equal(data[secondRowPixelOffset + 3], 1, 'literal run alpha is synthesized');
-
-  t.end();
+  ).toBeTruthy();
+  expect(data[secondRowPixelOffset + 3], 'literal run alpha is synthesized').toBe(1);
 });
-
-test('RadianceHDRLoader#load(Poly Haven URL)', async t => {
+test('RadianceHDRLoader#load(Poly Haven URL)', async () => {
   const texture = await load(POLY_HAVEN_HDR_URL, RadianceHDRLoader);
   const level = texture.data[0];
   const data = level.data as Float32Array;
-
-  t.equal(texture.shape, 'texture', 'returns a texture payload');
-  t.equal(texture.type, '2d', 'poly haven texture type is correct');
-  t.equal(texture.format, 'rgba32float', 'poly haven top-level format is correct');
-  t.equal(texture.data.length, 1, 'returns a single texture level');
-  t.equal(level.width, 256, 'poly haven width is correct');
-  t.equal(level.height, 128, 'poly haven height is correct');
-  t.equal(level.textureFormat, 'rgba32float', 'poly haven texture format is correct');
-  t.equal(level.format, GL_RGBA32F, 'poly haven WebGL format is correct');
-  t.ok(level.data instanceof Float32Array, 'poly haven data is float32');
-  t.ok(
+  expect(texture.shape, 'returns a texture payload').toBe('texture');
+  expect(texture.type, 'poly haven texture type is correct').toBe('2d');
+  expect(texture.format, 'poly haven top-level format is correct').toBe('rgba32float');
+  expect(texture.data.length, 'returns a single texture level').toBe(1);
+  expect(level.width, 'poly haven width is correct').toBe(256);
+  expect(level.height, 'poly haven height is correct').toBe(128);
+  expect(level.textureFormat, 'poly haven texture format is correct').toBe('rgba32float');
+  expect(level.format, 'poly haven WebGL format is correct').toBe(GL_RGBA32F);
+  expect(level.data instanceof Float32Array, 'poly haven data is float32').toBeTruthy();
+  expect(
     data.some(value => value > 1),
     'poly haven data keeps HDR intensity'
-  );
-
-  t.end();
+  ).toBeTruthy();
 });

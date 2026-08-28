@@ -86,7 +86,7 @@ export class ArrowTableBuilder {
   finishBatch(): ArrowTableBatch | null {
     const arrowRecordBatch = this._getArrowRecordBatch();
     this.arrowBuilders.forEach(builder => builder.finish());
-    if (arrowRecordBatch.numCols === 0) {
+    if (arrowRecordBatch.numCols === 0 && arrowRecordBatch.numRows === 0) {
       return null;
     }
     return {

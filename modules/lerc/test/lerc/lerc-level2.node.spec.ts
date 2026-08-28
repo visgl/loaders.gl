@@ -1,0 +1,78 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// Forked from https://github.com/Esri/lerc/blob/master/OtherLanguages/js/tests/
+// under Apache 2 license
+// (only used for test cases)
+
+import {expect, test} from 'vitest';
+import {readFile} from 'fs/promises';
+// import {validateLoader} from 'test/common/conformance';
+
+// import {LERCLoader, LERCData} from '@loaders.gl/wms';
+import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
+import {LERCLoader} from '../../src/lerc-loader';
+import {load, resolvePath} from '@loaders.gl/core';
+
+const LERC_FILES = [
+  '@loaders.gl/lerc/test/data/lerc/bluemarble_256_256_3_byte.lerc2',
+  '@loaders.gl/lerc/test/data/lerc/california_400_400_1_float.lerc2',
+  '@loaders.gl/lerc/test/data/lerc/world.lerc1'
+];
+
+test('LERCLoader#level2', async () => {
+  for (const lercFileName of LERC_FILES) {
+    const fileBytes = await readFile(resolvePath(lercFileName));
+    const arrayBuffer = fileBytes.buffer.slice(
+      fileBytes.byteOffset,
+      fileBytes.byteOffset + fileBytes.byteLength
+    ) as ArrayBuffer;
+    const result = await load(arrayBuffer, LERCLoader);
+
+    const actual = formatPixelBlock(result);
+
+    // TODO - verify against known data
+    // const base = JSON.parse(fs.readFileSync(baseFilePath, {encoding: 'utf-8'}));
+    // const keys = ['width', 'height', 'pixelType', 'statistics', 'pixels', 'dimCount', 'bandMasks'];
+    // let diff = '';
+    // keys.forEach((key) => {
+    //   if (JSON.stringify(base[key]) !== JSON.stringify(actual[key])) {
+    //     diff += key + ' ';
+    //   }
+    // });
+
+    expect(actual).toBeDefined();
+  }
+});
+
+/** Helper function */
+function formatPixelBlock(pb1: LERCData) {
+  const pb: Partial<LERCData> = {...pb1};
+  const pixels = pb1.pixels.map(band => band.join(','));
+  const mask = pb1.mask?.join(',');
+  const statistics = pb1.statistics;
+  if (statistics?.length) {
+    statistics.forEach(bandStat => {
+      const {depthStats} = bandStat;
+      if (depthStats) {
+        // @ts-expect-error
+        depthStats.minValues = depthStats.minValues.join(',');
+        // @ts-expect-error
+        depthStats.maxValues = depthStats.maxValues.join(',');
+      }
+    });
+  }
+  const validPixelCountFromMask = pb.mask
+    ? pb.mask.reduce((a, b) => a + b)
+    : pb1.width * pb1.height;
+  const validPixelCountPerBand = pb.bandMasks
+    ? pb.bandMasks.map(mask => mask.reduce((a, b) => a + b)).join(',')
+    : null;
+  const bandMasks = pb.bandMasks ? pb.bandMasks.map(mask => mask.join(',')) : pb.bandMasks;
+  // push properties to the end
+  delete pb.pixels;
+  delete pb.mask;
+  delete pb.bandMasks;
+  return {...pb, validPixelCountFromMask, validPixelCountPerBand, pixels, mask, bandMasks};
+}

@@ -1,6 +1,6 @@
 import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 
-# KTX2BasisWriter 🚧
+# KTX2BasisWriter
 
 <TexturesDocsTabs active="ktx2basiswriter" />
 
@@ -9,7 +9,7 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
   <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
 </p>
 
-> The experimental `KTX2BasisUniversalTextureWriter` class can encode a decoded image into a KTX2 texture.
+`KTX2BasisWriter` encodes RGBA8, RGBA16F, or RGBA32F pixels into a Basis Universal KTX2 texture.
 
 | Loader         | Characteristic                                                           |
 | -------------- | ------------------------------------------------------------------------ |
@@ -27,12 +27,21 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
-import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
+import {KTX2BasisWriter} from '@loaders.gl/textures';
 
 const shannonPNG = 'shannon.png';
 
 const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
-const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
+const encodedData = await encode(image, KTX2BasisWriter, {
+  'ktx2-basis-writer': {
+    format: 'uastc-ldr-4x4',
+    quality: 80,
+    effort: 5,
+    contentType: 'srgb',
+    mipmaps: true,
+    zstd: true
+  }
+});
 ```
 
 ## Data Format
@@ -41,24 +50,33 @@ https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc
 
 ## Options
 
-| Option       | Type    | Default | Description                                                                                                 |
-| ------------ | ------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| useSRGB      | Boolean | `false` | If true, the input is assumed to be in sRGB space.                                                          |
-| qualityLevel | Number  | 10      | Sets the ETC1S encoder's quality level, which controls the file size vs. quality tradeoff. Range is [1,255] |
-| encodeUASTC  | Boolean | `false` | If true, the encoder will output a UASTC texture, otherwise a ETC1S texture.                                |
-| mipmaps      | Boolean | `false` | If true mipmaps will be generated from the source images                                                    |
+Options are nested under `ktx2-basis-writer`.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `format` | `BasisEncoderFormat` | `'etc1s'` | ETC1S, UASTC LDR/HDR, XUASTC, ASTC LDR/HDR, or XUBC7 source codec. |
+| `quality` | number 0–100 | codec default | Unified quality/bitrate control. ETC1S defaults to the upstream midpoint. |
+| `effort` | number 0–10 | codec default | Unified encoding-effort control. |
+| `contentType` | `'linear' \| 'srgb' \| 'normal-map'` | `'linear'` | Applies the corresponding Basis encoder preset. |
+| `mipmaps` | boolean | `false` | Generate a complete mip chain. |
+| `zstd` | boolean | `false` | Apply Zstandard to UASTC LDR 4×4, UASTC HDR 4×4, or ASTC HDR 6×6. |
+| `ldrToHdrNitMultiplier` | number | `100` | Absolute-light scale for RGBA8-to-HDR conversion. |
+
+LDR formats require RGBA8 input. HDR formats accept RGBA8, half-float bit patterns in a
+`Uint16Array`, or RGBA float values in a `Float32Array`. An sRGB HDR input is converted to linear
+absolute-light values before encoding.
 
 ## WASM module
 
-The writer applies BinomialLCC basis universal encoder. The libraries are loaded during runtime from URLs:
+The writer loads the Binomial LLC Basis Universal encoder independently from the decoder:
 
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
 
 ## Module Overrides
 
-Use `options.modules` to override the Basis encoder runtime used by `KTX2BasisUniversalTextureWriter`.
+Use `options.modules` to override the Basis encoder runtime used by `KTX2BasisWriter`.
 
-- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `modules.basisEncoder`: supply a preloaded Basis encoder module containing `BasisEncoder`.
 - `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
 - `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

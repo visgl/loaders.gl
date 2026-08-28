@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tables, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
+import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
 
@@ -26,7 +27,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   };
   gis?: {
     reproject?: boolean;
-    _targetCrs?: string;
+    _targetCrs?: Proj4CRSDefinition;
   };
 };
 

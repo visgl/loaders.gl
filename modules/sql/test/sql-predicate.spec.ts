@@ -135,3 +135,29 @@ test.each([
 ])('parseSQLPredicate rejects unsupported input %o', (source, expectedError) => {
   expect(() => parseSQLPredicate(source)).toThrow(expectedError);
 });
+
+test('parseSQLPredicate parses decimal, exponent, and negative numeric literals', () => {
+  expect(parseSQLPredicate('ratio > -1.25 AND score = 1e3 AND count = 9007199254740993')).toEqual({
+    op: 'and',
+    args: [
+      {op: '>', args: [{property: 'ratio'}, -1.25]},
+      {op: '=', args: [{property: 'score'}, 1000]},
+      {op: '=', args: [{property: 'count'}, 9007199254740993n]}
+    ]
+  });
+});
+
+test.each([
+  [':', /invalid parameter/],
+  ['value = @', /unsupported token/],
+  ['value = -name', /unary minus/],
+  ['value = 1e999', /finite/]
+])('parseSQLPredicate rejects malformed scalar syntax %o', (source, expectedError) => {
+  expect(() => parseSQLPredicate(source)).toThrow(expectedError);
+});
+
+test('parseSQLPredicate enforces input size and expression depth limits', () => {
+  expect(() => parseSQLPredicate('value = 1'.repeat(8000))).toThrow(/safely bounded/);
+  const deeplyNestedPredicate = `${'('.repeat(65)}value = 1${')'.repeat(65)}`;
+  expect(() => parseSQLPredicate(deeplyNestedPredicate)).toThrow(/safe limit/);
+});

@@ -1,19 +1,21 @@
-// SPDX-License-Identifier: Apache-2.0
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
-
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
-const ASYNC_TRAVERSAL_TIMEOUT = 10_000;
-
+const TILESET_REPLACEMENT_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement1/tileset.json';
+const ASYNC_TRAVERSAL_TIMEOUT = 10000;
 /*
 // Parent tile with no content and four child tiles with content
 const TILESET_EMPTY_ROOT_URL =
@@ -111,7 +113,6 @@ const POINT_CLOUD_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/Poin
 const POINT_CLOUD_BATCHED_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudBatched/tileset.json';
 */
-
 const VIEWPORTS = [
   new WebMercatorViewport({
     altitude: 1.5,
@@ -155,13 +156,13 @@ const VIEWPORTS = [
   })
 ];
 
+/** Waits for asynchronous tile traversal to reach a deterministic test condition. */
 async function waitForCondition(
   predicate: () => boolean,
   timeoutMs: number,
   intervalMs = 100
 ): Promise<void> {
   const startTime = Date.now();
-
   while (!predicate()) {
     if (Date.now() - startTime > timeoutMs) {
       throw new Error(`Timed out after ${timeoutMs}ms`);
@@ -169,9 +170,8 @@ async function waitForCondition(
     await new Promise(resolve => setTimeout(resolve, intervalMs));
   }
 }
-
-test('Tileset3D#one viewport traversal', async t => {
-  t.plan(1);
+test('Tileset3D#one viewport traversal', async () => {
+  expect.assertions(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -182,15 +182,12 @@ test('Tileset3D#one viewport traversal', async t => {
     }
   });
   tileset.update(viewport);
-
-  t.timeoutAfter(ASYNC_TRAVERSAL_TIMEOUT);
   await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
   tileset.update(viewport);
-  t.equals(tileset.selectedTiles.length, 1);
+  expect(tileset.selectedTiles.length).toBe(1);
 });
-
-test('Tileset3D#onTraversalComplete', async t => {
-  t.plan(1);
+test('Tileset3D#onTraversalComplete', async () => {
+  expect.assertions(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
@@ -202,15 +199,12 @@ test('Tileset3D#onTraversalComplete', async t => {
     }
   });
   tileset.update(viewport);
-
-  t.timeoutAfter(ASYNC_TRAVERSAL_TIMEOUT);
   await waitForCondition(() => tileset.selectedTiles.length === 4, ASYNC_TRAVERSAL_TIMEOUT);
   tileset.update(viewport);
-  t.equals(tileset.selectedTiles.length, 4);
+  expect(tileset.selectedTiles.length).toBe(4);
 });
-
-test('Tileset3D#two viewports traversal', async t => {
-  t.plan(3);
+test('Tileset3D#two viewports traversal', async () => {
+  expect.assertions(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
@@ -219,17 +213,14 @@ test('Tileset3D#two viewports traversal', async t => {
     }
   });
   tileset.update(viewports);
-
-  t.timeoutAfter(ASYNC_TRAVERSAL_TIMEOUT);
   await waitForCondition(() => tileset.selectedTiles.length === 6, ASYNC_TRAVERSAL_TIMEOUT);
   tileset.update(viewports);
-  t.equals(tileset.selectedTiles.length, 6);
-  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 1);
-  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+  expect(tileset.selectedTiles.length).toBe(6);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length).toBe(1);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length).toBe(5);
 });
-
-test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
-  t.plan(3);
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async () => {
+  expect.assertions(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
@@ -242,18 +233,15 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
     }
   });
   tileset.update(viewports);
-
   // TODO/ActionEngine - wait for onTraversalComplete or onTilesetLoad or similar
-  t.timeoutAfter(ASYNC_TRAVERSAL_TIMEOUT);
   await waitForCondition(() => tileset.selectedTiles.length === 5, ASYNC_TRAVERSAL_TIMEOUT);
   tileset.update(viewports);
-  t.equals(tileset.selectedTiles.length, 5);
-  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
-  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
+  expect(tileset.selectedTiles.length).toBe(5);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length).toBe(5);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length).toBe(5);
 });
-
-test('Tileset3D#loadTiles option', async t => {
-  t.plan(2);
+test('Tileset3D#loadTiles option', async () => {
+  expect.assertions(2);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -265,21 +253,34 @@ test('Tileset3D#loadTiles option', async t => {
     loadTiles: true
   });
   tileset.update(viewport);
+  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.selectedTiles.length).toBe(1);
+  tileLoadCounter = 0;
+  viewport = VIEWPORTS[1];
+  tileset.setProps({loadTiles: false});
+  tileset.update(viewport);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  expect(tileLoadCounter).toBe(0);
+});
 
-  t.timeoutAfter(ASYNC_TRAVERSAL_TIMEOUT);
-  const setIntervalId = setInterval(() => {
-    if (tileLoadCounter > 0) {
-      clearInterval(setIntervalId);
+test('Tileset3D#skipLevelOfDetail retains replacement ancestors as coverage', async () => {
+  expect.assertions(3);
+  const tilesetJson = await load(TILESET_REPLACEMENT_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    maximumScreenSpaceError: 0,
+    skipLevelOfDetail: true,
+    onTileLoad: () => {
       tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 1);
-      tileLoadCounter = 0;
-
-      viewport = VIEWPORTS[1];
-      tileset.setProps({loadTiles: false});
-      tileset.update(viewport);
-      setTimeout(() => {
-        t.equals(tileLoadCounter, 0);
-      }, 300);
+      tileLoadCounter++;
     }
-  }, 100);
+  });
+  tileset.update(viewport);
+  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.options.skipLevelOfDetail).toBe(true);
+  expect(tileset.selectedTiles.some(tile => tile.depth === 0)).toBe(true);
+  expect(tileset.selectedTiles.length).toBeGreaterThan(1);
 });

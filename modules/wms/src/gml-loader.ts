@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Geometry} from './lib/parsers/gml/parse-gml';
+import type {GMLFeatureCollection, Geometry, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 
 import {GMLFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -11,7 +11,12 @@ import {GMLFormat} from './wms-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GMLLoaderOptions = LoaderOptions & {
-  gml?: {};
+  gml?: {
+    /** Number of feature members emitted in each streaming batch. */
+    batchSize?: number;
+    /** XML Schema scalar types keyed by the local feature property name. */
+    propertyTypes?: Record<string, GMLPropertyType>;
+  };
 };
 
 /** Preloads the parser-bearing GML loader implementation. */
@@ -42,7 +47,11 @@ export const GMLLoader = {
     gml: {}
   },
   preload
-} as const satisfies Loader<Geometry | null, never, GMLLoaderOptions>;
+} as const satisfies Loader<
+  Geometry | GMLFeatureCollection | null,
+  GMLFeatureCollection,
+  GMLLoaderOptions
+>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -1,8 +1,4 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
@@ -12,46 +8,51 @@ import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import * as geopackage from '@loaders.gl/geopackage';
 import * as bundledGeopackage from '@loaders.gl/geopackage/bundled';
 import * as unbundledGeopackage from '@loaders.gl/geopackage/unbundled';
-
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
-
 setLoaderOptions({
   _workerType: 'test',
   worker: false
 });
-
-test('GeoPackageLoader#loader conformance', t => {
-  validateLoader(t, GeoPackageLoader, 'GeoPackageLoader');
-  t.end();
+test('GeoPackageLoader#loader conformance', () => {
+  validateLoader(GeoPackageLoader, 'GeoPackageLoader');
 });
-
-test('GeoPackageLoader#removed Arrow loader exports', t => {
-  t.notOk('GeoPackageArrowLoader' in geopackage, 'root does not export GeoPackageArrowLoader');
-  t.notOk(
+test('GeoPackageLoader#removed Arrow loader exports', () => {
+  expect(
+    'GeoPackageArrowLoader' in geopackage,
+    'root does not export GeoPackageArrowLoader'
+  ).toBeFalsy();
+  expect(
     'GeoPackageArrowLoader' in bundledGeopackage,
     'bundled does not export GeoPackageArrowLoader'
-  );
-  t.notOk(
+  ).toBeFalsy();
+  expect(
     'GeoPackageArrowLoader' in unbundledGeopackage,
     'unbundled does not export GeoPackageArrowLoader'
-  );
-  t.end();
+  ).toBeFalsy();
 });
-
-test('GeoPackageLoader#load file as Arrow table', async t => {
+test('GeoPackageLoader#load file as Arrow table', async () => {
   const table = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table'}
   });
   const geoMetadata = getGeoMetadata(table.schema.metadata);
-
-  t.equal(table.shape, 'arrow-table');
-  t.equal(table.data.numRows, 1, 'loads one feature');
-  t.equal(table.schema.fields.length, 5, 'schema replaces source geom column with geometry');
-  t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
-  t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata identifies WKB encoding');
-
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data.numRows, 'loads one feature').toBe(1);
+  expect(table.schema.fields.length, 'schema replaces source geom column with geometry').toBe(5);
+  expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
+  expect(geoMetadata?.columns.geometry.encoding, 'geo metadata identifies WKB encoding').toBe(
+    'wkb'
+  );
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry');
+  const extensionMetadata = JSON.parse(
+    geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
+  );
+  expect(extensionMetadata.crs, 'GeoArrow field preserves the source CRS').toBeTruthy();
+  expect(
+    extensionMetadata.crs_type,
+    'GeoPackage WKT is not mislabeled as a specific GeoArrow WKT revision'
+  ).toBeUndefined();
   const rows = getRowsFromArrowTable(table);
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: table.schema, data: rows},
@@ -59,16 +60,11 @@ test('GeoPackageLoader#load file as Arrow table', async t => {
   );
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const expected = await response.json();
-
-  t.deepEqual(
-    normalizeFeatures(roundTripped.features),
-    normalizeFeatures(expected.features),
-    'Arrow output round-trips to GeoJSON'
+  expect(normalizeFeatures(roundTripped.features), 'Arrow output round-trips to GeoJSON').toEqual(
+    normalizeFeatures(expected.features)
   );
-  t.end();
 });
-
-test('GeoPackageLoader#load explicit table as Arrow table', async t => {
+test('GeoPackageLoader#load explicit table as Arrow table', async () => {
   const table = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
   });
@@ -80,32 +76,24 @@ test('GeoPackageLoader#load explicit table as Arrow table', async t => {
   const geojsonTable = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
     geopackage: {shape: 'geojson-table', table: 'FEATURESriversds'}
   });
-
-  t.deepEqual(
+  expect(
     normalizeFeatures(roundTripped.features),
-    normalizeFeatures(geojsonTable.features),
     'explicit table matches GeoPackageLoader'
-  );
-  t.end();
+  ).toEqual(normalizeFeatures(geojsonTable.features));
 });
-
-test('GeoPackageLoader#load default table honors metadata heuristic', async t => {
+test('GeoPackageLoader#load default table honors metadata heuristic', async () => {
   const table = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table'}
   });
   const defaultTable = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table', table: 'preferred_rivers'}
   });
-
-  t.deepEqual(
+  expect(
     getRowsFromArrowTable(table),
-    getRowsFromArrowTable(defaultTable),
     'default selection prefers the metadata-marked table'
-  );
-  t.end();
+  ).toEqual(getRowsFromArrowTable(defaultTable));
 });
-
-test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async t => {
+test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async () => {
   const arrowTable = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
@@ -114,37 +102,35 @@ test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async t
     geopackage: {shape: 'geojson-table'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
-
   const rows = getRowsFromArrowTable(arrowTable);
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrowTable.schema, data: rows},
     arrowTable.schema
   );
-
-  t.deepEqual(
-    normalizeFeatures(roundTripped.features),
-    normalizeFeatures(geojsonTable.features),
-    'reprojected features match'
+  expect(normalizeFeatures(roundTripped.features), 'reprojected features match').toEqual(
+    normalizeFeatures(geojsonTable.features)
   );
-  t.end();
+  const geometryField = arrowTable.schema.fields.find(field => field.name === 'geometry');
+  expect(
+    JSON.parse(geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'),
+    'Arrow metadata reports the transformed output CRS'
+  ).toEqual({crs: 'WGS84'});
 });
-
-test('GeoPackageLoader#load missing table errors clearly', async t => {
+test('GeoPackageLoader#load missing table errors clearly', async () => {
   try {
     await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
       geopackage: {shape: 'arrow-table', table: 'missing_table_name'}
     });
-    t.fail('expected load to throw');
+    (() => {
+      throw new Error('expected load to throw');
+    })();
   } catch (error) {
-    t.ok(
+    expect(
       (error as Error).message.includes('GeoPackage table not found: missing_table_name'),
       'throws a clear missing-table error'
-    );
+    ).toBeTruthy();
   }
-
-  t.end();
 });
-
 function getRowsFromArrowTable(table): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
   for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
@@ -152,7 +138,6 @@ function getRowsFromArrowTable(table): Record<string, unknown>[] {
   }
   return rows;
 }
-
 function normalizeFeatures(features: any[]) {
   return features.map(feature => {
     const properties = {...(feature.properties || {})};
@@ -160,11 +145,9 @@ function normalizeFeatures(features: any[]) {
       feature.id !== undefined && feature.id !== null
         ? feature.id
         : (properties.id as string | number);
-
     if (id !== undefined) {
       delete properties.id;
     }
-
     return {
       ...feature,
       id,

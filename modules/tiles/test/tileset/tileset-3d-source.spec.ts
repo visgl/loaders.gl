@@ -1,9 +1,10 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
+import {createQueryParameterCredential, type LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
@@ -20,8 +21,7 @@ import {
   type TilesetJSON,
   type TilesetSourceResolver
 } from '@loaders.gl/tiles';
-
-test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async t => {
+test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async () => {
   const descriptor: ImplicitTilingDescriptor = {
     contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
     subtreesUrlTemplate: 'https://example.com/subtrees/{level}/{x}/{y}.subtree',
@@ -85,21 +85,19 @@ test('Tiles3DSource lazily loads, installs and caches one implicit subtree', asy
   });
   const tileset = new Tileset3D(source);
   await tileset.tilesetInitializationPromise;
-
-  t.equal(requestedUrls.length, 0, 'initialization performs no implicit subtree request');
+  expect(requestedUrls.length, 'initialization performs no implicit subtree request').toBe(0);
   const root = tileset.root!;
   await root.loadChildren({} as any);
-  t.equal(subtreeMode, true, 'routes bytes through subtree parsing mode');
-  t.deepEqual(requestedUrls, ['https://example.com/subtrees/0/0/0.subtree?token=abc']);
-  t.equal(root.contentUrl, 'https://example.com/content/0/0/0.b3dm');
-  t.equal(root.children.length, 4, 'installs only the requested subtree boundary');
-  t.ok(root.children.every(child => child.hasUnloadedChildren));
-  t.equal(root.childrenState, 'ready');
-
+  expect(subtreeMode, 'routes bytes through subtree parsing mode').toBe(true);
+  expect(requestedUrls).toEqual(['https://example.com/subtrees/0/0/0.subtree?token=abc']);
+  expect(root.contentUrl).toBe('https://example.com/content/0/0/0.b3dm');
+  expect(root.children.length, 'installs only the requested subtree boundary').toBe(4);
+  expect(root.children.every(child => child.hasUnloadedChildren)).toBeTruthy();
+  expect(root.childrenState).toBe('ready');
   const duplicateRoot = new Tile3D(tileset, createRootHeader());
   await duplicateRoot.loadChildren({} as any);
-  t.equal(requestedUrls.length, 1, 'deduplicates the final subtree URL through parsed cache');
-  t.deepEqual(source.getImplicitTilingStats(), {
+  expect(requestedUrls.length, 'deduplicates the final subtree URL through parsed cache').toBe(1);
+  expect(source.getImplicitTilingStats()).toEqual({
     requestedSubtrees: 1,
     loadedSubtrees: 2,
     cacheHits: 1,
@@ -108,11 +106,11 @@ test('Tiles3DSource lazily loads, installs and caches one implicit subtree', asy
     materializedTiles: 8
   });
   tileset.destroy();
-  t.equal(source.getImplicitTilingStats().cachedSubtrees, 0, 'destroy releases parsed metadata');
-  t.end();
+  expect(source.getImplicitTilingStats().cachedSubtrees, 'destroy releases parsed metadata').toBe(
+    0
+  );
 });
-
-test('isTileset3DSource recognizes explicit source implementations', t => {
+test('isTileset3DSource recognizes explicit source implementations', () => {
   const tiles3DSource = new Tiles3DSource({
     url: 'https://example.com/tileset.json',
     loader: Tiles3DLoader,
@@ -124,21 +122,18 @@ test('isTileset3DSource recognizes explicit source implementations', t => {
     loader: I3SLoader,
     root: {refine: 'ADD'}
   } as any);
-
-  t.ok(isTileset3DSource(tiles3DSource));
-  t.ok(isTileset3DSource(i3sSource));
-  t.notOk(
+  expect(isTileset3DSource(tiles3DSource)).toBeTruthy();
+  expect(isTileset3DSource(i3sSource)).toBeTruthy();
+  expect(
     isTileset3DSource({
       initialize: async () => {},
       getRootTileset: async () => ({}),
       loadTileContent: async () => ({loaded: true})
     }),
     'partial lookalikes without initializeTileHeaders are rejected'
-  );
-  t.end();
+  ).toBeFalsy();
 });
-
-test('Tiles3DSource initializes metadata and merges source query parameters', async t => {
+test('Tiles3DSource initializes metadata and merges source query parameters', async () => {
   const tilesetJson: TilesetJSON = {
     type: 'tileset',
     url: 'https://example.com/root/tileset.json',
@@ -148,28 +143,91 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     lodMetricType: 'geometricError',
     lodMetricValue: 16,
     queryString: 'session=abc123',
-    extensionsUsed: ['KHR_texture_basisu']
+    extensionsUsed: ['KHR_texture_basisu'],
+    schema: {
+      classes: {
+        tileset: {
+          properties: {crs: {semantic: 'TILESET_CRS_GEOCENTRIC'}}
+        }
+      }
+    },
+    metadata: {class: 'tileset', properties: {crs: 'EPSG:4978'}}
   };
   const source = new Tiles3DSource({...tilesetJson, coreApi});
-
   await source.initialize();
-
   const metadata = source.getMetadata();
-  t.equal(metadata.basePath, 'https://example.com/root');
-  t.equal(metadata.refine, 'ADD');
-  t.ok(source.hasExtension('KHR_texture_basisu'));
-  t.equal(
-    source.getTileUrl('https://example.com/root/tile.b3dm?existing=1'),
+  expect(metadata.basePath).toBe('https://example.com/root');
+  expect(metadata.refine).toBe('ADD');
+  expect(metadata.spatialReference?.sourceCrs).toBe('EPSG:4978');
+  expect(source.hasExtension('KHR_texture_basisu')).toBeTruthy();
+  expect(source.getTileUrl('https://example.com/root/tile.b3dm?existing=1')).toBe(
     'https://example.com/root/tile.b3dm?existing=1&session=abc123&v=42'
   );
-  t.equal(
-    source.getTileUrl('data:application/octet-stream;base64,AA=='),
+  expect(source.getTileUrl('data:application/octet-stream;base64,AA==')).toBe(
     'data:application/octet-stream;base64,AA=='
   );
-  t.end();
 });
+test('Tiles3DSource applies an API key while preserving Google 3D Tiles sessions', async () => {
+  const requestedURLs: string[] = [];
+  let parseCount = 0;
+  const loader = {
+    id: 'credential-tiles',
+    name: 'Credential test tiles',
+    module: 'tiles',
+    version: '0.0.0',
+    extensions: [],
+    mimeTypes: [],
+    options: {},
+    parse: async () => {
+      parseCount++;
+      return parseCount === 1
+        ? {
+            shape: 'tileset3d',
+            type: 'TILES3D',
+            asset: {version: '1.1'},
+            root: {refine: 'ADD'},
+            lodMetricType: 'geometricError',
+            lodMetricValue: 16
+          }
+        : {shape: 'tile3d'};
+    }
+  } as unknown as LoaderWithParser;
+  const source = new Tiles3DSource(
+    {
+      url: 'https://tile.googleapis.com/v1/3dtiles/root.json',
+      loader,
+      coreApi
+    },
+    {
+      core: {
+        credentials: [
+          createQueryParameterCredential({
+            id: 'google-maps-key',
+            origins: ['https://tile.googleapis.com'],
+            parameterName: 'key',
+            token: 'api-key'
+          })
+        ],
+        fetch: async url => {
+          requestedURLs.push(String(url));
+          return new Response(new Uint8Array([1]));
+        }
+      }
+    }
+  );
 
-test('I3SSource initializes promised roots and appends auth tokens to tile urls', async t => {
+  await source.initialize();
+  await source.loadTileContent({
+    contentUrl:
+      'https://tile.googleapis.com/v1/3dtiles/datasets/example/tile.glb?session=session-id'
+  } as Tile3D);
+
+  expect(requestedURLs).toEqual([
+    'https://tile.googleapis.com/v1/3dtiles/root.json?key=api-key',
+    'https://tile.googleapis.com/v1/3dtiles/datasets/example/tile.glb?session=session-id&key=api-key'
+  ]);
+});
+test('I3SSource initializes promised roots and appends auth tokens to tile urls', async () => {
   const source = new I3SSource(
     {
       type: 'tileset',
@@ -179,28 +237,173 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
       lodMetricType: 'maxScreenThresholdSQ',
       lodMetricValue: 4,
       nodePagesTile: {nodesInNodePages: 7},
+      spatialReference: {wkid: 4326, vcsWkid: 5703},
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        vertCRS: 'EPSG:5703'
+      },
       store: {extent: [0, 0, 1, 1]}
     } as any,
+    {i3s: {token: 'secret-token'}}
+  );
+  await source.initialize();
+  const metadata = source.getMetadata();
+  expect(metadata.tileset.root.id, 'promised roots are awaited during initialization').toBe(
+    'root-node'
+  );
+  expect(metadata.spatialReference).toMatchObject({
+    sourceCrs: 'EPSG:4326',
+    verticalCrs: 'EPSG:5703',
+    heightReference: 'orthometric'
+  });
+  expect(source.getTileUrl('https://example.com/SceneServer/layers/0/nodes/1')).toBe(
+    'https://example.com/SceneServer/layers/0/nodes/1?token=secret-token'
+  );
+  expect(source.getTilesTotalCount()).toBe(7);
+});
+test('I3SSource transforms traversal bounds and preserves a geographic view center', async () => {
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 0, 12, 100],
+      boundingVolume: {sphere: [10, 0, 12, 100]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    store: {normalReferenceFrame: 'earth-centered'}
+  } as any);
+  const tileset = new Tileset3D(source, {spatial: {targetCrs: 'EPSG:3857'}});
+  await tileset.tilesetInitializationPromise;
+
+  expect(tileset.spatialReference).toMatchObject({
+    targetCrs: 'EPSG:3857',
+    status: 'transformed'
+  });
+  expect(tileset.root?.header.boundingVolume.box).toHaveLength(12);
+  expect(tileset.root?.header.spatialBoundingVolume.box).toHaveLength(12);
+  expect(tileset.root?.header.spatialBoundingVolume.box[0]).toBeCloseTo(1113194.9079, 2);
+  expect(tileset.root?.boundingVolume.center[0]).toBeGreaterThan(6_000_000);
+  expect(tileset.root?.header.i3sLodMbs.slice(0, 3)).toEqual([10, 0, 12]);
+  expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
+  expect(tileset.cartographicCenter[1]).toBeCloseTo(0, 8);
+});
+test('I3SSource prepares terrain-relative root bounds before tile initialization', async () => {
+  let rangeCallCount = 0;
+  const terrainElevationProvider = {
+    sampleElevations(positions: readonly (readonly [number, number])[]) {
+      return Promise.resolve(positions.map(() => 50));
+    },
+    getElevationRange() {
+      rangeCallCount++;
+      return Promise.resolve({minimum: 50, maximum: 50});
+    }
+  };
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 20, 5, 0],
+      boundingVolume: {sphere: [10, 20, 5, 0]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+    elevationInfo: {mode: 'relativeToGround', offset: 2, unit: 'meter'},
+    store: {normalReferenceFrame: 'earth-centered'}
+  } as any);
+  const tileset = new Tileset3D(source, {
+    spatial: {targetCrs: 'EPSG:4326', terrainElevationProvider}
+  });
+  await tileset.tilesetInitializationPromise;
+
+  expect(rangeCallCount).toBe(1);
+  expect(tileset.root?.header.i3sLodMbs[0]).toBeCloseTo(10, 8);
+  expect(tileset.root?.header.i3sLodMbs[1]).toBeCloseTo(20, 8);
+  expect(tileset.root?.header.i3sLodMbs[2]).toBeCloseTo(57, 8);
+  expect(tileset.root?.header.spatialBoundingVolume.region[4]).toBeCloseTo(57, 8);
+  expect(tileset.root?.header.spatialBoundingVolume.region[5]).toBeCloseTo(57, 8);
+  expect(tileset.cartographicCenter[0]).toBeCloseTo(10, 8);
+  expect(tileset.cartographicCenter[1]).toBeCloseTo(20, 8);
+  expect(tileset.cartographicCenter[2]).toBeCloseTo(57, 8);
+});
+test('I3SSource rejects unresolved format-owned vertical operations', async () => {
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    root: {
+      id: 'root-node',
+      refine: 'REPLACE',
+      mbs: [10, 20, 5, 0],
+      boundingVolume: {sphere: [10, 20, 5, 0]},
+      lodMetricType: 'maxScreenThresholdSQ',
+      lodMetricValue: 4
+    },
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    spatialReference: {wkid: 4326},
+    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'furlong'}
+  } as any);
+  const tileset = new Tileset3D(source);
+
+  await expect(tileset.tilesetInitializationPromise).rejects.toThrow(
+    'Unsupported I3S vertical unit furlong'
+  );
+});
+test('I3SSource appends auth tokens before loading URL-backed root metadata', async () => {
+  const requestedUrls: string[] = [];
+  const resolver: TilesetSourceResolver = {
+    async loadRoot(url) {
+      requestedUrls.push(url);
+      return {
+        type: 'tileset',
+        url,
+        loader: I3SLoader,
+        root: {id: 'root-node', refine: 'REPLACE'}
+      } as any;
+    },
+    async loadResource() {
+      return null;
+    }
+  };
+
+  const source = new I3SSource(
+    {
+      url: 'https://example.com/SceneServer/layers/0?existing=1',
+      loader: I3SLoader,
+      resolver
+    },
     {i3s: {token: 'secret-token'}}
   );
 
   await source.initialize();
 
-  const metadata = source.getMetadata();
-  t.equal(
-    metadata.tileset.root.id,
-    'root-node',
-    'promised roots are awaited during initialization'
+  expect(requestedUrls).toEqual([
+    'https://example.com/SceneServer/layers/0?existing=1&token=secret-token'
+  ]);
+  expect(source.getTileUrl('https://example.com/SceneServer/layers/0?token=caller-token')).toBe(
+    'https://example.com/SceneServer/layers/0?token=caller-token'
   );
-  t.equal(
-    source.getTileUrl('https://example.com/SceneServer/layers/0/nodes/1'),
-    'https://example.com/SceneServer/layers/0/nodes/1?token=secret-token'
+  expect(
+    source.getTileUrl('https://example.com/SceneServer/layers/0?redirect=https://host/path?a=1')
+  ).toBe(
+    'https://example.com/SceneServer/layers/0?redirect=https://host/path?a=1&token=secret-token'
   );
-  t.equal(source.getTilesTotalCount(), 7);
-  t.end();
 });
-
-test('Tiles3DSource uses injected resolvers for root metadata and tile content', async t => {
+test('Tiles3DSource uses injected resolvers for root metadata and tile content', async () => {
   const rootTileset: TilesetJSON = {
     asset: {version: '1.0'},
     root: {
@@ -215,7 +418,6 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
   let rootLoadCount = 0;
   let resourceLoadCount = 0;
   let resourceTilesetMode: unknown;
-
   const resolver: TilesetSourceResolver = {
     async loadRoot() {
       rootLoadCount++;
@@ -236,20 +438,16 @@ test('Tiles3DSource uses injected resolvers for root metadata and tile content',
     },
     {}
   );
-
   await source.initialize();
   const tile = {contentUrl: 'https://example.com/root/test.3tz/root.b3dm', type: 'b3dm'} as any;
   const loadResult = await source.loadTileContent(tile);
-
-  t.equal(rootLoadCount, 1, 'root metadata goes through the injected resolver');
-  t.equal(resourceLoadCount, 1, 'tile content goes through the injected resolver');
-  t.equal(resourceTilesetMode, 'auto', 'content kind is detected from bytes rather than URL');
-  t.equal(tile.content, tileContent);
-  t.notOk(loadResult.nestedTileset);
-  t.end();
+  expect(rootLoadCount, 'root metadata goes through the injected resolver').toBe(1);
+  expect(resourceLoadCount, 'tile content goes through the injected resolver').toBe(1);
+  expect(resourceTilesetMode, 'content kind is detected from bytes rather than URL').toBe('auto');
+  expect(tile.content).toBe(tileContent);
+  expect(loadResult.nestedTileset).toBeFalsy();
 });
-
-test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape', async t => {
+test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape', async () => {
   const nestedTileset = {shape: 'tileset3d', asset: {version: '1.1'}, root: {}};
   const resolver: TilesetSourceResolver = {
     async loadRoot() {
@@ -270,15 +468,12 @@ test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape',
     resolver
   });
   await source.initialize();
-
   const tile = {contentUrl: 'https://example.com/nested/signed-resource?token=one'} as any;
   const loadResult = await source.loadTileContent(tile);
-  t.equal(loadResult.nestedTileset, nestedTileset);
-  t.equal(tile.content, nestedTileset);
-  t.end();
+  expect(loadResult.nestedTileset).toBe(nestedTileset);
+  expect(tile.content).toBe(nestedTileset);
 });
-
-test('Tiles3DSource invalidates cached URLs when inherited query state changes', async t => {
+test('Tiles3DSource invalidates cached URLs when inherited query state changes', async () => {
   const source = new Tiles3DSource({
     type: 'tileset',
     url: 'https://example.com/tileset.json',
@@ -290,22 +485,16 @@ test('Tiles3DSource invalidates cached URLs when inherited query state changes',
     queryString: 'token=one'
   } as any);
   await source.initialize();
-
   const tilePath = 'https://example.com/tile.b3dm';
-  t.equal(source.getTileUrl(tilePath), `${tilePath}?token=one`);
+  expect(source.getTileUrl(tilePath)).toBe(`${tilePath}?token=one`);
   (source as any).setQueryParameter('token', 'two');
-  t.equal(
-    source.getTileUrl(tilePath),
-    `${tilePath}?token=two`,
-    'does not return a stale cached URL'
+  expect(source.getTileUrl(tilePath), 'does not return a stale cached URL').toBe(
+    `${tilePath}?token=two`
   );
-  t.end();
 });
-
-test('I3SSource uses injected resolvers for root metadata and child headers', async t => {
+test('I3SSource uses injected resolvers for root metadata and child headers', async () => {
   let rootLoadCount = 0;
   const requestedUrls: string[] = [];
-
   const resolver: TilesetSourceResolver = {
     async loadRoot() {
       rootLoadCount++;
@@ -329,26 +518,24 @@ test('I3SSource uses injected resolvers for root metadata and child headers', as
     },
     {}
   );
-
   await source.initialize();
   const childHeader = await source.loadChildTileHeader?.({} as any, '7', {} as any);
-
-  t.equal(rootLoadCount, 1, 'root metadata goes through the injected resolver');
-  t.deepEqual(requestedUrls, ['https://example.com/archive/test.slpk/nodes/7']);
-  t.equal(childHeader?.id, '7');
-  t.end();
+  expect(rootLoadCount, 'root metadata goes through the injected resolver').toBe(1);
+  expect(requestedUrls).toEqual(['https://example.com/archive/test.slpk/nodes/7']);
+  expect(childHeader?.id).toBe('7');
 });
-
-test('IndexedArchiveTilesetSource loads root metadata and nested resources from an archive', async t => {
+test('IndexedArchiveTilesetSource loads root metadata and nested resources from an archive', async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const files: Record<string, string> = {
     'tileset.json': 'root',
     'models/tile.b3dm': 'tile'
   };
-  const fileRequests: {path: string; mode?: string}[] = [];
+  const fileRequests: {
+    path: string;
+    mode?: string;
+  }[] = [];
   let parseArchiveCount = 0;
-
   const coreApiMock = {
     async fetchFile() {
       throw new Error('Blob archive inputs should not use coreApi.fetchFile');
@@ -378,30 +565,28 @@ test('IndexedArchiveTilesetSource loads root metadata and nested resources from 
     getCoreApi: () => coreApiMock,
     missingCoreApiMessage: 'missing core api'
   });
-
   const root = await archiveSource.loadRoot('memory://tileset.3tz', {} as any, {});
-
-  t.equal(archiveSource.sourceUrl, 'memory://tileset.3tz');
-  t.deepEqual(root, {text: 'root', nestedText: 'tile'});
-  t.equal(parseArchiveCount, 1, 'archive is opened and parsed once');
-  t.deepEqual(fileRequests, [
+  expect(archiveSource.sourceUrl).toBe('memory://tileset.3tz');
+  expect(root).toEqual({text: 'root', nestedText: 'tile'});
+  expect(parseArchiveCount, 'archive is opened and parsed once').toBe(1);
+  expect(fileRequests).toEqual([
     {path: 'tileset.json', mode: undefined},
     {path: 'models/tile.b3dm', mode: undefined}
   ]);
-  t.end();
 });
-
-test('IndexedArchiveTilesetSource resolves archive marker paths and local inputs', async t => {
+test('IndexedArchiveTilesetSource resolves archive marker paths and local inputs', async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const archiveInput = encoder.encode('archive').buffer;
-  const fileRequests: {path: string; mode?: string}[] = [];
+  const fileRequests: {
+    path: string;
+    mode?: string;
+  }[] = [];
   let fetchFileCount = 0;
-
   const coreApiMock = {
     async fetchFile(url: string | Blob) {
       fetchFileCount++;
-      t.equal(url, 'local/archive.slpk');
+      expect(url).toBe('local/archive.slpk');
       return new Response(archiveInput);
     },
     async parse(data: ArrayBuffer, _loader: any, _options: any, context: any) {
@@ -425,25 +610,21 @@ test('IndexedArchiveTilesetSource resolves archive marker paths and local inputs
     getCoreApi: () => coreApiMock,
     missingCoreApiMessage: 'missing core api'
   });
-
   const root = await archiveSource.loadRoot('local/archive.slpk', {} as any, {});
   const resource = await archiveSource.loadResource(
     'local/archive.slpk/nodes/7?token=1',
     {} as any,
     {}
   );
-
-  t.deepEqual(root, {url: 'local/archive.slpk', text: 'layer'});
-  t.deepEqual(resource, {url: 'local/archive.slpk/nodes/7?token=1', text: 'node'});
-  t.equal(fetchFileCount, 1, 'local archive input is loaded once through coreApi.fetchFile');
-  t.deepEqual(fileRequests, [
+  expect(root).toEqual({url: 'local/archive.slpk', text: 'layer'});
+  expect(resource).toEqual({url: 'local/archive.slpk/nodes/7?token=1', text: 'node'});
+  expect(fetchFileCount, 'local archive input is loaded once through coreApi.fetchFile').toBe(1);
+  expect(fileRequests).toEqual([
     {path: '', mode: 'http'},
     {path: 'nodes/7', mode: undefined}
   ]);
-  t.end();
 });
-
-test('IndexedArchiveTilesetSource throws a configured error without core API', async t => {
+test('IndexedArchiveTilesetSource throws a configured error without core API', async () => {
   const archiveSource = new IndexedArchiveTilesetSource({
     data: 'local/archive.3tz',
     fallbackFilename: 'tileset.3tz',
@@ -454,12 +635,12 @@ test('IndexedArchiveTilesetSource throws a configured error without core API', a
     getCoreApi: () => undefined,
     missingCoreApiMessage: 'archive source needs core api'
   });
-
   try {
     await archiveSource.loadRoot('local/archive.3tz', {} as any, {});
-    t.fail('loadRoot should fail without core API');
+    (() => {
+      throw new Error('loadRoot should fail without core API');
+    })();
   } catch (error) {
-    t.equal((error as Error).message, 'archive source needs core api');
+    expect((error as Error).message).toBe('archive source needs core api');
   }
-  t.end();
 });

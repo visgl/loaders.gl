@@ -1,8 +1,4 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   canProcessOnWorker,
   processOnWorker,
@@ -10,42 +6,33 @@ import {
   NullWorker,
   isBrowser
 } from '@loaders.gl/worker-utils';
-
-test('canProcessOnWorker#custom worker URL', t => {
+test('canProcessOnWorker#custom worker URL', () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
-
   const MainThreadLoader = {...NullWorker, worker: false};
-  t.notOk(canProcessOnWorker(MainThreadLoader, {worker: true}), 'defaults to the main thread');
-  t.ok(
+  expect(
+    canProcessOnWorker(MainThreadLoader, {worker: true}),
+    'defaults to the main thread'
+  ).toBeFalsy();
+  expect(
     canProcessOnWorker(MainThreadLoader, {worker: true, null: {workerUrl: 'custom-worker.js'}}),
     'a custom worker URL opts into worker processing'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('processOnWorker', async t => {
+test('processOnWorker', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
-
   const nullData = await processOnWorker(NullWorker, 'abc', {
     _workerType: 'test'
   });
-
-  t.equal(nullData, 'abc', 'NullWorker verified');
-  t.end();
+  expect(nullData, 'NullWorker verified').toBe('abc');
 });
-
-test('preloadWorker', async t => {
+test('preloadWorker', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
-
   let startedWorkers = 0;
   await preloadWorker(
     NullWorker,
@@ -59,24 +46,18 @@ test('preloadWorker', async t => {
     },
     {count: 3}
   );
-
   const nullData = await processOnWorker(NullWorker, 'abc', {
     _workerType: 'test',
     maxConcurrency: 3,
     reuseWorkers: true
   });
-
-  t.ok(startedWorkers >= 3, 'preloaded three worker jobs');
-  t.equal(nullData, 'abc', 'preloaded worker pool can process later jobs');
-  t.end();
+  expect(startedWorkers >= 3, 'preloaded three worker jobs').toBeTruthy();
+  expect(nullData, 'preloaded worker pool can process later jobs').toBe('abc');
 });
-
-test('preloadWorker handles count above maxConcurrency', async t => {
+test('preloadWorker handles count above maxConcurrency', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
-
   await Promise.race([
     preloadWorker(
       NullWorker,
@@ -89,13 +70,10 @@ test('preloadWorker handles count above maxConcurrency', async t => {
     ),
     new Promise((_, reject) => setTimeout(() => reject(new Error('preloadWorker timed out')), 2000))
   ]);
-
   const nullData = await processOnWorker(NullWorker, 'abc', {
     _workerType: 'test',
     maxConcurrency: 2,
     reuseWorkers: true
   });
-
-  t.equal(nullData, 'abc', 'preloaded constrained worker pool can process later jobs');
-  t.end();
+  expect(nullData, 'preloaded constrained worker pool can process later jobs').toBe('abc');
 });

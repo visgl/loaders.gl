@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import {expect, test as vitestTest} from 'vitest';
+import {expect, test} from 'vitest';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import {
@@ -105,7 +104,7 @@ const FIXTURES: LAZFixture[] = [
   }
 ];
 
-test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async t => {
+test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async () => {
   for (const fixture of FIXTURES) {
     const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
       loadArrayBuffer(fixture.lasUrl),
@@ -122,17 +121,12 @@ test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async t => {
 
     const expected = getLASPointData(lasArrayBuffer, fixture.pointDataRecordLength);
     const actual = concatenateUint8Arrays(decodedBatches);
-    t.equal(
-      actual.byteLength,
-      expected.byteLength,
-      `${fixture.label} raw record byte length matches LAS`
-    );
-    t.deepEqual(actual, expected, `${fixture.label} raw records match LAS`);
+    expect(actual.byteLength).toBe(expected.byteLength);
+    expect(actual).toEqual(expected);
   }
-  t.end();
 }, 60000);
 
-test('TypeScript LAZ complete and split parsing preserve Arrow attributes', async t => {
+test('TypeScript LAZ complete and split parsing preserve Arrow attributes', async () => {
   for (const fixture of FIXTURES) {
     const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
       loadArrayBuffer(fixture.lasUrl),
@@ -147,24 +141,15 @@ test('TypeScript LAZ complete and split parsing preserve Arrow attributes', asyn
     );
 
     for (const attributeName of Object.keys(expected) as Array<keyof CollectedAttributes>) {
-      t.equal(
-        complete[attributeName].length,
-        expected[attributeName].length,
-        `${fixture.label} complete ${attributeName} length matches LAS`
-      );
-      t.equal(
-        streamed[attributeName].length,
-        expected[attributeName].length,
-        `${fixture.label} split ${attributeName} length matches LAS`
-      );
+      expect(complete[attributeName].length).toBe(expected[attributeName].length);
+      expect(streamed[attributeName].length).toBe(expected[attributeName].length);
     }
-    t.deepEqual(complete, expected, `${fixture.label} complete parse matches LAS`);
-    t.deepEqual(streamed, expected, `${fixture.label} split parse matches LAS`);
+    expect(complete).toEqual(expected);
+    expect(streamed).toEqual(expected);
   }
-  t.end();
 }, 60000);
 
-test('TypeScript LAZ selective Point14 targets decode only requested layers', async t => {
+test('TypeScript LAZ selective Point14 targets decode only requested layers', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
@@ -179,7 +164,7 @@ test('TypeScript LAZ selective Point14 targets decode only requested layers', as
     {
       label: 'positions only',
       createTarget: () => createPointDataTarget(metadata.pointCount),
-      validate: target => t.deepEqual(target.positions, expected.positions, 'positions match')
+      validate: target => expect(target.positions).toEqual(expected.positions)
     },
     {
       label: 'intensity only',
@@ -187,7 +172,7 @@ test('TypeScript LAZ selective Point14 targets decode only requested layers', as
         ...createPointDataTarget(metadata.pointCount),
         intensities: new Uint16Array(metadata.pointCount)
       }),
-      validate: target => t.deepEqual(target.intensities, expected.intensities, 'intensity matches')
+      validate: target => expect(target.intensities).toEqual(expected.intensities)
     },
     {
       label: 'classification only',
@@ -195,8 +180,23 @@ test('TypeScript LAZ selective Point14 targets decode only requested layers', as
         ...createPointDataTarget(metadata.pointCount),
         classifications: new Uint8Array(metadata.pointCount)
       }),
-      validate: target =>
-        t.deepEqual(target.classifications, expected.classifications, 'classification matches')
+      validate: target => expect(target.classifications).toEqual(expected.classifications)
+    },
+    {
+      label: 'classification flags only',
+      createTarget: () => ({
+        ...createPointDataTarget(metadata.pointCount),
+        syntheticFlags: new Uint8Array(metadata.pointCount),
+        keyPointFlags: new Uint8Array(metadata.pointCount),
+        withheldFlags: new Uint8Array(metadata.pointCount),
+        overlapFlags: new Uint8Array(metadata.pointCount)
+      }),
+      validate: target => {
+        expect(target.syntheticFlags).toEqual(expected.syntheticFlags);
+        expect(target.keyPointFlags).toEqual(expected.keyPointFlags);
+        expect(target.withheldFlags).toEqual(expected.withheldFlags);
+        expect(target.overlapFlags).toEqual(expected.overlapFlags);
+      }
     },
     {
       label: 'RGB only',
@@ -204,37 +204,29 @@ test('TypeScript LAZ selective Point14 targets decode only requested layers', as
         ...createPointDataTarget(metadata.pointCount),
         rawColors: new Uint16Array(metadata.pointCount * 3)
       }),
-      validate: target => t.deepEqual(target.rawColors, expected.rawColors, 'RGB matches')
+      validate: target => expect(target.rawColors).toEqual(expected.rawColors)
     }
   ];
 
   for (const selection of targets) {
     const target = selection.createTarget();
     const cursor = createLAZChunkDecoderCursor(compressed, metadata);
-    t.equal(
-      cursor.decodeIntoPointData(target, metadata.pointCount),
-      metadata.pointCount,
-      `${selection.label} decodes every point`
-    );
+    expect(cursor.decodeIntoPointData(target, metadata.pointCount)).toBe(metadata.pointCount);
     selection.validate(target);
   }
 
   const lockedTarget = createPointDataTarget(metadata.pointCount);
   const lockedCursor = createLAZChunkDecoderCursor(compressed, metadata);
   lockedCursor.decodeIntoPointData(lockedTarget, 1);
-  t.throws(
-    () =>
-      lockedCursor.decodeIntoPointData(
-        {...lockedTarget, classifications: new Uint8Array(metadata.pointCount)},
-        1
-      ),
-    /Cannot change selected point-data fields/,
-    'selection cannot change after decoding begins'
-  );
-  t.end();
+  expect(() =>
+    lockedCursor.decodeIntoPointData(
+      {...lockedTarget, classifications: new Uint8Array(metadata.pointCount)},
+      1
+    )
+  ).toThrow(/Cannot change selected point-data fields/);
 }, 60000);
 
-test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', async t => {
+test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', async () => {
   for (const fixture of FIXTURES.filter(({pointDataRecordFormat}) =>
     [8, 9, 10].includes(pointDataRecordFormat)
   )) {
@@ -245,21 +237,12 @@ test('TypeScript LAZ skips unrequested RGB and auxiliary PDRF 8-10 layers', asyn
     const target = createPointDataTarget(metadata.pointCount);
     const cursor = createLAZChunkDecoderCursor(compressed, metadata);
 
-    t.equal(
-      cursor.decodeIntoPointData(target, metadata.pointCount),
-      metadata.pointCount,
-      `${fixture.label} positions-only target decodes every point`
-    );
-    t.deepEqual(
-      target.positions,
-      expected.positions,
-      `${fixture.label} positions match raw records`
-    );
+    expect(cursor.decodeIntoPointData(target, metadata.pointCount)).toBe(metadata.pointCount);
+    expect(target.positions).toEqual(expected.positions);
   }
-  t.end();
 }, 60000);
 
-vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () => {
+test('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 8)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
@@ -325,7 +308,99 @@ vitestTest('TypeScript LAZ progressively delivers PDRF 8 RGB and NIR', async () 
   expect(nir).toEqual(expectedNir);
 });
 
-vitestTest('TypeScript LAZ does not wait for unrequested Point14 layers', async () => {
+test.each(
+  FIXTURES.filter(({pointDataRecordFormat}) => [9, 10].includes(pointDataRecordFormat))
+)('TypeScript LAZ progressively delivers $label waveform references', async fixture => {
+  const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const rawPointData = decodeLAZChunk(compressed, metadata);
+  const waveformOffset = metadata.pointDataRecordFormat === 9 ? 30 : 38;
+  const extraByteOffset = metadata.pointDataRecordFormat === 9 ? 59 : 67;
+  const extraByteCount = metadata.pointDataRecordLength - extraByteOffset;
+  const expectedWaveforms = extractPackedPointField(rawPointData, metadata, waveformOffset, 29);
+  const expectedExtraBytes = extractPackedPointField(
+    rawPointData,
+    metadata,
+    extraByteOffset,
+    extraByteCount
+  );
+
+  const completeTarget = {
+    ...createPointDataTarget(metadata.pointCount),
+    waveforms: new Uint8Array(metadata.pointCount * 29),
+    extraBytes: new Uint8Array(metadata.pointCount * extraByteCount)
+  };
+  createLAZChunkDecoderCursor(compressed, metadata).decodeIntoPointData(
+    completeTarget,
+    metadata.pointCount
+  );
+  expect(completeTarget.waveforms).toEqual(expectedWaveforms);
+  expect(completeTarget.extraBytes).toEqual(expectedExtraBytes);
+
+  const decoder = createLAZChunkDecoder(metadata);
+  const progressiveTarget = {
+    ...createPointDataTarget(metadata.pointCount),
+    waveforms: new Uint8Array(metadata.pointCount * 29)
+  };
+  let decodedPointCount = 0;
+  let firstDecodedByteLength = -1;
+  for (
+    let byteOffset = 0;
+    byteOffset < compressed.byteLength;
+    byteOffset += TEST_INPUT_CHUNK_SIZE
+  ) {
+    const end = Math.min(byteOffset + TEST_INPUT_CHUNK_SIZE, compressed.byteLength);
+    decoder.feed(compressed.subarray(byteOffset, end));
+    progressiveTarget.pointOffset = decodedPointCount;
+    const pointsDecoded = decoder.readPointDataBatch(
+      progressiveTarget,
+      metadata.pointCount - decodedPointCount
+    );
+    if (pointsDecoded) {
+      firstDecodedByteLength = firstDecodedByteLength < 0 ? end : firstDecodedByteLength;
+      decodedPointCount += pointsDecoded;
+    }
+  }
+
+  expect(decodedPointCount).toBe(metadata.pointCount);
+  expect(firstDecodedByteLength).toBeGreaterThan(0);
+  expect(firstDecodedByteLength).toBeLessThan(compressed.byteLength);
+  expect(progressiveTarget.waveforms).toEqual(expectedWaveforms);
+});
+
+test.each(
+  FIXTURES.filter(({pointDataRecordFormat}) => [9, 10].includes(pointDataRecordFormat))
+)('TypeScript LAZ parser yields $label waveform rows before trailing layers', async fixture => {
+  const [lasArrayBuffer, lazArrayBuffer] = await Promise.all([
+    loadArrayBuffer(fixture.lasUrl),
+    loadArrayBuffer(fixture.lazUrl)
+  ]);
+  const {compressed} = getFirstLAZChunk(lazArrayBuffer, fixture);
+  const pointDataOffset = new DataView(lazArrayBuffer).getUint32(96, true);
+  const firstChunkEnd = pointDataOffset + 8 + compressed.byteLength;
+  const options = {batchSize: TEST_BATCH_SIZE, las: {columns: ['POSITION', 'WAVEFORM'] as const}};
+  const expected = parseLAS(lasArrayBuffer, options);
+  let consumedByteLength = 0;
+  const batches = parseLASInBatches(
+    trackSplitArrayBuffer(lazArrayBuffer, 31, byteLength => {
+      consumedByteLength = byteLength;
+    }),
+    options
+  )[Symbol.asyncIterator]();
+
+  const firstBatch = await batches.next();
+  expect(firstBatch.done).toBe(false);
+  expect(consumedByteLength).toBeLessThan(firstChunkEnd);
+  expect(readArrowColumn(firstBatch.value!, 'POSITION')).toEqual(
+    readArrowColumn(expected, 'POSITION').slice(0, TEST_BATCH_SIZE)
+  );
+  expect(readArrowColumn(firstBatch.value!, 'WAVEFORM')).toEqual(
+    readArrowColumn(expected, 'WAVEFORM').slice(0, TEST_BATCH_SIZE)
+  );
+  await batches.return?.();
+});
+
+test('TypeScript LAZ does not wait for unrequested Point14 layers', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const lazArrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const {compressed, metadata} = getFirstLAZChunk(lazArrayBuffer, fixture);
@@ -374,7 +449,7 @@ vitestTest('TypeScript LAZ does not wait for unrequested Point14 layers', async 
   expect(classifications).toEqual(expectedClassifications);
 });
 
-test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
+test('TypeScript LAZ validates VLR codecs and truncated input', async () => {
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const source = await loadArrayBuffer(fixture.lazUrl);
   const vlrDataOffset = findLASZipVLRDataOffset(source);
@@ -405,20 +480,16 @@ test('TypeScript LAZ validates VLR codecs and truncated input', async t => {
   for (const fixtureCase of cases) {
     const corrupted = source.slice(0);
     fixtureCase.mutate(new DataView(corrupted));
-    t.throws(() => parseLAS(corrupted), fixtureCase.error, `rejects invalid ${fixtureCase.label}`);
+    expect(() => parseLAS(corrupted)).toThrow(fixtureCase.error);
   }
 
-  t.throws(
-    () => parseLAS(source.slice(0, source.byteLength - 32)),
-    /needs more|truncated|beyond input/i,
-    'rejects truncated compressed point data'
+  expect(() => parseLAS(source.slice(0, source.byteLength - 32))).toThrow(
+    /needs more|truncated|beyond input|incomplete LAZ chunk table/i
   );
-  t.end();
 });
 
-test('LASLoader primary TypeScript variant uses its packaged worker', async t => {
+test('LASLoader primary TypeScript variant uses its packaged worker', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
 
@@ -431,18 +502,11 @@ test('LASLoader primary TypeScript variant uses its packaged worker', async t =>
     core: {worker: false}
   })) as LASMesh;
 
-  t.equal(workerResult.header.vertexCount, POINT_COUNT, 'TypeScript worker decodes LAS 1.4 PDRF 7');
-  t.deepEqual(
-    workerResult.attributes.POSITION.value,
-    mainThreadResult.attributes.POSITION.value,
-    'worker positions match main-thread TypeScript output'
+  expect(workerResult.header.vertexCount).toBe(POINT_COUNT);
+  expect(workerResult.attributes.POSITION.value).toEqual(
+    mainThreadResult.attributes.POSITION.value
   );
-  t.deepEqual(
-    workerResult.attributes.COLOR_0.value,
-    mainThreadResult.attributes.COLOR_0.value,
-    'worker colors match main-thread TypeScript output'
-  );
-  t.end();
+  expect(workerResult.attributes.COLOR_0.value).toEqual(mainThreadResult.attributes.COLOR_0.value);
 });
 
 /** Load one local LAS/LAZ fixture. */
@@ -483,6 +547,33 @@ function createPointDataTarget(pointCount: number): LAZPointDataTarget {
   };
 }
 
+/** Extract one fixed-width field from interleaved raw LAS point records. */
+function extractPackedPointField(
+  rawPointData: Uint8Array,
+  metadata: LAZChunkMetadata,
+  fieldOffset: number,
+  fieldByteLength: number
+): Uint8Array {
+  const packed = new Uint8Array(metadata.pointCount * fieldByteLength);
+  for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
+    const sourceOffset = pointIndex * metadata.pointDataRecordLength + fieldOffset;
+    packed.set(
+      rawPointData.subarray(sourceOffset, sourceOffset + fieldByteLength),
+      pointIndex * fieldByteLength
+    );
+  }
+  return packed;
+}
+
+/** Read one Arrow column into stable JavaScript values for batch-prefix comparison. */
+function readArrowColumn(table: LASArrowTable, columnName: string): unknown[] {
+  const column = table.data.getChild(columnName);
+  return Array.from({length: column?.length || 0}, (_, index) => {
+    const value = column?.get(index);
+    return value?.toArray ? Array.from(value.toArray()) : value;
+  });
+}
+
 /** Extract direct-output oracle columns from complete raw PDRF 6-10 records. */
 function getExpectedPointData(
   rawPointData: Uint8Array,
@@ -491,6 +582,10 @@ function getExpectedPointData(
   positions: Float64Array;
   intensities: Uint16Array;
   classifications: Uint8Array;
+  syntheticFlags: Uint8Array;
+  keyPointFlags: Uint8Array;
+  withheldFlags: Uint8Array;
+  overlapFlags: Uint8Array;
   rawColors: Uint16Array;
 } {
   const dataView = new DataView(
@@ -501,6 +596,10 @@ function getExpectedPointData(
   const positions = new Float64Array(metadata.pointCount * 3);
   const intensities = new Uint16Array(metadata.pointCount);
   const classifications = new Uint8Array(metadata.pointCount);
+  const syntheticFlags = new Uint8Array(metadata.pointCount);
+  const keyPointFlags = new Uint8Array(metadata.pointCount);
+  const withheldFlags = new Uint8Array(metadata.pointCount);
+  const overlapFlags = new Uint8Array(metadata.pointCount);
   const rawColors = new Uint16Array(metadata.pointCount * 3);
 
   for (let pointIndex = 0; pointIndex < metadata.pointCount; pointIndex++) {
@@ -511,13 +610,27 @@ function getExpectedPointData(
     positions[positionOffset + 2] = dataView.getInt32(recordOffset + 8, true);
     intensities[pointIndex] = dataView.getUint16(recordOffset + 12, true);
     classifications[pointIndex] = dataView.getUint8(recordOffset + 16);
+    const classificationFlags = dataView.getUint8(recordOffset + 15);
+    syntheticFlags[pointIndex] = classificationFlags & 1;
+    keyPointFlags[pointIndex] = (classificationFlags >> 1) & 1;
+    withheldFlags[pointIndex] = (classificationFlags >> 2) & 1;
+    overlapFlags[pointIndex] = (classificationFlags >> 3) & 1;
     if ([7, 8, 10].includes(metadata.pointDataRecordFormat)) {
       rawColors[positionOffset] = dataView.getUint16(recordOffset + 30, true);
       rawColors[positionOffset + 1] = dataView.getUint16(recordOffset + 32, true);
       rawColors[positionOffset + 2] = dataView.getUint16(recordOffset + 34, true);
     }
   }
-  return {positions, intensities, classifications, rawColors};
+  return {
+    positions,
+    intensities,
+    classifications,
+    syntheticFlags,
+    keyPointFlags,
+    withheldFlags,
+    overlapFlags,
+    rawColors
+  };
 }
 
 /** Collect represented attributes from one Arrow table. */
@@ -559,6 +672,20 @@ async function* splitArrayBuffer(
   const bytes = new Uint8Array(arrayBuffer);
   for (let byteOffset = 0; byteOffset < bytes.byteLength; byteOffset += chunkSize) {
     yield bytes.slice(byteOffset, Math.min(byteOffset + chunkSize, bytes.byteLength)).buffer;
+  }
+}
+
+/** Yield deterministic chunks while reporting how much source input has been requested. */
+async function* trackSplitArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  chunkSize: number,
+  onRead: (byteLength: number) => void
+): AsyncIterable<ArrayBuffer> {
+  const bytes = new Uint8Array(arrayBuffer);
+  for (let byteOffset = 0; byteOffset < bytes.byteLength; byteOffset += chunkSize) {
+    const end = Math.min(byteOffset + chunkSize, bytes.byteLength);
+    onRead(end);
+    yield bytes.slice(byteOffset, end).buffer;
   }
 }
 

@@ -7,6 +7,7 @@ import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
 import type {ParquetPredicate} from '../parquet-source-types';
+import type {ParquetEncryptionAlgorithm} from './parquet-encryption';
 import type {ParquetPagePruningPlan} from './parquet-page-index';
 import type {SchemaDefinition} from '../parquetjs/schema/declare';
 
@@ -38,6 +39,24 @@ export type ParquetSourceWorkerColumnChunk = {
   dataPageOffset: number;
   /** Absolute offset of the dictionary page, when present. */
   dictionaryPageOffset?: number;
+  /** Physical column ordinal in the original Parquet row group. */
+  columnOrdinal?: number;
+  /** Whether this column chunk's page modules are encrypted. */
+  encrypted?: boolean;
+  /** Key metadata identifying the column key, when present. */
+  keyMetadata?: ArrayBuffer;
+  /** Raw data key resolved by the caller before worker transfer. */
+  keyMaterial?: ArrayBuffer;
+};
+
+/** File-level encryption context transferred to a worker for encrypted page reads. */
+export type ParquetSourceWorkerEncryption = {
+  /** Modular-encryption algorithm selected by the file. */
+  algorithm: ParquetEncryptionAlgorithm;
+  /** Optional caller-supplied AAD prefix. */
+  aadPrefix?: ArrayBuffer;
+  /** Random per-file AAD suffix component. */
+  fileUnique: ArrayBuffer;
 };
 
 /** Transferable input for one worker-backed Parquet source row-group decode. */
@@ -62,8 +81,14 @@ export type ParquetSourceWorkerInput = {
   predicate?: ParquetPredicate;
   /** Selective data-page plan prepared from column and offset indexes on the caller thread. */
   pagePlan?: ParquetPagePruningPlan;
+  /** Encryption context and resolved keys needed for encrypted worker decoding. */
+  encryption?: ParquetSourceWorkerEncryption;
   /** Whether BYTE_ARRAY values stay binary during logical conversion. */
   preserveBinary: boolean;
+  /** Whether legacy INT96 values decode as epoch-nanosecond timestamps. */
+  int96AsTimestamp: boolean;
+  /** Whether page CRC values are verified while decoding in the worker. */
+  verifyPageChecksums: boolean;
 };
 
 /** One directly transferable Arrow batch decoded by a Parquet source worker. */

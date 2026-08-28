@@ -28,7 +28,14 @@ export type MeshArrowTableOptions = {
   /** Schema describing the mesh attributes and metadata. */
   schema?: Schema;
   /** Mesh primitive topology represented by the table rows. */
-  topology?: 'point-list' | 'triangle-list' | 'triangle-strip';
+  topology?:
+    | 'point-list'
+    | 'line-list'
+    | 'line-loop'
+    | 'line-strip'
+    | 'triangle-list'
+    | 'triangle-strip'
+    | 'triangle-fan';
   /** Numeric draw mode associated with the mesh topology. */
   mode?: number;
   /** Optional mesh bounding box metadata. */
@@ -172,7 +179,21 @@ function getAttributeArrowField(
   column: arrow.Vector
 ): arrow.Field {
   if (attributeName === 'POSITION' && isMeshPositionColumn(column)) {
-    return meshArrowSchema.fields[0];
+    const canonicalField = meshArrowSchema.fields[0];
+    const suppliedField = schema?.fields.find(schemaField => schemaField.name === attributeName);
+    if (!suppliedField?.metadata) {
+      return canonicalField;
+    }
+    const metadata = new Map(canonicalField.metadata);
+    for (const [key, value] of Object.entries(suppliedField.metadata)) {
+      metadata.set(key, value);
+    }
+    return new arrow.Field(
+      canonicalField.name,
+      canonicalField.type,
+      canonicalField.nullable,
+      metadata
+    );
   }
 
   const field = schema?.fields.find(schemaField => schemaField.name === attributeName);

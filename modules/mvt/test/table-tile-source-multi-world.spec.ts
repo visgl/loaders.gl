@@ -3,10 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {TableVectorTileSource} from '@loaders.gl/mvt';
 import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
-
 const leftPoint = {
   type: 'Feature',
   properties: {},
@@ -15,7 +14,6 @@ const leftPoint = {
     type: 'Point'
   }
 } as const satisfies Feature;
-
 const rightPoint = {
   type: 'Feature',
   properties: {},
@@ -24,7 +22,6 @@ const rightPoint = {
     type: 'Point'
   }
 } as const satisfies Feature;
-
 function makeGeoJSONTable(feature: Feature): GeoJSONTable {
   return {
     shape: 'geojson-table',
@@ -32,28 +29,21 @@ function makeGeoJSONTable(feature: Feature): GeoJSONTable {
     features: [feature]
   };
 }
-
-test('GeoJSONVT#handle point only in the rightside world', async t => {
+test('GeoJSONVT#handle point only in the rightside world', async () => {
   const source = new TableVectorTileSource(makeGeoJSONTable(rightPoint), {});
   await source.ready;
   const tile = source.getProtoTile({z: 0, x: 0, y: 0});
-
-  t.equal(tile?.protoFeatures[0].geometry[0][0], 4096);
-  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
-  t.end();
+  expect(tile?.protoFeatures[0].geometry[0][0]).toBe(4096);
+  expect(tile?.protoFeatures[0].geometry[0][1]).toBe(2048);
 });
-
-test('GeoJSONVT#handle point only in the leftside world', async t => {
+test('GeoJSONVT#handle point only in the leftside world', async () => {
   const source = new TableVectorTileSource(makeGeoJSONTable(leftPoint), {});
   await source.ready;
   const tile = source.getProtoTile({z: 0, x: 0, y: 0});
-
-  t.equal(tile?.protoFeatures[0].geometry[0][0], 0);
-  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
-  t.end();
+  expect(tile?.protoFeatures[0].geometry[0][0]).toBe(0);
+  expect(tile?.protoFeatures[0].geometry[0][1]).toBe(2048);
 });
-
-test('GeoJSONVT#handle points in the leftside world and the rightside world', async t => {
+test('GeoJSONVT#handle points in the leftside world and the rightside world', async () => {
   const source = new TableVectorTileSource(
     {
       shape: 'geojson-table',
@@ -64,11 +54,8 @@ test('GeoJSONVT#handle points in the leftside world and the rightside world', as
   );
   await source.ready;
   const tile = source.getProtoTile({z: 0, x: 0, y: 0});
-
-  t.equal(tile?.protoFeatures[0].geometry[0][0], 0);
-  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
-
-  t.equal(tile?.protoFeatures[1].geometry[0][0], 4096);
-  t.equal(tile?.protoFeatures[1].geometry[0][1], 2048);
-  t.end();
+  expect(tile?.protoFeatures[0].geometry[0][0]).toBe(0);
+  expect(tile?.protoFeatures[0].geometry[0][1]).toBe(2048);
+  expect(tile?.protoFeatures[1].geometry[0][0]).toBe(4096);
+  expect(tile?.protoFeatures[1].geometry[0][1]).toBe(2048);
 });

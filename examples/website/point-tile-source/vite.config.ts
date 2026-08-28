@@ -23,21 +23,6 @@ const DEDUPED_PACKAGES = [
   'react-dom'
 ];
 
-/** Run against local source. */
-const getAliases = async (
-  frameworkName: string,
-  frameworkRootDir: string
-): Promise<Record<string, string>> => {
-  const modules = await fs.promises.readdir(`${frameworkRootDir}/modules`);
-  const aliases: Record<string, string> = {};
-
-  modules.forEach((module) => {
-    aliases[`${frameworkName}/${module}`] = `${frameworkRootDir}/modules/${module}/src/index.ts`;
-  });
-
-  return aliases;
-};
-
 /** Ensures deck.gl and luma.gl resolve from the example package itself. */
 const resolvePackageDirectory = (packageRootDir: string, packageName: string): string => {
   const localPackagePath = path.resolve(packageRootDir, 'node_modules', packageName, 'package.json');
@@ -72,7 +57,6 @@ const getPackageAliases = (packageRootDir: string): Record<string, string> => {
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
   const aliases = {
-    ...(await getAliases('@loaders.gl', `${__dirname}/../../..`)),
     ...getPackageAliases(__dirname)
   };
 
@@ -82,6 +66,29 @@ export default defineConfig(async () => {
     },
     resolve: {
       alias: [
+        {
+          find: /^@loaders\.gl\/([^/]+)\/(.+)$/,
+          replacement: path.resolve(__dirname, '../../../modules/$1/src/$2.ts')
+        },
+        {
+          find: /^@loaders\.gl\/([^/]+)$/,
+          replacement: path.resolve(__dirname, '../../../modules/$1/src/index.ts')
+        },
+        {
+          find: /^@loaders\.gl\/arrow\/transport$/,
+          replacement: path.resolve(__dirname, '../../../modules/arrow/src/transport.ts')
+        },
+        {
+          find: /^@loaders\.gl\/compression\/(.+)$/,
+          replacement: path.resolve(__dirname, '../../../modules/compression/src/$1.ts')
+        },
+        {
+          find: /^@luma\.gl\/webgl\/constants$/,
+          replacement: path.resolve(
+            resolvePackageDirectory(__dirname, '@luma.gl/webgl'),
+            'dist/constants/index.js'
+          )
+        },
         {
           find: /^fs$/,
           replacement: path.resolve(__dirname, './empty-module.js')

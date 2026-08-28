@@ -17,7 +17,13 @@ import type {
   VectorSourceLayer,
   VectorSourceMetadata
 } from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource, explainTableQuery} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  explainTableQuery,
+  makeTableScanBatch
+} from '@loaders.gl/loader-utils';
+import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,
@@ -25,7 +31,11 @@ import {
   queryFlatGeobufArrowTable,
   type FlatGeobufQueryOptions
 } from './lib/parse-flatgeobuf';
-import {readFlatGeobufHeader, type FlatGeobufHeader} from './lib/flatgeobuf-reader';
+import {
+  getFlatGeobufCRSIdentifier,
+  readFlatGeobufHeader,
+  type FlatGeobufHeader
+} from './lib/flatgeobuf-reader';
 import {FLATGEOBUF_TABLE_QUERY_CAPABILITIES} from './flatgeobuf-table-query-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -111,6 +121,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     return createScanQueryMetadata({
       sourceType: 'flatgeobuf',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: info.layerName,
       description: info.header.description,
       schema: info.querySchema,
@@ -118,7 +129,8 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
       capabilities: {table: this.tableQueryCapabilities, bounds: 'pushdown'},
       spatial: {
         bounds: getScanBoundsFromHeader(info.header),
-        coordinateReferenceSystems: getLayerCrs(info.header)
+        coordinateReferenceSystems: getLayerCrs(info.header),
+        spatialReference: getFlatGeobufSpatialReference(info.header)
       },
       statistics: {rowCount: info.header.featuresCount}
     });
@@ -158,7 +170,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
     const info = await this.getHeaderInfo();
     assertNotAborted(parameters.signal);
     const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
-    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs && parameters.crs !== info.header.crs?.wkt)}) as VectorSourceData;
+    return parseFlatGeobuf(info.arrayBuffer, {shape: format === 'arrow' ? 'arrow-table' : format === 'binary' ? 'binary-geometry' : 'geojson-table', boundingBox: parameters.boundingBox, crs: parameters.crs || 'WGS84', reproject: Boolean(parameters.crs)}) as VectorSourceData;
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */
@@ -172,13 +184,7 @@ export class FlatGeobufVectorSource extends DataSource<string, FlatGeobufSourceL
   /** Streams one stable-schema Arrow batch for a portable FlatGeobuf query. */
   async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<ArrowTableBatch> {
     const table = await this.query(options);
-    yield {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: table.data.numRows,
-      schema: table.schema,
-      data: table.data
-    };
+    yield makeTableScanBatch(table);
   }
 
   protected getHeaderInfo(): Promise<HeaderInfo> { this.headerInfoPromise ||= loadHeaderInfo(this.url, this.fetch); return this.headerInfoPromise; }
@@ -195,12 +201,55 @@ async function loadHeaderInfo(url: string, fetch: FetchLike): Promise<HeaderInfo
 }
 
 function buildMetadata(layerName: string, header: FlatGeobufHeader): VectorSourceMetadata {
-  const layer: VectorSourceLayer = {name: layerName, title: header.title || layerName, crs: getLayerCrs(header), boundingBox: getBoundingBoxFromHeader(header)};
+  const layer: VectorSourceLayer = {
+    name: layerName,
+    title: header.title || layerName,
+    crs: getLayerCrs(header),
+    spatialReference: getFlatGeobufSpatialReference(header),
+    boundingBox: getBoundingBoxFromHeader(header)
+  };
   return {name: layerName, title: header.title || layerName, abstract: header.description, keywords: [], layers: [layer]};
 }
 
 function inferLayerName(url: string, header: FlatGeobufHeader): string { if (header.title) return header.title; const fileName = url.split(/[?#]/)[0].split('/').pop() || 'flatgeobuf'; return fileName.replace(/\.fgb$/i, '') || 'flatgeobuf'; }
-function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [header.crs?.codeString, header.crs?.wkt, Number.isFinite(header.crs?.code) ? `EPSG:${header.crs?.code}` : undefined].filter(Boolean).map(String); return values.length ? values : undefined; }
+function getLayerCrs(header: FlatGeobufHeader): string[] | undefined { const values = [getFlatGeobufCRSIdentifier(header.crs), header.crs?.wkt].filter(Boolean).map(String); return values.length ? values : undefined; }
+/** Normalize FlatGeobuf header CRS fields without discarding their original representations. */
+function getFlatGeobufSpatialReference(header: FlatGeobufHeader): SpatialReference {
+  const identifier = getFlatGeobufCRSIdentifier(header.crs);
+  const wkt = header.crs?.wkt;
+  if (wkt) {
+    return createSpatialReference({
+      crs: {
+        state: 'explicit',
+        definition: wkt,
+        representation: 'wkt',
+        provenance: 'metadata',
+        alternatives: identifier
+          ? [{definition: identifier, representation: 'identifier'}]
+          : undefined
+      },
+      coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+    });
+  }
+  if (identifier) {
+    return createSpatialReference({
+      crs: {
+        state: 'explicit',
+        definition: identifier,
+        representation: 'identifier',
+        provenance: 'metadata'
+      },
+      coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+    });
+  }
+  return createSpatialReference({
+    crs: {
+      state: header.crs ? 'unknown' : 'absent',
+      provenance: header.crs ? 'metadata' : 'unknown'
+    },
+    coordinateOrder: header.hasZ ? ['x', 'y', 'z'] : ['x', 'y']
+  });
+}
 function getBoundingBoxFromHeader(header: FlatGeobufHeader): [[number, number], [number, number]] | undefined { const envelope = header.envelope; return envelope && envelope.length >= 4 ? [[envelope[0], envelope[1]], [envelope[2], envelope[3]]] : undefined; }
 function getScanBoundsFromHeader(header: FlatGeobufHeader): {minimum: [number, number]; maximum: [number, number]} | undefined { const boundingBox = getBoundingBoxFromHeader(header); return boundingBox ? {minimum: boundingBox[0], maximum: boundingBox[1]} : undefined; }
 function getColumnRoles(header: FlatGeobufHeader): Record<string, ScanColumnRole> { const roles: Record<string, ScanColumnRole> = {geometry: 'geometry'}; for (const column of header.columns) if (column.primaryKey) roles[column.name] = 'identifier'; return roles; }

@@ -1,49 +1,29 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {AsyncQueue} from '@loaders.gl/worker-utils';
-
-test('AsyncQueue#push', async t => {
-  t.plan(2);
-
+test('AsyncQueue#push', async () => {
+  expect.assertions(2);
   const asyncQueue = new AsyncQueue();
-
   async function iterate() {
     for await (const value of asyncQueue) {
-      t.equal(value, 'tick');
+      expect(value).toBe('tick');
     }
   }
-
   const promise = iterate();
-
   asyncQueue.push('tick');
   asyncQueue.push('tick');
   asyncQueue.close();
-
   await promise;
-
-  // t.end(); handled by t.plan()
 });
-
-test('AsyncQueue#error', async t => {
-  t.plan(2);
-
+test('AsyncQueue#error', async () => {
+  expect.assertions(2);
   const asyncQueue = new AsyncQueue();
-
   async function iterate() {
     for await (const value of asyncQueue) {
-      t.equal(value, 'tick');
+      expect(value).toBe('tick');
     }
   }
-
   const promise = iterate();
-
   asyncQueue.enqueue('tick');
   asyncQueue.enqueue(new Error('done'));
-
-  t.rejects(promise);
-
-  // t.end(); handled by t.plan()
+  await expect(promise).rejects.toBeDefined();
 });

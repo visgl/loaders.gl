@@ -13,11 +13,37 @@ export {LASWriter} from './las-writer';
 export type {
   LASExtendedVariableLengthRecord,
   LASExtraBytesDescriptor,
+  LASGeoTIFFKey,
+  LASGeoTIFFKeyDirectory,
   LASHeader,
   LASMetadata,
   LASVariableLengthRecord,
   LASWaveformPacketDescriptor
 } from './lib/las-types';
+export {
+  decodeLASWaveformSamples,
+  getLASWaveformStorage,
+  parseLASWaveformPacketReference,
+  readLASWaveformPacket,
+  readLASWaveformPackets,
+  scaleLASWaveformSamples
+} from './lib/las-waveform';
+export type {
+  LASWaveformPacket,
+  LASWaveformPacketReference,
+  LASWaveformReadOptions,
+  LASWaveformStorage
+} from './lib/las-waveform';
+export {
+  createLASTypedExtraBytesAttributes,
+  createLASTypedExtraBytesValue,
+  parseLASExtraBytes,
+  populateLASTypedExtraBytes
+} from './lib/las-extra-bytes';
+export type {
+  LASTypedExtraBytesAttribute,
+  LASTypedExtraBytesValue
+} from './lib/las-extra-bytes';
 
 export {LASLoader} from './las-loader-types';
 export {LASCOPCLoader} from './las-copc-loader-types';

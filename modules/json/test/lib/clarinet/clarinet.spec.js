@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: BSD-2-Clause
-
-/* eslint-disable */
-// @ts-nocheck
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
-
 export const EVENTS = [
   'value',
   'string',
@@ -17,7 +12,6 @@ export const EVENTS = [
   'end',
   'ready'
 ];
-
 const seps = [undefined, /\t|\n|\r/, ''];
 const docs = {
   empty_array: {
@@ -753,8 +747,7 @@ const docs = {
     ]
   }
 };
-
-function generic(t, key, prechunked, sep) {
+function generic(key, prechunked, sep) {
   return function () {
     var doc = docs[key].text,
       events = docs[key].events,
@@ -765,7 +758,6 @@ function generic(t, key, prechunked, sep) {
       current,
       env = process && process.env ? process.env : window,
       record = [];
-
     events.forEach(function (event_pair) {
       l.push(event_pair);
     });
@@ -781,17 +773,14 @@ function generic(t, key, prechunked, sep) {
           if (!(current && current[0])) {
             return;
           }
-          t.equals(
-            current[0],
-            event,
-            '[ln' + i + '] event: [' + current[0] + '] got: [' + event + ']'
+          expect(current[0], '[ln' + i + '] event: [' + current[0] + '] got: [' + event + ']').toBe(
+            event
           );
           if (event !== 'error')
-            t.equals(
+            expect(
               current[1],
-              value,
               '[ln' + i + '] value: [' + current[1] + '] got: [' + value + ']'
-            );
+            ).toBe(value);
         }
       };
     });
@@ -799,8 +788,7 @@ function generic(t, key, prechunked, sep) {
     parser.end();
   };
 }
-
-test('clarinet#generic', t => {
+test('clarinet#generic', () => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       // undefined means no split
@@ -808,23 +796,19 @@ test('clarinet#generic', t => {
       // '' means on every char
       for (const sep in seps) {
         // t.comment('[' + key + '] should be able to parse -> ' + sep);
-        generic(t, key, false, sep);
+        generic(key, false, sep);
       }
     }
   }
-  t.end();
 });
-
-test('#pre-chunked', t => {
+test('#pre-chunked', () => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       if (!docs[key].chunks) {
         continue;
       }
-
       // t.comment('[' + key + '] should be able to parse pre-chunked');
-      generic(t, key, true);
+      generic(key, true);
     }
   }
-  t.end();
 });

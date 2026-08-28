@@ -5,6 +5,13 @@
 
 ## v5.0 (In Development)
 
+### 3D Tiles
+
+- Expose tileset metadata topology (`schema`, `schemaUri`, `groups`, `metadata`, and `statistics`) on the shared `Tileset3D` runtime for application inspection.
+- Normalize direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` metadata semantics into traversal-ready bounding volumes with metadata semantics taking precedence over ordinary header volumes.
+- Classify multi-content render volumes as a union, apply clipping planes only to render content, and document the 3D Tiles correctness/conformance contract for SSE, implicit boundaries, extensions, and lifecycle diagnostics.
+
+
 Release Date: 2026
 
 **Highlights**
@@ -21,6 +28,40 @@ Release Date: 2026
 
 **Features**
 
+**Coordinate reference systems**
+
+- Adopts the shared `@math.gl/crs` identifier, definition, PROJJSON, WKT, and PROJ types across
+  loader metadata and service source APIs.
+- `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free math.gl WKT codec
+  and use its value-preserving `WKTCRSAst` result.
+- GeoParquet metadata distinguishes omitted default CRS, explicit `null`, PROJJSON, and coordinate
+  epoch; GeoArrow field metadata types discriminate PROJJSON, WKT2:2019, authority codes, SRIDs,
+  and opaque strings.
+- Adds a cross-format [CRS support guide](/docs/developer-guide/coordinate-reference-systems) that
+  separates metadata preservation from coordinate transformation and records the reprojection
+  roadmap.
+- Upgrades all math.gl packages to `4.2.0-alpha.6` and adopts the canonical `SpatialReference`
+  descriptor from `@math.gl/crs` in I3S/3D Tiles and FlatGeobuf source metadata, without removing
+  format compatibility fields or implying that coordinates were transformed.
+- Uses math.gl's explicit horizontal-component conversion when a 3D transformation passes a broad
+  PROJJSON definition to proj4js, rejecting unsupported CRS object types instead of relying on
+  unchecked type casts.
+- Aligns tile and deck-layer culling with alpha.6's typed `outside`, `intersecting`, and `inside`
+  results.
+- Shapefile, FlatGeobuf, and GeoPackage reprojection now rejects missing or invalid source CRS
+  metadata instead of returning untransformed coordinates or assuming WGS84.
+- GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected
+  table CRS through source, scan, and GeoArrow field metadata.
+- I3S mesh and Point Cloud sources now apply requested horizontal CRS transforms to vertices,
+  stable origins, normals, and parallel target-space bounds, with Proj4-backed geographic and
+  projected targets plus direct WGS84 geocentric support. Traversal retains normalized WGS84
+  ECEF/geographic bounds so culling and LOD remain compatible with existing runtimes.
+- I3S mesh and Point Cloud sources normalize vertical units and offsets, apply all
+  `elevationInfo` placement modes with application terrain or scene providers, and use registered
+  `@math.gl/geoid` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
+  guide](/docs/developer-guide/vertical-coordinate-systems) documents formulas, provider
+  contracts, and deterministic failure behavior.
+
 **@loaders.gl/arrow**
 
 - `convertArrowVariableWidthVector` and `convertArrowTableVariableWidthTypes` convert `Utf8`,
@@ -34,6 +75,10 @@ Release Date: 2026
 **@loaders.gl/draco**
 
 - [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer) now accepts plain `Mesh` data and Mesh Arrow tables in addition to existing Draco attribute-map input.
+- `DracoLoader` and `DracoWriter` now use the Draco 1.5.7 WebAssembly decoder and encoder, including browser writer-worker support. Mesh decoding avoids an unnecessary Arrow round trip, compact meshes use 16-bit indices, and normalized attributes and typed-array view bounds survive encoding.
+- glTF Draco decompression now honors the extension's semantic-to-unique-ID mapping, including multiple texture-coordinate, color, and custom attributes.
+- `DracoWriter` preserves original application attribute names, supports explicit Draco attribute categories and point-cloud deduplication, and rejects inconsistent geometry before invoking the native encoder.
+- `DracoLoader` preserves unnamed same-category attributes with collision-free semantic names, validates native attribute and index extraction, and releases native decode status objects promptly.
 
 **@loaders.gl/gltf**
 
@@ -282,8 +327,11 @@ A minor release that includes:
 - **Implicit multiple contents** - Implicit subtrees now preserve every content-availability stream and materialize available content URLs in source order, while retaining the legacy single-content shape when only one stream is available.
 - **i3dm orientation** - Instanced 3D Model tiles now decode `NORMAL_UP_OCT32P` and `NORMAL_RIGHT_OCT32P`, including quantized-position fixtures, and use the decoded basis for per-instance transforms.
 - **3D Tiles metadata topology** - Tileset schemas, groups, tileset/tile/content metadata entities, and content group references are now typed and preserved through normalization; binary property-table decoding and metadata-derived bounds remain follow-up work.
+- **Native 3D Tiles test suites** - Active 3D Tiles parser and runtime suites now use native Vitest assertions, recover composite-i3dm and SSE coverage, and remove thousands of lines of non-executable Cesium renderer specifications from active test files.
+- **Region bounding volumes** - Geographic regions that cross the antimeridian now produce tight traversal OBBs instead of spanning the long way around the globe; polar and zero-height regions remain finite.
 - **Transform-correct LOD** Geometric error is scaled conservatively by composed tile and tileset transforms without compounding after runtime updates.
 - **Projection-correct SSE** Orthographic viewports use `metersPerPixel`, while perspective and orthographic traversal consistently use logical pixels without a second device-pixel-ratio correction.
+- **Skip-LOD replacement traversal** `Tileset3D` now exposes `skipLevelOfDetail`; enabled traversals retain ready replacement ancestors as fallback coverage while descending through deep hierarchies.
 - **Dynamic SSE** Perspective traversal can reduce distant, horizon-facing refinement with view-dependent density and height falloff while leaving orthographic and I3S LOD behavior unchanged.
 - **Same-frame dynamic SSE transforms** Animated local tilesets refresh the root transform before density calculation, and tilted oriented boxes derive height from every rotated half axis.
 - **Required-extension validation** Unsupported `extensionsRequired` values fail before normalization or dependent network access; unknown `extensionsUsed` values remain forward-compatible.

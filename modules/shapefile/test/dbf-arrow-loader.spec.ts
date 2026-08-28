@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/shapefile';
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [
   'boolean-property',
@@ -26,25 +24,18 @@ const SHAPEFILE_JS_TEST_FILES = [
   'string-property',
   'utf8-property'
 ];
-
-test('DBFLoader#parse arrow-table', async t => {
+test('DBFLoader#parse arrow-table', async () => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
     const options = {worker: false, dbf: {encoding, shape: 'arrow-table' as const}};
-
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
-
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
-
     const table = await parse(body, DBFLoader, options);
-
     for (let i = 0; i < features.length; i++) {
       const row = table.data.get(i)!.toJSON();
-      t.deepEqual(row, features[i].properties, testFileName);
+      expect(row, testFileName).toEqual(features[i].properties);
     }
   }
-
-  t.end();
 });

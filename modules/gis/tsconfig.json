@@ -9,7 +9,6 @@
   },
   "references": [
     {"path": "../loader-utils"},
-    {"path": "../math"},
     {"path": "../schema"},
     {"path": "../schema-utils"}
   ]

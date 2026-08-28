@@ -1,0 +1,13 @@
+---
+title: "CSV scan"
+hide_title: true
+---
+
+import {CSVScanLiveExample} from '@site/src/components/docs/csv-scan-live-example';
+
+# CSV scan
+
+The CSV source exposes its schema before streaming rows. The shared scan panel uses that metadata
+to offer projection and limit controls without loading the complete file into memory.
+
+<CSVScanLiveExample />

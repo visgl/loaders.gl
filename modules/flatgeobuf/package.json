@@ -58,7 +58,8 @@
     "@loaders.gl/gis": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
-    "@math.gl/proj4": "^4.1.0"
+    "@math.gl/crs": "^4.2.0-alpha.6",
+    "@math.gl/proj4": "^4.2.0-alpha.6"
   },
   "devDependencies": {
     "stream-buffers": "3.0.2"

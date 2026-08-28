@@ -10,6 +10,16 @@ export type GLBBinChunk = {
   arrayBuffer: ArrayBuffer;
 };
 
+/** A non-JSON chunk that can be emitted in a GLB v3 container. */
+export type GLBChunk = {
+  /** Four-byte chunk type, stored as a little-endian unsigned integer. */
+  type: number;
+  /** Chunk payload. */
+  arrayBuffer: ArrayBuffer;
+  /** GLB v3 chunk encoding. Only zero is currently defined. */
+  encoding?: number;
+};
+
 export type GLB = {
   type: string;
   /** Binary glTF container version. */
@@ -27,4 +37,8 @@ export type GLB = {
   /** Zero-based index of the glTF JSON chunk in the GLB container. */
   jsonChunkIndex: number;
   binChunks: GLBBinChunk[];
+  /** Optional generic chunks to preserve or emit in GLB v3. */
+  chunks?: GLBChunk[];
+  /** Legacy single BIN payload accepted by the writer. */
+  binary?: ArrayBuffer;
 };

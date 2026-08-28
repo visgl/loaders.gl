@@ -73,6 +73,15 @@ function transformTapeToVitest(sourceText, filePath) {
         return visitTestCallback(node, context, visitNode);
       }
 
+      if (ts.isCallExpression(node) && shouldDropAssertionTarget(node)) {
+        return ts.factory.updateCallExpression(
+          node,
+          node.expression,
+          node.typeArguments,
+          node.arguments.slice(1)
+        );
+      }
+
       if (ts.isCallExpression(node)) {
         return visitTapeCallExpression(node, context, visitNode);
       }
@@ -117,6 +126,23 @@ function transformTapeToVitest(sourceText, filePath) {
 }
 
 /**
+ * Identifies shared assertion helpers whose first Tape argument is optional.
+ * @param {ts.CallExpression} node
+ * @returns {boolean}
+ */
+function shouldDropAssertionTarget(node) {
+  if (!ts.isIdentifier(node.expression) || node.arguments.length < 2) {
+    return false;
+  }
+
+  return (
+    /^validate/.test(node.expression.text) &&
+    ts.isIdentifier(node.arguments[0]) &&
+    TEST_CONTEXT_NAMES.has(node.arguments[0].text)
+  );
+}
+
+/**
  * Returns the TypeScript script kind for a file path.
  * @param {string} filePath
  * @returns {ts.ScriptKind}
@@ -145,7 +171,9 @@ function getScriptKind(filePath) {
 function isTapeImport(node) {
   return (
     ts.isStringLiteral(node.moduleSpecifier) &&
-    (node.moduleSpecifier.text === 'tape-promise/tape' || node.moduleSpecifier.text === 'tape')
+    (node.moduleSpecifier.text === 'tape-promise/tape' ||
+      node.moduleSpecifier.text === 'tape' ||
+      node.moduleSpecifier.text === 'test/utils/vitest-tape')
   );
 }
 

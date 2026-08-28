@@ -517,6 +517,18 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   font-weight: 700;
 }
 
+.benchmark-results .ReactTable .rt-tr:has(.rt-td:first-child h3) .rt-td:first-child {
+  flex: 1 0 100% !important;
+  max-width: none !important;
+  overflow: visible;
+  white-space: normal;
+  width: 100% !important;
+}
+
+.benchmark-results .ReactTable .rt-tr:has(.rt-td:first-child h3) .rt-td:not(:first-child) {
+  display: none;
+}
+
 .benchmark-results
   .ReactTable
   .rt-thead

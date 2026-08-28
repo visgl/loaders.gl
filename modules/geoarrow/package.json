@@ -57,7 +57,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
-    "@math.gl/polygon": "^4.1.0",
+    "@math.gl/polygon": "4.2.0-alpha.6",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

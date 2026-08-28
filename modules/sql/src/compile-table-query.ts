@@ -11,6 +11,19 @@ import {
   type SQLPredicateValue
 } from './sql-predicate-types';
 import type {TableQueryOptions} from './table-query';
+import type {
+  RelationalAggregate,
+  RelationalExpression,
+  RelationalOrderKey
+} from '@loaders.gl/loader-utils';
+
+/** A named child relation using the SQL module's property-oriented predicate AST. */
+type SQLChildQuery = Readonly<{
+  /** Logical source name resolved by the SQL data source. */
+  source: string;
+  /** Optional query applied to the child relation before combining it. */
+  query?: TableQueryOptions;
+}>;
 
 /** SQL dialects supported by the portable table-query compiler. */
 export type SQLTableQueryDialect = 'duckdb' | 'snowflake';
@@ -24,6 +37,18 @@ export type SQLTableQuery = TableQueryOptions &
     schemaName?: string;
     /** Optional catalog containing the schema. */
     catalogName?: string;
+    /** Computed columns evaluated before projection. */
+    expressions?: readonly RelationalExpression[];
+    /** Stable ordering applied before the global limit. */
+    orderBy?: readonly RelationalOrderKey[];
+    /** Grouping keys for aggregate output. */
+    groupBy?: readonly string[];
+    /** Aggregate output definitions. */
+    aggregates?: readonly RelationalAggregate[];
+    /** Additional tables concatenated with `UNION ALL`. */
+    union?: readonly SQLChildQuery[];
+    /** Optional equi-join child table and key mapping. */
+    join?: Readonly<{child: SQLChildQuery; left: string; right: string}>;
   }>;
 
 /** Options controlling portable table-query compilation. */
@@ -59,20 +84,145 @@ export function compileSQLTableQuery(
     namedParameters: options.parameters,
     parameters: []
   };
-  const projection =
-    query.columns === undefined ? '*' : query.columns.map(quoteSQLIdentifier).join(', ');
+  return {
+    sql: compileTableStatement(query, context),
+    parameters: context.parameters
+  };
+}
+
+/** Compiles one table statement while sharing parameter bindings with child relations. */
+function compileTableStatement(query: SQLTableQuery, context: SQLCompilationContext): string {
+  const projection = compileProjection(query);
   const table = [query.catalogName, query.schemaName, query.tableName]
     .filter((identifier): identifier is string => identifier !== undefined)
     .map(quoteSQLIdentifier)
     .join('.');
-  const clauses = [`SELECT ${projection}`, `FROM ${table}`];
+  const fromClause = query.join ? compileJoinFromClause(query, table, context) : `FROM ${table}`;
+  const clauses = [`SELECT ${projection}`, fromClause];
   if (query.predicate) {
     clauses.push(`WHERE ${compileSQLPredicate(query.predicate, context)}`);
   }
-  if (query.limit !== undefined) {
-    clauses.push(`LIMIT ${query.limit}`);
+  if (query.groupBy?.length) {
+    clauses.push(`GROUP BY ${query.groupBy.map(quoteSQLIdentifier).join(', ')}`);
   }
-  return {sql: clauses.join('\n'), parameters: context.parameters};
+  let sql = clauses.join('\n');
+  for (const child of query.union || []) {
+    const childQuery: SQLTableQuery = {
+      tableName: child.source,
+      ...(child.query || {})
+    };
+    validateSQLTableQuery(childQuery);
+    const childSQL = compileTableStatement(childQuery, context);
+    const branchSQL = hasBranchLocalModifiers(childQuery) ? `(${childSQL})` : childSQL;
+    sql = `${sql}\nUNION ALL\n${branchSQL}`;
+  }
+  if (query.orderBy?.length) sql += `\nORDER BY ${query.orderBy.map(compileOrderKey).join(', ')}`;
+  if (query.limit !== undefined) sql += `\nLIMIT ${query.limit}`;
+  return sql;
+}
+
+/** Compiles a base table and optional child relation for an equi-join. */
+function compileJoinFromClause(
+  query: SQLTableQuery,
+  table: string,
+  context: SQLCompilationContext
+): string {
+  const join = query.join;
+  if (!join) return `FROM ${table}`;
+  validateSQLIdentifier(join.child.source);
+  validateSQLIdentifier(join.left);
+  validateSQLIdentifier(join.right);
+  const childTable = quoteSQLIdentifier(join.child.source);
+  const rightRelation = join.child.query
+    ? `(${compileTableStatement({tableName: join.child.source, ...join.child.query}, context)})`
+    : childTable;
+  return `FROM ${table} JOIN ${rightRelation} AS ${childTable} ON ${table}.${quoteSQLIdentifier(join.left)} = ${childTable}.${quoteSQLIdentifier(join.right)}`;
+}
+
+/** Compiles the SELECT list, including computed and aggregate output columns. */
+function compileProjection(query: SQLTableQuery): string {
+  const expressions = query.expressions || [];
+  const expressionByName = new Map(expressions.map(expression => [expression.name, expression]));
+  const aggregates = query.aggregates || [];
+  const aggregateByName = new Map(aggregates.map(aggregate => [aggregate.name, aggregate]));
+  const columns = query.columns === undefined ? undefined : [...query.columns];
+  const projectionColumns =
+    columns ||
+    (query.groupBy?.length || query.aggregates?.length ? [...(query.groupBy || [])] : []);
+  const selections = projectionColumns.map(column => {
+    const expression = expressionByName.get(column);
+    if (expression) {
+      return `${compileRelationalExpression(expression.expression)} AS ${quoteSQLIdentifier(expression.name)}`;
+    }
+    const aggregate = aggregateByName.get(column);
+    return aggregate
+      ? `${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`
+      : compileProjectionColumn(column, query);
+  });
+  if (!selections.length)
+    return expressions.length
+      ? expressions
+          .map(
+            expression =>
+              `${compileRelationalExpression(expression.expression)} AS ${quoteSQLIdentifier(expression.name)}`
+          )
+          .join(', ')
+      : aggregates.length
+        ? aggregates
+            .map(
+              aggregate => `${compileAggregate(aggregate)} AS ${quoteSQLIdentifier(aggregate.name)}`
+            )
+            .join(', ')
+        : '*';
+  return selections.join(', ');
+}
+
+/** Quotes a projection column, qualifying joined child fields component-wise. */
+function compileProjectionColumn(column: string, query: SQLTableQuery): string {
+  const childSource = query.join?.child.source;
+  return childSource && column.startsWith(`${childSource}.`)
+    ? column.split('.').map(quoteSQLIdentifier).join('.')
+    : quoteSQLIdentifier(column);
+}
+
+/** Returns whether a UNION child contains modifiers that must remain branch-local. */
+function hasBranchLocalModifiers(query: SQLTableQuery): boolean {
+  return Boolean(query.limit !== undefined || query.orderBy?.length || query.union?.length);
+}
+
+/** Compiles one portable scalar expression into quoted SQL. */
+function compileRelationalExpression(expression: RelationalExpression['expression']): string {
+  switch (expression.op) {
+    case 'column':
+      return quoteSQLIdentifier(expression.column);
+    case 'literal':
+      return expression.value === null
+        ? 'NULL'
+        : typeof expression.value === 'string'
+          ? `'${expression.value.replace(/'/g, "''")}'`
+          : String(expression.value);
+    case 'add':
+      return `(${quoteSQLIdentifier(expression.left)} + ${quoteSQLIdentifier(expression.right)})`;
+    case 'subtract':
+      return `(${quoteSQLIdentifier(expression.left)} - ${quoteSQLIdentifier(expression.right)})`;
+    case 'multiply':
+      return `(${quoteSQLIdentifier(expression.left)} * ${quoteSQLIdentifier(expression.right)})`;
+    case 'divide':
+      return `(${quoteSQLIdentifier(expression.left)} / NULLIF(${quoteSQLIdentifier(expression.right)}, 0))`;
+  }
+}
+
+/** Compiles one portable aggregate function call. */
+function compileAggregate(aggregate: RelationalAggregate): string {
+  const column = aggregate.column ? quoteSQLIdentifier(aggregate.column) : '*';
+  return `${aggregate.function.toUpperCase()}(${column})`;
+}
+
+/** Compiles one ordering key with explicit direction and null placement. */
+function compileOrderKey(orderKey: RelationalOrderKey): string {
+  const direction = orderKey.direction?.toUpperCase() || 'ASC';
+  const nulls = orderKey.nulls ? ` NULLS ${orderKey.nulls.toUpperCase()}` : '';
+  return `${quoteSQLIdentifier(orderKey.column)} ${direction}${nulls}`;
 }
 
 /** Compiles one portable predicate node while collecting bound scalar values. */
@@ -162,6 +312,38 @@ function validateSQLTableQuery(query: SQLTableQuery): void {
     throw new Error('Table query limit must be a non-negative safe integer.');
   }
   if (query.predicate) validateSQLPredicate(query.predicate);
+  validateRelationalQuery(query);
+}
+
+/** Validates relational identifiers and enum values before SQL generation. */
+function validateRelationalQuery(query: SQLTableQuery): void {
+  const expressionNames = new Set<string>();
+  for (const expression of query.expressions || []) {
+    validateSQLIdentifier(expression.name);
+    if (expressionNames.has(expression.name))
+      throw new Error(`Relational expression duplicates column: ${expression.name}`);
+    expressionNames.add(expression.name);
+    const definition = expression.expression;
+    if (definition.op === 'column') validateSQLIdentifier(definition.column);
+    if ('left' in definition) {
+      validateSQLIdentifier(definition.left);
+      validateSQLIdentifier(definition.right);
+    }
+  }
+  for (const column of query.groupBy || []) validateSQLIdentifier(column);
+  for (const key of query.orderBy || []) {
+    validateSQLIdentifier(key.column);
+    if (key.direction && key.direction !== 'asc' && key.direction !== 'desc')
+      throw new Error(`Invalid order direction: ${key.direction}`);
+    if (key.nulls && key.nulls !== 'first' && key.nulls !== 'last')
+      throw new Error(`Invalid null placement: ${key.nulls}`);
+  }
+  for (const aggregate of query.aggregates || []) {
+    validateSQLIdentifier(aggregate.name);
+    if (aggregate.function !== 'count' && !aggregate.column)
+      throw new Error(`Relational aggregate ${aggregate.function} requires a column.`);
+    if (aggregate.column) validateSQLIdentifier(aggregate.column);
+  }
 }
 
 /** Rejects empty or NUL-containing identifiers before quoting them. */

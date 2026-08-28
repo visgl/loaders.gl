@@ -1,24 +1,15 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {ArcGISWebSceneLoader} from '@loaders.gl/i3s';
-
 const ARCGIS_WEB_SCENE_WITH_SUPPORTED_LAYERS_URL =
   '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene-with-supported-layers.json';
-
 const ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYER_IN_LIST_URL =
   '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene-with-one-unsupported-layer.json';
-
 const ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_CRS_URL =
   '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene-with-unsupported-crs.json';
-
 const ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYERS_URL =
   '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene-with-all-unsupported-layers.json';
-
-test('ArcGISWebSceneLoader#should load WebScene', async t => {
+test('ArcGISWebSceneLoader#should load WebScene', async () => {
   const WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED = {
     id: '15f2fe08c8d-layer-0',
     showLegend: true,
@@ -55,61 +46,46 @@ test('ArcGISWebSceneLoader#should load WebScene', async t => {
       }
     }
   };
-
   const webScene = await load(ARCGIS_WEB_SCENE_WITH_SUPPORTED_LAYERS_URL, ArcGISWebSceneLoader);
-
-  t.ok(webScene);
-  t.ok(webScene.header);
-  t.equal(webScene.header.authoringApp, 'WebSceneViewer');
-  t.ok(webScene.layers);
-  t.equal(webScene.unsupportedLayers.length, 0);
-
+  expect(webScene).toBeTruthy();
+  expect(webScene.header).toBeTruthy();
+  expect(webScene.header.authoringApp).toBe('WebSceneViewer');
+  expect(webScene.layers).toBeTruthy();
+  expect(webScene.unsupportedLayers.length).toBe(0);
   const firstLayer = webScene.layers[0];
   const {url, ...dataWithoutUrl} = firstLayer;
-
-  t.ok(url);
-  t.equal(webScene.layers.length, 3, 'parent layers are good');
-  t.equal(webScene.layers[2]?.layers?.length, 4, 'child layers are good');
-  t.deepEqual(dataWithoutUrl, WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED);
-
-  t.end();
+  expect(url).toBeTruthy();
+  expect(webScene.layers.length, 'parent layers are good').toBe(3);
+  expect(webScene.layers[2]?.layers?.length, 'child layers are good').toBe(4);
+  expect(dataWithoutUrl).toEqual(WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED);
 });
-
-test('ArcGISWebSceneLoader#should load WebScene with partially unsupported layers', async t => {
+test('ArcGISWebSceneLoader#should load WebScene with partially unsupported layers', async () => {
   const webScene = await load(
     ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYER_IN_LIST_URL,
     ArcGISWebSceneLoader
   );
-
-  t.ok(webScene);
-  t.ok(webScene.header);
-  t.equal(webScene.header.authoringApp, 'WebSceneViewer');
-  t.ok(webScene.layers);
-  t.equal(webScene.layers.length, 1);
-  t.equal(webScene.unsupportedLayers.length, 1);
-
+  expect(webScene).toBeTruthy();
+  expect(webScene.header).toBeTruthy();
+  expect(webScene.header.authoringApp).toBe('WebSceneViewer');
+  expect(webScene.layers).toBeTruthy();
+  expect(webScene.layers.length).toBe(1);
+  expect(webScene.unsupportedLayers.length).toBe(1);
   const unsupportedLayerType = webScene.unsupportedLayers[0].layerType;
-  t.equal(unsupportedLayerType, 'ArcGISFeatureLayer');
-
-  t.end();
+  expect(unsupportedLayerType).toBe('ArcGISFeatureLayer');
 });
-
-test('ArcGISWebSceneLoader#should return error of loading WebScene if one layer has unsupported CRS', async t => {
+test('ArcGISWebSceneLoader#should return error of loading WebScene if one layer has unsupported CRS', async () => {
   try {
     await load(ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_CRS_URL, ArcGISWebSceneLoader);
   } catch (error) {
     // @ts-expect-error - Object is of type 'unknown'
-    t.equal(error.message, 'NOT_SUPPORTED_CRS_ERROR');
+    expect(error.message).toBe('NOT_SUPPORTED_CRS_ERROR');
   }
-  t.end();
 });
-
-test('ArcGISWebSceneLoader#should return error of loading WebScene if no any supported layers', async t => {
+test('ArcGISWebSceneLoader#should return error of loading WebScene if no any supported layers', async () => {
   try {
     await load(ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYERS_URL, ArcGISWebSceneLoader);
   } catch (error) {
     // @ts-expect-error - Object is of type 'unknown'
-    t.equal(error.message, 'NO_AVAILABLE_SUPPORTED_LAYERS_ERROR');
+    expect(error.message).toBe('NO_AVAILABLE_SUPPORTED_LAYERS_ERROR');
   }
-  t.end();
 });

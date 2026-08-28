@@ -15,7 +15,7 @@
     "@deck.gl/layers": "^9.3.0",
     "@deck.gl/react": "^9.3.0",
     "@deck.gl/widgets": "^9.3.0",
-    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/geotiff": "workspace:*",
     "@luma.gl/core": "^9.3.2",
     "@luma.gl/engine": "^9.3.2",

@@ -15,38 +15,11 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | Data Format    | Data formats                                        |
 | Supported APIs | `load`, `parse`                                     |
 
-## I3S Layer type support
+## Format support
 
-| Layer Type           | Supported       | I3S Spec Link                                                                  |
-| -------------------- | --------------- | ------------------------------------------------------------------------------ |
-| 3DObject             | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
-| Integrated Mesh      | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
-| Points               | ❌              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
-| PointClouds          | ❌              | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
-| Building Scene Layer | 🚧 experimental | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
-
-## I3S Aspects support
-
-| Aspect                | Supported | I3S Spec Link                                                                                |
-| --------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| Node pages            | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
-| Compressed attributes | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
-| PBR materials         | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
-| Feature attributes    | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
-| Texture Atlas         | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
-
-## Texture formats
-
-I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md
-
-| Texture                                        | Supported     |
-| ---------------------------------------------- | ------------- |
-| JPEG                                           | ✅            |
-| PNG                                            | ✅            |
-| .dds with DXT1 (no alpha)                      | ✅            |
-| .dds with DXT5 (alpha channel)                 | ✅            |
-| ktx-etc2                                       | 🚧 not tested |
-| Basis Universal Texture format in Khronos KTX2 | ✅            |
+See the [I3S format support matrix](../formats/i3s) for detailed coverage of scene layer profiles,
+specification generations, delivery modes, hierarchy and LOD, mesh geometry, textures, materials,
+feature attributes, coordinate systems, conversion, and known gaps.
 
 ## Terms
 
@@ -228,6 +201,7 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | `contentUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `featureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `textureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
+| `textureUrls`    | `Object[]` | Selected URLs for every texture-set resource referenced by the tile material.                                                                                                                                                                                                          |
 | `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
 | `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details.                |
 | `lodMetricValue` | `String` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
@@ -245,6 +219,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                         |
 | `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties |
 | `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](/docs/modules/images/api-reference/image-loader)                                               |
+| `textures`           | `Object`     | Loaded texture-set resources keyed by texture-set definition id.                                                                       |
 | `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                             |
 
 `attributes` contains following fields
@@ -255,3 +230,20 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
 | `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
 | `attributes.texCoords` | `Object` | `{value, type, size, normalized}` |
+
+### Layer statistics
+
+Use `loadStatistics` to fetch the resources listed in a scene layer's `statisticsInfo` array.
+The returned object is keyed by each descriptor's `key`; an unavailable resource is represented by
+`null` so other fields can still be consumed.
+
+```typescript
+import {loadStatistics} from '@loaders.gl/i3s';
+
+const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
+  core: {baseUrl: sceneLayer.url},
+  i3s: {token}
+});
+```
+
+Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.

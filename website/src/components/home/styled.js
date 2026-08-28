@@ -2,13 +2,27 @@ import styled from 'styled-components';
 import {isMobile} from '../common';
 
 export const Banner = styled.section`
-  position: relative;
-  height: 460px;
-  background:
-    linear-gradient(90deg, rgba(10, 20, 32, 0.92) 0%, rgba(10, 20, 32, 0.58) 46%, rgba(10, 20, 32, 0.2) 100%),
-    linear-gradient(135deg, #0c1a29 0%, #163b55 52%, #126f92 100%);
+  background: linear-gradient(135deg, #0c1a29 0%, #163b55 52%, #126f92 100%);
   color: var(--ifm-color-white);
+  height: 460px;
+  isolation: isolate;
+  position: relative;
   z-index: 0;
+
+  &::after {
+    background: linear-gradient(
+      90deg,
+      rgba(10, 20, 32, 0.92) 0%,
+      rgba(10, 20, 32, 0.58) 46%,
+      rgba(10, 20, 32, 0.2) 100%
+    );
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+  }
+
   ${isMobile} {
     height: 480px;
   }
@@ -29,8 +43,8 @@ export const BannerContainer = styled(Container)`
   height: auto;
   max-width: 780px;
   padding-left: 4rem;
-  z-index: 0;
   pointer-events: none;
+  z-index: 2;
 
   @media screen and (max-width: 640px) {
     bottom: 28px;
@@ -45,7 +59,7 @@ export const HeroExampleContainer = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: -1;
+  z-index: 0;
 `;
 
 export const Section = styled.section`

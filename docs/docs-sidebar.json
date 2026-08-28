@@ -38,6 +38,7 @@
       "modules/kml/formats/gpx",
       "modules/textures/formats/hdr",
       "modules/xml/formats/html",
+      "modules/i3s/formats/i3s",
       "modules/json/formats/json",
       "modules/kml/formats/kml",
       "modules/textures/formats/ktx",
@@ -46,7 +47,9 @@
       "modules/mvt/formats/map-style",
       "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
+      "modules/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
+      "modules/orc/formats/orc",
       "modules/wms/formats/ows-context",
       "modules/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
@@ -63,6 +66,7 @@
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
+      "modules/zarr/formats/zarr",
       "modules/zip/formats/zip"
     ]
   },
@@ -70,13 +74,21 @@
     "type": "category",
     "label": "Services",
     "items": [
+      "modules/services/README",
+      "developer-guide/authentication",
+      "modules/wms/formats/csw",
       "modules/wms/formats/wcs",
       "modules/wms/formats/wfs",
       "modules/wms/formats/wmc",
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
-      "modules/wms/services/arcgis-image-server",
-      "modules/wms/services/arcgis-feature-server"
+      "modules/wms/services/ogc-api",
+      "modules/services/arcgis-map-server",
+      "modules/services/arcgis-image-server",
+      "modules/services/arcgis-feature-server",
+      "modules/services/arcgis-vector-tile-server",
+      "modules/services/arcgis-scene-server",
+      "modules/services/api-reference/arcgis"
     ]
   },
   {
@@ -204,6 +216,8 @@
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/zarr/api-reference/ome-zarr-source-loader",
+          "modules/parquet/api-reference/delta-table-source",
+          "modules/parquet/api-reference/iceberg-table-source",
           "modules/parquet/api-reference/parquet-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
@@ -260,7 +274,10 @@
           "modules/loader-utils/api-reference/readable-file",
           "modules/loader-utils/api-reference/http-file",
           "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/request-cache",
           "modules/loader-utils/api-reference/range-request-scheduler",
+          "modules/loader-utils/api-reference/range-request-cache",
+          "modules/loader-utils/api-reference/request-credentials",
           "modules/loader-utils/api-reference/parse-with-context"
         ]
       },
@@ -274,6 +291,8 @@
             "label": "Runtime Concepts",
             "items": [
               "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/correctness-and-conformance",
+              "modules/3d-tiles/concepts/coordinate-reference-systems",
               "modules/3d-tiles/concepts/resource-resolution-and-content-detection",
               "modules/3d-tiles/concepts/tile-hierarchy-and-refinement",
               "modules/3d-tiles/concepts/implicit-tiling-and-subtrees",
@@ -405,7 +424,8 @@
         "type": "category",
         "label": "@loaders.gl/i3s",
         "items": [
-          "modules/i3s/README"
+          "modules/i3s/README",
+          "modules/i3s/concepts/coordinate-reference-systems"
         ]
       },
       {
@@ -461,6 +481,13 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/netcdf",
+        "items": [
+          "modules/netcdf/api-reference/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/mlt",
         "items": [
           "modules/mlt/README"
@@ -475,9 +502,19 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/orc",
+        "items": [
+          "modules/orc/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/parquet",
         "items": [
-          "modules/parquet/README"
+          "modules/parquet/README",
+          "modules/parquet/api-reference/parquet-source-loader",
+          "modules/parquet/api-reference/iceberg-table-source",
+          "modules/parquet/api-reference/delta-table-source"
         ]
       },
       {
@@ -517,6 +554,13 @@
           "modules/schema/api-reference/schema",
           "modules/schema/api-reference/table",
           "modules/schema/api-reference/table-batch"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/scan",
+        "items": [
+          "modules/scan/README"
         ]
       },
       {
@@ -686,6 +730,7 @@
         "items": [
           "developer-guide/dependencies",
           "developer-guide/apache-arrow",
+          "developer-guide/coordinate-reference-systems",
           "developer-guide/common-scan-architecture",
           "developer-guide/creating-loaders-and-writers",
           "developer-guide/composite-loaders",

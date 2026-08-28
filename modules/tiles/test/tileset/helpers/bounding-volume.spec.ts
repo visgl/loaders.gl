@@ -1,37 +1,28 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {createBoundingVolume} from '../../../src/tileset-3d/helpers/bounding-volume';
-import {Matrix4} from '@math.gl/core';
+import {degrees, Matrix4} from '@math.gl/core';
 import {OrientedBoundingBox} from '@math.gl/culling';
-import {areNumberArraysEqual} from '../../test-utils/compareArrays';
-
-test('Tiles bounding-volume#createBoundingVolume - should convert region to obb', t => {
-  const result = createBoundingVolume(
-    {
-      region: [
-        0.7853981633974483, 0.22689280275926285, 0.8028514559173916, 0.24434609527920614,
-        -17.29296875, 2493.5625
-      ]
-    },
-    new Matrix4()
-  );
-  t.ok(result instanceof OrientedBoundingBox);
-  t.ok(
-    areNumberArraysEqual(result.center, [4348195.679745842, 4424932.075472673, 1479471.892147189])
-  );
-  t.ok(
-    areNumberArraysEqual(
-      result.halfAxes,
-      // biome-ignore format: preserve intentional fixture layout
-      [
-        -38691.151309899986, 37690.50114047807, -2.3283064365386963e-10, 
-        -9209.347353689373, -9371.872726273723, 53695.496290528914, 
-        1176.6872740909457, 1197.4532991172746, 403.06533637456596
-      ]
-    )
-  );
-  t.end();
+import {Ellipsoid} from '@math.gl/geospatial';
+test('Tiles bounding-volume#createBoundingVolume - bounds Cesium OSM region', () => {
+  // Root region reported by Cesium OSM Buildings in loaders.gl issue #3144.
+  const region = [
+    -3.1415925942485985, -1.4599681618940228, 3.141545370875028, 1.4502639200680947,
+    -385.0565011513918, 5967.300616082603
+  ];
+  const result = createBoundingVolume({region}, new Matrix4());
+  expect(result).toBeInstanceOf(OrientedBoundingBox);
+  expect(result.center.every(Number.isFinite)).toBe(true);
+  expect(result.halfAxes.every(Number.isFinite)).toBe(true);
+  const [, south, , north, minimumHeight, maximumHeight] = region;
+  for (const longitude of [-180, -90, 0, 90, 179]) {
+    for (const latitude of [degrees(south), 0, degrees(north)]) {
+      for (const height of [minimumHeight, maximumHeight]) {
+        const point = Ellipsoid.WGS84.cartographicToCartesian([longitude, latitude, height]);
+        expect(result.distanceTo(point)).toBeLessThan(1e-5);
+      }
+    }
+  }
 });

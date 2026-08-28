@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import type {Geometry, Schema} from '@loaders.gl/schema';
 import {
   convertWKBToGeometry,
@@ -18,8 +17,7 @@ import {
   unpackGeoMetadata,
   unpackJSONStringMetadata
 } from '@loaders.gl/gis';
-
-test('geoarrow WKB helpers round-trip metadata for object and Map containers', t => {
+test('geoarrow WKB helpers round-trip metadata for object and Map containers', () => {
   const geoMetadata = {
     version: '1.1.0',
     primary_column: 'geometry',
@@ -30,63 +28,51 @@ test('geoarrow WKB helpers round-trip metadata for object and Map containers', t
       }
     }
   };
-
   const objectMetadata: Record<string, string> = {};
   setGeoMetadata(objectMetadata, geoMetadata);
-  t.deepEqual(getGeoMetadata(objectMetadata), geoMetadata, 'round-trips object metadata');
-
+  expect(getGeoMetadata(objectMetadata), 'round-trips object metadata').toEqual(geoMetadata);
   const mapMetadata = new Map<string, string>();
   setGeoMetadata(mapMetadata, geoMetadata);
-  t.deepEqual(getGeoMetadata(mapMetadata), geoMetadata, 'round-trips map metadata');
+  expect(getGeoMetadata(mapMetadata), 'round-trips map metadata').toEqual(geoMetadata);
   unpackGeoMetadata(mapMetadata);
-  t.equal(mapMetadata.get('geo.version'), '1.1.0', 'unpacks geo metadata');
-
+  expect(mapMetadata.get('geo.version'), 'unpacks geo metadata').toBe('1.1.0');
   objectMetadata.pandas = JSON.stringify({index_columns: ['id']});
   unpackJSONStringMetadata(objectMetadata, 'pandas');
-  t.equal(objectMetadata['pandas.index_columns'], '["id"]', 'unpacks arbitrary JSON metadata keys');
-  t.end();
+  expect(objectMetadata['pandas.index_columns'], 'unpacks arbitrary JSON metadata keys').toBe(
+    '["id"]'
+  );
 });
-
-test('geoarrow WKB helpers build Arrow Binary buffers from WKB values', t => {
+test('geoarrow WKB helpers build Arrow Binary buffers from WKB values', () => {
   const firstPoint = encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!;
   const secondPoint = encodeWKBGeometryValue({type: 'Point', coordinates: [3, 4]})!;
   const geometryData = makeWKBGeometryData([firstPoint, null, secondPoint]);
-
-  t.deepEqual(
+  expect(
     [...geometryData.valueOffsets],
-    [
-      0,
-      firstPoint.byteLength,
-      firstPoint.byteLength,
-      firstPoint.byteLength + secondPoint.byteLength
-    ],
     'offsets account for null rows without adding bytes'
+  ).toEqual([
+    0,
+    firstPoint.byteLength,
+    firstPoint.byteLength,
+    firstPoint.byteLength + secondPoint.byteLength
+  ]);
+  expect(geometryData.nullBitmap, 'null bitmap marks valid rows').toEqual(
+    new Uint8Array([0b00000101])
   );
-  t.deepEqual(
-    geometryData.nullBitmap,
-    new Uint8Array([0b00000101]),
-    'null bitmap marks valid rows'
+  expect(geometryData.nullCount, 'null count is set').toBe(1);
+  expect(geometryData.values.byteLength, 'values contain contiguous WKB bytes').toBe(
+    firstPoint.byteLength + secondPoint.byteLength
   );
-  t.equal(geometryData.nullCount, 1, 'null count is set');
-  t.equal(
-    geometryData.values.byteLength,
-    firstPoint.byteLength + secondPoint.byteLength,
-    'values contain contiguous WKB bytes'
-  );
-  t.deepEqual(
+  expect(
     convertWKBToGeometry(
       geometryData.values.buffer.slice(
         geometryData.valueOffsets[2],
         geometryData.valueOffsets[3]
       ) as ArrayBuffer
     ),
-    {type: 'Point', coordinates: [3, 4]},
     'second non-null geometry decodes from contiguous values'
-  );
-  t.end();
+  ).toEqual({type: 'Point', coordinates: [3, 4]});
 });
-
-test('geoarrow WKB helpers build Arrow Binary buffers from writer callbacks', t => {
+test('geoarrow WKB helpers build Arrow Binary buffers from writer callbacks', () => {
   const geometryData = makeWKBGeometryDataFromWriters([
     builder => {
       builder.beginPoint();
@@ -99,36 +85,33 @@ test('geoarrow WKB helpers build Arrow Binary buffers from writer callbacks', t 
       builder.writeCoordinate(5, 6);
     }
   ]);
-
-  t.deepEqual([...geometryData.valueOffsets], [0, 21, 21, 62], 'writer offsets are measured');
-  t.deepEqual(geometryData.nullBitmap, new Uint8Array([0b00000101]), 'writer null bitmap is set');
-  t.equal(geometryData.nullCount, 1, 'writer null count is set');
-  t.deepEqual(
+  expect([...geometryData.valueOffsets], 'writer offsets are measured').toEqual([0, 21, 21, 62]);
+  expect(geometryData.nullBitmap, 'writer null bitmap is set').toEqual(
+    new Uint8Array([0b00000101])
+  );
+  expect(geometryData.nullCount, 'writer null count is set').toBe(1);
+  expect(
     convertWKBToGeometry(
       geometryData.values.buffer.slice(
         geometryData.valueOffsets[2],
         geometryData.valueOffsets[3]
       ) as ArrayBuffer
     ),
-    {
-      type: 'LineString',
-      coordinates: [
-        [3, 4],
-        [5, 6]
-      ]
-    },
     'writer output decodes from contiguous values'
-  );
-  t.end();
+  ).toEqual({
+    type: 'LineString',
+    coordinates: [
+      [3, 4],
+      [5, 6]
+    ]
+  });
 });
-
-test('geoarrow WKB helpers update schema metadata and infer geometry types', t => {
+test('geoarrow WKB helpers update schema metadata and infer geometry types', () => {
   const geometryField = makeWKBGeometryField('geometry');
   const schema: Schema = {
     fields: [geometryField],
     metadata: {}
   };
-
   setWKBGeometrySchemaMetadata(schema, {
     geometryColumnName: 'geometry',
     geometryTypes: inferGeoParquetGeometryTypes([
@@ -142,42 +125,30 @@ test('geoarrow WKB helpers update schema metadata and infer geometry types', t =
       }
     ] as Geometry[])
   });
-
-  t.deepEqual(
-    getGeoMetadata(schema.metadata),
-    {
-      version: '1.1.0',
-      primary_column: 'geometry',
-      columns: {
-        geometry: {
-          encoding: 'wkb',
-          geometry_types: ['Point', 'LineString Z']
-        }
+  expect(getGeoMetadata(schema.metadata), 'adds WKB geo metadata to schema').toEqual({
+    version: '1.1.0',
+    primary_column: 'geometry',
+    columns: {
+      geometry: {
+        encoding: 'wkb',
+        geometry_types: ['Point', 'LineString Z']
       }
-    },
-    'adds WKB geo metadata to schema'
-  );
-  t.equal(
+    }
+  });
+  expect(
     geometryField.metadata?.['ARROW:extension:name'],
-    'geoarrow.wkb',
     'adds GeoArrow field metadata for WKB geometry columns'
-  );
-  t.end();
+  ).toBe('geoarrow.wkb');
 });
-
-test('geoarrow WKB helpers encode Geometry and pass through byte values', t => {
+test('geoarrow WKB helpers encode Geometry and pass through byte values', () => {
   const geometryBytes = encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]});
-  t.ok(geometryBytes instanceof Uint8Array, 'encodes GeoJSON geometry to bytes');
-
+  expect(geometryBytes instanceof Uint8Array, 'encodes GeoJSON geometry to bytes').toBeTruthy();
   const inputBytes = new Uint8Array([1, 2, 3, 4]);
   const outputBytes = encodeWKBGeometryValue(inputBytes);
-  t.deepEqual([...outputBytes!], [1, 2, 3, 4], 'passes through typed array bytes');
-  t.notEqual(outputBytes, inputBytes, 'returns a copy of passed-through bytes');
-
-  t.throws(
+  expect([...outputBytes!], 'passes through typed array bytes').toEqual([1, 2, 3, 4]);
+  expect(outputBytes, 'returns a copy of passed-through bytes').not.toBe(inputBytes);
+  expect(
     () => encodeWKBGeometryValue('POINT (1 2)' as unknown as Geometry),
-    /Expected a Geometry, ArrayBuffer, ArrayBufferView, or null for WKB encoding/,
     'rejects non-WKB string values'
-  );
-  t.end();
+  ).toThrow(/Expected a Geometry, ArrayBuffer, ArrayBufferView, or null for WKB encoding/);
 });

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import type {FlatGeobufReadOptions} from '@loaders.gl/flatgeobuf';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
-import type {ScanQueryMetadata} from '@loaders.gl/loader-utils';
+import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type FlatGeobufDemoState = Readonly<{

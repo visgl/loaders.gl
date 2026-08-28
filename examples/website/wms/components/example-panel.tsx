@@ -64,12 +64,19 @@ const Spinner = styled.div`
 `;
 
 export type Example = {
-  type: 'wms' | 'arcgis-image-server' | 'arcgis-feature-server' | 'wfs';
+  type:
+    | 'wms'
+    | 'wmts'
+    | 'arcgis-map-server'
+    | 'arcgis-image-server'
+    | 'arcgis-feature-server'
+    | 'wfs';
   url: string;
   description?: string;
   layers?: string[];
   viewState?: Record<string, number>;
   layerProps?: Record<string, unknown>;
+  sourceOptions?: Record<string, unknown>;
 };
 
 export type ExamplePanelProps = React.PropsWithChildren<{

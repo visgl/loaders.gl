@@ -12,9 +12,13 @@ import type {
   RasterData,
   RasterSource,
   RasterSourceMetadata,
-  SourceLoader
+  SourceLoader,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider
 } from '@loaders.gl/loader-utils';
-import {getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
+import type {CRSDefinition} from '@math.gl/crs';
+import {createScanQueryMetadata, getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
 
 import type {SupportedTypedArray} from './types';
 import {
@@ -73,8 +77,8 @@ export type GeoZarrSourceLoaderOptions = ZarrSourceLoaderOptions & {
     spatialDimensions?: [y: string, x: string];
     /** Explicit affine transform when the store does not provide one. */
     transform?: GeoZarrAffineTransform;
-    /** Explicit coordinate reference system identifier or WKT. */
-    coordinateReferenceSystem?: string;
+    /** Explicit coordinate reference system definition or identifier. */
+    coordinateReferenceSystem?: CRSDefinition;
     /** Default indices for non-spatial dimensions such as `time` or `level`. */
     defaultSelection?: Record<string, number>;
   };
@@ -166,7 +170,9 @@ export const GeoZarrSourceLoader = {
 /** Viewport-driven raster source for GeoZarr and regular CF/xarray Zarr data variables. */
 export class GeoZarrRasterSource
   extends ZarrSource
-  implements RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>
+  implements
+    RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>,
+    ScanQueryMetadataProvider
 {
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
@@ -180,6 +186,32 @@ export class GeoZarrRasterSource
   async getMetadata(): Promise<GeoZarrSourceMetadata> {
     const {metadata} = await this.getInitializationPromise();
     return metadata;
+  }
+
+  /** Discovers GeoZarr variables, spatial bounds, and selectable dimensions. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const metadata = await this.getMetadata();
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const fields = [{name: metadata.array, type: metadata.dtype, nullable: true, metadata: {}}];
+    return createScanQueryMetadata({
+      sourceType: 'geozarr',
+      queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
+      name: metadata.name,
+      schema: {fields, metadata: {}},
+      capabilities: {
+        bounds: 'pushdown',
+        levelOfDetail: 'unsupported'
+      },
+      spatial: metadata.boundingBox
+        ? {
+            bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+            coordinateReferenceSystems:
+              typeof metadata.crs === 'string' ? [metadata.crs] : undefined
+          }
+        : undefined
+    });
   }
 
   /** Loads a clipped native-resolution 2D window for the requested viewport and named selection. */

@@ -19,6 +19,13 @@ synchronous one-shot operation.
 | Backend | Compressor subpath | Decompressor subpath |
 | --- | --- | --- |
 | snappyjs | `snappy-compressor-snappyjs` | `snappy-decompressor-snappyjs` |
+| hysnappy | — | `snappy-decompressor-hysnappy` |
 | compress-utils | `snappy-compressor-compress-utils` | `snappy-decompressor-compress-utils` |
 
-The default is normally the best size/performance balance. See the [live benchmarks](/docs/modules/compression/benchmarks) before pinning another backend.
+`SnappyHysnappyDecompressor` uses a small embedded WebAssembly decoder. Its asynchronous
+`preload()` method instantiates one decoder per JavaScript realm, after which `decompressSync()` is
+available. This can be a better fit for formats such as Parquet that decode many independent blocks
+and already know each block's uncompressed size.
+
+The default is normally the best size/performance balance. See the
+[live benchmarks](/docs/modules/compression/benchmarks) before pinning another backend.

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray} from '../../types';
+import type {CRSDefinition, CRSIdentifier} from '@math.gl/crs';
 
 /**
  * Numeric channel types supported by viewport-driven raster payloads.
@@ -40,7 +41,7 @@ export type RasterViewport = {
   /** Viewport center in source coordinates. */
   center: number[];
   /** Optional coordinate reference system for the requested raster view. */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** Optional explicit bounds in source coordinates. */
   bounds?: RasterBoundingBox;
   /** Optional callback used to derive bounds from a deck.gl compatible viewport. */
@@ -72,7 +73,7 @@ export type RasterData = {
   /** Bounds covered by this payload in source coordinates. */
   boundingBox?: RasterBoundingBox;
   /** Coordinate reference system for the payload bounds. */
-  crs?: string;
+  crs?: CRSDefinition;
   /** Format-specific metadata retained for styling or upload configuration. */
   metadata?: Record<string, unknown>;
 };
@@ -131,7 +132,7 @@ export type RasterSourceMetadata = {
   /** Attribution strings. */
   attributions?: string[];
   /** Source coordinate reference system. */
-  crs?: string;
+  crs?: CRSDefinition;
   /** Dataset bounds in source coordinates. */
   boundingBox?: RasterBoundingBox;
   /** Full-resolution raster width. */

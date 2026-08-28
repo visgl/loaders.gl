@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Shared row-level options supported by both Parquet backends. */
 type ParquetCommonLoaderOptions = {
@@ -11,6 +12,8 @@ type ParquetCommonLoaderOptions = {
   batchSize?: number;
   columns?: string[];
   preserveBinary?: boolean;
+  /** Decode legacy INT96 values as Arrow timestamp-nanosecond values. */
+  int96AsTimestamp?: boolean;
 };
 
 /** Additional options supported by the wasm-backed Parquet reader. */
@@ -38,6 +41,12 @@ export type ParquetLoaderOptions = LoaderOptions & {
 export type ParquetJSLoaderOptions = LoaderOptions & {
   parquet?: {
     shape?: 'object-row-table' | 'arrow-table';
+    /** Resolves modular-encryption keys from file and column key metadata. */
+    keyRetriever?: ParquetKeyRetriever;
+    /** AAD prefix for encrypted files that intentionally omit it from metadata. */
+    aadPrefix?: Uint8Array;
+    /** Verify plaintext-footer signatures when present. Enabled by default. */
+    verifyFooterSignature?: boolean;
   } & {
     [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };

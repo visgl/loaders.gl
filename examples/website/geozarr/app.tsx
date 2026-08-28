@@ -2,24 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import type {MapViewState} from '@deck.gl/core';
-import {BitmapLayer} from '@deck.gl/layers';
 
-import {createDataSource} from '@loaders.gl/core';
-import type {RasterBoundingBox, RasterData, RasterViewport} from '@loaders.gl/loader-utils';
-import {
-  GeoZarrSourceLoader,
-  type GetGeoZarrParameters,
-  type GeoZarrRasterSource,
-  type GeoZarrSourceMetadata
-} from '@loaders.gl/zarr';
-import type {RasterSetRequest} from '@loaders.gl/tiles';
-import {RasterSet} from '@loaders.gl/tiles';
+import {SourceLayer} from '@loaders.gl/deck-layers';
+import type {RasterBoundingBox, RasterData} from '@loaders.gl/loader-utils';
+import {GeoZarrSourceLoader, type GeoZarrSourceMetadata} from '@loaders.gl/zarr';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -30,6 +22,13 @@ const DATA_ARRAY = 'ALLSKY_SFC_SW_DWN';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 const INITIAL_TIME_INDEX = 6;
 const INITIAL_OPACITY = 0.65;
+const GEOZARR_LOADERS = [GeoZarrSourceLoader];
+const GEOZARR_SOURCE_OPTIONS = {
+  geozarr: {
+    array: DATA_ARRAY,
+    defaultSelection: {time: INITIAL_TIME_INDEX}
+  }
+};
 const COLOR_DOMAIN: [minimum: number, maximum: number] = [0, 350];
 const TIME_LABELS = [
   'January',
@@ -88,22 +87,6 @@ type RasterRenderState = {
  * Deck.gl example that reads a public NASA POWER climatology variable directly from Zarr.
  */
 export default function App(props: AppProps = {}) {
-  const source = useMemo(
-    () =>
-      createDataSource(DATA_URL, [GeoZarrSourceLoader], {
-        geozarr: {
-          array: DATA_ARRAY,
-          defaultSelection: {time: INITIAL_TIME_INDEX}
-        }
-      }) as GeoZarrRasterSource,
-    []
-  );
-  const rasterSetRef = useRef<
-    RasterSet<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata> | null
-  >(null);
-  if (!rasterSetRef.current) {
-    rasterSetRef.current = RasterSet.fromRasterSource(source);
-  }
   const [timeIndex, setTimeIndex] = useState(INITIAL_TIME_INDEX);
   const [opacity, setOpacity] = useState(INITIAL_OPACITY);
   const [playing, setPlaying] = useState(false);
@@ -112,38 +95,8 @@ export default function App(props: AppProps = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const rasterSet = rasterSetRef.current!;
-    const unsubscribe = rasterSet.subscribe({
-      onLoadingStateChange: isLoading => setLoading(isLoading),
-      onMetadataLoad: nextMetadata => {
-        setMetadata(nextMetadata);
-        setError(null);
-      },
-      onMetadataLoadError: nextError => setError(getErrorMessage(nextError)),
-      onRasterLoad: ({raster}: RasterSetRequest<RasterData, GetGeoZarrParameters>) => {
-        setRasterState(renderRaster(raster, rasterSet.metadata!));
-        setError(null);
-      },
-      onRasterLoadError: (_requestId, nextError) => setError(getErrorMessage(nextError))
-    });
-
-    void rasterSet.loadMetadata().catch(() => {});
-
-    return () => {
-      unsubscribe();
-      rasterSet.finalize();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!metadata) {
-      return;
-    }
-
-    const viewport = createGlobalRasterViewport(metadata);
-    rasterSetRef.current?.requestRaster({viewport, selection: {time: timeIndex}});
-  }, [metadata, timeIndex]);
+  const rasterParameters = useMemo(() => ({selection: {time: timeIndex}}), [timeIndex]);
+  const bitmapLayerProps = useMemo(() => ({opacity}), [opacity]);
 
   useEffect(() => {
     if (!playing || loading) {
@@ -156,20 +109,33 @@ export default function App(props: AppProps = {}) {
     return () => globalThis.clearTimeout(timeout);
   }, [loading, playing, timeIndex]);
 
-  const layers = useMemo(
-    () =>
-      rasterState
-        ? [
-            new BitmapLayer({
-              id: `nasa-power-${timeIndex}`,
-              image: rasterState.canvas,
-              bounds: rasterState.bounds,
-              opacity
-            })
-          ]
-        : [],
-    [opacity, rasterState, timeIndex]
-  );
+  const layers = [
+    new SourceLayer({
+      id: 'nasa-power-geozarr',
+      data: DATA_URL,
+      loaders: GEOZARR_LOADERS,
+      sourceOptions: GEOZARR_SOURCE_OPTIONS,
+      rasterParameters,
+      bitmapLayerProps,
+      colorizeRaster: (raster, {metadata: sourceMetadata}) => {
+        const nextRasterState = renderRaster(raster, sourceMetadata as GeoZarrSourceMetadata);
+        setRasterState(nextRasterState);
+        setError(null);
+        return {image: nextRasterState.canvas, bounds: nextRasterState.bounds};
+      },
+      onMetadataLoad: sourceMetadata =>
+        setMetadata(sourceMetadata as GeoZarrSourceMetadata),
+      onLoadingStateChange: setLoading,
+      onSourceError: sourceError => {
+        setLoading(false);
+        setError(sourceError.message);
+      },
+      onRasterLoadError: (_requestId, sourceError) => {
+        setLoading(false);
+        setError(sourceError.message);
+      }
+    })
+  ];
 
   return (
     <div style={{position: 'relative', height: '100%', background: '#07101f'}}>
@@ -204,22 +170,6 @@ export default function App(props: AppProps = {}) {
 /** Mounts the example into a DOM container. */
 export function renderToDOM(container = document.body): void {
   createRoot(container).render(<App />);
-}
-
-/** Creates a full-extent raster viewport in the source coordinate system. */
-function createGlobalRasterViewport(metadata: GeoZarrSourceMetadata): RasterViewport {
-  const boundingBox = metadata.boundingBox!;
-  return {
-    id: 'nasa-power-global-grid',
-    width: metadata.width,
-    height: metadata.height,
-    zoom: 0,
-    center: [0, 0],
-    crs: metadata.crs,
-    bounds: boundingBox,
-    project: coordinates => coordinates,
-    unprojectPosition: position => [position[0], position[1], position[2] || 0]
-  };
 }
 
 /** Colorizes one typed GeoZarr raster and flips south-to-north grids for bitmap display. */
@@ -523,9 +473,4 @@ function LoadingSpinner() {
       </div>
     </div>
   );
-}
-
-/** Converts an unknown thrown value into display text. */
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

@@ -7,8 +7,7 @@ import {
   type WriterOptions,
   ensureArrayBuffer
 } from '@loaders.gl/loader-utils';
-import type {WKTCRS, EncodeWKTCRSOptions} from '@loaders.gl/gis';
-import {encodeWKTCRS} from '@loaders.gl/gis';
+import {encodeWKTCRS, type EncodeWKTCRSOptions, type WKTCRSAst} from '@math.gl/crs';
 import {VERSION} from './lib/version';
 import {WKTCRSFormat} from './wkt-format';
 
@@ -40,4 +39,4 @@ export const WKTCRSWriter = {
   encodeSync: (wktcrs, options) =>
     ensureArrayBuffer(new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs']))),
   encodeTextSync: (wktcrs, options) => encodeWKTCRS(wktcrs, options?.['wkt-crs'])
-} as const satisfies WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions>;
+} as const satisfies WriterWithEncoder<WKTCRSAst, never, WKTCRSWriterOptions>;

@@ -11,6 +11,7 @@ import type {ParquetValueBuffer} from '../codecs/declare';
 export type ParquetCodec =
   | 'PLAIN'
   | 'RLE'
+  | 'BIT_PACKED'
   | 'PLAIN_DICTIONARY'
   | 'RLE_DICTIONARY'
   | 'DELTA_BINARY_PACKED'
@@ -193,6 +194,8 @@ export interface ParquetReaderContext {
   column: ParquetField;
   numValues?: Int64;
   dictionary?: ParquetDictionary;
+  /** Reader-scoped codec selected once and reused for independently compressed pages. */
+  decompressPage?: (value: Uint8Array, size: number) => Promise<Uint8Array>;
   /** If true, binary values are not converted to strings */
   preserveBinary?: boolean;
   /** Retain byte arrays as views into decoded page buffers for direct materialization. */
@@ -201,14 +204,22 @@ export interface ParquetReaderContext {
   useTypedValueBuffers?: boolean;
   /** Decode repetition and definition levels into compact unsigned typed arrays. */
   useTypedLevelBuffers?: boolean;
+  /** Decode eligible PLAIN BYTE_ARRAY columns into Arrow-compatible contiguous buffers. */
+  useArrowByteArrayBuffers?: boolean;
+  /** Column metadata guarantees every data page supports direct Arrow byte-array decoding. */
+  hasOnlyArrowByteArrayDataPages?: boolean;
+  /** Verify a page-header CRC when one is present. */
+  verifyPageChecksums?: boolean;
+  /** Decode legacy INT96 physical values as epoch nanoseconds. */
+  int96AsTimestamp?: boolean;
 }
 
 /** Mutable storage for decoded Parquet repetition and definition levels. */
 export type ParquetLevelBuffer = number[] | Uint8Array | Uint16Array | Uint32Array;
 
 export interface ParquetPageData {
-  dlevels: number[];
-  rlevels: number[];
+  dlevels: ParquetLevelBuffer;
+  rlevels: ParquetLevelBuffer;
   /** Actual column chunks */
   values: ParquetValueBuffer;
   /** Number of values written directly into the column destination, if one was supplied. */
@@ -242,6 +253,15 @@ export interface ParquetColumnChunk {
   dlevels: ParquetLevelBuffer;
   rlevels: ParquetLevelBuffer;
   values: ParquetValueBuffer;
+  /** Number of omitted physical values represented by definition levels when known. */
+  nullCount?: number;
+  /** Compact Arrow-compatible physical BYTE_ARRAY data produced by the Arrow reader path. */
+  byteArrayData?: {
+    /** Contiguous non-null physical value bytes. */
+    data: Uint8Array;
+    /** Offsets into `data`, with one entry beyond the final physical value. */
+    valueOffsets: Int32Array;
+  };
   count: number;
   pageHeaders: PageHeader[];
 }

@@ -8,6 +8,7 @@ import type {
   DataSourceOptions,
   RangeRequestScheduler,
   RangeRequestSchedulerProps,
+  ScanExecutionTelemetryCallback,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
@@ -22,6 +23,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {TableQueryExplain} from '@loaders.gl/loader-utils';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
+import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Version validators captured from an HTTP Parquet object. */
 export type ParquetObjectVersion = {
@@ -45,6 +47,16 @@ export type ParquetColumnChunkStatistics = {
   minIsExact?: boolean;
   /** Whether the reported maximum is exact rather than truncated. */
   maxIsExact?: boolean;
+};
+
+/** Size statistics reported by a Parquet writer for one column chunk. */
+export type ParquetColumnChunkSizeStatistics = {
+  /** Unencoded bytes for BYTE_ARRAY values, excluding four-byte lengths. */
+  readonly unencodedByteArrayDataBytes?: number;
+  /** Counts observed at each repetition level, when supplied. */
+  readonly repetitionLevelHistogram?: readonly number[];
+  /** Counts observed at each definition level, when supplied. */
+  readonly definitionLevelHistogram?: readonly number[];
 };
 
 /** Native Parquet geospatial bounding-box statistics for a geometry column chunk. */
@@ -115,8 +127,20 @@ export type ParquetColumnChunkMetadata = {
   readonly bloomFilterByteLength?: number;
   /** Optional min/max and count statistics decoded from the footer. */
   readonly statistics?: ParquetColumnChunkStatistics;
+  /** Optional decoded size statistics for memory and nested-value planning. */
+  readonly sizeStatistics?: ParquetColumnChunkSizeStatistics;
   /** Native geospatial statistics decoded from a Parquet 2.11+ footer. */
   readonly geospatialStatistics?: ParquetGeospatialStatistics;
+};
+
+/** Sort-order declaration attached to one Parquet row group. */
+export type ParquetSortingColumn = {
+  /** Leaf-column index in the file schema. */
+  readonly columnIndex: number;
+  /** Whether values are sorted in descending order. */
+  readonly descending: boolean;
+  /** Whether nulls sort before non-null values. */
+  readonly nullsFirst: boolean;
 };
 
 /** Normalized metadata for one Parquet row group. */
@@ -137,6 +161,8 @@ export type ParquetRowGroupMetadata = {
   readonly compressedSize: number;
   /** Column chunks contained in the row group. */
   readonly columns: readonly ParquetColumnChunkMetadata[];
+  /** Optional sort order declared by the writer. */
+  readonly sortingColumns?: readonly ParquetSortingColumn[];
 };
 
 /** Dataset-level metadata returned by `ParquetSource.getMetadata()`. */
@@ -249,6 +275,8 @@ export type ParquetSourceReadOptions = {
   geometryColumn?: string;
   /** Abort this read and all of its outstanding range requests. */
   signal?: AbortSignal;
+  /** Receives one portable terminal execution snapshot for this read. */
+  onTelemetry?: ScanExecutionTelemetryCallback;
 };
 
 /** Explain result for a Parquet table query, including footer-level row-group pruning. */
@@ -448,6 +476,16 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */
     preserveBinary?: boolean;
+    /** Decode legacy INT96 values as epoch-nanosecond timestamps. */
+    int96AsTimestamp?: boolean;
+    /** Verify page-header CRC values in TypeScript reads. */
+    verifyPageChecksums?: boolean;
+    /** Resolves modular-encryption keys from file and column key metadata. */
+    keyRetriever?: ParquetKeyRetriever;
+    /** AAD prefix for encrypted files that intentionally omit it from metadata. */
+    aadPrefix?: Uint8Array;
+    /** Verify plaintext-footer signatures when present. Enabled by default. */
+    verifyFooterSignature?: boolean;
     /** Receives cumulative transport, pruning, decode, and batch telemetry events. */
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Overrides the package-local worker used for selective source decoding. */

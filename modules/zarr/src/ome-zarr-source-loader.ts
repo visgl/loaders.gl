@@ -12,7 +12,13 @@ import type {
   RasterChannelDataType,
   RasterQueryCapabilities
 } from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  type ScanQueryMetadata,
+  type ScanQueryMetadataOptions,
+  type ScanQueryMetadataProvider
+} from '@loaders.gl/loader-utils';
 
 import type {Labels, Channel, Multiscale, RootAttrs, SupportedTypedArray} from './types';
 import {guessLabels, guessTileSize, validLabels} from './lib/utils';
@@ -64,8 +70,12 @@ export type ZarrSourceLoader<SourceT extends ZarrSource = ZarrSource> = SourceLo
 
 /** Parameters used to request a 2D OME-Zarr plane. */
 export type GetOMEZarrParameters = {
-  /** Zero-based pyramid level. Defaults to `0`. */
-  level?: number;
+  /** Zero-based pyramid level, or `auto` to select from the requested dimensions. */
+  level?: number | 'auto';
+  /** Target display width used by automatic level selection. */
+  width?: number;
+  /** Target display height used by automatic level selection. */
+  height?: number;
   /** Zero-based time index. Defaults to the OME display setting or `0`. */
   t?: number;
   /** Zero-based z index. Defaults to the OME display setting or `0`. */
@@ -102,6 +112,8 @@ export type OMEZarrLevelMetadata = {
   height: number;
   /** OME coordinate transformations declared for this level. */
   coordinateTransformations?: unknown[];
+  /** Scale relative to the full-resolution level. */
+  scale?: [number, number];
 };
 
 /** Normalized metadata exposed by {@link OMEZarrImageSource}. */
@@ -327,7 +339,7 @@ export const OMEZarrSourceLoader = {
 /**
  * Source that loads 2D planes from an OME-Zarr pyramid.
  */
-export class OMEZarrImageSource extends ZarrSource {
+export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataProvider {
   /** Shared source initialization request. */
   private initPromise: Promise<OMEZarrInit> | null = null;
 
@@ -337,10 +349,32 @@ export class OMEZarrImageSource extends ZarrSource {
     return metadata;
   }
 
+  /** Discovers the raster pyramid through the common scan metadata contract. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    const metadata = await this.getMetadata(options.signal);
+    return createScanQueryMetadata({
+      sourceType: 'omezarr',
+      queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
+      name: metadata.name,
+      description: 'OME-Zarr multiscale image',
+      schema: {fields: [], metadata: {}},
+      capabilities: {
+        levelOfDetail: metadata.levels.length > 1 ? 'pushdown' : 'unsupported'
+      },
+      levels: metadata.levels.map(level => ({
+        index: level.level,
+        width: level.width,
+        height: level.height,
+        scale: level.scale
+      }))
+    });
+  }
+
   /** Loads one 2D OME-Zarr plane or channel composite. */
   async getRaster(parameters: GetOMEZarrParameters = {}): Promise<RasterData> {
     const {data, metadata} = await this.getInitPromise(parameters.signal);
-    const level = parameters.level ?? 0;
+    const level = selectOMEZarrLevel(metadata.levels, parameters);
     const pixelSource = data[level];
 
     if (!pixelSource) {
@@ -544,7 +578,8 @@ function normalizeOMEZarrMetadata(
       path: dataset?.path || String(level),
       width: levelWidth,
       height: levelHeight,
-      coordinateTransformations: dataset?.coordinateTransformations
+      coordinateTransformations: dataset?.coordinateTransformations,
+      scale: [width / levelWidth, height / levelHeight] as [number, number]
     };
   });
 
@@ -570,6 +605,23 @@ function normalizeOMEZarrMetadata(
     metadata: attrs as unknown as Record<string, unknown>,
     coordinateTransformations: attrs.coordinateTransformations
   };
+}
+
+/** Selects an explicit level or the closest pyramid level for a target viewport. */
+function selectOMEZarrLevel(
+  levels: OMEZarrLevelMetadata[],
+  parameters: GetOMEZarrParameters
+): number {
+  if (typeof parameters.level === 'number') {
+    return parameters.level;
+  }
+  if (parameters.level !== 'auto' || !parameters.width || !parameters.height) {
+    return 0;
+  }
+  const suitable = levels
+    .filter(level => level.width >= parameters.width! && level.height >= parameters.height!)
+    .sort((first, second) => first.width * first.height - second.width * second.height);
+  return (suitable[0] || levels[0]).level;
 }
 
 /** Converts OME display settings for one channel into public metadata. */

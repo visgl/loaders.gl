@@ -26,7 +26,7 @@ const source = createDataSource('https://example.com/spatialdata.zarr', [OMEZarr
 });
 
 const metadata = await source.getMetadata();
-const raster = await source.getRaster({level: 0, t: 0, z: 0});
+const raster = await source.getRaster({level: 'auto', width: 1024, height: 768, t: 0, z: 0});
 ```
 
 ## Source options
@@ -57,9 +57,13 @@ coordinate transformations when present.
 
 ### `getRaster(parameters?: GetOMEZarrParameters): Promise<RasterData>`
 
-Loads one complete 2D plane from a pyramid level.
+Loads one complete 2D plane from a pyramid level. OME-Zarr multiscale metadata is also exposed
+through the common `ScanQueryMetadataProvider` interface (`source.getQueryMetadata()`), allowing
+source-neutral scan UIs to discover the available levels without reading pixel chunks.
 
-- `level?: number` selects the zero-based pyramid level.
+- `level?: number | 'auto'` selects a level explicitly, or chooses the smallest level that still
+  covers the requested `width` and `height`.
+- `width?: number` and `height?: number` provide target display dimensions for `level: 'auto'`.
 - `t?: number` selects the time index.
 - `z?: number` selects the z index.
 - `channels?: number[]` selects one or more channel indices.
@@ -68,6 +72,10 @@ Loads one complete 2D plane from a pyramid level.
 
 Planar multi-channel results contain one typed array per channel. Interleaved results contain one
 typed array with `bandCount` samples per pixel.
+
+When `level` is omitted, level `0` is used for backwards compatibility. `getMetadata().levels`
+contains each level's pixel dimensions, dataset path, coordinate transformations, and scale
+relative to the full-resolution level.
 
 ## Consolidated root discovery
 

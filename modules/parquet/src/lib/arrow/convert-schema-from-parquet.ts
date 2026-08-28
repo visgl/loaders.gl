@@ -52,9 +52,10 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
 
 export function convertParquetSchema(
   parquetSchema: ParquetSchema,
-  parquetMetadata: FileMetaData | null
+  parquetMetadata: FileMetaData | null,
+  options?: {int96AsTimestamp?: boolean}
 ): Schema {
-  const fields = getFields(parquetSchema.schema);
+  const fields = getFields(parquetSchema.schema, options);
   const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
 
   const schema: Schema = {
@@ -65,21 +66,25 @@ export function convertParquetSchema(
   return schema;
 }
 
-function getFields(schema: SchemaDefinition): Field[] {
+function getFields(schema: SchemaDefinition, options?: {int96AsTimestamp?: boolean}): Field[] {
   const fields: Field[] = [];
 
   for (const name in schema) {
-    fields.push(getField(name, schema[name]));
+    fields.push(getField(name, schema[name], options));
   }
 
   return fields;
 }
 
 /** Converts one Parquet field, preserving repeated values as Arrow lists. */
-function getField(name: string, field: FieldDefinition): Field {
+function getField(
+  name: string,
+  field: FieldDefinition,
+  options?: {int96AsTimestamp?: boolean}
+): Field {
   const elementField: Field = {
     name,
-    type: getFieldValueType(field),
+    type: getFieldValueType(field, options),
     nullable: Boolean(field.optional),
     metadata: getFieldMetadata(field)
   };
@@ -100,9 +105,12 @@ function getField(name: string, field: FieldDefinition): Field {
 }
 
 /** Converts a nested Parquet definition into its corresponding Arrow data type. */
-function getFieldValueType(field: FieldDefinition): DataType {
+function getFieldValueType(
+  field: FieldDefinition,
+  options?: {int96AsTimestamp?: boolean}
+): DataType {
   if (!field.fields) {
-    return getFieldType(field);
+    return getFieldType(field, options);
   }
 
   if (field.logicalType?.type === 'LIST') {
@@ -110,7 +118,7 @@ function getFieldValueType(field: FieldDefinition): DataType {
     if (!element) {
       // Preserve unusual legacy LIST layouts as structs. Their group names and
       // repetition levels are still available to the row-materialization path.
-      return {type: 'struct', children: getFields(field.fields)};
+      return {type: 'struct', children: getFields(field.fields, options)};
     }
     if (
       (element.logicalType?.type === 'LIST' &&
@@ -121,14 +129,14 @@ function getFieldValueType(field: FieldDefinition): DataType {
       // Preserve nested legacy wrappers. Arrow's high-level List/Map type
       // cannot describe the historical wrapper shape without changing the
       // object-row contract used by existing callers.
-      return {type: 'struct', children: getFields(field.fields)};
+      return {type: 'struct', children: getFields(field.fields, options)};
     }
     return {
       type: 'list',
       children: [
         {
           name: 'element',
-          type: getFieldValueType(element),
+          type: getFieldValueType(element, options),
           nullable: Boolean(element.optional)
         }
       ]
@@ -142,7 +150,7 @@ function getFieldValueType(field: FieldDefinition): DataType {
     if (!key || !value) {
       // Preserve unusual legacy MAP layouts as structs rather than rejecting a
       // file whose converted annotation does not follow the standard wrapper.
-      return {type: 'struct', children: getFields(field.fields)};
+      return {type: 'struct', children: getFields(field.fields, options)};
     }
     return {
       type: 'map',
@@ -153,8 +161,12 @@ function getFieldValueType(field: FieldDefinition): DataType {
           type: {
             type: 'struct',
             children: [
-              {name: 'key', type: getFieldValueType(key), nullable: false},
-              {name: 'value', type: getFieldValueType(value), nullable: Boolean(value.optional)}
+              {name: 'key', type: getFieldValueType(key, options), nullable: false},
+              {
+                name: 'value',
+                type: getFieldValueType(value, options),
+                nullable: Boolean(value.optional)
+              }
             ]
           },
           nullable: false
@@ -163,7 +175,7 @@ function getFieldValueType(field: FieldDefinition): DataType {
     };
   }
 
-  return {type: 'struct', children: getFields(field.fields)};
+  return {type: 'struct', children: getFields(field.fields, options)};
 }
 
 /** Returns whether a nested LIST follows the standard list/list/element wrapper. */
@@ -177,7 +189,10 @@ function isStandardMapDefinition(field: FieldDefinition): boolean {
 }
 
 /** Returns the exact serialized Arrow type for one decoded Parquet field. */
-function getFieldType(field: FieldDefinition): DataType {
+function getFieldType(field: FieldDefinition, options?: {int96AsTimestamp?: boolean}): DataType {
+  if (field.type === 'INT96' && options?.int96AsTimestamp) {
+    return 'timestamp-nanosecond';
+  }
   if (field.logicalType?.type === 'DECIMAL') {
     const precision = field.precision ?? field.presision;
     const scale = field.scale;
@@ -198,6 +213,15 @@ function getFieldType(field: FieldDefinition): DataType {
 /** Returns defined physical field properties as Arrow-compatible string metadata. */
 function getFieldMetadata(field: FieldDefinition): Record<string, string> | undefined {
   let metadata: Record<string, string> | undefined;
+
+  if (
+    field.logicalType?.type === 'VARIANT' &&
+    field.logicalType.specificationVersion !== undefined
+  ) {
+    metadata = {
+      'parquet.variant.specification_version': String(field.logicalType.specificationVersion)
+    };
+  }
 
   for (const key in field) {
     const fieldValue = field[key];

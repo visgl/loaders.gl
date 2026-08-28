@@ -9,6 +9,7 @@ import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
 import type {ImplicitSubtreeReference} from '@loaders.gl/tiles';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 
 export type B3DMContent = {
   batchTableJson?: FeatureTableJson;
@@ -114,6 +115,8 @@ export type Tiles3DTilesetJSON = {
   extensions?: Record<string, unknown>;
   /** Application-specific data. */
   extras?: unknown;
+  /** Normalized CRS discovery metadata added by the loader. */
+  spatialMetadata?: TilesetSpatialReference;
 };
 
 /** Metadata about the complete 3D Tiles tileset asset. */

@@ -1,17 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {isBrowser, load} from '@loaders.gl/core';
-
 import {PMTILESETS_VECTOR} from './data/tilesets';
 import {_PMTilesLoader as PMTilesLoader} from '@loaders.gl/pmtiles';
-
-test('PMTilesLoader#schemas', async t => {
+test('PMTilesLoader#schemas', async () => {
   if (!isBrowser) {
-    t.comment('PMTilesSourceLoader currently only supported in browser');
-    t.end();
+    console.log('PMTilesSourceLoader currently only supported in browser');
     return;
   }
   for (const tilesetUrl of PMTILESETS_VECTOR) {
@@ -20,7 +13,6 @@ test('PMTilesLoader#schemas', async t => {
     for (const layer of source.layers) {
       fields.push(...layer.schema.fields);
     }
-    t.equal(fields.length, 66);
+    expect(fields.length).toBe(66);
   }
-  t.end();
 });

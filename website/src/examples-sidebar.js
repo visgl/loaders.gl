@@ -23,7 +23,15 @@ const sidebars = {
     {
       type: 'category',
       label: 'Table Formats',
-      items: ['table/arrow', 'table/parquet', 'table/avro', 'table/orc', 'table/csv']
+      items: [
+        'table/arrow',
+        'table/arrow-scan',
+        'table/parquet',
+        'table/avro',
+        'table/orc',
+        'table/csv',
+        'table/csv-scan'
+      ]
     },
     {
       type: 'category',
@@ -76,12 +84,17 @@ const sidebars = {
     {
       type: 'category',
       label: 'OGC Services',
-      items: ['tiles/wms', 'tiles/wfs']
+      items: ['tiles/wms', 'tiles/wfs', 'tiles/wmts']
     },
     {
       type: 'category',
       label: 'ArcGIS Services',
-      items: ['tiles/arcgis-image-server', 'tiles/arcgis-feature-server']
+      items: [
+        'tiles/arcgis-map-server',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server',
+        'tiles/arcgis-vector-tile-server'
+      ]
     },
     {
       type: 'category',

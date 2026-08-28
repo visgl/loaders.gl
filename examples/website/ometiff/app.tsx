@@ -5,17 +5,18 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {OrthographicView} from '@deck.gl/core';
-import {BitmapLayer} from '@deck.gl/layers';
 import type {BitmapBoundingBox} from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 
-import {createDataSource} from '@loaders.gl/core';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterData} from '@loaders.gl/loader-utils';
-import type {OMETiffImageSource, OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
+import type {OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
 import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/multi-channel.ome.tif';
+const OMETIFF_LOADERS = [OMETiffSourceLoader];
+const OMETIFF_SOURCE_OPTIONS = {core: {type: 'ometiff'}};
 
 type AppProps = {
   hideChrome?: boolean;
@@ -61,15 +62,7 @@ const DEFAULT_VIEW_STATE: OrthographicViewState = {
  * Website demo for non-geospatial OME-TIFF plane rendering.
  */
 export default function App(props: AppProps = {}) {
-  const sourceRef = useRef<OMETiffImageSource | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
-
-  if (!sourceRef.current) {
-    sourceRef.current = createDataSource(DATA_URL, [OMETiffSourceLoader], {
-      core: {type: 'ometiff'},
-      ometiff: {}
-    }) as OMETiffImageSource;
-  }
 
   const [metadata, setMetadata] = useState<OMETiffSourceLoaderMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +72,6 @@ export default function App(props: AppProps = {}) {
   const [selectedZ, setSelectedZ] = useState(0);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('rgb');
   const [stats, setStats] = useState<RasterStatistics | null>(null);
-  const [rasterCanvas, setRasterCanvas] = useState<HTMLCanvasElement | null>(null);
   const [rasterDimensions, setRasterDimensions] = useState<RasterDimensions | null>(null);
   const [viewportSize, setViewportSize] = useState<RasterDimensions>({width: 1, height: 1});
   const [viewState, setViewState] = useState<OrthographicViewState>(DEFAULT_VIEW_STATE);
@@ -106,82 +98,15 @@ export default function App(props: AppProps = {}) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadMetadata = async () => {
-      setLoading(true);
-      try {
-        const nextMetadata = await sourceRef.current!.getMetadata();
-        if (cancelled) {
-          return;
-        }
-
-        setMetadata(nextMetadata);
-        setDisplayMode(nextMetadata.bandCount >= 3 ? 'rgb' : 'channel-0');
-        setError(null);
-      } catch (nextError) {
-        console.error('OME-TIFF example metadata load failed', nextError);
-        if (!cancelled) {
-          setError(getErrorMessage(nextError));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadMetadata();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!metadata) {
-      return;
-    }
-
-    const abortController = new AbortController();
-
-    const loadRaster = async () => {
-      setLoading(true);
-      try {
-        const raster = await sourceRef.current!.getRaster({
-          level: selectedLevel,
-          t: selectedTime,
-          z: selectedZ,
-          channels: getRequestedChannels(metadata, displayMode),
-          signal: abortController.signal
-        });
-        if (abortController.signal.aborted) {
-          return;
-        }
-
-        const nextRasterCanvas = renderRasterToCanvas(raster);
-        setRasterCanvas(nextRasterCanvas.canvas);
-        setRasterDimensions({width: nextRasterCanvas.width, height: nextRasterCanvas.height});
-        setStats(nextRasterCanvas.stats);
-        setError(null);
-      } catch (nextError) {
-        if (abortController.signal.aborted) {
-          return;
-        }
-        console.error('OME-TIFF example raster load failed', nextError);
-        setError(getErrorMessage(nextError));
-      } finally {
-        if (!abortController.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadRaster();
-
-    return () => abortController.abort();
-  }, [displayMode, metadata, selectedLevel, selectedTime, selectedZ]);
+  const rasterParameters = useMemo(
+    () => ({
+      level: selectedLevel,
+      t: selectedTime,
+      z: selectedZ,
+      channels: metadata ? getRequestedChannels(metadata, displayMode) : [0]
+    }),
+    [displayMode, metadata, selectedLevel, selectedTime, selectedZ]
+  );
 
   useEffect(() => {
     if (!rasterDimensions) {
@@ -215,20 +140,37 @@ export default function App(props: AppProps = {}) {
     []
   );
 
-  const layers = useMemo(() => {
-    if (!rasterCanvas || !rasterDimensions) {
-      return [];
-    }
-
-    return [
-      new BitmapLayer({
-        id: 'ome-tiff-layer',
-        image: rasterCanvas,
-        bounds: getRasterBounds(rasterDimensions),
-        opacity: 1
-      })
-    ];
-  }, [rasterCanvas, rasterDimensions]);
+  const layers = [
+    new SourceLayer({
+      id: 'ome-tiff-source',
+      data: DATA_URL,
+      loaders: OMETIFF_LOADERS,
+      sourceOptions: OMETIFF_SOURCE_OPTIONS,
+      rasterParameters,
+      colorizeRaster: raster => {
+        const nextRasterCanvas = renderRasterToCanvas(raster);
+        const dimensions = {width: nextRasterCanvas.width, height: nextRasterCanvas.height};
+        setRasterDimensions(dimensions);
+        setStats(nextRasterCanvas.stats);
+        setError(null);
+        return {image: nextRasterCanvas.canvas, bounds: getRasterBounds(dimensions)};
+      },
+      onMetadataLoad: sourceMetadata => {
+        const nextMetadata = sourceMetadata as OMETiffSourceLoaderMetadata;
+        setMetadata(nextMetadata);
+        setDisplayMode(nextMetadata.bandCount >= 3 ? 'rgb' : 'channel-0');
+      },
+      onLoadingStateChange: setLoading,
+      onSourceError: sourceError => {
+        setLoading(false);
+        setError(sourceError.message);
+      },
+      onRasterLoadError: (_requestId, sourceError) => {
+        setLoading(false);
+        setError(sourceError.message);
+      }
+    })
+  ];
 
   const widgets = useMemo(() => {
     if (props.hideChrome) {
@@ -491,13 +433,6 @@ function sampleColorRamp(value: number): [number, number, number] {
     Math.round(lower[1] + (upper[1] - lower[1]) * mix),
     Math.round(lower[2] + (upper[2] - lower[2]) * mix)
   ];
-}
-
-/**
- * Normalizes unknown error values for display.
- */
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 /**

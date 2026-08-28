@@ -10,9 +10,12 @@ import type {
   DataSourceOptions,
   RasterData,
   RasterChannelDataType,
-  TypedArray
+  TypedArray,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  ScanQueryMetadataProvider
 } from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
 
 import type {TiffPixelSource} from './lib/tiff-pixel-source';
 import {loadOmeTiff, isOmeTiff} from './lib/ome/load-ome-tiff';
@@ -159,7 +162,10 @@ export const OMETiffSourceLoader = {
 /**
  * Source that loads 2D planes from an OME-TIFF pyramid.
  */
-export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceLoaderOptions> {
+export class OMETiffImageSource
+  extends DataSource<string | Blob, OMETiffSourceLoaderOptions>
+  implements ScanQueryMetadataProvider
+{
   private _initPromise: Promise<OMETiffInit> | null = null;
 
   /**
@@ -168,6 +174,35 @@ export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceL
   async getMetadata(): Promise<OMETiffSourceLoaderMetadata> {
     const {metadata} = await this._getInitPromise();
     return metadata;
+  }
+
+  /** Discovers OME-TIFF channels, pyramid levels, and selectable dimensions. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const metadata = await this.getMetadata();
+    if (options.signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const fields = metadata.channels.map(channel => ({
+      name: channel.name || `channel_${channel.index + 1}`,
+      type: metadata.dtype,
+      nullable: false,
+      metadata: channel.color ? {color: channel.color.join(',')} : undefined
+    }));
+    return createScanQueryMetadata({
+      sourceType: 'ometiff',
+      queryType: 'raster',
+      execution: {status: 'supported', method: 'getRaster'},
+      name: metadata.name,
+      schema: {fields, metadata: {}},
+      capabilities: {
+        levelOfDetail: metadata.levels.length > 1 ? 'pushdown' : 'unsupported'
+      },
+      levels: metadata.levels.map(level => ({
+        index: level.level,
+        width: level.width,
+        height: level.height,
+        scale: [metadata.width / level.width, metadata.height / level.height] as [number, number]
+      }))
+    });
   }
 
   /**

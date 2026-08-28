@@ -80,4 +80,130 @@ describe('compileSQLTableQuery', () => {
       compileSQLTableQuery({tableName: 'flights', limit: -1}, {dialect: 'duckdb'})
     ).toThrow(/non-negative/);
   });
+
+  test('compiles portable expressions, aggregates, and ordering', () => {
+    const compiled = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        expressions: [{name: 'metric', expression: {op: 'literal', value: 1}}],
+        columns: ['carrier', 'metric', 'flightCount'],
+        groupBy: ['carrier'],
+        aggregates: [{name: 'flightCount', function: 'count'}],
+        orderBy: [{column: 'flightCount', direction: 'desc', nulls: 'last'}],
+        limit: 10
+      },
+      {dialect: 'duckdb'}
+    );
+
+    expect(compiled.sql).toBe(
+      [
+        'SELECT "carrier", 1 AS "metric", COUNT(*) AS "flightCount"',
+        'FROM "flights"',
+        'GROUP BY "carrier"',
+        'ORDER BY "flightCount" DESC NULLS LAST',
+        'LIMIT 10'
+      ].join('\n')
+    );
+  });
+
+  test('compiles unions and qualified equi-joins', () => {
+    const union = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        union: [{source: 'archived_flights', query: {columns: ['carrier']}}]
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(union.sql).toBe(
+      [
+        'SELECT "carrier"',
+        'FROM "flights"',
+        'UNION ALL',
+        'SELECT "carrier"',
+        'FROM "archived_flights"'
+      ].join('\n')
+    );
+
+    const limitedUnion = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        union: [{source: 'archived_flights', query: {columns: ['carrier'], limit: 1}}]
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(limitedUnion.sql).toBe(
+      [
+        'SELECT "carrier"',
+        'FROM "flights"',
+        'UNION ALL',
+        '(SELECT "carrier"',
+        'FROM "archived_flights"',
+        'LIMIT 1)'
+      ].join('\n')
+    );
+
+    const join = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['carrier'],
+        join: {child: {source: 'airlines'}, left: 'carrier', right: 'code'}
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(join.sql).toContain(
+      'JOIN "airlines" AS "airlines" ON "flights"."carrier" = "airlines"."code"'
+    );
+
+    const joinedProjection = compileSQLTableQuery(
+      {
+        tableName: 'flights',
+        columns: ['airlines.name'],
+        join: {child: {source: 'airlines'}, left: 'carrier', right: 'code'}
+      },
+      {dialect: 'duckdb'}
+    );
+    expect(joinedProjection.sql).toContain('SELECT "airlines"."name"');
+  });
+
+  test('rejects non-count aggregates without an input column', () => {
+    expect(() =>
+      compileSQLTableQuery(
+        {tableName: 'flights', aggregates: [{name: 'total', function: 'sum'}]},
+        {dialect: 'duckdb'}
+      )
+    ).toThrow(/requires a column/);
+  });
+
+  test('compiles arithmetic expressions and child join queries', () => {
+    const compiled = compileSQLTableQuery(
+      {
+        tableName: 'measurements',
+        columns: ['sumValue', 'difference', 'product', 'ratio', 'other.value'],
+        expressions: [
+          {name: 'sumValue', expression: {op: 'add', left: 'a', right: 'b'}},
+          {name: 'difference', expression: {op: 'subtract', left: 'a', right: 'b'}},
+          {name: 'product', expression: {op: 'multiply', left: 'a', right: 'b'}},
+          {name: 'ratio', expression: {op: 'divide', left: 'a', right: 'b'}}
+        ],
+        join: {
+          child: {
+            source: 'other',
+            query: {columns: ['value'], orderBy: [{column: 'value', direction: 'asc'}]}
+          },
+          left: 'id',
+          right: 'measurement_id'
+        }
+      },
+      {dialect: 'snowflake'}
+    );
+
+    expect(compiled.sql).toContain('("a" + "b") AS "sumValue"');
+    expect(compiled.sql).toContain('("a" - "b") AS "difference"');
+    expect(compiled.sql).toContain('("a" * "b") AS "product"');
+    expect(compiled.sql).toContain('("a" / NULLIF("b", 0)) AS "ratio"');
+    expect(compiled.sql).toContain('JOIN (SELECT "value"');
+    expect(compiled.sql).toContain('ORDER BY "value" ASC');
+  });
 });

@@ -1,9 +1,4 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/** @typedef {import('@loaders.gl/compression').Compression} Compression */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {NoCompression} from '@loaders.gl/compression/no-compression';
 import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
 import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
@@ -26,15 +21,12 @@ import {
   supportsNativeDecompressionStream,
   type NativeDecompressionTestFormat
 } from './utils/native-decompression-test-utils';
-
 // Import big dependencies
-
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 // import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
-
 // Inject large dependencies through Compression constructor options
 const modules = {
   // brotli has problems with decompress in browsers
@@ -48,9 +40,7 @@ const modules = {
   // lzo,
   'zstd-codec': ZstdCodec
 };
-
 const TEST_DATA = getData();
-
 const TEST_CASES = [
   {
     title: 'binary',
@@ -81,7 +71,6 @@ const TEST_CASES = [
     }
   }
 ];
-
 /** @type {Compression[]} */
 const COMPRESSIONS = [
   new NoCompression({modules}),
@@ -93,12 +82,10 @@ const COMPRESSIONS = [
   new SnappyCompression({modules}),
   new ZstdCompression({modules})
 ];
-
 if (!isBrowser) {
   COMPRESSIONS.push();
 }
-
-test('compression#atomic', async t => {
+test('compression#atomic', async () => {
   for (const compression of COMPRESSIONS) {
     // brotli compress import issue
     if (!compression.isSupported || compression.name === 'brotli') {
@@ -107,36 +94,29 @@ test('compression#atomic', async t => {
     for (const tc of TEST_CASES) {
       const {title} = tc;
       const {name} = compression;
-      t.comment(`Testing ${name}(${title})`);
+      console.log(`Testing ${name}(${title})`);
       const compressedData = await compression.compress(tc.data);
       const compressedLength = tc.compression?.[compression.name]?.compressedLength;
       if (compressedLength) {
-        t.equal(
-          compressedData.byteLength,
-          compressedLength,
-          `${name}(${title}) compressed length correct`
+        expect(compressedData.byteLength, `${name}(${title}) compressed length correct`).toBe(
+          compressedLength
         );
       }
       const uncompressedData = await compression.decompress(compressedData);
-      t.ok(
+      expect(
         compareArrayBuffers(tc.data, uncompressedData),
         `${name}(${title}) decompressed data equals original`
-      );
+      ).toBeTruthy();
     }
   }
-
-  t.end();
 });
-
 // BATCHED TESTS
-
-test('compression#batched', async t => {
+test('compression#batched', async () => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
     new Uint8Array([7, 8, 9]).buffer
   ];
-
   for (const compression of COMPRESSIONS) {
     // brotli compress import issue
     if (!compression.isSupported || compression.name === 'brotli') {
@@ -145,55 +125,44 @@ test('compression#batched', async t => {
     for (const tc of TEST_CASES) {
       const {title} = tc;
       const {name} = compression;
-
       // Test empty batches
       let compressedBatches = compression.compressBatches(inputChunks);
       const compressedData = await concatenateArrayBuffersAsync(compressedBatches);
       if (name === 'gzip') {
-        t.equals(compressedData.byteLength, 29, `${name}(${title}) batches: length correct`); // Header overhead
+        expect(compressedData.byteLength, `${name}(${title}) batches: length correct`).toBe(29); // Header overhead
       }
-
       // test chained iterators
       compressedBatches = compression.compressBatches(inputChunks);
-
       const decompressedBatches = compression.decompressBatches(compressedBatches);
-
       const inputData = concatenateArrayBuffers(...inputChunks);
       const decompressedData = await concatenateArrayBuffersAsync(decompressedBatches);
-
-      t.ok(
+      expect(
         compareArrayBuffers(inputData, decompressedData),
         `${name}(${title}) batches: compress/decompress identical`
-      );
+      ).toBeTruthy();
     }
   }
-  t.end();
 });
-
-test('native decompression#real DecompressionStream formats', async t => {
+test('native decompression#real DecompressionStream formats', async () => {
   for (const format of Object.keys(
     NATIVE_DECOMPRESSION_FIXTURES
   ) as NativeDecompressionTestFormat[]) {
     if (!(await supportsNativeDecompressionStream(format))) {
-      t.comment(`${format} DecompressionStream is not available in this runtime`);
+      console.log(`${format} DecompressionStream is not available in this runtime`);
       continue;
     }
-
     const nativeFormats: NativeDecompressionTestFormat[] = [];
     const restoreDecompressionStream = installRecordingDecompressionStream(nativeFormats);
-
     try {
       const compressedData = new Uint8Array(NATIVE_DECOMPRESSION_FIXTURES[format]).buffer;
-
       const decompressedData = await decompressWithNativeDecompressionStream(
         compressedData,
         format
       );
-      t.ok(
+      expect(
         decompressedData && compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedData),
         `native atomic ${format} decompression works`
-      );
-
+      ).toBeTruthy();
       const splitIndex = Math.max(1, Math.floor(compressedData.byteLength / 2));
       const compressedBatches = [
         compressedData.slice(0, splitIndex),
@@ -203,114 +172,91 @@ test('native decompression#real DecompressionStream formats', async t => {
         compressedBatches,
         format
       );
-      t.ok(decompressedBatches, `native batched ${format} stream is created`);
+      expect(decompressedBatches, `native batched ${format} stream is created`).toBeTruthy();
       const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
-      t.ok(
+      expect(
         compareArrayBuffers(NATIVE_DECOMPRESSION_TEST_DATA, decompressedBatchData),
         `native batched ${format} decompression works`
-      );
-      t.deepEqual(
+      ).toBeTruthy();
+      expect(
         nativeFormats,
-        [format, format],
         `${format} uses the native stream for atomic and batched decompression`
-      );
+      ).toEqual([format, format]);
     } finally {
       restoreDecompressionStream();
     }
   }
-
-  t.end();
 });
-
-test('native decompression#mocked zstd atomic and batched', async t => {
+test('native decompression#mocked zstd atomic and batched', async () => {
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream({
     formats,
     supportedFormats: ['zstd']
   });
-
   try {
     const inputBatches = [new Uint8Array([1, 2, 3]).buffer, new Uint8Array([4, 5, 6]).buffer];
     const inputData = concatenateArrayBuffers(...inputBatches);
-
     const decompressedData = await decompressWithNativeDecompressionStream(inputData, 'zstd');
-    t.ok(
+    expect(
       decompressedData && compareArrayBuffers(inputData, decompressedData),
       'native atomic zstd needs no codec'
-    );
-
+    ).toBeTruthy();
     const decompressedBatches = decompressBatchesWithNativeDecompressionStream(
       inputBatches,
       'zstd'
     );
-    t.ok(decompressedBatches, 'native batched zstd stream is created');
+    expect(decompressedBatches, 'native batched zstd stream is created').toBeTruthy();
     const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
-    t.ok(
+    expect(
       compareArrayBuffers(inputData, decompressedBatchData),
       'native batched zstd needs no codec'
-    );
-    t.deepEqual(formats, ['zstd', 'zstd'], 'zstd maps to the native zstd format');
+    ).toBeTruthy();
+    expect(formats, 'zstd maps to the native zstd format').toEqual(['zstd', 'zstd']);
   } finally {
     restoreDecompressionStream();
   }
-
-  t.end();
 });
-
-test('native decompression#unsupported formats return null', async t => {
+test('native decompression#unsupported formats return null', async () => {
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream({
     formats,
     supportedFormats: []
   });
-
   try {
     const inputData = new Uint8Array([1, 2, 3]).buffer;
-    t.equal(
+    expect(
       await decompressWithNativeDecompressionStream(inputData, 'zstd'),
-      null,
       'atomic unsupported format returns null'
-    );
-    t.equal(
+    ).toBe(null);
+    expect(
       decompressBatchesWithNativeDecompressionStream([inputData], 'zstd'),
-      null,
       'batched unsupported format returns null'
-    );
-    t.deepEqual(formats, ['zstd', 'zstd'], 'both paths probe the requested format');
+    ).toBe(null);
+    expect(formats, 'both paths probe the requested format').toEqual(['zstd', 'zstd']);
   } finally {
     restoreDecompressionStream();
   }
-
-  t.end();
 });
-
-test('native decompression#stream failures propagate', async t => {
+test('native decompression#stream failures propagate', async () => {
   const restoreDecompressionStream = installMockDecompressionStream({
     formats: [],
     supportedFormats: ['zstd'],
     failWith: new Error('mock native decompression failed')
   });
-
   try {
     const inputData = new Uint8Array([1, 2, 3]).buffer;
-    await t.rejects(
+    await expect(
       decompressWithNativeDecompressionStream(inputData, 'zstd'),
-      /mock native decompression failed/,
       'native stream errors propagate'
-    );
+    ).rejects.toThrow(/mock native decompression failed/);
   } finally {
     restoreDecompressionStream();
   }
-
-  t.end();
 });
-
 // WORKER TESTS
-test('gzip#worker', async t => {
+test('gzip#worker', async () => {
   const {binaryData} = getData();
-
-  t.equal(binaryData.byteLength, 100000, 'Length correct');
-
+  expect(binaryData.byteLength, 'Length correct').toBe(100000);
   const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
     compression: 'gzip',
     operation: 'compress',
@@ -319,9 +265,7 @@ test('gzip#worker', async t => {
       level: 6
     }
   });
-
-  t.equal(compressedData.byteLength, 12819, 'Length correct');
-
+  expect(compressedData.byteLength, 'Length correct').toBe(12819);
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'gzip',
     operation: 'decompress',
@@ -330,86 +274,68 @@ test('gzip#worker', async t => {
       level: 6
     }
   });
-
-  t.equal(decompressdData.byteLength, 100000, 'Length correct');
-
-  t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
-
+  expect(decompressdData.byteLength, 'Length correct').toBe(100000);
+  expect(
+    compareArrayBuffers(decompressdData, binaryData),
+    'compress/decompress level 6'
+  ).toBeTruthy();
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test('lz4#worker', async t => {
+test('lz4#worker', async () => {
   const {binaryData} = getData();
-
-  t.equal(binaryData.byteLength, 100000, 'Length correct');
-
+  expect(binaryData.byteLength, 'Length correct').toBe(100000);
   const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
     compression: 'lz4',
     operation: 'compress',
     _workerType: 'test'
   });
-
-  t.equal(compressedData.byteLength, 12331, 'Length correct');
-
+  expect(compressedData.byteLength, 'Length correct').toBe(12331);
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'lz4',
     operation: 'decompress',
     _workerType: 'test'
   });
-
-  t.equal(decompressdData.byteLength, 100000, 'Length correct');
-
-  t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
-
+  expect(decompressdData.byteLength, 'Length correct').toBe(100000);
+  expect(
+    compareArrayBuffers(decompressdData, binaryData),
+    'compress/decompress level 6'
+  ).toBeTruthy();
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test.skip('zstd#worker', async t => {
+test.skip('zstd#worker', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
-
   const {binaryData} = getData();
-
-  t.equal(binaryData.byteLength, 100000, 'Length correct');
-
+  expect(binaryData.byteLength, 'Length correct').toBe(100000);
   const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
     compression: 'zstd',
     operation: 'compress',
     _workerType: 'test'
   });
-
-  t.equal(compressedData.byteLength, 11936, 'Length correct');
-
+  expect(compressedData.byteLength, 'Length correct').toBe(11936);
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'zstd',
     operation: 'decompress',
     _workerType: 'test'
   });
-
-  t.equal(decompressdData.byteLength, 100000, 'Length correct');
-
-  t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
-  t.end();
+  expect(decompressdData.byteLength, 'Length correct').toBe(100000);
+  expect(
+    compareArrayBuffers(decompressdData, binaryData),
+    'compress/decompress level 6'
+  ).toBeTruthy();
 });
-
 type MockDecompressionStreamOptions = {
   formats: string[];
   supportedFormats: string[];
   failWith?: Error;
 };
-
 /**
  * Installs a deterministic DecompressionStream double and returns a restorer.
  *
@@ -418,18 +344,15 @@ type MockDecompressionStreamOptions = {
  */
 function installMockDecompressionStream(options: MockDecompressionStreamOptions): () => void {
   const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'DecompressionStream');
-
   class MockDecompressionStream {
     readonly readable: ReadableStream<Uint8Array>;
     readonly writable: WritableStream<BufferSource>;
-
     /** Creates a mock native decompression stream for supported formats. */
     constructor(format: string) {
       options.formats.push(format);
       if (!options.supportedFormats.includes(format)) {
         throw new TypeError('mock compression format is unsupported');
       }
-
       const transformStream = new TransformStream<BufferSource, Uint8Array>({
         transform(chunk, controller) {
           if (options.failWith) {
@@ -442,13 +365,11 @@ function installMockDecompressionStream(options: MockDecompressionStreamOptions)
       this.writable = transformStream.writable;
     }
   }
-
   Object.defineProperty(globalThis, 'DecompressionStream', {
     configurable: true,
     writable: true,
     value: MockDecompressionStream
   });
-
   return () => {
     if (originalDescriptor) {
       Object.defineProperty(globalThis, 'DecompressionStream', originalDescriptor);
@@ -457,7 +378,6 @@ function installMockDecompressionStream(options: MockDecompressionStreamOptions)
     }
   };
 }
-
 /**
  * Copies a native stream input chunk into a Uint8Array.
  *

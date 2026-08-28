@@ -10,6 +10,23 @@ export const INITIAL_CATEGORY_NAME = 'WMS';
 export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap WMS (Terrestris)';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  WMTS: {
+    'NASA GIBS satellite imagery': {
+      type: 'wmts',
+      url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi',
+      description: 'NASA Global Imagery Browse Services WMTS, configured from its GetCapabilities document.',
+      viewState: {longitude: -98, latitude: 39, zoom: 3},
+      sourceOptions: {
+        wmts: {
+          layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+          tileMatrixSet: 'GoogleMapsCompatible_Level9',
+          format: 'image/jpeg',
+          capabilitiesUrl:
+            'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0'
+        }
+      }
+    }
+  },
   WMS: {
     'OpenStreetMap WMS (Terrestris)': {
       // const imageUrl = 'https://ows.terrestris.de/osm/service?width={width}&height={height}&bbox={bounds[0]},{bounds[1]},{bounds[2]},{bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS';
@@ -88,6 +105,22 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       }
     },
   },
+  'ArcGIS ImageServer tiles': {
+    'NLCD Land Cover tile exports': {
+      type: 'arcgis-image-server-tiles',
+      url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      description: 'ArcGIS ImageServer exportImage requests rendered as deck.gl tiles.',
+      viewState: {longitude: -96, latitude: 38.5, zoom: 4}
+    }
+  },
+  'ArcGIS MapServer': {
+    'World Imagery cached tiles': {
+      type: 'arcgis-map-server',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+      description: 'ArcGIS cached MapServer tiles with service metadata loaded automatically.',
+      viewState: {longitude: -98, latitude: 39, zoom: 3}
+    }
+  },
   'ArcGIS Feature Server': {
     'Kentucky Bicycle Routes FeatureServer': {
       type: 'arcgis-feature-server',
@@ -102,6 +135,23 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
         lineWidthMinPixels: 4,
         lineWidthMaxPixels: 8,
         getLineColor: [0, 80, 255, 220]
+      }
+    }
+  },
+  'ArcGIS VectorTileServer': {
+    'Esri World Basemap vector tiles': {
+      type: 'arcgis-vector-tile-server',
+      url: 'https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer',
+      description:
+        'ArcGIS-hosted MVT tiles decoded to WGS84 features by loaders.gl and rendered through SourceLayer.',
+      viewState: {longitude: -98, latitude: 39, zoom: 4},
+      layerProps: {
+        pickable: true,
+        stroked: true,
+        filled: true,
+        lineWidthMinPixels: 1,
+        getLineColor: [48, 68, 82, 180],
+        getFillColor: [109, 166, 122, 150]
       }
     }
   },

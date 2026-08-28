@@ -50,13 +50,15 @@ function insertLoaderLiveExample(children: ReactNode, syntheticTitle: string | n
 
   for (const node of nodes) {
     if (!exampleInserted) {
-      if (!sawRenderedTitle && isHeadingNode(node, 'h1')) {
+      if (!sawRenderedTitle) {
         beforeExample.push(node)
-        sawRenderedTitle = true
+        if (isHeadingNode(node, 'h1')) {
+          sawRenderedTitle = true
+        }
         continue
       }
 
-      if (isBadgeParagraph(node) || isImageParagraph(node)) {
+      if (isBadgeParagraph(node) || isImageParagraph(node) || isDocsPageTabs(node)) {
         beforeExample.push(node)
         continue
       }
@@ -80,6 +82,13 @@ function insertLoaderLiveExample(children: ReactNode, syntheticTitle: string | n
 
 function isHeadingNode(node: ReactNode, tagName: string): boolean {
   return React.isValidElement(node) && node.type === tagName
+}
+
+function isDocsPageTabs(node: ReactNode): boolean {
+  if (!React.isValidElement(node) || typeof node.type !== 'function') {
+    return false
+  }
+  return node.type.name === 'JsonDocsTabs'
 }
 
 function isParagraphNode(node: ReactNode): boolean {

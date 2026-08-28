@@ -8,7 +8,7 @@ import DeckGL from '@deck.gl/react';
 import {FullscreenWidget} from '@deck.gl/widgets';
 import '@deck.gl/widgets/stylesheet.css';
 
-import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 
 const INITIAL_VIEW_STATE = {
@@ -24,9 +24,9 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = new Tile3DSourceLayer({
+    const layers = new SourceLayer({
       data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
-      loader: I3SLoader,
+      loaders: [I3SLoader],
       loadOptions
     });
     return layers;

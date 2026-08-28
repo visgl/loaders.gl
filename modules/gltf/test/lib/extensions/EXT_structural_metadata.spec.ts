@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable camelcase */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {decodeExtensions, encodeExtensions} from '../../../src/lib/api/gltf-extensions';
 import {
   GLTFScenegraph,
@@ -11,8 +10,7 @@ import {
   type PropertyAttribute,
   GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/gltf';
-
-test('gltf#EXT_structural_metadata - Should decode', async t => {
+test('gltf#EXT_structural_metadata - Should decode', async () => {
   const binaryBufferData = [
     0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 33, 223, 70, 43, 39,
     58, 199, 113, 55, 81, 71, 94, 21, 60, 71, 154, 68, 219, 198, 113, 55, 81, 199, 183, 210, 225,
@@ -106,10 +104,8 @@ test('gltf#EXT_structural_metadata - Should decode', async t => {
       }
     }
   };
-
   const options = {gltf: {loadImages: true, loadBuffers: true}};
   await decodeExtensions(GLTF_WITH_EXTENSION, options);
-
   const expectedJson = {
     extensionsUsed: ['EXT_structural_metadata', 'EXT_mesh_features'],
     buffers: [{byteLength: 126}],
@@ -190,12 +186,9 @@ test('gltf#EXT_structural_metadata - Should decode', async t => {
       }
     }
   };
-
   // Modifies input
-  t.deepEqual(GLTF_WITH_EXTENSION.json, expectedJson);
-  t.end();
+  expect(GLTF_WITH_EXTENSION.json).toEqual(expectedJson);
 });
-
 const ATTRIBUTES: PropertyAttribute[] = [
   {
     name: 'OBJECTID',
@@ -221,7 +214,6 @@ const ATTRIBUTES: PropertyAttribute[] = [
     values: [31.46, 31.49, 31.49, 31.49]
   }
 ];
-
 const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
   asset: {
     version: '2.0',
@@ -287,54 +279,42 @@ const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
     {buffer: 0, byteOffset: 88, byteLength: 32}
   ]
 };
-
-test('gltf#EXT_structural_metadata - Should encode', async t => {
+test('gltf#EXT_structural_metadata - Should encode', async () => {
   const scenegraph = new GLTFScenegraph();
   const tableIndex = createExtStructuralMetadata(scenegraph, ATTRIBUTES);
   const gltfBin = encodeExtensions(scenegraph.gltf, {});
   const scenegraph1 = new GLTFScenegraph(gltfBin);
   scenegraph1.createBinaryChunk();
-
-  t.equal(tableIndex, 0);
-  t.equal(scenegraph1.gltf.buffers[0].byteLength, 120);
-
-  t.deepEqual(
-    JSON.stringify(scenegraph1.gltf.json),
+  expect(tableIndex).toBe(0);
+  expect(scenegraph1.gltf.buffers[0].byteLength).toBe(120);
+  expect(JSON.stringify(scenegraph1.gltf.json)).toEqual(
     JSON.stringify(EXPECTED_GLTF_JSON_WITH_EXTENSION)
   );
-  t.end();
 });
-
-test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async t => {
+test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async () => {
   const scenegraph = new GLTFScenegraph();
   createExtStructuralMetadata(scenegraph, ATTRIBUTES);
   const gltfBin = encodeExtensions(scenegraph.gltf, {});
-
   const scenegraph1 = new GLTFScenegraph(gltfBin);
   scenegraph1.createBinaryChunk();
-
   const options = {gltf: {loadImages: true, loadBuffers: true}};
   await decodeExtensions(scenegraph1.gltf, options);
-
   const scenegraph2 = new GLTFScenegraph(scenegraph1.gltf);
   scenegraph2.createBinaryChunk();
-
   for (const attr of ATTRIBUTES) {
     const name = attr.name;
     const ext = scenegraph2.gltf.json.extensions
       ?.EXT_structural_metadata as GLTF_EXT_structural_metadata_GLTF;
     const data = ext.propertyTables?.[0].properties?.[name].data;
     if (ext.schema?.classes?.schemaClassId.properties[name].type === 'STRING') {
-      t.deepEqual(JSON.stringify(data), JSON.stringify(attr.values));
+      expect(JSON.stringify(data)).toEqual(JSON.stringify(attr.values));
     } else {
       const dataArray: number[] = [...(data as any)];
-      t.deepEqual(JSON.stringify(dataArray), JSON.stringify(attr.values));
+      expect(JSON.stringify(dataArray)).toEqual(JSON.stringify(attr.values));
     }
   }
-  t.end();
 });
-
-test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async t => {
+test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async () => {
   // 3 features with variable-length string arrays
   // Feature 0: ["hello", "world"] (2 strings)
   // Feature 1: [] (0 strings)
@@ -344,7 +324,6 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
   // - values: "helloworldfoobar" (16 bytes)
   // - stringOffsets (UINT8): [0, 5, 10, 13, 16] (5 bytes)
   // - arrayOffsets (UINT8): [0, 2, 2, 4] (4 bytes)
-
   const binaryBufferData = [
     // values: "helloworldfoobar" (offset 0, length 16)
     104,
@@ -375,7 +354,6 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
     2,
     4
   ];
-
   const GLTF_WITH_STRING_ARRAY = {
     buffers: [
       {
@@ -428,19 +406,15 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
       }
     }
   };
-
   const options = {gltf: {loadImages: true, loadBuffers: true}};
   await decodeExtensions(GLTF_WITH_STRING_ARRAY, options);
-
   const ext = GLTF_WITH_STRING_ARRAY.json.extensions
     .EXT_structural_metadata as GLTF_EXT_structural_metadata_GLTF;
   const tagsData = ext.propertyTables?.[0].properties?.tags.data;
-
   // Verify variable-length string arrays are correctly decoded
-  t.deepEqual(
-    tagsData,
-    [['hello', 'world'], [], ['foo', 'bar']],
-    'Variable-length string arrays decoded correctly'
-  );
-  t.end();
+  expect(tagsData, 'Variable-length string arrays decoded correctly').toEqual([
+    ['hello', 'world'],
+    [],
+    ['foo', 'bar']
+  ]);
 });

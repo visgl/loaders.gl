@@ -3,12 +3,10 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {TableVectorTileSource, TableTileSourceLoaderOptions} from '@loaders.gl/mvt';
-
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
-
 const TEST_CASES = [
   {
     inputFile: 'us-states.json',
@@ -55,50 +53,35 @@ const TEST_CASES = [
     options: {indexMaxZoom: 0, generateId: true}
   }
 ];
-
-test('GeoJSONVT#full tiling test', async t => {
+test('GeoJSONVT#full tiling test', async () => {
   for (const tc of TEST_CASES) {
     const {inputFile, expectedFile, options} = tc;
     const parsedGeojson = await getJSON(inputFile);
     const tiles = await genTiles(parsedGeojson, options);
-
     // fs.writeFileSync(path.join(__dirname, '/fixtures/' + expectedFile), JSON.stringify(tiles));
-    t.same(
-      tiles,
-      await getJSON(expectedFile),
-      `Tiling ${inputFile}: ${expectedFile.replace('-tiles.json', '')}`
+    expect(tiles, `Tiling ${inputFile}: ${expectedFile.replace('-tiles.json', '')}`).toEqual(
+      await getJSON(expectedFile)
     );
   }
-
-  t.end();
 });
-
-test('GeoJSONVT#throws on invalid GeoJSON', async t => {
-  await t.rejects(async () => {
+test('GeoJSONVT#throws on invalid GeoJSON', async () => {
+  await await expect(async () => {
     await genTiles({type: 'Pologon'});
-  });
-  t.end();
+  }).rejects.toBeDefined();
 });
-
-test('GeoJSONVT#empty geojson', async t => {
-  t.same({}, await genTiles(await getJSON('empty.json')));
-  t.end();
+test('GeoJSONVT#empty geojson', async () => {
+  expect({}).toEqual(await genTiles(await getJSON('empty.json')));
 });
-
-test('GeoJSONVT#null geometry', async t => {
+test('GeoJSONVT#null geometry', async () => {
   // should ignore features with null geometry
-  t.same({}, await genTiles(await getJSON('feature-null-geometry.json')));
-  t.end();
+  expect({}).toEqual(await genTiles(await getJSON('feature-null-geometry.json')));
 });
-
 // Helpers
-
 async function getJSON(name) {
   const response = await fetchFile(`${DATA_PATH}/${name}`);
   const json = await response.json();
   return json;
 }
-
 /** Generate tiles for a GeoJSON files */
 async function genTiles(
   data,
@@ -114,7 +97,6 @@ async function genTiles(
     'MultiPolygon',
     'GeometryCollection'
   ].includes(geojsonType);
-
   if (
     data?.shape !== 'geojson-table' &&
     !Array.isArray(data?.features) &&
@@ -153,9 +135,7 @@ async function genTiles(
     )
   });
   await source.ready;
-
   const output = {};
-
   for (const id in source.tiles) {
     const tile = source.tiles[id];
     const protoFeatures =
@@ -171,6 +151,5 @@ async function genTiles(
       id: feature.id
     }));
   }
-
   return output;
 }

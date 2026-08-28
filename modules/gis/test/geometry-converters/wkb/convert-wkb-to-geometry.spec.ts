@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import type {Test} from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {earcut} from '@math.gl/polygon';
 import {
@@ -39,7 +38,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   return value;
 }
 
-test('convertWKBToBinaryGeometry#2D', async t => {
+test('convertWKBToBinaryGeometry#2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -47,50 +46,46 @@ test('convertWKBToBinaryGeometry#2D', async t => {
   for (const [title, testCase] of Object.entries(TEST_CASES2)) {
     // Little endian
     if (testCase.wkb && testCase.binary) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(2D)');
+      expect(isWKB(testCase.wkb)).toBe(true);
       const result = convertWKBToBinaryGeometry(testCase.wkb);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(2D)');
+      expect(isWKB(testCase.wkbXdr)).toBe(true);
       const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
   }
-
-  t.end();
 });
 
-test('convertWKBToBinaryGeometry#Z', async t => {
+test('convertWKBToBinaryGeometry#Z', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
   for (const [title, testCase] of Object.entries(TEST_CASES)) {
     // Little endian
     if (testCase.wkb && testCase.binary) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(Z)');
+      expect(isWKB(testCase.wkb)).toBe(true);
       const result = convertWKBToBinaryGeometry(testCase.wkb);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(Z)');
+      expect(isWKB(testCase.wkbXdr)).toBe(true);
       const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
     //   t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
     // }
   }
-
-  t.end();
 });
 
-test('convertWKBToGeometry#GeometryCollection 2D', async t => {
+test('convertWKBToGeometry#GeometryCollection 2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const testCases = parseTestCases(await response.json());
 
@@ -100,20 +95,22 @@ test('convertWKBToGeometry#GeometryCollection 2D', async t => {
     }
 
     if (testCase.wkb) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(GeometryCollection 2D)');
-      t.deepEqual(convertWKBToGeometry(testCase.wkb), testCase.geoJSON, `${title} little endian`);
+      expect(isWKB(testCase.wkb)).toBe(true);
+      expect(convertWKBToGeometry(testCase.wkb), `${title} little endian`).toEqual(
+        testCase.geoJSON
+      );
     }
 
     if (testCase.wkbXdr) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(GeometryCollection 2D XDR)');
-      t.deepEqual(convertWKBToGeometry(testCase.wkbXdr), testCase.geoJSON, `${title} big endian`);
+      expect(isWKB(testCase.wkbXdr)).toBe(true);
+      expect(convertWKBToGeometry(testCase.wkbXdr), `${title} big endian`).toEqual(
+        testCase.geoJSON
+      );
     }
   }
-
-  t.end();
 });
 
-test('convertWKBToGeometry#GeometryCollection Z', async t => {
+test('convertWKBToGeometry#GeometryCollection Z', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const testCases = parseTestCases(await response.json());
 
@@ -123,20 +120,22 @@ test('convertWKBToGeometry#GeometryCollection Z', async t => {
     }
 
     if (testCase.wkb) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(GeometryCollection Z)');
-      t.deepEqual(convertWKBToGeometry(testCase.wkb), testCase.geoJSON, `${title} little endian`);
+      expect(isWKB(testCase.wkb)).toBe(true);
+      expect(convertWKBToGeometry(testCase.wkb), `${title} little endian`).toEqual(
+        testCase.geoJSON
+      );
     }
 
     if (testCase.wkbXdr) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(GeometryCollection Z XDR)');
-      t.deepEqual(convertWKBToGeometry(testCase.wkbXdr), testCase.geoJSON, `${title} big endian`);
+      expect(isWKB(testCase.wkbXdr)).toBe(true);
+      expect(convertWKBToGeometry(testCase.wkbXdr), `${title} big endian`).toEqual(
+        testCase.geoJSON
+      );
     }
   }
-
-  t.end();
 });
 
-test('triangulateWKB#2D matches GeoJSON earcut path', async t => {
+test('triangulateWKB#2D matches GeoJSON earcut path', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const testCases = parseTestCases(await response.json());
 
@@ -144,18 +143,16 @@ test('triangulateWKB#2D matches GeoJSON earcut path', async t => {
     const testCase = testCases[title];
 
     if (testCase.wkb) {
-      assertTriangulateWKBMatchesEarcutInputs(t, testCase.wkb, `${title} little endian`);
+      assertTriangulateWKBMatchesEarcutInputs(testCase.wkb, `${title} little endian`);
     }
 
     if (testCase.wkbXdr) {
-      assertTriangulateWKBMatchesEarcutInputs(t, testCase.wkbXdr, `${title} big endian`);
+      assertTriangulateWKBMatchesEarcutInputs(testCase.wkbXdr, `${title} big endian`);
     }
   }
-
-  t.end();
 });
 
-test('triangulateWKB#Z uses XY coordinates', async t => {
+test('triangulateWKB#Z uses XY coordinates', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const testCases = parseTestCases(await response.json());
 
@@ -163,18 +160,16 @@ test('triangulateWKB#Z uses XY coordinates', async t => {
     const testCase = testCases[title];
 
     if (testCase.wkb) {
-      assertTriangulateWKBMatchesEarcutInputs(t, testCase.wkb, `${title} Z little endian`);
+      assertTriangulateWKBMatchesEarcutInputs(testCase.wkb, `${title} Z little endian`);
     }
 
     if (testCase.wkbXdr) {
-      assertTriangulateWKBMatchesEarcutInputs(t, testCase.wkbXdr, `${title} Z big endian`);
+      assertTriangulateWKBMatchesEarcutInputs(testCase.wkbXdr, `${title} Z big endian`);
     }
   }
-
-  t.end();
 });
 
-test('triangulateWKB#M and ZM use XY coordinates', t => {
+test('triangulateWKB#M and ZM use XY coordinates', () => {
   const polygon = {
     type: 'Polygon' as const,
     coordinates: [
@@ -188,40 +183,96 @@ test('triangulateWKB#M and ZM use XY coordinates', t => {
     ]
   };
 
+  assertTriangulateWKBMatchesEarcutInputs(convertGeometryToWKB(polygon, {hasM: true}), 'polygon M');
   assertTriangulateWKBMatchesEarcutInputs(
-    t,
-    convertGeometryToWKB(polygon, {hasM: true}),
-    'polygon M'
-  );
-  assertTriangulateWKBMatchesEarcutInputs(
-    t,
     convertGeometryToWKB(polygon, {hasZ: true, hasM: true}),
     'polygon ZM'
   );
-
-  t.end();
 });
 
-test('triangulateWKB#rejects non-polygon geometry', async t => {
+test('triangulateWKB#uses the indexed path for large polygons', () => {
+  const ring: Position[] = [];
+  for (let index = 0; index < 100; index++) {
+    const angle = (index / 100) * Math.PI * 2;
+    const radius = index % 2 === 0 ? 10 : 7;
+    ring.push([Math.cos(angle) * radius, Math.sin(angle) * radius]);
+  }
+  ring.push([...ring[0]]);
+
+  const wkb = convertGeometryToWKB({type: 'Polygon', coordinates: [ring]});
+  assertTriangulateWKBMatchesEarcutInputs(wkb, 'large star polygon');
+
+  const firstTriangles = triangulateWKB(wkb);
+  const secondTriangles = triangulateWKB(new Uint8Array(wkb));
+  expect(firstTriangles).toHaveLength(98 * 3);
+  expect(secondTriangles).toEqual(firstTriangles);
+});
+
+test('triangulateWKB#handles empty and degenerate polygons', () => {
+  const emptyPolygon = convertGeometryToWKB({type: 'Polygon', coordinates: []});
+  const degeneratePolygon = convertGeometryToWKB({
+    type: 'Polygon',
+    coordinates: [[[0, 0]]]
+  });
+
+  expect(triangulateWKB(emptyPolygon)).toEqual([]);
+  expect(triangulateWKB(degeneratePolygon)).toEqual([]);
+});
+
+test('triangulateWKB#handles EWKB SRID metadata without changing indices', () => {
+  const polygon = {
+    type: 'Polygon' as const,
+    coordinates: [
+      [
+        [0, 0],
+        [4, 0],
+        [4, 4],
+        [0, 4],
+        [0, 0]
+      ]
+    ]
+  };
+  const plain = triangulateWKB(convertGeometryToWKB(polygon));
+  const withSrid = triangulateWKB(convertGeometryToWKB(polygon, {wkb: {srid: 4326}}));
+  expect(withSrid).toEqual(plain);
+});
+
+test('triangulateWKB#rejects invalid multipolygon children', () => {
+  const bytes = new Uint8Array(
+    convertGeometryToWKB({
+      type: 'MultiPolygon',
+      coordinates: [
+        [
+          [
+            [0, 0],
+            [1, 0],
+            [0, 1],
+            [0, 0]
+          ]
+        ]
+      ]
+    })
+  );
+  bytes[10] = 2;
+
+  expect(() => triangulateWKB(bytes)).toThrow(/must be Polygon geometries/);
+});
+
+test('triangulateWKB#rejects non-polygon geometry', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const testCases = parseTestCases(await response.json());
 
-  t.throws(
-    () => triangulateWKB(testCases.lineString.wkb),
-    /Expected Polygon or MultiPolygon/,
-    'rejects LineString WKB'
+  expect(() => triangulateWKB(testCases.lineString.wkb)).toThrow(
+    /Expected Polygon or MultiPolygon/
   );
-
-  t.end();
 });
 
 /**
  * Verifies direct WKB triangulation against the existing GeoJSON-to-earcut path.
- * @param t Tape assertion context.
  * @param wkb WKB input.
  * @param title Assertion title.
  */
-function assertTriangulateWKBMatchesEarcutInputs(t: Test, wkb: ArrayBuffer, title: string): void {
+function assertTriangulateWKBMatchesEarcutInputs(wkb: ArrayBuffer, title: string): void {
   const inputs = getGeometryEarcutInputs(convertWKBToGeometry(wkb));
   const expectedTriangles = inputs.flatMap(input =>
     earcut(input.positions, input.holeIndices, input.dimensions).map(
@@ -230,7 +281,7 @@ function assertTriangulateWKBMatchesEarcutInputs(t: Test, wkb: ArrayBuffer, titl
   );
   const triangles = triangulateWKB(wkb);
 
-  t.deepEqual(triangles, expectedTriangles, `${title} triangles match GeoJSON earcut`);
+  expect(triangles, `${title} triangles match GeoJSON earcut`).toEqual(expectedTriangles);
 }
 
 /**

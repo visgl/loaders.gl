@@ -4,6 +4,7 @@
 
 import type {DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {TilesetSpatialReference} from '../spatial/spatial-types';
 
 /**
  * An accessor-like description for point cloud attributes.
@@ -34,6 +35,10 @@ export type PointCloudTileContent = {
   coordinateSystem: PointCloudCoordinateSystem;
   constantRGBA?: number[];
   modelMatrix?: number[] | Float32Array;
+  /** Spatial descriptor for returned points, origins, and bounds. */
+  spatialReference?: TilesetSpatialReference;
+  /** Content bound expressed in the selected spatial output frame. */
+  spatialBoundingVolume?: PointCloudBoundingVolume;
 };
 
 /**
@@ -41,8 +46,14 @@ export type PointCloudTileContent = {
  */
 export type PointCloudBoundingVolume = {
   cartographicBounds: [min: number[], max: number[]];
+  /** True when the longitude interval crosses the antimeridian. */
+  wrapsDateline?: boolean;
+  /** True when the longitude interval covers the full globe. */
+  coversFullLongitude?: boolean;
   center: number[];
   radius: number;
+  /** Broad coordinate frame of `center` and `cartographicBounds`. */
+  coordinateFrame?: 'geographic' | 'cartesian';
 };
 
 /**
@@ -54,6 +65,12 @@ export type PointCloudTileHeader = {
   pointCount: number;
   geometricError: number;
   boundingVolume: PointCloudBoundingVolume;
+  /** Bound expressed in the selected content/output frame; traversal retains geographic bounds. */
+  spatialBoundingVolume?: PointCloudBoundingVolume;
+  /** I3S LOD metric used to decide whether this node refines. */
+  lodSelectionMetricType?: 'maxScreenThresholdSQ' | 'density-threshold';
+  /** Source-provided LOD threshold for density or screen metrics. */
+  lodThreshold?: number;
 };
 
 /**

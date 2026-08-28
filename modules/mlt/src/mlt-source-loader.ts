@@ -243,11 +243,13 @@ export function getURLFromTemplate(
   }
 
   // If template already contains an extension (e.g. ".mvt"), don't double-append.
-  const path = url.split(/[?#]/, 1)[0];
+  const separatorIndex = url.search(/[?#]/);
+  const path = separatorIndex < 0 ? url : url.slice(0, separatorIndex);
+  const suffix = separatorIndex < 0 ? '' : url.slice(separatorIndex);
   const file = path.split('/').pop() || '';
   if (/\.[a-z0-9]+$/i.test(file)) {
     return url;
   }
 
-  return `${url}${extension}`;
+  return `${path}${extension}${suffix}`;
 }

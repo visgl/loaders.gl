@@ -45,19 +45,26 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
 /**
  * this function expects that the worker function sends certain messages,
  * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
+ * @param loader Loader metadata used to select the worker pool.
+ * @param data Input transferred to the worker.
+ * @param options Loader and worker options.
+ * @param context Serializable loader context.
+ * @param parseOnMainThread Callback for worker requests that must run on the calling thread.
+ * @param signal Optional cancellation signal for this worker job.
  */
 export async function parseWithWorker(
   loader: Loader,
   data: any,
   options?: StrictLoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: ParseOnMainThread
+  parseOnMainThread?: ParseOnMainThread,
+  signal?: AbortSignal
 ) {
-  const signal = getWorkerAbortSignal(options);
+  const workerSignal = signal || getWorkerAbortSignal(options);
   const result = await processOnWorker(
     loader,
     data,
-    {...getWorkerOptions(options), signal},
+    {...getWorkerOptions(options), signal: workerSignal},
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {

@@ -1,22 +1,19 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
-
 import {loadExplicitBitstream} from '../../../../src/lib/parsers/helpers/parse-3d-tile-subtree';
 import {Subtree, Availability} from '../../../../src/types';
 import {LoaderContext} from '@loaders.gl/loader-utils';
-
 const context = (): LoaderContext => ({
   fetch,
   coreApi,
   _parse: async arrayBuffer => arrayBuffer,
   baseUrl: 'fake/url'
 });
-
-test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', async t => {
+test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', async () => {
   const tileAvailability: Availability = {bitstream: 0};
   const subtree: Subtree = {
     buffers: [
@@ -37,15 +34,11 @@ test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', 
     childSubtreeAvailability: {constant: 0}
   };
   const internalBinaryBuffer = new Uint8Array([255]);
-
-  t.deepEqual(tileAvailability.explicitBitstream, undefined);
-
+  expect(tileAvailability.explicitBitstream).toEqual(undefined);
   await loadExplicitBitstream(subtree, tileAvailability, internalBinaryBuffer, context());
-
-  t.deepEqual(tileAvailability.explicitBitstream, new Uint8Array([255]));
+  expect(tileAvailability.explicitBitstream).toEqual(new Uint8Array([255]));
 });
-
-test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', async t => {
+test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', async () => {
   const tileAvailability: Availability = {bitstream: 0};
   const contentAvailability: Availability = {bitstream: 1};
   const subtree: Subtree = {
@@ -76,27 +69,20 @@ test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', a
     childSubtreeAvailability: {constant: 0}
   };
   const internalBinaryBuffer = new Uint8Array([255, 128]);
-
-  t.deepEqual(tileAvailability.explicitBitstream, undefined);
-  t.deepEqual(contentAvailability.explicitBitstream, undefined);
-
+  expect(tileAvailability.explicitBitstream).toEqual(undefined);
+  expect(contentAvailability.explicitBitstream).toEqual(undefined);
   await loadExplicitBitstream(subtree, tileAvailability, internalBinaryBuffer, context());
-  t.deepEqual(tileAvailability.explicitBitstream, new Uint8Array([255]));
-
+  expect(tileAvailability.explicitBitstream).toEqual(new Uint8Array([255]));
   await loadExplicitBitstream(subtree, contentAvailability, internalBinaryBuffer, context());
-  t.deepEqual(contentAvailability.explicitBitstream, new Uint8Array([128]));
+  expect(contentAvailability.explicitBitstream).toEqual(new Uint8Array([128]));
 });
-
-test('loadExplicitBitstream ignores omitted optional availability', async t => {
+test('loadExplicitBitstream ignores omitted optional availability', async () => {
   const subtree: Subtree = {
     buffers: [],
     bufferViews: [],
     tileAvailability: {constant: 1},
     childSubtreeAvailability: {constant: 0}
   };
-
   await loadExplicitBitstream(subtree, undefined, new ArrayBuffer(0), context());
-
-  t.pass('does not require optional content availability');
-  t.end();
+  expect(true, 'does not require optional content availability').toBe(true);
 });

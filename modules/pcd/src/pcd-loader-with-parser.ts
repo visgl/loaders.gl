@@ -4,6 +4,7 @@
 
 import {
   concatenateArrayBuffersAsync,
+  makeTableScanBatch,
   type Loader,
   type LoaderOptions,
   type LoaderWithParser
@@ -131,13 +132,7 @@ function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch
     return convertPCDTableToMesh(table, mesh);
   }
 
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: table.schema,
-    data: table.data,
-    length: table.data.numRows
-  };
+  return makeTableScanBatch(table);
 }
 
 /** Convert the parser's Arrow table to legacy PCD mesh output. */

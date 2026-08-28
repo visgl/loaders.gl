@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {SplatEngine} from '../src/splat/splat-engine';
 import {
   SPLAT_COMPUTE_F32_PARAM_COUNT,
@@ -25,7 +28,6 @@ import {
   SPLAT_TILE_RADIX_WORKGROUP_SIZE,
   SPLAT_TILE_SIZE_PIXELS
 } from '../src/splat/splat-sort';
-
 /** Creates a minimal Gaussian splat Arrow table. */
 function createGaussianSplatTable(): arrow.Table {
   return arrow.tableFromArrays({
@@ -46,7 +48,6 @@ function createGaussianSplatTable(): arrow.Table {
     rot_3: [0, 0]
   });
 }
-
 /** Creates a minimal WebGPU-like device for SplatEngine state tests. */
 function createTestDevice() {
   return {
@@ -64,60 +65,52 @@ function createTestDevice() {
     }
   } as any;
 }
-
-test('splat-data extracts shared Gaussian splat columns', t => {
+test('splat-data extracts shared Gaussian splat columns', () => {
   const data = getGaussianSplatDataFromArrowTable(createGaussianSplatTable());
-
-  t.equal(data.length, 2, 'extracts row count');
-  t.deepEqual(Array.from(data.positions), [0, 0, -2, 1, 2, -1], 'extracts positions');
-  t.deepEqual(Array.from(data.rotations), [1, 0, 0, 0, 1, 0, 0, 0], 'extracts rotations');
-  t.equal(data.radii[0], 3, 'decodes log scale support radius');
-  t.ok(Math.abs(data.opacities[0] - 0.5) < 1e-6, 'decodes logit opacity');
-  t.deepEqual(Array.from(data.colors.slice(0, 4)), [128, 128, 128, 128], 'derives color');
-  t.end();
+  expect(data.length, 'extracts row count').toBe(2);
+  expect(Array.from(data.positions), 'extracts positions').toEqual([0, 0, -2, 1, 2, -1]);
+  expect(Array.from(data.rotations), 'extracts rotations').toEqual([1, 0, 0, 0, 1, 0, 0, 0]);
+  expect(data.radii[0], 'decodes log scale support radius').toBe(3);
+  expect(Math.abs(data.opacities[0] - 0.5) < 1e-6, 'decodes logit opacity').toBeTruthy();
+  expect(Array.from(data.colors.slice(0, 4)), 'derives color').toEqual([128, 128, 128, 128]);
 });
-
-test('splat-data reports missing required columns', t => {
+test('splat-data reports missing required columns', () => {
   const table = arrow.tableFromArrays({
     POSITION: [[0, 0, 0]]
   });
-
-  t.throws(
+  expect(
     () => getGaussianSplatDataFromArrowTable(table),
-    /SplatLayer requires a scale_0 column/,
     'throws a clear error for missing required columns'
-  );
-  t.end();
+  ).toThrow(/SplatLayer requires a scale_0 column/);
 });
-
-test('splat-sort exposes radix constants and key packing', t => {
+test('splat-sort exposes radix constants and key packing', () => {
   const nearKey = packSplatDepthKey(0, {depthMin: 0, depthMax: 10});
   const farKey = packSplatDepthKey(10, {depthMin: 0, depthMax: 10});
   const byteLengths = getSplatTransientBufferByteLengths(2);
-
-  t.equal(SPLAT_RADIX_BUCKETS, 16, 'uses 4-bit radix buckets');
-  t.equal(SPLAT_RADIX_PASS_COUNT, 8, 'uses eight radix passes');
-  t.ok(farKey < nearKey, 'farther depth sorts before nearer depth');
-  t.equal(byteLengths.indices, 8, 'allocates one u32 per index');
-  t.equal(byteLengths.projected, 64, 'allocates two vec4<f32> entries per projected splat');
-  t.end();
+  expect(SPLAT_RADIX_BUCKETS, 'uses 4-bit radix buckets').toBe(16);
+  expect(SPLAT_RADIX_PASS_COUNT, 'uses eight radix passes').toBe(8);
+  expect(farKey < nearKey, 'farther depth sorts before nearer depth').toBeTruthy();
+  expect(byteLengths.indices, 'allocates one u32 per index').toBe(8);
+  expect(byteLengths.projected, 'allocates two vec4<f32> entries per projected splat').toBe(64);
 });
-
-test('splat-covariance projects identity rotation to axis-aligned ellipse', t => {
+test('splat-covariance projects identity rotation to axis-aligned ellipse', () => {
   const covariance = projectSplatCovarianceToScreen({
     position: [0, 0, 0],
     scale: [2, 1, 0],
     rotation: [1, 0, 0, 0],
     viewportSize: [100, 100]
   });
-
-  t.ok(Math.abs(Math.abs(covariance.axis0[0]) - 100) < 1e-6, 'projects major axis horizontally');
-  t.ok(Math.abs(covariance.axis0[1]) < 1e-6, 'keeps horizontal major axis aligned');
-  t.ok(Math.abs(covariance.maxAxisPixels - 100) < 1e-6, 'reports major one-sigma axis length');
-  t.end();
+  expect(
+    Math.abs(Math.abs(covariance.axis0[0]) - 100) < 1e-6,
+    'projects major axis horizontally'
+  ).toBeTruthy();
+  expect(Math.abs(covariance.axis0[1]) < 1e-6, 'keeps horizontal major axis aligned').toBeTruthy();
+  expect(
+    Math.abs(covariance.maxAxisPixels - 100) < 1e-6,
+    'reports major one-sigma axis length'
+  ).toBeTruthy();
 });
-
-test('splat-covariance applies quaternion rotation to ellipse axes', t => {
+test('splat-covariance applies quaternion rotation to ellipse axes', () => {
   const angle = Math.PI / 2;
   const covariance = projectSplatCovarianceToScreen({
     position: [0, 0, 0],
@@ -125,30 +118,27 @@ test('splat-covariance applies quaternion rotation to ellipse axes', t => {
     rotation: [Math.cos(angle / 2), 0, 0, Math.sin(angle / 2)],
     viewportSize: [100, 100]
   });
-
-  t.ok(Math.abs(covariance.axis0[0]) < 1e-6, 'rotates major axis away from screen x');
-  t.ok(
+  expect(
+    Math.abs(covariance.axis0[0]) < 1e-6,
+    'rotates major axis away from screen x'
+  ).toBeTruthy();
+  expect(
     Math.abs(Math.abs(covariance.axis0[1]) - 100) < 1e-6,
     'projects rotated major axis vertically'
-  );
-  t.end();
+  ).toBeTruthy();
 });
-
-test('splat-covariance returns finite axes for degenerate scale', t => {
+test('splat-covariance returns finite axes for degenerate scale', () => {
   const covariance = projectSplatCovarianceToScreen({
     position: [0, 0, 0],
     scale: [0, 0, 0],
     rotation: [0, 0, 0, 0],
     viewportSize: [100, 100]
   });
-
-  t.ok(Number.isFinite(covariance.axis0[0]), 'returns finite axis0 x');
-  t.ok(Number.isFinite(covariance.axis1[1]), 'returns finite axis1 y');
-  t.ok(covariance.maxAxisPixels > 0, 'returns a non-zero fallback axis length');
-  t.end();
+  expect(Number.isFinite(covariance.axis0[0]), 'returns finite axis0 x').toBeTruthy();
+  expect(Number.isFinite(covariance.axis1[1]), 'returns finite axis1 y').toBeTruthy();
+  expect(covariance.maxAxisPixels > 0, 'returns a non-zero fallback axis length').toBeTruthy();
 });
-
-test('splat-covariance remains finite under perspective projection', t => {
+test('splat-covariance remains finite under perspective projection', () => {
   const covariance = projectSplatCovarianceToScreen({
     position: [0, 0, -2],
     scale: [1, 1, 1],
@@ -156,13 +146,10 @@ test('splat-covariance remains finite under perspective projection', t => {
     modelViewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0],
     viewportSize: [200, 100]
   });
-
-  t.ok(Number.isFinite(covariance.axis0[0]), 'returns finite projected axis');
-  t.ok(covariance.maxAxisPixels > 0, 'returns positive projected axis length');
-  t.end();
+  expect(Number.isFinite(covariance.axis0[0]), 'returns finite projected axis').toBeTruthy();
+  expect(covariance.maxAxisPixels > 0, 'returns positive projected axis length').toBeTruthy();
 });
-
-test('splat-covariance applies 2D kernel inflation and screen-size clamp', t => {
+test('splat-covariance applies 2D kernel inflation and screen-size clamp', () => {
   const inflated = projectSplatCovarianceToScreen({
     position: [0, 0, 0],
     scale: [0, 0, 0],
@@ -177,13 +164,13 @@ test('splat-covariance applies 2D kernel inflation and screen-size clamp', t => 
     viewportSize: [100, 100],
     maxScreenSpaceSplatSize: 10
   });
-
-  t.ok(inflated.maxAxisPixels >= 0.5, 'inflates degenerate covariance by kernel size');
-  t.equal(clamped.maxAxisPixels, 10, 'clamps oversized screen-space covariance');
-  t.end();
+  expect(
+    inflated.maxAxisPixels >= 0.5,
+    'inflates degenerate covariance by kernel size'
+  ).toBeTruthy();
+  expect(clamped.maxAxisPixels, 'clamps oversized screen-space covariance').toBe(10);
 });
-
-test('SplatEngine exposes oriented projected data and visibility', t => {
+test('SplatEngine exposes oriented projected data and visibility', () => {
   const engine = new SplatEngine(createTestDevice(), {
     sortMode: 'global',
     alphaCutoff: 0,
@@ -194,23 +181,24 @@ test('SplatEngine exposes oriented projected data and visibility', t => {
   });
   engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
   engine.update({viewportSize: [100, 100], radiusScale: 1});
-
   const projected = engine.getProjectedDataForTesting(0);
-  t.equal(engine.getRenderSplatCount(), 2, 'renders visible splats through compact index buffer');
-  t.deepEqual(projected.axis0, [50, 0], 'stores first one-sigma screen axis');
-  t.deepEqual(projected.axis1, [0, 50], 'stores second one-sigma screen axis');
-  t.equal(projected.maxAxisPixels, 50, 'stores maximum one-sigma screen axis length');
-  t.equal(projected.visible, 1, 'marks visible splat');
-
+  expect(engine.getRenderSplatCount(), 'renders visible splats through compact index buffer').toBe(
+    2
+  );
+  expect(projected.axis0, 'stores first one-sigma screen axis').toEqual([50, 0]);
+  expect(projected.axis1, 'stores second one-sigma screen axis').toEqual([expect.any(Number), 50]);
+  expect(Math.abs(projected.axis1[0]), 'stores a zero horizontal component').toBe(0);
+  expect(projected.maxAxisPixels, 'stores maximum one-sigma screen axis length').toBe(50);
+  expect(projected.visible, 'marks visible splat').toBe(1);
   engine.setProps({screenSizeCutoffPixels: 200});
   engine.update({viewportSize: [100, 100], radiusScale: 1});
-  t.equal(engine.getProjectedDataForTesting(0).visible, 0, 'applies rendered ellipse size cutoff');
-  t.equal(engine.getRenderSplatCount(), 1, 'removes culled splats from render count');
+  expect(engine.getProjectedDataForTesting(0).visible, 'applies rendered ellipse size cutoff').toBe(
+    0
+  );
+  expect(engine.getRenderSplatCount(), 'removes culled splats from render count').toBe(1);
   engine.destroy();
-  t.end();
 });
-
-test('SplatEngine exposes WebGL binary attributes', t => {
+test('SplatEngine exposes WebGL binary attributes', () => {
   const engine = new SplatEngine({type: 'webgl'} as any, {
     gaussianSupportRadius: 3,
     sortMode: 'global',
@@ -220,25 +208,20 @@ test('SplatEngine exposes WebGL binary attributes', t => {
     maxScreenSpaceSplatSize: 1024
   });
   engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
-
   const webGLAttributes = engine.getWebGLAttributes();
-  t.equal(webGLAttributes.length, 2, 'exposes one rendered object per splat');
-  t.deepEqual(
+  expect(webGLAttributes.length, 'exposes one rendered object per splat').toBe(2);
+  expect(
     Array.from(webGLAttributes.attributes.getPosition.value),
-    [0, 0, -2, 1, 2, -1],
     'exposes interleaved positions'
-  );
-  t.equal(webGLAttributes.attributes.getRadius.value[0], 3, 'exposes decoded radii');
-  t.deepEqual(
+  ).toEqual([0, 0, -2, 1, 2, -1]);
+  expect(webGLAttributes.attributes.getRadius.value[0], 'exposes decoded radii').toBe(3);
+  expect(
     Array.from(webGLAttributes.attributes.getColor.value.slice(0, 4)),
-    [128, 128, 128, 128],
     'exposes unorm8 colors'
-  );
+  ).toEqual([128, 128, 128, 128]);
   engine.destroy();
-  t.end();
 });
-
-test('SplatEngine supports tile-local visible index ordering', t => {
+test('SplatEngine supports tile-local visible index ordering', () => {
   const engine = new SplatEngine(createTestDevice(), {
     sortMode: 'tile',
     alphaCutoff: 0,
@@ -249,41 +232,46 @@ test('SplatEngine supports tile-local visible index ordering', t => {
   });
   engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
   engine.update({viewportSize: [100, 100], radiusScale: 1});
-
-  t.equal(engine.getRenderSplatCount(), 2, 'keeps visible tile-binned splats');
-  t.equal(engine.getSortedIndicesForTesting().length, 2, 'stores compact tile-binned indices');
+  expect(engine.getRenderSplatCount(), 'keeps visible tile-binned splats').toBe(2);
+  expect(engine.getSortedIndicesForTesting().length, 'stores compact tile-binned indices').toBe(2);
   engine.destroy();
-  t.end();
 });
-
-test('splat-sort calculates tile grid and buffer sizes', t => {
+test('splat-sort calculates tile grid and buffer sizes', () => {
   const tileGrid = getSplatTileGrid(1920, 1080);
   const byteLengths = getSplatTileBufferByteLengths(1000, tileGrid);
-
-  t.equal(SPLAT_TILE_SIZE_PIXELS, 16, 'uses 16 pixel default tiles');
-  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 1024, 'reserves 1024 splats per tile workgroup');
-  t.equal(SPLAT_TILE_RADIX_WORKGROUP_SIZE, 256, 'uses 256 lane tile radix workgroups');
-  t.equal(tileGrid.columns, 120, 'calculates tile columns');
-  t.equal(tileGrid.rows, 68, 'calculates tile rows');
-  t.equal(tileGrid.tileCount, 8160, 'calculates tile count');
-  t.equal(byteLengths.tileCounts, 8160 * 4, 'allocates one count per tile');
-  t.equal(byteLengths.tileOffsets, 8161 * 4, 'allocates sentinel tile offset');
-  t.equal(byteLengths.tileIndices, 1000 * 4, 'allocates compacted splat references');
-  t.equal(byteLengths.overflowCount, 4, 'allocates overflow counter');
-  t.equal(byteLengths.overflowIndices, 4, 'allocates at least one overflow slot');
-  t.end();
+  expect(SPLAT_TILE_SIZE_PIXELS, 'uses 16 pixel default tiles').toBe(16);
+  expect(SPLAT_TILE_RADIX_MAX_SPLATS, 'reserves 1024 splats per tile workgroup').toBe(1024);
+  expect(SPLAT_TILE_RADIX_WORKGROUP_SIZE, 'uses 256 lane tile radix workgroups').toBe(256);
+  expect(tileGrid.columns, 'calculates tile columns').toBe(120);
+  expect(tileGrid.rows, 'calculates tile rows').toBe(68);
+  expect(tileGrid.tileCount, 'calculates tile count').toBe(8160);
+  expect(byteLengths.tileCounts, 'allocates one count per tile').toBe(8160 * 4);
+  expect(byteLengths.tileOffsets, 'allocates sentinel tile offset').toBe(8161 * 4);
+  expect(byteLengths.tileIndices, 'allocates compacted splat references').toBe(1000 * 4);
+  expect(byteLengths.overflowCount, 'allocates overflow counter').toBe(4);
+  expect(byteLengths.overflowIndices, 'allocates at least one overflow slot').toBe(4);
 });
-
-test('splat-compute shader exposes projection and tile-sort entry points', t => {
-  t.equal(SPLAT_COMPUTE_WORKGROUP_SIZE, 256, 'uses 256 lane compute workgroups');
-  t.equal(SPLAT_COMPUTE_F32_PARAM_COUNT, 48, 'reserves f32 matrix, viewport, and plane params');
-  t.equal(SPLAT_COMPUTE_U32_PARAM_COUNT, 8, 'reserves u32 count and tile params');
-  t.equal(SPLAT_COMPUTE_PARAM_BYTE_LENGTH, 224, 'packs compute params into one uniform buffer');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn clear('), 'includes clear entry point');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn project('), 'includes project entry point');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn scanTiles('), 'includes tile scan entry point');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn scatterTiles('), 'includes scatter entry point');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn tileSort('), 'includes tile sort entry point');
-  t.ok(SPLAT_COMPUTE_SHADER.includes('fn copySorted('), 'includes sorted copy entry point');
-  t.end();
+test('splat-compute shader exposes projection and tile-sort entry points', () => {
+  expect(SPLAT_COMPUTE_WORKGROUP_SIZE, 'uses 256 lane compute workgroups').toBe(256);
+  expect(SPLAT_COMPUTE_F32_PARAM_COUNT, 'reserves f32 matrix, viewport, and plane params').toBe(48);
+  expect(SPLAT_COMPUTE_U32_PARAM_COUNT, 'reserves u32 count and tile params').toBe(8);
+  expect(SPLAT_COMPUTE_PARAM_BYTE_LENGTH, 'packs compute params into one uniform buffer').toBe(224);
+  expect(SPLAT_COMPUTE_SHADER.includes('fn clear('), 'includes clear entry point').toBeTruthy();
+  expect(SPLAT_COMPUTE_SHADER.includes('fn project('), 'includes project entry point').toBeTruthy();
+  expect(
+    SPLAT_COMPUTE_SHADER.includes('fn scanTiles('),
+    'includes tile scan entry point'
+  ).toBeTruthy();
+  expect(
+    SPLAT_COMPUTE_SHADER.includes('fn scatterTiles('),
+    'includes scatter entry point'
+  ).toBeTruthy();
+  expect(
+    SPLAT_COMPUTE_SHADER.includes('fn tileSort('),
+    'includes tile sort entry point'
+  ).toBeTruthy();
+  expect(
+    SPLAT_COMPUTE_SHADER.includes('fn copySorted('),
+    'includes sorted copy entry point'
+  ).toBeTruthy();
 });

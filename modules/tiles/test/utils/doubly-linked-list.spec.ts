@@ -1,427 +1,317 @@
-// SPDX-License-Identifier: Apache-2.0
-
-// This file is derived from the Cesium code base under Apache 2 license
-// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {DoublyLinkedList} from '../../src/utils/doubly-linked-list';
-
-function expectOrder(t, list, nodes) {
+function expectOrder(list, nodes) {
   // Assumes at least one node is in the list
   const length = nodes.length;
-
-  t.equals(list.length, length);
-
+  expect(list.length).toBe(length);
   // Verify head and tail pointers
-  t.equals(list.head, nodes[0]);
-  t.equals(list.tail, nodes[length - 1]);
-
+  expect(list.head).toBe(nodes[0]);
+  expect(list.tail).toBe(nodes[length - 1]);
   // Verify that linked list has nodes in the expected order
   let node = list.head;
   for (let i = 0; i < length; ++i) {
     const nextNode = i === length - 1 ? null : nodes[i + 1];
     const previousNode = i === 0 ? null : nodes[i - 1];
-
-    t.equals(node, nodes[i]);
-    t.equals(node.next, nextNode);
-    t.equals(node.previous, previousNode);
-
+    expect(node).toBe(nodes[i]);
+    expect(node.next).toBe(nextNode);
+    expect(node.previous).toBe(previousNode);
     node = node.next;
   }
 }
-
-test('DoublyLinkedList#constructs', t => {
+test('DoublyLinkedList#constructs', () => {
   const list = new DoublyLinkedList();
-  t.equals(list.head, null);
-  t.equals(list.head, null);
-  t.equals(list.length, 0);
-
-  t.end();
+  expect(list.head).toBe(null);
+  expect(list.head).toBe(null);
+  expect(list.length).toBe(0);
 });
-
 // eslint-disable-next-line max-statements
-test('DoublyLinkedList#adds items', t => {
+test('DoublyLinkedList#adds items', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
-
   //   node
   //  ^     ^
   //  |     |
   // head  tail
-  t.equals(list.head, node);
-  t.equals(list.tail, node);
-  t.equals(list.length, 1);
-
-  t.ok(node);
-  t.equals(node.item, 1);
-  t.notOk(node.previous);
-  t.notOk(node.next);
-
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node);
+  expect(list.length).toBe(1);
+  expect(node).toBeTruthy();
+  expect(node.item).toBe(1);
+  expect(node.previous).toBeFalsy();
+  expect(node.next).toBeFalsy();
   const node2 = list.add(2);
-
   //  node <-> node2
   //  ^         ^
   //  |         |
   // head      tail
-  t.equals(list.head, node);
-  t.equals(list.tail, node2);
-  t.equals(list.length, 2);
-
-  t.ok(node2);
-  t.equals(node2.item, 2);
-  t.equals(node2.previous, node);
-  t.notOk(node2.next);
-
-  t.equals(node.next, node2);
-
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node2);
+  expect(list.length).toBe(2);
+  expect(node2).toBeTruthy();
+  expect(node2.item).toBe(2);
+  expect(node2.previous).toBe(node);
+  expect(node2.next).toBeFalsy();
+  expect(node.next).toBe(node2);
   const node3 = list.add(3);
-
   //  node <-> node2 <-> node3
   //  ^                    ^
   //  |                    |
   // head                 tail
-  t.equals(list.head, node);
-  t.equals(list.tail, node3);
-  t.equals(list.length, 3);
-
-  t.ok(node3);
-  t.equals(node3.item, 3);
-  t.equals(node3.previous, node2);
-  t.notOk(node3.next);
-  t.equals(node2.next, node3);
-
-  t.end();
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node3);
+  expect(list.length).toBe(3);
+  expect(node3).toBeTruthy();
+  expect(node3.item).toBe(3);
+  expect(node3.previous).toBe(node2);
+  expect(node3.next).toBeFalsy();
+  expect(node2.next).toBe(node3);
 });
-
-test('DoublyLinkedList#removes from a list with one item', t => {
+test('DoublyLinkedList#removes from a list with one item', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
-
   list.remove(node);
-  t.notOk(list.head);
-  t.notOk(list.tail);
-  t.equals(list.length, 0);
-
-  t.end();
+  expect(list.head).toBeFalsy();
+  expect(list.tail).toBeFalsy();
+  expect(list.length).toBe(0);
 });
-
-test('DoublyLinkedList#removes head of list', t => {
+test('DoublyLinkedList#removes head of list', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
-
   list.remove(node);
-
-  t.equals(list.head, node2);
-  t.equals(list.tail, node2);
-  t.equals(list.length, 1);
-
-  t.end();
+  expect(list.head).toBe(node2);
+  expect(list.tail).toBe(node2);
+  expect(list.length).toBe(1);
 });
-
-test('DoublyLinkedList#removes tail of list', t => {
+test('DoublyLinkedList#removes tail of list', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
-
   list.remove(node2);
-
-  t.equals(list.head, node);
-  t.equals(list.tail, node);
-  t.equals(list.length, 1);
-
-  t.end();
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node);
+  expect(list.length).toBe(1);
 });
-
-test('DoublyLinkedList#removes middle of list', t => {
+test('DoublyLinkedList#removes middle of list', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
-
   list.remove(node2);
-
-  t.equals(list.head, node);
-  t.equals(list.tail, node3);
-  t.equals(list.length, 2);
-
-  t.end();
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node3);
+  expect(list.length).toBe(2);
 });
-
-test('DoublyLinkedList#removes nothing', t => {
+test('DoublyLinkedList#removes nothing', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
-
   // @ts-ignore
   list.remove();
-
-  t.equals(list.head, node);
-  t.equals(list.tail, node);
-  t.equals(list.length, 1);
-
-  t.end();
+  expect(list.head).toBe(node);
+  expect(list.tail).toBe(node);
+  expect(list.length).toBe(1);
 });
-
-test('DoublyLinkedList#splices nextNode before node', t => {
+test('DoublyLinkedList#splices nextNode before node', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
   const node5 = list.add(5);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4 <-> node5
   //  ^          ^                   ^          ^
   //  |          |                   |          |
   // head     nextNode             node        tail
-
   // After:
   //
   //  node <-> node3 <-> node4 <-> node2 <-> node5
   //  ^                                         ^
   //  |                                         |
   // head                                      tail
-
   // Move node2 after node4
   list.splice(node4, node2);
-  expectOrder(t, list, [node, node3, node4, node2, node5]);
-
-  t.end();
+  expectOrder(list, [node, node3, node4, node2, node5]);
 });
-
-test('DoublyLinkedList#splices nextNode after node', t => {
+test('DoublyLinkedList#splices nextNode after node', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
   const node5 = list.add(5);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4 <-> node5
   //  ^          ^                   ^          ^
   //  |          |                   |          |
   // head      node              nextNode      tail
-
   // After:
   //
   //  node <-> node2 <-> node4 <-> node3 <-> node5
   //  ^                                         ^
   //  |                                         |
   // head                                      tail
-
   // Move node4 after node2
   list.splice(node2, node4);
-  expectOrder(t, list, [node, node2, node4, node3, node5]);
-
-  t.end();
+  expectOrder(list, [node, node2, node4, node3, node5]);
 });
-
-test('DoublyLinkedList#splices nextNode immediately before node', t => {
+test('DoublyLinkedList#splices nextNode immediately before node', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^          ^         ^         ^
   //  |          |         |         |
   // head     nextNode    node      tail
-
   // After:
   //
   //  node <-> node3 <-> node2 <-> node4
   //  ^                              ^
   //  |                              |
   // head                           tail
-
   // Move node2 after node4
   list.splice(node3, node2);
-  expectOrder(t, list, [node, node3, node2, node4]);
-
-  t.end();
+  expectOrder(list, [node, node3, node2, node4]);
 });
-
-test('DoublyLinkedList#splices nextNode immediately after node', t => {
+test('DoublyLinkedList#splices nextNode immediately after node', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^          ^         ^         ^
   //  |          |         |         |
   // head      node    nextNode     tail
-
   // After: does not change
-
   list.splice(node2, node3);
-  expectOrder(t, list, [node, node2, node3, node4]);
-
-  t.end();
+  expectOrder(list, [node, node2, node3, node4]);
 });
-
-test('DoublyLinkedList#splices node === nextNode', t => {
+test('DoublyLinkedList#splices node === nextNode', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
-
   // Before:
   //
   //  node <-> node2 <-> node3
   //  ^          ^         ^
   //  |          |         |
   // head  node/nextNode  tail
-
   // After: does not change
-
   list.splice(node2, node2);
-  expectOrder(t, list, [node, node2, node3]);
-
-  t.end();
+  expectOrder(list, [node, node2, node3]);
 });
-
-test('DoublyLinkedList#splices when nextNode was tail', t => {
+test('DoublyLinkedList#splices when nextNode was tail', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^          ^                   ^
   //  |          |                   |
   // head      node           tail/nextNode
-
   // After:
   //
   //  node <-> node2 <-> node4 <-> node3
   //  ^                               ^
   //  |                               |
   // head                            tail
-
   list.splice(node2, node4);
-  expectOrder(t, list, [node, node2, node4, node3]);
-
-  t.end();
+  expectOrder(list, [node, node2, node4, node3]);
 });
-
-test('DoublyLinkedList#splices when node was tail', t => {
+test('DoublyLinkedList#splices when node was tail', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^          ^                   ^
   //  |          |                   |
   // head      nextNode           tail/node
-
   // After:
   //
   //  node <-> node3 <-> node4 <-> node2
   //  ^                              ^
   //  |                              |
   // head                         tail/node
-
   list.splice(node4, node2);
-  expectOrder(t, list, [node, node3, node4, node2]);
-
-  t.end();
+  expectOrder(list, [node, node3, node4, node2]);
 });
-
-test('DoublyLinkedList#splices when nextNode was head', t => {
+test('DoublyLinkedList#splices when nextNode was head', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^                   ^         ^
   //  |                   |         |
   // head/nextNode       node      tail
-
   // After:
   //
   //  node2 <-> node3 <-> node <-> node4
   //  ^                              ^
   //  |                              |
   // head                           tail
-
   list.splice(node3, node);
-  expectOrder(t, list, [node2, node3, node, node4]);
-
-  t.end();
+  expectOrder(list, [node2, node3, node, node4]);
 });
-
-test('DoublyLinkedList#splices when node was head', t => {
+test('DoublyLinkedList#splices when node was head', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^                   ^         ^
   //  |                   |         |
   // head/node        nextNode      tail
-
   // After:
   //
   //  node <-> node3 <-> node2 <-> node4
   //  ^                              ^
   //  |                              |
   // head                           tail
-
   list.splice(node, node3);
-  expectOrder(t, list, [node, node3, node2, node4]);
-
-  t.end();
+  expectOrder(list, [node, node3, node2, node4]);
 });
-
-test('DoublyLinkedList#insert', t => {
+test('DoublyLinkedList#insert', () => {
   const list = new DoublyLinkedList();
   const node = list.add(1);
   const node2 = list.add(2);
   const node3 = list.add(3);
   const node4 = list.add(4);
-
   // Before:
   //
   //  node <-> node2 <-> node3 <-> node4
   //  ^                   ^         ^
   //  |                   |         |
   // head/node        nextNode      tail
-
   // After:
   //
   //  node <-> node3 <-> node2 <-> node4
   //  ^                              ^
   //  |                              |
   // head                           tail
-
   list.splice(node, node3);
-  expectOrder(t, list, [node, node3, node2, node4]);
-
-  t.end();
+  expectOrder(list, [node, node3, node2, node4]);
 });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 import {WMSErrorLoader} from '@loaders.gl/wms';
@@ -34,10 +34,19 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
   }
 ];
 
-test('WMSErrorLoader#test cases', async (t) => {
+test('WMSErrorLoader#test cases', async () => {
   for (const tc of ERROR_TEST_CASES) {
     const error = (await parse(tc.xml, WMSErrorLoader, {wms: {minimalErrors: true}}));
-    t.equal(error, tc.parsed, `Error message: "${error}"`);
+    expect(error).toBe(tc.parsed);
   }
-  t.end();
+});
+
+test('WMSErrorLoader returns an error code when the response has no message', async () => {
+  const error = await parse(
+    '<ServiceExceptionReport><ServiceException code="MissingLayer"/></ServiceExceptionReport>',
+    WMSErrorLoader,
+    {wms: {minimalErrors: true}}
+  );
+
+  expect(error).toBe('MissingLayer');
 });

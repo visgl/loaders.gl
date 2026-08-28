@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ParseWKTCRSOptions, WKTCRS} from '@loaders.gl/gis';
-import {parseWKTCRS} from '@loaders.gl/gis';
+import {parseWKTCRS, type ParseWKTCRSOptions, type WKTCRSAst} from '@math.gl/crs';
 import {WKTCRSLoader as WKTCRSLoaderMetadata} from './wkt-crs-loader';
 
 const {preload: _WKTCRSLoaderPreload, ...WKTCRSLoaderMetadataWithoutPreload} = WKTCRSLoaderMetadata;
@@ -23,4 +22,4 @@ export const WKTCRSLoaderWithParser = {
   parse: async (arrayBuffer, options) =>
     parseWKTCRS(new TextDecoder().decode(arrayBuffer), options?.['wkt-crs']),
   parseTextSync: (string, options) => parseWKTCRS(string, options?.['wkt-crs'])
-} as const satisfies LoaderWithParser<WKTCRS, never, WKTCRSLoaderOptions>;
+} as const satisfies LoaderWithParser<WKTCRSAst, never, WKTCRSLoaderOptions>;

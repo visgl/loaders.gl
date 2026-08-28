@@ -1,92 +1,83 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
 import {SPZLoader} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
-
 const modules = {'zstd-codec': ZstdCodec};
-
-test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async t => {
+test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
   const data = await makeSPZFixture();
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream(formats);
-
   try {
     const table = await parse(data, SPZLoader, {modules});
-
-    t.equal(table.shape, 'arrow-table', 'returns MeshArrowTable');
-    t.equal(table.topology, 'point-list', 'returns point-list topology');
-    t.equal(table.data.numRows, 2, 'parses row count');
-    t.equal(
+    expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
+    expect(table.topology, 'returns point-list topology').toBe('point-list');
+    expect(table.data.numRows, 'parses row count').toBe(2);
+    expect(
       table.data.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
-      'spz',
       'adds source format metadata'
-    );
-    t.deepEqual(table.data.getChild('POSITION')?.get(0)?.toArray(), [1, 2, -3], 'parses position');
-    t.ok(Math.abs(Number(table.data.getChild('scale_1')?.get(0)) - 1) < 1e-6, 'decodes scale');
-    t.ok(
+    ).toBe('spz');
+    expect(
+      Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
+      'parses position'
+    ).toEqual([1, 2, -3]);
+    expect(
+      Math.abs(Number(table.data.getChild('scale_1')?.get(0)) - 1) < 1e-6,
+      'decodes scale'
+    ).toBeTruthy();
+    expect(
       Math.abs(Number(table.data.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
       'decodes linear opacity'
-    );
-    t.ok(
+    ).toBeTruthy();
+    expect(
       Math.abs(Number(table.data.getChild('f_dc_0')?.get(0)) - (140 / 255 - 0.5) / 0.15) < 1e-6,
       'decodes SPZ DC coefficient'
-    );
-    t.ok(Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6, 'decodes rotation');
-
+    ).toBeTruthy();
+    expect(
+      Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+      'decodes rotation'
+    ).toBeTruthy();
     const directTable = await SPZLoaderWithParser.parse(data, {modules});
-    t.equal(directTable.data.numRows, 2, 'parser subpath supports async parse');
-    t.deepEqual(formats, [], 'provided zstd-codec bypasses native stream probing');
+    expect(directTable.data.numRows, 'parser subpath supports async parse').toBe(2);
+    expect(formats, 'provided zstd-codec bypasses native stream probing').toEqual([]);
   } finally {
     restoreDecompressionStream();
   }
-  t.end();
 });
-
-test('SPZLoader uses native zstd without a codec module', async t => {
+test('SPZLoader uses native zstd without a codec module', async () => {
   const data = await makeSPZFixture(false);
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream(formats);
   const restoreZstd = removeRegisteredModule('zstd-codec');
-
   try {
     const table = await SPZLoaderWithParser.parse(data);
-    t.equal(table.data.numRows, 2, 'native zstd path parses SPZ data');
-    t.deepEqual(
-      formats,
-      ['zstd', 'zstd', 'zstd', 'zstd', 'zstd', 'zstd'],
-      'one capability probe and all SPZ streams use native zstd'
-    );
+    expect(table.data.numRows, 'native zstd path parses SPZ data').toBe(2);
+    expect(formats, 'one capability probe and all SPZ streams use native zstd').toEqual([
+      'zstd',
+      'zstd',
+      'zstd',
+      'zstd',
+      'zstd',
+      'zstd'
+    ]);
   } finally {
     restoreZstd();
     restoreDecompressionStream();
   }
-
-  t.end();
 });
-
-test('SPZLoader validates header', async t => {
-  await t.rejects(
-    () => SPZLoaderWithParser.parse(new ArrayBuffer(8), {modules}),
-    /32-byte header/,
+test('SPZLoader validates header', async () => {
+  await expect(
+    SPZLoaderWithParser.parse(new ArrayBuffer(8), {modules}),
     'rejects missing header'
-  );
-
+  ).rejects.toThrow(/32-byte header/);
   const data = await makeSPZFixture();
   new DataView(data).setUint32(4, 3, true);
-  await t.rejects(
-    () => SPZLoaderWithParser.parse(data, {modules}),
-    /version 3 is not supported/,
+  await expect(
+    SPZLoaderWithParser.parse(data, {modules}),
     'rejects unsupported version'
-  );
-  t.end();
+  ).rejects.toThrow(/version 3 is not supported/);
 });
-
 /**
  * Builds a deterministic two-row SPZ v4 fixture.
  *
@@ -118,7 +109,6 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
   const data = new ArrayBuffer(byteLength);
   const dataView = new DataView(data);
   const bytes = new Uint8Array(data);
-
   dataView.setUint32(0, 0x5053474e, true);
   dataView.setUint32(4, 4, true);
   dataView.setUint32(8, 2, true);
@@ -127,7 +117,6 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
   dataView.setUint8(14, 0);
   dataView.setUint8(15, compressedStreams.length);
   dataView.setUint32(16, headerByteLength, true);
-
   let compressedOffset = headerByteLength + tocByteLength;
   for (let streamIndex = 0; streamIndex < compressedStreams.length; streamIndex++) {
     const tocOffset = headerByteLength + streamIndex * 16;
@@ -136,10 +125,8 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
     bytes.set(compressedStreams[streamIndex], compressedOffset);
     compressedOffset += compressedStreams[streamIndex].byteLength;
   }
-
   return data;
 }
-
 /**
  * Installs a pass-through native zstd stream and returns a restorer.
  *
@@ -148,11 +135,9 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
  */
 function installMockDecompressionStream(formats: string[]): () => void {
   const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'DecompressionStream');
-
   class MockDecompressionStream {
     readonly readable: ReadableStream<Uint8Array>;
     readonly writable: WritableStream<BufferSource>;
-
     /** Creates a pass-through stream for the native zstd format. */
     constructor(format: string) {
       formats.push(format);
@@ -168,13 +153,11 @@ function installMockDecompressionStream(formats: string[]): () => void {
       this.writable = transformStream.writable;
     }
   }
-
   Object.defineProperty(globalThis, 'DecompressionStream', {
     configurable: true,
     writable: true,
     value: MockDecompressionStream
   });
-
   return () => {
     if (originalDescriptor) {
       Object.defineProperty(globalThis, 'DecompressionStream', originalDescriptor);
@@ -183,7 +166,6 @@ function installMockDecompressionStream(formats: string[]): () => void {
     }
   };
 }
-
 /**
  * Removes one registered injectable module and returns a restorer.
  *
@@ -199,7 +181,6 @@ function removeRegisteredModule(moduleName: string): () => void {
   const hadModule = Object.prototype.hasOwnProperty.call(registeredModules, moduleName);
   const originalModule = registeredModules[moduleName];
   delete registeredModules[moduleName];
-
   return () => {
     if (hadModule) {
       registeredModules[moduleName] = originalModule;
@@ -208,7 +189,6 @@ function removeRegisteredModule(moduleName: string): () => void {
     }
   };
 }
-
 /**
  * Copies a native stream input chunk into a Uint8Array.
  *
@@ -225,7 +205,6 @@ function copyBufferSource(bufferSource: BufferSource): Uint8Array {
     bufferSource.byteLength
   ).slice();
 }
-
 /** Builds packed 24-bit fixed-point position fixture bytes. */
 function makePositionStream(): Uint8Array {
   const positions = new Uint8Array(18);
@@ -237,14 +216,12 @@ function makePositionStream(): Uint8Array {
   writeFixed24(positions, 15, 6 * 4096);
   return positions;
 }
-
 /** Writes one signed little-endian 24-bit fixture value. */
 function writeFixed24(bytes: Uint8Array, byteOffset: number, value: number): void {
   bytes[byteOffset + 0] = value & 0xff;
   bytes[byteOffset + 1] = (value >> 8) & 0xff;
   bytes[byteOffset + 2] = (value >> 16) & 0xff;
 }
-
 /** Builds packed log-scale fixture bytes. */
 function makeScaleStream(): Uint8Array {
   return new Uint8Array([
@@ -256,12 +233,10 @@ function makeScaleStream(): Uint8Array {
     encodeScale(5)
   ]);
 }
-
 /** Encodes a linear scale fixture value as an SPZ log-scale byte. */
 function encodeScale(value: number): number {
   return Math.round((Math.log(value) + 10) * 16);
 }
-
 /** Builds packed smallest-three quaternion fixture bytes. */
 function makeRotationStream(): Uint8Array {
   const rotations = new Uint8Array(8);
@@ -269,7 +244,6 @@ function makeRotationStream(): Uint8Array {
   rotations.set(encodeQuaternionSmallestThree([1, 0, 0, 0]), 4);
   return rotations;
 }
-
 /** Encodes one `[x, y, z, w]` quaternion as SPZ smallest-three bytes. */
 function encodeQuaternionSmallestThree(quaternion: [number, number, number, number]): Uint8Array {
   let largestComponent = 0;
@@ -278,7 +252,6 @@ function encodeQuaternionSmallestThree(quaternion: [number, number, number, numb
       largestComponent = component;
     }
   }
-
   const negate = quaternion[largestComponent] < 0;
   let packed = largestComponent;
   for (let component = 0; component < 4; component++) {
@@ -290,7 +263,6 @@ function encodeQuaternionSmallestThree(quaternion: [number, number, number, numb
       packed = (packed << 10) | (Number(isNegative) << 9) | magnitude;
     }
   }
-
   return new Uint8Array([
     packed & 0xff,
     (packed >>> 8) & 0xff,

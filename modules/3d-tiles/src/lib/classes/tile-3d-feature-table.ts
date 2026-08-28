@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {GL, GLType} from '@loaders.gl/math';
+import {GL, GLType} from '@math.gl/geometry-utils';
 
 // Reference:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/1de96d087f0b17575eb1a3f736407b348c765d59/Source/Scene/Cesium3DTileFeatureTable.js
@@ -28,7 +28,7 @@ export default class Tile3DFeatureTable {
     return Boolean(this.json[propertyName]);
   }
 
-  getGlobalProperty(propertyName, componentType = GL.UNSIGNED_INT, componentLength = 1) {
+  getGlobalProperty(propertyName, componentType: number = GL.UNSIGNED_INT, componentLength = 1) {
     const jsonValue = this.json[propertyName];
 
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {

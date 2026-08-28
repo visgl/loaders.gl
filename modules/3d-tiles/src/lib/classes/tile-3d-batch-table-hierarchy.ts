@@ -10,6 +10,37 @@
 // @ts-nocheck
 const defined = x => x !== undefined;
 
+const scratchVisited = [];
+const scratchStack = [];
+let marker = 0;
+
+/** Throws an error when a hierarchy invariant is violated. */
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message || 'Batch table hierarchy assertion failed');
+  }
+}
+
+/** Combines JSON hierarchy properties with any decoded binary properties. */
+function combine(binaryProperties, properties) {
+  return {...binaryProperties, ...properties};
+}
+
+/**
+ * Returns decoded binary hierarchy properties when supported.
+ *
+ * Binary hierarchy accessors are still a pending part of the hierarchy port;
+ * fail explicitly for those descriptors instead of silently dropping values.
+ */
+function getBinaryProperties(featuresLength, properties, binaryBody) {
+  for (const propertyName in properties || {}) {
+    if (properties[propertyName] && 'byteOffset' in properties[propertyName]) {
+      throw new Error(`Binary hierarchy property ${propertyName} is not supported yet`);
+    }
+  }
+  return undefined;
+}
+
 export function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
   if (!jsonHeader) {
     return null;
@@ -129,10 +160,10 @@ export function traverseHierarchy(hierarchy, instanceIndex, endConditionCallback
 
   const parentCounts = hierarchy.parentCounts;
   const parentIds = hierarchy.parentIds;
-  if (parentIds) {
+  if (!parentIds) {
     return endConditionCallback(hierarchy, instanceIndex);
   }
-  if (parentCounts > 0) {
+  if (parentCounts) {
     return traverseHierarchyMultipleParents(hierarchy, instanceIndex, endConditionCallback);
   }
   return traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCallback);
@@ -196,7 +227,7 @@ function traverseHierarchySingleParent(hierarchy, instanceIndex, endConditionCal
     hasParent = parentId !== instanceIndex;
     instanceIndex = parentId;
   }
-  throw new Error('traverseHierarchySingleParent');
+  return undefined;
 }
 
 // DEBUG CODE
@@ -208,7 +239,7 @@ function validateHierarchy(hierarchy) {
   const instancesLength = classIds.length;
 
   for (let i = 0; i < instancesLength; ++i) {
-    validateInstance(hierarchy, i, stack);
+    validateInstance(hierarchy, i, _scratchValidateStack);
   }
 }
 

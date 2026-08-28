@@ -4,8 +4,8 @@
 
 export {WKTFormat, WKBFormat, HexWKBFormat, TWKBFormat, WKTCRSFormat} from './wkt-format';
 
-export {WKTCRSLoader} from './wkt-crs-loader';
-export {WKTCRSWriter} from './wkt-crs-writer';
+export {WKTCRSLoader, type WKTCRSLoaderOptions} from './wkt-crs-loader';
+export {WKTCRSWriter, type WKTCRSWriterOptions} from './wkt-crs-writer';
 
 export {WKTLoader} from './wkt-loader';
 export {WKTWriter} from './wkt-writer';

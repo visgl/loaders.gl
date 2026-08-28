@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-
 const TEST_TILE_SOURCE = {
   mimeType: 'image/png',
   options: {},
@@ -17,7 +16,6 @@ const TEST_TILE_SOURCE = {
     return null;
   }
 };
-
 const TEST_SOURCE_FACTORY = {
   name: 'TestSource',
   id: 'test-source',
@@ -33,46 +31,36 @@ const TEST_SOURCE_FACTORY = {
     return TEST_TILE_SOURCE as any;
   }
 };
-
 const ARROW_TILE = createArrowTile();
-
 function createLayer(props: Tile2DSourceLayerProps = {id: 'test', data: TEST_TILE_SOURCE as any}) {
   return new Tile2DSourceLayer(props as any) as any;
 }
-
-test('Tile2DSourceLayer#resolves URL inputs with sources', t => {
+test('Tile2DSourceLayer#resolves URL inputs with sources', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/tiles',
     sources: [TEST_SOURCE_FACTORY as any]
   });
-
   const resolvedData = layer._resolveData(layer.props);
-  t.equal(resolvedData, TEST_TILE_SOURCE);
-  t.end();
+  expect(resolvedData).toBe(TEST_TILE_SOURCE);
 });
-
-test('Tile2DSourceLayer#accepts direct TileSource inputs', t => {
+test('Tile2DSourceLayer#accepts direct TileSource inputs', () => {
   const layer = createLayer();
   const resolvedData = layer._resolveData(layer.props);
-  t.equal(resolvedData, TEST_TILE_SOURCE);
-  t.end();
+  expect(resolvedData).toBe(TEST_TILE_SOURCE);
 });
-
-test('Tile2DSourceLayer#detects local-coordinate MVT sources', t => {
+test('Tile2DSourceLayer#detects local-coordinate MVT sources', () => {
   const layer = createLayer();
-  t.ok(
+  expect(
     layer.sourceSupportsMVTLayer({
       ...TEST_TILE_SOURCE,
       mimeType: 'application/vnd.mapbox-vector-tile',
       localCoordinates: true
     })
-  );
-  t.notOk(layer.sourceSupportsMVTLayer(TEST_TILE_SOURCE));
-  t.end();
+  ).toBeTruthy();
+  expect(layer.sourceSupportsMVTLayer(TEST_TILE_SOURCE)).toBeFalsy();
 });
-
-test('Tile2DSourceLayer#default render path creates GeoJsonLayer for vector tiles', t => {
+test('Tile2DSourceLayer#default render path creates GeoJsonLayer for vector tiles', () => {
   const layer = createLayer();
   const renderedLayers = (layer.props as any).renderSubLayers({
     ...layer.props,
@@ -92,12 +80,9 @@ test('Tile2DSourceLayer#default render path creates GeoJsonLayer for vector tile
       mimeType: 'application/vnd.mapbox-vector-tile'
     }
   });
-
-  t.equal(renderedLayers[0].constructor.layerName, 'GeoJsonLayer');
-  t.end();
+  expect(renderedLayers[0].constructor.layerName).toBe('GeoJsonLayer');
 });
-
-test('Tile2DSourceLayer#default render path creates GeoJsonLayer for Arrow vector tiles', t => {
+test('Tile2DSourceLayer#default render path creates GeoJsonLayer for Arrow vector tiles', () => {
   const layer = createLayer();
   const renderedLayers = (layer.props as any).renderSubLayers({
     ...layer.props,
@@ -118,17 +103,12 @@ test('Tile2DSourceLayer#default render path creates GeoJsonLayer for Arrow vecto
       mimeType: 'application/vnd.mapbox-vector-tile'
     }
   });
-
-  t.equal(renderedLayers[0].constructor.layerName, 'GeoJsonLayer');
-  t.equal(
-    renderedLayers[0].props.data.shape,
-    'binary-feature-collection',
-    'passes deck.gl binary feature data'
+  expect(renderedLayers[0].constructor.layerName).toBe('GeoJsonLayer');
+  expect(renderedLayers[0].props.data.shape, 'passes deck.gl binary feature data').toBe(
+    'binary-feature-collection'
   );
-  t.end();
 });
-
-test('Tile2DSourceLayer#default render path creates BitmapLayer for raster tiles', t => {
+test('Tile2DSourceLayer#default render path creates BitmapLayer for raster tiles', () => {
   const layer = createLayer();
   const renderedLayers = (layer.props as any).renderSubLayers({
     ...layer.props,
@@ -145,11 +125,8 @@ test('Tile2DSourceLayer#default render path creates BitmapLayer for raster tiles
     },
     tileSource: TEST_TILE_SOURCE
   });
-
-  t.equal(renderedLayers[0].constructor.layerName, 'BitmapLayer');
-  t.end();
+  expect(renderedLayers[0].constructor.layerName).toBe('BitmapLayer');
 });
-
 function createArrowTile() {
   const schema = {
     fields: [

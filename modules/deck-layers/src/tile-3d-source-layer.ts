@@ -11,8 +11,8 @@ import {
   type Tileset3DProps,
   type Tileset3DSource
 } from '@loaders.gl/tiles';
-import {coreApi} from '@loaders.gl/core';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {coreApi, preload, selectLoader} from '@loaders.gl/core';
+import type {LoaderOptions, LoaderWithParser, RequestCredential} from '@loaders.gl/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
 /**
@@ -84,7 +84,20 @@ export class Tile3DSourceLayer<
     // TODO: deprecate `loader` in v9.0
     // @ts-ignore
     const loaders = this.props.loader || this.props.loaders;
-    const loader = (Array.isArray(loaders) ? loaders[0] : loaders) as LoaderWithParser;
+    const loaderCandidates = (Array.isArray(loaders) ? loaders : [loaders]).filter(Boolean);
+    const selectedLoader =
+      (await selectLoader(tilesetUrl, loaderCandidates as any, {
+        ...loadOptions,
+        core: {...loadOptions.core, nothrow: true}
+      })) || loaderCandidates[0];
+    if (!selectedLoader) {
+      throw new Error('Tile3DSourceLayer requires a loader for URL or Blob inputs.');
+    }
+    const loader = await preload(
+      selectedLoader,
+      loadOptions,
+      typeof tilesetUrl === 'string' ? tilesetUrl : undefined
+    );
 
     const options: {loadOptions: LoaderOptions} & Partial<Tileset3DProps> = {
       loadOptions: {...loadOptions}
@@ -97,7 +110,13 @@ export class Tile3DSourceLayer<
         actualTilesetUrl = preloadOptions.url;
       }
 
-      if (preloadOptions.headers) {
+      const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
+      if (credentials?.length) {
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+        };
+      } else if (preloadOptions.headers) {
         options.loadOptions.fetch = {
           ...options.loadOptions.fetch,
           headers: preloadOptions.headers
@@ -138,13 +157,14 @@ export function createSource(
   loadOptions: LoaderOptions,
   injectedCoreApi = coreApi
 ): Tiles3DSource | I3SSource {
+  const sourceLoader = getSourceLoader(loader);
   const lowerCaseUrl = typeof url === 'string' ? url.toLowerCase() : '';
 
-  if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
+  if (sourceLoader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
     const archiveConfig =
-      loader.id === 'slpk'
+      sourceLoader.id === 'slpk'
         ? createSLPKArchiveResolver(url)
-        : createSLPKArchiveResolver(url, loader);
+        : createSLPKArchiveResolver(url, sourceLoader);
     return new I3SSource(
       {
         url,
@@ -157,11 +177,11 @@ export function createSource(
     );
   }
 
-  if (loader.id === '3tz' || lowerCaseUrl.endsWith('.3tz')) {
+  if (sourceLoader.id === '3tz' || lowerCaseUrl.endsWith('.3tz')) {
     const archiveConfig =
-      loader.id === '3tz'
+      sourceLoader.id === '3tz'
         ? createTiles3DArchiveResolver(url)
-        : createTiles3DArchiveResolver(url, loader);
+        : createTiles3DArchiveResolver(url, sourceLoader);
     return new Tiles3DSource(
       {
         url,
@@ -174,9 +194,20 @@ export function createSource(
     );
   }
 
-  if (loader.id === 'i3s') {
-    return new I3SSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
+  if (sourceLoader.id === 'i3s') {
+    return new I3SSource({url, loader: sourceLoader, coreApi: injectedCoreApi}, loadOptions);
   }
 
-  return new Tiles3DSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
+  return new Tiles3DSource({url, loader: sourceLoader, coreApi: injectedCoreApi}, loadOptions);
+}
+
+/** Removes the provider bootstrap hook before a resolved service loader is used for child tiles. */
+function getSourceLoader(loader: LoaderWithParser): LoaderWithParser {
+  if (loader.id !== 'cesium-ion') {
+    return loader;
+  }
+
+  const loaderWithProviderHooks = loader as LoaderWithParser & {parseUrl?: unknown};
+  const {parseUrl: _parseUrl, preload: _preload, ...sourceLoader} = loaderWithProviderHooks;
+  return sourceLoader as LoaderWithParser;
 }

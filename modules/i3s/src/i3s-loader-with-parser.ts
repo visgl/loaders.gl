@@ -92,7 +92,7 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
 
 async function parseTile(data, context) {
   data = JSON.parse(new TextDecoder().decode(data));
-  return normalizeTileData(data, context);
+  return await normalizeTileData(data, context);
 }
 
 function getMagicNumber(data) {

@@ -4,6 +4,9 @@
 
 The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
 
+See the [I3S format support matrix](/docs/modules/i3s/formats/i3s) for detailed coverage of scene layer profiles,
+specification generations, geometry, textures, attributes, delivery options, and known gaps.
+
 References
 
 - [I3S Tiles Specification](https://github.com/Esri/i3s-spec) - The living specification.
@@ -21,6 +24,7 @@ npm install @loaders.gl/core
 A standard complement of loader is provided to load the individual 3d Tile file formats:
 
 - [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader), a loader for loading a top-down or nested tileset and its tiles.
+- [`I3SPointCloudSource`](/docs/modules/i3s/api-reference/i3s-point-cloud-source), a source for I3S 2.x Point Cloud layers that can be used with [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset).
 
 To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
 

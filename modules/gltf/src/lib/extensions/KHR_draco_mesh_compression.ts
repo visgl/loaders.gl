@@ -20,7 +20,6 @@ import type {
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {GLTFIterator} from '../api/gltf-iterator';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 
@@ -70,18 +69,6 @@ export async function decode(
   iterator.removeExtension(KHR_DRACO_MESH_COMPRESSION);
 }
 
-export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
-  const scenegraph = new GLTFScenegraph(gltfData);
-
-  for (const mesh of scenegraph.json.meshes || []) {
-    // eslint-disable-next-line camelcase
-    // @ts-ignore
-    compressMesh(mesh, options);
-    // NOTE: Only add the extension if something was actually compressed
-    scenegraph.addRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
-  }
-}
-
 // DECODE
 
 // Unpacks one mesh primitive and removes the extension from the primitive
@@ -109,16 +96,21 @@ async function decompressPrimitive(
     iterator.gltf.buffers,
     dracoExtension.bufferView
   );
-  // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
-  // TODO - remove when `parse` is fixed to handle `byteOffset`s
-  const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
+  const compressedData = getExactArrayBuffer(buffer);
 
-  const dracoOptions: DracoLoaderOptions = {...options};
+  const dracoOptions: DracoLoaderOptions = {
+    ...options,
+    draco: {
+      ...options.draco,
+      decoderProfile: options.draco?.decoderProfile || 'gltf',
+      extraAttributes: dracoExtension.attributes
+    }
+  };
 
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
   const decodedData = (await parseFromContext(
-    bufferCopy,
+    compressedData,
     DracoLoader,
     dracoOptions,
     context
@@ -151,51 +143,22 @@ async function decompressPrimitive(
   checkPrimitive(primitive);
 }
 
-// ENCODE
-
-// eslint-disable-next-line max-len
-// Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-function compressMesh(attributes, indices, mode: number = 4, options, context: LoaderContext) {
-  if (!options.DracoWriter) {
-    throw new Error('options.gltf.DracoWriter not provided');
-  }
-
-  // TODO - use DracoWriter using encode w/ registered DracoWriter...
-  const compressedData = options.DracoWriter.encodeSync({attributes});
-
-  // Draco compression may change the order and number of vertices in a mesh.
-  // To satisfy the requirement that accessors properties be correct for both
-  // compressed and uncompressed data, generators should create uncompressed
-  // attributes and indices using data that has been decompressed from the Draco buffer,
-  // rather than the original source data.
-  // @ts-ignore TODO this needs to be fixed
-  const decodedData = context?.parseSync?.({attributes});
-  const fauxAccessors = options._addFauxAttributes(decodedData.attributes);
-
-  const bufferViewIndex = options.addBufferView(compressedData);
-
-  const glTFMesh = {
-    primitives: [
-      {
-        attributes: fauxAccessors, // TODO - verify with spec
-        mode, // GL.POINTS
-        extensions: {
-          [KHR_DRACO_MESH_COMPRESSION]: {
-            bufferView: bufferViewIndex,
-            attributes: fauxAccessors // TODO - verify with spec
-          }
-        }
-      }
-    ]
-  };
-
-  return glTFMesh;
-}
-
 // UTILS
 
-function checkPrimitive(primitive: GLTFMeshPrimitive) {
-  if (!primitive.attributes && Object.keys(primitive.attributes).length > 0) {
+function checkPrimitive(primitive: GLTFMeshPrimitive): void {
+  if (!primitive.attributes || Object.keys(primitive.attributes).length === 0) {
     throw new Error('glTF: Empty primitive detected: Draco decompression failure?');
   }
+}
+
+/** Returns an exact ArrayBuffer for a compressed buffer view, copying only when required. */
+function getExactArrayBuffer(buffer: Uint8Array): ArrayBuffer {
+  if (
+    buffer.buffer instanceof ArrayBuffer &&
+    buffer.byteOffset === 0 &&
+    buffer.byteLength === buffer.buffer.byteLength
+  ) {
+    return buffer.buffer;
+  }
+  return sliceArrayBuffer(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 }

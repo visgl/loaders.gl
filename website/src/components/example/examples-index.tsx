@@ -11,6 +11,7 @@ import {
   ExampleLogo,
   ExampleTitle
 } from './styled';
+import {CURATED_EXAMPLES} from '../../../../examples/website/shared/example-catalog';
 
 const DEFAULT_EXAMPLE_THUMBNAIL = '/images/maps.jpg';
 
@@ -62,9 +63,22 @@ export default function ExamplesIndex({
 }) {
   const mainSidebar = useDocsSidebar();
   const sidebarItems = mainSidebar?.items?.[0]?.items || mainSidebar?.items || [];
+  const featuredImageRoot = useBaseUrl('/');
 
   return (
     <MainExamples>
+      <ExampleHeader>Featured datasets</ExampleHeader>
+      <ExamplesGroup>
+        {CURATED_EXAMPLES.map(example => (
+          <ExampleCard key={example.id} href={getExampleHref(example.surface, example.format)}>
+            <img width="100%" src={`${featuredImageRoot}${example.thumbnail}`} alt={example.label} />
+            <ExampleTitle>
+              <span>{example.label}</span>
+              <small>{example.description}</small>
+            </ExampleTitle>
+          </ExampleCard>
+        ))}
+      </ExamplesGroup>
       {sidebarItems.map(item => {
         if (item.type === 'category' && item.items && item.label) {
           return renderCategory(item, getThumbnail, getLogo, defaultThumbnail);
@@ -73,4 +87,14 @@ export default function ExamplesIndex({
       })}
     </MainExamples>
   );
+}
+
+function getExampleHref(surface: string, format: string): string {
+  if (surface === 'tiles') {
+    return format.toLowerCase() === 'pmtiles' ? '/examples/tiles/pmtiles' : '/examples/tiles/mvt';
+  }
+  if (surface === 'pointcloud') {
+    return `/examples/pointclouds/${format.toLowerCase()}`;
+  }
+  return `/examples/geospatial/${format.toLowerCase()}`;
 }

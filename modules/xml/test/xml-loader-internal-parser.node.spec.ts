@@ -1,26 +1,15 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {readFile} from 'node:fs/promises';
-
 import {XMLLoader} from '@loaders.gl/xml/bundled';
-
 const FORECASTS_URL = new URL('./data/forecasts.xml', import.meta.url);
-
-test('XMLLoader#internal parser#forecasts.xml (NODE)', async t => {
+test('XMLLoader#internal parser#forecasts.xml (NODE)', async () => {
   const text = await readFile(FORECASTS_URL, 'utf8');
   const json = XMLLoader.parseTextSync?.(text, {xml: {_parser: 'internal'}});
-
-  t.ok(json, 'got result');
-  t.equal(typeof json, 'object', 'parsed');
-  t.equal(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'world_rivers', 'contents');
-
-  t.end();
+  expect(json, 'got result').toBeTruthy();
+  expect(typeof json, 'parsed').toBe('object');
+  expect(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'contents').toBe('world_rivers');
 });
-
-test('XMLLoader#internal parser#parity (NODE)', t => {
+test('XMLLoader#internal parser#parity (NODE)', () => {
   const testCases = [
     {
       title: 'text-only node',
@@ -92,7 +81,6 @@ test('XMLLoader#internal parser#parity (NODE)', t => {
       options: {_fastXML: {parseAttributeValue: true}}
     }
   ];
-
   for (const testCase of testCases) {
     const parserOptions = {textNodeName: 'value', ...testCase.options};
     const fastXML = XMLLoader.parseTextSync?.(testCase.xml, {
@@ -101,9 +89,6 @@ test('XMLLoader#internal parser#parity (NODE)', t => {
     const internalXML = XMLLoader.parseTextSync?.(testCase.xml, {
       xml: {...parserOptions, _parser: 'internal'}
     });
-
-    t.deepEqual(internalXML, fastXML, testCase.title);
+    expect(internalXML, testCase.title).toEqual(fastXML);
   }
-
-  t.end();
 });

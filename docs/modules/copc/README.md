@@ -2,17 +2,23 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+current COPC/LAS projection-record support and vertical/compound CRS roadmap.
+
 ![copc-logo](../../images/logos/copc-logo-80.png)
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
   <img src="https://img.shields.io/badge/source_loader-Work--In--Progress-orange.svg?style=flat-square" alt="source loader work in progress" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
 </p>
 
 <CopcDocsTabs active="overview" />
 
-The `@loaders.gl/copc` module loads and writes the [COPC](/docs/modules/copc/formats/copc) format.
+The `@loaders.gl/copc` module loads and writes the [COPC](/docs/modules/copc/formats/copc) format. Its primary reader is TypeScript-only and performs native COPC hierarchy, byte-range, and LAZ point decoding.
 
 ## Installation
 
@@ -29,4 +35,4 @@ npm install @loaders.gl/core @loaders.gl/copc
 
 ## Attribution
 
-This module is a fork of Connor Manning's awesome [copc.js](https://github.com/connormanning/copc.js/) module, under MIT license.
+The original module was based on Connor Manning's [copc.js](https://github.com/connormanning/copc.js/) project under the MIT license. The current primary reader is a first-party TypeScript implementation with no `copc` runtime dependency.

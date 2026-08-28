@@ -38,6 +38,10 @@
     "./orc-loader": {
       "types": "./dist/orc-loader.d.ts",
       "import": "./dist/orc-loader.js"
+    },
+    "./orc-source-loader": {
+      "types": "./dist/orc-source-loader.d.ts",
+      "import": "./dist/orc-source-loader.js"
     }
   },
   "sideEffects": false,
@@ -54,7 +58,8 @@
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2"
+    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",

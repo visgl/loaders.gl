@@ -4,6 +4,7 @@
 
 // TODO - can we import from schema?
 import {ImageType} from './utils/image-type';
+import type {CRSIdentifier} from '@math.gl/crs';
 // TODO - remove (this breaks WMS layer)
 
 /**
@@ -40,7 +41,7 @@ export type ImageSourceLayer = {
   /** Human readable title of this layer */
   title?: string;
   /** Coordinate systems supported by this layer */
-  crs?: string[];
+  crs?: CRSIdentifier[];
   /** layer limits in unspecified CRS:84-like lng/lat, for quick access w/o CRS calculations. */
   boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Sub layers of this layer */
@@ -62,7 +63,7 @@ export type GetImageParameters = {
   /** pixels */
   height: number;
   /** crs for the image (not the bounding box) */
-  crs?: string;
+  crs?: CRSIdentifier;
   /** requested format for the return image */
   format?: 'image/png';
   /** Abort signal for canceling in-flight requests. */

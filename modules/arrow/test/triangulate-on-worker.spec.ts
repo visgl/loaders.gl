@@ -1,9 +1,12 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-
 import * as arrow from 'apache-arrow';
-import test from 'test/utils/vitest-tape';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
 import {
   triangulateOnWorker,
   triangulateWKBColumnOnWorker,
@@ -21,75 +24,37 @@ import {
   GEOARROW_POINT_FILE,
   GEOARROW_POLYGON_WKB_FILE
 } from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
-
 // WORKER TESTS
-test('TriangulationWorker#plumbing', async t => {
+test('TriangulationWorker#plumbing', async () => {
   const sourceData = {
     operation: 'test',
     data: new ArrayBuffer(100)
   };
-
   const triangulatedData = await processOnWorker(
     TriangulationWorker,
     sourceData,
     getTriangulationWorkerOptions()
   );
-
-  t.ok(triangulatedData, 'Triangulation worker echoed input data');
-
-  t.rejects(
-    () =>
-      processOnWorker(TriangulationWorker, {operation: 'error'}, getTriangulationWorkerOptions()),
+  expect(triangulatedData, 'Triangulation worker echoed input data').toBeTruthy();
+  await expect(
+    processOnWorker(TriangulationWorker, {operation: 'error'}, getTriangulationWorkerOptions()),
     'Triangulation worker throws on incorrect operation'
-  );
-
+  ).rejects.toBeDefined();
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test.skip('triangulateOnWorker', async t => {
-  t.ok(triangulateOnWorker, 'triangulateOnWorker imported ok');
-  /*
-  const triangulatedData = await triangulateOnWorker(
-    {
-      data: new ArrayBuffer(100)
-    },
-    {
-      _workerType: 'test'
-    }
-  );
-
-  t.equal(triangulatedData.operation, 'test', 'Triangulation worker got correct return type');
-  if (triangulatedData.operation === 'test') {
-    t.equal(triangulatedData.data?.byteLength, 100, 'Triangulation worker echoed input data');
-  }
-
-  // t.rejec(() => await processOnWorker(TriangulationWorker, sourceData, {
-  //   operation: 'error',
-  //   _workerType: 'test'
-  // }), 'Triangulation worker throws on incorrect operation');
-
-  if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
-  }
-  */
-  t.end();
+test.skip('triangulateOnWorker', async () => {
+  expect(triangulateOnWorker, 'triangulateOnWorker imported ok').toBeTruthy();
 });
-
-test('parseGeoArrowOnWorker', async t => {
+test('parseGeoArrowOnWorker', async () => {
   const arrowFile = await fetchFile(GEOARROW_POINT_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
   const arrowTable = arrow.tableFromIPC(arrowContent);
-
   // simulate parsing 1st batch/chunk of the arrow data in web worker from e.g. kepler
   const geometryColumn = arrowTable.getChild('geometry');
   const geometryChunk = geometryColumn?.data[0];
-
   if (geometryChunk) {
     const parseGeoArrowInput: ParseGeoArrowInput = {
       operation: 'parse-geoarrow',
@@ -100,87 +65,68 @@ test('parseGeoArrowOnWorker', async t => {
       calculateMeanCenters: true,
       triangle: false
     };
-
     const parsedGeoArrowData = await parseGeoArrowOnWorker(parseGeoArrowInput, {
       ...getTriangulationWorkerOptions()
     });
-
     // kepler should await for the result from web worker and render the binary geometries
     const {binaryGeometries, bounds, featureTypes, meanCenters} =
       parsedGeoArrowData.binaryDataFromGeoArrow!;
-    t.ok(binaryGeometries, 'ParseGeoArrow worker returned binaryGeometries');
-    t.ok(bounds, 'ParseGeoArrow worker returned binaryGeometries');
-    t.ok(featureTypes, 'ParseGeoArrow worker returned featureTypes');
-    t.ok(meanCenters, 'ParseGeoArrow worker returned meanCenters');
+    expect(binaryGeometries, 'ParseGeoArrow worker returned binaryGeometries').toBeTruthy();
+    expect(bounds, 'ParseGeoArrow worker returned binaryGeometries').toBeTruthy();
+    expect(featureTypes, 'ParseGeoArrow worker returned featureTypes').toBeTruthy();
+    expect(meanCenters, 'ParseGeoArrow worker returned meanCenters').toBeTruthy();
   }
-  t.end();
 });
-
-test('triangulateWKBColumnOnWorker', async t => {
+test('triangulateWKBColumnOnWorker', async () => {
   const arrowFile = await fetchFile(GEOARROW_POLYGON_WKB_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
   const arrowTable = arrow.tableFromIPC(arrowContent);
   const geometryColumn = arrowTable.getChild('geometry');
   const geometryChunk = geometryColumn?.data[0];
-
   if (geometryChunk) {
     const triangulateWKBColumnInput: TriangulateWKBColumnInput = {
       operation: 'triangulate-wkb-column',
       chunkData: getWorkerChunkData(geometryChunk),
       chunkIndex: 0
     };
-
     const result = await triangulateWKBColumnOnWorker(triangulateWKBColumnInput, {
       ...getTriangulationWorkerOptions()
     });
     const vertexIndexColumn = arrow.makeVector(rebuildWorkerChunkData(result.vertexIndexColumn));
     const vertexColumn = arrow.makeVector(rebuildWorkerChunkData(result.vertexColumn));
-
-    t.equals(result.chunkIndex, 0, 'worker preserves chunk index');
-    t.equals(
-      vertexIndexColumn.length,
-      geometryColumn?.length,
-      'vertex index column has one row per input geometry'
+    expect(result.chunkIndex, 'worker preserves chunk index').toBe(0);
+    expect(vertexIndexColumn.length, 'vertex index column has one row per input geometry').toBe(
+      geometryColumn?.length
     );
-    t.equals(
-      vertexColumn.length,
-      geometryColumn?.length,
-      'vertex column has one row per input geometry'
+    expect(vertexColumn.length, 'vertex column has one row per input geometry').toBe(
+      geometryColumn?.length
     );
-    t.ok(vertexIndexColumn.get(0)?.length > 0, 'first geometry has triangle indices');
-    t.ok(vertexColumn.get(0)?.length > 0, 'first geometry has vertices');
+    expect(
+      vertexIndexColumn.get(0)?.length > 0,
+      'first geometry has triangle indices'
+    ).toBeTruthy();
+    expect(vertexColumn.get(0)?.length > 0, 'first geometry has vertices').toBeTruthy();
   }
-
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test('triangulateWKBGeometryColumn', async t => {
+test('triangulateWKBGeometryColumn', async () => {
   const arrowFile = await fetchFile(GEOARROW_POLYGON_WKB_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
   const arrowTable = arrow.tableFromIPC(arrowContent);
   const geometryColumn = arrowTable.getChild('geometry') as arrow.Vector<arrow.Binary> | null;
-
   if (geometryColumn) {
     const {vertexIndices, vertices} = triangulateWKBGeometryColumn(geometryColumn);
-
-    t.equals(
-      vertexIndices.length,
-      geometryColumn.length,
-      'vertex index column length matches input'
+    expect(vertexIndices.length, 'vertex index column length matches input').toBe(
+      geometryColumn.length
     );
-    t.equals(vertices.length, geometryColumn.length, 'vertex column length matches input');
-    t.ok(vertexIndices.get(0)?.length > 0, 'first geometry has triangle indices');
-    t.ok(vertices.get(0)?.length > 0, 'first geometry has vertices');
+    expect(vertices.length, 'vertex column length matches input').toBe(geometryColumn.length);
+    expect(vertexIndices.get(0)?.length > 0, 'first geometry has triangle indices').toBeTruthy();
+    expect(vertices.get(0)?.length > 0, 'first geometry has vertices').toBeTruthy();
   }
-
-  t.end();
 });
-
 /**
  * Copies an Arrow data chunk into the structured-cloneable shape used by the worker tests.
  * @param geometryChunk Arrow data chunk.
@@ -204,7 +150,6 @@ function getWorkerChunkData(
     dictionary: chunkCopy.dictionary
   };
 }
-
 /**
  * Returns runtime-specific options for the triangulation worker tests.
  * @returns Worker options that use the local browser worker or built Node worker bundle.
@@ -214,7 +159,6 @@ function getTriangulationWorkerOptions(): WorkerOptions {
     ? {_workerType: 'test'}
     : {triangulation: {workerUrl: 'modules/arrow/dist/triangulation-worker-node.js'}};
 }
-
 /**
  * Rebuilds an Arrow data chunk returned by the worker.
  * @param chunkData Worker chunk payload.

@@ -7,7 +7,7 @@
 
 import {Vector3, Matrix3, Matrix4, Quaternion} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {GL, octDecodeInRange} from '@loaders.gl/math'; // 'math.gl/geometry';
+import {GL, octDecodeInRange} from '@math.gl/geometry-utils';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 

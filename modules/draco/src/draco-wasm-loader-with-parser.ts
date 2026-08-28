@@ -20,6 +20,11 @@ export const DracoWASMLoaderWithParser = {
     await parseDraco(
       arrayBuffer,
       options,
-      async () => await loadDracoDecoderModule(extractLoadLibraryOptions(options), 'wasm')
+      async () =>
+        await loadDracoDecoderModule(
+          extractLoadLibraryOptions(options),
+          'wasm',
+          options?.draco?.decoderProfile
+        )
     )
 } as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;

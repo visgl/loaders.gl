@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import type {TextureFormat} from '@loaders.gl/schema';
 import {isBrowser} from '@loaders.gl/core';
 import {
@@ -19,91 +18,76 @@ import {
   getWebGLFormatFromTextureFormat
 } from '../../src/lib/utils/texture-format-map';
 import {GL_COMPRESSED_RGB_S3TC_DXT1_EXT} from '../../src/lib/gl-extensions';
-
-test('detectSupportedGPUTextureFormats', t => {
+test('detectSupportedGPUTextureFormats', () => {
   if (isBrowser) {
     // Minimal test as this is WebGL dependent
     const formats = detectSupportedGPUTextureFormats();
-    formats.forEach(format => t.ok(typeof format === 'string'));
-    t.end();
+    formats.forEach(format => expect(typeof format === 'string').toBeTruthy());
   } else {
     const formats = detectSupportedGPUTextureFormats();
-    t.equal(formats.size, 0);
-    t.end();
+    expect(formats.size).toBe(0);
   }
 });
-
-test('detectSupportedTextureFormats', t => {
+test('detectSupportedTextureFormats', () => {
   if (isBrowser) {
     const textureFormats = detectSupportedTextureFormats();
-    textureFormats.forEach(textureFormat => t.ok(typeof textureFormat === 'string'));
-    t.end();
+    textureFormats.forEach(textureFormat => expect(typeof textureFormat === 'string').toBeTruthy());
   } else {
     const textureFormats = detectSupportedTextureFormats();
-    t.equal(textureFormats.size, 0);
-    t.end();
+    expect(textureFormats.size).toBe(0);
   }
 });
-
-test('selectSupportedBasisFormat', t => {
-  t.equal(
+test('selectSupportedBasisFormat', () => {
+  expect(
     selectSupportedBasisFormat(['astc-4x4-unorm']),
-    'astc-4x4',
     'ASTC texture formats select ASTC format'
-  );
-  t.deepEqual(
+  ).toEqual('astc-4x4');
+  expect(
     selectSupportedBasisFormat(['bc7-rgba-unorm']),
-    {alpha: 'bc7-m5', noAlpha: 'bc7-m6-opaque-only'},
-    'BC7 texture formats select BC7 formats'
-  );
-  t.deepEqual(
+    'BC7 texture formats select canonical BC7'
+  ).toEqual('bc7');
+  expect(
     selectSupportedBasisFormat(['bc3-rgba-unorm']),
-    {alpha: 'bc3', noAlpha: 'bc1'},
     'BC texture formats select BC formats'
-  );
-  t.equal(
+  ).toEqual({alpha: 'bc3', noAlpha: 'bc1'});
+  expect(
     selectSupportedBasisFormat(['bc5-rg-unorm']),
-    'rgb565',
     'RGTC-only texture formats do not infer BC1/BC3 support'
-  );
-  t.equal(
+  ).toEqual({alpha: 'rgba32', noAlpha: 'rgb565'});
+  expect(
     selectSupportedBasisFormat(['etc2-rgba8unorm']),
-    'etc2',
     'ETC2 texture formats select ETC2 format'
-  );
-  t.equal(
+  ).toBe('etc2');
+  expect(
     selectSupportedBasisFormat(['etc1-rgb-unorm-webgl']),
-    'etc1',
     'ETC1 extension texture formats select ETC1 format'
-  );
-  t.equal(selectSupportedBasisFormat([]), 'rgb565', 'fallback selects RGB565');
-  t.end();
+  ).toEqual({alpha: 'rgba32', noAlpha: 'etc1'});
+  expect(selectSupportedBasisFormat([]), 'fallback preserves alpha').toEqual({
+    alpha: 'rgba32',
+    noAlpha: 'rgb565'
+  });
 });
-
-test('getSupportedBasisFormats', t => {
+test('getSupportedBasisFormats', () => {
   const supportedBasisFormats = getSupportedBasisFormats([
     'bc3-rgba-unorm',
     'bc7-rgba-unorm',
     'etc2-rgba8unorm'
   ] as TextureFormat[]);
-
-  t.ok(supportedBasisFormats.includes('bc3'), 'BC formats are reported');
-  t.ok(supportedBasisFormats.includes('bc7-m5'), 'BC7 formats are reported');
-  t.ok(supportedBasisFormats.includes('etc2'), 'ETC2 formats are reported');
-  t.ok(supportedBasisFormats.includes('rgb565'), 'fallback CPU format is always reported');
-  t.end();
+  expect(supportedBasisFormats.includes('bc3'), 'BC formats are reported').toBeTruthy();
+  expect(supportedBasisFormats.includes('bc7'), 'BC7 formats are reported').toBeTruthy();
+  expect(supportedBasisFormats.includes('etc2'), 'ETC2 formats are reported').toBeTruthy();
+  expect(
+    supportedBasisFormats.includes('rgb565'),
+    'fallback CPU format is always reported'
+  ).toBeTruthy();
 });
-
-test('texture format maps are reversible for known WebGL extension formats', t => {
-  t.equal(
+test('texture format maps are reversible for known WebGL extension formats', () => {
+  expect(
     getTextureFormatFromWebGLFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT),
-    'bc1-rgb-unorm-webgl',
     'maps known WebGL compressed formats to canonical texture format strings'
-  );
-  t.equal(
+  ).toBe('bc1-rgb-unorm-webgl');
+  expect(
     getWebGLFormatFromTextureFormat('bc1-rgb-unorm-webgl'),
-    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
     'maps canonical texture format strings back to WebGL format constants'
-  );
-  t.end();
+  ).toBe(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
 });

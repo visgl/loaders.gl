@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/schema';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
@@ -17,10 +17,12 @@ import {
 import {getGeoMetadata} from '@loaders.gl/gis';
 import * as jsonModule from '@loaders.gl/json';
 import * as arrow from 'apache-arrow';
-
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
-const STREAMING_LOADER_CONFIGS: {name: string; options?: JSONLoaderOptions}[] = [
+const STREAMING_LOADER_CONFIGS: {
+  name: string;
+  options?: JSONLoaderOptions;
+}[] = [
   {name: 'JSONLoader'},
   {name: 'JSONLoader json.backend=fast', options: {json: {backend: 'fast'}}}
 ];
@@ -46,27 +48,21 @@ const NESTED_JSON_TEXT = JSON.stringify({
     }
   ]
 });
-
-test('JSONLoader#load(geojson.json)', async t => {
+test('JSONLoader#load(geojson.json)', async () => {
   const table = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
-  t.equal(
+  expect(
     table.shape === 'object-row-table' && table.data.length,
-    308,
     'Correct number of rows received'
-  );
-  t.end();
+  ).toBe(308);
 });
-
-test('JSONTableLoader#parse(arrow-table nested rows)', async t => {
+test('JSONTableLoader#parse(arrow-table nested rows)', async () => {
   const table = BundledJSONTableLoader.parseTextSync?.(NESTED_JSON_TEXT, {
     json: {shape: 'arrow-table'}
   });
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow table shape');
-  t.equal(table.data.numRows, 2, 'returns two rows');
-
+  expect(table.shape, 'returns Arrow table shape').toBe('arrow-table');
+  expect(table.data.numRows, 'returns two rows').toBe(2);
   const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
-  t.equal(typeof geometryField?.type, 'object', 'geometry schema is nested');
+  expect(typeof geometryField?.type, 'geometry schema is nested').toBe('object');
   if (
     geometryField &&
     typeof geometryField.type === 'object' &&
@@ -75,30 +71,27 @@ test('JSONTableLoader#parse(arrow-table nested rows)', async t => {
     const coordinatesField = geometryField.type.children.find(
       child => child.name === 'coordinates'
     );
-    t.equal(coordinatesField?.type?.type, 'list', 'coordinates schema is list');
+    expect(coordinatesField?.type?.type, 'coordinates schema is list').toBe('list');
   }
-
-  const geometry = table.data.getChild('geometry')?.get(0) as {type: string; coordinates: number[]};
-  t.equal(geometry.type, 'Point', 'geometry struct is materialized');
-  t.deepEqual(
+  const geometry = table.data.getChild('geometry')?.get(0) as {
+    type: string;
+    coordinates: number[];
+  };
+  expect(geometry.type, 'geometry struct is materialized').toBe('Point');
+  expect(
     Array.from(geometry.coordinates as unknown as ArrayLike<number>),
-    [1, 2],
     'geometry coordinates are preserved'
-  );
-
+  ).toEqual([1, 2]);
   const properties = table.data.getChild('properties')?.get(1) as {
     name: string;
     count: number | null;
     active: boolean;
   };
-  t.equal(properties.name, 'B', 'properties struct is materialized');
-  t.equal(properties.count, 0, 'nested numeric values are preserved');
-  t.equal(properties.active, false, 'boolean nested values are preserved');
-
-  t.end();
+  expect(properties.name, 'properties struct is materialized').toBe('B');
+  expect(properties.count, 'nested numeric values are preserved').toBe(0);
+  expect(properties.active, 'boolean nested values are preserved').toBe(false);
 });
-
-test('JSONTableLoader#parse(arrow-table treats GeoJSON as generic JSON rows)', async t => {
+test('JSONTableLoader#parse(arrow-table treats GeoJSON as generic JSON rows)', async () => {
   const table = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -119,23 +112,20 @@ test('JSONTableLoader#parse(arrow-table treats GeoJSON as generic JSON rows)', a
       json: {shape: 'arrow-table'}
     }
   );
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow table shape');
-  t.equal(table.data.numRows, 2, 'returns feature rows');
-  t.equal(table.data.getChild('type')?.get(0), 'Feature', 'materializes feature envelope type');
-  t.equal(table.data.getChild('name'), null, 'does not lift properties as columns');
-
+  expect(table.shape, 'returns Arrow table shape').toBe('arrow-table');
+  expect(table.data.numRows, 'returns feature rows').toBe(2);
+  expect(table.data.getChild('type')?.get(0), 'materializes feature envelope type').toBe('Feature');
+  expect(table.data.getChild('name'), 'does not lift properties as columns').toBe(null);
   const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
-  t.equal(typeof geometryField?.type, 'object', 'geometry field is nested JSON');
-  t.equal(geometryField?.metadata?.['ARROW:extension:name'], undefined, 'no GeoArrow metadata');
-
-  const properties = table.data.getChild('properties')?.get(0) as {name: string; count: number};
-  t.equal(properties.name, 'A', 'keeps properties as nested struct');
-
-  t.end();
+  expect(typeof geometryField?.type, 'geometry field is nested JSON').toBe('object');
+  expect(geometryField?.metadata?.['ARROW:extension:name'], 'no GeoArrow metadata').toBe(undefined);
+  const properties = table.data.getChild('properties')?.get(0) as {
+    name: string;
+    count: number;
+  };
+  expect(properties.name, 'keeps properties as nested struct').toBe('A');
 });
-
-test('GeoJSONLoader#parse(arrow-table with supplied schema)', async t => {
+test('GeoJSONLoader#parse(arrow-table with supplied schema)', async () => {
   const schema: Schema = {
     fields: [
       {name: 'name', type: 'utf8', nullable: false},
@@ -159,20 +149,19 @@ test('GeoJSONLoader#parse(arrow-table with supplied schema)', async t => {
       json: {schema}
     }
   );
-
-  t.equal(table.schema?.fields[0].name, 'name', 'uses supplied property field');
-  t.equal(table.schema?.fields[1].name, 'geometry', 'uses supplied geometry field');
-  t.equal(
+  expect(table.schema?.fields[0].name, 'uses supplied property field').toBe('name');
+  expect(table.schema?.fields[1].name, 'uses supplied geometry field').toBe('geometry');
+  expect(
     table.schema?.fields[1].metadata?.['ARROW:extension:name'],
-    'geoarrow.wkb',
     'adds GeoArrow WKB extension metadata to supplied schema'
-  );
-  t.equal(table.data.getChild('name')?.get(0), 'A', 'converts properties against schema');
-  t.ok(table.data.getChild('geometry')?.get(0) instanceof Uint8Array, 'converts geometry to WKB');
-  t.end();
+  ).toBe('geoarrow.wkb');
+  expect(table.data.getChild('name')?.get(0), 'converts properties against schema').toBe('A');
+  expect(
+    table.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+    'converts geometry to WKB'
+  ).toBeTruthy();
 });
-
-test('GeoJSONLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
+test('GeoJSONLoader#parse(arrow-table with supplied arrow.Schema)', async () => {
   const schema = new arrow.Schema([
     new arrow.Field('name', new arrow.Utf8(), false),
     new arrow.Field('geometry', new arrow.Binary(), true)
@@ -190,80 +179,71 @@ test('GeoJSONLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
       json: {schema}
     }
   );
-
-  t.equal(table.schema?.fields[1].name, 'geometry', 'normalizes supplied Arrow schema');
-  t.equal(
+  expect(table.schema?.fields[1].name, 'normalizes supplied Arrow schema').toBe('geometry');
+  expect(
     table.schema?.fields[1].metadata?.['ARROW:extension:name'],
-    'geoarrow.wkb',
     'adds GeoArrow WKB extension metadata'
-  );
-  t.ok(table.data.getChild('geometry')?.get(0) instanceof Uint8Array, 'converts geometry to WKB');
-  t.end();
+  ).toBe('geoarrow.wkb');
+  expect(
+    table.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+    'converts geometry to WKB'
+  ).toBeTruthy();
 });
-
-test('JSONTableLoader#parse(arrow-table empty arrays and rows)', async t => {
+test('JSONTableLoader#parse(arrow-table empty arrays and rows)', async () => {
   const emptyArrayTable = BundledJSONTableLoader.parseTextSync?.(JSON.stringify({items: []}), {
     json: {shape: 'arrow-table'}
   });
-  t.equal(emptyArrayTable.shape, 'arrow-table', 'empty selected array returns Arrow table');
-  t.equal(emptyArrayTable.data.numRows, 0, 'empty selected array keeps zero rows');
-  t.equal(emptyArrayTable.data.numCols, 0, 'empty selected array keeps zero columns');
-
+  expect(emptyArrayTable.shape, 'empty selected array returns Arrow table').toBe('arrow-table');
+  expect(emptyArrayTable.data.numRows, 'empty selected array keeps zero rows').toBe(0);
+  expect(emptyArrayTable.data.numCols, 'empty selected array keeps zero columns').toBe(0);
   const emptyObjectRowsTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify({items: [{}, {}]}),
     {
       json: {shape: 'arrow-table'}
     }
   );
-  t.equal(emptyObjectRowsTable.data.numRows, 2, 'array of empty objects keeps row count');
-  t.equal(emptyObjectRowsTable.data.numCols, 0, 'array of empty objects keeps zero columns');
-
-  t.end();
+  expect(emptyObjectRowsTable.data.numRows, 'array of empty objects keeps row count').toBe(2);
+  expect(emptyObjectRowsTable.data.numCols, 'array of empty objects keeps zero columns').toBe(0);
 });
-
-test('JSONTableLoader#load(geojson.json, shape: arrow-table)', async t => {
+test('JSONTableLoader#load(geojson.json, shape: arrow-table)', async () => {
   const arrowTable = await load(GEOJSON_PATH, JSONTableLoader, {
     json: {shape: 'arrow-table'}
   });
-  t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
-  t.equal(arrowTable.data.numRows, 308, 'Correct number of Arrow rows received');
-  t.equal(arrowTable.data.getChild('type')?.get(0), 'Feature', 'Arrow field values are preserved');
-  t.end();
+  expect(arrowTable.shape, 'Correct Arrow table type received').toBe('arrow-table');
+  expect(arrowTable.data.numRows, 'Correct number of Arrow rows received').toBe(308);
+  expect(arrowTable.data.getChild('type')?.get(0), 'Arrow field values are preserved').toBe(
+    'Feature'
+  );
 });
-
-test('JSONTableLoader#parse returns requested row-table shapes', async t => {
+test('JSONTableLoader#parse returns requested row-table shapes', async () => {
   const objectRowTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 1, name: 'A'}])
   );
-  t.equal(objectRowTable.shape, 'object-row-table', 'defaults to object-row-table output');
-
+  expect(objectRowTable.shape, 'defaults to object-row-table output').toBe('object-row-table');
   const arrayRowTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 1, name: 'A'}]),
     {json: {shape: 'array-row-table'}}
   );
-  t.equal(arrayRowTable.shape, 'array-row-table', 'returns array-row-table output on request');
-  t.deepEqual(arrayRowTable.data[0], [1, 'A'], 'preserves row values during conversion');
-  t.end();
+  expect(arrayRowTable.shape, 'returns array-row-table output on request').toBe('array-row-table');
+  expect(arrayRowTable.data[0], 'preserves row values during conversion').toEqual([1, 'A']);
 });
-
-test('JSONTableLoader#parse rejects non-tabular JSON documents', async t => {
-  t.throws(
+test('JSONTableLoader#parse rejects non-tabular JSON documents', async () => {
+  expect(
     () => BundledJSONTableLoader.parseTextSync?.(JSON.stringify({meta: {source: 'test'}})),
-    /expected a JSON row array or an object containing a JSON row array/,
     'documents without row arrays fail table-only parsing'
-  );
-  t.end();
+  ).toThrow(/expected a JSON row array or an object containing a JSON row array/);
 });
-
 for (const config of STREAMING_LOADER_CONFIGS) {
-  test(`${config.name}#loadInBatches(geojson.json, rows, batchSize = auto)`, async t => {
+  test(`${config.name}#loadInBatches(geojson.json, rows, batchSize = auto)`, async () => {
     const iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
       getStreamingLoaderOptions(config)
     );
-    t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
-
+    expect(
+      isIterator(iterator) || isAsyncIterable(iterator),
+      'loadInBatches returned iterator'
+    ).toBeTruthy();
     let batch;
     let batchCount = 0;
     let rowCount = 0;
@@ -272,17 +252,12 @@ for (const config of STREAMING_LOADER_CONFIGS) {
     for await (batch of iterator) {
       batchCount++;
       rowCount += batch.length;
-      // byteLength = batch.bytesUsed;
     }
-
     // t.comment(JSON.stringify(batchCount));
-    t.ok(batchCount <= 4, 'Correct number of batches received');
-    t.equal(rowCount, 308, 'Correct number of row received');
-    // t.equal(byteLength, 135910, 'Correct number of bytes received');
-    t.end();
+    expect(batchCount <= 4, 'Correct number of batches received').toBeTruthy();
+    expect(rowCount, 'Correct number of row received').toBe(308);
   });
-
-  test(`${config.name}#loadInBatches(geojson.json, rows, batchSize = 10)`, async t => {
+  test(`${config.name}#loadInBatches(geojson.json, rows, batchSize = 10)`, async () => {
     const iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
@@ -290,79 +265,66 @@ for (const config of STREAMING_LOADER_CONFIGS) {
         batchSize: 10
       })
     );
-    t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
-
+    expect(
+      isIterator(iterator) || isAsyncIterable(iterator),
+      'loadInBatches returned iterator'
+    ).toBeTruthy();
     let batch;
     let batchCount = 0;
     let rowCount = 0;
     for await (batch of iterator) {
       // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
       if (batchCount < 30) {
-        t.equal(batch.length, 10, `Got correct batch size for batch ${batchCount}`);
+        expect(batch.length, `Got correct batch size for batch ${batchCount}`).toBe(10);
       }
-
       const feature = batch.data[0];
-      t.equal(feature.type, 'Feature', 'row 0 valid');
-      t.equal(feature.geometry.type, 'Point', 'row 0 valid');
-
+      expect(feature.type, 'row 0 valid').toBe('Feature');
+      expect(feature.geometry.type, 'row 0 valid').toBe('Point');
       batchCount++;
       rowCount += batch.length;
     }
-
     const lastFeature = batch.data[batch.data.length - 1];
-    t.equal(lastFeature.type, 'Feature', 'row 0 valid');
-    t.equal(lastFeature.properties.name, 'West Oakland (WOAK)', 'row 0 valid');
-
-    t.equal(batchCount, 31, 'Correct number of batches received');
-    t.equal(rowCount, 308, 'Correct number of row received');
-    t.end();
+    expect(lastFeature.type, 'row 0 valid').toBe('Feature');
+    expect(lastFeature.properties.name, 'row 0 valid').toBe('West Oakland (WOAK)');
+    expect(batchCount, 'Correct number of batches received').toBe(31);
+    expect(rowCount, 'Correct number of row received').toBe(308);
   });
 }
-
-test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
+test('JSONLoader#parseInBatches(complete rows with nested arrays)', async () => {
   const valueCount = 2048;
   const rows = Array.from({length: 3}, (_, rowIndex) => ({
     text: `row-${rowIndex}`,
     values: Array.from({length: valueCount}, (_, valueIndex) => rowIndex * valueCount + valueIndex)
   }));
-
   const iterator = BundledJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(JSON.stringify(rows), 128),
     {
       batchSize: 1
     }
   );
-
-  t.ok(iterator, 'parseInBatches returned iterator');
+  expect(iterator, 'parseInBatches returned iterator').toBeTruthy();
   if (!iterator) {
-    t.end();
     return;
   }
-
   let emittedRowCount = 0;
   for await (const batch of iterator) {
     if (batch.batchType === 'data') {
-      t.equal(batch.length, 1, 'fixed-size batch contains one complete row');
+      expect(batch.length, 'fixed-size batch contains one complete row').toBe(1);
       for (const row of batch.data) {
         const expectedFirstValue = emittedRowCount * valueCount;
         emittedRowCount++;
-        t.equal(row.values.length, valueCount, 'nested values array is complete when emitted');
-        t.equal(row.values[0], expectedFirstValue, 'first nested value is preserved');
-        t.equal(
-          row.values[valueCount - 1],
-          expectedFirstValue + valueCount - 1,
-          'last nested value is preserved'
+        expect(row.values.length, 'nested values array is complete when emitted').toBe(valueCount);
+        expect(row.values[0], 'first nested value is preserved').toBe(expectedFirstValue);
+        expect(row.values[valueCount - 1], 'last nested value is preserved').toBe(
+          expectedFirstValue + valueCount - 1
         );
       }
     }
   }
-
-  t.equal(emittedRowCount, rows.length, 'all rows were emitted');
-  t.end();
+  expect(emittedRowCount, 'all rows were emitted').toBe(rows.length);
 });
-
 for (const config of STREAMING_LOADER_CONFIGS) {
-  test(`${config.name}#loadInBatches(jsonpaths)`, async t => {
+  test(`${config.name}#loadInBatches(jsonpaths)`, async () => {
     let iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
@@ -370,7 +332,6 @@ for (const config of STREAMING_LOADER_CONFIGS) {
         json: {jsonpaths: ['$.features']}
       })
     );
-
     // let batchCount = 0;
     let rowCount = 0;
     // let byteLength = 0;
@@ -379,54 +340,46 @@ for (const config of STREAMING_LOADER_CONFIGS) {
       rowCount += batch.length;
       // byteLength = batch.bytesUsed;
       // @ts-ignore
-      t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+      expect(batch.jsonpath?.toString(), 'correct jsonpath on batch').toBe('$.features');
     }
-
     // t.skip(batchCount <= 3, 'Correct number of batches received');
-    t.equal(rowCount, 308, 'Correct number of row received');
+    expect(rowCount, 'Correct number of row received').toBe(308);
     // t.equal(byteLength, 135910, 'Correct number of bytes received');
-
     iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
       getStreamingLoaderOptions(config, {json: {jsonpaths: ['$.featureTypo']}})
     );
-
     rowCount = 0;
     for await (const batch of iterator) {
       rowCount += batch.length;
     }
-
-    t.equal(rowCount, 0, 'Correct number of row received');
-    t.end();
+    expect(rowCount, 'Correct number of row received').toBe(0);
   });
 }
-
-test('GeoJSONLoader#loadInBatches(arrow-table streams GeoArrow WKB)', async t => {
+test('GeoJSONLoader#loadInBatches(arrow-table streams GeoArrow WKB)', async () => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
     batchSize: 10,
     geojson: {shape: 'arrow-table'}
   });
-
   let rowCount = 0;
   for await (const batch of iterator) {
-    t.equal(batch.shape, 'arrow-table', 'data batch is converted to Arrow');
-    t.equal(
+    expect(batch.shape, 'data batch is converted to Arrow').toBe('arrow-table');
+    expect(
       batch.schema?.fields.find(field => field.name === 'geometry')?.metadata?.[
         'ARROW:extension:name'
       ],
-      'geoarrow.wkb',
       'geometry field carries GeoArrow WKB metadata'
-    );
-    t.ok(batch.data.getChild('geometry')?.get(0) instanceof Uint8Array, 'geometry is WKB');
+    ).toBe('geoarrow.wkb');
+    expect(
+      batch.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+      'geometry is WKB'
+    ).toBeTruthy();
     rowCount += batch.length;
   }
-
-  t.equal(rowCount, 308, 'converts all streamed feature rows');
-  t.end();
+  expect(rowCount, 'converts all streamed feature rows').toBe(308);
 });
-
-test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)', async t => {
+test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)', async () => {
   const crs = {type: 'name', properties: {name: 'EPSG:4326'}};
   const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
@@ -445,25 +398,20 @@ test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)
     ),
     {batchSize: 1, geojson: {shape: 'arrow-table'}}
   );
-
   let dataBatchCount = 0;
   for await (const batch of iterator) {
-    t.equal(batch.batchType, 'data', 'internal metadata batches are not emitted');
+    expect(batch.batchType, 'internal metadata batches are not emitted').toBe('data');
     const geoMetadata = getGeoMetadata(batch.schema?.metadata);
-    t.deepEqual(geoMetadata?.columns.geometry.geojson_crs, crs, 'preserves root CRS on schema');
-    t.equal(
+    expect(geoMetadata?.columns.geometry.geojson_crs, 'preserves root CRS on schema').toEqual(crs);
+    expect(
       (geoMetadata?.columns.geometry.crs as any)?.id?.code,
-      4326,
       'maps known root CRS before first feature batch'
-    );
+    ).toBe(4326);
     dataBatchCount++;
   }
-
-  t.equal(dataBatchCount, 1, 'received one data batch');
-  t.end();
+  expect(dataBatchCount, 'received one data batch').toBe(1);
 });
-
-test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)', async t => {
+test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)', async () => {
   const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
@@ -481,21 +429,17 @@ test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)'
     ),
     {batchSize: 1, geojson: {shape: 'arrow-table'}}
   );
-
   let dataBatchCount = 0;
   for await (const batch of iterator) {
-    t.equal(batch.batchType, 'data', 'late CRS does not force metadata batches');
+    expect(batch.batchType, 'late CRS does not force metadata batches').toBe('data');
     const geoMetadata = getGeoMetadata(batch.schema?.metadata);
-    t.equal(geoMetadata?.columns.geometry.geojson_crs, undefined, 'late CRS is ignored');
-    t.equal(geoMetadata?.columns.geometry.crs, undefined, 'late CRS is not mapped');
+    expect(geoMetadata?.columns.geometry.geojson_crs, 'late CRS is ignored').toBe(undefined);
+    expect(geoMetadata?.columns.geometry.crs, 'late CRS is not mapped').toBe(undefined);
     dataBatchCount++;
   }
-
-  t.equal(dataBatchCount, 1, 'received one data batch');
-  t.end();
+  expect(dataBatchCount, 'received one data batch').toBe(1);
 });
-
-test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t => {
+test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async () => {
   const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
@@ -513,25 +457,18 @@ test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async 
           }
         ]
       }),
-      1000
+      20
     ),
     {batchSize: 1, geojson: {shape: 'arrow-table'}}
   );
-
-  await t.rejects(
-    async () => {
-      for await (const _batch of iterator) {
-        // Consume batches until the second feature violates the frozen schema.
-      }
-    },
-    /unexpected field extra/,
-    'later streamed feature batches are converted against the frozen schema'
+  await expect(async () => {
+    for await (const _batch of iterator) {
+    }
+  }, 'later streamed feature batches are converted against the frozen schema').rejects.toThrow(
+    /unexpected field extra/
   );
-
-  t.end();
 });
-
-test('JSONTableLoader#parseInBatches(arrow-table preserves metadata batches)', async t => {
+test('JSONTableLoader#parseInBatches(arrow-table preserves metadata batches)', async () => {
   const iterator = BundledJSONTableLoader.parseInBatches?.(
     makeChunkedTextIterator(NESTED_JSON_TEXT, 13),
     {
@@ -543,35 +480,28 @@ test('JSONTableLoader#parseInBatches(arrow-table preserves metadata batches)', a
       }
     }
   );
-
   let dataBatchCount = 0;
   for await (const batch of iterator) {
     switch (batch.batchType) {
       case 'partial-result':
-        t.ok(batch.container, 'partial-result retains container metadata');
+        expect(batch.container, 'partial-result retains container metadata').toBeTruthy();
         break;
-
       case 'data':
-        t.equal(batch.shape, 'arrow-table', 'data batch is converted to Arrow');
-        t.equal(batch.data.numRows, 1, 'batch size is preserved after Arrow conversion');
+        expect(batch.shape, 'data batch is converted to Arrow').toBe('arrow-table');
+        expect(batch.data.numRows, 'batch size is preserved after Arrow conversion').toBe(1);
         dataBatchCount++;
         break;
-
       case 'final-result':
-        t.equal(batch.shape, 'json', 'final-result batch keeps JSON shape');
-        t.ok(batch.container, 'final-result retains container metadata');
+        expect(batch.shape, 'final-result batch keeps JSON shape').toBe('json');
+        expect(batch.container, 'final-result retains container metadata').toBeTruthy();
         break;
-
       default:
     }
   }
-
-  t.equal(dataBatchCount, 2, 'received both Arrow data batches');
-  t.end();
+  expect(dataBatchCount, 'received both Arrow data batches').toBe(2);
 });
-
-test('JSONTableLoader#parse(arrow-table rejects incompatible field shapes)', async t => {
-  t.throws(
+test('JSONTableLoader#parse(arrow-table rejects incompatible field shapes)', async () => {
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(
         JSON.stringify({items: [{value: 1}, {value: {nested: true}}]}),
@@ -579,14 +509,10 @@ test('JSONTableLoader#parse(arrow-table rejects incompatible field shapes)', asy
           json: {shape: 'arrow-table'}
         }
       ),
-    /incompatible Arrow field types/,
     'throws when rows disagree on field shape'
-  );
-
-  t.end();
+  ).toThrow(/incompatible Arrow field types/);
 });
-
-test('JSONTableLoader#parse(arrow-table with supplied loaders.gl schema)', async t => {
+test('JSONTableLoader#parse(arrow-table with supplied loaders.gl schema)', async () => {
   const schema: Schema = {
     fields: [
       {name: 'id', type: 'float64', nullable: false},
@@ -594,24 +520,19 @@ test('JSONTableLoader#parse(arrow-table with supplied loaders.gl schema)', async
     ],
     metadata: {}
   };
-
   const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
     json: {shape: 'arrow-table', schema}
   });
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow table');
-  t.equal(table.schema?.fields[0].name, 'id', 'uses supplied schema fields');
-  t.equal(table.data.getChild('id')?.get(0), 1, 'converts numeric field');
-  t.equal(table.data.getChild('name')?.get(0), 'A', 'converts string field');
-  t.end();
+  expect(table.shape, 'returns Arrow table').toBe('arrow-table');
+  expect(table.schema?.fields[0].name, 'uses supplied schema fields').toBe('id');
+  expect(table.data.getChild('id')?.get(0), 'converts numeric field').toBe(1);
+  expect(table.data.getChild('name')?.get(0), 'converts string field').toBe('A');
 });
-
-test('JSONTableLoader#parse(arrow-table prefers supported Arrow view types)', async t => {
+test('JSONTableLoader#parse(arrow-table prefers supported Arrow view types)', async () => {
   const schema: Schema = {
     fields: [{name: 'name', type: 'utf8', nullable: false}],
     metadata: {}
   };
-
   const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{name: 'Arrow'}]), {
     json: {
       shape: 'arrow-table',
@@ -619,35 +540,27 @@ test('JSONTableLoader#parse(arrow-table prefers supported Arrow view types)', as
       arrowConversion: {viewTypes: 'require'}
     }
   });
-
-  t.equal(table.data.schema.fields[0].type.constructor.name, 'Utf8View');
-  t.deepEqual(
+  expect(table.data.schema.fields[0].type.constructor.name).toBe('Utf8View');
+  expect(
     table.schema?.fields.map(field => field.type),
-    ['utf8-view'],
     'reports the selected physical types'
-  );
-  t.equal(table.data.getChild('name')?.get(0), 'Arrow');
-  t.end();
+  ).toEqual(['utf8-view']);
+  expect(table.data.getChild('name')?.get(0)).toBe('Arrow');
 });
-
-test('JSONTableLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
+test('JSONTableLoader#parse(arrow-table with supplied arrow.Schema)', async () => {
   const schema = new arrow.Schema([
     new arrow.Field('id', new arrow.Float64(), false),
     new arrow.Field('name', new arrow.Utf8(), true)
   ]);
-
   const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
     json: {shape: 'arrow-table', schema}
   });
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow table');
-  t.equal(table.schema?.fields[1].name, 'name', 'normalizes Arrow schema');
-  t.equal(table.data.getChild('id')?.get(0), 1, 'converts numeric field');
-  t.equal(table.data.getChild('name')?.get(0), 'A', 'converts string field');
-  t.end();
+  expect(table.shape, 'returns Arrow table').toBe('arrow-table');
+  expect(table.schema?.fields[1].name, 'normalizes Arrow schema').toBe('name');
+  expect(table.data.getChild('id')?.get(0), 'converts numeric field').toBe(1);
+  expect(table.data.getChild('name')?.get(0), 'converts string field').toBe('A');
 });
-
-test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
+test('JSONTableLoader#parse(arrow-table conversion policy)', async () => {
   const nullableSchema: Schema = {
     fields: [{name: 'id', type: 'float64', nullable: true}],
     metadata: {}
@@ -656,16 +569,13 @@ test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
     fields: [{name: 'id', type: 'float64', nullable: false}],
     metadata: {}
   };
-
-  t.throws(
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
-    /expected number/,
     'strict mode rejects type mismatches'
-  );
-
+  ).toThrow(/expected number/);
   const typeMismatchLog = makeTestLog();
   const nullTypeTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 'bad'}, {id: 'worse'}]),
@@ -678,18 +588,15 @@ test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
       }
     }
   );
-  t.equal(nullTypeTable.data.getChild('id')?.get(0), null, 'type mismatch can recover to null');
-  t.equal(typeMismatchLog.messages.length, 1, 'type mismatch recovery logs once');
-
-  t.throws(
+  expect(nullTypeTable.data.getChild('id')?.get(0), 'type mismatch can recover to null').toBe(null);
+  expect(typeMismatchLog.messages.length, 'type mismatch recovery logs once').toBe(1);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
-    /missing field id/,
     'strict mode rejects missing fields'
-  );
-
+  ).toThrow(/missing field id/);
   const missingFieldLog = makeTestLog();
   const missingFieldTable = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{}, {}]), {
     core: {log: missingFieldLog},
@@ -699,18 +606,17 @@ test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
       arrowConversion: {onMissingField: 'null'}
     }
   });
-  t.equal(missingFieldTable.data.getChild('id')?.get(0), null, 'missing field can recover to null');
-  t.equal(missingFieldLog.messages.length, 1, 'missing field recovery logs once');
-
-  t.throws(
+  expect(missingFieldTable.data.getChild('id')?.get(0), 'missing field can recover to null').toBe(
+    null
+  );
+  expect(missingFieldLog.messages.length, 'missing field recovery logs once').toBe(1);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1, extra: true}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
-    /unexpected field extra/,
     'strict mode rejects extra fields'
-  );
-
+  ).toThrow(/unexpected field extra/);
   const extraFieldLog = makeTestLog();
   const dropExtraTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([
@@ -726,11 +632,10 @@ test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
       }
     }
   );
-  t.equal(dropExtraTable.data.numCols, 1, 'extra field is dropped');
-  t.equal(dropExtraTable.data.getChild('extra'), null, 'extra field is not materialized');
-  t.equal(extraFieldLog.messages.length, 1, 'extra field recovery logs once');
-
-  t.throws(
+  expect(dropExtraTable.data.numCols, 'extra field is dropped').toBe(1);
+  expect(dropExtraTable.data.getChild('extra'), 'extra field is not materialized').toBe(null);
+  expect(extraFieldLog.messages.length, 'extra field recovery logs once').toBe(1);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
         json: {
@@ -739,14 +644,10 @@ test('JSONTableLoader#parse(arrow-table conversion policy)', async t => {
           arrowConversion: {onTypeMismatch: 'null'}
         }
       }),
-    /expected number/,
     'non-nullable field still rejects null recovery'
-  );
-
-  t.end();
+  ).toThrow(/expected number/);
 });
-
-test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => {
+test('JSONTableLoader#parse(arrow-table integer conversion policy)', async () => {
   const nullableSchema: Schema = {
     fields: [{name: 'id', type: 'int8', nullable: true}],
     metadata: {}
@@ -755,17 +656,14 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
     fields: [{name: 'id', type: 'int8', nullable: false}],
     metadata: {}
   };
-
-  t.throws(
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
-    /expected integer/,
     'strict mode rejects non-integral integer values'
-  );
-
-  t.throws(
+  ).toThrow(/expected integer/);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: -1}]), {
         json: {
@@ -773,10 +671,8 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
           schema: {fields: [{name: 'id', type: 'uint8', nullable: true}], metadata: {}}
         }
       }),
-    /expected integer/,
     'strict mode rejects out-of-range unsigned integer values'
-  );
-
+  ).toThrow(/expected integer/);
   const nullIntegerTable = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
     json: {
       shape: 'arrow-table',
@@ -784,13 +680,11 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
       arrowConversion: {integerConversion: 'null'}
     }
   });
-  t.equal(
+  expect(
     nullIntegerTable.data.getChild('id')?.get(0),
-    null,
     'integer conversion can recover to null'
-  );
-
-  t.throws(
+  ).toBe(null);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
         json: {
@@ -799,10 +693,8 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
           arrowConversion: {integerConversion: 'null'}
         }
       }),
-    /expected integer/,
     'non-nullable integer field still rejects null recovery'
-  );
-
+  ).toThrow(/expected integer/);
   const clampedIntegerTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 127.6}]),
     {
@@ -813,12 +705,10 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
       }
     }
   );
-  t.equal(
+  expect(
     clampedIntegerTable.data.getChild('id')?.get(0),
-    127,
     'integer conversion can round and clamp'
-  );
-
+  ).toBe(127);
   const integerConversionLog = makeTestLog();
   const warnedIntegerTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 2.5}, {id: 3.5}]),
@@ -831,27 +721,21 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
       }
     }
   );
-  t.equal(warnedIntegerTable.data.getChild('id')?.get(0), 3, 'warn mode rounds values');
-  t.equal(integerConversionLog.messages.length, 1, 'integer conversion warning logs once');
-
-  t.end();
+  expect(warnedIntegerTable.data.getChild('id')?.get(0), 'warn mode rounds values').toBe(3);
+  expect(integerConversionLog.messages.length, 'integer conversion warning logs once').toBe(1);
 });
-
-test('JSONTableLoader#parse(arrow-table Utf8 numeric conversion policy)', async t => {
+test('JSONTableLoader#parse(arrow-table Utf8 numeric conversion policy)', async () => {
   const schema: Schema = {
     fields: [{name: 'id', type: 'utf8', nullable: false}],
     metadata: {}
   };
-
-  t.throws(
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 7}]), {
         json: {shape: 'arrow-table', schema}
       }),
-    /expected string/,
     'strict mode rejects numeric Utf8 values by default'
-  );
-
+  ).toThrow(/expected string/);
   const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 7}, {id: '8'}]), {
     json: {
       shape: 'arrow-table',
@@ -859,10 +743,9 @@ test('JSONTableLoader#parse(arrow-table Utf8 numeric conversion policy)', async 
       arrowConversion: {utf8Conversion: 'number-to-string'}
     }
   });
-  t.equal(table.data.getChild('id')?.get(0), '7', 'numeric Utf8 values can coerce to strings');
-  t.equal(table.data.getChild('id')?.get(1), '8', 'string Utf8 values remain unchanged');
-
-  t.throws(
+  expect(table.data.getChild('id')?.get(0), 'numeric Utf8 values can coerce to strings').toBe('7');
+  expect(table.data.getChild('id')?.get(1), 'string Utf8 values remain unchanged').toBe('8');
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: true}]), {
         json: {
@@ -871,43 +754,32 @@ test('JSONTableLoader#parse(arrow-table Utf8 numeric conversion policy)', async 
           arrowConversion: {utf8Conversion: 'number-to-string'}
         }
       }),
-    /expected string/,
     'non-numeric primitive values still reject Utf8 coercion'
-  );
-  t.end();
+  ).toThrow(/expected string/);
 });
-
-test('JSONTableLoader#parse(arrow-table schema options require Arrow shape)', async t => {
+test('JSONTableLoader#parse(arrow-table schema options require Arrow shape)', async () => {
   const schema: Schema = {
     fields: [{name: 'id', type: 'float64', nullable: true}],
     metadata: {}
   };
-
-  t.throws(
+  expect(
     () => BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {json: {schema}}),
-    /require json.shape to be "arrow-table"/,
     'schema without Arrow shape throws'
-  );
-
-  t.throws(
+  ).toThrow(/require json.shape to be "arrow-table"/);
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {
         json: {arrowConversion: {onExtraField: 'drop'}}
       }),
-    /require json.shape to be "arrow-table"/,
     'conversion policy without Arrow shape throws'
-  );
-
-  t.end();
+  ).toThrow(/require json.shape to be "arrow-table"/);
 });
-
-test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async t => {
+test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async () => {
   const schema: Schema = {
     fields: [{name: 'geometry', type: 'binary', nullable: true}],
     metadata: {}
   };
-
-  t.throws(
+  expect(
     () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
@@ -915,11 +787,9 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async t => 
           json: {schema}
         }
       ),
-    /require geojson.shape to be "arrow-table"/,
     'schema without Arrow shape throws'
-  );
-
-  t.throws(
+  ).toThrow(/require geojson.shape to be "arrow-table"/);
+  expect(
     () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
@@ -927,11 +797,9 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async t => 
           json: {arrowConversion: {onExtraField: 'drop'}}
         }
       ),
-    /require geojson.shape to be "arrow-table"/,
     'conversion policy without Arrow shape throws'
-  );
-
-  t.throws(
+  ).toThrow(/require geojson.shape to be "arrow-table"/);
+  expect(
     () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
@@ -939,14 +807,10 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async t => 
           json: {geoarrowGeometryColumn: 'geom'}
         }
       ),
-    /require geojson.shape to be "arrow-table"/,
     'geometry column option without Arrow shape throws'
-  );
-
-  t.end();
+  ).toThrow(/require geojson.shape to be "arrow-table"/);
 });
-
-test('JSONTableLoader#parseInBatches(arrow-table with supplied schema)', async t => {
+test('JSONTableLoader#parseInBatches(arrow-table with supplied schema)', async () => {
   const schema: Schema = {
     fields: [{name: 'id', type: 'float64', nullable: false}],
     metadata: {}
@@ -958,20 +822,16 @@ test('JSONTableLoader#parseInBatches(arrow-table with supplied schema)', async t
       json: {shape: 'arrow-table', jsonpaths: ['$.items'], schema}
     }
   );
-
   let rowCount = 0;
   for await (const batch of iterator) {
     if (batch.batchType === 'data') {
-      t.equal(batch.schema?.fields[0].name, 'id', 'uses supplied schema in data batch');
+      expect(batch.schema?.fields[0].name, 'uses supplied schema in data batch').toBe('id');
       rowCount += batch.data.numRows;
     }
   }
-
-  t.equal(rowCount, 2, 'converts all streamed rows');
-  t.end();
+  expect(rowCount, 'converts all streamed rows').toBe(2);
 });
-
-test('JSONTableLoader#parseInBatches(fast arrow-table preserves raw Utf8 JSON fields)', async t => {
+test('JSONTableLoader#parseInBatches(fast arrow-table preserves raw Utf8 JSON fields)', async () => {
   const schema: Schema = {
     fields: [
       {name: 'id', type: 'float64', nullable: false},
@@ -993,7 +853,6 @@ test('JSONTableLoader#parseInBatches(fast arrow-table preserves raw Utf8 JSON fi
       arrowConversion: {onMissingField: 'null'}
     }
   });
-
   const metadataValues: (string | null)[] = [];
   const tagValues: (string | null)[] = [];
   const labelValues: string[] = [];
@@ -1004,84 +863,60 @@ test('JSONTableLoader#parseInBatches(fast arrow-table preserves raw Utf8 JSON fi
       labelValues.push(batch.data.getChild('label')?.get(0) as string);
     }
   }
-
-  t.deepEqual(
-    metadataValues,
-    ['{ "nested" : [1, {"escaped":"\\u2603"}] }', null],
-    'object values keep their exact JSON source or null'
-  );
-  t.deepEqual(
-    tagValues,
-    ['[ "alpha" , {"value":2} ]', null],
-    'array values keep their exact JSON source or recovered missing null'
-  );
-  t.deepEqual(labelValues, ['line\nbreak', 'plain'], 'ordinary Utf8 strings still decode');
-  t.end();
+  expect(metadataValues, 'object values keep their exact JSON source or null').toEqual([
+    '{ "nested" : [1, {"escaped":"\\u2603"}] }',
+    null
+  ]);
+  expect(tagValues, 'array values keep their exact JSON source or recovered missing null').toEqual([
+    '[ "alpha" , {"value":2} ]',
+    null
+  ]);
+  expect(labelValues, 'ordinary Utf8 strings still decode').toEqual(['line\nbreak', 'plain']);
 });
-
-test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsing', async t => {
+test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsing', async () => {
   const schema: Schema = {
     fields: [{name: 'metadata', type: 'utf8', nullable: false}],
     metadata: {}
   };
   const jsonText = '{"items":[{"metadata":{"nested":true}}]}';
-
-  t.throws(
+  expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(jsonText, {
         json: {shape: 'arrow-table', schema}
       }),
-    /expected string/,
     'sync parsing still rejects object values for Utf8 schema fields'
-  );
-
+  ).toThrow(/expected string/);
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
     batchSize: 1,
     json: {shape: 'arrow-table', jsonpaths: ['$.items'], schema}
   });
-
-  await t.rejects(
-    async () => {
-      for await (const _batch of iterator) {
-        // Consume batches until Arrow conversion reaches the nested object value.
-      }
-    },
-    /expected string/,
-    'clarinet streaming still rejects object values for Utf8 schema fields'
+  await expect(async () => {
+    for await (const _batch of iterator) {
+    }
+  }, 'clarinet streaming still rejects object values for Utf8 schema fields').rejects.toThrow(
+    /expected string/
   );
-  t.end();
 });
-
-test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t => {
+test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async () => {
   const iterator = BundledNDJSONLoader.parseInBatches?.(
     makeChunkedTextIterator('{"id":1}\n{"id":2,"extra":true}\n', 9),
     {batchSize: 1, ndjson: {shape: 'arrow-table'}}
   );
-
-  await t.rejects(
-    async () => {
-      for await (const _batch of iterator) {
-        // Consume batches until the second row violates the frozen schema.
-      }
-    },
-    /unexpected field extra/,
-    'later streamed batches are converted against the frozen schema'
+  await await expect(async () => {
+    for await (const _batch of iterator) {
+    }
+  }, 'later streamed batches are converted against the frozen schema').rejects.toThrow(
+    /unexpected field extra/
   );
-
-  t.end();
 });
-
-test('NDJSONLoader#parse(deprecated json.shape arrow-table alias)', async t => {
+test('NDJSONLoader#parse(deprecated json.shape arrow-table alias)', async () => {
   const table = BundledNDJSONLoader.parseTextSync?.('{"id":1}\n{"id":2}\n', {
     json: {shape: 'arrow-table'}
   });
-
-  t.equal(table.shape, 'arrow-table', 'deprecated json.shape alias requests Arrow output');
-  t.equal(table.data.numRows, 2, 'converts all rows');
-  t.end();
+  expect(table.shape, 'deprecated json.shape alias requests Arrow output').toBe('arrow-table');
+  expect(table.data.numRows, 'converts all rows').toBe(2);
 });
-
-test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic rows)', async t => {
+test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic rows)', async () => {
   const ndjsonText = `${JSON.stringify({
     type: 'Feature',
     geometry: {type: 'Point', coordinates: [1, 2]},
@@ -1095,44 +930,33 @@ test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic
     batchSize: 1,
     ndjson: {shape: 'arrow-table'}
   });
-
   let rowCount = 0;
   for await (const batch of iterator) {
-    t.equal(batch.shape, 'arrow-table', 'data batch is converted to Arrow');
-    t.equal(batch.data.getChild('type')?.get(0), 'Feature', 'keeps feature envelope type');
-    t.equal(batch.data.getChild('name'), null, 'does not lift properties');
-    t.equal(
+    expect(batch.shape, 'data batch is converted to Arrow').toBe('arrow-table');
+    expect(batch.data.getChild('type')?.get(0), 'keeps feature envelope type').toBe('Feature');
+    expect(batch.data.getChild('name'), 'does not lift properties').toBe(null);
+    expect(
       batch.schema?.fields.find(field => field.name === 'geometry')?.metadata?.[
         'ARROW:extension:name'
       ],
-      undefined,
       'does not add GeoArrow metadata'
-    );
+    ).toBe(undefined);
     rowCount += batch.length;
   }
-
-  t.equal(rowCount, 2, 'converts streamed feature rows generically');
-  t.end();
+  expect(rowCount, 'converts streamed feature rows generically').toBe(2);
 });
-
-test('GeoJSONLoader#exports official names only', t => {
-  t.equal(typeof jsonModule.JSONTableLoader, 'object', 'JSONTableLoader is exported');
-  t.equal(typeof jsonModule.GeoJSONLoader, 'object', 'GeoJSONLoader is exported');
-  t.equal(typeof jsonModule.GeoJSONWriter, 'object', 'GeoJSONWriter is exported');
-  t.equal(
-    (jsonModule as any)._GeoJSONLoader,
-    undefined,
-    'underscored GeoJSONLoader is not exported'
+test('GeoJSONLoader#exports official names only', () => {
+  expect(typeof jsonModule.JSONTableLoader, 'JSONTableLoader is exported').toBe('object');
+  expect(typeof jsonModule.GeoJSONLoader, 'GeoJSONLoader is exported').toBe('object');
+  expect(typeof jsonModule.GeoJSONWriter, 'GeoJSONWriter is exported').toBe('object');
+  expect((jsonModule as any)._GeoJSONLoader, 'underscored GeoJSONLoader is not exported').toBe(
+    undefined
   );
-  t.equal(
-    (jsonModule as any)._GeoJSONWriter,
-    undefined,
-    'underscored GeoJSONWriter is not exported'
+  expect((jsonModule as any)._GeoJSONWriter, 'underscored GeoJSONWriter is not exported').toBe(
+    undefined
   );
-  t.end();
 });
-
-test('GeoJSONLoader#parse(default geojson-table shape)', async t => {
+test('GeoJSONLoader#parse(default geojson-table shape)', async () => {
   const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -1145,13 +969,10 @@ test('GeoJSONLoader#parse(default geojson-table shape)', async t => {
       ]
     })
   );
-
-  t.equal(table.shape, 'geojson-table', 'returns GeoJSON table by default');
-  t.equal(table.features.length, 1, 'returns features');
-  t.end();
+  expect(table.shape, 'returns GeoJSON table by default').toBe('geojson-table');
+  expect(table.features.length, 'returns features').toBe(1);
 });
-
-test('GeoJSONLoader#parse(binary-feature-collection shape)', async t => {
+test('GeoJSONLoader#parse(binary-feature-collection shape)', async () => {
   const binary = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -1165,13 +986,10 @@ test('GeoJSONLoader#parse(binary-feature-collection shape)', async t => {
     }),
     {geojson: {shape: 'binary-feature-collection'}}
   );
-
-  t.equal(binary.shape, 'binary-feature-collection', 'returns binary feature collection');
-  t.ok(binary.points, 'returns point binary features');
-  t.end();
+  expect(binary.shape, 'returns binary feature collection').toBe('binary-feature-collection');
+  expect(binary.points, 'returns point binary features').toBeTruthy();
 });
-
-test('GeoJSONLoader#parse(arrow-table GeoArrow WKB)', async t => {
+test('GeoJSONLoader#parse(arrow-table GeoArrow WKB)', async () => {
   const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -1185,21 +1003,20 @@ test('GeoJSONLoader#parse(arrow-table GeoArrow WKB)', async t => {
     }),
     {geojson: {shape: 'arrow-table'}}
   );
-
-  t.equal(table.shape, 'arrow-table', 'returns Arrow table');
-  t.equal(table.data.getChild('name')?.get(0), 'A', 'lifts properties as columns');
+  expect(table.shape, 'returns Arrow table').toBe('arrow-table');
+  expect(table.data.getChild('name')?.get(0), 'lifts properties as columns').toBe('A');
   const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
-  t.equal(geometryField?.type, 'binary', 'geometry field is binary');
-  t.equal(
+  expect(geometryField?.type, 'geometry field is binary').toBe('binary');
+  expect(
     geometryField?.metadata?.['ARROW:extension:name'],
-    'geoarrow.wkb',
     'geometry field carries GeoArrow WKB extension metadata'
-  );
-  t.ok(table.data.getChild('geometry')?.get(0) instanceof Uint8Array, 'geometry is WKB');
-  t.end();
+  ).toBe('geoarrow.wkb');
+  expect(
+    table.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+    'geometry is WKB'
+  ).toBeTruthy();
 });
-
-test('GeoJSONLoader#parse(arrow-table preserves legacy GeoJSON CRS)', async t => {
+test('GeoJSONLoader#parse(arrow-table preserves legacy GeoJSON CRS)', async () => {
   const crs = {type: 'name', properties: {name: 'urn:ogc:def:crs:OGC:1.3:CRS84'}};
   const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
@@ -1216,18 +1033,14 @@ test('GeoJSONLoader#parse(arrow-table preserves legacy GeoJSON CRS)', async t =>
     {geojson: {shape: 'arrow-table'}}
   );
   const geoMetadata = getGeoMetadata(table.schema?.metadata);
-
-  t.deepEqual(geoMetadata?.columns.geometry.geojson_crs, crs, 'preserves raw root CRS');
-  t.equal(
+  expect(geoMetadata?.columns.geometry.geojson_crs, 'preserves raw root CRS').toEqual(crs);
+  expect(
     (geoMetadata?.columns.geometry.crs as any)?.id?.code,
-    'CRS84',
     'maps known root CRS to GeoArrow CRS metadata'
-  );
-  t.end();
+  ).toBe('CRS84');
 });
-
 for (const config of TABLE_STREAMING_LOADER_CONFIGS) {
-  test(`${config.name}#loadInBatches(jsonpaths, shape: arrow-table)`, async t => {
+  test(`${config.name}#loadInBatches(jsonpaths, shape: arrow-table)`, async () => {
     const schema: Schema = {
       fields: [{name: 'type', type: 'utf8', nullable: false}],
       metadata: {}
@@ -1244,7 +1057,6 @@ for (const config of TABLE_STREAMING_LOADER_CONFIGS) {
         }
       })
     );
-
     let rowCount = 0;
     let dataBatchCount = 0;
     for await (const batch of iterator) {
@@ -1252,32 +1064,25 @@ for (const config of TABLE_STREAMING_LOADER_CONFIGS) {
         dataBatchCount++;
         rowCount += batch.data.numRows;
         // @ts-ignore
-        t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on Arrow batch');
+        expect(batch.jsonpath?.toString(), 'correct jsonpath on Arrow batch').toBe('$.features');
       }
     }
-
-    t.ok(dataBatchCount > 0, 'received Arrow data batches');
-    t.equal(rowCount, 308, 'Correct number of Arrow rows received');
-    t.end();
+    expect(dataBatchCount > 0, 'received Arrow data batches').toBeTruthy();
+    expect(rowCount, 'Correct number of Arrow rows received').toBe(308);
   });
 }
-
-test('GeoJSONLoader#loadInBatches(jsonpaths)', async t => {
+test('GeoJSONLoader#loadInBatches(jsonpaths)', async () => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
     json: {jsonpaths: ['$.features']}
   });
-
   let rowCount = 0;
   for await (const batch of iterator) {
     rowCount += batch.length;
     // @ts-ignore
-    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+    expect(batch.jsonpath?.toString(), 'correct jsonpath on batch').toBe('$.features');
   }
-
-  t.equal(rowCount, 308, 'Correct number of row received');
-  t.end();
+  expect(rowCount, 'Correct number of row received').toBe(308);
 });
-
 // TODO - columnar table batch support not yet fixed
 /*
 test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async t => {
@@ -1301,32 +1106,31 @@ test('JSONLoader#loadInBatches(geojson.json, columns, batchSize = auto)', async 
   t.end();
 });
 */
-
-async function testContainerBatches(t, iterator, expectedCount) {
+async function testContainerBatches(iterator, expectedCount) {
   let opencontainerBatchCount = 0;
   let closecontainerBatchCount = 0;
-
   for await (const batch of iterator) {
     switch (batch.batchType) {
       case 'partial-result':
-        t.ok(batch.container.type, 'batch.container should be set on partial-result');
+        expect(
+          batch.container.type,
+          'batch.container should be set on partial-result'
+        ).toBeTruthy();
         opencontainerBatchCount++;
         break;
       case 'final-result':
-        t.ok(batch.container.type, 'batch.container should be set on final-result');
+        expect(batch.container.type, 'batch.container should be set on final-result').toBeTruthy();
         closecontainerBatchCount++;
         break;
       default:
-        t.notOk(batch.container, 'batch.container should not be set');
+        expect(batch.container, 'batch.container should not be set').toBeFalsy();
     }
   }
-
-  t.equal(opencontainerBatchCount, expectedCount, 'partial-result batch as expected');
-  t.equal(closecontainerBatchCount, expectedCount, 'final-result batch as expected');
+  expect(opencontainerBatchCount, 'partial-result batch as expected').toBe(expectedCount);
+  expect(closecontainerBatchCount, 'final-result batch as expected').toBe(expectedCount);
 }
-
 for (const config of STREAMING_LOADER_CONFIGS) {
-  test(`${config.name}#loadInBatches(geojson.json, {metadata: true})`, async t => {
+  test(`${config.name}#loadInBatches(geojson.json, {metadata: true})`, async () => {
     let iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
@@ -1335,8 +1139,7 @@ for (const config of STREAMING_LOADER_CONFIGS) {
         json: {table: true}
       })
     );
-    await testContainerBatches(t, iterator, 1);
-
+    await testContainerBatches(iterator, 1);
     iterator = await loadInBatches(
       GEOJSON_PATH,
       JSONLoader,
@@ -1345,12 +1148,9 @@ for (const config of STREAMING_LOADER_CONFIGS) {
         json: {table: true}
       })
     );
-    await testContainerBatches(t, iterator, 0);
-
-    t.end();
+    await testContainerBatches(iterator, 0);
   });
-
-  test(`${config.name}#loadInBatches(streaming array of arrays)`, async t => {
+  test(`${config.name}#loadInBatches(streaming array of arrays)`, async () => {
     const iterator = await loadInBatches(
       GEOJSON_KEPLER_DATASET_PATH,
       JSONLoader,
@@ -1362,7 +1162,6 @@ for (const config of STREAMING_LOADER_CONFIGS) {
         }
       })
     );
-
     let rowCount = 0;
     for await (const batch of iterator) {
       switch (batch.batchType) {
@@ -1376,21 +1175,20 @@ for (const config of STREAMING_LOADER_CONFIGS) {
           break;
         case 'final-result':
           if (batch.shape === 'json') {
-            t.ok(batch.container, 'final batch contains json');
+            expect(batch.container, 'final batch contains json').toBeTruthy();
           }
           break;
         default:
       }
     }
-    t.equal(rowCount, 247, '247 rows found');
-
-    t.end();
+    expect(rowCount, '247 rows found').toBe(247);
   });
 }
-
 /** Merges scenario options with the streaming parser backend under test. */
 function getStreamingLoaderOptions(
-  config: {options?: JSONLoaderOptions},
+  config: {
+    options?: JSONLoaderOptions;
+  },
   options: JSONLoaderOptions = {}
 ): JSONLoaderOptions {
   return {
@@ -1399,10 +1197,11 @@ function getStreamingLoaderOptions(
     json: {...config.options?.json, ...options.json}
   };
 }
-
 /** Merges JSON table scenario options with the streaming parser backend under test. */
 function getTableStreamingLoaderOptions(
-  config: {options?: JSONTableLoaderOptions},
+  config: {
+    options?: JSONTableLoaderOptions;
+  },
   options: JSONTableLoaderOptions = {}
 ): JSONTableLoaderOptions {
   return {
@@ -1411,12 +1210,13 @@ function getTableStreamingLoaderOptions(
     json: {...config.options?.json, ...options.json}
   };
 }
-
 /** Creates a probe.gl-compatible test logger that records one-time messages. */
-function makeTestLog(): {messages: string[]; once: (message: string) => () => void} {
+function makeTestLog(): {
+  messages: string[];
+  once: (message: string) => () => void;
+} {
   const messages: string[] = [];
   const seenMessages = new Set<string>();
-
   return {
     messages,
     once: (message: string) => () => {
@@ -1427,7 +1227,6 @@ function makeTestLog(): {messages: string[]; once: (message: string) => () => vo
     }
   };
 }
-
 /** Emits UTF-8 JSON text chunks for streaming parse tests. */
 async function* makeChunkedTextIterator(text: string, chunkSize: number) {
   const textEncoder = new TextEncoder();

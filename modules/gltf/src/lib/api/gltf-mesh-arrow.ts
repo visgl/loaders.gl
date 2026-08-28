@@ -4,7 +4,7 @@
 
 import {Matrix4} from '@math.gl/core';
 import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {deduceMeshSchema, makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {GLTFAccessor, GLTFMeshPrimitive, GLTFNode} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
@@ -214,6 +214,7 @@ function convertGLTFPrimitiveToMeshArrowGeometry(
 
   return {
     table: makeMeshArrowTable(attributes, {
+      schema: deduceMeshSchema(attributes),
       topology: getMeshTopology(mode),
       mode,
       indices: indexResult?.attribute
@@ -270,14 +271,21 @@ function getMeshAttribute(
     value = materializedValue;
   }
 
+  const attribute: MeshAttribute = {value, size};
+  if (!requiresMaterialization) {
+    if (accessor.byteOffset !== undefined) {
+      attribute.byteOffset = accessor.byteOffset;
+    }
+    if (bufferView?.byteStride !== undefined) {
+      attribute.byteStride = bufferView.byteStride;
+    }
+  }
+  if (accessor.normalized !== undefined) {
+    attribute.normalized = accessor.normalized;
+  }
+
   return {
-    attribute: {
-      value,
-      size,
-      byteOffset: requiresMaterialization ? 0 : accessor.byteOffset,
-      byteStride: requiresMaterialization ? undefined : bufferView?.byteStride,
-      normalized: accessor.normalized
-    },
+    attribute,
     materialized: requiresMaterialization
   };
 }
@@ -367,6 +375,8 @@ function getMeshTypedArrayConstructor(componentType: number): MeshTypedArrayCons
       return Uint32Array;
     case 5126:
       return Float32Array;
+    case 5130:
+      return Float64Array;
     default:
       throw new Error(
         `glTF accessor component type ${componentType} is not supported by Mesh Arrow`
@@ -379,10 +389,18 @@ function getMeshTopology(mode: number): MeshArrowTable['topology'] {
   switch (mode) {
     case 0:
       return 'point-list';
+    case 1:
+      return 'line-list';
+    case 3:
+      return 'line-strip';
+    case 2:
+      return 'line-loop';
     case 4:
       return 'triangle-list';
     case 5:
       return 'triangle-strip';
+    case 6:
+      return 'triangle-fan';
     default:
       throw new Error(`glTF primitive mode ${mode} is not supported by Mesh Arrow`);
   }

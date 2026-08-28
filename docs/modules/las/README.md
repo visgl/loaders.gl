@@ -1,8 +1,11 @@
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+current LAS/LAZ projection-record support and vertical/compound CRS roadmap.
+
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
-`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, RGB, GPS time, and NIR where present, while the raw APIs preserve complete supported point records. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
+`LASLoader` supports LAZ point formats 0-10 for documented LASzip codec combinations. Arrow output exposes positions, intensity, classification, RGB, GPS time, NIR, waveform references, and Extra Bytes where present, while the raw APIs preserve complete supported point records. Waveform helpers range-read internal LAS or external WDP sample packets on demand. See the [LAS/LAZ implementation limits](/docs/modules/las/formats/las#current-implementation-limits) for exact codec, point-format, fixture, and streaming details.
 
 ## Installation
 

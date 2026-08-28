@@ -4,6 +4,12 @@ import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
 <TileDocsTabs active="pmtiles" />
 
+<p class="badges">
+  <a href="/docs/modules/scan#vector-table-views">
+    <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
+  </a>
+</p>
+
 - [*`@loaders.gl/pmtiles`*](/docs/modules/pmtiles)
 - [*PMTiles specification*](https://github.com/protomaps/PMTiles)
 - [*PMTiles example*](/examples/tiles/pmtiles).
@@ -15,6 +21,23 @@ PMTiles is commonly used for visualization (e.g. for cartographic basemap vector
 A PMTiles archive replaces a big directory tree of thousands of individual tile files, allowing an entire tileset to be manipulated (uploaded, downloaded, served, analyzed) as a single file.
 
 In addition, there is a range of utilities and libraries for working with PMTiles, such Python packages for reading and writing, and support for various programming languages and tools as well as a number of viewers. And tiling tools such as [tippecanoe](https://github.com/felt/tippecanoe) can now output directly to PMTiles.
+
+## Optional scan table view
+
+For a vector PMTiles archive, the PMTiles source first resolves z/x/y and returns one MVT tile as an
+Arrow table. `VectorTileTableScanSource` can then apply a portable query to those feature rows.
+
+| Capability | Support |
+| --- | --- |
+| Archive directory and tile range lookup | PMTiles source |
+| Tile address and layer selection | Specialized source parameters |
+| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution after tile decoding |
+| Cancellation | Supported while resolving the tile and executing the table query |
+| Cross-tile query | Not provided |
+| Raster or terrain tile table view | Not applicable |
+
+The adapter does not scan the archive as one logical table and does not imply server-side or
+directory-level predicate pruning.
 
 ## Tile types
 

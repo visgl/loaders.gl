@@ -27,8 +27,7 @@ type ResolvedPotreeBinOptions = {
 };
 
 /**
- * Parse a Potree 1.7 binary node into a minimal mesh.
- * The loader decodes only the attributes needed by the point-cloud tileset path.
+ * Parse a Potree 1.7 binary node into a typed point-attribute mesh.
  */
 export function parsePotreeBin(
   arrayBuffer: ArrayBuffer,
@@ -59,6 +58,24 @@ export function parsePotreeBin(
       pointAttribute === 'RGB_PACKED'
   );
   const colors = hasColor ? new Uint8Array(pointCount * 3) : null;
+  const intensities = resolvedOptions.pointAttributes.includes('INTENSITY')
+    ? new Uint16Array(pointCount)
+    : null;
+  const classifications = resolvedOptions.pointAttributes.includes('CLASSIFICATION')
+    ? new Uint8Array(pointCount)
+    : null;
+  const normalFloats = resolvedOptions.pointAttributes.includes('NORMAL_FLOATS')
+    ? new Float32Array(pointCount * 3)
+    : null;
+  const normals = resolvedOptions.pointAttributes.includes('NORMAL')
+    ? new Float32Array(pointCount * 3)
+    : null;
+  const sphereMappedNormals = resolvedOptions.pointAttributes.includes('NORMAL_SPHEREMAPPED')
+    ? new Uint8Array(pointCount * 2)
+    : null;
+  const oct16Normals = resolvedOptions.pointAttributes.includes('NORMAL_OCT16')
+    ? new Uint16Array(pointCount)
+    : null;
 
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
     let attributeByteOffset = pointIndex * pointByteSize;
@@ -93,6 +110,47 @@ export function parsePotreeBin(
           break;
         }
 
+        case 'INTENSITY':
+          intensities![pointIndex] = dataView.getUint16(attributeByteOffset, true);
+          attributeByteOffset += 2;
+          break;
+
+        case 'CLASSIFICATION':
+          classifications![pointIndex] = dataView.getUint8(attributeByteOffset);
+          attributeByteOffset += 1;
+          break;
+
+        case 'NORMAL_FLOATS': {
+          const normalIndex = pointIndex * 3;
+          normalFloats![normalIndex] = dataView.getFloat32(attributeByteOffset, true);
+          normalFloats![normalIndex + 1] = dataView.getFloat32(attributeByteOffset + 4, true);
+          normalFloats![normalIndex + 2] = dataView.getFloat32(attributeByteOffset + 8, true);
+          attributeByteOffset += 12;
+          break;
+        }
+
+        case 'NORMAL': {
+          const normalIndex = pointIndex * 3;
+          normals![normalIndex] = dataView.getFloat32(attributeByteOffset, true);
+          normals![normalIndex + 1] = dataView.getFloat32(attributeByteOffset + 4, true);
+          normals![normalIndex + 2] = dataView.getFloat32(attributeByteOffset + 8, true);
+          attributeByteOffset += 12;
+          break;
+        }
+
+        case 'NORMAL_SPHEREMAPPED': {
+          const normalIndex = pointIndex * 2;
+          sphereMappedNormals![normalIndex] = dataView.getUint8(attributeByteOffset);
+          sphereMappedNormals![normalIndex + 1] = dataView.getUint8(attributeByteOffset + 1);
+          attributeByteOffset += 2;
+          break;
+        }
+
+        case 'NORMAL_OCT16':
+          oct16Normals![pointIndex] = dataView.getUint16(attributeByteOffset, true);
+          attributeByteOffset += 2;
+          break;
+
         default:
           attributeByteOffset += getPotreeAttributeByteSize(pointAttribute);
           break;
@@ -104,6 +162,10 @@ export function parsePotreeBin(
     POSITION: {
       value: positions,
       size: 3
+    },
+    POSITION_CARTESIAN: {
+      value: positions,
+      size: 3
     }
   };
 
@@ -112,7 +174,30 @@ export function parsePotreeBin(
       value: colors,
       size: 3
     };
+    const colorAttributeName = resolvedOptions.pointAttributes.find(
+      pointAttribute =>
+        pointAttribute === 'COLOR_PACKED' ||
+        pointAttribute === 'RGBA_PACKED' ||
+        pointAttribute === 'RGB_PACKED'
+    );
+    if (colorAttributeName) {
+      attributes[colorAttributeName] = {value: colors, size: 3};
+    }
   }
+  if (intensities) attributes.INTENSITY = {value: intensities, size: 1};
+  if (classifications) attributes.CLASSIFICATION = {value: classifications, size: 1};
+  if (normalFloats) {
+    attributes.NORMAL_FLOATS = {value: normalFloats, size: 3};
+  }
+  if (normals) {
+    attributes.NORMAL = {value: normals, size: 3};
+  } else if (normalFloats) {
+    attributes.NORMAL = {value: normalFloats, size: 3};
+  }
+  if (sphereMappedNormals) {
+    attributes.NORMAL_SPHEREMAPPED = {value: sphereMappedNormals, size: 2};
+  }
+  if (oct16Normals) attributes.NORMAL_OCT16 = {value: oct16Normals, size: 1};
 
   const mesh: Mesh = {
     loader: 'potree',

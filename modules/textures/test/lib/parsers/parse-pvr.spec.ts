@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/* eslint-disable camelcase */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {parsePVR} from '../../../src/lib/parsers/parse-pvr';
 import {
@@ -15,7 +14,6 @@ import {
   GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR
 } from '../../../src/lib/gl-extensions';
 import {checkCompressedTexture} from '../../test-utils/check-compressed-texture';
-
 const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-2bpp-rgb.pvr',
@@ -48,13 +46,11 @@ const TEST_CASES = [
     textureFormat: 'astc-10x10-unorm-srgb'
   }
 ];
-
-test('CompressedTextureLoader#pvr', async t => {
+test('CompressedTextureLoader#pvr', async () => {
   for (const testCase of TEST_CASES) {
     const response = await fetchFile(testCase.url);
     const data = await response.arrayBuffer();
     const result = parsePVR(data);
-    checkCompressedTexture(t, result, testCase);
+    checkCompressedTexture(result, testCase);
   }
-  t.end();
 });

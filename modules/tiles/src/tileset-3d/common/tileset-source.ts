@@ -9,6 +9,7 @@ import type {Tile3D} from './tile-3d';
 import type {Tileset3D} from './tileset-3d';
 import type {FrameState} from '../helpers/frame-state';
 import type {TILESET_TYPE} from '../../constants';
+import type {TilesetSpatialReference} from '../../spatial/spatial-types';
 
 /**
  * Parsed top-level tileset payload consumed by {@link Tileset3D} or a {@link Tileset3DSource}.
@@ -132,6 +133,8 @@ export type TilesetSourceMetadata = {
   lodMetricValue: number;
   /** Root refinement mode used as fallback by runtime tiles. */
   refine: string;
+  /** Format-discovered coordinate reference system metadata. */
+  spatialReference?: TilesetSpatialReference;
 };
 
 /**
@@ -170,6 +173,14 @@ export interface Tileset3DSource {
    * Initializes source state before traversal begins.
    */
   initialize(): Promise<void>;
+
+  /**
+   * Prepares option-dependent asynchronous source state before runtime headers are constructed.
+   *
+   * I3S uses this hook to sample elevation surfaces for its root bound after `Tileset3D` has
+   * applied spatial options. Sources without asynchronous header preparation omit the hook.
+   */
+  prepareTileset?(tileset: Tileset3D): Promise<void>;
 
   /** Releases source-local caches and prevents late asynchronous work from mutating runtime tiles. */
   destroy?(): void;

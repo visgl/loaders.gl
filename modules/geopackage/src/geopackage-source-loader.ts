@@ -2,13 +2,31 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {
+  CoreAPI,
+  DataSourceOptions,
+  ScanQueryMetadata,
+  ScanQueryMetadataOptions,
+  SourceLoader,
+  TableScanReadOptions,
+  TableScanSource
+} from '@loaders.gl/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  filterColumnarRowIndices,
+  makeTableScanBatch,
+  validateTableQueryOptions
+} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/schema-utils';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader';
 import {
   DEFAULT_SQLJS_CDN,
+  getGeoPackageArrowSchema,
+  getProjections,
   listGeoPackageVectorTables,
   loadGeoPackageDatabase,
   parseGeoPackageToArrow,
@@ -21,10 +39,14 @@ import {GeoPackageFormat} from './geopackage-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GeoPackageSourceTableMetadata = {
+  /** Query-visible WKB Arrow schema for this feature table. */
+  schema: Schema;
   name: string;
   identifier?: string;
   description?: string;
   srsId?: number;
+  /** Preferred WKT2 or fallback WKT1 definition for the table SRS. */
+  crs?: WKTCRSDefinition;
   geometryColumnName: string;
   geometryTypeName: string;
   bounds?: [[number, number], [number, number]];
@@ -82,7 +104,10 @@ export const GeoPackageSource = {
 /**
  * GeoPackage data source that exposes vector table metadata and Arrow table reads.
  */
-export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSourceOptions> {
+export class GeoPackageDataSource
+  extends DataSource<string | Blob, GeoPackageSourceOptions>
+  implements TableScanSource<ArrowTableBatch>
+{
   private arrayBufferPromise: Promise<ArrayBuffer> | null = null;
   private metadataPromise: Promise<GeoPackageSourceMetadata> | null = null;
 
@@ -99,10 +124,67 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
     return this.metadataPromise;
   }
 
+  /** Discovers the selected feature table schema and spatial bounds for the shared scan panel. */
+  async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
+    throwIfAborted(options.signal);
+    const metadata = await this.getMetadata();
+    throwIfAborted(options.signal);
+    const selectedTable = metadata.tables.find(table => table.isDefault) || metadata.tables[0];
+    if (!selectedTable) throw new Error('GeoPackage contains no vector feature tables');
+    const fieldNames = new Set(selectedTable.schema.fields.map(field => field.name));
+    const geometryColumnName = fieldNames.has('geometry')
+      ? 'geometry'
+      : fieldNames.has(selectedTable.geometryColumnName)
+        ? selectedTable.geometryColumnName
+        : undefined;
+    return createScanQueryMetadata({
+      sourceType: 'geopackage',
+      queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
+      name: selectedTable.identifier || selectedTable.name,
+      description: selectedTable.description,
+      schema: selectedTable.schema,
+      columnRoles: geometryColumnName ? {[geometryColumnName]: 'geometry'} : undefined,
+      capabilities: {
+        table: {
+          projection: 'residual',
+          predicate: 'residual',
+          limit: 'residual',
+          streaming: false,
+          cancellation: false
+        }
+      },
+      spatial:
+        selectedTable.bounds || selectedTable.crs
+          ? {
+              bounds: selectedTable.bounds
+                ? {minimum: selectedTable.bounds[0], maximum: selectedTable.bounds[1]}
+                : undefined,
+              coordinateReferenceSystems: selectedTable.crs ? [selectedTable.crs] : undefined
+            }
+          : undefined,
+      statistics: {byteLength: undefined}
+    });
+  }
+
   /** Loads one GeoPackage vector table as an Arrow table. */
   async getTable(tableName?: string): Promise<ArrowTable> {
     const arrayBuffer = await this.getArrayBuffer();
     return parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName));
+  }
+
+  /** Executes projection, residual predicates, and a global limit on the selected feature table. */
+  async query(options: TableScanReadOptions = {}): Promise<ArrowTable> {
+    throwIfAborted(options.signal);
+    const table = await this.getTable();
+    throwIfAborted(options.signal);
+    return queryGeoPackageTable(table, options);
+  }
+
+  /** Executes a common table scan as one bounded Arrow batch. */
+  async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+    const table = await this.query(options);
+    yield makeTableScanBatch(table);
   }
 
   private async loadMetadata(): Promise<GeoPackageSourceMetadata> {
@@ -112,27 +194,33 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
       this.options.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
     );
     const vectorTables = listGeoPackageVectorTables(database);
+    const projections = getProjections(database);
     const defaultTable = selectGeoPackageVectorTable(
       vectorTables,
       this.options.geopackage?.table || undefined
     );
 
     return {
-      tables: vectorTables.map(vectorTable => ({
-        name: vectorTable.name,
-        identifier: vectorTable.identifier,
-        description: vectorTable.description,
-        srsId: vectorTable.srsId,
-        geometryColumnName: vectorTable.geometryColumnName,
-        geometryTypeName: vectorTable.geometryTypeName,
-        bounds: vectorTable.bounds
-          ? [
-              [vectorTable.bounds.minX, vectorTable.bounds.minY],
-              [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
-            ]
-          : undefined,
-        isDefault: vectorTable.name === defaultTable.name
-      }))
+      tables: vectorTables.map(vectorTable => {
+        const crs = vectorTable.srsId === undefined ? undefined : projections[vectorTable.srsId];
+        return {
+          schema: getGeoPackageArrowSchema(database, vectorTable, crs),
+          name: vectorTable.name,
+          identifier: vectorTable.identifier,
+          description: vectorTable.description,
+          srsId: vectorTable.srsId,
+          crs,
+          geometryColumnName: vectorTable.geometryColumnName,
+          geometryTypeName: vectorTable.geometryTypeName,
+          bounds: vectorTable.bounds
+            ? [
+                [vectorTable.bounds.minX, vectorTable.bounds.minY],
+                [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
+              ]
+            : undefined,
+          isDefault: vectorTable.name === defaultTable.name
+        };
+      })
     };
   }
 
@@ -177,4 +265,18 @@ export class GeoPackageDataSource extends DataSource<string | Blob, GeoPackageSo
       }
     };
   }
+}
+
+/** Applies the portable table query to a materialized GeoPackage feature table. */
+function queryGeoPackageTable(table: ArrowTable, options: TableScanReadOptions): ArrowTable {
+  const availableColumns = table.data.schema.fields.map(field => field.name);
+  validateTableQueryOptions(availableColumns, options);
+  const queriedTable = queryArrowTable(table, options, (predicate, columns, rowCount) =>
+    filterColumnarRowIndices(predicate as never, columns as never, rowCount)
+  );
+  return {...queriedTable, schema: convertArrowToSchema(queriedTable.data.schema)};
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
 }

@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffersAsync,
+  makeTableScanBatch,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {
   AsyncQueue,
@@ -18,7 +22,7 @@ import type {CSVLoaderOptions} from '../../csv-loader-options';
 import {CSV_LOADER_OPTIONS} from '../../csv-loader-options';
 import Papa from '../../papaparse/papaparse';
 import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
-import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
+import {parseRawArrowCSVASCIIText, parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
 
 /** CSV options accepted by the internal Arrow table parser. */
 export type CSVRawArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape' | 'header'> & {
@@ -77,6 +81,15 @@ export async function parseRawArrowCSVText(
   const csvOptions = createRawArrowCSVOptions(options);
   if (shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
     return parseRawArrowCSVTextWithPapa(csvText, options, csvOptions);
+  }
+
+  // Keep the common text case in the string domain: encoding the entire input before parsing
+  // duplicates the input and makes the parser pay a UTF-16-to-UTF-8 conversion that ASCII does
+  // not need. The direct parser is deliberately conservative and returns null for any case it
+  // cannot prove equivalent, allowing the general byte/Papa-compatible paths to preserve behavior.
+  const rawASCIIArrowTable = parseRawArrowCSVASCIIText(csvText, csvOptions);
+  if (rawASCIIArrowTable) {
+    return rawASCIIArrowTable;
   }
 
   const encodedCSVText = textEncoder.encode(csvText);
@@ -398,11 +411,7 @@ async function* parseRawArrowCSVInSingleBatch(
     (await parseRawArrowCSVText(csvText || new TextDecoder().decode(arrayBuffer), options));
 
   yield {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: arrowTable.schema,
-    data: arrowTable.data,
-    length: arrowTable.data.numRows,
+    ...makeTableScanBatch(arrowTable),
     count: 0,
     bytesUsed: arrayBuffer.byteLength
   };

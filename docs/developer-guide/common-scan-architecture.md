@@ -1,3 +1,5 @@
+import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan-live-example';
+
 # Common Scan Architecture
 
 The loaders.gl common scan architecture is a portable query and execution model for columnar data.
@@ -14,28 +16,41 @@ they share is the logical meaning of a query and a small set of execution invari
 
 ## Format-family support at a glance
 
-This is the end-user view of the architecture. “Supported” means a source can be used through the
-common scan contract today. “Partial” means useful metadata or Arrow reading exists, but some
-operators or pushdown opportunities remain source-specific. “Specialized” means the format has a
-different query model, such as tiles or raster windows, rather than a relational table scan.
+This is the end-user view of the architecture. The statuses are deliberately conclusive:
 
-| Format family | Status | What is supported |
-| --- | --- | --- |
-| Arrow / GeoArrow | Partial | In-memory projection, predicates, and limits; GeoArrow extension-column conformance is still expanding. |
-| Parquet / Iceberg | Supported | Schema discovery, projection, filtering, global limits, streaming Arrow batches, cancellation, and metadata pruning. |
-| FlatGeobuf | Supported | Arrow feature queries, R-tree bounding-box pruning, residual attribute filtering, projection, and limits. |
-| DuckDB / Snowflake SQL | Supported | Raw SQL plus the portable table query with safe parameter binding. |
-| CSV / JSONL / ORC | Planned | Existing loaders are available; common chunk, stripe, and row-index scans are next. |
-| Delta Lake / Lance | Partial | Read-only metadata and Arrow-batch paths exist; common snapshot/fragment planning and predicate pushdown are incomplete. |
-| COPC / Potree | Partial | Point-cloud metadata, coordinate roles, hierarchy bounds, level-of-detail, spacing, and capability discovery are available; full common point streaming is source-specific. |
-| GeoTIFF / COG / Zarr / GeoZarr / OME-Zarr | Partial | Raster window, band/channel, overview/level, and multidimensional selection APIs are available with shared query validation and capabilities. |
-| NetCDF | Planned | The loader is available; the shared multidimensional raster scan contract is not yet wired in. |
-| MVT / PMTiles / 3D Tiles / I3S | Specialized | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
-| WMS / WFS / STAC and other services | Specialized | Use the service or catalog query APIs; they are not normalized into the table scan contract. |
+- **Supported** means query metadata names a common execution method that works today. The details
+  say which operations are pushed down and which are evaluated after decoding.
+- **Metadata only** means the source can populate discovery UI but does not claim a common scan
+  executor. Its metadata includes a concrete reason and the panel disables execution.
+- **Not implemented** means the format has no common scan adapter.
+- **Outside protocol** means the format intentionally uses a specialized tile, service, or catalog
+  API instead of pretending to implement a scan.
 
-The matrix describes the public experience, not identical physical performance. A source may accept
-the same logical query while evaluating some operators after decoding; capability metadata and
-explain output identify what was pushed down and what remained residual.
+| Format or source | Status | Common entry point | Supported scope |
+| --- | --- | --- | --- |
+| In-memory Arrow / GeoArrow | Supported | `read()` | Portable predicates, projection, limit, expressions, ordering, aggregates, unions, and joins; `query()` also returns a materialized table. |
+| Arrow IPC | Supported | `read()` | Schema discovery, residual predicates, projection, global limit, cancellation, explain output, and streaming Arrow batches. |
+| Parquet / Iceberg | Supported | `read()` | Projection, predicate and metadata pruning, global limits, cancellation, and streaming Arrow batches. |
+| Delta Lake | Supported | `read()` | Read-only versioned snapshot replay, active-file planning, Parquet filtering, global limits, cancellation, and explain output; tables with deletion vectors are rejected explicitly until decoding is available. |
+| FlatGeobuf | Supported | `read()` | R-tree bounding-box pruning, residual predicates, projection, limits, cancellation, and Arrow feature batches. |
+| CSV | Supported | `read()` | Streaming projection and limit with residual predicates. |
+| NDJSON / JSONL | Supported | `read()` | Streaming projection and limit with residual predicates. |
+| ORC | Supported | `read()` | Materialized Arrow reads with residual projection, predicate, and limit. |
+| GeoPackage | Supported | `read()` | Selected feature-table discovery and materialized Arrow reads with residual projection, predicate, and limit. |
+| GeoTIFF / COG | Supported | `getRaster()` | Bounds and overview selection, bands, typed output, and validated raster queries. |
+| OME-TIFF | Supported | `getRaster()` | Multiscale levels, channels, slices, typed output, and validated raster queries. |
+| GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned bounds, channels or variables, multiscale levels, slices, and typed output. |
+| COPC / Potree | Supported | `scan()` | Ordered hierarchy traversal, bounds and level-of-detail pruning, residual attribute predicates, caller-ordered projection, global limits, cancellation, and Arrow point batches. |
+| NetCDF | Supported | `getRaster()` | Numeric variable selection, named half-open dimension slices, typed output, cancellation, and validated raster queries. |
+| Lance / Shapefile / MLT / LAS / LAZ / PLY / PCD | Not implemented | — | Their existing loaders or specialized sources do not expose the common scan contract. |
+| DuckDB / Snowflake SQL | Supported | `query()` | Compiles the portable table query to bound SQL; this is a backend rather than a file-format adapter. |
+| MVT / PMTiles / 3D Tiles / I3S | Outside protocol | — | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
+| WMS / WFS / STAC and other services | Outside protocol | — | Use the service or catalog APIs; they are not normalized into the scan contract. |
+
+The matrix describes the public experience, not identical physical performance. A residual
+operator is still supported and correct; it simply does not avoid decoding work. Each scan-aware
+source publishes the same conclusion through `ScanQueryMetadata.execution`, so documentation and
+query panels do not have to infer support from a collection of capabilities.
 
 ## Why a common scan architecture?
 
@@ -84,6 +99,29 @@ bounded scan tasks -> decoded Arrow batches
 The logical query does not prescribe whether a backend materializes rows, returns batches, or
 retains selection indices. It prescribes which rows and columns are visible to the caller and in
 which source order they are selected.
+
+### Catalog fragments
+
+Catalog-backed sources may additionally implement `ScanFragmentProvider`. Its
+`getScanFragments()` method returns immutable, format-neutral descriptors after cheap catalog
+pruning and before opening Parquet pages:
+
+```ts
+type ScanFragment = {
+  id: string;
+  uri?: string;
+  partitionValues?: Record<string, unknown>;
+  byteLength?: number | bigint;
+  rowCount?: number | bigint;
+  metadata?: Record<string, unknown>;
+};
+```
+
+`ParquetDatasetSource` exposes descriptor-selected files through this contract. `IcebergTableSource`
+uses the same shape for snapshot-selected data files and preserves snapshot, manifest, partition,
+schema, and column-bound metadata. The fragment layer is deliberately separate from Parquet row
+groups: catalog planning chooses files, while the Parquet executor continues to choose row groups,
+pages, and byte ranges.
 
 ## The portable logical query
 
@@ -138,6 +176,24 @@ ranges; DuckDB may compile the whole sequence to one prepared statement; Arrow m
 steps over vectors; luma.gl may lower filter to WGSL and retain indices. Operator fusion is welcome
 as long as the visible result is equivalent.
 
+### The source contract
+
+Format adapters that participate in the table scan architecture implement `TableScanSource`. It
+combines metadata discovery with an ordered batch reader:
+
+```ts
+type TableScanSource<BatchT, PredicateT extends ColumnarPredicate = ColumnarPredicate> =
+  ScanQueryMetadataProvider & {
+    read(options?: TableQueryOptions<PredicateT> & {signal?: AbortSignal}): AsyncIterable<BatchT>;
+  };
+```
+
+`getQueryMetadata()` is intentionally cheap and drives the query panel. `read()` is the execution
+boundary: it may prune manifests, row groups, pages, or ranges, but it must preserve the logical
+plan's projection, three-valued predicate semantics, source ordering, and global limit. Parquet is
+the reference implementation: its `ParquetSource` exposes the shared capabilities and explainable
+logical plan while adding row-group, page-index, Bloom-filter, range, and worker details.
+
 ### Package ownership
 
 | Layer | Owning package | Responsibility |
@@ -152,6 +208,48 @@ as long as the visible result is equivalent.
 Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database
 adapter. SQL retains compatibility exports from `@loaders.gl/sql/table-query` while new generic
 planners can import the lower-level contract directly.
+
+### Optional scan runtime
+
+Applications that want the shared planner and reference executor can opt into the single
+`@loaders.gl/scan` package:
+
+```ts
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/scan';
+
+const engine = await createScanEngine();
+const result = engine.query(table, {
+  predicate: parseSQLPredicate('population >= 1000000'),
+  columns: ['name', 'population'],
+  limit: 100
+});
+```
+
+Arrow is the built-in reference backend. The factory is asynchronous so optional backends can be
+loaded later without adding backend-specific imports to application code. Format adapters continue
+to import only the lightweight contracts from `@loaders.gl/loader-utils`; importing a format or
+loading metadata does not require the scan runtime. The proof-of-concept backend registry is
+intentionally internal to this one public package rather than exposing a family of backend
+subpaths.
+
+The same optional package is also the application-facing home for the source-neutral query state
+and metadata vocabulary:
+
+```ts
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+
+const query: ScanQuery = {columns: ['name'], limit: 25};
+async function describe(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}) {
+  return await source.getQueryMetadata();
+}
+```
+
+`ScanQuery` is intentionally a control-state shape, not a promise that every source supports every
+field. An adapter normalizes the values it understands and reports the rest through metadata
+capabilities. This keeps the panel reusable without making React, a database client, or a GPU
+runtime a dependency of the scan package. Format packages continue to implement the contracts from
+`@loaders.gl/loader-utils`, so applications that do not use scanning pay no scan-runtime bundle
+cost.
 
 ## Predicates and SQL semantics
 
@@ -413,6 +511,9 @@ rows:
 type ScanQueryMetadata = Readonly<{
   sourceType: string;
   queryType: 'table' | 'point-cloud' | 'raster';
+  execution:
+    | {status: 'supported'; method: 'read' | 'query' | 'getRaster' | 'scan'}
+    | {status: 'metadata-only'; reason: string};
   name?: string;
   description?: string;
   schema: Schema;
@@ -422,6 +523,10 @@ type ScanQueryMetadata = Readonly<{
   statistics?: {rowCount?: number | bigint; byteLength?: number | bigint};
 }>;
 ```
+
+`execution` is the authoritative support conclusion. A supported source names the common method
+applications can call; a metadata-only source supplies the concrete missing capability. The helper
+rejects methods that do not match the query family, such as `read()` for a raster query.
 
 `schema` is the authoritative execution schema. `columns` is a panel-ready view of those fields
 that adds semantic roles such as `identifier`, `geometry`, `x`, `y`, `z`, `time`, `intensity`, or
@@ -448,6 +553,7 @@ A framework-specific panel can remain outside the scan core. Its data flow is sm
 
 ```text
 source.getQueryMetadata()
+    -> execution status / disabled reason
     -> column projection picker
     -> typed predicate builder
     -> named parameter inputs
@@ -515,8 +621,26 @@ explanation.rowGroups?.prunedByStatistics;
 
 Plans must not contain bound secrets or backend handles. Values may be represented by named
 parameters, and telemetry remains the source of truth for what actually happened at execution
-time.
-Execution telemetry can then annotate the plan with actual counts and durations.
+time. Supply `onTelemetry` to receive one immutable terminal snapshot:
+
+```ts
+let telemetry;
+for await (const batch of source.read({
+  predicate,
+  limit: 100,
+  onTelemetry: value => {
+    telemetry = value;
+  }
+})) {
+  render(batch);
+}
+```
+
+The common fields cover status, files and tasks opened, bytes fetched, batches decoded, rows read,
+tested, retained, returned, and pruned, wall time, early termination, cancellation, and error
+state. Federated scans additionally preserve one record per source in append order. Physical
+executors may retain additional immutable counters under `details`; consumers should not infer
+portable behavior from those source-specific fields.
 
 ## Adding a new source
 
@@ -567,17 +691,23 @@ const metadata = await source.getQueryMetadata();
 ```
 
 The returned schema and capability descriptors drive the shared `ScanQueryPanel` used by the
-documentation examples. The panel currently exposes three source-neutral controls:
+documentation examples. Its source-neutral controls include:
 
 - output-column projection, populated from `metadata.columns`;
 - a global row limit, enabled only when the source advertises limit support;
 - a source-coordinate bounding box when `metadata.spatial` and bounds pushdown are available.
 
-The panel emits the same immutable query shape consumed by a source's `query()` or `scan()` method.
-This keeps Iceberg, FlatGeobuf, Arrow, and future COPC/Potree or raster examples visually
-consistent while preserving their physical executors. A source may add a format-specific editor
+For supported sources, the panel emits the same immutable query shape consumed by `read()`,
+`query()`, `getRaster()`, or `scan()`. For metadata-only sources it still shows the discovered
+schema but disables Apply and explains the missing executor. This keeps Iceberg, FlatGeobuf, Arrow,
+point-cloud, and raster examples visually consistent without overstating their physical support. A source may add a format-specific editor
 alongside the panel—for example, the Iceberg example retains its SQL/predicate editor—without
 duplicating schema discovery or projection/limit controls.
+
+`FederatedScanPanel` composes those controls with read-only managed-source discovery. It adds
+source selection and ordering, strict-versus-union schema policy, explicit column mappings, named
+predicate parameters, explain output, actual telemetry, and batch provenance. It does not replace
+format-specific controls or expose live source objects from `DataSourceManager`.
 
 When adding an example, load metadata first, render a loading state, and keep metadata failures
 separate from scan failures. The preview should show bounded Arrow output and explain which work was
@@ -598,13 +728,12 @@ The architecture favors small, composable contracts over a speculative universal
 test for every addition is: can two materially different backends execute it with the same visible
 semantics?
 
-## Scan supremacy roadmap
+## Implementation status and roadmap
 
-“Scan supremacy” means that a user can open a supported loaders.gl format, discover its queryable
-fields and capabilities, use the same query panel, and receive bounded Arrow/typed results without
-learning a format-specific API. It does not mean that every format gets the same physical plan. The
-winning strategy is to make more formats *scan-compatible* before making the portable language
-larger.
+A format is considered scan-compatible when a user can discover its queryable fields and
+capabilities, use the same query panel, and receive bounded Arrow or typed results without learning
+a format-specific query API. Formats retain their own physical plans; compatibility describes the
+portable behavior, not a shared decoder.
 
 The roadmap is therefore format-support-first. Each tranche must ship three things together:
 
@@ -617,70 +746,171 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
 0. **Contract and reference implementation — landed.** Keep the generic predicates, immutable
    `TableQueryOptions`, point-cloud and raster siblings, canonical planning, late-bound parameters,
    capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
-1. **Panel everywhere — next priority.** Add a small adapter shim for every existing source that can
-   expose a schema or header. Populate projection, limit, bounds, level, band, variable, and time
-   controls from metadata rather than hard-coded examples. Add a support badge and an explain preview
-   to each compatible example. This tranche is successful when users can try the same panel against
-   the sources marked “Ready” or “Foundation” in the matrix below.
-2. **Tabular and vector coverage.** Finish Arrow/GeoArrow as the conformance executor, then bring
-   ORC, CSV, JSONL, GeoPackage, Shapefile, MLT, and existing FlatGeobuf paths to scan parity. Start
-   with schema/projection/limit and residual predicates; add stripe, row-index, packed-index, or
-   byte-range pruning only where the format can prove it safely.
-3. **Cloud and versioned tables.** Complete Parquet/Iceberg parity, then add Delta Lake and Lance
-   snapshot/fragment planners. Reuse delete semantics, hidden required columns, task ordering,
-   global limits, and explain output. Do not create format-specific predicate ASTs.
-4. **Point-cloud coverage.** Turn COPC and Potree foundations into bounded Arrow point batches with
-   bounds pushdown, ordered hierarchy tasks, residual attribute predicates, and global point limits.
-   Add LAS/LAZ as a sequential fallback and PLY/PCD/splats as metadata-first adapters where their
-   native formats cannot prune remotely.
-5. **Raster and multidimensional coverage.** Complete GeoTIFF/COG and Zarr/GeoZarr/OME-Zarr scan
-   requests, then wire NetCDF. Add terrain/heightmap and LERC-backed sources through the same raster
-   panel. Standardize window, resolution/overview, band/channel, variable, dimension slice, typed
-   output, and chunk telemetry without pretending pixels are table rows.
-6. **Tiles and services bridge.** Keep MVT, PMTiles, 3D Tiles, I3S, WMS, WFS, and STAC specialized,
-   but expose shared discovery, bounds, time, level-of-detail, explain, and cancellation metadata.
-   Where a source returns feature tables (for example MVT or WFS), offer an explicit table-scan view;
-   keep tile addressing and rendering controls outside `TableQuery`.
-7. **Portable relational growth.** Promote ordering, scalar expressions, aggregates, unions, and
-   equi-joins from logical planning to execution only after at least two real backends pass identical
-   conformance tests. Arrow and DuckDB are the first pair; Parquet/Iceberg and GPU are follow-ons.
-8. **GPU and acceleration.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
+1. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts,
+   and the reference runtime in `@loaders.gl/scan`, while format adapters retain lightweight
+   `@loaders.gl/loader-utils` dependencies. No UI or GPU code crosses this boundary.
+2. **Panel everywhere — concluded for support signaling.** The shared panel consumes package-level
+   metadata/query types, renders discovered raster overviews, and is exercised by FlatGeobuf,
+   Parquet, Iceberg, CSV, and Arrow examples. It now shows the source's declared execution method
+   and disables Apply with the source-provided reason for metadata-only adapters.
+3. **Existing tabular and vector adapters — concluded.** In-memory Arrow, Arrow IPC, ORC, CSV,
+   NDJSON, GeoPackage, and FlatGeobuf expose common executors. GeoPackage now closes the last
+   residual-execution gap in this set. Shapefile and MLT are explicitly not implemented rather than
+   being left in a planned state. Physical stripe, row-index, packed-index, and byte-range pruning
+   remain performance improvements and do not change the support conclusion.
+4. **Existing cloud and versioned tables — concluded.** Parquet, Iceberg, and Delta Lake read-only
+   snapshots expose common execution. Delta replays versioned transaction logs and plans active
+   Parquet fragments; checkpoint discovery, CDC, deletion-vector decoding, and writes remain
+   separate format features. Lance is explicitly not implemented.
+5. **Point-cloud execution — concluded.** COPC and Potree execute the shared point-cloud query through
+   `scan()`. A common breadth-first hierarchy planner applies bounds, levels, and target spacing;
+   adapters then apply exact bounds, residual predicates, caller-ordered projection, and one global
+   limit while emitting bounded Arrow point batches. LAS/LAZ, PLY, PCD, and splats remain explicitly
+   not implemented rather than partially supported.
+6. **Existing raster adapters — concluded.** GeoTIFF/COG, OME-TIFF, GeoZarr, OME-Zarr, and NetCDF
+   execute validated raster queries through `getRaster()`. NetCDF supports numeric variable reads
+   and named dimension index or half-open range slices with typed output. Terrain and LERC remain
+   explicitly not implemented.
+7. **Tiles and services bridge — feature-table slice landed.** MVT/PMTiles vector tiles and bounded
+   WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/scan` adapters. The
+   physical tile address, layers, bounds, and CRS remain outside `TableQuery`; the resolved Arrow
+   feature table exposes shared metadata, explain, cancellation, residual predicates, projection,
+   relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while
+   shared time, level-of-detail, and non-table discovery metadata are still open.
+8. **Portable relational growth — second slice landed.** Arrow and DuckDB now execute the shared
+   ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes.
+   Ordered append federation now resolves named `TableScanSource` instances through the existing
+   `DataSourceManager`, reconciles strict or union schemas with explicit column mappings, and
+   enforces source order, one global limit, cancellation, early termination, and batch provenance.
+   Managed multi-source joins remain outside this tranche.
+9. **GPU and acceleration — deferred.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or
    materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest
    neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
 
 ### Format-support scorecard
 
-This is the end-user support view. “Ready” means the source can populate the shared panel and execute
-the listed controls correctly today. “Foundation” means metadata/capabilities exist but the scan
-adapter is incomplete. “Planned” means the normal loader exists, but no common scan contract is
-exposed yet. A residual predicate is still correct; it simply cannot avoid decoding work.
+This repeats the end-user support view beside the implementation roadmap so progress cannot drift
+back into “foundation” or “planned” gray zones. “Supported,” “Metadata only,” “Not implemented,”
+and “Outside protocol” have the exact meanings defined at the top of this page.
 
-| Family and representative sources | Status | Discovery | Projection / selection | Filter / spatial controls | Limit / stream | Priority |
-| --- | --- | --- | --- | --- | --- | --- |
-| Arrow / GeoArrow | Ready | schema | zero-copy/residual | residual, null-safe | yes / batches | conformance reference |
-| Parquet / Iceberg | Ready | footer/catalog | pushdown | statistics + residual | global / batches | maintain and extend |
-| FlatGeobuf | Ready | header/index | Arrow properties | bbox pushdown, scalar residual | bounded / batches | maintain and panel |
-| ORC | Foundation | stripe schema | planned stripe projection | planned row-index/statistics | planned | P2 |
-| CSV / JSONL | Planned | header/sample | parser-dependent | residual | planned chunks | P2 |
-| GeoPackage / Shapefile / MLT | Planned | container/header | planned | planned spatial or residual | planned | P2 |
-| Delta Lake / Lance | Foundation | log/manifest | format-native | fragments + residual | global / batches | P1 |
-| COPC / Potree | Foundation | header/hierarchy | point attributes | bounds pushdown, attribute residual | planned global / batches | P1 |
-| LAS / LAZ / PLY / PCD / splats | Planned | header | sequential attribute decode | residual unless indexed | planned | P2 |
-| GeoTIFF / COG | Foundation | TIFF/overview metadata | bands/windows | window pushdown | tile-local / typed arrays | P1 |
-| Zarr / GeoZarr / OME-Zarr | Foundation | group/array metadata | variables/channels | chunk/window pushdown | chunked / typed arrays | P1 |
-| NetCDF | Planned | file dimensions/variables | variables/slices | window/slice pushdown | chunked / typed arrays | P1 |
-| Terrain / LERC | Planned | tile/codec metadata | bands/tiles | tile bounds | tile streams | P2 |
-| MVT / PMTiles | Specialized | tile/catalog metadata | feature-layer selection | tile bounds, optional residual table view | tile streams | P2 |
-| 3D Tiles / I3S | Specialized | tileset metadata | tile content | volume/LOD pushdown | tile streams | P2 |
-| WMS / WFS / STAC | Specialized | service/catalog metadata | layer/asset selection | server-specific bounds/time | response streams | P3 |
+| Family and representative sources | Status | Execution | Correct behavior today | Remaining work |
+| --- | --- | --- | --- | --- |
+| In-memory Arrow / GeoArrow | Supported | `read()` | Portable relational execution; materialized `query()` is also available | Optimize vector paths and expand GeoArrow conformance |
+| Arrow IPC | Supported | `read()` | Residual predicates, projection, global limit, cancellation, explain, telemetry, Arrow batches | More selective IPC batch pruning |
+| Parquet / Iceberg | Supported | `read()` | Pushdown plus residual filtering and streaming | More pruning and explain detail |
+| Delta Lake | Supported | `read()` | Versioned snapshot replay, active-file planning, Parquet filtering, and explicit deletion-vector rejection | Checkpoints, CDC, and deletion-vector decoding |
+| FlatGeobuf | Supported | `read()` | Bounding-box pushdown and residual table query | More packed-index telemetry |
+| CSV / NDJSON | Supported | `read()` | Streaming projection and limit, residual predicates | Byte-range and record-index pruning |
+| ORC | Supported | `read()` | Materialized residual table query | Stripe and row-index pruning |
+| GeoPackage | Supported | `read()` | Materialized residual feature-table query | SQL and spatial-index pushdown |
+| Shapefile / MLT / Lance | Not implemented | — | No common scan claims | Add adapters only when end-to-end execution is available |
+| COPC / Potree | Supported | `scan()` | Ordered hierarchy selection, exact bounds, residual predicates, projection, global limit, cancellation, and Arrow batches | Finer decoder projection and hierarchy telemetry |
+| LAS / LAZ / PLY / PCD / splats | Not implemented | — | No common scan claims | Decide which formats justify sequential adapters |
+| GeoTIFF / COG / OME-TIFF | Supported | `getRaster()` | Windows, bands/channels, levels, typed output | More chunk telemetry and pushdown |
+| GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned windows, channels, levels, slices | More variable and dimension UI |
+| NetCDF | Supported | `getRaster()` | Numeric variables, named dimension index/range slices, typed output, and cancellation | Range reads, chunk pruning, and broader NetCDF variants |
+| Terrain / LERC | Not implemented | — | No common scan claims | Raster adapter design |
+| MVT / PMTiles | Outside protocol; optional table view | `read()` after binding a vector tile | Tile addressing stays specialized; Arrow feature rows use portable residual queries | Cross-tile planning and tile-statistics discovery |
+| 3D Tiles / I3S | Outside protocol | — | Specialized tile APIs | Shared bounds, time, level-of-detail, and explain metadata |
+| WFS / ArcGIS FeatureServer | Outside protocol; optional table view | `read()` after binding a bounded request | Service controls stay specialized; Arrow feature rows use portable residual queries | DescribeFeatureType schema discovery and server-side filter translation |
+| WMS / STAC | Outside protocol | — | Specialized imagery and catalog APIs | Shared time and non-table discovery metadata |
 
 “Pushdown” is a promise about avoiding physical work, not merely accepting an option. Every adapter
 must report `residual` when it decodes rows, features, points, or chunks before evaluating a filter.
-The scorecard should be updated whenever a source gains a panel, adapter, or conformance slice; it is
-the primary progress report for the roadmap.
+The scorecard changes only when a source gains or loses a working common entry point. Optimization
+tranches update the behavior and remaining-work columns without downgrading correct residual
+execution to an ambiguous intermediate status.
 
 The desired end state is not one monolithic engine. It is a family of specialized planners and
 executors that agree on what a query means.
+
+### Relational first slice
+
+The first relational tranche deliberately stays small enough to run without a database ingest. An
+in-memory Arrow table can evaluate computed numeric columns, stable multi-key ordering (including
+explicit null placement), and `count`, `sum`, `min`, `max`, and `avg` aggregates. DuckDB receives the
+same immutable options through the SQL compiler, with identifiers quoted and arithmetic guarded
+against division by zero. Both executors apply filtering before expressions, ordering before the
+global limit, and projection after computed or aggregate columns are available.
+
+```ts
+const query = {
+  predicate: parseSQLPredicate("status = 'active'"),
+  expressions: [{name: 'revenue', expression: {op: 'multiply', left: 'price', right: 'quantity'}}],
+  columns: ['category', 'revenue'],
+  orderBy: [{column: 'revenue', direction: 'desc', nulls: 'last'}],
+  limit: 100
+};
+```
+
+The Arrow executor remains intentionally row-oriented for this proof of concept: it materializes
+only the rows needed by the relational operators and returns a bounded Arrow table. This gives
+format adapters and the GPU executor a conformance target without committing them to the same
+physical implementation. In-memory unions resolve named child tables through an explicit table map;
+joins expose child fields with a source-qualified name and use SQL inner-join null semantics. SQL
+backends compile the same child relations to `UNION ALL` and qualified `JOIN` statements. The
+following managed append layer adds source registration and streaming resolution without extending
+that materialized join path into a distributed executor.
+
+### Managed append federation
+
+The first managed federation layer is an ordered append, not a distributed database. Applications
+register runtime sources once with `DataSourceManager`; `FederatedTableScanSource` subscribes to
+their stable ids while discovering metadata or producing batches. This intentionally aligns scan
+planning with the existing loaders.gl resource-management system:
+
+```text
+SourceLoader / application factory
+              |
+              v
+       DataSourceManager
+       (identity, lifetime,
+        deferred resolution)
+              |
+              v
+ FederatedTableScanSource
+ (schema plan, ordered append,
+  global query semantics)
+              |
+              v
+     Arrow batches + provenance
+```
+
+The manager remains format-agnostic and does not inspect query capabilities. The federated adapter
+requires each resolved object to publish supported table scan metadata and `read()`. Consequently,
+CSV, NDJSON, Parquet, Iceberg, Delta, ORC, GeoPackage, FlatGeobuf, Arrow IPC, or an application
+source can participate through the same registry when its concrete source implements that
+contract.
+
+Source-local queries use physical source names and run before reconciliation. Explicit mappings
+then rename fields into the federated namespace. Under `strict`, every mapped schema must contain
+the same fields with identical portable data types. Under `union`, columns are ordered by first
+appearance and a source that lacks a field contributes typed nulls. The global predicate,
+projection, and limit operate on this reconciled namespace. Callers may declare an output schema
+to request safe numeric widening, dictionary-to-value normalization, and field ordering. Lossy
+conversions, implicit string conversion, geometry coercion, and removal of nullability are rejected
+before result rows are decoded.
+
+Execution is serial by design. This is what makes the following guarantees inexpensive and
+testable:
+
+1. source-list order is row order;
+2. a global limit counts rows after the global predicate;
+3. reaching the limit closes the current child iterator and avoids opening later sources;
+4. abort signals cover deferred source resolution as well as batch reads;
+5. each result batch identifies its source id, source position, and physical batch position; and
+6. manager subscriptions are released for completion, errors, cancellation, and early return.
+
+Parallel scheduling, managed-source joins, optimizer-selected source order, schema coercion, and
+distributed aggregation are explicit non-goals. The in-memory relational executor can still join
+or union already supplied Arrow tables; that is a separate materialized execution path.
+
+The browser example below registers real CSV, NDJSON, and Arrow IPC sources, discovers them without
+exposing the managed source objects, applies explicit mappings and a named predicate parameter,
+and shows both the plan and terminal execution telemetry. Source badges below the panel are the
+provenance attached to emitted Arrow batches.
+
+<FederatedScanLiveExample />
 
 ## Point-cloud participation
 
@@ -711,8 +941,10 @@ to emit its own limit.
 non-finite or inverted bounds, invalid hierarchy levels, and non-positive spacing. A point-cloud
 adapter advertises table capabilities plus `bounds`, `levelOfDetail`, and `spacing` support.
 
-COPC is the first physical target because its hierarchy pages, node bounds, point counts, and LAZ
-chunks create a clean pruning ladder:
+COPC and Potree implement the same deterministic breadth-first hierarchy planner. Bounds prune
+whole subtrees, `minimumLevel` suppresses coarse payloads while preserving traversal,
+`maximumLevel` stops descent, and `targetSpacing` selects the first acceptable resolution. Their
+hierarchy pages, node bounds, point counts, and encoded chunks create a clean pruning ladder:
 
 ```text
 PointCloudQueryOptions
@@ -726,12 +958,12 @@ PointCloudQueryOptions
     -> Arrow or GeoArrow point batches
 ```
 
-Potree can reuse the logical query, metadata roles, hierarchy selection interface, scan executor,
-and result batches. Its physical adapter remains separate because Potree versions differ in
-metadata, hierarchy storage, point encoding, and URL layout. Initial Potree support can conservatively
-advertise bounds and level selection as pushdown while keeping scalar attribute predicates residual.
+The physical adapters remain separate because COPC and Potree differ in metadata, hierarchy
+storage, point encoding, and URL layout. Both conservatively advertise hierarchy bounds, level, and
+spacing selection as pushdown while keeping scalar attribute predicates and final point bounds
+residual. COPC minimizes requested LAZ attributes; Potree currently decodes complete point records.
 
-Both adapters should expose `x`, `y`, and `z` roles even when their native attribute names use LAS
+Both adapters expose `x`, `y`, and `z` roles even when their native attribute names use LAS
 conventions such as `X`, `Y`, and `Z`. Intensity, classification, color, GPS time, and point-source
 identifier roles allow the same query panel to render useful typed controls without embedding COPC
 or Potree naming rules in UI code.
@@ -794,6 +1026,12 @@ GeoTIFF contributes internal tile offsets, overview selection, and COG byte rang
 OME-Zarr contribute array metadata, chunk coordinates, multiscale levels, dimension labels, and
 codec pipelines. Both can lower to the same `ScanTask` executor while preserving their natural
 typed-array result forms.
+
+NetCDF selects numeric variables and applies slices by discovered dimension name. A numeric slice
+selects one index and removes that dimension; a tuple uses half-open `[start, stop)` semantics and
+retains it. The current classic-file executor materializes the source before slicing, so slicing is
+reported as residual even though the result is fully supported. Range reads and chunk pruning are
+future physical optimizations, not prerequisites for the common `getRaster()` contract.
 
 Cross-domain operations belong above the physical scan layer. For example, sampling a raster at
 Arrow point coordinates or joining a raster window with vector features may coordinate a

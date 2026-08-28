@@ -9,6 +9,9 @@
 It wraps `getMetadata()` and `getRaster()` calls, tracks loading state, debounces viewport updates,
 and emits lifecycle callbacks that examples and layers can subscribe to.
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
+difference between native raster CRS metadata and raster reprojection or resampling.
+
 ## Usage
 
 ```ts

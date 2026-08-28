@@ -1,38 +1,27 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-
 import {ZipWriter, ZipLoader} from '@loaders.gl/zip';
 import {encode, parse} from '@loaders.gl/core';
 import JSZip from 'jszip';
-
 const FILE_MAP = {
   src: 'abc',
   dist: 'cba',
   'README.md': 'This is a module',
   package: '{"name": "module"}'
 };
-
-test('Zip#loader/writer conformance', t => {
-  validateLoader(t, ZipLoader, 'ZipLoader');
-  validateWriter(t, ZipWriter, 'ZipWriter');
-  t.end();
+test('Zip#loader/writer conformance', () => {
+  validateLoader(ZipLoader, 'ZipLoader');
+  validateWriter(ZipWriter, 'ZipWriter');
 });
-
-test('Zip#encode/decode', async t => {
+test('Zip#encode/decode', async () => {
   const arrayBuffer = await encode(FILE_MAP, ZipWriter);
   const fileMap = await parse(arrayBuffer, ZipLoader);
   for (const key in FILE_MAP) {
     const text = new TextDecoder().decode(fileMap[key]);
-    t.equal(text, FILE_MAP[key], `Subfile ${key} encoded/decoded correctly`);
+    expect(text, `Subfile ${key} encoded/decoded correctly`).toBe(FILE_MAP[key]);
   }
-  t.end();
 });
-
-test('ZipLoader handles directory entries', async t => {
+test('ZipLoader handles directory entries', async () => {
   const arrayBuffer = await encode(
     {
       'AgData/Implements/': '',
@@ -41,17 +30,13 @@ test('ZipLoader handles directory entries', async t => {
     ZipWriter
   );
   const fileMap = await parse(arrayBuffer, ZipLoader);
-
-  t.equal(
+  expect(
     new TextDecoder().decode(fileMap['AgData/Implements/README.txt']),
-    'folder entry should not crash',
     'Loads file content in directory entry'
-  );
-  t.notOk(fileMap['AgData/Implements/'], 'Skips directory entry in file map');
-  t.end();
+  ).toBe('folder entry should not crash');
+  expect(fileMap['AgData/Implements/'], 'Skips directory entry in file map').toBeFalsy();
 });
-
-test('ZipWriter creates parent directory entries for nested files', async t => {
+test('ZipWriter creates parent directory entries for nested files', async () => {
   const arrayBufferWithoutDirectoryEntries = await encode(
     {
       'folder1/folder2/file.txt': 'nested file'
@@ -64,9 +49,7 @@ test('ZipWriter creates parent directory entries for nested files', async t => {
   const directoryEntriesWithoutOption = Object.keys(zipWithoutDirectoryEntries.files)
     .filter(fileName => zipWithoutDirectoryEntries.files[fileName].dir)
     .sort();
-
-  t.deepEqual(directoryEntriesWithoutOption, [], 'No parent directory entries by default');
-
+  expect(directoryEntriesWithoutOption, 'No parent directory entries by default').toEqual([]);
   const arrayBuffer = await encode(
     {
       'folder1/folder2/file.txt': 'nested file',
@@ -80,20 +63,16 @@ test('ZipWriter creates parent directory entries for nested files', async t => {
   const directoryEntriesWithOption = Object.keys(zipWithDirectoryEntries.files)
     .filter(fileName => zipWithDirectoryEntries.files[fileName].dir)
     .sort();
-
-  t.deepEqual(
-    directoryEntriesWithOption,
-    ['folder1/', 'folder1/folder2/'],
-    'Writes parent directory entries when enabled'
-  );
-  t.equal(new TextDecoder().decode(fileMap['folder1/folder2/file.txt']), 'nested file');
-  t.equal(new TextDecoder().decode(fileMap['folder1/folder2/file2.txt']), 'nested file 2');
-  t.notOk(fileMap['folder1/'], 'Skips first-level directory entry in file map');
-  t.notOk(fileMap['folder1/folder2/'], 'Skips nested directory entry in file map');
-  t.end();
+  expect(directoryEntriesWithOption, 'Writes parent directory entries when enabled').toEqual([
+    'folder1/',
+    'folder1/folder2/'
+  ]);
+  expect(new TextDecoder().decode(fileMap['folder1/folder2/file.txt'])).toBe('nested file');
+  expect(new TextDecoder().decode(fileMap['folder1/folder2/file2.txt'])).toBe('nested file 2');
+  expect(fileMap['folder1/'], 'Skips first-level directory entry in file map').toBeFalsy();
+  expect(fileMap['folder1/folder2/'], 'Skips nested directory entry in file map').toBeFalsy();
 });
-
-test('ZipWriter preserves explicit slash directory keys even when parent directory generation is disabled', async t => {
+test('ZipWriter preserves explicit slash directory keys even when parent directory generation is disabled', async () => {
   const arrayBuffer = await encode(
     {
       'images/avatars/': '',
@@ -102,21 +81,16 @@ test('ZipWriter preserves explicit slash directory keys even when parent directo
     },
     ZipWriter
   );
-
   const zipWithoutDirectoryEntries = await new JSZip().loadAsync(arrayBuffer);
   const directoryEntries = Object.keys(zipWithoutDirectoryEntries.files)
     .filter(fileName => zipWithoutDirectoryEntries.files[fileName].dir)
     .sort();
-
-  t.deepEqual(
-    directoryEntries,
-    ['images/', 'images/avatars/'],
-    'Explicitly included slash keys are still written'
-  );
-  t.end();
+  expect(directoryEntries, 'Explicitly included slash keys are still written').toEqual([
+    'images/',
+    'images/avatars/'
+  ]);
 });
-
-test('ZipWriter and ZipLoader keep directory keys out of the decoded file map', async t => {
+test('ZipWriter and ZipLoader keep directory keys out of the decoded file map', async () => {
   const arrayBuffer = await encode(
     {
       'assets/': '',
@@ -126,18 +100,14 @@ test('ZipWriter and ZipLoader keep directory keys out of the decoded file map', 
     ZipWriter
   );
   const fileMap = await parse(arrayBuffer, ZipLoader);
-
-  t.equal(new TextDecoder().decode(fileMap['assets/readme.txt']), 'hello');
-  t.equal(new TextDecoder().decode(fileMap['assets/docs/guide.txt']), 'guide');
-  t.deepEqual(
+  expect(new TextDecoder().decode(fileMap['assets/readme.txt'])).toBe('hello');
+  expect(new TextDecoder().decode(fileMap['assets/docs/guide.txt'])).toBe('guide');
+  expect(
     Object.keys(fileMap).sort(),
-    ['assets/docs/guide.txt', 'assets/readme.txt'],
     'Directory entries are not present in output file map'
-  );
-  t.end();
+  ).toEqual(['assets/docs/guide.txt', 'assets/readme.txt']);
 });
-
-test('ZipWriter emits generated directory entries when explicitly enabled', async t => {
+test('ZipWriter emits generated directory entries when explicitly enabled', async () => {
   const arrayBuffer = await encode(
     {
       'images/avatars/user-1.txt': '1',
@@ -146,13 +116,10 @@ test('ZipWriter emits generated directory entries when explicitly enabled', asyn
     ZipWriter,
     {zip: {createFolders: true}}
   );
-
   const zip = await new JSZip().loadAsync(arrayBuffer);
   const directoryEntries = Object.keys(zip.files).filter(fileName => zip.files[fileName].dir);
-  t.deepEqual(
-    directoryEntries.sort(),
-    ['images/', 'images/avatars/'],
-    'Writes one entry for each generated parent directory'
-  );
-  t.end();
+  expect(directoryEntries.sort(), 'Writes one entry for each generated parent directory').toEqual([
+    'images/',
+    'images/avatars/'
+  ]);
 });

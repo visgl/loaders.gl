@@ -1,97 +1,64 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-// Copyright 2022 Foursquare Labs, Inc.
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {JSONWriter} from '@loaders.gl/json';
 import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/json/bundled';
 import {encodeTableAsText} from '@loaders.gl/core';
 import {convertTableToArrow} from '@loaders.gl/schema-utils';
 import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
-
-test('JSONWriter#encodeTableAsText - empty table', async t => {
+test('JSONWriter#encodeTableAsText - empty table', async () => {
   const encodedText = await encodeTableAsText(emptyTable, JSONWriter);
-  t.equal(encodedText, '[]', 'got expected output');
-
-  t.end();
+  expect(encodedText, 'got expected output').toBe('[]');
 });
-
-test('JSONWriter#encodeTableAsText - data table, row objects', async t => {
+test('JSONWriter#encodeTableAsText - data table, row objects', async () => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter);
-  t.equal(
-    encodedText,
-    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async t => {
+test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async () => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     json: {shape: 'object-row-table'}
   });
-  t.equal(
-    encodedText,
-    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - data table, row arrays', async t => {
+test('JSONWriter#encodeTableAsText - data table, row arrays', async () => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     json: {shape: 'array-row-table'}
   });
-  t.equal(
-    encodedText,
-    '[["a",1,10.1,-10.1],["b",2,20.2,-20.2],["c",3,30.3,-30.3]]',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '[["a",1,10.1,-10.1],["b",2,20.2,-20.2],["c",3,30.3,-30.3]]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - arrow table input, row objects', async t => {
+test('JSONWriter#encodeTableAsText - arrow table input, row objects', async () => {
   const arrowTable = {
     shape: 'arrow-table' as const,
     schema: tableWithData.schema,
     data: convertTableToArrow(tableWithData)
   };
-
   const encodedText = await encodeTableAsText(arrowTable, JSONWriter);
-  t.equal(
-    encodedText,
-    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - arrow table input, explicit arrow shape', async t => {
+test('JSONWriter#encodeTableAsText - arrow table input, explicit arrow shape', async () => {
   const arrowTable = {
     shape: 'arrow-table' as const,
     schema: tableWithData.schema,
     data: convertTableToArrow(tableWithData)
   };
-
   const encodedText = await encodeTableAsText(arrowTable, JSONWriter, {
     json: {shape: 'arrow-table'}
   });
-  t.equal(
-    encodedText,
-    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async t => {
+test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async () => {
   const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -107,18 +74,12 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async t =>
       geojson: {shape: 'arrow-table'}
     }
   );
-
   const encodedText = await encodeTableAsText(arrowTable, JSONWriter);
-  t.equal(
-    encodedText,
-    '[{"name":"A","geometry":{"type":"Point","coordinates":[1,2]}}]',
-    'got expected GeoJSON geometry output'
+  expect(encodedText, 'got expected GeoJSON geometry output').toBe(
+    '[{"name":"A","geometry":{"type":"Point","coordinates":[1,2]}}]'
   );
-
-  t.end();
 });
-
-test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', async t => {
+test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', async () => {
   const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify([
       {
@@ -131,26 +92,21 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', asy
       geojson: {shape: 'arrow-table'}
     }
   );
-
   const encodedText = await encodeTableAsText(arrowTable, JSONWriter, {
     json: {geoarrow: 'none'}
   });
-  t.ok(encodedText.includes('"name":"A"'), 'preserves non-geometry columns');
-  t.ok(encodedText.includes('"geometry"'), 'preserves raw geometry column');
-  t.notOk(encodedText.includes('"type":"Point"'), 'does not decode WKB to GeoJSON geometry');
-
-  t.end();
+  expect(encodedText.includes('"name":"A"'), 'preserves non-geometry columns').toBeTruthy();
+  expect(encodedText.includes('"geometry"'), 'preserves raw geometry column').toBeTruthy();
+  expect(
+    encodedText.includes('"type":"Point"'),
+    'does not decode WKB to GeoJSON geometry'
+  ).toBeFalsy();
 });
-
-test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async t => {
+test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async () => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     json: {shape: 'array-row-table', wrapper: table => ({wrapped: true, table})}
   });
-  t.equal(
-    encodedText,
-    '{"wrapped":true,"table":[["a",1,10.1,-10.1],["b",2,20.2,-20.2],["c",3,30.3,-30.3]]}',
-    'got expected output'
+  expect(encodedText, 'got expected output').toBe(
+    '{"wrapped":true,"table":[["a",1,10.1,-10.1],["b",2,20.2,-20.2],["c",3,30.3,-30.3]]}'
   );
-
-  t.end();
 });

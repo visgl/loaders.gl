@@ -9,6 +9,7 @@ import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
+import {I3SSpatialTransformer} from '@loaders.gl/tiles';
 
 import {
   FeatureAttribute,
@@ -88,72 +89,45 @@ export async function parseI3STileContent(
   };
   const requiredContext = context ? getRequiredContext(context, 'parse nested resources') : null;
 
-  if (tileOptions.textureUrl) {
+  const textureResources = tileOptions.textureUrls?.length
+    ? tileOptions.textureUrls
+    : tileOptions.textureUrl
+      ? [
+          {
+            textureSetDefinitionId: getMaterialTextureSetDefinitionId(
+              tileOptions.materialDefinition
+            ),
+            textureUrl: tileOptions.textureUrl,
+            textureFormat: tileOptions.textureFormat || 'jpg'
+          }
+        ]
+      : [];
+  const decodedTextures: Record<string, TileContentTexture> = {};
+
+  for (const textureResource of textureResources) {
     try {
-      // @ts-expect-error options is not properly typed
-      const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
-      const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-      const fetchFunc = context?.fetch || fetch;
-      const response = await fetchFunc(url); // options?.fetch
-      if (!response.ok) {
-        throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
-      }
-
-      const textureArrayBuffer = await response.arrayBuffer();
-
-      // @ts-expect-error options is not properly typed
-      if (options?.i3s.decodeTextures) {
-        const nestedContext = getRequiredContext(
-          requiredContext || context,
-          'decode texture payloads'
-        );
-        // TODO - replace with switch
-        if (loader === ImageBitmapLoader) {
-          const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
-          try {
-            const parsedTexture: any = await parseFromContext(
-              textureArrayBuffer,
-              ImageBitmapLoader,
-              imageLoaderOptions,
-              nestedContext
-            );
-            content.texture = getImageData(parsedTexture);
-          } catch (_error) {
-            const parsedTexture: any = await parseFromContext(
-              textureArrayBuffer,
-              loader,
-              imageLoaderOptions,
-              nestedContext
-            );
-            content.texture = getImageData(parsedTexture);
-          }
-        } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-          let texture: any = await parseFromContext(
-            textureArrayBuffer,
-            loader,
-            tileOptions.textureLoaderOptions,
-            nestedContext
-          );
-          if (loader === BasisLoader) {
-            texture = texture[0];
-          }
-          content.texture = {
-            compressed: true,
-            mipmaps: false,
-            width: texture[0].width,
-            height: texture[0].height,
-            data: texture
-          };
-        }
-      } else {
-        content.texture = textureArrayBuffer;
+      const texture = await loadI3STexture(
+        textureResource.textureUrl,
+        textureResource.textureFormat,
+        tileOptions,
+        options,
+        requiredContext || context
+      );
+      if (texture) {
+        decodedTextures[textureResource.textureSetDefinitionId] = texture;
       }
     } catch (error) {
       console.warn(error);
     }
   }
 
-  content.material = makePbrMaterial(tileOptions.materialDefinition, content.texture);
+  const firstTexture = Object.values(decodedTextures)[0] || null;
+  content.texture = firstTexture;
+  if (Object.keys(decodedTextures).length > 0) {
+    content.textures = decodedTextures;
+  }
+
+  content.material = makePbrMaterial(tileOptions.materialDefinition, decodedTextures, firstTexture);
   if (content.material) {
     content.texture = null;
   }
@@ -166,6 +140,77 @@ export async function parseI3STileContent(
     options,
     context
   );
+}
+
+/**
+ * Fetch and optionally decode one I3S texture-set resource.
+ * @param textureUrl - texture resource URL
+ * @param textureFormat - I3S texture format
+ * @param tileOptions - texture decoder options
+ * @param options - top-level loader options
+ * @param context - loader context for nested parsing
+ * @returns decoded texture or raw bytes
+ */
+async function loadI3STexture(
+  textureUrl: string,
+  textureFormat: I3STileOptions['textureFormat'],
+  tileOptions: I3STileOptions,
+  options: StrictLoaderOptions | undefined,
+  context?: LoaderContext
+): Promise<TileContentTexture | null> {
+  // @ts-expect-error options is not properly typed
+  const url = getUrlWithToken(textureUrl, options?.i3s?.token);
+  const loader = getLoaderForTextureFormat(textureFormat);
+  const fetchFunc = context?.fetch || fetch;
+  const response = await fetchFunc(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
+  }
+
+  const textureArrayBuffer = await response.arrayBuffer();
+
+  if (!options?.i3s?.decodeTextures) {
+    return textureArrayBuffer;
+  }
+
+  const nestedContext = getRequiredContext(context, 'decode texture payloads');
+  if (loader === ImageBitmapLoader) {
+    const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
+    try {
+      const parsedTexture: any = await parseFromContext(
+        textureArrayBuffer,
+        ImageBitmapLoader,
+        imageLoaderOptions,
+        nestedContext
+      );
+      return getImageData(parsedTexture);
+    } catch (_error) {
+      const parsedTexture: any = await parseFromContext(
+        textureArrayBuffer,
+        loader,
+        imageLoaderOptions,
+        nestedContext
+      );
+      return getImageData(parsedTexture);
+    }
+  }
+
+  let texture: any = await parseFromContext(
+    textureArrayBuffer,
+    loader,
+    tileOptions.textureLoaderOptions,
+    nestedContext
+  );
+  if (loader === BasisLoader) {
+    texture = texture[0];
+  }
+  return {
+    compressed: true,
+    mipmaps: false,
+    width: texture[0].width,
+    height: texture[0].height,
+    data: texture
+  };
 }
 
 /* eslint-disable max-statements */
@@ -245,19 +290,53 @@ async function parseI3SNodeGeometry(
     );
 
     // Getting feature attributes such as featureIds and faceRange
-    const {attributes: normalizedFeatureAttributes} = normalizeAttributes(
-      arrayBuffer,
-      offset,
-      featureAttributes,
-      featureCount,
-      featureAttributeOrder
-    );
+    const {attributes: normalizedFeatureAttributes, byteOffset: featureByteOffset} =
+      normalizeAttributes(
+        arrayBuffer,
+        offset,
+        featureAttributes,
+        featureCount,
+        featureAttributeOrder
+      );
+
+    const meshSegmentation = extractMeshSegmentation(arrayBuffer, featureByteOffset);
+    if (meshSegmentation) {
+      content.meshSegmentation = meshSegmentation;
+    }
 
     flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes);
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
-  if (
+  const spatialReference = tilesetOptions.spatialReference;
+  if (spatialReference?.status === 'transformable' || spatialReference?.status === 'transformed') {
+    const spatialTransformer = new I3SSpatialTransformer(
+      spatialReference,
+      tilesetOptions.spatialOptions || options?.i3s?.spatial
+    );
+    const sourcePositions = offsetsToSourcePositions(
+      attributes.position.value,
+      attributes.position.metadata,
+      tileOptions.mbs
+    );
+    const transformed = await spatialTransformer.transformPositionsAsync(
+      sourcePositions,
+      tileOptions.mbs
+    );
+    attributes.position.value = transformed.positions;
+    if (attributes.normal?.value) {
+      attributes.normal.value = spatialTransformer.transformNormals(
+        attributes.normal.value,
+        transformed.sourcePositions,
+        tilesetOptions.store.normalReferenceFrame
+      );
+    }
+    content.modelMatrix = transformed.modelMatrix;
+    content.coordinateSystem = transformed.coordinateSystem;
+    content.origin = transformed.origin;
+    content.cartographicOrigin = transformed.cartographicOrigin;
+    content.spatialReference = spatialTransformer.spatialReference;
+  } else if (
     !options?.i3s?.coordinateSystem ||
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
@@ -294,6 +373,22 @@ async function parseI3SNodeGeometry(
   content.byteLength = contentByteLength;
 
   return content;
+}
+
+/**
+ * Preserve the optional legacy mesh-segmentation payload that follows the schema-defined attributes.
+ * Older I3S services append this payload to the geometry buffer without adding it to
+ * `defaultGeometrySchema`; retaining it keeps the bytes available to applications that understand
+ * the service-specific segmentation record.
+ * @param arrayBuffer - complete legacy geometry buffer
+ * @param byteOffset - first byte after schema-defined attributes
+ * @returns segmentation bytes, or undefined when the schema consumes the complete buffer
+ */
+function extractMeshSegmentation(
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number
+): ArrayBuffer | undefined {
+  return byteOffset < arrayBuffer.byteLength ? arrayBuffer.slice(byteOffset) : undefined;
 }
 
 /**
@@ -443,13 +538,13 @@ function normalizeAttributes(
  *
  * @param buffer
  * @param elementsCount
- * @returns 64-bit array of values until precision is lost after Number.MAX_SAFE_INTEGER
+ * @returns Numeric values with exact representation through Number.MAX_SAFE_INTEGER
  */
-function parseUint64Values(
+export function parseUint64Values(
   buffer: ArrayBuffer,
   elementsCount: number,
   attributeSize: number
-): Uint32Array {
+): Float64Array {
   const values: number[] = [];
   const dataView = new DataView(buffer);
   let offset = 0;
@@ -465,7 +560,7 @@ function parseUint64Values(
     offset += attributeSize;
   }
 
-  return new Uint32Array(values);
+  return new Float64Array(values);
 }
 
 function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): Matrix4 {
@@ -483,6 +578,30 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
 }
 
 /**
+ * Reconstruct absolute source positions from I3S node-relative vertex values.
+ *
+ * @param vertices - Relative I3S positions.
+ * @param metadata - Draco scale metadata.
+ * @param sourceOrigin - Node MBS center in source CRS coordinates.
+ * @returns Absolute positions retained as Float64.
+ */
+function offsetsToSourcePositions(
+  vertices: ArrayLike<number>,
+  metadata: any = {},
+  sourceOrigin: ArrayLike<number>
+): Float64Array {
+  const positions = new Float64Array(vertices.length);
+  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
+  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
+  for (let index = 0; index < positions.length; index += 3) {
+    positions[index] = vertices[index] * scaleX + sourceOrigin[0];
+    positions[index + 1] = vertices[index + 1] * scaleY + sourceOrigin[1];
+    positions[index + 2] = vertices[index + 2] + sourceOrigin[2];
+  }
+  return positions;
+}
+
+/**
  * Converts position coordinates to absolute cartesian coordinates
  * @param vertices - "position" attribute data
  * @param metadata - When the geometry is DRACO compressed, contain position attribute's metadata
@@ -495,14 +614,7 @@ function offsetsToCartesians(
   metadata: any = {},
   cartographicOrigin: Vector3
 ): Float64Array {
-  const positions = new Float64Array(vertices.length);
-  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
-  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = vertices[i] * scaleX + cartographicOrigin.x;
-    positions[i + 1] = vertices[i + 1] * scaleY + cartographicOrigin.y;
-    positions[i + 2] = vertices[i + 2] + cartographicOrigin.z;
-  }
+  const positions = offsetsToSourcePositions(vertices, metadata, cartographicOrigin);
 
   for (let i = 0; i < positions.length; i += 3) {
     // @ts-ignore
@@ -537,13 +649,35 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
  * @param texture - Decoded texture data when one was fetched successfully.
  * @returns Material definition normalized for glTF-style rendering.
  */
-function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
+function makePbrMaterial(
+  materialDefinition?: I3SMaterialDefinition,
+  textures: Record<string, TileContentTexture> = {},
+  texture?: TileContentTexture
+) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
       ...materialDefinition,
+      normalTexture: materialDefinition.normalTexture
+        ? {...materialDefinition.normalTexture}
+        : undefined,
+      occlusionTexture: materialDefinition.occlusionTexture
+        ? {...materialDefinition.occlusionTexture}
+        : undefined,
+      emissiveTexture: materialDefinition.emissiveTexture
+        ? {...materialDefinition.emissiveTexture}
+        : undefined,
       pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-        ? {...materialDefinition.pbrMetallicRoughness}
+        ? {
+            ...materialDefinition.pbrMetallicRoughness,
+            baseColorTexture: materialDefinition.pbrMetallicRoughness.baseColorTexture
+              ? {...materialDefinition.pbrMetallicRoughness.baseColorTexture}
+              : undefined,
+            metallicRoughnessTexture: materialDefinition.pbrMetallicRoughness
+              .metallicRoughnessTexture
+              ? {...materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture}
+              : undefined
+          }
         : {baseColorFactor: [255, 255, 255, 255]}
     };
   } else {
@@ -575,8 +709,10 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
     );
   }
 
-  if (texture) {
-    setMaterialTexture(pbrMaterial, texture!);
+  if (Object.keys(textures).length > 0) {
+    setMaterialTextures(pbrMaterial, textures);
+  } else if (texture) {
+    setMaterialTexture(pbrMaterial, texture);
   }
 
   return pbrMaterial;
@@ -627,6 +763,46 @@ function setMaterialTexture(material, image: TileContentTexture): void {
 }
 
 /**
+ * Attach each decoded texture-set resource to its matching PBR material slot.
+ * @param material - normalized I3S material definition
+ * @param textures - decoded textures keyed by texture-set definition id
+ */
+function setMaterialTextures(material, textures: Record<string, TileContentTexture>): void {
+  const textureSlots = [
+    material.pbrMetallicRoughness?.baseColorTexture,
+    material.pbrMetallicRoughness?.metallicRoughnessTexture,
+    material.normalTexture,
+    material.occlusionTexture,
+    material.emissiveTexture
+  ];
+  for (const textureSlot of textureSlots) {
+    if (!textureSlot) {
+      continue;
+    }
+    const texture = textures[textureSlot.textureSetDefinitionId];
+    if (texture) {
+      textureSlot.texture = {source: {image: texture}};
+    }
+  }
+}
+
+/**
+ * Get the texture-set definition id used by the legacy singleton texture URL.
+ * @param materialDefinition - optional material definition containing texture references
+ * @returns referenced texture-set definition id, or zero when no reference is available
+ */
+function getMaterialTextureSetDefinitionId(materialDefinition?: I3SMaterialDefinition): number {
+  return (
+    materialDefinition?.pbrMetallicRoughness?.baseColorTexture?.textureSetDefinitionId ??
+    materialDefinition?.pbrMetallicRoughness?.metallicRoughnessTexture?.textureSetDefinitionId ??
+    materialDefinition?.normalTexture?.textureSetDefinitionId ??
+    materialDefinition?.occlusionTexture?.textureSetDefinitionId ??
+    materialDefinition?.emissiveTexture?.textureSetDefinitionId ??
+    0
+  );
+}
+
+/**
  * Flatten feature ids using face ranges
  * @param normalizedFeatureAttributes
  * @returns
@@ -641,7 +817,7 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: I3SMeshAttri
   const featureIds = id.value;
   const range = faceRange.value;
   const featureIdsLength = range[range.length - 1] + 1;
-  const orderedFeatureIndices = new Uint32Array(featureIdsLength * 3);
+  const orderedFeatureIndices = new Float64Array(featureIdsLength * 3);
 
   let featureIndex = 0;
   let startIndex = 0;

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from './sql-source';
+export {ArrowTableSource} from './arrow-table-source';
 export {DuckDBSQLSource, DuckDBSQLDataSource} from './duckdb-sql-source';
 export {SnowflakeSQLSource, SnowflakeSQLDataSource} from './snowflake-sql-source';
 export {
@@ -55,12 +56,18 @@ export type {
 } from './sql-types';
 
 export type {ArrowQueryOptions} from './query-arrow-table';
+export type {ArrowTableSourceOptions} from './arrow-table-source';
 export type {
   CompiledSQLTableQuery,
   SQLTableQuery,
   SQLTableQueryCompilerOptions,
   SQLTableQueryDialect
 } from './compile-table-query';
+export type {
+  RelationalAggregate,
+  RelationalExpression,
+  RelationalOrderKey
+} from '@loaders.gl/loader-utils';
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,

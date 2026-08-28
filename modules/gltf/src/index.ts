@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase, indent */
-export type {GLB} from './lib/types/glb-types';
+export type {GLB, GLBChunk} from './lib/types/glb-types';
 
 // Raw GLTF Types (i.e. not post-processed)
 export type {
@@ -31,6 +31,8 @@ export type {
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp
 } from './lib/types/gltf-json-schema';
+
+export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
 
 // 3DTiles extensions
 export type {
@@ -128,7 +130,9 @@ export {
   GLTFKHRMeshoptCompressionSchema,
   GLTFEXTMeshoptCompressionSchema,
   GLTFEXTTextureWebpSchema,
-  GLTFMSFTTextureDdsSchema
+  GLTFMSFTTextureDdsSchema,
+  GLTFShapeSchema,
+  GLTFBoundingVolumeSchema
 } from './lib/types/gltf-zod-schema';
 export {GLTFFormat, GLBFormat} from './gltf-format';
 
@@ -164,7 +168,14 @@ export {
   type GLTFSkinReferences,
   type GLTFTextureReferences
 } from './lib/api/gltf-iterator';
+export {getGLTFCullingShape, getGLTFNodeCullingShape} from './lib/api/gltf-culling';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
+export {
+  convertGLTFV1ToGLTF2,
+  normalizeGLTFV1,
+  type GLTFV1NormalizationOptions,
+  type GLTFV1NormalizationReport
+} from './lib/api/normalize-gltf-v1';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
 export {
   findGLTFFileIndex,

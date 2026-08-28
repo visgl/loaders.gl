@@ -7,6 +7,7 @@ import {getArrowViewTypeSupport} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVRawArrowOptions} from './parse-csv-to-arrow';
+import {copyByteRange} from '../utils/copy-byte-range';
 
 /** Normalized ASCII-byte CSV options used by the raw Arrow byte parser. */
 type CSVByteParserOptions = {
@@ -34,6 +35,9 @@ const CARRIAGE_RETURN = 13;
 const LINE_FEED = 10;
 const SPACE = 32;
 const TAB = 9;
+// A bounded probe rejects the common quoted/UTF-8 cases before allocating Arrow builders. The
+// complete scan below remains authoritative, so late non-ASCII or quote characters still fall back.
+const ASCII_TEXT_PROBE_LENGTH = 256;
 
 const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
@@ -60,6 +64,8 @@ export function parseRawArrowCSVBytes(
 
   const bytes = new Uint8Array(arrayBuffer);
   if (!parserOptions.skipEmptyLines && bytes.indexOf(parserOptions.quote) === -1) {
+    // An unquoted file needs no row objects or quote-state machine. Write each field directly to
+    // its column's Arrow buffers after this one cheap quote probe.
     const parser = new RawArrowUnquotedCSVByteParser(bytes, parserOptions);
     return parser.parseTable();
   }
@@ -76,6 +82,69 @@ export function parseRawArrowCSVBytes(
 
   const parser = new RawArrowCSVByteParser(bytes, parserOptions);
   return parser.parseTable();
+}
+
+/**
+ * Parses explicit-delimiter, unquoted ASCII CSV text directly into an Arrow Utf8 table.
+ *
+ * Returns `null` when the input or options require the general UTF-8 byte parser.
+ */
+export function parseRawArrowCSVASCIIText(
+  csvText: string,
+  csvOptions: CSVRawArrowOptions
+): ArrowTable | null {
+  const parserOptions = getCSVASCIITextParserOptions(csvOptions);
+  if (!parserOptions) {
+    return null;
+  }
+
+  // This is only an inexpensive admission test. The parser must still validate every field while
+  // scanning because a quote or non-ASCII code unit can occur after the probe window.
+  const probeLength = Math.min(csvText.length, ASCII_TEXT_PROBE_LENGTH);
+  for (let characterIndex = 0; characterIndex < probeLength; characterIndex++) {
+    const characterCode = csvText.charCodeAt(characterIndex);
+    if (characterCode === parserOptions.quote || characterCode >= 128) {
+      return null;
+    }
+  }
+
+  const parser = new RawArrowUnquotedCSVTextParser(csvText, parserOptions);
+  return parser.parseTable();
+}
+
+/** Returns parser options for the direct unquoted ASCII text path. */
+function getCSVASCIITextParserOptions(csvOptions: CSVRawArrowOptions): CSVByteParserOptions | null {
+  const shouldUseUtf8View =
+    csvOptions.viewTypes === 'require' ||
+    (csvOptions.viewTypes === 'prefer' && getArrowViewTypeSupport().utf8View);
+  // The direct scanner intentionally supports a small, explicit option set. Falling back here is
+  // cheaper and safer than adding branches to the hot loop for comments, skipped rows, or views.
+  if (shouldUseUtf8View || csvOptions.comments || csvOptions.skipEmptyLines) {
+    return null;
+  }
+
+  const quoteChar = csvOptions.quoteChar || '"';
+  const escapeChar = csvOptions.escapeChar || '"';
+  const configuredDelimiter = (csvOptions as CSVRawArrowOptions & {delimiter?: string}).delimiter;
+  if (
+    quoteChar.length !== 1 ||
+    quoteChar.charCodeAt(0) >= 128 ||
+    escapeChar !== quoteChar ||
+    !configuredDelimiter ||
+    configuredDelimiter.length !== 1 ||
+    configuredDelimiter.charCodeAt(0) >= 128
+  ) {
+    return null;
+  }
+
+  return {
+    delimiter: configuredDelimiter.charCodeAt(0),
+    quote: quoteChar.charCodeAt(0),
+    columnPrefix: csvOptions.columnPrefix || 'column',
+    header: csvOptions.header ?? false,
+    dynamicTyping: Boolean(csvOptions.dynamicTyping),
+    skipEmptyLines: false
+  };
 }
 
 /** Returns byte parser options when the CSV options are safe for the raw byte fast path. */
@@ -189,21 +258,6 @@ function findSimpleHeaderRowEnd(
   }
 
   return {end: bytes.length, nextStart: bytes.length};
-}
-
-/**
- * Selects the earliest found structural byte index.
- *
- * The raw parser only searches for ASCII CSV syntax bytes such as comma, tab,
- * quote, CR and LF. In valid UTF-8, non-ASCII characters use leading bytes
- * 0xc2-0xf4 and continuation bytes 0x80-0xbf, so these ASCII syntax bytes
- * cannot be mistaken for part of a multi-byte character.
- */
-function selectEarlierIndex(currentIndex: number, nextIndex: number): number {
-  if (nextIndex < 0) {
-    return currentIndex;
-  }
-  return currentIndex < 0 || nextIndex < currentIndex ? nextIndex : currentIndex;
 }
 
 /** Stateful single-buffer byte CSV parser that appends cell bytes into Arrow Utf8 columns. */
@@ -584,6 +638,10 @@ class RawArrowQuotedDirectCSVByteParser {
   }
 
   private appendDataRows(start: number): void {
+    if (start >= this.bytes.length) {
+      return;
+    }
+
     const columnCount = this.columnBuilders.length;
     const bytes = this.bytes;
     const delimiter = this.options.delimiter;
@@ -684,16 +742,16 @@ class RawArrowQuotedDirectCSVByteParser {
 
   private findNextTokenIndex(start: number): number {
     const bytes = this.bytes;
-    const byte = bytes[start];
-    if (byte === this.options.delimiter || byte === LINE_FEED || byte === CARRIAGE_RETURN) {
-      return start;
+    const delimiter = this.options.delimiter;
+
+    for (let byteIndex = start; byteIndex < bytes.length; byteIndex++) {
+      const byte = bytes[byteIndex];
+      if (byte === delimiter || byte === LINE_FEED || byte === CARRIAGE_RETURN) {
+        return byteIndex;
+      }
     }
 
-    const scanStart = start + 1;
-    let tokenIndex = bytes.indexOf(this.options.delimiter, scanStart);
-    tokenIndex = selectEarlierIndex(tokenIndex, bytes.indexOf(LINE_FEED, scanStart));
-    tokenIndex = selectEarlierIndex(tokenIndex, bytes.indexOf(CARRIAGE_RETURN, scanStart));
-    return tokenIndex;
+    return -1;
   }
 
   private appendField(
@@ -786,28 +844,45 @@ class RawArrowUnquotedCSVByteParser {
   }
 
   private appendDataRows(start: number): void {
+    if (start >= this.bytes.length) {
+      return;
+    }
+
     const columnCount = this.columnBuilders.length;
-    let rowStart = start;
+    const bytes = this.bytes;
+    const delimiter = this.options.delimiter;
+    let fieldStart = start;
+    let columnIndex = 0;
 
-    while (rowStart < this.bytes.length) {
-      const rowEnd = this.findRowEnd(rowStart);
-      let fieldStart = rowStart;
-      let columnIndex = 0;
-
-      while (fieldStart <= rowEnd.end) {
-        const delimiterIndex = this.bytes.indexOf(this.options.delimiter, fieldStart);
-        if (delimiterIndex >= 0 && delimiterIndex < rowEnd.end) {
-          this.appendField(columnIndex, fieldStart, delimiterIndex);
-          columnIndex++;
-          fieldStart = delimiterIndex + 1;
-        } else {
-          this.appendField(columnIndex, fieldStart, rowEnd.end);
-          this.appendMissingFields(columnIndex + 1, columnCount);
-          break;
-        }
+    for (let byteIndex = start; byteIndex <= bytes.length; byteIndex++) {
+      const byte = bytes[byteIndex];
+      if (
+        byte !== delimiter &&
+        byte !== LINE_FEED &&
+        byte !== CARRIAGE_RETURN &&
+        byteIndex !== bytes.length
+      ) {
+        continue;
       }
 
-      rowStart = rowEnd.nextStart;
+      this.appendField(columnIndex, fieldStart, byteIndex);
+      columnIndex++;
+
+      if (byte === delimiter) {
+        fieldStart = byteIndex + 1;
+        continue;
+      }
+
+      this.appendMissingFields(columnIndex, columnCount);
+      columnIndex = 0;
+
+      if (byte === CARRIAGE_RETURN && bytes[byteIndex + 1] === LINE_FEED) {
+        byteIndex++;
+      }
+      fieldStart = byteIndex + 1;
+      if (fieldStart >= bytes.length) {
+        break;
+      }
     }
   }
 
@@ -849,6 +924,149 @@ class RawArrowUnquotedCSVByteParser {
       }
     }
     return {end: this.bytes.length, nextStart: this.bytes.length};
+  }
+}
+
+/** Single-string parser for CSV text containing only unquoted ASCII fields. */
+class RawArrowUnquotedCSVTextParser {
+  /** Source CSV text. */
+  private readonly csvText: string;
+  /** Normalized parser options. */
+  private readonly options: CSVByteParserOptions;
+  /** Header transformer that makes duplicate column names unique. */
+  private readonly duplicateColumnTransformer = createDuplicateColumnTransformer();
+
+  /** Creates a direct ASCII text parser. */
+  constructor(csvText: string, options: CSVByteParserOptions) {
+    this.csvText = csvText;
+    this.options = options;
+  }
+
+  /** Parses the text or returns `null` when it requires the general UTF-8 parser. */
+  parseTable(): ArrowTable | null {
+    if (this.csvText.length === 0) {
+      return createRawArrowTable([], []);
+    }
+
+    let dataStart = 0;
+    const firstRow = this.findRowEnd(0);
+    const isHeader = this.options.header === 'auto' ? true : Boolean(this.options.header);
+    let headerRow: string[];
+
+    if (isHeader) {
+      const decodedHeaderRow = this.decodeHeaderRow(0, firstRow.end);
+      if (!decodedHeaderRow) {
+        return null;
+      }
+      headerRow = decodedHeaderRow;
+      dataStart = firstRow.nextStart;
+    } else {
+      headerRow = generateHeader(
+        this.options.columnPrefix,
+        countDelimitedTextFields(this.csvText, 0, firstRow.end, this.options.delimiter)
+      );
+    }
+
+    // Builders own the final Arrow offsets/data buffers. Parsing directly into them avoids the
+    // row arrays and per-cell strings normally needed by a row-oriented CSV representation.
+    const columnBuilders = createRawArrowColumnBuilders(headerRow, this.csvText.length);
+    if (!this.appendDataRows(dataStart, columnBuilders)) {
+      return null;
+    }
+    return createRawArrowTable(headerRow, columnBuilders);
+  }
+
+  /** Appends data rows and reports whether every field was unquoted ASCII. */
+  private appendDataRows(start: number, columnBuilders: RawArrowUtf8ColumnBuilder[]): boolean {
+    if (start >= this.csvText.length) {
+      return true;
+    }
+
+    const columnCount = columnBuilders.length;
+    const delimiter = this.options.delimiter;
+    const quote = this.options.quote;
+    let fieldStart = start;
+    let columnIndex = 0;
+
+    // Scan once over the source string. Delimiters and line endings are the only boundaries needed
+    // for this proven-unquoted path; CRLF is consumed as one row terminator below.
+    for (let characterIndex = start; characterIndex <= this.csvText.length; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === quote || characterCode >= 128) {
+        return false;
+      }
+      if (
+        characterCode !== delimiter &&
+        characterCode !== LINE_FEED &&
+        characterCode !== CARRIAGE_RETURN &&
+        characterIndex !== this.csvText.length
+      ) {
+        continue;
+      }
+
+      const columnBuilder = columnBuilders[columnIndex];
+      if (columnBuilder) {
+        columnBuilder.appendASCIITextRange(this.csvText, fieldStart, characterIndex);
+      }
+      columnIndex++;
+
+      if (characterCode === delimiter) {
+        fieldStart = characterIndex + 1;
+        continue;
+      }
+
+      for (; columnIndex < columnCount; columnIndex++) {
+        columnBuilders[columnIndex].appendNull();
+      }
+      columnIndex = 0;
+
+      if (
+        characterCode === CARRIAGE_RETURN &&
+        this.csvText.charCodeAt(characterIndex + 1) === LINE_FEED
+      ) {
+        characterIndex++;
+      }
+      fieldStart = characterIndex + 1;
+      if (fieldStart >= this.csvText.length) {
+        break;
+      }
+    }
+    return true;
+  }
+
+  /** Decodes and deduplicates an ASCII header row. */
+  private decodeHeaderRow(start: number, end: number): string[] | null {
+    const headerRow: string[] = [];
+    let fieldStart = start;
+    for (let characterIndex = start; characterIndex <= end; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === this.options.quote || characterCode >= 128) {
+        return null;
+      }
+      if (characterIndex === end || characterCode === this.options.delimiter) {
+        headerRow.push(
+          this.duplicateColumnTransformer(this.csvText.slice(fieldStart, characterIndex))
+        );
+        fieldStart = characterIndex + 1;
+      }
+    }
+    return headerRow;
+  }
+
+  /** Locates the end of one row and the beginning of the next. */
+  private findRowEnd(start: number): {end: number; nextStart: number} {
+    for (let characterIndex = start; characterIndex < this.csvText.length; characterIndex++) {
+      const characterCode = this.csvText.charCodeAt(characterIndex);
+      if (characterCode === LINE_FEED || characterCode === CARRIAGE_RETURN) {
+        const nextStart =
+          characterCode === CARRIAGE_RETURN &&
+          this.csvText.charCodeAt(characterIndex + 1) === LINE_FEED
+            ? characterIndex + 2
+            : characterIndex + 1;
+        return {end: characterIndex, nextStart};
+      }
+    }
+    return {end: this.csvText.length, nextStart: this.csvText.length};
   }
 }
 
@@ -962,6 +1180,20 @@ class RawArrowUtf8ColumnBuilder {
   /** Appends a non-null value from a byte range. */
   appendRange(source: Uint8Array, start: number, end: number): void {
     this.appendValue(source, start, end);
+  }
+
+  /** Appends a non-null value from a previously validated ASCII text range. */
+  appendASCIITextRange(source: string, start: number, end: number): void {
+    // For validated ASCII, each UTF-16 code unit is already the corresponding UTF-8 byte. Copying
+    // directly into the Arrow data buffer avoids TextEncoder calls and temporary cell strings.
+    const characterLength = end - start;
+    this.reserveData(characterLength);
+    for (let characterIndex = start; characterIndex < end; characterIndex++) {
+      this.data[this.dataLength] = source.charCodeAt(characterIndex);
+      this.dataLength++;
+    }
+    this.appendValueOffset(this.dataLength);
+    this.setValid(this.valueOffsetCount - 2);
   }
 
   /** Appends an escaped quoted value by collapsing doubled quote bytes. */
@@ -1087,21 +1319,6 @@ class RawArrowUtf8ColumnBuilder {
   }
 }
 
-/** Copies one byte range into a target and returns the next write offset. */
-function copyByteRange(
-  source: Uint8Array,
-  start: number,
-  end: number,
-  target: Uint8Array,
-  targetStart: number
-): number {
-  for (let byteIndex = start; byteIndex < end; byteIndex++) {
-    target[targetStart] = source[byteIndex];
-    targetStart++;
-  }
-  return targetStart;
-}
-
 /** Counts fields in a byte range that contains unquoted delimiter bytes. */
 function countDelimitedFields(
   bytes: Uint8Array,
@@ -1112,6 +1329,22 @@ function countDelimitedFields(
   let fieldCount = 1;
   for (let byteIndex = start; byteIndex < end; byteIndex++) {
     if (bytes[byteIndex] === delimiter) {
+      fieldCount++;
+    }
+  }
+  return fieldCount;
+}
+
+/** Counts fields in an unquoted text range. */
+function countDelimitedTextFields(
+  csvText: string,
+  start: number,
+  end: number,
+  delimiter: number
+): number {
+  let fieldCount = 1;
+  for (let characterIndex = start; characterIndex < end; characterIndex++) {
+    if (csvText.charCodeAt(characterIndex) === delimiter) {
       fieldCount++;
     }
   }

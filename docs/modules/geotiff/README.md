@@ -2,10 +2,16 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 # Overview
 
+See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for raster
+CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
+
 <GeoTiffDocsTabs active="overview" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
 </p>
 
 The `@loaders.gl/geotiff` module provides loader and source support for
@@ -22,6 +28,11 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 ```
 
 ## Loaders and Sources
+
+`GeoTIFFRasterSource` also implements the shared scan metadata contract. Call
+`getQueryMetadata()` to discover raster bands, source bounds, and available overview levels for
+the source-neutral scan query panel. Pixel reads use the common raster entry point, `getRaster()`,
+and preserve GeoTIFF/COG range access, overview selection, band selection, and typed output.
 
 | Loader / Source | Description |
 | ---------------- | ----------- |

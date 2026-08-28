@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 
 import {hydrateArrowTable} from '@loaders.gl/arrow';
 import {createDataSource, encode, fetchFile, isBrowser, load} from '@loaders.gl/core';
@@ -25,6 +25,7 @@ import {
 import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
 import type {ParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-types';
+import {ParquetRangeFile} from '../src/lib/sources/parquet-range-file';
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -62,71 +63,66 @@ type RangeFetchOptions = {
   intercept?: RangeRequestInterceptor;
 };
 
-test('ParquetSourceLoader#Blob metadata and schema are cached', async (t) => {
+test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
   const fixture = await loadFixture();
   const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
 
-  t.ok(source instanceof ParquetSource, 'root metadata loader preloads the runtime source');
-  t.equal(source.capabilities, PARQUET_SOURCE_CAPABILITIES, 'advertises immutable capabilities');
-  t.ok(Object.isFrozen(source.getTelemetry()), 'returns frozen telemetry snapshots');
+  expect(source instanceof ParquetSource).toBeTruthy();
+  expect(source.capabilities).toBe(PARQUET_SOURCE_CAPABILITIES);
+  expect(Object.isFrozen(source.getTelemetry())).toBeTruthy();
   const metadata = await source.getMetadata();
   const schema = await source.getSchema();
 
-  t.ok(metadata.rowCount > 0, 'reports rows');
-  t.equal(metadata.rowGroupCount, metadata.rowGroups.length, 'reports row groups');
-  t.equal(metadata.fileByteLength, fixture.byteLength, 'reports file byte length');
-  t.equal(metadata.schema, schema, 'metadata retains the cached schema');
-  t.equal(metadata.version, metadata.formatVersion, 'retains the version compatibility alias');
-  t.ok(metadata.rowGroups[0].columns.length > 0, 'reports column chunks');
-  t.equal(metadata.rowGroups[0].rowOffset, 0, 'reports absolute row-group offsets');
-  t.equal(
-    metadata.rowGroups[0].compressedSize,
-    metadata.rowGroups[0].compressedByteLength,
-    'retains row-group size compatibility aliases'
-  );
-  t.ok(metadata.rowGroups[0].columns[0].fileOffset >= 4, 'reports column chunk offsets');
-  t.ok(schema.fields.length > 0, 'decodes logical schema');
-  t.equal(await source.getMetadata(), metadata, 'returns cached metadata object');
-  t.equal(await source.getSchema(), schema, 'returns cached schema object');
-  t.ok(Object.isFrozen(metadata), 'freezes the cached metadata object');
-  t.ok(Object.isFrozen(metadata.schema), 'freezes the cached schema');
-  t.ok(Object.isFrozen(metadata.schema.fields), 'freezes cached schema fields');
-  t.ok(Object.isFrozen(metadata.schema.fields[0]), 'freezes each cached schema field');
-  t.ok(Object.isFrozen(metadata.rowGroups), 'freezes the cached row-group list');
-  t.ok(Object.isFrozen(metadata.rowGroups[0].columns), 'freezes cached column metadata');
+  expect(metadata.rowCount > 0).toBeTruthy();
+  expect(metadata.rowGroupCount).toBe(metadata.rowGroups.length);
+  expect(metadata.fileByteLength).toBe(fixture.byteLength);
+  expect(metadata.schema).toBe(schema);
+  expect(metadata.version).toBe(metadata.formatVersion);
+  expect(metadata.rowGroups[0].columns.length > 0).toBeTruthy();
+  expect(metadata.rowGroups[0].rowOffset).toBe(0);
+  expect(metadata.rowGroups[0].compressedSize).toBe(metadata.rowGroups[0].compressedByteLength);
+  expect(metadata.rowGroups[0].columns[0].fileOffset >= 4).toBeTruthy();
+  expect(schema.fields.length > 0).toBeTruthy();
+  expect(await source.getMetadata()).toBe(metadata);
+  expect(await source.getSchema()).toBe(schema);
+  expect(Object.isFrozen(metadata)).toBeTruthy();
+  expect(Object.isFrozen(metadata.schema)).toBeTruthy();
+  expect(Object.isFrozen(metadata.schema.fields)).toBeTruthy();
+  expect(Object.isFrozen(metadata.schema.fields[0])).toBeTruthy();
+  expect(Object.isFrozen(metadata.rowGroups)).toBeTruthy();
+  expect(Object.isFrozen(metadata.rowGroups[0].columns)).toBeTruthy();
 
   const formatMetadata = await source.getMetadata({formatSpecificMetadata: true});
-  t.ok(formatMetadata.formatSpecificMetadata, 'optionally exposes decoded thrift footer');
+  expect(formatMetadata.formatSpecificMetadata).toBeTruthy();
   await source.close();
   await source.close();
-  await t.rejects(source.getMetadata(), /ParquetSource is closed/, 'operations fail after close');
-  t.end();
-});
+  await expect(source.getMetadata()).rejects.toThrow(/ParquetSource is closed/);
+  });
 
-test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics', async t => {
+test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics', async () => {
   const fixture = await loadFixture();
   const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
   const metadata = await source.getQueryMetadata();
 
-  t.equal(metadata.sourceType, 'parquet', 'identifies the source adapter');
-  t.equal(metadata.queryType, 'table', 'identifies the query family');
-  t.ok(metadata.columns.length > 0, 'discovers selectable columns');
-  t.equal(metadata.capabilities.table?.projection, 'pushdown', 'reports projection pushdown');
-  t.ok(Number(metadata.statistics?.rowCount) > 0, 'reports footer row count');
+  expect(metadata.sourceType).toBe('parquet');
+  expect(metadata.queryType).toBe('table');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
+  expect(metadata.columns.length > 0).toBeTruthy();
+  expect(metadata.capabilities.table?.projection).toBe('pushdown');
+  expect(Number(metadata.statistics?.rowCount) > 0).toBeTruthy();
   await source.close();
 });
 
-test('ParquetSource#preserves opaque WASM inputs by identity', async (t) => {
+test('ParquetSource#preserves opaque WASM inputs by identity', async () => {
   const wasmUrl = Promise.resolve(new URL('https://example.com/parquet_wasm_bg.wasm'));
   const source = new ParquetSource(new Blob(), {parquet: {wasmUrl}});
 
-  t.equal(source.options.parquet.wasmUrl, wasmUrl, 'does not recursively merge the WASM input');
+  expect(source.options.parquet.wasmUrl).toBe(wasmUrl);
 
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#routes the public worker URL to the selective worker descriptor', async t => {
+test('ParquetSource#routes the public worker URL to the selective worker descriptor', async () => {
   const workerUrl = 'https://example.com/parquet-source-worker.js';
   const source = new ParquetSource(new Blob(), {parquet: {workerUrl}});
   const signal = new AbortController().signal;
@@ -139,18 +135,13 @@ test('ParquetSource#routes the public worker URL to the selective worker descrip
     }
   ).getWorkerOptions(1, signal);
 
-  t.equal(
-    workerOptions['parquet-source']?.workerUrl,
-    workerUrl,
-    'keys the URL override by the private worker descriptor id'
-  );
-  t.equal(workerOptions.parquet?.signal, signal, 'retains cancellation in the public namespace');
+  expect(workerOptions['parquet-source']?.workerUrl).toBe(workerUrl);
+  expect(workerOptions.parquet?.signal).toBe(signal);
 
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#read applies snapshotted source defaults', async (t) => {
+test('ParquetSource#read applies snapshotted source defaults', async () => {
   const fixture = await createSelectiveFixture();
   const rowGroups = [1];
   const columns = ['x'];
@@ -166,20 +157,12 @@ test('ParquetSource#read applies snapshotted source defaults', async (t) => {
   });
   const batches = firstBatch.value ? [firstBatch.value, ...remainingBatches] : remainingBatches;
 
-  t.deepEqual(
-    batches.map(batch => batch.rowGroupIndex),
-    [1, 1],
-    'uses the snapshotted default row-group selection'
-  );
-  t.ok(
-    batches.every(batch => batch.schema?.fields[0]?.name === 'x'),
-    'uses the snapshotted default column projection'
-  );
+  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([1, 1]);
+  expect(batches.every(batch => batch.schema?.fields[0]?.name === 'x')).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) => {
+test('ParquetSourceLoader#decodes optional column-chunk statistics', async () => {
   const fixture = await loadFixture(STATISTICS_FIXTURE_URL);
   const source = createDataSource(new Blob([fixture]), [ParquetSourceLoaderWithParser], {
     core: {type: 'parquet'}
@@ -191,16 +174,15 @@ test('ParquetSourceLoader#decodes optional column-chunk statistics', async (t) =
     column => column.path.join('.') === 'int_map.map.key'
   )?.statistics;
 
-  t.equal(idStatistics?.min, 1n, 'decodes physical INT64 minimum exactly');
-  t.equal(idStatistics?.max, 7n, 'decodes physical INT64 maximum exactly');
-  t.equal(idStatistics?.nullCount, 0, 'retains an explicit zero null count');
-  t.equal(keyStatistics?.min, 'k1', 'converts a logical UTF8 minimum');
-  t.equal(keyStatistics?.max, 'k3', 'converts a logical UTF8 maximum');
+  expect(idStatistics?.min).toBe(1n);
+  expect(idStatistics?.max).toBe(7n);
+  expect(idStatistics?.nullCount).toBe(0);
+  expect(keyStatistics?.min).toBe('k1');
+  expect(keyStatistics?.max).toBe('k3');
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#getScanPlan shares logical and physical pruning decisions', async t => {
+test('ParquetSource#getScanPlan shares logical and physical pruning decisions', async () => {
   const fixture = await createSelectiveFixture();
   const source = createRemoteSource(createRangeFetch(fixture));
   const plan = await source.getScanPlan({
@@ -210,30 +192,25 @@ test('ParquetSource#getScanPlan shares logical and physical pruning decisions', 
     limit: 1
   });
 
-  t.deepEqual(plan.outputColumns, ['source_id'], 'retains the visible projection');
-  t.deepEqual(plan.requiredColumns, ['x', 'source_id'], 'retains the hidden predicate column');
-  t.deepEqual(plan.rowGroups.indices, [1], 'selects the matching physical row group');
-  t.equal(plan.rowGroups.requested, 3, 'reports every candidate row group');
-  t.equal(plan.rowGroups.selected, 1, 'reports the retained row group');
-  t.equal(plan.rowGroups.prunedByCallback, 2, 'attributes metadata callback pruning');
-  t.equal(plan.rowGroups.prunedByStatistics, 0, 'does not invent statistics pruning');
-  t.equal(plan.rowGroups.prunedByBloomFilter, 0, 'does not invent Bloom-filter pruning');
-  t.equal(plan.plan.at(-1)?.kind, 'limit', 'retains the common logical limit');
-  t.ok(Object.isFrozen(plan.rowGroups.indices), 'freezes physical plan selections');
-  t.deepEqual(
-    plan.pages.plans.map(pagePlan => ({phase: pagePlan.phase, columns: pagePlan.columns})),
-    [
+  expect(plan.outputColumns).toEqual(['source_id']);
+  expect(plan.requiredColumns).toEqual(['x', 'source_id']);
+  expect(plan.rowGroups.indices).toEqual([1]);
+  expect(plan.rowGroups.requested).toBe(3);
+  expect(plan.rowGroups.selected).toBe(1);
+  expect(plan.rowGroups.prunedByCallback).toBe(2);
+  expect(plan.rowGroups.prunedByStatistics).toBe(0);
+  expect(plan.rowGroups.prunedByBloomFilter).toBe(0);
+  expect(plan.plan.at(-1)?.kind).toBe('limit');
+  expect(Object.isFrozen(plan.rowGroups.indices)).toBeTruthy();
+  expect(plan.pages.plans.map(pagePlan => ({phase: pagePlan.phase, columns: pagePlan.columns}))).toEqual([
       {phase: 'predicate', columns: [['x']]},
       {phase: 'projection', columns: [['source_id']]}
-    ],
-    'describes caller-thread late-materialization phases'
-  );
+    ]);
 
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', async t => {
+test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', async () => {
   const parquetBuffer = await encode(
     {
       shape: 'object-row-table',
@@ -251,19 +228,15 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
   }) as ParquetSource;
   const metadata = await source.getMetadata();
   const idColumns = metadata.rowGroups.map(rowGroup => rowGroup.columns[0]);
-  t.ok(idColumns.every(column => column.bloomFilterOffset !== undefined), 'writes Bloom offsets');
-  t.ok(
-    idColumns.every(column => (column.bloomFilterByteLength || 0) > 0),
-    'writes Bloom payload lengths'
-  );
+  expect(idColumns.every(column => column.bloomFilterOffset !== undefined)).toBeTruthy();
+  expect(idColumns.every(column => (column.bloomFilterByteLength || 0) > 0)).toBeTruthy();
   const plan = await source.getScanPlan({predicate: {op: '=', args: [{property: 'id'}, 'm']}});
-  t.equal(plan.bloomFilters.read, 2, 'reads one Bloom filter per row group');
-  t.equal(plan.rowGroups.prunedByBloomFilter, 2, 'prunes absent values before decoding');
+  expect(plan.bloomFilters.read).toBe(2);
+  expect(plan.rowGroups.prunedByBloomFilter).toBe(2);
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetJSWriter emits page indexes consumed by selective page planning', async t => {
+test('ParquetJSWriter emits page indexes consumed by selective page planning', async () => {
   const parquetBuffer = await encode(
     {
       shape: 'object-row-table',
@@ -289,37 +262,28 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
   }) as ParquetSource;
   const metadata = await source.getMetadata();
   const xColumn = metadata.rowGroups[0].columns.find(column => column.path.join('.') === 'x');
-  t.ok(xColumn?.columnIndexOffset !== undefined, 'writes column-index offset');
-  t.ok(xColumn?.offsetIndexOffset !== undefined, 'writes offset-index offset');
+  expect(xColumn?.columnIndexOffset !== undefined).toBeTruthy();
+  expect(xColumn?.offsetIndexOffset !== undefined).toBeTruthy();
   const plan = await source.getScanPlan({
     columns: ['payload'],
     predicate: {op: '>=', args: [{property: 'x'}, 100]}
   });
-  t.equal(plan.pages.indexesRead, 2, 'reads both page indexes for the predicate column');
-  t.equal(plan.pages.plans[0]?.selectedPages, 1, 'selects only the matching predicate page');
-  t.equal(plan.pages.plans[0]?.totalPages, 2, 'reports all predicate pages');
+  expect(plan.pages.indexesRead).toBe(2);
+  expect(plan.pages.plans[0]?.selectedPages).toBe(1);
+  expect(plan.pages.plans[0]?.totalPages).toBe(2);
   const emptyPlan = await source.getScanPlan({
     columns: ['payload'],
     predicate: {op: '>=', args: [{property: 'x'}, 1000]}
   });
-  t.deepEqual(
-    emptyPlan.pages.plans.map(pagePlan => pagePlan.phase),
-    ['predicate'],
-    'does not advertise a projection phase after page indexes prove no rows match'
-  );
+  expect(emptyPlan.pages.plans.map(pagePlan => pagePlan.phase)).toEqual(['predicate']);
   const batches = await collectParquetBatches(
     source.read({columns: ['payload'], predicate: {op: '>=', args: [{property: 'x'}, 100]}})
   );
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || [])),
-    ['hundred', 'hundred-one'],
-    'decodes rows selected by the page index'
-  );
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || []))).toEqual(['hundred', 'hundred-one']);
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#read selects row groups and columns with exact provenance', async (t) => {
+test('ParquetSource#read selects row groups and columns with exact provenance', async () => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
   const source = createRemoteSource(createRangeFetch(fixture, {requests}));
@@ -329,68 +293,33 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     source.read({rowGroups: [1], columns: ['x', 'source_id'], batchSize: 1, concurrency: 2})
   );
 
-  t.deepEqual(
-    metadata.rowGroups.map(rowGroup => rowGroup.rowOffset),
-    [0, 2, 4],
-    'metadata records cumulative source row offsets'
-  );
-  t.equal(batches.length, 2, 'honors the requested batch size');
-  t.deepEqual(
-    batches.map(batch => batch.rowGroupIndex),
-    [1, 1],
-    'identifies the selected row group'
-  );
-  t.deepEqual(
-    batches.map(batch => batch.rowOffset),
-    [2, 3],
-    'reports absolute source row offsets'
-  );
-  t.deepEqual(
-    batches.map(batch => batch.rowGroupRowOffset),
-    [0, 1],
-    'reports offsets within the row group'
-  );
-  t.ok(
-    batches.every(
+  expect(metadata.rowGroups.map(rowGroup => rowGroup.rowOffset)).toEqual([0, 2, 4]);
+  expect(batches.length).toBe(2);
+  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([1, 1]);
+  expect(batches.map(batch => batch.rowOffset)).toEqual([2, 3]);
+  expect(batches.map(batch => batch.rowGroupRowOffset)).toEqual([0, 1]);
+  expect(batches.every(
       batch =>
         batch.source === REMOTE_URL &&
         batch.sourceId === REMOTE_URL &&
         batch.sourceUrl === REMOTE_URL
-    ),
-    'identifies the source through current and compatibility fields'
-  );
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
-    [2, 3],
-    'returns only rows from the selected row group'
-  );
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
-    ['source-2', 'source-3'],
-    'converts logical values directly from decoded columns'
-  );
-  t.deepEqual(
-    batches[0].schema?.fields.map(field => field.name),
-    ['x', 'source_id'],
-    'projects the batch schema'
-  );
-  t.notOk(batches[0].data.getChild('ignored_payload'), 'does not materialize ignored columns');
-  t.ok(Object.isFrozen(batches[0].metadata), 'freezes batch provenance');
+    )).toBeTruthy();
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([2, 3]);
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2', 'source-3']);
+  expect(batches[0].schema?.fields.map(field => field.name)).toEqual(['x', 'source_id']);
+  expect(batches[0].data.getChild('ignored_payload')).toBeFalsy();
+  expect(Object.isFrozen(batches[0].metadata)).toBeTruthy();
 
   const selectedRanges = getColumnRanges(metadata, 1, ['x', 'source_id']);
   const dataRequests = requests.slice(metadataRequestCount);
-  t.ok(dataRequests.length > 0, 'fetches selected column chunks');
-  t.ok(
-    dataRequests.every(request =>
+  expect(dataRequests.length > 0).toBeTruthy();
+  expect(dataRequests.every(request =>
       selectedRanges.some(range => request.start >= range.start && request.end <= range.end)
-    ),
-    'every post-metadata request stays inside a selected column chunk'
-  );
+    )).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#executeScanPlan reuses selected row groups', async t => {
+test('ParquetSource#executeScanPlan reuses selected row groups', async () => {
   const fixture = await createSelectiveFixture();
   const source = createRemoteSource(createRangeFetch(fixture));
   const plan = await source.getScanPlan({
@@ -398,17 +327,12 @@ test('ParquetSource#executeScanPlan reuses selected row groups', async t => {
     predicate: {op: '=', args: [{property: 'x'}, 2]}
   });
   const batches = await collectParquetBatches(source.executeScanPlan(plan));
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
-    ['source-2'],
-    'executes the planned predicate and projection'
-  );
-  t.ok(batches.every(batch => batch.rowGroupIndex === 1), 'retains planned row-group selection');
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches.every(batch => batch.rowGroupIndex === 1)).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#read late-materializes projected columns after predicate matches', async t => {
+test('ParquetSource#read late-materializes projected columns after predicate matches', async () => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
   const source = createRemoteSource(createRangeFetch(fixture, {requests}));
@@ -425,39 +349,23 @@ test('ParquetSource#read late-materializes projected columns after predicate mat
   const projectedRanges = getColumnRanges(metadata, 1, ['source_id']);
   const ignoredRanges = getColumnRanges(metadata, 1, ['ignored_payload']);
 
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
-    ['source-2'],
-    'filters with a non-projected column and returns only the projected values'
-  );
-  t.deepEqual(
-    batches[0]?.schema?.fields.map(field => field.name),
-    ['source_id'],
-    'does not expose the predicate-only column in the output schema'
-  );
-  t.ok(
-    dataRequests.some(request =>
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches[0]?.schema?.fields.map(field => field.name)).toEqual(['source_id']);
+  expect(dataRequests.some(request =>
       predicateRanges.some(range => request.start >= range.start && request.end <= range.end)
     ) &&
       dataRequests.some(request =>
         projectedRanges.some(range => request.start >= range.start && request.end <= range.end)
-      ),
-    'reads predicate and projected column chunks after a match'
-  );
-  t.notOk(
-    dataRequests.some(request =>
+      )).toBeTruthy();
+  expect(dataRequests.some(request =>
       ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
-    ),
-    'does not read unrequested columns'
-  );
+    )).toBeFalsy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async t => {
+test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', async () => {
   if (!isBrowser) {
-    t.end();
-    return;
+        return;
   }
 
   const fixture = await createSelectiveFixture();
@@ -476,25 +384,15 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   );
   const batches = await batchesPromise;
 
-  t.ok(mainThreadTicked, 'keeps the caller event loop responsive during decode');
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
-    [2, 3],
-    'hydrates directly transferred Arrow buffers into main-thread class instances'
-  );
-  t.deepEqual(
-    batches.map(batch => batch.rowOffset),
-    [2, 3],
-    'retains exact source provenance across the worker boundary'
-  );
+  expect(mainThreadTicked).toBeTruthy();
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([2, 3]);
+  expect(batches.map(batch => batch.rowOffset)).toEqual([2, 3]);
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#worker late-materializes projected columns after filtering', async t => {
+test('ParquetSource#worker late-materializes projected columns after filtering', async () => {
   if (!isBrowser) {
-    t.end();
-    return;
+        return;
   }
 
   const fixture = await createSelectiveFixture();
@@ -515,66 +413,33 @@ test('ParquetSource#worker late-materializes projected columns after filtering',
     getColumnRanges(metadata, rowGroup.index, ['ignored_payload'])
   );
 
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || [])),
-    ['source-2'],
-    'filters predicate-only columns in the worker and gathers projected values'
-  );
-  t.deepEqual(
-    batches[0]?.schema?.fields.map(field => field.name),
-    ['source_id'],
-    'keeps predicate-only columns out of the transferred output'
-  );
-  t.notOk(
-    dataRequests.some(request =>
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches[0]?.schema?.fields.map(field => field.name)).toEqual(['source_id']);
+  expect(dataRequests.some(request =>
       ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
-    ),
-    'does not fetch the large projected payload for non-matching row groups'
-  );
+    )).toBeFalsy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async t => {
+test('ParquetSource worker decoder batches projected columns into transferable Arrow data', async () => {
   const fixture = await createSelectiveFixture();
   const input = await createParquetSourceWorkerInput(fixture, 1, ['x', 'source_id']);
 
   const result = await decodeParquetSourceWorkerInput(input);
   const arrowTables = result.batches.map(batch => hydrateArrowTable(batch.arrowTable));
 
-  t.equal(result.rowCount, 2, 'decodes the complete selected row group');
-  t.deepEqual(
-    result.batches.map(batch => batch.rowGroupRowOffset),
-    [0, 1],
-    'retains batch offsets within the selected row group'
-  );
-  t.deepEqual(
-    result.batches.map(batch => batch.rowCount),
-    [1, 1],
-    'honors the requested worker batch size'
-  );
-  t.deepEqual(
-    arrowTables.flatMap(table => Array.from(table.getChild('x')?.toArray() || [])),
-    [2, 3],
-    'decodes projected numeric values'
-  );
-  t.deepEqual(
-    arrowTables.flatMap(table => Array.from(table.getChild('source_id')?.toArray() || [])),
-    ['source-2', 'source-3'],
-    'decodes projected logical values'
-  );
-  t.notOk(arrowTables[0].getChild('ignored_payload'), 'does not materialize unselected columns');
-  t.ok(result.decodeDurationMs >= 0, 'reports worker decode duration');
-  t.ok(result.arrowConversionDurationMs >= 0, 'reports worker Arrow conversion duration');
-  await t.rejects(
-    decodeParquetSourceWorkerInput({...input, ranges: []}),
-    /unavailable byte range/,
-    'rejects decoder reads outside the transferred column ranges'
-  );
-  t.end();
-});
+  expect(result.rowCount).toBe(2);
+  expect(result.batches.map(batch => batch.rowGroupRowOffset)).toEqual([0, 1]);
+  expect(result.batches.map(batch => batch.rowCount)).toEqual([1, 1]);
+  expect(arrowTables.flatMap(table => Array.from(table.getChild('x')?.toArray() || []))).toEqual([2, 3]);
+  expect(arrowTables.flatMap(table => Array.from(table.getChild('source_id')?.toArray() || []))).toEqual(['source-2', 'source-3']);
+  expect(arrowTables[0].getChild('ignored_payload')).toBeFalsy();
+  expect(result.decodeDurationMs >= 0).toBeTruthy();
+  expect(result.arrowConversionDurationMs >= 0).toBeTruthy();
+  await expect(decodeParquetSourceWorkerInput({...input, ranges: []})).rejects.toThrow(/unavailable byte range/);
+  });
 
-test('ParquetSource#read preserves the caller AbortSignal reason', async t => {
+test('ParquetSource#read preserves the caller AbortSignal reason', async () => {
   const fixture = await createSelectiveFixture();
   const source = new ParquetSource(new Blob([fixture]), {
     core: {worker: isBrowser, reuseWorkers: false, _workerType: 'test'}
@@ -584,15 +449,14 @@ test('ParquetSource#read preserves the caller AbortSignal reason', async t => {
   const iterator = source.read({batchSize: 1, signal: abortController.signal})[Symbol.asyncIterator]();
 
   const firstResult = await iterator.next();
-  t.notOk(firstResult.done, 'emits a batch before cancellation');
+  expect(firstResult.done).toBeFalsy();
   abortController.abort(abortReason);
-  await t.rejects(iterator.next(), abortReason, 'rejects with the caller AbortSignal reason');
+  await expect(iterator.next()).rejects.toThrow(abortReason);
 
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#read cancels outstanding ranges when iteration ends early', async (t) => {
+test('ParquetSource#read cancels outstanding ranges when iteration ends early', async () => {
   const fixture = await createSelectiveFixture();
   let markBlockedRequestStarted: () => void = () => {};
   const blockedRequestStarted = new Promise<void>(resolve => {
@@ -628,16 +492,15 @@ test('ParquetSource#read cancels outstanding ranges when iteration ends early', 
     [Symbol.asyncIterator]();
   const firstBatch = await iterator.next();
   await blockedRequestStarted;
-  t.equal(firstBatch.value?.rowGroupIndex, 0, 'emits the first row group in requested order');
+  expect(firstBatch.value?.rowGroupIndex).toBe(0);
   await iterator.return?.();
-  t.ok(blockedRequestAborted, 'aborts the concurrently requested next row group');
-  t.equal(source.getTelemetry().cancellationCount, 1, 'counts the cancelled read');
-  t.ok(source.getTelemetry().abortedRangeRequestCount >= 1, 'counts the aborted range');
+  expect(blockedRequestAborted).toBeTruthy();
+  expect(source.getTelemetry().cancellationCount).toBe(1);
+  expect(source.getTelemetry().abortedRangeRequestCount >= 1).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#prunes row groups and reports exact cumulative telemetry', async (t) => {
+test('ParquetSource#prunes row groups and reports exact cumulative telemetry', async () => {
   const fixture = await createSelectiveFixture();
   const requests: RangeRequestRecord[] = [];
   const events: ParquetTelemetryEvent[] = [];
@@ -661,36 +524,28 @@ test('ParquetSource#prunes row groups and reports exact cumulative telemetry', a
   const prunedRanges = getColumnRanges(metadata, 1, ['x']);
   const dataRequests = requests.slice(metadataRequestCount);
 
-  t.deepEqual(
-    batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || [])),
-    [0, 1, 4, 5],
-    'returns only rows from retained row groups'
-  );
-  t.ok(
-    dataRequests.every(request =>
+  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([0, 1, 4, 5]);
+  expect(dataRequests.every(request =>
       prunedRanges.every(range => request.end < range.start || request.start > range.end)
-    ),
-    'does not fetch the pruned row group column'
-  );
-  t.equal(telemetry.rangeRequestCount, requests.length, 'counts every HTTP range');
-  t.equal(telemetry.requestedBytes, downloadedBytes, 'requested bytes match the server log');
-  t.equal(telemetry.downloadedBytes, downloadedBytes, 'downloaded bytes match the server log');
-  t.equal(telemetry.cacheHits, 1, 'counts the cached header read');
-  t.equal(telemetry.rowGroupsRequested, 3, 'counts candidate row groups');
-  t.equal(telemetry.rowGroupsPruned, 1, 'counts pruned row groups');
-  t.equal(telemetry.rowGroupsDecoded, 2, 'counts decoded row groups');
-  t.equal(telemetry.batchesEmitted, 2, 'counts emitted Arrow batches');
-  t.equal(telemetry.rowsEmitted, 4, 'counts emitted rows');
-  t.ok(telemetry.networkDurationMs >= 0, 'records network duration');
-  t.ok(telemetry.decodeDurationMs >= 0, 'records decode duration');
-  t.ok(telemetry.arrowConversionDurationMs >= 0, 'records Arrow conversion duration');
-  t.ok(events.some(event => event.type === 'row-group-prune'), 'emits a pruning event');
-  t.ok(events.some(event => event.type === 'batch'), 'emits batch events');
+    )).toBeTruthy();
+  expect(telemetry.rangeRequestCount).toBe(requests.length);
+  expect(telemetry.requestedBytes).toBe(downloadedBytes);
+  expect(telemetry.downloadedBytes).toBe(downloadedBytes);
+  expect(telemetry.cacheHits).toBe(1);
+  expect(telemetry.rowGroupsRequested).toBe(3);
+  expect(telemetry.rowGroupsPruned).toBe(1);
+  expect(telemetry.rowGroupsDecoded).toBe(2);
+  expect(telemetry.batchesEmitted).toBe(2);
+  expect(telemetry.rowsEmitted).toBe(4);
+  expect(telemetry.networkDurationMs >= 0).toBeTruthy();
+  expect(telemetry.decodeDurationMs >= 0).toBeTruthy();
+  expect(telemetry.arrowConversionDurationMs >= 0).toBeTruthy();
+  expect(events.some(event => event.type === 'row-group-prune')).toBeTruthy();
+  expect(events.some(event => event.type === 'batch')).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSource#read rethrows range errors and validates selections', async (t) => {
+test('ParquetSource#read rethrows range errors and validates selections', async () => {
   const fixture = await createSelectiveFixture();
   let failedRange: {start: number; end: number} | null = null;
   const source = createRemoteSource(
@@ -706,26 +561,13 @@ test('ParquetSource#read rethrows range errors and validates selections', async 
   const metadata = await source.getMetadata();
   [failedRange] = getColumnRanges(metadata, 2, ['x']);
 
-  await t.rejects(
-    collectParquetBatches(source.read({rowGroups: [2], columns: ['x']})),
-    /selected range failed/,
-    'rethrows transport failures'
-  );
-  await t.rejects(
-    collectParquetBatches(source.read({rowGroups: [3]})),
-    /row-group index 3/,
-    'rejects an out-of-range row group'
-  );
-  await t.rejects(
-    collectParquetBatches(source.read({columns: ['missing']})),
-    /column not found: missing/,
-    'rejects an unknown column before row data is read'
-  );
+  await expect(collectParquetBatches(source.read({rowGroups: [2], columns: ['x']}))).rejects.toThrow(/selected range failed/);
+  await expect(collectParquetBatches(source.read({rowGroups: [3]}))).rejects.toThrow(/row-group index 3/);
+  await expect(collectParquetBatches(source.read({columns: ['missing']}))).rejects.toThrow(/column not found: missing/);
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSourceLoader#URL uses bounded, versioned range requests', async (t) => {
+test('ParquetSourceLoader#URL uses bounded, versioned range requests', async () => {
   const fixture = await loadFixture();
   const requests: RangeRequestRecord[] = [];
   const rangeFetch = createRangeFetch(fixture, {requests});
@@ -738,49 +580,79 @@ test('ParquetSourceLoader#URL uses bounded, versioned range requests', async (t)
   await source.getMetadata();
   await source.getSchema();
 
-  t.equal(requests[0].headers.get('Range'), 'bytes=0-3', 'opens with four-byte probe');
-  t.equal(requests[0].headers.get('Authorization'), 'Bearer test', 'forwards source headers');
-  t.equal(requests[1].headers.get('If-Match'), '"fixture-v1"', 'pins later ranges');
-  t.equal(requests.length, requestCount, 'metadata and schema share one initialization');
-  t.equal(metadata.fileByteLength, fixture.byteLength, 'parses object length from Content-Range');
-  t.equal(metadata.objectVersion?.etag, '"fixture-v1"', 'exposes captured object version');
-  t.ok(
-    requests.every(request => request.headers.get('Range') !== `bytes=0-${fixture.byteLength - 1}`),
-    'does not request the complete object'
-  );
+  expect(requests[0].headers.get('Range')).toBe('bytes=0-3');
+  expect(requests[0].headers.get('Authorization')).toBe('Bearer test');
+  expect(requests[1].headers.get('If-Match')).toBe('"fixture-v1"');
+  expect(requests.length).toBe(requestCount);
+  expect(metadata.fileByteLength).toBe(fixture.byteLength);
+  expect(metadata.objectVersion?.etag).toBe('"fixture-v1"');
+  expect(requests.every(request => request.headers.get('Range') !== `bytes=0-${fixture.byteLength - 1}`)).toBeTruthy();
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSourceLoader#rejects object version changes', async (t) => {
+test('ParquetSourceLoader#rejects object version changes', async () => {
   const fixture = await loadFixture();
   const rangeFetch = createRangeFetch(fixture, {
     getEtag: requestIndex => (requestIndex === 0 ? '"fixture-v1"' : '"fixture-v2"')
   });
   const source = createRemoteSource(rangeFetch);
 
-  await t.rejects(source.getMetadata(), /ETag changed/, 'rejects mixed-version footer reads');
+  await expect(source.getMetadata()).rejects.toThrow(/ETag changed/);
   await source.close();
-  t.end();
-});
+  });
 
-test('ParquetSourceLoader#abort and close cancel initialization', async (t) => {
+test('ParquetSourceLoader#abort and close cancel initialization', async () => {
   const callerAbortController = new AbortController();
   const callerFetch = createPendingFetch();
   const callerSource = createRemoteSource(callerFetch.fetch);
   const callerRequest = callerSource.getMetadata({signal: callerAbortController.signal});
   await callerFetch.started;
   callerAbortController.abort();
-  await t.rejects(callerRequest, /abort/i, 'caller signal aborts the opening range');
+  await expect(callerRequest).rejects.toThrow(/abort/i);
 
   const closeFetch = createPendingFetch();
   const closeSource = createRemoteSource(closeFetch.fetch);
   const closeRequest = closeSource.getMetadata();
   await closeFetch.started;
   await closeSource.close();
-  await t.rejects(closeRequest, /abort/i, 'closing the source aborts the opening range');
-  await t.rejects(closeSource.getMetadata(), /closed/i, 'closed sources cannot be reopened');
-  t.end();
+  await expect(closeRequest).rejects.toThrow(/abort/i);
+  await expect(closeSource.getMetadata()).rejects.toThrow(/closed/i);
+  });
+
+test('ParquetRangeFile#close cancels oversized uncached reads', async () => {
+  const fileByteLength = 100_000;
+  let requestCount = 0;
+  let markReadStarted: () => void = () => {};
+  const readStarted = new Promise<void>(resolve => {
+    markReadStarted = resolve;
+  });
+  const file = new ParquetRangeFile(REMOTE_URL, {
+    fetch: async (_url, options = {}) => {
+      requestCount++;
+      if (requestCount === 1) {
+        return new Response(new Uint8Array(4), {
+          status: 206,
+          headers: {'Content-Range': `bytes 0-3/${fileByteLength}`, ETag: '"fixture-v1"'}
+        });
+      }
+      markReadStarted();
+      return await new Promise<Response>((_resolve, reject) => {
+        const rejectAborted = () => reject(createAbortError());
+        if (options.signal?.aborted) {
+          rejectAborted();
+        } else {
+          options.signal?.addEventListener('abort', rejectAborted, {once: true});
+        }
+      });
+    }
+  });
+
+  await file.open();
+  const read = file.read(4, 70_000);
+  await readStarted;
+  await file.close();
+
+  await expect(read).rejects.toThrow(/abort/i);
 });
 
 /** Loads the shared Parquet fixture into memory for deterministic transport tests. */
@@ -875,7 +747,9 @@ async function createParquetSourceWorkerInput(
     }),
     ranges,
     batchSize: 1,
-    preserveBinary: false
+    preserveBinary: false,
+    int96AsTimestamp: false,
+    verifyPageChecksums: false
   };
 }
 

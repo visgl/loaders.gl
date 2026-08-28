@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {makeTableFromData, convert, type Converter, TableConverter} from '@loaders.gl/schema-utils';
 import {ArrowConverter} from '@loaders.gl/arrow';
-
-test('convert() selects direct converter over longer path', async t => {
+test('convert() selects direct converter over longer path', async () => {
   const calls: string[] = [];
   const directConverter: Converter<'start' | 'middle' | 'target'> = {
     id: 'direct',
@@ -14,7 +13,15 @@ test('convert() selects direct converter over longer path', async t => {
     to: ['target'],
     convert(input, targetShape) {
       calls.push(`direct:${targetShape}`);
-      return {shape: targetShape, value: (input as {value: number}).value + 10};
+      return {
+        shape: targetShape,
+        value:
+          (
+            input as {
+              value: number;
+            }
+          ).value + 10
+      };
     }
   };
   const firstHopConverter: Converter<'start' | 'middle' | 'target'> = {
@@ -23,7 +30,15 @@ test('convert() selects direct converter over longer path', async t => {
     to: ['middle'],
     convert(input, targetShape) {
       calls.push(`first-hop:${targetShape}`);
-      return {shape: targetShape, value: (input as {value: number}).value + 1};
+      return {
+        shape: targetShape,
+        value:
+          (
+            input as {
+              value: number;
+            }
+          ).value + 1
+      };
     }
   };
   const secondHopConverter: Converter<'start' | 'middle' | 'target'> = {
@@ -32,23 +47,30 @@ test('convert() selects direct converter over longer path', async t => {
     to: ['target'],
     convert(input, targetShape) {
       calls.push(`second-hop:${targetShape}`);
-      return {shape: targetShape, value: (input as {value: number}).value + 1};
+      return {
+        shape: targetShape,
+        value:
+          (
+            input as {
+              value: number;
+            }
+          ).value + 1
+      };
     }
   };
-
   const result = convert({shape: 'start', value: 1}, 'target', [
     firstHopConverter,
     secondHopConverter,
     directConverter
-  ]) as {shape: string; value: number};
-
-  t.equal(result.shape, 'target', 'selected the target shape');
-  t.equal(result.value, 11, 'used the direct path result');
-  t.deepEqual(calls, ['direct:target'], 'only executed the direct converter');
-  t.end();
+  ]) as {
+    shape: string;
+    value: number;
+  };
+  expect(result.shape, 'selected the target shape').toBe('target');
+  expect(result.value, 'used the direct path result').toBe(11);
+  expect(calls, 'only executed the direct converter').toEqual(['direct:target']);
 });
-
-test('convert() rejects ambiguous source shape detection', async t => {
+test('convert() rejects ambiguous source shape detection', async () => {
   const firstConverter: Converter<'alpha' | 'target'> = {
     id: 'alpha',
     from: ['alpha'],
@@ -71,56 +93,55 @@ test('convert() rejects ambiguous source shape detection', async t => {
       return input;
     }
   };
-
-  t.throws(
+  expect(
     () =>
       convert({value: 1}, 'target', [
         firstConverter as Converter<string>,
         secondConverter as Converter<string>
       ]),
-    /Ambiguous source shape/,
     'throws on ambiguous source shape'
-  );
-  t.end();
+  ).toThrow(/Ambiguous source shape/);
 });
-
-test('convert() forwards options to each step', async t => {
+test('convert() forwards options to each step', async () => {
   const seenOptions: unknown[] = [];
-  const converter: Converter<'start' | 'target', {flag: boolean}> = {
+  const converter: Converter<
+    'start' | 'target',
+    {
+      flag: boolean;
+    }
+  > = {
     id: 'options',
     from: ['start'],
     to: ['target'],
     convert(input, targetShape, options) {
       seenOptions.push(options);
-      return {...(input as {shape: string}), shape: targetShape};
+      return {
+        ...(input as {
+          shape: string;
+        }),
+        shape: targetShape
+      };
     }
   };
-
   convert({shape: 'start'}, 'target', [converter], {flag: true});
-  t.deepEqual(seenOptions, [{flag: true}], 'forwarded options to the step');
-  t.end();
+  expect(seenOptions, 'forwarded options to the step').toEqual([{flag: true}]);
 });
-
-test('convert() performs a real arrow roundtrip with explicit converters', async t => {
+test('convert() performs a real arrow roundtrip with explicit converters', async () => {
   const table = makeTableFromData([
     {name: 'alpha', value: 1},
     {name: 'beta', value: 2}
   ]);
-
   const arrowTable = convert(table, 'arrow', [ArrowConverter, TableConverter]);
   const roundTrippedTable = convert(arrowTable, 'object-row-table', [ArrowConverter]) as {
     shape: string;
     data: Array<Record<string, unknown>>;
   };
-
-  t.equal(roundTrippedTable.shape, 'object-row-table', 'returned the requested table shape');
-  t.deepEqual(
+  expect(roundTrippedTable.shape, 'returned the requested table shape').toBe('object-row-table');
+  expect(
     roundTrippedTable.data,
-    [
-      {name: 'alpha', value: 1},
-      {name: 'beta', value: 2}
-    ],
     'round-tripped table rows through the generic convert dispatcher'
-  );
-  t.end();
+  ).toEqual([
+    {name: 'alpha', value: 1},
+    {name: 'beta', value: 2}
+  ]);
 });

@@ -11,8 +11,8 @@
 
 /* eslint-disable camelcase */
 
-/** Draco3D untyped memory pointer */
-type VoidPtr = any;
+/** Byte offset into Draco's WebAssembly memory. */
+type VoidPtr = number;
 
 // DRACO WEB DECODER IDL
 
@@ -209,9 +209,14 @@ export declare class MetadataQuerier {
 export declare class Decoder {
   constructor();
 
-  GetEncodedGeometryType(in_buffer: DecoderBuffer): draco_EncodedGeometryType;
+  GetEncodedGeometryType(data: Int8Array): draco_EncodedGeometryType;
 
+  DecodeArrayToPointCloud(data: Int8Array, data_size: number, out_point_cloud: PointCloud): Status;
+  DecodeArrayToMesh(data: Int8Array, data_size: number, out_mesh: Mesh): Status;
+
+  /** @deprecated Use `DecodeArrayToPointCloud`. */
   DecodeBufferToPointCloud(in_buffer: DecoderBuffer, out_point_cloud: PointCloud): Status;
+  /** @deprecated Use `DecodeArrayToMesh`. */
   DecodeBufferToMesh(in_buffer: DecoderBuffer, out_mesh: Mesh): Status;
 
   GetAttributeId(pc: PointCloud, type: draco_GeometryAttribute_Type): number;
@@ -360,12 +365,13 @@ export declare class PointCloudBuilder {
 
   AddMetadata(pc: PointCloud, metadata: Metadata): boolean;
   SetMetadataForAttribute(pc: PointCloud, attribute_id: number, metadata: Metadata);
+  SetNormalizedFlagForAttribute(pc: PointCloud, attribute_id: number, normalized: boolean): boolean;
 }
 
 /** Draco3D mesh builder */
 export declare class MeshBuilder extends PointCloudBuilder {
   constructor();
-  AddFacesToMesh(mesh: Mesh, num_faces: number, faces: number[]): boolean;
+  AddFacesToMesh(mesh: Mesh, num_faces: number, faces: Uint16Array | Uint32Array): boolean;
 }
 
 /** Draco3D encoder */
@@ -399,8 +405,7 @@ export declare class Encoder {
 
 /** Draco3D expert encoder */
 export declare class ExpertEncoder {
-  constructor();
-  ExpertEncoder(pc: PointCloud): void;
+  constructor(pointCloud: PointCloud);
   SetEncodingMethod(method: number): void;
   SetAttributeQuantization(att_id: number, quantization_bits: number);
   SetAttributeExplicitQuantization(
@@ -438,6 +443,9 @@ export interface Draco3D {
   readonly TEX_COORD: draco_GeometryAttribute_Type;
   readonly GENERIC: draco_GeometryAttribute_Type;
 
+  readonly MESH_SEQUENTIAL_ENCODING: number;
+  readonly MESH_EDGEBREAKER_ENCODING: number;
+
   // enum draco_DataType
   readonly DT_INVALID: draco_DataType;
   readonly DT_INT8: draco_DataType;
@@ -458,6 +466,7 @@ export interface Draco3D {
   readonly Metadata: typeof Metadata;
 
   readonly Encoder: typeof Encoder;
+  readonly ExpertEncoder: typeof ExpertEncoder;
   readonly MeshBuilder: typeof MeshBuilder;
   readonly MetadataBuilder: typeof MetadataBuilder;
 
@@ -474,14 +483,15 @@ export interface Draco3D {
   readonly DracoUInt32Array: typeof DracoUInt32Array;
 
   readonly AttributeQuantizationTransform: typeof AttributeQuantizationTransform;
+  readonly AttributeOctahedronTransform: typeof AttributeOctahedronTransform;
 
   // createEncoderModule(): Encoder;
   // createDecoderModule(): Decoder;
-  destroy(resource: any): void;
+  destroy(resource: object): void;
   _malloc(byteLength: number): number;
   _free(ptr: number): void;
 
-  HEAPF32: {
+  HEAPU8: {
     buffer: ArrayBuffer;
   };
 }

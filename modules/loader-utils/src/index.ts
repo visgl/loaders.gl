@@ -145,7 +145,29 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {RequestCache} from './lib/request-utils/request-cache';
+export type {
+  RequestCacheProps,
+  RequestCacheRemovalReason
+} from './lib/request-utils/request-cache';
 export {parseContentType} from './lib/request-utils/parse-content-type';
+export {
+  createAuthenticatedFetch,
+  createBearerTokenCredential,
+  createQueryParameterCredential,
+  redactCredentialURL
+} from './lib/request-utils/request-credentials';
+export type {
+  AuthenticatedFetchOptions,
+  BearerTokenCredentialOptions,
+  QueryParameterCredentialOptions,
+  RequestCredential,
+  TokenProvider,
+  TokenProviderContext,
+  TokenProviderReason,
+  TokenProviderResponse,
+  TokenValue
+} from './lib/request-utils/request-credentials';
 export {
   RangeRequestScheduler,
   createRangeStats,
@@ -160,6 +182,12 @@ export type {
   RangeRequestTransportResult,
   RangeStats
 } from './lib/request-utils/range-request-scheduler';
+export {RangeRequestCache} from './lib/request-utils/range-request-cache';
+export type {
+  CachedRangeRequest,
+  RangeRequestCacheEvent,
+  RangeRequestCacheProps
+} from './lib/request-utils/range-request-cache';
 
 // LAZ DECODER UTILS
 export {
@@ -169,7 +197,9 @@ export {
   decodeLAZChunkTable,
   decodeLAZChunk,
   decodeLAZChunkInBatches,
-  getLAZChunkByteLength
+  getLAZChunkByteLength,
+  getLAZChunkDeclaredByteLength,
+  getLAZChunkHeaderByteLength
 } from './lib/laz/laz-chunk-decoder';
 export type {
   FeedableLAZChunkDecoder,
@@ -248,6 +278,10 @@ export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 export type {
   ManageableDataSource,
+  DataSourceManagerEntryInfo,
+  DataSourceManagerEntryStatus,
+  DataSourceManagerDiscoveryInfo,
+  DataSourceManagerDiscoveryOptions,
   DataSourceManagerAddParameters,
   DataSourceManagerGetOrCreateParameters,
   DataSourceManagerSubscribeParameters,
@@ -268,6 +302,18 @@ export {
   validateColumnarPredicate
 } from './lib/scan-utils/columnar-predicate';
 export {executeScanTasks} from './lib/scan-utils/scan-executor';
+export {
+  executeTableScanBatches,
+  filterTableBatch,
+  makeTableScanBatch,
+  projectTableBatch,
+  projectTableSchema,
+  truncateTableBatch
+} from './lib/scan-utils/table-scan-batch';
+export type {
+  TableScanBatchReader,
+  TableScanBatchOperators
+} from './lib/scan-utils/table-scan-batch';
 export {validateRasterQueryOptions} from './lib/scan-utils/raster-query';
 export type {RasterQueryOptions, RasterQueryCapabilities} from './lib/scan-utils/raster-query';
 export {planRelationalQuery} from './lib/scan-utils/relational-query';
@@ -279,8 +325,15 @@ export type {
   RelationalPlanStep,
   RelationalQueryOptions
 } from './lib/scan-utils/relational-query';
-export {createScanQueryMetadata} from './lib/scan-utils/scan-query-metadata';
-export {validatePointCloudQueryOptions} from './lib/scan-utils/point-cloud-query';
+export {
+  createScanQueryMetadata,
+  emitScanExecutionTelemetry
+} from './lib/scan-utils/scan-query-metadata';
+export {
+  intersectPointCloudBounds,
+  selectPointCloudScanTiles,
+  validatePointCloudQueryOptions
+} from './lib/scan-utils/point-cloud-query';
 export {
   planTableQuery,
   validateTableQueryLimit,
@@ -288,22 +341,36 @@ export {
 } from './lib/scan-utils/table-query';
 export {explainTableQuery} from './lib/scan-utils/table-query-explain';
 export type {ScanExecutorOptions, ScanTask} from './lib/scan-utils/scan-executor';
+export type {ScanFragment, ScanFragmentProvider} from './lib/scan-utils/scan-fragments';
 export type {
   CreateScanQueryMetadataOptions,
   ScanBounds,
   ScanColumnMetadata,
   ScanColumnRole,
+  ScanExecutionMethod,
+  ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
+  ScanExecutionTelemetry,
+  ScanExecutionTelemetryCallback,
+  ScanExecutionTelemetryStatus,
+  ScanSourceExecutionTelemetry,
+  PointCloudScanReadOptions,
+  PointCloudScanSource,
+  TableScanReadOptions,
+  TableScanSource,
+  ScanRasterLevel,
   ScanSourceStatistics,
   ScanSpatialMetadata
 } from './lib/scan-utils/scan-query-metadata';
 export type {
   PointCloudQueryBounds,
   PointCloudQueryCapabilities,
-  PointCloudQueryOptions
+  PointCloudQueryOptions,
+  PointCloudScanChildrenLoader,
+  PointCloudScanTile
 } from './lib/scan-utils/point-cloud-query';
 export type {
   ColumnarComparisonPredicate,
@@ -336,6 +403,7 @@ export type {
 } from './lib/scan-utils/table-query-explain';
 
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
+export type {GeoServiceType, ServiceCapabilities} from './lib/sources/service-capabilities';
 
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
@@ -350,7 +418,7 @@ export type {
   VectorSourceMetadata
 } from './lib/sources/vector-source';
 
-export type {TileSource} from './lib/sources/tile-source';
+export type {TileSource, TileGrid} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';

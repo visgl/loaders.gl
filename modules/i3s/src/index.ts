@@ -38,7 +38,20 @@ export type {
   OperationalLayer,
   TextureSetDefinitionFormats
 } from './types';
+export type {
+  I3SPointCloudAttributeInfo,
+  I3SPointCloudNode,
+  I3SPointCloudNodePage,
+  PointCloudDefaultGeometrySchema,
+  Store
+} from './types';
 export type {I3SLoaderOptions} from './i3s-loader';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from './i3s-zod-schema';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 export {
@@ -66,3 +79,20 @@ export {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 export {LayerError} from './lib/parsers/parse-arcgis-webscene';
 export {customizeColors} from './lib/utils/customize-colors';
 export {type I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
+export {loadStatistics} from './i3s-statistics';
+export type {I3SStatistics} from './i3s-statistics';
+export {
+  I3SLEPCCDecoder,
+  type I3SLEPCCBlobType,
+  type I3SLEPCCDecodedValue,
+  type I3SLEPCCDecoderOptions
+} from './i3s-lepcc';
+export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';
+export {
+  createI3SLayerSource,
+  I3SUnsupportedProfileError,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
+} from './i3s-service';
+export type {I3SLayerSource, I3SServiceMetadata} from './i3s-service';

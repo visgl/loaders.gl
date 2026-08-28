@@ -1,72 +1,63 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import draco3d from 'draco3d';
-
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';
-
 setLoaderOptions({
   _workerType: 'test'
 });
-
-test('DracoLoader#loader conformance', t => {
-  validateLoader(t, DracoLoader, 'DracoLoader');
-  validateLoader(t, DracoWorkerLoader, 'DracoWorkerLoader');
-  t.end();
+test('DracoLoader#loader conformance', () => {
+  validateLoader(DracoLoader, 'DracoLoader');
+  validateLoader(DracoWorkerLoader, 'DracoWorkerLoader');
 });
-
-test('DracoLoader#parse(mainthread)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoLoader#parse(mainthread)', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false}
   });
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-  t.ok(data.schema, 'Has arrow-like schema');
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
+  expect(data.schema, 'Has arrow-like schema').toBeTruthy();
 });
-
-test('DracoLoader#draco3d npm package', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoLoader#draco3d npm package', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
     modules: {draco3d}
   });
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
 });
-
-test('DracoLoader#parse custom attributes(mainthread)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+test('DracoLoader#JavaScript fallback decoder', async () => {
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {
+    core: {worker: false},
+    useLocalLibraries: true,
+    draco: {backend: 'javascript'}
+  });
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
+});
+test('DracoLoader#parse custom attributes(mainthread)', async () => {
+  if (skipBrowserDracoWasmTest()) {
     return;
   }
   let data = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false}
   });
-  t.equal(
+  expect(
     data.attributes.CUSTOM_ATTRIBUTE_2.value.length,
-    173210,
     'Custom (Intensity) attribute was found'
-  );
-  t.equal(
+  ).toBe(173210);
+  expect(
     data.attributes.CUSTOM_ATTRIBUTE_3.value.length,
-    173210,
     'Custom (Classification) attribute was found'
-  );
-
+  ).toBe(173210);
   data = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false},
     draco: {
@@ -76,32 +67,23 @@ test('DracoLoader#parse custom attributes(mainthread)', async t => {
       }
     }
   });
-  t.equal(data.attributes.Intensity.value.length, 173210, 'Intensity attribute was found');
-  t.equal(
-    data.attributes.Classification.value.length,
-    173210,
-    'Classification attribute was found'
+  expect(data.attributes.Intensity.value.length, 'Intensity attribute was found').toBe(173210);
+  expect(data.attributes.Classification.value.length, 'Classification attribute was found').toBe(
+    173210
   );
-
-  t.end();
 });
-
 /**
  * Skips Draco tests that depend on direct WASM module initialization in browser runs.
  */
-function skipBrowserDracoWasmTest(t) {
+function skipBrowserDracoWasmTest() {
   if (isBrowser) {
-    t.comment('Skipping Draco WASM main-thread test in browser');
-    t.end();
+    console.log('Skipping Draco WASM main-thread test in browser');
     return true;
   }
   return false;
 }
-
-test('DracoWorkerLoader#parse', async t => {
+test('DracoWorkerLoader#parse', async () => {
   const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {_nodeWorkers: true});
-  validateMeshCategoryData(t, data);
-  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
-
-  t.end();
+  validateMeshCategoryData(data);
+  expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
 });

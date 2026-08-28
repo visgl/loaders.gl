@@ -1,5 +1,11 @@
 # Iceberg table source
 
+<p class="badges">
+  <a href="/docs/developer-guide/common-scan-architecture">
+    <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
+  </a>
+</p>
+
 `IcebergTableSource` reads an Apache Iceberg table's metadata and manifest files, selects Parquet
 data files, and delegates the actual file reads to `ParquetDatasetSource`.
 
@@ -18,7 +24,6 @@ const source = new IcebergTableSource('https://data.example.com/events/metadata/
 for await (const batch of source.scan({
   columns: ['timestamp', 'event_type'],
   predicate: {op: '=', args: [{property: 'event_type'}, 'click']},
-  limit: 1000,
   batchSize: 10000
 })) {
   consume(batch);
@@ -46,6 +51,21 @@ metadata-only bundle.
 The source accepts an explicit metadata JSON URL. It does not perform catalog lookup, refresh a
 catalog pointer, commit snapshots, or write Iceberg metadata.
 
+## Scan behavior at a glance
+
+| Layer | Current behavior |
+| --- | --- |
+| Entry point | `scan()` emits Arrow batches |
+| Snapshot selection | Current snapshot, explicit snapshot id, or named branch/tag |
+| Catalog pruning | Manifest status, partitions, scalar bounds, and optional spatial envelopes |
+| Data-file execution | Selected Parquet files use the shared projection, predicate, range, worker, limit, and cancellation paths |
+| Delete files | Discovered by default; position and equality deletes can be applied explicitly |
+| Ordering | Manifest and data-file order is preserved |
+| Writes and catalog refresh | Not provided |
+
+Iceberg planning selects files; Parquet remains responsible for row groups, pages, byte ranges, and
+exact residual filtering. The badge does not imply write support or a catalog-wide client.
+
 ## What is supported
 
 | Capability | Support | Notes |
@@ -58,7 +78,6 @@ catalog pointer, commit snapshots, or write Iceberg metadata.
 | Data manifests | Supported | Active Parquet entries are returned in manifest order. |
 | Delete manifests | Supported | Delete files are discovered in `getScanPlan()`; position and equality deletes can be applied opt-in. |
 | Parquet projection and predicates | Supported | Delegated to the existing Parquet source. |
-| Global post-delete limit | Supported | Counts visible rows across files after exact predicates and opted-in deletes. |
 | File partition pruning | Supported | Scalar manifest partition values use the shared dataset pruning path. |
 | File statistics pruning | Supported | Conservative lower/upper-bound pruning; unknown encodings are retained. |
 | Spatial envelope pruning | Supported | Opt-in conservative bounding-box pruning when Iceberg bounds expose a recognized geometry envelope. |
@@ -211,7 +230,6 @@ projection, workers, and range access; GPU representation remains an application
 | `snapshotRef` | Per-scan branch or tag name from metadata `refs`. |
 | `columns` | Projected Parquet columns. |
 | `predicate` | Serializable columnar predicate used for file, row-group, and row pruning. |
-| `limit` | Global maximum rows emitted after exact predicates and opted-in deletes. |
 | `fileConcurrency` | Per-scan maximum number of Parquet files read concurrently. |
 | `parquetDataset.fileConcurrency` | Default file concurrency for all scans from this source. |
 | `signal` | Cancels metadata, manifest, and data-file work. |
@@ -234,11 +252,29 @@ introduce a second worker protocol or a second range-reader implementation.
 
 ## Delta Lake adapter
 
-`DeltaTableSource` is a deliberately small read-only adapter for Delta tables whose active data is
-Parquet. It replays JSON commits through an explicit `delta.version`, then delegates active files
-to `ParquetDatasetSource`. Automatic latest-version discovery, deletion vectors, CDC, and writes
-remain outside this first adapter so the shared scan substrate does not inherit Delta-specific
-transaction semantics prematurely.
+`DeltaTableSource` is the read-only Delta adapter exported from `@loaders.gl/parquet`. It accepts a
+commit-log URL or an in-memory `Blob`, replays all JSON commits through the selected version, and
+delegates active Parquet files to `ParquetDatasetSource`. A commit URL with a twenty-digit version
+selects that snapshot automatically; callers can override it with `delta.version` or per-scan
+`version`.
+
+```ts
+import {DeltaTableSource} from '@loaders.gl/parquet/delta-source';
+
+const source = new DeltaTableSource(
+  'https://data.example.com/events/_delta_log/00000000000000000042.json',
+  {delta: {headers: {Authorization: 'Bearer token'}}}
+);
+
+for await (const batch of source.scan({columns: ['timestamp', 'event_type']})) {
+  consume(batch);
+}
+```
+
+The adapter applies `add` and `remove` actions, preserves partition values and `numRecords`
+statistics for file planning, and rejects active files carrying deletion vectors rather than
+silently returning incomplete data. CDC actions, checkpoint discovery, writes, and deletion-vector
+decoding remain outside this read-only Parquet snapshot contract.
 
 The intended extension point for Iceberg is the scan plan: a future planner can select files and
 delete files, then dispatch each Parquet data file through `ParquetDatasetSource` without depending

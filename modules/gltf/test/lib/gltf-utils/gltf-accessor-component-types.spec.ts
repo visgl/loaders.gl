@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
 import type {BigTypedArray} from '@loaders.gl/schema';
-
 const TEST_CASES: {
   name: string;
   componentType: number;
@@ -26,8 +24,7 @@ const TEST_CASES: {
     source: new BigUint64Array([9007199254740993n, 18446744073709551615n])
   }
 ];
-
-test('glTF 2.1 accessor component types', t => {
+test('glTF 2.1 accessor component types', () => {
   for (const testCase of TEST_CASES) {
     const gltf = {
       json: {
@@ -51,36 +48,25 @@ test('glTF 2.1 accessor component types', t => {
         }
       ]
     };
-
     const scenegraph = new GLTFScenegraph(gltf);
     const scenegraphValues = scenegraph.getTypedArrayForAccessor(0);
-    t.equal(scenegraphValues.constructor, testCase.source.constructor, `${testCase.name} type`);
-    t.deepEqual(
-      Array.from(scenegraphValues),
-      Array.from(testCase.source),
-      `${testCase.name} values`
+    expect(scenegraphValues.constructor, `${testCase.name} type`).toBe(testCase.source.constructor);
+    expect(Array.from(scenegraphValues), `${testCase.name} values`).toEqual(
+      Array.from(testCase.source)
     );
-
     const processed = postProcessGLTF(gltf);
     const processedValues = processed.accessors[0].value;
-    t.equal(
-      processedValues.constructor,
-      testCase.source.constructor,
-      `${testCase.name} postprocessed type`
+    expect(processedValues.constructor, `${testCase.name} postprocessed type`).toBe(
+      testCase.source.constructor
     );
-    t.deepEqual(
-      Array.from(processedValues),
-      Array.from(testCase.source),
-      `${testCase.name} postprocessed values`
+    expect(Array.from(processedValues), `${testCase.name} postprocessed values`).toEqual(
+      Array.from(testCase.source)
     );
   }
-  t.end();
 });
-
-test('GLTFScenegraph#addBinaryBuffer accepts 64-bit integer arrays', t => {
+test('GLTFScenegraph#addBinaryBuffer accepts 64-bit integer arrays', () => {
   const gltf = {json: {asset: {version: '2.1'}}, buffers: []};
   const scenegraph = new GLTFScenegraph(gltf);
-
   scenegraph.addBinaryBuffer(new BigInt64Array([-1n, 1n]), {
     size: 1,
     min: [-1n],
@@ -91,11 +77,8 @@ test('GLTFScenegraph#addBinaryBuffer accepts 64-bit integer arrays', t => {
     min: [0n],
     max: [2n]
   });
-
-  t.deepEqual(
+  expect(
     gltf.json.accessors?.map(accessor => accessor.componentType),
-    [5134, 5135],
     'maps signed and unsigned 64-bit constructors to glTF component types'
-  );
-  t.end();
+  ).toEqual([5134, 5135]);
 });

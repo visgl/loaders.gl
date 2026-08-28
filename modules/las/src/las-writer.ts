@@ -20,6 +20,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
+const LAS_1_5_HEADER_LENGTH = 393;
 const VLR_HEADER_LENGTH = 54;
 const EXTRA_BYTES_DESCRIPTOR_LENGTH = 192;
 const DEFAULT_LAZ_CHUNK_SIZE = 50_000;
@@ -34,7 +35,9 @@ const POINT_RECORD_LENGTHS: Record<number, number> = {
   5: 63,
   6: 30,
   7: 36,
-  8: 38
+  8: 38,
+  9: 59,
+  10: 67
 };
 
 /** Description of a typed mesh attribute stored in LAS Extra Bytes. */
@@ -53,10 +56,16 @@ export type LASWriterOptions = WriterOptions & {
   las?: {
     /** Output container format. COPC has its own writer in @loaders.gl/copc. */
     format?: 'las' | 'laz';
-    /** LAS file version to write. LAS 1.5 writing is intentionally not supported. */
-    version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
+    /** LAS file version to write. LAS 1.5 requires a WKT CRS string. */
+    version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4' | '1.5';
+    /** WKT coordinate system required for LAS 1.5 output. */
+    wkt?: string;
+    /** Optional WKT math transform VLR for LAS 1.5 output. */
+    wktMathTransform?: string;
+    /** LAS 1.5 GPS time offset in the public header. */
+    timeOffset?: number;
     /** LAS point data record format to write. */
-    pointDataRecordFormat?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+    pointDataRecordFormat?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     /** Coordinate scale factors used to quantize positions into LAS integer coordinates. */
     scale?: [number, number, number];
     /** Coordinate offsets used to quantize positions into LAS integer coordinates. */
@@ -148,7 +157,17 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   }
   validateExtraBytesVLR(extraByteFields);
   const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
-  const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
+  const headerLength =
+    version === '1.5'
+      ? LAS_1_5_HEADER_LENGTH
+      : version === '1.4'
+        ? LAS_1_4_HEADER_LENGTH
+        : LAS_HEADER_LENGTH;
+  validateLASVersionOptions(version, pointDataRecordFormat, options);
+  const gpsTimeRange = getGpsTimeRange(gpsTimeAttribute, vertexCount);
+  if (version === '1.5' && options.las?.timeOffset && !gpsTimeAttribute) {
+    throw new Error('LASWriter: LAS 1.5 timeOffset requires a GPS time attribute');
+  }
   if (format === 'laz') {
     validateLAZOptions(version, pointDataRecordFormat, options.las?.chunkSize);
   }
@@ -217,7 +236,12 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     headerLength,
     pointDataRecordFormat,
     pointDataRecordLength,
-    returnCounts
+    returnCounts,
+    maxGpsTime: gpsTimeRange.maximum,
+    minGpsTime: gpsTimeRange.minimum,
+    timeOffset: options.las?.timeOffset || 0,
+    hasGpsTime: Boolean(gpsTimeAttribute),
+    hasWkt: Boolean(options.las?.wkt)
   };
   if (format === 'laz') {
     return encodeLAZFile(
@@ -225,39 +249,72 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
       writeParameters,
       options.las?.chunkSize,
       options.las?.variableChunkTable,
-      extraByteFields
+      extraByteFields,
+      options
     );
   }
 
-  const extraBytesVLR = encodeExtraBytesVLR(extraByteFields);
-  const pointDataOffset = headerLength + extraBytesVLR.byteLength;
+  const metadataVLR = encodeMetadataVLRs(extraByteFields, options);
+  const pointDataOffset = headerLength + metadataVLR.byteLength;
   const arrayBuffer = new ArrayBuffer(pointDataOffset + rawPointData.byteLength);
   writeHeader(new DataView(arrayBuffer), {
     ...writeParameters,
     pointDataOffset,
-    vlrCount: extraBytesVLR.byteLength ? 1 : 0
+    vlrCount: countMetadataVLRs(extraByteFields, options)
   });
   const bytes = new Uint8Array(arrayBuffer);
-  bytes.set(extraBytesVLR, headerLength);
+  bytes.set(metadataVLR, headerLength);
   bytes.set(rawPointData, pointDataOffset);
   return arrayBuffer;
 }
 
 /** Validate that the selected LAS header can represent the point record format. */
 function validatePointDataRecordVersion(version: string, pointDataRecordFormat: number): void {
+  const minimumVersionByPointFormat: Record<number, string> = {
+    0: '1.0',
+    1: '1.1',
+    2: '1.2',
+    3: '1.2'
+  };
+  const minimumVersion = minimumVersionByPointFormat[pointDataRecordFormat];
+  if (minimumVersion && version < minimumVersion) {
+    throw new Error(
+      `LASWriter: point data record format ${pointDataRecordFormat} requires LAS ${minimumVersion} or newer; received ${version}`
+    );
+  }
   if (
     pointDataRecordFormat >= 4 &&
     pointDataRecordFormat <= 5 &&
-    !['1.3', '1.4'].includes(version)
+    !['1.3', '1.4', '1.5'].includes(version)
   ) {
     throw new Error(
       `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.3; received ${version}`
     );
   }
-  if (pointDataRecordFormat >= 6 && version !== '1.4') {
+  if (pointDataRecordFormat >= 6 && !['1.4', '1.5'].includes(version)) {
     throw new Error(
       `LASWriter: point data record format ${pointDataRecordFormat} requires LAS 1.4; received ${version}`
     );
+  }
+}
+
+/** Validate LAS 1.5 writer requirements before allocating point data. */
+function validateLASVersionOptions(
+  version: string,
+  pointDataRecordFormat: number,
+  options: LASWriterOptions
+): void {
+  if (version === '1.5') {
+    if (pointDataRecordFormat < 6 || pointDataRecordFormat > 10) {
+      throw new Error('LASWriter: LAS 1.5 output requires point data record format 6-10');
+    }
+    if (!options.las?.wkt?.trim()) {
+      throw new Error('LASWriter: LAS 1.5 output requires las.wkt');
+    }
+    const timeOffset = options.las?.timeOffset ?? 0;
+    if (!Number.isInteger(timeOffset) || timeOffset < 0 || timeOffset > 0xffff) {
+      throw new Error('LASWriter: LAS 1.5 timeOffset must be an unsigned 16-bit integer');
+    }
   }
 }
 
@@ -272,7 +329,7 @@ type LASWriteParameters = {
   /** Coordinate quantization offsets. */
   offset: [number, number, number];
   /** LAS file version. */
-  version: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
+  version: '1.0' | '1.1' | '1.2' | '1.3' | '1.4' | '1.5';
   /** Public header byte length. */
   headerLength: number;
   /** LAS point data record format. */
@@ -281,6 +338,16 @@ type LASWriteParameters = {
   pointDataRecordLength: number;
   /** Counts for the fifteen LAS 1.4 return-number buckets. */
   returnCounts: number[];
+  /** LAS 1.5 maximum GPS time, or zero when no GPS time is present. */
+  maxGpsTime: number;
+  /** LAS 1.5 minimum GPS time, or zero when no GPS time is present. */
+  minGpsTime: number;
+  /** LAS 1.5 GPS time offset. */
+  timeOffset: number;
+  /** Whether the input contained a GPS time attribute. */
+  hasGpsTime: boolean;
+  /** Whether a WKT coordinate-system VLR is emitted. */
+  hasWkt: boolean;
 };
 
 /** Internal description of one encoded LAS Extra Bytes field. */
@@ -301,7 +368,8 @@ function encodeLAZFile(
   parameters: LASWriteParameters,
   requestedChunkSize?: number,
   variableChunkTable = false,
-  extraByteFields: LASExtraByteField[] = []
+  extraByteFields: LASExtraByteField[] = [],
+  options: LASWriterOptions = {}
 ): ArrayBuffer {
   const chunkSize = requestedChunkSize || DEFAULT_LAZ_CHUNK_SIZE;
   const laszipVLR = encodeLASzipVLR({
@@ -309,8 +377,8 @@ function encodeLAZFile(
     pointDataRecordLength: parameters.pointDataRecordLength,
     chunkSize: variableChunkTable ? VARIABLE_LAZ_CHUNK_SIZE : chunkSize
   });
-  const extraBytesVLR = encodeExtraBytesVLR(extraByteFields);
-  const pointDataOffset = parameters.headerLength + extraBytesVLR.byteLength + laszipVLR.byteLength;
+  const metadataVLR = encodeMetadataVLRs(extraByteFields, options);
+  const pointDataOffset = parameters.headerLength + metadataVLR.byteLength + laszipVLR.byteLength;
   const compressedChunks: Uint8Array[] = [];
   const chunkTableEntries: LAZChunkTableEntry[] = [];
 
@@ -347,11 +415,11 @@ function encodeLAZFile(
   writeHeader(dataView, {
     ...parameters,
     pointDataOffset,
-    vlrCount: extraBytesVLR.byteLength ? 2 : 1,
+    vlrCount: countMetadataVLRs(extraByteFields, options) + 1,
     compressed: true
   });
-  bytes.set(extraBytesVLR, parameters.headerLength);
-  bytes.set(laszipVLR, parameters.headerLength + extraBytesVLR.byteLength);
+  bytes.set(metadataVLR, parameters.headerLength);
+  bytes.set(laszipVLR, parameters.headerLength + metadataVLR.byteLength);
   writeUint64Fallback(dataView, pointDataOffset, chunkTableOffset);
   let compressedOffset = pointDataOffset + 8;
   for (const chunk of compressedChunks) {
@@ -456,6 +524,76 @@ function encodeExtraBytesVLR(fields: readonly LASExtraByteField[]): Uint8Array {
   return bytes;
 }
 
+/** Encode projection and Extra Bytes VLRs in the order used by the public header. */
+function encodeMetadataVLRs(
+  fields: readonly LASExtraByteField[],
+  options: LASWriterOptions
+): Uint8Array {
+  const records: Uint8Array[] = [];
+  if (options.las?.wktMathTransform) {
+    records.push(encodeProjectionVLR(2111, 'WKT Math Transform', options.las.wktMathTransform));
+  }
+  if (options.las?.wkt) {
+    records.push(encodeProjectionVLR(2112, 'WKT Coordinate System', options.las.wkt));
+  }
+  const extraBytesVLR = encodeExtraBytesVLR(fields);
+  if (extraBytesVLR.byteLength) {
+    records.push(extraBytesVLR);
+  }
+  const byteLength = records.reduce((total, record) => total + record.byteLength, 0);
+  const bytes = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const record of records) {
+    bytes.set(record, offset);
+    offset += record.byteLength;
+  }
+  return bytes;
+}
+
+/** Encode one LAS WKT projection VLR. */
+function encodeProjectionVLR(recordId: 2111 | 2112, description: string, wkt: string): Uint8Array {
+  const payload = new TextEncoder().encode(`${wkt}\0`);
+  if (payload.byteLength > 0xffff) {
+    throw new Error(`LASWriter: WKT VLR ${recordId} exceeds the LAS VLR size limit`);
+  }
+  const bytes = new Uint8Array(VLR_HEADER_LENGTH + payload.byteLength);
+  const dataView = new DataView(bytes.buffer);
+  writeString(dataView, 2, 'LASF_Projection', 16);
+  dataView.setUint16(18, recordId, true);
+  dataView.setUint16(20, payload.byteLength, true);
+  writeString(dataView, 22, description, 32);
+  bytes.set(payload, VLR_HEADER_LENGTH);
+  return bytes;
+}
+
+/** Count the VLR records emitted by the metadata encoder. */
+function countMetadataVLRs(
+  fields: readonly LASExtraByteField[],
+  options: LASWriterOptions
+): number {
+  return (
+    (options.las?.wktMathTransform ? 1 : 0) + (options.las?.wkt ? 1 : 0) + (fields.length ? 1 : 0)
+  );
+}
+
+/** Return the finite GPS time range needed by the LAS 1.5 public header. */
+function getGpsTimeRange(
+  attribute: MeshAttribute | undefined,
+  vertexCount: number
+): {minimum: number; maximum: number} {
+  if (!attribute) {
+    return {minimum: 0, maximum: 0};
+  }
+  let minimum = Number(attribute.value[0]);
+  let maximum = minimum;
+  for (let vertexIndex = 1; vertexIndex < vertexCount; vertexIndex++) {
+    const value = Number(attribute.value[vertexIndex * attribute.size]);
+    minimum = Math.min(minimum, value);
+    maximum = Math.max(maximum, value);
+  }
+  return {minimum, maximum};
+}
+
 /** Validate that the Extra Bytes VLR payload fits its 16-bit length field. */
 function validateExtraBytesVLR(fields: readonly LASExtraByteField[]): void {
   const payloadByteLength = fields.length * EXTRA_BYTES_DESCRIPTOR_LENGTH;
@@ -472,7 +610,14 @@ function validateLAZOptions(
   pointDataRecordFormat: number,
   chunkSize?: number
 ): void {
-  if (pointDataRecordFormat <= 3 && !['1.2', '1.3', '1.4'].includes(version)) {
+  if (pointDataRecordFormat === 1 && !['1.1', '1.2', '1.3', '1.4', '1.5'].includes(version)) {
+    throw new Error(`LASWriter: LAZ PDRF 1 output requires LAS 1.1 or newer; received ${version}`);
+  }
+  if (
+    pointDataRecordFormat >= 2 &&
+    pointDataRecordFormat <= 3 &&
+    !['1.2', '1.3', '1.4', '1.5'].includes(version)
+  ) {
     throw new Error(
       `LASWriter: LAZ PDRF ${pointDataRecordFormat} output requires LAS 1.2 or newer; received ${version}`
     );
@@ -480,18 +625,18 @@ function validateLAZOptions(
   if (
     pointDataRecordFormat >= 4 &&
     pointDataRecordFormat <= 5 &&
-    !['1.3', '1.4'].includes(version)
+    !['1.3', '1.4', '1.5'].includes(version)
   ) {
     throw new Error(
       `LASWriter: LAZ PDRF ${pointDataRecordFormat} requires LAS 1.3 or newer; received ${version}`
     );
   }
-  if (pointDataRecordFormat >= 6 && version !== '1.4') {
+  if (pointDataRecordFormat >= 6 && !['1.4', '1.5'].includes(version)) {
     throw new Error(`LASWriter: LAZ output requires LAS 1.4; received ${version}`);
   }
-  if (![0, 1, 2, 3, 4, 5, 6, 7, 8].includes(pointDataRecordFormat)) {
+  if (![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(pointDataRecordFormat)) {
     throw new Error(
-      `LASWriter: LAZ output currently supports point data record formats 0-8; received ${pointDataRecordFormat}`
+      `LASWriter: LAZ output currently supports point data record formats 0-10; received ${pointDataRecordFormat}`
     );
   }
   if (
@@ -659,8 +804,7 @@ function validateOptionalPointAttributes(mesh: Mesh, vertexCount: number): void 
     'wavePacketDescriptorIndex',
     'wavePacketOffset',
     'wavePacketSize',
-    'wavePacketReturnPoint',
-    'wavePacketVector'
+    'wavePacketReturnPoint'
   ];
   for (const attributeName of scalarAttributeNames) {
     const attribute = mesh.attributes[attributeName];
@@ -758,13 +902,25 @@ function writeHeader(
   dataView.setUint32(100, parameters.vlrCount || 0, true);
   dataView.setUint8(104, parameters.pointDataRecordFormat | (parameters.compressed ? 0x80 : 0));
   dataView.setUint16(105, parameters.pointDataRecordLength, true);
-  dataView.setUint32(107, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
+  const isExtendedHeader = parameters.version === '1.4' || parameters.version === '1.5';
+  dataView.setUint32(107, isExtendedHeader ? 0 : parameters.vertexCount, true);
   for (let returnIndex = 0; returnIndex < 5; returnIndex++) {
     dataView.setUint32(
       111 + returnIndex * 4,
-      parameters.version === '1.4' ? 0 : parameters.returnCounts[returnIndex],
+      isExtendedHeader ? 0 : parameters.returnCounts[returnIndex],
       true
     );
+  }
+
+  if (parameters.version === '1.5') {
+    // LAS 1.5 requires WKT and stores the time range in the extended header.
+    dataView.setUint16(
+      6,
+      0x10 | (parameters.hasGpsTime ? 1 : 0) | (parameters.timeOffset ? 0x40 : 0),
+      true
+    );
+  } else if (parameters.version === '1.4' && parameters.hasWkt) {
+    dataView.setUint16(6, 0x10, true);
   }
 
   dataView.setFloat64(131, parameters.scale[0], true);
@@ -780,11 +936,16 @@ function writeHeader(
   dataView.setFloat64(211, parameters.boundingBox[1][2], true);
   dataView.setFloat64(219, parameters.boundingBox[0][2], true);
 
-  if (parameters.version === '1.4') {
+  if (isExtendedHeader) {
     writeUint64Fallback(dataView, 247, parameters.vertexCount);
     for (let returnIndex = 0; returnIndex < LAS_RETURN_BUCKET_COUNT; returnIndex++) {
       writeUint64Fallback(dataView, 255 + returnIndex * 8, parameters.returnCounts[returnIndex]);
     }
+  }
+  if (parameters.version === '1.5') {
+    dataView.setFloat64(375, parameters.maxGpsTime, true);
+    dataView.setFloat64(383, parameters.minGpsTime, true);
+    dataView.setUint16(391, parameters.timeOffset, true);
   }
 }
 
@@ -858,32 +1019,7 @@ function writePointRecord(
     }
     if (pointDataRecordFormat === 4 || pointDataRecordFormat === 5) {
       const waveformOffset = pointDataRecordFormat === 4 ? 28 : 34;
-      dataView.setUint8(
-        pointOffset + waveformOffset,
-        getUInt8Attribute(attributes.waveformDescriptorAttribute, vertexIndex)
-      );
-      dataView.setBigUint64(
-        pointOffset + waveformOffset + 1,
-        getBigUint64Attribute(attributes.waveformOffsetAttribute, vertexIndex),
-        true
-      );
-      dataView.setUint32(
-        pointOffset + waveformOffset + 9,
-        getUInt32Attribute(attributes.waveformSizeAttribute, vertexIndex),
-        true
-      );
-      dataView.setFloat32(
-        pointOffset + waveformOffset + 13,
-        getAttributeValue(attributes.waveformReturnPointAttribute, vertexIndex),
-        true
-      );
-      for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
-        dataView.setFloat32(
-          pointOffset + waveformOffset + 17 + componentIndex * 4,
-          getComponent(attributes.waveformVectorAttribute, vertexIndex, componentIndex),
-          true
-        );
-      }
+      writeWaveformPacket(dataView, pointOffset + waveformOffset, vertexIndex, attributes);
     }
   } else {
     const returnNumber = getUInt8Attribute(attributes.returnNumberAttribute, vertexIndex, 1) & 0x0f;
@@ -924,6 +1060,10 @@ function writePointRecord(
       getAttributeValue(attributes.gpsTimeAttribute, vertexIndex),
       true
     );
+    if (pointDataRecordFormat === 9 || pointDataRecordFormat === 10) {
+      const waveformOffset = pointDataRecordFormat === 9 ? 30 : 38;
+      writeWaveformPacket(dataView, pointOffset + waveformOffset, vertexIndex, attributes);
+    }
   }
 
   writePointColor(
@@ -933,7 +1073,7 @@ function writePointRecord(
     pointDataRecordFormat,
     attributes.colorAttribute
   );
-  if (pointDataRecordFormat === 8) {
+  if (pointDataRecordFormat === 8 || pointDataRecordFormat === 10) {
     dataView.setUint16(
       pointOffset + 36,
       getUInt16Attribute(attributes.nirAttribute, vertexIndex),
@@ -947,6 +1087,47 @@ function writePointRecord(
     basePointDataRecordLength,
     attributes.extraByteFields
   );
+}
+
+/** Write one 29-byte LAS waveform packet reference. */
+function writeWaveformPacket(
+  dataView: DataView,
+  byteOffset: number,
+  vertexIndex: number,
+  attributes: {
+    waveformDescriptorAttribute?: MeshAttribute;
+    waveformOffsetAttribute?: MeshAttribute;
+    waveformSizeAttribute?: MeshAttribute;
+    waveformReturnPointAttribute?: MeshAttribute;
+    waveformVectorAttribute?: MeshAttribute;
+  }
+): void {
+  dataView.setUint8(
+    byteOffset,
+    getUInt8Attribute(attributes.waveformDescriptorAttribute, vertexIndex)
+  );
+  dataView.setBigUint64(
+    byteOffset + 1,
+    getBigUint64Attribute(attributes.waveformOffsetAttribute, vertexIndex),
+    true
+  );
+  dataView.setUint32(
+    byteOffset + 9,
+    getUInt32Attribute(attributes.waveformSizeAttribute, vertexIndex),
+    true
+  );
+  dataView.setFloat32(
+    byteOffset + 13,
+    getAttributeValue(attributes.waveformReturnPointAttribute, vertexIndex),
+    true
+  );
+  for (let componentIndex = 0; componentIndex < 3; componentIndex++) {
+    dataView.setFloat32(
+      byteOffset + 17 + componentIndex * 4,
+      getComponent(attributes.waveformVectorAttribute, vertexIndex, componentIndex),
+      true
+    );
+  }
 }
 
 /** Write configured Extra Bytes values into one raw LAS point record. */
@@ -1052,6 +1233,7 @@ function getColorOffset(pointDataRecordFormat: number): number {
       return 57;
     case 7:
     case 8:
+    case 10:
       return 30;
     default:
       return -1;

@@ -17,7 +17,7 @@ import {
   SchemaDefinition
 } from '../schema/declare';
 import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
-import type {ParquetValueBuffer} from '../codecs/declare';
+import type {ParquetByteArrayOutput, ParquetValueBuffer} from '../codecs/declare';
 import {
   ConvertedType,
   EdgeInterpolationAlgorithm,
@@ -32,11 +32,16 @@ import {decompress} from '../compression';
 import type {TimeUnit as ParquetThriftTimeUnit} from '../parquet-thrift/TimeUnit';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
+import {crc32} from '../utils/crc32';
+
+/** Shared empty level storage for required flat columns, whose levels are implicit. */
+const EMPTY_PARQUET_LEVEL_BUFFER = new Uint8Array(0);
 
 /** Preallocated column destination used to bypass page-local value and level arrays. */
 type ParquetPageDecodeTarget = {
   values: ParquetValueBuffer;
   valueOffset: number;
+  byteArrayOutput?: ParquetByteArrayOutput;
   dictionary: readonly unknown[];
   rlevels: ParquetLevelBuffer;
   dlevels: ParquetLevelBuffer;
@@ -70,12 +75,14 @@ export async function decodeDataPages(
   }
 
   const outputCapacity = expectedLevelCount ?? 0;
+  const byteArrayOutput = createArrowByteArrayOutput(buffer, context, outputCapacity);
   const data: ParquetColumnChunk = {
     rlevels: createParquetLevelBuffer(context, outputCapacity, context.rLevelMax),
     dlevels: createParquetLevelBuffer(context, outputCapacity, context.dLevelMax),
-    values: createParquetColumnValueBuffer(context, outputCapacity),
+    values: byteArrayOutput ? [] : createParquetColumnValueBuffer(context, outputCapacity),
     pageHeaders: [],
-    count: 0
+    count: 0,
+    nullCount: 0
   };
 
   let dictionary = context.dictionary || [];
@@ -88,14 +95,19 @@ export async function decodeDataPages(
     (expectedLevelCount === undefined || levelOffset < expectedLevelCount)
   ) {
     // Looks like we have to decode these in sequence due to cursor updates?
-    const page = await decodePage(cursor, context, {
+    const target = {
       values: data.values,
       valueOffset,
+      byteArrayOutput,
       dictionary,
       rlevels: data.rlevels,
       dlevels: data.dlevels,
       levelOffset
-    });
+    };
+    const page =
+      context.compression === 'UNCOMPRESSED'
+        ? decodeUncompressedPage(cursor, context, target)
+        : await decodePage(cursor, context, target);
 
     if (page.dictionary) {
       dictionary = page.dictionary;
@@ -107,6 +119,7 @@ export async function decodeDataPages(
 
     if (page.directValuesWritten !== undefined) {
       valueOffset += page.directValuesWritten;
+      data.nullCount! += page.count - page.directValuesWritten;
     } else {
       const valueEncoding = getThriftEnum(
         Encoding,
@@ -129,9 +142,112 @@ export async function decodeDataPages(
 
   data.rlevels = trimParquetLevelBuffer(data.rlevels, levelOffset);
   data.dlevels = trimParquetLevelBuffer(data.dlevels, levelOffset);
-  data.values = trimParquetValueBuffer(data.values, valueOffset);
+  if (byteArrayOutput) {
+    data.values = [];
+    data.byteArrayData = {
+      data: byteArrayOutput.data.subarray(0, byteArrayOutput.byteLength),
+      valueOffsets: byteArrayOutput.valueOffsets.subarray(0, valueOffset + 1)
+    };
+  } else {
+    data.values = trimParquetValueBuffer(data.values, valueOffset);
+  }
 
   return data;
+}
+
+/**
+ * Decodes an uncompressed column chunk synchronously.
+ *
+ * In-memory Parquet reads use this entry point to avoid one resolved Promise per selected column.
+ */
+export function decodeUncompressedDataPages(
+  buffer: Uint8Array,
+  context: ParquetReaderContext
+): ParquetColumnChunk {
+  const cursor: CursorBuffer = {buffer, offset: 0, size: buffer.length};
+  const expectedLevelCount =
+    context.numValues === undefined ? undefined : Number(context.numValues);
+  if (
+    expectedLevelCount !== undefined &&
+    (!Number.isSafeInteger(expectedLevelCount) || expectedLevelCount < 0)
+  ) {
+    throw new Error(`Invalid Parquet column value count ${expectedLevelCount}`);
+  }
+
+  const outputCapacity = expectedLevelCount ?? 0;
+  const byteArrayOutput = createArrowByteArrayOutput(buffer, context, outputCapacity);
+  const data: ParquetColumnChunk = {
+    rlevels: createParquetLevelBuffer(context, outputCapacity, context.rLevelMax),
+    dlevels: createParquetLevelBuffer(context, outputCapacity, context.dLevelMax),
+    values: byteArrayOutput ? [] : createParquetColumnValueBuffer(context, outputCapacity),
+    pageHeaders: [],
+    count: 0,
+    nullCount: 0
+  };
+  let dictionary = context.dictionary || [];
+  let levelOffset = 0;
+  let valueOffset = 0;
+
+  while (
+    cursor.offset < (cursor.size ?? cursor.buffer.length) &&
+    (expectedLevelCount === undefined || levelOffset < expectedLevelCount)
+  ) {
+    const page = decodeUncompressedPage(cursor, context, {
+      values: data.values,
+      valueOffset,
+      byteArrayOutput,
+      dictionary,
+      rlevels: data.rlevels,
+      dlevels: data.dlevels,
+      levelOffset
+    });
+    if (page.dictionary) {
+      dictionary = page.dictionary;
+      continue;
+    }
+
+    levelOffset += page.count;
+    if (page.directValuesWritten !== undefined) {
+      valueOffset += page.directValuesWritten;
+      data.nullCount! += page.count - page.directValuesWritten;
+    } else {
+      const valueEncoding = getThriftEnum(
+        Encoding,
+        page.pageHeader.data_page_header?.encoding ?? page.pageHeader.data_page_header_v2?.encoding!
+      ) as ParquetCodec;
+      const usesDictionary =
+        dictionary.length &&
+        (valueEncoding === 'PLAIN_DICTIONARY' || valueEncoding === 'RLE_DICTIONARY');
+      for (let index = 0; index < page.values.length; index++) {
+        const value = usesDictionary ? dictionary[Number(page.values[index])] : page.values[index];
+        if (value !== undefined) data.values[valueOffset++] = value;
+      }
+    }
+    data.count += page.count;
+    data.pageHeaders.push(page.pageHeader);
+  }
+
+  data.rlevels = trimParquetLevelBuffer(data.rlevels, levelOffset);
+  data.dlevels = trimParquetLevelBuffer(data.dlevels, levelOffset);
+  if (byteArrayOutput) {
+    data.values = [];
+    data.byteArrayData = {
+      data: byteArrayOutput.data.subarray(0, byteArrayOutput.byteLength),
+      valueOffsets: byteArrayOutput.valueOffsets.subarray(0, valueOffset + 1)
+    };
+  } else {
+    data.values = trimParquetValueBuffer(data.values, valueOffset);
+  }
+  return data;
+}
+
+/** Decodes a dictionary page from an uncompressed in-memory column chunk. */
+export function decodeUncompressedDictionaryBuffer(
+  buffer: Uint8Array,
+  context: ParquetReaderContext
+): unknown[] {
+  const cursor: CursorBuffer = {buffer, offset: 0, size: buffer.length};
+  return decodeUncompressedPage(cursor, context).dictionary!;
 }
 
 /**
@@ -150,6 +266,8 @@ export async function decodePage(
   cursor.offset += length;
 
   const pageType = getThriftEnum(PageType, pageHeader.type);
+  const pageEnd = cursor.offset + pageHeader.compressed_page_size;
+  verifyPageChecksum(cursor, pageHeader, pageEnd, context);
 
   switch (pageType) {
     case 'DATA_PAGE':
@@ -169,6 +287,56 @@ export async function decodePage(
   }
 
   return page;
+}
+
+/** Decodes one uncompressed page without introducing a Promise/microtask boundary. */
+function decodeUncompressedPage(
+  cursor: CursorBuffer,
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
+): ParquetPageData {
+  const {pageHeader, length} = decodePageHeader(cursor.buffer, cursor.offset);
+  cursor.offset += length;
+  const pageEnd = cursor.offset + pageHeader.compressed_page_size;
+  verifyPageChecksum(cursor, pageHeader, pageEnd, context);
+
+  const pageType = getThriftEnum(PageType, pageHeader.type);
+  switch (pageType) {
+    case 'DATA_PAGE':
+      return decodeDataPageValues(cursor, pageHeader, context, target);
+    case 'DATA_PAGE_V2':
+      return decodeUncompressedDataPageV2(cursor, pageHeader, context, target);
+    case 'DICTIONARY_PAGE':
+      return {
+        dictionary: decodeUncompressedDictionaryPage(cursor, pageHeader, context),
+        dlevels: EMPTY_PARQUET_LEVEL_BUFFER,
+        rlevels: EMPTY_PARQUET_LEVEL_BUFFER,
+        values: [],
+        count: 0,
+        pageHeader
+      };
+    default:
+      throw new Error(`invalid page type: ${pageType}`);
+  }
+}
+
+/** Verifies a page checksum before either the synchronous or asynchronous decode path consumes it. */
+function verifyPageChecksum(
+  cursor: CursorBuffer,
+  pageHeader: PageHeader,
+  pageEnd: number,
+  context: ParquetReaderContext
+): void {
+  if (!context.verifyPageChecksums) return;
+  if (pageEnd > (cursor.size ?? cursor.buffer.length)) {
+    throw new Error('Parquet page extends beyond the available buffer');
+  }
+  if (pageHeader.crc === undefined) return;
+  const expected = pageHeader.crc >>> 0;
+  const actual = crc32(cursor.buffer.subarray(cursor.offset, pageEnd));
+  if (actual !== expected) {
+    throw new Error(`Parquet page checksum mismatch: expected ${expected}, calculated ${actual}`);
+  }
 }
 
 /**
@@ -437,17 +605,15 @@ async function decodeDataPage(
   target?: ParquetPageDecodeTarget
 ): Promise<ParquetPageData> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
-  const valueCount = header.data_page_header?.num_values;
 
   /* uncompress page */
   let dataCursor = cursor;
 
   if (context.compression !== 'UNCOMPRESSED') {
-    const valuesBuf = await decompress(
-      context.compression,
-      cursor.buffer.slice(cursor.offset, cursorEnd),
-      header.uncompressed_page_size
-    );
+    const compressedValues = cursor.buffer.slice(cursor.offset, cursorEnd);
+    const valuesBuf = context.decompressPage
+      ? await context.decompressPage(compressedValues, header.uncompressed_page_size)
+      : await decompress(context.compression, compressedValues, header.uncompressed_page_size);
     dataCursor = {
       buffer: valuesBuf,
       offset: 0,
@@ -455,6 +621,18 @@ async function decodeDataPage(
     };
     cursor.offset = cursorEnd;
   }
+
+  return decodeDataPageValues(dataCursor, header, context, target);
+}
+
+/** Decodes one uncompressed Data Page V1 body without introducing an asynchronous boundary. */
+function decodeDataPageValues(
+  dataCursor: CursorBuffer,
+  header: PageHeader,
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
+): ParquetPageData {
+  const valueCount = header.data_page_header?.num_values;
 
   /* read repetition levels */
   const rLevelEncoding = getThriftEnum(
@@ -506,7 +684,9 @@ async function decodeDataPage(
     output: target?.values,
     outputOffset: target?.valueOffset,
     dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
-    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+    byteArrayOutput: target?.byteArrayOutput,
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+    int96AsTimestamp: context.int96AsTimestamp
   };
 
   const values = decodeValues(
@@ -615,14 +795,125 @@ async function decodeDataPageV2(
   let valuesBuffer = cursor.buffer.subarray(valuesOffset, cursorEnd);
 
   if (dataPageHeader.is_compressed !== false && context.compression !== 'UNCOMPRESSED') {
-    valuesBuffer = await decompress(
-      context.compression,
-      valuesBuffer,
-      valuesUncompressedByteLength
-    );
+    valuesBuffer = context.decompressPage
+      ? await context.decompressPage(valuesBuffer, valuesUncompressedByteLength)
+      : await decompress(context.compression, valuesBuffer, valuesUncompressedByteLength);
   }
-  const valuesBufCursor = {buffer: valuesBuffer, offset: 0, size: valuesBuffer.length};
   cursor.offset = cursorEnd;
+  return decodeDataPageV2Values(
+    valuesBuffer,
+    header,
+    context,
+    target,
+    rLevels,
+    dLevels,
+    valueCount,
+    valueCountNonNull,
+    valueEncoding
+  );
+}
+
+/** Decodes one uncompressed Data Page V2 without awaiting an unused decompressor. */
+function decodeUncompressedDataPageV2(
+  cursor: CursorBuffer,
+  header: PageHeader,
+  context: ParquetReaderContext,
+  target?: ParquetPageDecodeTarget
+): ParquetPageData {
+  const dataPageHeader = header.data_page_header_v2;
+  if (!dataPageHeader) {
+    throw new Error('Missing Parquet data page v2 header');
+  }
+  const cursorEnd = cursor.offset + header.compressed_page_size;
+  const levelsOffset = cursor.offset;
+  const valueCount = dataPageHeader.num_values;
+  const valueCountNonNull = valueCount - dataPageHeader.num_nulls;
+  const valueEncoding = getThriftEnum(Encoding, dataPageHeader.encoding) as ParquetCodec;
+  if (
+    header.compressed_page_size < 0 ||
+    cursorEnd > (cursor.size ?? cursor.buffer.length) ||
+    valueCountNonNull < 0
+  ) {
+    throw new Error('Invalid Parquet data page v2 header');
+  }
+
+  let rLevels: number[] = [];
+  if (context.column.rLevelMax > 0) {
+    const repetitionLevelCursor = createPageSliceCursor(
+      cursor,
+      levelsOffset,
+      dataPageHeader.repetition_levels_byte_length
+    );
+    rLevels = decodeLevels(
+      repetitionLevelCursor,
+      valueCount,
+      context.column.rLevelMax,
+      PARQUET_RDLVL_ENCODING,
+      true,
+      target?.rlevels,
+      target?.levelOffset
+    );
+  } else if (!target) {
+    rLevels = new Array(valueCount).fill(0);
+  }
+
+  const definitionLevelsOffset = levelsOffset + dataPageHeader.repetition_levels_byte_length;
+  let dLevels: number[] = [];
+  if (context.column.dLevelMax > 0) {
+    const definitionLevelCursor = createPageSliceCursor(
+      cursor,
+      definitionLevelsOffset,
+      dataPageHeader.definition_levels_byte_length
+    );
+    dLevels = decodeLevels(
+      definitionLevelCursor,
+      valueCount,
+      context.column.dLevelMax,
+      PARQUET_RDLVL_ENCODING,
+      true,
+      target?.dlevels,
+      target?.levelOffset
+    );
+  } else if (!target) {
+    dLevels = new Array(valueCount).fill(0);
+  }
+
+  const valuesOffset = definitionLevelsOffset + dataPageHeader.definition_levels_byte_length;
+  const valuesUncompressedByteLength =
+    header.uncompressed_page_size -
+    dataPageHeader.repetition_levels_byte_length -
+    dataPageHeader.definition_levels_byte_length;
+  if (valuesOffset > cursorEnd || valuesUncompressedByteLength < 0) {
+    throw new Error('Invalid Parquet data page v2 level lengths');
+  }
+  const valuesBuffer = cursor.buffer.subarray(valuesOffset, cursorEnd);
+  cursor.offset = cursorEnd;
+  return decodeDataPageV2Values(
+    valuesBuffer,
+    header,
+    context,
+    target,
+    rLevels,
+    dLevels,
+    valueCount,
+    valueCountNonNull,
+    valueEncoding
+  );
+}
+
+/** Decodes a prepared Data Page V2 value section without an asynchronous boundary. */
+function decodeDataPageV2Values(
+  valuesBuffer: Uint8Array,
+  header: PageHeader,
+  context: ParquetReaderContext,
+  target: ParquetPageDecodeTarget | undefined,
+  rLevels: number[],
+  dLevels: number[],
+  valueCount: number,
+  valueCountNonNull: number,
+  valueEncoding: ParquetCodec
+): ParquetPageData {
+  const valuesBufCursor = {buffer: valuesBuffer, offset: 0, size: valuesBuffer.length};
 
   const decodeOptions = {
     typeLength: context.column.typeLength,
@@ -631,7 +922,9 @@ async function decodeDataPageV2(
     output: target?.values,
     outputOffset: target?.valueOffset,
     dictionary: isDictionaryEncoding(valueEncoding) ? target?.dictionary : undefined,
-    int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+    byteArrayOutput: target?.byteArrayOutput,
+    int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+    int96AsTimestamp: context.int96AsTimestamp
   };
 
   const values = decodeValues(
@@ -674,12 +967,114 @@ function decodeLevels(
   return output ? [] : levels;
 }
 
+/**
+ * Allocates a compact Arrow-compatible destination for supported uncompressed byte pages.
+ *
+ * Scanning only the small Thrift page headers avoids committing to the fast path when a column
+ * mixes in an encoding that still requires materialized values. The page buffer is a useful
+ * initial capacity; the destination grows for prefix-reconstructed delta values when necessary.
+ */
+function createArrowByteArrayOutput(
+  buffer: Uint8Array,
+  context: ParquetReaderContext,
+  valueCapacity: number
+): ParquetByteArrayOutput | undefined {
+  if (
+    !context.useArrowByteArrayBuffers ||
+    context.compression !== 'UNCOMPRESSED' ||
+    !supportsArrowByteArrayOutput(context.column) ||
+    valueCapacity === 0
+  ) {
+    return undefined;
+  }
+  if (
+    !context.hasOnlyArrowByteArrayDataPages &&
+    !hasOnlyArrowByteArrayDataPages(buffer, valueCapacity)
+  ) {
+    return undefined;
+  }
+  return {
+    data:
+      context.column.primitiveType === 'FIXED_LEN_BYTE_ARRAY'
+        ? new Uint8Array(0)
+        : new Uint8Array(Math.max(1, buffer.byteLength)),
+    valueOffsets: new Int32Array(valueCapacity + 1),
+    byteLength: 0
+  };
+}
+
+/** Returns whether a BYTE_ARRAY field maps directly to Arrow Utf8 or Binary without conversion. */
+function supportsArrowByteArrayOutput(column: ParquetReaderContext['column']): boolean {
+  if (column.primitiveType !== 'BYTE_ARRAY' && column.primitiveType !== 'FIXED_LEN_BYTE_ARRAY') {
+    return false;
+  }
+  if (column.logicalType) {
+    return (
+      column.logicalType.type === 'STRING' ||
+      column.logicalType.type === 'ENUM' ||
+      column.logicalType.type === 'JSON' ||
+      column.logicalType.type === 'BSON' ||
+      column.logicalType.type === 'VARIANT' ||
+      column.logicalType.type === 'GEOMETRY' ||
+      column.logicalType.type === 'GEOGRAPHY'
+    );
+  }
+  return (
+    !column.originalType ||
+    column.originalType === 'UTF8' ||
+    column.originalType === 'ENUM' ||
+    column.originalType === 'JSON' ||
+    column.originalType === 'BSON' ||
+    column.originalType === 'INTERVAL'
+  );
+}
+
+/** Returns whether a complete column buffer contains only direct Arrow byte-array data pages. */
+function hasOnlyArrowByteArrayDataPages(buffer: Uint8Array, expectedLevelCount: number): boolean {
+  let offset = 0;
+  let levelCount = 0;
+  while (offset < buffer.byteLength && levelCount < expectedLevelCount) {
+    const {pageHeader, length} = decodePageHeader(buffer, offset);
+    const pageType = getThriftEnum(PageType, pageHeader.type);
+    if (pageType !== 'DATA_PAGE' && pageType !== 'DATA_PAGE_V2') {
+      return false;
+    }
+    const encoding = getThriftEnum(
+      Encoding,
+      pageHeader.data_page_header?.encoding ?? pageHeader.data_page_header_v2?.encoding!
+    );
+    if (
+      encoding !== 'PLAIN' &&
+      encoding !== 'DELTA_LENGTH_BYTE_ARRAY' &&
+      encoding !== 'DELTA_BYTE_ARRAY'
+    ) {
+      return false;
+    }
+    const valueCount =
+      pageHeader.data_page_header?.num_values ?? pageHeader.data_page_header_v2?.num_values;
+    if (valueCount === undefined || valueCount < 0) {
+      return false;
+    }
+    levelCount += valueCount;
+    offset += length + pageHeader.compressed_page_size;
+    if (offset > buffer.byteLength) {
+      return false;
+    }
+  }
+  return levelCount === expectedLevelCount;
+}
+
 /** Allocates compact unsigned storage for repetition and definition levels. */
 function createParquetLevelBuffer(
   context: ParquetReaderContext,
   capacity: number,
   levelMax: number
 ): ParquetLevelBuffer {
+  if (context.useTypedLevelBuffers && levelMax === 0) {
+    // Required flat columns have no encoded levels. Avoid allocating two row-sized zero buffers
+    // that neither direct Arrow construction nor level decoding will inspect.
+    return EMPTY_PARQUET_LEVEL_BUFFER;
+  }
   if (!context.useTypedLevelBuffers || capacity === 0) {
     return levelMax > 0 ? new Array<number>(capacity) : new Array<number>(capacity).fill(0);
   }
@@ -698,6 +1093,7 @@ function trimParquetLevelBuffer(levels: ParquetLevelBuffer, length: number): Par
     levels.length = length;
     return levels;
   }
+  if (levels.length === 0 || levels.length === length) return levels;
   return levels.subarray(0, length) as ParquetLevelBuffer;
 }
 
@@ -727,6 +1123,7 @@ function createParquetColumnValueBuffer(
     case 'INT64':
       return new BigInt64Array(capacity);
     case 'INT96':
+      return context.int96AsTimestamp ? new BigInt64Array(capacity) : new Float64Array(capacity);
     case 'DOUBLE':
       return new Float64Array(capacity);
     case 'FLOAT':
@@ -792,11 +1189,10 @@ async function decodeDictionaryPage(
   cursor.offset = cursorEnd;
 
   if (context.compression !== 'UNCOMPRESSED') {
-    const valuesBuf = await decompress(
-      context.compression,
-      dictCursor.buffer.subarray(dictCursor.offset),
-      pageHeader.uncompressed_page_size
-    );
+    const compressedValues = dictCursor.buffer.subarray(dictCursor.offset);
+    const valuesBuf = context.decompressPage
+      ? await context.decompressPage(compressedValues, pageHeader.uncompressed_page_size)
+      : await decompress(context.compression, compressedValues, pageHeader.uncompressed_page_size);
 
     dictCursor = {
       buffer: valuesBuf,
@@ -807,6 +1203,34 @@ async function decodeDictionaryPage(
     cursor.offset = cursorEnd;
   }
 
+  return decodeDictionaryValues(dictCursor, pageHeader, context);
+}
+
+/** Decodes an uncompressed dictionary page directly from a view of the column chunk. */
+function decodeUncompressedDictionaryPage(
+  cursor: CursorBuffer,
+  pageHeader: PageHeader,
+  context: ParquetReaderContext
+): (string | ArrayBuffer)[] {
+  const cursorEnd = cursor.offset + pageHeader.compressed_page_size;
+  if (cursorEnd > (cursor.size ?? cursor.buffer.length)) {
+    throw new Error('Parquet dictionary page exceeds the available buffer');
+  }
+  const dictionaryCursor: CursorBuffer = {
+    buffer: cursor.buffer.subarray(cursor.offset, cursorEnd),
+    offset: 0,
+    size: pageHeader.compressed_page_size
+  };
+  cursor.offset = cursorEnd;
+  return decodeDictionaryValues(dictionaryCursor, pageHeader, context);
+}
+
+/** Decodes one dictionary body from its current cursor without copying uncompressed page bytes. */
+function decodeDictionaryValues(
+  dictionaryCursor: CursorBuffer,
+  pageHeader: PageHeader,
+  context: ParquetReaderContext
+): (string | ArrayBuffer)[] {
   const numValues = pageHeader?.dictionary_page_header?.num_values || 0;
   const declaredEncoding = getThriftEnum(
     Encoding,
@@ -822,12 +1246,13 @@ async function decodeDictionaryPage(
   const decodedDictionaryValues = decodeValues(
     context.column.primitiveType!,
     dictionaryValueEncoding,
-    dictCursor,
+    dictionaryCursor,
     numValues,
     {
       ...context,
       typeLength: context.column.typeLength,
-      int64AsBigInt: shouldDecodeInt64AsBigInt(context)
+      int64AsBigInt: shouldDecodeInt64AsBigInt(context),
+      int96AsTimestamp: context.int96AsTimestamp
     } as ParquetCodecOptions
   );
 

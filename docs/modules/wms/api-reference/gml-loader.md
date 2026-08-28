@@ -37,7 +37,22 @@ const data = await load(url, GMLLoader, options);
 
 ## Parsed Data Format
 
-The `GMLLoader` only supports parsing the standard geospatial subset of features (points, multipoints, lines, linestrings, polygons and multipolygons), on a "best effort" basis. Because of this, the `GMLLoader` is treated as a geospatial loader and can return GeoJSON style output.
+The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines, linestrings, polygons and multipolygons), and GML `FeatureCollection` documents are returned as GeoJSON-style feature collections with feature IDs and properties.
+
+For large WFS responses, the parser-bearing loader also supports incremental feature batches:
+
+```typescript
+import {GMLLoader} from '@loaders.gl/wms/bundled';
+
+for await (const batch of GMLLoader.parseInBatches!(response.body as any, {
+  gml: {batchSize: 500}
+})) {
+  renderFeatures(batch.features);
+}
+```
+
+The streaming path emits complete `featureMember` elements as soon as they are available and keeps
+the final incomplete fragment buffered until the response ends.
 
 ## Options
 

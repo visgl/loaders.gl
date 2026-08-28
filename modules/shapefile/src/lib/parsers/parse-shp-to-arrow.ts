@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, Field} from '@loaders.gl/schema';
+import {makeTableScanBatch} from '@loaders.gl/loader-utils';
 import {
   type GeoParquetGeometryType,
   makeWKBGeometryField,
@@ -56,13 +57,7 @@ export async function* parseSHPToArrowInBatches(
     const schema = buildOutputSchema(header);
     const arrowTable = makeWKBGeometryArrowTable(geometries, schema);
     yieldedDataBatch = true;
-    yield {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowTable.data.numRows,
-      schema: arrowTable.schema,
-      data: arrowTable.data
-    };
+    yield makeTableScanBatch(arrowTable);
   }
 
   if (!yieldedDataBatch) {
@@ -136,11 +131,5 @@ function makeEmptyArrowBatch(schema: ArrowTable['schema']): ArrowTableBatch {
     throw new Error('SHP Arrow batch requires a schema');
   }
   const table = new ArrowTableBuilder(schema).finishTable();
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 0,
-    schema,
-    data: table.data
-  };
+  return makeTableScanBatch({...table, schema});
 }

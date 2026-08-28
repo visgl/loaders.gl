@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-
 import {fetchFile, load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
@@ -13,44 +12,32 @@ import * as kml from '@loaders.gl/kml';
 import * as bundledKml from '@loaders.gl/kml/bundled';
 import * as unbundledKml from '@loaders.gl/kml/unbundled';
 import type {ArrowTable, Feature, Geometry} from '@loaders.gl/schema';
-
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/kml/test/data/kml/linestring';
-
-test('KMLLoader#loader conformance', t => {
-  validateLoader(t, KMLLoader, 'KMLLoader');
-  t.end();
+test('KMLLoader#loader conformance', () => {
+  validateLoader(KMLLoader, 'KMLLoader');
 });
-
-test('KMLLoader#removed Arrow loader exports', t => {
-  t.notOk('KMLArrowLoader' in kml, 'root does not export KMLArrowLoader');
-  t.notOk('KMLArrowLoader' in bundledKml, 'bundled does not export KMLArrowLoader');
-  t.notOk('KMLArrowLoader' in unbundledKml, 'unbundled does not export KMLArrowLoader');
-  t.end();
+test('KMLLoader#removed Arrow loader exports', () => {
+  expect('KMLArrowLoader' in kml, 'root does not export KMLArrowLoader').toBeFalsy();
+  expect('KMLArrowLoader' in bundledKml, 'bundled does not export KMLArrowLoader').toBeFalsy();
+  expect('KMLArrowLoader' in unbundledKml, 'unbundled does not export KMLArrowLoader').toBeFalsy();
 });
-
-test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow-table', async t => {
+test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow-table', async () => {
   const arrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const expectedFeatures = await loadKMLFeatures(KML_URL);
-
-  t.equal(arrowTable.shape, 'arrow-table', 'shape is arrow-table');
-  t.equal(
-    arrowTable.data.numRows,
-    expectedFeatures.length,
-    'Arrow row count matches KML feature count'
+  expect(arrowTable.shape, 'shape is arrow-table').toBe('arrow-table');
+  expect(arrowTable.data.numRows, 'Arrow row count matches KML feature count').toBe(
+    expectedFeatures.length
   );
-  t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
-  t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
-  t.deepEqual(
+  expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
+  expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses WKB encoding').toBe('wkb');
+  expect(
     geoMetadata?.columns.geometry.geometry_types,
-    inferExpectedGeometryTypes(expectedFeatures),
     'geo metadata geometry types match mixed KML feature types'
-  );
-  t.end();
+  ).toEqual(inferExpectedGeometryTypes(expectedFeatures));
 });
-
-test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', async t => {
+test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', async () => {
   const arrowTable = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
     kml: {shape: 'arrow-table'}
   });
@@ -58,18 +45,12 @@ test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', 
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
     arrowTable.schema!
   );
-
   const response = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
   const expected = await response.json();
-
-  t.deepEqual(
-    roundTripped.features,
-    expected.features,
-    'Arrow linestring matches expected GeoJSON'
+  expect(roundTripped.features, 'Arrow linestring matches expected GeoJSON').toEqual(
+    expected.features
   );
-  t.end();
 });
-
 /**
  * Loads KML features through the classic KML loader for comparison.
  *
@@ -80,7 +61,6 @@ async function loadKMLFeatures(url: string): Promise<Feature[]> {
   const table = await load(url, KMLLoader, {kml: {shape: 'geojson-table'}});
   return table.shape === 'geojson-table' ? table.features : [];
 }
-
 /**
  * Reads Arrow rows as plain objects so they can be passed to WKB conversion helpers.
  *
@@ -95,7 +75,6 @@ function getRowsFromArrowTable(table: ArrowTable): Record<string, unknown>[] {
   }
   return rows;
 }
-
 /**
  * Infers expected GeoParquet geometry type strings from classic GeoJSON features.
  *
@@ -113,7 +92,6 @@ function inferExpectedGeometryTypes(features: Feature[]): string[] {
   }
   return [...geometryTypes];
 }
-
 /**
  * Returns the coordinate dimensionality of one representative geometry coordinate tuple.
  *
@@ -132,7 +110,6 @@ function getCoordinateDimensions(coordinates: unknown): number {
   }
   return getCoordinateDimensions(coordinates[0]);
 }
-
 /**
  * Extracts one representative coordinate payload from a geometry.
  *
@@ -148,7 +125,6 @@ function getGeometrySampleCoordinates(geometry: Geometry): unknown {
   }
   return undefined;
 }
-
 /**
  * Ensures the geometry column is represented as a typed byte array for WKB conversion helpers.
  *
@@ -162,7 +138,6 @@ function normalizeBinaryGeometryRow(row: Record<string, unknown>): Record<string
   }
   return row;
 }
-
 /**
  * Returns true when a value is a plain object containing numeric keys for byte values.
  *

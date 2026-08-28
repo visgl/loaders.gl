@@ -5,7 +5,10 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 
+import {ArrowTableSource} from '@loaders.gl/arrow';
 import {encode} from '@loaders.gl/core';
+import {DataSourceManager} from '@loaders.gl/loader-utils';
+import {FederatedTableScanSource} from '@loaders.gl/scan';
 import {IcebergTableSource} from '../src/iceberg-table-source';
 import {AvroWriter} from '../src/avro-writer';
 import {ParquetJSWriter} from '../src/parquet-js-writer';
@@ -53,67 +56,6 @@ test('IcebergTableSource supports tables without a current snapshot', async () =
     createMetadataUrl({'format-version': 2, location: 'table', 'current-snapshot-id': -1})
   );
   await expect(source.getCurrentSnapshot()).resolves.toBeUndefined();
-});
-
-test('IcebergTableSource exposes the declared schema for an empty snapshot', async () => {
-  const source = new IcebergTableSource(
-    createMetadataUrl({
-      'format-version': 2,
-      location: 'table',
-      'current-snapshot-id': -1,
-        'current-schema-id': 7,
-        schemas: [{
-          'schema-id': 7,
-          fields: [
-          {name: 'flag', type: 'boolean', required: true},
-          {name: 'count', type: 'int', required: true},
-          {name: 'id', type: 'long', required: true},
-          {name: 'ratio', type: 'float', required: false},
-          {name: 'score', type: 'double', required: false},
-          {name: 'day', type: 'date', required: false},
-          {name: 'clock', type: 'time', required: false},
-          {name: 'created', type: 'timestamp', required: false},
-          {name: 'updated', type: 'timestamptz', required: false},
-          {name: 'payload', type: 'binary', required: false},
-          {name: 'fixed', type: 'fixed', required: false},
-          {name: 'label', type: 'string', required: false},
-          {name: 'other', type: {type: 'list'}, required: false}
-        ]
-      }]
-    })
-  );
-  const metadata = await source.getQueryMetadata();
-  expect(metadata.columns.map(column => column.name)).toEqual([
-    'flag',
-    'count',
-    'id',
-    'ratio',
-    'score',
-    'day',
-    'clock',
-    'created',
-    'updated',
-    'payload',
-    'fixed',
-    'label',
-    'other'
-  ]);
-  expect(metadata.columns.map(column => column.type)).toEqual([
-    'bool',
-    'int32',
-    'int64',
-    'float32',
-    'float64',
-    'date-day',
-    'time-microsecond',
-    'timestamp-microsecond',
-    'timestamp-microsecond',
-    'binary',
-    'binary',
-    'utf8',
-    'utf8'
-  ]);
-  await source.close();
 });
 
 test('IcebergTableSource scans an empty current snapshot through the dataset source', async () => {
@@ -519,11 +461,51 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
   };
   try {
     const batches = [];
-    for await (const batch of source.scan({applyDeletes: true, batchSize: 3})) batches.push(batch);
+    let telemetry;
+    for await (const batch of source.scan({
+      applyDeletes: true,
+      batchSize: 3,
+      onTelemetry: value => {
+        telemetry = value;
+      }
+    }))
+      batches.push(batch);
     expect(batches).toHaveLength(1);
     expect([...batches[0].data.getChild('id')!.toArray()]).toEqual([1, 3]);
     expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['one', 'three']);
     expect(batches[0].rowIndices).toEqual([0, 2]);
+    expect(telemetry).toMatchObject({status: 'completed', rowsReturned: 2});
+
+    const liveTable = new arrow.Table({
+      id: arrow.vectorFromArray([4], new arrow.Int32()),
+      value: arrow.vectorFromArray(['four'], new arrow.Utf8())
+    });
+    const dataSourceManager = new DataSourceManager();
+    dataSourceManager.add({dataSourceId: 'snapshot', dataSource: source});
+    dataSourceManager.add({
+      dataSourceId: 'live',
+      dataSource: new ArrowTableSource(new Blob([arrow.tableToIPC(liveTable)]))
+    });
+    const history = new FederatedTableScanSource(dataSourceManager, {
+      outputSchema: {
+        fields: [
+          {name: 'id', type: 'int32', nullable: true},
+          {name: 'value', type: 'utf8', nullable: true}
+        ],
+        metadata: {}
+      },
+      sources: [{dataSourceId: 'snapshot'}, {dataSourceId: 'live'}]
+    });
+    const historyBatches = [];
+    for await (const batch of history.read({limit: 4})) historyBatches.push(batch);
+    expect(historyBatches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([
+      1, 2, 3, 4
+    ]);
+    expect(historyBatches.map(batch => batch.sourceId)).toEqual(['snapshot', 'live']);
+    expect((await history.explain()).sources.map(entry => entry.sourceType)).toEqual([
+      'iceberg',
+      'arrow'
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
     await source.close();

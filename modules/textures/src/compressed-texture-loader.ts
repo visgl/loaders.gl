@@ -5,16 +5,18 @@
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {CompressedTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
+import type {BasisLoaderOptions} from './basis-types';
 
 /** Options for the CompressedTextureLoader */
-export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
-  'compressed-texture'?: {
-    /** Whether to use Basis decoding */
-    useBasis?: boolean;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
+export type CompressedTextureLoaderOptions = StrictLoaderOptions &
+  Pick<BasisLoaderOptions, 'basis'> & {
+    'compressed-texture'?: {
+      /** Whether to use Basis decoding */
+      useBasis?: boolean;
+      /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+      workerUrl?: string;
+    };
   };
-};
 
 /** Preloads the parser-bearing compressed texture loader implementation. */
 async function preload() {
@@ -54,6 +56,10 @@ export const CompressedTextureWorkerLoader = {
   options: {
     'compressed-texture': {
       useBasis: false
+    },
+    basis: {
+      format: 'auto',
+      containerFormat: 'auto'
     }
   },
   preload

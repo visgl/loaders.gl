@@ -2,38 +2,101 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
-import {SourceLayer, type SourceLayerProps} from '@loaders.gl/deck-layers';
+import {expect, test} from 'vitest';
+import {SourceLayer} from '@loaders.gl/deck-layers';
+import {createSourceViewState, getSourceCoordinateReferenceSystem} from '../src/source-layer-utils';
 
 const TEST_3D_LOADER = {
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
-  version: '0.0.0'
+  version: '1.0.0',
+  extensions: ['json'],
+  mimeTypes: ['application/json']
 };
 
-/** Creates a source dispatcher without requiring a deck.gl rendering context. */
-function createSourceLayer(props: SourceLayerProps): SourceLayer {
-  return new SourceLayer(props as any);
-}
-
-test('SourceLayer#preserves URL inputs for browser 3D loader dispatch', t => {
+test('SourceLayer preserves URL inputs for parser-backed 3D dispatch', () => {
   const tilesetUrl = 'https://example.com/tileset.json';
-  const layer = createSourceLayer({
+  const layer = new SourceLayer({
     id: 'tiles-3d',
     data: tilesetUrl,
     loaders: [TEST_3D_LOADER as any]
+  }) as any;
+
+  expect(layer.props.data).toBe(tilesetUrl);
+  layer.initializeState();
+  layer.state = {
+    resolvedSource: {
+      source: tilesetUrl,
+      sourceType: 'tile-3d',
+      parserLoaders: [TEST_3D_LOADER],
+      owned: false
+    },
+    metadata: null,
+    resolvedLayers: undefined,
+    resolvedCoordinateReferenceSystem: undefined,
+    isResolving: false
+  };
+  const childLayer = layer.renderLayers()[0];
+
+  expect(childLayer.constructor.layerName).toBe('Tile3DSourceLayer');
+  expect(childLayer.id).toBe('tiles-3d-tile-3d');
+  expect(childLayer.props.data).toBe(tilesetUrl);
+  expect(childLayer.props.loaders).toEqual([TEST_3D_LOADER]);
+});
+
+test('source metadata discovery follows the first leaf and supports PROJJSON CRS identifiers', async () => {
+  const metadata = {
+    layers: [
+      {
+        name: 'group',
+        layers: [
+          {title: 'unnamed leaf', boundingBox: [-20, -10, 20, 10]},
+          {name: 'first-leaf', boundingBox: [0, 0, 1, 1]}
+        ]
+      }
+    ],
+    crs: {id: {authority: 'EPSG', code: 3857}}
+  };
+
+  const viewState = await createSourceViewState({}, metadata);
+
+  expect(getSourceCoordinateReferenceSystem(metadata)).toBe('EPSG:3857');
+  expect(viewState).toMatchObject({
+    bounds: [
+      [0, 0],
+      [1, 1]
+    ],
+    longitude: 0.5,
+    latitude: 0.5,
+    crs: 'EPSG:3857'
   });
+});
 
-  t.equal(layer.props.data, tilesetUrl, 'data is not replaced by deck.gl async prop handling');
+test('SourceLayer keeps an explicitly empty layer selection', () => {
+  const layer = new SourceLayer({
+    id: 'explicit-empty-layers',
+    data: {
+      getMetadata: async () => ({layers: [{name: 'discovered'}]}),
+      getSchema: async () => ({fields: [], metadata: {}}),
+      getFeatures: async () => ({shape: 'geojson-table', type: 'FeatureCollection', features: []})
+    } as any,
+    layers: []
+  }) as any;
 
-  const resolvedData = (layer as any)._resolveData(layer.props);
-  (layer as any).state = {resolvedData};
-  const renderedLayers = layer.renderLayers() as any[];
+  layer.initializeState();
+  layer.state = {
+    resolvedSource: {
+      source: layer.props.data,
+      sourceType: 'vector',
+      parserLoaders: [],
+      owned: false
+    },
+    metadata: {layers: [{name: 'discovered'}]},
+    resolvedLayers: [],
+    resolvedCoordinateReferenceSystem: undefined,
+    isResolving: false
+  };
 
-  t.equal(resolvedData, tilesetUrl, 'URL is retained for the 3D child layer');
-  t.equal(renderedLayers[0].constructor.layerName, 'Tile3DSourceLayer');
-  t.equal(renderedLayers[0].id, 'tiles-3d-tiles-3d', 'child layer has a unique sublayer id');
-  t.equal(renderedLayers[0].props.loaders[0], TEST_3D_LOADER);
-  t.end();
+  expect(layer.renderLayers()[0].props.layers).toEqual([]);
 });

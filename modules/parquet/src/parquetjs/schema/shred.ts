@@ -8,6 +8,7 @@ import {ArrayType} from '@loaders.gl/schema';
 import {ParquetRowGroup, ParquetColumnChunk, ParquetField, ParquetRow} from './declare';
 import {ParquetSchema} from './schema';
 import * as Types from './types';
+import {decodeVariant} from './variant';
 
 export {ParquetRowGroup};
 
@@ -218,7 +219,109 @@ export function materializeRows(schema: ParquetSchema, rowGroup: ParquetRowGroup
       materializeColumnAsRows(schema, columnData, key, rows);
     }
   }
+  decodeVariantFields(schema.fields, rows);
   return rows;
+}
+
+/** Decodes complete unshredded VARIANT groups after their binary child columns are materialized. */
+function decodeVariantFields(fields: Record<string, ParquetField>, records: unknown[]): void {
+  for (const field of Object.values(fields)) {
+    if (field.logicalType?.type === 'VARIANT') {
+      for (const record of records) {
+        if (record && typeof record === 'object') {
+          const row = record as Record<string, unknown>;
+          if (Object.prototype.hasOwnProperty.call(row, field.name)) {
+            row[field.name] = decodeVariantRecord(row[field.name], field);
+          }
+        }
+      }
+    } else if (field.fields) {
+      for (const record of records) {
+        if (record && typeof record === 'object') {
+          decodeVariantFields(field.fields, getNestedRecords(record, field.name));
+        }
+      }
+    }
+  }
+}
+
+/** Recursively decodes one materialized Variant group, preserving shredded values as records. */
+function decodeVariantRecord(value: unknown, field?: ParquetField): unknown {
+  if (Array.isArray(value)) {
+    return value.map(item => decodeVariantRecord(item, field));
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  const metadata = record.metadata;
+  const variantValue = record.value;
+  if (isByteArray(metadata) && isByteArray(variantValue)) {
+    return decodeVariant(metadata, variantValue);
+  }
+  // Shredded Variant encodings may materialize the typed_value child directly while
+  // omitting the unshredded metadata/value pair. Preserve that typed representation as
+  // the logical value instead of leaking the physical wrapper into object rows.
+  if (Object.prototype.hasOwnProperty.call(record, 'typed_value')) {
+    return decodeShreddedVariantValue(record.typed_value, field?.fields?.typed_value);
+  }
+  return value;
+}
+
+/** Collapses a declared one-field typed-value union used by shredded Variant layouts. */
+function decodeShreddedVariantValue(value: unknown, field?: ParquetField): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).filter(key => record[key] !== undefined);
+  if (keys.length === 1 && isVariantTypedValueField(field?.fields?.[keys[0]])) {
+    return decodeShreddedVariantValue(record[keys[0]], field?.fields?.[keys[0]]);
+  }
+  return value;
+}
+
+/** Identifies the declared members of the Parquet Variant typed-value union. */
+function isVariantTypedValueField(field: ParquetField | undefined): boolean {
+  return Boolean(field && VARIANT_TYPED_VALUE_FIELD_NAMES.has(field.name));
+}
+
+const VARIANT_TYPED_VALUE_FIELD_NAMES = new Set([
+  'null_value',
+  'boolean_value',
+  'int8_value',
+  'int16_value',
+  'int32_value',
+  'int64_value',
+  'uint8_value',
+  'uint16_value',
+  'uint32_value',
+  'uint64_value',
+  'float16_value',
+  'float32_value',
+  'float64_value',
+  'decimal4_value',
+  'decimal8_value',
+  'decimal16_value',
+  'string_value',
+  'blob_value',
+  'date_value',
+  'timestamp_millis_value',
+  'timestamp_micros_value',
+  'timestamp_nanos_value',
+  'object_value',
+  'array_value'
+]);
+
+/** Finds nested records while preserving repeated group values. */
+function getNestedRecords(record: object, fieldName: string): unknown[] {
+  const value = Reflect.get(record, fieldName);
+  return Array.isArray(value) ? value : value && typeof value === 'object' ? [value] : [];
+}
+
+/** Identifies binary values emitted by Parquet primitive materialization. */
+function isByteArray(value: unknown): value is ArrayBuffer | ArrayBufferView {
+  return value instanceof ArrayBuffer || ArrayBuffer.isView(value);
 }
 
 /** Populate record fields for one column */
@@ -244,13 +347,20 @@ function materializeColumnAsRows(
   const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
   let vIndex = 0;
   for (let i = 0; i < columnData.count; i++) {
-    const dLevel = columnData.dlevels[i];
-    const rLevel = columnData.rlevels[i];
+    // Zero maximum levels are implicit and may use allocation-free empty buffers. Preserve both
+    // fallbacks: required nested scalars still need dLevel === 0 to materialize their leaf value.
+    const dLevel = columnData.dlevels[i] ?? 0;
+    const rLevel = columnData.rlevels[i] ?? 0;
     rLevels[rLevel]++;
     rLevels.fill(0, rLevel + 1);
 
     let rIndex = 0;
     let record = rows[rLevels[rIndex++] - 1];
+    if (!record) {
+      throw new Error(
+        `Parquet column ${key} referenced row ${rLevels[0] - 1} of ${rows.length} at value ${i} (rLevel ${rLevel}, dLevel ${dLevel})`
+      );
+    }
 
     // Internal nodes - Build a nested row object
     for (const step of branch) {
@@ -280,7 +390,7 @@ function materializeColumnAsRows(
 
     // Leaf node - Add the value
     if (dLevel === field.dLevelMax) {
-      const primitiveValue = columnData.values[vIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, vIndex);
       const value = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
       vIndex++;
 
@@ -318,14 +428,24 @@ function materializeFlatColumnAsRows(
 
   if (field.repetitionType === 'REQUIRED' && !fromPrimitive) {
     for (let rowIndex = 0; rowIndex < count; rowIndex++) {
-      rows[rowIndex][field.name] = columnData.values[rowIndex];
+      rows[rowIndex][field.name] = getDecodedColumnValue(columnData, rowIndex);
+    }
+    return;
+  }
+
+  if (field.repetitionType === 'REQUIRED') {
+    for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+      rows[rowIndex][field.name] = fromPrimitive!(
+        getDecodedColumnValue(columnData, rowIndex),
+        field
+      );
     }
     return;
   }
 
   for (let rowIndex = 0; rowIndex < count; rowIndex++) {
     if (columnData.dlevels[rowIndex] === field.dLevelMax) {
-      const primitiveValue = columnData.values[valueIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, valueIndex);
       rows[rowIndex][field.name] = fromPrimitive
         ? fromPrimitive(primitiveValue, field)
         : primitiveValue;
@@ -498,7 +618,7 @@ function materializeColumnAsColumnarArray(
       const value = Types.fromPrimitive(
         // @ts-ignore
         field.originalType || field.primitiveType,
-        columnData.values[vIndex],
+        getDecodedColumnValue(columnData, vIndex),
         field
       );
       vIndex++;
@@ -550,14 +670,34 @@ function materializeFlatColumn(
     return columnData.values;
   }
 
+  if (field.repetitionType === 'REQUIRED') {
+    const column = new Array(rowCount).fill(null);
+    for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+      column[rowIndex] = fromPrimitive
+        ? fromPrimitive(getDecodedColumnValue(columnData, rowIndex), field)
+        : getDecodedColumnValue(columnData, rowIndex);
+    }
+    return column;
+  }
+
   const column = new Array(rowCount).fill(null);
   let valueIndex = 0;
   for (let rowIndex = 0; rowIndex < count; rowIndex++) {
     if (columnData.dlevels[rowIndex] === field.dLevelMax) {
-      const primitiveValue = columnData.values[valueIndex];
+      const primitiveValue = getDecodedColumnValue(columnData, valueIndex);
       column[rowIndex] = fromPrimitive ? fromPrimitive(primitiveValue, field) : primitiveValue;
       valueIndex++;
     }
   }
   return column;
+}
+
+/** Returns one compact byte value or one value from the decoder's conventional destination. */
+function getDecodedColumnValue(columnData: ParquetColumnChunk, valueIndex: number): unknown {
+  const byteArrayData = columnData.byteArrayData;
+  if (!byteArrayData) return columnData.values[valueIndex];
+  return byteArrayData.data.subarray(
+    byteArrayData.valueOffsets[valueIndex],
+    byteArrayData.valueOffsets[valueIndex + 1]
+  );
 }

@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
-
+import {expect, test} from 'vitest';
 import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/geoarrow';
-
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('ArrowUtils#updateBoundsFromGeoArrowSamples', t => {
+test('ArrowUtils#updateBoundsFromGeoArrowSamples', () => {
   const testCases = [
     {
       coords: [0, 0, 1, 1, 2, 2],
@@ -34,17 +28,14 @@ test('ArrowUtils#updateBoundsFromGeoArrowSamples', t => {
       boundSample2: [0, 0, 4, 4]
     }
   ];
-
   testCases.forEach(testCase => {
     const initBound: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
-
     const updatedBound = updateBoundsFromGeoArrowSamples(
       new Float64Array(testCase.coords),
       testCase.nDim,
       initBound
     );
-    t.deepEqual(updatedBound, testCase.bound, 'bounds updated correctly');
-
+    expect(updatedBound, 'bounds updated correctly').toEqual(testCase.bound);
     const sampleSize = 2;
     const updateBoundWith2Samples = updateBoundsFromGeoArrowSamples(
       new Float64Array(testCase.coords),
@@ -52,11 +43,8 @@ test('ArrowUtils#updateBoundsFromGeoArrowSamples', t => {
       initBound,
       sampleSize
     );
-    t.deepEqual(
-      updateBoundWith2Samples,
-      testCase.boundSample2,
-      'bounds updated correctly with 2 samples'
+    expect(updateBoundWith2Samples, 'bounds updated correctly with 2 samples').toEqual(
+      testCase.boundSample2
     );
   });
-  t.end();
 });

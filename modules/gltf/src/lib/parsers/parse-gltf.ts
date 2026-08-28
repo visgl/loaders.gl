@@ -12,7 +12,7 @@ import type {ParseGLBOptions} from './parse-glb';
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader} from '@loaders.gl/images';
-import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
+import {BasisLoader} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
@@ -24,7 +24,7 @@ import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
-  normalize?: boolean;
+  normalize?: boolean | 'best-effort' | 'strict';
   loadImages?: boolean;
   /** Load linked and embedded buffers; required for meshopt decompression. @default true */
   loadBuffers?: boolean;
@@ -41,7 +41,7 @@ export type ParseGLTFOptions = ParseGLBOptions & {
 
 /**
  * Creates options for parsing an image referenced by a glTF asset.
- * Resolves automatic Basis format selection before the image is delegated to a worker.
+ * Preserves automatic Basis format selection until the worker can inspect the source codec.
  * @param options - glTF loader options.
  * @param mimeType - MIME type declared by the glTF image.
  * @returns Loader options for the referenced image.
@@ -51,18 +51,10 @@ export function getGLTFImageOptions(
   mimeType?: string
 ): GLTFLoaderOptions {
   const basisOptions = options.basis;
-  const basisFormat = basisOptions?.format;
-
   return {
     ...options,
     core: {...options.core, mimeType},
-    basis: {
-      ...basisOptions,
-      format:
-        basisFormat && basisFormat !== 'auto'
-          ? basisFormat
-          : selectSupportedBasisFormat(basisOptions?.supportedTextureFormats)
-    }
+    basis: {...basisOptions, format: basisOptions?.format || 'auto'}
   };
 }
 

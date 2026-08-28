@@ -8,6 +8,7 @@
 import type {PrimitiveType} from '../schema/declare';
 import {
   getParquetValueOutput,
+  reserveParquetByteArrayOutput,
   type CursorBuffer,
   type ParquetCodecOptions,
   type ParquetValueBuffer
@@ -24,10 +25,18 @@ import {
   writeUInt32LE
 } from '../utils/binary-utils';
 
+const JULIAN_DAY_UNIX_EPOCH = 2440588n;
+const NANOSECONDS_PER_DAY = 86_400_000_000_000n;
+const INT64_MIN = -(1n << 63n);
+const INT64_MAX = (1n << 63n) - 1n;
+const IS_LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+/** Largest byte value copied inline to avoid a temporary TypedArray view. */
+const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
+
 export function encodeValues(
   type: PrimitiveType,
   values: any[],
-  opts: ParquetCodecOptions
+  opts: ParquetCodecOptions = {}
 ): Uint8Array {
   switch (type) {
     case 'BOOLEAN':
@@ -37,7 +46,7 @@ export function encodeValues(
     case 'INT64':
       return encodeValues_INT64(values);
     case 'INT96':
-      return encodeValues_INT96(values);
+      return encodeValues_INT96(values, opts.int96AsTimestamp);
     case 'FLOAT':
       return encodeValues_FLOAT(values);
     case 'DOUBLE':
@@ -118,6 +127,9 @@ function decodeValues_INT32(
   options: ParquetCodecOptions
 ): ParquetValueBuffer {
   const {output, outputOffset} = getParquetValueOutput(options, count);
+  if (output instanceof Int32Array && copyPlainTypedValues(cursor, output, outputOffset, count)) {
+    return output;
+  }
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     output[outputOffset + i] = dataView.getInt32(cursor.offset, true);
@@ -140,6 +152,13 @@ function decodeValues_INT64(
   options: ParquetCodecOptions
 ): ParquetValueBuffer {
   const {output, outputOffset} = getParquetValueOutput(options, count);
+  if (
+    options.int64AsBigInt &&
+    output instanceof BigInt64Array &&
+    copyPlainTypedValues(cursor, output, outputOffset, count)
+  ) {
+    return output;
+  }
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     const value = dataView.getBigInt64(cursor.offset, true);
@@ -149,13 +168,34 @@ function decodeValues_INT64(
   return output;
 }
 
-function encodeValues_INT96(values: number[]): Uint8Array {
+function encodeValues_INT96(values: Array<number | bigint>, asTimestamp = false): Uint8Array {
   const buf = new Uint8Array(12 * values.length);
   for (let i = 0; i < values.length; i++) {
-    writeInt64LE(buf, values[i], i * 12);
-    writeUInt32LE(buf, values[i] >= 0 ? 0 : 0xffffffff, i * 12 + 8);
+    if (!asTimestamp) {
+      writeInt64LE(buf, values[i], i * 12);
+      writeUInt32LE(buf, values[i] >= 0 ? 0 : 0xffffffff, i * 12 + 8);
+      continue;
+    }
+    const epochNanoseconds = BigInt(values[i]);
+    if (epochNanoseconds < INT64_MIN || epochNanoseconds > INT64_MAX) {
+      throw new Error(`INT96 timestamp is outside the signed 64-bit range: ${epochNanoseconds}`);
+    }
+    const julianDayOffset = floorDivide(epochNanoseconds, NANOSECONDS_PER_DAY);
+    const nanosecondsOfDay = epochNanoseconds - julianDayOffset * NANOSECONDS_PER_DAY;
+    const julianDay = JULIAN_DAY_UNIX_EPOCH + julianDayOffset;
+    if (julianDay < -2147483648n || julianDay > 2147483647n) {
+      throw new Error(`INT96 timestamp has an unsupported Julian day: ${julianDay}`);
+    }
+    writeInt64LE(buf, nanosecondsOfDay, i * 12);
+    writeInt32LE(buf, Number(julianDay), i * 12 + 8);
   }
   return buf;
+}
+
+function floorDivide(value: bigint, divisor: bigint): bigint {
+  const quotient = value / divisor;
+  const remainder = value % divisor;
+  return remainder < 0n ? quotient - 1n : quotient;
 }
 
 function decodeValues_INT96(
@@ -166,12 +206,26 @@ function decodeValues_INT96(
   const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
-    const low = Number(dataView.getBigInt64(cursor.offset, true));
-    const high = dataView.getUint32(cursor.offset + 8, true);
-    if (high === 0xffffffff) {
-      output[outputOffset + i] = ~-low + 1; // truncate to 64 actual precision
+    if (options.int96AsTimestamp) {
+      const nanosecondsOfDay = dataView.getBigUint64(cursor.offset, true);
+      if (nanosecondsOfDay >= NANOSECONDS_PER_DAY) {
+        throw new Error(`Invalid INT96 nanoseconds of day: ${nanosecondsOfDay}`);
+      }
+      const julianDay = BigInt(dataView.getInt32(cursor.offset + 8, true));
+      const epochNanoseconds =
+        (julianDay - JULIAN_DAY_UNIX_EPOCH) * NANOSECONDS_PER_DAY + nanosecondsOfDay;
+      if (epochNanoseconds < INT64_MIN || epochNanoseconds > INT64_MAX) {
+        throw new Error(`INT96 timestamp is outside the signed 64-bit range: ${epochNanoseconds}`);
+      }
+      output[outputOffset + i] = epochNanoseconds;
     } else {
-      output[outputOffset + i] = low; // truncate to 64 actual precision
+      const low = Number(dataView.getBigInt64(cursor.offset, true));
+      const high = dataView.getUint32(cursor.offset + 8, true);
+      if (high === 0xffffffff) {
+        output[outputOffset + i] = ~-low + 1; // truncate to 64 actual precision
+      } else {
+        output[outputOffset + i] = low; // truncate to 64 actual precision
+      }
     }
     cursor.offset += 12;
   }
@@ -192,6 +246,9 @@ function decodeValues_FLOAT(
   options: ParquetCodecOptions
 ): ParquetValueBuffer {
   const {output, outputOffset} = getParquetValueOutput(options, count);
+  if (output instanceof Float32Array && copyPlainTypedValues(cursor, output, outputOffset, count)) {
+    return output;
+  }
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     output[outputOffset + i] = dataView.getFloat32(cursor.offset, true);
@@ -214,6 +271,9 @@ function decodeValues_DOUBLE(
   options: ParquetCodecOptions
 ): ParquetValueBuffer {
   const {output, outputOffset} = getParquetValueOutput(options, count);
+  if (output instanceof Float64Array && copyPlainTypedValues(cursor, output, outputOffset, count)) {
+    return output;
+  }
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
     output[outputOffset + i] = dataView.getFloat64(cursor.offset, true);
@@ -245,6 +305,9 @@ function decodeValues_BYTE_ARRAY(
   count: number,
   options: ParquetCodecOptions
 ): ParquetValueBuffer {
+  if (options.byteArrayOutput) {
+    return decodeByteArraysToContiguousOutput(cursor, count, options);
+  }
   const {output, outputOffset} = getParquetValueOutput(options, count);
   const dataView = getCursorDataView(cursor);
   for (let i = 0; i < count; i++) {
@@ -253,6 +316,47 @@ function decodeValues_BYTE_ARRAY(
     output[outputOffset + i] = readByteArray(cursor, len, options.retainByteArrayViews);
   }
   return output;
+}
+
+/** Decodes length-prefixed PLAIN values directly into one Arrow-compatible byte buffer. */
+function decodeByteArraysToContiguousOutput(
+  cursor: CursorBuffer,
+  count: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const byteArrayOutput = options.byteArrayOutput!;
+  const outputOffset = options.outputOffset || 0;
+  const dataView = getCursorDataView(cursor);
+  let byteOffset = byteArrayOutput.byteLength;
+  byteArrayOutput.valueOffsets[outputOffset] = byteOffset;
+  const remainingByteLength = (cursor.size ?? cursor.buffer.byteLength) - cursor.offset;
+  if (remainingByteLength < 0) {
+    throw new Error('PLAIN BYTE_ARRAY cursor exceeds the page buffer');
+  }
+  // PLAIN's remaining encoded bytes are an upper bound for its decoded payload because each value
+  // drops a four-byte length prefix. Reserve once per page instead of checking capacity per value.
+  reserveParquetByteArrayOutput(byteArrayOutput, remainingByteLength);
+  for (let valueIndex = 0; valueIndex < count; valueIndex++) {
+    const byteLength = dataView.getUint32(cursor.offset, true);
+    cursor.offset += 4;
+    const sourceEnd = cursor.offset + byteLength;
+    const destinationEnd = byteOffset + byteLength;
+    if (sourceEnd > (cursor.size ?? cursor.buffer.byteLength)) {
+      throw new Error('PLAIN BYTE_ARRAY value exceeds the page buffer');
+    }
+    if (byteLength <= MAXIMUM_INLINE_BYTE_COPY_LENGTH) {
+      for (let byteIndex = 0; byteIndex < byteLength; byteIndex++) {
+        byteArrayOutput.data[byteOffset + byteIndex] = cursor.buffer[cursor.offset + byteIndex];
+      }
+    } else {
+      byteArrayOutput.data.set(cursor.buffer.subarray(cursor.offset, sourceEnd), byteOffset);
+    }
+    cursor.offset = sourceEnd;
+    byteOffset = destinationEnd;
+    byteArrayOutput.valueOffsets[outputOffset + valueIndex + 1] = byteOffset;
+  }
+  byteArrayOutput.byteLength = byteOffset;
+  return options.output || [];
 }
 
 function encodeValues_FIXED_LEN_BYTE_ARRAY(values: any[], opts: ParquetCodecOptions): Uint8Array {
@@ -273,14 +377,51 @@ function decodeValues_FIXED_LEN_BYTE_ARRAY(
   count: number,
   opts: ParquetCodecOptions
 ): ParquetValueBuffer {
-  const {output, outputOffset} = getParquetValueOutput(opts, count);
   if (!opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
+  if (opts.byteArrayOutput) {
+    return decodeFixedLengthByteArraysToContiguousOutput(cursor, count, opts.typeLength, opts);
+  }
+  const {output, outputOffset} = getParquetValueOutput(opts, count);
   for (let i = 0; i < count; i++) {
     output[outputOffset + i] = readByteArray(cursor, opts.typeLength, opts.retainByteArrayViews);
   }
   return output;
+}
+
+/** Exposes one fixed-width PLAIN payload directly as Arrow-compatible bytes and offsets. */
+function decodeFixedLengthByteArraysToContiguousOutput(
+  cursor: CursorBuffer,
+  count: number,
+  typeLength: number,
+  options: ParquetCodecOptions
+): ParquetValueBuffer {
+  const byteArrayOutput = options.byteArrayOutput!;
+  const outputOffset = options.outputOffset || 0;
+  const payloadByteLength = count * typeLength;
+  const inputEnd = cursor.offset + payloadByteLength;
+  if (inputEnd > (cursor.size ?? cursor.buffer.byteLength)) {
+    throw new Error('PLAIN FIXED_LEN_BYTE_ARRAY values exceed the page buffer');
+  }
+
+  let byteOffset = byteArrayOutput.byteLength;
+  byteArrayOutput.valueOffsets[outputOffset] = byteOffset;
+  if (byteOffset === 0) {
+    // The common single-page case can retain the original Parquet bytes without allocating either
+    // one view per value or a second payload buffer. A later page falls back to append-and-copy.
+    byteArrayOutput.data = cursor.buffer.subarray(cursor.offset, inputEnd);
+  } else {
+    reserveParquetByteArrayOutput(byteArrayOutput, payloadByteLength);
+    byteArrayOutput.data.set(cursor.buffer.subarray(cursor.offset, inputEnd), byteOffset);
+  }
+  cursor.offset = inputEnd;
+  for (let valueIndex = 0; valueIndex < count; valueIndex++) {
+    byteOffset += typeLength;
+    byteArrayOutput.valueOffsets[outputOffset + valueIndex + 1] = byteOffset;
+  }
+  byteArrayOutput.byteLength = byteOffset;
+  return options.output || [];
 }
 
 /** Reads one byte-array value, optionally retaining a view into the decoded page buffer. */
@@ -297,6 +438,31 @@ function readByteArray(
 /** Creates one reusable DataView for all primitive reads from a codec cursor. */
 function getCursorDataView(cursor: CursorBuffer): DataView {
   return new DataView(cursor.buffer.buffer, cursor.buffer.byteOffset, cursor.buffer.byteLength);
+}
+
+/** Copies little-endian PLAIN values directly into an identical typed destination. */
+function copyPlainTypedValues(
+  cursor: CursorBuffer,
+  output: Int32Array | BigInt64Array | Float32Array | Float64Array,
+  outputOffset: number,
+  count: number
+): boolean {
+  if (!IS_LITTLE_ENDIAN) {
+    return false;
+  }
+  const byteLength = count * output.BYTES_PER_ELEMENT;
+  const inputEnd = cursor.offset + byteLength;
+  if (inputEnd > (cursor.size ?? cursor.buffer.length) || outputOffset + count > output.length) {
+    throw new Error('Unexpected end of Parquet PLAIN values');
+  }
+  const outputBytes = new Uint8Array(
+    output.buffer,
+    output.byteOffset + outputOffset * output.BYTES_PER_ELEMENT,
+    byteLength
+  );
+  outputBytes.set(cursor.buffer.subarray(cursor.offset, inputEnd));
+  cursor.offset = inputEnd;
+  return true;
 }
 
 function toPrimitiveBytes(value: any): Uint8Array {

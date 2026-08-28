@@ -159,7 +159,7 @@ export class NetCDFReader {
 
     if (variable.record) {
       // record variable case
-      return readRecord(this.buffer, variable, this.header.recordDimension);
+      return readRecord(this.buffer, variable, this.header.recordDimension, this.header.dimensions);
     }
     // non-record variable case
     return readNonRecord(this.buffer, variable);

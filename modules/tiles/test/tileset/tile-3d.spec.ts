@@ -1,18 +1,17 @@
-// SPDX-License-Identifier: Apache-2.0
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-// @ts-ignore
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {Tile3D} from '@loaders.gl/tiles';
 // @ts-ignore
 import {LOD_METRIC_TYPE} from '../../src';
-
 // @ts-ignore
 const clone = (object, flag) => JSON.parse(JSON.stringify(object));
-
 const TILE_HEADER_WITH_BOUNDING_SPHERE = {
   lodMetricValue: 1,
   lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
@@ -22,7 +21,6 @@ const TILE_HEADER_WITH_BOUNDING_SPHERE = {
     sphere: [0.0, 0.0, 0.0, 5.0]
   }
 };
-
 /*
 const TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE = {
   lodMetricValue: 1,
@@ -39,16 +37,14 @@ const TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE = {
   }
 };
 */
-
 const TILE_HEADER_WITH_BOUNDING_REGION = {
   lodMetricValue: 1,
   refine: 'REPLACE',
   children: [],
   boundingVolume: {
-    region: [-1.2, -1.2, 0.0, 0.0, -30, -34]
+    region: [-1.2, -1.2, 0.0, 0.0, -34, -30]
   }
 };
-
 /*
 const TILE_HEADER_WITH_CONTENT_BOUNDING_REGION = {
   lodMetricValue: 1,
@@ -57,15 +53,14 @@ const TILE_HEADER_WITH_CONTENT_BOUNDING_REGION = {
   content: {
     url: '0/0.b3dm',
     boundingVolume: {
-      region: [-1.2, -1.2, 0, 0, -30, -34]
+      region: [-1.2, -1.2, 0, 0, -34, -30]
     }
   },
   boundingVolume: {
-    region: [-1.2, -1.2, 0, 0, -30, -34]
+    region: [-1.2, -1.2, 0, 0, -34, -30]
   }
 };
 */
-
 const TILE_HEADER_WITH_BOUNDING_BOX = {
   lodMetricValue: 1,
   refine: 'REPLACE',
@@ -74,7 +69,6 @@ const TILE_HEADER_WITH_BOUNDING_BOX = {
     box: [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
   }
 };
-
 /*
 const TILE_HEADER_WITH_CONTENT_BOUNDING_BOX = {
   lodMetricValue: 1,
@@ -103,7 +97,6 @@ const TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME = {
   }
 };
 */
-
 const MOCK_TILESET = {
   debugShowBoundingVolume: true,
   debugShowViewerRequestVolume: true,
@@ -111,85 +104,67 @@ const MOCK_TILESET = {
   lodMetricValue: 2,
   lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR
 };
-
 // const centerLongitude = -1.31968;
 // const centerLatitude = 0.698874;
-
 // function getTileTransform(longitude, latitude) {
 //   const transformCenter = Cartesian3.fromRadians(longitude, latitude, 0.0);
 //   const hpr = new HeadingPitchRoll();
 //   const transformMatrix = Transforms.headingPitchRollToFixedFrame(transformCenter, hpr);
 //   return Matrix4.pack(transformMatrix, new Array(16));
 // }
-
-test('Tile3D#destroys', t => {
+test('Tile3D#destroys', () => {
   // @ts-ignore
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
-  t.equals(tile.isDestroyed(), false);
+  expect(tile.isDestroyed()).toBe(false);
   tile.destroy();
-  t.equals(tile.isDestroyed(), true);
-  t.end();
+  expect(tile.isDestroyed()).toBe(true);
 });
-
-test('Tile3D#preserves viewer request volume when an implicit root materializes without content', t => {
+test('Tile3D#preserves viewer request volume when an implicit root materializes without content', () => {
   const tile = new Tile3D(MOCK_TILESET as any, {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     content: {uri: 'content/{level}.b3dm'},
     viewerRequestVolume: {sphere: [0, 0, 0, 2]}
   });
-
   tile.applyImplicitSubtreeHeader({
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     contentUrl: undefined,
     content: undefined,
     type: 'empty'
   });
-
-  t.ok(tile._viewerRequestVolume, 'retains the inherited traversal request-volume restriction');
-  t.end();
+  expect(
+    tile._viewerRequestVolume,
+    'retains the inherited traversal request-volume restriction'
+  ).toBeTruthy();
 });
-
-test('Tile3D#throws if boundingVolume is undefined', t => {
+test('Tile3D#throws if boundingVolume is undefined', () => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
-
   delete tileWithoutBoundingVolume.boundingVolume;
   // @ts-ignore
-  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume));
-  t.end();
+  expect(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume)).toThrow();
 });
-
-test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', t => {
+test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', () => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
-
   delete tileWithoutBoundingVolume.boundingVolume.sphere;
   // @ts-ignore
-  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume));
-  t.end();
+  expect(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume)).toThrow();
 });
-
-test('Tile3D#geometric error is undefined', t => {
+test('Tile3D#geometric error is undefined', () => {
   // spyOn(Tile3D, '_deprecationWarning');
-
   const lodMetricValueMissing = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete lodMetricValueMissing.lodMetricValue;
-
   // @ts-ignore
   const parent = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
   // @ts-ignore
   const child = new Tile3D(MOCK_TILESET, lodMetricValueMissing, parent);
-  t.equals(child.lodMetricType, parent.lodMetricType);
-  t.equals(child.lodMetricValue, parent.lodMetricValue);
-  t.equals(child.lodMetricValue, 1);
-
+  expect(child.lodMetricType).toBe(parent.lodMetricType);
+  expect(child.lodMetricValue).toBe(parent.lodMetricValue);
+  expect(child.lodMetricValue).toBe(1);
   // @ts-ignore
   const tile = new Tile3D(MOCK_TILESET, lodMetricValueMissing);
-  t.equals(tile.lodMetricValue, MOCK_TILESET.lodMetricValue);
-  t.equals(tile.lodMetricValue, 2);
-
-  t.end();
+  expect(tile.lodMetricValue).toBe(MOCK_TILESET.lodMetricValue);
+  expect(tile.lodMetricValue).toBe(2);
 });
-
-test('Tile3D#scales geometric error with the complete transform', t => {
+test('Tile3D#scales geometric error with the complete transform', () => {
   const uniformScaleHeader = {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     transform: new Matrix4().scale([3, 3, 3])
@@ -203,80 +178,64 @@ test('Tile3D#scales geometric error with the complete transform', t => {
     // A 90-degree Z rotation plus translation. Neither operation changes geometric error.
     transform: new Matrix4([0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 100, 200, 300, 1])
   };
-
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
-  t.equals(new Tile3D(MOCK_TILESET, uniformScaleHeader).lodMetricValue, 3, 'uses uniform scale');
+  expect(new Tile3D(MOCK_TILESET, uniformScaleHeader).lodMetricValue, 'uses uniform scale').toBe(3);
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
-  t.equals(
+  expect(
     new Tile3D(MOCK_TILESET, nonUniformScaleHeader).lodMetricValue,
-    4,
     'uses the largest non-uniform scale component'
-  );
+  ).toBe(4);
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
-  t.equals(
+  expect(
     new Tile3D(MOCK_TILESET, rigidTransformHeader).lodMetricValue,
-    1,
     'ignores rotation and translation'
-  );
-  t.end();
+  ).toBe(1);
 });
-
-test('Tile3D#recomputes geometric error without compounding transform scale', t => {
+test('Tile3D#recomputes geometric error without compounding transform scale', () => {
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
-
   tile._updateTransform(new Matrix4().scale([2, 2, 2]));
-  t.equals(tile.lodMetricValue, 2, 'applies the first transform scale');
-
+  expect(tile.lodMetricValue, 'applies the first transform scale').toBe(2);
   tile._updateTransform(new Matrix4().scale([4, 4, 4]));
-  t.equals(tile.lodMetricValue, 4, 'recomputes from the source error after a scale change');
-
+  expect(tile.lodMetricValue, 'recomputes from the source error after a scale change').toBe(4);
   tile._updateTransform(new Matrix4());
-  t.equals(tile.lodMetricValue, 1, 'returns to the source error when the scale is removed');
-  t.end();
+  expect(tile.lodMetricValue, 'returns to the source error when the scale is removed').toBe(1);
 });
-
-test('Tile3D#inherits unscaled geometric error before applying the child transform', t => {
+test('Tile3D#inherits unscaled geometric error before applying the child transform', () => {
   const parentHeader = {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     lodMetricValue: 2,
     transform: new Matrix4().scale([3, 3, 3])
   };
-  const childHeader: {[key: string]: any} = {
+  const childHeader: {
+    [key: string]: any;
+  } = {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     transform: new Matrix4().scale([4, 4, 4])
   };
   delete childHeader.lodMetricValue;
-
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
   const parent = new Tile3D(MOCK_TILESET, parentHeader);
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
   const child = new Tile3D(MOCK_TILESET, childHeader, parent);
-
-  t.equals(parent.lodMetricValue, 6, 'parent geometric error uses its complete scale');
-  t.equals(
+  expect(parent.lodMetricValue, 'parent geometric error uses its complete scale').toBe(6);
+  expect(
     child.lodMetricValue,
-    24,
     'child applies its complete scale to the inherited source error exactly once'
-  );
-  t.end();
+  ).toBe(24);
 });
-
-test('Tile3D#does not transform-scale I3S screen-threshold metrics', t => {
+test('Tile3D#does not transform-scale I3S screen-threshold metrics', () => {
   const tileHeader = {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     lodMetricType: LOD_METRIC_TYPE.MAX_SCREEN_THRESHOLD,
     lodMetricValue: 5,
     transform: new Matrix4().scale([2, 3, 4])
   };
-
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
   const tile = new Tile3D(MOCK_TILESET, tileHeader);
-  t.equals(tile.lodMetricValue, 5, 'keeps I3S metric in its original screen-space units');
-  t.end();
+  expect(tile.lodMetricValue, 'keeps I3S metric in its original screen-space units').toBe(5);
 });
-
-test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', t => {
+test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', () => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -290,7 +249,6 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
     },
     content: {}
   };
-
   // @ts-ignore
   const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
   tile.updateVisibility(
@@ -303,13 +261,11 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
     },
     ['test']
   );
-  t.ok(tile.header.viewerRequestVolume);
+  expect(tile.header.viewerRequestVolume).toBeTruthy();
   // @ts-ignore
-  t.equal(tile._inRequestVolume, true);
-  t.end();
+  expect(tile._inRequestVolume).toBe(true);
 });
-
-test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume', t => {
+test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume', () => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -323,7 +279,6 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
     },
     content: {}
   };
-
   // @ts-ignore
   const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
   tile.updateVisibility(
@@ -336,13 +291,11 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
     },
     ['test']
   );
-  t.ok(tile.header.viewerRequestVolume);
+  expect(tile.header.viewerRequestVolume).toBeTruthy();
   // @ts-ignore
-  t.equal(tile._inRequestVolume, false);
-  t.end();
+  expect(tile._inRequestVolume).toBe(false);
 });
-
-test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume', t => {
+test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume', () => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -356,7 +309,6 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
     },
     content: {}
   };
-
   // @ts-ignore
   const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
   tile.updateVisibility(
@@ -369,13 +321,11 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
     },
     ['test']
   );
-  t.ok(tile.header.viewerRequestVolume);
+  expect(tile.header.viewerRequestVolume).toBeTruthy();
   // @ts-ignore
-  t.equal(tile._inRequestVolume, true);
-  t.end();
+  expect(tile._inRequestVolume).toBe(true);
 });
-
-test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume', t => {
+test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume', () => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -389,7 +339,6 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
     },
     content: {}
   };
-
   // @ts-ignore
   const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
   tile.updateVisibility(
@@ -402,28 +351,21 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
     },
     ['test']
   );
-  t.ok(tile.header.viewerRequestVolume);
+  expect(tile.header.viewerRequestVolume).toBeTruthy();
   // @ts-ignore
-  t.equal(tile._inRequestVolume, false);
-  t.end();
+  expect(tile._inRequestVolume).toBe(false);
 });
-
-test('Tile3D#tileDrawn defaults to true', t => {
+test('Tile3D#tileDrawn defaults to true', () => {
   // @ts-ignore
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
-  t.equals(tile.tileDrawn, true, 'tileDrawn defaults to true for backwards compatibility');
-
+  expect(tile.tileDrawn, 'tileDrawn defaults to true for backwards compatibility').toBe(true);
   tile.tileDrawn = false;
-  t.equals(tile.tileDrawn, false, 'tileDrawn can be set to false');
-
+  expect(tile.tileDrawn, 'tileDrawn can be set to false').toBe(false);
   tile.unloadContent();
-  t.equals(tile.tileDrawn, true, 'tileDrawn resets to true after unloadContent');
-
-  t.end();
+  expect(tile.tileDrawn, 'tileDrawn resets to true after unloadContent').toBe(true);
 });
-
 // TODO failing test
-test('Tile3D#screenSpaceError is calculated correctly', t => {
+test('Tile3D#screenSpaceError is calculated correctly', () => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -437,10 +379,8 @@ test('Tile3D#screenSpaceError is calculated correctly', t => {
     },
     content: {}
   };
-
   // @ts-ignore
   const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
-
   tile.updateVisibility(
     {
       frameNumber: 100,
@@ -453,245 +393,28 @@ test('Tile3D#screenSpaceError is calculated correctly', t => {
     },
     ['test']
   );
-  t.equal(tile.screenSpaceError, 3.6893401777997967);
-  t.end();
+  expect(tile.screenSpaceError).toBe(3.6893401777997967);
 });
-
-test('Tile3D#cartographic bounding box', t => {
+test('Tile3D#cartographic bounding box', () => {
   // @ts-ignore
   let tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX);
-  t.ok(tile.boundingBox, 'Calculated for bounding box');
-
+  expect(tile.boundingBox, 'Calculated for bounding box').toBeTruthy();
   // @ts-ignore
   tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
-  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
-
+  expect(tile.boundingBox, 'Calculated for bounding sphere').toBeTruthy();
   // @ts-ignore
   tile = new Tile3D(MOCK_TILESET, {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     boundingVolume: {sphere: [1, 1, 1, 5]}
   });
-  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
-
+  expect(tile.boundingBox, 'Calculated for bounding sphere').toBeTruthy();
   // @ts-ignore
   tile = new Tile3D(MOCK_TILESET, {
     ...TILE_HEADER_WITH_BOUNDING_SPHERE,
     boundingVolume: {sphere: [1, 0, 0, 5]}
   });
-  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
-
+  expect(tile.boundingBox, 'Calculated for bounding sphere').toBeTruthy();
   // @ts-ignore
   tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION);
-  t.ok(tile.boundingBox, 'Calculated for bounding region');
-
-  t.end();
+  expect(tile.boundingBox, 'Calculated for bounding region').toBeTruthy();
 });
-
-/*
-test('Tile3D#bounding volumes', tt => {
-  test('Tile3D#returns the tile bounding volume if the content bounding volume is undefined', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
-    t.ok(tile.boundingVolume);
-    t.deepEquals(tile.contentBoundingVolume, tile.boundingVolume);
-    t.end();
-  });
-
-  test('Tile3D#can have a bounding sphere', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
-    const radius = TILE_HEADER_WITH_BOUNDING_SPHERE.boundingVolume.sphere[3];
-    t.ok(tile.boundingVolume);
-    t.equals(tile.boundingVolume.boundingVolume.radius, radius);
-    t.deepEquals(tile.boundingVolume.boundingVolume.center, [0, 0, 0]);
-    t.end();
-  });
-
-  test('Tile3D#can have a content bounding sphere', t => {
-    const tile = new Tile3D(
-      MOCK_TILESET,
-      TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE,
-      undefined
-    );
-    const radius = TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE.content.boundingVolume.sphere[3];
-    t.ok(tile.contentBoundingVolume);
-    t.equals(tile.contentBoundingVolume.boundingVolume.radius, radius);
-    t.deepEquals(tile.contentBoundingVolume.boundingVolume.center, [0.0, 0.0, 1.0]);
-    t.end();
-  });
-
-  test('Tile3D#can have a bounding region', t => {
-    const box = TILE_HEADER_WITH_BOUNDING_REGION.boundingVolume.region;
-    const rectangle = new Rectangle(box[0], box[1], box[2], box[3]);
-    const minimumHeight = TILE_HEADER_WITH_BOUNDING_REGION.boundingVolume.region[4];
-    const maximumHeight = TILE_HEADER_WITH_BOUNDING_REGION.boundingVolume.region[5];
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION, undefined);
-    const tbr = new TileBoundingRegion({rectangle, minimumHeight, maximumHeight});
-    t.ok(tile.boundingVolume);
-    t.equals(tile.boundingVolume, tbr);
-    t.end();
-  });
-
-  test('Tile3D#can have a content bounding region', t => {
-    const region = TILE_HEADER_WITH_CONTENT_BOUNDING_REGION.content.boundingVolume.region;
-    const tile = new Tile3D(
-      MOCK_TILESET,
-      '/s_Cme_url',
-      TILE_HEADER_WITH_CONTENT_BOUNDING_REGION,
-      undefined
-    );
-    t.ok(tile.contentBoundingVolume);
-    const tbb = new TileBoundingRegion({
-      rectangle: new Rectangle(region[0], region[1], region[2], region[3]),
-      minimumHeight: region[4],
-      maximumHeight: region[5]
-    });
-    t.equals(tile.contentBoundingVolume, tbb);
-    t.end();
-  });
-
-  test('Tile3D#can have an oriented bounding box', t => {
-    const box = TILE_HEADER_WITH_BOUNDING_BOX.boundingVolume.box;
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX, undefined);
-    t.ok(tile.boundingVolume);
-    const center = new Cartesian3(box[0], box[1], box[2]);
-    const halfAxes = Matrix3.fromArray(box, 3);
-    const obb = new TileOrientedBoundingBox(center, halfAxes);
-    t.equals(tile.boundingVolume, obb);
-    t.end();
-  });
-
-  test('Tile3D#can have a content oriented bounding box', t => {
-    const box = TILE_HEADER_WITH_CONTENT_BOUNDING_BOX.boundingVolume.box;
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_CONTENT_BOUNDING_BOX, undefined);
-    t.ok(tile.contentBoundingVolume);
-    const center = new Cartesian3(box[0], box[1], box[2]);
-    const halfAxes = Matrix3.fromArray(box, 3);
-    const obb = new TileOrientedBoundingBox(center, halfAxes);
-    t.equals(tile.contentBoundingVolume, obb);
-    t.end();
-  });
-
-  test('Tile3D#tile transform affects bounding sphere', t => {
-    const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE, true);
-    header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3D(MOCK_TILESET, header, undefined);
-    const boundingSphere = tile.boundingVolume.boundingVolume;
-    const contentBoundingSphere = tile.contentBoundingVolume.boundingVolume;
-
-    const boundingVolumeCenter = Cartesian3.fromRadians(centerLongitude, centerLatitude, 1.0);
-    expect(boundingSphere.center).toEqualEpsilon(boundingVolumeCenter, CesiumMath.EPSILON4);
-    t.equals(boundingSphere.radius, 5.0); // No change
-
-    expect(contentBoundingSphere.center).toEqualEpsilon(boundingVolumeCenter, CesiumMath.EPSILON4);
-    t.equals(contentBoundingSphere.radius, 5.0); // No change
-    t.end();
-  });
-
-  test('Tile3D#tile transform affects oriented bounding box', t => {
-    const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_BOX, true);
-    header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3D(MOCK_TILESET, header, undefined);
-    const boundingBox = tile.boundingVolume.boundingVolume;
-    const contentBoundingBox = tile.contentBoundingVolume.boundingVolume;
-
-    const boundingVolumeCenter = Cartesian3.fromRadians(centerLongitude, centerLatitude, 1.0);
-    expect(boundingBox.center).toEqualEpsilon(boundingVolumeCenter, CesiumMath.EPSILON7);
-    expect(contentBoundingBox.center).toEqualEpsilon(boundingVolumeCenter, CesiumMath.EPSILON7);
-    t.end();
-  });
-
-  test('Tile3D#tile transform does not affect bounding region', t => {
-    const header = clone(TILE_HEADER_WITH_CONTENT_BOUNDING_REGION, true);
-    header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3D(MOCK_TILESET, header, undefined);
-    const boundingRegion = tile.boundingVolume;
-    const contentBoundingRegion = tile.contentBoundingVolume;
-
-    const region = header.boundingVolume.region;
-    const rectangle = Rectangle.unpack(region);
-    t.equals(boundingRegion.rectangle, rectangle);
-    t.equals(contentBoundingRegion.rectangle, rectangle);
-    t.end();
-  });
-
-  test('Tile3D#tile transform affects viewer request volume', t => {
-    const header = clone(TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME, true);
-    header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3D(MOCK_TILESET, header, undefined);
-    const requestVolume = tile._viewerRequestVolume.boundingVolume;
-    const requestVolumeCenter = Cartesian3.fromRadians(centerLongitude, centerLatitude, 1.0);
-    expect(requestVolume.center).toEqualEpsilon(requestVolumeCenter, CesiumMath.EPSILON7);
-    t.end();
-  });
-
-  test('Tile3D#tile transform changes', t => {
-    const MOCK_TILESET = {
-      modelMatrix: Matrix4.IDENTITY
-    };
-    const header = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
-    header.transform = getTileTransform(centerLongitude, centerLatitude);
-    const tile = new Tile3D(MOCK_TILESET, header, undefined);
-    const boundingSphere = tile.boundingVolume.boundingVolume;
-
-    // Check the original transform
-    const boundingVolumeCenter = Cartesian3.fromRadians(centerLongitude, centerLatitude);
-    expect(boundingSphere.center).toEqualEpsilon(boundingVolumeCenter, CesiumMath.EPSILON7);
-
-    // Change the transform
-    const newLongitude = -1.012;
-    const newLatitude = 0.698874;
-    tile.transform = getTileTransform(newLongitude, newLatitude);
-    tile.updateTransform();
-
-    // Check the new transform
-    const newCenter = Cartesian3.fromRadians(newLongitude, newLatitude);
-    expect(boundingSphere.center).toEqualEpsilon(newCenter, CesiumMath.EPSILON7);
-    t.end();
-  });
-
-  tt.end();
-});
-
-test('Tile3D#debug bounding volumes', tt => {
-  const scene;
-  beforeEach(function() {
-    scene = createScene();
-    scene.frameState.passes.render = true;
-    t.end();
-  });
-
-  afterEach(function() {
-    scene.destroyForSpecs();
-    t.end();
-  });
-
-  test('Tile3D#can be a bounding region', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION, undefined);
-    tile.update(MOCK_TILESET, scene.frameState);
-    t.ok(tile._debugBoundingVolume);
-    t.end();
-  });
-
-  test('Tile3D#can be an oriented bounding box', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX, undefined);
-    tile.update(MOCK_TILESET, scene.frameState);
-    t.ok(tile._debugBoundingVolume);
-    t.end();
-  });
-
-  test('Tile3D#can be a bounding sphere', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
-    tile.update(MOCK_TILESET, scene.frameState);
-    t.ok(tile._debugBoundingVolume);
-    t.end();
-  });
-
-  test('Tile3D#creates debug bounding volume for viewer request volume', t => {
-    const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_VIEWER_REQUEST_VOLUME, undefined);
-    tile.update(MOCK_TILESET, scene.frameState);
-    t.ok(tile._debugViewerRequestVolume);
-    t.end();
-  });
-
-  tt.end();
-});
-*/

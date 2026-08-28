@@ -1,16 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {getImageData} from '@loaders.gl/images';
 // @ts-expect-error
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
 import {TEST_LAYER_URL, TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
-
 import {I3SContentLoader} from '@loaders.gl/i3s';
-
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0';
 const NEW_YORK_TILE_CONTENT =
@@ -21,8 +15,7 @@ const MONTREAL_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/1/geometries/1';
 const MONTREAL_CONTENT_LOADER_OPTIONS =
   '@loaders.gl/i3s/test/data/Montreal_3DObjects_subset_1_v17_ktx2/i3s-content-loader-options.json';
-
-test('ParseI3sTileContent#should parse tile content', async t => {
+test('ParseI3sTileContent#should parse tile content', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -34,21 +27,17 @@ test('ParseI3sTileContent#should parse tile content', async t => {
       useDracoGeometry: false
     }
   });
-  t.ok(content);
-
+  expect(content).toBeTruthy();
   // color array should be colorized by attribute
   const colorsArray = content!.attributes.colors.value;
   const testArray = new Uint8Array(9);
   testArray.fill(255);
-  t.deepEquals(colorsArray.subarray(0, 9), testArray);
+  expect(colorsArray.subarray(0, 9)).toEqual(testArray);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
-  t.deepEquals(colorsArray.subarray(arrayMiddle, arrayMiddle + 9), testArray);
-  t.deepEquals(colorsArray.subarray(colorsArray.length - 9), testArray);
-
-  t.end();
+  expect(colorsArray.subarray(arrayMiddle, arrayMiddle + 9)).toEqual(testArray);
+  expect(colorsArray.subarray(colorsArray.length - 9)).toEqual(testArray);
 });
-
-test('ParseI3sTileContent#should load "dds" texture if it is supported', async t => {
+test('ParseI3sTileContent#should load "dds" texture if it is supported', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -63,17 +52,17 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async t
   });
   const texture = content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (texture && typeof texture === 'object' && 'compressed' in texture) {
-    t.ok(texture.compressed);
-    t.ok(texture.data instanceof Array);
+    expect(texture.compressed).toBeTruthy();
+    expect(texture.data instanceof Array).toBeTruthy();
   } else {
     const imageData = getImageData(texture);
-    t.ok(texture instanceof ImageBitmap);
-    t.ok(imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray);
+    expect(texture instanceof ImageBitmap).toBeTruthy();
+    expect(
+      imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray
+    ).toBeTruthy();
   }
-  t.end();
 });
-
-test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async t => {
+test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async () => {
   const response = await fetchFile(MONTREAL_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(MONTREAL_CONTENT_LOADER_OPTIONS);
@@ -83,12 +72,10 @@ test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async
   });
   const texture =
     content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image.data[0];
-  t.ok(texture instanceof Object);
-  t.ok(texture.data instanceof Uint8Array);
-  t.end();
+  expect(texture instanceof Object).toBeTruthy();
+  expect(texture.data instanceof Uint8Array).toBeTruthy();
 });
-
-test('ParseI3sTileContent#should make PBR material', async t => {
+test('ParseI3sTileContent#should make PBR material', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -102,30 +89,29 @@ test('ParseI3sTileContent#should make PBR material', async t => {
     }
   });
   const material = content!.material;
-  t.ok(material.doubleSided);
-  t.deepEqual(material.emissiveFactor, [1, 1, 1]);
-  t.ok(material.pbrMetallicRoughness);
-  t.ok(material.pbrMetallicRoughness.baseColorTexture);
-
+  expect(material.doubleSided).toBeTruthy();
+  expect(material.emissiveFactor).toEqual([1, 1, 1]);
+  expect(material.pbrMetallicRoughness).toBeTruthy();
+  expect(material.pbrMetallicRoughness.baseColorTexture).toBeTruthy();
   const texture = material.pbrMetallicRoughness.baseColorTexture.texture;
-  t.ok(texture);
-  t.ok(texture.source);
+  expect(texture).toBeTruthy();
+  expect(texture.source).toBeTruthy();
   if (
     texture.source.image &&
     typeof texture.source.image === 'object' &&
     'compressed' in texture.source.image
   ) {
-    t.ok(texture.source.image.compressed);
-    t.ok(texture.source.image.data instanceof Array);
+    expect(texture.source.image.compressed).toBeTruthy();
+    expect(texture.source.image.data instanceof Array).toBeTruthy();
   } else {
     const imageData = getImageData(texture.source.image);
-    t.ok(texture.source.image instanceof ImageBitmap);
-    t.ok(imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray);
+    expect(texture.source.image instanceof ImageBitmap).toBeTruthy();
+    expect(
+      imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray
+    ).toBeTruthy();
   }
-  t.end();
 });
-
-test('ParseI3sTileContent#should have featureIds', async t => {
+test('ParseI3sTileContent#should have featureIds', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -138,23 +124,19 @@ test('ParseI3sTileContent#should have featureIds', async t => {
       decodeTextures: true
     }
   });
-  t.ok(content);
-  t.ok(content!.featureIds);
-  t.equal(content!.featureIds.length, 25638);
-  t.end();
+  expect(content).toBeTruthy();
+  expect(content!.featureIds).toBeTruthy();
+  expect(content!.featureIds.length).toBe(25638);
 });
-
-test('ParseI3sTileContent#should generate mbs from obb', async t => {
+test('ParseI3sTileContent#should generate mbs from obb', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
-  t.ok(tile.mbs);
-  t.equals(tile.mbs.length, 4);
-  t.deepEquals(tile.mbs.slice(0, 3), tile.obb.center);
-  t.end();
+  expect(tile.mbs).toBeTruthy();
+  expect(tile.mbs.length).toBe(4);
+  expect(tile.mbs.slice(0, 3)).toEqual(tile.obb.center);
 });
-
-test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async t => {
+test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async () => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -168,17 +150,16 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
     }
   });
   const texture = content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
-  t.ok(texture instanceof ArrayBuffer);
+  expect(texture instanceof ArrayBuffer).toBeTruthy();
   if (isBrowser) {
     if (texture.byteLength === 45200) {
-      t.equal(texture.byteLength, 45200);
+      expect(texture.byteLength).toBe(45200);
     } else {
-      t.equal(texture.byteLength, 7199);
+      expect(texture.byteLength).toBe(7199);
     }
   } else {
-    t.equal(texture.byteLength, 7199);
+    expect(texture.byteLength).toBe(7199);
   }
-
   const i3SNodePagesTiles2 = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {
     i3s: {useCompressedTextures: false}
   });
@@ -193,13 +174,10 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
     }
   });
   const texture2 = content2!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
-  t.ok(texture2 instanceof ArrayBuffer);
-  t.equal(texture2.byteLength, 7199);
-
-  t.end();
+  expect(texture2 instanceof ArrayBuffer).toBeTruthy();
+  expect(texture2.byteLength).toBe(7199);
 });
-
-test('ParseI3sTileContent#should colorize by attribute', async t => {
+test('ParseI3sTileContent#should colorize by attribute', async () => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
@@ -208,25 +186,19 @@ test('ParseI3sTileContent#should colorize by attribute', async t => {
   const content = await parse(data, I3SContentLoader, {
     i3s: i3sLoaderOptions
   });
-  t.ok(content);
-
+  expect(content).toBeTruthy();
   // color array should be colorized by attribute
   const colorsArray = content!.attributes.colors.value;
-  t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
+  expect(colorsArray.subarray(0, 9)).toEqual([139, 139, 247, 255, 139, 139, 247, 255, 139]);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
-  t.deepEquals(
-    colorsArray.subarray(arrayMiddle, arrayMiddle + 9),
-    [244, 255, 135, 135, 244, 255, 135, 135, 244]
-  );
-  t.deepEquals(
-    colorsArray.subarray(colorsArray.length - 9),
-    [255, 141, 141, 248, 255, 141, 141, 248, 255]
-  );
-
-  t.end();
+  expect(colorsArray.subarray(arrayMiddle, arrayMiddle + 9)).toEqual([
+    244, 255, 135, 135, 244, 255, 135, 135, 244
+  ]);
+  expect(colorsArray.subarray(colorsArray.length - 9)).toEqual([
+    255, 141, 141, 248, 255, 141, 141, 248, 255
+  ]);
 });
-
-test('ParseI3sTileContent#should colorize by attribute using mutiplying colors', async t => {
+test('ParseI3sTileContent#should colorize by attribute using mutiplying colors', async () => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
@@ -235,24 +207,18 @@ test('ParseI3sTileContent#should colorize by attribute using mutiplying colors',
   const content = await parse(data, I3SContentLoader, {
     i3s: i3sLoaderOptions
   });
-  t.ok(content);
-
+  expect(content).toBeTruthy();
   // color array should be colorized by attribute using multiplying colors
   const colorsArray = content!.attributes.colors.value;
-  t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
+  expect(colorsArray.subarray(0, 9)).toEqual([139, 139, 247, 255, 139, 139, 247, 255, 139]);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
-  t.deepEquals(
-    colorsArray.subarray(arrayMiddle, arrayMiddle + 9),
-    [244, 255, 135, 135, 244, 255, 135, 135, 244]
-  );
-  t.deepEquals(
-    colorsArray.subarray(colorsArray.length - 9),
-    [255, 141, 141, 248, 255, 141, 141, 248, 255]
-  );
-
-  t.end();
+  expect(colorsArray.subarray(arrayMiddle, arrayMiddle + 9)).toEqual([
+    244, 255, 135, 135, 244, 255, 135, 135, 244
+  ]);
+  expect(colorsArray.subarray(colorsArray.length - 9)).toEqual([
+    255, 141, 141, 248, 255, 141, 141, 248, 255
+  ]);
 });
-
 function getI3SOptions(tile, tileset) {
   return {
     _tileOptions: {

@@ -78,16 +78,16 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
     }
 
     if (Array.isArray(_input.data)) {
+      if (!Array.isArray(_input.data[0]) && typeof _input.data[0] !== 'object') {
+        _input.data = [_input.data]; // handles input like [1,2,3] or ['asdf']
+      }
+
       if (!_input.fields) {
         _input.fields = _input.meta && _input.meta.fields;
       }
 
       if (!_input.fields) {
         _input.fields = Array.isArray(_input.data[0]) ? _input.fields : Object.keys(_input.data[0]);
-      }
-
-      if (!Array.isArray(_input.data[0]) && typeof _input.data[0] !== 'object') {
-        _input.data = [_input.data]; // handles input like [1,2,3] or ['asdf']
       }
     }
 

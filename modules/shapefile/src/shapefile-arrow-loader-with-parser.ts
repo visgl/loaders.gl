@@ -4,6 +4,7 @@
 
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {
+  makeTableScanBatch,
   parseFromContext,
   parseInBatchesFromContext,
   toArrayBufferIterator
@@ -17,6 +18,7 @@ import {
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 import {SHPLoaderWithParser} from './shp-loader-with-parser';
 import {DBFLoaderWithParser} from './dbf-loader-with-parser';
 import type {ShapefileLoaderOptions} from './shapefile-loader';
@@ -212,13 +214,7 @@ export async function* parseShapefileToArrowInBatches(
         outputSchema
       );
       yieldedDataBatch = true;
-      yield {
-        shape: 'arrow-table',
-        batchType: 'data',
-        length: batch.data.numRows,
-        schema: batch.schema,
-        data: batch.data
-      };
+      yield makeTableScanBatch(batch);
     }
     if (!yieldedDataBatch) {
       yield makeEmptyArrowBatch(outputSchema);
@@ -244,13 +240,7 @@ export async function* parseShapefileToArrowInBatches(
       transform
     );
     yieldedDataBatch = true;
-    yield {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowTable.data.numRows,
-      schema: outputSchema,
-      data: arrowTable.data
-    };
+    yield makeTableScanBatch({...arrowTable, schema: outputSchema});
   }
   if (!yieldedDataBatch) {
     yield makeEmptyArrowBatch(outputSchema);
@@ -314,14 +304,17 @@ function appendGeometryColumnToArrowTable(
 }
 
 function getReprojectionTransform(
-  sourceCrs: string | undefined,
+  sourceCrs: WKTCRSDefinition | undefined,
   options?: ShapefileLoaderOptions
 ): ((coordinate: number[]) => number[]) | undefined {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   if (!reproject) {
     return undefined;
   }
-  const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: _targetCrs || 'WGS84'});
+  if (!sourceCrs) {
+    throw new Error('Shapefile reprojection requires a source CRS from the .prj sidecar file');
+  }
+  const projection = new Proj4Projection({from: sourceCrs, to: _targetCrs || 'WGS84'});
   return coordinate => projection.project(coordinate);
 }
 
@@ -409,11 +402,5 @@ function takeRowsFromQueue(queue: arrow.Table[], rowCount: number): arrow.Table 
 /** Creates an explicit empty Arrow batch so zero-row shapefiles still expose schema in batch mode. */
 function makeEmptyArrowBatch(schema: TableSchema): ArrowTableBatch {
   const table = new ArrowTableBuilder(schema).finishTable();
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 0,
-    schema,
-    data: table.data
-  };
+  return makeTableScanBatch({...table, schema});
 }

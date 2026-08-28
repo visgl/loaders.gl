@@ -8,14 +8,18 @@ import {
   BlobFile,
   DataSource,
   createScanQueryMetadata,
+  emitScanExecutionTelemetry,
   explainTableQuery,
   isBrowser,
+  makeTableScanBatch,
   validateTableQueryLimit
 } from '@loaders.gl/loader-utils';
 import type {
   ScanColumnRole,
+  ScanExecutionTelemetry,
   ScanQueryMetadata,
-  ScanQueryMetadataOptions
+  ScanQueryMetadataOptions,
+  TableScanSource
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -69,12 +73,14 @@ import type {
   ParquetBatch,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
   ParquetObjectVersion,
   ParquetPageScanPlan,
   ParquetPredicate,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -121,6 +127,7 @@ export type {
   ParquetBoundingBox,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
+  ParquetColumnChunkSizeStatistics,
   ParquetGeospatialBoundingBox,
   ParquetGeospatialStatistics,
   ParquetMetadataRequestOptions,
@@ -137,6 +144,7 @@ export type {
   ParquetRangeRequestOptions,
   ParquetReadOptions,
   ParquetRowGroupMetadata,
+  ParquetSortingColumn,
   ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
@@ -229,7 +237,10 @@ export const ParquetSourceLoaderWithParser = {
 export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
-export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoaderOptions> {
+export class ParquetSource
+  extends DataSource<string | Blob, ParquetSourceLoaderOptions>
+  implements TableScanSource<ParquetSourceBatch, ParquetPredicate>
+{
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
   readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
   /** Immutable feature support for the current range-backed source implementation. */
@@ -283,6 +294,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     return createScanQueryMetadata({
       sourceType: 'parquet',
       queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
       name: metadata.name,
       schema,
       capabilities: {table: this.tableQueryCapabilities},
@@ -373,13 +385,26 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
 
   /** Selectively fetches row groups and columns as ordered Arrow batches with source provenance. */
   async *read(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
+    const startedAt = Date.now();
+    const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);
     if (readOptions.limit === 0) {
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
+        createParquetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          'early-terminated',
+          'limit'
+        )
+      );
       return;
     }
     const readContext = createReadAbortContext(readOptions.signal);
     const inFlightReads = new Set<Promise<SettledParquetRowGroupRead>>();
     let completed = false;
+    let limitReached = false;
     let readError: unknown;
     this.activeReadControllers.add(readContext.abortController);
 
@@ -416,7 +441,9 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       const projectedSchema = projectSchema(initialization.schema, columns);
       const projectedColumnNames = columns.length ? new Set(columns) : undefined;
       const workerOptions = this.getWorkerOptions(concurrency, readContext.abortController.signal);
-      const decodeOnWorker = canDecodeParquetSourceOnWorker(workerOptions);
+      const decodeOnWorker =
+        canDecodeParquetSourceOnWorker(workerOptions) &&
+        (!initialization.reader.encrypted || Boolean(this.options.parquet?.keyRetriever));
       const scheduledReads = new Map<number, Promise<SettledParquetRowGroupRead>>();
       let nextPositionToSchedule = 0;
       let remainingRows = readOptions.limit ?? Number.POSITIVE_INFINITY;
@@ -495,6 +522,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             yield batch;
             remainingRows -= batch.length;
             if (remainingRows === 0) {
+              limitReached = true;
               completed = true;
               return;
             }
@@ -548,6 +576,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           yield batch;
           remainingRows -= batch.length;
           if (remainingRows === 0) {
+            limitReached = true;
             completed = true;
             return;
           }
@@ -566,10 +595,33 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       if (!completed && readError === undefined) {
         this.recordTelemetry('cancel', {cancellationCount: 1}, {});
       }
+      const cancelled = readContext.abortController.signal.aborted || readOptions.signal?.aborted;
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
       await Promise.allSettled([...inFlightReads]);
+      const status: ScanExecutionTelemetry['status'] = readError
+        ? cancelled
+          ? 'cancelled'
+          : 'failed'
+        : limitReached || !completed
+          ? 'early-terminated'
+          : 'completed';
+      emitScanExecutionTelemetry(
+        options.onTelemetry,
+        createParquetScanExecutionTelemetry(
+          telemetryBefore,
+          this.getTelemetry(),
+          startedAt,
+          status,
+          limitReached
+            ? 'limit'
+            : !completed && readError === undefined
+              ? 'consumer-return'
+              : undefined,
+          readError
+        )
+      );
     }
   }
 
@@ -685,6 +737,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
         if (phase.phase === 'projection' && predicateProvedEmpty) {
           continue;
         }
+        await initialization.reader.resolveColumnMetadata(rowGroup, rowGroupIndex, phase.columns);
         const pagePlan = phase.predicate
           ? await createParquetPagePruningPlan(
               initialization.file,
@@ -692,7 +745,19 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
               initialization.parquetSchema,
               phase.columns,
               phase.predicate,
-              signal
+              signal,
+              {
+                rowGroupOrdinal: rowGroupIndex,
+                int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
+                decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
+                  initialization.reader.decryptIndexModule(
+                    bytes,
+                    module,
+                    rowGroupOrdinal,
+                    columnOrdinal,
+                    columnChunk
+                  )
+              }
             )
           : undefined;
         plans.push(
@@ -709,9 +774,12 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
                 selectedPages: pagePlan.selectedPageCount,
                 rowsPruned: pagePlan.prunedRowCount,
                 ranges: Object.freeze(
-                  getParquetPageReadRanges(rowGroup, phase.columns, pagePlan).map(range =>
-                    Object.freeze({...range})
-                  )
+                  getParquetPageReadRanges(
+                    rowGroup,
+                    phase.columns,
+                    pagePlan,
+                    initialization.parquetSchema
+                  ).map(range => Object.freeze({...range}))
                 )
               })
             : createFullColumnScanPlan(rowGroup, rowGroupIndex, phase.phase, phase.columns)
@@ -735,6 +803,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     }
     await this.readableFile?.close();
     const initialization = await this.initializationPromise?.catch(() => null);
+    initialization?.reader.close();
     if (initialization?.file !== this.readableFile) {
       await initialization?.file.close();
     }
@@ -838,6 +907,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       );
     }
     const rowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+    await initialization.reader.resolveColumnMetadata(rowGroup, rowGroupIndex, columnList);
     const pagePlan = predicate
       ? await createParquetPagePruningPlan(
           initialization.file,
@@ -845,7 +915,19 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           initialization.parquetSchema,
           columnList,
           predicate,
-          signal
+          signal,
+          {
+            rowGroupOrdinal: rowGroupIndex,
+            int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
+            decryptModule: (bytes, module, rowGroupOrdinal, columnOrdinal, columnChunk) =>
+              initialization.reader.decryptIndexModule(
+                bytes,
+                module,
+                rowGroupOrdinal,
+                columnOrdinal,
+                columnChunk
+              )
+          }
         )
       : undefined;
     if (pagePlan) {
@@ -879,7 +961,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
               columnList,
               rowRange,
               pagePlan.pageLocations,
-              signal
+              signal,
+              rowGroupIndex
             )
           )
         )
@@ -888,7 +971,8 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
             initialization.parquetSchema,
             rowGroup,
             columnList,
-            signal
+            signal,
+            rowGroupIndex
           )
         ];
     throwIfAborted(signal);
@@ -952,7 +1036,7 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       return Boolean(path && (columnList.length === 0 || fieldIndexOf(columnList, path) >= 0));
     });
     const rangeDescriptors = pagePlan
-      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan)
+      ? getParquetPageReadRanges(rowGroup, columnList, pagePlan, initialization.parquetSchema)
       : selectedColumnChunks.map(getColumnChunkRange);
     const ranges = await Promise.all(
       rangeDescriptors.map(async ({offset, length}) => {
@@ -960,6 +1044,26 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
       })
     );
     throwIfAborted(signal);
+
+    const workerColumnChunks = await Promise.all(
+      selectedColumnChunks.map(async columnChunk => {
+        const descriptor = createParquetSourceWorkerColumnChunk(columnChunk);
+        descriptor.columnOrdinal = rowGroup.columns.indexOf(columnChunk);
+        if (columnChunk.crypto_metadata) {
+          const columnOrdinal = rowGroup.columns.indexOf(columnChunk);
+          const key = await initialization.reader.getColumnKeyForWorker(
+            columnChunk,
+            rowGroupIndex,
+            columnOrdinal
+          );
+          descriptor.encrypted = true;
+          descriptor.keyMetadata = key.keyMetadata?.slice().buffer;
+          descriptor.keyMaterial = key.keyMaterial.slice().buffer;
+        }
+        return descriptor;
+      })
+    );
+    const encryptionContext = initialization.reader.getEncryptionContextForWorker();
 
     let workerResult: ParquetSourceWorkerResult;
     try {
@@ -970,12 +1074,21 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
           uncompressedByteLength: Number(rowGroup.total_byte_size),
           schemaDefinition: initialization.parquetSchema.schema,
           projectedSchema,
-          columnChunks: selectedColumnChunks.map(createParquetSourceWorkerColumnChunk),
+          columnChunks: workerColumnChunks,
           ranges,
           batchSize: batchSize || Math.max(Number(rowGroup.num_rows), 1),
           predicate: predicate ? copyParquetPredicate(predicate) : undefined,
           pagePlan,
-          preserveBinary: Boolean(this.options.parquet?.preserveBinary)
+          encryption: encryptionContext
+            ? {
+                algorithm: encryptionContext.algorithm,
+                aadPrefix: encryptionContext.aadPrefix?.slice().buffer,
+                fileUnique: encryptionContext.fileUnique.slice().buffer
+              }
+            : undefined,
+          preserveBinary: Boolean(this.options.parquet?.preserveBinary),
+          int96AsTimestamp: Boolean(this.options.parquet?.int96AsTimestamp),
+          verifyPageChecksums: Boolean(this.options.parquet?.verifyPageChecksums)
         },
         workerOptions
       );
@@ -1095,6 +1208,11 @@ export class ParquetSource extends DataSource<string | Blob, ParquetSourceLoader
     try {
       const reader = new ParquetReader(file, {
         preserveBinary: this.options.parquet?.preserveBinary,
+        int96AsTimestamp: this.options.parquet?.int96AsTimestamp,
+        verifyPageChecksums: this.options.parquet?.verifyPageChecksums,
+        verifyFooterSignature: this.options.parquet?.verifyFooterSignature,
+        keyRetriever: this.options.parquet?.keyRetriever,
+        aadPrefix: this.options.parquet?.aadPrefix,
         signal
       });
       const fileMetadata = await reader.getFileMetadata();
@@ -1210,7 +1328,8 @@ function createParquetSourceMetadata(
       rowOffset,
       Number(rowGroup.num_rows),
       Number(rowGroup.total_byte_size),
-      columns
+      columns,
+      rowGroup.sorting_columns
     );
     rowOffset += normalizedRowGroup.rowCount;
     return normalizedRowGroup;
@@ -1248,6 +1367,7 @@ function createColumnChunkMetadata(
     parquetSchema.findField(columnMetadata.path_in_schema)
   );
   const geospatialStatistics = createGeospatialStatistics(columnMetadata.geospatial_statistics);
+  const sizeStatistics = createSizeStatistics(columnMetadata.size_statistics);
   const compressedByteLength = Number(columnMetadata.total_compressed_size);
   const uncompressedByteLength = Number(columnMetadata.total_uncompressed_size);
   return Object.freeze({
@@ -1284,8 +1404,62 @@ function createColumnChunkMetadata(
         : Number(columnMetadata.bloom_filter_offset),
     bloomFilterByteLength: columnMetadata.bloom_filter_length,
     statistics,
+    sizeStatistics,
     geospatialStatistics
   });
+}
+
+/** Normalizes optional Parquet size statistics without inventing missing counts. */
+function createSizeStatistics(
+  statistics:
+    | {
+        unencoded_byte_array_data_bytes?: {toNumber?: () => number} | number;
+        repetition_level_histogram?: Array<{toNumber?: () => number} | number>;
+        definition_level_histogram?: Array<{toNumber?: () => number} | number>;
+      }
+    | undefined
+): ParquetColumnChunkSizeStatistics | undefined {
+  if (!statistics) return undefined;
+  const result: ParquetColumnChunkSizeStatistics = {
+    unencodedByteArrayDataBytes:
+      statistics.unencoded_byte_array_data_bytes === undefined
+        ? undefined
+        : toSafeNumber(statistics.unencoded_byte_array_data_bytes),
+    repetitionLevelHistogram: normalizeSizeStatisticsList(statistics.repetition_level_histogram),
+    definitionLevelHistogram: normalizeSizeStatisticsList(statistics.definition_level_histogram)
+  };
+  if (
+    result.unencodedByteArrayDataBytes === undefined &&
+    result.repetitionLevelHistogram === undefined &&
+    result.definitionLevelHistogram === undefined
+  ) {
+    return undefined;
+  }
+  return Object.freeze({
+    ...result,
+    repetitionLevelHistogram: result.repetitionLevelHistogram
+      ? Object.freeze(result.repetitionLevelHistogram)
+      : undefined,
+    definitionLevelHistogram: result.definitionLevelHistogram
+      ? Object.freeze(result.definitionLevelHistogram)
+      : undefined
+  });
+}
+
+function toSafeNumber(value: {toNumber?: () => number} | number): number | undefined {
+  const numberValue = typeof value === 'number' ? value : value.toNumber?.();
+  return numberValue !== undefined && Number.isSafeInteger(numberValue) && numberValue >= 0
+    ? numberValue
+    : undefined;
+}
+
+/** Converts a Thrift int64 histogram only when every entry is a safe non-negative integer. */
+function normalizeSizeStatisticsList(
+  values: Array<{toNumber?: () => number} | number> | undefined
+): readonly number[] | undefined {
+  if (!values) return undefined;
+  const normalized = values.map(toSafeNumber);
+  return normalized.every((value): value is number => value !== undefined) ? normalized : undefined;
 }
 
 /** Normalizes native Parquet geospatial statistics from the decoded footer. */
@@ -1391,7 +1565,8 @@ function createRowGroupMetadata(
   rowOffset: number,
   rowCount: number,
   uncompressedByteLength: number,
-  columns: ParquetColumnChunkMetadata[]
+  columns: ParquetColumnChunkMetadata[],
+  sortingColumns: RowGroup['sorting_columns']
 ): ParquetRowGroupMetadata {
   const compressedByteLength = columns.reduce(
     (sum, column) => sum + column.compressedByteLength,
@@ -1405,7 +1580,17 @@ function createRowGroupMetadata(
     uncompressedSize: uncompressedByteLength,
     compressedByteLength,
     compressedSize: compressedByteLength,
-    columns: Object.freeze(columns)
+    columns: Object.freeze(columns),
+    sortingColumns: Object.freeze(
+      (sortingColumns || []).map(
+        sortingColumn =>
+          Object.freeze({
+            columnIndex: sortingColumn.column_idx,
+            descending: sortingColumn.descending,
+            nullsFirst: sortingColumn.nulls_first
+          }) satisfies ParquetSortingColumn
+      )
+    )
   });
 }
 
@@ -1540,11 +1725,8 @@ function createParquetBatchFromArrow(
       : undefined
   });
   return {
-    batchType: 'data',
-    shape: 'arrow-table',
+    ...makeTableScanBatch({shape: 'arrow-table', schema, data}),
     schemaType: 'explicit',
-    schema,
-    data,
     length: rowCount,
     metadata: provenance,
     ...provenance
@@ -1681,6 +1863,45 @@ function createParquetTelemetry(): ParquetTelemetry {
     cancellationCount: 0,
     failedReadCount: 0
   };
+}
+
+/** Converts cumulative Parquet counters into one portable read-scoped execution snapshot. */
+function createParquetScanExecutionTelemetry(
+  before: ParquetTelemetry,
+  after: ParquetTelemetry,
+  startedAt: number,
+  status: ScanExecutionTelemetry['status'],
+  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  error?: unknown
+): ScanExecutionTelemetry {
+  const delta = Object.fromEntries(
+    Object.keys(after).map(key => {
+      const telemetryKey = key as keyof ParquetTelemetry;
+      return [key, after[telemetryKey] - before[telemetryKey]];
+    })
+  ) as ParquetTelemetry;
+  const rowsRead = Math.max(delta.predicateRowsTested, delta.rowsEmitted);
+  return Object.freeze({
+    status,
+    sourcesPlanned: 1,
+    sourcesRead:
+      status === 'early-terminated' && earlyTerminationReason === 'limit' && rowsRead === 0 ? 0 : 1,
+    batchesRead: delta.batchesEmitted,
+    batchesDecoded: delta.rowGroupsDecoded,
+    rowsRead,
+    rowsTested: delta.predicateRowsTested || undefined,
+    rowsRetained: delta.predicateRowsMatched || undefined,
+    rowsReturned: delta.rowsEmitted,
+    bytesRead: delta.downloadedBytes,
+    bytesFetched: delta.downloadedBytes,
+    filesOpened: rowsRead || delta.downloadedBytes ? 1 : 0,
+    tasksOpened: delta.rowGroupsDecoded,
+    rowsPruned: delta.rowsPrunedByPageIndex,
+    durationMilliseconds: Date.now() - startedAt,
+    earlyTerminationReason,
+    details: Object.freeze({...delta}),
+    ...(error === undefined ? {} : {error})
+  });
 }
 
 /** Returns a monotonic timestamp when available and falls back to wall-clock time. */
@@ -1835,12 +2056,31 @@ async function filterParquetRowGroupsWithBloomFilters(
       if (!field.primitiveType) continue;
       let filter: ReturnType<typeof decodeParquetSplitBlockBloomFilter>;
       try {
+        const rawColumnOrdinal = initialization.fileMetadata.row_groups[
+          rowGroupIndex
+        ].columns.findIndex(
+          columnChunk =>
+            JSON.stringify(columnChunk.meta_data?.path_in_schema) ===
+            JSON.stringify(probe.column.path)
+        );
+        const rawColumnChunk =
+          rawColumnOrdinal >= 0
+            ? initialization.fileMetadata.row_groups[rowGroupIndex].columns[rawColumnOrdinal]
+            : undefined;
         const data = await initialization.file.read(
           probe.column.bloomFilterOffset,
           probe.column.bloomFilterByteLength,
           signal
         );
-        filter = decodeParquetSplitBlockBloomFilter(toUint8Array(data));
+        const decodedBloomFilter = rawColumnChunk
+          ? await initialization.reader.decryptBloomFilter(
+              toUint8Array(data),
+              rowGroupIndex,
+              rawColumnOrdinal,
+              rawColumnChunk
+            )
+          : toUint8Array(data);
+        filter = decodeParquetSplitBlockBloomFilter(decodedBloomFilter);
         filtersRead++;
         bytesRead += data.byteLength;
       } catch {

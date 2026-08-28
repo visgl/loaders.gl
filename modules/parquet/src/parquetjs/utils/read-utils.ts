@@ -4,7 +4,12 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import {FileMetaData, PageHeader} from '../parquet-thrift/index';
+import {
+  ColumnMetaData,
+  FileCryptoMetaData,
+  FileMetaData,
+  PageHeader
+} from '../parquet-thrift/index';
 import {Uint8ArrayCompactProtocol} from './uint8-array-compact-protocol';
 import {Uint8ArrayCompactProtocolWriter} from './uint8-array-compact-protocol-writer';
 import {Uint8ArrayTransport} from './uint8-array-transport';
@@ -64,6 +69,26 @@ export function decodeFileMetadata(buf: Uint8Array, offset?: number) {
   transport.readPos = offset;
   const protocol = new Uint8ArrayCompactProtocol(transport);
   const metadata = FileMetaData.read(protocol as any);
+  return {length: transport.readPos - offset, metadata};
+}
+
+/** Decodes the FileCryptoMetaData prefix used by encrypted-footer files. */
+export function decodeFileCryptoMetadata(buf: Uint8Array, offset?: number) {
+  if (!offset) offset = 0;
+  const transport = new Uint8ArrayTransport(buf);
+  transport.readPos = offset;
+  const protocol = new Uint8ArrayCompactProtocol(transport);
+  const metadata = FileCryptoMetaData.read(protocol as any);
+  return {length: transport.readPos - offset, metadata};
+}
+
+/** Decodes a serialized ColumnMetaData encryption module. */
+export function decodeColumnMetadata(buf: Uint8Array, offset?: number) {
+  if (!offset) offset = 0;
+  const transport = new Uint8ArrayTransport(buf);
+  transport.readPos = offset;
+  const protocol = new Uint8ArrayCompactProtocol(transport);
+  const metadata = ColumnMetaData.read(protocol as any);
   return {length: transport.readPos - offset, metadata};
 }
 

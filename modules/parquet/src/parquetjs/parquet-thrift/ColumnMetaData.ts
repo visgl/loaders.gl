@@ -19,6 +19,7 @@ import * as KeyValue from './KeyValue';
 import * as PageEncodingStats from './PageEncodingStats';
 import * as Statistics from './Statistics';
 import * as Type from './Type';
+import * as SizeStatistics from './SizeStatistics';
 export interface IColumnMetaDataArgs {
   type: Type.Type;
   encodings: Array<Encoding.Encoding>;
@@ -36,6 +37,7 @@ export interface IColumnMetaDataArgs {
   bloom_filter_offset?: number | Int64;
   bloom_filter_length?: number;
   geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
+  size_statistics?: SizeStatistics.SizeStatistics;
 }
 export class ColumnMetaData {
   public type: Type.Type;
@@ -54,6 +56,7 @@ export class ColumnMetaData {
   public bloom_filter_offset?: Int64;
   public bloom_filter_length?: number;
   public geospatial_statistics?: GeospatialStatistics.GeospatialStatistics;
+  public size_statistics?: SizeStatistics.SizeStatistics;
   constructor(args: IColumnMetaDataArgs) {
     if (args != null && args.type != null) {
       this.type = args.type;
@@ -170,6 +173,9 @@ export class ColumnMetaData {
     if (args != null && args.geospatial_statistics != null) {
       this.geospatial_statistics = args.geospatial_statistics;
     }
+    if (args != null && args.size_statistics != null) {
+      this.size_statistics = args.size_statistics;
+    }
   }
   public write(output: thrift.TProtocol): void {
     output.writeStructBegin('ColumnMetaData');
@@ -267,6 +273,11 @@ export class ColumnMetaData {
     if (this.geospatial_statistics != null) {
       output.writeFieldBegin('geospatial_statistics', thrift.Thrift.Type.STRUCT, 17);
       this.geospatial_statistics.write(output);
+      output.writeFieldEnd();
+    }
+    if (this.size_statistics != null) {
+      output.writeFieldBegin('size_statistics', thrift.Thrift.Type.STRUCT, 16);
+      this.size_statistics.write(output);
       output.writeFieldEnd();
     }
     output.writeFieldStop();
@@ -435,6 +446,13 @@ export class ColumnMetaData {
         case 17:
           if (fieldType === thrift.Thrift.Type.STRUCT) {
             _args.geospatial_statistics = GeospatialStatistics.GeospatialStatistics.read(input);
+          } else {
+            input.skip(fieldType);
+          }
+          break;
+        case 16:
+          if (fieldType === thrift.Thrift.Type.STRUCT) {
+            _args.size_statistics = SizeStatistics.SizeStatistics.read(input);
           } else {
             input.skip(fieldType);
           }

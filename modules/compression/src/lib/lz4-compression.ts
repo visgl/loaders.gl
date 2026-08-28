@@ -100,15 +100,21 @@ export class LZ4Compression extends Compression {
       let uncompressed = new Uint8Array(maxSize);
       const hadoopSize = this.decodeHadoopBlocks(inputArray, uncompressed);
       if (hadoopSize !== null) {
-        return toArrayBuffer(uncompressed.slice(0, hadoopSize));
+        return toArrayBuffer(
+          hadoopSize === uncompressed.byteLength
+            ? uncompressed
+            : uncompressed.subarray(0, hadoopSize)
+        );
       }
       const uncompressedSize = this.decodeBlock(inputArray, uncompressed);
       if (uncompressedSize < 0 || uncompressedSize > maxSize) {
         throw new Error(`Invalid LZ4 block at byte ${Math.abs(uncompressedSize)}`);
       }
-      uncompressed = uncompressed.slice(0, uncompressedSize);
-
-      return toArrayBuffer(uncompressed);
+      return toArrayBuffer(
+        uncompressedSize === uncompressed.byteLength
+          ? uncompressed
+          : uncompressed.subarray(0, uncompressedSize)
+      );
     } catch (error) {
       throw this.improveError(error);
     }
@@ -243,12 +249,20 @@ export class LZ4Compression extends Compression {
    * @param input
    */
   checkMagicNumber(data: ArrayBuffer): boolean {
-    const magic = new Uint32Array(data.slice(0, 4));
-    return magic[0] === LZ4_MAGIC_NUMBER;
+    if (data.byteLength < 4) return false;
+    const bytes = new Uint8Array(data, 0, 4);
+    const magic = (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0;
+    return magic === LZ4_MAGIC_NUMBER;
   }
 }
 
 /** Reads one unsigned big-endian 32-bit Hadoop block length. */
 function readUInt32BE(data: Uint8Array, offset: number): number {
-  return new DataView(data.buffer, data.byteOffset, data.byteLength).getUint32(offset, false);
+  return (
+    ((data[offset] << 24) |
+      (data[offset + 1] << 16) |
+      (data[offset + 2] << 8) |
+      data[offset + 3]) >>>
+    0
+  );
 }

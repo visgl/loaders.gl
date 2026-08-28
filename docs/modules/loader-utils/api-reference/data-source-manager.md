@@ -4,6 +4,10 @@
 
 The manager is intentionally format-agnostic. It can hold any `DataSource` subclass created by a `SourceLoader`, including tile, image, raster, vector, SQL, archive-backed, and in-memory sources.
 
+Picker and diagnostics UI should use `listDataSources()` or `discoverDataSources()` rather than
+subscribing merely to inspect registrations. These read-only methods expose lifecycle information
+and common query metadata without returning the managed source object or changing retention.
+
 ## Usage
 
 ### Create and register a DataSource
@@ -245,6 +249,33 @@ This split keeps responsibilities clear:
 - `DataSource` subclasses implement format-specific query APIs such as `getMetadata()`, `getTile()`, `getRaster()`, or SQL methods.
 - `DataSourceManager` handles object identity, subscriptions, replacement, and cleanup.
 
+### Use the manager for scan federation
+
+`@loaders.gl/scan` reuses this manager rather than defining a scan-only registry. Register each
+`TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
+
+```ts
+import {DataSourceManager} from '@loaders.gl/loader-utils';
+import {FederatedTableScanSource} from '@loaders.gl/scan';
+
+const dataSourceManager = new DataSourceManager();
+dataSourceManager.add({dataSourceId: 'today', dataSource: todaySource});
+dataSourceManager.add({dataSourceId: 'archive', dataSource: archiveSource});
+
+const source = new FederatedTableScanSource(dataSourceManager, {
+  sources: [{dataSourceId: 'today'}, {dataSourceId: 'archive'}]
+});
+```
+
+The federated source owns no child source resources. It creates operation-scoped subscriptions for
+metadata discovery, explanation, and iteration, then releases them on completion, error,
+cancellation, a global-limit stop, or early iterator return. Non-persistent sources therefore keep
+the same pruning and lifecycle behavior they have for any other manager consumer.
+
+The dependency direction is intentional: `DataSourceManager` remains a lightweight,
+format-agnostic resource manager in `@loaders.gl/loader-utils`; the optional scan package adds
+schema reconciliation and ordered query execution on top.
+
 ### Integrate with DataSource subclasses
 
 Any subclass of `DataSource` can be managed. Subclasses do not need to know that a manager exists.
@@ -348,6 +379,30 @@ subscribe<DataSourceT extends ManageableDataSource>({
 ```
 
 Subscribes one consumer request to a managed source. Returns the current source if available, `null` for a deferred placeholder, or `undefined` if the id is not registered and does not use the manager protocol.
+
+### listDataSources()
+
+```ts
+listDataSources(): readonly DataSourceManagerEntryInfo[];
+```
+
+Returns stable ids, lifecycle status, persistence, retain count, and subscription count for every
+registration. It does not resolve pending sources or expose source objects.
+
+### discoverDataSources()
+
+```ts
+discoverDataSources(options?: {
+  queryType?: 'table' | 'raster' | 'point-cloud';
+  signal?: AbortSignal;
+}): Promise<readonly DataSourceManagerDiscoveryInfo[]>;
+```
+
+Calls `getQueryMetadata()` only on ready metadata providers and reports whether each source has a
+supported common executor for the requested query family. Discovery errors are retained on the
+corresponding result so one broken source does not hide the remaining picker choices. Aborts are
+propagated immediately. The result contains metadata and lifecycle information, never the managed
+source instance.
 
 ### unsubscribe()
 

@@ -52,12 +52,6 @@
       "@loaders.gl/polyfills/test": [
         "modules/polyfills/test"
       ],
-      "@loaders.gl/math": [
-        "modules/math/src"
-      ],
-      "@loaders.gl/math/test": [
-        "modules/math/test"
-      ],
       "@loaders.gl/geoarrow": [
         "modules/geoarrow/src"
       ],
@@ -102,6 +96,9 @@
       ],
       "@loaders.gl/3d-tiles": [
         "modules/3d-tiles/src"
+      ],
+      "@loaders.gl/3d-tiles/cesium-ion-loader-with-parser": [
+        "modules/3d-tiles/src/cesium-ion-loader-with-parser"
       ],
       "@loaders.gl/3d-tiles/test": [
         "modules/3d-tiles/test"
@@ -229,6 +226,9 @@
       "@loaders.gl/netcdf": [
         "modules/netcdf/src"
       ],
+      "@loaders.gl/netcdf/*": [
+        "modules/netcdf/src/*"
+      ],
       "@loaders.gl/netcdf/test": [
         "modules/netcdf/test"
       ],
@@ -279,6 +279,12 @@
       ],
       "@loaders.gl/sql": [
         "modules/sql/src"
+      ],
+      "@loaders.gl/scan": [
+        "modules/scan/src"
+      ],
+      "@loaders.gl/scan/test": [
+        "modules/scan/test"
       ],
       "@loaders.gl/sql/test": [
         "modules/sql/test"
@@ -370,14 +376,32 @@
       "@loaders.gl/wkt": [
         "modules/wkt/src"
       ],
+      "@loaders.gl/wkt/wkt-crs-loader": [
+        "modules/wkt/src/wkt-crs-loader-with-parser"
+      ],
+      "@loaders.gl/wkt/*": [
+        "modules/wkt/src/*"
+      ],
       "@loaders.gl/wkt/test": [
         "modules/wkt/test"
       ],
       "@loaders.gl/wms": [
         "modules/wms/src"
       ],
+      "@loaders.gl/wms/*": [
+        "modules/wms/src/*"
+      ],
       "@loaders.gl/wms/test": [
         "modules/wms/test"
+      ],
+      "@loaders.gl/services": [
+        "modules/services/src"
+      ],
+      "@loaders.gl/services/unbundled": [
+        "modules/services/src/unbundled"
+      ],
+      "@loaders.gl/services/test": [
+        "modules/services/test"
       ],
       "@loaders.gl/xml": [
         "modules/xml/src"

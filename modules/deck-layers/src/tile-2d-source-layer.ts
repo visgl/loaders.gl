@@ -5,6 +5,7 @@
 import {
   CompositeLayer,
   type CompositeLayerProps,
+  type LayerContext,
   Layer,
   type LayersList,
   type PickingInfo,
@@ -17,29 +18,30 @@ import {createDataSource} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetTileDataParameters,
+  Loader,
   SourceLoader,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {SharedTile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
+import {
+  finalizeOwnedSource,
+  resolveVisualSource,
+  type ResolvedVisualSource
+} from './source-layer-utils';
 
 /** Runtime shape used by loaders.gl source-backed tile layers. */
 export type TileSourceRuntime = TileSource & {
   /** Indicates that vector tiles can be rendered in local coordinates. */
   localCoordinates?: boolean;
   /** MIME type that identifies vector or image payload handling. */
-  mimeType: string | null;
-  /** Mutable source options forwarded to loaders.gl tile fetches. */
-  options: {
-    table?: {
-      coordinates?: string;
-    };
-  };
+  mimeType?: string | null;
   /** Source URL used for stable layer ids. */
   url?: string;
 };
@@ -47,12 +49,17 @@ export type TileSourceRuntime = TileSource & {
 type Tile2DSourceLayerData = string | Blob | TileSourceRuntime;
 
 /** Props for {@link Tile2DSourceLayer}. */
-export type Tile2DSourceLayerProps<DataT = unknown> = CompositeLayerProps &
-  Partial<Omit<TileLayerProps, 'data' | 'renderSubLayers'>> & {
+export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
+  CompositeLayerProps,
+  'data' | 'loaders'
+> &
+  Partial<Omit<TileLayerProps, 'data' | 'loaders' | 'renderSubLayers'>> & {
     /** URL/blob input or a fully constructed loaders.gl tile source. */
     data: Tile2DSourceLayerData;
     /** Source factories used to auto-create tile sources from URL/blob inputs. */
     sources?: Readonly<SourceLoader[]>;
+    /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
+    loaders?: ReadonlyArray<Loader | SourceLoader>;
     /** Options forwarded to `createDataSource` when `sources` are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata used by the example overlay and zoom bounds. */
@@ -95,6 +102,8 @@ export type Tile2DSourceLayerProps<DataT = unknown> = CompositeLayerProps &
     zRange?: [number, number] | null;
     /** Optional model matrix applied by the surrounding layer stack. */
     modelMatrix?: NumericArray | null;
+    /** Called when URL/Blob source resolution fails. */
+    onSourceError?: (error: Error) => void;
   };
 
 /** Picking info returned from {@link Tile2DSourceLayer}. */
@@ -112,6 +121,7 @@ export type Tile2DSourceLayerPickingInfo<
 
 type Tile2DSourceLayerState<DataT> = {
   resolvedData: TileSourceRuntime | null;
+  resolvedSource: ResolvedVisualSource | null;
   tileset: Tileset2D<DataT, any> | null;
   tilesetViews: Map<string, SharedTile2DView<DataT>>;
   isLoaded: boolean;
@@ -180,6 +190,10 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   /** Default props shared by the vector and raster rendering paths. */
   static defaultProps = {
     ...TileLayer.defaultProps,
+    data: '',
+    sources: {type: 'array', compare: false, value: []},
+    loaders: {type: 'array', compare: false, value: []},
+    sourceOptions: {type: 'object', compare: false, value: {}},
     tileSize: 256,
     minZoom: null,
     maxZoom: null,
@@ -189,13 +203,21 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     debounceTime: 0,
     zoomOffset: 0,
     showTileBorders: true,
-    renderSubLayers: defaultRenderSubLayers
+    renderSubLayers: defaultRenderSubLayers,
+    onSourceError: {type: 'function', value: () => {}}
   };
 
   /** Viewports tracked by id so shared tileset views stay stable across renders. */
   private _knownViewports: Map<string, any> = new Map();
   /** Typed deck.gl state for source resolution, traversal views, and tile sublayers. */
   state = null as unknown as Tile2DSourceLayerState<DataT>;
+
+  private resolutionId = 0;
+
+  /** Creates a 2D tile layer with mixed parser and source loader support. */
+  constructor(props: Tile2DSourceLayerProps<DataT>) {
+    super(props as any);
+  }
 
   /** Initializes local state before props are first rendered. */
   initializeState(): void {
@@ -205,6 +227,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     }
     this.state = {
       resolvedData: null,
+      resolvedSource: null,
       tileset: null,
       tilesetViews: new Map(),
       isLoaded: false,
@@ -215,8 +238,13 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   }
 
   /** Finalizes owned resources and detaches from the shared tileset. */
-  finalizeState(): void {
+  finalizeState(context: LayerContext): void {
+    this.resolutionId++;
     this._releaseTileset();
+    if (this.state.resolvedSource?.owned) {
+      void finalizeOwnedSource(this.state.resolvedSource.source);
+    }
+    super.finalizeState(context);
   }
 
   /** Returns whether all visible sub-layers for all tracked views are loaded. */
@@ -249,30 +277,74 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
       this._knownViewports.set(this._getViewportKey(), this.context.viewport);
     }
 
-    const previousResolvedData = this.state.resolvedData;
-    let resolvedData = previousResolvedData;
     const dataChanged =
       changeFlags.dataChanged ||
       props.sources !== oldProps.sources ||
+      props.loaders !== oldProps.loaders ||
       props.sourceOptions !== oldProps.sourceOptions;
 
     if (dataChanged) {
-      resolvedData = this._resolveData(props);
-      this.setState({resolvedData});
+      void this.resolveTileSource(props);
+      return;
     }
 
+    this.updateTilesetForProps(this.state.resolvedData, false, changeFlags);
+  }
+
+  private async resolveTileSource(props: Tile2DSourceLayerProps<DataT>): Promise<void> {
+    const resolutionId = ++this.resolutionId;
+    const previousSource = this.state.resolvedSource;
+    const previousResolvedData = this.state.resolvedData;
+    try {
+      const resolvedSource = await resolveVisualSource(props);
+      if (resolvedSource.sourceType !== 'tile-2d') {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        throw new Error(
+          `Tile2DSourceLayer expected a 2D tile source but resolved ${resolvedSource.sourceType}.`
+        );
+      }
+      if (resolutionId !== this.resolutionId) {
+        if (resolvedSource.owned) {
+          await finalizeOwnedSource(resolvedSource.source);
+        }
+        return;
+      }
+      if (previousSource?.owned && previousSource.source !== resolvedSource.source) {
+        await finalizeOwnedSource(previousSource.source);
+      }
+      const resolvedData = resolvedSource.source as TileSourceRuntime;
+      this.setState({resolvedData, resolvedSource});
+      this.updateTilesetForProps(resolvedData, resolvedData !== previousResolvedData, {
+        propsOrDataChanged: true,
+        updateTriggersChanged: false
+      });
+    } catch (error) {
+      if (resolutionId === this.resolutionId) {
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+        this.props.onSourceError?.(normalizedError);
+        this.raiseError(normalizedError, 'resolving 2D tile source');
+      }
+    }
+  }
+
+  private updateTilesetForProps(
+    resolvedData: TileSourceRuntime | null,
+    resolvedDataChanged: boolean,
+    changeFlags: {propsOrDataChanged?: boolean; updateTriggersChanged?: boolean}
+  ): void {
     if (!resolvedData || this.sourceSupportsMVTLayer(resolvedData)) {
       this._releaseTileset();
       return;
     }
 
-    const resolvedDataChanged = resolvedData !== previousResolvedData;
     const tileset = this._getOrCreateTileset(resolvedData, resolvedDataChanged);
     if (tileset !== this.state.tileset) {
       this.setState({tileset});
     } else {
       tileset.setOptions(this._getTilesetOptions(resolvedData));
-      if (dataChanged) {
+      if (resolvedDataChanged) {
         tileset.reloadAll();
       } else if (changeFlags.propsOrDataChanged || changeFlags.updateTriggersChanged) {
         this.state.tileLayers.clear();
@@ -336,17 +408,12 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     }
 
     if (this.sourceSupportsMVTLayer(resolvedData)) {
-      resolvedData.options.table = resolvedData.options.table || {};
-      resolvedData.options.table.coordinates = 'local';
       return this.renderMVTLayer(resolvedData);
     }
 
     if (!tileset) {
       return null;
     }
-
-    resolvedData.options.table = resolvedData.options.table || {};
-    resolvedData.options.table.coordinates = 'wgs84';
 
     return tileset.tiles.map(tile => {
       let layers = tileLayers.get(tile.id);
@@ -385,8 +452,8 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   /** Render vector tiles through `MVTLayer` when local coordinate support is required. */
   renderMVTLayer(tileSource: TileSourceRuntime) {
     const {showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
-    const minZoom = metadata?.minZoom || 0;
-    const maxZoom = metadata?.maxZoom || 30;
+    const minZoom = this.props.minZoom ?? metadata?.minZoom ?? 0;
+    const maxZoom = this.props.maxZoom ?? metadata?.maxZoom ?? 30;
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
@@ -457,24 +524,18 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
       maxCacheByteSize,
       TILE2D_LAYER_DEFAULT_OPTION_VALUES.maxCacheByteSize
     );
-    this._assignTilesetOptionIfExplicit(
-      options,
-      'maxZoom',
-      maxZoom,
-      TILE2D_LAYER_DEFAULT_OPTION_VALUES.maxZoom
-    );
-    this._assignTilesetOptionIfExplicit(
-      options,
-      'minZoom',
-      minZoom,
-      TILE2D_LAYER_DEFAULT_OPTION_VALUES.minZoom
-    );
-    this._assignTilesetOptionIfExplicit(
-      options,
-      'extent',
-      extent,
-      TILE2D_LAYER_DEFAULT_OPTION_VALUES.extent
-    );
+    const resolvedMaxZoom = maxZoom ?? this.props.metadata?.maxZoom;
+    const resolvedMinZoom = minZoom ?? this.props.metadata?.minZoom;
+    const resolvedExtent = extent ?? flattenTileBounds(this.props.metadata?.boundingBox);
+    if (resolvedMaxZoom !== undefined) {
+      options.maxZoom = resolvedMaxZoom;
+    }
+    if (resolvedMinZoom !== undefined) {
+      options.minZoom = resolvedMinZoom;
+    }
+    if (resolvedExtent !== undefined) {
+      options.extent = resolvedExtent;
+    }
     this._assignTilesetOptionIfExplicit(
       options,
       'maxRequests',
@@ -623,13 +684,23 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   }
 
   /** Resolves the `data` prop to a concrete loaders.gl tile source. */
-  private _resolveData(props: Tile2DSourceLayerProps<DataT>): TileSourceRuntime | null {
-    const {data, sources, sourceOptions = {}} = props;
+  _resolveData(props: Tile2DSourceLayerProps<DataT>): TileSourceRuntime | null {
+    const {data, sources, sourceOptions = {}, loaders = []} = props;
     if (isTileSourceRuntime(data)) {
       return data;
     }
-    if ((typeof data === 'string' || data instanceof Blob) && sources?.length) {
-      return createDataSource(data, sources, sourceOptions) as unknown as TileSourceRuntime;
+    const sourceLoaders = Array.from(
+      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
+    );
+    if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
+      const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+      return createDataSource(data, sourceLoaders, {
+        ...sourceOptions,
+        core: {
+          ...sourceOptions.core,
+          loaders: [...(sourceOptions.core?.loaders || []), ...parserLoaders]
+        }
+      }) as unknown as TileSourceRuntime;
     }
     throw new Error('Tile2DSourceLayer requires `sources` for URL/blob inputs.');
   }
@@ -663,6 +734,12 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   private _flattenTileLayers(rendered: Layer | null | LayersList): any[] {
     return flatten(rendered as any, Boolean) as any[];
   }
+}
+
+function flattenTileBounds(
+  bounds?: [[number, number], [number, number]]
+): [number, number, number, number] | undefined {
+  return bounds ? [bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]] : undefined;
 }
 
 /**

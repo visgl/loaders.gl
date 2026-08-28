@@ -4,7 +4,7 @@
 
 export type Example = {
   type: 'las' | 'draco' | 'pcd' | 'ply' | 'obj';
-  url: string;
+  url: string | File;
   urls?: string[];
   pointCount?: number;
   initialExample?: boolean;

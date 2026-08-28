@@ -120,14 +120,24 @@ export class BinaryWriter {
     this.byteOffset += arrayBuffer.byteLength;
   }
 
+  /** Returns the written bytes without unused capacity from a resizable writer. */
+  getArrayBuffer(): ArrayBuffer {
+    return this.byteOffset === this.arrayBuffer.byteLength
+      ? this.arrayBuffer
+      : this.arrayBuffer.slice(0, this.byteOffset);
+  }
+
   /** Resizes this.arrayBuffer if not enough space */
   _ensureSize(size: number) {
-    if (this.arrayBuffer.byteLength < this.byteOffset + size) {
+    const requiredByteLength = this.byteOffset + size;
+    if (this.arrayBuffer.byteLength < requiredByteLength) {
       if (this.allowResize) {
-        const newArrayBuffer = new ArrayBuffer(this.byteOffset + size);
+        const doubledByteLength = Math.max(this.arrayBuffer.byteLength * 2, 16);
+        const newArrayBuffer = new ArrayBuffer(Math.max(requiredByteLength, doubledByteLength));
         const tempArray = new Uint8Array(newArrayBuffer);
         tempArray.set(new Uint8Array(this.arrayBuffer));
         this.arrayBuffer = newArrayBuffer;
+        this.dataView = new DataView(this.arrayBuffer);
       } else {
         throw new Error('BinaryWriter overflow');
       }

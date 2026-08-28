@@ -22,6 +22,11 @@ import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-pr
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
 import {TILESET_TYPE} from '../../constants';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../spatial/spatial-types';
+import {
+  applyTilesetSpatialOptions,
+  createTilesetSpatialReference
+} from '../../spatial/spatial-types';
 
 import {TilesetTraverser} from './tileset-traverser';
 import {
@@ -72,8 +77,16 @@ export type Tileset3DProps = {
 
   ellipsoid?: object;
   modelMatrix?: Matrix4;
+  /** Automatic CRS output options and expert source-metadata recovery overrides. */
+  spatial?: TilesetSpatialOptions;
 
   maximumScreenSpaceError?: number;
+  /**
+   * Enables replacement traversal that may skip hierarchy levels while retaining ready ancestors
+   * as coverage. This trades temporary overdraw for faster refinement on deep trees.
+   * @default false
+   */
+  skipLevelOfDetail?: boolean;
   /** Enables perspective dynamic SSE to reduce distant, horizon-facing refinement. */
   dynamicScreenSpaceError?: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -139,6 +152,8 @@ type Props = {
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   onUpdate: () => void;
   maximumScreenSpaceError: number;
+  /** Whether replacement traversal may skip levels while retaining ancestor coverage. */
+  skipLevelOfDetail: boolean;
   /** Whether perspective dynamic SSE is enabled. */
   dynamicScreenSpaceError: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -170,6 +185,8 @@ type Props = {
   basePath: string;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   i3s: Record<string, any>;
+  /** Automatic CRS output options and expert source-metadata recovery overrides. */
+  spatial: TilesetSpatialOptions;
 };
 
 const BYTES_PER_MEBIBYTE = 1024 * 1024;
@@ -264,6 +281,7 @@ const DEFAULT_PROPS: Props = {
   foveatedInterpolationCallback: interpolateLinearly,
   foveatedTimeDelay: 0.2,
   maximumScreenSpaceError: 8,
+  skipLevelOfDetail: false,
   dynamicScreenSpaceError: true,
   dynamicScreenSpaceErrorDensity: 2.0e-4,
   dynamicScreenSpaceErrorFactor: 24,
@@ -275,7 +293,8 @@ const DEFAULT_PROPS: Props = {
   loadOptions: {fetch: {}},
   attributions: [],
   basePath: '',
-  i3s: {}
+  i3s: {},
+  spatial: {}
 };
 
 const TILES_TOTAL = 'Tiles In Tileset(s)';
@@ -314,6 +333,18 @@ export class Tileset3D {
   root: Tile3D | null = null;
   roots: Record<string, Tile3D> = {};
   asset: Record<string, any> = {};
+  /** Inline metadata schema declared by the source tileset, when present. */
+  schema: Record<string, any> | null = null;
+  /** External metadata schema URI declared by the source tileset, when present. */
+  schemaUri: string | null = null;
+  /** Metadata groups declared by the source tileset, in source order. */
+  groups: Array<Record<string, any>> = [];
+  /** Tileset-wide metadata entity, preserved without property-table decoding. */
+  metadata: Record<string, any> | null = null;
+  /** Tileset statistics metadata, preserved for application-level inspection. */
+  statistics: unknown = null;
+  /** Normalized source and target coordinate reference system metadata. */
+  spatialReference: TilesetSpatialReference = createTilesetSpatialReference({});
 
   description = '';
   properties: any;
@@ -422,6 +453,13 @@ export class Tileset3D {
     this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
     this._cacheBytes = cacheBytes;
     this._maximumCacheOverflowBytes = maximumCacheOverflowBytes;
+    const metadata = this._getSourceMetadata();
+    if (metadata) {
+      this.spatialReference = applyTilesetSpatialOptions(
+        metadata.spatialReference,
+        this.options.spatial
+      );
+    }
 
     this.stats = new Stats({id: this.url});
     this._initializeStats();
@@ -838,7 +876,8 @@ export class Tileset3D {
       }
       if (
         initialMetadata?.tileset?.root &&
-        typeof initialMetadata.tileset.root.then !== 'function'
+        typeof initialMetadata.tileset.root.then !== 'function' &&
+        !this.source.prepareTileset
       ) {
         this.root = this._initializeTileHeaders(initialMetadata.tileset, null);
         this._applyViewState();
@@ -847,6 +886,7 @@ export class Tileset3D {
       await initializePromise;
       const metadata = this.source.getMetadata();
       this._syncSourceState(metadata);
+      await this.source.prepareTileset?.(this);
       if (!this.root) {
         this.root = this._initializeTileHeaders(metadata.tileset, null);
       }
@@ -1052,6 +1092,20 @@ export class Tileset3D {
     this.refine = metadata.refine;
     this.contentFormats = this.source.contentFormats;
     this.asset = this.source.asset || this.asset;
+    const tileset = metadata.tileset as Record<string, any>;
+    this.schema = tileset.schema || null;
+    this.schemaUri = tileset.schemaUri || null;
+    this.groups = tileset.groups || [];
+    this.metadata = tileset.metadata || null;
+    this.statistics = tileset.statistics ?? null;
+    const spatialReference = applyTilesetSpatialOptions(
+      metadata.spatialReference,
+      this.options.spatial
+    );
+    this.spatialReference = preserveTransformedSpatialReference(
+      this.spatialReference,
+      spatialReference
+    );
     this.properties = this.source.properties ?? this.properties;
     this.extras = this.source.extras ?? this.extras;
     if (this.options.attributions?.length) {
@@ -1087,4 +1141,18 @@ export class Tileset3D {
       return null;
     }
   }
+}
+
+/** Preserve a completed runtime operation when asynchronous source metadata describes the same request. */
+function preserveTransformedSpatialReference(
+  current: TilesetSpatialReference,
+  next: TilesetSpatialReference
+): TilesetSpatialReference {
+  return current?.status === 'transformed' &&
+    current.sourceCrs === next.sourceCrs &&
+    current.targetCrs === next.targetCrs &&
+    current.targetHeightReference === next.targetHeightReference &&
+    current.outputCoordinates === next.outputCoordinates
+    ? current
+    : next;
 }

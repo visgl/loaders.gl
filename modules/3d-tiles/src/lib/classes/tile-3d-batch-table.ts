@@ -79,7 +79,9 @@ export default class Tile3DBatchTableParser {
       const result = traverseHierarchy(this._hierarchy, batchId, (hierarchy, instanceIndex) => {
         const classId = hierarchy.classIds[instanceIndex];
         const instanceClass = hierarchy.classes[classId];
-        return instanceClass.name === className;
+        // Returning undefined keeps walking when this class does not match. The hierarchy
+        // traverser treats any defined value as a successful match.
+        return instanceClass.name === className ? true : undefined;
       });
       return defined(result);
     }
@@ -257,7 +259,7 @@ export default class Tile3DBatchTableParser {
     const result = traverseHierarchy(this._hierarchy, batchId, (hierarchy, instanceIndex) => {
       const classId = hierarchy.classIds[instanceIndex];
       const instances = hierarchy.classes[classId].instances;
-      return defined(instances[name]);
+      return defined(instances[name]) ? true : undefined;
     });
 
     return defined(result);
@@ -289,7 +291,7 @@ export default class Tile3DBatchTableParser {
         }
         return clone(propertyValues[indexInClass], true);
       }
-      return null;
+      return undefined;
     });
   }
 
@@ -308,7 +310,7 @@ export default class Tile3DBatchTableParser {
         }
         return true;
       }
-      return false;
+      return undefined;
     });
     return defined(result);
   }

@@ -1,14 +1,18 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-/* eslint-disable max-len */
-import test from 'test/utils/vitest-tape';
-import {GL} from '@loaders.gl/math';
+import {GL} from '@math.gl/geometry-utils';
+import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
-
-const TEST_CASES: {tile: Tiles3DTileContent; colors; batchTable; expected; message: string}[] = [
+const TEST_CASES: {
+  tile: Tiles3DTileContent;
+  colors;
+  batchTable;
+  expected;
+  message: string;
+}[] = [
   {
     tile: {shape: 'tile3d'},
     colors: null,
@@ -48,15 +52,10 @@ const TEST_CASES: {tile: Tiles3DTileContent; colors; batchTable; expected; messa
   //   message: 'Size should be 3 for rgb565 format'
   // }
 ];
-
-test('normalize3DTileColorAttribute', t => {
+test('normalize3DTileColorAttribute', () => {
   TEST_CASES.forEach(testCase =>
-    t.deepEqual(
-      normalize3DTileColorAttribute(testCase.tile, testCase.colors),
-      testCase.expected,
-      testCase.message
+    expect(normalize3DTileColorAttribute(testCase.tile, testCase.colors), testCase.message).toEqual(
+      testCase.expected
     )
   );
-
-  t.end();
 });

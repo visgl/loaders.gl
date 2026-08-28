@@ -5,16 +5,27 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {KTX2BasisTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
-import type {ImageDataType} from '@loaders.gl/images';
+import type {BasisEncoderFormat, BasisImageData} from './basis-types';
 import {encodeKTX2BasisTexture} from './lib/encoders/encode-ktx2-basis-texture';
 
-/** @todo should be in basis sub-object */
+/** Options for the KTX2 Basis writer. */
 export type KTX2BasisWriterOptions = WriterOptions & {
+  /** Basis encoder options. */
   ['ktx2-basis-writer']?: {
-    useSRGB?: boolean;
-    qualityLevel?: number;
-    encodeUASTC?: boolean;
+    /** Source codec written to the KTX2 container. */
+    format?: BasisEncoderFormat;
+    /** Unified encoder quality from 0 to 100. */
+    quality?: number;
+    /** Unified encoder effort from 0 to 10. */
+    effort?: number;
+    /** Color interpretation of the input pixels. */
+    contentType?: 'linear' | 'srgb' | 'normal-map';
+    /** Whether to generate a complete mip chain. */
     mipmaps?: boolean;
+    /** Whether to apply Zstandard supercompression where supported. */
+    zstd?: boolean;
+    /** Absolute-light scale used when converting RGBA8 input to HDR. */
+    ldrToHdrNitMultiplier?: number;
   };
 };
 
@@ -33,12 +44,13 @@ export const KTX2BasisWriter = {
   mimeTypes: ['image/ktx2'],
   options: {
     ['ktx2-basis-writer']: {
-      useSRGB: false,
-      qualityLevel: 10,
-      encodeUASTC: false,
-      mipmaps: false
+      format: 'etc1s',
+      contentType: 'linear',
+      mipmaps: false,
+      zstd: false,
+      ldrToHdrNitMultiplier: 100
     }
   },
 
   encode: encodeKTX2BasisTexture
-} as const satisfies WriterWithEncoder<ImageDataType, unknown, KTX2BasisWriterOptions>;
+} as const satisfies WriterWithEncoder<BasisImageData, unknown, KTX2BasisWriterOptions>;

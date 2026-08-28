@@ -10,10 +10,25 @@ export type {AnyLayerProps} from './any-layer';
 export {AnyLayer} from './any-layer';
 export type {SourceLayerProps} from './source-layer';
 export {SourceLayer} from './source-layer';
+export type {
+  SourceLayerData,
+  SourceLayerLoadInfo,
+  SourceLayerViewState,
+  VisualSourceType
+} from './source-layer';
 export type {ImageSourceLayerProps} from './image-source-layer';
 export {ImageSourceLayer} from './image-source-layer';
 export type {VectorSourceLayerProps} from './vector-source-layer';
 export {VectorSourceLayer} from './vector-source-layer';
+export type {
+  RasterBitmapImage,
+  RasterColorizerContext,
+  RasterRenderResult,
+  RasterSourceLayerProps
+} from './raster-source-layer';
+export {colorizeRasterData, RasterSourceLayer} from './raster-source-layer';
+export type {PointCloudSourceLayerProps} from './point-cloud-source-layer';
+export {PointCloudSourceLayer} from './point-cloud-source-layer';
 export type {GeoArrowLayerProps} from './geoarrow-layer';
 export {createGeoJsonLayerProps, GeoArrowLayer} from './geoarrow-layer';
 export type {

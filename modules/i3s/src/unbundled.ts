@@ -3,6 +3,12 @@
 // Copyright vis.gl contributors
 
 export type {I3SLoaderOptions} from './i3s-loader';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from './i3s-zod-schema';
 export {I3SLoader} from './i3s-loader';
 export {SLPKLoader} from './i3s-slpk-loader';
 export type {SLPKSourceInput} from './i3s-slpk-source';
@@ -12,3 +18,18 @@ export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader'
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
+export {
+  I3SLEPCCDecoder,
+  type I3SLEPCCBlobType,
+  type I3SLEPCCDecodedValue,
+  type I3SLEPCCDecoderOptions
+} from './i3s-lepcc';
+export {I3SPointCloudSource} from './i3s-point-cloud-source';
+export {
+  createI3SLayerSource,
+  I3SUnsupportedProfileError,
+  normalizeI3SServiceMetadata,
+  parseI3SSceneLayerMetadata
+} from './i3s-service';
+export type {I3SLayerSource, I3SServiceMetadata} from './i3s-service';
+export type {I3SPointCloudSourceOptions} from './i3s-point-cloud-source';

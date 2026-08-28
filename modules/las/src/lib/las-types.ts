@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Mesh} from '@loaders.gl/schema';
+import type {WKTCRSDefinition} from '@math.gl/crs';
 
 /** LAS Variable Length Record metadata and payload. */
 export type LASVariableLengthRecord = {
@@ -80,12 +81,40 @@ export type LASWaveformPacketDescriptor = {
   digitizerOffset: number;
 };
 
+/** One resolved GeoTIFF GeoKey directory entry from LAS CRS metadata. */
+export type LASGeoTIFFKey = {
+  /** GeoTIFF key identifier. */
+  keyId: number;
+  /** TIFF tag containing the value, or zero when the value is inline. */
+  tiffTagLocation: number;
+  /** Number of values referenced by this key. */
+  count: number;
+  /** Inline value or offset into the referenced GeoTIFF parameter tag. */
+  valueOffset: number;
+  /** Resolved scalar, numeric array, or ASCII value when its source tag is available. */
+  value?: number | number[] | string;
+};
+
+/** Parsed GeoTIFF GeoKey directory header and entries. */
+export type LASGeoTIFFKeyDirectory = {
+  /** GeoKey directory format version. */
+  version: number;
+  /** GeoKey revision. */
+  keyRevision: number;
+  /** GeoKey minor revision. */
+  minorRevision: number;
+  /** Resolved GeoKey entries. */
+  entries: LASGeoTIFFKey[];
+};
+
 /** Typed metadata parsed from a LAS file. */
 export type LASMetadata = {
   /** File source id from the public header. */
   fileSourceId: number;
   /** Global encoding bit field from the public header. */
   globalEncoding: number;
+  /** Start of the internal waveform data packet record, preserved as an exact uint64. */
+  waveformDataOffset?: bigint;
   /** Project identifier as a UUID string. */
   projectId: string;
   /** System identifier string. */
@@ -98,6 +127,8 @@ export type LASMetadata = {
   creationYear: number;
   /** LAS header byte length. */
   headerSize: number;
+  /** LAS header extension bytes after the standard 393-byte LAS 1.5 header. */
+  userHeaderData?: Uint8Array;
   /** Number of VLRs before point data. */
   vlrCount: number;
   /** Offset of first EVLR, or zero when absent. */
@@ -117,7 +148,7 @@ export type LASMetadata = {
   /** Parsed EVLR records when available. */
   evlrs: LASExtendedVariableLengthRecord[];
   /** WKT coordinate reference system text when present. */
-  wkt?: string;
+  wkt?: WKTCRSDefinition;
   /** WKT math transform text when present. */
   wktMathTransform?: string;
   /** GeoTIFF VLRs retained for legacy LAS versions. */
@@ -128,6 +159,8 @@ export type LASMetadata = {
     doubles?: Float64Array;
     /** GeoAsciiParamsTag payload. */
     ascii?: string;
+    /** Parsed and resolved GeoKey directory entries. */
+    keyDirectory?: LASGeoTIFFKeyDirectory;
   };
   /** Extra Bytes descriptors parsed from the Extra Bytes VLR. */
   extraBytes: LASExtraBytesDescriptor[];
@@ -153,6 +186,8 @@ export type LASHeader = {
   versionAsString?: string;
   isCompressed?: boolean;
   headerSize?: number;
+  /** LAS header extension bytes after the standard 393-byte LAS 1.5 header. */
+  userHeaderData?: Uint8Array;
   vlrCount?: number;
   metadata?: LASMetadata;
 };

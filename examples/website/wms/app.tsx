@@ -8,14 +8,15 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 
-import {ImageSourceLayer, VectorSourceLayer} from '@loaders.gl/deck-layers';
-import {createDataSource} from '@loaders.gl/core';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {
-  _ArcGISFeatureServerSourceLoader,
-  _ArcGISImageServerSourceLoader,
   WFSSourceLoader,
-  WMSSourceLoader
+  WMSSourceLoader,
+  WMTSSourceLoader
 } from '@loaders.gl/wms';
+import {
+  SERVICE_LOADERS
+} from '@loaders.gl/services';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -55,19 +56,15 @@ type AppProps = {
 
 const SOURCE_FACTORIES = [
   WMSSourceLoader,
-  _ArcGISImageServerSourceLoader,
-  _ArcGISFeatureServerSourceLoader,
-  WFSSourceLoader
+  WFSSourceLoader,
+  WMTSSourceLoader,
+  ...SERVICE_LOADERS
 ];
-
-type SourceData = any;
 
 /** Application state */
 type AppState = {
   /** Currently selected example. */
   example: Example | null;
-  /** Currently active source instance. */
-  source: SourceData | null;
   /** Metadata loaded from the active source. */
   metadata: string;
   /** Current view state. */
@@ -79,14 +76,13 @@ type AppState = {
 export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     example: null,
-    source: null,
     metadata: '',
     viewState: INITIAL_VIEW_STATE,
     loading: true,
     error: null,
   });
 
-  const layers = renderLayer(state.example, state.source);
+  const layers = renderLayer(state.example);
   const widgets = useMemo(
     () => [createDeckFullscreenWidget('wms-fullscreen'), createDeckStatsWidget('wms-stats')],
     []
@@ -147,77 +143,66 @@ export default function App(props: AppProps = {}) {
     };
   }
 
-  async function onExampleChange({example}) {
+  function onExampleChange({example}) {
     const {viewState} = example;
     const newViewState = {...state.viewState, ...viewState};
-    const source = createDataSource(example.url, SOURCE_FACTORIES, {
-      type: example.type
-    });
-
     setState((state) => ({
       ...state,
       example,
-      source,
       viewState: newViewState,
       metadata: 'Loading metadata...',
       loading: true,
       error: null
     }));
 
-    try {
-      const metadata = await source.getMetadata({formatSpecificMetadata: false});
-      const title = metadata?.title || metadata?.name || example.url;
-      globalThis.document.title = String(title);
-      setState((state) => ({
-        ...state,
-        metadata: JSON.stringify(metadata, null, 2)
-      }));
-    } catch (error) {
-      setState((state) => ({
-        ...state,
-        metadata: '',
-        error: `Could not load metadata: ${error instanceof Error ? error.message : String(error)}`
-      }));
-    }
   }
 
-  function renderLayer(example: Example | null, source: SourceData | null) {
-    if (!example || !source) {
+  function renderLayer(example: Example | null) {
+    if (!example) {
       return null;
     }
 
-    if (example.type === 'arcgis-feature-server' || example.type === 'wfs') {
-      const vectorLayerProps = getVectorLayerProps(example.layerProps || {});
-      return [
-        new VectorSourceLayer({
-          id: `${example.type}-${example.url}`,
-          data: source,
-          layers: example.layers || [],
-          pickable: true,
-          autoHighlight: true,
-          onLoadingStateChange: isLoading =>
-            setState((state) => ({...state, loading: isLoading})),
-          onError: (error: Error) =>
-            setState((state) => ({...state, loading: false, error: error.message})),
-          ...vectorLayerProps
-        })
-      ];
-    }
+    const isVector =
+      example.type === 'arcgis-feature-server' ||
+      example.type === 'arcgis-vector-tile-server' ||
+      example.type === 'wfs';
+    const vectorLayerProps = isVector ? getVectorLayerProps(example.layerProps || {}) : {};
 
     return [
-      new ImageSourceLayer({
+      new SourceLayer({
         id: `${example.type}-${example.url}`,
-        data: source,
+        data: example.url,
+        loaders: SOURCE_FACTORIES,
+        sourceOptions: {
+          ...example.sourceOptions,
+          core: {...example.sourceOptions?.core, type: example.type}
+        },
         layers: example.layers || [],
+        pickable: true,
+        autoHighlight: true,
         srs:
           example.type === 'wms' || example.type === 'arcgis-image-server'
             ? 'EPSG:4326'
             : 'auto',
         onLoadingStateChange: isLoading =>
           setState((state) => ({...state, loading: isLoading})),
+        onMetadataLoad: (metadata) => {
+          const typedMetadata = metadata as {title?: string; name?: string};
+          globalThis.document.title = typedMetadata.title || typedMetadata.name || example.url;
+          setState((state) => ({
+            ...state,
+            metadata: JSON.stringify(metadata, null, 2),
+            error: null
+          }));
+        },
+        onSourceError: (error) =>
+          setState((state) => ({...state, loading: false, error: error.message})),
         onImageLoadError: (_requestId: number, error: Error) =>
           setState((state) => ({...state, loading: false, error: error.message})),
-        ...example.layerProps
+        onError: (error: Error) =>
+          setState((state) => ({...state, loading: false, error: error.message})),
+        ...example.layerProps,
+        ...vectorLayerProps
       })
     ];
   }

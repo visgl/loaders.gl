@@ -144,6 +144,13 @@ Unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` columns are returned
 for example `UTF8` values are returned as JavaScript strings and `JSON` values are
 returned as parsed JavaScript values.
 
+Unshredded Parquet `VARIANT` groups are decoded into JavaScript primitives, arrays, and
+objects for object-row results from the TypeScript `ParquetJSLoader` variant. Arrow results
+and the default WASM `ParquetLoader` retain the canonical `metadata` and `value` binary child
+fields so applications can choose when to decode or project them. Shredded Variant values
+are currently exposed as their typed child columns and are not yet reconstructed into one
+JavaScript value.
+
 `ParquetJSLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
 `ConvertedType` fallback. Arrow output preserves exact signed and unsigned integer widths,
 date/time/timestamp units through nanoseconds, Decimal128/256 precision and scale, UUID fixed-size
@@ -167,6 +174,10 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
 | `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
+| `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files when using `ParquetJSLoader`. |
+| `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
+| `parquet.int96AsTimestamp` | `boolean` | `false` for object rows, `true` for TypeScript Arrow output | Decodes legacy INT96 physical values as signed epoch-nanosecond timestamps. |
+| `parquet.verifyFooterSignature` | `boolean` | `true` | Verifies plaintext-footer signatures on modular-encrypted files when a `keyRetriever` is supplied. |
 
 ## Loader Variants
 
@@ -174,7 +185,9 @@ Supports table category options such as `batchType` and `batchSize`.
   and can use the package's prebuilt worker.
 - Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and
   Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`,
-  `batchSize`, and `preserveBinary`.
+  `batchSize`, and `preserveBinary`. It can also read AES-GCM and AES-GCM-CTR encrypted column
+  metadata, page indexes, Bloom filters, and page modules when `keyRetriever` is supplied. Plaintext
+  footer signatures are verified by default.
 
 The implementation is selected by the loader import. There is no runtime backend option.
 The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
@@ -215,31 +228,8 @@ Set `core.worker: false` to decode on the calling thread. `ParquetJSLoader` alwa
 
 ## Live Benchmarks
 
-These benchmarks compare maintained JavaScript and WebAssembly Arrow-table decode paths on common,
-checked-in fixtures. They are a reproducible baseline for finding optimization opportunities in the
-loaders.gl TypeScript backend, not a ranking of projects.
-
-The suite runs entirely in your browser. Fixture download and parser initialization happen before
-timing; each implementation is warmed up and must return the same row count. The matrix covers
-nullable primitives, nested and repeated data, dictionary and delta encodings, compression, and
-column projection. It focuses on Arrow output and retains one object-row control to expose
-row-materialization cost. `N/A` means an implementation is intentionally excluded from a scenario;
-`Failed` means a selected implementation threw or could not complete; and `Incorrect` means it
-completed but returned a different row count from the validated result. A green
-marker identifies the fastest completed value in each row. Results depend on the browser, hardware,
-thermal state, and whether this tab remains focused.
-
-The throughput cases emphasize sustained work rather than two-row initialization effects: the main
-fixtures span 1,000 to 40,000 rows, up to 66 columns, and multiple row groups. The compression matrix
-covers SNAPPY, GZIP, ZSTD, LZ4_RAW, and legacy LZ4 framing in addition to uncompressed data. Scenario
-labels show their row and top-level column counts so results from differently shaped files are not
-mistaken for equivalent workloads.
-
-The live suite includes `ParquetLoader` plus the browser-oriented `parquet-wasm` and `hyparquet`
-packages. External package versions are displayed in the table headers and pinned in the repository
-lockfile. The hyparquet compression cases use the separately pinned `hyparquet-compressors` 1.1.1
-package. The corresponding Node suite covers additional codecs and projections with
-`yarn bench parquet`.
+Live Arrow decode throughput on representative, checked-in Parquet fixtures. Exact external package
+versions appear in the table headers.
 
 <BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
   {() => {
@@ -247,6 +237,28 @@ package. The corresponding Node suite covers additional codecs and projections w
     return <ParquetBenchmarksApp />;
   }}
 </BrowserOnly>
+
+- 🟢 marks the fastest completed result in each row.
+- `N/A` is excluded, `Failed` is a runtime error, and `Incorrect` is a row-count mismatch.
+- Results vary by browser and hardware; keep this tab focused while the suite runs.
+
+<details>
+  <summary>Methodology and coverage</summary>
+
+  - Downloads and parser initialization are excluded from timing; each implementation is warmed up.
+  - Results must match the validated row count. Projection rows include extra work when an
+    implementation returns the complete fixture table.
+  - The primarily Arrow-focused matrix covers nullable, nested, repeated, dictionary, delta,
+    projection, and compression cases, plus one object-row control.
+  - Main fixtures span 1,000–40,000 rows, up to 66 columns, and multiple row groups. Scenario labels
+    show row and top-level column counts.
+  - External versions are pinned in the lockfile. Compression support for `hyparquet` uses
+    `hyparquet-compressors` 1.1.1.
+  - Run `yarn bench parquet` for the broader Node benchmark suite.
+
+  This is a reproducible optimization baseline across maintained JavaScript and WebAssembly paths,
+  not a ranking of projects.
+</details>
 
 ## Remarks
 
