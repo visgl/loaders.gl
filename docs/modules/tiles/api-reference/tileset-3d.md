@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
   eyebrow="Tiles module · 3D runtime"
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Tiles module', to: '/docs/modules/tiles'}
   ]}
 />
+
+<TiledSceneGraphic />
 
 <DocOrientation
   eyebrow="The 3D runtime"

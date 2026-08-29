@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 
 <DocPageHeader
   eyebrow="Parquet source"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'}
   ]}
 />
+
+<ParquetLayoutGraphic />
 
 <DocOrientation
   eyebrow="The source contract"
