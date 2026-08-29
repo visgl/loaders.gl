@@ -66,6 +66,25 @@ test('loads a registered backend through the same root API', async () => {
   await expect(engine.queryAsync(table)).resolves.toBe(table);
 });
 
+test('preserves prototype methods and receiver when loading class backends', async () => {
+  class ClassBackend {
+    readonly name = 'class-backend' as const;
+    readonly prefix = 'class';
+    query(sourceTable: ArrowTable) {
+      if (this.prefix !== 'class') throw new Error('backend receiver was lost');
+      return sourceTable;
+    }
+    explain() {
+      return {} as never;
+    }
+  }
+  registerScanBackend('class-backend', () => new ClassBackend());
+  const engine = await createScanEngine({backend: 'class-backend'});
+  const table = makeArrowTable({value: [1]});
+  expect(engine.query(table)).toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(table);
+});
+
 test('validates backend registrations and loader names', async () => {
   expect(() => registerScanBackend('' as never, () => ({}) as never)).toThrow(
     'A scan backend name and loader are required'

@@ -86,10 +86,11 @@ export async function createScanEngine(options: ScanEngineOptions = {}): Promise
       `Scan backend loader returned "${backend.name}" while "${backendName}" was requested.`
     );
   }
-  return Object.freeze({
-    ...backend,
-    queryAsync:
-      backend.queryAsync ||
-      (async (sourceTable, queryOptions) => backend.query(sourceTable, queryOptions))
-  });
+  const query = backend.query.bind(backend);
+  const explain = backend.explain.bind(backend);
+  const queryAsync = backend.queryAsync
+    ? backend.queryAsync.bind(backend)
+    : async (sourceTable: ArrowTable, queryOptions?: ArrowQueryOptions) =>
+        backend.query.call(backend, sourceTable, queryOptions);
+  return Object.freeze({...backend, query, explain, queryAsync});
 }

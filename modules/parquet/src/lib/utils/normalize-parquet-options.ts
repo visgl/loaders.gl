@@ -10,6 +10,13 @@ export function normalizeParquetOptions<OptionsT extends {parquet?: unknown}>(
   const scanOptions = (
     options as {_scan?: {columns?: readonly string[]; limit?: number}} | undefined
   )?._scan;
+  if (scanOptions) {
+    for (const key of Object.keys(scanOptions)) {
+      if (key !== 'columns' && key !== 'limit') {
+        throw new Error(`Parquet _scan option "${key}" is not supported`);
+      }
+    }
+  }
   const parquetOptions = (options?.parquet as Record<string, unknown> | undefined) || {};
   return {
     ...options,
