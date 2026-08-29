@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
+import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+<ArrowJsStructureGraphic />
 
 <DocOrientation
   eyebrow="Start with the data shape"
