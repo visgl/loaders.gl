@@ -6,13 +6,12 @@ import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
 import {FeatureCollection, GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
-import {kml} from '@tmcw/togeojson';
-import {DOMParser} from '@xmldom/xmldom';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
 import {KMLLoader as KMLLoaderMetadata} from './kml-loader';
+import {convertKMLDocumentToFeatureCollection, parseKMLDocument} from './kml-parser';
 
 const {preload: _KMLLoaderPreload, ...KMLLoaderMetadataWithoutPreload} = KMLLoaderMetadata;
 
@@ -43,8 +42,7 @@ export const KMLLoaderWithParser = {
  * @returns Parsed GeoJSON feature collection.
  */
 export function parseKMLTextToFeatureCollection(text: string): FeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  return kml(doc);
+  return convertKMLDocumentToFeatureCollection(parseKMLDocument(text));
 }
 
 /**

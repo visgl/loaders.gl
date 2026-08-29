@@ -11,6 +11,8 @@
     {"path": "../gis"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
-    {"path": "../schema-utils"}
+    {"path": "../schema-utils"},
+    {"path": "../xml"},
+    {"path": "../zip"}
   ]
 }

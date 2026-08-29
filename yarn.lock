@@ -5524,6 +5524,8 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/xml": "npm:5.0.0-alpha.2"
+    "@loaders.gl/zip": "npm:5.0.0-alpha.2"
     "@tmcw/togeojson": "npm:^4.5.0"
     "@xmldom/xmldom": "npm:^0.8.12"
   peerDependencies:
