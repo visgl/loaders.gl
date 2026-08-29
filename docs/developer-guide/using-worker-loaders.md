@@ -37,7 +37,7 @@ This means that the main thread will not block during parsing and can continue
 to respond to user interactions or do parallel processing.
 
 Worker threads can also run in parallel, increasing your application's performance
-when loading parsing many files in parallel.
+when loading many files in parallel.
 
 Note that worker thread loading is not always the best choice since the transfer of
 data between workers and the main thread is only efficient if the data is predominantly
@@ -51,8 +51,8 @@ parse a format is not bundled into the application but loaded on demand. This is
 particularly useful when adding loaders that are only used occasionally by your
 application.
 
-More details on advantages and complications with worker thread based loading the
-[Worker Threads](./concepts/worker-threads) article in the concepts section.
+For the tradeoffs and lifecycle details, see the [Worker Threads](./concepts/worker-threads)
+article in the concepts section.
 
 <ReferenceBoundary
   title="The worker runtime"
@@ -60,24 +60,27 @@ More details on advantages and complications with worker thread based loading th
   tone="blue"
 />
 
-## Processing Data on Workers
+## Processing data on workers
 
 The `processOnWorker` function in `@loaders.gl/worker-utils` is used with worker objects
 exported by modules like `@loaders.gl/compression` and `@loaders.gl/crypto` to move
-processing intensive tasks to workers.
+processing-intensive tasks to workers.
 
 `processOnWorkerInBatches` leases one worker for an entire input iterator. This lets streaming
 parsers and encoders retain state across chunks while applying input and output backpressure.
 See the [worker processing API](/docs/modules/worker-utils/api-reference/worker-processing) for
 worker implementation, cancellation, transfer, and lifecycle guidance.
 
-## Parsing data on Workers
+## Parsing data on workers
 
-## Loading Files in Parallel using Worker Loaders
+Most worker-enabled loaders use the same `load` and `parse` APIs as their main-thread
+counterparts. The loader reference identifies whether a loader has a worker bundle and
+whether it needs additional codec assets.
 
-The `DracoLoader` is an example of a worker enabled loader.
-It parses data on worker threads by default. To load two Draco encoded meshes
-_in parallel_ on worker threads, just use the `DracoLoader` as follows:
+## Loading files in parallel
+
+`DracoLoader` is a worker-enabled loader that parses Draco-compressed meshes away from
+the main thread. Multiple calls can use the worker pool concurrently:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -88,9 +91,10 @@ async function loadInParallel(url1, url2) {
 }
 ```
 
-## Disabling Worker Loaders
+## Disabling worker loaders
 
-Applications can use the `core.worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
+Applications can use `core.worker: false` to disable worker execution, for instance to
+simplify debugging of parsing issues:
 
 ```typescript
 async function loadWithoutWorker(url1) {
@@ -98,36 +102,53 @@ async function loadWithoutWorker(url1) {
 }
 ```
 
-## Disabling Reuse of Workers
+## Disabling worker reuse
 
-Applications reuse already created workers by default. To avoid `enlarge memory arrays` error it is really necessary to disable it if you need to load multiple datasets in a sequence.
-This functionality can be disabled by `core.reuseWorkers: false` option:
+Applications reuse already-created workers by default. Some codec runtimes retain sizeable
+allocations while a worker remains alive, so disabling reuse can help when processing
+multiple datasets sequentially or investigating memory growth.
+Set `core.reuseWorkers: false` when an application needs to release worker state between
+sequential datasets or is diagnosing retained memory:
 
 ```typescript
-async function loadWithoutWorker(url1) {
-  const data = await load(url1, DracoLoader, {worker: true, reuseWorkers: false});
+async function loadWithFreshWorker(url1) {
+  const data = await load(url1, DracoLoader, {core: {reuseWorkers: false}});
 }
 ```
 
-## Concurrency Level and Worker Reuse
+## Concurrency and worker reuse
 
-Concurrency - The `options.maxConcurrency` and `option.maxMobileConcurrency` options can be adjusted to define how many worker instances should be created for each format. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.
+`core.maxConcurrency` and `core.maxMobileConcurrency` control how many worker instances
+each loader may create. Increasing these limits can help when several large files are
+loaded at once, but setting them above roughly the number of CPU cores usually adds
+overhead without improving throughput.
 
-Worker reuse - Workers threads can occupy memory and
+Workers remain available for reuse by default. This avoids startup costs for subsequent
+loads, but retained workers also retain their runtime and codec memory. Set
+`core.reuseWorkers: false` when that memory should be released after each job.
 
-## ArrayBuffer Neutering
+## ArrayBuffer transfer
 
-Be aware that when calling worker loaders, binary data is transferred from the calling thread to the worker thread. This means that if you are using `parse`, any `ArrayBuffer` parameter you pass in to the will be "neutered" and no longer be accessible in the calling thread.
+Be aware that worker loaders transfer binary data from the calling thread to the worker
+thread. When using `parse`, an `ArrayBuffer` passed to the worker may be *neutered* and
+no longer accessible in the calling thread.
 
-Most applications will not need to do further processing on the raw binary data after it has been parsed so this is rarely an issue, but if you do, you may need to copy the data before parsing, or disable worker loading (see above).
+Most applications do not need to process the raw binary data after parsing, so this is
+rarely an issue. If you do, copy the data before parsing or disable worker execution (see
+above).
 
 ## Specifying Worker Script URLs (Advanced)
 
-In JavaScript, worker threads are loaded from separate scripts files and are typically not part of the main application bundle. For ease-of-use, loaders.gl provides a default set of pre-built worker threads which are published on loaders.gl npm distribution from `unpkg.com` CDN (Content Delivery Network).
+In JavaScript, worker threads are loaded from separate script files and are typically not
+part of the main application bundle. For ease of use, loaders.gl provides a default set
+of pre-built worker threads through the loaders.gl npm distribution and the `unpkg.com`
+CDN.
 
-As an advanced option, it is possible to for application to specify alternate URLs for loading a pre-built worker loader instance.
+As an advanced option, an application can specify an alternate URL for a pre-built
+worker loader instance.
 
-This can be useful e.g. when building applications that cannot access CDNs or when creating highly customized application builds, or doing in-depth debugging.
+This can be useful when building applications that cannot access CDNs, creating highly
+customized application builds, or doing in-depth debugging.
 
 ```typescript
 /**
@@ -142,14 +163,13 @@ import mvtLoaderUrl from '@loaders.gl/mvt/mvt-worker.js?url';
 
 loaders.gl supports sub-loader invocation from worker loaders.
 
-A worker loader starts a separate thread with a javascript bundle that only contains the code for that loader, so a worker loader needs to call the main thread (and indirectly, potentially another worker thread with another worker loader) to parse using a sub-loader, properly transferring data into and back from the other thread.
+A worker loader starts a separate thread with a JavaScript bundle that contains the code
+for that loader. If it invokes a sub-loader, the request may cross the main thread and
+another worker boundary, with loaders.gl transferring the input and result between them.
 
 ## Debugging Worker Loaders (Advanced)
 
-Debugging worker loaders is tricky. While it is always possible to specify `options.core.worker: false` which helps in many situations, there are cases where the worker loader itself must be debugged.
-
-TBA - There is an ambition to provide better support for debugging worker loaders:
-
-- Pre-build non-minified versions of workers, and provide option to easily select those.
-- Let loaders.gl developers easily switch between CDN and locally built workers.
-- ...
+Debugging worker loaders can be easier if you first set `core.worker: false` to confirm
+whether an issue is specific to worker execution. For worker-specific issues, use an
+explicit local worker URL and a non-minified application build so the worker request and
+message boundary can be inspected directly in the browser's developer tools.
