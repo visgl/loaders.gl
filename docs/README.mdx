@@ -81,16 +81,13 @@ Docs for older versions are available on github:
 
 ## Overview
 
-loaders.gl is a collection of open source loaders and writers for various file formats, 
-primarily focused on supporting visualization and analytics of big data. 
-Tabular, geospatial, and 3D file formats are well covered. 
+loaders.gl is a collection of composable TypeScript modules for loading, scanning, transforming, and
+writing data in JavaScript applications. It covers tabular, geospatial, imagery, and 3D formats with
+consistent APIs for complete results, streamed batches, workers, and remote sources.
 
-Published as a suite of composable loader modules with consistent APIs, 
-offering advanced features such as threaded and incremental parsing.
-
-loaders.gl can be used with any JavaScript application or framework. Other
-[vis.gl frameworks](https://vis.gl/frameworks), such as [**deck.gl**](https://deck.gl), are designed
-to integrate seamlessly with loaders.gl.
+The modules are framework agnostic. Use them with any JavaScript application, or combine them with
+[vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) when loaded
+data should be visualized.
 
 ## Loaders
 
@@ -139,42 +136,35 @@ for await (const batch of await loadInBatches('data.csv', CSVLoader)) {
 }
 ```
 
-To quickly get up to speed on how the loaders.gl API works, please see [Get Started](docs/developer-guide/get-started).
+To quickly get up to speed on how the loaders.gl API works, see [Get Started](/docs/developer-guide/get-started).
 
 ## Supported Platforms
 
-loaders.gl supports both browsers and Node.js:
-
-- **Evergreen Browsers** recent versions of major evergreen browsers (e.g. Chrome, Firefox, Safari) are supported on both desktop and mobile.
-- **Node.js** All current [LTS releases](https://nodejs.org/en/about/previous-releases) are supported. 
+| Runtime | Support |
+| --- | --- |
+| Evergreen browsers | Current Chrome, Firefox, and Safari releases on desktop and mobile |
+| Node.js | All current [LTS releases](https://nodejs.org/en/about/previous-releases) |
 
 ## Design Goals
 
-**Framework Agnostic** - Files are parsed into clearly documented plain data structures (objects + typed arrays) that can be used with any JavaScript framework.
-
-**Browser Support** - supports recent versions of evergreen browsers, and ensures that loaders are easy to bundle.
-
-**Node Support** - loaders.gl can be used when writing backend and cloud services, and you can confidently run your unit tests under Node.
-
-**Worker Support** - Many loaders.gl loaders come with pre-built web workers, keeping the main thread free for other tasks while parsing completes.
-
-**Loader Categories** - loaders.gl groups similar data formats into "categories" that return parsed data in "standardized" form. This makes it easier to build applications that can handle multiple similar file formats.
-
-**Format Autodetection** - Applications can specify multiple loaders when parsing a file, and loaders.gl will automatically pick the right loader based on file or URL extensions, MIME types, and initial data bytes.
-
-**Streaming Support** - Many loaders can parse in batches from both node and WhatWG streams, allowing "larger than memory" files to be processed, and initial results to be available while the remainder of a file is still loading.
-
-**Composability and Bundle-Size Optimization** - Loaders for each file format are published in independent npm modules to allow applications to cherry-pick only the loaders it needs. In addition, modules are optimized for tree-shaking, and many larger loader libraries and web workers are loaded from CDN on use and not included in your application bundle.
-
-**Binary Data** - loaders.gl is optimized to load into compact memory representations and use with WebGL frameworks (e.g. by returning typed arrays whenever possible). Note that in spite of the `.gl` naming, loaders.gl has no any actual WebGL dependencies and loaders can be used without restrictions in non-WebGL applications.
-
-**Multi-Asset Loading** - Formats like glTF, Shapefile, or mip mapped / cube textures can require dozens of separate loads to resolve all linked assets (external buffers, images etc). loaders.gl loads all linked assets before resolving the returned `Promise`.
-
-**Modern JavaScript** - loaders.gl is written in TypeScript 6.0 and standard ES2018, is packaged as ECMAScript modules, and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
+| Goal | What it means in practice |
+| --- | --- |
+| Framework agnostic | Return documented objects, typed arrays, tables, and batches that any JavaScript framework can consume. |
+| Browser and Node.js | Keep the same core APIs usable in browsers, services, scripts, and tests. |
+| Worker-ready parsing | Move expensive decoders to prebuilt workers when a module provides them. |
+| Loader categories | Normalize related formats into shared application-facing data shapes. |
+| Format autodetection | Select loaders from extensions, MIME types, and initial bytes when the input allows it. |
+| Streaming | Process async input and parsed batches incrementally, including inputs larger than memory. |
+| Composable bundles | Publish independent modules and lazy runtimes so applications can install what they use. |
+| Binary-first data | Preserve compact typed-array and Arrow representations without adding WebGL dependencies. |
+| Multi-asset loading | Resolve linked buffers, images, tiles, and texture levels through one loading path. |
+| Modern JavaScript | Use TypeScript, ECMAScript modules, `ArrayBuffer`, and async iterators as portable primitives. |
 
 ## Licenses
 
-loaders.gl itself is MIT licensed, however various modules contain forked code under several permissive, compatible open source licenses, such as ISC, BSD and Apache 2 licenses. Each loader module provides license notes, so if the distinction matters to you, please check the documentation for each module and decide accordingly. We guarantee that loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
+loaders.gl itself is MIT licensed. Some modules include adapted code under compatible permissive
+licenses such as ISC, BSD, or Apache 2. Each module documents its own attributions and license
+boundary; loaders.gl does not include commercial or copyleft dependencies.
 
 ## Credits and Attributions
 

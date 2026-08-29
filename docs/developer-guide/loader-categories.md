@@ -32,11 +32,13 @@ Choose a loader category when your application should accept several formats wit
 paths for each one. The category defines the common result shape, while each loader handles its own
 file format.
 
-To simplify working with multiple similar formats, loaders and writers in loaders.gl are grouped into _categories_.
+To simplify working with related formats, loaders and writers in loaders.gl are grouped into
+_categories_. A category defines the data shape that an application can rely on after loading, so
+one rendering, analysis, or export path can accept several input formats.
 
-The idea is that many loaders return very similar data (e.g. point clouds loaders), which makes it possible to represent the loaded data in the same data structure, letting applications handle the output from multiple loaders without
-
-When a loader is documented as belonging to a specifc category, it converts the parsed data into the common format for that category. This allows an application to support multiple formats with a single code path, since all the loaders will return similar data structures.
+Each loader still preserves format-specific details in `loaderData` when they do not fit the common
+shape. Category data is therefore a stable application boundary, not a promise that every format
+has identical capabilities.
 
 <ReferenceBoundary
   title="The category contract"
@@ -51,10 +53,10 @@ The fact that loaders belong to categories enable applications to flexibly regis
 For instance, once an application has added support for one loader in a category, other loaders in the same category can be registered during application startup.
 
 ```typescript
-import {parse, registerLoaders} from '@loaders.gl/core';
+import {load, registerLoaders} from '@loaders.gl/core';
 import {PCDLoader} from '@loaders.gl/pcd';
 async function loadPointCloud(url) {
-  const pointCloud = await parse(fetch(url, PCDLoader));
+  const pointCloud = await load(url, PCDLoader);
   // Use some WebGL framework to render the parsed cloud
 }
 ```
