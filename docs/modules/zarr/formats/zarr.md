@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
 
 <DocPageHeader
   eyebrow="Chunked multidimensional data"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<RasterWindowGraphic kind="zarr" />
 
 <DocOrientation
   eyebrow="The array boundary"

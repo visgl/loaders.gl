@@ -8,6 +8,7 @@ page_style: designed
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
 
 <DocPageHeader
   eyebrow="Raster module"
@@ -25,6 +26,8 @@ See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-sy
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
 <GeoTiffDocsTabs active="overview" />
+
+<RasterWindowGraphic kind="geotiff" />
 
 <DocOrientation
   eyebrow="The raster path"
