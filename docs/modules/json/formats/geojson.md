@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'GeoJSON loader', to: '/docs/modules/json/api-reference/geojson-loader'}
   ]}
 />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The object model"

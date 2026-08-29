@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+import {PointCloudFormatGraphic} from '@site/src/components/docs/point-cloud-format-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <PcdDocsTabs active="overview" />
+
+<PointCloudFormatGraphic />
 
 <DocOrientation
   eyebrow="The point-cloud contract"
