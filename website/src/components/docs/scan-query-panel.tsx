@@ -1,6 +1,7 @@
 import React, {useEffect, useId, useState} from 'react';
-import styled from 'styled-components';
 import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+
+import styles from './scan-query-panel.module.css';
 
 /** State emitted by the reusable scan-query controls. */
 export type ScanQueryPanelState = ScanQuery;
@@ -77,52 +78,52 @@ export function ScanQueryPanel({
   };
 
   return (
-    <Panel aria-label={`${title} controls`}>
-      <PanelHeader>
+    <section className={styles.panel} aria-label={`${title} controls`}>
+      <div className={styles.panelHeader}>
         <strong>{title}</strong>
-        <PanelHint>
+        <span className={styles.panelHint}>
           {loading ? 'Discovering schema…' : metadata ? `${metadata.sourceType} · ${metadata.queryType}` : 'Select a source'}
-        </PanelHint>
-      </PanelHeader>
+        </span>
+      </div>
       {metadata ? (
         <>
-          <MetadataSummary>
-            <SupportBadge $supported={isExecutable}>
+          <div className={styles.metadataSummary}>
+            <span className={`${styles.supportBadge} ${isExecutable ? styles.supported : styles.unsupported}`}>
               {execution?.status === 'supported'
                 ? `Scan supported · ${execution.method}`
                 : 'Metadata only'}
-            </SupportBadge>
+            </span>
             <span>{columns.length} columns</span>
             {metadata.statistics?.rowCount !== undefined ? <span>{String(metadata.statistics.rowCount)} rows</span> : null}
             {metadata.spatial?.coordinateReferenceSystems?.[0] ? (
               <span>{metadata.spatial.coordinateReferenceSystems[0]}</span>
             ) : null}
-          </MetadataSummary>
+          </div>
           {execution?.status === 'metadata-only' ? (
-            <SupportMessage>{execution.reason}</SupportMessage>
+            <div className={styles.supportMessage}>{execution.reason}</div>
           ) : null}
-          <FieldGroup>
-            <FieldLabel>Output columns</FieldLabel>
-            <ColumnGrid>
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Output columns</label>
+            <div className={styles.columnGrid}>
               {columns.map(column => (
-                <ColumnOption key={column.name}>
+                <label className={styles.columnOption} key={column.name}>
                   <input
                     type="checkbox"
                     checked={selectedColumns.length === 0 || selectedColumns.includes(column.name)}
                     onChange={() => toggleColumn(column.name)}
                   />
                   <span>{column.title || column.name}</span>
-                  <ColumnType>{column.role}</ColumnType>
-                </ColumnOption>
+                  <span className={styles.columnType}>{column.role}</span>
+                </label>
               ))}
-            </ColumnGrid>
-            <FieldHint>Leave every column selected to preserve the source projection.</FieldHint>
-          </FieldGroup>
-          <InlineFields>
+            </div>
+            <div className={styles.fieldHint}>Leave every column selected to preserve the source projection.</div>
+          </div>
+          <div className={styles.inlineFields}>
             {hasLimit ? (
-              <FieldGroup>
-                <FieldLabel htmlFor={`${panelId}-limit`}>Row limit</FieldLabel>
-                <TextInput
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor={`${panelId}-limit`}>Row limit</label>
+                <input className={styles.textInput}
                   id={`${panelId}-limit`}
                   inputMode="numeric"
                   min="0"
@@ -130,24 +131,24 @@ export function ScanQueryPanel({
                   value={limitText}
                   onChange={event => setLimitText(event.target.value)}
                 />
-              </FieldGroup>
+              </div>
             ) : null}
             {hasBounds ? (
-              <FieldGroup>
-                <FieldLabel htmlFor={`${panelId}-bounds`}>Bounding box</FieldLabel>
-                <TextInput
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor={`${panelId}-bounds`}>Bounding box</label>
+                <input className={styles.textInput}
                   id={`${panelId}-bounds`}
                   placeholder={sourceBounds ? formatBounds(sourceBounds) : 'minX,minY,maxX,maxY'}
                   value={boundingBoxText}
                   onChange={event => setBoundingBoxText(event.target.value)}
                 />
-              </FieldGroup>
+              </div>
             ) : null}
             {hasLevel ? (
-              <FieldGroup>
-                <FieldLabel htmlFor={`${panelId}-level`}>{isPointCloud ? 'Minimum level' : 'Overview level'}</FieldLabel>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel} htmlFor={`${panelId}-level`}>{isPointCloud ? 'Minimum level' : 'Overview level'}</label>
                 {hasRasterLevels ? (
-                  <Select
+                  <select className={styles.select}
                     id={`${panelId}-level`}
                     value={levelText}
                     onChange={event => setLevelText(event.target.value)}
@@ -158,9 +159,9 @@ export function ScanQueryPanel({
                         Level {level.index} ({level.width} × {level.height})
                       </option>
                     ))}
-                  </Select>
+                  </select>
                 ) : (
-                  <TextInput
+                  <input className={styles.textInput}
                     id={`${panelId}-level`}
                     inputMode="numeric"
                     min="0"
@@ -171,13 +172,13 @@ export function ScanQueryPanel({
                     }
                   />
                 )}
-              </FieldGroup>
+              </div>
             ) : null}
             {isPointCloud && hasLevel ? (
               <>
-                <FieldGroup>
-                  <FieldLabel htmlFor={`${panelId}-maximum-level`}>Maximum level</FieldLabel>
-                  <TextInput
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor={`${panelId}-maximum-level`}>Maximum level</label>
+                  <input className={styles.textInput}
                     id={`${panelId}-maximum-level`}
                     inputMode="numeric"
                     min="0"
@@ -185,10 +186,10 @@ export function ScanQueryPanel({
                     value={maximumLevelText}
                     onChange={event => setMaximumLevelText(event.target.value)}
                   />
-                </FieldGroup>
-                <FieldGroup>
-                  <FieldLabel htmlFor={`${panelId}-spacing`}>Target spacing</FieldLabel>
-                  <TextInput
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor={`${panelId}-spacing`}>Target spacing</label>
+                  <input className={styles.textInput}
                     id={`${panelId}-spacing`}
                     inputMode="decimal"
                     min="0"
@@ -196,11 +197,11 @@ export function ScanQueryPanel({
                     value={targetSpacingText}
                     onChange={event => setTargetSpacingText(event.target.value)}
                   />
-                </FieldGroup>
+                </div>
               </>
             ) : null}
-          </InlineFields>
-          <ApplyButton
+          </div>
+          <button className={styles.applyButton}
             type="button"
             disabled={!isExecutable}
             onClick={() => {
@@ -222,12 +223,12 @@ export function ScanQueryPanel({
             }}
           >
             {isExecutable ? 'Apply scan parameters' : 'Scan execution unavailable'}
-          </ApplyButton>
+          </button>
         </>
       ) : (
-        <EmptyState>{loading ? 'Reading source metadata before opening the data…' : 'Metadata will appear here when a source is selected.'}</EmptyState>
+        <div className={styles.emptyState}>{loading ? 'Reading source metadata before opening the data…' : 'Metadata will appear here when a source is selected.'}</div>
       )}
-    </Panel>
+    </section>
   );
 }
 
@@ -255,111 +256,3 @@ function parsePositiveNumber(value: string): number | undefined {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? number : undefined;
 }
-
-const Panel = styled.section`
-  border: 1px solid #d8dee9;
-  border-radius: 8px;
-  padding: 14px;
-  margin: 14px 0;
-  background: #fbfcfe;
-`;
-const PanelHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-`;
-const PanelHint = styled.span`
-  color: #667085;
-  font-size: 0.82rem;
-`;
-const MetadataSummary = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  color: #475467;
-  font-size: 0.82rem;
-  margin-bottom: 10px;
-`;
-const SupportBadge = styled.span<{$supported: boolean}>`
-  border-radius: 999px;
-  padding: 2px 8px;
-  color: ${({$supported}) => ($supported ? '#067647' : '#7a2e0e')};
-  background: ${({$supported}) => ($supported ? '#ecfdf3' : '#fff4ed')};
-  font-weight: 600;
-`;
-const SupportMessage = styled.div`
-  margin: -4px 0 12px;
-  color: #7a2e0e;
-  font-size: 0.82rem;
-`;
-const FieldGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-`;
-const FieldLabel = styled.label`
-  font-weight: 600;
-  font-size: 0.82rem;
-`;
-const FieldHint = styled.div`
-  color: #667085;
-  font-size: 0.76rem;
-`;
-const ColumnGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;
-const ColumnOption = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 5px 7px;
-  background: white;
-  font-size: 0.82rem;
-`;
-const ColumnType = styled.span`
-  color: #667085;
-  font-size: 0.7rem;
-`;
-const InlineFields = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-`;
-const TextInput = styled.input`
-  min-width: 180px;
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 7px;
-`;
-const Select = styled.select`
-  min-width: 180px;
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 7px;
-  background: white;
-`;
-const ApplyButton = styled.button`
-  margin-top: 12px;
-  border: 0;
-  border-radius: 5px;
-  padding: 8px 12px;
-  color: white;
-  background: #475467;
-  cursor: pointer;
-
-  &:disabled {
-    background: #98a2b3;
-    cursor: not-allowed;
-  }
-`;
-const EmptyState = styled.div`
-  color: #667085;
-  font-size: 0.84rem;
-`;
