@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-live-example';
@@ -22,6 +23,8 @@ import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-liv
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<ArrowDataPlaneGraphic />
 
 <DocOrientation
   eyebrow="How the pieces fit"

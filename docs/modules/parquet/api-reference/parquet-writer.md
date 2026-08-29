@@ -8,6 +8,7 @@ page_style: designed
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
 
 <DocPageHeader
   eyebrow="Parquet writer"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ParquetDocsTabs active="parquetwriter" />
+
+<WriterPipelineGraphic />
 
 <DocOrientation
   eyebrow="The encode path"

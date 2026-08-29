@@ -8,6 +8,7 @@ page_style: designed
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
 
 <DocPageHeader
   eyebrow="Arrow writer"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ArrowDocsTabs active="arrowwriter" />
+
+<WriterPipelineGraphic />
 
 <DocOrientation
   eyebrow="Encode once, reuse elsewhere"
