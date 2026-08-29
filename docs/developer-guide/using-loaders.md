@@ -125,7 +125,7 @@ import {CSVLoader} from '@loaders.gl/csv';
 
 registerLoaders([CSVLoader]);
 
-data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
+const data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
 ```
 
 Note that in this case the loader type is not known and the return type will be unknown.
@@ -146,7 +146,7 @@ import {selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
+const loader = await selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
 
 Note: Selection works on urls and/or data

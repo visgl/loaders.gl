@@ -57,7 +57,7 @@ const mesh = {
   }
 };
 
-const data = await encode(mesh, DracoWriter, options);
+const data = await encode(mesh, DracoWriter);
 ```
 
 ## Input Data
