@@ -1,4 +1,37 @@
-# Zarr, GeoZarr, and OME-Zarr
+---
+title: Zarr, GeoZarr, and OME-Zarr formats
+description: Store typed multidimensional arrays as independently addressable chunks.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Chunked multidimensional data"
+  title="Read the array chunks that answer the question."
+  description="Zarr stores typed multidimensional arrays in independently addressable chunks. OME-Zarr and GeoZarr add conventions for images, coordinates, dimensions, transforms, and spatial metadata."
+  tone="pink"
+  meta={['Zarr v2 and v3', 'Chunked arrays', 'OME-Zarr and GeoZarr']}
+  links={[
+    {label: 'Zarr module', to: '/docs/modules/zarr'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The array boundary"
+  title="Keep the dimensions named and the chunks independent."
+  description="The storage model stays multidimensional. loaders.gl can discover variables and dimensions, select windows or levels, and return typed raster data without flattening away the array’s meaning."
+  tone="pink"
+  items={[
+    {label: 'Storage', value: 'Typed arrays split into addressable chunks'},
+    {label: 'Conventions', value: 'OME-Zarr, GeoZarr, CF, and xarray metadata'},
+    {label: 'Selection', value: 'Windows, channels, levels, and named slices'},
+    {label: 'Output', value: 'Typed raster data with dimension metadata'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -14,6 +47,12 @@ Zarr stores typed multidimensional arrays as independently addressable chunks. O
 bioimaging conventions such as multiscale image pyramids, channels, and labeled dimensions.
 GeoZarr and CF/xarray conventions add coordinate reference systems, transforms, coordinate arrays,
 and named scientific dimensions.
+
+<ReferenceBoundary
+  title="Array conventions and scan behavior"
+  description="The sections below compare Zarr generations and conventions, then describe chunk selection and raster query behavior."
+  tone="pink"
+/>
 
 ## Format support
 
