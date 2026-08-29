@@ -1,6 +1,26 @@
-# I3S Building Scene Layer (BSL)
+---
+title: I3S Building Scene Layer (BSL)
+description: Load a hierarchical building scene layer and render its visible sublayers.
+hide_title: true
+page_style: designed
+---
 
 import {ClientExample} from '@site/src/components';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S recipe · building scenes"
+  title="Turn a building layer tree into visible scene layers."
+  description="An I3S Building Scene Layer is a hierarchy of groups and content layers. Loaders.gl flattens the metadata into renderable sublayers that a deck.gl application can show, hide, and organize."
+  tone="violet"
+  meta={['Building Scene Layer', 'Nested sublayers', 'Tile3DLayer']}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3S examples', to: '/examples/i3s-arcgis'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square" alt="From-v3.2" />
@@ -9,6 +29,25 @@ import {ClientExample} from '@site/src/components';
 <div style={{height: '50vh'}}>
   <ClientExample kind="i3s-building-scene-layer" />
 </div>
+
+<DocOrientation
+  eyebrow="What this recipe demonstrates"
+  title="Treat nested scene content as an application tree."
+  description="The loader handles the I3S hierarchy and leaves the application with renderable sublayers. Your UI can then use the same tree to control visibility, identify disciplines, or build a scene explorer."
+  tone="violet"
+  items={[
+    {label: 'Layer model', value: 'Groups contain 3D Object or Point content layers.'},
+    {label: 'Loader result', value: 'A flattened list of renderable sublayers plus the original header tree.'},
+    {label: 'Rendering', value: 'Create one Tile3DLayer for each visible sublayer.'},
+    {label: 'Application UI', value: 'Use ids, names, and visibility to drive an explorer panel.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Building Scene Layer implementation"
+  description="The detailed guide covers the BSL hierarchy, loader result, Tile3DLayer setup, visibility control, and sublayer metadata."
+  tone="violet"
+/>
 Please find source code of the example [here](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-building-scene-layer)
 
 A building scene layer can represent 3D model content based on BIM structuring disciplines such as architectural or structural, and categories such as windows or walls. In I3S [specification](https://github.com/Esri/i3s-spec) BSL is a layer type.

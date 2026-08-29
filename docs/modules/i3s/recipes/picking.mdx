@@ -1,10 +1,49 @@
-# I3S Picking
+---
+title: I3S picking
+description: Pick 3D Object features and load the attributes for the selected object.
+hide_title: true
+page_style: designed
+---
 
 import {ClientExample} from '@site/src/components';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S recipe · interaction"
+  title="Pick an object, then inspect its data."
+  description="Connect a click in a rendered I3S 3D Object layer to the feature id and attributes behind it. The recipe separates the visual highlight from the metadata request so each part stays easy to reuse."
+  tone="blue"
+  meta={['3D Object layers', 'Feature picking', 'Attribute lookup']}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: 'Tile3DLayer', to: 'https://deck.gl/docs/api-reference/geo-layers/tile-3d-layer'},
+    {label: 'I3S examples', to: '/examples/i3s-arcgis'}
+  ]}
+/>
 
 <div style={{height: '50vh'}}>
   <ClientExample kind="i3s-picking" />
 </div>
+
+<DocOrientation
+  eyebrow="What this recipe demonstrates"
+  title="Make a rendered feature addressable."
+  description="Picking is a two-step interaction: the tile layer reports which feature was hit, then the I3S helpers can load the corresponding attributes for an inspector, tooltip, or selection panel."
+  tone="blue"
+  items={[
+    {label: 'Interactive scope', value: 'Supported for I3S 3D Object layers.'},
+    {label: 'Visual state', value: 'Use pickable and highlightedObjectIndex to show selection.'},
+    {label: 'Metadata', value: 'Call loadFeatureAttributes with the selected object and index.'},
+    {label: 'Not universal', value: 'Integrated Mesh layers do not expose individual objects in this way.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Picking and attribute-loading details"
+  description="The sections below show the deck.gl event wiring, highlighted-object state, and the follow-up attribute request."
+  tone="blue"
+/>
 
 <p></p>
 At the example above you can click any interesting object to get it highlighted and show selected object attributes data.
