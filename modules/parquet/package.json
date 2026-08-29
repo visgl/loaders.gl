@@ -145,7 +145,6 @@
     "@loaders.gl/arrow": "5.0.0-alpha.2",
     "@loaders.gl/bson": "5.0.0-alpha.2",
     "@loaders.gl/compression": "5.0.0-alpha.2",
-    "@loaders.gl/geoarrow": "5.0.0-alpha.2",
     "@loaders.gl/gis": "5.0.0-alpha.2",
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",

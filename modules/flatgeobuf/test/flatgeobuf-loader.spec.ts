@@ -78,18 +78,14 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
   expect(arrowTable.data.numRows, 'preserves row count').toBe(geojsonTable.features.length);
   expect(arrowTable.schema.fields.length, 'adds a geometry field').toBe(3);
   expect(arrowTable.schema.fields[2].name, 'geometry field appended').toBe('geometry');
-  expect(arrowTable.schema.fields[2].type.type, 'geometry field is a nested Arrow list').toBe(
-    'list'
-  );
+  expect(arrowTable.schema.fields[2].type, 'geometry field is Arrow binary').toBe('binary');
   expect(
     arrowTable.schema.fields[2].metadata?.['ARROW:extension:name'],
-    'geometry field includes native GeoArrow metadata'
-  ).toBe('geoarrow.multipolygon');
+    'geometry field includes GeoArrow WKB metadata'
+  ).toBe('geoarrow.wkb');
   const geoMetadata = getGeoMetadata(arrowTable.schema.metadata);
   expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
-  expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses native encoding').toBe(
-    'multipolygon'
-  );
+  expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses WKB encoding').toBe('wkb');
   expect(
     geoMetadata?.columns.geometry.geometry_types,
     'geo metadata captures FlatGeobuf geometry type'

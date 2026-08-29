@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/crs';
+import type {WKBBuilder} from '@loaders.gl/gis';
 
 /** The FlatGeobuf file signature has a stable prefix and a version byte. */
 const MAGIC_PREFIX = [0x66, 0x67, 0x62];
@@ -100,6 +101,14 @@ export type FlatGeobufFeature = {
   properties: Record<string, unknown>;
   geometryOffset?: number;
 };
+
+/** Axis-aligned XY bounds for one FlatGeobuf geometry. */
+export type FlatGeobufBounds = readonly [
+  minimumX: number,
+  minimumY: number,
+  maximumX: number,
+  maximumY: number
+];
 
 /** Reads FlatBuffers primitives with explicit bounds checks. */
 class FlatBufferView {
@@ -346,6 +355,171 @@ export function writeFlatGeobufGeometry(
     default:
       throw new Error(`Unsupported FlatGeobuf geometry type ${type}`);
   }
+}
+
+/** Writes one FlatGeobuf geometry directly as standards-compatible WKB. */
+export function writeFlatGeobufGeometryToWKB(
+  builder: WKBBuilder,
+  arrayBuffer: ArrayBuffer,
+  geometryOffset: number | undefined,
+  header: FlatGeobufHeader,
+  geometryTypeOverride?: FlatGeobufGeometryType
+): void {
+  if (geometryOffset === undefined) {
+    throw new Error('Cannot write an absent FlatGeobuf geometry as WKB');
+  }
+
+  const view = new FlatBufferView(arrayBuffer);
+  const xy = readFloat64Vector(view, view.tableField(geometryOffset, 1)) || new Float64Array();
+  const z = readFloat64Vector(view, view.tableField(geometryOffset, 2));
+  const ends = readUint32Vector(view, view.tableField(geometryOffset, 0));
+  const type = geometryTypeOverride || getFlatGeobufGeometryType(view, geometryOffset, header);
+  const pointCount = xy.length / 2;
+  const writeCoordinates = (start: number, end: number) => {
+    for (let index = start; index < end; index++) {
+      builder.writeCoordinate(xy[index * 2], xy[index * 2 + 1], z?.[index]);
+    }
+  };
+
+  switch (type) {
+    case FlatGeobufGeometryType.Point:
+      builder.beginPoint();
+      writeCoordinates(0, pointCount);
+      return;
+    case FlatGeobufGeometryType.MultiPoint:
+      builder.beginMultiPoint(pointCount);
+      for (let index = 0; index < pointCount; index++) {
+        builder.beginPoint();
+        writeCoordinates(index, index + 1);
+      }
+      return;
+    case FlatGeobufGeometryType.LineString:
+      builder.beginLineString(pointCount);
+      writeCoordinates(0, pointCount);
+      return;
+    case FlatGeobufGeometryType.MultiLineString: {
+      const lineEnds = ends || new Uint32Array([pointCount]);
+      builder.beginMultiLineString(lineEnds.length);
+      let start = 0;
+      for (const end of lineEnds) {
+        builder.beginLineString(end - start);
+        writeCoordinates(start, end);
+        start = end;
+      }
+      return;
+    }
+    case FlatGeobufGeometryType.Polygon: {
+      const ringEnds = ends || new Uint32Array([pointCount]);
+      builder.beginPolygon(ringEnds.length);
+      let start = 0;
+      for (const end of ringEnds) {
+        builder.beginLinearRing(end - start);
+        writeCoordinates(start, end);
+        start = end;
+      }
+      return;
+    }
+    case FlatGeobufGeometryType.MultiPolygon: {
+      const partsField = view.tableField(geometryOffset, 7);
+      if (partsField === undefined) throw new Error('FlatGeobuf multipolygon has no polygon parts');
+      const parts = view.vector(partsField);
+      builder.beginMultiPolygon(parts.length);
+      for (let index = 0; index < parts.length; index++) {
+        writeFlatGeobufGeometryToWKB(
+          builder,
+          arrayBuffer,
+          view.indirect(parts.offset + index * 4),
+          header,
+          FlatGeobufGeometryType.Polygon
+        );
+      }
+      return;
+    }
+    case FlatGeobufGeometryType.GeometryCollection: {
+      const partsField = view.tableField(geometryOffset, 7);
+      const parts = partsField === undefined ? {offset: 0, length: 0} : view.vector(partsField);
+      builder.beginGeometry('GeometryCollection', parts.length);
+      for (let index = 0; index < parts.length; index++) {
+        writeFlatGeobufGeometryToWKB(
+          builder,
+          arrayBuffer,
+          view.indirect(parts.offset + index * 4),
+          header
+        );
+      }
+      return;
+    }
+    default:
+      throw new Error(`Unsupported FlatGeobuf geometry type ${type}`);
+  }
+}
+
+/** Computes geometry bounds directly from FlatGeobuf buffers without creating coordinates. */
+export function getFlatGeobufGeometryBounds(
+  arrayBuffer: ArrayBuffer,
+  geometryOffset: number | undefined,
+  header: FlatGeobufHeader
+): FlatGeobufBounds | undefined {
+  if (geometryOffset === undefined) return undefined;
+
+  const view = new FlatBufferView(arrayBuffer);
+  return getGeometryBounds(view, geometryOffset, header);
+}
+
+function getGeometryBounds(
+  view: FlatBufferView,
+  geometryOffset: number,
+  header: FlatGeobufHeader
+): FlatGeobufBounds | undefined {
+  const xy = readFloat64Vector(view, view.tableField(geometryOffset, 1));
+  let minimumX = Number.POSITIVE_INFINITY;
+  let minimumY = Number.POSITIVE_INFINITY;
+  let maximumX = Number.NEGATIVE_INFINITY;
+  let maximumY = Number.NEGATIVE_INFINITY;
+
+  if (xy) {
+    for (let index = 0; index + 1 < xy.length; index += 2) {
+      const x = xy[index];
+      const y = xy[index + 1];
+      minimumX = Math.min(minimumX, x);
+      minimumY = Math.min(minimumY, y);
+      maximumX = Math.max(maximumX, x);
+      maximumY = Math.max(maximumY, y);
+    }
+  }
+
+  const type = getFlatGeobufGeometryType(view, geometryOffset, header);
+  if (
+    type === FlatGeobufGeometryType.MultiPolygon ||
+    type === FlatGeobufGeometryType.GeometryCollection
+  ) {
+    const partsField = view.tableField(geometryOffset, 7);
+    if (partsField !== undefined) {
+      const parts = view.vector(partsField);
+      for (let index = 0; index < parts.length; index++) {
+        const bounds = getGeometryBounds(view, view.indirect(parts.offset + index * 4), header);
+        if (!bounds) continue;
+        minimumX = Math.min(minimumX, bounds[0]);
+        minimumY = Math.min(minimumY, bounds[1]);
+        maximumX = Math.max(maximumX, bounds[2]);
+        maximumY = Math.max(maximumY, bounds[3]);
+      }
+    }
+  }
+
+  return Number.isFinite(minimumX) && Number.isFinite(minimumY)
+    ? [minimumX, minimumY, maximumX, maximumY]
+    : undefined;
+}
+
+function getFlatGeobufGeometryType(
+  view: FlatBufferView,
+  geometryOffset: number,
+  header: FlatGeobufHeader
+): FlatGeobufGeometryType {
+  const typeField = view.tableField(geometryOffset, 6);
+  return ((typeField === undefined ? 0 : view.uint8(typeField)) ||
+    header.geometryType) as FlatGeobufGeometryType;
 }
 
 /** Decodes one geometry for compatibility adapters that require GeoJSON values. */
