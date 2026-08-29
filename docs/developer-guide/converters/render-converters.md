@@ -1,4 +1,44 @@
-# Render Converters
+---
+title: Render converters
+description: Turn geometry columns and values into render-ready binary feature collections without a GeoJSON detour.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Converter guide · rendering"
+  title="Move geometry from columns to pixels."
+  description="Render converters take WKB, WKT, or native GeoArrow geometry and produce the binary feature structures used by visualization layers. They keep the conversion path direct when a GeoJSON object graph would add unnecessary work."
+  tone="cyan"
+  meta={['WKB / WKT / GeoArrow', 'BinaryFeatureCollection', 'Direct render path']}
+  links={[
+    {label: 'GIS module', to: '/docs/modules/gis'},
+    {label: 'Feature collection converters', to: '/docs/developer-guide/converters/feature-collection-converters'},
+    {label: 'GIS category', to: '/docs/specifications/category-gis'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The render conversion path"
+  title="Keep the table shape until the renderer needs geometry arrays."
+  description="A geometry column can remain in Arrow or GeoArrow form while it moves through scans and transforms. Convert at the rendering boundary, where offsets, positions, ids, and triangles become useful to a layer."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Geometry column or geometry value list'},
+    {label: 'Accepted encodings', value: 'WKB, WKT, and native GeoArrow columns'},
+    {label: 'Output', value: 'Points, lines, and polygons in BinaryFeatureCollection bins'},
+    {label: 'Optimization', value: 'Typed arrays, scratch reuse, and optional triangulation'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Render converter contracts"
+  description="The sections below cover supported geometry families, mixed and nested geometries, scratch reuse, triangulation, and the Arrow-backed wrapper."
+  tone="cyan"
+ />
 
 These APIs skip generic shape dispatch and produce render-oriented GIS structures directly.
 
