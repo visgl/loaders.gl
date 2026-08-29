@@ -59,6 +59,13 @@
   max-width: 54rem;
 }
 
+.topline {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
 .eyebrow {
   color: var(--header-accent);
   font-family: var(--ifm-heading-font-family);
@@ -68,6 +75,16 @@
   line-height: 1.3;
   margin: 0 0 0.75rem;
   text-transform: uppercase;
+}
+
+.identity {
+  color: var(--header-accent);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: clamp(1.1rem, 2vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  margin: 0 0 0.7rem;
 }
 
 .title {
@@ -93,7 +110,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-top: 1.1rem;
+  justify-content: flex-end;
+  margin: 0;
+  max-width: 48%;
 }
 
 .badges:empty {
@@ -170,5 +189,15 @@
   .footer {
     align-items: start;
     flex-direction: column;
+  }
+
+  .topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .badges {
+    justify-content: flex-start;
+    max-width: none;
   }
 }

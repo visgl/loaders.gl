@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {TableShapeGraphic} from '@site/src/components/docs/table-shape-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
@@ -21,6 +22,8 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
     {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />
+
+<TableShapeGraphic />
 
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
 

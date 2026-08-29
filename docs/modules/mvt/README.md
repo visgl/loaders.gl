@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {VectorTileDeliveryGraphic} from '@site/src/components/docs/vector-tile-delivery-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
+
+<VectorTileDeliveryGraphic />
 
 <DocOrientation
   eyebrow="The vector-tile path"

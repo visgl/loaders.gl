@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
+import {useDoc} from '@docusaurus/plugin-content-docs/client';
 
 import styles from './doc-page-header.module.css';
 
@@ -51,6 +52,7 @@ export function DocPageHeader({
   links = [],
   badges = []
 }: DocPageHeaderProps): ReactNode {
+  const {metadata} = useDoc();
   const headerReference = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -81,14 +83,17 @@ export function DocPageHeader({
       aria-labelledby="doc-page-header-title"
     >
       <div className={styles.copy}>
-        <p className={styles.eyebrow}>{eyebrow}</p>
+        <div className={styles.topline}>
+          <p className={styles.eyebrow}>{eyebrow}</p>
+          <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
+            {badges}
+          </div>
+        </div>
+        <p className={styles.identity}>{metadata.title}</p>
         <h1 className={styles.title} id="doc-page-header-title">
           {title}
         </h1>
         <p className={styles.description}>{description}</p>
-        <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
-          {badges}
-        </div>
       </div>
       {(meta.length > 0 || links.length > 0) && (
         <div className={styles.footer}>
