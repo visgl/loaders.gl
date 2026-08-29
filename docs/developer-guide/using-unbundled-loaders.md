@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
+import {BundleBoundaryGraphic} from '@site/src/components/docs/bundle-boundary-graphic';
 
 <DocPageHeader
   eyebrow="Bundle boundaries"
@@ -19,6 +20,8 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
     {label: 'Managing dependencies', to: '/docs/developer-guide/dependencies'}
   ]}
 />
+
+<BundleBoundaryGraphic />
 
 <DocOrientation
   eyebrow="When to split a parser"

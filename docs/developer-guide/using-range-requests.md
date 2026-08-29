@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 
 <DocPageHeader
   eyebrow="Cloud-native I/O"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
+
+<RangeRequestGraphic />
 
 <DocOrientation
   eyebrow="The range-request path"
