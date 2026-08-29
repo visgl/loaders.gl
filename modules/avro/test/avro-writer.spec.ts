@@ -29,6 +29,10 @@ test('Avro compression rejects unsupported codecs', async () => {
     /unsupported compression codec/
   );
 });
+
+test('Avro metadata loader preloads the parser implementation', async () => {
+  await expect(AvroLoader.preload?.()).resolves.toBe(AvroLoaderWithParser);
+});
 test('AvroWriter#encode round-trips an Arrow table', async () => {
   const input = {
     shape: 'arrow-table' as const,
