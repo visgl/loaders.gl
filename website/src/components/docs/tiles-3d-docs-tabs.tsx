@@ -13,6 +13,7 @@ type Tiles3DDocsTab = {
 /** 3D Tiles documentation tab identifiers. */
 export type Tiles3DDocsTabId =
   | 'module'
+  | 'format'
   | 'runtime'
   | 'resources'
   | 'hierarchy'
@@ -24,6 +25,7 @@ export type Tiles3DDocsTabId =
 
 const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
   {id: 'module', label: 'Module', href: '/docs/modules/3d-tiles'},
+  {id: 'format', label: '3D Tiles format', href: '/docs/modules/3d-tiles/formats/3d-tiles'},
   {id: 'runtime', label: 'Runtime', href: '/docs/modules/3d-tiles/concepts'},
   {
     id: 'resources',

@@ -75,7 +75,7 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
 
 ```typescript
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
 const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
@@ -90,9 +90,9 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
 
 const tilesetUrl = 'https://assets.cesium.ion.com/43978/tileset.json';
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+const tilesetHeader = await load(tilesetUrl, Tiles3DLoader);
 
-const tileset3d = new Tileset3D(tilesetJson, {
+const tileset = new Tileset3D(tilesetHeader, {
   throttleRequests: false,
   onTileLoad: (tile) => console.log(tile)
 });
@@ -104,16 +104,16 @@ const viewport = new WebMercatorViewport({
   longitude: -74.0115413,
   zoom: 17
 });
-tileset3d.selectTiles(viewport);
+await tileset.selectTiles(viewport);
 
 // visible tiles
-const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
+const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
 
 // To fully load all tiles in a given view, repeatedly select tiles until the tileset is loaded
-while (!tileset3d.isLoaded()) {
-  await tileset3d.selectTiles(viewport);
+while (!tileset.isLoaded()) {
+  await tileset.selectTiles(viewport);
 }
 ```
 
@@ -135,27 +135,19 @@ Both schemas enforce the same structural constraints, including that a tileset c
 
 ## Options
 
-| Option               | Type             | Default | Description                                                                                                                                                           |
-| -------------------- | ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `3d-tiles.isTileset` | `Boolean` or `auto` | `auto` | Selects tileset-header or render-content parsing. `auto` inspects binary magic and JSON structure, independent of the URL extension or MIME type. Explicit `true` or `false` asserts the expected category and rejects a mismatch. |
-| `3d-tiles.maximumCachedSubtrees` | `Number` | `32` | Maximum settled implicit-subtree availability resources retained by each `Tiles3DSource`. `0` retains only in-flight requests for deduplication. See [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees). |
-| `3d-tiles.headers`   | `Object`         | `null`  | Used to load data from server                                                                                                                                         |
-| `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
-| `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `3d-tiles.isTileset` | `boolean \| 'auto'` | `'auto'` | Select tileset-header or render-content parsing. Auto-detection uses binary magic and JSON structure rather than trusting the URL extension. |
+| `3d-tiles.loadGLTF` | `boolean` | `true` | Parse embedded glTF binaries and linked glTF resources in `b3dm` and `i3dm` content. |
+| `3d-tiles.decodeQuantizedPositions` | `boolean` | `false` | Decode quantized point positions on the CPU when the renderer does not handle them directly. |
+| `3d-tiles.maximumCachedSubtrees` | `number` | `32` | Limit settled implicit-subtree resources retained by each 3D Tiles source. `0` retains only in-flight requests for deduplication. |
+| `3d-tiles.assetGltfUpAxis` | `'x' \| 'y' \| 'z' \| null` | `null` | Override the up axis used when interpreting linked glTF assets. |
 
-Point cloud tie options
+General request options such as headers are supplied through the shared loaders.gl options. When
+`3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader)
+under `options.gltf` to control linked scene resources.
 
-| Option                              | Type      | Default | Description                          |
-| ----------------------------------- | --------- | ------- | ------------------------------------ |
-| `3d-tiles.decodeQuantizedPositions` | `Boolean` | `false` | Pre-decode quantized position on CPU |
-
-For i3dm and b3dm tiles:
-
-| Option              | Type    | Default | Description                           |
-| ------------------- | ------- | ------- | ------------------------------------- |
-| `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
-
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options. Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
 
 See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
 
@@ -163,7 +155,9 @@ See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/
 
 ### b3dm, i3dm
 
-The Batched 3D Model and Instanced 3D model tile types contain an embedded glTF file. This can be parsed into a hierarchical scene graph description that can be used to instantiate an actual sceneg raph in most WebGL libraries.
+The Batched 3D Model and Instanced 3D Model tile types contain an embedded glTF file. This can be
+parsed into a hierarchical scene graph description that can be used to instantiate an actual scene
+graph in most WebGL libraries.
 
 Can load both binary `.glb` files and JSON `.gltf` files.
 

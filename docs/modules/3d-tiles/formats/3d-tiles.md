@@ -21,7 +21,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<Tiles3DDocsTabs active="module" />
+<Tiles3DDocsTabs active="format" />
 
 <DocOrientation
   eyebrow="The 3D Tiles delivery model"
