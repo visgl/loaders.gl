@@ -53,7 +53,7 @@ test('validates nested named schemas, unions, collections, and defaults', () => 
         },
         default: {id: 7}
       },
-      {name: 'nestedReference', type: {type: 'Nested'}, default: {}},
+      {name: 'nestedReference', type: {type: 'Nested'}, default: {id: 7}},
       {name: 'wrapped', type: {type: {type: 'string'}}, default: 'value'},
       {name: 'primitiveObject', type: {type: 'string'}, default: 'value'},
       {name: 'optional', type: ['null', 'string'], default: null}

@@ -9,6 +9,7 @@ import {AvroLoaderWithParser} from '../src/avro-loader';
 import {parseAvroOCF} from '../src/avro-ocf';
 import {encodeAvroInChunks} from '../src/avro-stream';
 import {AvroWriter} from '../src/avro-writer';
+import {decodeAvroBlockRows} from '../src/lib/parsers/parse-avro';
 
 test('Avro Snappy compression appends and validates the block checksum', async () => {
   const value = new TextEncoder().encode('snappy checksum coverage');
@@ -42,7 +43,15 @@ test('AvroWriter encodes non-empty arrays and object and Map values', async () =
   );
   const container = parseAvroOCF(output);
   expect(container.blocks).toHaveLength(1);
-  expect(container.blocks[0].count).toBe(1);
+  const block = container.blocks[0];
+  const blockBytes = new Uint8Array(output, block.dataOffset, block.compressedSize);
+  await expect(decodeAvroBlockRows(blockBytes, block.count, container)).resolves.toEqual([
+    {
+      tags: ['one', 'two'],
+      objectAttributes: new Map([['first', 1]]),
+      mapAttributes: new Map([['second', 2]])
+    }
+  ]);
 });
 
 test('AvroWriter selects primitive union branches and nested schema wrappers', async () => {
