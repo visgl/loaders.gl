@@ -27,7 +27,7 @@ import type {
   IcebergTableMetadata,
   IcebergTableSourceOptions
 } from './iceberg-types';
-import {parseAvro} from '@loaders.gl/avro/avro-loader';
+import {parseAvro} from '@loaders.gl/avro';
 import {ParquetDatasetSource} from './parquet-dataset-source';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
