@@ -1,4 +1,44 @@
-# Overview
+---
+title: XML
+description: Parse XML documents through a streaming-friendly loaders.gl module.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="XML module"
+  title="Keep document parsing separate from document meaning."
+  description="`@loaders.gl/xml` provides the XML parsing boundary used by format-specific loaders. It exposes XML document processing without forcing applications to depend on one particular geographic, media, or metadata vocabulary."
+  tone="cyan"
+  meta={['XML', 'Streaming parser', 'HTML loader']}
+  links={[
+    {label: 'XML loader', to: '/docs/modules/xml/api-reference/xml-loader'},
+    {label: 'HTML loader', to: '/docs/modules/xml/api-reference/html-loader'},
+    {label: 'XML formats', to: '/docs/modules/xml/formats/xml'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The document parsing path"
+  title="Read XML tokens. Let the format loader interpret them."
+  description="XML is a syntax layer shared by formats such as KML and other document types. This module handles that layer so higher-level loaders can focus on their own data models."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'XML or HTML text and binary resources'},
+    {label: 'Parsing', value: 'Token and document structure'},
+    {label: 'Consumers', value: 'KML, metadata, and application loaders'},
+    {label: 'Output', value: 'Format-specific JavaScript data'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Parser and format details"
+  description="The reference below covers XML handling, HTML support, installation, parser behavior, and attribution."
+  tone="cyan"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
