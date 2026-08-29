@@ -23,7 +23,7 @@ export function* makeTableToArrowBatchesIterator(
   const batchSize = options?.batchSize || length;
 
   const builders = arrowSchema.fields.map(arrowField =>
-    arrow.makeBuilder({type: arrowField.type, nullValues: [null]})
+    arrow.makeBuilder({type: arrowField.type, nullValues: [null, undefined]})
   );
   const structField = new arrow.Struct(arrowSchema.fields);
 

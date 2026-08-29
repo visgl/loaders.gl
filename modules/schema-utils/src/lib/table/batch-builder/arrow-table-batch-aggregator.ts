@@ -61,6 +61,9 @@ function getArrowSchema(schema): arrow.Schema {
   if (arrowFields.length === 0) {
     throw new Error('No arrow convertible fields');
   }
+  if (arrowFields.length !== fields.length) {
+    throw new Error('Some schema fields are not arrow convertible');
+  }
 
   return new arrow.Schema(arrowFields);
 }

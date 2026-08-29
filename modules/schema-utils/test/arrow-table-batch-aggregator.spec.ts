@@ -40,6 +40,19 @@ describe('ArrowTableBatchAggregator', () => {
     unsupported.addArrayRow([1]);
     expect(() => unsupported.getBatch()).toThrow('No arrow convertible fields');
 
+    const mixed = new ArrowTableBatchAggregator(
+      {
+        fields: [
+          {name: 'value', type: 'float32', nullable: false},
+          {name: 'count', type: 'int32', nullable: false}
+        ],
+        metadata: {}
+      } as any,
+      {}
+    );
+    mixed.addArrayRow([1, 2]);
+    expect(() => mixed.getBatch()).toThrow('Some schema fields are not arrow convertible');
+
     const invalidColumn = new ArrowTableBatchAggregator(FLOAT_SCHEMA as any, {});
     invalidColumn.addArrayRow([1]);
     invalidColumn.columns.value = [1];

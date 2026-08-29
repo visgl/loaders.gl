@@ -18,19 +18,16 @@ describe('makeTableToArrowBatchesIterator', () => {
     const table = {
       shape: 'object-row-table' as const,
       schema: SCHEMA,
-      data: [
-        {id: 1, name: 'one'},
-        {id: 2, name: 'two'},
-        {id: 3, name: null}
-      ]
+      data: [{id: 1, name: 'one'}, {id: 2, name: 'two'}, {id: 3, name: null}, {id: 4}]
     };
     const batches = Array.from(makeTableToArrowBatchesIterator(table as any, {batchSize: 2}));
 
-    expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
+    expect(batches.map(batch => batch.numRows)).toEqual([2, 2]);
     expect(batches[0].getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
     expect(batches[0].getChild('name')?.toArray()).toEqual(['one', 'two']);
     expect(batches[1].getChild('id')?.get(0)).toBe(3);
     expect(batches[1].getChild('name')?.get(0)).toBeNull();
+    expect(batches[1].getChild('name')?.get(1)).toBeNull();
   });
 
   test('uses the table length as the default batch size', () => {
