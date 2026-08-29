@@ -8,13 +8,24 @@ page_style: designed
 import {FormatLogoGallery} from '@site/src/components/docs/format-logo-gallery';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import Link from '@docusaurus/Link';
 
 <DocPageHeader
   eyebrow="Library overview"
-  title="Load data. Keep the application path."
-  description="A focused map of loaders.gl: choose a format, find its common data shape, and go deeper only when you need the implementation details."
+  title="Big data loading for the web."
+  description="Load large files, streams, and cloud-hosted datasets in the browser or Node.js. Use one small API to parse, scan, transform, and write the formats your application needs."
   tone="cyan"
   meta={['Loaders and writers', 'Files, streams, and services', 'TypeScript']}
+  notice={
+    <>
+      This documentation describes loaders.gl <strong>v5</strong>. See our{' '}
+      <Link to="/docs/whats-new">release notes</Link> to learn what is new. Older versions:{' '}
+      <a href="https://github.com/visgl/loaders.gl/blob/4.4-release/docs/README.md">v4.4</a>,{' '}
+      <a href="https://github.com/visgl/loaders.gl/blob/3.3-release/docs/README.md">v3.3</a>,{' '}
+      <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">v2.3</a>,{' '}
+      <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">v1.3</a>.
+    </>
+  }
   links={[
     {label: 'Get started', to: '/docs/developer-guide/get-started'},
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
@@ -45,21 +56,15 @@ Choose the loader that matches your data and use the same small set of APIs to l
 write it. Modules are independent, so applications install only the formats and capabilities they
 need.
 
-<img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" /> &nbsp;
-<img src="https://img.shields.io/badge/License-MIT-green.svg" /> &nbsp;
-<img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />  &nbsp;
-<img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" /> &nbsp;
-<a href="https://coveralls.io/github/visgl/loaders.gl?branch=master"><img src="https://coveralls.io/repos/github/visgl/loaders.gl/badge.svg?branch=master" alt="Coverage Status" /></a> &nbsp;
-<br />
-<br />
-
-This documentation describes loaders.gl **v5**. See our [**release notes**](/docs/whats-new) to learn what is new.
-
-Docs for older versions are available on github:
-**[v4.4](https://github.com/visgl/loaders.gl/blob/4.4-release/docs/README.md)**,
-**[v3.3](https://github.com/visgl/loaders.gl/blob/3.3-release/docs/README.md)**,
-**[v2.3](https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md)**,
-**[v1.3](https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md)**.
+<p className="badges">
+  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" alt="npm package" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT license" />
+  <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" alt="npm downloads" />
+  <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" />
+  <a href="https://coveralls.io/github/visgl/loaders.gl?branch=master">
+    <img src="https://coveralls.io/repos/github/visgl/loaders.gl/badge.svg?branch=master" alt="Coverage status" />
+  </a>
+</p>
 
 <div style={{textAlign: 'center', margin: '40px 0 56px'}}>
   <a href="https://openvisualization.org">

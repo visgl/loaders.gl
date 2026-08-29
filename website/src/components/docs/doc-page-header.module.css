@@ -105,6 +105,27 @@
   max-width: 48rem;
 }
 
+.notice {
+  background: color-mix(in srgb, var(--header-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--header-accent) 25%, transparent);
+  border-left: 2px solid var(--header-accent);
+  border-radius: 0.55rem;
+  color: rgba(219, 231, 244, 0.75);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin-top: 1rem;
+  padding: 0.65rem 0.8rem;
+}
+
+.notice :global(a) {
+  color: var(--header-accent);
+  font-weight: 700;
+}
+
+.notice :global(strong) {
+  color: #fff;
+}
+
 .badges {
   align-items: center;
   display: flex;

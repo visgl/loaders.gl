@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CrsFlowGraphic} from '@site/src/components/docs/capability-flow-graphics';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'WKT CRS loader', to: '/docs/modules/wkt/api-reference/wkt-crs-loader'}
   ]}
 />
+
+<CrsFlowGraphic />
 
 <DocOrientation
   eyebrow="The CRS path"

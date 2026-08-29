@@ -36,6 +36,8 @@ export type DocPageHeaderProps = {
   meta?: readonly string[];
   /** Optional related destinations. */
   links?: readonly DocPageHeaderLink[];
+  /** Optional release or compatibility note shown in the orientation card. */
+  notice?: ReactNode;
   /** Optional status and version badges moved out of the long-form reference content. */
   badges?: readonly ReactNode[];
 };
@@ -50,6 +52,7 @@ export function DocPageHeader({
   tone = 'cyan',
   meta = [],
   links = [],
+  notice,
   badges = []
 }: DocPageHeaderProps): ReactNode {
   const {metadata} = useDoc();
@@ -94,6 +97,7 @@ export function DocPageHeader({
           {title}
         </h1>
         <p className={styles.description}>{description}</p>
+        {notice ? <div className={styles.notice}>{notice}</div> : null}
       </div>
       {(meta.length > 0 || links.length > 0) && (
         <div className={styles.footer}>

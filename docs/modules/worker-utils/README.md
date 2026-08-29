@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {WorkerFlowGraphic} from '@site/src/components/docs/capability-flow-graphics';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Worker threads', to: '/docs/developer-guide/concepts/worker-threads'}
   ]}
 />
+
+<WorkerFlowGraphic />
 
 <DocOrientation
   eyebrow="The worker boundary"
