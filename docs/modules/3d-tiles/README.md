@@ -54,8 +54,7 @@ summary of parser, traversal, extension, and renderer-facing support.
 ## Installation
 
 ```bash
-npm install @loaders.gl/3d-tiles
-npm install @loaders.gl/core
+npm install @loaders.gl/core @loaders.gl/3d-tiles @loaders.gl/tiles
 ```
 
 ## API
@@ -92,15 +91,13 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 Basic API usage is illustrated in the following snippet. Load the tileset header, create a `Tileset3D` instance, and keep selecting tiles as the camera moves:
 
 ```typescript
-import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
-const tilesetUrl = ''; // add the url to your tileset.json file here
+const tilesetUrl = 'https://example.com/tileset.json';
+const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
 
-const tilesetHeader = await load(tilesetUrl, Tiles3DLoader);
-
-const tileset = new Tileset3D(tilesetHeader, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 
