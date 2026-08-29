@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
 
@@ -35,6 +36,14 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
     {label: 'Output', value: 'Object rows, Arrow tables, or incremental batches'}
   ]}
 />
+
+## Try a range-aware read
+
+Use the panel below to inspect Parquet metadata, select columns, and limit the Arrow rows returned
+from a remote file. The reader can plan the request from the footer before decoding the selected
+data ranges.
+
+<ParquetScanLiveExample />
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
