@@ -1,4 +1,44 @@
-# loadCubeImages
+---
+title: loadImageCube
+description: Load the six images that make up a cubemap, with optional mip levels per face.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Images API · cubemap helper"
+  title="Load six images with one callback."
+  description="loadImageCube turns a face naming function into a cubemap image set. Use it when the images are already described by application logic rather than a JSON manifest."
+  tone="blue"
+  meta={['Six directional faces', 'Optional mip levels', 'Browser and Node polyfills']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'TextureCubeLoader', to: '/docs/modules/textures/api-reference/texture-cube-loader'},
+    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The helper path"
+  title="Generate face URLs without hand-writing six loads."
+  description="The callback receives stable face and direction information for every request. Add mip loading when each direction has a resolution chain, or keep one image per face for a simple environment map."
+  tone="blue"
+  items={[
+    {label: 'Callback', value: 'Receives face, direction, axis, sign, and index'},
+    {label: 'Output', value: 'Six images keyed by WebGL cube-face constants'},
+    {label: 'Mip levels', value: 'Single images or arrays of images per face'},
+    {label: 'Options', value: 'ImageBitmapLoader options plus image.mipLevels'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="loadImageCube reference"
+  description="The sections below document URL callbacks, directional names, mip-level loading, return values, and image options."
+  tone="blue"
+/>
 
 A function that loads 6 images representing the faces of a cube. Primarily intended for loading images for WebGL `GL.TEXTURE_CUBE` textures.
 

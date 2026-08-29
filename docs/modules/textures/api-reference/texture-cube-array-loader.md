@@ -1,4 +1,44 @@
-# TextureCubeArrayLoader
+---
+title: TextureCubeArrayLoader
+description: Load layered cubemaps and mip levels from a JSON texture manifest.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Textures API · cube arrays"
+  title="Load many cubemaps from one manifest."
+  description="TextureCubeArrayLoader reads a JSON manifest whose layers contain six cube faces. It keeps the face layout and optional mip chains explicit for environment, irradiance, and other layered texture data."
+  tone="pink"
+  meta={['From v5.0', 'JSON manifest', 'Cube faces and mip levels']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'TextureCubeLoader', to: '/docs/modules/textures/api-reference/texture-cube-loader'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The cube-array path"
+  title="Keep layers, faces, and mip levels addressable."
+  description="The manifest is the small piece of structure that a cube-array upload needs. Each layer names its six faces, and each face can point to one image, a mip chain, or a URL template."
+  tone="pink"
+  items={[
+    {label: 'Input', value: 'JSON manifest with one or more cubemap layers'},
+    {label: 'Face layout', value: '+X, -X, +Y, -Y, +Z, and -Z'},
+    {label: 'Mip levels', value: 'Single paths, arrays, or inferred templates'},
+    {label: 'Decode', value: 'ImageBitmapLoader by default, with Node polyfill support'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Cube-array manifest and options"
+  description="The reference below documents manifest structure, face templates, mip-level discovery, and loader options."
+  tone="pink"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
