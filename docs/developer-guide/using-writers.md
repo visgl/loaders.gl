@@ -5,9 +5,12 @@ hide_title: true
 page_style: designed
 ---
 
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="writers" />
 
 <DocPageHeader
   eyebrow="Core API"

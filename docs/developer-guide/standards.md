@@ -5,9 +5,12 @@ hide_title: true
 page_style: designed
 ---
 
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {StandardsBoundaryGraphic} from '@site/src/components/docs/standards-boundary-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="standards" />
 
 <DocPageHeader
   eyebrow="Standards and specifications"

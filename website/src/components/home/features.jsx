@@ -57,6 +57,19 @@ export const FEATURE_CARDS = [
     tone: 'mint'
   },
   {
+    id: 'datasets',
+    eyebrow: 'Cloud datasets',
+    title: 'Fetch the part that matters.',
+    description:
+      'Treat remote files, tiled archives, and services as datasets: inspect metadata, plan a request, and read only the bytes needed for the current result.',
+    href: '/docs/developer-guide/using-sources',
+    linkLabel: 'Use cloud sources',
+    tags: ['metadata', 'range reads', 'services'],
+    visual: 'datasets',
+    wide: true,
+    tone: 'orange'
+  },
+  {
     id: 'workers',
     eyebrow: 'Runtime performance',
     title: 'Keep the UI responsive.',
@@ -79,6 +92,43 @@ export const FEATURE_CARDS = [
     tags: ['typed columns', 'zero-copy', 'Arrow IPC'],
     visual: 'arrow',
     tone: 'cyan'
+  },
+  {
+    id: 'writers',
+    eyebrow: 'Portable output',
+    title: 'Encode the data you already have.',
+    description:
+      'Convert application and category data at the edge of the pipeline, then let a format-specific writer own validation, compression, and output bytes.',
+    href: '/docs/developer-guide/using-writers',
+    linkLabel: 'Use writers',
+    tags: ['encode()', 'conversion', 'compression'],
+    visual: 'writers',
+    wide: true,
+    tone: 'yellow'
+  },
+  {
+    id: 'performance',
+    eyebrow: 'End-to-end performance',
+    title: 'Measure bytes, copies, and boundaries.',
+    description:
+      'Performance depends on the complete path: selective I/O, decoding, allocation, worker transfer, and the shape handed to the application.',
+    href: '/docs/developer-guide/concepts/javascript-and-wasm-performance',
+    linkLabel: 'Measure the pipeline',
+    tags: ['I/O', 'memory', 'workers'],
+    visual: 'performance',
+    tone: 'violet'
+  },
+  {
+    id: 'standards',
+    eyebrow: 'Standards fidelity',
+    title: 'Keep the format boundary visible.',
+    description:
+      'Track versions, profiles, protocols, and unsupported edges explicitly while applications use practical loaders, sources, and common data shapes.',
+    href: '/docs/developer-guide/standards',
+    linkLabel: 'See standards support',
+    tags: ['versions', 'profiles', 'capabilities'],
+    visual: 'standards',
+    tone: 'violet'
   },
   {
     id: 'categories',
@@ -498,6 +548,36 @@ const StreamingVisual = styled(CardVisual)`
   gap: 8px;
 `;
 
+const DatasetVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 154px;
+  width: 48%;
+`;
+
+const DatasetLine = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: end;
+`;
+
+const DatasetStage = styled.span`
+  background: ${(props) => (props.$active ? 'rgba(255, 179, 107, 0.2)' : 'rgba(229, 240, 247, 0.07)')};
+  border: 1px solid ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.2)')};
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.62)')};
+  font-family: monospace;
+  font-size: 10px;
+  padding: 7px 9px;
+`;
+
+const DatasetArrow = styled.span`
+  color: var(--card-accent);
+  font-size: 15px;
+`;
+
 const StreamLine = styled.div`
   align-items: center;
   display: flex;
@@ -559,6 +639,87 @@ const ArrowCell = styled.span`
   border-radius: 3px;
   display: block;
   height: ${(props) => (props.$header ? '10px' : '18px')};
+`;
+
+const WriterVisual = styled(CardVisual)`
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  height: 142px;
+  justify-content: end;
+  width: 48%;
+`;
+
+const WriterBlock = styled.div`
+  background: ${(props) => (props.$active ? 'rgba(240, 216, 119, 0.18)' : 'rgba(229, 240, 247, 0.07)')};
+  border: 1px solid ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.2)')};
+  border-radius: 8px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.58)')};
+  font-family: monospace;
+  font-size: 10px;
+  min-width: 68px;
+  padding: 10px 8px;
+  text-align: center;
+`;
+
+const WriterArrow = styled.span`
+  color: var(--card-accent);
+  font-size: 18px;
+`;
+
+const PerformanceVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 9px;
+  height: 142px;
+  width: 46%;
+`;
+
+const PerformanceLine = styled.div`
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 52px 1fr;
+`;
+
+const PerformanceLabel = styled.span`
+  color: rgba(229, 240, 247, 0.56);
+  font-family: monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+`;
+
+const PerformanceBar = styled.span`
+  background: linear-gradient(90deg, var(--card-accent), rgba(155, 140, 255, 0.2));
+  border-radius: 4px;
+  display: block;
+  height: 10px;
+  width: ${(props) => props.$width};
+`;
+
+const StandardsVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 150px;
+  width: 48%;
+`;
+
+const StandardsLine = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: end;
+`;
+
+const StandardsChip = styled.span`
+  background: rgba(155, 140, 255, 0.12);
+  border: 1px solid rgba(155, 140, 255, 0.46);
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.62)')};
+  font-family: monospace;
+  font-size: 10px;
+  padding: 7px 9px;
 `;
 
 const LoaderVisual = styled(CardVisual)`
@@ -742,6 +903,28 @@ export function RenderFeatureVisual({type, wide}) {
     );
   }
 
+  if (type === 'datasets') {
+    return (
+      <DatasetVisual $wide={wide} aria-hidden="true">
+        <DatasetLine>
+          <DatasetStage>catalog</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>metadata</DatasetStage>
+        </DatasetLine>
+        <DatasetLine>
+          <DatasetStage>dataset</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>ranges</DatasetStage>
+        </DatasetLine>
+        <DatasetLine>
+          <DatasetStage>many files</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>one result</DatasetStage>
+        </DatasetLine>
+      </DatasetVisual>
+    );
+  }
+
   if (type === 'workers') {
     return (
       <WorkersVisual $wide={wide} aria-hidden="true">
@@ -765,6 +948,60 @@ export function RenderFeatureVisual({type, wide}) {
           </ArrowColumn>
         ))}
       </ArrowVisual>
+    );
+  }
+
+  if (type === 'writers') {
+    return (
+      <WriterVisual $wide={wide} aria-hidden="true">
+        <WriterBlock>Arrow table</WriterBlock>
+        <WriterArrow>→</WriterArrow>
+        <WriterBlock $active>validate</WriterBlock>
+        <WriterArrow>→</WriterArrow>
+        <WriterBlock $active>Parquet</WriterBlock>
+      </WriterVisual>
+    );
+  }
+
+  if (type === 'performance') {
+    return (
+      <PerformanceVisual $wide={wide} aria-hidden="true">
+        <PerformanceLine>
+          <PerformanceLabel>bytes</PerformanceLabel>
+          <PerformanceBar $width="88%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>copies</PerformanceLabel>
+          <PerformanceBar $width="42%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>transfer</PerformanceLabel>
+          <PerformanceBar $width="64%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>first batch</PerformanceLabel>
+          <PerformanceBar $width="29%" />
+        </PerformanceLine>
+      </PerformanceVisual>
+    );
+  }
+
+  if (type === 'standards') {
+    return (
+      <StandardsVisual $wide={wide} aria-hidden="true">
+        <StandardsLine>
+          <StandardsChip>format</StandardsChip>
+          <StandardsChip $active>version</StandardsChip>
+        </StandardsLine>
+        <StandardsLine>
+          <StandardsChip>profile</StandardsChip>
+          <StandardsChip $active>capability</StandardsChip>
+        </StandardsLine>
+        <StandardsLine>
+          <StandardsChip>boundary</StandardsChip>
+          <StandardsChip $active>contract</StandardsChip>
+        </StandardsLine>
+      </StandardsVisual>
     );
   }
 
@@ -838,12 +1075,12 @@ export default function Features({showVisuals = true, featureIds}) {
       <FeatureContent>
         <FeatureIntro>
           <div>
-            <FeatureEyebrow>The loaders.gl data plane</FeatureEyebrow>
-            <FeatureTitle>Data in. Insight out.</FeatureTitle>
+            <FeatureEyebrow>Big data loading</FeatureEyebrow>
+            <FeatureTitle>Large data. Small application paths.</FeatureTitle>
           </div>
           <FeatureLead>
-            A standards-first toolkit for loading, scanning, transforming, and visualizing the
-            formats that power modern geospatial and 3D applications.
+            Load large files, streams, and cloud datasets, then hand the application the rows,
+            columns, geometry, or pixels it actually needs.
           </FeatureLead>
         </FeatureIntro>
 
