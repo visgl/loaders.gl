@@ -32,6 +32,19 @@ export const FEATURE_CARDS = [
     tone: 'pink'
   },
   {
+    id: '3d',
+    eyebrow: '3D data formats',
+    title: 'From scene files to streamed worlds.',
+    description:
+      'Load scene graphs, tiled worlds, point clouds, and their compressed payloads through TypeScript implementations with detailed format coverage.',
+    href: '/docs/developer-guide/3d-data-formats',
+    linkLabel: 'Explore 3D data formats',
+    tags: ['glTF', '3D Tiles', 'I3S', 'COPC'],
+    visual: '3d',
+    wide: true,
+    tone: 'blue'
+  },
+  {
     id: 'streaming',
     eyebrow: 'Progressive data',
     title: 'No waiting. Process data as it arrives.',
@@ -553,6 +566,42 @@ const LoaderChip = styled.div`
   }
 `;
 
+const ThreeDVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 168px;
+  width: 48%;
+`;
+
+const ThreeDRow = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+`;
+
+const ThreeDRowLabel = styled.span`
+  color: rgba(229, 240, 247, 0.46);
+  flex: 0 0 52px;
+  font-family: monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+`;
+
+const ThreeDChip = styled.span`
+  background: rgba(112, 199, 255, 0.13);
+  border: 1px solid rgba(112, 199, 255, 0.48);
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.72)')};
+  flex: 0 1 auto;
+  font-family: monospace;
+  font-size: 10px;
+  min-width: 0;
+  padding: 7px 8px;
+  white-space: nowrap;
+`;
+
 const CategoriesVisual = styled(CardVisual)`
   height: 150px;
 `;
@@ -708,6 +757,36 @@ export function RenderFeatureVisual({type, wide}) {
         <LoaderChip $active>GLTFLoader</LoaderChip>
         <LoaderChip>LASLoader</LoaderChip>
       </LoaderVisual>
+    );
+  }
+
+  if (type === '3d') {
+    return (
+      <ThreeDVisual $wide={wide} aria-hidden="true">
+        <ThreeDRow>
+          <ThreeDRowLabel>scene</ThreeDRowLabel>
+          <ThreeDChip $active>glTF</ThreeDChip>
+          <ThreeDChip>GLB</ThreeDChip>
+          <ThreeDChip>USD</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>world</ThreeDRowLabel>
+          <ThreeDChip $active>3D Tiles</ThreeDChip>
+          <ThreeDChip>I3S</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>points</ThreeDRowLabel>
+          <ThreeDChip $active>COPC</ThreeDChip>
+          <ThreeDChip>Potree</ThreeDChip>
+          <ThreeDChip>LAS</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>payload</ThreeDRowLabel>
+          <ThreeDChip>Draco</ThreeDChip>
+          <ThreeDChip>meshopt</ThreeDChip>
+          <ThreeDChip $active>KTX2</ThreeDChip>
+        </ThreeDRow>
+      </ThreeDVisual>
     );
   }
 

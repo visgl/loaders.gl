@@ -941,6 +941,59 @@ export function StreamingConcept() {
   );
 }
 
+/** Renders the composite-loader delegation flow used on the composite loaders guide. */
+export function CompositeConcept() {
+  return (
+    <WidePanel>
+      <PanelHeader>
+        <PanelLabel $color="#B54F49">Composite loading</PanelLabel>
+        <PanelTitle>Complex formats invoke sub loaders.</PanelTitle>
+        <PanelText>
+          Composite loaders resolve linked assets and delegate embedded content without pushing
+          that work into application code.
+        </PanelText>
+      </PanelHeader>
+      <Diagram>
+        <SplitPanel>
+          <CompactFlow>
+            <Stack>
+              <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
+                <NaturalBreaks>GLTFLoader</NaturalBreaks>
+                <LinkMark aria-hidden="true">↗</LinkMark>
+              </LinkedNode>
+              <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
+                <NaturalBreaks>Tiles3DLoader</NaturalBreaks>
+                <LinkMark aria-hidden="true">↗</LinkMark>
+              </LinkedNode>
+            </Stack>
+            <VerticalConnector $label="calls" />
+            <Stack>
+              {subloaders.map((subloader) => (
+                <LinkedNode
+                  key={subloader}
+                  to={loaderDocumentationLinks[subloader]}
+                  $compactText={subloader.length > 20}
+                >
+                  <NaturalBreaks>{subloader}</NaturalBreaks>
+                  <LinkMark aria-hidden="true">↗</LinkMark>
+                </LinkedNode>
+              ))}
+            </Stack>
+            <VerticalConnector $label="returns" />
+            <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
+              <span>glTF data</span>
+            </LabelOnlyNode>
+          </CompactFlow>
+          <Note $color="#B54F49">
+            A single top-level load can fetch linked buffers, images, compressed meshes, and tile
+            content while preserving the same loaders.gl API surface.
+          </Note>
+        </SplitPanel>
+      </Diagram>
+    </WidePanel>
+  );
+}
+
 /** Renders the homepage section that explains loaders.gl concept flows. */
 export default function Concepts() {
   return (
@@ -984,53 +1037,7 @@ export default function Concepts() {
             </Diagram>
           </Panel>
 
-          <Panel>
-            <PanelHeader>
-              <PanelLabel $color="#B54F49">Composite loading</PanelLabel>
-              <PanelTitle>Complex formats invoke sub loaders.</PanelTitle>
-              <PanelText>
-                Composite loaders resolve linked assets and delegate embedded content without
-                pushing that work into application code.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <SplitPanel>
-                <CompactFlow>
-                  <Stack>
-                    <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
-                      <NaturalBreaks>GLTFLoader</NaturalBreaks>
-                      <LinkMark aria-hidden="true">↗</LinkMark>
-                    </LinkedNode>
-                    <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
-                      <NaturalBreaks>Tiles3DLoader</NaturalBreaks>
-                      <LinkMark aria-hidden="true">↗</LinkMark>
-                    </LinkedNode>
-                  </Stack>
-                  <VerticalConnector $label="calls" />
-                  <Stack>
-                    {subloaders.map((subloader) => (
-                      <LinkedNode
-                        key={subloader}
-                        to={loaderDocumentationLinks[subloader]}
-                        $compactText={subloader.length > 20}
-                      >
-                        <NaturalBreaks>{subloader}</NaturalBreaks>
-                        <LinkMark aria-hidden="true">↗</LinkMark>
-                      </LinkedNode>
-                    ))}
-                  </Stack>
-                  <VerticalConnector $label="returns" />
-                  <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
-                    <span>glTF data</span>
-                  </LabelOnlyNode>
-                </CompactFlow>
-                <Note $color="#B54F49">
-                  A single top-level load can fetch linked buffers, images, compressed meshes, and
-                  tile content while preserving the same loaders.gl API surface.
-                </Note>
-              </SplitPanel>
-            </Diagram>
-          </Panel>
+          <CompositeConcept />
 
           <StreamingConcept />
         </PanelGrid>
