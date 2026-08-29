@@ -1,6 +1,7 @@
 import React, {Suspense, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {useDoc} from '@docusaurus/plugin-content-docs/client';
+import '@deck.gl/widgets/stylesheet.css';
 import type {Example} from 'examples/website/pointcloud/examples';
 import type {TableLiveExampleConfig} from './table-live-example';
 

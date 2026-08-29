@@ -115,6 +115,7 @@ const config = {
         },
         theme: {
           customCss: [
+            resolve('../node_modules/@deck.gl/widgets/dist/stylesheet.css'),
             resolve('./src/styles.css')
             // resolve('./node_modules/maplibre-gl/dist/maplibre-gl.css')
           ]

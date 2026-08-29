@@ -169,6 +169,11 @@ html.docs-designed-page main {
   color: var(--ifm-heading-color);
 }
 
+.docs-designed-page .theme-doc-markdown code {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
 .docs-designed-page .theme-code-block {
   border: 1px solid var(--docs-border-subtle);
   border-radius: 14px;
@@ -357,7 +362,7 @@ main .container {
 .markdown .docs-markdown-table__table th code {
   background: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
   background-color: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 20%, transparent) !important;
+  border: 0 !important;
   border-radius: 0.4rem;
   box-shadow: none !important;
   color: var(--docs-table-link) !important;

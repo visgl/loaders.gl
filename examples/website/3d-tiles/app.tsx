@@ -91,12 +91,15 @@ export default class App extends PureComponent<AppProps> {
       droppedFile: null,
       examplesByCategory: null,
       selectedExample: null,
+      isFullscreen: false,
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME
     };
 
     this._deckRef = null;
-    this._fullscreenWidget = createDeckFullscreenWidget('3d-tiles-fullscreen');
+    this._fullscreenWidget = createDeckFullscreenWidget('3d-tiles-fullscreen', {
+      onFullscreenChange: (isFullscreen) => this.setState({isFullscreen})
+    });
     this._tile3dLayer = null;
     this._tile3dLayerKey = null;
     this._onTilesetLoad = this._onTilesetLoad.bind(this);
@@ -320,8 +323,11 @@ export default class App extends PureComponent<AppProps> {
   }
 
   render() {
-    const {viewState, selectedMapStyle} = this.state;
+    const {isFullscreen, viewState, selectedMapStyle} = this.state;
     const tile3DLayer = this._renderTile3DLayer();
+    const controller = this.props.hideChrome && !isFullscreen
+      ? false
+      : {type: MapController, maxPitch: 85, inertia: true};
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -331,7 +337,7 @@ export default class App extends PureComponent<AppProps> {
           layers={[tile3DLayer]}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85, inertia: true}}
+          controller={controller}
           widgets={this._getDeckWidgets()}
           onAfterRender={() => this._updateStatWidgets()}
         >

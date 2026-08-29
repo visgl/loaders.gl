@@ -22,6 +22,16 @@ export type DocPageHeaderLink = {
   to: string;
 };
 
+/** A standards or ecosystem logo shown in the page header. */
+export type DocPageHeaderLogo = {
+  /** Accessible description of the logo. */
+  alt: string;
+  /** Optional destination associated with the logo. */
+  href?: string;
+  /** Absolute or site-relative image URL. */
+  src: string;
+};
+
 /** Properties for the compact page header used on non-tentpole documentation pages. */
 export type DocPageHeaderProps = {
   /** Short context label above the page title. */
@@ -36,6 +46,8 @@ export type DocPageHeaderProps = {
   meta?: readonly string[];
   /** Optional related destinations. */
   links?: readonly DocPageHeaderLink[];
+  /** Optional standards or ecosystem logos shown in the top-right of the header. */
+  logos?: readonly DocPageHeaderLogo[];
   /** Optional release or compatibility note shown in the orientation card. */
   notice?: ReactNode;
   /** Optional status and version badges moved out of the long-form reference content. */
@@ -63,6 +75,7 @@ export function DocPageHeader({
   description,
   tone = 'cyan',
   links = [],
+  logos = [],
   notice,
   badges = [],
   hideTitle = false
@@ -100,13 +113,31 @@ export function DocPageHeader({
       <div className={styles.copy}>
         <div className={styles.topline}>
           <p className={styles.eyebrow}>{eyebrow}</p>
-          <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
-            {badges}
+          <div className={styles.toplineActions}>
+            {logos.length > 0 && (
+              <div className={styles.logos} aria-label="Standards and ecosystem logos">
+                {logos.map(logo => {
+                  const image = <img src={logo.src} alt={logo.alt} />;
+                  return logo.href ? (
+                    <a className={styles.logoLink} href={logo.href} key={logo.src}>
+                      {image}
+                    </a>
+                  ) : (
+                    <span className={styles.logoLink} key={logo.src}>
+                      {image}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
+              {badges}
+            </div>
           </div>
         </div>
         {hideTitle ? (
-          <h1 className={styles.identity} id="doc-page-header-title">
-            {metadata.title}
+          <h1 className={styles.title} id="doc-page-header-title">
+            {title}
           </h1>
         ) : (
           <>
