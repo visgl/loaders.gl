@@ -1,10 +1,50 @@
-# WKB - Well-Known Binary
+---
+title: WKB - Well-Known Binary
+description: Represent vector geometry as compact, typed binary records.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geometry binary format"
+  title="Carry geometry without paying for readable text."
+  description="Well-Known Binary (WKB) is the compact binary counterpart to WKT. Its header identifies byte order and geometry type before the coordinate records, making it useful for storage and transport in GIS pipelines."
+  tone="orange"
+  meta={['OGC geometry', 'Compact binary', 'XY / Z / M / ZM']}
+  links={[
+    {label: 'WKT module', to: '/docs/modules/wkt'},
+    {label: 'WKB loader', to: '/docs/modules/wkt/api-reference/wkb-loader'},
+    {label: 'WKT-CRS', to: '/docs/modules/wkt/formats/wkt-crs'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The WKB record path"
+  title="Read byte order. Identify the geometry. Decode its coordinate records."
+  description="WKB keeps geometry compact while retaining the type and dimensionality needed to reconstruct points, lines, polygons, and collections. Spatial reference metadata is a separate concern."
+  tone="orange"
+  items={[
+    {label: 'Header', value: 'Byte order and 32-bit geometry type'},
+    {label: 'Shape', value: 'Point, line, polygon, multiparts, and collections'},
+    {label: 'Dimensions', value: 'XY, XYZ, XYM, and XYZM variants'},
+    {label: 'Alternative', value: 'WKT for readable text; GeoJSON for JSON APIs'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/wkt`](/docs/modules/wkt)_
 
 Well-Known Binary (WKB) is a binary version of Well-known Text
+
+<ReferenceBoundary
+  title="WKB layout and compatibility details"
+  description="The reference below covers byte order, geometry type codes, dimensional variants, supported shapes, alternatives, and loader support."
+  tone="orange"
+/>
 
 ## Overview
 
