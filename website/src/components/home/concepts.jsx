@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import styled from 'styled-components';
 import {NaturalBreaks} from '../natural-breaks';
-import SourceLoaderGraphic from '../source-loader-graphic';
 
 const categoryTabs = [
   {
@@ -286,111 +285,6 @@ const streamingLoaders = ['CSVLoader', 'JSONLoader', 'GeoJSONLoader', 'ParquetLo
 const streamingProcessingBlocks = ['loadInBatches()', 'parseInBatches()', 'transforms', 'batchSize'];
 
 const streamingOutputs = ['Table batches', 'GeoJSON batches', 'Arrow batches'];
-
-const ConceptsSection = styled.section`
-  background:
-    linear-gradient(180deg, var(--docs-surface-raised) 0%, var(--docs-surface-muted) 100%),
-    var(--docs-surface-muted);
-  color: var(--docs-text-strong);
-  padding: 88px 64px 96px;
-
-  @media screen and (max-width: 996px) {
-    padding: 72px 32px 80px;
-  }
-
-  @media screen and (max-width: 640px) {
-    padding: 56px 20px 64px;
-  }
-`;
-
-const Content = styled.div`
-  margin: 0 auto;
-  max-width: 1180px;
-`;
-
-const Intro = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1.2fr);
-  gap: 40px;
-  align-items: end;
-  margin-bottom: 40px;
-
-  @media screen and (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-`;
-
-const Eyebrow = styled.p`
-  color: var(--docs-accent-text);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0 0 14px;
-  text-transform: uppercase;
-`;
-
-const Title = styled.h2`
-  color: var(--docs-text-strong);
-  font-size: 42px;
-  font-weight: 800;
-  line-height: 1.08;
-  margin: 0;
-
-  @media screen and (max-width: 640px) {
-    font-size: 32px;
-  }
-`;
-
-const Lead = styled.p`
-  color: var(--docs-text-muted);
-  font-size: 18px;
-  line-height: 1.65;
-  margin: 0;
-`;
-
-const LinkBar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 36px;
-`;
-
-const GuideLink = styled(Link)`
-  align-items: center;
-  background: var(--docs-surface-raised);
-  border: 1px solid var(--docs-border-subtle);
-  border-radius: 8px;
-  color: var(--docs-text-strong);
-  display: inline-flex;
-  font-size: 13px;
-  font-weight: 700;
-  gap: 8px;
-  line-height: 1;
-  padding: 11px 14px;
-  text-decoration: none;
-  transition:
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-
-  &:hover {
-    border-color: var(--ifm-color-primary);
-    color: var(--ifm-color-primary-darkest);
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
-`;
-
-const PanelGrid = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 22px;
-
-  @media screen and (max-width: 1080px) {
-    grid-template-columns: 1fr;
-  }
-`;
 
 const Panel = styled.article`
   background: var(--docs-surface);
@@ -991,57 +885,5 @@ export function CompositeConcept() {
         </SplitPanel>
       </Diagram>
     </WidePanel>
-  );
-}
-
-/** Renders the homepage section that explains loaders.gl concept flows. */
-export default function Concepts() {
-  return (
-    <ConceptsSection>
-      <Content>
-        <Intro>
-          <div>
-            <Eyebrow>How loaders.gl fits together</Eyebrow>
-            <Title>Different formats. Common data shapes. Portable pipelines.</Title>
-          </div>
-          <Lead>
-            Loaders decode files and services into category data that applications can use
-            consistently. Writers encode compatible data back out. Sources handle datasets that need
-            metadata, tiles, or repeated requests.
-          </Lead>
-        </Intro>
-
-        <LinkBar aria-label="Concept guide links">
-          <GuideLink to="/docs/developer-guide/loader-categories">Loader categories</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-loaders">Using loaders</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-writers">Using writers</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-sources">Using sources</GuideLink>
-          <GuideLink to="/docs/developer-guide/common-scan-architecture">Using scans</GuideLink>
-          <GuideLink to="/docs/developer-guide/composite-loaders">Composite loaders</GuideLink>
-        </LinkBar>
-
-        <PanelGrid>
-          <CategoryDataConcept />
-
-          <Panel>
-            <PanelHeader>
-              <PanelLabel $color="#287A4B">Data sources</PanelLabel>
-              <PanelTitle>Load incrementally from tiles or services.</PanelTitle>
-              <PanelText>
-                SourceLoaders encapsulate incremental loading for vector, raster, imagery, and 3D
-                data from cloud archives and web services.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <SourceLoaderGraphic />
-            </Diagram>
-          </Panel>
-
-          <CompositeConcept />
-
-          <StreamingConcept />
-        </PanelGrid>
-      </Content>
-    </ConceptsSection>
   );
 }
