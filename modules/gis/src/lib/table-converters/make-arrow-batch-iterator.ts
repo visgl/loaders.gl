@@ -11,6 +11,7 @@ import {
   getTableCellAt
 } from '@loaders.gl/schema-utils';
 
+/** Converts a loaders.gl table into bounded Apache Arrow record batches. */
 export function* makeTableToArrowBatchesIterator(
   table: Table,
   options?: {batchSize?: number}
@@ -21,7 +22,9 @@ export function* makeTableToArrowBatchesIterator(
   const numColumns = getTableNumCols(table);
   const batchSize = options?.batchSize || length;
 
-  const builders = arrowSchema?.fields.map(arrowField => arrow.makeBuilder(arrowField));
+  const builders = arrowSchema.fields.map(arrowField =>
+    arrow.makeBuilder({type: arrowField.type, nullValues: [null]})
+  );
   const structField = new arrow.Struct(arrowSchema.fields);
 
   let batchLength = 0;
@@ -31,14 +34,14 @@ export function* makeTableToArrowBatchesIterator(
 
       const builder = builders[columnIndex];
       builder.append(value);
-      batchLength++;
+    }
+    batchLength++;
 
-      if (batchLength >= batchSize) {
-        const datas = builders.map(builder => builder.flush());
-        const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
-        yield new arrow.RecordBatch(arrowSchema, structData);
-        batchLength = 0;
-      }
+    if (batchLength >= batchSize) {
+      const datas = builders.map(builder => builder.flush());
+      const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
+      yield new arrow.RecordBatch(arrowSchema, structData);
+      batchLength = 0;
     }
   }
 

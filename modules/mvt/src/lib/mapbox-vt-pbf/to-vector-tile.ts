@@ -83,6 +83,9 @@ export function fromGeojsonVt(vtLayers, options): ArrayBuffer {
 */
 
 export function normalizeGeojson(geojson: GeoJSON): FeatureCollection {
+  if (geojson.type === 'FeatureCollection') {
+    return geojson;
+  }
   // Array of features
   if (Array.isArray(geojson)) {
     return {
