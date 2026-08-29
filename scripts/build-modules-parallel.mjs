@@ -212,7 +212,7 @@ function runCommand(command, commandArguments, workingDirectory) {
       });
     }
 
-    childProcess.on('exit', (exitCode, signal) => {
+    childProcess.on('close', (exitCode, signal) => {
       if (exitCode === 0) {
         resolve();
         return;
