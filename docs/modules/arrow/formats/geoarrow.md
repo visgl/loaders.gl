@@ -64,7 +64,9 @@ GeoArrow enables each row in an Arrow table to represent a feature as defined by
 
 Aside from geometry, simple features can also have additional standard Arrow columns that provide additional non-spatial attributes for the feature.
 
-Geospatial tabular data where one or more columns contains feature geometries and remaining columns define feature attributes. The GeoArrow specification defines how such vector features (geometries) can be stored in Arrow (and Arrow-compatible) data structures.
+GeoArrow represents geospatial tabular data with one or more geometry columns and ordinary Arrow
+columns for feature attributes. The specification defines how those vector features can be stored in
+Arrow-compatible data structures.
 
 Note that GeoArrow is not a separate format from Apache Arrow rather, the GeoArrow specification simply describes additional conventions for metadata and layout of geospatial data. This means that a valid GeoArrow file is always a valid Arrow file. This is done through [Arrow extension type](https://arrow.apache.org/docs/format/Columnar.html#extension-types) definitions that ensure type-level metadata (e.g., CRS) is propagated when used in Arrow implementations.
 

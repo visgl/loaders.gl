@@ -59,7 +59,7 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'gpx', label: 'GPX', logo: 'format-logo.svg', tags: ['geospatial']},
   {slug: 'hdr', label: 'Radiance HDR', logo: 'hdr-logo.svg', tags: ['textures']},
   {slug: 'html', label: 'HTML', logo: 'format-logo.svg', tags: []},
-  {slug: 'i3s', label: 'I3S', logo: 'format-logo.svg', tags: ['geospatial', 'meshes']},
+  {slug: 'i3s', label: 'I3S', logo: 'esri-logo.png', tags: ['geospatial', 'meshes']},
   {slug: 'json', label: 'JSON', logo: 'format-logo.svg', tags: ['tables']},
   {slug: 'kml', label: 'KML', logo: 'ogc-logo.png', tags: ['geospatial']},
   {slug: 'ktx', label: 'KTX / KTX2', logo: 'format-logo.svg', tags: ['textures']},
