@@ -1,4 +1,37 @@
-# Overview
+---
+title: '@loaders.gl/zarr'
+description: Read chunked multidimensional arrays and spatial windows from Zarr, GeoZarr, and OME-Zarr datasets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Chunked array module"
+  title="Read the chunks that cover the question."
+  description="The Zarr module opens chunked multidimensional data and exposes source APIs for spatial, multiscale, and named-dimension selection. It supports Earth-science rasters as well as OME-Zarr bioimaging data."
+  tone="orange"
+  meta={['Zarr v2 / v3', 'GeoZarr', 'OME-Zarr']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The chunked-array path"
+  title="Discover the array, then select a window."
+  description="Zarr stores large arrays as independently addressable chunks. Source metadata identifies dimensions, scales, variables, and coordinate meaning before a request reads the selected region."
+  tone="orange"
+  items={[
+    {label: 'Datasets', value: 'GeoZarr, OME-Zarr, and generic Zarr arrays'},
+    {label: 'Selection', value: 'Spatial windows, bands, channels, time, and levels'},
+    {label: 'Access', value: 'Chunk reads from local files or object storage'},
+    {label: 'Output', value: 'Typed raster data with source metadata'}
+  ]}
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for GeoZarr
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
@@ -15,6 +48,12 @@ CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 The `@loaders.gl/zarr` module reads chunked, multidimensional [Zarr](https://zarr.dev/)
 arrays. It supports the existing pixel-pyramid API, an OME-Zarr source API for bioimaging, and a
 GeoZarr/CF source API for georeferenced Earth-science rasters.
+
+<ReferenceBoundary
+  title="Zarr source and array details"
+  description="The sections below cover installation, source APIs, metadata discovery, chunk selection, and the supported Zarr conventions."
+  tone="orange"
+/>
 
 ## Installation
 

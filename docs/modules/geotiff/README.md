@@ -1,11 +1,43 @@
-import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+---
+title: '@loaders.gl/geotiff'
+description: Read GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF rasters with windows, bands, and metadata.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Raster module"
+  title="Read the raster window the application asked for."
+  description="The GeoTIFF module handles georeferencing, tiled imagery, multiband data, and multiscale OME-TIFF. Its source APIs can select native windows and overviews before decoding the pixels."
+  tone="orange"
+  meta={['GeoTIFF / COG', 'OME-TIFF', 'Windowed raster reads']}
+  links={[
+    {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for raster
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
 <GeoTiffDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="The raster path"
+  title="Metadata first. Pixels second."
+  description="Raster sources use georeferencing and overview metadata to choose a useful window, resolution, and band set before turning bytes into a typed result."
+  tone="orange"
+  items={[
+    {label: 'Formats', value: 'GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF'},
+    {label: 'Selection', value: 'Bounds, overview, bands, channels, and slices'},
+    {label: 'Output', value: 'Typed raster data or renderer-oriented texture data'},
+    {label: 'Metadata', value: 'CRS, geotransform, dimensions, and multiscale layout'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
@@ -16,6 +48,12 @@ CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
 The `@loaders.gl/geotiff` module provides loader and source support for
 [GeoTIFF](/docs/modules/geotiff/formats/geotiff) and OME-TIFF data.
+
+<ReferenceBoundary
+  title="Raster source and loader details"
+  description="The sections below cover installation, loader and source APIs, raster windows, metadata, and scan behavior."
+  tone="orange"
+/>
 
 GeoTIFF combines georeferencing metadata with multi-band raster imagery. The module now also
 includes viewport-driven raster sources for typed raster access and texture-oriented rendering

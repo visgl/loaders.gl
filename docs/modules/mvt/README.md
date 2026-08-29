@@ -1,8 +1,47 @@
-# Overview
+---
+title: '@loaders.gl/mvt'
+description: Load, write, and serve Mapbox Vector Tiles and the metadata that describes tiled maps.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Vector tile module"
+  title="Keep tiled map delivery separate from map rendering."
+  description="The MVT module parses and writes Mapbox Vector Tiles, reads TileJSON and map styles, and provides sources for pre-tiled or dynamically generated vector data."
+  tone="violet"
+  meta={['MVT / protobuf', 'TileJSON', 'Vector tile sources']}
+  links={[
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The vector-tile path"
+  title="Decode a tile, or let a source manage the tile set."
+  description="The module keeps the binary tile format, its metadata, and the source that requests tiles as related but separate layers. Applications can choose the level of control they need."
+  tone="violet"
+  items={[
+    {label: 'Read', value: 'MVT protobuf into feature or binary data'},
+    {label: 'Describe', value: 'TileJSON bounds, schemes, and tilestats'},
+    {label: 'Source', value: 'Request pre-tiled or generated vector tiles'},
+    {label: 'Write', value: 'Encode compatible feature data as MVT'}
+  ]}
+/>
 
 The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
 
 The modules also provides a `TableTileSourceLoader` class that can serve up dynamic tiles from an in-memory `GeoJSON` file.
+
+<ReferenceBoundary
+  title="Vector tile module details"
+  description="The sections below cover installation, loaders, writers, sources, formats, and tile-specific data behavior."
+  tone="violet"
+/>
 
 ## Installation
 

@@ -1,4 +1,37 @@
-# Overview
+---
+title: '@loaders.gl/json'
+description: Parse JSON, newline-delimited JSON, and GeoJSON into document, table, or feature data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Structured data module"
+  title="Use JSON where it is strongest, then choose a shape."
+  description="The JSON module covers arbitrary documents, newline-delimited records, tabular arrays, and GeoJSON. Applications can preserve nested structures or ask for table and feature outputs when that is the better next step."
+  tone="yellow"
+  meta={['JSON / NDJSON', 'GeoJSON', 'Table and feature output']}
+  links={[
+    {label: 'JSON category', to: '/docs/specifications/category-json'},
+    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="One module, several paths"
+  title="Keep documents, rows, and features distinct."
+  description="JSON values are not automatically tables. The module keeps the source structure available, while specialized loaders make the intended table or geospatial interpretation explicit."
+  tone="yellow"
+  items={[
+    {label: 'Documents', value: 'Nested objects, arrays, and scalar values'},
+    {label: 'Rows', value: 'JSON arrays and newline-delimited JSON records'},
+    {label: 'Features', value: 'GeoJSON geometries, features, and collections'},
+    {label: 'Batches', value: 'Incremental parsing for line-oriented inputs'}
+  ]}
+/>
 
 The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats that use JSON encoding. It includes:
 
@@ -9,6 +42,12 @@ The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats 
 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
+
+<ReferenceBoundary
+  title="JSON module details"
+  description="The sections below list loaders and writers, output shapes, streaming behavior, and parser options."
+  tone="yellow"
+/>
 
 `JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 
