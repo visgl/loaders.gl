@@ -48,7 +48,8 @@ has identical capabilities.
 
 ## Categories and Loader Registration
 
-The fact that loaders belong to categories enable applications to flexibly register new loaders in the same category.
+The fact that loaders belong to categories enables applications to register additional loaders in
+the same category.
 
 For instance, once an application has added support for one loader in a category, other loaders in the same category can be registered during application startup.
 

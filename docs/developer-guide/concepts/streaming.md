@@ -43,7 +43,9 @@ import {StreamingConcept} from '@site/src/components/home/concepts';
   tone="mint"
 />
 
-> Streaming support in loaders.gl is a work-in-progress. The ambition is that many loaders would support streaming from both Node and DOM streams, through a consistent API and set of conventions (for both applications and loader/writer objects).
+Streaming support is format-dependent. The common API is an async-iterator contract, while each
+loader documents whether it can parse partial input, emit batches, or make progress from a source
+that provides ranges or chunks.
 
 ## Streaming Loads
 
@@ -57,31 +59,36 @@ Incremental parsing becomes more interesting when it can be powered by increment
 
 ### Streamed Loading
 
-Streamed loading means that the entire data does not need to be loaded.
+Streamed loading means that the entire data does not need to be loaded at once.
 
 This is particularly advantageous when:
 
 - loading files with sizes that exceed browser limits (e.g. 1GB in Chrome)
-- doing local processing to files (tranforming one row at a time), this allows pipe constructions that can process files that far exceed internal memory.
+- doing local processing on files (transforming one row at a time), which allows pipelines to process files that far exceed available memory.
 
 ## Batched Updates
 
-For incemental loading and parsing to be really effective, the application needs to be able to deal efficiently with partial batches as they arrive. Each loader category (or loader) may define a batch update conventions that are appropriate for the format being loaded.
+For incremental loading and parsing to be effective, the application needs to handle partial
+batches efficiently as they arrive. Each loader category or loader can define batch conventions
+that fit the format being loaded.
 
 ## Streaming Writes
 
-TBA
+Streaming writes remain format-specific. Use a writer that documents incremental output support;
+otherwise `encode` or `encodeSync` produces a complete result in memory.
 
 ## Node Streams vs DOM Streams
 
-Stream support is finally arriving in browsers, however DOM Streams have a slightly different API than Node streams and the support across browsers is still spotty.
+Browser and Node streams have different APIs and deployment constraints. loaders.gl normalizes the
+parts needed by its loaders, but a source or writer may still expose platform-specific behavior.
 
 ## Polyfills
 
-Stream support across browsers can be somewhat improved with polyfills. TBA
+Use the documented polyfills when an older runtime lacks the stream or text APIs required by a
+loader.
 
 ## Stream Utilities
 
-- Stream to memory, ...
-- Automatically create stream if loader/writer only supports streaming
-- ...
+The core APIs provide helpers for loading complete results, iterating over batches, and applying
+transforms between async-iterator stages. See [Using streaming loaders](/docs/developer-guide/using-streaming-loaders)
+for the supported entry points and examples.

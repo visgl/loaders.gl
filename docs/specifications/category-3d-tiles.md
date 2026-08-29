@@ -32,13 +32,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The 3D Tiles category defines a generalized representation of hierarchical geospatial data structures. Specific loaders for tiled 3D data return a standardized representation.
+The 3D Tiles category defines a generalized representation of hierarchical geospatial data
+structures. Specific loaders for tiled 3D data return a standardized representation.
 
 The 3D Tiles category can represent the major tiled 3D formats:
 
 - [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard
-- [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
-- `potree` format.
+- [OGC I3S](https://www.opengeospatial.org/standards/i3s) standard
+- [Potree](https://potree.github.io/) format
 
 | Loader                                                                      | Notes |
 | --------------------------------------------------------------------------- | ----- |
@@ -55,10 +56,12 @@ The 3D Tiles category can represent the major tiled 3D formats:
 
 ## Concepts
 
-- **Tile Header Hierarchy** - An initial, "minimal" set of data listing the _hierarchy of available tiles_, with minimal information to allow an application to determine which tiles need to be loaded based on a certain viewing position in 3d space.
-- **Tile Header** - A minimal header describing a tiles bounding volume and a screen space error tolerance (allowing the tile to be culled if it is distant), as well as the URL to load the tile's actual content from.
-- **Tile Cache** - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
-- **Tileset Traversal** - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
+- **Tile header hierarchy** - A minimal listing of available tiles that lets an application decide
+  which parts of the hierarchy matter for the current view.
+- **Tile header** - A tile's bounds, screen-space error, refinement mode, and content reference.
+- **Tile cache** - A bounded store for content that is no longer visible but may be needed again.
+- **Tileset traversal** - View-dependent loading and selection that requests new tiles and releases
+  older content as the camera moves.
 
 ## Helper Classes
 

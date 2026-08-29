@@ -201,7 +201,9 @@ SimpleMesh Fields
 
 ### Coordinate Systems
 
-To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
+To help applications process tile `position` data, 3D Tiles category loaders provide matrices that
+allow tiles to be used in either fixed-frame or cartographic (longitude/latitude-relative,
+east-north-up / ENU) coordinate systems:
 
 - _cartesian_ WGS84 fixed frame coordinates
 - _cartographic_ tile geometry positions to ENU meter offsets from `cartographicOrigin`.
