@@ -103,28 +103,37 @@ function hasValidCoordinateArity(geometry: Geometry, dimension: GeoArrowDimensio
   const coordinateSize =
     dimension === null ? null : dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
   let inferredCoordinateSize: number | null = null;
-  const isValidCoordinate = (coordinate: number[]): boolean => {
+  /** Checks one coordinate tuple without assuming that the parser produced an array. */
+  const isValidCoordinate = (coordinate: unknown): boolean => {
+    if (!Array.isArray(coordinate)) return false;
     if (coordinate.length === 0) return true;
+    if (!coordinate.every(value => typeof value === 'number' && Number.isFinite(value))) {
+      return false;
+    }
     if (coordinateSize !== null) return coordinate.length === coordinateSize;
     if (coordinate.length < 2 || coordinate.length > 4) return false;
     if (inferredCoordinateSize === null) inferredCoordinateSize = coordinate.length;
     return coordinate.length === inferredCoordinateSize;
   };
+  /** Checks a list of coordinate tuples. */
+  const isValidCoordinateList = (coordinates: unknown): boolean =>
+    Array.isArray(coordinates) && coordinates.every(isValidCoordinate);
+  /** Checks a list of coordinate rings. */
+  const isValidRingList = (rings: unknown): boolean =>
+    Array.isArray(rings) && rings.every(isValidCoordinateList);
   switch (geometry.type) {
     case 'Point':
       return isValidCoordinate(geometry.coordinates);
     case 'LineString':
-      return geometry.coordinates.every(isValidCoordinate);
+      return isValidCoordinateList(geometry.coordinates);
     case 'Polygon':
-      return geometry.coordinates.every(ring => ring.every(isValidCoordinate));
+      return isValidRingList(geometry.coordinates);
     case 'MultiPoint':
-      return geometry.coordinates.every(isValidCoordinate);
+      return isValidCoordinateList(geometry.coordinates);
     case 'MultiLineString':
-      return geometry.coordinates.every(line => line.every(isValidCoordinate));
+      return isValidRingList(geometry.coordinates);
     case 'MultiPolygon':
-      return geometry.coordinates.every(polygon =>
-        polygon.every(ring => ring.every(isValidCoordinate))
-      );
+      return Array.isArray(geometry.coordinates) && geometry.coordinates.every(isValidRingList);
     case 'GeometryCollection':
       return true;
     default:
