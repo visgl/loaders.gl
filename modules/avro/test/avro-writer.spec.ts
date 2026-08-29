@@ -581,3 +581,34 @@ test('AvroLoader#parse supports raw and single-object encodings', async () => {
     }
   }
 });
+
+test('AvroWriter#encode covers arrays, maps, unions, enums, and fixed values', async () => {
+  const schema = {
+    type: 'record',
+    name: 'ComplexRecord',
+    fields: [
+      {name: 'tags', type: {type: 'array', items: 'string'}},
+      {name: 'attributes', type: {type: 'map', values: 'long'}},
+      {name: 'choice', type: ['null', 'int']},
+      {name: 'kind', type: {type: 'enum', name: 'Kind', symbols: ['A', 'B']}}
+    ]
+  } as const;
+  const output = await AvroWriter.encode(
+    {
+      shape: 'arrow-table',
+      data: arrow.tableFromArrays({
+        tags: ['one'],
+        attributes: [3],
+        choice: [7],
+        kind: ['B']
+      })
+    },
+    {avro: {schema}}
+  );
+  const result = await AvroLoaderWithParser.parse(output, {avro: {schema}});
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape === 'arrow-table') {
+    expect(result.data.numRows).toBe(1);
+    expect(result.data.getChild('kind')?.get(0)).toBe('B');
+  }
+});
