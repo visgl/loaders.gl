@@ -75,9 +75,8 @@ const arrayBuffer = encodeSync(arraysData, ArrowWriter);
 
 ## Options
 
-| Option | Type | Default | Description |
-| ------ | ---- | ------- | ----------- |
-|        |      |         |             |
+`ArrowWriter` does not currently define format-specific options. The input arrays determine the
+Arrow field names and types; use the exported `VECTOR_TYPES` constants when constructing the input.
 
 ## Dependencies
 

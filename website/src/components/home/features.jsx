@@ -257,6 +257,7 @@ const FeatureCard = styled(Link)`
 `;
 
 const CompactFeatureCard = styled(FeatureCard)`
+  grid-column: span 1;
   min-height: 270px;
 
   @media screen and (max-width: 760px) {
