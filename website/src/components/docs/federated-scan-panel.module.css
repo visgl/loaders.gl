@@ -1,0 +1,195 @@
+.frame {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid #cfd8e6;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.hint {
+  color: #667085;
+  font-size: 0.76rem;
+}
+
+.sourceCount,
+.provenance span {
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #175cd3;
+  background: #eff8ff;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.sourceList {
+  display: grid;
+  gap: 6px;
+}
+
+.sourceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.sourceRow label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.compatible {
+  opacity: 1;
+}
+
+.incompatible {
+  opacity: 0.55;
+}
+
+.sourceType {
+  color: #667085;
+  font-size: 0.72rem;
+}
+
+.orderControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.orderNumber {
+  min-width: 1.5rem;
+  color: #344054;
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.orderButton {
+  padding: 2px 6px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.orderButton:disabled {
+  color: #98a2b3;
+  cursor: default;
+}
+
+.editorGrid,
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.editorGrid {
+  margin-top: 14px;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 7px;
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+}
+
+.select {
+  background: #ffffff;
+}
+
+.textarea {
+  min-height: 92px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible,
+.orderButton:focus-visible,
+.sourceRow label:has(input:focus-visible) {
+  outline: 3px solid rgba(50, 120, 216, 0.25);
+  outline-offset: 2px;
+}
+
+.validationError {
+  margin-top: 10px;
+  color: #b42318;
+  font-size: 0.82rem;
+}
+
+.resultsGrid {
+  gap: 10px;
+}
+
+.resultCard {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.code {
+  max-height: 260px;
+  margin: 8px 0 0;
+  overflow: auto;
+  font-size: 0.7rem;
+}
+
+.provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+  color: #667085;
+  font-size: 0.76rem;
+}
+
+.provenance span {
+  font-weight: 400;
+}
+
+@media (max-width: 640px) {
+  .heading {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sourceRow {
+    align-items: flex-start;
+  }
+
+  .sourceRow label {
+    flex-wrap: wrap;
+  }
+}

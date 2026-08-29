@@ -1,9 +1,10 @@
 import React, {Suspense, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {useDoc} from '@docusaurus/plugin-content-docs/client';
-import styled from 'styled-components';
 import type {Example} from 'examples/website/pointcloud/examples';
 import type {TableLiveExampleConfig} from './table-live-example';
+
+import styles from './loader-live-example.module.css';
 
 const GeospatialExample = React.lazy(() => import('examples/website/geospatial/app'));
 const PointcloudExample = React.lazy(() => import('examples/website/pointcloud/app'));
@@ -58,17 +59,6 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   'modules/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'}
 };
 
-const ExampleContainer = styled.div<{$kind: LoaderLiveExampleKind}>`
-  position: relative;
-  margin: 0 0 2rem;
-  overflow: hidden;
-  height: ${(props) => (props.$kind === 'table' ? 'auto' : '420px')};
-`;
-
-const LoadingContainer = styled.div<{$kind: LoaderLiveExampleKind}>`
-  height: ${(props) => (props.$kind === 'table' ? '160px' : '420px')};
-`;
-
 /**
  * Renders a live, render-only example for loader doc pages that have a reusable website demo.
  */
@@ -81,15 +71,15 @@ export function LoaderLiveExample() {
   }
 
   return (
-    <ExampleContainer data-loader-live-example $kind={exampleConfig.kind}>
-      <BrowserOnly fallback={<LoadingContainer $kind={exampleConfig.kind} />}>
+    <div className={`${styles.exampleContainer} ${getExampleKindClass(exampleConfig.kind)}`} data-loader-live-example>
+      <BrowserOnly fallback={<LoadingContainer kind={exampleConfig.kind} />}>
         {() => (
-          <Suspense fallback={<LoadingContainer $kind={exampleConfig.kind} />}>
+          <Suspense fallback={<LoadingContainer kind={exampleConfig.kind} />}>
             <LoaderLiveExampleContent exampleConfig={exampleConfig} />
           </Suspense>
         )}
       </BrowserOnly>
-    </ExampleContainer>
+    </div>
   );
 }
 
@@ -103,9 +93,9 @@ export function PointcloudLoaderLiveExample({
   format: string;
 }) {
   return (
-    <BrowserOnly fallback={<LoadingContainer $kind="pointcloud" />}>
+    <BrowserOnly fallback={<LoadingContainer kind="pointcloud" />}>
       {() => (
-        <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
+        <Suspense fallback={<LoadingContainer kind="pointcloud" />}>
           <PointcloudLoaderLiveExampleContent format={format} />
         </Suspense>
       )}
@@ -123,9 +113,9 @@ export function PointTileSourceLiveExample({
   format?: 'potree' | 'copc';
 }) {
   return (
-    <BrowserOnly fallback={<LoadingContainer $kind="pointcloud" />}>
+    <BrowserOnly fallback={<LoadingContainer kind="pointcloud" />}>
       {() => (
-        <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
+        <Suspense fallback={<LoadingContainer kind="pointcloud" />}>
           <div style={{height: 'calc(100vh - var(--ifm-navbar-height))'}}>
             <PointTileSourceExample format={format} />
           </div>
@@ -171,16 +161,31 @@ export function GeospatialLoaderLiveExample({
   format: string;
 }) {
   return (
-    <ExampleContainer data-loader-live-example $kind="geospatial">
-      <BrowserOnly fallback={<LoadingContainer $kind="geospatial" />}>
+    <div className={`${styles.exampleContainer} ${getExampleKindClass('geospatial')}`} data-loader-live-example>
+      <BrowserOnly fallback={<LoadingContainer kind="geospatial" />}>
         {() => (
-          <Suspense fallback={<LoadingContainer $kind="geospatial" />}>
+          <Suspense fallback={<LoadingContainer kind="geospatial" />}>
             <GeospatialExample format={format} hideChrome={true} />
           </Suspense>
         )}
       </BrowserOnly>
-    </ExampleContainer>
+    </div>
   );
+}
+
+type LoadingContainerProps = {
+  /** Example type used to preserve the live example's reserved height. */
+  kind: LoaderLiveExampleKind;
+};
+
+/** Renders a reserved loading area for an example before its browser-only bundle arrives. */
+function LoadingContainer({kind}: LoadingContainerProps): JSX.Element {
+  return <div className={`${styles.loadingContainer} ${getExampleKindClass(kind)}`} aria-hidden="true" />;
+}
+
+/** Returns the CSS module class for the example's layout variant. */
+function getExampleKindClass(kind: LoaderLiveExampleKind): string {
+  return kind === 'table' ? styles.tableExample : styles.visualExample;
 }
 
 /**

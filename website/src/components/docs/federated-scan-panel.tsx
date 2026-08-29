@@ -1,5 +1,4 @@
 import React, {useEffect, useId, useState} from 'react';
-import styled from 'styled-components';
 
 import type {
   FederatedTableSchemaPolicy,
@@ -9,6 +8,7 @@ import type {
 } from '@loaders.gl/scan';
 
 import {ScanQueryPanel} from './scan-query-panel';
+import styles from './federated-scan-panel.module.css';
 
 /** One discoverable source shown in the federation controls. */
 export type FederatedScanPanelSource = Readonly<{
@@ -110,19 +110,19 @@ export function FederatedScanPanel({
   };
 
   return (
-    <Frame aria-label="Federated scan controls">
-      <Heading>
+    <section className={styles.frame} aria-label="Federated scan controls">
+      <div className={styles.heading}>
         <div>
           <strong>Managed sources</strong>
-          <Hint>Choose sources and set their deterministic UNION ALL order.</Hint>
+          <div className={styles.hint}>Choose sources and set their deterministic UNION ALL order.</div>
         </div>
-        <SourceCount>{sourceIds.length} selected</SourceCount>
-      </Heading>
-      <SourceList>
+        <span className={styles.sourceCount}>{sourceIds.length} selected</span>
+      </div>
+      <div className={styles.sourceList}>
         {sources.map(source => {
           const selectedIndex = sourceIds.indexOf(source.id);
           return (
-            <SourceRow key={source.id} $compatible={source.compatible}>
+            <div className={`${styles.sourceRow} ${source.compatible ? styles.compatible : styles.incompatible}`} key={source.id}>
               <label>
                 <input
                   type="checkbox"
@@ -131,76 +131,77 @@ export function FederatedScanPanel({
                   onChange={() => toggleSource(source.id)}
                 />
                 <span>{source.title}</span>
-                <SourceType>{source.sourceType}</SourceType>
+                <span className={styles.sourceType}>{source.sourceType}</span>
               </label>
               {selectedIndex >= 0 ? (
-                <OrderControls>
-                  <OrderNumber>{selectedIndex + 1}</OrderNumber>
-                  <OrderButton
+                <div className={styles.orderControls}>
+                  <span className={styles.orderNumber}>{selectedIndex + 1}</span>
+                  <button className={styles.orderButton}
                     type="button"
                     aria-label={`Move ${source.title} earlier`}
                     disabled={selectedIndex === 0}
                     onClick={() => moveSource(source.id, -1)}
                   >
                     ↑
-                  </OrderButton>
-                  <OrderButton
+                  </button>
+                  <button className={styles.orderButton}
                     type="button"
                     aria-label={`Move ${source.title} later`}
                     disabled={selectedIndex === sourceIds.length - 1}
                     onClick={() => moveSource(source.id, 1)}
                   >
                     ↓
-                  </OrderButton>
-                </OrderControls>
+                  </button>
+                </div>
               ) : null}
-            </SourceRow>
+            </div>
           );
         })}
-      </SourceList>
-      <EditorGrid>
-        <Editor>
-          <Label htmlFor={`${panelId}-schema-policy`}>Schema policy</Label>
-          <Select
+      </div>
+      <div className={styles.editorGrid}>
+        <div className={styles.editor}>
+          <label className={styles.label} htmlFor={`${panelId}-schema-policy`}>Schema policy</label>
+          <select
+            className={styles.select}
             id={`${panelId}-schema-policy`}
             value={schemaPolicy}
             onChange={event => setSchemaPolicy(event.target.value as FederatedTableSchemaPolicy)}
           >
             <option value="strict">Strict</option>
             <option value="union">Union with typed nulls</option>
-          </Select>
-          <Hint>Explicit mappings and safe casts are validated before data pages are read.</Hint>
-        </Editor>
-        <Editor>
-          <Label htmlFor={`${panelId}-predicate`}>Predicate</Label>
-          <Input
+          </select>
+          <div className={styles.hint}>Explicit mappings and safe casts are validated before data pages are read.</div>
+        </div>
+        <div className={styles.editor}>
+          <label className={styles.label} htmlFor={`${panelId}-predicate`}>Predicate</label>
+          <input className={styles.input}
             id={`${panelId}-predicate`}
             value={predicateSql}
             placeholder="temperature >= :minimum"
             onChange={event => setPredicateSql(event.target.value)}
           />
-          <Hint>Enter the SQL WHERE expression, without SELECT or WHERE.</Hint>
-        </Editor>
-        <Editor>
-          <Label htmlFor={`${panelId}-mappings`}>Column mappings by source</Label>
-          <Textarea
+          <div className={styles.hint}>Enter the SQL WHERE expression, without SELECT or WHERE.</div>
+        </div>
+        <div className={styles.editor}>
+          <label className={styles.label} htmlFor={`${panelId}-mappings`}>Column mappings by source</label>
+          <textarea className={styles.textarea}
             id={`${panelId}-mappings`}
             value={mappingText}
             onChange={event => setMappingText(event.target.value)}
             spellCheck={false}
           />
-        </Editor>
-        <Editor>
-          <Label htmlFor={`${panelId}-parameters`}>Predicate parameters</Label>
-          <Textarea
+        </div>
+        <div className={styles.editor}>
+          <label className={styles.label} htmlFor={`${panelId}-parameters`}>Predicate parameters</label>
+          <textarea className={styles.textarea}
             id={`${panelId}-parameters`}
             value={parameterText}
             onChange={event => setParameterText(event.target.value)}
             spellCheck={false}
           />
-        </Editor>
-      </EditorGrid>
-      {validationError ? <ValidationError>{validationError}</ValidationError> : null}
+        </div>
+      </div>
+      {validationError ? <div className={styles.validationError}>{validationError}</div> : null}
       <ScanQueryPanel
         metadata={metadata}
         loading={loading}
@@ -226,31 +227,31 @@ export function FederatedScanPanel({
         }}
       />
       {results ? <ExecutionResults results={results} /> : null}
-    </Frame>
+    </section>
   );
 }
 
 /** Renders planned and actual execution data without hiding source-specific fields. */
 function ExecutionResults({results}: {results: FederatedScanPanelResults}): JSX.Element {
   return (
-    <ResultsGrid>
-      <ResultCard>
+    <div className={styles.resultsGrid}>
+      <div className={styles.resultCard}>
         <strong>Explain</strong>
-        <Code>{formatJson(results.explanation || {})}</Code>
-      </ResultCard>
-      <ResultCard>
+        <pre className={styles.code}>{formatJson(results.explanation || {})}</pre>
+      </div>
+      <div className={styles.resultCard}>
         <strong>Actual telemetry</strong>
-        <Code>{formatJson(results.telemetry || {})}</Code>
-      </ResultCard>
-      <ResultCard>
+        <pre className={styles.code}>{formatJson(results.telemetry || {})}</pre>
+      </div>
+      <div className={styles.resultCard}>
         <strong>Batch provenance</strong>
-        <Provenance>
+        <div className={styles.provenance}>
           {results.provenance?.map((sourceId, index) => (
             <span key={`${sourceId}-${index}`}>{sourceId}</span>
           )) || 'No batches yet'}
-        </Provenance>
-      </ResultCard>
-    </ResultsGrid>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -287,149 +288,3 @@ function parseNestedStringMap(
 function formatJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
-
-const Frame = styled.section`
-  margin: 18px 0;
-  border: 1px solid #cfd8e6;
-  border-radius: 10px;
-  padding: 16px;
-  background: #f8fafc;
-`;
-const Heading = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-`;
-const Hint = styled.div`
-  color: #667085;
-  font-size: 0.76rem;
-`;
-const SourceCount = styled.span`
-  color: #175cd3;
-  background: #eff8ff;
-  border-radius: 999px;
-  padding: 3px 9px;
-  font-size: 0.76rem;
-  font-weight: 600;
-`;
-const SourceList = styled.div`
-  display: grid;
-  gap: 6px;
-`;
-const SourceRow = styled.div<{$compatible: boolean}>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 7px 9px;
-  background: white;
-  opacity: ${({$compatible}) => ($compatible ? 1 : 0.55)};
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-`;
-const SourceType = styled.span`
-  color: #667085;
-  font-size: 0.72rem;
-`;
-const OrderControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-const OrderNumber = styled.span`
-  min-width: 1.5rem;
-  text-align: center;
-  color: #344054;
-  font-size: 0.76rem;
-`;
-const OrderButton = styled.button`
-  border: 1px solid #d0d5dd;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-
-  &:disabled {
-    color: #98a2b3;
-    cursor: default;
-  }
-`;
-const EditorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-`;
-const Editor = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
-const Label = styled.label`
-  font-weight: 600;
-  font-size: 0.82rem;
-`;
-const Input = styled.input`
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 7px;
-`;
-const Select = styled.select`
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 7px;
-  background: white;
-`;
-const Textarea = styled.textarea`
-  min-height: 92px;
-  border: 1px solid #d0d5dd;
-  border-radius: 5px;
-  padding: 7px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.76rem;
-`;
-const ValidationError = styled.div`
-  margin-top: 10px;
-  color: #b42318;
-  font-size: 0.82rem;
-`;
-const ResultsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 10px;
-`;
-const ResultCard = styled.div`
-  min-width: 0;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 10px;
-  background: white;
-`;
-const Code = styled.pre`
-  max-height: 260px;
-  overflow: auto;
-  margin: 8px 0 0;
-  font-size: 0.7rem;
-`;
-const Provenance = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-  color: #667085;
-  font-size: 0.76rem;
-
-  span {
-    border-radius: 999px;
-    padding: 3px 7px;
-    color: #175cd3;
-    background: #eff8ff;
-  }
-`;

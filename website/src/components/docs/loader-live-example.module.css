@@ -1,0 +1,25 @@
+.exampleContainer {
+  position: relative;
+  margin: 0 0 2rem;
+  overflow: hidden;
+}
+
+.visualExample {
+  height: 420px;
+}
+
+.tableExample {
+  height: auto;
+}
+
+.loadingContainer {
+  width: 100%;
+}
+
+.loadingContainer.visualExample {
+  height: 420px;
+}
+
+.loadingContainer.tableExample {
+  height: 160px;
+}
