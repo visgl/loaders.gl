@@ -1,8 +1,47 @@
-import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+---
+title: Draco format
+description: Compress and decompress triangle meshes and point clouds while retaining a shared geometry data shape.
+hide_title: true
+page_style: designed
+---
 
-# Draco Format
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geometry compression"
+  title="Smaller geometry, the same application shape."
+  description="Draco compresses triangle meshes and point clouds for delivery. loaders.gl decodes its attributes into common mesh data and can encode compatible data back into Draco payloads."
+  tone="pink"
+  meta={['Mesh and point cloud', 'Attribute compression', 'Worker-capable decode']}
+  links={[
+    {label: 'Draco module', to: '/docs/modules/draco'},
+    {label: 'DracoLoader', to: '/docs/modules/draco/api-reference/draco-loader'},
+    {label: 'DracoWriter', to: '/docs/modules/draco/api-reference/draco-writer'}
+  ]}
+/>
 
 <DracoDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Compressed geometry"
+  title="Transport geometry compactly, decode it where it is needed."
+  description="Draco represents geometry attributes using specialized compression. The loaders.gl boundary keeps the compressed payload format-specific while exposing decoded attributes through the mesh category."
+  tone="pink"
+  items={[
+    {label: 'Geometry', value: 'Triangle meshes and point clouds with supported attributes.'},
+    {label: 'Compression', value: 'Quantization and prediction reduce delivery size.'},
+    {label: 'Decode', value: 'Return Mesh objects or Mesh Arrow tables.'},
+    {label: 'Encode', value: 'Write compatible mesh data as Draco binary.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Draco format and API details"
+  description="The reference below covers encoded geometry, attributes, compression behavior, worker loading, and writer compatibility."
+  tone="pink"
+/>
 
 | Characteristic       | Value                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------ |

@@ -1,8 +1,47 @@
-import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+---
+title: PCD format
+description: Read and write Point Cloud Data files as render-ready points or typed mesh columns.
+hide_title: true
+page_style: designed
+---
 
-# PCD Format
+import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Point-cloud format"
+  title="A simple point-cloud interchange."
+  description="PCD describes point records with a compact header and ASCII or binary payload. loaders.gl maps those records to the shared point-cloud and Mesh Arrow shapes used by applications and writers."
+  tone="blue"
+  meta={['ASCII and binary', 'PointCloud output', 'Mesh Arrow output']}
+  links={[
+    {label: 'PCD module', to: '/docs/modules/pcd'},
+    {label: 'PCDLoader', to: '/docs/modules/pcd/api-reference/pcd-loader'},
+    {label: 'PCDWriter', to: '/docs/modules/pcd/api-reference/pcd-writer'}
+  ]}
+/>
 
 <PcdDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Point records"
+  title="Keep the attributes, choose the representation."
+  description="The PCD header declares the fields, sizes, types, and layout of each point. Once decoded, applications can use the same point or typed-column path as other point-cloud formats."
+  tone="blue"
+  items={[
+    {label: 'Header', value: 'Fields, dimensions, point count, viewpoint, and storage layout.'},
+    {label: 'Encodings', value: 'ASCII, binary, and the format-specific binary-compressed variant.'},
+    {label: 'Output', value: 'PointCloud objects or Mesh Arrow tables.'},
+    {label: 'Write', value: 'Encode compatible point data as ASCII PCD text.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="PCD format and API details"
+  description="The reference below documents header fields, supported encodings, decoded attributes, and loader/writer behavior."
+  tone="blue"
+/>
 
 ## Loaders and Writers
 
