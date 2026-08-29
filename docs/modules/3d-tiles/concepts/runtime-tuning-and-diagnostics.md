@@ -1,8 +1,42 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: 3D Tiles runtime tuning and diagnostics
+description: Tune final detail, request timing, concurrency, and memory in a sequence that makes visible behavior explainable.
+hide_title: true
+page_style: designed
+---
 
-# Runtime Tuning and Diagnostics
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles runtime / diagnostics"
+  title="Tune the runtime in layers."
+  description="When a tileset looks slow, blurry, or memory-hungry, inspect the measurements before changing options. This guide gives a sequence that keeps cause and effect visible."
+  tone="cyan"
+  meta={['Quality first', 'Requests second', 'Memory last']}
+/>
 
 <Tiles3DDocsTabs active="diagnostics" />
+
+<DocOrientation
+  eyebrow="A practical tuning loop"
+  title="Change one layer, then inspect the frame."
+  description="Start with the final visual quality target. Only after that should you tune initial coverage, request timing, concurrency, and byte budgets."
+  tone="cyan"
+  items={[
+    {label: 'Quality', value: 'Choose maximumScreenSpaceError for a still camera.'},
+    {label: 'Responsiveness', value: 'Tune progressive and foveated request behavior.'},
+    {label: 'Capacity', value: 'Match maxRequests and decode work to the device.'},
+    {label: 'Evidence', value: 'Read tile fields, source stats, and cache pressure together.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Measurements and tuning details"
+  description="The detailed guide maps runtime controls to observable tile fields, statistics, and common symptoms."
+  tone="cyan"
+/>
 
 Tune 3D Tiles in layers: establish the desired final LOD, then improve how quickly useful coverage arrives, then size request and memory resources. Changing several layers together makes symptoms harder to explain.
 

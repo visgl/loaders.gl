@@ -1,8 +1,42 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: 3D Tiles caching and memory
+description: Size byte-native cache budgets and understand how current-frame protection interacts with tile reuse and level of detail.
+hide_title: true
+page_style: designed
+---
 
-# Caching and Memory
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles runtime / cache"
+  title="Reuse detail without letting memory run away."
+  description="The 3D Tiles cache is a working-set policy, not a hard process limit. This guide explains which content is protected, what gets evicted, and when pressure changes refinement demand."
+  tone="yellow"
+  meta={['Byte-native budgets', 'Current-frame protection', 'LRU reuse']}
+/>
 
 <Tiles3DDocsTabs active="cache" />
+
+<DocOrientation
+  eyebrow="Working-set policy"
+  title="Keep what the current view needs."
+  description="A useful cache balances complete coverage for the current frame with enough reuse for nearby camera positions. The base budget is soft so visible content is not evicted mid-frame."
+  tone="yellow"
+  items={[
+    {label: 'Target', value: 'Use cacheBytes as the preferred resident-content budget.'},
+    {label: 'Protect', value: 'Keep selected and current-frame tiles available.'},
+    {label: 'Overflow', value: 'Allow headroom before memory-adjusted SSE reduces demand.'},
+    {label: 'Evict', value: 'Remove unused least-recently-used content toward the target.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Cache and memory details"
+  description="The technical sections cover both decoded tile content and the separate metadata cache used by implicit subtrees."
+  tone="yellow"
+/>
 
 `Tileset3D` caches loaded content so camera movement can reuse tiles without immediately fetching and decoding them again. The cache cooperates with traversal: tiles touched in the current frame are protected, while unused least-recently-used content becomes eligible for eviction.
 

@@ -1,8 +1,47 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: 3D Tiles runtime concepts
+description: Understand the runtime stages that turn a 3D Tiles hierarchy into visible, cacheable content.
+hide_title: true
+page_style: designed
+---
 
-# 3D Tiles Runtime Concepts
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles runtime"
+  title="From tileset metadata to visible content."
+  description="These guides explain the decisions made between a tileset response and the content an application can render: resource detection, hierarchy traversal, level of detail, request priority, and memory."
+  tone="violet"
+  meta={['Traversal and LOD', 'Request scheduling', 'Cache diagnostics']}
+  links={[
+    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
+    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'},
+    {label: '3D formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
 
 <Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="A view-dependent pipeline"
+  title="Each stage answers a different question."
+  description="A runtime first resolves and classifies resources, then traverses the hierarchy, chooses an acceptable level of detail, schedules missing content, and keeps useful results available for the next frame."
+  tone="violet"
+  items={[
+    {label: 'Resolve', value: 'Turn references, templates, and archives into fetchable resources.'},
+    {label: 'Select', value: 'Use visibility, geometric error, and refinement to choose coverage.'},
+    {label: 'Schedule', value: 'Rank required requests within network and decode limits.'},
+    {label: 'Retain', value: 'Reuse current content while managing byte-native cache budgets.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="The runtime guides"
+  description="The sections below document each stage independently, with links back to the APIs and the measurements needed to diagnose a real tileset."
+  tone="violet"
+/>
 
 Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarchy, decide which level of detail is needed, rank missing content, load within concurrency limits, render safe coverage, and retain useful content in the cache. These pages document each stage and the options that connect them.
 
