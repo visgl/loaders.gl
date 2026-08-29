@@ -82,7 +82,7 @@ The terms and concepts used in `i3s` module have the corresponding parts [I3S Sp
 
 ## Usage
 
-As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/modules/core/docs/api-reference/load) function.
+As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be explicitly specified when using [`load`](/docs/modules/core/api-reference/load).
 
 ### Render an I3S layer with deck.gl
 
@@ -111,33 +111,36 @@ See the [I3S example](/examples/i3s-arcgis) for a complete application and the
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
 ```typescript
-import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
 
 const tilesetUrl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 
-const tilesetHeader = await load(tilesetUrl, I3SLoader);
+const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
 
-const tileset = new Tileset3D(tilesetHeader, {
+const tileset = new Tileset3D(source, {
   onTileLoad: tile => console.log(tile)
 });
 
-// initial viewport
-// viewport should be deck.gl WebMercatorViewport instance
-const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...})
-tileset.update(viewport);
+const viewport = new WebMercatorViewport({
+  width: 600,
+  height: 400,
+  latitude: 37.7749,
+  longitude: -122.4194,
+  zoom: 15
+});
+await tileset.selectTiles(viewport);
 
-// Viewport changes (pan zoom etc)
-tileset.selectTiles(viewport);
+// Call again whenever the viewport changes (pan, zoom, and so on).
+await tileset.selectTiles(viewport);
 
 // Visible tiles
 const visibleTiles = tileset.tiles.filter(tile => tile.selected);
 
-// Note that visibleTiles will likely not immediately include all tiles
-// tiles will keep loading and file `onTileLoad` callbacks
+// Note that visibleTiles will likely not immediately include all tiles.
+// Content continues loading and onTileLoad fires as resources become ready.
 ```
 
 ## Options
