@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <DocPageHeader
   eyebrow="Loader category"
@@ -18,6 +19,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'}
   ]}
 />
+
+<CategoryDataConcept initialCategoryId="mesh" initialRepresentationId="arrow" />
 
 <DocOrientation
   eyebrow="Two useful result paths"

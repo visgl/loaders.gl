@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <DocPageHeader
   eyebrow="Loader category"
@@ -18,6 +19,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'}
   ]}
 />
+
+<CategoryDataConcept initialCategoryId="scenegraph" initialRepresentationId="plain" />
 
 <DocOrientation
   eyebrow="A scene is more than a mesh"
