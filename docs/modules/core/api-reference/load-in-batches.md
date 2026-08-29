@@ -1,4 +1,37 @@
-# loadInBatches
+---
+title: loadInBatches
+description: Fetch and decode a resource as an async iterator of loader-defined batches.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core streaming API"
+  title="Start processing while the resource is still arriving."
+  description="`loadInBatches()` connects fetching to `parseInBatches()`, releasing metadata and data batches through an async iterator instead of waiting for the complete resource."
+  tone="violet"
+  meta={['Async iterator', 'Streaming decode', 'Multiple files']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The batch path"
+  title="Fetch, decode, yield, continue."
+  description="Batch boundaries depend on the selected loader. They may carry metadata, schemas, record batches, tiles, or other category-specific values while the source remains open."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'One resource or a coordinated list of files'},
+    {label: 'Selection', value: 'Explicit loaders or registered autodetection'},
+    {label: 'Yield', value: 'Metadata and data through an async iterator'},
+    {label: 'Control', value: 'Loader options, file matching, and cancellation'}
+  ]}
+/>
 
 ```typescript
 loadInBatches(url: string | File | ... , loaders: Loader, options?: LoaderOptions]): Promise<AsyncIrerator<unknown>>
@@ -8,6 +41,12 @@ loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], opti
 ```
 
 `loadInBatches` opens a `url` as a stream and passes it and options to `parseInBatches`. See the documentation of `load` and `parseInBatches` for more details.
+
+<ReferenceBoundary
+  title="Batch loading details"
+  description="The sections below cover single and multiple resources, loader matching, iterator results, options, and multi-file loader behavior."
+  tone="violet"
+/>
 
 Starting with [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), `loadInBatches` can also load and parse multiple files from a list of `File` objects or urls.
 
