@@ -1,9 +1,48 @@
+---
+title: ArcGIS MapServer
+description: Load cached or dynamically rendered ArcGIS map tiles through one tile source.
+hide_title: true
+page_style: designed
+---
+
 import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# ArcGIS MapServer
+<DocPageHeader
+  eyebrow="Services module · ArcGIS tile source"
+  title="ArcGIS MapServer"
+  description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
+  tone="violet"
+  meta={['MapServer', 'Cached or dynamic', 'TileSource']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'Tiles module', to: '/docs/modules/tiles'}
+  ]}
+/>
 
 <WmsDocsTabs active="arcgis-map-server" />
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Use the same tile interface for two server modes."
+  description="MapServer can expose a cache, a dynamic export endpoint, or both. The source normalizes those modes while keeping the choice explicit and configurable."
+  tone="violet"
+  items={[
+    {label: 'Cached', value: 'Advertised tile matrix and tile URLs'},
+    {label: 'Dynamic', value: 'Exported images for requested bounds'},
+    {label: 'Grid', value: 'ArcGIS LODs normalized to tile metadata'},
+    {label: 'Control', value: 'Mode, layers, format, time, and tokens'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="MapServer reference"
+  description="The sections below cover support, authentication, cached tiles, dynamic exports, and source options."
+  tone="violet"
+/>
 
 ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both.
 `ArcGISMapTileSourceLoader` presents either mode through one loaders.gl `TileSource`.

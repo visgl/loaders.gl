@@ -1,9 +1,48 @@
+---
+title: ArcGIS VectorTileServer
+description: Load ArcGIS vector tiles, style metadata, and tile grids through a vector-tile source.
+hide_title: true
+page_style: designed
+---
+
 import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# ArcGIS VectorTileServer
+<DocPageHeader
+  eyebrow="Services module · ArcGIS vector-tile source"
+  title="ArcGIS VectorTileServer"
+  description="Load ArcGIS vector tiles together with their tile grid, style, and sprite metadata, then expose raw or decoded MVT data to the application."
+  tone="violet"
+  meta={['VectorTileServer', 'MVT and styles', 'VectorTileSource']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'}
+  ]}
+/>
 
 <WmsDocsTabs active="arcgis-vector-tile-server" />
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Keep tile bytes, decoded features, and style metadata connected."
+  description="The source exposes the raw PBF payload for low-level consumers and a decoded MVT path for map applications, while preserving ArcGIS’s published grid and style resources."
+  tone="violet"
+  items={[
+    {label: 'Metadata', value: 'Extent, CRS, LOD grid, and style URLs'},
+    {label: 'Raw', value: 'Original vector-tile PBF bytes'},
+    {label: 'Decoded', value: 'MVT features in application coordinates'},
+    {label: 'Resources', value: 'Styles, sprites, and authentication'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="VectorTileServer reference"
+  description="The sections below cover support, authentication, raw and decoded tiles, styles, and source options."
+  tone="violet"
+/>
 
 ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together with an ArcGIS
 tile grid, style document, and sprite resources. `ArcGISVectorTileServerSourceLoader` implements the

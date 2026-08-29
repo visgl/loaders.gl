@@ -1,4 +1,44 @@
-# ArcGIS SceneServer
+---
+title: ArcGIS SceneServer
+description: Connect ArcGIS SceneServer layers to I3S and 3D tileset sources.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Services module · ArcGIS 3D source"
+  title="ArcGIS SceneServer"
+  description="Connect an ArcGIS SceneServer layer to the loaders.gl 3D source runtime, delegating I3S mesh, point, and point-cloud decoding to the existing format implementations."
+  tone="violet"
+  meta={['SceneServer', 'I3S', '3D source integration']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Use a service endpoint without learning a second traversal runtime."
+  description="SceneServer handles layer metadata, credentials, and source selection; the shared tiles runtime handles hierarchy traversal, visibility, requests, and content lifecycle."
+  tone="violet"
+  items={[
+    {label: 'Metadata', value: 'Layer type, version, profile, and extent'},
+    {label: 'Profiles', value: 'I3S mesh, Point, and Point Cloud'},
+    {label: 'Runtime', value: 'Tileset traversal and content loading'},
+    {label: 'Auth', value: 'Scoped credentials through core options'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="SceneServer reference"
+  description="The sections below document construction, metadata, layer selection, authentication, and delegated I3S sources."
+  tone="violet"
+/>
 
 `ArcGISSceneServerSource` provides a thin service facade for I3S layers published through an ArcGIS
 `SceneServer` endpoint. It fetches and normalizes layer metadata, then delegates traversal and
