@@ -336,7 +336,8 @@ const config = {
         title: 'loaders.gl',
         logo: {
           alt: 'vis.gl Logo',
-          src: 'images/visgl-logo-dark.png'
+          src: 'images/visgl-logo-dark.png',
+          srcDark: 'images/visgl-logo-light.png'
         },
         items: [
           {

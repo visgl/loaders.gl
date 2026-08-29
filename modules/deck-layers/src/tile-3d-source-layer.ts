@@ -82,13 +82,18 @@ export class Tile3DSourceLayer<
     const {loadOptions = {}} = this.props;
 
     // TODO: deprecate `loader` in v9.0
+    // Prefer the explicit loader array over Tile3DLayer's default `loader` prop.
     // @ts-ignore
-    const loaders = this.props.loader || this.props.loaders;
+    const loaders = this.props.loaders || this.props.loader;
     const loaderCandidates = (Array.isArray(loaders) ? loaders : [loaders]).filter(Boolean);
     const selectedLoader =
       (await selectLoader(tilesetUrl, loaderCandidates as any, {
         ...loadOptions,
-        core: {...loadOptions.core, nothrow: true}
+        core: {
+          ...loadOptions.core,
+          ignoreRegisteredLoaders: true,
+          nothrow: true
+        }
       })) || loaderCandidates[0];
     if (!selectedLoader) {
       throw new Error('Tile3DSourceLayer requires a loader for URL or Blob inputs.');
