@@ -1,4 +1,37 @@
-# NetCDF
+---
+title: NetCDF format
+description: A scientific array format for named dimensions, variables, attributes, and typed data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Scientific array format"
+  title="Keep the dimensions that give data meaning."
+  description="NetCDF stores typed multidimensional arrays together with named dimensions and attributes, making time, level, latitude, longitude, and other scientific axes part of the data model."
+  tone="cyan"
+  meta={['NetCDF classic', 'Multidimensional arrays', 'Remote discovery']}
+  links={[
+    {label: 'NetCDF API reference', to: '/docs/modules/netcdf/api-reference'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The array model"
+  title="Choose the variable and slice the dimensions."
+  description="NetCDF is most useful when the axes are meaningful. loaders.gl preserves those names and attributes while allowing a caller to request only a selected numeric variable and half-open dimension ranges."
+  tone="cyan"
+  items={[
+    {label: 'Describe', value: 'Dimensions, variables, attributes, and types'},
+    {label: 'Select', value: 'A numeric variable and named dimension slices'},
+    {label: 'Read', value: 'The corresponding classic-file ranges'},
+    {label: 'Return', value: 'Typed data with original metadata attached'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -12,6 +45,12 @@
 NetCDF stores named dimensions, variables, attributes, and typed multidimensional arrays. It is
 widely used for weather, climate, ocean, and scientific data where array dimensions carry domain
 meaning such as time, pressure level, latitude, and longitude.
+
+<ReferenceBoundary
+  title="NetCDF structure and support"
+  description="The sections below describe the file variants, source discovery, variable selection, dimension slicing, and current implementation boundaries."
+  tone="cyan"
+/>
 
 ## loaders.gl support
 

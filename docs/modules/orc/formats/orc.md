@@ -1,4 +1,37 @@
-# Apache ORC
+---
+title: Apache ORC format
+description: A typed columnar file format organized into stripes, streams, and footer metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Columnar file format"
+  title="Read typed columns from a striped file."
+  description="Apache ORC stores a schema, encoded column streams, and statistics in a compact file layout. Its footer makes the structure discoverable before the data is materialized."
+  tone="violet"
+  meta={['Apache ORC', 'Columnar stripes', 'Arrow output']}
+  links={[
+    {label: 'ORC module', to: '/docs/modules/orc'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The ORC layout"
+  title="Footer first. Stripes and streams after."
+  description="The current loaders.gl source uses ORC metadata for discovery and returns correct Arrow data. The physical layout also explains where future selective reads can be added."
+  tone="violet"
+  items={[
+    {label: 'Footer', value: 'Schema, encodings, streams, and statistics'},
+    {label: 'Stripes', value: 'Independent groups of rows and column data'},
+    {label: 'Streams', value: 'Encoded values, indexes, and dictionaries'},
+    {label: 'Output', value: 'Arrow tables with portable scan semantics'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -11,6 +44,12 @@
 
 Apache ORC is a typed, column-oriented storage format. Files organize rows into stripes and keep a
 schema, encodings, stream locations, and statistics in their footer and stripe metadata.
+
+<ReferenceBoundary
+  title="ORC layout and scan support"
+  description="The sections below explain the physical format and make the current materialized-scan boundary explicit."
+  tone="violet"
+/>
 
 ## Format characteristics
 
