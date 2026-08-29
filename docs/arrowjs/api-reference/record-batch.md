@@ -1,4 +1,44 @@
-# RecordBatch
+---
+title: RecordBatch
+description: Work with one row-aligned chunk of typed Apache Arrow columns.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · batch container"
+  title="A RecordBatch is one useful chunk of a table."
+  description="RecordBatch groups equal-length child vectors under one schema. It is the unit that IPC readers, streaming loaders, and incremental processing pipelines can pass around without materializing an entire table."
+  tone="cyan"
+  meta={['Fixed-width row set', 'Child vectors', 'Streaming boundary']}
+  links={[
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'},
+    {label: 'Vector', to: '/docs/arrowjs/api-reference/vector'},
+    {label: 'Working with tables', to: '/docs/arrowjs/developer-guide/tables'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The RecordBatch model"
+  title="Keep rows aligned while data arrives in chunks."
+  description="Every child vector in a RecordBatch has the same logical length. Pass batches through a stream, inspect rows, or combine them into a Table when a complete logical result is useful."
+  tone="cyan"
+  items={[
+    {label: 'Rows', value: 'Equal-length records across all child vectors'},
+    {label: 'Columns', value: 'Typed Vector children under one Schema'},
+    {label: 'Source', value: 'Table chunks or IPC readers'},
+    {label: 'Next step', value: 'Process immediately or append to a Table'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="RecordBatch reference"
+  description="The sections below document constructors, schema and data members, child access, row iteration, and chunk behavior."
+  tone="cyan"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
