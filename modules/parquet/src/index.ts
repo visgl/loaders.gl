@@ -16,32 +16,6 @@ export type {AvroSchema, AvroWriterOptions} from './avro-writer';
 export {encodeAvroInChunks} from './avro-stream';
 export {parseAvroOCF} from './avro-ocf';
 export {AvroSchemaLoader} from './avro-schema-loader-types';
-export type {
-  IcebergPartitionSpec,
-  IcebergDataFile,
-  IcebergBoundingBox,
-  IcebergDeleteFile,
-  IcebergManifestFile,
-  IcebergParquetFile,
-  IcebergScanPlan,
-  IcebergSchema,
-  IcebergSnapshot,
-  IcebergSnapshotReference,
-  IcebergSpatialFilter,
-  IcebergTableMetadata,
-  IcebergTableSourceOptions
-} from './iceberg-types';
-export {IcebergTableSource} from './iceberg-table-source';
-export type {IcebergScanOptions, IcebergSourceOptions} from './iceberg-table-source';
-export {DeltaSourceLoader} from './delta-source-loader-types';
-export type {DeltaSourceLoaderOptions} from './delta-source-loader-types';
-export type {DeltaAction, DeltaScanOptions, DeltaSourceOptions} from './delta-types';
-export {IcebergRestCatalog} from './iceberg-rest-catalog';
-export type {
-  IcebergRestCatalogOptions,
-  IcebergRestTable,
-  IcebergRestTableIdentifier
-} from './iceberg-rest-catalog';
 export {GeoParquetLoader} from './geoparquet-loader';
 export {ParquetJSLoader} from './parquet-js-loader-types';
 

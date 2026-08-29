@@ -11,7 +11,7 @@ transaction-log actions, resolves the active Parquet files, and delegates physic
 `ParquetDatasetSource`.
 
 ```ts
-import {DeltaTableSource} from '@loaders.gl/parquet/delta-source';
+import {DeltaTableSource} from '@loaders.gl/scan/delta';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json'
