@@ -88,20 +88,19 @@ export async function preloadArrowCompressionEncoder(
     return;
   }
 
-  if (compression === 'zstd') {
-    await zstdCompressor.preload(modules);
-    zstdCompressorReady = true;
+  if (compression === 'zstd' && !modules['zstd-codec']) {
+    throw new Error(
+      "Arrow Zstandard encoding requires a 'zstd-codec' module in writer options.modules"
+    );
   }
   try {
+    if (compression === 'zstd') {
+      await zstdCompressor.preload(modules);
+      zstdCompressorReady = true;
+    }
     registerArrowCompressionEncoderSync(compression);
   } catch (error) {
     zstdCompressorReady = false;
-    if (compression === 'zstd' && !modules['zstd-codec']) {
-      throw new Error(
-        "Arrow Zstandard encoding requires a 'zstd-codec' module in writer options.modules",
-        {cause: error}
-      );
-    }
     throw error;
   }
 }
