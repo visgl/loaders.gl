@@ -1,4 +1,44 @@
-# Overview
+---
+title: WKT, WKB, and WKT-CRS
+description: Parse and write geometry and coordinate reference systems in OGC text and binary forms.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT and WKB module"
+  title="Keep geometry and coordinate systems interoperable."
+  description="`@loaders.gl/wkt` handles OGC Well-Known Text, Well-Known Binary, and WKT coordinate reference systems. It provides loaders and writers for the syntax boundaries that appear across GIS formats."
+  tone="orange"
+  meta={['WKT and WKB', 'WKT-CRS', 'Loaders and writers']}
+  links={[
+    {label: 'WKT formats', to: '/docs/modules/wkt/formats/wkt'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: 'WKT APIs', to: '/docs/modules/wkt/api-reference/wkt-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The geometry syntax path"
+  title="Parse text or bytes. Preserve the geometry meaning."
+  description="Choose WKT for readable interchange, WKB for compact binary geometry, or WKT-CRS for spatial reference definitions. The same module also provides the corresponding writers."
+  tone="orange"
+  items={[
+    {label: 'WKT', value: 'Readable geometry text'},
+    {label: 'WKB', value: 'Compact binary geometry'},
+    {label: 'WKT-CRS', value: 'Coordinate reference system syntax'},
+    {label: 'Output', value: 'Geometry or CRS objects for GIS pipelines'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Format and API details"
+  description="The reference below covers supported syntaxes, loaders, writers, CRS handling, and the upstream implementations used by the module."
+  tone="orange"
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for WKT
 syntax handling, shared CRS types, and cross-format CRS support.

@@ -1,4 +1,37 @@
-# Authentication
+---
+title: Authentication
+description: Carry credentials through file, tile, and service requests without coupling loaders.gl to a sign-in system.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Application-owned credentials"
+  title="Keep authentication with the request."
+  description="Loaders.gl carries tokens through file, tile, and service requests while your application remains responsible for sign-in, secure storage, and token issuance."
+  tone="blue"
+  meta={['Static tokens', 'Refresh callbacks', 'Origin-scoped requests']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'Loader options', to: '/docs/modules/core/api-reference/loader-options'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The credential boundary"
+  title="Configure access once. Let sources reuse it."
+  description="A credential can cover the follow-up requests made by a source, including metadata, tiles, and data ranges, without putting provider-specific sign-in logic into every loader."
+  tone="blue"
+  items={[
+    {label: 'Application', value: 'Acquires, stores, and refreshes credentials'},
+    {label: 'Loaders.gl', value: 'Matches credentials to the request origin'},
+    {label: 'Sources', value: 'Reuse credentials for nested requests'},
+    {label: 'Precedence', value: 'Explicit URL or request headers win'}
+  ]}
+/>
 
 loaders.gl uses one credential pipeline for files, tiles, service metadata, and the follow-up
 requests made by a source. Applications provide a static token or an asynchronous token callback;
@@ -8,6 +41,12 @@ loaders.gl decides where that credential may be sent and carries it through `loa
 The pipeline deliberately does not implement sign-in screens, OAuth redirects, secure storage, or
 provider token issuance. Those remain application responsibilities. Its job begins when the
 application can return a usable token.
+
+<ReferenceBoundary
+  title="Credential configuration"
+  description="The sections below cover provider presets, static and refreshing tokens, origin matching, and request precedence."
+  tone="blue"
+/>
 
 ## The minimal pattern
 

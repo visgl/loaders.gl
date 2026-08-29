@@ -55,14 +55,38 @@ test('validates nested named schemas, unions, collections, and defaults', () => 
 });
 
 test.each([
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":"int","default":1.5}]}', 'expected integer'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":"boolean","default":1}]}', 'expected boolean'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":"null","default":false}]}', 'expected null'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":["string","null"],"default":null}]}', 'expected string'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"array","items":"int"},"default":{}}]}', 'expected array'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"map","values":"int"},"default":[]}]}', 'expected object map'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"enum","name":"Kind","symbols":["A"]},"default":"B"}]}', 'unknown enum symbol'],
-  ['{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"fixed","name":"Value","size":2},"default":1}]}', 'expected string']
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":"int","default":1.5}]}',
+    'expected integer'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":"boolean","default":1}]}',
+    'expected boolean'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":"null","default":false}]}',
+    'expected null'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":["string","null"],"default":null}]}',
+    'expected string'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"array","items":"int"},"default":{}}]}',
+    'expected array'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"map","values":"int"},"default":[]}]}',
+    'expected object map'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"enum","name":"Kind","symbols":["A"]},"default":"B"}]}',
+    'unknown enum symbol'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"fixed","name":"Value","size":2},"default":1}]}',
+    'expected string'
+  ]
 ])('rejects incompatible Avro defaults: %s', (schema, message) => {
   expect(() => parseAvroSchema(schema)).toThrow(message);
 });

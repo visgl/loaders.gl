@@ -1,6 +1,39 @@
-# Delta Lake table source
+---
+title: Delta Lake table source
+description: Read a versioned Delta Lake snapshot through Parquet planning and Arrow batches.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Versioned table source"
+  title="Read a Delta snapshot as a table, not a log."
+  description="DeltaTableSource replays the transaction log to determine the active Parquet files, then uses the common source and scan contracts for metadata, filtering, projection, limits, and streaming Arrow results."
+  tone="violet"
+  meta={['Delta Lake', 'Snapshot replay', 'Parquet and Arrow']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The snapshot path"
+  title="Resolve the version first, then query its files."
+  description="The source keeps transaction-log replay separate from physical Parquet reads. That makes version selection explicit while preserving the same table query semantics as an ordinary dataset."
+  tone="violet"
+  items={[
+    {label: 'Resolve', value: 'Replay add/remove actions through a selected version'},
+    {label: 'Plan', value: 'Build the active Parquet file set'},
+    {label: 'Query', value: 'Projection, predicates, limits, and cancellation'},
+    {label: 'Return', value: 'Streaming Arrow batches in source order'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -10,8 +43,14 @@
 transaction-log actions, resolves the active Parquet files, and delegates physical reads to
 `ParquetDatasetSource`.
 
+<ReferenceBoundary
+  title="Delta source details"
+  description="The sections below document construction, snapshot planning, scan support, and the boundaries of the read-only adapter."
+  tone="violet"
+/>
+
 ```ts
-import {DeltaTableSource} from '@loaders.gl/parquet/delta-source';
+import {DeltaTableSource} from '@loaders.gl/scan/delta';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json'

@@ -74,7 +74,7 @@ function createBundlerPlugin() {
 
 const config = {
   title: 'loaders.gl',
-  tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
+  tagline: 'Big data loading for the web',
   url: siteUrl,
   baseUrl,
   onBrokenLinks: 'warn',
@@ -115,6 +115,7 @@ const config = {
         },
         theme: {
           customCss: [
+            resolve('../node_modules/@deck.gl/widgets/dist/stylesheet.css'),
             resolve('./src/styles.css')
             // resolve('./node_modules/maplibre-gl/dist/maplibre-gl.css')
           ]
@@ -154,6 +155,7 @@ const config = {
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
+            '@loaders.gl/avro': resolve('../modules/avro/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
             '@loaders.gl/config': resolve('../modules/config/src'),
@@ -328,11 +330,17 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+        defaultMode: 'dark',
+        disableSwitch: false,
+        respectPrefersColorScheme: false
+      },
       navbar: {
         title: 'loaders.gl',
         logo: {
           alt: 'vis.gl Logo',
-          src: 'images/visgl-logo-dark.png'
+          src: 'images/visgl-logo-dark.png',
+          srcDark: 'images/visgl-logo-light.png'
         },
         items: [
           {

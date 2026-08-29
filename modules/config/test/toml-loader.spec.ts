@@ -62,3 +62,54 @@ test('TOMLLoader forwards parser options', async () => {
   );
   expect(value).toEqual({large: 9007199254740993n});
 });
+
+test('TOMLLoader preserves multiline values and nested array tables', () => {
+  const value = BundledTOMLLoader.parseTextSync?.(`
+ports = [
+  8001,
+  8002,
+]
+description = """
+Multiline description.
+"""
+literal = '''
+Literal # value.
+'''
+point = { coordinates.x = 1, coordinates.y = 2 }
+
+[[fruits]]
+name = "apple"
+[fruits.physical]
+color = "red"
+[[fruits.varieties]]
+name = "red delicious"
+
+[[fruits]]
+name = "banana"
+[fruits.physical]
+color = "yellow"
+`);
+
+  expect(value).toEqual({
+    ports: [8001, 8002],
+    description: 'Multiline description.\n',
+    literal: 'Literal # value.\n',
+    point: {coordinates: {x: 1, y: 2}},
+    fruits: [
+      {
+        name: 'apple',
+        physical: {color: 'red'},
+        varieties: [{name: 'red delicious'}]
+      },
+      {name: 'banana', physical: {color: 'yellow'}}
+    ]
+  });
+});
+
+test('TOMLLoader keeps safe integers as numbers in asNeeded mode', () => {
+  const value = BundledTOMLLoader.parseTextSync?.('small = 1\nlarge = 9007199254740993', {
+    toml: {integersAsBigInt: 'asNeeded'}
+  });
+
+  expect(value).toEqual({small: 1, large: 9007199254740993n});
+});

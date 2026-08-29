@@ -326,7 +326,11 @@ async function selectSourceLoader(
 
   return (await selectLoader(data, sourceLoaders, {
     ...(sourceOptions as any),
-    core: {...sourceOptions?.core, nothrow: true}
+    core: {
+      ...sourceOptions?.core,
+      ignoreRegisteredLoaders: true,
+      nothrow: true
+    }
   })) as SourceLoader | null;
 }
 

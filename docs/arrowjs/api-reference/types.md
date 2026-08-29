@@ -1,4 +1,44 @@
-# Types
+---
+title: Arrow data types
+description: Choose the logical types used by Apache Arrow JS fields, vectors, builders, and tables.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · type system"
+  title="Choose a logical type before choosing storage."
+  description="Arrow DataType classes describe what a column means: integers, floating point, text, binary, timestamps, lists, structs, maps, unions, and dictionaries. Builders and vectors use that choice to keep values typed."
+  tone="yellow"
+  meta={['Primitive types', 'Nested types', 'Temporal and dictionary types']}
+  links={[
+    {label: 'Schema', to: '/docs/arrowjs/api-reference/schema'},
+    {label: 'Field', to: '/docs/arrowjs/api-reference/field'},
+    {label: 'Builder', to: '/docs/arrowjs/api-reference/builder'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Arrow type map"
+  title="Make values portable by naming their meaning."
+  description="A DataType is more than a JavaScript constructor. It determines buffers, null handling, nested children, serialization, and how another Arrow implementation interprets the column."
+  tone="yellow"
+  items={[
+    {label: 'Scalar', value: 'Null, Bool, integers, floats, decimals, and binary/text'},
+    {label: 'Temporal', value: 'Date, time, timestamp, duration, and interval types'},
+    {label: 'Nested', value: 'List, fixed-size list, struct, map, and union'},
+    {label: 'Encoded', value: 'Dictionary and other types with child or index storage'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="DataType reference"
+  description="The sections below list core type families, constructors, properties, predicates, and the relationships between types, fields, and storage."
+  tone="yellow"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

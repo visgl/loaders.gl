@@ -1,10 +1,51 @@
-import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
+---
+title: PLY format
+description: A flexible element-and-property format for polygon meshes and vertex data.
+hide_title: true
+page_style: designed
+---
 
-# PLY - Polygon File Format
+import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
+import {PointCloudFormatGraphic} from '@site/src/components/docs/point-cloud-format-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Polygon and vertex format"
+  title="Let the header describe the mesh you have."
+  description="PLY defines elements and properties in its header, then stores those records as readable text or compact binary data. It is flexible enough for meshes and many point-cloud workflows."
+  tone="orange"
+  meta={['PLY 1.0', 'Elements and properties', 'Mesh interchange']}
+  links={[
+    {label: 'PLY module', to: '/docs/modules/ply'},
+    {label: 'PLYLoader', to: '/docs/modules/ply/api-reference/ply-loader'}
+  ]}
+/>
 
 <PlyDocsTabs active="overview" />
 
+<PointCloudFormatGraphic />
+
+<DocOrientation
+  eyebrow="The element model"
+  title="Declare the records before reading them."
+  description="A PLY reader uses the header as a schema: it knows which elements exist, how many records to expect, and how to interpret every property before it reaches the payload."
+  tone="orange"
+  items={[
+    {label: 'Format', value: 'ASCII or little/big-endian binary representation'},
+    {label: 'Elements', value: 'Vertices, faces, and application-defined records'},
+    {label: 'Properties', value: 'Coordinates, color, normals, UVs, and confidence'},
+    {label: 'Output', value: 'Mesh data, including point-cloud-style vertices'}
+  ]}
+/>
+
 PLY (Polygon File Format, also known as the Stanford Triangle Format) stores 3D graphical objects as a collection of vertices, faces, and other polygon-oriented elements.
+
+<ReferenceBoundary
+  title="PLY structure and examples"
+  description="The sections below cover ASCII and binary variants, common properties, element ordering, and a complete example file."
+  tone="orange"
+/>
 
 - _[`@loaders.gl/ply`](/docs/modules/ply)_
 - _[PLY documentation](http://paulbourke.net/dataformats/ply/)_

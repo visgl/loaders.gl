@@ -1,8 +1,44 @@
-# Tiles3DSource
+---
+title: Tiles3DSource
+description: Connect a 3D Tiles loader to the shared tileset runtime.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles module · 3D source API"
+  title="Tiles3DSource"
+  description="Connect a 3D Tiles loader to the shared tileset runtime, handling root metadata, content URLs, implicit subtrees, external tilesets, and format-specific tile state."
+  tone="cyan"
+  meta={['From v5.0', '3D Tiles source', 'Lazy hierarchy']}
+  links={[
+    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
+    {label: 'Tileset3D', to: '/docs/modules/tiles/api-reference/tileset-3d'},
+    {label: 'Tiles module', to: '/docs/modules/tiles'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The source boundary"
+  title="Keep format-specific requests out of traversal."
+  description="Tiles3DSource owns the 3D Tiles rules; Tileset3D owns traversal, culling, cache management, and scheduling. That separation makes the runtime reusable across formats."
+  tone="cyan"
+  items={[
+    {label: 'Metadata', value: 'Root asset and tileset state'},
+    {label: 'Hierarchy', value: 'Explicit and implicit child headers'},
+    {label: 'Content', value: 'glTF, binary, external tilesets, and formats'},
+    {label: 'Requests', value: 'Versions, sessions, headers, and URLs'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tiles3DSource reference"
+  description="The sections below document construction, format-specific behavior, lifecycle methods, and tile content loading."
+  tone="cyan"
+/>
 
 The `Tiles3DSource` class implements [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source) for datasets loaded with the [Tiles3DLoader](/docs/modules/3d-tiles/api-reference/tiles-3d-loader).
 

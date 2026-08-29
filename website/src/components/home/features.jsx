@@ -24,12 +24,25 @@ export const FEATURE_CARDS = [
     title: 'Optimized, feature-rich parsers',
     description:
       'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
-    href: '/docs',
-    linkLabel: 'Browse loader docs',
+    href: '/docs/developer-guide/using-loaders',
+    linkLabel: 'Choose a loader',
     tags: ['tables', 'GIS', '3D', 'point clouds'],
     visual: 'loaders',
     wide: true,
     tone: 'pink'
+  },
+  {
+    id: '3d',
+    eyebrow: '3D data formats',
+    title: 'From scene files to streamed worlds.',
+    description:
+      'Load scene graphs, tiled worlds, point clouds, and their compressed payloads through TypeScript implementations with detailed format coverage.',
+    href: '/docs/developer-guide/3d-data-formats',
+    linkLabel: 'Explore 3D data formats',
+    tags: ['glTF', '3D Tiles', 'I3S', 'COPC'],
+    visual: '3d',
+    wide: true,
+    tone: 'blue'
   },
   {
     id: 'streaming',
@@ -42,6 +55,19 @@ export const FEATURE_CARDS = [
     tags: ['batches', 'transforms', 'async iterators'],
     visual: 'streaming',
     tone: 'mint'
+  },
+  {
+    id: 'datasets',
+    eyebrow: 'Cloud datasets',
+    title: 'Fetch the part that matters.',
+    description:
+      'Treat remote files, tiled archives, and services as datasets: inspect metadata, plan a request, and read only the bytes needed for the current result.',
+    href: '/docs/developer-guide/using-sources',
+    linkLabel: 'Use cloud sources',
+    tags: ['metadata', 'range reads', 'services'],
+    visual: 'datasets',
+    wide: true,
+    tone: 'orange'
   },
   {
     id: 'workers',
@@ -66,6 +92,56 @@ export const FEATURE_CARDS = [
     tags: ['typed columns', 'zero-copy', 'Arrow IPC'],
     visual: 'arrow',
     tone: 'cyan'
+  },
+  {
+    id: 'columnar',
+    eyebrow: 'Binary columnar data',
+    title: 'Keep wide tables compact.',
+    description:
+      'Use typed columns, selective reads, and Arrow-compatible batches to move large analytical datasets through the browser without turning every value into a JavaScript object.',
+    href: '/docs/formats/binary-columnar',
+    linkLabel: 'Explore columnar data',
+    tags: ['Arrow', 'Parquet', 'selective reads'],
+    visual: 'columnar',
+    wide: true,
+    tone: 'cyan'
+  },
+  {
+    id: 'writers',
+    eyebrow: 'Portable output',
+    title: 'Encode the data you already have.',
+    description:
+      'Convert application and category data at the edge of the pipeline, then let a format-specific writer own validation, compression, and output bytes.',
+    href: '/docs/developer-guide/using-writers',
+    linkLabel: 'Use writers',
+    tags: ['encode()', 'conversion', 'compression'],
+    visual: 'writers',
+    wide: true,
+    tone: 'yellow'
+  },
+  {
+    id: 'performance',
+    eyebrow: 'End-to-end performance',
+    title: 'Measure bytes, copies, and boundaries.',
+    description:
+      'Performance depends on the complete path: selective I/O, decoding, allocation, worker transfer, and the shape handed to the application.',
+    href: '/docs/developer-guide/concepts/javascript-and-wasm-performance',
+    linkLabel: 'Measure the pipeline',
+    tags: ['I/O', 'memory', 'workers'],
+    visual: 'performance',
+    tone: 'violet'
+  },
+  {
+    id: 'standards',
+    eyebrow: 'Standards fidelity',
+    title: 'Keep the format boundary visible.',
+    description:
+      'Track versions, profiles, protocols, and unsupported edges explicitly while applications use practical loaders, sources, and common data shapes.',
+    href: '/docs/developer-guide/standards',
+    linkLabel: 'See standards support',
+    tags: ['versions', 'profiles', 'capabilities'],
+    visual: 'standards',
+    tone: 'violet'
   },
   {
     id: 'categories',
@@ -94,11 +170,25 @@ export const FEATURE_CARDS = [
   }
 ];
 
+/** The compact capability index shown on the homepage; full graphics live on the linked pages. */
+export const HOME_FEATURE_IDS = [
+  'scan',
+  'loaders',
+  '3d',
+  'streaming',
+  'datasets',
+  'workers',
+  'arrow',
+  'writers',
+  'performance',
+  'standards'
+];
+
 const FeatureSection = styled.section`
   background: #0d1521;
   color: #f4f8fb;
   overflow: hidden;
-  padding: 112px 64px 120px;
+  padding: ${(props) => (props.$compact ? '72px 64px 80px' : '112px 64px 120px')};
   position: relative;
 
   &::before {
@@ -112,11 +202,11 @@ const FeatureSection = styled.section`
   }
 
   @media screen and (max-width: 996px) {
-    padding: 88px 32px 96px;
+    padding: ${(props) => (props.$compact ? '60px 32px 68px' : '88px 32px 96px')};
   }
 
   @media screen and (max-width: 640px) {
-    padding: 68px 20px 76px;
+    padding: ${(props) => (props.$compact ? '48px 20px 56px' : '68px 20px 76px')};
   }
 `;
 
@@ -187,7 +277,7 @@ const toneColors = {
   yellow: {accent: '#f0d877', glow: 'rgba(231, 177, 38, 0.28)'}
 };
 
-const FeatureCard = styled.article`
+const FeatureCard = styled(Link)`
   --card-accent: ${(props) => toneColors[props.$tone].accent};
   --card-glow: ${(props) => toneColors[props.$tone].glow};
   background: linear-gradient(145deg, rgba(26, 39, 56, 0.98), rgba(17, 27, 41, 0.96));
@@ -201,6 +291,7 @@ const FeatureCard = styled.article`
   overflow: hidden;
   padding: 30px;
   position: relative;
+  text-decoration: none;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -220,13 +311,33 @@ const FeatureCard = styled.article`
   &:hover {
     border-color: color-mix(in srgb, var(--card-accent) 58%, transparent);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
     transform: translateY(-4px);
+  }
+
+  &:focus-visible {
+    border-color: var(--card-accent);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.3),
+      0 0 0 3px color-mix(in srgb, var(--card-accent) 45%, transparent);
+    outline: none;
   }
 
   @media screen and (max-width: 760px) {
     grid-column: span 1;
     min-height: 320px;
     padding: 24px;
+  }
+`;
+
+const CompactFeatureCard = styled(FeatureCard)`
+  grid-column: span 1;
+  min-height: 218px;
+  padding: 24px;
+
+  @media screen and (max-width: 760px) {
+    min-height: 204px;
+    padding: 22px;
   }
 `;
 
@@ -299,6 +410,11 @@ const CardFooter = styled.div`
   }
 `;
 
+const CompactCardFooter = styled(CardFooter)`
+  max-width: 100%;
+  padding-top: 22px;
+`;
+
 const TagList = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -315,7 +431,7 @@ const Tag = styled.span`
   padding: 7px 9px;
 `;
 
-const CardLink = styled(Link)`
+const CardLink = styled.span`
   align-items: center;
   color: var(--card-accent);
   display: inline-flex;
@@ -326,11 +442,6 @@ const CardLink = styled(Link)`
   line-height: 1.35;
   text-decoration: none;
   white-space: normal;
-
-  &:hover {
-    color: #ffffff;
-    text-decoration: none;
-  }
 
   &::after {
     content: '↗';
@@ -461,6 +572,36 @@ const StreamingVisual = styled(CardVisual)`
   gap: 8px;
 `;
 
+const DatasetVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 154px;
+  width: 48%;
+`;
+
+const DatasetLine = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: end;
+`;
+
+const DatasetStage = styled.span`
+  background: ${(props) => (props.$active ? 'rgba(255, 179, 107, 0.2)' : 'rgba(229, 240, 247, 0.07)')};
+  border: 1px solid ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.2)')};
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.62)')};
+  font-family: monospace;
+  font-size: 10px;
+  padding: 7px 9px;
+`;
+
+const DatasetArrow = styled.span`
+  color: var(--card-accent);
+  font-size: 15px;
+`;
+
 const StreamLine = styled.div`
   align-items: center;
   display: flex;
@@ -524,6 +665,121 @@ const ArrowCell = styled.span`
   height: ${(props) => (props.$header ? '10px' : '18px')};
 `;
 
+const ColumnarVisual = styled(CardVisual)`
+  align-items: end;
+  display: flex;
+  gap: 9px;
+  height: 150px;
+  justify-content: end;
+  padding: 18px;
+  width: 48%;
+`;
+
+const ColumnarColumn = styled.div`
+  display: grid;
+  gap: 4px;
+  width: ${(props) => props.$width || '31px'};
+`;
+
+const ColumnarCell = styled.span`
+  background: ${(props) =>
+    props.$selected ? 'var(--card-accent)' : props.$header ? 'rgba(81, 226, 244, 0.68)' : 'rgba(81, 226, 244, 0.18)'};
+  border-radius: 3px;
+  display: block;
+  height: ${(props) => (props.$header ? '9px' : '16px')};
+`;
+
+const ColumnarRange = styled.span`
+  border: 1px solid rgba(117, 224, 186, 0.7);
+  border-radius: 5px;
+  bottom: 13px;
+  height: 42px;
+  position: absolute;
+  right: 14px;
+  width: 35px;
+`;
+
+const WriterVisual = styled(CardVisual)`
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  height: 142px;
+  justify-content: end;
+  width: 48%;
+`;
+
+const WriterBlock = styled.div`
+  background: ${(props) => (props.$active ? 'rgba(240, 216, 119, 0.18)' : 'rgba(229, 240, 247, 0.07)')};
+  border: 1px solid ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.2)')};
+  border-radius: 8px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.58)')};
+  font-family: monospace;
+  font-size: 10px;
+  min-width: 68px;
+  padding: 10px 8px;
+  text-align: center;
+`;
+
+const WriterArrow = styled.span`
+  color: var(--card-accent);
+  font-size: 18px;
+`;
+
+const PerformanceVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 9px;
+  height: 142px;
+  width: 46%;
+`;
+
+const PerformanceLine = styled.div`
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 52px 1fr;
+`;
+
+const PerformanceLabel = styled.span`
+  color: rgba(229, 240, 247, 0.56);
+  font-family: monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+`;
+
+const PerformanceBar = styled.span`
+  background: linear-gradient(90deg, var(--card-accent), rgba(155, 140, 255, 0.2));
+  border-radius: 4px;
+  display: block;
+  height: 10px;
+  width: ${(props) => props.$width};
+`;
+
+const StandardsVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 150px;
+  width: 48%;
+`;
+
+const StandardsLine = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  justify-content: end;
+`;
+
+const StandardsChip = styled.span`
+  background: rgba(155, 140, 255, 0.12);
+  border: 1px solid rgba(155, 140, 255, 0.46);
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.62)')};
+  font-family: monospace;
+  font-size: 10px;
+  padding: 7px 9px;
+`;
+
 const LoaderVisual = styled(CardVisual)`
   display: grid;
   gap: 7px;
@@ -546,6 +802,42 @@ const LoaderChip = styled.div`
     color: var(--card-accent);
     content: '↗';
   }
+`;
+
+const ThreeDVisual = styled(CardVisual)`
+  align-content: center;
+  display: grid;
+  gap: 8px;
+  height: 168px;
+  width: 48%;
+`;
+
+const ThreeDRow = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+`;
+
+const ThreeDRowLabel = styled.span`
+  color: rgba(229, 240, 247, 0.46);
+  flex: 0 0 52px;
+  font-family: monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+`;
+
+const ThreeDChip = styled.span`
+  background: rgba(112, 199, 255, 0.13);
+  border: 1px solid rgba(112, 199, 255, 0.48);
+  border-radius: 7px;
+  color: ${(props) => (props.$active ? 'var(--card-accent)' : 'rgba(229, 240, 247, 0.72)')};
+  flex: 0 1 auto;
+  font-family: monospace;
+  font-size: 10px;
+  min-width: 0;
+  padding: 7px 8px;
+  white-space: nowrap;
 `;
 
 const CategoriesVisual = styled(CardVisual)`
@@ -669,6 +961,28 @@ export function RenderFeatureVisual({type, wide}) {
     );
   }
 
+  if (type === 'datasets') {
+    return (
+      <DatasetVisual $wide={wide} aria-hidden="true">
+        <DatasetLine>
+          <DatasetStage>catalog</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>metadata</DatasetStage>
+        </DatasetLine>
+        <DatasetLine>
+          <DatasetStage>dataset</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>ranges</DatasetStage>
+        </DatasetLine>
+        <DatasetLine>
+          <DatasetStage>many files</DatasetStage>
+          <DatasetArrow>→</DatasetArrow>
+          <DatasetStage $active>one result</DatasetStage>
+        </DatasetLine>
+      </DatasetVisual>
+    );
+  }
+
   if (type === 'workers') {
     return (
       <WorkersVisual $wide={wide} aria-hidden="true">
@@ -695,6 +1009,76 @@ export function RenderFeatureVisual({type, wide}) {
     );
   }
 
+  if (type === 'columnar') {
+    return (
+      <ColumnarVisual $wide={wide} aria-hidden="true">
+        {[['25px', false], ['34px', true], ['25px', false], ['34px', true]].map(([width, selected], index) => (
+          <ColumnarColumn key={index} $width={width}>
+            <ColumnarCell $header />
+            {Array.from({length: 5}, (_, rowIndex) => (
+              <ColumnarCell key={rowIndex} $selected={selected && rowIndex > 1} />
+            ))}
+          </ColumnarColumn>
+        ))}
+        <ColumnarRange />
+      </ColumnarVisual>
+    );
+  }
+
+  if (type === 'writers') {
+    return (
+      <WriterVisual $wide={wide} aria-hidden="true">
+        <WriterBlock>Arrow table</WriterBlock>
+        <WriterArrow>→</WriterArrow>
+        <WriterBlock $active>validate</WriterBlock>
+        <WriterArrow>→</WriterArrow>
+        <WriterBlock $active>Parquet</WriterBlock>
+      </WriterVisual>
+    );
+  }
+
+  if (type === 'performance') {
+    return (
+      <PerformanceVisual $wide={wide} aria-hidden="true">
+        <PerformanceLine>
+          <PerformanceLabel>bytes</PerformanceLabel>
+          <PerformanceBar $width="88%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>copies</PerformanceLabel>
+          <PerformanceBar $width="42%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>transfer</PerformanceLabel>
+          <PerformanceBar $width="64%" />
+        </PerformanceLine>
+        <PerformanceLine>
+          <PerformanceLabel>first batch</PerformanceLabel>
+          <PerformanceBar $width="29%" />
+        </PerformanceLine>
+      </PerformanceVisual>
+    );
+  }
+
+  if (type === 'standards') {
+    return (
+      <StandardsVisual $wide={wide} aria-hidden="true">
+        <StandardsLine>
+          <StandardsChip>format</StandardsChip>
+          <StandardsChip $active>version</StandardsChip>
+        </StandardsLine>
+        <StandardsLine>
+          <StandardsChip>profile</StandardsChip>
+          <StandardsChip $active>capability</StandardsChip>
+        </StandardsLine>
+        <StandardsLine>
+          <StandardsChip>boundary</StandardsChip>
+          <StandardsChip $active>contract</StandardsChip>
+        </StandardsLine>
+      </StandardsVisual>
+    );
+  }
+
   if (type === 'loaders') {
     return (
       <LoaderVisual $wide={wide} aria-hidden="true">
@@ -703,6 +1087,36 @@ export function RenderFeatureVisual({type, wide}) {
         <LoaderChip $active>GLTFLoader</LoaderChip>
         <LoaderChip>LASLoader</LoaderChip>
       </LoaderVisual>
+    );
+  }
+
+  if (type === '3d') {
+    return (
+      <ThreeDVisual $wide={wide} aria-hidden="true">
+        <ThreeDRow>
+          <ThreeDRowLabel>scene</ThreeDRowLabel>
+          <ThreeDChip $active>glTF</ThreeDChip>
+          <ThreeDChip>GLB</ThreeDChip>
+          <ThreeDChip>USD</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>world</ThreeDRowLabel>
+          <ThreeDChip $active>3D Tiles</ThreeDChip>
+          <ThreeDChip>I3S</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>points</ThreeDRowLabel>
+          <ThreeDChip $active>COPC</ThreeDChip>
+          <ThreeDChip>Potree</ThreeDChip>
+          <ThreeDChip>LAS</ThreeDChip>
+        </ThreeDRow>
+        <ThreeDRow>
+          <ThreeDRowLabel>payload</ThreeDRowLabel>
+          <ThreeDChip>Draco</ThreeDChip>
+          <ThreeDChip>meshopt</ThreeDChip>
+          <ThreeDChip $active>KTX2</ThreeDChip>
+        </ThreeDRow>
+      </ThreeDVisual>
     );
   }
 
@@ -717,25 +1131,42 @@ export function RenderFeatureVisual({type, wide}) {
   );
 }
 
-/** Renders the homepage's large feature cards for the loaders.gl tentpole capabilities. */
-export default function Features() {
+/**
+ * Renders feature cards for the loaders.gl tentpole capabilities.
+ * @param {{showVisuals?: boolean, featureIds?: string[]}} props Component properties.
+ */
+export default function Features({showVisuals = true, featureIds}) {
+  const CardComponent = showVisuals ? FeatureCard : CompactFeatureCard;
+  const FooterComponent = showVisuals ? CardFooter : CompactCardFooter;
+  const cards = featureIds
+    ? featureIds
+        .map((featureId) => FEATURE_CARDS.find((feature) => feature.id === featureId))
+        .filter(Boolean)
+    : FEATURE_CARDS;
+
   return (
-    <FeatureSection>
+    <FeatureSection $compact={!showVisuals}>
       <FeatureContent>
         <FeatureIntro>
           <div>
-            <FeatureEyebrow>The loaders.gl data plane</FeatureEyebrow>
-            <FeatureTitle>Data in. Insight out.</FeatureTitle>
+            <FeatureEyebrow>Big data loading</FeatureEyebrow>
+            <FeatureTitle>Large data. Small application paths.</FeatureTitle>
           </div>
           <FeatureLead>
-            A standards-first toolkit for loading, scanning, transforming, and visualizing the
-            formats that power modern geospatial and 3D applications.
+            Load large files, streams, and cloud datasets, then hand the application the rows,
+            columns, geometry, or pixels it actually needs.
           </FeatureLead>
         </FeatureIntro>
 
         <FeatureGrid>
-          {FEATURE_CARDS.map((feature) => (
-            <FeatureCard key={feature.id} $tone={feature.tone} $wide={feature.wide}>
+          {cards.map((feature) => (
+            <CardComponent
+              key={feature.id}
+              to={feature.href}
+              aria-label={`${feature.title} — ${feature.linkLabel}`}
+              $tone={feature.tone}
+              $wide={feature.wide}
+            >
               <CardBody $wide={feature.wide}>
                 <CardEyebrow>
                   {feature.eyebrow}
@@ -744,16 +1175,16 @@ export default function Features() {
                 <CardTitle>{feature.title}</CardTitle>
                 <CardDescription>{feature.description}</CardDescription>
               </CardBody>
-              <RenderFeatureVisual type={feature.visual} wide={feature.wide} />
-              <CardFooter $wide={feature.wide}>
+              {showVisuals && <RenderFeatureVisual type={feature.visual} wide={feature.wide} />}
+              <FooterComponent $wide={feature.wide}>
                 <TagList>
                   {feature.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>
                   ))}
                 </TagList>
-                <CardLink to={feature.href}>{feature.linkLabel}</CardLink>
-              </CardFooter>
-            </FeatureCard>
+                <CardLink>{feature.linkLabel}</CardLink>
+              </FooterComponent>
+            </CardComponent>
           ))}
         </FeatureGrid>
       </FeatureContent>

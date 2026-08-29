@@ -1,8 +1,53 @@
-# Using Writers
+---
+title: Using writers
+description: Encode application data into the formats supported by loaders.gl writers.
+hide_title: true
+page_style: designed
+---
 
-Writers allow applications to encoded data for a number of the formats supported by loaders.gl.
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="writers" />
+
+<DocPageHeader
+  eyebrow="Core API"
+  title="Using writers"
+  description="Turn tables, geometry, images, and other application data back into portable files with the same explicit module boundaries used for loading."
+  tone="yellow"
+  meta={['encode() and encodeSync()', 'Format-specific writers', 'Browser and Node.js']}
+  links={[
+    {label: 'Writer object format', to: '/docs/specifications/writer-object-format'},
+    {label: 'Converting data', to: '/docs/developer-guide/converting-data'}
+  ]}
+/>
+
+<WriterPipelineGraphic />
+
+<DocOrientation
+  eyebrow="The writer path"
+  title="Encode the application shape you already have."
+  description="Writers sit at the far edge of a pipeline. Convert into the format’s documented input shape, choose the output container, and keep format-specific encoding behind one explicit module."
+  tone="yellow"
+  items={[
+    {label: 'Prepare', value: 'Use a category shape or format-specific writer input'},
+    {label: 'Encode', value: 'Call encode() or encodeSync() with one writer'},
+    {label: 'Compress', value: 'Pass codec and container options where supported'},
+    {label: 'Save', value: 'Write a buffer, stream, file, or application response'}
+  ]}
+/>
+
+Writers allow applications to encode data into many of the formats supported by loaders.gl.
 
 For a detailed specification of the writer object format see the [API reference](/docs/specifications/writer-object-format).
+
+<ReferenceBoundary
+  title="Writer inputs and output behavior"
+  description="The guide below covers writer selection, category-compatible input data, asynchronous encoding, options, and format-specific boundaries."
+  tone="yellow"
+/>
 
 ## Usage
 
@@ -18,7 +63,7 @@ const mesh = {
   }
 };
 
-const data = await encode(mesh, DracoWriter, options);
+const data = await encode(mesh, DracoWriter);
 ```
 
 ## Input Data

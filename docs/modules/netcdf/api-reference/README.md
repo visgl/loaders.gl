@@ -1,8 +1,42 @@
-# NetCDF - Network Common Data Form
+---
+title: NetCDF source API
+description: Discover NetCDF variables and read selected slices as raster data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="NetCDF source"
+  title="Read selected variables without guessing the whole dataset."
+  description="The NetCDF source discovers variables, dimensions, attributes, and file metadata before materializing selected numeric slices. It provides a clear boundary between format discovery and raster data access."
+  tone="cyan"
+  meta={['NetCDF classic', 'Variable discovery', 'Dimension slices']}
+  links={[
+    {label: 'NetCDF format', to: '/docs/modules/netcdf/formats/netcdf'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Cloud-native data', to: '/docs/specifications/cloud-native-geospatial'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The NetCDF query path"
+  title="Inspect the header. Choose variables. Materialize a slice."
+  description="NetCDF dimensions are not automatically treated as map coordinates. The source reports the file’s structure and lets the application choose variables and named dimension ranges explicitly."
+  tone="cyan"
+  items={[
+    {label: 'Discover', value: 'Variables, dimensions, attributes, and file size'},
+    {label: 'Select', value: 'Named numeric variables and dimension slices'},
+    {label: 'Read', value: 'Classic or 64-bit-offset data arrays'},
+    {label: 'Output', value: 'Typed raster data with original metadata'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-<p class="badges">
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -11,6 +45,12 @@
 OGC network Common Data Form (netCDF) standards suite
 
 ## Scan support
+
+<ReferenceBoundary
+  title="NetCDF source details"
+  description="The reference below documents scan support, metadata discovery, slicing, limitations, and the source API."
+  tone="cyan"
+/>
 
 `NetCDFSource` and `NetCDFSourceLoader` expose NetCDF classic and 64-bit-offset headers through
 the shared scan architecture. `getQueryMetadata()` discovers variable names, portable scalar

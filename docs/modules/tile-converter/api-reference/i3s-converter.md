@@ -1,6 +1,46 @@
-# I3SConverter class
+---
+title: I3SConverter
+description: Convert 3D Tiles datasets into I3S output through the tile-converter JavaScript API.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter API / output"
+  title="Prepare 3D Tiles data for I3S consumers."
+  description="I3SConverter translates a 3D Tiles tileset into an I3S layer, with explicit controls for depth, materials, textures, compression, bounds, and height reference conversion."
+  tone="mint"
+  meta={['3D Tiles → I3S', 'Node.js API', 'Layer preparation']}
+  links={[
+    {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
+    {label: '3D Tiles converter', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Conversion path"
+  title="Translate the hierarchy and make the output policy explicit."
+  description="I3S and 3D Tiles share many concepts but not the same packaging or metadata layout. The converter exposes the choices that affect generated nodes, geometry, textures, materials, and bounds."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'A 3D Tiles tileset URL or supported local source.'},
+    {label: 'Translate', value: 'Convert hierarchy, geometry, materials, and resources into I3S.'},
+    {label: 'Optimize', value: 'Choose Draco, texture generation, node depth, and bounds.'},
+    {label: 'Output', value: 'An I3S layer or SLPK-compatible output directory.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="I3SConverter reference"
+  description="The detailed reference covers construction, conversion options, generated resources, texture/material policies, and coordinate-height handling."
+  tone="mint"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 

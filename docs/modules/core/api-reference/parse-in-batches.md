@@ -1,26 +1,70 @@
-# parseInBatches
+---
+title: parseInBatches
+description: Decode a stream incrementally into loader-defined batches.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core streaming API"
+  title="Decode a stream one batch at a time."
+  description="Use `parseInBatches()` when the input can arrive incrementally and the application can start work before the complete resource is available. The async iterator yields metadata and data in the shape defined by the loader."
+  tone="violet"
+  meta={['Async iterator', 'Incremental parsing', 'Metadata and data batches']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Load in batches', to: '/docs/modules/core/api-reference/load-in-batches'},
+    {label: 'Streaming guide', to: '/docs/developer-guide/using-streaming-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The batch boundary"
+  title="Read, yield, process, continue."
+  description="A batch is not always a row array. Depending on the loader it may contain metadata, a schema, table rows, geometry, or another category-specific result."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'Response, stream, iterator, or supported loaded data'},
+    {label: 'Selection', value: 'Explicit loader or registered autodetection'},
+    {label: 'Yield', value: 'Metadata and data through an async iterator'},
+    {label: 'Control', value: 'Loader options, backpressure, and cancellation'}
+  ]}
+/>
 
 The `parseInBatches` function can parse incrementally from a stream of data as it arrives and emit "batches" of parsed data.
 
-Batched parsing is only supported by a subset of loaders. Check documentation of each loader before using this function.
+Batched parsing is most useful with loaders that emit meaningful partial results. Check each
+loader's documentation for its batch shape and streaming behavior.
 
-From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io) `parseInBatches` can be used with all loaders. Non-supporting loaders will wait until all data has arrived, and emit a single batch containing the parsed data for the entire input (effectively behave as if `parse` had been called).
+When a loader does not implement a specialized batch parser, `parseInBatches()` can fall back to
+waiting for the complete input and emitting one batch. In that case it has the same memory profile
+as an atomic parse.
 
 :::caution
-When calling parse from a loader to invoke a sub-loader, do not use this function. Use the `parseInBatchesWithContext` counterparts in `@loaders.gl/loader-utils``
+When calling a sub-loader from inside a loader, do not use this public function. Use the
+`parseInBatchesWithContext` counterparts in `@loaders.gl/loader-utils`.
 :::
 
 ## Usage
+
+<ReferenceBoundary
+  title="Batch parsing details"
+  description="The reference below covers batch-compatible loaders, metadata batches, input types, loader selection, and options."
+  tone="violet"
+/>
 
 Parse CSV in batches (emitting a batch of rows every time data arrives from the network):
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {
-  console.log(batch.length);
+  console.log(batch.data);
 }
 ```
 
@@ -28,7 +72,7 @@ Parse CSV in batches, requesting an initial metadata batch:
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader, {metadata: true});
 for await (const batch of batchIterator) {
@@ -44,35 +88,36 @@ for await (const batch of batchIterator) {
 
 ## Functions
 
-### async parseInBatches(data: DataSource, loaders: object | object\[], options?: object): AsyncIterator
+### async parseInBatches(data: DataType, loaders: Loader | Loader[], options?: LoaderOptions): `Promise<AsyncIterable>`
 
-### async parseInBatches(data: DataSource, options?: object]]): AsyncIterator
+### async parseInBatches(data: DataType, options?: LoaderOptions): `Promise<AsyncIterable>`
 
 Parses data in batches from a stream, releasing each batch to the application while the stream is still being read.
 
-Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using the URL extension and header matching).
 
-- `data`: loaded data or an object that allows data to be loaded. Plese refer to the table below for valid types.
-- `loaders` can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `data`: loaded data or an object that allows data to be loaded. See the table below for valid types.
+- `loaders` can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
 - `options`: See [`LoaderOptions`](./loader-options) for documentation of options.
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
-Returns:
-
-- Returns an async iterator that yields batches of data. The exact format for the batches depends on the _loader object_ category.
+Returns an async iterator that yields loader-defined batches. The exact batch shape depends on the
+loader's category data and may include metadata before data batches.
 
 Notes:
 
-- The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+- The `loaders` parameter can also be omitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
 
 ## Input Types
 
-| Data Type                                          | Description                                                                                   | Comments                                                        |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `Response`                                         | `Response` object, e.g returned by `fetch` or `fetchFile`.                                    | Data will be streamed from the `response.body` stream.          |
-| `AsyncIterator`                                    | iterator that yields promises that resolve to binary (`ArrayBuffer`) chunks or string chunks. |
-| converted into async iterators behind the scenes.) |
-| `Iterator`                                         | Iterator that yields binary chunks (`ArrayBuffer`) or string chunks                           | string chunks only work for loaders that support textual input. |
-| `Promise`                                          | A promise that resolves to any of the other supported data types can also be supplied.        |
+| Input | Description |
+| --- | --- |
+| `Response` | A response returned by `fetch()` or `fetchFile()`; its body can be consumed incrementally. |
+| `ArrayBuffer`, `Uint8Array`, or `string` | Already loaded binary or textual data. |
+| `File` or `Blob` | Browser file data. |
+| `Iterator` or `AsyncIterator` | Binary or textual chunks for loaders that support streaming input. |
+| `ReadableStream` | A DOM or Node stream. |
+| `Promise` | A promise resolving to any supported input type. |
 
-Note that many other data sources can also be parsed by first converting them to `Response` objects, e.g. with `fetchResoure`: http urls, data urls, `ArrayBuffer`, `String`, `File`, `Blob`, `ReadableStream` etc.
+Many other data sources can also be wrapped in a `Response` before parsing, including data URLs,
+`ArrayBuffer`, `File`, `Blob`, and `ReadableStream` values.

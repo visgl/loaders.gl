@@ -14,6 +14,7 @@ type YAMLMapping = Record<string, unknown>;
 type YAMLLine = {
   indent: number;
   content: string;
+  blank?: boolean;
 };
 
 /** Small dependency-free YAML parser for common YAML 1.1 and 1.2 documents. */
@@ -30,10 +31,12 @@ class YAMLParser {
 
   /** Parses the document root. */
   parse(): unknown {
+    this.skipBlankLines();
     if (this.lines.length === 0) {
       return null;
     }
-    const value = this.parseBlock(this.lines[0].indent);
+    const value = this.parseBlock(this.lines[this.lineIndex].indent);
+    this.skipBlankLines();
     if (this.lineIndex < this.lines.length) {
       throw this.error('Unexpected content', this.lineIndex);
     }
@@ -47,7 +50,11 @@ class YAMLParser {
     for (const sourceLine of sourceLines) {
       const leadingWhitespace = sourceLine.match(/^ */)?.[0].length ?? 0;
       const content = this.stripComment(sourceLine.slice(leadingWhitespace)).trimEnd();
-      if (!content || content === '---' || content === '...') {
+      if (!content) {
+        lines.push({indent: leadingWhitespace, content: '', blank: true});
+        continue;
+      }
+      if (content === '---' || content === '...') {
         continue;
       }
       if (/\t/.test(sourceLine.slice(0, leadingWhitespace))) {
@@ -60,6 +67,7 @@ class YAMLParser {
 
   /** Parses a sequence or mapping at the requested indentation. */
   private parseBlock(indent: number): unknown {
+    this.skipBlankLines();
     const line = this.lines[this.lineIndex];
     if (!line || line.indent < indent) {
       return null;
@@ -81,6 +89,10 @@ class YAMLParser {
   private parseSequence(indent: number): unknown[] {
     const values: unknown[] = [];
     while (this.lineIndex < this.lines.length) {
+      this.skipBlankLines();
+      if (this.lineIndex >= this.lines.length) {
+        break;
+      }
       const line = this.lines[this.lineIndex];
       if (line.indent !== indent || !(line.content === '-' || line.content.startsWith('- '))) {
         break;
@@ -102,9 +114,13 @@ class YAMLParser {
   private parseSequenceMapping(indent: number, firstEntry: string): YAMLMapping {
     const result: YAMLMapping = {};
     this.parseMappingEntry(result, firstEntry, indent);
-    while (this.lineIndex < this.lines.length && this.lines[this.lineIndex].indent > indent) {
+    while (this.lineIndex < this.lines.length) {
+      this.skipBlankLines();
+      if (this.lineIndex >= this.lines.length || this.lines[this.lineIndex].indent <= indent) {
+        break;
+      }
       const line = this.lines[this.lineIndex];
-      if (line.indent <= indent || this.findMappingSeparator(line.content) < 0) {
+      if (this.findMappingSeparator(line.content) < 0) {
         break;
       }
       this.lineIndex++;
@@ -117,6 +133,10 @@ class YAMLParser {
   private parseMapping(indent: number): YAMLMapping {
     const result: YAMLMapping = {};
     while (this.lineIndex < this.lines.length) {
+      this.skipBlankLines();
+      if (this.lineIndex >= this.lines.length) {
+        break;
+      }
       const line = this.lines[this.lineIndex];
       if (line.indent !== indent || this.findMappingSeparator(line.content) < 0) {
         break;
@@ -134,7 +154,7 @@ class YAMLParser {
       throw this.error('Expected a mapping entry', this.lineIndex - 1);
     }
     const key = this.parseKey(entry.slice(0, separatorIndex).trim());
-    if (key === null && this.options.stringKeys) {
+    if (this.options.stringKeys && typeof key !== 'string') {
       throw this.error('Mapping keys must be strings', this.lineIndex - 1);
     }
     const keyString = key === null ? 'null' : String(key);
@@ -149,6 +169,7 @@ class YAMLParser {
 
   /** Parses a nested block following a mapping or empty sequence item. */
   private parseNestedValue(parentIndent: number): unknown {
+    this.skipBlankLines();
     if (this.lineIndex >= this.lines.length || this.lines[this.lineIndex].indent <= parentIndent) {
       return null;
     }
@@ -191,11 +212,24 @@ class YAMLParser {
   /** Parses a literal or folded block scalar. */
   private parseBlockScalar(parentIndent: number, indicator: string, folded: boolean): string {
     const blockLines: string[] = [];
-    const contentIndent =
-      this.lineIndex < this.lines.length ? this.lines[this.lineIndex].indent : 0;
-    while (this.lineIndex < this.lines.length && this.lines[this.lineIndex].indent > parentIndent) {
+    const contentIndent = this.lines
+      .slice(this.lineIndex)
+      .find(line => !line.blank && line.indent > parentIndent)?.indent;
+    while (
+      this.lineIndex < this.lines.length &&
+      (this.lines[this.lineIndex].blank || this.lines[this.lineIndex].indent > parentIndent)
+    ) {
       const line = this.lines[this.lineIndex++];
-      blockLines.push(' '.repeat(Math.max(0, line.indent - contentIndent)) + line.content);
+      blockLines.push(
+        line.blank || contentIndent === undefined
+          ? ''
+          : ' '.repeat(Math.max(0, line.indent - contentIndent)) + line.content
+      );
+    }
+    if (!indicator.includes('+')) {
+      while (blockLines.at(-1) === '') {
+        blockLines.pop();
+      }
     }
     const value = folded ? blockLines.join(' ').replace(/ +/g, ' ') : blockLines.join('\n');
     return indicator.includes('-') ? value : `${value}\n`;
@@ -246,11 +280,18 @@ class YAMLParser {
         }
       } else if (character === '"' || character === "'") {
         quote = character;
-      } else if (character === '#') {
+      } else if (character === '#' && (index === 0 || /\s/.test(value[index - 1]))) {
         return value.slice(0, index).trimEnd();
       }
     }
     return value;
+  }
+
+  /** Skips blank and comment-only lines outside block scalar values. */
+  private skipBlankLines(): void {
+    while (this.lineIndex < this.lines.length && this.lines[this.lineIndex].blank) {
+      this.lineIndex++;
+    }
   }
 
   /** Creates a source-oriented parser error. */
@@ -336,6 +377,9 @@ class YAMLFlowParser {
       }
       this.skipWhitespace();
       const value = this.parseValue();
+      if (this.options.stringKeys && typeof key !== 'string') {
+        throw this.errorFactory('Mapping keys must be strings');
+      }
       const keyString = key === null ? 'null' : String(key);
       if (this.options.uniqueKeys && Object.prototype.hasOwnProperty.call(result, keyString)) {
         throw this.errorFactory(`Duplicate mapping key: ${keyString}`);

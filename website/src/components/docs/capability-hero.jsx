@@ -48,7 +48,9 @@ export function CapabilityHero({capability}) {
           ))}
         </div>
       </div>
-      <RenderFeatureVisual type={feature.visual} wide />
+      <div className={styles.visual}>
+        <RenderFeatureVisual type={feature.visual} wide />
+      </div>
     </section>
   );
 }

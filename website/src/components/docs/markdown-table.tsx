@@ -88,8 +88,12 @@ function normalizeTableCellValue(node: ReactNode): ReactNode {
     return '✅'
   }
 
-  if (text === 'No') {
-    return '❌'
+  if (text === 'No' || text === '❌') {
+    return '✕'
+  }
+
+  if (text === 'Worker Thread Support') {
+    return 'Worker Thread'
   }
 
   return node

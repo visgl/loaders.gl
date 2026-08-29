@@ -43,7 +43,14 @@ jobs:
           LATEST_RELEASE_BRANCH: ${{ steps.get_version.outputs.latest }}
           RELEASE_WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          if [ "${EVENT_NAME}" = "workflow_run" ] && [ "${RELEASE_WORKFLOW_CONCLUSION}" = "success" ]; then
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            # A manual website run is the explicit preview deployment: always publish master at /next,
+            # even when the workflow UI was opened from another branch.
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=master" >> "$GITHUB_OUTPUT"
+            echo "target_folder=next" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/next/" >> "$GITHUB_OUTPUT"
+          elif [ "${EVENT_NAME}" = "workflow_run" ] && [ "${RELEASE_WORKFLOW_CONCLUSION}" = "success" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "checkout_ref=${LATEST_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
             echo "target_folder=" >> "$GITHUB_OUTPUT"

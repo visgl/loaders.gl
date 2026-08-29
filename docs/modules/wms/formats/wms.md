@@ -1,8 +1,43 @@
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+---
+title: WMS format
+description: Request georeferenced map images and service metadata through the OGC Web Map Service protocol.
+hide_title: true
+page_style: designed
+---
 
-# WMS - Web Map Service
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="OGC map-image service"
+  title="Ask a map service for the image the view needs."
+  description="WMS exposes georeferenced map images through capabilities, layer, style, dimension, and CRS parameters. loaders.gl keeps service discovery and image retrieval in a source API suitable for browser maps."
+  tone="mint"
+  meta={['WMS 1.3.0', 'GetCapabilities', 'GetMap and feature info']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WMTS format', to: '/docs/modules/wms/formats/wmts'}
+  ]}
+/>
 
 <WmsDocsTabs active="wms" />
+
+<ServiceSourceGraphic kind="ogc" />
+
+<DocOrientation
+  eyebrow="The service sequence"
+  title="Discover the layer. Request the image. Keep CRS explicit."
+  description="A WMS client first learns what the service advertises, then selects layers, styles, dimensions, and a coordinate reference for each map request."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Capabilities, layers, CRS, and dimensions'},
+    {label: 'Request', value: 'GetMap image with bounds and size'},
+    {label: 'Inspect', value: 'Feature info and legend operations'},
+    {label: 'Render', value: 'SourceLayer-compatible image tiles'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
@@ -11,6 +46,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 - _[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)_
 
 WMS (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
+
+<ReferenceBoundary
+  title="WMS operations and source behavior"
+  description="The sections below cover supported protocol operations, quick start usage, CRS handling, dimensions, authentication, and rendering integration."
+  tone="mint"
+/>
 
 ## Feature support
 

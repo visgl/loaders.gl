@@ -1,4 +1,44 @@
-# loadImage
+---
+title: loadImage
+description: Load one image or a mip chain through the standard image decoding path.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Images API · basic helper"
+  title="Load one image, or let the mip chain follow it."
+  description="loadImage is the small helper for a single image resource. With mipLevels enabled, the same callback can describe the lower-resolution images needed by a texture upload."
+  tone="blue"
+  meta={['Single image', 'Optional mip chain', 'ImageBitmapLoader options']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'loadImageArray', to: '/docs/modules/textures/api-reference/load-image-array'},
+    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The image helper path"
+  title="Use one loading contract for pixels and mip levels."
+  description="The helper hides the repeated request and decode loop while leaving URL generation in your hands. That makes it useful for texture manifests, generated asset names, and level-of-detail resources."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'A URL or callback receiving the mip level'},
+    {label: 'Output', value: 'One decoded image or an array of mip images'},
+    {label: 'Mip policy', value: '0 for one image, a count, or auto inference'},
+    {label: 'Runtime', value: 'ImageBitmap in browsers; polyfill when needed in Node.js'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="loadImage reference"
+  description="The reference below covers callback signatures, mip-level discovery, image options, and the returned image contract."
+  tone="blue"
+/>
 
 ## Usage
 

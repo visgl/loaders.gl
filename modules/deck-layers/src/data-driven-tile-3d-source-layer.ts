@@ -35,7 +35,7 @@ export class SourceDataDrivenTile3DLayer<
 
     // TODO: deprecate `loader` in v9.0
     // @ts-ignore
-    const loaders = this.props.loader || this.props.loaders;
+    const loaders = this.props.loaders || this.props.loader;
     const loader = (Array.isArray(loaders) ? loaders[0] : loaders) as LoaderWithParser;
 
     const options: {loadOptions: LoaderOptions} & Partial<Tileset3DProps> = {

@@ -1,3 +1,7 @@
+@import '@fontsource-variable/source-sans-3';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource/ibm-plex-mono';
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -6,6 +10,13 @@
 
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: 'Source Sans 3 Variable', 'Avenir Next', system-ui, sans-serif;
+  --ifm-heading-font-family: 'Space Grotesk Variable', 'Avenir Next', system-ui, sans-serif;
+  --ifm-font-family-monospace: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  --ifm-font-size-base: 100%;
+  --ifm-line-height-base: 1.68;
+  --ifm-heading-font-weight: 680;
+  --ifm-navbar-height: 4.25rem;
   --ifm-color-primary: #00ade6;
   --ifm-color-primary-dark: #009ccf;
   --ifm-color-primary-darker: #0093c4;
@@ -24,11 +35,18 @@
   --ifm-color-gray-900: #2B3848;
   --ifm-color-black: #19202C;
   --code-font-size: 95%;
+  --docs-surface: rgba(255, 255, 255, 0.94);
+  --docs-surface-raised: #FFFFFF;
+  --docs-surface-muted: #F7FAFC;
+  --docs-border-subtle: rgba(72, 86, 104, 0.18);
+  --docs-accent-text: var(--ifm-color-primary-darkest);
+  --docs-text-strong: #19202C;
+  --docs-text-muted: #5B6B7D;
   --docs-table-background: rgba(255, 255, 255, 0.92);
   --docs-table-shell-background: rgba(247, 250, 252, 0.92);
   --docs-table-header-background: var(--ifm-color-gray-200);
-  --docs-table-border: var(--ifm-color-gray-400);
-  --docs-table-divider: rgba(43, 56, 72, 0.1);
+  --docs-table-border: rgba(118, 131, 150, 0.32);
+  --docs-table-divider: rgba(92, 101, 122, 0.14);
   --docs-table-shadow:
     0 20px 44px rgba(43, 56, 72, 0.12),
     0 6px 18px rgba(43, 56, 72, 0.08);
@@ -38,17 +56,160 @@
 }
 
 html[data-theme='dark'] {
-  --docs-table-background: rgba(36, 46, 58, 0.92);
-  --docs-table-shell-background: rgba(29, 38, 49, 0.94);
-  --docs-table-header-background: rgba(72, 86, 104, 0.72);
-  --docs-table-border: rgba(158, 174, 192, 0.26);
-  --docs-table-divider: rgba(225, 232, 240, 0.12);
+  --ifm-background-color: #08111F;
+  --ifm-background-surface-color: #0C1728;
+  --ifm-navbar-background-color: rgba(8, 17, 31, 0.9);
+  --ifm-footer-background-color: #070E19;
+  --ifm-font-color-base: #CFDAE8;
+  --ifm-font-color-secondary: #9FB0C4;
+  --ifm-heading-color: #F5F8FC;
+  --ifm-link-color: #5FD5FF;
+  --ifm-menu-color: #B7C5D5;
+  --ifm-menu-color-active: #62D5FF;
+  --ifm-color-emphasis-100: #101C2E;
+  --ifm-color-emphasis-200: #17263A;
+  --ifm-color-emphasis-300: #22344A;
+  --ifm-code-background: rgba(112, 199, 255, 0.1);
+  --ifm-toc-border-color: rgba(159, 176, 196, 0.16);
+  --docs-surface: rgba(16, 28, 46, 0.94);
+  --docs-surface-raised: #111F33;
+  --docs-surface-muted: #0D192A;
+  --docs-border-subtle: rgba(159, 176, 196, 0.18);
+  --docs-accent-text: #62D5FF;
+  --docs-text-strong: #F5F8FC;
+  --docs-text-muted: #9FB0C4;
+  --docs-table-background: rgba(11, 24, 43, 0.72);
+  --docs-table-shell-background: rgba(13, 21, 33, 0.96);
+  --docs-table-header-background: rgba(19, 39, 65, 0.94);
+  --docs-table-border: rgba(111, 120, 145, 0.34);
+  --docs-table-divider: rgba(165, 151, 184, 0.12);
   --docs-table-shadow:
     0 18px 42px rgba(0, 0, 0, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.24);
-  --docs-table-text: rgba(255, 255, 255, 0.92);
-  --docs-table-link: #66d6ff;
-  --docs-table-link-hover: #8ae0ff;
+  --docs-table-text: rgba(244, 248, 251, 0.9);
+  --docs-table-link: #70c7ff;
+  --docs-table-link-hover: #9bdcff;
+}
+
+/* Designed documentation keeps reference tables on the same dark surface as its cards in either theme. */
+html.docs-designed-page {
+  --docs-table-background: rgba(17, 31, 51, 0.96);
+  --docs-table-shell-background: rgba(13, 21, 33, 0.96);
+  --docs-table-header-background: rgba(26, 45, 70, 0.94);
+  --docs-table-border: rgba(111, 120, 145, 0.34);
+  --docs-table-divider: rgba(165, 151, 184, 0.12);
+  --docs-table-shadow:
+    0 20px 44px rgba(13, 21, 33, 0.22),
+    0 6px 18px rgba(13, 21, 33, 0.14);
+  --docs-table-text: rgba(244, 248, 251, 0.9);
+  --docs-table-link: #70c7ff;
+  --docs-table-link-hover: #9bdcff;
+}
+
+html[data-theme='dark'] .navbar {
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(159, 176, 196, 0.12);
+}
+
+html[data-theme='dark'] .theme-doc-sidebar-container {
+  background: rgba(7, 15, 27, 0.64);
+  border-right-color: rgba(159, 176, 196, 0.12);
+}
+
+html.docs-designed-page main {
+  background:
+    radial-gradient(circle at 52% -8rem, rgba(0, 173, 230, 0.1), transparent 34rem),
+    var(--ifm-background-color);
+}
+
+.docs-designed-page .theme-doc-markdown {
+  font-size: 1.075rem;
+  line-height: 1.72;
+}
+
+.docs-designed-page .theme-doc-markdown > h1,
+.docs-designed-page .theme-doc-markdown > h2,
+.docs-designed-page .theme-doc-markdown > h3,
+.docs-designed-page .theme-doc-markdown > p,
+.docs-designed-page .theme-doc-markdown > ul,
+.docs-designed-page .theme-doc-markdown > ol,
+.docs-designed-page .theme-doc-markdown > blockquote,
+.docs-designed-page .theme-doc-markdown > details,
+.docs-designed-page .theme-doc-markdown > .theme-code-block {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 72ch;
+}
+
+.docs-designed-page .theme-doc-markdown > h2 {
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  letter-spacing: -0.045em;
+  line-height: 1.06;
+  margin-top: 4.5rem;
+}
+
+.docs-designed-page .theme-doc-markdown > h3 {
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+  margin-top: 3rem;
+}
+
+.docs-designed-page .theme-doc-markdown > h2 + p,
+.docs-designed-page .theme-doc-markdown > h3 + p {
+  color: var(--ifm-font-color-secondary);
+  font-size: 1.08em;
+}
+
+.docs-designed-page .theme-doc-markdown:has(> [data-doc-page-header]) > .badges {
+  display: none;
+}
+
+.docs-designed-page .theme-doc-markdown strong {
+  color: var(--ifm-heading-color);
+}
+
+.docs-designed-page .theme-doc-markdown code {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.docs-designed-page .theme-code-block {
+  border: 1px solid var(--docs-border-subtle);
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.docs-designed-page .table-of-contents__link {
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.docs-designed-page .table-of-contents__link--active {
+  color: #75E0BA;
+}
+
+@media (min-width: 997px) and (max-width: 1440px) {
+  .docs-designed-page .col:has(> .theme-doc-toc-desktop) {
+    display: none;
+  }
+
+  /* Docusaurus protects this width with ID-level specificity, so the opt-in needs to exceed it. */
+  .docs-designed-page
+    [class*='docItemCol_']:not(#designed-doc-width):not(#designed-doc-width):not(#designed-doc-width) {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .docs-designed-page .theme-doc-markdown {
+    font-size: 1rem;
+  }
+
+  .docs-designed-page .theme-doc-markdown > h2 {
+    margin-top: 3.5rem;
+  }
 }
 main .container {
   position: relative;
@@ -58,33 +219,54 @@ main .container {
   position: relative;
 }
 .markdown .docs-markdown-table {
-  margin: 1.75rem 0;
-  width: fit-content;
-  max-width: 100%;
-  overflow-x: auto;
+  background:
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--ifm-color-primary) 10%, transparent), transparent 34%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ifm-color-primary) 7%, var(--docs-table-shell-background)), var(--docs-table-shell-background));
   border: 1px solid var(--docs-table-border);
-  border-radius: 12px;
-  padding: 0.75rem;
-  background: var(--docs-table-shell-background);
+  border-radius: 22px;
   box-shadow: var(--docs-table-shadow);
-  margin-left: auto;
-  margin-right: auto;
+  margin: 2rem auto;
+  max-width: min(100%, 82rem);
+  overflow: auto;
+  padding: 0;
+  position: relative;
+  scrollbar-color: var(--ifm-color-primary) transparent;
+}
+
+.markdown .docs-markdown-table::before {
+  background: linear-gradient(90deg, var(--ifm-color-primary), color-mix(in srgb, var(--ifm-color-primary) 10%, transparent));
+  border-radius: 1rem 1rem 0 0;
+  content: '';
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .markdown .docs-markdown-table__table {
-  width: max-content;
-  min-width: min(100%, 40rem);
-  margin: 0;
+  border: 0 !important;
   border-collapse: separate;
   border-spacing: 0;
+  background: transparent;
+  border-radius: 0;
   color: var(--docs-table-text);
-  border-radius: 8px;
-  background: var(--docs-table-background);
+  margin: 0;
+  min-width: 100%;
   overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.docs-designed-page .markdown .docs-markdown-table__table {
+  font-size: 0.92rem;
+  line-height: 1.42;
 }
 
 .markdown .docs-markdown-table__table thead {
-  background: var(--docs-table-header-background);
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--ifm-color-primary) 16%, transparent), transparent 68%),
+    var(--docs-table-header-background);
 }
 
 .markdown .docs-markdown-table__table thead tr {
@@ -95,14 +277,29 @@ main .container {
 .markdown .docs-markdown-table__table tbody tr:nth-child(2n),
 .markdown .docs-markdown-table__table tbody tr:nth-child(2n + 1) {
   background: transparent;
+  transition: background-color 160ms ease;
+}
+
+.markdown .docs-markdown-table__table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ifm-color-primary) 4%, transparent);
+}
+
+.markdown .docs-markdown-table__table tbody tr:hover {
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
 }
 
 .markdown .docs-markdown-table__table th,
 .markdown .docs-markdown-table__table td {
-  padding: 0.8rem 0.95rem;
-  border: 0;
-  border-bottom: 1px solid var(--docs-table-divider);
+  border-color: transparent !important;
+  border-style: none !important;
+  border-width: 0 !important;
+  padding: 0.34rem 0.6rem !important;
   vertical-align: top;
+}
+
+.markdown .docs-markdown-table__table tbody tr + tr td {
+  border-top: 1px solid var(--docs-table-divider) !important;
+  border-bottom: 0 !important;
 }
 
 .markdown .docs-markdown-table__table tbody td,
@@ -112,43 +309,90 @@ main .container {
 }
 
 .markdown .docs-markdown-table__table th {
-  font-size: 0.83rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  color: var(--docs-accent-text);
+  font-size: 0.76rem;
+  font-weight: 780;
+  letter-spacing: 0.075em;
   text-transform: none;
 }
 
 .markdown .docs-markdown-table__table thead th[colspan] {
-  font-size: 1.66rem;
-  font-weight: 800;
-  line-height: 1.2;
-  text-align: center;
+  border-bottom: 1px solid var(--docs-table-divider) !important;
+  color: var(--ifm-color-primary-light) !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  line-height: 1.2 !important;
+  padding: 0.78rem 0.9rem !important;
+  text-align: left;
+  text-transform: uppercase !important;
 }
 
 .markdown .docs-markdown-table__table tbody tr:last-child td {
-  border-bottom: 0;
+  border-bottom: 0 !important;
 }
 
-.markdown .docs-markdown-table__table th + th,
-.markdown .docs-markdown-table__table td + td {
-  border-left: 1px solid var(--docs-table-divider);
+.markdown .docs-markdown-table__table tbody td:first-child {
+  background: color-mix(in srgb, var(--ifm-color-primary) 4.5%, transparent) !important;
+  border-right: 0 !important;
+  color: color-mix(in srgb, var(--docs-table-text) 90%, var(--ifm-color-primary-light)) !important;
+  font-weight: 700 !important;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+  width: 27% !important;
+}
+
+.markdown .docs-markdown-table__table:has(tbody td:nth-child(3)) tbody td:first-child {
+  width: 24% !important;
+}
+
+.markdown .docs-markdown-table__table:has(tbody td:nth-child(3)) tbody td:nth-child(2) {
+  width: 18% !important;
+}
+
+.markdown .docs-markdown-table__table:has(thead th [data-docs-table-status]) thead th:nth-child(2),
+.markdown .docs-markdown-table__table:has(thead th [data-docs-table-status]) tbody td:nth-child(2) {
+  min-width: 7.5rem;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap !important;
+  width: 7.5rem !important;
+}
+
+.markdown .docs-markdown-table__table:not(:has(tbody td:nth-child(3))) tbody td:nth-child(2) {
+  width: 73% !important;
+}
+
+.markdown .docs-markdown-table__table tbody td + td {
+  border-left: 0 !important;
 }
 
 .markdown .docs-markdown-table__table td code,
 .markdown .docs-markdown-table__table th code {
-  white-space: nowrap;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ifm-color-gray-800);
-  font-size: 1.02em;
+  background: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
+  background-color: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
+  border: 0 !important;
+  border-radius: 0.4rem;
+  box-shadow: none !important;
+  color: var(--docs-table-link) !important;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9em !important;
   font-weight: 700;
+  overflow-wrap: anywhere;
+  padding: 0.06em 0.25em !important;
+  white-space: normal !important;
+}
+
+.docs-designed-page .markdown .docs-markdown-table__table td code,
+.docs-designed-page .markdown .docs-markdown-table__table th code {
+  background: rgba(112, 199, 255, 0.1);
+  border-color: rgba(112, 199, 255, 0.24);
+  color: #9bdcff;
 }
 
 html[data-theme='dark'] .markdown .docs-markdown-table__table td code,
 html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
-  color: rgba(226, 232, 240, 0.92);
+  color: var(--docs-table-link);
 }
 
 .markdown .docs-markdown-table__table a {
@@ -165,19 +409,28 @@ html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
 
 .markdown .docs-page-tabs,
 html.examples-demo-page .docs-page-tabs {
-  border-bottom: 1px solid var(--docs-table-border);
+  align-items: center;
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--ifm-color-primary) 7%, transparent), transparent 66%),
+    var(--docs-table-shell-background);
+  border: 1px solid var(--docs-table-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(13, 21, 33, 0.12);
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  margin: 0.5rem 0 1.5rem;
+  gap: 0.2rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0.25rem;
 }
 
 .markdown .docs-page-tabs__tab,
 html.examples-demo-page .docs-page-tabs__tab {
-  border-bottom: 3px solid transparent;
+  border: 0;
+  border-radius: 11px;
   color: var(--ifm-font-color-base);
   font-weight: 600;
-  padding: 0.75rem 1rem;
+  line-height: 1.25;
+  padding: 0.55rem 0.78rem;
   text-decoration: none;
 }
 
@@ -191,8 +444,9 @@ html.examples-demo-page .docs-page-tabs__tab:focus {
 
 .markdown .docs-page-tabs__tab--active,
 html.examples-demo-page .docs-page-tabs__tab--active {
-  border-bottom-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 20%, transparent), color-mix(in srgb, var(--ifm-color-primary) 7%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ifm-color-primary) 28%, transparent);
+  color: var(--ifm-color-primary-light);
 }
 
 .markdown .docs-api-card-grid {
@@ -246,8 +500,8 @@ html[data-theme='dark'] .markdown .docs-api-card__meta {
 
 @media (max-width: 996px) {
   .markdown .docs-markdown-table {
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .markdown .docs-markdown-table__table {

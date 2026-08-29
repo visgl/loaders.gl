@@ -1,0 +1,157 @@
+.panel {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid #d8dee9;
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.panelHint,
+.fieldHint,
+.emptyState {
+  color: #667085;
+}
+
+.panelHint {
+  font-size: 0.82rem;
+}
+
+.metadataSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #475467;
+  font-size: 0.82rem;
+}
+
+.supportBadge {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.supported {
+  color: #067647;
+  background: #ecfdf3;
+}
+
+.unsupported {
+  color: #7a2e0e;
+  background: #fff4ed;
+}
+
+.supportMessage {
+  margin: -4px 0 12px;
+  color: #7a2e0e;
+  font-size: 0.82rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fieldLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.fieldHint {
+  font-size: 0.76rem;
+}
+
+.columnGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.columnOption {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px 7px;
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+  background: #ffffff;
+  font-size: 0.82rem;
+}
+
+.columnType {
+  color: #667085;
+  font-size: 0.7rem;
+}
+
+.inlineFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.textInput,
+.select {
+  min-width: 180px;
+  padding: 7px;
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+}
+
+.select {
+  background: #ffffff;
+}
+
+.applyButton {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 5px;
+  color: #ffffff;
+  background: #475467;
+  cursor: pointer;
+}
+
+.applyButton:hover:not(:disabled),
+.applyButton:focus-visible {
+  background: #344054;
+}
+
+.applyButton:focus-visible,
+.textInput:focus-visible,
+.select:focus-visible,
+.columnOption:has(input:focus-visible) {
+  outline: 3px solid rgba(50, 120, 216, 0.25);
+  outline-offset: 2px;
+}
+
+.applyButton:disabled {
+  background: #98a2b3;
+  cursor: not-allowed;
+}
+
+.emptyState {
+  font-size: 0.84rem;
+}
+
+@media (max-width: 640px) {
+  .panelHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .textInput,
+  .select {
+    width: 100%;
+  }
+}

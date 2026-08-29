@@ -1,4 +1,39 @@
-# Composite Loaders
+---
+title: Composite loaders
+description: Let complex formats delegate embedded files and payloads through one loader context.
+hide_title: true
+page_style: designed
+---
+
+import {CompositeConcept} from '@site/src/components/home/concepts';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Composite loaders"
+  title="One load can coordinate a whole format."
+  description="Complex formats often contain other files, buffers, images, or tile payloads. Composite loaders keep that delegation inside the loader graph, so applications receive a useful result without wiring every nested request themselves."
+  links={[
+    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+  tone="orange"
+/>
+
+<CompositeConcept />
+
+<DocOrientation
+  eyebrow="A small contract with a large payoff"
+  title="Nested resources stay inside the same loading context."
+  description="A composite loader can choose the right member loader, preserve caller options, and resolve relative resources from the original URL. The application still starts with one load call."
+  items={[
+    {label: 'Delegates', value: 'Embedded buffers, images, meshes, and tile content'},
+    {label: 'Preserves', value: 'Loader lists, MIME hints, URLs, and base paths'},
+    {label: 'Returns', value: 'The category data expected by the top-level format'}
+  ]}
+  tone="orange"
+  compact
+/>
 
 loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section).
 This enables loaders for "composite formats" to be "composed" out of loaders for the primitive parts.
@@ -10,6 +45,11 @@ An example of sub-loaders can be seen in the `GLTFLoader`, which delegates:
 
 Naturally, composite loaders can call other composite loaders, which is for instance used by
 the `Tiles3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in certain tiles.
+
+<ReferenceBoundary
+  title="The friendly model, then the implementation details"
+  description="The graphic above shows the application-level idea. The sections below document the loader context and the rules that make nested loading reliable across workers, URLs, and caller-supplied loaders."
+/>
 
 ## Calling loaders inside loaders
 

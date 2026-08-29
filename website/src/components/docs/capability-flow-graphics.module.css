@@ -1,0 +1,208 @@
+.frame {
+  --flow-accent: #70c7ff;
+  --flow-glow: rgba(37, 137, 255, 0.16);
+  background:
+    radial-gradient(circle at 82% 0%, var(--flow-glow), transparent 25rem),
+    linear-gradient(155deg, #111f33, #0b1728);
+  border: 1px solid color-mix(in srgb, var(--flow-accent) 30%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.2);
+  color: #e8f0f8;
+  margin: 2rem 0;
+  overflow: hidden;
+  padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.frame[data-tone='orange'] {
+  --flow-accent: #ffb36b;
+  --flow-glow: rgba(255, 133, 74, 0.17);
+}
+
+.header {
+  max-width: 46rem;
+}
+
+.eyebrow,
+.stageLabel {
+  color: var(--flow-accent);
+  font-family: var(--ifm-heading-font-family);
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+}
+
+.title {
+  color: #f6f9fc;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  margin: 0;
+}
+
+.lead {
+  color: rgba(219, 231, 244, 0.7);
+  line-height: 1.62;
+  margin: 1rem 0 0;
+  max-width: 43rem;
+}
+
+.flow,
+.crsFlow {
+  align-items: stretch;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.flow {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.1fr) auto minmax(0, 1fr);
+}
+
+.crsFlow {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.stage,
+.outcome {
+  background: rgba(5, 14, 26, 0.54);
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 13px;
+  padding: 1rem;
+}
+
+.activeStage {
+  background: color-mix(in srgb, var(--flow-accent) 9%, rgba(5, 14, 26, 0.7));
+  border-color: color-mix(in srgb, var(--flow-accent) 44%, transparent);
+}
+
+.stageLabel {
+  margin: 0 0 0.9rem;
+}
+
+.nodeGrid,
+.workerGrid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.node,
+.worker {
+  background: rgba(17, 31, 51, 0.92);
+  border: 1px solid rgba(173, 200, 219, 0.15);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 630;
+  padding: 0.62rem 0.7rem;
+}
+
+.workerGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.worker {
+  border-color: color-mix(in srgb, var(--flow-accent) 48%, transparent);
+  color: var(--flow-accent);
+  font-family: var(--ifm-font-family-monospace);
+  text-align: center;
+}
+
+.stageNote {
+  color: rgba(219, 231, 244, 0.56);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  margin: 0.75rem 0 0;
+}
+
+.connector {
+  align-items: center;
+  color: color-mix(in srgb, var(--flow-accent) 78%, white);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.58rem;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.connector b {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.coordinate,
+.definition {
+  color: #f6f9fc;
+  display: block;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+}
+
+.coordinate {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.tag {
+  border: 1px solid rgba(173, 200, 219, 0.17);
+  border-radius: 999px;
+  color: rgba(219, 231, 244, 0.66);
+  font-size: 0.62rem;
+  padding: 0.35rem 0.45rem;
+}
+
+.outcomeGrid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.outcome {
+  padding: 0.75rem;
+}
+
+.outcome span {
+  color: var(--flow-accent);
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.outcome strong {
+  color: #e8f0f8;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px) {
+  .frame {
+    border-radius: 16px;
+  }
+
+  .flow,
+  .crsFlow {
+    grid-template-columns: 1fr;
+  }
+
+  .connector {
+    min-height: 2.2rem;
+  }
+
+  .connector b {
+    transform: rotate(90deg);
+  }
+}

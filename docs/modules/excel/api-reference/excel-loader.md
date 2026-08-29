@@ -1,4 +1,47 @@
-# Excel Loaders
+---
+title: ExcelLoader
+description: Load worksheets into row tables or Apache Arrow tables from XLS, XLSB, and XLSX files.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+
+<DocPageHeader
+  eyebrow="Excel API · table loader"
+  title="Bring worksheets into the same table path."
+  description="ExcelLoader reads XLS, XLSB, and XLSX worksheets and returns either row-oriented data or an Arrow-backed table. Choose the shape that matches the next processing or rendering step."
+  tone="cyan"
+  meta={['XLS / XLSB / XLSX', 'Object rows or Arrow', 'Non-streaming']}
+  links={[
+    {label: 'Excel module', to: '/docs/modules/excel'},
+    {label: 'Table category', to: '/docs/specifications/category-table'},
+    {label: 'Apache Arrow guide', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<LoaderLiveExample />
+
+<DocOrientation
+  eyebrow="The worksheet path"
+  title="Choose rows for convenience or columns for processing."
+  description="ExcelLoader keeps worksheet selection and output representation explicit. Object rows are convenient for application code; Arrow output is a better boundary when typed columns will feed scans, transforms, or writers."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Excel workbook with one or more worksheets'},
+    {label: 'Worksheet', value: 'Select a sheet or use the first sheet by default'},
+    {label: 'Output', value: 'ObjectRowTable or ArrowTable'},
+    {label: 'Boundary', value: 'Non-streaming loader backed by SheetJS'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ExcelLoader reference"
+  description="The sections below document supported file types, output shapes, worksheet selection, options, and the SheetJS implementation boundary."
+  tone="cyan"
+/>
 
 Non-streaming table loaders for Excel files.
 

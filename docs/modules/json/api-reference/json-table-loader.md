@@ -1,8 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: JSONTableLoader
+description: Load JSON row arrays into loaders.gl row or Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-# JSONTableLoader
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="JSON module · table loader"
+  title="JSONTableLoader"
+  description="Load JSON row arrays into a table-shaped result every time, with optional Apache Arrow output and controlled conversion of nested values and types."
+  tone="yellow"
+  meta={['JSON rows', 'Arrow output', 'Streaming batches']}
+  links={[
+    {label: 'JSON format', to: '/docs/modules/json/formats/json'},
+    {label: 'JSONLoader', to: '/docs/modules/json/api-reference/json-loader'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
 
 <JsonDocsTabs active="jsontableloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Make the table contract explicit at the JSON boundary."
+  description="JSONTableLoader is for JSON that represents records. It keeps the familiar row path while allowing applications to request Arrow columns and define how conversion mismatches are handled."
+  tone="yellow"
+  items={[
+    {label: 'Rows', value: 'Object or array row tables'},
+    {label: 'Arrow', value: 'Typed columns and record batches'},
+    {label: 'Schema', value: 'Optional supplied loaders.gl or Arrow schema'},
+    {label: 'Streaming', value: 'Incremental batches from row arrays'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="JSONTableLoader reference"
+  description="The sections below cover usage, output shapes, Arrow conversion, streaming, and mismatch policies."
+  tone="yellow"
+/>
 
 Streaming loader for JSON files that must resolve to loaders.gl table output.
 

@@ -1,6 +1,22 @@
-import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+---
+title: '@loaders.gl/3d-tiles'
+description: Load and traverse large 3D Tiles datasets with standards-aware tile and content handling.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiled scene module"
+  title="@loaders.gl/3d-tiles"
+  description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
+  tone="violet"
+  meta={['3D Tiles', 'Tileset traversal', 'glTF and point clouds']}
+/>
 
 <Tiles3DDocsTabs active="module" />
 
@@ -8,12 +24,27 @@ import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 &nbsp;
 ![3dtiles-logo](./images/3d-tiles-logo-60.png)
 
+<TiledSceneGraphic />
+
 The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 
 See the [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles) for a capability-by-capability
 summary of parser, traversal, extension, and renderer-facing support.
 
-References
+<DocOrientation
+  eyebrow="The 3D Tiles module"
+  title="Keep the hierarchy. Request the visible pieces."
+  description="The module separates tileset parsing from view-dependent traversal, so applications can work with large worlds while retaining bounds, refinement, content references, and source metadata."
+  tone="violet"
+  items={[
+    {label: 'Parse', value: 'Tileset JSON, archives, payloads, and extensions'},
+    {label: 'Traverse', value: 'Bounds, screen-space error, refinement, and visibility'},
+    {label: 'Resolve', value: 'glTF, points, composites, nested tilesets, and subtrees'},
+    {label: 'Integrate', value: 'Tileset3D and Tile3D for application-owned rendering'}
+  ]}
+/>
+
+## Standards
 
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.
 - [3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
@@ -21,18 +52,18 @@ References
 ## Installation
 
 ```bash
-npm install @loaders.gl/3d-tiles
-npm install @loaders.gl/core
+npm install @loaders.gl/core @loaders.gl/3d-tiles @loaders.gl/tiles
 ```
 
 ## API
 
-A standard complement of loaders and writers are provided to load the individual 3d Tile file formats:
+The module provides loaders for the individual 3D Tiles payload forms:
 
 - [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), a loader for loading a top-down or nested tileset and its tiles.
-- [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader), a loader extends from `Tiles3DLoader` with resolving credentials from Cesium ion.
+- [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader), a `Tiles3DLoader` variant that resolves credentials and tileset URLs from Cesium ion.
 
-To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
+For dynamic selection and loading of tilesets larger than browser memory, use the helper classes in
+the `@loaders.gl/tiles` module:
 
 - [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
 - [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
@@ -47,34 +78,36 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 - [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory)
 - [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics)
 
+<ReferenceBoundary
+  title="Module APIs and runtime concepts"
+  description="The reference below covers installation, loaders, traversal helpers, usage, runtime concepts, and the current compatibility boundaries."
+  tone="violet"
+/>
+
 ## Usage
 
-Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
+Basic API usage is illustrated in the following snippet. Load the tileset header, create a `Tileset3D` instance, and keep selecting tiles as the camera moves:
 
 ```typescript
-import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
-const tilesetUrl = ''; // add the url to your tileset.json file here
+const tilesetUrl = 'https://example.com/tileset.json';
+const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
 
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
-
-const tileset3d = new Tileset3D(tilesetJson, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 
-// initial viewport
-tileset3d.update(viewport);
+await tileset.selectTiles(viewport);
 
-// Viewport changes (pan zoom etc)
-tileset3d.selectTiles(viewport);
+// Call again whenever the viewport changes.
+await tileset.selectTiles(viewport);
 
 // Visible tiles
-const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
+const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
 
-// Note that visibleTiles will likely not immediately include all tiles
-// tiles will keep loading and file `onTileLoad` callbacks
+// Visible tiles may change while content continues loading.
 ```
 
 ## Remarks
@@ -87,4 +120,5 @@ const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 
 ## Attribution
 
-`@loaders.gl/3d-tiles` is a fork of 3D tile related code in the [Cesium github repository](https://github.com/AnalyticalGraphicsInc/cesium) under Apache 2 License, and is developed in collabration with the Cesium engineering team.
+`@loaders.gl/3d-tiles` includes code derived from the [Cesium repository](https://github.com/AnalyticalGraphicsInc/cesium)
+under the Apache 2.0 license and is maintained in collaboration with the Cesium engineering team.

@@ -1,6 +1,54 @@
-# Table Loaders
+---
+title: Table Loaders
+description: Load row-based and columnar data through a shared table-oriented API.
+hide_title: true
+page_style: designed
+---
 
-The _table_ category loaders supports loading tables in _row-based_, _columnar_ or _batched columnar_ formats.
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
+<CapabilityHero capability="columnar" />
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Table loaders"
+  description="Choose a table shape for your application, then let the input format vary behind the same processing path."
+  tone="cyan"
+  meta={['Rows and columns', 'Arrow-compatible', 'Streaming batches']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+<DocOrientation
+  eyebrow="The table path"
+  title="Choose the shape that fits the next step."
+  description="A table loader can return familiar rows, contiguous columns, or Arrow batches. The file format may change, but application code can keep the same basic handoff between loading, processing, and writing."
+  tone="cyan"
+  items={[
+    {label: 'Rows', value: 'Convenient objects or arrays for application logic'},
+    {label: 'Columns', value: 'Typed arrays for compact access and transfer'},
+    {label: 'Arrow', value: 'A shared binary table shape for larger pipelines'},
+    {label: 'Batches', value: 'Incremental results for streams and large files'}
+  ]}
+/>
+
+Table loaders accept row-oriented text, binary columnar files, and Arrow interchange data. Choose
+the returned shape based on what the next stage needs: rows are convenient for application logic,
+columns are efficient for typed processing, and Arrow batches are useful when data must cross a
+worker, scan, renderer, or writer boundary.
+
+<ReferenceBoundary
+  title="Table shapes and contracts"
+  description="The reference below defines supported loaders, row and column representations, Arrow integration, accessors, and serialization details."
+  tone="cyan"
+/>
 
 ## Table Category Loaders
 
@@ -53,19 +101,24 @@ This is the classic JavaScript table. `data` consists of an `Array` of `Object` 
 
 ### Columnar Tables (Column-Major)
 
-Columnar tables are stored as one array per column. Columns that are numeric can be loaded as typed arrays which are stored in contigous memory. `data` is an `Object` that maps column names to an array or typed array.
+Columnar tables are stored as one array per column. Numeric columns can use typed arrays stored in
+contiguous memory. `data` is an `Object` that maps column names to an array or typed array.
 
 Contiguous memory has tremendous benefits:
 
-- Values are adjacent in memory, the resulting cache locality can result in big performance gains
+- Values are adjacent in memory, so cache locality can improve processing performance
 - Typed arrays can of course be efficiently transferred from worker threads to main thread
-- Can be directly uploaded to the GPU for further processing.
+- They can be uploaded directly to a GPU for further processing.
 
 ### Chunked Columnar Tables (DataFrames)
 
-A problem with columnar tables is that column arrays they can get very long, causing issues with streaming, memory allication etc. A powerful solution is to worked with chunked columnar tables, where columns is are broken into matching sequences of typed arrays.
+A problem with columnar tables is that arrays can become very long, which complicates streaming and
+memory allocation. Chunked columnar tables solve this by splitting each column into matching
+sequences of typed arrays.
 
-The down-side is that complexity can increase quickly. Data Frames are optimized to minimize the amount of copying/moving/reallocation of data during common operations such e.g. loading and transformations, and support zero-cost filtering through smart iterators etc.
+The tradeoff is additional coordination between batches. Data frames are useful when loading and
+transforming large inputs because they can limit copying, reallocation, and movement while keeping
+batch boundaries explicit.
 
 Using the Arrow API it is possible to work extremely efficiently with very large (multi-gigabyte) datasets.
 
@@ -82,8 +135,8 @@ loaders.gl provides a range of table accessors.
 | `getTableRowShape(table: Table): 'array-row-table' \| 'object-row-table'`                          | Gets the shape of each table row                                                       |
 | `getTableColumnIndex(table: Table, columnName: string): number`                                    | Gets the index of a named column                                                       |
 | `getTableColumnName(table: Table, columnIndex: number): string`                                    | Gets the name of a column by index                                                     |
-| `getTableRowAsObject(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy')`           | Gets a row from the table. Parameters contol whether a new object is minted or reused. |
-| `getTableRowAsArray(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy'): unknown[]` | Gets a row from the table. Parameters contol whether a new array is minted or reused.  |
+| `getTableRowAsObject(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy')`           | Gets a row from the table. Parameters control whether a new object is created or reused. |
+| `getTableRowAsArray(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy'): unknown[]` | Gets a row from the table. Parameters control whether a new array is created or reused. |
 | `makeArrayRowTable(table: Table): ArrayRowTable`                                                   | Copies a table into 'array-row-table' format.                                          |
 | `makeObjectRowTable(table: Table): ObjectRowTable`                                                 | Copies a table into 'object-row-table' format                                          |
 

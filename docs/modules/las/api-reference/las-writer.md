@@ -1,14 +1,47 @@
-import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+---
+title: LASWriter
+description: Write mesh and Arrow point clouds as interoperable LAS or LAZ data.
+hide_title: true
+page_style: designed
+---
 
-# LASWriter
+import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="LAS module · writer API"
+  title="LASWriter"
+  description="Write loaders.gl mesh or Arrow point-cloud data as LAS or LAZ, with control over point record formats, quantization, compression chunks, and rich point attributes."
+  tone="orange"
+  meta={['From v5.0', 'LAS 1.0–1.4', 'LAS / LAZ']}
+  links={[
+    {label: 'LAS format', to: '/docs/modules/las/formats/las'},
+    {label: 'LAS module', to: '/docs/modules/las'},
+    {label: 'COPCWriter', to: '/docs/modules/copc/api-reference/copc-writer'}
+  ]}
+/>
 
 <LasDocsTabs active="laswriter" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
-</p>
+<DocOrientation
+  eyebrow="What it writes"
+  title="Turn typed point data into a standard point-cloud file."
+  description="LASWriter maps common mesh attributes into LAS point records, then optionally compresses them as LAZ. The result can be read by loaders.gl and other LAS-compatible tools."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Mesh or Mesh Arrow table'},
+    {label: 'Containers', value: 'LAS and compressed LAZ'},
+    {label: 'Records', value: 'PDRF 0–10 and LAS 1.0–1.4'},
+    {label: 'Attributes', value: 'Color, time, classification, waveform, and extras'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="LASWriter reference"
+  description="The sections below document usage, supported data mapping, options, compression, and interoperability details."
+  tone="orange"
+/>
 
 The `LASWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) point cloud data as LAS or LAZ binary data.
 

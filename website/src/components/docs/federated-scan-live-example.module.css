@@ -1,0 +1,67 @@
+.exampleFrame {
+  margin: 18px 0;
+}
+
+.exampleHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #475467;
+}
+
+.exampleHeader strong {
+  color: #101828;
+}
+
+.status {
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.success {
+  color: #067647;
+  background: #ecfdf3;
+}
+
+.failed {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.errorMessage {
+  padding: 10px;
+  border-radius: 6px;
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.preview {
+  overflow-x: auto;
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+}
+
+.preview table {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+}
+
+.preview th,
+.preview td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eaecf0;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .exampleHeader {
+    flex-direction: column;
+    gap: 5px;
+  }
+}

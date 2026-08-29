@@ -1,6 +1,46 @@
-# Overview
+---
+title: Tile converter
+description: Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter"
+  title="Move tiled datasets between compatible standards."
+  description="`@loaders.gl/tile-converter` provides command-line and JavaScript tools for converting I3S and 3D Tiles data. Use the APIs when conversion is part of an application, or the CLI when it belongs in a build or data-preparation workflow."
+  tone="orange"
+  meta={['I3S ↔ 3D Tiles', 'CLI and API', 'Esri contributed']}
+  links={[
+    {label: 'I3S converter', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
+    {label: '3D Tiles converter', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'},
+    {label: 'Build instructions', to: '/docs/modules/tile-converter/api-reference/build-instructions'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The conversion path"
+  title="Read one tiled standard. Write the other."
+  description="The converter uses the loaders.gl format implementations at the edges and keeps conversion concerns in one place, whether it runs from a Node.js API or a command-line bundle."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'I3S or 3D Tiles dataset'},
+    {label: 'Conversion', value: 'Format-aware hierarchy and content translation'},
+    {label: 'Execution', value: 'JavaScript API or command line'},
+    {label: 'Output', value: 'The target tiled standard and its resources'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Conversion and CLI details"
+  description="The reference below covers installation, converter APIs, build and bundle instructions, CLI usage, supported features, and format standards."
+  tone="orange"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 

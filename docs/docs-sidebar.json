@@ -5,6 +5,7 @@
     "items": [
       "README",
       "developer-guide/get-started",
+      "developer-guide/3d-data-formats",
       "whats-new",
       "upgrade-guide"
     ]

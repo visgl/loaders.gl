@@ -1,15 +1,55 @@
+---
+title: COPCSourceLoader
+description: Build a range-readable point-cloud source from a COPC dataset.
+hide_title: true
+page_style: designed
+---
+
 import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# COPCSourceLoader
+<DocPageHeader
+  eyebrow="COPC source"
+  title="Turn one cloud object into a selectable point source."
+  description="COPCSourceLoader connects the COPC hierarchy to loaders.gl's point-cloud source contract. It discovers metadata, selects nodes, range-reads LAZ chunks, and can emit normalized point tiles or Arrow batches."
+  tone="violet"
+  meta={['COPC 1.0', 'Range requests', 'PointCloudTileset']}
+  links={[
+    {label: 'COPC format', to: '/docs/modules/copc/formats/copc'},
+    {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
+  ]}
+/>
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
 <CopcDocsTabs active="source" />
 
+<CopcRangeGraphic />
+
+<DocOrientation
+  eyebrow="What this loader does"
+  title="Discover, select, fetch, emit."
+  description="The source keeps hierarchy and point decoding separate, so viewport traversal or a scan query can stop before unrelated nodes are fetched."
+  tone="violet"
+  items={[
+    {label: 'Discover', value: 'Bounds, CRS, schema, hierarchy, and point count'},
+    {label: 'Select', value: 'Nodes by bounds, level, spacing, or query'},
+    {label: 'Fetch', value: 'COPC hierarchy and LAZ payload ranges'},
+    {label: 'Emit', value: 'Point tiles or progressive Arrow point batches'}
+  ]}
+/>
+
 `COPCSourceLoader` creates a point-cloud tile source for Cloud Optimized Point Cloud (`.copc.laz`) datasets.
+
+<ReferenceBoundary
+  title="Source construction and loading"
+  description="The sections below document source creation, tile methods, column selection, batching, cancellation, and range scheduling."
+  tone="violet"
+/>
 
 ## Usage
 

@@ -1,4 +1,42 @@
-# GLTFIterator
+---
+title: GLTFIterator
+description: Traverse standards-shaped glTF JSON lazily while preserving raw object identity and numeric references.
+hide_title: true
+page_style: designed
+---
+
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="glTF API / iterator"
+  title="Traverse glTF without rewriting the source."
+  description="GLTFIterator adds lazy, typed navigation to the original glTF JSON. Numeric indices stay in their standards-defined fields, while resolved references are available when an extension or application needs them."
+  tone="violet"
+  meta={['Raw object identity', 'Lazy references', 'Extension-friendly']}
+/>
+
+<GltfDocsTabs active="iterator" />
+
+<DocOrientation
+  eyebrow="Standards-shaped traversal"
+  title="Add convenience without hiding the document."
+  description="The iterator keeps the source document recognizable and mutable. Its metadata and reference facades live alongside the JSON rather than replacing it with a copied scenegraph."
+  tone="violet"
+  items={[
+    {label: 'Collections', value: 'Iterate accessors, meshes, nodes, materials, scenes, and more.'},
+    {label: 'References', value: 'Resolve numeric links only when a property is accessed.'},
+    {label: 'Metadata', value: 'Inspect stable type, index, path, and parent information.'},
+    {label: 'Use case', value: 'Implement extensions or targeted transforms in place.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="GLTFIterator reference"
+  description="The detailed sections define identity, collections, lazy references, metadata, and the mutation boundaries of the iterator."
+  tone="violet"
+/>
 
 The `GLTFIterator` class traverses the original glTF JSON objects directly. Numeric references remain in their standard glTF fields and are resolved lazily through `getReferences()`, without wrapping, copying, linking, normalizing, or otherwise postprocessing the source document.
 

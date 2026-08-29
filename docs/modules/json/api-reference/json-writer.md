@@ -1,12 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: JSONWriter
+description: Encode loaders.gl row, columnar, and Arrow tables as JSON text.
+hide_title: true
+page_style: designed
+---
 
-# JSONWriter
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="JSON module · writer API"
+  title="JSONWriter"
+  description="Encode loaders.gl tables as JSON text, including readable GeoJSON conversion for GeoArrow WKB columns when the output needs to cross into a JSON-oriented system."
+  tone="yellow"
+  meta={['From v4.0', 'Rows and tables', 'GeoArrow-aware']}
+  links={[
+    {label: 'JSON format', to: '/docs/modules/json/formats/json'},
+    {label: 'GeoJSONWriter', to: '/docs/modules/json/api-reference/geojson-writer'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
 
 <JsonDocsTabs active="jsonwriter" />
 
-<p className="badges">
-  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
-</p>
+<DocOrientation
+  eyebrow="What it writes"
+  title="Leave a binary table as ordinary JSON when you need to."
+  description="JSONWriter accepts row, columnar, and Arrow-backed tables and serializes them as JSON rows. GeoArrow WKB columns can be decoded to readable GeoJSON geometry by default."
+  tone="yellow"
+  items={[
+    {label: 'Input', value: 'Row, columnar, or Arrow tables'},
+    {label: 'Output', value: 'JSON text or an ArrayBuffer'},
+    {label: 'Geometry', value: 'WKB to GeoJSON by default'},
+    {label: 'Control', value: 'Shape, wrapper, and GeoArrow options'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="JSONWriter reference"
+  description="The sections below document usage, table conversion, GeoArrow handling, and writer options."
+  tone="yellow"
+/>
 
 `JSONWriter` writes loaders.gl tables as JSON text.
 

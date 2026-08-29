@@ -1,13 +1,54 @@
-# @loaders.gl/parquet 🚧
+---
+title: '@loaders.gl/parquet'
+description: Read and write Parquet with selective scans, Arrow output, and cloud-friendly ranges.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="columnar" />
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/parquet"
+  description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
+  tone="mint"
+  meta={['Parquet and GeoParquet', 'Arrow output', 'Selective reads']}
+  links={[
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'ParquetLoader', to: '/docs/modules/parquet/api-reference/parquet-loader'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+![parquet-logo](./images/parquet-logo-small.png)
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
-  &nbsp;
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
+
+<ParquetLayoutGraphic />
+
+<DocOrientation
+  eyebrow="The Parquet module"
+  title="Read the columns that matter."
+  description="The module spans the simple loader path and the selective cloud path: use rows for convenience, Arrow for typed transport, and sources when metadata can eliminate work before decoding."
+  tone="mint"
+  items={[
+    {label: 'Load', value: 'Decode Parquet into rows or Arrow-compatible tables'},
+    {label: 'Select', value: 'Prune files, row groups, columns, pages, and predicates'},
+    {label: 'Stream', value: 'Process batches without materializing the complete dataset'},
+    {label: 'Compose', value: 'Use GeoParquet, Iceberg, Delta, and scan-aware sources'}
+  ]}
+/>
 
 Experimental loader and writer for the Apache Parquet format.
 
@@ -16,13 +57,16 @@ Experimental loader and writer for the Apache Parquet format.
 - [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetJSLoader` and `ParquetJSWriter` provide experimental TypeScript parquetjs variants documented with [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants). <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - `ParquetLoader` supports Arrow output with `parquet.shape: 'arrow-table'`, and `ParquetWriter` accepts loaders.gl Arrow tables.
-- [`IcebergTableSource`](/docs/modules/parquet/api-reference/iceberg-table-source) provides read-only
-  Iceberg metadata and manifest planning, dispatching selected Parquet files through the existing
-  range-aware dataset reader.
-- `DeltaSourceLoader` provides metadata-only loader discovery for read-only Delta snapshots.
-  Import `DeltaTableSource` from the explicit `@loaders.gl/parquet/delta-source` subpath to replay
-  newline-delimited transaction logs and dispatch active Parquet files through the same dataset
-  reader.
+- Iceberg and Delta table-format adapters incubate under the optional
+  [`@loaders.gl/scan`](/docs/modules/scan) package. Import them from
+  `@loaders.gl/scan/iceberg` or `@loaders.gl/scan/delta`; Parquet remains the physical file
+  executor and stays focused on the Parquet format.
+
+<ReferenceBoundary
+  title="Parquet APIs and dataset integrations"
+  description="The reference below covers loaders, writers, Arrow output, geospatial metadata, selective sources, Iceberg, Delta, and implementation boundaries."
+  tone="mint"
+/>
 
 ## Geospatial Metadata
 

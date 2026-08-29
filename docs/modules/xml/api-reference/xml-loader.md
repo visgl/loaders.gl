@@ -1,14 +1,46 @@
-import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+---
+title: XMLLoader
+description: Parse XML into JavaScript data while preserving its document structure.
+hide_title: true
+page_style: designed
+---
 
-# XMLLoader
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="XML module · loader API"
+  title="XMLLoader"
+  description="Parse XML into an untyped JavaScript tree, with practical options for adapting namespaces and tag names to application code."
+  tone="violet"
+  meta={['From v3.3', 'XML', 'Experimental options']}
+  links={[
+    {label: 'XML format', to: '/docs/modules/xml/formats/xml'},
+    {label: 'XML module', to: '/docs/modules/xml'}
+  ]}
+/>
 
 <XmlDocsTabs active="xmlloader" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
-</p>
+<DocOrientation
+  eyebrow="What it returns"
+  title="A document tree you can adapt at the boundary."
+  description="XMLLoader does not impose a domain schema. It gives application code the XML hierarchy, then lets options handle common JavaScript ergonomics such as camelCase-like keys and namespace prefixes."
+  tone="violet"
+  items={[
+    {label: 'Structure', value: 'Nested tags and values'},
+    {label: 'Keys', value: 'Optionally uncapitalize tag names'},
+    {label: 'Namespaces', value: 'Optionally remove prefixes'},
+    {label: 'Parser', value: 'fast-xml-parser by default'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="XMLLoader reference"
+  description="The sections below cover usage, returned data, options, and parser attribution."
+  tone="violet"
+/>
 
 The `XMLLoader` parses XML-encoded data.
 

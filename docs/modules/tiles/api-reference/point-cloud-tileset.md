@@ -1,4 +1,44 @@
-# PointCloudTileset
+---
+title: PointCloudTileset
+description: Traverse source-backed point-cloud octrees with a small common runtime.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Point-cloud tiles runtime"
+  title="Traverse large point clouds without loading every point."
+  description="`PointCloudTileset` provides a focused traversal manager for source-backed octree formats such as COPC and Potree. It selects visible tiles, applies a point budget, and exposes loaded data to the renderer."
+  tone="violet"
+  meta={['COPC and Potree', 'Octree traversal', 'Point budgets']}
+  links={[
+    {label: 'Tiles module', to: '/docs/modules/tiles'},
+    {label: 'COPC source', to: '/docs/modules/copc/api-reference/copc-source-loader'},
+    {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The point-cloud path"
+  title="Open a source. Select visible nodes. Render what is ready."
+  description="Format-specific sources provide metadata and tile content; `PointCloudTileset` keeps the application-facing traversal lifecycle consistent across octree formats."
+  tone="violet"
+  items={[
+    {label: 'Source', value: 'A DataSource with point-cloud tile methods'},
+    {label: 'Selection', value: 'Viewport-driven octree traversal'},
+    {label: 'Budget', value: 'Screen-space error, depth, and point limits'},
+    {label: 'Output', value: 'Loaded and selected point-cloud tiles'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Traversal contract"
+  description="The sections below cover construction, selection, callbacks, options, format limits, and source requirements."
+  tone="violet"
+/>
 
 `PointCloudTileset` is a small point-cloud-specific tileset manager in `@loaders.gl/tiles`.
 

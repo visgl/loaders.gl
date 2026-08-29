@@ -1,10 +1,51 @@
-import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+---
+title: PCD format
+description: A point-cloud format with a schema header and ASCII, binary, or compressed binary records.
+hide_title: true
+page_style: designed
+---
 
-# PCD - Point Cloud Data
+import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+import {PointCloudFormatGraphic} from '@site/src/components/docs/point-cloud-format-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Point-cloud format"
+  title="Name the point fields before storing the points."
+  description="PCD starts with a compact ASCII header that defines the fields and their physical layout, then stores records in a representation suited to inspection or fast transfer."
+  tone="violet"
+  meta={['PCD 0.7', 'Named fields', 'Binary and compressed']}
+  links={[
+    {label: 'PCD module', to: '/docs/modules/pcd'},
+    {label: 'PCDLoader', to: '/docs/modules/pcd/api-reference/pcd-loader'}
+  ]}
+/>
 
 <PcdDocsTabs active="overview" />
 
+<PointCloudFormatGraphic />
+
+<DocOrientation
+  eyebrow="The point-cloud contract"
+  title="Schema in the header. Records in the payload."
+  description="The header tells the reader how to interpret every record, including custom attributes and whether the cloud is organized like an image or stored as an unstructured list."
+  tone="violet"
+  items={[
+    {label: 'Schema', value: 'Fields, sizes, types, and component counts'},
+    {label: 'Organization', value: 'Width and height describe the point arrangement'},
+    {label: 'Encoding', value: 'ASCII, binary, or binary-compressed data'},
+    {label: 'Fields', value: 'Position, normals, color, intensity, and custom values'}
+  ]}
+/>
+
 PCD (Point Cloud Data) stores 3D point clouds as named numeric fields with an ASCII header and ASCII, binary, or compressed binary point data.
+
+<ReferenceBoundary
+  title="PCD fields and file structure"
+  description="The sections below describe common columns, header fields, versions, and a complete example payload."
+  tone="violet"
+/>
 
 - _[`@loaders.gl/pcd`](/docs/modules/pcd)_
 - _[PCD documentation](https://pcl.readthedocs.io/projects/tutorials/en/latest/pcd_file_format.html)_

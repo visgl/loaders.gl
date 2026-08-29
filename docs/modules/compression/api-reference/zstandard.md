@@ -1,6 +1,46 @@
-# Zstandard Compressor and Decompressor
+---
+title: Zstandard Compressor and Decompressor
+description: Use Zstandard compression with lazy WASM and compact JavaScript fallbacks.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Compression API · Zstandard"
+  title="Keep the large codec out of the common path."
+  description="ZstdCompressor and ZstdDecompressor probe native streams first and load a larger or specialized implementation only when the runtime or application needs it."
+  tone="violet"
+  meta={['From v5.0', 'Lazy codec loading', 'Native and WASM options']}
+  links={[
+    {label: 'Compression module', to: '/docs/modules/compression'},
+    {label: 'Shared codec API', to: '/docs/modules/compression/api-reference/compressor-decompressor'},
+    {label: 'Built-in codecs', to: '/docs/modules/compression/api-reference/built-in-codecs'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Zstandard path"
+  title="Pay for the codec only when the data needs it."
+  description="Zstandard offers strong compression, but its best implementations can be sizeable. The default classes keep that cost lazy and leave an explicit injection point for applications that already manage a WASM or native backend."
+  tone="violet"
+  items={[
+    {label: 'Compression', value: 'Native stream, then lazy compress-utils'},
+    {label: 'Decompression', value: 'Native stream, then compact fzstd'},
+    {label: 'Optional backend', value: 'Inject zstd-codec when needed'},
+    {label: 'Lifecycle', value: 'Preload before synchronous specialized methods'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Zstandard implementation reference"
+  description="The sections below document usage, lazy loading, options, backend choices, and preload requirements."
+  tone="violet"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 

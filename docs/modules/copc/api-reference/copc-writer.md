@@ -1,12 +1,47 @@
+---
+title: COPCWriter
+description: Write cloud-optimized point clouds as range-readable COPC data.
+hide_title: true
+page_style: designed
+---
+
 import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# COPCWriter
-
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-</p>
+<DocPageHeader
+  eyebrow="COPC module · writer API"
+  title="COPCWriter"
+  description="Write mesh and Arrow point clouds as COPC 1.0-compatible LAZ, organized for spatially selective, range-readable access from cloud storage."
+  tone="cyan"
+  meta={['From v5.0', 'COPC 1.0', 'Cloud-optimized']}
+  links={[
+    {label: 'COPC format', to: '/docs/modules/copc/formats/copc'},
+    {label: 'COPC module', to: '/docs/modules/copc'},
+    {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}
+  ]}
+/>
 
 <CopcDocsTabs active="writer" />
+
+<DocOrientation
+  eyebrow="What it writes"
+  title="Package a point cloud for selective reads."
+  description="COPCWriter builds a sparse octree, keeps level-of-detail samples at parent nodes, and stores point chunks and hierarchy pages so clients can fetch only the regions they need."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Mesh or Mesh Arrow table'},
+    {label: 'Hierarchy', value: 'Sparse octree with LOD samples'},
+    {label: 'Storage', value: 'LAZ chunks and range-readable pages'},
+    {label: 'Records', value: 'LAS 1.4 PDRF 6, 7, or 8'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="COPCWriter reference"
+  description="The sections below document usage, node organization, supported attributes, options, and interoperability."
+  tone="cyan"
+/>
 
 `COPCWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) point clouds as COPC 1.0-compatible LAZ data.
 

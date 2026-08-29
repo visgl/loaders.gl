@@ -1,8 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: JSON format
+description: Load, stream, transform, and write JSON documents and table-shaped JSON data through one set of APIs.
+hide_title: true
+page_style: designed
+---
 
-# JSON Format
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Document and table format"
+  title="Start with JSON. Keep the next step open."
+  description="The JSON module handles arbitrary documents, row arrays, newline-delimited records, GeoJSON, and JSON output. Choose the result shape that matches the application instead of writing a new parser path for each variant."
+  tone="blue"
+  meta={['JSON and NDJSON', 'GeoJSON', 'Rows and Arrow tables']}
+  links={[
+    {label: 'JSON module', to: '/docs/modules/json'},
+    {label: 'JSONLoader', to: '/docs/modules/json/api-reference/json-loader'},
+    {label: 'Table category', to: '/docs/specifications/category-table'}
+  ]}
+/>
 
 <JsonDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Flexible input, explicit output"
+  title="Use the document shape you already have."
+  description="JSON may be a nested document, a stream of records, or a table-like array. loaders.gl keeps those cases separate while letting applications select object rows, arrays, columns, Arrow, or geometry tables where appropriate."
+  tone="blue"
+  items={[
+    {label: 'Documents', value: 'Load arbitrary nested JSON without imposing a table schema.'},
+    {label: 'Records', value: 'Stream NDJSON or row arrays incrementally.'},
+    {label: 'Geospatial', value: 'Decode GeoJSON into shared geometry data shapes.'},
+    {label: 'Output', value: 'Write JSON values or compatible table representations.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="JSON format and API details"
+  description="The reference below compares JSON loaders, streaming variants, GeoJSON behavior, output shapes, and writers."
+  tone="blue"
+/>
 
 ## Loaders and Writers
 

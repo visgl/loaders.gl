@@ -1,4 +1,37 @@
-# Development Environment
+---
+title: Development environment
+description: Build, test, and debug loaders.gl locally across supported operating systems.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Working on loaders.gl"
+  title="A predictable path from checkout to test."
+  description="The repository uses a small set of repeatable install, build, lint, and test commands. The same workflow keeps browser workers, generated bundles, and package dependencies in sync."
+  tone="cyan"
+  meta={['Yarn workspace', 'Browser and Node.js', 'Headless tests']}
+  links={[
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Node.js support', to: '/docs/developer-guide/node'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The local workflow"
+  title="Install. Build. Test. Inspect."
+  description="Build the packages before running worker-dependent tests, keep formatting automatic, and use the browser test lane for browser-capable behavior."
+  tone="cyan"
+  items={[
+    {label: 'Install', value: 'Resolve the workspace with Yarn'},
+    {label: 'Build', value: 'Generate package and worker bundles'},
+    {label: 'Verify', value: 'Run lint, Node, and Chromium tests'},
+    {label: 'Debug', value: 'Use the main-thread path when useful'}
+  ]}
+/>
 
 The **master** branch is the active development branch.
 

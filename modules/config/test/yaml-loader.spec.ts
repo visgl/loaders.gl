@@ -62,3 +62,27 @@ test('YAMLLoader works with load and loader options', async () => {
   });
   expect(value).toEqual({enabled: true});
 });
+
+test('YAMLLoader preserves hashes in plain scalars and blank block-scalar lines', () => {
+  const value = BundledYAMLLoader.parseTextSync?.(`
+url: https://example.test/#section # trailing comment
+message: |
+  first
+
+  second
+`);
+
+  expect(value).toEqual({
+    url: 'https://example.test/#section',
+    message: 'first\n\nsecond\n'
+  });
+});
+
+test('YAMLLoader enforces string keys', () => {
+  expect(() => BundledYAMLLoader.parseTextSync?.('1: value', {yaml: {stringKeys: true}})).toThrow(
+    'Mapping keys must be strings'
+  );
+  expect(() =>
+    BundledYAMLLoader.parseTextSync?.('{true: value}', {yaml: {stringKeys: true}})
+  ).toThrow('Mapping keys must be strings');
+});

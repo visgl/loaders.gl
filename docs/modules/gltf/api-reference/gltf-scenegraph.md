@@ -1,4 +1,42 @@
-# GLTFScenegraph
+---
+title: GLTFScenegraph
+description: Inspect and build glTF scene data through a mutable API over JSON, buffers, images, scenes, and extensions.
+hide_title: true
+page_style: designed
+---
+
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="glTF API / scenegraph"
+  title="Work with a glTF asset as a scenegraph."
+  description="GLTFScenegraph provides focused accessors and builders for glTF JSON and binary resources. Use it when an application needs to inspect, modify, or assemble a scene while retaining the format's structure."
+  tone="violet"
+  meta={['Inspect and modify', 'JSON plus resources', 'Fluent builder API']}
+/>
+
+<GltfDocsTabs active="scenegraph" />
+
+<DocOrientation
+  eyebrow="Scenegraph operations"
+  title="Keep the asset model visible while you work."
+  description="The API makes common scene operations explicit: access scenes and nodes, read application data and extensions, inspect images, and build compatible JSON for a writer."
+  tone="violet"
+  items={[
+    {label: 'Inspect', value: 'Read scenes, nodes, meshes, materials, images, and extensions.'},
+    {label: 'Modify', value: 'Update supported JSON structures without hiding the source format.'},
+    {label: 'Build', value: 'Create scene data with the fluent builder methods.'},
+    {label: 'Boundary', value: 'Treat binary chunk editing as focused, not a generic buffer editor.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="GLTFScenegraph reference"
+  description="The detailed reference covers accessors, modification, resource handling, builders, and the limitations around binary data chunks."
+  tone="violet"
+/>
 
 The `GLTFScenegraph` class provides an API for accessing and modifying glTF data.
 

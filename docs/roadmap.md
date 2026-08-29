@@ -1,3 +1,45 @@
+---
+title: loaders.gl roadmap
+description: Follow the project’s direction across binary data, cloud-native sources, services, and format support.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Project direction"
+  title="A roadmap organized around data movement."
+  description="loaders.gl is evolving toward compact binary representations, cloud-native reads, explicit source contracts, and deeper standards support. This page records the direction and the work still under discussion."
+  tone="cyan"
+  meta={['Binary data', 'Cloud-native sources', 'Standards fidelity']}
+  links={[
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Common scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'What’s new', to: '/docs/whats-new'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The current direction"
+  title="Move less data, preserve more meaning, and keep the seams explicit."
+  description="The roadmap groups work by the boundary it improves: representation, source access, service interoperability, and application control. Statuses are directional rather than release promises."
+  tone="cyan"
+  items={[
+    {label: 'Representation', value: 'Arrow and GeoArrow for compact typed data'},
+    {label: 'Access', value: 'Ranges, scans, tiles, and cloud-native datasets'},
+    {label: 'Services', value: 'Protocol-aware sources with useful normalized output'},
+    {label: 'Control', value: 'Explicit shapes, cancellation, auth, and lifecycle'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Roadmap details"
+  description="The sections below record v5 direction, per-module work, and the service roadmap with current status and open trade-offs."
+  tone="cyan"
+/>
+
 # Roadmap
 
 loaders.gl is developed under open governance by multiple contributors working with their own priorities. This page aims to give information about upcoming releases and directions.

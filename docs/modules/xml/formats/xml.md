@@ -1,11 +1,52 @@
-import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+---
+title: XML format
+description: A flexible markup foundation used by many established data formats.
+hide_title: true
+page_style: designed
+---
 
-# XML
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
+
+<DocPageHeader
+  eyebrow="Extensible Markup Language"
+  title="Parse the structure without hiding the details."
+  description="XML supplies a portable tree of elements, attributes, namespaces, and text. loaders.gl exposes that structure as JavaScript data so applications can work with XML-based formats without committing to a single schema."
+  tone="violet"
+  meta={['XML 1.0', 'Tree-shaped', 'Schema-neutral']}
+  links={[
+    {label: 'XML module', to: '/docs/modules/xml'},
+    {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'}
+  ]}
+/>
 
 <XmlDocsTabs active="overview" />
 
+<StructuredDataPathGraphic />
+
+<DocOrientation
+  eyebrow="The XML model"
+  title="A tree first. Meaning comes from the schema."
+  description="XML defines the syntax for nested data, but not the domain meaning. Individual standards add that meaning through their own element names, namespaces, and schemas."
+  tone="violet"
+  items={[
+    {label: 'Elements', value: 'Nested nodes with names and content'},
+    {label: 'Attributes', value: 'Compact metadata attached to nodes'},
+    {label: 'Namespaces', value: 'Names that remain distinct across vocabularies'},
+    {label: 'Schemas', value: 'Domain rules supplied by each XML format'}
+  ]}
+/>
+
 - _[`@loaders.gl/xml`](/docs/modules/xml)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/XML)_
+
+<ReferenceBoundary
+  title="XML and JavaScript data"
+  description="The sections below cover the practical conversion choices made when XML is represented as JavaScript objects."
+  tone="violet"
+/>
 
 XML (eXtensible Markup Language) is a markup language and file format for storing, transmitting, and reconstructing arbitrary data.
 
@@ -33,7 +74,10 @@ A repetition of XML elements with the same tag name is typically converted into 
 
 ### Arrays
 
-TBA
+XML has no standalone array type. A sequence of sibling elements with the same name is commonly
+represented as a JavaScript array, while a single occurrence is represented as one value. This
+means a consumer that needs a stable array shape should normalize both cases at its application
+boundary, and should keep XML schema knowledge outside the generic XML parser.
 
 ## XML schemas
 

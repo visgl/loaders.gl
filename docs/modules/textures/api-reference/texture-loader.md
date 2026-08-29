@@ -1,10 +1,50 @@
-# TextureLoader
+---
+title: TextureLoader
+description: Load a manifest-driven image texture or mip chain into a normalized texture object.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Composite texture loader"
+  title="Describe a texture once. Resolve its image levels as a unit."
+  description="`TextureLoader` reads a JSON manifest for a single image or mip chain, resolves member URLs, and returns a normalized `Texture` object. It keeps file organization out of the rendering code."
+  tone="cyan"
+  meta={['JSON manifest', 'Mipmapped images', 'Normalized Texture output']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'},
+    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The manifest path"
+  title="Read the manifest. Resolve the members. Return one texture."
+  description="A composite texture can be a single image, an explicit list of mip levels, or a template-driven sequence. The loader turns each supported description into the same schema-level texture shape."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'JSON image-texture manifest'},
+    {label: 'Resolve', value: 'Relative member URLs and optional base URL'},
+    {label: 'Decode', value: 'Member images through ImageBitmapLoader'},
+    {label: 'Output', value: 'Texture with ordered TextureLevel entries'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 A loader for image-based composite textures described by a JSON manifest.
+
+<ReferenceBoundary
+  title="Manifest and texture output details"
+  description="The reference below covers manifest forms, URL resolution, member decoding, mip levels, options, and normalized output fields."
+  tone="cyan"
+/>
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |

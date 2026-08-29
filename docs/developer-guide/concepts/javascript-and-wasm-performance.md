@@ -1,4 +1,47 @@
-# JavaScript and WebAssembly Performance
+---
+title: JavaScript and WebAssembly performance
+description: Compare complete data-loading pipelines instead of judging performance by decoder language alone.
+hide_title: true
+page_style: designed
+---
+
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="performance" />
+
+<DocPageHeader
+  eyebrow="Developer guide · performance"
+  title="Measure the pipeline, not the language label."
+  description="WebAssembly can accelerate a compute-heavy kernel, while JavaScript or TypeScript can win end to end by avoiding I/O, allocation, copying, and conversion. The right comparison includes the work around decoding."
+  tone="violet"
+  meta={['End-to-end measurement', 'I/O and memory', 'JavaScript and WASM']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Using workers', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Compression benchmarks', to: '/docs/modules/compression/benchmarks'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A useful performance model"
+  title="Count bytes, copies, boundaries, and time to first result."
+  description="A fast inner loop is only one part of a loader. Selective reads, direct Arrow or GPU output, lazy code loading, worker transfer, and pipeline fusion can dominate the result users experience."
+  tone="violet"
+  items={[
+    {label: 'WASM excels', value: 'Dense compute with amortized initialization cost'},
+    {label: 'TypeScript can win', value: 'Selective I/O and direct output construction'},
+    {label: 'Measure', value: 'Cold start, throughput, bytes, memory, and transfer'},
+    {label: 'Decide', value: 'Use reproducible data and the output shape users need'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Performance reasoning and measurements"
+  description="The sections below compare WASM and JavaScript strengths, give Parquet and COPC examples, and define a practical end-to-end benchmark checklist."
+  tone="violet"
+/>
 
 WebAssembly (WASM) makes code written in languages such as Rust and C++ available in browsers. It
 can deliver excellent performance, particularly for dense computation with predictable memory

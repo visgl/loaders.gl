@@ -1,4 +1,40 @@
-# GLB - glTF Binary Format
+---
+title: GLB binary format
+description: Package a glTF scene, buffers, and textures into one binary file.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
+
+<DocPageHeader
+  eyebrow="Binary scene container"
+  title="Put a complete glTF scene in one file."
+  description="GLB packages the glTF JSON document, binary buffers, and embedded resources into a single binary container. It is the compact delivery form for portable 3D scenes."
+  tone="violet"
+  meta={['glTF 2.0', 'Single binary file', 'Embedded resources']}
+  links={[
+    {label: 'glTF module', to: '/docs/modules/gltf'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
+
+<ThreeDDataFormatsGraphic />
+
+<DocOrientation
+  eyebrow="The GLB boundary"
+  title="Scene structure stays glTF. Delivery becomes one binary."
+  description="Applications can use the same scenegraph model whether buffers and images are external in .gltf or packaged into the chunks of a .glb file."
+  tone="violet"
+  items={[
+    {label: 'JSON', value: 'Scene, nodes, meshes, materials, and metadata'},
+    {label: 'BIN', value: 'Buffer data referenced by accessors'},
+    {label: 'Resources', value: 'Textures and other embedded chunks'},
+    {label: 'Next generation', value: 'Draft GLB v3 multiple binary chunks'}
+  ]}
+/>
 
 - _[`@loaders.gl/gltf`](/docs/modules/gltf)_
 - _[GLB specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#glb-file-format-specification)_
@@ -7,6 +43,12 @@
 A GLB file (.glb), which stands for “GL Transmission Format Binary file”. contains a binary representation of a glTF scenegraph packaged into a single binary file.
 
 The GLB file format is a binary form of glTF that includes textures instead of referencing them as external images.
+
+<ReferenceBoundary
+  title="GLB structure and version history"
+  description="The sections below cover the container layout, GLB versions, multiple binary chunks, and writing behavior."
+  tone="violet"
+/>
 
 ## Version History
 

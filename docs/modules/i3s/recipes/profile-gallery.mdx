@@ -1,4 +1,44 @@
-# I3S profile gallery
+---
+title: I3S profile gallery
+description: Inspect I3S scene and point-cloud profiles through a metadata-first example.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S recipe · conformance"
+  title="Inspect the profile before you render it."
+  description="Use the I3S profile gallery to inspect service metadata, versions, spatial references, and conservative feature support before sending a layer into a renderer."
+  tone="orange"
+  meta={['Metadata first', 'I3S profiles', 'SceneServer layers']}
+  links={[
+    {label: 'Open profile gallery', to: '/examples/i3s-profile-gallery'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3S module', to: '/docs/modules/i3s'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What the gallery answers"
+  title="Find out what a layer is before choosing a renderer."
+  description="I3S services can expose different profiles and generations. The gallery makes those differences visible as metadata, so an application can select a safe path instead of discovering limitations during traversal."
+  tone="orange"
+  items={[
+    {label: 'Profiles', value: '3D Object, Integrated Mesh, Building, Point, and Point Cloud.'},
+    {label: 'Metadata', value: 'Version, spatial reference, capabilities, and support report.'},
+    {label: 'Raw access', value: 'Original layer documents remain available to advanced consumers.'},
+    {label: 'Rendering', value: 'Use the companion recipes after the layer shape is understood.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Profile inspection and source usage"
+  description="The reference below shows the normalized source facade, profile fields, and links to rendering recipes and conformance fixtures."
+  tone="orange"
+/>
 
 The [I3S profile gallery](/examples/i3s-profile-gallery) is a metadata-first example for checking
 SceneServer layers across the supported I3S families. It uses the same normalized service facade as
@@ -19,7 +59,7 @@ profiles. Enter a SceneServer layer URL to inspect its version, spatial referenc
 and conservative feature report. Renderer, Arcade, label, and popup expressions are intentionally
 shown as metadata: evaluating them belongs in the application or rendering layer.
 
-For rendering examples, see [Building Scene Layer](./building-scene-layer), [I3S picking](./i3s-picking),
-and [attribute colorization](./i3s-colorization-by-attributes). The checked-in version/profile
+For rendering examples, see [Building Scene Layer](./building-scene-layer), [I3S picking](./picking),
+and [attribute colorization](./attribute-driven-colorization). The checked-in version/profile
 fixtures used by conformance tests are listed in the
 [`I3S_CONFORMANCE_PROFILES`](https://github.com/visgl/loaders.gl/blob/master/modules/i3s/src/i3s-conformance.ts).

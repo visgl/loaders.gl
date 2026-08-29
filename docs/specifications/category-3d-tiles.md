@@ -1,116 +1,149 @@
-# 3D Tiles Loaders
+---
+title: 3D Tiles category
+description: Load hierarchical worlds and point-cloud datasets through one tileset data model.
+hide_title: true
+page_style: designed
+---
 
-The 3D Tiles category defines a generalized representation of hierarchical geospatial data structures. Specific loaders for tiled 3D data return a standardized representation.
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
-The 3D Tiles category can represent the major tiled 3D formats:
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Tiled worlds, loaded a piece at a time."
+  description="The 3D Tiles category gives applications a common way to discover, select, cache, and refresh content from hierarchical 3D datasets. The source format can be 3D Tiles, I3S, or Potree."
+  tone="violet"
+  links={[
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
+    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'}
+  ]}
+/>
 
-- [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard
-- [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
-- `potree` format.
+<CategoryDataConcept initialCategoryId="tiles" initialRepresentationId="plain" />
 
-| Loader                                                                      | Notes |
-| --------------------------------------------------------------------------- | ----- |
-| [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader)     |       |
-| [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) |       |
-| [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader)                   |       |
-| [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader)          |       |
+<TiledSceneGraphic />
+
+<DocOrientation
+  eyebrow="What the category standardizes"
+  title="The application follows the visible world, not the file layout."
+  description="A tileset exposes hierarchy, bounds, geometric error, and content references. Traversal code decides what belongs in view while format adapters handle the source-specific details."
+  tone="violet"
+  items={[
+    {label: 'Sources', value: '3D Tiles, I3S, and Potree datasets'},
+    {label: 'Selection', value: 'Bounds, screen-space error, and level of detail'},
+    {label: 'Runtime', value: 'Caching, scheduling, cancellation, and refresh'},
+    {label: 'Payloads', value: 'glTF, point clouds, terrain, and application data'}
+  ]}
+/>
+
+:::info[Choose the runtime that matches the job]
+
+- Use a format loader such as `Tiles3DLoader`, `I3SLoader`, or `PotreeLoader` when you need to
+  inspect or load one resource.
+- Use a source such as `Tiles3DSource` or `I3SSource` with `Tileset3D` when visibility, caching,
+  request scheduling, and repeated viewport updates are part of the application.
+- Use `SourceLayer` when a deck.gl application should connect a source directly to a renderer.
+
+:::
+
+<ReferenceBoundary
+  title="The tileset contract"
+  description="The sections below describe the shared tile representation, traversal lifecycle, coordinate systems, and helper classes."
+  tone="violet"
+/>
 
 ## Concepts
 
-- **Tile Header Hierarchy** - An initial, "minimal" set of data listing the _hierarchy of available tiles_, with minimal information to allow an application to determine which tiles need to be loaded based on a certain viewing position in 3d space.
-- **Tile Header** - A minimal header describing a tiles bounding volume and a screen space error tolerance (allowing the tile to be culled if it is distant), as well as the URL to load the tile's actual content from.
-- **Tile Cache** - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
-- **Tileset Traversal** - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
+- **Tileset metadata** describes the source, coordinate context, and root of a hierarchy.
+- **Tile headers** describe bounds, refinement, level of detail, child relationships, and content references.
+- **Tile content** is the decoded application data for a selected tile.
+- **Traversal** selects useful content for a viewport and manages requests, cache state, and release.
 
-## Helper Classes
+The category is intentionally format-neutral. A 3D Tiles source can use geometric error, while an
+I3S source can use its own level-of-detail metric; both expose the result through the same runtime
+selection model.
 
-The `@loaders.gl/tiles` module provides classes that facilitate working with `3D Tiles` loader category data.
+## Loader and runtime choices
 
-Tileset Traversal Support
+Use a loader when the application needs to parse one resource. Use a source-backed runtime when
+the application needs repeated, viewport-driven requests:
 
-To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.update(viewport)`.
+| Need | Entry point | Role |
+| --- | --- | --- |
+| Parse a 3D Tiles resource | [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader) | Decode a tileset or tile payload |
+| Resolve Cesium ion data | [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) | Resolve ion credentials and tileset URLs |
+| Parse I3S resources | [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader) | Decode I3S metadata, nodes, and content |
+| Parse Potree resources | [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader) | Decode Potree hierarchy and point data |
+| Traverse a tiled world | [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) | Select, request, cache, and release visible tiles |
 
-Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
+<ReferenceBoundary
+  title="The application-facing contract"
+  description="The tables below summarize the common shape. Follow the source and runtime references for format-specific fields, options, and lifecycle details."
+  tone="violet"
+/>
 
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+## Traversal
 
-### Coordinate Systems
+Create the format-specific source, give it to `Tileset3D`, and await selection as the viewport
+changes:
 
-To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
+```typescript
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
-- _cartesian_ WGS84 fixed frame coordinates
-- _cartographic_ tile geometry positions to ENU meter offsets from `cartographicOrigin`.
+const source = new Tiles3DSource({
+  url: 'https://example.com/tileset.json',
+  loader: Tiles3DLoader
+});
+const tileset = new Tileset3D(source);
 
-Position units in both cases are in meters.
+await tileset.selectTiles(viewport);
+const selectedTiles = tileset.selectedTiles;
+```
 
-For cartographic coordinates, tiles come with a pre chosen cartographic origin and precalculated model matrix. This cartographic origin is "arbitrary" (chosen based on the tiles bounding volume center). A different origin can be chosen and a transform can be calculated, e.g. using the math.gl `Ellipsoid` class.
+`selectTiles` waits for initialization and coalesces repeated viewport updates. Content may continue
+arriving through the tile lifecycle after a selection pass. Use `onTileLoad` and `onTileUnload` when
+the renderer needs to react to those changes. `update(viewport)` remains available as a
+fire-and-forget compatibility wrapper.
 
-## Data Format
+For direct deck.gl integration, use [`SourceLayer`](/docs/developer-guide/using-sources) with the
+source and format loaders. See [Using sources](/docs/developer-guide/using-sources) for the
+renderer boundary.
 
-Loaders in the 3D Tiles category load data into a standardized format. This section specifies the data formats of objects loaded by 3D Tile category loaders.
+## Application data
 
-Loaded data is typically returned in the form of pure data structures (rather than JavaScript classes), however for complex formats like 3D tiles, helper classes are provided which can be instantiated on the loaded data.
+The following fields are common entry points, but a source may add format-specific metadata. Use
+the [`Tile3D` reference](/docs/modules/tiles/api-reference/tile-3d) for runtime state and the
+[3D Tiles format page](/docs/modules/3d-tiles/formats/3d-tiles) for payload conformance.
 
-| Data Format  | Helper class                                        | Description                                                                                                                    |
-| ------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Tileset      |                                                     | Contains "global" metadata about the tileset.                                                                                  |
-| Tile         |                                                     | Metadata for one tile. Includes bounding volumes required to determine if tile content needs to be loaded in a given viewport. |
-| Tile Content | Actual content of a tile (geometry attributes etc). |
+| Object | Common fields | Meaning |
+| --- | --- | --- |
+| Tileset | `type`, `url`, `root` | Source identity and the root tile header |
+| Tile header | `id`, `type`, `boundingVolume`, `children`, `content` | Hierarchy, bounds, refinement inputs, and payload reference |
+| Tile content | `modelMatrix`, `cartesianOrigin`, `cartographicOrigin`, `attributes` | Decoded data plus the transforms needed to place it |
+| Point-cloud content | `pointCount`, `attributes.positions`, `attributes.colors` | Point count and render-ready point attributes when supplied |
+| Scenegraph content | `gltf` | Decoded glTF scene data when the tile contains a scene payload |
 
-### Tileset Object
+A tile can be empty, renderable, or a nested tileset. A selected tile is the runtime’s current
+rendering choice; the presence of a header does not imply that its content is already available.
 
-A single metadata object that needs to be loaded for each tileset. It contains "global" metadata and information that applies to all tiles in the tileset as well as information needed to correctly load additional tiles. The application is expected to keep a reference to the tileset object for each loaded tileset.
+## Coordinate systems
 
-| Field            | Type     | Contents                                                                                                                                                                                                                                                                         |
-| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`           | `string` | Indicates the type of the tileset, for instance `i3s` tileset.                                                                                                                                                                                                                   |
-| `url`            | `string` | The url of this tileset                                                                                                                                                                                                                                                          |
-| `root`           | `Object` | The root tile header object                                                                                                                                                                                                                                                      |
-| `lodMetricType`  | `string` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
-| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                       |
+Tile positions may be represented in:
 
-### Tile Object
+- fixed-frame Cartesian coordinates, typically WGS84 ECEF
+- local or cartographic coordinates relative to a tile origin, with positions in meters
 
-The following fields are guaranteed. Additionally, the loaded tile object will contain all the data fetched from the provided url.
+Transforms and origins are source data, not assumptions hidden by the category. I3S can additionally
+request explicit horizontal and vertical placement; see [I3S coordinate reference systems](/docs/modules/i3s/concepts/coordinate-reference-systems)
+and [vertical coordinate systems](/docs/developer-guide/vertical-coordinate-systems).
 
-Tiles are often loaded in bulk, however they may be loaded in pages or
+## Standards and format details
 
-| Field            | Type     | Contents                                                                                                                                                                                                                                                                  |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`           | `string` | E.g. `mesh`.                                                                                                                                                                                                                                                              |
-| `id`             | `string` | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                               |
-| `refine`         | `string` | Refinement type of the tile `ADD` or `REPLACE`                                                                                                                                                                                                                            |
-| `url`            | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
-| `contentUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
-| `featureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
-| `textureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
-| `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/docs/1.6/mbs.cmn.) that encloses a tile or its content. Exactly one box, region, or sphere property is required.                                |
-| `lodMetricType`  | `string` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
-| `lodMetricValue` | `string` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                       |
-| `children`       | `Array`  | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.              |
-| `content`        | `string` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                             |
-
-### Tile Content
-
-After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
-
-| Field                | Type         | Contents                                                                                                  |
-| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                |
-| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                    |
-| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                             |
-| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                             |
-| `attributes`         | `Object`     | Binary typed arrays containing the geometry of the tile.                                                  |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/docs/modules/images/api-reference/image-loader) |
-| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                 |
-
-`attributes` contains following fields
-
-| Field                  | Type     | Contents                          |
-| ---------------------- | -------- | --------------------------------- |
-| `attributes.positions` | `Object` | `{value, type, size, normalized}` |
-| `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
-| `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
-| `attributes.texCoords` | `Object` | `{value, type, size, normalized}` |
-
-Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties.
+- [OGC 3D Tiles standard](https://www.ogc.org/standards/3DTiles)
+- [OGC I3S standard](https://www.ogc.org/standards/i3s)
+- [Potree format](https://potree.github.io/)
+- [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles)
+- [Tiles runtime module](/docs/modules/tiles)

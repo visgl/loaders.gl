@@ -7,12 +7,13 @@ import {PCDLoader} from '@loaders.gl/pcd';
 import {PLYLoader} from '@loaders.gl/ply';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
-import styled from 'styled-components';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
 import {
   ExampleUrlInputCard,
   type UrlOption
 } from 'examples/website/shared/url-input-card';
+
+import styles from './pointcloud-data-preview.module.css';
 
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
 const PREVIEW_ROW_LIMIT = 100;
@@ -57,288 +58,6 @@ type PreviewColumn = {
   /** Attribute name on the parsed mesh. */
   attributeName: string;
 };
-
-type BinaryBytesProps = {
-  /** Number of source bytes rendered in each row. */
-  $bytesPerRow: number;
-};
-
-const PreviewLayout = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: stretch;
-  margin-top: 1rem;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  @media (max-width: 760px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const PreviewPane = styled.section`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-`;
-
-const PaneCard = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  padding: 0.9rem;
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  background: rgba(247, 250, 252, 0.92);
-`;
-
-const PaneHeader = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0 0 0.75rem;
-`;
-
-const PaneLabel = styled.div`
-  margin: 0;
-  color: var(--ifm-color-gray-700);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-`;
-
-const PaneMeta = styled.div`
-  margin: 0;
-  color: var(--ifm-color-gray-700);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: right;
-`;
-
-const SourceShell = styled.div`
-  width: 100%;
-  height: 24rem;
-  overflow: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-`;
-
-const TableShell = styled.div`
-  position: relative;
-  width: 100%;
-  height: 24rem;
-  overflow: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-`;
-
-const CanvasShell = styled.div`
-  width: 100%;
-  height: 24rem;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #eef2f7;
-`;
-
-const BinaryViewport = styled.div`
-  min-height: 100%;
-  padding: 1rem 1.05rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ifm-color-gray-900);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.8rem;
-  line-height: 1.5;
-`;
-
-const BinaryHeader = styled.div`
-  display: grid;
-  grid-template-columns: 4.5rem max-content max-content;
-  gap: 1.1rem;
-  margin-bottom: 0.6rem;
-  color: var(--ifm-color-gray-700);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-`;
-
-const BinaryRow = styled.div`
-  display: grid;
-  grid-template-columns: 4.5rem max-content max-content;
-  gap: 1.1rem;
-  align-items: start;
-  margin-bottom: 0.35rem;
-`;
-
-const BinaryOffset = styled.div`
-  color: var(--ifm-color-gray-700);
-  font-weight: 700;
-`;
-
-const BinaryBytes = styled.div<BinaryBytesProps>`
-  display: grid;
-  grid-template-columns: repeat(${(props) => props.$bytesPerRow}, minmax(0, max-content));
-  gap: 0.45rem;
-`;
-
-const BinaryByte = styled.div`
-  width: 1.85rem;
-  text-align: center;
-`;
-
-const BinaryAscii = styled.div`
-  white-space: pre;
-`;
-
-const TextViewport = styled.pre`
-  min-height: 100%;
-  margin: 0;
-  padding: 1rem 1.05rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ifm-color-gray-900);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.8rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-`;
-
-const BinaryOverflow = styled.div`
-  margin-top: 0.9rem;
-  color: var(--ifm-color-gray-700);
-  font-weight: 600;
-`;
-
-const PreviewTable = styled.table`
-  width: max-content;
-  min-width: 100%;
-  margin: 0;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.85rem;
-  color: var(--ifm-color-gray-900);
-  background: rgba(255, 255, 255, 0.96);
-`;
-
-const PreviewTableHead = styled.thead`
-  position: sticky;
-  top: 0;
-  z-index: 6;
-`;
-
-const HeaderCell = styled.th`
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  width: 1%;
-  min-width: 7rem;
-  max-width: 28rem;
-  padding: 0.7rem 0.95rem;
-  text-align: left;
-  white-space: nowrap;
-  background: var(--ifm-color-gray-200);
-  background-clip: padding-box;
-  border-bottom: 1px solid rgba(43, 56, 72, 0.12);
-  box-shadow: 0 1px 0 rgba(43, 56, 72, 0.12);
-  color: var(--ifm-color-gray-900);
-  font-size: 0.83rem;
-  font-weight: 700;
-`;
-
-const RowIndexHeaderCell = styled(HeaderCell)`
-  left: 0;
-  z-index: 5;
-  width: 3.25rem;
-  min-width: 3.25rem;
-  max-width: 3.25rem;
-  text-align: right;
-  box-shadow:
-    1px 0 0 rgba(43, 56, 72, 0.12),
-    0 1px 0 rgba(43, 56, 72, 0.12);
-`;
-
-const BodyCell = styled.td`
-  width: 1%;
-  min-width: 7rem;
-  max-width: 28rem;
-  padding: 0.68rem 0.95rem;
-  white-space: nowrap;
-  border-bottom: 1px solid rgba(43, 56, 72, 0.08);
-  color: var(--ifm-color-gray-800);
-`;
-
-const RowIndexCell = styled(BodyCell)`
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  width: 3.25rem;
-  min-width: 3.25rem;
-  max-width: 3.25rem;
-  background: rgba(255, 255, 255, 0.96);
-  background-clip: padding-box;
-  box-shadow: 1px 0 0 rgba(43, 56, 72, 0.08);
-  color: var(--ifm-color-gray-700);
-  font-weight: 700;
-  text-align: right;
-`;
-
-const StatusContainer = styled.div`
-  display: flex;
-  min-height: 6rem;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  color: var(--ifm-color-emphasis-700);
-`;
-
-const GlobalPreviewStyle = styled.div`
-  html[data-theme='dark'] & ${PaneCard} {
-    border-color: rgba(158, 174, 192, 0.26);
-    background: rgba(29, 38, 49, 0.94);
-  }
-
-  html[data-theme='dark'] & ${BinaryViewport},
-  html[data-theme='dark'] & ${TextViewport},
-  html[data-theme='dark'] & ${PreviewTable} {
-    background: rgba(36, 46, 58, 0.92);
-    color: rgba(241, 245, 249, 0.92);
-  }
-
-  html[data-theme='dark'] & ${BinaryHeader},
-  html[data-theme='dark'] & ${BinaryOffset},
-  html[data-theme='dark'] & ${BinaryAscii},
-  html[data-theme='dark'] & ${BinaryOverflow},
-  html[data-theme='dark'] & ${PaneMeta} {
-    color: rgba(203, 213, 225, 0.9);
-  }
-
-  html[data-theme='dark'] & ${HeaderCell} {
-    background: rgba(72, 86, 104, 0.72);
-    border-bottom-color: rgba(225, 232, 240, 0.14);
-    color: rgba(255, 255, 255, 0.92);
-  }
-
-  html[data-theme='dark'] & ${BodyCell},
-  html[data-theme='dark'] & ${RowIndexCell} {
-    border-bottom-color: rgba(225, 232, 240, 0.12);
-    color: rgba(241, 245, 249, 0.9);
-  }
-
-  html[data-theme='dark'] & ${RowIndexCell} {
-    background: rgba(36, 46, 58, 0.92);
-  }
-`;
 
 /**
  * Renders source bytes and parsed attribute rows for the first point cloud example in a format.
@@ -407,7 +126,7 @@ export default function PointcloudDataPreview({
   }, [exampleEntry, format]);
 
   return (
-    <GlobalPreviewStyle>
+    <div className={styles.globalPreviewStyle}>
       {exampleEntry && (
         <ExampleUrlInputCard<Example>
           format={format}
@@ -430,59 +149,59 @@ export default function PointcloudDataPreview({
           }
         />
       )}
-      <PreviewLayout data-loader-live-pointcloud-data-preview>
-        <PreviewPane>
-          <PaneCard>
-            <PaneHeader>
-              <PaneLabel>
+      <div className={styles.previewLayout} data-loader-live-pointcloud-data-preview>
+        <section className={styles.previewPane}>
+          <div className={styles.paneCard}>
+            <div className={styles.paneHeader}>
+              <div className={styles.paneLabel}>
                 {state.status === 'loaded' && state.sourceText ? 'Source text' : 'Source bytes'}
-              </PaneLabel>
-              <PaneMeta>
+              </div>
+              <div className={styles.paneMeta}>
                 {state.status === 'loaded' ? formatByteCount(state.arrayBuffer.byteLength) : '\u00a0'}
-              </PaneMeta>
-            </PaneHeader>
-            <SourceShell>
-              {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
-              {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
+              </div>
+            </div>
+            <div className={styles.sourceShell}>
+              {state.status === 'loading' && <div className={styles.statusContainer}>Loading point cloud data...</div>}
+              {state.status === 'error' && <div className={styles.statusContainer}>{state.errorMessage}</div>}
               {state.status === 'loaded' && state.sourceText && (
                 <SourceTextPreview sourceText={state.sourceText} />
               )}
               {state.status === 'loaded' && !state.sourceText && (
                 <SourceBytesPreview arrayBuffer={state.arrayBuffer} />
               )}
-            </SourceShell>
-          </PaneCard>
-        </PreviewPane>
-        <PreviewPane>
-          <PaneCard>
-            <PaneHeader>
-              <PaneLabel>Arrow table</PaneLabel>
-              <PaneMeta>
+            </div>
+          </div>
+        </section>
+        <section className={styles.previewPane}>
+          <div className={styles.paneCard}>
+            <div className={styles.paneHeader}>
+              <div className={styles.paneLabel}>Arrow table</div>
+              <div className={styles.paneMeta}>
                 {state.status === 'loaded'
                   ? formatRowCount(getPointCount((state.mesh as any).attributes || {}))
                   : '\u00a0'}
-              </PaneMeta>
-            </PaneHeader>
-            <TableShell>
-              {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
-              {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
+              </div>
+            </div>
+            <div className={styles.tableShell}>
+              {state.status === 'loading' && <div className={styles.statusContainer}>Loading point cloud data...</div>}
+              {state.status === 'error' && <div className={styles.statusContainer}>{state.errorMessage}</div>}
               {state.status === 'loaded' && <PointcloudTable mesh={state.mesh} />}
-            </TableShell>
-          </PaneCard>
-        </PreviewPane>
+            </div>
+          </div>
+        </section>
         {children && (
-          <PreviewPane>
-            <PaneCard>
-              <PaneHeader>
-                <PaneLabel>Deck canvas</PaneLabel>
-                <PaneMeta>&nbsp;</PaneMeta>
-              </PaneHeader>
-              <CanvasShell>{children}</CanvasShell>
-            </PaneCard>
-          </PreviewPane>
+          <section className={styles.previewPane}>
+            <div className={styles.paneCard}>
+              <div className={styles.paneHeader}>
+                <div className={styles.paneLabel}>Deck canvas</div>
+                <div className={styles.paneMeta}>&nbsp;</div>
+              </div>
+              <div className={styles.canvasShell}>{children}</div>
+            </div>
+          </section>
         )}
-      </PreviewLayout>
-    </GlobalPreviewStyle>
+      </div>
+    </div>
   );
 }
 
@@ -546,9 +265,9 @@ function SourceBytesPreview({
   }, []);
 
   return (
-    <BinaryViewport ref={sourceElementRef}>
+    <div className={styles.binaryViewport} ref={sourceElementRef}>
       {formatBinaryPreview(arrayBuffer, bytesPerRow)}
-    </BinaryViewport>
+    </div>
   );
 }
 
@@ -575,10 +294,10 @@ function SourceTextPreview({
   const previewText = truncated ? sourceText.slice(0, SOURCE_TEXT_LIMIT) : sourceText;
 
   return (
-    <TextViewport>
+    <pre className={styles.textViewport}>
       {previewText}
       {truncated ? `\n\n... ${formatByteCount(sourceText.length - SOURCE_TEXT_LIMIT)} more text` : ''}
-    </TextViewport>
+    </pre>
   );
 }
 
@@ -596,32 +315,32 @@ function PointcloudTable({
   const rowCount = Math.min(getPointCount(attributes), PREVIEW_ROW_LIMIT);
 
   if (!columns.length || !rowCount) {
-    return <StatusContainer>No point attributes</StatusContainer>;
+    return <div className={styles.statusContainer}>No point attributes</div>;
   }
 
   return (
-    <PreviewTable>
-      <PreviewTableHead>
+    <table className={styles.previewTable}>
+      <thead className={styles.previewTableHead}>
         <tr>
-          <RowIndexHeaderCell>#</RowIndexHeaderCell>
+          <th className={styles.rowIndexHeaderCell}>#</th>
           {columns.map((column) => (
-            <HeaderCell key={column.name}>{column.name}</HeaderCell>
+            <th className={styles.headerCell} key={column.name}>{column.name}</th>
           ))}
         </tr>
-      </PreviewTableHead>
+      </thead>
       <tbody>
         {Array.from({length: rowCount}, (_, rowIndex) => (
           <tr key={rowIndex}>
-            <RowIndexCell>{rowIndex}</RowIndexCell>
+            <td className={styles.rowIndexCell}>{rowIndex}</td>
             {columns.map((column) => (
-              <BodyCell key={column.name}>
+              <td className={styles.bodyCell} key={column.name}>
                 {formatAttributeValue(attributes, column.attributeName, rowIndex)}
-              </BodyCell>
+              </td>
             ))}
           </tr>
         ))}
       </tbody>
-    </PreviewTable>
+    </table>
   );
 }
 
@@ -796,28 +515,31 @@ function formatBinaryPreview(arrayBuffer: ArrayBuffer, bytesPerRow: number): Rea
   for (let offset = 0; offset < previewLength; offset += bytesPerRow) {
     const rowBytes = Array.from(bytes.slice(offset, Math.min(offset + bytesPerRow, previewLength)));
     rows.push(
-      <BinaryRow key={offset}>
-        <BinaryOffset>{offset.toString(16).padStart(6, '0')}</BinaryOffset>
-        <BinaryBytes $bytesPerRow={bytesPerRow}>
+      <div className={styles.binaryRow} key={offset}>
+        <div className={styles.binaryOffset}>{offset.toString(16).padStart(6, '0')}</div>
+        <div
+          className={styles.binaryBytes}
+          style={{gridTemplateColumns: `repeat(${bytesPerRow}, minmax(0, max-content))`}}
+        >
           {rowBytes.map((byte, index) => (
-            <BinaryByte key={index}>{byte.toString(16).padStart(2, '0')}</BinaryByte>
+            <div className={styles.binaryByte} key={index}>{byte.toString(16).padStart(2, '0')}</div>
           ))}
-        </BinaryBytes>
-        <BinaryAscii>{formatAsciiPreview(rowBytes)}</BinaryAscii>
-      </BinaryRow>
+        </div>
+        <div className={styles.binaryAscii}>{formatAsciiPreview(rowBytes)}</div>
+      </div>
     );
   }
 
   return (
     <>
-      <BinaryHeader>
+      <div className={styles.binaryHeader}>
         <span>Offset</span>
         <span>Bytes</span>
         <span>ASCII</span>
-      </BinaryHeader>
+      </div>
       {rows}
       {bytes.length > previewLength && (
-        <BinaryOverflow>{formatByteCount(bytes.length - previewLength)} more bytes</BinaryOverflow>
+        <div className={styles.binaryOverflow}>{formatByteCount(bytes.length - previewLength)} more bytes</div>
       )}
     </>
   );

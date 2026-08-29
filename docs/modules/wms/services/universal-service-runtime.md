@@ -1,4 +1,44 @@
-# Universal service runtime
+---
+title: Universal service runtime
+description: Apply shared request policy and source caching across protocol-specific OGC service loaders.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Service operations"
+  title="Share operational policy without hiding the protocol."
+  description="ServiceRuntime selects a source, reuses it, and applies common headers, retries, cancellation, telemetry, and error context. The resulting source still exposes its protocol-specific methods."
+  tone="orange"
+  meta={['Source selection', 'Request policy', 'Lifecycle and telemetry']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'Capability discovery', to: '/docs/modules/wms/services/capability-discovery'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Optional runtime layer"
+  title="Standardize the boring parts of service access."
+  description="Use the runtime when several services need the same transport and lifecycle behavior. Keep direct source APIs when the application needs precise control over one protocol."
+  tone="orange"
+  items={[
+    {label: 'Select', value: 'Detect or explicitly choose a compatible service loader.'},
+    {label: 'Reuse', value: 'Cache resolved source instances for repeated URLs.'},
+    {label: 'Operate', value: 'Apply headers, retries, abort signals, and telemetry consistently.'},
+    {label: 'Explain', value: 'Attach operation and request context to service errors.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ServiceRuntime details"
+  description="The reference below covers registry scope, source caching, shared options, custom loaders, telemetry, and the persistent-cache boundary."
+  tone="orange"
+/>
 
 `ServiceRuntime` is an optional lifecycle wrapper for the OGC sources in `@loaders.gl/wms`. It
 selects a loader, caches the resulting source, and applies consistent request policy without hiding

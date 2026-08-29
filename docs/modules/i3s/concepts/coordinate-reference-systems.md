@@ -1,4 +1,44 @@
-# Coordinate reference systems in I3S
+---
+title: Coordinate reference systems in I3S
+description: Discover horizontal and vertical coordinate systems, height models, and placement rules in an I3S layer.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S runtime / coordinates"
+  title="Keep horizontal, vertical, and placement semantics separate."
+  description="I3S describes a horizontal CRS, an optional vertical CRS, a height model, and layer placement through related but distinct fields. loaders.gl discovers them without collapsing their meanings into one guessed coordinate system."
+  tone="orange"
+  meta={['Horizontal and vertical CRS', 'Height models', 'Layer placement']}
+  links={[
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3S source APIs', to: '/docs/modules/i3s/api-reference/i3s-point-cloud-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="I3S spatial metadata"
+  title="Discover meaning first, transform only by request."
+  description="An I3S layer may use legacy WKIDs, embedded WKT, a vertical coordinate system, and an elevation policy. Keeping each source field available makes target-CRS and height conversion decisions auditable."
+  tone="orange"
+  items={[
+    {label: 'Horizontal', value: 'Prefer current WKID, then legacy WKID, WKT, and extent metadata.'},
+    {label: 'Vertical', value: 'Read vertical CRS and height-model information independently.'},
+    {label: 'Placement', value: 'Apply elevationInfo after interpreting source heights.'},
+    {label: 'Output', value: 'Expose original spatialReference and normalized spatialMetadata.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="I3S coordinate reference"
+  description="The detailed reference covers discovery precedence, horizontal output, vertical operations, mesh and point-cloud sources, and diagnostic behavior."
+  tone="orange"
+/>
 
 I3S combines a horizontal CRS, optional vertical CRS, height model, and layer placement rules.
 These inputs answer different questions and must be handled separately. loaders.gl discovers them

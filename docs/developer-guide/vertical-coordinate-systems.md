@@ -1,4 +1,37 @@
-# Vertical Coordinate Systems and Elevation Placement
+---
+title: Vertical coordinate systems and elevation placement
+description: Keep units, height datums, surfaces, and 3D placement as separate parts of a spatial pipeline.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Spatial metadata"
+  title="Know what a Z value means before moving it."
+  description="Vertical coordinates combine stored units, height references, and placement rules. Keeping those questions separate prevents silent shifts in 3D scenes."
+  tone="orange"
+  meta={['Units', 'Vertical CRS', 'Surface placement']}
+  links={[
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The three questions"
+  title="Convert the value, identify the datum, then place the content."
+  description="A geoid is not terrain, and terrain is not a vertical CRS. loaders.gl keeps the metadata and execution layers distinct so each conversion can be inspected."
+  tone="orange"
+  items={[
+    {label: 'Stored unit', value: 'Feet, meters, or a format-specific scale'},
+    {label: 'Height reference', value: 'Ellipsoidal, orthometric, or another datum'},
+    {label: 'Placement', value: 'Absolute, terrain-relative, or surface-relative'},
+    {label: 'Output', value: 'Renderer-relative coordinates after conversion'}
+  ]}
+/>
 
 The vertical position of 3D content is governed by three independent questions:
 
@@ -11,6 +44,12 @@ The vertical position of 3D content is governed by three independent questions:
 These concepts are deliberately separate. A geoid converts between height references; it does not
 describe terrain. A terrain provider supplies ground elevation; it does not identify whether that
 elevation is ellipsoidal or orthometric unless its `heightReference` says so.
+
+<ReferenceBoundary
+  title="Metadata and execution order"
+  description="The sections below define the shared CRS layers, vertical metadata, placement formulas, and the order in which loaders.gl applies them."
+  tone="orange"
+/>
 
 Applications normally do **not** populate source-unit, vertical-CRS, height-model, or placement
 fields. I3S discovers them from layer metadata. Applications supply only a requested output, a

@@ -1,12 +1,54 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: '@loaders.gl/gltf'
+description: Load, inspect, transform, and write glTF and GLB scene assets.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Scenegraph module"
+  title="@loaders.gl/gltf"
+  description="Bring glTF and GLB scenes into an application with linked assets, compressed meshes, typed traversal, and a standards-shaped result."
+  tone="pink"
+  meta={['glTF and GLB', 'Scenegraph data', 'Draco and meshopt']}
+  links={[
+    {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
+    {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
+    {label: 'Try glTF', to: '/examples/gltf'}
+  ]}
+/>
 
 <GltfDocsTabs active="overview" />
 
 ![logo](./images/gltf-small.png)
 
+<ThreeDDataFormatsGraphic />
+
 The `@loaders.gl/gltf` module provides loaders and writers of the GLB/glTF formats.
+
+<DocOrientation
+  eyebrow="The glTF module"
+  title="Keep the scene graph, add the processing you need."
+  description="The module exposes standards-shaped scene data while providing focused APIs for traversal, post-processing, writing, compression, and conversion into application-friendly geometry."
+  tone="pink"
+  items={[
+    {label: 'Read', value: 'Load glTF and GLB with linked resources resolved on demand'},
+    {label: 'Traverse', value: 'Inspect nodes, meshes, materials, and extensions lazily'},
+    {label: 'Process', value: 'Handle Draco, meshopt, thumbnails, and derived data'},
+    {label: 'Write', value: 'Build or encode scenegraphs and compatible binary assets'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Module APIs and format boundaries"
+  description="The reference below covers installation, scenegraph helpers, post-processing, GLB containers, extension handling, compression, and writers."
+  tone="pink"
+/>
 
 ## Installation
 

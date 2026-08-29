@@ -1,4 +1,44 @@
-# Capability graph and service discovery
+---
+title: Capability graph and service discovery
+description: Discover related geospatial service endpoints, preserve their capabilities, and rank candidates without forcing a universal runtime.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Service discovery"
+  title="Find the right endpoint before creating a source."
+  description="Service directories and OGC landing pages describe relationships, formats, coordinate systems, and quality at different levels of detail. discoverServiceGraph records that information so an application can make an explicit choice."
+  tone="mint"
+  meta={['Relationship graph', 'Capability ranking', 'Explicit source creation']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'Universal runtime', to: '/docs/modules/wms/services/universal-service-runtime'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Discovery without lock-in"
+  title="Collect options, keep the decision in application code."
+  description="The graph follows known service relationships and normalizes the capabilities it can identify. It does not crawl arbitrary pages or hide protocol-specific source behavior."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Follow typed links, landing pages, and service-directory children.'},
+    {label: 'Describe', value: 'Preserve type, formats, CRS, tile grids, latency, and quality.'},
+    {label: 'Rank', value: 'Apply application preferences to produce candidate endpoints.'},
+    {label: 'Create', value: 'Pass the chosen endpoint to its concrete source loader.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Discovery graph details"
+  description="The reference below defines graph contents, ranking inputs, serialization, invalidation, and the boundary between discovery and source execution."
+  tone="mint"
+/>
 
 `discoverServiceGraph` follows service-directory JSON and OGC landing-page links and returns a
 serializable `CapabilityGraph`. The graph records what was discovered without forcing applications

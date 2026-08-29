@@ -1,12 +1,53 @@
-# Tileset3D
+---
+title: Tileset3D
+description: Traverse, cull, request, and cache source-backed 3D tilesets.
+hide_title: true
+page_style: designed
+---
 
-> The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+
+<DocPageHeader
+  eyebrow="Tiles module · 3D runtime"
+  title="Tileset3D"
+  description="The shared runtime for hierarchical 3D data: traverse visible tiles, cull by volume, schedule requests, manage cache state, and coordinate selected content."
+  tone="cyan"
+  meta={['3D traversal', 'Culling and requests', 'Source-backed runtime']}
+  links={[
+    {label: 'Tileset3DSource', to: '/docs/modules/tiles/api-reference/tileset-3d-source'},
+    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'},
+    {label: 'Tiles module', to: '/docs/modules/tiles'}
+  ]}
+/>
+
+<TiledSceneGraphic />
+
+<DocOrientation
+  eyebrow="The 3D runtime"
+  title="Select the data the view needs, when it needs it."
+  description="Tileset3D keeps hierarchical data responsive by combining view-dependent traversal with source-provided metadata and content loading."
+  tone="cyan"
+  items={[
+    {label: 'Traversal', value: 'Choose tiles by screen-space and hierarchy'},
+    {label: 'Culling', value: 'Test volumes against the current view'},
+    {label: 'Requests', value: 'Schedule and prioritize tile content'},
+    {label: 'Cache', value: 'Retain, unload, and refresh tile state'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tileset3D reference"
+  description="The sections below document construction, viewport updates, callbacks, traversal, cache behavior, and source integration."
+  tone="cyan"
+/>
 
 The `Tileset3D` class is the shared runtime for traversal, culling, selection, cache management, and request scheduling across source-backed 3D tilesets.
 
 It is constructed with a [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source), such as [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source) or [`I3SSource`](/docs/modules/tiles/api-reference/i3s-source).
 
-References
+## Standards
 
 - [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
 - [I3S Tiles](https://github.com/Esri/i3s-spec).
@@ -21,40 +62,35 @@ import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
-const tileset3d = new Tileset3D(source, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 ```
 
-Loading a tileset and dynamically load/unload with viewport.
+Loading a tileset from an I3S source and updating it with the viewport:
 
 ```typescript
 import {I3SLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
 import {WebMercatorViewport} from '@deck.gl/web-mercator';
 
-const tileseturl =
+const tilesetUrl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
-const tileset3d = new Tileset3D(source, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-tileset3d.update(viewport);
+await tileset.selectTiles(viewport);
+const visibleTiles = tileset.tiles.filter(tile => tile.selected);
 ```
 
-Since `Tileset3D's update` is a synchronized call, which selects the tiles qualified for rendering based on current viewport and available tiles, user can trigger another `update` when new tiles are loaded.
+`Tileset3D.selectTiles` waits for initialization and coalesces viewport updates. Call it again when
+the viewport changes; the selected set can continue to change as requested tile content arrives.
 
-```typescript
-import {Tileset3D} from '@loaders.gl/tiles';
-
-const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-
-const tileset3d = new Tileset3D(source, {
-  onTileLoad: (tile) => tileset3d.update(viewport)
-});
-```
+`Tileset3D.update(viewport)` remains available as a fire-and-forget compatibility wrapper when the
+application does not need to await the traversal promise.
 
 ## Constructor
 
@@ -87,16 +123,18 @@ Parameters:
   - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
-  - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverse and update tiles. Set this options to `false` during the run time to freeze the scene.
+  - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverses and updates tiles. Set this option to `false` at runtime to freeze the scene.
 
 Callbacks:
 
 - `onTileLoad` (`(tileHeader : Tile3D) : void`) - callback when a tile node is fully loaded during the tileset traversal.
 - `onTileUnload` (`(tileHeader : Tile3D) : void`) - callback when a tile node is unloaded during the tileset traversal.
-- `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+- `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile fails to load during traversal.
 - `onTraversalComplete` (`(selectedTiles : Tile3D[]) : Tile3D[]`) - callback post-process selectedTiles right after traversal.
 
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app
+when the set of tiles available for rendering has changed. Tile loads complete asynchronously, so
+the selected set can change after a traversal call returns.
 
 For format-specific source behavior, see:
 
@@ -122,7 +160,8 @@ for the formulas, worked example, projection boundaries, and tuning guidance.
 
 ###### `boundingVolume` (BoundingVolume)
 
-The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3D#boundingVolume`
+The root tile's bounding volume, which is also the bounding volume of the entire tileset. See
+`Tile3D#boundingVolume`.
 
 ###### `cartesianCenter` (Number[3])
 
@@ -130,7 +169,7 @@ Center of tileset in fixed frame coordinates.
 
 ###### `cartographicCenter` (Number[3])
 
-Center of tileset in cartographic coordinates `[long, lat, elevation]`
+Center of the tileset in cartographic coordinates `[long, lat, elevation]`.
 
 ###### `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid))
 

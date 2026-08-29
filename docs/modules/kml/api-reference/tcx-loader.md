@@ -1,12 +1,46 @@
+---
+title: TCXLoader
+description: Parse activity-oriented TCX files into loaders.gl geometry tables.
+hide_title: true
+page_style: designed
+---
+
 import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# TCXLoader
-
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
-</p>
+<DocPageHeader
+  eyebrow="KML module · loader API"
+  title="TCXLoader"
+  description="Parse Garmin Training Center XML activities into loaders.gl geometry tables while keeping the activity, lap, and measurement structure available to the application."
+  tone="orange"
+  meta={['From v3.0', 'TCX', 'Activity data']}
+  links={[
+    {label: 'TCX format', to: '/docs/modules/kml/formats/tcx'},
+    {label: 'KML module', to: '/docs/modules/kml'}
+  ]}
+/>
 
 <KmlDocsTabs active="tcxloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Keep track geometry compatible with table pipelines."
+  description="TCXLoader presents activity tracks through the same geometry-table family used by related loaders, so applications can share rendering and analysis code."
+  tone="orange"
+  items={[
+    {label: 'Default', value: 'GeoJSONTable for application code'},
+    {label: 'Rows', value: 'Object-row table for inspection'},
+    {label: 'Columns', value: 'ArrowTable with WKB geometry'},
+    {label: 'Binary', value: 'Binary feature collection for rendering'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TCXLoader reference"
+  description="The sections below document imports, output shapes, options, and runtime limitations."
+  tone="orange"
+/>
 
 The `TCXLoader` parses [TCX files][tcx_wikipedia] into loaders.gl geometry tables.
 

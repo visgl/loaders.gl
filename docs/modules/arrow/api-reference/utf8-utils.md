@@ -1,10 +1,50 @@
-# UTF-8 Utilities
+---
+title: UTF-8 Utilities
+description: Compare and parse Arrow UTF-8 byte ranges without materializing JavaScript strings.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow UTF-8 utilities"
+  title="Inspect text columns without leaving the byte path."
+  description="These helpers compare UTF-8 values and parse numeric text directly from Arrow byte ranges. They are designed for hot paths where allocating JavaScript strings would add avoidable work."
+  tone="cyan"
+  meta={['Utf8 and LargeUtf8', 'Byte-range parsing', 'Allocation-aware']}
+  links={[
+    {label: 'Arrow module', to: '/docs/modules/arrow'},
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Table category', to: '/docs/specifications/category-table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The byte-range path"
+  title="Find the offsets. Read the bytes. Materialize only when needed."
+  description="Arrow stores variable-width strings in a values buffer plus offsets. These functions operate on that representation directly for comparisons and numeric parsing."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Arrow Utf8 or LargeUtf8 data'},
+    {label: 'Locate', value: 'Value offsets from the Arrow data chunk'},
+    {label: 'Inspect', value: 'Unsigned UTF-8 comparison or number parsing'},
+    {label: 'Result', value: 'A comparison value or parsed number'}
+  ]}
+/>
 
 The UTF-8 utilities compare and parse Arrow UTF-8 value byte ranges without materializing them into
 JavaScript strings.
 
 Use these helpers with Arrow `Utf8` or `LargeUtf8` data when a hot path needs to inspect string
 values directly from `data.values` and `data.valueOffsets`.
+
+<ReferenceBoundary
+  title="Byte offsets and utility details"
+  description="The reference below covers UTF-8 comparison, numeric parsing, sliced data, offset handling, and supported Arrow string layouts."
+  tone="cyan"
+/>
 
 ## Usage
 

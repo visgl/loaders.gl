@@ -26,7 +26,8 @@ class TOMLParser {
 
   /** Parses the document root. */
   parse(): TOMLTable {
-    for (const [lineIndex, sourceLine] of this.lines.entries()) {
+    for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
+      const sourceLine = this.lines[lineIndex];
       const line = stripTOMLComment(sourceLine).trim();
       if (!line) {
         continue;
@@ -36,7 +37,16 @@ class TOMLParser {
       } else if (line.startsWith('[') && line.endsWith(']')) {
         this.currentTable = this.openTable(line.slice(1, -1).trim(), lineIndex);
       } else {
-        this.parseAssignment(line, lineIndex);
+        const assignmentLineIndex = lineIndex;
+        let assignment = sourceLine;
+        while (!isTOMLValueComplete(getTOMLValueText(assignment))) {
+          if (lineIndex + 1 >= this.lines.length) {
+            break;
+          }
+          lineIndex++;
+          assignment += `\n${this.lines[lineIndex]}`;
+        }
+        this.parseAssignment(stripTOMLComment(assignment).trim(), assignmentLineIndex);
       }
     }
     return this.root;
@@ -45,16 +55,7 @@ class TOMLParser {
   /** Opens or creates a regular table. */
   private openTable(pathText: string, lineIndex: number): TOMLTable {
     const path = parseTOMLKey(pathText, lineIndex);
-    let table = this.root;
-    for (const key of path) {
-      const value = table[key];
-      if (value !== undefined && !isTOMLTable(value)) {
-        throw tomlError(lineIndex, `Cannot redefine ${path.join('.')}`);
-      }
-      table[key] = value ?? {};
-      table = table[key] as TOMLTable;
-    }
-    return table;
+    return this.resolveTable(path, lineIndex);
   }
 
   /** Opens a new array-of-tables entry. */
@@ -64,15 +65,7 @@ class TOMLParser {
     if (!key) {
       throw tomlError(lineIndex, 'Empty table name');
     }
-    let parent = this.root;
-    for (const part of path) {
-      const value = parent[part];
-      if (value !== undefined && !isTOMLTable(value)) {
-        throw tomlError(lineIndex, `Cannot create table ${pathText}`);
-      }
-      parent[part] = value ?? {};
-      parent = parent[part] as TOMLTable;
-    }
+    const parent = this.resolveTable(path, lineIndex);
     const existingEntries = parent[key];
     if (existingEntries !== undefined && !Array.isArray(existingEntries)) {
       throw tomlError(lineIndex, `Cannot redefine ${pathText}`);
@@ -81,6 +74,29 @@ class TOMLParser {
     const entries = (existingEntries as TOMLTable[] | undefined) ?? [];
     entries.push(table);
     parent[key] = entries;
+    return table;
+  }
+
+  /** Resolves a table path, selecting the most recent array-table element. */
+  private resolveTable(path: string[], lineIndex: number): TOMLTable {
+    let table = this.root;
+    for (const key of path) {
+      const value = table[key];
+      if (value === undefined) {
+        table[key] = {};
+        table = table[key] as TOMLTable;
+      } else if (Array.isArray(value)) {
+        const activeTable = value[value.length - 1];
+        if (!isTOMLTable(activeTable)) {
+          throw tomlError(lineIndex, `Cannot create table ${path.join('.')}`);
+        }
+        table = activeTable;
+      } else if (isTOMLTable(value)) {
+        table = value;
+      } else {
+        throw tomlError(lineIndex, `Cannot redefine ${path.join('.')}`);
+      }
+    }
     return table;
   }
 
@@ -163,16 +179,16 @@ class TOMLValueParser {
     }
     const normalized = word.replace(/_/g, '');
     if (/^[+-]?0x[0-9a-f]+$/i.test(normalized)) {
-      return Number.parseInt(normalized, 16);
+      return parseTOMLInteger(normalized, Number.parseInt(normalized, 16), this.options);
     }
     if (/^[+-]?0o[0-7]+$/i.test(normalized)) {
-      return Number.parseInt(normalized, 8);
+      return parseTOMLInteger(normalized, Number.parseInt(normalized, 8), this.options);
     }
     if (/^[+-]?0b[01]+$/i.test(normalized)) {
-      return Number.parseInt(normalized, 2);
+      return parseTOMLInteger(normalized, Number.parseInt(normalized, 2), this.options);
     }
     if (/^[+-]?\d+$/.test(normalized)) {
-      return this.options.integersAsBigInt ? BigInt(normalized) : Number(normalized);
+      return parseTOMLInteger(normalized, Number(normalized), this.options);
     }
     if (/^[+-]?(?:\d+\.\d*|\d*\.\d+|\d+)(?:e[+-]?\d+)?$/i.test(normalized)) {
       return Number(normalized);
@@ -189,11 +205,20 @@ class TOMLValueParser {
 
   /** Parses a basic or literal string. */
   private parseString(quote: string): string {
-    this.index++;
+    const delimiter = this.text.startsWith(quote.repeat(3), this.index) ? quote.repeat(3) : quote;
+    const multiline = delimiter.length === 3;
+    this.index += delimiter.length;
+    if (multiline && this.text[this.index] === '\n') {
+      this.index++;
+    }
     let result = '';
     while (this.index < this.text.length) {
+      if (multiline && this.text.startsWith(delimiter, this.index)) {
+        this.index += delimiter.length;
+        return result;
+      }
       const character = this.text[this.index++];
-      if (character === quote) {
+      if (!multiline && character === quote) {
         return result;
       }
       if (quote === '"' && character === '\\') {
@@ -263,8 +288,21 @@ class TOMLValueParser {
       const keyText = this.text.slice(keyStart, keyStart + separator).trim();
       this.index = keyStart + separator + 1;
       this.skipWhitespace();
-      const key = parseTOMLKey(keyText, this.lineIndex).join('.');
-      result[key] = this.parseValue();
+      const keyPath = parseTOMLKey(keyText, this.lineIndex);
+      let target = result;
+      for (const key of keyPath.slice(0, -1)) {
+        const nested = target[key];
+        if (nested !== undefined && !isTOMLTable(nested)) {
+          throw tomlError(this.lineIndex, `Cannot create dotted key ${keyPath.join('.')}`);
+        }
+        target[key] = nested ?? {};
+        target = target[key] as TOMLTable;
+      }
+      const key = keyPath[keyPath.length - 1];
+      if (!key || Object.prototype.hasOwnProperty.call(target, key)) {
+        throw tomlError(this.lineIndex, `Duplicate key ${keyPath.join('.')}`);
+      }
+      target[key] = this.parseValue();
       this.skipWhitespace();
       if (this.text[this.index] === ',') {
         this.index++;
@@ -345,14 +383,59 @@ function stripTOMLComment(text: string): string {
   for (let index = 0; index < text.length; index++) {
     const character = text[index];
     if (quote) {
-      if (character === quote && text[index - 1] !== '\\') quote = null;
+      if (text.startsWith(quote, index) && (quote.length === 3 || text[index - 1] !== '\\')) {
+        index += quote.length - 1;
+        quote = null;
+      }
     } else if (character === '"' || character === "'") {
-      quote = character;
+      quote = text.startsWith(character.repeat(3), index) ? character.repeat(3) : character;
     } else if (character === '#') {
       return text.slice(0, index);
     }
   }
   return text;
+}
+
+/** Returns the value portion of a TOML assignment. */
+function getTOMLValueText(text: string): string {
+  const separator = findTOMLSeparator(text, '=');
+  return separator < 0 ? '' : stripTOMLComment(text.slice(separator + 1)).trim();
+}
+
+/** Checks whether a TOML value is complete across physical lines. */
+function isTOMLValueComplete(text: string): boolean {
+  if (!text) {
+    return false;
+  }
+  let quote: string | null = null;
+  let depth = 0;
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index];
+    if (quote) {
+      if (text.startsWith(quote, index) && (quote.length === 3 || text[index - 1] !== '\\')) {
+        index += quote.length - 1;
+        quote = null;
+      }
+    } else if (character === '"' || character === "'") {
+      quote = text.startsWith(character.repeat(3), index) ? character.repeat(3) : character;
+    } else if (character === '[' || character === '{') {
+      depth++;
+    } else if (character === ']' || character === '}') {
+      depth--;
+    }
+  }
+  return depth === 0 && !quote;
+}
+
+/** Converts a TOML integer to a number or BigInt according to parser options. */
+function parseTOMLInteger(
+  text: string,
+  numericValue: number,
+  options: TOMLParseOptions
+): number | bigint {
+  const mode = options.integersAsBigInt;
+  const useBigInt = mode === true || (mode === 'asNeeded' && !Number.isSafeInteger(numericValue));
+  return useBigInt ? BigInt(text) : numericValue;
 }
 
 /** Checks whether a value can hold TOML child keys. */

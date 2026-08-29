@@ -1,10 +1,49 @@
-# WMTSCapabilityLoader
+---
+title: WMTSCapabilitiesLoader
+description: Parse OGC WMTS capabilities into typed tile-service metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS module · capabilities loader"
+  title="WMTSCapabilitiesLoader"
+  description="Read an OGC Web Map Tile Service capabilities response into the layer and request metadata needed to select a tile matrix set and formats."
+  tone="cyan"
+  meta={['From v3.4', 'OGC WMTS', 'Typed metadata']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'CRS and tile grids', to: '/docs/modules/wms/api-reference/crs-and-tile-grids'},
+    {label: 'WMS capabilities', to: '/docs/modules/wms/api-reference/wms-capabilities-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Turn a verbose tile catalog into selection metadata."
+  description="The loader extracts the commonly needed service, layer, request, CRS, and bounding-box fields while leaving the full XML path available through XMLLoader when an application needs more."
+  tone="cyan"
+  items={[
+    {label: 'Layers', value: 'Names, titles, bounds, and supported CRS'},
+    {label: 'Requests', value: 'Operations and advertised MIME types'},
+    {label: 'Tile matrix', value: 'Metadata for choosing a compatible grid'},
+    {label: 'Boundary', value: 'Typed subset of a larger XML standard'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WMTSCapabilitiesLoader reference"
+  description="The sections below document the request, parsed data, options, and the intentionally focused extraction scope."
+  tone="cyan"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
-  &nbsp;
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 

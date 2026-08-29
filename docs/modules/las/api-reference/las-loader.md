@@ -1,14 +1,52 @@
-import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+---
+title: LASLoader
+description: Parse LAS and LAZ point records into render-ready objects or Mesh Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-# LAS Loaders
+import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="LAS loader"
+  title="Choose the point shape that fits the next step."
+  description="LASLoader reads LAS and LAZ records with a pure TypeScript implementation. Return a render-ready point cloud for visualization, or select Arrow columns when the data is headed to analysis, workers, scans, or writers."
+  tone="blue"
+  meta={['LAS / LAZ', 'TypeScript', 'Arrow output']}
+  links={[
+    {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
+    {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}
+  ]}
+/>
 
 <LasDocsTabs active="lasloader" />
 
-<p class="badges">
+<DocOrientation
+  eyebrow="One parser, several uses"
+  title="Keep only the representation you need."
+  description="The same point records can become a legacy point-cloud object or typed columns. Column selection keeps optional fields from expanding the result unnecessarily."
+  tone="blue"
+  items={[
+    {label: 'Default', value: 'PointCloud object for direct visualization'},
+    {label: 'Columnar', value: "Mesh Arrow table with shape: 'arrow-table'"},
+    {label: 'Fields', value: 'Position, color, returns, time, NIR, waveform, and Extra Bytes'},
+    {label: 'Variants', value: 'TypeScript, LASzip-compatible, and COPC decoding paths'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
 `LASLoader` is the primary, pure TypeScript LAS/LAZ loader. It parses point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+<ReferenceBoundary
+  title="LASLoader details"
+  description="The sections below cover usage, output shapes, decoder variants, options, streaming, and compatibility."
+  tone="blue"
+/>
 
 ## Usage
 

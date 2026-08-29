@@ -1,11 +1,49 @@
-import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+---
+title: Chrome Trace format
+description: A JSON event format for browser, Node.js, and application performance traces.
+hide_title: true
+page_style: designed
+---
 
-# Chrome Trace
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Performance trace format"
+  title="Keep the event stream, then make it queryable."
+  description="Chrome Trace Event files describe process, thread, duration, instant, counter, and flow events as JSON. loaders.gl normalizes common identifiers and exposes them as Arrow columns without discarding extra fields."
+  tone="violet"
+  meta={['Trace Event JSON', 'Arrow output', 'Round-trip writer']}
+  links={[
+    {label: 'Traces module', to: '/docs/modules/traces'},
+    {label: 'Chrome Trace loader', to: '/docs/modules/traces/api-reference/chrome-trace-loader'}
+  ]}
+/>
 
 <TracesDocsTabs active="chrome-trace" />
 
+<DocOrientation
+  eyebrow="The event model"
+  title="Use phase codes to describe time and relationships."
+  description="A trace event is small, but its phase, identifiers, timestamps, duration, and arguments give it meaning. The loader makes those fields stable for analysis and preserves data it does not model directly."
+  tone="violet"
+  items={[
+    {label: 'Phases', value: 'Duration, instant, counter, metadata, and flow events'},
+    {label: 'Identity', value: 'Process, thread, async, and flow identifiers'},
+    {label: 'Columns', value: 'Stable Arrow fields plus JSON for extra values'},
+    {label: 'Round trip', value: 'Writer restores metadata and logical event fields'}
+  ]}
+/>
+
 Chrome Trace Event files are JSON objects with a top-level `traceEvents` array. They are produced by
 Chrome, Chromium-based tools, Node.js, and many profiling libraries.
+
+<ReferenceBoundary
+  title="Chrome Trace events and Arrow output"
+  description="The sections below describe event phases, the Arrow representation, metadata, streaming behavior, and round-trip guarantees."
+  tone="violet"
+/>
 
 ```json
 {
