@@ -1,8 +1,42 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: postProcessGLTF
+description: Convert raw glTF JSON into an interlinked structure when an application wants resolved scenegraph references.
+hide_title: true
+page_style: designed
+---
 
-# postProcessGLTF
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="glTF API / post-processing"
+  title="Opt into convenient scenegraph links."
+  description="The glTF loader preserves standards-shaped JSON. postProcessGLTF is the explicit second step for applications that prefer object references between scenes, nodes, meshes, materials, and buffers."
+  tone="pink"
+  meta={['Explicit opt-in', 'Resolved references', 'Typed postprocessed data']}
+/>
 
 <GltfDocsTabs active="post-processing" />
+
+<DocOrientation
+  eyebrow="Two useful representations"
+  title="Raw first. Convenient when needed."
+  description="Keeping post-processing separate lets loaders.gl preserve fidelity for general consumers while giving renderers and scene tools an easy-to-navigate graph when they need one."
+  tone="pink"
+  items={[
+    {label: 'Input', value: 'A GLTFWithBuffers result with source-shaped JSON and resources.'},
+    {label: 'Transform', value: 'Resolve selected numeric links and construct scenegraph helpers.'},
+    {label: 'Output', value: 'A GLTFPostprocessed structure for convenient traversal.'},
+    {label: 'Choice', value: 'Call it only when the application benefits from the extra structure.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Post-processing reference"
+  description="The sections below describe the function signature, copied versus shared objects, resolved links, and the transformations performed."
+  tone="pink"
+/>
 
 The `postProcessGLTF` function transforms standards-compliant glTF JSON
 into an inter-linked JavaScript data structure that it significantly easier to work with.
