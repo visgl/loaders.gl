@@ -181,7 +181,12 @@ export class HudiTableSource
     return new ParquetDatasetSource(
       () =>
         this.getScanFragments(options).then(fragments =>
-          fragments.map(fragment => ({data: fragment.uri!, id: fragment.id}))
+          fragments.map(fragment => ({
+            data: fragment.uri!,
+            id: fragment.id,
+            partitions: fragment.partitionValues as never,
+            metadata: fragment.metadata
+          }))
         ),
       this.options
     );
