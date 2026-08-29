@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 
 <DocPageHeader
   eyebrow="Service sources"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Service catalog', to: '/docs'}
   ]}
 />
+
+<ServiceSourceGraphic kind="arcgis" />
 
 The `@loaders.gl/services` module provides framework-independent sources for ArcGIS REST services.
 The sources use the same loaders.gl contracts as file loaders: they can be selected by `load`,

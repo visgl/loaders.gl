@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 
 <DocPageHeader
   eyebrow="OGC service module"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
+
+<ServiceSourceGraphic kind="ogc" />
 
 <DocOrientation
   eyebrow="The service path"
