@@ -1,4 +1,44 @@
-# RequestCache
+---
+title: RequestCache
+description: Share concurrent requests and retain settled results within source-scoped entry and byte budgets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader utilities / request cache"
+  title="Deduplicate work, then keep useful results nearby."
+  description="RequestCache shares in-flight requests, retains settled values by recency, and bounds storage by entries or estimated bytes. It is designed for one source's request lifecycle rather than as a global HTTP cache."
+  tone="yellow"
+  meta={['Concurrent request sharing', 'Entry and byte budgets', 'Abort-aware']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: '3D Tiles cache', to: '/docs/modules/3d-tiles/concepts/caching-and-memory'},
+    {label: 'Request scheduling', to: '/docs/modules/loader-utils/api-reference/request-scheduler'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Source-scoped cache"
+  title="Share pending work without making cancellation surprising."
+  description="Several consumers can ask for the same resource and share one promise. A caller may abort its own wait, while the underlying request remains alive for other waiters until the cache no longer needs it."
+  tone="yellow"
+  items={[
+    {label: 'Share', value: 'Deduplicate concurrent loads for the same key.'},
+    {label: 'Retain', value: 'Keep settled results by recency for nearby reuse.'},
+    {label: 'Bound', value: 'Limit entries and estimated retained bytes.'},
+    {label: 'Cancel', value: 'Abort underlying work only when no waiter still needs it.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="RequestCache reference"
+  description="The detailed reference covers construction, loading, eviction, byte estimation, abort behavior, clear operations, and lifecycle events."
+  tone="yellow"
+/>
 
 - _Framework_: JavaScript
 - _Module_: [`@loaders.gl/loader-utils`](https://www.npmjs.com/package/@loaders.gl/loader-utils)

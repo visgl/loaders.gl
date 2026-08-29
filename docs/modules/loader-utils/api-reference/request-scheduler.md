@@ -1,4 +1,44 @@
-# Request Scheduler
+---
+title: RequestScheduler
+description: Queue and reprioritize outstanding resource requests without flooding browser connections or service endpoints.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader utilities / request scheduling"
+  title="Control when outstanding work gets a network slot."
+  description="RequestScheduler does not fetch resources itself. It coordinates the moment an application is allowed to issue a request, and it can reevaluate priority as the camera, viewport, or application state changes."
+  tone="orange"
+  meta={['Concurrency limits', 'Dynamic priorities', 'Cancellation-aware']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: '3D Tiles priorities', to: '/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities'},
+    {label: 'Request cache', to: '/docs/modules/loader-utils/api-reference/request-cache'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Request coordination"
+  title="Issue many requests without issuing them all at once."
+  description="Applications can describe work immediately, then let the scheduler decide which request starts when capacity is available. Priority callbacks are reevaluated as pending work and application state change."
+  tone="orange"
+  items={[
+    {label: 'Queue', value: 'Register work that is ready to be issued.'},
+    {label: 'Limit', value: 'Keep active requests within a configured concurrency.'},
+    {label: 'Prioritize', value: 'Reevaluate outstanding work when a slot opens.'},
+    {label: 'Complete', value: 'Release the token so the next queued request can proceed.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="RequestScheduler reference"
+  description="The detailed reference covers construction, scheduling tokens, priority callbacks, throttling, cancellation, and completion lifecycle."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 

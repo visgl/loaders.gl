@@ -1,4 +1,44 @@
-# DataSourceManager
+---
+title: DataSourceManager
+description: Share source instances by stable ids while keeping lifecycle, discovery, and release behavior explicit.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader utilities / source lifecycle"
+  title="Share a source without sharing every implementation detail."
+  description="DataSourceManager owns source instances by stable ids and lets consumers subscribe, inspect, and release them through a small lifecycle boundary. It works with tile, image, raster, vector, SQL, archive-backed, and in-memory sources."
+  tone="mint"
+  meta={['Stable source ids', 'Subscriptions', 'Lifecycle and diagnostics']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'Source selection', to: '/docs/modules/core/api-reference/select-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Managed source path"
+  title="Create once, observe intentionally, release cleanly."
+  description="A manager is useful when application components need a lightweight reference to a shared source. Read-only discovery methods expose registrations and metadata without requiring consumers to hold the concrete source object."
+  tone="mint"
+  items={[
+    {label: 'Create', value: 'Build a concrete DataSource through the core source API.'},
+    {label: 'Register', value: 'Store it under an application-chosen stable id.'},
+    {label: 'Subscribe', value: 'Observe one source without passing it through every component.'},
+    {label: 'Release', value: 'Remove the registration and underlying source resources together.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="DataSourceManager reference"
+  description="The detailed reference covers registration, subscriptions, discovery, diagnostics, replacement, and resource release."
+  tone="mint"
+/>
 
 `DataSourceManager` owns a set of shared `DataSource` instances and lets consumers subscribe to them by stable ids. It is useful when an application or integration layer needs to create `DataSource` objects once, pass lightweight references through props or configuration, and release the underlying resources when those references are no longer used.
 
