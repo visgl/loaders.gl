@@ -34,13 +34,22 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ```typescript
-loadInBatches(url: string | File | ... , loaders: Loader, options?: LoaderOptions): Promise<AsyncIterator<unknown>>
-loadInBatches(url: string | File | ... , loaders: Loader[], options?: LoaderOptions): Promise<AsyncIterator<unknown>>
-loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader, options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
-loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
+type BatchInput = string | File | Blob | Response;
+
+loadInBatches(
+  files: BatchInput,
+  loaders?: Loader | Loader[],
+  options?: LoaderOptions
+): Promise<AsyncIterable<unknown>>
+loadInBatches(
+  files: BatchInput[] | FileList,
+  loaders?: Loader | Loader[],
+  options?: LoaderOptions
+): Promise<AsyncIterable<unknown>>[]
 ```
 
-`loadInBatches` opens a `url` as a stream and passes it and options to `parseInBatches`. See the documentation of `load` and `parseInBatches` for more details.
+`loadInBatches()` fetches each URL and passes its response to `parseInBatches()`. For local files,
+blobs, responses, and iterables it forwards the input directly to the parser.
 
 <ReferenceBoundary
   title="Batch loading details"
@@ -48,31 +57,35 @@ loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], opti
   tone="violet"
 />
 
-Starting with [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), `loadInBatches` can also load and parse multiple files from a list of `File` objects or URLs.
+`loadInBatches()` can also open multiple files from a list of `File` objects or URLs.
 
-In this mode, it iterates over the supplied files, looking for valid loader matches, ignores files that do not match a loader and calls `parseInBatches` on each valid file/loader combination, returning an array of async batch iterators.
+In this mode, it returns one promise for each file. Each promise resolves to an async batch
+iterator, allowing independent files to begin loading without waiting for the other files.
 
 More importantly, when called with multiple files, `loadInBatches` makes all the supplied files available to all loaders (enabling multi-file loaders such as the ShapefileLoader to access multiple files).
 
 ### Usage
 
 ```typescript
-const iteratorPromises = await loadInBatches([file1, file2], OBJLoader);
-for await (const iterator of iteratorPromises) {
+const iteratorPromises = loadInBatches([file1, file2], OBJLoader);
+const iterators = await Promise.all(iteratorPromises);
+for (const iterator of iterators) {
   for await (const batch of iterator) {
-    // Just the one batch...
-    t.equal(batch.mode, 4, 'mode is TRIANGLES (4)');
+    processMeshBatch(batch.data);
   }
 }
 ```
 
 ```typescript
-import {fetchFile, parseFilesInBatches} from '@loaders.gl/core';
+import {loadInBatches} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
-const batchIterators = await loadFilesInBatches([shpFile, dbfFile, projFile], ShapefileLoader));
+const batchIteratorPromises = loadInBatches(
+  [shpFile, dbfFile, projFile],
+  ShapefileLoader
+);
+const batchIterators = await Promise.all(batchIteratorPromises);
 for (const batchIterator of batchIterators) {
-  // `batchIterator` represents the the output of `parseInBatches` on one of the files
   for await (const batch of batchIterator) {
     switch (batch.batchType) {
       case 'metadata':
@@ -85,7 +98,7 @@ for (const batchIterator of batchIterators) {
 }
 ```
 
-Loads data in batches from a stream, releasing each batch to the application while the stream is still being read.
+`loadInBatches()` releases each batch to the application while the resource is still being read.
 
 Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using the URL extension and header matching).
 
@@ -93,13 +106,11 @@ Parses data with the selected _loader object_. An array of `loaders` can be prov
 - `loaders`: can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
 - `options`: see [`LoaderOptions`](./loader-options).
 
-Returns:
+Returns an async iterator that yields loader-defined batches. With multiple files, the function
+returns an array of promises, one for each input file.
 
-- Returns an async iterator that yields batches of data. The exact format for the batches depends on the _loader object_ category.
-
-Notes:
-
-- The `loaders` parameter can also be omitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+The `loaders` parameter can be omitted when loaders have been registered with
+[`registerLoaders`](/docs/modules/core/api-reference/register-loaders).
 
 ## Options
 
