@@ -1,4 +1,37 @@
-# @loaders.gl/stac
+---
+title: STAC module
+description: Discover cloud datasets and assets through static catalogs or the STAC API.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Dataset discovery"
+  title="Find the asset before choosing the loader."
+  description="The STAC module discovers datasets, links, time ranges, and spatial extents from static catalogs or API searches, then leaves the selected asset free to use its native loader."
+  tone="mint"
+  meta={['STAC catalogs', 'API Item Search', 'Asset links']}
+  links={[
+    {label: 'STAC source', to: '/docs/modules/stac/api-reference/stac-source-loader'},
+    {label: 'Services module', to: '/docs/modules/services'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Discovery before decoding"
+  title="Catalogs describe data. Assets carry it."
+  description="STAC keeps search and traversal separate from format parsing. Once an item and asset are selected, the application can hand the link to GeoTIFF, Parquet, COG, or another specialized loader."
+  tone="mint"
+  items={[
+    {label: 'Static', value: 'Traverse linked catalogs when explicitly requested'},
+    {label: 'API', value: 'Search items by collection, time, or bbox'},
+    {label: 'Asset', value: 'Select links by role, media type, or name'},
+    {label: 'Next step', value: 'Load the asset with its native format module'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -10,6 +43,12 @@ The `@loaders.gl/stac` module discovers datasets and assets described by the
 [SpatioTemporal Asset Catalog specification](https://stacspec.org/). It supports both linked static
 catalogs and server-side STAC API Item Search without imposing a rendering framework or a database
 dependency.
+
+<ReferenceBoundary
+  title="STAC source usage"
+  description="The sections below cover installation, catalog traversal, API search, and asset selection."
+  tone="mint"
+/>
 
 ## Installation
 
