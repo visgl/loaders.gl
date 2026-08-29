@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -32,6 +33,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Save', value: 'Write a buffer, stream, file, or application response'}
   ]}
 />
+
+<WriterPipelineGraphic />
 
 Writers allow applications to encode data into many of the formats supported by loaders.gl.
 
