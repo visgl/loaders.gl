@@ -151,7 +151,6 @@
   gap: 0.4rem;
   justify-content: flex-end;
   margin: 0;
-  max-width: 48%;
 }
 
 .badges:empty {
@@ -181,13 +180,8 @@
 }
 
 .badges :global(img) {
-  border: 1px solid color-mix(in srgb, var(--header-accent) 42%, transparent);
-  border-radius: 0.28rem;
-  display: block;
-  filter: saturate(0.72) brightness(1.08);
-  height: 1.25rem;
+  display: inline-block;
   margin: 0;
-  opacity: 0.92;
 }
 
 .badges :global(a) {
