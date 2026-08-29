@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
   ]}
 />
+
+<ServiceSourceGraphic kind="arcgis" />
 
 <DocOrientation
   eyebrow="What it provides"

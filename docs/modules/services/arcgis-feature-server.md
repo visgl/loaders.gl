@@ -7,6 +7,7 @@ page_style: designed
 
 import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -24,6 +25,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <WmsDocsTabs active="arcgis-feature-server" />
+
+<ServiceSourceGraphic kind="arcgis" />
 
 <p className="badges">
   <a href="/docs/modules/scan#vector-table-views">
