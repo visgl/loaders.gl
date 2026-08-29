@@ -1,4 +1,44 @@
-# CSW - Catalogue Service for the Web
+---
+title: CSW - Catalogue Service for the Web
+description: Search geospatial catalogs and discover the services that publish their datasets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="OGC catalog format"
+  title="Find the dataset before requesting its pixels or features."
+  description="Catalogue Service for the Web (CSW) is an OGC protocol for searching geospatial catalogs. loaders.gl adapts the read-only catalog operations into typed records and a normalized service directory."
+  tone="orange"
+  meta={['OGC CSW', 'Catalog search', 'Service discovery']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'CSW service', to: '/docs/modules/wms/api-reference/csw-source-loader'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The catalog path"
+  title="Search records, then follow their service references."
+  description="CSW sits above map, feature, tile, and coverage services. The source exposes catalog metadata first, keeping the decision about which service to request in the application."
+  tone="orange"
+  items={[
+    {label: 'Discover', value: 'Read capabilities and advertised domains'},
+    {label: 'Search', value: 'Request typed catalog records asynchronously'},
+    {label: 'Resolve', value: 'Extract WMS, WMTS, and WFS service references'},
+    {label: 'Boundary', value: 'Read-only GET/KVP support; POST XML is outside the source'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="CSW operations and support"
+  description="The reference below covers supported operations, catalog search, service-directory extraction, request customization, and current protocol boundaries."
+  tone="orange"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

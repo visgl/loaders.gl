@@ -1,4 +1,44 @@
-# WMSFeatureInfoLoader
+---
+title: WMSFeatureInfoLoader
+description: Parse a WMS GetFeatureInfo response into a typed result for map inspection workflows.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS API · feature information"
+  title="Ask a map service what is under the cursor."
+  description="WMSFeatureInfoLoader parses the XML response from a GetFeatureInfo request into a typed JavaScript result. It keeps verbose protocol details behind a smaller boundary for identify, tooltip, and inspection tools."
+  tone="blue"
+  meta={['From v3.3', 'GetFeatureInfo', 'Experimental']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WMS format', to: '/docs/modules/wms/formats/wms'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The identify path"
+  title="Keep map rendering and feature inspection separate."
+  description="The WMS map response is an image; GetFeatureInfo is a separate request that returns information about the queried location. This loader parses that second response without becoming a full XML client."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'XML response from a WMS GetFeatureInfo request'},
+    {label: 'Output', value: 'Typed WMSFeatureInfo data'},
+    {label: 'Runtime', value: 'Synchronous XML parsing; no worker path'},
+    {label: 'Fallback', value: 'Use XMLLoader when fields outside the normalized result are needed'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WMSFeatureInfoLoader reference"
+  description="The sections below document request usage, parsed data, options, and the boundary between normalized fields and raw XML."
+  tone="blue"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

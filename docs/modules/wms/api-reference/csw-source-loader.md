@@ -1,4 +1,44 @@
-# CSWService 🚧
+---
+title: CSWService
+description: Query a CSW catalog through typed capabilities, service-directory, and search methods.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS module · catalog service"
+  title="Give catalog search a typed application boundary."
+  description="CSWService wraps the OGC Catalogue Service for the Web protocol and parses its responses into usable metadata, catalog records, domains, and referenced services."
+  tone="orange"
+  meta={['From v3.4', 'Experimental', 'HTTP GET / KVP']}
+  links={[
+    {label: 'CSW format', to: '/docs/modules/wms/formats/csw'},
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The CSW service path"
+  title="Discover, search, and resolve without parsing XML yourself."
+  description="CSWService keeps protocol request construction and response parsing together, while leaving the decision about which discovered WMS, WMTS, or WFS endpoint to use with the application."
+  tone="orange"
+  items={[
+    {label: 'Capabilities', value: 'Read and normalize GetCapabilities metadata'},
+    {label: 'Catalog records', value: 'Search and retrieve typed records'},
+    {label: 'Service directory', value: 'Extract known service references'},
+    {label: 'Boundary', value: 'GET/KVP requests; XML POST generation is not supported'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="CSWService reference"
+  description="The sections below document construction, capabilities, catalog records, service discovery, request options, and current protocol limits."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
