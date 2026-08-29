@@ -26,6 +26,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <TiledSceneGraphic />
 
+![ogc-logo](../../../images/logos/ogc-logo-80.png)
+&nbsp;
+![3dtiles-logo](../images/3d-tiles-logo-60.png)
+
 <DocOrientation
   eyebrow="The 3D Tiles delivery model"
   title="A large scene, divided into useful requests."
