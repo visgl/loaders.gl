@@ -5,7 +5,6 @@ import {ThemeClassNames} from '@docusaurus/theme-common';
 import {useDoc} from '@docusaurus/plugin-content-docs/client';
 import Heading from '@theme/Heading';
 import MDXComponents from '@theme/MDXComponents';
-import {LoaderLiveExample} from '../../../components/docs/loader-live-example';
 import {MarkdownTable} from '../../../components/docs/markdown-table';
 import type {Props} from '@theme/DocItem/Content';
 
@@ -37,92 +36,9 @@ function DocsMDXContent({children}: {children: ReactNode}): ReactNode {
   return <MDXProvider components={components}>{children}</MDXProvider>;
 }
 
-/**
- * Places the live example after title-adjacent badges, logos, and the first intro paragraph.
- */
-function insertLoaderLiveExample(children: ReactNode, syntheticTitle: string | null): ReactNode[] {
-  const nodes = React.Children.toArray(children)
-  const beforeExample: ReactNode[] = []
-  const afterExample: ReactNode[] = []
-  let exampleInserted = false
-  let sawRenderedTitle = Boolean(syntheticTitle)
-  let introParagraphCount = 0
-
-  for (const node of nodes) {
-    if (!exampleInserted) {
-      if (!sawRenderedTitle) {
-        beforeExample.push(node)
-        if (isHeadingNode(node, 'h1')) {
-          sawRenderedTitle = true
-        }
-        continue
-      }
-
-      if (isBadgeParagraph(node) || isImageParagraph(node) || isDocsPageTabs(node)) {
-        beforeExample.push(node)
-        continue
-      }
-
-      if (sawRenderedTitle && introParagraphCount === 0 && isPlainParagraph(node)) {
-        beforeExample.push(node)
-        introParagraphCount += 1
-        continue
-      }
-
-      exampleInserted = true
-      afterExample.push(node)
-      continue
-    }
-
-    afterExample.push(node)
-  }
-
-  return [...beforeExample, <LoaderLiveExample key="loader-live-example" />, ...afterExample]
-}
-
-function isHeadingNode(node: ReactNode, tagName: string): boolean {
-  return React.isValidElement(node) && node.type === tagName
-}
-
-function isDocsPageTabs(node: ReactNode): boolean {
-  if (!React.isValidElement(node) || typeof node.type !== 'function') {
-    return false
-  }
-  return node.type.name.endsWith('DocsTabs')
-}
-
-function isParagraphNode(node: ReactNode): boolean {
-  return React.isValidElement(node) && node.type === 'p'
-}
-
-function isBadgeParagraph(node: ReactNode): boolean {
-  return (
-    isParagraphNode(node) &&
-    typeof node.props.className === 'string' &&
-    node.props.className.split(' ').includes('badges')
-  )
-}
-
-function isImageParagraph(node: ReactNode): boolean {
-  if (!isParagraphNode(node)) {
-    return false
-  }
-
-  return React.Children.toArray(node.props.children).some(
-    child => React.isValidElement(child) && child.type === 'img'
-  )
-}
-
-function isPlainParagraph(node: ReactNode): boolean {
-  return isParagraphNode(node) && !isBadgeParagraph(node) && !isImageParagraph(node)
-}
-
-/**
- * Renders doc markdown and injects loader live examples after the page title.
- */
+/** Renders the document content with the shared markdown table treatment. */
 export default function DocItemContent({children}: Props): ReactNode {
   const syntheticTitle = useSyntheticTitle();
-  const contentNodes = insertLoaderLiveExample(children, syntheticTitle)
   return (
     <div className={clsx(ThemeClassNames.docs.docMarkdown, 'markdown')}>
       {syntheticTitle && (
@@ -130,7 +46,7 @@ export default function DocItemContent({children}: Props): ReactNode {
           <Heading as="h1">{syntheticTitle}</Heading>
         </header>
       )}
-      <DocsMDXContent>{contentNodes}</DocsMDXContent>
+      <DocsMDXContent>{children}</DocsMDXContent>
     </div>
   );
 }

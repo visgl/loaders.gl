@@ -1,6 +1,8 @@
 .exampleContainer {
+  background: transparent;
+  border-radius: 22px;
+  margin: 1.25rem 0 2rem;
   position: relative;
-  margin: 0 0 2rem;
   overflow: hidden;
 }
 

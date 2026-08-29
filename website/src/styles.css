@@ -249,7 +249,8 @@ main .container {
   margin: 0;
   min-width: 100%;
   overflow: hidden;
-  width: max-content;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .docs-designed-page .markdown .docs-markdown-table__table {
@@ -287,7 +288,7 @@ main .container {
   border-color: transparent !important;
   border-style: none !important;
   border-width: 0 !important;
-  padding: 0.34rem 0.78rem !important;
+  padding: 0.34rem 0.6rem !important;
   vertical-align: top;
 }
 
@@ -331,8 +332,21 @@ main .container {
   border-right: 0 !important;
   color: color-mix(in srgb, var(--docs-table-text) 90%, var(--ifm-color-primary-light)) !important;
   font-weight: 700 !important;
-  white-space: nowrap !important;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
   width: 27% !important;
+}
+
+.markdown .docs-markdown-table__table:has(tbody td:nth-child(3)) tbody td:first-child {
+  width: 24% !important;
+}
+
+.markdown .docs-markdown-table__table:has(tbody td:nth-child(3)) tbody td:nth-child(2) {
+  width: 18% !important;
+}
+
+.markdown .docs-markdown-table__table:not(:has(tbody td:nth-child(3))) tbody td:nth-child(2) {
+  width: 73% !important;
 }
 
 .markdown .docs-markdown-table__table tbody td + td {
@@ -350,8 +364,9 @@ main .container {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.9em !important;
   font-weight: 700;
+  overflow-wrap: anywhere;
   padding: 0.06em 0.25em !important;
-  white-space: nowrap;
+  white-space: normal !important;
 }
 
 .docs-designed-page .markdown .docs-markdown-table__table td code,
@@ -380,19 +395,28 @@ html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
 
 .markdown .docs-page-tabs,
 html.examples-demo-page .docs-page-tabs {
-  border-bottom: 1px solid var(--docs-table-border);
+  align-items: center;
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--ifm-color-primary) 7%, transparent), transparent 66%),
+    var(--docs-table-shell-background);
+  border: 1px solid var(--docs-table-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(13, 21, 33, 0.12);
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  margin: 0.5rem 0 1.5rem;
+  gap: 0.2rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0.25rem;
 }
 
 .markdown .docs-page-tabs__tab,
 html.examples-demo-page .docs-page-tabs__tab {
-  border-bottom: 3px solid transparent;
+  border: 0;
+  border-radius: 11px;
   color: var(--ifm-font-color-base);
   font-weight: 600;
-  padding: 0.75rem 1rem;
+  line-height: 1.25;
+  padding: 0.55rem 0.78rem;
   text-decoration: none;
 }
 
@@ -406,8 +430,9 @@ html.examples-demo-page .docs-page-tabs__tab:focus {
 
 .markdown .docs-page-tabs__tab--active,
 html.examples-demo-page .docs-page-tabs__tab--active {
-  border-bottom-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 20%, transparent), color-mix(in srgb, var(--ifm-color-primary) 7%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ifm-color-primary) 28%, transparent);
+  color: var(--ifm-color-primary-light);
 }
 
 .markdown .docs-api-card-grid {

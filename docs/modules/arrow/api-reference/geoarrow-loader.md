@@ -8,6 +8,7 @@ page_style: designed
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="GeoArrow loader"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ArrowDocsTabs active="geoarrowloader" />
+
+<LoaderLiveExample />
 
 <DocOrientation
   eyebrow="A geospatial Arrow entry point"

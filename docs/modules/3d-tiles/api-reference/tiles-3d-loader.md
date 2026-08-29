@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
@@ -22,6 +23,8 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
     {label: 'Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
   ]}
 />
+
+<LoaderLiveExample />
 
 <TiledSceneGraphic />
 

@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="MVT loader"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'MVT module', to: '/docs/modules/mvt'}
   ]}
 />
+
+<LoaderLiveExample />
 
 <DocOrientation
   eyebrow="What the loader does"

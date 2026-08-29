@@ -8,6 +8,7 @@ page_style: designed
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="OBJ loader"
@@ -36,6 +37,8 @@ import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
 />
 
 <ObjDocsTabs active="objloader" />
+
+<LoaderLiveExample />
 
 <ReferenceBoundary
   title="OBJ parsing and output details"

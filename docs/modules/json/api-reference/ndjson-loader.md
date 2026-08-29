@@ -8,6 +8,7 @@ page_style: designed
 import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="JSON module · streaming loader"
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <JsonDocsTabs active="ndjsonloader" />
+
+<LoaderLiveExample />
 
 <DocOrientation
   eyebrow="What it reads"

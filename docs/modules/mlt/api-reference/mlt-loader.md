@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="MLT API · vector tiles"
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'MLT source', to: '/docs/modules/mlt/api-reference/mlt-source-loader'}
   ]}
 />
+
+<LoaderLiveExample />
 
 <DocOrientation
   eyebrow="The MLT loader path"

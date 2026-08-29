@@ -62,7 +62,6 @@ export function DocPageHeader({
   title,
   description,
   tone = 'cyan',
-  meta = [],
   links = [],
   notice,
   badges = [],
@@ -120,24 +119,15 @@ export function DocPageHeader({
         <p className={styles.description}>{renderDescription(description)}</p>
         {notice ? <div className={styles.notice}>{notice}</div> : null}
       </div>
-      {(meta.length > 0 || links.length > 0) && (
+      {links.length > 0 && (
         <div className={styles.footer}>
-          {meta.length > 0 && (
-            <ul className={styles.meta} aria-label="Page details">
-              {meta.map(item => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          )}
-          {links.length > 0 && (
-            <nav className={styles.links} aria-label="Related documentation">
-              {links.map(link => (
-                <Link className={styles.link} key={link.to} to={link.to}>
-                  {link.label} <span aria-hidden="true">↗</span>
-                </Link>
-              ))}
-            </nav>
-          )}
+          <nav className={styles.links} aria-label="Related documentation">
+            {links.map(link => (
+              <Link className={styles.link} key={link.to} to={link.to}>
+                {link.label} <span aria-hidden="true">↗</span>
+              </Link>
+            ))}
+          </nav>
         </div>
       )}
     </section>

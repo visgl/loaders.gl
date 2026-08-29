@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
   eyebrow="Excel API · table loader"
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Apache Arrow guide', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />
+
+<LoaderLiveExample />
 
 <DocOrientation
   eyebrow="The worksheet path"
