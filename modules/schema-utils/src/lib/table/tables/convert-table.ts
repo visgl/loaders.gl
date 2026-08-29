@@ -52,7 +52,7 @@ export function convertTable(
 export function convertToColumnarTable(table: Table): ColumnarTable {
   // TODO - should schema really be optional?
   const schema = table.schema || deduceTableSchema(table);
-  const fields = table.schema?.fields || [];
+  const fields = schema.fields;
 
   if (table.shape === 'columnar-table') {
     return {...table, schema};

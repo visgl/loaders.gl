@@ -10,16 +10,14 @@ export type BoundingBox = [[number, number, number], [number, number, number]];
 export function getBoundingBoxFromArrowPositions(
   column: arrow.Vector<arrow.FixedSizeList>
 ): BoundingBox {
-  const mins: [number, number, number] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-  const maxs: [number, number, number] = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+  const mins: [number, number, number] = [Infinity, Infinity, Infinity];
+  const maxs: [number, number, number] = [-Infinity, -Infinity, -Infinity];
 
   const valueColumn = column.getChildAt(0)!;
   for (const data of valueColumn.data) {
     const pointSize = 3; // attributes.POSITION.size;
     const pointData = data.buffers[arrow.BufferType.DATA];
-    const pointCount = pointData.length / pointSize;
-
-    for (let i = 0; i < pointCount; i += pointSize) {
+    for (let i = 0; i < pointData.length; i += pointSize) {
       const x = pointData[i];
       const y = pointData[i + 1];
       const z = pointData[i + 2];

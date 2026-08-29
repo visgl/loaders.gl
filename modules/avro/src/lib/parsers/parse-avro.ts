@@ -178,10 +178,10 @@ export async function* parseAvroInBatchesFromUrl(
 ): AsyncIterable<ArrowTableBatch> {
   if (options?.encoding && options.encoding !== 'auto' && options.encoding !== 'ocf')
     throw new Error('URL-backed Avro loading currently supports OCF input only');
-  const batchSize = options?.batchSize || 10_000;
+  const batchSize = options?.batchSize ?? 10_000;
   if (!Number.isInteger(batchSize) || batchSize <= 0)
     throw new Error('Avro batchSize must be positive');
-  const rangeChunkSize = options?.rangeChunkSize || 1024 * 1024;
+  const rangeChunkSize = options?.rangeChunkSize ?? 1024 * 1024;
   if (!Number.isInteger(rangeChunkSize) || rangeChunkSize < 1024)
     throw new Error('Avro rangeChunkSize must be at least 1024 bytes');
   const initial = await fetchAvroRange(url, 0, rangeChunkSize - 1, options);
@@ -257,7 +257,7 @@ export async function* parseAvroInBatchesFromFile(
   file: ReadableFile,
   options?: AvroParseOptions & {batchSize?: number}
 ): AsyncIterable<ArrowTableBatch> {
-  const rangeChunkSize = options?.rangeChunkSize || 1024 * 1024;
+  const rangeChunkSize = options?.rangeChunkSize ?? 1024 * 1024;
   if (!Number.isInteger(rangeChunkSize) || rangeChunkSize < 1024)
     throw new Error('Avro rangeChunkSize must be at least 1024 bytes');
   const stat = file.stat ? await file.stat() : null;
@@ -277,7 +277,9 @@ export async function* parseAvroInBatchesFromFile(
   let offset = header.dataOffset;
   let blockIndex = 0;
   let batch: Record<string, unknown>[] = [];
-  const batchSize = options?.batchSize || 10_000;
+  const batchSize = options?.batchSize ?? 10_000;
+  if (!Number.isInteger(batchSize) || batchSize <= 0)
+    throw new Error('Avro batchSize must be positive');
   while (offset < fileSize) {
     const blockHeader = new Uint8Array(
       await file.read(offset, Math.min(32, fileSize - offset), options?.signal)

@@ -3,13 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {describe, expect, test} from 'vitest';
+import {afterEach, describe, expect, test, vi} from 'vitest';
 import {encodeAvro, encodeAvroInChunks} from '../src/lib/encoders/encode-avro';
 import {
   getAvroSchemaFingerprint,
   parseAvro,
-  parseAvroInBatches
+  parseAvroFromUrl,
+  parseAvroInBatches,
+  parseAvroInBatchesFromUrl
 } from '../src/lib/parsers/parse-avro';
+
+afterEach(() => vi.unstubAllGlobals());
 
 /** Creates the minimal Arrow-table contract needed by the Avro encoder. */
 function createStructuralTable(rows: Record<string, unknown>[]) {
@@ -246,5 +250,78 @@ describe('Avro boundary coverage', () => {
       'bigint'
     );
     expect(getAvroSchemaFingerprint({type: 'fixed', name: 'F', size: 2})).toBeTypeOf('bigint');
+  });
+
+  test('reads a URL-backed OCF with bounded range requests', async () => {
+    const schema = {type: 'record', name: 'Value', fields: [{name: 'label', type: 'string'}]};
+    const rows = Array.from({length: 80}, (_, index) => ({label: `${index}-${'x'.repeat(40)}`}));
+    const encoded = new Uint8Array(
+      await encodeAvro(createStructuralTable(rows), {avro: {schema, blockSize: 700}})
+    );
+    const requests: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, requestInit?: RequestInit) => {
+        const range = new Headers(requestInit?.headers).get('Range') || '';
+        requests.push(range);
+        const match = range.match(/bytes=(\d+)-(\d+)/);
+        const start = Number(match?.[1]);
+        const end = Math.min(Number(match?.[2]), encoded.length - 1);
+        if (start >= encoded.length) return new Response(null, {status: 416});
+        return new Response(encoded.slice(start, end + 1), {status: 206});
+      })
+    );
+
+    const result = await parseAvroFromUrl('https://example.test/data.avro', {
+      rangeChunkSize: 1024,
+      batchSize: 13,
+      blockIndices: [0, 2],
+      headers: {'X-Test': 'yes'}
+    });
+    expect(result.data.numRows).toBeGreaterThan(0);
+    expect(result.data.numRows).toBeLessThan(rows.length);
+    expect(requests[0]).toBe('bytes=0-1023');
+    expect(requests.some(range => !range.startsWith('bytes=0-'))).toBe(true);
+  });
+
+  test('falls back when a URL server returns the complete file', async () => {
+    const schema = {type: 'record', name: 'Value', fields: [{name: 'id', type: 'int'}]};
+    const encoded = await encodeAvro(createStructuralTable([{id: 1}, {id: 2}]), {avro: {schema}});
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(encoded, {status: 200}))
+    );
+
+    const batches = await collectBatches(
+      parseAvroInBatchesFromUrl('https://example.test/data.avro', {batchSize: 1})
+    );
+    expect(batches.map(batch => batch.length)).toEqual([1, 1]);
+  });
+
+  test('validates URL options and range responses', async () => {
+    await expect(
+      collectBatches(parseAvroInBatchesFromUrl('https://example.test/data.avro', {encoding: 'raw'}))
+    ).rejects.toThrow('supports OCF input only');
+    await expect(
+      collectBatches(parseAvroInBatchesFromUrl('https://example.test/data.avro', {batchSize: 0}))
+    ).rejects.toThrow('batchSize must be positive');
+    await expect(
+      collectBatches(
+        parseAvroInBatchesFromUrl('https://example.test/data.avro', {rangeChunkSize: 100})
+      )
+    ).rejects.toThrow('rangeChunkSize must be at least 1024 bytes');
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, {status: 416}))
+    );
+    await expect(parseAvroFromUrl('https://example.test/missing.avro')).rejects.toThrow(
+      'returned no data'
+    );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, {status: 503}))
+    );
+    await expect(parseAvroFromUrl('https://example.test/error.avro')).rejects.toThrow('HTTP 503');
   });
 });
