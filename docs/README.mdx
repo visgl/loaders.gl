@@ -88,9 +88,9 @@ Tabular, geospatial, and 3D file formats are well covered.
 Published as a suite of composable loader modules with consistent APIs, 
 offering advanced features such as threaded and incremental parsing.
 
-loaders.gl can be used with any JavaScript application or framework. In addition,
-other [vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) 
-come are designed to integrate seamlessly loaders.gl.
+loaders.gl can be used with any JavaScript application or framework. Other
+[vis.gl frameworks](https://vis.gl/frameworks), such as [**deck.gl**](https://deck.gl), are designed
+to integrate seamlessly with loaders.gl.
 
 ## Loaders
 
@@ -99,12 +99,12 @@ loaders.gl provides a wide selection of loaders organized into categories:
 | Category                                                         | Loaders                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Table Loaders](/docs/specifications/category-table)              | Streaming tabular loaders for [CSV](/docs/modules/csv/api-reference/csv-loader), [JSON](/docs/modules/json/api-reference/json-loader), [Parquet](/docs/modules/parquet/api-reference/parquet-loader), [Arrow](/docs/modules/arrow/api-reference/arrow-loader), and loaders that can return Arrow tables with `shape: 'arrow-table'`                                                                                                                                                     |
-| [Geospatial Loaders](/docs/specifications/category-gis)           | Loaders for geospatial formats such as [GeoJSON](/docs/modules/json/api-reference/geojson-loader) [KML](/docs/modules/kml/api-reference/kml-loader), [WKT/WKB](/docs/modules/wkt/api-reference/wkt-loader), [Mapbox Vector Tiles](/docs/modules/mvt/api-reference/mvt-loader) etc.                                                                                                                                                                                                   |
+| [Geospatial Loaders](/docs/specifications/category-gis)           | Loaders for formats such as [GeoJSON](/docs/modules/json/api-reference/geojson-loader), [KML](/docs/modules/kml/api-reference/kml-loader), [WKT/WKB](/docs/modules/wkt/api-reference/wkt-loader), and [Mapbox Vector Tiles](/docs/modules/mvt/api-reference/mvt-loader). |
 | [Image Loaders](/docs/specifications/category-image)              | Loaders for [images](/docs/modules/images/api-reference/image-bitmap-loader) and image utilities such as the [parsed image API](/docs/modules/images/api-reference/parsed-image-api) and [binary image API](/docs/modules/images/api-reference/binary-image-api). |
 | [Texture Loaders](/docs/specifications/category-texture)          | Loaders for [compressed textures](/docs/modules/textures/api-reference/compressed-texture-loader), [Basis textures](/docs/modules/textures/api-reference/basis-loader), and manifest-driven [texture loaders](/docs/modules/textures/api-reference/texture-loader) for arrays, cubemaps, and mip chains. |
 | [Pointcloud and Mesh Loaders](/docs/specifications/category-mesh) | Loaders for point cloud and simple mesh formats such as [Draco](/docs/modules/draco/api-reference/draco-loader), [LAS](/docs/modules/las/api-reference/las-loader), [PCD](/docs/modules/pcd/api-reference/pcd-loader), [PLY](/docs/modules/ply/api-reference/ply-loader), [OBJ](/docs/modules/obj/api-reference/obj-loader), and [Terrain](/docs/modules/terrain/api-reference/terrain-loader).                                                                                            |
 | [Scenegraph Loaders](/docs/specifications/category-scenegraph)    | [glTF](/docs/modules/gltf/api-reference/gltf-loader) and [OpenUSD](/docs/modules/scene/api-reference/usd-loader) loaders                                                                                                                                                                                                                                                                                                                                                                                        |
-| [Tiled Data Loaders](/docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [I3S](/docs/modules/i3s/api-reference/i3s-loader) and potree                                                                                                                                                                                                                                                                                                                             |
+| [Tiled Data Loaders](/docs/specifications/category-3d-tiles)         | Loaders for tiled 3D data such as [3D Tiles](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [I3S](/docs/modules/i3s/api-reference/i3s-loader), and [Potree](/docs/modules/potree). |
 
 ## Code Examples
 
@@ -131,8 +131,10 @@ import {loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 for await (const batch of await loadInBatches('data.csv', CSVLoader)) {
-  for (const row of batch) {
-    console.log(JSON.stringify(row)); // => '{header1: value1, header2: value2}'
+  if (batch.batchType === 'data') {
+    for (const row of batch.data) {
+      console.log(JSON.stringify(row)); // => '{header1: value1, header2: value2}'
+    }
   }
 }
 ```
@@ -158,7 +160,7 @@ loaders.gl supports both browsers and Node.js:
 
 **Loader Categories** - loaders.gl groups similar data formats into "categories" that return parsed data in "standardized" form. This makes it easier to build applications that can handle multiple similar file formats.
 
-**Format Autodection** - Applications can specify multiple loaders when parsing a file, and loaders.gl will automatically pick the right loader for a given file based on a combination of file/url extensions, MIME types and initial data bytes.
+**Format Autodetection** - Applications can specify multiple loaders when parsing a file, and loaders.gl will automatically pick the right loader based on file or URL extensions, MIME types, and initial data bytes.
 
 **Streaming Support** - Many loaders can parse in batches from both node and WhatWG streams, allowing "larger than memory" files to be processed, and initial results to be available while the remainder of a file is still loading.
 

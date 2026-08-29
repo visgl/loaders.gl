@@ -84,7 +84,7 @@ Remarks:
 
 Returns
 
-```typescripton
+```typescript
 {
   "header": {
     "byteLength": number,

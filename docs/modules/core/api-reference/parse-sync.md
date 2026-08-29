@@ -55,7 +55,7 @@ parseSync(data: ArrayBuffer | string, loaders: Loader[], options?: LoaderOptions
   - `string`: Parse from text data in a string. (Only works for loaders that support textual input).
   - `Iterator`: Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
     can also be supplied.
-- `loaders`: can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `loaders`: can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
 - `options`: See [`LoaderOptions`](./loader-options).
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 

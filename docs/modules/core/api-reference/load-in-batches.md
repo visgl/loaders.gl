@@ -34,8 +34,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ```typescript
-loadInBatches(url: string | File | ... , loaders: Loader, options?: LoaderOptions]): Promise<AsyncIrerator<unknown>>
-loadInBatches(url: string | File | ... , loaders: Loader[], options?: LoaderOptions]): Promise<AsyncIrerator<unknown>>
+loadInBatches(url: string | File | ... , loaders: Loader, options?: LoaderOptions): Promise<AsyncIterator<unknown>>
+loadInBatches(url: string | File | ... , loaders: Loader[], options?: LoaderOptions): Promise<AsyncIterator<unknown>>
 loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader, options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
 loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
 ```
@@ -48,11 +48,11 @@ loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], opti
   tone="violet"
 />
 
-Starting with [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), `loadInBatches` can also load and parse multiple files from a list of `File` objects or urls.
+Starting with [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), `loadInBatches` can also load and parse multiple files from a list of `File` objects or URLs.
 
 In this mode, it iterates over the supplied files, looking for valid loader matches, ignores files that do not match a loader and calls `parseInBatches` on each valid file/loader combination, returning an array of async batch iterators.
 
-More importantly, when called with multiple files, `loadInBatches` makes all the supplied files avialable to all loaders (enabling multi-file loaders such as the ShapefileLoader to access multiple files).
+More importantly, when called with multiple files, `loadInBatches` makes all the supplied files available to all loaders (enabling multi-file loaders such as the ShapefileLoader to access multiple files).
 
 ### Usage
 
@@ -87,10 +87,10 @@ for (const batchIterator of batchIterators) {
 
 Loads data in batches from a stream, releasing each batch to the application while the stream is still being read.
 
-Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using the URL extension and header matching).
 
-- `files`: loaded data or an object that allows data to be loaded. Plese refer to the table below for valid types.
-- `loaders`: can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `files`: loaded data or an object that allows data to be loaded. See the table below for valid types.
+- `loaders`: can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
 - `options`: see [`LoaderOptions`](./loader-options).
 
 Returns:
@@ -99,7 +99,7 @@ Returns:
 
 Notes:
 
-- The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+- The `loaders` parameter can also be omitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
 
 ## Options
 
@@ -109,7 +109,7 @@ A loader object, that can contain a mix of options:
 - options defined by the `parseInBatches` and `parse` functions can be specified.
 - options specific to any loaders can also be specified (in loader specific sub-objects).
 
-Please refer to the corresponding documentation page for for `parse` and for each loader for details.
+Please refer to the corresponding documentation page for `parse` and to each loader for details.
 
 | Option                       | Type      | Default | Description                                           |
 | ---------------------------- | --------- | ------- | ----------------------------------------------------- |

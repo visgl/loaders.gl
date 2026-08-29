@@ -100,10 +100,10 @@ Parses data asynchronously either using the provided loader or loaders, or using
   - `File` - A browser file object (from drag-and-drop or file selection operations).
   - `Promise` - A promise that resolves to any of the other supported data types can also be supplied.
 
-- `loaders` - can be a single loader or an array of loaders. If single loader is provided, will force to use it. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
+- `loaders` - can be a single loader or an array of loaders. If a single loader is provided, it is used directly. If omitted, the list of pre-registered loaders is used (see `registerLoaders`).
 
 - `data`: loaded data or an object that allows data to be loaded. See table below for valid input types for this parameter.
-- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
+- `loaders` - can be a single loader or an array of loaders. If omitted, the list of pre-registered loaders is used (see `registerLoaders`).
 - `options`: See [`LoaderOptions`](./loader-options).
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 

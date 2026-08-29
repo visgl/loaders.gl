@@ -179,13 +179,13 @@ and its buffers or textures to be packaged together. Unreferenced definitions re
 
 The job of `GLTFLoader` is to open the glTF container file(s) and extract the glTF JSON, together with any associated binary chunks and images.
 
-If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this 'storage optimized" form, traversing the loaded glTF scene graph tends to required verbose and repetitive code with lots of checks and guards.
+If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this storage-optimized form, traversing the loaded glTF scene graph tends to require verbose and repetitive code with many checks and guards.
 
 To simplify traversal and manipulation of glTF data, loaders.gl provides three separate mechanisms:
 
 - The [`GLTFIterator`](./gltf-iterator) class lazily resolves references while preserving the original glTF JSON objects, making it suitable for extension transformations.
-- The [`postProcessGLTF()`](./post-process-gltf) function converts the glTF JSON into a largely equivalent JavaScript structure that significantly simpler to work with.
-- The [`GLTFScenegraph`](./gltf-scenegraph) function accepts glTF data and provides methods for accessing or modifying APIS.
+- The [`postProcessGLTF()`](./post-process-gltf) function converts the glTF JSON into a largely equivalent JavaScript structure that is simpler to work with.
+- The [`GLTFScenegraph`](./gltf-scenegraph) class accepts glTF data and provides methods for accessing or modifying APIs.
 
 The gltf module provides typescript definitions for the glTF JSON that align with the glTF specification, and all APIs and return values are strongly typed to assist applications to write robust code.
 
@@ -195,7 +195,7 @@ The data format returned by the `GLTFLoader` is the unmodified glTF JSON extract
 
 The standard glTF JSON structure will be available in the `json` field.
 
-```typescripton
+```typescript
 {
   json: {
     scenes: [...],
@@ -208,7 +208,7 @@ The standard glTF JSON structure will be available in the `json` field.
 
 However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
 
-```typescripton
+```typescript
 {
   // The base URI used to load this glTF, if any. For resolving relative uris to linked resources.
   baseUri: String,

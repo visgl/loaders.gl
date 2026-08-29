@@ -99,7 +99,7 @@ Parameters:
 
 Returns
 
-- An object with 6 key/value pairs containing images (or arrays of mip images) for for each cube face. They keys are the (stringified) numeric values of the GL constant for the respective faces of the cube
+- An object with 6 key/value pairs containing images (or arrays of mip images) for each cube face. The keys are the (stringified) numeric values of the GL constant for the respective faces of the cube.
 
 ## Options
 

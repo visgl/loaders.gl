@@ -84,16 +84,16 @@ for await (const batch of batchIterator) {
 
 ## Functions
 
-### async parseInBatches(data: DataSource, loaders: object | object\[], options?: object): AsyncIterator
+### async parseInBatches(data: DataSource, loaders: object | object[], options?: object): AsyncIterator
 
-### async parseInBatches(data: DataSource, options?: object]]): AsyncIterator
+### async parseInBatches(data: DataSource, options?: object): AsyncIterator
 
 Parses data in batches from a stream, releasing each batch to the application while the stream is still being read.
 
-Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
+Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using the URL extension and header matching).
 
-- `data`: loaded data or an object that allows data to be loaded. Plese refer to the table below for valid types.
-- `loaders` can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `data`: loaded data or an object that allows data to be loaded. See the table below for valid types.
+- `loaders` can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
 - `options`: See [`LoaderOptions`](./loader-options) for documentation of options.
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
@@ -103,7 +103,7 @@ Returns:
 
 Notes:
 
-- The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+- The `loaders` parameter can also be omitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
 
 ## Input Types
 
