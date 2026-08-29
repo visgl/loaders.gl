@@ -41,6 +41,11 @@ const zstdDecompressor = new ZstdFzstdDecompressor();
 const zstdCompressor = new ZstdCompression();
 let zstdCompressorReady = false;
 
+const lz4Encoder = (data: Uint8Array): Uint8Array =>
+  new Uint8Array(lz4Compressor.compressSync(data.slice().buffer as ArrayBuffer));
+const zstdEncoder = (data: Uint8Array): Uint8Array =>
+  new Uint8Array(zstdCompressor.compressSync(data.slice().buffer as ArrayBuffer));
+
 /**
  * Registers loaders.gl codecs with Apache Arrow runtimes that support IPC body compression.
  *
@@ -74,7 +79,12 @@ export async function preloadArrowCompressionEncoder(
   modules: Record<string, any> = {}
 ): Promise<void> {
   const registration = getArrowCompressionRegistration(compression);
-  if (registration.registry.get(registration.compressionType)?.encode) {
+  const registeredEncoder = registration.registry.get(registration.compressionType)?.encode;
+  const encoder = compression === 'lz4' ? lz4Encoder : zstdEncoder;
+  if (
+    registeredEncoder &&
+    (compression !== 'zstd' || registeredEncoder !== encoder || zstdCompressorReady)
+  ) {
     return;
   }
 
@@ -100,7 +110,11 @@ export async function preloadArrowCompressionEncoder(
 export function registerArrowCompressionEncoderSync(compression: ArrowIPCCompression): number {
   const registration = getArrowCompressionRegistration(compression);
   const codec = registration.registry.get(registration.compressionType);
-  if (codec?.encode) {
+  const encoder = compression === 'lz4' ? lz4Encoder : zstdEncoder;
+  if (
+    codec?.encode &&
+    (compression !== 'zstd' || codec.encode !== encoder || zstdCompressorReady)
+  ) {
     return registration.compressionType;
   }
   if (compression === 'zstd' && !zstdCompressorReady) {
@@ -109,10 +123,9 @@ export function registerArrowCompressionEncoderSync(compression: ArrowIPCCompres
     );
   }
 
-  const compressor = compression === 'lz4' ? lz4Compressor : zstdCompressor;
   registration.registry.set(registration.compressionType, {
     ...(codec || {}),
-    encode: data => new Uint8Array(compressor.compressSync!(data.slice().buffer as ArrayBuffer))
+    encode: encoder
   });
   return registration.compressionType;
 }

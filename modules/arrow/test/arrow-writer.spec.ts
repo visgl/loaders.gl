@@ -94,27 +94,47 @@ test('ArrowWriter writes LZ4 and Zstandard compressed Feather V2 files', async (
   const lz4Sync = encodeSync(arraysData, ArrowWriter, {
     arrow: {container: 'file', compression: 'lz4'}
   });
-  compressionAPI.compressionRegistry.set(compressionAPI.CompressionType.ZSTD, {});
-  expect(() =>
-    encodeSync(arraysData, ArrowWriter, {
+  const originalModules = globalThis.loaders?.modules;
+  if (globalThis.loaders) {
+    globalThis.loaders.modules = {...originalModules};
+    delete globalThis.loaders.modules['zstd-codec'];
+  }
+  let zstd: ArrayBuffer | null = null;
+  try {
+    compressionAPI.compressionRegistry.set(compressionAPI.CompressionType.ZSTD, {});
+    expect(() =>
+      encodeSync(arraysData, ArrowWriter, {
+        arrow: {container: 'file', compression: 'zstd'}
+      })
+    ).toThrow(/use encode\(\) instead of encodeSync\(\)/);
+    await expect(
+      encode(arraysData, ArrowWriter, {
+        arrow: {container: 'file', compression: 'zstd'}
+      })
+    ).rejects.toThrow(/requires a 'zstd-codec' module/);
+    zstd = await encode(arraysData, ArrowWriter, {
+      modules: {'zstd-codec': ZstdCodec},
       arrow: {container: 'file', compression: 'zstd'}
-    })
-  ).toThrow(/use encode\(\) instead of encodeSync\(\)/);
-  await expect(
-    encode(arraysData, ArrowWriter, {
+    });
+    const zstdWithRegisteredEncoder = await encode(arraysData, ArrowWriter, {
       arrow: {container: 'file', compression: 'zstd'}
-    })
-  ).rejects.toThrow(/requires a 'zstd-codec' module/);
-  const zstd = await encode(arraysData, ArrowWriter, {
-    modules: {'zstd-codec': ZstdCodec},
-    arrow: {container: 'file', compression: 'zstd'}
-  });
+    });
+    expect(zstdWithRegisteredEncoder.byteLength).toBe(zstd.byteLength);
+    expect(parseSync(zstd, ArrowLoader).shape).toBe('columnar-table');
+  } finally {
+    if (globalThis.loaders) {
+      globalThis.loaders.modules = originalModules;
+    }
+  }
 
   expect(lz4.byteLength).toBeLessThan(uncompressed.byteLength);
   expect(lz4WithRegisteredEncoder.byteLength).toBe(lz4.byteLength);
   expect(lz4Sync.byteLength).toBeLessThan(uncompressed.byteLength);
+  expect(zstd).not.toBeNull();
+  if (!zstd) {
+    throw new Error('Zstandard encoding did not produce an Arrow IPC buffer');
+  }
   expect(zstd.byteLength).toBeLessThan(uncompressed.byteLength);
   expect(parseSync(lz4, ArrowLoader).shape).toBe('columnar-table');
   expect(parseSync(lz4Sync, ArrowLoader).shape).toBe('columnar-table');
-  expect(parseSync(zstd, ArrowLoader).shape).toBe('columnar-table');
 });
