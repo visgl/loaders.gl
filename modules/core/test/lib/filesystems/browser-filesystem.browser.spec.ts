@@ -39,6 +39,18 @@ test('BrowserFileSystem supports ranges, case-insensitive lookup, metadata, and 
   expect(rangedResponse.status).toBe(206);
   expect(rangedResponse.headers.get('Content-Range')).toBe('bytes 1-3/6');
   expect(await rangedResponse.text()).toBe('bcd');
+  const clampedResponse = await fileSystem.fetch('folder/mixed.txt', {
+    headers: {Range: 'bytes=4-99'}
+  });
+  expect(clampedResponse.status).toBe(206);
+  expect(clampedResponse.headers.get('Content-Range')).toBe('bytes 4-5/6');
+  expect(await clampedResponse.text()).toBe('ef');
+  const unsatisfiedResponse = await fileSystem.fetch('folder/mixed.txt', {
+    headers: {Range: 'bytes=6-99'}
+  });
+  expect(unsatisfiedResponse.status).toBe(416);
+  expect(unsatisfiedResponse.headers.get('Content-Range')).toBe('bytes */6');
+  expect(await unsatisfiedResponse.text()).toBe('');
   expect((await fileSystem.fetch('Folder/Mixed.TXT')).url).toBe('Folder/Mixed.TXT');
   expect(await fileSystem.readdir('ignored')).toEqual(['Folder/Mixed.TXT']);
   expect(await fileSystem.stat('FOLDER/MIXED.TXT')).toEqual({size: 6});

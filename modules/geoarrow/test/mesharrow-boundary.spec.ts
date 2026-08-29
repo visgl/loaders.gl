@@ -31,9 +31,24 @@ test('mesharrow bounding boxes inspect every point and support negative maxima',
     new Float64Array([-5, -4, -3, -2, -1, -8, -7, -6, -0.5]),
     3
   );
-
   expect(getBoundingBoxFromArrowPositions(positions)).toEqual([
     [-7, -6, -8],
     [-2, -1, -0.5]
+  ]);
+});
+
+test('mesharrow bounding boxes respect Arrow slice bounds', () => {
+  const positions = getFixedSizeListVector(
+    new Float64Array([100, 100, 100, -5, -4, -3, -2, -1, -0.5, 200, 200, 200]),
+    3
+  );
+
+  expect(getBoundingBoxFromArrowPositions(positions.slice(1, 3))).toEqual([
+    [-5, -4, -3],
+    [-2, -1, -0.5]
+  ]);
+  expect(getBoundingBoxFromArrowPositions(positions.slice(1, 2))).toEqual([
+    [-5, -4, -3],
+    [-5, -4, -3]
   ]);
 });

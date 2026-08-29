@@ -61,7 +61,15 @@ export class BrowserFileSystem implements FileSystem {
 
     if (bytes) {
       const start = parseInt(bytes[1]);
-      const end = parseInt(bytes[2]);
+      const end = Math.min(parseInt(bytes[2]), file.size - 1);
+      if (start > end) {
+        const response = new Response(null, {
+          status: 416,
+          headers: {'Content-Range': `bytes */${file.size}`}
+        });
+        Object.defineProperty(response, 'url', {value: path});
+        return response;
+      }
       // The trick when reading File objects is to read successive "slices" of the File
       // Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
       // Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
