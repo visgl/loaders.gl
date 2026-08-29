@@ -67,6 +67,10 @@
       "types": "./dist/iceberg-table-source.d.ts",
       "import": "./dist/iceberg-table-source.js"
     },
+    "./iceberg-types": {
+      "types": "./dist/iceberg-types.d.ts",
+      "import": "./dist/iceberg-types.js"
+    },
     "./iceberg-rest-catalog": {
       "types": "./dist/iceberg-rest-catalog.d.ts",
       "import": "./dist/iceberg-rest-catalog.js"
@@ -74,6 +78,14 @@
     "./delta-source": {
       "types": "./dist/delta-source.d.ts",
       "import": "./dist/delta-source.js"
+    },
+    "./delta-source-loader-types": {
+      "types": "./dist/delta-source-loader-types.d.ts",
+      "import": "./dist/delta-source-loader-types.js"
+    },
+    "./delta-types": {
+      "types": "./dist/delta-types.d.ts",
+      "import": "./dist/delta-types.js"
     },
     "./parquet-js-loader": {
       "types": "./dist/parquet-js-loader.d.ts",
