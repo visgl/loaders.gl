@@ -1,10 +1,44 @@
-# QuantizedMeshWriter
+---
+title: QuantizedMeshWriter
+description: Encode mesh and Arrow terrain data as quantized mesh tiles.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Terrain module · writer API"
+  title="QuantizedMeshWriter"
+  description="Encode loaders.gl mesh or Mesh Arrow table data as compact quantized mesh terrain tiles for tile-based terrain delivery."
+  tone="orange"
+  meta={['From v5.0', 'Quantized Mesh', 'Binary terrain output']}
+  links={[
+    {label: 'Terrain module', to: '/docs/modules/terrain'},
+    {label: 'Terrain module', to: '/docs/modules/terrain'},
+    {label: 'QuantizedMeshLoader', to: '/docs/modules/terrain/api-reference/quantized-mesh-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it writes"
+  title="Put a terrain surface into a tile-ready encoding."
+  description="QuantizedMeshWriter normalizes mesh input, quantizes positions within bounds, and writes the core terrain header, vertices, indices, and edge structures expected by quantized mesh readers."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Mesh or Mesh Arrow table'},
+    {label: 'Output', value: 'Binary `.terrain` quantized mesh'},
+    {label: 'Geometry', value: 'Triangle-list positions and indices'},
+    {label: 'Control', value: 'Bounds and quantization options'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="QuantizedMeshWriter reference"
+  description="The sections below document usage, input normalization, output structure, and writer options."
+  tone="orange"
+/>
 
 The `QuantizedMeshWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) terrain data as quantized mesh binary data.
 

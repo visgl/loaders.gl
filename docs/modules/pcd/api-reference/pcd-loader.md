@@ -1,12 +1,47 @@
-import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+---
+title: PCDLoader
+description: Decode Point Cloud Data into point-cloud or Mesh Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-# PCD Loaders
+import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="PCD module · loader API"
+  title="PCDLoader"
+  description="Decode ASCII, binary, and compressed Point Cloud Data into a point-cloud object or a Mesh Arrow table with named attributes."
+  tone="violet"
+  meta={['From v1.0', 'ASCII and binary', 'Point cloud / Arrow']}
+  links={[
+    {label: 'PCD format', to: '/docs/modules/pcd/formats/pcd'},
+    {label: 'PCDWriter', to: '/docs/modules/pcd/api-reference/pcd-writer'},
+    {label: 'PCD module', to: '/docs/modules/pcd'}
+  ]}
+/>
 
 <PcdDocsTabs active="pcdloader" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
+<DocOrientation
+  eyebrow="What it returns"
+  title="Keep point positions and named attributes together."
+  description="PCDLoader reads the schema in the PCD header, then decodes the point records into the representation that best fits the next stage of the pipeline."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'ASCII, binary, or compressed PCD'},
+    {label: 'Default', value: 'Legacy PointCloud mesh object'},
+    {label: 'Arrow', value: 'Mesh Arrow table with columns'},
+    {label: 'Streaming', value: 'Batches for ASCII and uncompressed binary'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="PCDLoader reference"
+  description="The sections below document format metadata, usage, batch parsing, output shapes, and options."
+  tone="violet"
+/>
 
 `PCDLoader` parses point cloud data in the Point Cloud Data (PCD) format and returns a legacy [PointCloud](/docs/specifications/category-mesh) object by default.
 
