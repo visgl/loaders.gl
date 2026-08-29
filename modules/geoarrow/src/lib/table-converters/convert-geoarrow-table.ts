@@ -15,7 +15,7 @@ import type {
 import {convertTable, convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema} from '../../metadata/geoarrow-metadata';
 import {getGeoMetadata} from '../../metadata/geoparquet-metadata';
-import {convertGeoArrowGeometryToGeoJSON} from '../geometry-converters/convert-geoarrow-to-geojson';
+import {convertGeoArrowVectorCellToGeoJSON} from '../../geoarrow-converter/convert-geoarrow-geometry';
 
 export function convertGeoArrowToTable(arrowTable: arrow.Table, shape: 'arrow-table'): ArrowTable;
 export function convertGeoArrowToTable(
@@ -97,17 +97,18 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
   const arrowGeometryColumn = arrowTable.getChild(geometryColumnName);
 
   for (let rowIndex = 0; rowIndex < arrowTable.numRows; rowIndex++) {
-    const featureGeometry = convertGeoArrowGeometryToGeoJSON(
-      arrowGeometryColumn?.get(rowIndex),
-      geometryColumnMetadata.encoding
-    );
-    if (featureGeometry) {
-      features.push({
-        type: 'Feature',
-        geometry: featureGeometry,
-        properties: propertiesTable.get(rowIndex)?.toJSON() || {}
-      });
-    }
+    const featureGeometry = arrowGeometryColumn
+      ? convertGeoArrowVectorCellToGeoJSON(
+          arrowGeometryColumn,
+          rowIndex,
+          geometryColumnMetadata.encoding
+        )
+      : null;
+    features.push({
+      type: 'Feature',
+      geometry: featureGeometry as Feature['geometry'],
+      properties: propertiesTable.get(rowIndex)?.toJSON() || {}
+    });
   }
 
   return {

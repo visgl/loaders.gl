@@ -9,10 +9,12 @@
  * @see https://github.com/geoarrow/geoarrow-js/
  */
 
-import {DataType} from 'apache-arrow/type';
+import {DataType, LargeList, List} from 'apache-arrow/type';
 
 import type {
+  GeoArrowBoxType,
   GeoArrowPoint,
+  GeoArrowList,
   GeoArrowLineString,
   GeoArrowPolygon,
   GeoArrowMultiPoint,
@@ -20,6 +22,24 @@ import type {
   GeoArrowMultiPolygon,
   GeoArrowGeometry
 } from './geoarrow-types';
+
+/** Checks whether the given Apache Arrow JS type is a canonical GeoArrow Box struct. */
+export function isGeoArrowBox(type: DataType): type is GeoArrowBoxType {
+  if (!DataType.isStruct(type)) return false;
+  const coordinateNames = type.children.map(field => field.name);
+  const validCoordinateNames = [
+    ['xmin', 'ymin', 'xmax', 'ymax'],
+    ['xmin', 'ymin', 'zmin', 'xmax', 'ymax', 'zmax'],
+    ['xmin', 'ymin', 'mmin', 'xmax', 'ymax', 'mmax'],
+    ['xmin', 'ymin', 'zmin', 'mmin', 'xmax', 'ymax', 'zmax', 'mmax']
+  ];
+  return validCoordinateNames.some(
+    names =>
+      names.length === coordinateNames.length &&
+      names.every((name, index) => coordinateNames[index] === name) &&
+      type.children.every(field => DataType.isFloat(field.type))
+  );
+}
 
 /** Checks whether the given Apache Arrow JS type is a Point data type */
 export function isGeoArrowPoint(type: DataType): type is GeoArrowPoint {
@@ -37,24 +57,21 @@ export function isGeoArrowPoint(type: DataType): type is GeoArrowPoint {
     return true;
   }
 
-  // TODO - support separated coordinates
-  // if (DataType.isStruct(type)) {
-  //   // Check number of children
-  //   if (![2, 3, 4].includes(type.children.length)) {
-  //     return false;
-  //   }
-
-  //   // Check that children have correct field names
-  //   if (!type.children.every((field) => ['x', 'y', 'z', 'm'].includes(field.name))) {
-  //     return false;
-  //   }
-
-  //   if (!type.children.every((field) => DataType.isFloat(field))) {
-  //     return false;
-  //   }
-
-  //   return true;
-  // }
+  if (DataType.isStruct(type)) {
+    const coordinateNames = type.children.map(field => field.name);
+    const validCoordinateNames = [
+      ['x', 'y'],
+      ['x', 'y', 'z'],
+      ['x', 'y', 'm'],
+      ['x', 'y', 'z', 'm']
+    ];
+    return validCoordinateNames.some(
+      names =>
+        names.length === coordinateNames.length &&
+        names.every((name, index) => coordinateNames[index] === name) &&
+        type.children.every(field => DataType.isFloat(field.type))
+    );
+  }
 
   return false;
 }
@@ -62,7 +79,7 @@ export function isGeoArrowPoint(type: DataType): type is GeoArrowPoint {
 /** Checks whether the given Apache Arrow JS type is a Point data type */
 export function isGeoArrowLineString(type: DataType): type is GeoArrowLineString {
   // Check the outer type is a List
-  if (!DataType.isList(type)) {
+  if (!isGeoArrowList(type)) {
     return false;
   }
 
@@ -77,7 +94,7 @@ export function isGeoArrowLineString(type: DataType): type is GeoArrowLineString
 /** Checks whether the given Apache Arrow JS type is a Polygon data type */
 export function isGeoArrowPolygon(type: DataType): type is GeoArrowPolygon {
   // Check the outer vector is a List
-  if (!DataType.isList(type)) {
+  if (!isGeoArrowList(type)) {
     return false;
   }
 
@@ -92,7 +109,7 @@ export function isGeoArrowPolygon(type: DataType): type is GeoArrowPolygon {
 /** Checks whether the given Apache Arrow JS type is a Polygon data type */
 export function isGeoArrowMultiPoint(type: DataType): type is GeoArrowMultiPoint {
   // Check the outer vector is a List
-  if (!DataType.isList(type)) {
+  if (!isGeoArrowList(type)) {
     return false;
   }
 
@@ -107,7 +124,7 @@ export function isGeoArrowMultiPoint(type: DataType): type is GeoArrowMultiPoint
 /** Checks whether the given Apache Arrow JS type is a Polygon data type */
 export function isGeoArrowMultiLineString(type: DataType): type is GeoArrowMultiLineString {
   // Check the outer vector is a List
-  if (!DataType.isList(type)) {
+  if (!isGeoArrowList(type)) {
     return false;
   }
 
@@ -122,7 +139,7 @@ export function isGeoArrowMultiLineString(type: DataType): type is GeoArrowMulti
 /** Checks whether the given Apache Arrow JS type is a Polygon data type */
 export function isGeoArrowMultiPolygon(type: DataType): type is GeoArrowMultiPolygon {
   // Check the outer vector is a List
-  if (!DataType.isList(type)) {
+  if (!isGeoArrowList(type)) {
     return false;
   }
 
@@ -132,6 +149,11 @@ export function isGeoArrowMultiPolygon(type: DataType): type is GeoArrowMultiPol
   }
 
   return true;
+}
+
+/** Checks both Arrow list widths used by the GeoArrow specification. */
+function isGeoArrowList(type: DataType): type is GeoArrowList<DataType> {
+  return type instanceof List || type instanceof LargeList;
 }
 
 /**

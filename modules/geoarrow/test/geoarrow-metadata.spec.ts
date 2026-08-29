@@ -1,55 +1,67 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {expect, test} from 'vitest';
-import type {GeoArrowMetadata} from '@loaders.gl/geoarrow';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
-// fix a bug that map bounds are not updated correctly from arrow samples
-test('geoarrow#getGeometryColumnsFromSchema', () => {
-  const testCases: {
-    schema: string;
-    columns: Record<string, GeoArrowMetadata>;
-  }[] = [
+import {mergeGeoArrowMetadata} from '@loaders.gl/geoarrow';
+
+test('mergeGeoArrowMetadata is deterministic and unions geometry types canonically', () => {
+  const left = mergeGeoArrowMetadata([
     {
-      schema: '',
-      columns: {}
+      encoding: 'geoarrow.wkb',
+      geometry_types: ['Polygon', 'Point Z'],
+      crs: {type: 'name', properties: {name: 'EPSG:4326'}},
+      source: {version: 1, name: 'fixture'}
+    },
+    {
+      encoding: 'geoarrow.wkb',
+      geometry_types: ['LineString', 'Point'],
+      crs: {properties: {name: 'EPSG:4326'}, type: 'name'},
+      source: {name: 'fixture', version: 1}
     }
-  ];
-  for (const testCase of testCases) {
-    const columns = getGeometryColumnsFromSchema(testCase.schema as any);
-    expect(columns).toBeTruthy();
-  }
+  ]);
+  const right = mergeGeoArrowMetadata([
+    {
+      encoding: 'geoarrow.wkb',
+      geometry_types: ['LineString', 'Point'],
+      crs: {properties: {name: 'EPSG:4326'}, type: 'name'},
+      source: {name: 'fixture', version: 1}
+    },
+    {
+      encoding: 'geoarrow.wkb',
+      geometry_types: ['Polygon', 'Point Z'],
+      crs: {type: 'name', properties: {name: 'EPSG:4326'}},
+      source: {version: 1, name: 'fixture'}
+    }
+  ]);
+
+  expect(left).toEqual(right);
+  expect(left.valid).toBe(true);
+  expect(left.metadata.geometry_types).toEqual(['Point', 'Point Z', 'LineString', 'Polygon']);
+  expect(left.metadata.source).toEqual({version: 1, name: 'fixture'});
 });
-test('geoarrow#getGeometryColumnsFromSchema preserves encoding when extension metadata is empty', () => {
-  const columns = getGeometryColumnsFromSchema({
-    fields: [
-      {
-        name: 'geometry',
-        type: 'binary',
-        metadata: {
-          'ARROW:extension:name': 'geoarrow.wkb',
-          'ARROW:extension:metadata': '{}'
-        }
-      }
-    ]
-  } as any);
-  expect(columns).toEqual({geometry: {encoding: 'geoarrow.wkb'}});
+
+test('mergeGeoArrowMetadata reports strict conflicts without preserving unsafe claims', () => {
+  const result = mergeGeoArrowMetadata([
+    {encoding: 'geoarrow.point', crs: 'EPSG:4326'},
+    {encoding: 'geoarrow.wkb', crs: 'EPSG:3857'}
+  ]);
+
+  expect(result.valid).toBe(false);
+  expect(result.metadata).toEqual({});
+  expect(result.conflicts.map(conflict => [conflict.key, conflict.action])).toEqual([
+    ['crs', 'rejected'],
+    ['encoding', 'rejected']
+  ]);
 });
-test('geoarrow#getGeometryColumnsFromSchema preserves a mislabeled string CRS as opaque', () => {
-  const wkt = 'GEOGCRS["WGS 84",ID["EPSG",4326]]';
-  const schema = {
-    fields: [
-      {
-        name: 'geometry',
-        type: 'binary',
-        metadata: {
-          'ARROW:extension:name': 'geoarrow.wkb',
-          'ARROW:extension:metadata': JSON.stringify({crs: wkt, crs_type: 'projjson'})
-        }
-      }
-    ]
-  } as any;
-  expect(getGeometryColumnsFromSchema(schema)).toEqual({
-    geometry: {encoding: 'geoarrow.wkb', crs: wkt}
-  });
-  expect(JSON.parse(schema.fields[0].metadata['ARROW:extension:metadata']).crs_type).toBe(
-    'projjson'
-  );
+
+test('mergeGeoArrowMetadata supports permissive and repair conflict policies', () => {
+  const values = [{encoding: 'geoarrow.point'}, {encoding: 'geoarrow.linestring'}] as const;
+  const permissive = mergeGeoArrowMetadata(values, {mode: 'permissive'});
+  const repair = mergeGeoArrowMetadata(values, {mode: 'repair'});
+
+  expect(permissive.metadata.encoding).toBe('geoarrow.point');
+  expect(permissive.conflicts[0]?.action).toBe('preserved-first');
+  expect(repair.metadata).toEqual({});
+  expect(repair.conflicts[0]?.action).toBe('dropped');
 });

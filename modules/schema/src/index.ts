@@ -16,7 +16,32 @@ export type {
 // SCHEMAS AND DATA TYPES
 
 export type {Schema, Field, DataType, KeyType, SchemaMetadata, FieldMetadata} from './types/schema';
+export type {Metadata, SchemaWithMetadata} from './metadata';
+export {
+  getGeoMetadata,
+  getMetadataValue,
+  parseJSONStringMetadata,
+  setGeoMetadata,
+  setMetadataValue,
+  unpackGeoMetadata,
+  unpackJSONStringMetadata
+} from './metadata';
 export type {Batch} from './types/batch';
+export type {
+  GeoArrowEncoding,
+  GeoArrowDimension,
+  GeoArrowCoordinateLayout,
+  GeoArrowOffsetType,
+  GeoArrowBox,
+  GeoArrowEdgeType,
+  GeoArrowCRSValue,
+  GeoArrowCRSType,
+  GeoArrowCRSMetadata,
+  GeoArrowMetadata,
+  GeoParquetGeometryType,
+  GeoColumnMetadata,
+  GeoMetadata
+} from './geometry/geoarrow';
 
 // TABLE CATEGORY TYPES
 export type {

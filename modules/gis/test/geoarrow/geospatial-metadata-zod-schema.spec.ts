@@ -46,6 +46,21 @@ describe('geospatial metadata schemas', () => {
         }
       }).success
     ).toBe(true);
+    for (const encoding of ['GEOMETRY', 'GEOGRAPHY']) {
+      expect(
+        GeoParquetMetadataSchema.safeParse({
+          version: '2.0.0',
+          primary_column: 'geometry',
+          columns: {
+            geometry: {
+              encoding,
+              geometry_types: ['Point ZM'],
+              statistics: {xmin: -180, ymin: -90, xmax: 180, ymax: 90}
+            }
+          }
+        }).success
+      ).toBe(true);
+    }
 
     expect(
       GeoParquetMetadataSchema.safeParse({

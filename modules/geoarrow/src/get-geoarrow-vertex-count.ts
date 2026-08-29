@@ -3,8 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import type {Geometry} from '@loaders.gl/schema';
+import {convertWKTToGeometry} from '@loaders.gl/gis';
 
 import {
+  isGeoArrowBox,
   isGeoArrowLineString,
   isGeoArrowMultiLineString,
   isGeoArrowMultiPoint,
@@ -87,11 +90,37 @@ function getGeoarrowVectorVertexCount(vector: arrow.Vector): number {
  * @returns Number of vertices in the data chunk.
  */
 function getGeoarrowDataVertexCount(data: arrow.Data): number {
-  if (data.type instanceof arrow.Binary || data.type instanceof arrow.LargeBinary) {
+  if (
+    data.type instanceof arrow.Binary ||
+    data.type instanceof arrow.LargeBinary ||
+    data.type instanceof arrow.BinaryView
+  ) {
     return getWKBDataVertexCount(data);
   }
-  if (data.type instanceof arrow.Utf8 || data.type instanceof arrow.LargeUtf8) {
-    throw new Error('GeoArrow WKT vertex counting is not supported.');
+  if (
+    data.type instanceof arrow.Utf8 ||
+    data.type instanceof arrow.LargeUtf8 ||
+    data.type instanceof arrow.Utf8View
+  ) {
+    return getWKTDataVertexCount(data);
+  }
+  if (data.type instanceof arrow.DenseUnion) {
+    return data.children.reduce(
+      (vertexCount, child) => vertexCount + getGeoarrowDataVertexCount(child),
+      0
+    );
+  }
+  if (
+    (data.type instanceof arrow.List || data.type instanceof arrow.LargeList) &&
+    data.children[0]?.type instanceof arrow.DenseUnion
+  ) {
+    return getGeoarrowDataVertexCount(data.children[0]);
+  }
+
+  // A Box stores extents rather than geometry vertices. It is still a recognized
+  // GeoArrow column, but contributes no coordinate vertices to this measurement.
+  if (isGeoArrowBox(data.type)) {
+    return 0;
   }
 
   if (isGeoArrowPoint(data.type)) {
@@ -108,6 +137,48 @@ function getGeoarrowDataVertexCount(data: arrow.Data): number {
   }
 
   throw new Error(`Unsupported GeoArrow data type: ${data.type}`);
+}
+
+/** Counts vertices in one Arrow UTF-8 WKT data chunk. */
+function getWKTDataVertexCount(data: arrow.Data): number {
+  const vector = new arrow.Vector([data]);
+  let vertexCount = 0;
+
+  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
+    const value = vector.get(rowIndex);
+    if (value == null) continue;
+    const geometry = convertWKTToGeometry(String(value));
+    if (!geometry) throw new Error(`Invalid WKT geometry at row ${rowIndex}.`);
+    vertexCount += countGeometryVertices(geometry);
+  }
+
+  return vertexCount;
+}
+
+/** Counts coordinate tuples in a parsed GeoJSON geometry, including nested collections. */
+function countGeometryVertices(geometry: Geometry): number {
+  switch (geometry.type) {
+    case 'Point':
+      return geometry.coordinates.length > 0 ? 1 : 0;
+    case 'MultiPoint':
+    case 'LineString':
+      return geometry.coordinates.length;
+    case 'Polygon':
+      return geometry.coordinates.reduce((count, ring) => count + ring.length, 0);
+    case 'MultiLineString':
+      return geometry.coordinates.reduce((count, line) => count + line.length, 0);
+    case 'MultiPolygon':
+      return geometry.coordinates.reduce(
+        (count, polygon) =>
+          count + polygon.reduce((polygonCount, ring) => polygonCount + ring.length, 0),
+        0
+      );
+    case 'GeometryCollection':
+      return geometry.geometries.reduce(
+        (count, childGeometry) => count + countGeometryVertices(childGeometry),
+        0
+      );
+  }
 }
 
 /**

@@ -74,7 +74,7 @@ function arrowMultiPolygonToGeometry(arrowMultiPolygon: any): MultiPolygon {
         arrowRing && coordinateIndex < arrowRing.length;
         coordinateIndex++
       ) {
-        ring.push(Array.from(arrowRing.get(coordinateIndex)));
+        ring.push(convertArrowCoordinate(arrowRing.get(coordinateIndex)));
       }
       polygon.push(ring);
     }
@@ -94,7 +94,7 @@ function arrowPolygonToGeometry(arrowPolygon: any): Polygon {
       arrowRing && coordinateIndex < arrowRing.length;
       coordinateIndex++
     ) {
-      ring.push(Array.from(arrowRing.get(coordinateIndex)));
+      ring.push(convertArrowCoordinate(arrowRing.get(coordinateIndex)));
     }
     polygon.push(ring);
   }
@@ -107,7 +107,7 @@ function arrowMultiPointToGeometry(arrowMultiPoint: any): MultiPoint {
   for (let pointIndex = 0; arrowMultiPoint && pointIndex < arrowMultiPoint.length; pointIndex++) {
     const arrowPoint = arrowMultiPoint.get(pointIndex);
     if (arrowPoint) {
-      multiPoint.push(Array.from(arrowPoint));
+      multiPoint.push(convertArrowCoordinate(arrowPoint));
     }
   }
 
@@ -115,7 +115,10 @@ function arrowMultiPointToGeometry(arrowMultiPoint: any): MultiPoint {
 }
 
 function arrowPointToGeometry(arrowPoint: any): Point {
-  return {type: 'Point', coordinates: Array.from(arrowPoint)};
+  if (isEmptyArrowCoordinate(arrowPoint)) {
+    return {type: 'Point', coordinates: []};
+  }
+  return {type: 'Point', coordinates: convertArrowCoordinate(arrowPoint)};
 }
 
 function arrowMultiLineStringToGeometry(arrowMultiLineString: any): MultiLineString {
@@ -134,7 +137,7 @@ function arrowMultiLineStringToGeometry(arrowMultiLineString: any): MultiLineStr
     ) {
       const arrowCoordinate = arrowLineString.get(coordinateIndex);
       if (arrowCoordinate) {
-        lineString.push(Array.from(arrowCoordinate));
+        lineString.push(convertArrowCoordinate(arrowCoordinate));
       }
     }
     multiLineString.push(lineString);
@@ -152,9 +155,38 @@ function arrowLineStringToGeometry(arrowLineString: any): LineString {
   ) {
     const arrowCoordinate = arrowLineString.get(coordinateIndex);
     if (arrowCoordinate) {
-      lineString.push(Array.from(arrowCoordinate));
+      lineString.push(convertArrowCoordinate(arrowCoordinate));
     }
   }
 
   return {type: 'LineString', coordinates: lineString};
+}
+
+/** Reads an interleaved or separated GeoArrow coordinate value. */
+function convertArrowCoordinate(arrowCoordinate: any): Position {
+  if (arrowCoordinate && typeof arrowCoordinate.toArray === 'function') {
+    return Array.from(arrowCoordinate.toArray()) as Position;
+  }
+  if (arrowCoordinate && typeof arrowCoordinate === 'object' && 'x' in arrowCoordinate) {
+    return ['x', 'y', 'z', 'm']
+      .filter(name => name in arrowCoordinate)
+      .map(name => arrowCoordinate[name]) as Position;
+  }
+  return Array.from(arrowCoordinate) as Position;
+}
+
+/** Returns true when a native point's coordinate children are all null. */
+function isEmptyArrowCoordinate(arrowCoordinate: any): boolean {
+  if (arrowCoordinate && typeof arrowCoordinate.isValid === 'function') {
+    for (let index = 0; index < arrowCoordinate.length; index++) {
+      if (arrowCoordinate.isValid(index)) return false;
+    }
+    return arrowCoordinate.length > 0;
+  }
+  if (arrowCoordinate && typeof arrowCoordinate === 'object' && 'x' in arrowCoordinate) {
+    return ['x', 'y', 'z', 'm']
+      .filter(name => name in arrowCoordinate)
+      .every(name => arrowCoordinate[name] == null);
+  }
+  return false;
 }

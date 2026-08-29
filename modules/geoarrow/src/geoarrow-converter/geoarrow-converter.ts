@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Converter} from '@loaders.gl/schema-utils';
-import type {GeoArrowConvertFromEncoding} from '../convert-table-to-geoarrow';
+import type {GeoArrowConvertFromOptions as GeoArrowTableConvertFromOptions} from '../convert-table-to-geoarrow';
 import {convertGeoArrow, isGeoArrowApacheTable} from './convert-geoarrow';
 
 const convertGeoArrowUnchecked = convertGeoArrow as (
@@ -28,12 +28,7 @@ export type GeoArrowConvertToOptions = {
 /**
  * Options shared by conversions from loaders.gl tables to GeoArrow Apache Arrow tables.
  */
-export type GeoArrowConvertFromOptions = {
-  batchSize?: number;
-  geoarrow?: {
-    encoding?: GeoArrowConvertFromEncoding;
-  };
-};
+export type GeoArrowConvertFromOptions = GeoArrowTableConvertFromOptions;
 
 /**
  * Leaf converter for GeoArrow Arrow tables and loaders.gl table shapes.

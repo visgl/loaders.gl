@@ -4,121 +4,19 @@
 
 /* eslint-disable camelcase */
 
-import type {CRSIdentifier, PROJJSONCRS, WKTCRSDefinition} from '@math.gl/crs';
+import type {GeoMetadata} from '@loaders.gl/schema';
 import {getMetadataValue, type Metadata, setMetadataValue} from './metadata-utils';
 
-/**
- * A GeoParquet metadata object stored in the top-level `geo` schema metadata key.
- */
-export type GeoMetadata = {
-  version?: string;
-  primary_column?: string;
-  columns: Record<string, GeoColumnMetadata>;
-  [key: string]: unknown;
-};
-
-/**
- * GeoParquet metadata for one geometry column.
- */
-export type GeoColumnMetadata = {
-  encoding:
-    | 'WKB'
-    | 'wkb'
-    | 'wkt'
-    | 'point'
-    | 'linestring'
-    | 'polygon'
-    | 'multipoint'
-    | 'multilinestring'
-    | 'multipolygon';
-  geometry_types: GeoParquetGeometryType[];
-  /** PROJJSON CRS, explicit unknown CRS (`null`), or omitted default OGC:CRS84. */
-  crs?: PROJJSONCRS | null;
-  orientation?: 'counterclockwise';
-  bbox?:
-    | [number, number, number, number]
-    | [number, number, number, number, number, number]
-    | [number, number, number, number, number, number, number, number];
-  edges?: 'planar' | GeoArrowEdgeType;
-  epoch?: number;
-  [key: string]: unknown;
-};
-
-/**
- * Geometry type strings used by GeoParquet metadata.
- */
-export type GeoParquetGeometryType =
-  | 'Point'
-  | 'LineString'
-  | 'Polygon'
-  | 'MultiPoint'
-  | 'MultiLineString'
-  | 'MultiPolygon'
-  | 'GeometryCollection'
-  | 'Point Z'
-  | 'LineString Z'
-  | 'Polygon Z'
-  | 'MultiPoint Z'
-  | 'MultiLineString Z'
-  | 'MultiPolygon Z'
-  | 'GeometryCollection Z'
-  | 'Point M'
-  | 'LineString M'
-  | 'Polygon M'
-  | 'MultiPoint M'
-  | 'MultiLineString M'
-  | 'MultiPolygon M'
-  | 'GeometryCollection M'
-  | 'Point ZM'
-  | 'LineString ZM'
-  | 'Polygon ZM'
-  | 'MultiPoint ZM'
-  | 'MultiLineString ZM'
-  | 'MultiPolygon ZM'
-  | 'GeometryCollection ZM';
-
-/** GeoArrow extension names used to describe geometry column encodings. */
-export type GeoArrowEncoding =
-  | 'geoarrow.geometry'
-  | 'geoarrow.geometrycollection'
-  | 'geoarrow.multipolygon'
-  | 'geoarrow.polygon'
-  | 'geoarrow.multilinestring'
-  | 'geoarrow.linestring'
-  | 'geoarrow.multipoint'
-  | 'geoarrow.point'
-  | 'geoarrow.box'
-  | 'geoarrow.wkb'
-  | 'geoarrow.wkt';
-
-/** CRS serialization identifiers defined by the GeoArrow extension metadata specification. */
-export type GeoArrowCRSType = 'projjson' | 'wkt2:2019' | 'authority_code' | 'srid';
-
-/** CRS metadata representations supported by GeoArrow extension metadata. */
-export type GeoArrowCRSMetadata =
-  | {crs?: undefined; crs_type?: undefined}
-  | {crs: PROJJSONCRS; crs_type?: 'projjson'}
-  | {crs: WKTCRSDefinition; crs_type: 'wkt2:2019'}
-  | {crs: CRSIdentifier; crs_type: 'authority_code'}
-  | {crs: string; crs_type: 'srid'}
-  | {crs: string; crs_type?: undefined};
-
-/** Non-planar edge interpretations supported by GeoArrow extension metadata. */
-export type GeoArrowEdgeType = 'spherical' | 'vincenty' | 'thomas' | 'andoyer' | 'karney';
-
-/** Geospatial metadata stored on one GeoArrow extension field. */
-type GeoArrowMetadataBase = {
-  /** Geometry encoding declared by the Arrow extension name. */
-  encoding?: GeoArrowEncoding;
-  /** Non-planar interpretation of edges between geometry vertices. */
-  edges?: GeoArrowEdgeType;
-  /** Geometry types represented by the field. */
-  geometry_types?: GeoParquetGeometryType[];
-  [key: string]: unknown;
-};
-
-/** Geospatial metadata stored on one GeoArrow extension field. */
-export type GeoArrowMetadata = GeoArrowMetadataBase & GeoArrowCRSMetadata;
+export type {
+  GeoArrowCRSMetadata,
+  GeoArrowCRSType,
+  GeoArrowEncoding,
+  GeoArrowEdgeType,
+  GeoArrowMetadata,
+  GeoColumnMetadata,
+  GeoMetadata,
+  GeoParquetGeometryType
+} from '@loaders.gl/schema';
 
 /**
  * Reads GeoParquet metadata from a metadata container.

@@ -16,11 +16,14 @@ export type GeoArrowBuilderEncoding =
 /** Coordinate transform applied while writing coordinate values. */
 export type GeoArrowCoordinateTransform = (coordinate: number[]) => number[];
 
+/** Coordinate dimensions supported by the incremental builder. */
+export type GeoArrowBuilderDimension = 'xy' | 'xyz' | 'xym' | 'xyzm';
+
 /** Builder target buffers supplied for write mode. */
 export type GeoArrowBuilderTarget = {
   /** Validity bitmap for top-level geometry rows. */
   nullBitmap: Uint8Array;
-  /** Coordinate values stored as interleaved x/y(/z). */
+  /** Coordinate values stored as interleaved x/y(/z/m). */
   coordinates: Float64Array;
   /** Top-level geometry offsets for variable-size encodings. */
   geometryOffsets?: Int32Array;
@@ -46,8 +49,12 @@ export type GeoArrowGeometryArray = GeoArrowBuilderTarget & {
 export type GeoArrowBuilderBaseOptions = {
   /** GeoArrow geometry encoding to build. */
   encoding: GeoArrowBuilderEncoding;
-  /** Whether coordinate tuples include Z. */
+  /** Exact coordinate dimension. Takes precedence over the legacy flags. */
+  dimension?: GeoArrowBuilderDimension;
+  /** Whether coordinate tuples include Z when `dimension` is omitted. */
   hasZ?: boolean;
+  /** Whether coordinate tuples include M when `dimension` is omitted. */
+  hasM?: boolean;
   /** Optional coordinate transform applied during write mode. */
   transform?: GeoArrowCoordinateTransform;
 };
@@ -102,16 +109,24 @@ export class GeoArrowBuilder {
   readonly encoding: GeoArrowBuilderEncoding;
   /** Whether coordinate tuples include Z. */
   readonly hasZ: boolean;
+  /** Whether coordinate tuples include M. */
+  readonly hasM: boolean;
+  /** Exact coordinate dimension emitted by this builder. */
+  readonly dimension: GeoArrowBuilderDimension;
   private state: GeoArrowBuilderState;
 
   /** Creates a GeoArrow builder in measure or write mode. */
   constructor(options: GeoArrowBuilderOptions) {
     this.encoding = options.encoding;
-    this.hasZ = Boolean(options.hasZ);
+    this.dimension =
+      options.dimension ||
+      (options.hasZ && options.hasM ? 'xyzm' : options.hasZ ? 'xyz' : options.hasM ? 'xym' : 'xy');
+    this.hasZ = this.dimension === 'xyz' || this.dimension === 'xyzm';
+    this.hasM = this.dimension === 'xym' || this.dimension === 'xyzm';
     this.state = {
       mode: options.mode,
       encoding: options.encoding,
-      coordinateSize: this.hasZ ? 3 : 2,
+      coordinateSize: getCoordinateSize(this.dimension),
       transform: options.transform,
       length: 0,
       nullCount: 0,
@@ -217,8 +232,8 @@ export class GeoArrowBuilder {
     this.writeGeometryOffset(polygonCount);
   }
 
-  /** Writes one coordinate tuple. */
-  writeCoordinate(x: number, y: number, z?: number): void {
+  /** Writes one coordinate tuple. The third ordinate is M for an XYM builder. */
+  writeCoordinate(x: number, y: number, z?: number, m?: number): void {
     const coordinateIndex = this.state.coordinateCount;
     if (this.state.mode === 'write') {
       const target = this.getTarget();
@@ -226,20 +241,18 @@ export class GeoArrowBuilder {
         throw new Error('GeoArrowBuilder target coordinate buffer overflow');
       }
       const valueOffset = coordinateIndex * this.state.coordinateSize;
+      const coordinate = this.getCoordinateValuesForWrite(x, y, z, m);
       if (this.state.transform) {
-        const coordinate = this.state.transform([x, y, z ?? 0]);
-        target.coordinates[valueOffset] = coordinate[0] ?? x;
-        target.coordinates[valueOffset + 1] = coordinate[1] ?? y;
-        if (this.hasZ) {
-          target.coordinates[valueOffset + 2] = coordinate[2] ?? z ?? Number.NaN;
+        const transformedCoordinate = this.state.transform(coordinate);
+        for (let dimensionIndex = 0; dimensionIndex < this.state.coordinateSize; dimensionIndex++) {
+          target.coordinates[valueOffset + dimensionIndex] =
+            transformedCoordinate[dimensionIndex] ?? coordinate[dimensionIndex] ?? Number.NaN;
         }
         this.state.coordinateCount++;
         return;
       }
-      target.coordinates[valueOffset] = x;
-      target.coordinates[valueOffset + 1] = y;
-      if (this.hasZ) {
-        target.coordinates[valueOffset + 2] = z ?? Number.NaN;
+      for (let dimensionIndex = 0; dimensionIndex < this.state.coordinateSize; dimensionIndex++) {
+        target.coordinates[valueOffset + dimensionIndex] = coordinate[dimensionIndex] ?? Number.NaN;
       }
     }
     this.state.coordinateCount++;
@@ -361,6 +374,13 @@ export class GeoArrowBuilder {
       target.ringOffsets = new Int32Array([0]);
     }
     this.state.target = target;
+  }
+
+  private getCoordinateValuesForWrite(x: number, y: number, z?: number, m?: number): number[] {
+    if (this.dimension === 'xy') return [x, y];
+    if (this.dimension === 'xyz') return [x, y, z ?? Number.NaN];
+    if (this.dimension === 'xym') return [x, y, m ?? z ?? Number.NaN];
+    return [x, y, z ?? Number.NaN, m ?? Number.NaN];
   }
 
   private writeGeometryOffset(childCount = 0): void {
@@ -485,6 +505,10 @@ export class GeoArrowBuilder {
 
 function makePrimitiveData(values: Float64Array): arrow.Data {
   return arrow.makeData({type: new arrow.Float64(), data: values} as any);
+}
+
+function getCoordinateSize(dimension: GeoArrowBuilderDimension): 2 | 3 | 4 {
+  return dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
 }
 
 function makeCoordinateData(values: Float64Array, coordinateSize: number): arrow.Data {
