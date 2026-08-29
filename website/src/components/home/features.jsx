@@ -107,6 +107,9 @@ export const FEATURE_CARDS = [
   }
 ];
 
+/** The small set of capability entry points that belongs on the homepage. */
+export const HOME_FEATURE_IDS = ['scan', 'loaders', '3d', 'streaming'];
+
 const FeatureSection = styled.section`
   background: #0d1521;
   color: #f4f8fb;
@@ -813,10 +816,18 @@ export function RenderFeatureVisual({type, wide}) {
   );
 }
 
-/** Renders the homepage's large feature cards for the loaders.gl tentpole capabilities. */
-export default function Features({showVisuals = true}) {
+/**
+ * Renders feature cards for the loaders.gl tentpole capabilities.
+ * @param {{showVisuals?: boolean, featureIds?: string[]}} props Component properties.
+ */
+export default function Features({showVisuals = true, featureIds}) {
   const CardComponent = showVisuals ? FeatureCard : CompactFeatureCard;
   const FooterComponent = showVisuals ? CardFooter : CompactCardFooter;
+  const cards = featureIds
+    ? featureIds
+        .map((featureId) => FEATURE_CARDS.find((feature) => feature.id === featureId))
+        .filter(Boolean)
+    : FEATURE_CARDS;
 
   return (
     <FeatureSection>
@@ -833,7 +844,7 @@ export default function Features({showVisuals = true}) {
         </FeatureIntro>
 
         <FeatureGrid>
-          {FEATURE_CARDS.map((feature) => (
+          {cards.map((feature) => (
             <CardComponent
               key={feature.id}
               to={feature.href}
