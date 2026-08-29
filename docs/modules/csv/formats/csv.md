@@ -8,6 +8,7 @@ page_style: designed
 import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="Delimited text formats"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <CsvDocsTabs active="overview" />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The delimiter is the detail"

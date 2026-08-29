@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="Table module"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
   ]}
 />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The CSV path"

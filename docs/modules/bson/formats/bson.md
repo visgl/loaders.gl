@@ -8,6 +8,7 @@ page_style: designed
 import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="Document binary format"
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <BsonDocsTabs active="overview" />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The BSON document path"

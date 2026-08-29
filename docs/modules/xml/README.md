@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="XML module"
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'XML formats', to: '/docs/modules/xml/formats/xml'}
   ]}
 />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The document parsing path"

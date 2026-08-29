@@ -8,6 +8,7 @@ page_style: designed
 import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="Extensible Markup Language"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <XmlDocsTabs active="overview" />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="The XML model"

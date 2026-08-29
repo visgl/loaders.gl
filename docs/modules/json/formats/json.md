@@ -8,6 +8,7 @@ page_style: designed
 import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
   eyebrow="Structured text format"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <JsonDocsTabs active="overview" />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="Choose the right shape"
