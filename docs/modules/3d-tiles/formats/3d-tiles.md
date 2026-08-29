@@ -7,6 +7,7 @@ page_style: designed
 
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Tiled scene format"
@@ -22,10 +23,29 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 <Tiles3DDocsTabs active="module" />
 
+<DocOrientation
+  eyebrow="The 3D Tiles delivery model"
+  title="A large scene, divided into useful requests."
+  description="A tileset describes the hierarchy and the rules for selecting content. Traversal chooses what the current view needs, while loaders.gl preserves the payload and metadata needed by the application."
+  tone="violet"
+  items={[
+    {label: 'Hierarchy', value: 'Bounding volumes, geometric error, and refinement'},
+    {label: 'Payloads', value: 'glTF, batched models, instancing, points, and composites'},
+    {label: 'Requests', value: 'Lazy content, implicit subtrees, archives, and caching'},
+    {label: 'Application', value: 'Traversal-ready tiles with source metadata intact'}
+  ]}
+/>
+
 3D Tiles is a hierarchical, streamable format for rendering large geospatial datasets. A tileset
 describes a tree of bounding volumes, geometric-error values, refinement rules, and references to
 renderable tile payloads. The runtime selects the smallest useful set of payloads for the current
 viewport instead of downloading the complete dataset.
+
+<ReferenceBoundary
+  title="Compatibility and implementation details"
+  description="The matrices below distinguish parser support, traversal behavior, payload handling, metadata preservation, and renderer-owned features."
+  tone="violet"
+/>
 
 ## Compatibility at a glance
 

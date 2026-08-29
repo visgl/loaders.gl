@@ -7,6 +7,7 @@ page_style: designed
 
 import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="glTF module / loader"
@@ -22,6 +23,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 />
 
 <GltfDocsTabs active="gltf-loader" />
+
+<DocOrientation
+  eyebrow="What GLTFLoader handles"
+  title="Resolve a scene without hiding the source document."
+  description="GLTFLoader loads the standards-shaped scene first, then optionally resolves linked assets, decompresses payloads, and exposes derived data in parallel fields for applications that need it."
+  tone="pink"
+  items={[
+    {label: 'Input', value: '.gltf JSON, .glb binary, or a resolved response'},
+    {label: 'Resolution', value: 'Buffers, images, external files, and nested assets'},
+    {label: 'Compression', value: 'Draco, meshopt, and KTX2/Basis extension paths'},
+    {label: 'Output', value: 'Scenegraph JSON plus optional typed and decoded resources'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
@@ -64,6 +78,12 @@ import {GLTFLoader} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
 ```
+
+<ReferenceBoundary
+  title="Loader behavior and options"
+  description="The reference below covers loading modes, post-processing, extension handling, scenegraph conversion, and the complete option surface."
+  tone="pink"
+/>
 
 ## Overview
 

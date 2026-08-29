@@ -8,6 +8,7 @@ page_style: designed
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Parquet module / loader"
@@ -23,6 +24,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 <ParquetDocsTabs active="parquetloader" />
 
+<DocOrientation
+  eyebrow="What ParquetLoader returns"
+  title="Start with rows. Keep a columnar path open."
+  description="ParquetLoader can return familiar object rows, Arrow-compatible tables, or incremental batches. The same entry point can stay useful as files become wider, larger, and more selective."
+  tone="mint"
+  items={[
+    {label: 'Default', value: 'Object-row tables for straightforward application code'},
+    {label: 'Columnar', value: "ArrowTable output with parquet.shape: 'arrow-table'"},
+    {label: 'Streaming', value: 'Batches for incremental processing and lower peak memory'},
+    {label: 'Selective path', value: 'Use ParquetSourceLoader for footer and range-aware reads'}
+  ]}
+/>
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   &nbsp;
@@ -37,6 +51,12 @@ and support Arrow tables through `parquet.shape: 'arrow-table'`.
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
+
+<ReferenceBoundary
+  title="Loader usage and compatibility"
+  description="The sections below cover row and Arrow shapes, streaming, geospatial metadata, loader variants, and the options that control decoding."
+  tone="mint"
+/>
 
 ## Usage
 

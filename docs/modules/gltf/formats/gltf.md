@@ -7,6 +7,7 @@ page_style: designed
 
 import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Scenegraph format"
@@ -23,6 +24,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 <GltfDocsTabs active="format" />
 
+<DocOrientation
+  eyebrow="The glTF delivery model"
+  title="A scene graph with its payloads close at hand."
+  description="glTF describes the scene and its relationships, while buffers, images, and extensions carry the data needed to render it. Choose the JSON or binary container without changing the application-facing scene model."
+  tone="pink"
+  items={[
+    {label: 'Scene', value: 'Nodes, meshes, materials, skins, and animation'},
+    {label: 'Containers', value: '.gltf JSON or .glb binary packaging'},
+    {label: 'Payloads', value: 'Buffers and images, embedded or external'},
+    {label: 'Extensions', value: 'Draco, meshopt, KTX2/Basis, and draft 2.1 features'}
+  ]}
+/>
+
 - _[`@loaders.gl/gltf`](/docs/modules/gltf)_
 - _[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/GlTF)_
@@ -30,6 +44,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 glTF is a standard file format for three-dimensional scenes and models, intended to be a streamlined, interoperable format for the delivery of 3D assets, while minimizing file size and runtime processing by apps. Sometimes described as the "JPEG of 3D."
 
 An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation.
+
+<ReferenceBoundary
+  title="Specification and implementation details"
+  description="The sections below record draft 2.1 behavior, container variants, version history, extensions, and the fields exposed by loaders.gl."
+  tone="pink"
+/>
 
 ## Draft glTF 2.1 Unified File References
 
