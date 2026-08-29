@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <FlatGeobufDocsTabs active="overview" />
+
+<RangeRequestGraphic />
 
 <DocOrientation
   eyebrow="The useful trade-off"
