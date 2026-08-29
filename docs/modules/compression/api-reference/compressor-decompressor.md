@@ -1,4 +1,44 @@
-# Compressor and Decompressor
+---
+title: Compressor and Decompressor
+description: Use one typed interface for lossless compression and decompression across runtimes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Compression API · shared contract"
+  title="Move bytes through the codec that fits."
+  description="Compressor and Decompressor are the narrow interfaces shared by loaders, writers, and applications. Pick a stable root class for normal use, or select a backend when bundle size, throughput, or reproducibility calls for it."
+  tone="violet"
+  meta={['Compress and decompress', 'One-shot and batches', 'Runtime-aware codecs']}
+  links={[
+    {label: 'Compression module', to: '/docs/modules/compression'},
+    {label: 'Built-in codecs', to: '/docs/modules/compression/api-reference/built-in-codecs'},
+    {label: 'Live benchmarks', to: '/docs/modules/compression/benchmarks'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The codec contract"
+  title="Keep codec choice separate from the data format."
+  description="A Parquet reader, a ZIP writer, and an application-level payload can all use the same direction-specific interface. The implementation can change with the runtime without changing the surrounding pipeline."
+  tone="violet"
+  items={[
+    {label: 'Direction', value: 'Compressor for writing; Decompressor for reading'},
+    {label: 'Execution', value: 'Async, synchronous, and batch operations'},
+    {label: 'Selection', value: 'Native stream, compact fallback, or explicit backend'},
+    {label: 'Portability', value: 'Browser and Node.js implementations'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Shared fields and methods"
+  description="The reference below defines codec metadata, preload behavior, one-shot methods, batch methods, and error expectations."
+  tone="violet"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />

@@ -1,4 +1,44 @@
-# MLTLoader
+---
+title: MLTLoader
+description: Parse MapLibre Tile payloads into reusable vector-tile data shapes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MLT API · vector tiles"
+  title="Decode a compact tile into application data."
+  description="MLTLoader parses a MapLibre Tile payload and exposes its feature tables as GeoJSON or binary geometry data. Use it directly when tile addressing and repeated requests are handled elsewhere."
+  tone="cyan"
+  meta={['From v4.4', 'Binary vector tile', 'GeoJSON or binary geometry']}
+  links={[
+    {label: 'MLT module', to: '/docs/modules/mlt'},
+    {label: 'MLT format', to: '/docs/modules/mlt/formats/mlt'},
+    {label: 'MLT source', to: '/docs/modules/mlt/api-reference/mlt-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The MLT loader path"
+  title="Decode bytes first. Choose coordinates at the edge."
+  description="MLTLoader keeps binary tile decoding separate from tile addressing. The same payload can stay in local tile space for rendering or be converted to WGS84 when the tile index is available."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'One MapLibre Tile binary payload'},
+    {label: 'Tables', value: 'Named feature tables with geometry and attributes'},
+    {label: 'Output', value: 'GeoJSON table or binary geometry data'},
+    {label: 'Coordinates', value: 'Local tile space by default; WGS84 is optional'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="MLTLoader reference"
+  description="The sections below document installation, output shapes, coordinate options, tile indexes, and parser behavior."
+  tone="cyan"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
