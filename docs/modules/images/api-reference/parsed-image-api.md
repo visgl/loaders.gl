@@ -1,6 +1,46 @@
-# Image Utilities
+---
+title: Image Utilities
+description: Work with decoded images through one platform-independent helper layer.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Image utility API"
+  title="Keep image handling independent of the runtime’s image class."
+  description="The image utilities recognize loaders.gl image values and expose common operations for size, pixels, MIME types, and supported formats. They let application code work across `ImageBitmap`, `Image`, and raw image-data values."
+  tone="orange"
+  meta={['ImageBitmap', 'Image', 'Image data']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-bitmap-loader'},
+    {label: 'Image category', to: '/docs/specifications/category-image'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The platform boundary"
+  title="Accept the image value you have. Ask for the information you need."
+  description="These helpers keep browser-specific image classes out of most application code. Decode with a loader, then use the same utility calls for inspection or pixel access."
+  tone="orange"
+  items={[
+    {label: 'Recognize', value: 'ImageBitmap, Image, or image-data values'},
+    {label: 'Inspect', value: 'Type, dimensions, and supported MIME types'},
+    {label: 'Extract', value: 'Portable raw pixels when analysis needs them'},
+    {label: 'Compose', value: 'Use the result with loaders and writers'}
+  ]}
+/>
 
 A small set of image utility functions intended to help write image handling code that works across platforms.
+
+<ReferenceBoundary
+  title="Image utility details"
+  description="The reference below covers supported image values, type detection, pixel extraction, dimensions, and platform-dependent format support."
+  tone="orange"
+/>
 
 Background: The image returned by [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) is always `ImageBitmap`, while deprecated [`ImageLoader`](/docs/modules/images/api-reference/image-loader) preserves older compatibility return types.
 

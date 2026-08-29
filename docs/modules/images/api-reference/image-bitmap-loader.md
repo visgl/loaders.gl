@@ -1,10 +1,50 @@
-# ImageBitmapLoader
+---
+title: ImageBitmapLoader
+description: Decode common image files into portable ImageBitmap values.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Image loader"
+  title="Decode pixels into the browser’s portable image type."
+  description="`ImageBitmapLoader` is the preferred image loader for new code. It turns common encoded image files into `ImageBitmap` values in supported browsers and through the loaders.gl polyfill path under Node.js."
+  tone="orange"
+  meta={['PNG, JPEG, WebP, AVIF', 'ImageBitmap output', 'Browser and Node.js']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'Image category', to: '/docs/specifications/category-image'},
+    {label: 'Image utilities', to: '/docs/modules/images/api-reference/parsed-image-api'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The image path"
+  title="Read encoded bytes. Decode once. Hand pixels to the application."
+  description="The loader keeps environment-specific decoding at the boundary. Applications can use the same output shape in rendering, analysis, and image conversion code."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, or SVG'},
+    {label: 'Decode', value: 'Browser `createImageBitmap` or Node polyfill'},
+    {label: 'Output', value: 'An `ImageBitmap` value'},
+    {label: 'Next step', value: 'Read pixels with `getImageData` or render directly'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 The preferred image loader for new code. `ImageBitmapLoader` returns `ImageBitmap` in supported browsers and under Node.js when `@loaders.gl/polyfills` is installed.
+
+<ReferenceBoundary
+  title="Decode and portability details"
+  description="The reference below covers supported image formats, output behavior, browser options, Node.js polyfills, and portability limitations."
+  tone="orange"
+/>
 
 | Loader         | Characteristic                                                            |
 | -------------- | ------------------------------------------------------------------------- |
