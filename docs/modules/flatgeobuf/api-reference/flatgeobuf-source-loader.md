@@ -35,7 +35,7 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square" alt="range requests from v5.0" />
 </p>

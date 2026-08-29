@@ -24,7 +24,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
 point-cloud CRS support matrix and reprojection roadmap.
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
   <a href="/docs/developer-guide/common-scan-architecture">

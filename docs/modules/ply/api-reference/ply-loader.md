@@ -43,7 +43,7 @@ import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
   tone="violet"
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 

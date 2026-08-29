@@ -63,7 +63,7 @@ console.log(imageData.width, imageData.height, imageData.data);
 
 ### getSupportedImageTypes()
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
 </p>
 
@@ -79,7 +79,7 @@ Returns a promise that resolves to a `Set` of MIME types that `@loaders.gl/image
 
 ### isImageTypeSupported()
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
 </p>
 

@@ -36,7 +36,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <a href="/docs/modules/scan#vector-table-views">
     <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
   </a>

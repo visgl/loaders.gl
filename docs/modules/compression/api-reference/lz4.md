@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 # LZ4 Compressor and Decompressor
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 

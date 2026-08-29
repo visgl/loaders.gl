@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>

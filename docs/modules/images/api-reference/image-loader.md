@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="pink"
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
   <img src="https://img.shields.io/badge/Deprecated-v4.4-orange.svg?style=flat-square" alt="Deprecated-v4.4" />
 </p>

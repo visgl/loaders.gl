@@ -69,7 +69,7 @@ Use of `fetchFile` is optional. loaders.gl `parse()` function can be used with d
 
 ## Node.js local file system support
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
 

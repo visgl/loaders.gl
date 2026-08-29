@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
   <img src="https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square" alt="range requests from v5.0" />
   <img src="https://img.shields.io/badge/range_requests-experimental-yellow.svg?style=flat-square" alt="range requests experimental" />

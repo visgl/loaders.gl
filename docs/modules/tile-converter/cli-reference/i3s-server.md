@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="mint"
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
   <a href="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter">
     <img src="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg" alt="npm version" height="18" />

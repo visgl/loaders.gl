@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![bson-logo](../../images/logos/bson-logo.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
 </p>
 

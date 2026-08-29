@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From v2.3" />
 </p>
 
@@ -43,7 +43,7 @@ and Node.js. It is designed to keep the common path small: use a built-in codec 
 has one, choose a compact JavaScript implementation when it does not, and load a larger or
 specialized implementation only when an application asks for it.
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 

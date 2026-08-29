@@ -36,7 +36,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>

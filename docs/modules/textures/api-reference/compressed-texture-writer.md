@@ -37,7 +37,7 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
   <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
 </p>

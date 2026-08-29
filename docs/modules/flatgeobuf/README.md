@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![flatgeobuf-logo](./images/flatgeobuf-logo.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   <img src="https://img.shields.io/badge/arrow_output-From_v5.0-blue.svg?style=flat-square" alt="arrow output from v5.0" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />

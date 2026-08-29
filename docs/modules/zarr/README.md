@@ -36,7 +36,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for GeoZarr
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
   <a href="/docs/developer-guide/common-scan-architecture">

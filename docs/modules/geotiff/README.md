@@ -39,7 +39,7 @@ CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
   ]}
 />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />

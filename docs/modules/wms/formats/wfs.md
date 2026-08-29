@@ -38,7 +38,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 <WmsDocsTabs active="wfs" />
 
-<p class="badges">
+<p className="badges">
   <a href="/docs/modules/scan#vector-table-views">
     <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
   </a>
