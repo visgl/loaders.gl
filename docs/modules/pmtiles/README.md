@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'PMTiles source', to: '/docs/modules/pmtiles/api-reference/pmtiles-source-loader'}
   ]}
 />
+
+<RangeRequestGraphic />
 
 <DocOrientation
   eyebrow="The archive boundary"

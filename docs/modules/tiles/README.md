@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
+
+<TiledSceneGraphic />
 
 <DocOrientation
   eyebrow="The tiles runtime"
