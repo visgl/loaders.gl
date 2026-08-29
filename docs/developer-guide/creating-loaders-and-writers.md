@@ -1,10 +1,49 @@
-# Creating New Loaders and Writers
+---
+title: Creating new loaders and writers
+description: Add a parser or writer that fits the loaders.gl runtime, worker, and composition model.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Extension point"
+  title="Add one format without learning the whole runtime."
+  description="A loader describes how to recognize and parse input. A writer describes how to encode a compatible result. The surrounding core APIs handle fetching, workers, batching, and composition."
+  tone="cyan"
+  meta={['Loader object', 'Parser or writer', 'Composable runtime']}
+  links={[
+    {label: 'Loader object format', to: '/docs/specifications/loader-object-format'},
+    {label: 'Composite loaders', to: '/docs/developer-guide/composite-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A small public contract"
+  title="Describe the format. Supply the transformation."
+  description="Keep metadata, parsing, and output behavior explicit so applications can use the new loader through the same load, batch, worker, and source APIs as built-in formats."
+  tone="cyan"
+  items={[
+    {label: 'Identify', value: 'Name, extensions, MIME types, and tests'},
+    {label: 'Parse', value: 'Text, binary, sync, async, or batched input'},
+    {label: 'Compose', value: 'Call sub-loaders through the parser context'},
+    {label: 'Ship', value: 'Keep workers and browser boundaries explicit'}
+  ]}
+/>
 
 > See the a detailed specification of the [loader object format API reference](/docs/specifications/loader-object-format).
 
 ## Overview
 
 Applications can also create new loader objects. E.g. if you have existing JavaScript parsing functionality that you would like to use with the loaders.gl core utility functions.
+
+<ReferenceBoundary
+  title="Loader and writer implementation"
+  description="The detailed sections below define object fields, parser variants, dependencies, composition, and access to the fetch response."
+  tone="cyan"
+/>
 
 ## Creating a Loader Object
 

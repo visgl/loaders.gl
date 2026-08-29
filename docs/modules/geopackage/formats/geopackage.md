@@ -1,8 +1,40 @@
-import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+---
+title: GeoPackage format
+description: A SQLite-based package for portable geospatial feature tables, tiles, and metadata.
+hide_title: true
+page_style: designed
+---
 
-# Geopackage
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Portable geospatial package"
+  title="Carry feature tables and their metadata together."
+  description="GeoPackage uses SQLite to package geospatial tables and metadata in one portable file. loaders.gl can discover a feature table and expose it through the common table shape."
+  tone="orange"
+  meta={['SQLite container', 'OGC standard', 'Feature tables']}
+  links={[
+    {label: 'GeoPackage module', to: '/docs/modules/geopackage'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
 <GeoPackageDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="The package boundary"
+  title="Discover the table before reading the rows."
+  description="A GeoPackage may contain several feature tables. The source first discovers the package catalog, then reads the selected table into a consistent Arrow feature shape."
+  tone="orange"
+  items={[
+    {label: 'Container', value: 'SQLite database in one file'},
+    {label: 'Catalog', value: 'Feature tables, geometry columns, and bounds'},
+    {label: 'Output', value: 'Arrow feature table with geometry metadata'},
+    {label: 'Execution', value: 'Materialized read with residual filtering'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -33,3 +65,9 @@ query pushdown.
 Choose the feature table through the source options before calling `getQueryMetadata()` or
 `read()`. Predicate columns remain available for filtering even when they are absent from the final
 projection.
+
+<ReferenceBoundary
+  title="GeoPackage structure and execution"
+  description="The sections below cover package metadata, feature-table selection, geometry handling, and the current scan execution boundary."
+  tone="orange"
+/>

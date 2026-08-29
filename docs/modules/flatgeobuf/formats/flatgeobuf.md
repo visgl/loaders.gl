@@ -1,8 +1,40 @@
-import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+---
+title: FlatGeobuf format
+description: A binary, spatially indexed feature format designed for streaming and selective reads.
+hide_title: true
+page_style: designed
+---
 
-# FlatGeobuf
+import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Indexed feature format"
+  title="Find the features before decoding the file."
+  description="FlatGeobuf stores OGC geometries in a compact FlatBuffers layout and can include a spatial index. That makes it useful for streaming and bounded reads without the weight of a database."
+  tone="cyan"
+  meta={['FlatBuffers', 'Row-oriented', 'Optional spatial index']}
+  links={[
+    {label: 'FlatGeobuf module', to: '/docs/modules/flatgeobuf'},
+    {label: 'FlatGeobuf source', to: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader'}
+  ]}
+/>
 
 <FlatGeobufDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="The useful trade-off"
+  title="A row format with a spatial shortcut."
+  description="FlatGeobuf keeps complete features together while its index lets a reader skip records outside a requested bounding box. It complements columnar formats rather than replacing them."
+  tone="cyan"
+  items={[
+    {label: 'Layout', value: 'FlatBuffers-encoded feature records'},
+    {label: 'Selection', value: 'R-tree bounding-box pruning when present'},
+    {label: 'Geometry', value: 'OGC Simple Features geometry types'},
+    {label: 'Output', value: 'GeoJSON-like features or Arrow batches'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -17,6 +49,12 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
 
 FlatGeobuf is a binary (FlatBuffers-encoded) format that defines geospatial geometries. It is row-oriented rather than columnar like GeoParquet and GeoArrow and offers a different set of trade-offs.
 FlatGeobuf was inspired by [geobuf](https://github.com/mapbox/geobuf) and [flatbush](https://github.com/mourner/flatbush).
+
+<ReferenceBoundary
+  title="FlatGeobuf structure and support"
+  description="The sections below describe layout, geometry types, indexing, scan behavior, and the format features supported by loaders.gl."
+  tone="cyan"
+/>
 
 ## Characteristics
 
