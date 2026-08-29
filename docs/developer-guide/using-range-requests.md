@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Cloud-native I/O"
@@ -16,6 +17,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The range-request path"
+  title="Turn a logical read into a few useful bytes."
+  description="Range-aware sources use file metadata and request context to fetch only the intervals needed by the current operation, while a shared scheduler combines nearby work."
+  tone="violet"
+  items={[
+    {label: 'Locate', value: 'Map a tile, column, page, or footer to byte offsets'},
+    {label: 'Combine', value: 'Merge nearby ranges within explicit request limits'},
+    {label: 'Cache', value: 'Reuse completed intervals without sharing mutable storage'},
+    {label: 'Serve', value: 'Work with object stores, CDNs, and compatible HTTP servers'}
   ]}
 />
 
@@ -30,6 +44,12 @@ loaders.gl Sources can use scheduled byte-range loading to take the middle path.
 
 PMTiles URL sources use this path by default. The lower-level scheduler is available in
 `@loaders.gl/loader-utils` for future byte-range Sources.
+
+<ReferenceBoundary
+  title="Scheduling, caching, and transport details"
+  description="The guide below covers scheduler options, cache behavior, HTTP range semantics, local testing, diagnostics, and failure or abort handling."
+  tone="violet"
+/>
 
 ## How It Works
 

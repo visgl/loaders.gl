@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Data conversion"
@@ -16,6 +17,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   links={[
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
     {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The conversion path"
+  title="Make the next shape an explicit decision."
+  description="Converters connect related data representations without making every loader understand every other format. Applications choose the edges they need and keep the rest out of the bundle."
+  tone="yellow"
+  items={[
+    {label: 'Detect', value: 'Identify the source and target data shapes'},
+    {label: 'Compose', value: 'Pass the leaf converters that define an allowed path'},
+    {label: 'Preserve', value: 'Keep metadata and binary columns where the target supports them'},
+    {label: 'Render', value: 'Use dedicated geometry converters when GeoJSON is not required'}
   ]}
 />
 
@@ -35,6 +49,12 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 ```
 
 ![Converter flow](/img/developer-guide/conversion-flow.svg)
+
+<ReferenceBoundary
+  title="Converter families and shape paths"
+  description="The sections below document the dispatcher, table and Arrow conversions, GeoArrow and feature collections, render-focused utilities, and format categories."
+  tone="yellow"
+/>
 
 ## In This Section
 

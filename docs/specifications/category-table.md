@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <DocPageHeader
@@ -23,6 +24,12 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
 
 The _table_ category loaders supports loading tables in _row-based_, _columnar_ or _batched columnar_ formats.
+
+<ReferenceBoundary
+  title="Table shapes and contracts"
+  description="The reference below defines supported loaders, row and column representations, Arrow integration, accessors, and serialization details."
+  tone="cyan"
+/>
 
 ## Table Category Loaders
 

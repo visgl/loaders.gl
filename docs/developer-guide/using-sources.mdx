@@ -7,6 +7,7 @@ page_style: designed
 
 import SourceLoaderGraphic from '@site/src/components/source-loader-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Multi-resource data"
@@ -20,12 +21,31 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
+<DocOrientation
+  eyebrow="The source path"
+  title="Discover first. Request only what the view needs."
+  description="A source owns the extra steps around a dataset: metadata discovery, spatial or tile selection, range requests, caching, and repeated refreshes."
+  tone="orange"
+  items={[
+    {label: 'Discover', value: 'Identify layers, fields, bounds, and service capabilities'},
+    {label: 'Select', value: 'Use a viewport, tile, query, or application request'},
+    {label: 'Fetch', value: 'Load only the resources needed for that request'},
+    {label: 'Return', value: 'Expose a shared source result or a format-specific data object'}
+  ]}
+/>
+
 loaders.gl provides a number of `SourceLoader` exports that support multi-step data loading. **SourceLoaders** are different from parser **loaders**:
 
 - loaders are designed for "one-shot" atomic or streaming loads of data
 - while a `SourceLoader` can be thought of as a multi-step or multi-resource loader, which is required for a number of data formats and access patterns.
 
 <SourceLoaderGraphic standalone />
+
+<ReferenceBoundary
+  title="Source interfaces and implementations"
+  description="The reference below covers SourceLoader and DataSource contracts, metadata, adapters, auto-selection, raster sources, and source-specific options."
+  tone="orange"
+/>
 
 **SourceLoaders** encapsulate the following data access models:
 

@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Core API"
@@ -19,7 +20,26 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
+<DocOrientation
+  eyebrow="The loader path"
+  title="Choose how much the application wants to know."
+  description="Use one known loader when the format is part of the application contract, a list when the input may vary, or the shared registry when discovery belongs to the runtime."
+  tone="pink"
+  items={[
+    {label: 'Explicit', value: 'Pass one loader and retain precise result types'},
+    {label: 'Multiple', value: 'Offer compatible loaders for automatic selection'},
+    {label: 'Registered', value: 'Add application-wide defaults with registerLoaders()'},
+    {label: 'Result', value: 'Use load(), parse(), or loadInBatches() for the chosen shape'}
+  ]}
+/>
+
 loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
+
+<ReferenceBoundary
+  title="Selection, options, and runtime behavior"
+  description="The guide below covers installation, explicit and automatic selection, TypeScript inference, options, composite loaders, and error handling."
+  tone="pink"
+/>
 
 ## Installing loaders
 

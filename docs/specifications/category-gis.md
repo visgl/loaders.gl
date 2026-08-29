@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <DocPageHeader
@@ -25,6 +26,12 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 > The Geospatial category is experimental
 
 Several geospatial formats return data in the form of lists of lng/lat encoded geometric objects.
+
+<ReferenceBoundary
+  title="Geospatial shapes and contracts"
+  description="The reference below records loader outputs, shape selection, geometry representations, layer handling, and conversion boundaries."
+  tone="orange"
+/>
 
 ## Geospatial Category Loaders
 
