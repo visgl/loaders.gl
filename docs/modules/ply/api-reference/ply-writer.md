@@ -1,8 +1,47 @@
+---
+title: PLYWriter
+description: Encode Mesh or Mesh Arrow table data as PLY text.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
 
-# PLYWriter
+<DocPageHeader
+  eyebrow="PLY writer"
+  title="Write common mesh data into a portable text format."
+  description="`PLYWriter` accepts legacy Mesh objects and Mesh Arrow tables, normalizes their common attributes, and writes ASCII Polygon File Format output for tools and pipelines that speak PLY."
+  tone="mint"
+  meta={['PLY text', 'Mesh and Arrow table', 'Vertices and faces']}
+  links={[
+    {label: 'PLY module', to: '/docs/modules/ply'},
+    {label: 'PLY format', to: '/docs/modules/ply/formats/ply'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The PLY writing path"
+  title="Normalize the mesh. Emit a file other tools can read."
+  description="The writer keeps format delivery separate from the application’s mesh representation, carrying standard vertex attributes and faces into a simple PLY schema."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'Mesh or Mesh Arrow table'},
+    {label: 'Attributes', value: 'Position, normal, UV, color, and custom scalars'},
+    {label: 'Topology', value: 'Indexed or sequential triangle faces'},
+    {label: 'Output', value: 'ASCII PLY text or encoded bytes'}
+  ]}
+/>
 
 <PlyDocsTabs active="plywriter" />
+
+<ReferenceBoundary
+  title="PLY output details"
+  description="The reference below covers accepted mesh shapes, written attributes, faces, and encoding entry points."
+  tone="mint"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />

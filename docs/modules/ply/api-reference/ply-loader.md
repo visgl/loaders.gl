@@ -1,8 +1,47 @@
+---
+title: PLYLoader
+description: Parse Polygon File Format meshes into legacy Mesh objects or Mesh Arrow tables.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
 
-# PLYLoader
+<DocPageHeader
+  eyebrow="PLY loader"
+  title="Read a classic mesh file into the shape your renderer needs."
+  description="`PLYLoader` parses Polygon File Format files and can return either the legacy Mesh object or a Mesh Arrow table. Choose the output shape at the boundary so downstream geometry code can stay consistent."
+  tone="violet"
+  meta={['PLY', 'Mesh and Arrow table', 'Batched parsing']}
+  links={[
+    {label: 'PLY module', to: '/docs/modules/ply'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
+    {label: 'PLYWriter', to: '/docs/modules/ply/api-reference/ply-writer'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The PLY path"
+  title="Parse vertices and faces. Select a legacy or columnar result."
+  description="PLY is a flexible mesh container. loaders.gl keeps the parser focused on its records while letting applications choose the representation that best fits existing rendering or columnar pipelines."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'ASCII or binary PLY mesh data'},
+    {label: 'Records', value: 'Vertices, faces, normals, colors, and UVs'},
+    {label: 'Output', value: 'Mesh object or Mesh Arrow table'},
+    {label: 'Streaming', value: 'Batched parsing for Arrow table output'}
+  ]}
+/>
 
 <PlyDocsTabs active="plyloader" />
+
+<ReferenceBoundary
+  title="PLY parsing and output details"
+  description="The reference below covers output shapes, attributes, batched parsing, and loader options."
+  tone="violet"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
