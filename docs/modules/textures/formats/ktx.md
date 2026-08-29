@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <TexturesDocsTabs active="ktx" />
+
+<TextureTranscodeGraphic />
 
 <DocOrientation
   eyebrow="Container responsibilities"

@@ -8,6 +8,7 @@ page_style: designed
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 
 <DocPageHeader
   eyebrow="Texture formats"
@@ -23,6 +24,8 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 />
 
 <TexturesDocsTabs active="compressed-textures" />
+
+<TextureTranscodeGraphic />
 
 <DocOrientation
   eyebrow="Container, payload, device"
