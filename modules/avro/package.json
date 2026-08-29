@@ -46,6 +46,10 @@
     "./avro-ocf": {
       "types": "./dist/avro-ocf.d.ts",
       "import": "./dist/avro-ocf.js"
+    },
+    "./avro-parser": {
+      "types": "./dist/avro-parser.d.ts",
+      "import": "./dist/avro-parser.js"
     }
   },
   "sideEffects": false,

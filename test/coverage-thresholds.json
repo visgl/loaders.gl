@@ -32,6 +32,21 @@
         "branches": 82
       }
     },
+    "@loaders.gl/avro": {
+      "path": "modules/avro",
+      "browser": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      }
+    },
     "@loaders.gl/bson": {
       "path": "modules/bson",
       "browser": {
