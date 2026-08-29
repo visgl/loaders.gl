@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -26,13 +27,15 @@ current COPC/LAS projection-record support and vertical/compound CRS roadmap.
 
 ![copc-logo](../../images/logos/copc-logo-80.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
+
+<CopcRangeGraphic />
 
 <CopcDocsTabs active="overview" />
 

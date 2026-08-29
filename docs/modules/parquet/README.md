@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -30,6 +31,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
+
+<ParquetLayoutGraphic />
 
 <DocOrientation
   eyebrow="The Parquet module"

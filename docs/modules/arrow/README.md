@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -24,6 +25,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ![arrow-logo](./images/apache-arrow-small.png)
 &emsp;
 ![apache-logo](../../images/logos/apache-logo.png)
+
+<ArrowDataPlaneGraphic />
 
 <DocOrientation
   eyebrow="The Arrow module"
