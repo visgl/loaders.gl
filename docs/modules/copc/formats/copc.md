@@ -1,8 +1,40 @@
-import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+---
+title: COPC format
+description: A range-readable LAZ point-cloud format organized for spatial selection.
+hide_title: true
+page_style: designed
+---
 
-# COPC
+import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Cloud point-cloud format"
+  title="A point cloud that can answer bounded requests."
+  description="COPC combines LAS 1.4 point records, LAZ compression, and an octree hierarchy in one file. A reader can inspect the metadata, choose relevant nodes, and fetch their byte ranges without downloading the complete cloud."
+  tone="violet"
+  meta={['COPC 1.0', 'LAZ 1.4', 'Spatial byte ranges']}
+  links={[
+    {label: 'COPC module', to: '/docs/modules/copc'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
 <CopcDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="What the file adds"
+  title="LAS records, arranged for cloud access."
+  description="COPC keeps the exchange-format record model while adding the metadata and hierarchy needed to find spatially relevant compressed chunks."
+  tone="violet"
+  items={[
+    {label: 'Records', value: 'LAS 1.4 point formats carried in LAZ chunks'},
+    {label: 'Index', value: 'Variable-depth clustered octree hierarchy'},
+    {label: 'Access', value: 'HTTP range requests against one object'},
+    {label: 'Use', value: 'Viewport traversal, scan queries, and progressive analysis'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -14,6 +46,12 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 - _[Video Overview](https://www.youtube.com/watch?v=rWkKKZYN86A)_
 
 COPC, short for Cloud Optimized Point Cloud, is a range-readable LAZ 1.4 file whose point data is organized as a clustered octree. A COPC reader can select spatial nodes and fetch only their compressed byte ranges instead of downloading the complete point cloud.
+
+<ReferenceBoundary
+  title="COPC structure and compatibility"
+  description="The sections below describe scan behavior, file organization, metadata, and the implementation boundaries of the loaders.gl reader and writer."
+  tone="violet"
+/>
 
 Data organization is modeled after the [EPT data format](https://entwine.io/en/latest/entwine-point-tile.html), but COPC stores the octree as variably chunked LAZ data in one file. The same file can therefore be consumed sequentially by a variable-chunk LAZ reader or spatially by a COPC hierarchy reader.
 

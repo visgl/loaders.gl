@@ -1,7 +1,45 @@
-# Scenegraph Loaders
+---
+title: Scenegraph category
+description: Keep hierarchical scene descriptions intact while they move from files into applications.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Keep the scene hierarchy until the renderer needs it."
+  description="Scenegraph loaders preserve nodes, meshes, materials, transforms, and extensions as a structured representation. That lets applications inspect, transform, or render a scene without flattening it during decode."
+  tone="pink"
+  links={[
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
+    {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A scene is more than a mesh"
+  title="Decode the relationships as well as the bytes."
+  description="A scenegraph carries the hierarchy that connects geometry, materials, animations, and transforms. The category keeps those relationships available to an application-specific renderer or converter."
+  tone="pink"
+  items={[
+    {label: 'Scene files', value: 'glTF, GLB, and OpenUSD'},
+    {label: 'Preserves', value: 'Nodes, meshes, materials, transforms, animations, and extensions'},
+    {label: 'Payloads', value: 'Binary buffers, images, compressed geometry, and textures'},
+    {label: 'Output', value: 'Typed scene data close to the source format'}
+  ]}
+/>
 
 The Scenegraph category represents hierarchical 3D scene descriptions. Each loader returns a
 typed representation close to its source format.
+
+<ReferenceBoundary
+  title="The scenegraph data model"
+  description="The sections below document the loaders and the source-shaped data structures they return."
+  tone="pink"
+/>
 
 ## Loaders
 

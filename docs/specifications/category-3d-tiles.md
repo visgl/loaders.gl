@@ -1,4 +1,36 @@
-# 3D Tiles Loaders
+---
+title: 3D Tiles category
+description: Load hierarchical worlds and point-cloud datasets through one tileset data model.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Tiled worlds, loaded a piece at a time."
+  description="The 3D Tiles category gives applications a common way to discover, select, cache, and refresh content from hierarchical 3D datasets. The source format can be 3D Tiles, I3S, or Potree."
+  tone="violet"
+  links={[
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
+    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What the category standardizes"
+  title="The application follows the visible world, not the file layout."
+  description="A tileset exposes hierarchy, bounds, geometric error, and content references. Traversal code decides what belongs in view while format adapters handle the source-specific details."
+  tone="violet"
+  items={[
+    {label: 'Sources', value: '3D Tiles, I3S, and Potree datasets'},
+    {label: 'Selection', value: 'Bounds, screen-space error, and level of detail'},
+    {label: 'Runtime', value: 'Caching, scheduling, cancellation, and refresh'},
+    {label: 'Payloads', value: 'glTF, point clouds, terrain, and application data'}
+  ]}
+/>
 
 The 3D Tiles category defines a generalized representation of hierarchical geospatial data structures. Specific loaders for tiled 3D data return a standardized representation.
 
@@ -14,6 +46,12 @@ The 3D Tiles category can represent the major tiled 3D formats:
 | [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) |       |
 | [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader)                   |       |
 | [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader)          |       |
+
+<ReferenceBoundary
+  title="The tileset contract"
+  description="The sections below describe the shared tile representation, traversal lifecycle, coordinate systems, and helper classes."
+  tone="violet"
+/>
 
 ## Concepts
 

@@ -1,8 +1,40 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: '@loaders.gl/textures'
+description: Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Texture module"
+  title="Ship one texture asset. Choose the GPU format at runtime."
+  description="The textures module handles containers, mip chains, arrays, cube maps, and compressed payloads. Basis Universal can be transcoded on the client to a format supported by the current device."
+  tone="cyan"
+  meta={['KTX / KTX2', 'Basis Universal', 'GPU-oriented payloads']}
+  links={[
+    {label: 'Texture category', to: '/docs/specifications/category-texture'},
+    {label: 'Basis format', to: '/docs/modules/textures/formats/basis'}
+  ]}
+/>
 
 <TexturesDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="Container, payload, device"
+  title="Keep texture delivery separate from texture use."
+  description="A source file can carry mip levels and a portable compressed payload. The application can inspect that metadata, select a target, and hand the resulting levels to its rendering layer."
+  tone="cyan"
+  items={[
+    {label: 'Containers', value: 'KTX, KTX2, DDS, PVR, Basis, and Crunch'},
+    {label: 'Layouts', value: 'Mips, arrays, cube maps, and 3D texture images'},
+    {label: 'Transcode', value: 'Basis payloads to device-compatible compressed formats'},
+    {label: 'Return', value: 'TextureLevel data or normalized texture objects'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
@@ -11,6 +43,12 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
 
 See [Texture Loaders](/docs/specifications/category-texture) for the shared category conventions.
+
+<ReferenceBoundary
+  title="Texture module details"
+  description="The sections below cover formats, loaders, writers, normalized return shapes, and runtime selection."
+  tone="cyan"
+/>
 
 Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
 

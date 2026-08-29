@@ -1,10 +1,48 @@
-# Texture Loaders
+---
+title: Texture category
+description: Decode and transcode GPU-oriented texture containers, mip chains, and compressed payloads.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Get texture payloads ready for the GPU."
+  description="Texture loaders preserve the details that ordinary image loaders do not: mip levels, array and cube layouts, compression formats, and the metadata a runtime needs to choose a supported GPU representation."
+  tone="cyan"
+  links={[
+    {label: 'Texture module', to: '/docs/modules/textures'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Container, payload, runtime"
+  title="Keep the texture pipeline explicit."
+  description="A KTX2 or Basis asset is a delivery container, not necessarily the final GPU format. loaders.gl exposes the levels and metadata, then can transcode to a device-compatible representation."
+  tone="cyan"
+  items={[
+    {label: 'Containers', value: 'KTX, KTX2, DDS, PVR, and Basis'},
+    {label: 'Layouts', value: 'Mip chains, arrays, cube maps, and 3D textures'},
+    {label: 'Transcoding', value: 'Basis Universal to a supported runtime format'},
+    {label: 'Output', value: 'TextureLevel data or normalized texture objects'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 The texture loader category documents the common return shapes, conventions, and helper APIs used for compressed and GPU-oriented texture assets under loaders.gl conventions.
+
+<ReferenceBoundary
+  title="Texture data and format details"
+  description="The sections below cover category loaders, normalized return shapes, container formats, and writer behavior."
+  tone="cyan"
+/>
 
 ## Texture Category Loaders
 

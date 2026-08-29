@@ -1,14 +1,52 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: BasisLoader
+description: Transcode Basis Universal payloads into texture levels suited to the current device.
+hide_title: true
+page_style: designed
+---
 
-# BasisLoader
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Texture loader"
+  title="Let the device choose the final texture format."
+  description="BasisLoader decodes raw Basis or KTX2-wrapped Basis payloads and transcodes them into a supported compressed or fallback texture format. Applications can keep one portable source asset across GPU families."
+  tone="cyan"
+  meta={['Basis / KTX2', 'Runtime transcoding', 'TextureLevel[][]']}
+  links={[
+    {label: 'Basis format', to: '/docs/modules/textures/formats/basis'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'}
+  ]}
+/>
 
 <TexturesDocsTabs active="basisloader" />
+
+<DocOrientation
+  eyebrow="The runtime decision"
+  title="Portable input, device-aware output."
+  description="Use automatic selection when the runtime can report its texture capabilities, or provide an explicit target when decoding in a worker or coordinating a known rendering path."
+  tone="cyan"
+  items={[
+    {label: 'Inputs', value: '.basis and .ktx2 Basis payloads'},
+    {label: 'Selection', value: 'Automatic or explicit target texture format'},
+    {label: 'Output', value: 'One or more images with complete mip levels'},
+    {label: 'Options', value: 'Supported formats, features, container, and worker settings'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
 A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompressed textures from the basis or ktx2 container and efficiently "transpiles" them into the specified compressed texture format.
+
+<ReferenceBoundary
+  title="BasisLoader details"
+  description="The sections below document the normalized output, device selection options, containers, and usage patterns."
+  tone="cyan"
+/>
 
 | Loader         | Characteristic                                                    |
 | -------------- | ----------------------------------------------------------------- |

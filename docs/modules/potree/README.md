@@ -1,6 +1,25 @@
-import {PotreeDocsTabs} from '@site/src/components/docs/potree-docs-tabs';
+---
+title: '@loaders.gl/potree'
+description: Traverse Potree point clouds from cloud-hosted hierarchy and node resources.
+hide_title: true
+page_style: designed
+---
 
-# @loaders.gl/potree
+import {PotreeDocsTabs} from '@site/src/components/docs/potree-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Point-cloud module"
+  title="Traverse Potree clouds without loading the whole octree."
+  description="Potree datasets expose a hierarchy and node payloads that can be requested progressively. loaders.gl turns supported Potree layouts into a source and scan shape that applications can use alongside COPC."
+  tone="violet"
+  meta={['Potree 1.4–1.8', 'Octree traversal', 'Progressive point batches']}
+  links={[
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
+    {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
+  ]}
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
 point-cloud CRS support matrix and reprojection roadmap.
@@ -15,7 +34,26 @@ point-cloud CRS support matrix and reprojection roadmap.
 
 <PotreeDocsTabs active="overview" />
 
+<DocOrientation
+  eyebrow="The Potree path"
+  title="Use the hierarchy as the query plan."
+  description="Metadata identifies the coordinate system, point attributes, and node layout. Traversal then selects the nodes that match the view or scan request and fetches only their payloads."
+  tone="violet"
+  items={[
+    {label: 'Supported layouts', value: 'Potree 1.4 through 1.8 node and hierarchy variants'},
+    {label: 'Traversal', value: 'Bounds, levels, spacing, and cancellation'},
+    {label: 'Payloads', value: 'Potree binary nodes plus LAS and LAZ records'},
+    {label: 'Output', value: 'Point tiles and ordered Arrow point batches'}
+  ]}
+/>
+
 Support for loading and traversing [potree](http://potree.org/) format point clouds.
+
+<ReferenceBoundary
+  title="Potree compatibility details"
+  description="The sections below document supported metadata and node layouts, scan behavior, and source-specific limitations."
+  tone="violet"
+/>
 
 ## Format Support
 

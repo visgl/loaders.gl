@@ -1,13 +1,51 @@
-import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+---
+title: LAS and LAZ formats
+description: Open point-cloud exchange formats with typed records, lossless compression, and extensible metadata.
+hide_title: true
+page_style: designed
+---
 
-# LAS / LAZ
+import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Point-cloud exchange formats"
+  title="Keep the point record useful at every layer."
+  description="LAS defines a widely used point-cloud record and metadata model. LAZ applies lossless compression without changing the logical records, so tools can exchange lidar data without giving up its attributes."
+  tone="blue"
+  meta={['LAS 1.0–1.5', 'LAZ lossless compression', 'Extensible VLR metadata']}
+  links={[
+    {label: 'LAS module', to: '/docs/modules/las'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
 
 <LasDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="Three related layouts"
+  title="Exchange, compress, or query the same points."
+  description="LAS is the record model, LAZ compresses those records, and COPC adds a spatial hierarchy for cloud range reads. They belong to one point-cloud family but serve different delivery problems."
+  tone="blue"
+  items={[
+    {label: 'LAS', value: 'Uncompressed point records and metadata'},
+    {label: 'LAZ', value: 'LASzip-compatible lossless compressed records'},
+    {label: 'COPC', value: 'Range-readable LAZ with an octree index'},
+    {label: 'Attributes', value: 'Positions, returns, classification, color, time, and extensions'}
+  ]}
+/>
 
 - _[`@loaders.gl/las`](/docs/modules/las)_
 - _[ASPRS LAS 1.5](https://asprslas.org/latest/index.html)_ - _[ASPRS LAS 1.4 R15](https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf)_ - _[COPC 1.0](https://copc.io/)_ - _[LASzip project](https://github.com/LASzip/LASzip)_ - _[LAZ spec](https://www.cs.unc.edu/~isenburg/lastools/download/laszip.pdf)_
 
 The _LASER file format_ (LAS) and its compressed version (LAZ) are public formats for the interchange of 3D point cloud data, developed for lidar mapping and related point cloud workflows.
+
+<ReferenceBoundary
+  title="Point-record and codec details"
+  description="The sections below cover the relationship between LAS, LAZ, and COPC, plus the exact implementation support and limits."
+  tone="blue"
+/>
 
 ## LAS, LAZ, and COPC
 

@@ -1,3 +1,44 @@
+---
+title: '@loaders.gl/tiles'
+description: Traverse source-backed 2D and 3D tilesets with selection, caching, and refreshable data sources.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles runtime module"
+  title="Let the viewport decide which data arrives."
+  description="The tiles module supplies source-backed 2D and 3D traversal primitives. It coordinates hierarchy selection, request scheduling, caching, and refresh while leaving the final rendering policy to the application."
+  tone="violet"
+  meta={['Tileset3D', 'PointCloudTileset', 'RasterSet']}
+  links={[
+    {label: '3D Tiles category', to: '/docs/specifications/category-3d-tiles'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The tiles runtime"
+  title="Select, request, cache, refresh."
+  description="A tileset is a data source with a hierarchy. The runtime tracks what is visible, requests the corresponding content, and releases data that is no longer useful under the configured cache policy."
+  tone="violet"
+  items={[
+    {label: 'Selection', value: 'Viewport, bounds, geometric error, and level of detail'},
+    {label: 'Requests', value: 'Priority scheduling, cancellation, and refresh'},
+    {label: 'Memory', value: 'Cache budgets and eviction of no-longer-needed content'},
+    {label: 'Outputs', value: '3D tiles, point clouds, raster tiles, and source metadata'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tiles runtime details"
+  description="The sections below document the tile hierarchy, traversal lifecycle, cache, coordinate model, and helper classes."
+  tone="violet"
+/>
+
 <p align="right">
   <a href="https://www.npmjs.com/package/@loaders.gl/tiles">
     <img src="https://img.shields.io/npm/v/@loaders.gl/tiles.svg?style=flat-square&label=npm%20package" alt="npm package version" />
