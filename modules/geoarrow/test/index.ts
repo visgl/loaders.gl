@@ -8,4 +8,5 @@ import './get-geoarrow-geometry-info.spec';
 import './get-geoarrow-vertex-count.spec';
 import './get-arrow-bounds.spec';
 import './merge-geoarrow-schemas.spec';
+import './geoarrow-layout.spec';
 import './geoarrow-stream.spec';

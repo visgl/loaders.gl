@@ -41,6 +41,10 @@
       "types": "./dist/geoarrow-inspection.d.ts",
       "import": "./dist/geoarrow-inspection.js"
     },
+    "./geoarrow-layout": {
+      "types": "./dist/geoarrow-layout.d.ts",
+      "import": "./dist/geoarrow-layout.js"
+    },
     "./geoarrow-bounds": {
       "types": "./dist/geoarrow-bounds.d.ts",
       "import": "./dist/geoarrow-bounds.js"

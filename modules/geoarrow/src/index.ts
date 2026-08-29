@@ -144,6 +144,7 @@ export {
   validateGeoArrowVector,
   negotiateGeoArrowEncoding
 } from './geoarrow-capabilities';
+export {inspectGeoArrowLayout} from './geoarrow-layout';
 export type {
   GeoArrowFieldInfo,
   GeoArrowValidationIssue,
@@ -151,6 +152,17 @@ export type {
   GeoArrowVectorValidationResult,
   GeoArrowEncodingRequirements
 } from './geoarrow-capabilities';
+export type {
+  GeoArrowChildNullability,
+  GeoArrowCoordinatePrecision,
+  GeoArrowLayoutInfo,
+  GeoArrowLayoutInspection,
+  GeoArrowLayoutIssue,
+  GeoArrowLayoutIssueCode,
+  GeoArrowLayoutKind,
+  GeoArrowStorageKind,
+  GeoArrowUnionChildLayout
+} from './geoarrow-layout';
 
 export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 

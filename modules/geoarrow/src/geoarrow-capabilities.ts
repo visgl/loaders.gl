@@ -13,6 +13,7 @@ import type {
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
 import {getWKBGeometryStatistics, convertWKTToGeometry} from '@loaders.gl/gis';
+import {inspectGeoArrowLayout} from './geoarrow-layout';
 
 /** Physical and logical capabilities of one GeoArrow field. */
 export type GeoArrowFieldInfo = Readonly<{
@@ -94,37 +95,26 @@ export function getGeoArrowFieldInfo(field: arrow.Field): GeoArrowFieldInfo | nu
 /** Validates the physical Arrow type and extension metadata of one field. */
 export function validateGeoArrowField(field: arrow.Field): GeoArrowValidationResult {
   const info = getGeoArrowFieldInfo(field);
-  const issues: GeoArrowValidationIssue[] = [];
+  const layoutInspection = inspectGeoArrowLayout(field);
+  const issues: GeoArrowValidationIssue[] = layoutInspection.issues.map(issue => ({
+    path: issue.path,
+    message: issue.message
+  }));
   const metadata = getGeometryMetadataForField(field.metadata || new Map());
   if (!info) {
-    issues.push({path: field.name, message: 'Field is not a recognized GeoArrow physical type.'});
+    if (!issues.some(issue => issue.message.includes('recognized GeoArrow physical type'))) {
+      issues.push({path: field.name, message: 'Field is not a recognized GeoArrow physical type.'});
+    }
     return {valid: false, issues, info: null};
   }
-  if (!metadata?.encoding) {
-    issues.push({path: field.name, message: 'GeoArrow extension name is missing.'});
-  } else if (
+  if (
+    metadata?.encoding &&
     !getGeoArrowGeometryInfo(field) &&
-    metadata.encoding !== 'geoarrow.geometry' &&
-    metadata.encoding !== 'geoarrow.geometrycollection'
+    !issues.some(issue => issue.message.includes('physical Arrow layout'))
   ) {
     issues.push({
       path: field.name,
       message: `Encoding ${metadata.encoding} does not have a recognized physical Arrow layout.`
-    });
-  } else if (!isEncodingCompatible(metadata.encoding, info)) {
-    issues.push({
-      path: field.name,
-      message: `Encoding ${metadata.encoding} is incompatible with Arrow type ${field.type.toString()}.`
-    });
-  }
-  if (
-    (metadata?.encoding === 'geoarrow.geometry' ||
-      metadata?.encoding === 'geoarrow.geometrycollection') &&
-    !isUnionPhysicalType(field.type, metadata.encoding)
-  ) {
-    issues.push({
-      path: field.name,
-      message: `${metadata.encoding} requires a dense union Arrow physical type.`
     });
   }
   if (metadata?.geometry_types && metadata.geometry_types.length === 0) {
@@ -559,26 +549,6 @@ function getOffsetType(type: arrow.DataType): GeoArrowOffsetType | null {
     }
   }
   return null;
-}
-
-function isEncodingCompatible(encoding: GeoArrowEncoding, info: GeoArrowFieldInfo): boolean {
-  if (encoding === 'geoarrow.wkb') return info.compatibleEncodings.includes('geoarrow.wkb');
-  if (encoding === 'geoarrow.wkt') return info.compatibleEncodings.includes('geoarrow.wkt');
-  if (encoding === 'geoarrow.geometry' || encoding === 'geoarrow.geometrycollection') {
-    return info.compatibleEncodings.includes(encoding) || info.compatibleEncodings.length > 0;
-  }
-  return info.compatibleEncodings.includes(encoding);
-}
-
-function isUnionPhysicalType(
-  type: arrow.DataType,
-  encoding: 'geoarrow.geometry' | 'geoarrow.geometrycollection'
-): boolean {
-  if (encoding === 'geoarrow.geometry') return type instanceof arrow.DenseUnion;
-  return (
-    (type instanceof arrow.List || type instanceof arrow.LargeList) &&
-    type.children[0]?.type instanceof arrow.DenseUnion
-  );
 }
 
 function assertPhysicalRequirements(
